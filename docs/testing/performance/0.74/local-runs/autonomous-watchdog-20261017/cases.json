@@ -1,0 +1,506 @@
+[
+  {
+    "compiler": "194",
+    "case": "normal",
+    "repeat": 1,
+    "seed": "0x7407a17",
+    "elapsed_ms": 40
+  },
+  {
+    "compiler": "194",
+    "case": "controller-kill",
+    "repeat": 1,
+    "seed": "0x7407a17",
+    "elapsed_ms": 30
+  },
+  {
+    "compiler": "194",
+    "case": "controller-stop",
+    "repeat": 1,
+    "seed": "0x7407a17",
+    "elapsed_ms": 10128
+  },
+  {
+    "compiler": "194",
+    "case": "hidden-writer",
+    "repeat": 1,
+    "seed": "0x7407a17",
+    "elapsed_ms": 161
+  },
+  {
+    "compiler": "194",
+    "case": "stopped-writer",
+    "repeat": 1,
+    "seed": "0x7407a17",
+    "elapsed_ms": 151
+  },
+  {
+    "compiler": "194",
+    "case": "ack-omitted",
+    "repeat": 1,
+    "seed": "0x7407a17",
+    "elapsed_ms": 40
+  },
+  {
+    "compiler": "194",
+    "case": "ack-disconnected",
+    "repeat": 1,
+    "seed": "0x7407a17",
+    "elapsed_ms": 151
+  },
+  {
+    "compiler": "194",
+    "case": "write-failure",
+    "repeat": 1,
+    "seed": "0x7407a17",
+    "elapsed_ms": 250
+  },
+  {
+    "compiler": "194",
+    "case": "sync-failure",
+    "repeat": 1,
+    "seed": "0x7407a17",
+    "elapsed_ms": 260
+  },
+  {
+    "compiler": "194",
+    "case": "size-limit",
+    "repeat": 1,
+    "seed": "0x7407a17",
+    "elapsed_ms": 250
+  },
+  {
+    "compiler": "194",
+    "case": "overflow",
+    "repeat": 1,
+    "seed": "0x7407a17",
+    "elapsed_ms": 380
+  },
+  {
+    "compiler": "194",
+    "case": "collector-stop",
+    "repeat": 1,
+    "seed": "0x7407a17",
+    "elapsed_ms": 10128
+  },
+  {
+    "compiler": "194",
+    "case": "normal",
+    "repeat": 2,
+    "seed": "0x7407a17",
+    "elapsed_ms": 40
+  },
+  {
+    "compiler": "194",
+    "case": "controller-kill",
+    "repeat": 2,
+    "seed": "0x7407a17",
+    "elapsed_ms": 40
+  },
+  {
+    "compiler": "194",
+    "case": "controller-stop",
+    "repeat": 2,
+    "seed": "0x7407a17",
+    "elapsed_ms": 10125
+  },
+  {
+    "compiler": "194",
+    "case": "hidden-writer",
+    "repeat": 2,
+    "seed": "0x7407a17",
+    "elapsed_ms": 151
+  },
+  {
+    "compiler": "194",
+    "case": "stopped-writer",
+    "repeat": 2,
+    "seed": "0x7407a17",
+    "elapsed_ms": 151
+  },
+  {
+    "compiler": "194",
+    "case": "ack-omitted",
+    "repeat": 2,
+    "seed": "0x7407a17",
+    "elapsed_ms": 40
+  },
+  {
+    "compiler": "194",
+    "case": "ack-disconnected",
+    "repeat": 2,
+    "seed": "0x7407a17",
+    "elapsed_ms": 151
+  },
+  {
+    "compiler": "194",
+    "case": "write-failure",
+    "repeat": 2,
+    "seed": "0x7407a17",
+    "elapsed_ms": 250
+  },
+  {
+    "compiler": "194",
+    "case": "sync-failure",
+    "repeat": 2,
+    "seed": "0x7407a17",
+    "elapsed_ms": 260
+  },
+  {
+    "compiler": "194",
+    "case": "size-limit",
+    "repeat": 2,
+    "seed": "0x7407a17",
+    "elapsed_ms": 250
+  },
+  {
+    "compiler": "194",
+    "case": "overflow",
+    "repeat": 2,
+    "seed": "0x7407a17",
+    "elapsed_ms": 380
+  },
+  {
+    "compiler": "194",
+    "case": "collector-stop",
+    "repeat": 2,
+    "seed": "0x7407a17",
+    "elapsed_ms": 10126
+  },
+  {
+    "compiler": "194",
+    "case": "normal",
+    "repeat": 3,
+    "seed": "0x7407a17",
+    "elapsed_ms": 40
+  },
+  {
+    "compiler": "194",
+    "case": "controller-kill",
+    "repeat": 3,
+    "seed": "0x7407a17",
+    "elapsed_ms": 40
+  },
+  {
+    "compiler": "194",
+    "case": "controller-stop",
+    "repeat": 3,
+    "seed": "0x7407a17",
+    "elapsed_ms": 10126
+  },
+  {
+    "compiler": "194",
+    "case": "hidden-writer",
+    "repeat": 3,
+    "seed": "0x7407a17",
+    "elapsed_ms": 151
+  },
+  {
+    "compiler": "194",
+    "case": "stopped-writer",
+    "repeat": 3,
+    "seed": "0x7407a17",
+    "elapsed_ms": 151
+  },
+  {
+    "compiler": "194",
+    "case": "ack-omitted",
+    "repeat": 3,
+    "seed": "0x7407a17",
+    "elapsed_ms": 40
+  },
+  {
+    "compiler": "194",
+    "case": "ack-disconnected",
+    "repeat": 3,
+    "seed": "0x7407a17",
+    "elapsed_ms": 151
+  },
+  {
+    "compiler": "194",
+    "case": "write-failure",
+    "repeat": 3,
+    "seed": "0x7407a17",
+    "elapsed_ms": 250
+  },
+  {
+    "compiler": "194",
+    "case": "sync-failure",
+    "repeat": 3,
+    "seed": "0x7407a17",
+    "elapsed_ms": 260
+  },
+  {
+    "compiler": "194",
+    "case": "size-limit",
+    "repeat": 3,
+    "seed": "0x7407a17",
+    "elapsed_ms": 250
+  },
+  {
+    "compiler": "194",
+    "case": "overflow",
+    "repeat": 3,
+    "seed": "0x7407a17",
+    "elapsed_ms": 380
+  },
+  {
+    "compiler": "194",
+    "case": "collector-stop",
+    "repeat": 3,
+    "seed": "0x7407a17",
+    "elapsed_ms": 10125
+  },
+  {
+    "compiler": "188",
+    "case": "normal",
+    "repeat": 1,
+    "seed": "0x7407a17",
+    "elapsed_ms": 40
+  },
+  {
+    "compiler": "188",
+    "case": "controller-kill",
+    "repeat": 1,
+    "seed": "0x7407a17",
+    "elapsed_ms": 40
+  },
+  {
+    "compiler": "188",
+    "case": "controller-stop",
+    "repeat": 1,
+    "seed": "0x7407a17",
+    "elapsed_ms": 10125
+  },
+  {
+    "compiler": "188",
+    "case": "hidden-writer",
+    "repeat": 1,
+    "seed": "0x7407a17",
+    "elapsed_ms": 151
+  },
+  {
+    "compiler": "188",
+    "case": "stopped-writer",
+    "repeat": 1,
+    "seed": "0x7407a17",
+    "elapsed_ms": 151
+  },
+  {
+    "compiler": "188",
+    "case": "ack-omitted",
+    "repeat": 1,
+    "seed": "0x7407a17",
+    "elapsed_ms": 40
+  },
+  {
+    "compiler": "188",
+    "case": "ack-disconnected",
+    "repeat": 1,
+    "seed": "0x7407a17",
+    "elapsed_ms": 151
+  },
+  {
+    "compiler": "188",
+    "case": "write-failure",
+    "repeat": 1,
+    "seed": "0x7407a17",
+    "elapsed_ms": 250
+  },
+  {
+    "compiler": "188",
+    "case": "sync-failure",
+    "repeat": 1,
+    "seed": "0x7407a17",
+    "elapsed_ms": 260
+  },
+  {
+    "compiler": "188",
+    "case": "size-limit",
+    "repeat": 1,
+    "seed": "0x7407a17",
+    "elapsed_ms": 250
+  },
+  {
+    "compiler": "188",
+    "case": "overflow",
+    "repeat": 1,
+    "seed": "0x7407a17",
+    "elapsed_ms": 380
+  },
+  {
+    "compiler": "188",
+    "case": "collector-stop",
+    "repeat": 1,
+    "seed": "0x7407a17",
+    "elapsed_ms": 10128
+  },
+  {
+    "compiler": "188",
+    "case": "normal",
+    "repeat": 2,
+    "seed": "0x7407a17",
+    "elapsed_ms": 40
+  },
+  {
+    "compiler": "188",
+    "case": "controller-kill",
+    "repeat": 2,
+    "seed": "0x7407a17",
+    "elapsed_ms": 40
+  },
+  {
+    "compiler": "188",
+    "case": "controller-stop",
+    "repeat": 2,
+    "seed": "0x7407a17",
+    "elapsed_ms": 10128
+  },
+  {
+    "compiler": "188",
+    "case": "hidden-writer",
+    "repeat": 2,
+    "seed": "0x7407a17",
+    "elapsed_ms": 151
+  },
+  {
+    "compiler": "188",
+    "case": "stopped-writer",
+    "repeat": 2,
+    "seed": "0x7407a17",
+    "elapsed_ms": 151
+  },
+  {
+    "compiler": "188",
+    "case": "ack-omitted",
+    "repeat": 2,
+    "seed": "0x7407a17",
+    "elapsed_ms": 40
+  },
+  {
+    "compiler": "188",
+    "case": "ack-disconnected",
+    "repeat": 2,
+    "seed": "0x7407a17",
+    "elapsed_ms": 151
+  },
+  {
+    "compiler": "188",
+    "case": "write-failure",
+    "repeat": 2,
+    "seed": "0x7407a17",
+    "elapsed_ms": 250
+  },
+  {
+    "compiler": "188",
+    "case": "sync-failure",
+    "repeat": 2,
+    "seed": "0x7407a17",
+    "elapsed_ms": 260
+  },
+  {
+    "compiler": "188",
+    "case": "size-limit",
+    "repeat": 2,
+    "seed": "0x7407a17",
+    "elapsed_ms": 250
+  },
+  {
+    "compiler": "188",
+    "case": "overflow",
+    "repeat": 2,
+    "seed": "0x7407a17",
+    "elapsed_ms": 380
+  },
+  {
+    "compiler": "188",
+    "case": "collector-stop",
+    "repeat": 2,
+    "seed": "0x7407a17",
+    "elapsed_ms": 10127
+  },
+  {
+    "compiler": "188",
+    "case": "normal",
+    "repeat": 3,
+    "seed": "0x7407a17",
+    "elapsed_ms": 51
+  },
+  {
+    "compiler": "188",
+    "case": "controller-kill",
+    "repeat": 3,
+    "seed": "0x7407a17",
+    "elapsed_ms": 40
+  },
+  {
+    "compiler": "188",
+    "case": "controller-stop",
+    "repeat": 3,
+    "seed": "0x7407a17",
+    "elapsed_ms": 10125
+  },
+  {
+    "compiler": "188",
+    "case": "hidden-writer",
+    "repeat": 3,
+    "seed": "0x7407a17",
+    "elapsed_ms": 151
+  },
+  {
+    "compiler": "188",
+    "case": "stopped-writer",
+    "repeat": 3,
+    "seed": "0x7407a17",
+    "elapsed_ms": 151
+  },
+  {
+    "compiler": "188",
+    "case": "ack-omitted",
+    "repeat": 3,
+    "seed": "0x7407a17",
+    "elapsed_ms": 40
+  },
+  {
+    "compiler": "188",
+    "case": "ack-disconnected",
+    "repeat": 3,
+    "seed": "0x7407a17",
+    "elapsed_ms": 151
+  },
+  {
+    "compiler": "188",
+    "case": "write-failure",
+    "repeat": 3,
+    "seed": "0x7407a17",
+    "elapsed_ms": 250
+  },
+  {
+    "compiler": "188",
+    "case": "sync-failure",
+    "repeat": 3,
+    "seed": "0x7407a17",
+    "elapsed_ms": 260
+  },
+  {
+    "compiler": "188",
+    "case": "size-limit",
+    "repeat": 3,
+    "seed": "0x7407a17",
+    "elapsed_ms": 250
+  },
+  {
+    "compiler": "188",
+    "case": "overflow",
+    "repeat": 3,
+    "seed": "0x7407a17",
+    "elapsed_ms": 380
+  },
+  {
+    "compiler": "188",
+    "case": "collector-stop",
+    "repeat": 3,
+    "seed": "0x7407a17",
+    "elapsed_ms": 10125
+  }
+]

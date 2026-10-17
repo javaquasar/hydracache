@@ -1,0 +1,6 @@
+HC074-CAPSULE name=instrumentation.patch files=4 exact=true current=True
+HC074-FIXED-GROUPED-PROCESS-COHORT mode=screen lane=194 cases=2 inspections=4 exact=true
+HC074-FIXED-GROUPED-PROCESS-COHORT mode=matrix lane=194 cases=24 inspections=48 exact=true
+HC074-FIXED-GROUPED-PROCESS-COHORT mode=matrix lane=188 cases=24 inspections=48 exact=true
+HC074-FIXED-GROUPED-PROCESS-EVIDENCE verified=true matrix_sigkills=36 matrix_lost_acks=6 matrix_controls=6 fresh_inspections=100 production_changed=false admission=false
+Prior fixed grouped evidence verified at exact source 5621df7b4a5a7f7e5da0f77c7a6459a7d5e04fbf; active index unchanged

@@ -1,0 +1,19 @@
+{
+  "scope": "Focused step checks only; no full verify or ship qualification",
+  "linux_194": { "release_fast_tests": 4, "alarm_tests": 8, "selected_compile_fail_tests": 7, "all_target_check_exit": 0, "strict_all_feature_clippy_exit": 0 },
+  "linux_188": { "release_fast_tests": 4, "alarm_tests": 8, "selected_compile_fail_tests": 7, "all_target_check_exit": 0, "strict_all_feature_clippy_exit": 0 },
+  "wsl_debug_matrix": { "exit": 0, "cases": 36, "repeats": 3 },
+  "isolated_host_driver": { "exit": 0, "cases": 72, "repeats_per_compiler": 3 },
+  "static_contracts": { "exit": 0, "passed": 200 },
+  "gated_registry": { "exit": 0, "discovered": 184, "all_registered": true },
+  "windows_check_exit": 0,
+  "windows_strict_clippy_exit": 0,
+  "workspace_format_check_exit": 0,
+  "doc_check_exit": 0,
+  "local_nonpromotable_contract_exit": 0,
+  "archived_prior_verifier_exit": 0,
+  "qualification_changed": false,
+  "full_release_verify_run": false,
+  "product_workload_run": false,
+  "production_admission": false
+}

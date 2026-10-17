@@ -3761,3 +3761,15 @@ refusals. All 199 static contracts pass, production bodies and time origins stay
 exact, and independent host postflight preserves the supervisor and artifacts.
 Actual manager delivery/ACK recovery, independent guardian, P2/P3 writer cessation
 and later lifecycle remain closed; the private timer is not a watchdog.
+
+The [private autonomous guardian](local-runs/autonomous-watchdog-20261017/README.md)
+now passes 36 WSL debug cases and 72 isolated server cases on Rust 1.94/1.88.
+A separate collector owns disk output; the guardian has no sink writer aliases
+after readiness and independently expires a genuinely stopped collector. Fence
+release needs actual collector success, terminal writers and independent EOF;
+hidden writers, I/O failure, overflow and expiry retain it. All 200 static
+contracts pass; original live validators and deadlines remain exact.
+This closes isolated kernel mechanics only. Original common-fence/sink transfer,
+authenticated start, recursive cgroup revocation and external guardian
+supervision remain before production execution or any completion/later cell.
+The supervisor and installed artifacts were unchanged throughout this rehearsal.

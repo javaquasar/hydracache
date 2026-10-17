@@ -1,0 +1,334 @@
+{
+  "baseline_commit": "e5e3c1db5e76ba586fdbbc62610a81c2a1807c60",
+  "source_commit": "9751a95cdec15091ca1bb848dc9bfbd9d635187f",
+  "changed_paths": [
+    "crates/xtask/tests/support/performance_contract_074_fixed_grouped.rs",
+    "crates/xtask/tests/support/performance_contract_074_start_material.rs",
+    "docs/COMPAT.md",
+    "docs/testing/gated-test-registry.toml",
+    "docs/testing/performance/0.74/diagnostic-autonomous-watchdog-plan-20261017.md",
+    "tools/long-run-supervisor-074/src/diagnostic_autonomous_watchdog.rs",
+    "tools/long-run-supervisor-074/src/diagnostic_autonomous_watchdog_tests.rs",
+    "tools/long-run-supervisor-074/src/watchdog.rs"
+  ],
+  "sources": [
+    {
+      "path": "Cargo.lock",
+      "blob": "6719445160dd8e5dec3e097eaf0a146ada683b26",
+      "raw_sha256": "99c8cf65fd709e390727d1441117b85e84fa9fe120cac9a94e35c5d44fc2fcc7"
+    },
+    {
+      "path": "Cargo.toml",
+      "blob": "93020db0f98eb9b3b22b39d0d9c7f191d22b23ed",
+      "raw_sha256": "18a8a27cf140a1d6eb31c8316ee39bb7d5832866a990346eee16cd0c30de344b"
+    },
+    {
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_grouped.rs",
+      "blob": "c20dbe5e9516bcf0cd1662ee5fbc8960e2286a76",
+      "raw_sha256": "b5b26ed87e1464879142659d9f8e21e10056c7e93e45348b7f0b562791d6abb9"
+    },
+    {
+      "path": "crates/xtask/tests/support/performance_contract_074_start_material.rs",
+      "blob": "13ff5b28834432246b2dd2ce9475a93f4c6c2520",
+      "raw_sha256": "0f16ab21abacf6de0b2a418fa3e9844e44997cf2b4198a7621b0ac72aa6b1f0e"
+    },
+    {
+      "path": "docs/COMPAT.md",
+      "blob": "a5da68d6736e2df680e011c7a85fbcd73cda0b31",
+      "raw_sha256": "3a7b6171ecc6063a413a1053069e69d3c623746c94df44bc6c425fda5c3183d3"
+    },
+    {
+      "path": "docs/testing/gated-test-registry.toml",
+      "blob": "a2351473e7e440657866b6ecbdec918919fed78c",
+      "raw_sha256": "7439e0da561ec41a546d3ef686d0f7c8844fdf868d41b1050f8e7dbbe093958a"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-autonomous-watchdog-plan-20261017.md",
+      "blob": "28156810ebe0c1d309eb863fb868170fe402d965",
+      "raw_sha256": "e450c834b48f942ac316e3909711da5a246699b50a56807a61757112b5994cac"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/Cargo.toml",
+      "blob": "f04328a58ace3f0bd0f1bc712abda91d2245cf27",
+      "raw_sha256": "47bb5eb7f68b4b7b541a9a925881da6b331652ab970186db5ae19600cbcea341"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_autonomous_watchdog_tests.rs",
+      "blob": "ccd95d5878fdc68745c10788b4a4ae18da2af753",
+      "raw_sha256": "7e6ab3a8be1fb8deb4e4d581cc2b84c3574cc9f640fae79ddc97f0caef8b5efc"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_autonomous_watchdog.rs",
+      "blob": "56787d6b5d446e817d8ca71a1d06df3122aa6426",
+      "raw_sha256": "f8c3457db0af04ea598868f4ba6d72e178cfa28f390e8f1107fc0b44999b1ead"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs",
+      "blob": "fc848af142e61068bd4f5460503b8df1186d5aaf",
+      "raw_sha256": "07355b1299ea9e3010e28b95fdb9d4dd2591c2996cc7fbe73662de426d4d74dc"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_progress.rs",
+      "blob": "a8d64842c5e498216bf23892ebbd68c3a1dede22",
+      "raw_sha256": "13b9fe620dcd4b3bff719f3b4f62eb1b38c33809d1ed0f81a597a49734e2c9a8"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_lease.rs",
+      "blob": "ed9e30a164514f72e9556ddace46bea549191318",
+      "raw_sha256": "a0df0b79a11422df4279a7c5bb8485d5297853639039a02f5127503b52508cc5"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_collector_pipes.rs",
+      "blob": "ff5a742adb2fa0c5261193c3137f062a28945fc2",
+      "raw_sha256": "d2a0d29d67f46a9eac4848b8c3fa9b4bfce458d125f90df5e0d48cccbf35df64"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_collector_sinks.rs",
+      "blob": "cfab3ce9fe8c20e85daa05f84cb5078dcd5367ec",
+      "raw_sha256": "ee934f1312161238226e6618910c25717a36f8719b4613d45da51e4309ea961d"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_fence.rs",
+      "blob": "b0e641e441eab6564f4908d395ad84905ad20fba",
+      "raw_sha256": "9372e04527aea745eaad2dd39179c9f96424c05a6625cffd7f6ba5135fceb8d4"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_grouped_preparation.rs",
+      "blob": "3a8c2bee94acc3cc4c11d553483ad063db9fac99",
+      "raw_sha256": "f67e2505a8e7a35e05cb2dc1ea1ab3e8b62dfff07b4961f521c18829722a802c"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_output_join.rs",
+      "blob": "7a409745e6584d39d3bf6ffc34ea5053e8782616",
+      "raw_sha256": "ab79547eda14955753dcf333c034454616e3b4a22efa62b8f7eb6e25d98f9d45"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport.rs",
+      "blob": "8911efa8dd6ce03da299d0c057699d62bd0def48",
+      "raw_sha256": "e761ec070542dca7268ecacd3dbd43d09cb6f5ed05bc19933a35e1589a109a1b"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_start_material.rs",
+      "blob": "e3aa12ca473e9364f2f4d69cbc06583589724f33",
+      "raw_sha256": "874efb8015333b5ff4b3dd2b26e8e8c0ec3706f5ffbbe80d7dc0fd8b9dbde887"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs",
+      "blob": "57d99659aedfb86ebb4bd83ba4b29a379d9d93bd",
+      "raw_sha256": "62934d8b3b021b49671685ff83155ea781082ba84a227ebe9fb6462fbb848817"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/watchdog.rs",
+      "blob": "062afe26539b0646f0407d9284a6ab5c677816aa",
+      "raw_sha256": "3a6a567239093f8525a9e1df96493df93f888e7ad1af1fde810bff9fb3422c32"
+    }
+  ],
+  "files": [
+    {
+      "path": "alarm-188.log",
+      "bytes": 8447,
+      "sha256": "6174fa0d3b2d6b84b81a324d9ff7ff5aa25c57e20c0fef73c5ef3f0a15d1ed4f"
+    },
+    {
+      "path": "alarm-194.log",
+      "bytes": 8447,
+      "sha256": "6174fa0d3b2d6b84b81a324d9ff7ff5aa25c57e20c0fef73c5ef3f0a15d1ed4f"
+    },
+    {
+      "path": "cases.json",
+      "bytes": 8955,
+      "sha256": "30ce806d948cf8d1c8dd52328d749eaa7753a367774e68b35d538e5859f7073c"
+    },
+    {
+      "path": "checks.json",
+      "bytes": 1013,
+      "sha256": "501d532be839006ea4e605752b8e4f2cb2aa2785f168b5a12896d8a38de0d347"
+    },
+    {
+      "path": "compile-fail-188.log",
+      "bytes": 3513,
+      "sha256": "fb0fc41fe7b0fd58a28fc6499af70253d92032485217830fa59bf50695c84568"
+    },
+    {
+      "path": "compile-fail-194.log",
+      "bytes": 3512,
+      "sha256": "e1cb3f5cb868ea996fbf7e7bc0160e35adfe5b86bd184ecc2939480cb6ec4b75"
+    },
+    {
+      "path": "compiler-188.log",
+      "bytes": 196,
+      "sha256": "2775ffb86baebfb4c9959501cdd336fe315dd8e1229ffaede4f428f33862f10d"
+    },
+    {
+      "path": "compiler-194.log",
+      "bytes": 196,
+      "sha256": "b75985398e5509a90a7d5d68f8ec6690675f703c5cfa11893b04fc9c3fceca69"
+    },
+    {
+      "path": "doc-check.log",
+      "bytes": 167,
+      "sha256": "54814086fd966424b92f9c895321f834ac7fd4af27502fcce7d9c702f9f6ff2b"
+    },
+    {
+      "path": "format.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "guard.sh",
+      "bytes": 2247,
+      "sha256": "21be0de3e6ecb0ca9665c7f32ac474cbebbc597777048b119310b5769d89bc95"
+    },
+    {
+      "path": "host.log",
+      "bytes": 9040,
+      "sha256": "8e7d4db88adc3cdfbd561a572f26c40b44e925ffd147b75cd93dd8eb273bedc7"
+    },
+    {
+      "path": "implementation.patch",
+      "bytes": 56418,
+      "sha256": "84a3d2afba1e0365d9f754ebd71e056a4b421144baca62c06252ceeaaff880e0"
+    },
+    {
+      "path": "initial-host.log",
+      "bytes": 9040,
+      "sha256": "79a96fc7459c17c50b3d3583f19938d395274c117cfd37f5b7996e7611187d6e"
+    },
+    {
+      "path": "initial-implementation.patch",
+      "bytes": 51316,
+      "sha256": "aa524a05c7fde558434772259266d232b00af4c9cc39310ec3649dbc1bef1873"
+    },
+    {
+      "path": "initial-linux-188.log",
+      "bytes": 1465,
+      "sha256": "ab20fe3908d367b1b504aba8e1b8c93003a4d0f1ddfb89b99df7845968286090"
+    },
+    {
+      "path": "initial-linux-194.log",
+      "bytes": 1465,
+      "sha256": "170a998b8b621255fbfde67ca92ee5b268fd7ed2f9bb6f69e9b76f8d140cca90"
+    },
+    {
+      "path": "initial-wsl-debug.log",
+      "bytes": 4785,
+      "sha256": "721c1990c81227008592ff4148fbd513f1441280a33eb64eb000efbca21010ff"
+    },
+    {
+      "path": "linux-188.log",
+      "bytes": 1465,
+      "sha256": "23e1d0758ba2887c6a8a33bef9440c4aac05d7535c020520b93621f7f2fda307"
+    },
+    {
+      "path": "linux-194.log",
+      "bytes": 1465,
+      "sha256": "659e9ca09a71ac3d2168c1bfeec4cd3dd1be8c09546029ed23733b003d8ba8f6"
+    },
+    {
+      "path": "local-contract.log",
+      "bytes": 215,
+      "sha256": "230933c1105d010a2c5d10c350efbd53cd50f67d0df543bb9f3ddfbc45643693"
+    },
+    {
+      "path": "prior.log",
+      "bytes": 639,
+      "sha256": "a2562919cf5c3fcb66c5b277cd819e228e0993274bf9c3b3e3ef15223a1be0df"
+    },
+    {
+      "path": "README.md",
+      "bytes": 5393,
+      "sha256": "9e5f7a0baaf731856c3e3e78a4296c52c7edb8327a542afc6e0777eb4c6b276e"
+    },
+    {
+      "path": "registry.log",
+      "bytes": 275,
+      "sha256": "abc3d0ca2b8a330ef26d201b1acf0f2c8dc0d4e8b2f92fd5af0c57f94bcd6520"
+    },
+    {
+      "path": "run.sh",
+      "bytes": 1040,
+      "sha256": "b75bd6994cc3a54b90991a3f199b0b8e05e4b795ff88a198fbcdbb8b947945bb"
+    },
+    {
+      "path": "static-initial-negative.log",
+      "bytes": 35433,
+      "sha256": "d18ed180e73136a471c2b79ef0c8d2e6c2f0b73385213fc748ac10f69492b5a3"
+    },
+    {
+      "path": "static.log",
+      "bytes": 17875,
+      "sha256": "6b77995b7e7dfe5f497a3d5d0e29c63ced5c4c43eb5c8fb565f25ce4cf6e1054"
+    },
+    {
+      "path": "verifier-initial-negative.log",
+      "bytes": 334,
+      "sha256": "09407c8db2f9bf0b5a3294a804172fd99a9cc3bcb89883bd3ef038a59167a575"
+    },
+    {
+      "path": "verify-prior.ps1",
+      "bytes": 3952,
+      "sha256": "d47618e5d4fa0575ab6a0cfca4c53abb3964048801e93e267d7fe90f27010443"
+    },
+    {
+      "path": "verify.ps1",
+      "bytes": 7761,
+      "sha256": "95a699bec49ff9d4aae0e758065e899e2a32fdf8311c18393dd3159cae7b4aba"
+    },
+    {
+      "path": "windows-check.log",
+      "bytes": 258,
+      "sha256": "0d26c80df5d5db8f3ec02c296adabb17cded96219dca4e6b7b7e83849fc1e238"
+    },
+    {
+      "path": "windows-clippy.log",
+      "bytes": 157,
+      "sha256": "6f01df29c9ba823fb2d5e9d924e21c826e9067ecbbfe59435f3992ae765a00fe"
+    },
+    {
+      "path": "wsl-debug.log",
+      "bytes": 4782,
+      "sha256": "795518f9057538e22636ad85fd6473957c9cc0ada89777b155ed3b5cdebd9eaa"
+    }
+  ],
+  "binaries": [
+    {
+      "compiler": "194",
+      "bytes": 19158040,
+      "sha256": "6d6a8aae088c4dd3a26bbe3c90b3a7c58d04b8270e9f6583c2c9dd2acbf15614"
+    },
+    {
+      "compiler": "188",
+      "bytes": 18789872,
+      "sha256": "26b5b693dbf9b1619ed559a9d1178c3d4b23787545d99f33ae7741de1797a557"
+    }
+  ],
+  "debug_binary_sha256": "f8e0a755167b8457355f2eedc04649b1a935b89bd5623775330c9199a56ee4ec",
+  "qualification_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "server_root": "/tmp/hc074-autonomous-20261017.6GsLW5",
+  "server_cases": 72,
+  "wsl_debug_cases": 36,
+  "seed": "0x07407a17",
+  "production_join": false,
+  "admission": false,
+  "initial_cohort": {
+    "source_commit": "1f9e0e965e7a91125626f39ea59d15830e6b65f2",
+    "binaries": [
+      {
+        "compiler": "194",
+        "bytes": 19279568,
+        "sha256": "760822f6cca4e85cea5d11119ff9ff562d4e76665900a83d8a7274b1e085b2ea"
+      },
+      {
+        "compiler": "188",
+        "bytes": 18779520,
+        "sha256": "826ced3da305ba6702fd1099e9202be708d44446c662671bbcd53fe131f4379a"
+      }
+    ],
+    "debug_binary_sha256": "cc417ef0f10027fe9b2dc401e5bd20a96ad43020f26c8677dff4bf9d819d7c1d",
+    "source_patch": "initial-implementation.patch",
+    "host_log": "initial-host.log",
+    "wsl_debug_log": "initial-wsl-debug.log",
+    "server_cases": 72,
+    "wsl_debug_cases": 36
+  }
+}

@@ -298,3 +298,28 @@ not fixed-root enrollment, arbitrary syscall/power loss or actual execution.
 During future execution a guardian must retain the fence independently of the
 controller until all worker/collector writers cease. The private timer and this
 process cleanup proof do not fulfill that stronger P2/P3 obligation.
+
+## Private autonomous guardian mechanics
+
+The [kernel packet](local-runs/autonomous-watchdog-20261017/README.md) now separates
+the collector from a disk-independent guardian. A private barrier prevents disk
+work until the guardian pins its exact unreaped collector and closes its own
+sink aliases. The collector alone drains, bounds, syncs and closes output.
+The guardian retains the fence, controller/writer/collector pidfds and original
+selected absolute alarm; it has no regular-file output writes or fsyncs.
+
+Ordinary controller death stops known pipe writers and allows drain only within
+the existing bound. Expiry kills the collector too, emits explicit refusal and
+retains the fence. Release requires the private post-close success notice,
+actual successful child wait status, terminal known writers and two independent
+EOF reads. A hidden writer blocks release even after every known writer exits.
+Neither missing ACK nor later EOF can repair a refused run.
+
+All 36 WSL and 72 three-repeat server cases pass, including actual stopped
+collector/controller, SIGKILL, lost/disconnected readiness ACK, sink EBADF,
+RLIMIT_FSIZE exhaustion and fixed-cap overflow. All 200 static contracts pass.
+These private descriptors are not authenticated original objects. The original
+common-fence destructor, all validators and 300/60/10-second origins stay exact;
+there is no start/service route. Original ownership transfer, complete cgroup
+revocation, durable completion and external guardian supervision remain open.
+No standalone flock can survive its last guardian being killed or host loss.

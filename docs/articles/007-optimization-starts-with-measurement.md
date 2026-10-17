@@ -12132,3 +12132,55 @@ without changing the checked retained history. All 199 static contracts and the
 independent host postflight pass with the original supervisor and installed
 artifacts unchanged. This closes the new owner's selected nonexecuting process
 cuts. It is neither a product speedup result nor authenticated execution admission.
+
+## The watchdog must not share the disk writer
+
+An absolute timer does not by itself make a watchdog autonomous. If the same
+process drains pipes into regular files and observes the timer, a blocked write
+or fsync can also block revocation. The private kernel implementation therefore
+separates a collector from a guardian. A one-shot barrier keeps the collector
+idle until the guardian has pinned its actual child with pidfd and closed its
+own regular-file writer aliases. The guardian can then observe the already
+selected absolute deadline without performing disk output.
+
+Ownership is as important as process separation. A duplicate flock descriptor
+shares an open-file description: another owner's explicit unlock can release
+the lock for both. The private engine transfers ownership and closes the parent
+alias without unlocking. It does not attach this mechanism to the existing
+original fence, whose explicit-unlock destructor remains unchanged. A later
+original-object join must prove that transfer rather than substitute a generic
+descriptor or silently change an earlier validator.
+
+The collector's success notice is necessary but insufficient for release. It
+follows both pipe EOFs, bounded writes, fsync and explicit sink close. The
+guardian additionally checks the actual successful child wait status, terminal
+writer pidfds and EOF through its own readers. An unlisted pipe writer keeps
+EOF false even when every known process has exited. Error, overflow or absolute
+expiry instead produces a distinct failure notice and retains the fence;
+disconnect or a missing notice does not grant retry or completion.
+
+This private mechanism is not authenticated original-start or cgroup enrollment.
+It cannot establish sole ownership of production sinks from arbitrary file
+descriptors, revoke an unknown process tree, or keep a kernel flock after the
+last guardian is itself killed. Original-object transfer, live authority and
+cgroup checks, durable-history exclusion and external supervision remain
+execution prerequisites. There is no product throughput or overhead claim.
+
+The [isolated packet](../testing/performance/0.74/local-runs/autonomous-watchdog-20261017/README.md)
+passes all twelve cases three times in a WSL debug build and on both normal GNU
+release compilers on the server: 36 local and 72 server cases. In particular,
+the collector really enters SIGSTOP; its guardian remains runnable, sends
+SIGKILL at the selected absolute bound and keeps the fence in a refused state.
+The hidden-writer case independently rejects the tempting shortcut of releasing
+after known pidfds alone become terminal. All 200 static contracts pass with
+original live validators and deadline origins unchanged. No installation,
+supervisor interruption or product workload was needed for these kernel facts.
+
+Final review also moved signal blocking before the outer fork. Blocking only
+inside the child leaves a window for an inherited userspace handler to run.
+The parent now restores its exact previous mask on success and fork failure;
+a deterministic failure seam tests that restoration without exhausting host
+process limits. The complete local and two-compiler server matrices were
+repeated on this corrected source, with the first positive cohort retained
+separately. Collector/guardian loops and original validation deadlines did not
+change during that correction.

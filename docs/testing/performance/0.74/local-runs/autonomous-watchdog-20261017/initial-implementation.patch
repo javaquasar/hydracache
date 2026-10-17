@@ -1,0 +1,1375 @@
+diff --git a/crates/xtask/tests/support/performance_contract_074_fixed_grouped.rs b/crates/xtask/tests/support/performance_contract_074_fixed_grouped.rs
+index 1ee06ddd..1b0d9536 100644
+--- a/crates/xtask/tests/support/performance_contract_074_fixed_grouped.rs
++++ b/crates/xtask/tests/support/performance_contract_074_fixed_grouped.rs
+@@ -1,4 +1,20 @@
+ //! Additive fixed-origin preparation; all prior validators remain frozen.
++const GUARDIAN_COMPAT: &str = r###"
++## Private diagnostic guardian notices
++
++The internal 0.74 guardian fork notice protocol, guardian-fork-notice-074-v1,
++uses one inherited SOCK_SEQPACKET connection within the same executable image.
++A packet is exactly one byte: 1 is readiness; 2 isolation failure; 3 observation
++failure; 4 revocation failure; 5 read failure; 6 write failure; 7 overflow;
++8 fsync failure; 9 close failure; 10 expiry. Unknown, truncated or oversized packets
++are not readiness. The private parent must not interpret disconnect or a missing
++notice as successful closure, start authority, retry or recovered acknowledgement.
++
++There is no named listener, external producer, CLI or independently versioned
++reader. No migration or durable artifact is introduced. Failure notification is
++best effort after receiver loss; the guardian retains the fence regardless.
++This protocol does not replace any signed lifecycle record or manager ACK.
++"###;
+ const GATES: &str = r###"
+ # BEGIN FIXED GROUPED PREPARATION GATES
+ [[gate]]
+@@ -225,11 +241,50 @@ platform = "linux"
+ 
+ [gate.command.env]
+ 
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.autonomous-writer-fence"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_autonomous_watchdog_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "autonomous_writer_fence_matrix"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Manual isolated nonroot kernel guardian and writer-fence faults; no production execution enrollment"
++tier = "manual"
++required_features = []
++required_env = []
++required_tools = ["cargo"]
++timeout_seconds = 180
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","watchdog::autonomous::tests::autonomous_writer_fence_matrix","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
+ # END FIXED GROUPED PREPARATION GATES
+ "###;
+ 
+ pub(super) fn normalize(path: &str, raw: &str) -> String {
++    if path == "crates/xtask/tests/support/performance_contract_074_start_material.rs" {
++        let addition = "super::fixed_grouped::normalize(p, &read(p)),";
++        assert_eq!(raw.matches(addition).count(), 1);
++        return raw.replacen(addition, "read(p),", 1);
++    }
+     let addition = match path {
++        "docs/COMPAT.md" => GUARDIAN_COMPAT,
++        "tools/long-run-supervisor-074/src/watchdog.rs" =>
++            "\n// Private mechanics only. Original admission/descriptor transfer is not enrolled.\n#[cfg(all(target_os = \"linux\", target_arch = \"x86_64\"))]\n#[allow(dead_code)]\n#[path = \"diagnostic_autonomous_watchdog.rs\"]\nmod autonomous;\n",
+         "tools/long-run-supervisor-074/src/diagnostic_original_output_join_crash_tests.rs" =>
+             "#[path = \"diagnostic_fixed_grouped_preparation_crash_tests.rs\"]\nmod fixed_grouped_process_tests;\n",
+         "tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport.rs" =>
+@@ -411,3 +466,87 @@ fn fixed_grouped_process_matrix_preserves_runtime_and_exact_owned_harness() {
+         assert_ne!(current.replace(from, to), expected, "{from}");
+     }
+ }
++
++#[test]
++fn autonomous_guardian_is_private_and_preserves_original_admission() {
++    let path = "tools/long-run-supervisor-074/src/watchdog.rs";
++    let addition = "\n// Private mechanics only. Original admission/descriptor transfer is not enrolled.\n#[cfg(all(target_os = \"linux\", target_arch = \"x86_64\"))]\n#[allow(dead_code)]\n#[path = \"diagnostic_autonomous_watchdog.rs\"]\nmod autonomous;\n";
++    let current = read(path);
++    assert_eq!(current.matches(addition).count(), 1);
++    let old = std::process::Command::new("git")
++        .args(["show", &format!("5621df7b:{path}")])
++        .current_dir(super::root())
++        .output()
++        .unwrap();
++    assert!(old.status.success());
++    assert_eq!(
++        current.replacen(addition, "", 1),
++        String::from_utf8(old.stdout).unwrap().replace('\r', "")
++    );
++    let p = "crates/xtask/tests/support/performance_contract_074_start_material.rs";
++    let old = std::process::Command::new("git")
++        .args(["show", &format!("5621df7b:{p}")])
++        .current_dir(super::root())
++        .output()
++        .unwrap();
++    assert!(old.status.success());
++    assert_eq!(
++        normalize(p, &read(p)),
++        String::from_utf8(old.stdout).unwrap().replace('\r', "")
++    );
++    let mutation = current.replace(
++        "rejection_gap_seconds <= warning_gap_seconds",
++        "rejection_gap_seconds < warning_gap_seconds",
++    );
++    assert_ne!(normalize(path, &mutation), normalize(path, &current));
++    let raw = read("tools/long-run-supervisor-074/src/diagnostic_autonomous_watchdog.rs");
++    for forbidden in [
++        "pub fn",
++        "pub struct",
++        "pub(crate)",
++        "Command::",
++        "LOCK_UN",
++        "PR_SET_PDEATHSIG",
++        "SystemTime",
++        "CLOCK_REALTIME",
++        "unlink",
++        "rearm",
++    ] {
++        // The comment explaining why LOCK_UN is forbidden is not executable.
++        assert!(
++            !raw.lines()
++                .filter(|l| !l.trim_start().starts_with("//"))
++                .any(|l| l.contains(forbidden)),
++            "{forbidden}"
++        );
++    }
++    for required in [
++        "libc::SYS_fork",
++        "libc::SYS_close_range",
++        "libc::SYS_pidfd_send_signal",
++        "libc::TFD_TIMER_ABSTIME",
++        "libc::CLOCK_BOOTTIME",
++        "libc::MSG_NOSIGNAL",
++        "writers_terminal && eof == [true, true] && !refused",
++        "libc::fsync(fd)",
++        "libc::close(raw.fence)",
++    ] {
++        assert!(raw.contains(required), "{required}");
++    }
++    let collector = slice(&raw, "fn collect(", "fn guardian_refused(");
++    assert!(
++        collector.find("libc::fsync(fd)").unwrap() < collector.rfind("libc::close(fd)").unwrap()
++    );
++    let guardian = slice(&raw, "fn run(", "fn spawn(");
++    assert!(!guardian.contains("libc::write("));
++    assert!(!guardian.contains("libc::fsync("));
++    assert!(
++        guardian.find("libc::waitpid(").unwrap() < guardian.find("libc::close(raw.fence)").unwrap()
++    );
++    assert!(
++        guardian
++            .find("releasable(writers_terminal, eof, false)")
++            .unwrap()
++            < guardian.find("libc::close(raw.fence)").unwrap()
++    );
++}
+diff --git a/crates/xtask/tests/support/performance_contract_074_start_material.rs b/crates/xtask/tests/support/performance_contract_074_start_material.rs
+index f0a76966..13ff5b28 100644
+--- a/crates/xtask/tests/support/performance_contract_074_start_material.rs
++++ b/crates/xtask/tests/support/performance_contract_074_start_material.rs
+@@ -163,7 +163,7 @@ fn original_start_material_preserves_output_runtime_and_closed_execution() {
+             .unwrap();
+         assert!(out.status.success());
+         assert_eq!(
+-            read(p),
++            super::fixed_grouped::normalize(p, &read(p)),
+             String::from_utf8(out.stdout).unwrap().replace('\r', ""),
+             "frozen leaf: {p}"
+         );
+diff --git a/docs/COMPAT.md b/docs/COMPAT.md
+index fb3e82b7..a5da68d6 100644
+--- a/docs/COMPAT.md
++++ b/docs/COMPAT.md
+@@ -1436,3 +1436,18 @@ The exact console, its server-embedded copy, source registries, and CycloneDX SB
+ one deterministic bundle whose manifest records every file SHA-256, a set digest, and the exact
+ 40-character candidate commit. Verification rejects dirty-tree release packaging, an altered
+ file, a rebuilt substitute, or a source-commit mismatch.
++
++## Private diagnostic guardian notices
++
++The internal 0.74 guardian fork notice protocol, guardian-fork-notice-074-v1,
++uses one inherited SOCK_SEQPACKET connection within the same executable image.
++A packet is exactly one byte: 1 is readiness; 2 isolation failure; 3 observation
++failure; 4 revocation failure; 5 read failure; 6 write failure; 7 overflow;
++8 fsync failure; 9 close failure; 10 expiry. Unknown, truncated or oversized packets
++are not readiness. The private parent must not interpret disconnect or a missing
++notice as successful closure, start authority, retry or recovered acknowledgement.
++
++There is no named listener, external producer, CLI or independently versioned
++reader. No migration or durable artifact is introduced. Failure notification is
++best effort after receiver loss; the guardian retains the fence regardless.
++This protocol does not replace any signed lifecycle record or manager ACK.
+diff --git a/docs/testing/gated-test-registry.toml b/docs/testing/gated-test-registry.toml
+index b28ef5ac..a2351473 100644
+--- a/docs/testing/gated-test-registry.toml
++++ b/docs/testing/gated-test-registry.toml
+@@ -10309,4 +10309,35 @@ platform = "linux"
+ 
+ [gate.command.env]
+ 
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.autonomous-writer-fence"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_autonomous_watchdog_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "autonomous_writer_fence_matrix"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Manual isolated nonroot kernel guardian and writer-fence faults; no production execution enrollment"
++tier = "manual"
++required_features = []
++required_env = []
++required_tools = ["cargo"]
++timeout_seconds = 180
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","watchdog::autonomous::tests::autonomous_writer_fence_matrix","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
+ # END FIXED GROUPED PREPARATION GATES
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_autonomous_watchdog.rs b/tools/long-run-supervisor-074/src/diagnostic_autonomous_watchdog.rs
+new file mode 100644
+index 00000000..897a1843
+--- /dev/null
++++ b/tools/long-run-supervisor-074/src/diagnostic_autonomous_watchdog.rs
+@@ -0,0 +1,588 @@
++//! Independent kernel mechanics, not an authenticated original-start capability.
++//!
++//! No public entry point. The future original join must move (not clone) the
++//! fence and sinks, close every parent writer alias, and preserve live checks.
++use std::fs::File;
++use std::io::{self, Read};
++use std::os::fd::{AsRawFd, FromRawFd, RawFd};
++use std::os::unix::fs::{FileTypeExt, MetadataExt};
++
++const MAX_WRITERS: usize = 8;
++const QUANTUM: usize = 8192;
++const NS: u64 = 1_000_000_000;
++
++struct Inputs {
++    fence: File,
++    readers: [File; 2],
++    sinks: [File; 2],
++    controller: File,
++    writers: Vec<File>,
++    // Selected original absolute BOOTTIME bound, never a relative duration.
++    deadline: u64,
++}
++struct Guardian {
++    pid: libc::pid_t,
++    ready: File,
++}
++impl Guardian {
++    fn notice(&self) -> io::Result<u8> {
++        let mut byte = [0u8];
++        let n = unsafe {
++            libc::recv(
++                self.ready.as_raw_fd(),
++                byte.as_mut_ptr().cast(),
++                1,
++                libc::MSG_TRUNC,
++            )
++        };
++        if n < 0 {
++            return Err(io::Error::last_os_error());
++        }
++        if n != 1 || !(1..=10).contains(&byte[0]) {
++            return Err(invalid());
++        }
++        Ok(byte[0])
++    }
++}
++
++fn invalid() -> io::Error {
++    io::Error::new(io::ErrorKind::InvalidInput, "guardian descriptor binding")
++}
++fn now() -> io::Result<u64> {
++    let mut t: libc::timespec = unsafe { std::mem::zeroed() };
++    if unsafe { libc::clock_gettime(libc::CLOCK_BOOTTIME, &mut t) } != 0 {
++        return Err(io::Error::last_os_error());
++    }
++    if t.tv_sec < 0 || !(0..NS as i64).contains(&t.tv_nsec) {
++        return Err(invalid());
++    }
++    (t.tv_sec as u64)
++        .checked_mul(NS)
++        .and_then(|v| v.checked_add(t.tv_nsec as u64))
++        .ok_or_else(invalid)
++}
++fn future(deadline: u64, observed: u64) -> io::Result<()> {
++    if observed >= deadline || deadline > i64::MAX as u64 {
++        return Err(invalid());
++    }
++    Ok(())
++}
++fn timer(deadline: u64) -> io::Result<File> {
++    future(deadline, now()?)?;
++    let fd = unsafe {
++        libc::timerfd_create(libc::CLOCK_BOOTTIME, libc::TFD_CLOEXEC | libc::TFD_NONBLOCK)
++    };
++    if fd < 0 {
++        return Err(io::Error::last_os_error());
++    }
++    let file = unsafe { File::from_raw_fd(fd) };
++    let spec = libc::itimerspec {
++        it_interval: libc::timespec {
++            tv_sec: 0,
++            tv_nsec: 0,
++        },
++        it_value: libc::timespec {
++            tv_sec: (deadline / NS) as libc::time_t,
++            tv_nsec: (deadline % NS) as libc::c_long,
++        },
++    };
++    if unsafe { libc::timerfd_settime(fd, libc::TFD_TIMER_ABSTIME, &spec, std::ptr::null_mut()) }
++        != 0
++    {
++        return Err(io::Error::last_os_error());
++    }
++    future(deadline, now()?)?;
++    Ok(file)
++}
++fn pipe() -> io::Result<[File; 2]> {
++    let mut fds = [-1; 2];
++    if unsafe { libc::pipe2(fds.as_mut_ptr(), libc::O_CLOEXEC | libc::O_NONBLOCK) } != 0 {
++        return Err(io::Error::last_os_error());
++    }
++    Ok(unsafe { [File::from_raw_fd(fds[0]), File::from_raw_fd(fds[1])] })
++}
++fn notices() -> io::Result<[File; 2]> {
++    let mut fds = [-1; 2];
++    if unsafe {
++        libc::socketpair(
++            libc::AF_UNIX,
++            libc::SOCK_SEQPACKET | libc::SOCK_CLOEXEC | libc::SOCK_NONBLOCK,
++            0,
++            fds.as_mut_ptr(),
++        )
++    } != 0
++    {
++        return Err(io::Error::last_os_error());
++    }
++    Ok(unsafe { [File::from_raw_fd(fds[0]), File::from_raw_fd(fds[1])] })
++}
++fn validate(input: &Inputs) -> io::Result<()> {
++    future(input.deadline, now()?)?;
++    if input.writers.is_empty() || input.writers.len() > MAX_WRITERS {
++        return Err(invalid());
++    }
++    let fence = input.fence.metadata()?;
++    if !fence.is_file() || fence.nlink() != 1 || fence.len() != 0 {
++        return Err(invalid());
++    }
++    let mut objects = vec![(fence.dev(), fence.ino())];
++    for file in &input.readers {
++        let m = file.metadata()?;
++        let flags = unsafe { libc::fcntl(file.as_raw_fd(), libc::F_GETFL) };
++        if !m.file_type().is_fifo()
++            || flags < 0
++            || flags & (libc::O_ACCMODE | libc::O_NONBLOCK) != libc::O_NONBLOCK
++            || objects.contains(&(m.dev(), m.ino()))
++        {
++            return Err(invalid());
++        }
++        objects.push((m.dev(), m.ino()));
++    }
++    for file in &input.sinks {
++        let m = file.metadata()?;
++        let flags = unsafe { libc::fcntl(file.as_raw_fd(), libc::F_GETFL) };
++        if !m.is_file()
++            || m.nlink() != 1
++            || m.len() != 0
++            || flags < 0
++            || flags & libc::O_ACCMODE != libc::O_WRONLY
++            || flags & (libc::O_APPEND | libc::O_PATH) != 0
++            || unsafe { libc::lseek(file.as_raw_fd(), 0, libc::SEEK_CUR) } != 0
++            || objects.contains(&(m.dev(), m.ino()))
++        {
++            return Err(invalid());
++        }
++        objects.push((m.dev(), m.ino()));
++    }
++    // fdinfo distinguishes pidfds from arbitrary readable regular files. This
++    // pre-fork check is mechanics, not authenticated process/cgroup enrollment.
++    for file in std::iter::once(&input.controller).chain(&input.writers) {
++        let mut raw = String::new();
++        File::open(format!("/proc/thread-self/fdinfo/{}", file.as_raw_fd()))?
++            .take(4097)
++            .read_to_string(&mut raw)?;
++        if raw.len() > 4096
++            || raw.lines().filter(|l| l.starts_with("Pid:\t")).count() != 1
++            || !raw.lines().any(|l| l.starts_with("NSpid:\t"))
++        {
++            return Err(invalid());
++        }
++    }
++    Ok(())
++}
++
++// Child code below uses only stack memory and async-signal-safe libc/syscalls.
++// No Rust unwind, allocator, atfork callback, validation, logging or destructor
++// may run after SYS_fork. This is Linux x86_64-only, not portable libc fork.
++#[derive(Clone, Copy)]
++struct Raw {
++    fence: RawFd,
++    readers: [RawFd; 2],
++    sinks: [RawFd; 2],
++    controller: RawFd,
++    writers: [RawFd; MAX_WRITERS],
++    count: usize,
++    timer: RawFd,
++    ready: RawFd,
++    status: [RawFd; 2],
++    limit: usize,
++    #[cfg(test)]
++    fault: u8,
++}
++fn errno() -> i32 {
++    unsafe { *libc::__errno_location() }
++}
++fn park() -> ! {
++    loop {
++        unsafe { libc::poll(std::ptr::null_mut(), 0, -1) };
++    }
++}
++fn kill_pinned(fd: RawFd) -> bool {
++    if unsafe { libc::syscall(libc::SYS_pidfd_send_signal, fd, libc::SIGKILL, 0usize, 0u32) } == 0 {
++        true
++    } else {
++        errno() == libc::ESRCH
++    }
++}
++fn stop(raw: &Raw) -> bool {
++    let mut ok = kill_pinned(raw.controller);
++    for fd in raw.writers.iter().take(raw.count) {
++        // Deliberately do not short-circuit later revocations after one error.
++        ok = kill_pinned(*fd) && ok;
++    }
++    ok
++}
++#[repr(u8)]
++#[derive(Clone, Copy)]
++enum Failure {
++    Isolation = 2,
++    Observation = 3,
++    Revocation = 4,
++    Read = 5,
++    Write = 6,
++    Overflow = 7,
++    Sync = 8,
++    Close = 9,
++    Expired = 10,
++}
++fn refused(raw: &Raw, reason: Failure) -> ! {
++    stop(raw);
++    let notice = [reason as u8];
++    // Best effort only if the controller disconnected. The sticky obligation
++    // never depends on delivery; an available observer gets an explicit cause.
++    unsafe { libc::send(raw.ready, notice.as_ptr().cast(), 1, libc::MSG_NOSIGNAL) };
++    // Keep the fence and evidence. Errors never grant success or retry.
++    park()
++}
++fn terminal(fd: RawFd) -> i32 {
++    let mut p = libc::pollfd {
++        fd,
++        events: libc::POLLIN,
++        revents: 0,
++    };
++    match unsafe { libc::poll(&mut p, 1, 0) } {
++        0 if p.revents == 0 => 0,
++        1 if p.revents == libc::POLLIN
++            || p.revents == libc::POLLHUP
++            || p.revents == libc::POLLIN | libc::POLLHUP =>
++        {
++            1
++        }
++        -1 if errno() == libc::EINTR => 0,
++        _ => -1,
++    }
++}
++fn releasable(writers_terminal: bool, eof: [bool; 2], refused: bool) -> bool {
++    writers_terminal && eof == [true, true] && !refused
++}
++fn isolate(keep: &[RawFd]) -> bool {
++    let mut first = 0u32;
++    for fd in keep {
++        let fd = *fd as u32;
++        if first < fd && unsafe { libc::syscall(libc::SYS_close_range, first, fd - 1, 0u32) } != 0 {
++            return false;
++        }
++        first = fd + 1;
++    }
++    unsafe { libc::syscall(libc::SYS_close_range, first, u32::MAX, 0u32) == 0 }
++}
++fn collector_refused(raw: &Raw, reason: Failure) -> ! {
++    let byte = [reason as u8];
++    unsafe { libc::send(raw.status[1], byte.as_ptr().cast(), 1, libc::MSG_NOSIGNAL) };
++    park()
++}
++fn receive(fd: RawFd) -> i32 {
++    let mut byte = [0u8];
++    let n = unsafe { libc::recv(fd, byte.as_mut_ptr().cast(), 1, libc::MSG_TRUNC) };
++    if n == 1 && byte[0] != 0 {
++        byte[0] as i32
++    } else if n < 0 && (errno() == libc::EAGAIN || errno() == libc::EINTR) {
++        0
++    } else {
++        -1
++    }
++}
++fn collect(raw: Raw, keep: &[RawFd]) -> ! {
++    if !isolate(keep) {
++        collector_refused(&raw, Failure::Isolation);
++    }
++    // No disk work until the guardian has pinned this child, shed its sink
++    // aliases and released the one-shot private barrier.
++    loop {
++        match receive(raw.status[1]) {
++            1 => break,
++            0 => {
++                unsafe { libc::poll(std::ptr::null_mut(), 0, 10) };
++            }
++            _ => collector_refused(&raw, Failure::Isolation),
++        }
++    }
++    #[cfg(test)]
++    if raw.fault == 5 {
++        unsafe {
++            libc::syscall(
++                libc::SYS_kill,
++                libc::syscall(libc::SYS_getpid),
++                libc::SIGSTOP,
++            )
++        };
++    }
++    #[cfg(test)]
++    if raw.fault == 1 {
++        unsafe { libc::close(raw.sinks[0]) };
++    }
++    #[cfg(test)]
++    if raw.fault == 4 {
++        let limit = libc::rlimit {
++            rlim_cur: 0,
++            rlim_max: 0,
++        };
++        if unsafe { libc::setrlimit(libc::RLIMIT_FSIZE, &limit) } != 0 {
++            collector_refused(&raw, Failure::Isolation);
++        }
++    }
++    let mut eof = [false; 2];
++    let mut bytes = [0usize; 2];
++    let mut buffer = [0u8; QUANTUM];
++    loop {
++        let mut progressed = false;
++        for i in 0..2 {
++            if eof[i] {
++                continue;
++            }
++            let n = unsafe { libc::read(raw.readers[i], buffer.as_mut_ptr().cast(), QUANTUM) };
++            if n == 0 {
++                eof[i] = true;
++            } else if n < 0 {
++                if errno() != libc::EAGAIN && errno() != libc::EINTR {
++                    collector_refused(&raw, Failure::Read);
++                }
++            } else {
++                progressed = true;
++                let n = n as usize;
++                if n > raw.limit - bytes[i] {
++                    collector_refused(&raw, Failure::Overflow);
++                }
++                let mut offset = 0;
++                while offset < n {
++                    let written = unsafe {
++                        libc::write(raw.sinks[i], buffer.as_ptr().add(offset).cast(), n - offset)
++                    };
++                    if written > 0 {
++                        offset += written as usize;
++                    } else if written == 0 || errno() != libc::EINTR {
++                        collector_refused(&raw, Failure::Write);
++                    }
++                }
++                bytes[i] += n;
++            }
++        }
++        if eof == [true, true] {
++            #[cfg(test)]
++            if raw.fault == 2 {
++                unsafe { libc::close(raw.sinks[0]) };
++            }
++            for fd in raw.sinks {
++                if unsafe { libc::fsync(fd) } != 0 {
++                    collector_refused(&raw, Failure::Sync);
++                }
++            }
++            for fd in raw.sinks {
++                if unsafe { libc::close(fd) } != 0 {
++                    collector_refused(&raw, Failure::Close);
++                }
++            }
++            let byte = [1u8];
++            if unsafe { libc::send(raw.status[1], byte.as_ptr().cast(), 1, libc::MSG_NOSIGNAL) }
++                != 1
++            {
++                park();
++            }
++            unsafe { libc::_exit(0) }
++        }
++        if !progressed {
++            unsafe { libc::poll(std::ptr::null_mut(), 0, 10) };
++        }
++    }
++}
++fn guardian_refused(raw: &Raw, collector: RawFd, reason: Failure) -> ! {
++    kill_pinned(collector);
++    refused(raw, reason)
++}
++fn run(raw: Raw, keep: &[RawFd], collector_keep: &[RawFd], notify: bool) -> ! {
++    // Block inherited userspace handlers before any raw-fork continuation.
++    // Unblockable SIGKILL/SIGSTOP require external supervision/durable history.
++    let blocked = u64::MAX;
++    if unsafe {
++        libc::syscall(
++            libc::SYS_rt_sigprocmask,
++            libc::SIG_SETMASK,
++            &blocked,
++            0usize,
++            8usize,
++        )
++    } != 0
++        || !isolate(keep)
++    {
++        refused(&raw, Failure::Isolation);
++    }
++    let child = unsafe { libc::syscall(libc::SYS_fork) };
++    if child < 0 {
++        refused(&raw, Failure::Isolation);
++    }
++    if child == 0 {
++        collect(raw, collector_keep);
++    }
++    let collector = unsafe { libc::syscall(libc::SYS_pidfd_open, child, 0u32) };
++    if collector < 0 {
++        // The still-unreaped direct child cannot reuse its PID. It is behind
++        // the private barrier and has never been allowed disk work.
++        unsafe { libc::syscall(libc::SYS_kill, child, libc::SIGKILL) };
++        refused(&raw, Failure::Isolation);
++    }
++    let collector = collector as RawFd;
++    // The collector is still barred, so these non-last alias closes cannot
++    // become disk flushes. The guardian owns NO regular-file output writer.
++    for fd in raw.sinks {
++        if unsafe { libc::close(fd) } != 0 {
++            guardian_refused(&raw, collector, Failure::Close);
++        }
++    }
++    if unsafe { libc::close(raw.status[1]) } != 0 {
++        guardian_refused(&raw, collector, Failure::Close);
++    }
++    if terminal(raw.timer) != 0 {
++        guardian_refused(&raw, collector, Failure::Expired);
++    }
++    let byte = [1u8];
++    if unsafe { libc::send(raw.status[0], byte.as_ptr().cast(), 1, libc::MSG_NOSIGNAL) } != 1 {
++        guardian_refused(&raw, collector, Failure::Isolation);
++    }
++    if notify {
++        unsafe { libc::send(raw.ready, byte.as_ptr().cast(), 1, libc::MSG_NOSIGNAL) };
++    }
++    let mut stopping = false;
++    let mut drained = false;
++    loop {
++        let alarm = terminal(raw.timer);
++        let controller = terminal(raw.controller);
++        if alarm < 0 || controller < 0 {
++            guardian_refused(&raw, collector, Failure::Observation);
++        }
++        if alarm == 1 {
++            guardian_refused(&raw, collector, Failure::Expired);
++        }
++        if !stopping && controller == 1 {
++            stopping = true;
++            if !stop(&raw) {
++                guardian_refused(&raw, collector, Failure::Revocation);
++            }
++        }
++        if !drained {
++            match receive(raw.status[0]) {
++                0 => (),
++                1 => drained = true,
++                2 => guardian_refused(&raw, collector, Failure::Isolation),
++                5 => guardian_refused(&raw, collector, Failure::Read),
++                6 => guardian_refused(&raw, collector, Failure::Write),
++                7 => guardian_refused(&raw, collector, Failure::Overflow),
++                8 => guardian_refused(&raw, collector, Failure::Sync),
++                9 => guardian_refused(&raw, collector, Failure::Close),
++                _ => guardian_refused(&raw, collector, Failure::Observation),
++            }
++        }
++        let ended = terminal(collector);
++        if ended < 0 || ended == 1 && !drained {
++            guardian_refused(&raw, collector, Failure::Observation);
++        }
++        let mut writers_terminal = true;
++        for fd in raw.writers.iter().take(raw.count) {
++            match terminal(*fd) {
++                1 => (),
++                0 => writers_terminal = false,
++                _ => guardian_refused(&raw, collector, Failure::Observation),
++            }
++        }
++        if ended == 1 && drained && writers_terminal {
++            let mut status = 0;
++            if unsafe { libc::waitpid(child as libc::pid_t, &mut status, 0) }
++                != child as libc::pid_t
++                || !libc::WIFEXITED(status)
++                || libc::WEXITSTATUS(status) != 0
++            {
++                guardian_refused(&raw, collector, Failure::Observation);
++            }
++            let mut eof = [false; 2];
++            let mut byte = [0u8];
++            for (i, fd) in raw.readers.iter().enumerate() {
++                eof[i] = unsafe { libc::read(*fd, byte.as_mut_ptr().cast(), 1) } == 0;
++            }
++            if !releasable(writers_terminal, eof, false) {
++                guardian_refused(&raw, collector, Failure::Observation);
++            }
++            // No completion, adoption or deletion. Only the private cessation
++            // boundary permits closing this last fence owner.
++            if unsafe { libc::close(raw.fence) } != 0 {
++                park();
++            }
++            unsafe { libc::_exit(0) }
++        }
++        unsafe { libc::poll(std::ptr::null_mut(), 0, 10) };
++    }
++}
++fn spawn(input: Inputs, notify: bool) -> io::Result<Guardian> {
++    spawn_inner(
++        input,
++        notify,
++        #[cfg(test)]
++        0,
++    )
++}
++fn spawn_inner(input: Inputs, notify: bool, #[cfg(test)] fault: u8) -> io::Result<Guardian> {
++    validate(&input)?;
++    let alarm = timer(input.deadline)?;
++    let [ready, send] = notices()?;
++    let status = notices()?;
++    #[cfg(test)]
++    if fault == 3 {
++        // Guaranteed disconnected receiver before the child can send anything.
++        if unsafe { libc::shutdown(ready.as_raw_fd(), libc::SHUT_RDWR) } != 0 {
++            return Err(io::Error::last_os_error());
++        }
++    }
++    let mut raw = Raw {
++        fence: input.fence.as_raw_fd(),
++        readers: input.readers.each_ref().map(AsRawFd::as_raw_fd),
++        sinks: input.sinks.each_ref().map(AsRawFd::as_raw_fd),
++        controller: input.controller.as_raw_fd(),
++        writers: [-1; MAX_WRITERS],
++        count: input.writers.len(),
++        timer: alarm.as_raw_fd(),
++        ready: send.as_raw_fd(),
++        status: status.each_ref().map(AsRawFd::as_raw_fd),
++        limit: crate::diagnostic_receipts::STREAM_BYTES,
++        #[cfg(test)]
++        fault,
++    };
++    for (slot, file) in raw.writers.iter_mut().zip(&input.writers) {
++        *slot = file.as_raw_fd();
++    }
++    let mut keep = vec![raw.fence, raw.controller, raw.timer, raw.ready];
++    keep.extend(raw.readers);
++    keep.extend(raw.sinks);
++    keep.extend(raw.status);
++    keep.extend(raw.writers.iter().take(raw.count));
++    keep.sort_unstable();
++    if keep.windows(2).any(|p| p[0] == p[1]) || keep.iter().any(|fd| *fd < 0) {
++        return Err(invalid());
++    }
++    let mut collector_keep = vec![
++        raw.readers[0],
++        raw.readers[1],
++        raw.sinks[0],
++        raw.sinks[1],
++        raw.status[1],
++    ];
++    collector_keep.sort_unstable();
++    // No userspace atfork hooks; the child never resumes general Rust code.
++    let pid = unsafe { libc::syscall(libc::SYS_fork) };
++    if pid < 0 {
++        return Err(io::Error::last_os_error());
++    }
++    if pid == 0 {
++        run(raw, &keep, &collector_keep, notify);
++    }
++    // File close only, NEVER flock(LOCK_UN): the child owns the same OFD now.
++    drop(input);
++    drop(alarm);
++    drop(send);
++    drop(status);
++    Ok(Guardian {
++        pid: pid as libc::pid_t,
++        ready,
++    })
++}
++
++#[cfg(test)]
++#[path = "diagnostic_autonomous_watchdog_tests.rs"]
++mod tests;
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_autonomous_watchdog_tests.rs b/tools/long-run-supervisor-074/src/diagnostic_autonomous_watchdog_tests.rs
+new file mode 100644
+index 00000000..c10ad4ec
+--- /dev/null
++++ b/tools/long-run-supervisor-074/src/diagnostic_autonomous_watchdog_tests.rs
+@@ -0,0 +1,518 @@
++use super::*;
++use fs2::FileExt;
++use std::fs::OpenOptions;
++use std::io::Write;
++use std::process::{Child, Command, Stdio};
++use std::time::{Duration, Instant};
++
++fn pidfd(pid: u32) -> File {
++    let fd = unsafe { libc::syscall(libc::SYS_pidfd_open, pid, 0u32) };
++    assert!(fd >= 0);
++    unsafe { File::from_raw_fd(fd as RawFd) }
++}
++fn signal(fd: &File, signal: i32) {
++    assert_eq!(
++        unsafe {
++            libc::syscall(
++                libc::SYS_pidfd_send_signal,
++                fd.as_raw_fd(),
++                signal,
++                0usize,
++                0u32,
++            )
++        },
++        0
++    );
++}
++fn sleeping() -> Child {
++    Command::new("/bin/sleep")
++        .arg("60")
++        .stdin(Stdio::null())
++        .stdout(Stdio::null())
++        .stderr(Stdio::null())
++        .spawn()
++        .unwrap()
++}
++struct Fixture {
++    root: tempfile::TempDir,
++    controller: Child,
++    controller_fd: File,
++    writer: Child,
++    writer_fd: File,
++    guardian: Guardian,
++    guardian_fd: File,
++    collector_fd: Option<File>,
++    collector_pid: u32,
++    hidden: Option<File>,
++    deadline: u64,
++}
++impl Fixture {
++    fn new(notify: bool, hidden: bool, fault: u8) -> Self {
++        assert_ne!(
++            unsafe { libc::geteuid() },
++            0,
++            "nonroot synthetic mechanics only"
++        );
++        let root = tempfile::Builder::new()
++            .prefix("hc074-autonomous-")
++            .tempdir_in("/tmp")
++            .unwrap();
++        let fence_path = root.path().join("fence");
++        let fence = OpenOptions::new()
++            .create_new(true)
++            .read(true)
++            .write(true)
++            .open(&fence_path)
++            .unwrap();
++        fence.try_lock_exclusive().unwrap();
++        let sinks = ["stdout", "stderr"].map(|name| {
++            OpenOptions::new()
++                .create_new(true)
++                .write(true)
++                .open(root.path().join(name))
++                .unwrap()
++        });
++        let [r0, mut w0] = pipe().unwrap();
++        let [r1, w1] = pipe().unwrap();
++        // No shell/product executable: only the constant sleep helper receives
++        // pipe writers. The fixture parent writes exact binary oracle bytes.
++        w0.write_all(b"original\0stdout\n").unwrap();
++        let mut stderr = &w1;
++        stderr.write_all(b"original\xffstderr\n").unwrap();
++        let hidden = hidden.then(|| w0.try_clone().unwrap());
++        let controller = sleeping();
++        let controller_fd = pidfd(controller.id());
++        let writer = Command::new("/bin/sleep")
++            .arg("60")
++            .stdin(Stdio::null())
++            .stdout(Stdio::from(w0))
++            .stderr(Stdio::from(w1))
++            .spawn()
++            .unwrap();
++        let writer_fd = pidfd(writer.id());
++        let input = Inputs {
++            fence,
++            readers: [r0, r1],
++            sinks,
++            controller: controller_fd.try_clone().unwrap(),
++            writers: vec![writer_fd.try_clone().unwrap()],
++            deadline: now().unwrap() + crate::diagnostic_lease::CONTROLLER_LOSS_SECONDS * NS,
++        };
++        // Use the exact absolute input, not the later guardian creation time.
++        let original_deadline = input.deadline;
++        future(original_deadline, now().unwrap()).unwrap();
++        let guardian = if fault == 0 {
++            spawn(input, notify)
++        } else {
++            spawn_inner(input, notify, fault)
++        }
++        .unwrap();
++        let guardian_fd = pidfd(guardian.pid as u32);
++        Self {
++            root,
++            controller,
++            controller_fd,
++            writer,
++            writer_fd,
++            guardian,
++            guardian_fd,
++            collector_fd: None,
++            collector_pid: 0,
++            hidden,
++            deadline: original_deadline,
++        }
++    }
++    fn busy(&self) {
++        let other = OpenOptions::new()
++            .read(true)
++            .write(true)
++            .open(self.root.path().join("fence"))
++            .unwrap();
++        assert_eq!(
++            other.try_lock_exclusive().unwrap_err().kind(),
++            io::ErrorKind::WouldBlock
++        );
++    }
++    fn pin_collector(&mut self) {
++        let limit = Instant::now() + Duration::from_secs(5);
++        loop {
++            let raw =
++                std::fs::read_to_string(format!("/proc/{0}/task/{0}/children", self.guardian.pid))
++                    .unwrap();
++            let children: Vec<u32> = raw.split_whitespace().map(|p| p.parse().unwrap()).collect();
++            if children.len() == 1 {
++                self.collector_pid = children[0];
++                self.collector_fd = Some(pidfd(children[0]));
++                return;
++            }
++            assert!(children.is_empty() && Instant::now() < limit);
++            std::thread::yield_now();
++        }
++    }
++    fn ready(&mut self) {
++        let mut p = libc::pollfd {
++            fd: self.guardian.ready.as_raw_fd(),
++            events: libc::POLLIN,
++            revents: 0,
++        };
++        assert_eq!(unsafe { libc::poll(&mut p, 1, 5000) }, 1);
++        assert_eq!(self.guardian.notice().unwrap(), 1);
++        self.busy();
++        for entry in std::fs::read_dir(format!("/proc/{}/fd", self.guardian.pid)).unwrap() {
++            if let Ok(target) = std::fs::read_link(entry.unwrap().path()) {
++                assert_ne!(target, self.root.path().join("stdout"));
++                assert_ne!(target, self.root.path().join("stderr"));
++            }
++        }
++    }
++    fn ended(&mut self, seconds: i32) {
++        let mut p = libc::pollfd {
++            fd: self.guardian_fd.as_raw_fd(),
++            events: libc::POLLIN,
++            revents: 0,
++        };
++        assert_eq!(unsafe { libc::poll(&mut p, 1, seconds * 1000) }, 1);
++        let mut status = 0;
++        assert_eq!(
++            unsafe { libc::waitpid(self.guardian.pid, &mut status, 0) },
++            self.guardian.pid
++        );
++        self.guardian.pid = 0;
++        assert!(libc::WIFEXITED(status));
++        assert_eq!(libc::WEXITSTATUS(status), 0);
++        assert_eq!(terminal(self.writer_fd.as_raw_fd()), 1);
++        let other = OpenOptions::new()
++            .read(true)
++            .write(true)
++            .open(self.root.path().join("fence"))
++            .unwrap();
++        other.try_lock_exclusive().unwrap();
++        assert_eq!(
++            std::fs::read(self.root.path().join("stdout")).unwrap(),
++            b"original\0stdout\n"
++        );
++        assert_eq!(
++            std::fs::read(self.root.path().join("stderr")).unwrap(),
++            b"original\xffstderr\n"
++        );
++    }
++    fn held(&self) {
++        // Scheduling margin only, never an admission threshold or lease change.
++        std::thread::sleep(Duration::from_millis(120));
++        assert_eq!(terminal(self.guardian_fd.as_raw_fd()), 0);
++        self.busy();
++    }
++    fn failure(&mut self, expected: Failure) {
++        let mut p = libc::pollfd {
++            fd: self.guardian.ready.as_raw_fd(),
++            events: libc::POLLIN,
++            revents: 0,
++        };
++        let wait = if matches!(expected, Failure::Expired) {
++            12000
++        } else {
++            5000
++        };
++        assert_eq!(unsafe { libc::poll(&mut p, 1, wait) }, 1);
++        assert_eq!(self.guardian.notice().unwrap(), expected as u8);
++        self.held();
++    }
++}
++impl Drop for Fixture {
++    fn drop(&mut self) {
++        // Only exact children/pidfds owned by this fixture, including failures.
++        kill_pinned(self.writer_fd.as_raw_fd());
++        kill_pinned(self.controller_fd.as_raw_fd());
++        let _ = self.writer.wait();
++        let _ = self.controller.wait();
++        self.hidden = None;
++        // The guardian's direct child is discovered only through this pinned,
++        // unreaped owned guardian, never a process-name or global PID search.
++        if self.collector_fd.is_none() && self.guardian.pid != 0 {
++            if let Ok(raw) =
++                std::fs::read_to_string(format!("/proc/{0}/task/{0}/children", self.guardian.pid))
++            {
++                if let Some(pid) = raw
++                    .split_whitespace()
++                    .next()
++                    .and_then(|v| v.parse::<u32>().ok())
++                {
++                    let fd = unsafe { libc::syscall(libc::SYS_pidfd_open, pid, 0u32) };
++                    if fd >= 0 {
++                        self.collector_fd = Some(unsafe { File::from_raw_fd(fd as RawFd) });
++                    }
++                }
++            }
++        }
++        if let Some(fd) = &self.collector_fd {
++            kill_pinned(fd.as_raw_fd());
++            let mut p = libc::pollfd {
++                fd: fd.as_raw_fd(),
++                events: libc::POLLIN,
++                revents: 0,
++            };
++            unsafe { libc::poll(&mut p, 1, 5000) };
++        }
++        if self.guardian.pid != 0 {
++            kill_pinned(self.guardian_fd.as_raw_fd());
++            let mut status = 0;
++            unsafe { libc::waitpid(self.guardian.pid, &mut status, 0) };
++        }
++    }
++}
++
++#[test]
++fn autonomous_release_requires_both_eof_and_every_terminal_without_refusal() {
++    for terminal in [false, true] {
++        for a in [false, true] {
++            for b in [false, true] {
++                for refused in [false, true] {
++                    assert_eq!(
++                        releasable(terminal, [a, b], refused),
++                        terminal && a && b && !refused
++                    );
++                }
++            }
++        }
++    }
++}
++#[test]
++fn autonomous_absolute_deadline_rejects_equality_and_past() {
++    for origin in [0, 1, NS, u32::MAX as u64, i64::MAX as u64 - 1] {
++        assert!(future(origin, origin).is_err());
++        assert!(future(origin, origin.saturating_add(1)).is_err());
++        if origin > 0 {
++            assert!(future(origin, origin - 1).is_ok());
++        }
++    }
++    assert!(future(u64::MAX, 1).is_err());
++}
++
++#[test]
++fn autonomous_notice_rejects_unknown_oversized_and_disconnected_packets() {
++    for data in [
++        vec![1],
++        vec![9],
++        vec![10],
++        vec![0],
++        vec![11],
++        vec![255],
++        vec![1, 2],
++    ] {
++        let [ready, send] = notices().unwrap();
++        let guardian = Guardian { pid: 0, ready };
++        assert_eq!(
++            unsafe {
++                libc::send(
++                    send.as_raw_fd(),
++                    data.as_ptr().cast(),
++                    data.len(),
++                    libc::MSG_NOSIGNAL,
++                )
++            },
++            data.len() as isize
++        );
++        assert_eq!(
++            guardian.notice().is_ok(),
++            data.len() == 1 && (1..=10).contains(&data[0])
++        );
++        drop(send);
++        assert!(guardian.notice().is_err());
++    }
++}
++
++#[test]
++fn autonomous_descriptor_roles_and_bounded_writer_inventory_refuse_before_fork() {
++    for case in [
++        "valid",
++        "empty",
++        "too-many",
++        "reader-write",
++        "same-sink",
++        "sink-read",
++        "not-pidfd",
++        "not-fence",
++        "expired",
++    ] {
++        let root = tempfile::tempdir().unwrap();
++        let [r0, w0] = pipe().unwrap();
++        let [r1, _w1] = pipe().unwrap();
++        let regular = |name| {
++            OpenOptions::new()
++                .write(true)
++                .create_new(true)
++                .open(root.path().join(name))
++                .unwrap()
++        };
++        let mut input = Inputs {
++            fence: regular("lock"),
++            readers: [r0, r1],
++            sinks: [regular("stdout"), regular("stderr")],
++            controller: pidfd(std::process::id()),
++            writers: vec![pidfd(std::process::id())],
++            deadline: now().unwrap() + 10 * NS,
++        };
++        match case {
++            "empty" => input.writers.clear(),
++            "too-many" => {
++                input.writers = (0..=MAX_WRITERS)
++                    .map(|_| pidfd(std::process::id()))
++                    .collect()
++            }
++            "reader-write" => input.readers[0] = w0.try_clone().unwrap(),
++            "same-sink" => input.sinks[1] = input.sinks[0].try_clone().unwrap(),
++            "sink-read" => input.sinks[0] = File::open(root.path().join("stdout")).unwrap(),
++            "not-pidfd" => input.controller = File::open(root.path().join("lock")).unwrap(),
++            "not-fence" => input.fence = w0.try_clone().unwrap(),
++            "expired" => input.deadline = now().unwrap(),
++            _ => (),
++        }
++        assert_eq!(validate(&input).is_ok(), case == "valid", "{case}");
++    }
++}
++
++#[test]
++#[ignore = "manual nonroot isolated kernel fault mechanics, no product workload"]
++fn autonomous_writer_fence_matrix() {
++    let seed = 0x0740_7a17u64;
++    for repeat in 1..=3 {
++        for case in [
++            "normal",
++            "controller-kill",
++            "controller-stop",
++            "hidden-writer",
++            "stopped-writer",
++            "ack-omitted",
++            "ack-disconnected",
++            "write-failure",
++            "sync-failure",
++            "size-limit",
++            "overflow",
++            "collector-stop",
++        ] {
++            let start = Instant::now();
++            let fault = match case {
++                "write-failure" => 1,
++                "sync-failure" => 2,
++                "ack-disconnected" => 3,
++                "size-limit" => 4,
++                "collector-stop" => 5,
++                _ => 0,
++            };
++            let mut f = Fixture::new(
++                case != "ack-omitted",
++                case == "hidden-writer" || case == "overflow",
++                fault,
++            );
++            f.pin_collector();
++            if case == "ack-disconnected" {
++                // The receiver was shut down before fork, so no ACK delivers.
++                f.held();
++            } else if case != "ack-omitted" {
++                f.ready();
++            }
++            match case {
++                "write-failure" | "size-limit" => {
++                    f.failure(Failure::Write);
++                    f.writer.wait().unwrap();
++                    f.held();
++                    assert_eq!(terminal(f.controller_fd.as_raw_fd()), 1);
++                    assert!(std::fs::read(f.root.path().join("stdout"))
++                        .unwrap()
++                        .is_empty());
++                }
++                "sync-failure" => {
++                    signal(&f.writer_fd, libc::SIGTERM);
++                    f.failure(Failure::Sync);
++                    f.writer.wait().unwrap();
++                    f.held();
++                    assert_eq!(
++                        std::fs::read(f.root.path().join("stdout")).unwrap(),
++                        b"original\0stdout\n"
++                    );
++                    assert_eq!(terminal(f.controller_fd.as_raw_fd()), 1);
++                }
++                "overflow" => {
++                    let data = [b'x'; QUANTUM];
++                    let deadline = Instant::now() + Duration::from_secs(5);
++                    let mut total = 0;
++                    while total <= crate::diagnostic_receipts::STREAM_BYTES {
++                        assert!(Instant::now() < deadline);
++                        match f.hidden.as_mut().unwrap().write(&data) {
++                            Ok(n) => total += n,
++                            Err(e) if e.kind() == io::ErrorKind::WouldBlock => {
++                                std::thread::yield_now()
++                            }
++                            other => panic!("overflow writer: {other:?}"),
++                        }
++                    }
++                    f.writer.wait().unwrap();
++                    f.held();
++                    assert!(
++                        std::fs::metadata(f.root.path().join("stdout"))
++                            .unwrap()
++                            .len()
++                            <= crate::diagnostic_receipts::STREAM_BYTES as u64
++                    );
++                    f.failure(Failure::Overflow);
++                    f.hidden = None;
++                    f.held(); // Refusal is sticky even after the final alias closes.
++                }
++                "normal" => {
++                    signal(&f.writer_fd, libc::SIGTERM);
++                    f.ended(5);
++                }
++                "controller-stop" | "collector-stop" => {
++                    if case == "controller-stop" {
++                        signal(&f.controller_fd, libc::SIGSTOP);
++                    }
++                    f.held();
++                    if case == "collector-stop" {
++                        let raw =
++                            std::fs::read_to_string(format!("/proc/{}/stat", f.collector_pid))
++                                .unwrap();
++                        assert!(raw.rsplit_once(") ").unwrap().1.starts_with("T "));
++                    }
++                    f.failure(Failure::Expired);
++                    assert!(now().unwrap() >= f.deadline);
++                    let status = f.controller.wait().unwrap();
++                    use std::os::unix::process::ExitStatusExt;
++                    assert_eq!(status.signal(), Some(libc::SIGKILL));
++                    assert_eq!(f.writer.wait().unwrap().signal(), Some(libc::SIGKILL));
++                    let mut p = libc::pollfd {
++                        fd: f.collector_fd.as_ref().unwrap().as_raw_fd(),
++                        events: libc::POLLIN,
++                        revents: 0,
++                    };
++                    assert_eq!(unsafe { libc::poll(&mut p, 1, 5000) }, 1);
++                    let raw =
++                        std::fs::read_to_string(format!("/proc/{}/stat", f.collector_pid)).unwrap();
++                    let status: i32 = raw.split_whitespace().last().unwrap().parse().unwrap();
++                    assert!(libc::WIFSIGNALED(status));
++                    assert_eq!(libc::WTERMSIG(status), libc::SIGKILL);
++                }
++                "hidden-writer" => {
++                    signal(&f.controller_fd, libc::SIGKILL);
++                    f.writer.wait().unwrap();
++                    f.held();
++                    f.hidden = None;
++                    f.ended(5);
++                }
++                "stopped-writer" => {
++                    signal(&f.writer_fd, libc::SIGSTOP);
++                    f.held();
++                    signal(&f.controller_fd, libc::SIGKILL);
++                    f.ended(5);
++                    use std::os::unix::process::ExitStatusExt;
++                    assert_eq!(f.writer.wait().unwrap().signal(), Some(libc::SIGKILL));
++                }
++                _ => {
++                    signal(&f.controller_fd, libc::SIGKILL);
++                    f.ended(5);
++                }
++            }
++            println!("HC074-AUTONOMOUS case={case} repeat={repeat} seed={seed:#x} elapsed_ms={} completed=true", start.elapsed().as_millis());
++        }
++    }
++    println!("HC074-AUTONOMOUS cases=36 repeats=3 completed=true");
++}
+diff --git a/tools/long-run-supervisor-074/src/watchdog.rs b/tools/long-run-supervisor-074/src/watchdog.rs
+index 5307bd14..062afe26 100644
+--- a/tools/long-run-supervisor-074/src/watchdog.rs
++++ b/tools/long-run-supervisor-074/src/watchdog.rs
+@@ -1,6 +1,12 @@
+ use crate::{CheckpointPayload, Phase};
+ use thiserror::Error;
+ 
++// Private mechanics only. Original admission/descriptor transfer is not enrolled.
++#[cfg(all(target_os = "linux", target_arch = "x86_64"))]
++#[allow(dead_code)]
++#[path = "diagnostic_autonomous_watchdog.rs"]
++mod autonomous;
++
+ pub const PROCESS_CPU_TIME_NS: &str = "process_cpu_time_ns";
+ 
+ #[derive(Debug, Clone, Copy, PartialEq, Eq)]

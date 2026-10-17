@@ -1,0 +1,118 @@
+21be0de3e6ecb0ca9665c7f32ac474cbebbc597777048b119310b5769d89bc95  guard.sh
+b75bd6994cc3a54b90991a3f199b0b8e05e4b795ff88a198fbcdbb8b947945bb  run.sh
+HC074-AUTONOMOUS-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-AUTONOMOUS-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-AUTONOMOUS-COHORT compiler=194
+6d6a8aae088c4dd3a26bbe3c90b3a7c58d04b8270e9f6583c2c9dd2acbf15614  tests-194
+
+running 4 tests
+test watchdog::autonomous::tests::autonomous_absolute_deadline_rejects_equality_and_past ... ok
+test watchdog::autonomous::tests::autonomous_descriptor_roles_and_bounded_writer_inventory_refuse_before_fork ... ok
+test watchdog::autonomous::tests::autonomous_notice_rejects_unknown_oversized_and_disconnected_packets ... ok
+test watchdog::autonomous::tests::autonomous_release_requires_both_eof_and_every_terminal_without_refusal ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 1066 filtered out; finished in 0.00s
+
+
+running 1 test
+test watchdog::autonomous::tests::autonomous_writer_fence_matrix ... HC074-AUTONOMOUS case=normal repeat=1 seed=0x7407a17 elapsed_ms=40 completed=true
+HC074-AUTONOMOUS case=controller-kill repeat=1 seed=0x7407a17 elapsed_ms=30 completed=true
+HC074-AUTONOMOUS case=controller-stop repeat=1 seed=0x7407a17 elapsed_ms=10128 completed=true
+HC074-AUTONOMOUS case=hidden-writer repeat=1 seed=0x7407a17 elapsed_ms=161 completed=true
+HC074-AUTONOMOUS case=stopped-writer repeat=1 seed=0x7407a17 elapsed_ms=151 completed=true
+HC074-AUTONOMOUS case=ack-omitted repeat=1 seed=0x7407a17 elapsed_ms=40 completed=true
+HC074-AUTONOMOUS case=ack-disconnected repeat=1 seed=0x7407a17 elapsed_ms=151 completed=true
+HC074-AUTONOMOUS case=write-failure repeat=1 seed=0x7407a17 elapsed_ms=250 completed=true
+HC074-AUTONOMOUS case=sync-failure repeat=1 seed=0x7407a17 elapsed_ms=260 completed=true
+HC074-AUTONOMOUS case=size-limit repeat=1 seed=0x7407a17 elapsed_ms=250 completed=true
+HC074-AUTONOMOUS case=overflow repeat=1 seed=0x7407a17 elapsed_ms=380 completed=true
+HC074-AUTONOMOUS case=collector-stop repeat=1 seed=0x7407a17 elapsed_ms=10128 completed=true
+HC074-AUTONOMOUS case=normal repeat=2 seed=0x7407a17 elapsed_ms=40 completed=true
+HC074-AUTONOMOUS case=controller-kill repeat=2 seed=0x7407a17 elapsed_ms=40 completed=true
+HC074-AUTONOMOUS case=controller-stop repeat=2 seed=0x7407a17 elapsed_ms=10125 completed=true
+HC074-AUTONOMOUS case=hidden-writer repeat=2 seed=0x7407a17 elapsed_ms=151 completed=true
+HC074-AUTONOMOUS case=stopped-writer repeat=2 seed=0x7407a17 elapsed_ms=151 completed=true
+HC074-AUTONOMOUS case=ack-omitted repeat=2 seed=0x7407a17 elapsed_ms=40 completed=true
+HC074-AUTONOMOUS case=ack-disconnected repeat=2 seed=0x7407a17 elapsed_ms=151 completed=true
+HC074-AUTONOMOUS case=write-failure repeat=2 seed=0x7407a17 elapsed_ms=250 completed=true
+HC074-AUTONOMOUS case=sync-failure repeat=2 seed=0x7407a17 elapsed_ms=260 completed=true
+HC074-AUTONOMOUS case=size-limit repeat=2 seed=0x7407a17 elapsed_ms=250 completed=true
+HC074-AUTONOMOUS case=overflow repeat=2 seed=0x7407a17 elapsed_ms=380 completed=true
+HC074-AUTONOMOUS case=collector-stop repeat=2 seed=0x7407a17 elapsed_ms=10126 completed=true
+HC074-AUTONOMOUS case=normal repeat=3 seed=0x7407a17 elapsed_ms=40 completed=true
+HC074-AUTONOMOUS case=controller-kill repeat=3 seed=0x7407a17 elapsed_ms=40 completed=true
+HC074-AUTONOMOUS case=controller-stop repeat=3 seed=0x7407a17 elapsed_ms=10126 completed=true
+HC074-AUTONOMOUS case=hidden-writer repeat=3 seed=0x7407a17 elapsed_ms=151 completed=true
+HC074-AUTONOMOUS case=stopped-writer repeat=3 seed=0x7407a17 elapsed_ms=151 completed=true
+HC074-AUTONOMOUS case=ack-omitted repeat=3 seed=0x7407a17 elapsed_ms=40 completed=true
+HC074-AUTONOMOUS case=ack-disconnected repeat=3 seed=0x7407a17 elapsed_ms=151 completed=true
+HC074-AUTONOMOUS case=write-failure repeat=3 seed=0x7407a17 elapsed_ms=250 completed=true
+HC074-AUTONOMOUS case=sync-failure repeat=3 seed=0x7407a17 elapsed_ms=260 completed=true
+HC074-AUTONOMOUS case=size-limit repeat=3 seed=0x7407a17 elapsed_ms=250 completed=true
+HC074-AUTONOMOUS case=overflow repeat=3 seed=0x7407a17 elapsed_ms=380 completed=true
+HC074-AUTONOMOUS case=collector-stop repeat=3 seed=0x7407a17 elapsed_ms=10125 completed=true
+HC074-AUTONOMOUS cases=36 repeats=3 completed=true
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1069 filtered out; finished in 65.93s
+
+HC074-AUTONOMOUS-COHORT compiler=194 completed=true
+HC074-AUTONOMOUS-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-AUTONOMOUS-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-AUTONOMOUS-COHORT compiler=188
+26b5b693dbf9b1619ed559a9d1178c3d4b23787545d99f33ae7741de1797a557  tests-188
+
+running 4 tests
+test watchdog::autonomous::tests::autonomous_absolute_deadline_rejects_equality_and_past ... ok
+test watchdog::autonomous::tests::autonomous_descriptor_roles_and_bounded_writer_inventory_refuse_before_fork ... ok
+test watchdog::autonomous::tests::autonomous_notice_rejects_unknown_oversized_and_disconnected_packets ... ok
+test watchdog::autonomous::tests::autonomous_release_requires_both_eof_and_every_terminal_without_refusal ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 1066 filtered out; finished in 0.00s
+
+
+running 1 test
+test watchdog::autonomous::tests::autonomous_writer_fence_matrix ... HC074-AUTONOMOUS case=normal repeat=1 seed=0x7407a17 elapsed_ms=40 completed=true
+HC074-AUTONOMOUS case=controller-kill repeat=1 seed=0x7407a17 elapsed_ms=40 completed=true
+HC074-AUTONOMOUS case=controller-stop repeat=1 seed=0x7407a17 elapsed_ms=10125 completed=true
+HC074-AUTONOMOUS case=hidden-writer repeat=1 seed=0x7407a17 elapsed_ms=151 completed=true
+HC074-AUTONOMOUS case=stopped-writer repeat=1 seed=0x7407a17 elapsed_ms=151 completed=true
+HC074-AUTONOMOUS case=ack-omitted repeat=1 seed=0x7407a17 elapsed_ms=40 completed=true
+HC074-AUTONOMOUS case=ack-disconnected repeat=1 seed=0x7407a17 elapsed_ms=151 completed=true
+HC074-AUTONOMOUS case=write-failure repeat=1 seed=0x7407a17 elapsed_ms=250 completed=true
+HC074-AUTONOMOUS case=sync-failure repeat=1 seed=0x7407a17 elapsed_ms=260 completed=true
+HC074-AUTONOMOUS case=size-limit repeat=1 seed=0x7407a17 elapsed_ms=250 completed=true
+HC074-AUTONOMOUS case=overflow repeat=1 seed=0x7407a17 elapsed_ms=380 completed=true
+HC074-AUTONOMOUS case=collector-stop repeat=1 seed=0x7407a17 elapsed_ms=10128 completed=true
+HC074-AUTONOMOUS case=normal repeat=2 seed=0x7407a17 elapsed_ms=40 completed=true
+HC074-AUTONOMOUS case=controller-kill repeat=2 seed=0x7407a17 elapsed_ms=40 completed=true
+HC074-AUTONOMOUS case=controller-stop repeat=2 seed=0x7407a17 elapsed_ms=10128 completed=true
+HC074-AUTONOMOUS case=hidden-writer repeat=2 seed=0x7407a17 elapsed_ms=151 completed=true
+HC074-AUTONOMOUS case=stopped-writer repeat=2 seed=0x7407a17 elapsed_ms=151 completed=true
+HC074-AUTONOMOUS case=ack-omitted repeat=2 seed=0x7407a17 elapsed_ms=40 completed=true
+HC074-AUTONOMOUS case=ack-disconnected repeat=2 seed=0x7407a17 elapsed_ms=151 completed=true
+HC074-AUTONOMOUS case=write-failure repeat=2 seed=0x7407a17 elapsed_ms=250 completed=true
+HC074-AUTONOMOUS case=sync-failure repeat=2 seed=0x7407a17 elapsed_ms=260 completed=true
+HC074-AUTONOMOUS case=size-limit repeat=2 seed=0x7407a17 elapsed_ms=250 completed=true
+HC074-AUTONOMOUS case=overflow repeat=2 seed=0x7407a17 elapsed_ms=380 completed=true
+HC074-AUTONOMOUS case=collector-stop repeat=2 seed=0x7407a17 elapsed_ms=10127 completed=true
+HC074-AUTONOMOUS case=normal repeat=3 seed=0x7407a17 elapsed_ms=51 completed=true
+HC074-AUTONOMOUS case=controller-kill repeat=3 seed=0x7407a17 elapsed_ms=40 completed=true
+HC074-AUTONOMOUS case=controller-stop repeat=3 seed=0x7407a17 elapsed_ms=10125 completed=true
+HC074-AUTONOMOUS case=hidden-writer repeat=3 seed=0x7407a17 elapsed_ms=151 completed=true
+HC074-AUTONOMOUS case=stopped-writer repeat=3 seed=0x7407a17 elapsed_ms=151 completed=true
+HC074-AUTONOMOUS case=ack-omitted repeat=3 seed=0x7407a17 elapsed_ms=40 completed=true
+HC074-AUTONOMOUS case=ack-disconnected repeat=3 seed=0x7407a17 elapsed_ms=151 completed=true
+HC074-AUTONOMOUS case=write-failure repeat=3 seed=0x7407a17 elapsed_ms=250 completed=true
+HC074-AUTONOMOUS case=sync-failure repeat=3 seed=0x7407a17 elapsed_ms=260 completed=true
+HC074-AUTONOMOUS case=size-limit repeat=3 seed=0x7407a17 elapsed_ms=250 completed=true
+HC074-AUTONOMOUS case=overflow repeat=3 seed=0x7407a17 elapsed_ms=380 completed=true
+HC074-AUTONOMOUS case=collector-stop repeat=3 seed=0x7407a17 elapsed_ms=10125 completed=true
+HC074-AUTONOMOUS cases=36 repeats=3 completed=true
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1069 filtered out; finished in 65.95s
+
+HC074-AUTONOMOUS-COHORT compiler=188 completed=true
+HC074-AUTONOMOUS-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-AUTONOMOUS-HOST completed=true supervisor_unchanged=true no_fixture_executable=true

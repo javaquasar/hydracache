@@ -350,3 +350,7 @@ docs/testing/performance/0.74/local-runs/fixed-grouped-preparation-*/*.patch -te
 docs/testing/performance/0.74/local-runs/fixed-grouped-process-loss-*/** -text whitespace=cr-at-eol
 docs/testing/performance/0.74/local-runs/fixed-grouped-process-loss-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
 docs/testing/performance/0.74/local-runs/fixed-grouped-process-loss-*/*.patch -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/autonomous-watchdog-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/autonomous-watchdog-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/autonomous-watchdog-*/*.patch -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol

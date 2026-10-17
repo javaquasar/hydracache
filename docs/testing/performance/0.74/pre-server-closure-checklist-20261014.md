@@ -5,6 +5,13 @@ Server execution is not admitted yet. This checklist follows the approved
 and [collector amendment](diagnostic-collector-design.md). Local primitives and
 kernel facts are distinct from a complete installed production path.
 
+The [autonomous guardian packet](local-runs/autonomous-watchdog-20261017/README.md)
+now closes private disk-independent watchdog/fence mechanics with 36 WSL and
+72 isolated server cases. It does not close original common-fence/sink ownership
+transfer, authenticated original-start, recursive cgroup revocation or external
+guardian supervision. Those remain necessary before production completion,
+later cells or execution admission; original validators and deadlines are intact.
+
 ## Implemented local prerequisites
 
 P0 has retained original-process SIGKILL/lost-ack proof. P1 has original attempt,
