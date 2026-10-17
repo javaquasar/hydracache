@@ -60,3 +60,27 @@ checks. Commit the implementation separately from evidence and article updates.
 This stage can close the isolated guardian mechanics, not authenticated original
 send/start, cgroup enrollment, production root-sink transfer, durable completion,
 cells 2 through 4 or server execution admission.
+
+## Independent disk writer amendment before the first process run
+
+Source review rejects combining disk writes with the timer observer: a blocked
+regular-file write/fsync would block expiry handling too. No process result is
+claimed for that unexecuted draft. Fork a distinct collector behind an initial
+private barrier. Before releasing it, the guardian pins that unreaped child with
+pidfd, closes its regular-file aliases and retains the sole fence. Only the
+collector may read/drain/write/fsync those streams. The guardian neither writes
+nor syncs regular files; it separately observes the original absolute timer.
+
+Ordinary controller death stops the pinned writers and allows bounded collector
+drain inside the already selected deadline. Absolute expiry stops controller,
+writers AND collector, sends explicit expiry failure and keeps the fence.
+Collector success is only a private notice after both EOFs, fsync and sink close;
+the guardian also requires actual successful child wait status, terminal writers
+and its own two EOF reads before release. A notice cannot replace kernel facts.
+
+Add a real SIGSTOP of the collector before disk work. At the unchanged ten-second
+fixture bound, its independent guardian must SIGKILL the stopped collector and
+writer, report expiry, and remain live with the fence busy. A stopped controller
+at that bound is also an expiry refusal, not successful execution. Add this
+twelfth case to all three repeats per compiler, with explicit failure notices.
+These are synthetic private objects, not original fixed-install/cgroup admission.
