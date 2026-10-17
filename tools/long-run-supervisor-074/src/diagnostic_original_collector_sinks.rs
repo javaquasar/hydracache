@@ -4,6 +4,8 @@ use std::ffi::CString;
 #[path = "diagnostic_original_output_join.rs"]
 mod joined;
 pub use joined::OutputJoinStage;
+#[path = "diagnostic_original_start_material.rs"]
+pub mod start_material;
 
 const PREFIX: &str = "diagnostic-collector-output-074-";
 const DIRECTORY: &str = "collector-attempt-v1";

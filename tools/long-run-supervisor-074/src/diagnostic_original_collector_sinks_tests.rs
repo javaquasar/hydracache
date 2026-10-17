@@ -7,6 +7,8 @@ use std::path::{Path, PathBuf};
 mod crash_tests;
 #[path = "diagnostic_original_output_join_fault_tests.rs"]
 mod join_fault_tests;
+#[path = "diagnostic_original_start_material_join_tests.rs"]
+mod start_material_tests;
 
 #[test]
 #[ignore = "manual nonroot J1 output cost and complete original control; no execution"]
