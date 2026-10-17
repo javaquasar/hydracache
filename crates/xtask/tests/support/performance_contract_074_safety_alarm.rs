@@ -1,4 +1,4 @@
-//! Additive alarm entry; original observers, deadlines and message logic stay exact.
+//! Test-only alarm and leaf attribution; original runtime stays exact.
 const GATES: &str = r###"
 # BEGIN ORIGINAL SAFETY ALARM GATES
 [[gate]]
@@ -32,6 +32,38 @@ cwd = "."
 platform = "linux"
 
 [gate.command.env]
+[[gate]]
+id = "tool.hydracache-long-run-supervisor-074.original-validation-leaf-cost-attribution"
+kind = "external_tool"
+source = "tools/long-run-supervisor-074/src/diagnostic_validation_leaf_cost_tests.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "hydracache_long_run_supervisor_074"
+test = "original_validation_leaf_cost_attribution"
+cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
+env = ""
+reason = "Existing opening callback only; full closing round retained in explicit final bucket"
+tier = "manual"
+required_features = []
+required_env = []
+required_tools = ["cargo"]
+timeout_seconds = 180
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::leaf_cost_tests::original_validation_leaf_cost_attribution","--","--ignored","--exact","--nocapture","--test-threads=1"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+
 # END ORIGINAL SAFETY ALARM GATES
 "###;
 pub(super) fn normalize(path: &str, raw: &str) -> String {
@@ -135,4 +167,32 @@ fn rejected_original_alarm_stays_test_only_with_exact_original_guards() {
             .replace("#[cfg(test)]", "#[cfg(all())]")
     ))
     .is_err());
+}
+
+#[test]
+fn validation_leaf_attribution_keeps_all_runtime_and_observation_points_exact() {
+    for path in [
+        "tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs",
+        "tools/long-run-supervisor-074/src/diagnostic_preconsent_frame.rs",
+        "tools/long-run-supervisor-074/src/diagnostic_original_output_join.rs",
+        "tools/long-run-supervisor-074/src/diagnostic_original_start_material.rs",
+        "tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport.rs",
+        "tools/long-run-supervisor-074/src/diagnostic_original_safety_alarm.rs",
+        "tools/long-run-supervisor-074/src/diagnostic_validation_trace.rs",
+        "tools/long-run-supervisor-074/src/diagnostic_lease.rs",
+        "docs/testing/performance/0.74/qualification-manifest.toml",
+    ] {
+        let before = std::process::Command::new("git")
+            .args(["show", &format!("48aa96b7:{path}")])
+            .current_dir(super::root())
+            .output()
+            .unwrap();
+        assert!(before.status.success());
+        let current = std::fs::read_to_string(super::root().join(path)).unwrap();
+        assert_eq!(
+            current.replace('\r', ""),
+            String::from_utf8(before.stdout).unwrap().replace('\r', ""),
+            "{path}"
+        );
+    }
 }
