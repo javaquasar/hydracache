@@ -74,3 +74,36 @@ another timer or replace any original frame/observation. Authentication counts
 remain 68; only the already selected absolute deadline is reobserved. The first
 builds are provisional compilation checks, not process certificates for this
 review refinement. No new-owner process run preceded this correction.
+
+A cfg(test)-only final-observation delay waits for that exact existing BOOTTIME
+bound after the complete closing frame. The later-refusal gate must observe
+Original(Expired), latch refusal and retain the original owner. This specifically
+tests the added final alarm probe, rather than crediting an earlier causal-time
+refusal. Normal and production paths have no delay or new time input.
+
+## Rejected double frame and direct sink candidate
+
+Both compiler screens obtain custody with 68 authentications, then healthy
+revalidation refuses at the unchanged original Causal(Time) challenge bound.
+The full patch, source hashes, compiler binaries and screens are retained as a
+negative, not retried into admission. Its fault/process qualification is not run.
+
+Replace only that composition with a separate direct-sink candidate. Consume
+OriginalCollectorSinks directly and insert typed custody into the already
+approved grouped preparation opening/closing frame, before its closing
+original_round. Keep the existing grouped constructor and every old validator
+body and observation unchanged. The new constructor uses the same material_round,
+fixed bundle/message preparation and closing original_round as that baseline;
+custody adds descriptor ownership/metadata observations, not another pair of
+full frames. Revalidation brackets the unchanged grouped validate with custody
+observations and ends with its original absolute alarm probe.
+
+This candidate expects the baseline's 34 authentications for construction and
+34 for revalidation. Those are reference-call assertions for a distinct
+composition, not revised safety or numerical release thresholds. The original
+challenge, progress, cell and total deadlines remain exact. No failed double-frame
+measurement is pooled with the new candidate. Withdraw its public grouped-owner
+bind route; the new production constructor accepts only the original sinks and
+no replacement inputs. The same healthy, persistent-fault, lost-ACK and selected
+process-loss gates must pass on the new source before acceptance. A fixed-loader
+refusal is still never a fixture fallback.
