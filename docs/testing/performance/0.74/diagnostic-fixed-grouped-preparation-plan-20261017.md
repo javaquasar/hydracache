@@ -59,3 +59,20 @@ local non-promotable performance-contract-check. Review diff, then commit code
 and evidence separately and push. Autonomous watchdog, authenticated original
 send/start, all-writer cessation, completion/cells 2–4 and their real process-loss
 matrix remain the next prerequisites before installation or a server pilot.
+
+## Origin harness correction after the first negative
+
+At implementation 7ddcd6f3bd6507e945048147971a5cc4bca15be6, all seven healthy
+controls and both 14-case refusal matrices pass. The first Rust 1.94 origin
+test confirms the missing fixed-install refusal, then fails the unchanged
+with_original_at postcondition: its argument incorrectly requests refused=false
+although the test intentionally latches the whole original chain. Actual
+guard.is_refused is true, as required. The next cohort stops automatically.
+
+Retain that exact failing host/raw log and both original binaries. Correct only
+the two origin-test wrapper arguments to expect refused=true, keeping every
+inner reason/sticky/fence/record assertion and the helper unchanged. Preserve
+the old source capsule; add an exact two-line correction capsule and separate
+origin binary/source identities. Rerun local gates and both origin cohorts on
+the corrected harness, without repeating or reattributing the old timing data.
+No production body, observation, deadline, fixture helper or threshold changes.
