@@ -3666,3 +3666,14 @@ pins implementation `fb6afed217ed6193f2898001bbd58da80ecdfc83`. Seven fast tests
 three repetitions; three manual repetitions prove the post-exit write. Process
 regression passes 103, diagnostic integrations 65 and Linux doctests 55. The
 existing Starting SIGKILL matrix remains green; server admission stays closed.
+
+The [original pipe message packet](local-runs/original-pipe-transport-20261017/README.md)
+now closes one additional preparation prerequisite in `e2e92fd9`: an opaque
+owner retains an unsent message with the two original write ends, while all
+35 typed worker settings match signed collector requirements. Six complete
+healthy chains and 18 exact refusal cases pass across normal Rust 1.94/1.88
+release fixtures. Construction and revalidation each perform two fresh original
+rounds/34 authentications; original deadlines and all frozen guards stay exact.
+The supervisor and installed artifacts remain unchanged. This is representation
+and ownership proof, not SCM_RIGHTS delivery, authenticated start, armed watchdog,
+all-writer cessation or production admission. Those execution gates remain next.

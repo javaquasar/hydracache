@@ -11708,3 +11708,65 @@ durable write boundary was added, and no additional crash-matrix pass is claimed
 Installed production ancestry, real executable/environment/FD transport,
 original manager/process/cgroup, autonomous writing/watchdog and all-writer
 cessation still precede completion, later cells and production admission.
+
+### Preserve original pipes through message encoding
+
+The [next isolated slice](../testing/performance/0.74/local-runs/original-pipe-transport-20261017/README.md)
+addresses a concrete transport limitation: the old systemd property enum has
+no Unix FD variant. Extending that general transport would widen an unrelated
+execution entry. Instead, a distinct consuming preparation takes the retained
+original material and builds an opaque, unsent message. No bus connection or
+start method is available. The complete signed collector projection is checked
+again, and every one of its 35 typed worker settings must match. Legacy
+regular-file output signatures and their transport remain byte-exact.
+
+The message encodes the same original stdout/stderr write ends as Unix FD
+values, not integers that merely resemble descriptor numbers. Tests decode the
+actual message body and its owned out-of-band table, inspect pipe identities
+and flags, and reject swapped streams, duplicate stream identity, a read end,
+a regular file, changed settings and malformed headers/body. This verifies
+representation inside the process, not delivery over SCM_RIGHTS or acceptance
+by the installed manager. Binary bytes and separate streams are exercised with
+real anonymous pipes, without running the observer or a product workload.
+
+An important lifecycle consequence is visible even before sending: message
+encoding creates two additional writer copies. Closing the creator's original
+writer does not produce EOF while the message still owns its duplicate. The
+kernel read returns EOF only after the final copy closes. The retained object
+therefore drops message copies before the original material and fence. A
+construction error retains the whole owner, and later errors permanently
+refuse it. This strengthens the reason to count every creator and manager copy
+when implementing actual start; a dead worker leader cannot establish cessation.
+
+Three fresh original chains on each normal GNU release compiler pass both
+construction and subsequent revalidation. Each phase performs 34 authentications,
+two complete fresh original rounds, with the same old leaf predicates and
+unchanged origins. The phase spans are about 321–326 milliseconds on this host;
+they include live filesystem walks and bundle checks, not just marshalling.
+They are descriptive fixture observations, not a paired improvement estimate or
+an assertion that collector overhead is acceptable for measurement.
+
+All nine independent refusal cases pass per compiler: fixture entry, bundle
+failure at entry, already-refused material, missing message, later bundle,
+output, trust, fixture validation and actual progress-age expiry. Each requires
+the intended refusal rather than accepting any error. The expiry case preserves
+the exact ten-second origin and bound; the others cannot pass through an
+incidental timeout. Original intent documents remain unchanged, and the fence
+stays held until owner drop. Six healthy chains and eighteen exact refusals
+close this message prerequisite, not the execution path.
+
+The retained negative results are tooling failures, not rejected performance
+hypotheses: missing API, two incorrect test expectations, a nonexistent test
+target, an extra registry blank line and a non-executable transferred test
+binary. None requires changing a runtime predicate or a deadline. The corrected
+packet passes 190 static contracts and both compiler gates, and verifies its
+predecessor at the exact old source without rewriting old proof. Independent
+postflight confirms the supervisor and installed binary/receipt are unchanged.
+
+The next producer still must arm an autonomous watchdog before an authenticated
+send, derive remaining absolute cell/total deadlines instead of renewing the
+signed RuntimeMax ceiling, bind the original executable/effective environment,
+manager invocation/process/cgroup, and revoke all writers before releasing the
+fence. Only then can authenticated completion, later cells and their new
+SIGKILL/lost-ack matrix proceed. Preparing an unsent message is not an installed
+production start or another completed crash matrix.

@@ -1,0 +1,10 @@
+HC074-PIPE-TRANSPORT-SERVER preflight=ok supervisor_pid=8839 restarts=0
+MainPID=8839
+NRestarts=0
+ExecMainStartTimestamp=Tue 2026-10-06 15:03:40 CEST
+ActiveState=active
+SubState=running
+e81671d6-bf23-4ebf-b8fe-5dad1f45866f
+f797629f65385ebfd4d94577a43a2d1d020f71c1e841028dad7d02a51b47ad62  /opt/hydracache-perf/bin/hydracache-long-run-supervisor-074
+b314953d4deedaeaade3e24468da4844b7f13d348a5d77b8e8f41c672ff44525  /var/lib/hydracache-performance/provisioning-receipt-074.json
+HC074-PIPE-TRANSPORT-POSTFLIGHT test_processes=absent supervisor_unchanged=true installed_receipt_unchanged=true active_contexts=absent clock_changed=false product=false

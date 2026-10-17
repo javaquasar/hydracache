@@ -314,8 +314,10 @@ The exact stable supervisor and installed binary/receipt stayed unchanged.
    to actual original start. Private output preparation and
    [retained original bundle material](local-runs/original-collector-start-material-20261017/README.md)
    now have complete temporary fixture gates; installed root ancestry remains
-   unproved. Preserve legacy signatures; fulfill executable, environment, pipe FD
-   transport, collector, process and manager invocation/cgroup requirements.
+   unproved. [Unsent pipe message preparation](local-runs/original-pipe-transport-20261017/README.md)
+   also passes both compiler fixture gates without changing legacy signatures.
+   Actual FD delivery, executable/effective environment, collector, process and
+   manager invocation/cgroup requirements still need authenticated original start.
 3. Implement autonomous watchdog and exact original-cgroup revocation/emptiness.
    Missing EOF, uncertain stop, collector loss and leaked writers retain failure;
    a stopped leader or replacement unit name grants no release.

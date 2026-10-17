@@ -143,3 +143,21 @@ checks, warnings-denied Clippy/Rustdoc, scoped formatting, documentation and
 non-promotable performance-contract checks. Retain negative results and raw logs.
 Collector overhead must later pass the existing host budget before measurement
 admission; no numerical benefit or negligible overhead is assumed.
+
+## Original pipe message preparation
+
+The [separate message preparation](diagnostic-original-pipe-transport-plan-20261017.md)
+consumes original material and retains an unsent FD-bearing systemd message.
+It checks every fixed typed worker property against the signed collector
+projection and uses only the same original stdout/stderr write ends. The two
+message-owned duplicate writers close before the original material and fence.
+No evidence file descriptor enters that message, and no public extraction,
+connection, send or execution method exists.
+
+Fresh full original rounds bracket bundle and message inspection. The immutable
+RuntimeMaxUSec requirement is not a refreshed execution lease: the future
+authenticated start must derive remaining absolute deadlines and arm an
+independent watchdog before sending. Effective executable/environment, manager
+invocation, process/cgroup ownership and closure of every manager/creator writer
+remain actual-start obligations. Marshalled FD identities and temporary EOF
+tests alone cannot fulfill them or publish completion.

@@ -49,3 +49,14 @@ Starting/output SIGKILL proof or the future execution/writer crash matrix.
 Watchdog implementation, actual transport send and original writer handoff are
 the next execution slice; installed enrollment and integrated host admission
 remain open. No qualification manifest or numerical threshold changes here.
+
+## Completed message preparation
+
+Implementation `e2e92fd9` passes three complete original fixture chains and nine
+exact refusals per compiler, including a pre-refused owner and original real
+progress-age expiry. Construction and revalidation each observe 34
+authentications, two fresh full original rounds. The
+[packet](local-runs/original-pipe-transport-20261017/README.md) retains raw results,
+source/binary hashes, tooling failures and independent unchanged-host postflight.
+Only unsent message representation/ownership is closed. Authenticated delivery,
+armed watchdog, actual writer handoff and every execution/lifecycle gate remain.

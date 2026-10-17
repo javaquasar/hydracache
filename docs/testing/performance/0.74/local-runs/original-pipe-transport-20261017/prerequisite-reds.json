@@ -1,0 +1,22 @@
+{
+  "record_kind": "observed_failure_excerpts",
+  "full_process_stdout": false,
+  "baseline": "fa680f3d4220bb0e49bd730c990ff07b9edfe8fa",
+  "missing_api": {
+    "exit_code": 1,
+    "command": "cargo +1.94.0 check -p hydracache-long-run-supervisor-074 --test diagnostic_original_pipe_transport --locked",
+    "error": "E0599: no method named prepare_original_pipe_transport found for OriginalCollectorStartMaterial"
+  },
+  "first_unit_screen": {
+    "exit_code": 1,
+    "result": "3 passed; 1 failed",
+    "error": "test expected 36 settings, actual signed worker has 35",
+    "correction": "test-only count corrected to 35; runtime unchanged"
+  },
+  "second_unit_screen": {
+    "exit_code": 1,
+    "result": "3 passed; 1 failed",
+    "error": "zvariant Signature display includes tuple parentheses: (ssa(sv)a(sa(sv)))",
+    "correction": "test-only display expectation corrected; runtime unchanged"
+  }
+}

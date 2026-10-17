@@ -1,0 +1,401 @@
+{
+  "format_version": 1,
+  "kind": "original-pipe-message-preparation",
+  "baseline_commit": "fa680f3d4220bb0e49bd730c990ff07b9edfe8fa",
+  "preregister_commit": "5a3863148e57b7632121bf5dd84924b0a6f123c8",
+  "implementation_commit": "e2e92fd98abbac78ac58a0df149ab665cf3a28a7",
+  "scope": {
+    "message_preparation_complete": true,
+    "original_guards_unchanged": true,
+    "deadlines_unchanged": true,
+    "admission_closed": true,
+    "message_sent": false,
+    "authenticated_start": false,
+    "watchdog_armed": false,
+    "writer_handoff": false,
+    "all_writer_cessation": false,
+    "completion": false,
+    "later_cells": false,
+    "production_enrollment": false,
+    "installed_release_changed": false,
+    "supervisor_stopped": false,
+    "clock_changed": false,
+    "product_workload": false,
+    "qualification_changed": false,
+    "performance_claim": false,
+    "server_ready": false
+  },
+  "source_blobs": [
+    {
+      "git_blob": "009afded2626148b943f5356f73240b2e36f3b5a",
+      "path": "crates/xtask/tests/performance_contract_074.rs"
+    },
+    {
+      "git_blob": "587bc7843cafadbac8cbf4d76418a7c4989da70b",
+      "path": "crates/xtask/tests/support/performance_contract_074_start_material.rs"
+    },
+    {
+      "git_blob": "d7beb4769ff5993e1f5854937e139dea8d66ef19",
+      "path": "crates/xtask/tests/support/performance_contract_074_pipe_transport.rs"
+    },
+    {
+      "git_blob": "e908d3f2b25a196054dc743334e0afe01c697c9b",
+      "path": "docs/testing/gated-test-registry.toml"
+    },
+    {
+      "git_blob": "e3aa12ca473e9364f2f4d69cbc06583589724f33",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_start_material.rs"
+    },
+    {
+      "git_blob": "dbcfac7ab2d734c193ffb3f03b7c093fe359c4f1",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_start_material_join_tests.rs"
+    },
+    {
+      "git_blob": "a93a8a60884691d25444060b9bb829f07032d9b1",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport.rs"
+    },
+    {
+      "git_blob": "9f87a2e7d3e6fa6e7a7b7be790c65624aa8445a7",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport_tests.rs"
+    },
+    {
+      "git_blob": "ed9fe573f634531a2b93f6490a7669a97603b5d8",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport_join_tests.rs"
+    },
+    {
+      "git_blob": "7ca2e45fd2c28ebe3aa1f0bfaea291a426610066",
+      "path": "tools/long-run-supervisor-074/tests/diagnostic_original_pipe_transport.rs"
+    }
+  ],
+  "binaries": [
+    {
+      "lane": "194",
+      "bytes": 18629416,
+      "sha256": "8f31b62d578544360cecbfb483fb3971ef673a6d14f8464b2bddb3d2853f9963"
+    },
+    {
+      "sha256": "f6873fca94df31a0375ac1849a9228b2d2a911047e61edef81cfdf7053f97f9d",
+      "lane": "188",
+      "bytes": 18293896
+    }
+  ],
+  "server": {
+    "root": "/tmp/hc074-pipe-transport-20261017.b9l0y9",
+    "uid": 1000,
+    "gid": 1000,
+    "mode": "0700",
+    "boot_id": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+    "supervisor_pid": 8839,
+    "supervisor_restarts": 0,
+    "installed_binary_sha256": "f797629f65385ebfd4d94577a43a2d1d020f71c1e841028dad7d02a51b47ad62",
+    "provisioning_receipt_sha256": "b314953d4deedaeaade3e24468da4844b7f13d348a5d77b8e8f41c672ff44525"
+  },
+  "results": {
+    "healthy_chains": 6,
+    "exact_refusal_cases": 18,
+    "authentications_per_prepare_or_revalidation": 34,
+    "unit_tests_per_compiler_per_profile": 5,
+    "integration_cases_per_compiler": 41,
+    "compile_fail_examples_per_compiler": 4,
+    "static_contracts": 190,
+    "discovered_registered_gates": 183,
+    "observations": [
+      {
+        "sample": 0,
+        "wall_ns": 325223952,
+        "lane": "194",
+        "phase": "prepare"
+      },
+      {
+        "sample": 0,
+        "wall_ns": 325677595,
+        "lane": "194",
+        "phase": "validate"
+      },
+      {
+        "sample": 1,
+        "wall_ns": 321565338,
+        "lane": "194",
+        "phase": "prepare"
+      },
+      {
+        "sample": 1,
+        "wall_ns": 321475849,
+        "lane": "194",
+        "phase": "validate"
+      },
+      {
+        "sample": 2,
+        "wall_ns": 324654636,
+        "lane": "194",
+        "phase": "prepare"
+      },
+      {
+        "sample": 2,
+        "wall_ns": 324577498,
+        "lane": "194",
+        "phase": "validate"
+      },
+      {
+        "sample": 0,
+        "wall_ns": 322989412,
+        "lane": "188",
+        "phase": "prepare"
+      },
+      {
+        "sample": 0,
+        "wall_ns": 322636529,
+        "lane": "188",
+        "phase": "validate"
+      },
+      {
+        "sample": 1,
+        "wall_ns": 321434540,
+        "lane": "188",
+        "phase": "prepare"
+      },
+      {
+        "sample": 1,
+        "wall_ns": 321181895,
+        "lane": "188",
+        "phase": "validate"
+      },
+      {
+        "sample": 2,
+        "wall_ns": 321915713,
+        "lane": "188",
+        "phase": "prepare"
+      },
+      {
+        "sample": 2,
+        "wall_ns": 321748237,
+        "lane": "188",
+        "phase": "validate"
+      }
+    ],
+    "observation_scope": "descriptive correctness-fixture inclusive phase spans; not isolated marshalling, paired effect, product performance or host-overhead admission"
+  },
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "artifacts": [
+    {
+      "sha256": "181b3beb68e478bdd2c293c92cf0f01acca7897eff3a8209d5d0a39ba06a793f",
+      "path": "contract-focused.log",
+      "bytes": 400
+    },
+    {
+      "sha256": "eaa7ab67623c5b7793b764e0e9aa45f279bd0c88f3a55ea0100fa14b5805efa2",
+      "path": "contracts-first.log",
+      "bytes": 9052026
+    },
+    {
+      "sha256": "f491019e5475f93752fa9536d01a82d7ae8a0c462840be6b6ed0bda609a2abc0",
+      "path": "contracts.log",
+      "bytes": 16714
+    },
+    {
+      "sha256": "59912d972f049057013ed8772b7f029980c12f2717d9ad4fa8ae3ad0160f3a46",
+      "path": "doc-check-final.log",
+      "bytes": 167
+    },
+    {
+      "sha256": "b47dad3a59012e18b78112272b1a71752a403385908756e8db379fc9b182e5b1",
+      "path": "doc-check.log",
+      "bytes": 167
+    },
+    {
+      "sha256": "5bef1fbee863c82c9880abf330e6edbb67fbe3d91b65ac805bb7ee2dd6c1388c",
+      "path": "final-188.log",
+      "bytes": 3091
+    },
+    {
+      "sha256": "973083e45762ee4703484200043332ad627433f79507cf93b43d26dc0dc8194f",
+      "path": "final-194.log",
+      "bytes": 3037
+    },
+    {
+      "sha256": "8783a65f4cd42ba87d8ecb67395b25262942a5e31a97d4375f57d64c9bc8cec9",
+      "path": "final-checks.sh",
+      "bytes": 713
+    },
+    {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "path": "final-scoped-fmt.log",
+      "bytes": 0
+    },
+    {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "path": "fmt.log",
+      "bytes": 0
+    },
+    {
+      "sha256": "824312e59bf2478b30224b23bfa625783c9bddf9b4010726ed3e5565a0cb725c",
+      "path": "guard.sh",
+      "bytes": 2255
+    },
+    {
+      "sha256": "6280d5d098cafa5fc31b3a939ad32608ddbbd67fb8a567480c233a9a3d3c0df2",
+      "path": "healthy-188.log",
+      "bytes": 8828
+    },
+    {
+      "sha256": "b9159ab4b09b7f23840ae72c8fc76ab09b76cb004c284011e953f6529df9f21a",
+      "path": "healthy-194.log",
+      "bytes": 8830
+    },
+    {
+      "sha256": "001889c68a162470e74e6f7a70d1392c17d2081caa582f456e3d21a0fb587e71",
+      "path": "host-version.log",
+      "bytes": 332
+    },
+    {
+      "sha256": "a8aa082e8381bdeb9d05340c8e5c5ef1abeb7fb97cd00c87286390c21c94970c",
+      "path": "launch-permission-194.log",
+      "bytes": 68
+    },
+    {
+      "sha256": "1bbe0f18cae576cf9b5b5c3ed3245551ec8a9b12c083a828ffc8fae5d7c9e4da",
+      "path": "local-188.log",
+      "bytes": 12126
+    },
+    {
+      "sha256": "280dfc3b4be30bdca497d613ea34dfe4263e391c3536df81fd0a716fe43bfd1e",
+      "path": "local-194.log",
+      "bytes": 12126
+    },
+    {
+      "sha256": "ae91924d33ed85ffb28dca3981f617124b9cc45ce83cdd6a38c7caf19ac96925",
+      "path": "local-checks.sh",
+      "bytes": 1270
+    },
+    {
+      "sha256": "62bf027e632809cb6acef01030cc2d627e6ca73b482217cf408b005e84d041c5",
+      "path": "local-first-188.log",
+      "bytes": 2595
+    },
+    {
+      "sha256": "c7028ba675aedf5c51e14996f1225ad6fc772bc4e20a3f3016e08c9511168317",
+      "path": "local-first-194.log",
+      "bytes": 2595
+    },
+    {
+      "sha256": "89ec3848ab627ef7c3c05fb7a2bc6db3b4697e9a582b78ab396dd2e2a2552a9c",
+      "path": "performance-contract-final.log",
+      "bytes": 215
+    },
+    {
+      "sha256": "c6c4a6bf8b667a4f494a57ae887311ab2a804f80ba4062810adbe97abf7d6716",
+      "path": "performance-contract.log",
+      "bytes": 215
+    },
+    {
+      "sha256": "1c7ed1c683704e7062ebcff1fbfc466b500dd31ef43f18f36baa74e803c055df",
+      "path": "postflight.log",
+      "bytes": 656
+    },
+    {
+      "sha256": "f660f64c5e4d12f70a2a921351350bde293387a86f9cd787db1709c06e736d8c",
+      "path": "postflight.sh",
+      "bytes": 1024
+    },
+    {
+      "sha256": "5d7630e9411d9f9c6abc0123975def82cdeda18ca0b985489de3fbc070444a2f",
+      "path": "prerequisite-reds.json",
+      "bytes": 905
+    },
+    {
+      "sha256": "8e13f8e0622e12a348e4f404dd6dc3c3fe0b1c0847e1fbdef8d3f295422883e6",
+      "path": "prior-proof.log",
+      "bytes": 638
+    },
+    {
+      "sha256": "3242cab40c53b5d395910a1783de231f0d1a5e1f0d753b3bd40353ec5a335297",
+      "path": "protocol-reference.md",
+      "bytes": 989
+    },
+    {
+      "sha256": "a54af317b3e013bf45d9b964b1f3e17ce55b03e2177d5cd9b5e7001c2757b7b7",
+      "path": "README.md",
+      "bytes": 8344
+    },
+    {
+      "sha256": "53855c181758290d7a1a7b98fd33961fa97f16533a7537c1dfff1d4ac746e913",
+      "path": "refusals-188.log",
+      "bytes": 1682
+    },
+    {
+      "sha256": "87fc415dd5ea13de6b9023612d8061e89bf6164d27e43385a0a93b34cfcde41a",
+      "path": "refusals-194.log",
+      "bytes": 1682
+    },
+    {
+      "sha256": "9f5f0157b5b7c1a4dd6fda1d0edc50220a1a6ed224637a48108b28d1ebfa6527",
+      "path": "registry.log",
+      "bytes": 275
+    },
+    {
+      "sha256": "c39736f45bdfb50d8872ae716368d696f880253bbe251edf6ff52c843e4dc93d",
+      "path": "run-188.log",
+      "bytes": 10946
+    },
+    {
+      "sha256": "128f4c000ba4a520e54f87ccde7d674a967e8223bc9d06c37b74cf64e6ae11f4",
+      "path": "run-194.log",
+      "bytes": 10948
+    },
+    {
+      "sha256": "3bc7439cd5c47da39c90806fd2a3eb28f9f416f00e911012eea248750e022814",
+      "path": "run-first-194.log",
+      "bytes": 198
+    },
+    {
+      "sha256": "b6f3b7f95f1ccd6730b72e4f2a4fde6159ed45592870efb2fcd00eb2581316f7",
+      "path": "run.sh",
+      "bytes": 1699
+    },
+    {
+      "sha256": "ed46f861f1453334d9a35ae7e62a5c00eb4d6fbb2f75c5ae7c16d0900a1f3d0e",
+      "path": "setup.log",
+      "bytes": 962
+    },
+    {
+      "sha256": "02659fffb515a7fe17137aa83cc2ad501de8a13dac70fc4e05b2c0cd4b005a38",
+      "path": "setup.sh",
+      "bytes": 546
+    },
+    {
+      "sha256": "2d254524ec424f4304ec7b43f01f546a96a571e14cc18728f8b23f10ffeaadc4",
+      "path": "ship-guard-expected-red.log",
+      "bytes": 499
+    },
+    {
+      "sha256": "52dbe589bd3a034ce1ad8036319038f2f5507ad95baa1b603daed28bb670e932",
+      "path": "verify-prior.ps1",
+      "bytes": 2884
+    },
+    {
+      "sha256": "f0e36f4b8efa9444d80dcc2b7625943205d89bfcbc4ddadda9a14909065e0396",
+      "path": "verify.ps1",
+      "bytes": 7857
+    },
+    {
+      "sha256": "1b7da7bf265d99955cbb92ce11fd6f14488cfd04018311a95680891833ee5c49",
+      "path": "windows-check.log",
+      "bytes": 286
+    },
+    {
+      "sha256": "5228f17349c5821edf260e97abe225f8fe57f520f25c62dcb872e29b45b6c95b",
+      "path": "windows-clippy.log",
+      "bytes": 979
+    },
+    {
+      "sha256": "623d14cab54226529ebc930a822818545a8e32ce13cde1e5faf000f158945a1c",
+      "path": "windows-msrv-check.log",
+      "bytes": 287
+    },
+    {
+      "sha256": "ee7b3ebcf18a49ccde542a51308cdc8a0565d60041fa9a5dc643aaabb22a56c7",
+      "path": "windows-msrv-clippy.log",
+      "bytes": 286
+    }
+  ]
+}

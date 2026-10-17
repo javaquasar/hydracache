@@ -99,3 +99,9 @@ complete rounds/34 authentications. The complete
 all three source variants, the first red result and independent postflight.
 Only this temporary material prerequisite is closed. Installed root ancestry,
 authenticated start and every remaining execution/writer/lifecycle gate stay open.
+
+The subsequent [pipe message slice](diagnostic-original-pipe-transport-plan-20261017.md)
+now adds a distinct consuming preparation API without modifying this material
+algorithm. It holds an unsent Unix-FD message rather than converting the signed
+collector requirements to the legacy file-output transport. Watchdog arming and
+an authenticated send/start producer remain separate prerequisites.

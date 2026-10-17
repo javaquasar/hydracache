@@ -1,0 +1,5 @@
+Source capsule exact: candidate.patch paths=10 material_runtime=e73a10ce39afe2e166d0f9adb42970f7b6f602bf
+Source capsule exact: attribution.patch paths=10 material_runtime=e73a10ce39afe2e166d0f9adb42970f7b6f602bf
+Source capsule exact: candidate-v2.patch paths=10 material_runtime=1577346592bec88d3cfbc0f64c390e9dee01b5c3
+Original material v2 verified: 6 healthy chains, 26 exact refusal cases, first red retained, original live guards/deadlines exact; authenticated start and production admission CLOSED
+Prior material proof verified at exact immutable source fa680f3d4220bb0e49bd730c990ff07b9edfe8fa; active checkout/index unchanged
