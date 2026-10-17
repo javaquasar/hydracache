@@ -12095,3 +12095,40 @@ cloning and deserialization unavailable to production callers. No service route
 uses this type to start a worker. A private retained timer cannot terminate a
 writer when its observer dies: independent guardian lifetime, authenticated
 original delivery and P2/P3 cessation of every writer must precede that authority.
+
+## Process loss evidence follows the retained owner
+
+The [new process harness](../testing/performance/0.74/local-runs/fixed-grouped-process-loss-20261017/README.md)
+tests the production grouped owner's shared construction body through its closed
+fixture entry. Similar method names and an earlier prototype's green crash matrix
+are not a certificate for a different owner. Here the actual new type must retain
+the original fence, files, message writer duplicates and timer at each selected
+interruption point. Static comparisons keep its runtime and the older harness
+exact; only private test namespaces and the constructor differ.
+
+The six cuts cover five internal acquisition checkpoints and successful return
+before a private ACK. Each case pins the exact unreaped child with pidfd, checks
+lock exclusion and independently inspects the sealed original records and empty
+outputs before termination. Kernel terminal readiness and wait status signal 9
+distinguish actual SIGKILL from a logical refusal. Two separately started
+inspectors must then reject existing history while preserving the checked bytes
+and identity/mtime/ctime inventory. Normal controls finish full revalidation and
+owner drop, either emitting exactly one ACK or deliberately omitting it at zero
+exit. The latter is missing return notification, not manager delivery evidence.
+
+That lock result has a precise execution limit. A killed nonexecuting preparer
+must release its kernel resources and leave history ineligible for reuse. During
+actual execution, by contrast, the fence must remain held independently of the
+controller while any worker or collector can still write. The private timer does
+not enforce that lifetime. Autonomous guardian ownership and proven cessation of
+all writers therefore precede any future original send/start capability; this
+matrix does not turn ordinary process cleanup into that stronger guarantee.
+
+Both normal GNU release compiler cohorts pass three repeats of the declared
+six-cut matrix. The main cohorts contain 36 SIGKILLs, six ordinary controls and
+six zero-exit omitted-ACK controls. A separate first screen adds one SIGKILL and
+one ordinary control; together all 50 cases produce 100 fresh-process refusals
+without changing the checked retained history. All 199 static contracts and the
+independent host postflight pass with the original supervisor and installed
+artifacts unchanged. This closes the new owner's selected nonexecuting process
+cuts. It is neither a product speedup result nor authenticated execution admission.

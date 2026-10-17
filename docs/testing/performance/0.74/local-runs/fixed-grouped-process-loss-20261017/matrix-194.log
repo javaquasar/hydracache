@@ -1,0 +1,81 @@
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::crash_tests::fixed_grouped_process_tests::original_fixed_grouped_process_matrix ... HC074-FIXED-GROUPED-INSPECTION repeat=1 stage=returned-unacknowledged mode=kill inspection=1 refused=true unchanged=true
+HC074-FIXED-GROUPED-INSPECTION repeat=1 stage=returned-unacknowledged mode=kill inspection=2 refused=true unchanged=true
+HC074-FIXED-GROUPED-PROCESS seed=0x07406c17 repeat=1 stage=returned-unacknowledged mode=kill sigkill=true acks=0 held=true unchanged=true send=false
+HC074-FIXED-GROUPED-INSPECTION repeat=1 stage=bound mode=kill inspection=1 refused=true unchanged=true
+HC074-FIXED-GROUPED-INSPECTION repeat=1 stage=bound mode=kill inspection=2 refused=true unchanged=true
+HC074-FIXED-GROUPED-PROCESS seed=0x07406c17 repeat=1 stage=bound mode=kill sigkill=true acks=0 held=true unchanged=true send=false
+HC074-FIXED-GROUPED-INSPECTION repeat=1 stage=message mode=kill inspection=1 refused=true unchanged=true
+HC074-FIXED-GROUPED-INSPECTION repeat=1 stage=message mode=kill inspection=2 refused=true unchanged=true
+HC074-FIXED-GROUPED-PROCESS seed=0x07406c17 repeat=1 stage=message mode=kill sigkill=true acks=0 held=true unchanged=true send=false
+HC074-FIXED-GROUPED-INSPECTION repeat=1 stage=opened mode=kill inspection=1 refused=true unchanged=true
+HC074-FIXED-GROUPED-INSPECTION repeat=1 stage=opened mode=kill inspection=2 refused=true unchanged=true
+HC074-FIXED-GROUPED-PROCESS seed=0x07406c17 repeat=1 stage=opened mode=kill sigkill=true acks=0 held=true unchanged=true send=false
+HC074-FIXED-GROUPED-INSPECTION repeat=1 stage=armed mode=kill inspection=1 refused=true unchanged=true
+HC074-FIXED-GROUPED-INSPECTION repeat=1 stage=armed mode=kill inspection=2 refused=true unchanged=true
+HC074-FIXED-GROUPED-PROCESS seed=0x07406c17 repeat=1 stage=armed mode=kill sigkill=true acks=0 held=true unchanged=true send=false
+HC074-FIXED-GROUPED-INSPECTION repeat=1 stage=loaded mode=kill inspection=1 refused=true unchanged=true
+HC074-FIXED-GROUPED-INSPECTION repeat=1 stage=loaded mode=kill inspection=2 refused=true unchanged=true
+HC074-FIXED-GROUPED-PROCESS seed=0x07406c17 repeat=1 stage=loaded mode=kill sigkill=true acks=0 held=true unchanged=true send=false
+HC074-FIXED-GROUPED-INSPECTION repeat=1 stage=returned-unacknowledged mode=control inspection=1 refused=true unchanged=true
+HC074-FIXED-GROUPED-INSPECTION repeat=1 stage=returned-unacknowledged mode=control inspection=2 refused=true unchanged=true
+HC074-FIXED-GROUPED-PROCESS seed=0x07406c17 repeat=1 stage=returned-unacknowledged mode=control sigkill=false acks=1 held=true unchanged=true send=false
+HC074-FIXED-GROUPED-INSPECTION repeat=1 stage=returned-unacknowledged mode=ack-lost inspection=1 refused=true unchanged=true
+HC074-FIXED-GROUPED-INSPECTION repeat=1 stage=returned-unacknowledged mode=ack-lost inspection=2 refused=true unchanged=true
+HC074-FIXED-GROUPED-PROCESS seed=0x07406c17 repeat=1 stage=returned-unacknowledged mode=ack-lost sigkill=false acks=0 held=true unchanged=true send=false
+HC074-FIXED-GROUPED-PROCESS-SUMMARY seed=0x07406c17 repeat=1 sigkills=6 controls=1 lost_acks=1 inspections=16 admission=false
+HC074-FIXED-GROUPED-INSPECTION repeat=2 stage=returned-unacknowledged mode=kill inspection=1 refused=true unchanged=true
+HC074-FIXED-GROUPED-INSPECTION repeat=2 stage=returned-unacknowledged mode=kill inspection=2 refused=true unchanged=true
+HC074-FIXED-GROUPED-PROCESS seed=0x07406c17 repeat=2 stage=returned-unacknowledged mode=kill sigkill=true acks=0 held=true unchanged=true send=false
+HC074-FIXED-GROUPED-INSPECTION repeat=2 stage=bound mode=kill inspection=1 refused=true unchanged=true
+HC074-FIXED-GROUPED-INSPECTION repeat=2 stage=bound mode=kill inspection=2 refused=true unchanged=true
+HC074-FIXED-GROUPED-PROCESS seed=0x07406c17 repeat=2 stage=bound mode=kill sigkill=true acks=0 held=true unchanged=true send=false
+HC074-FIXED-GROUPED-INSPECTION repeat=2 stage=message mode=kill inspection=1 refused=true unchanged=true
+HC074-FIXED-GROUPED-INSPECTION repeat=2 stage=message mode=kill inspection=2 refused=true unchanged=true
+HC074-FIXED-GROUPED-PROCESS seed=0x07406c17 repeat=2 stage=message mode=kill sigkill=true acks=0 held=true unchanged=true send=false
+HC074-FIXED-GROUPED-INSPECTION repeat=2 stage=opened mode=kill inspection=1 refused=true unchanged=true
+HC074-FIXED-GROUPED-INSPECTION repeat=2 stage=opened mode=kill inspection=2 refused=true unchanged=true
+HC074-FIXED-GROUPED-PROCESS seed=0x07406c17 repeat=2 stage=opened mode=kill sigkill=true acks=0 held=true unchanged=true send=false
+HC074-FIXED-GROUPED-INSPECTION repeat=2 stage=armed mode=kill inspection=1 refused=true unchanged=true
+HC074-FIXED-GROUPED-INSPECTION repeat=2 stage=armed mode=kill inspection=2 refused=true unchanged=true
+HC074-FIXED-GROUPED-PROCESS seed=0x07406c17 repeat=2 stage=armed mode=kill sigkill=true acks=0 held=true unchanged=true send=false
+HC074-FIXED-GROUPED-INSPECTION repeat=2 stage=loaded mode=kill inspection=1 refused=true unchanged=true
+HC074-FIXED-GROUPED-INSPECTION repeat=2 stage=loaded mode=kill inspection=2 refused=true unchanged=true
+HC074-FIXED-GROUPED-PROCESS seed=0x07406c17 repeat=2 stage=loaded mode=kill sigkill=true acks=0 held=true unchanged=true send=false
+HC074-FIXED-GROUPED-INSPECTION repeat=2 stage=returned-unacknowledged mode=control inspection=1 refused=true unchanged=true
+HC074-FIXED-GROUPED-INSPECTION repeat=2 stage=returned-unacknowledged mode=control inspection=2 refused=true unchanged=true
+HC074-FIXED-GROUPED-PROCESS seed=0x07406c17 repeat=2 stage=returned-unacknowledged mode=control sigkill=false acks=1 held=true unchanged=true send=false
+HC074-FIXED-GROUPED-INSPECTION repeat=2 stage=returned-unacknowledged mode=ack-lost inspection=1 refused=true unchanged=true
+HC074-FIXED-GROUPED-INSPECTION repeat=2 stage=returned-unacknowledged mode=ack-lost inspection=2 refused=true unchanged=true
+HC074-FIXED-GROUPED-PROCESS seed=0x07406c17 repeat=2 stage=returned-unacknowledged mode=ack-lost sigkill=false acks=0 held=true unchanged=true send=false
+HC074-FIXED-GROUPED-PROCESS-SUMMARY seed=0x07406c17 repeat=2 sigkills=6 controls=1 lost_acks=1 inspections=16 admission=false
+HC074-FIXED-GROUPED-INSPECTION repeat=3 stage=returned-unacknowledged mode=kill inspection=1 refused=true unchanged=true
+HC074-FIXED-GROUPED-INSPECTION repeat=3 stage=returned-unacknowledged mode=kill inspection=2 refused=true unchanged=true
+HC074-FIXED-GROUPED-PROCESS seed=0x07406c17 repeat=3 stage=returned-unacknowledged mode=kill sigkill=true acks=0 held=true unchanged=true send=false
+HC074-FIXED-GROUPED-INSPECTION repeat=3 stage=bound mode=kill inspection=1 refused=true unchanged=true
+HC074-FIXED-GROUPED-INSPECTION repeat=3 stage=bound mode=kill inspection=2 refused=true unchanged=true
+HC074-FIXED-GROUPED-PROCESS seed=0x07406c17 repeat=3 stage=bound mode=kill sigkill=true acks=0 held=true unchanged=true send=false
+HC074-FIXED-GROUPED-INSPECTION repeat=3 stage=message mode=kill inspection=1 refused=true unchanged=true
+HC074-FIXED-GROUPED-INSPECTION repeat=3 stage=message mode=kill inspection=2 refused=true unchanged=true
+HC074-FIXED-GROUPED-PROCESS seed=0x07406c17 repeat=3 stage=message mode=kill sigkill=true acks=0 held=true unchanged=true send=false
+HC074-FIXED-GROUPED-INSPECTION repeat=3 stage=opened mode=kill inspection=1 refused=true unchanged=true
+HC074-FIXED-GROUPED-INSPECTION repeat=3 stage=opened mode=kill inspection=2 refused=true unchanged=true
+HC074-FIXED-GROUPED-PROCESS seed=0x07406c17 repeat=3 stage=opened mode=kill sigkill=true acks=0 held=true unchanged=true send=false
+HC074-FIXED-GROUPED-INSPECTION repeat=3 stage=armed mode=kill inspection=1 refused=true unchanged=true
+HC074-FIXED-GROUPED-INSPECTION repeat=3 stage=armed mode=kill inspection=2 refused=true unchanged=true
+HC074-FIXED-GROUPED-PROCESS seed=0x07406c17 repeat=3 stage=armed mode=kill sigkill=true acks=0 held=true unchanged=true send=false
+HC074-FIXED-GROUPED-INSPECTION repeat=3 stage=loaded mode=kill inspection=1 refused=true unchanged=true
+HC074-FIXED-GROUPED-INSPECTION repeat=3 stage=loaded mode=kill inspection=2 refused=true unchanged=true
+HC074-FIXED-GROUPED-PROCESS seed=0x07406c17 repeat=3 stage=loaded mode=kill sigkill=true acks=0 held=true unchanged=true send=false
+HC074-FIXED-GROUPED-INSPECTION repeat=3 stage=returned-unacknowledged mode=control inspection=1 refused=true unchanged=true
+HC074-FIXED-GROUPED-INSPECTION repeat=3 stage=returned-unacknowledged mode=control inspection=2 refused=true unchanged=true
+HC074-FIXED-GROUPED-PROCESS seed=0x07406c17 repeat=3 stage=returned-unacknowledged mode=control sigkill=false acks=1 held=true unchanged=true send=false
+HC074-FIXED-GROUPED-INSPECTION repeat=3 stage=returned-unacknowledged mode=ack-lost inspection=1 refused=true unchanged=true
+HC074-FIXED-GROUPED-INSPECTION repeat=3 stage=returned-unacknowledged mode=ack-lost inspection=2 refused=true unchanged=true
+HC074-FIXED-GROUPED-PROCESS seed=0x07406c17 repeat=3 stage=returned-unacknowledged mode=ack-lost sigkill=false acks=0 held=true unchanged=true send=false
+HC074-FIXED-GROUPED-PROCESS-SUMMARY seed=0x07406c17 repeat=3 sigkills=6 controls=1 lost_acks=1 inspections=16 admission=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1064 filtered out; finished in 311.40s
+

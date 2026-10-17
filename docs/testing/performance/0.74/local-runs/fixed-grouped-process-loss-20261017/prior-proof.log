@@ -1,0 +1,4 @@
+HC074-CAPSULE name=implementation.patch files=10 exact=true current=False
+HC074-CAPSULE name=origin-harness-fix.patch files=1 exact=true current=True
+HC074-FIXED-GROUPED-EVIDENCE verified=true healthy=7 persistent_refusals=28 origin_refusals=4 guardian=false send=false admission=false
+Prior fixed grouped evidence verified at exact source 49db0f7f0b25089f72f9459f5d2fd5880d122e44; active index unchanged

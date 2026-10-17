@@ -268,13 +268,33 @@ capability exists. The entry is not connected to a service dispatch route.
 
 The new owner's shared fixture schedule passes one screen and six repeated
 healthy chains on both compilers. This is not a successful root-owned fixed
-installation or reuse of the previous SIGKILL certificate for a new type. Its
-process-loss/return-ACK matrix, independent watchdog, authenticated original
-send/start and P2/P3 all-writer cessation remain distinct prerequisites before
-completion, later cells, installation or measurement admission.
+installation or reuse of the previous SIGKILL certificate for a new type. The
+separate process-loss packet below covers this new owner. Independent watchdog,
+authenticated original send/start and P2/P3 all-writer cessation remain distinct
+prerequisites before completion, later cells, installation or measurement admission.
 
 Both compiler cohorts pass 28 persistent-drift/expiry cases in total. A separate
 two-line origin-test correction retains the first negative and original binaries;
 the corrected controls prove four expected refusals across both compilers:
 missing fixed install without fallback and fixture-to-production revalidation.
 All 198 static contracts pass. No fixture success enrolls root-owned installation.
+
+## Process loss for the fixed grouped owner
+
+The [new owner matrix](local-runs/fixed-grouped-process-loss-20261017/README.md)
+keeps the shared production construction body and all earlier runtime sources
+exact. Its private child harness differs from the old candidate harness only in
+namespace, constructor and one exact formatting fold. New static guards cover
+that equivalence and four negative mutations; all 199 contracts pass.
+
+The first screen and both three-repeat compiler matrices pass: 36 SIGKILLs,
+six ordinary controls and six zero-exit omitted-ACK controls in the main cohorts.
+Including the screen there are 50 cases and 100 fresh-process refusals, with
+checked original records/metadata unchanged and flock reacquirable after terminal
+wait. The ACK is a harness-only return notice. No manager delivery occurs.
+
+This closes the selected nonexecuting acquisition/return cuts for the new type,
+not fixed-root enrollment, arbitrary syscall/power loss or actual execution.
+During future execution a guardian must retain the fence independently of the
+controller until all worker/collector writers cease. The private timer and this
+process cleanup proof do not fulfill that stronger P2/P3 obligation.

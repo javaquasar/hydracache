@@ -1,0 +1,2 @@
+HC074-CAPSULE name=instrumentation.patch files=4 exact=true current=True
+HC074-FIXED-GROUPED-PROCESS-VERIFIER-TEST accepted=1 refused=9 passed=true

@@ -3746,9 +3746,18 @@ policy and identity; fixture loading/callbacks are absent from non-test builds.
 Seven shared-body healthy controls pass with the original 300/60/10-second bounds
 and complete subsequent validation. The old references and validator bodies stay
 unchanged. This type has no send/start, descriptor extraction, rearm or service
-route. Its own process-loss matrix, autonomous guardian and all-writer cessation
-remain prerequisites; no fixed production install or product pilot is admitted.
+route. Autonomous guardian and all-writer cessation remain prerequisites;
+no fixed production install or product pilot is admitted.
 Both compiler cohorts also pass 28 persistent-drift/expiry cases and four
 expected origin refusals. The latter use a separately identified two-line test
 correction; the original negative and timing cohort are retained. All 198 static
 contracts and local current/MSRV checks pass without deadline changes.
+
+The [fixed grouped owner process-loss packet](local-runs/fixed-grouped-process-loss-20261017/README.md)
+now supplies that new type's own selected six-cut matrix. Both compilers pass
+three repeats: 36 SIGKILLs, six ordinary controls and six zero-exit ACK omissions.
+The separate first screen brings the packet to 50 cases and 100 fresh inspector
+refusals. All 199 static contracts pass, production bodies and time origins stay
+exact, and independent host postflight preserves the supervisor and artifacts.
+Actual manager delivery/ACK recovery, independent guardian, P2/P3 writer cessation
+and later lifecycle remain closed; the private timer is not a watchdog.

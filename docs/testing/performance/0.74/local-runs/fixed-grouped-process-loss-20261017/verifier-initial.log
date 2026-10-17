@@ -1,0 +1,5 @@
+ParserError: C:\Workspace\prj\jq\cashe\hydracache-074\docs\testing\performance\0.74\local-runs\fixed-grouped-process-loss-20261017\verify.ps1:151
+Line |
+ 151 |  … anifest.implementation_source -cmatch '^[0-9a-f]{40}) 'source cohort'
+     |                                                           ~~~~~~
+     | Unexpected token 'source' in expression or statement.

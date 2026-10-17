@@ -1,0 +1,235 @@
+rustc 1.94.0 (4a4ef493e 2026-03-02)
+binary: rustc
+commit-hash: 4a4ef493e3a1488c6e321570238084b38948f6db
+commit-date: 2026-03-02
+host: x86_64-unknown-linux-gnu
+release: 1.94.0
+LLVM version: 21.1.8
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `release` profile [optimized] target(s) in 2m 59s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/release/deps/hydracache_long_run_supervisor_074-171a8ee7d3705ebd)
+
+running 5 tests
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::crash_tests::fixed_grouped_process_tests::original_fixed_grouped_process_matrix ... ignored, manual nonroot grouped preparation SIGKILL matrix and synthetic return ACK loss
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::crash_tests::fixed_grouped_process_tests::original_fixed_grouped_process_screen ... ignored, manual nonroot grouped process screen; exact owned SIGKILL and ordinary ACK control
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::crash_tests::fixed_grouped_process_tests::original_fixed_grouped_process_child ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::crash_tests::fixed_grouped_process_tests::fixed_grouped_process_ack_codec_distinguishes_absent_exact_and_duplicate ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::crash_tests::fixed_grouped_process_tests::fixed_grouped_process_protocol_rejects_invalid_or_ambiguous_records ... ok
+
+test result: ok. 3 passed; 0 failed; 2 ignored; 0 measured; 1060 filtered out; finished in 0.00s
+
+HC074-FIXED-GROUPED-PROCESS-BUILD lane=194 completed=true
+    Finished `release` profile [optimized] target(s) in 3.27s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/release/deps/hydracache_long_run_supervisor_074-171a8ee7d3705ebd)
+
+running 4 tests
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::tests::fixed_grouped_alarm_bounds_exclude_equality_overflow_and_later_starting_renewal ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::tests::fixed_grouped_alarm_seeded_bounds_match_checked_reference_without_time_refresh ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::tests::fixed_grouped_alarm_kernel_flags_clock_interval_disarm_and_extension_refuse ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::tests::fixed_grouped_alarm_kernel_expiry_is_readable_and_validation_does_not_consume_or_rearm ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 1061 filtered out; finished in 0.10s
+
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Finished `release` profile [optimized] target(s) in 3.22s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/release/deps/hydracache_long_run_supervisor_074-171a8ee7d3705ebd)
+
+running 4 tests
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::safety_alarm::tests::original_alarm_bounds_exclude_equality_overflow_and_later_starting_renewal ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::safety_alarm::tests::original_alarm_seeded_bounds_match_checked_reference_without_time_refresh ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::safety_alarm::tests::original_alarm_kernel_flags_clock_interval_disarm_and_extension_refuse ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::safety_alarm::tests::original_alarm_kernel_expiry_is_readable_and_validation_does_not_consume_or_rearm ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 1061 filtered out; finished in 0.10s
+
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on shared package cache
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 06s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 5 tests
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::crash_tests::fixed_grouped_process_tests::original_fixed_grouped_process_matrix ... ignored, manual nonroot grouped preparation SIGKILL matrix and synthetic return ACK loss
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::crash_tests::fixed_grouped_process_tests::original_fixed_grouped_process_screen ... ignored, manual nonroot grouped process screen; exact owned SIGKILL and ordinary ACK control
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::crash_tests::fixed_grouped_process_tests::original_fixed_grouped_process_child ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::crash_tests::fixed_grouped_process_tests::fixed_grouped_process_protocol_rejects_invalid_or_ambiguous_records ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::crash_tests::fixed_grouped_process_tests::fixed_grouped_process_ack_codec_distinguishes_absent_exact_and_duplicate ... ok
+
+test result: ok. 3 passed; 0 failed; 2 ignored; 0 measured; 1060 filtered out; finished in 0.00s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.92s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 4 tests
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::tests::fixed_grouped_alarm_bounds_exclude_equality_overflow_and_later_starting_renewal ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::tests::fixed_grouped_alarm_seeded_bounds_match_checked_reference_without_time_refresh ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::tests::fixed_grouped_alarm_kernel_flags_clock_interval_disarm_and_extension_refuse ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::tests::fixed_grouped_alarm_kernel_expiry_is_readable_and_validation_does_not_consume_or_rearm ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 1061 filtered out; finished in 0.10s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.87s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 4 tests
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::safety_alarm::tests::original_alarm_bounds_exclude_equality_overflow_and_later_starting_renewal ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::safety_alarm::tests::original_alarm_seeded_bounds_match_checked_reference_without_time_refresh ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::safety_alarm::tests::original_alarm_kernel_flags_clock_interval_disarm_and_extension_refuse ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::safety_alarm::tests::original_alarm_kernel_expiry_is_readable_and_validation_does_not_consume_or_rearm ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 1061 filtered out; finished in 0.10s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.88s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::crash_tests::original_output_join_process_protocol_accepts_only_bounded_expected_records ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1064 filtered out; finished in 0.00s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.22s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 6 tests
+test diagnostic_ipc::validation_trace_tests::validation_trace_disabled_and_success_do_not_invent_time_refusals ... ok
+test diagnostic_ipc::validation_trace_tests::validation_trace_actual_authentication_early_error_is_counted_without_signature ... ok
+test diagnostic_ipc::validation_trace_tests::validation_trace_first_time_facts_are_not_replaced_or_authority ... ok
+test diagnostic_ipc::validation_trace_tests::validation_trace_independent_threads_keep_numeric_reports_separate ... ok
+HC074-VALIDATION-COST Report { stages: [Stats { wall_ns: 112703, authentication_calls: 1, authentication_ns: 110472, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }], first_time: Some(TimeRefusal { stage: Unassigned, operation: Reserve, issued: 1, expires: 61, now: 0 }), time_refusals: 1 }
+test diagnostic_ipc::validation_trace_tests::validation_trace_nested_unwind_and_ambient_scope_restore_original_frame ... ok
+test diagnostic_ipc::validation_trace_tests::validation_trace_actual_signed_window_and_signature_errors_are_distinct ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 1059 filtered out; finished in 0.05s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.84s
+     Running tests/diagnostic_collector_starting_publication.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_collector_starting_publication-68b31164f0a7196c)
+
+running 1 test
+test collector_starting_publication_consumes_only_original_frame ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/diagnostic_fixed_grouped_preparation.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_fixed_grouped_preparation-009a8b271f386288)
+
+running 1 test
+test fixed_grouped_preparation_consumes_original_sinks_without_replacement_inputs ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/diagnostic_intent_projection.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_intent_projection-fa194d21ccbab1d0)
+
+running 30 tests
+test collector_intent_requires_a_distinct_output_projection ... ok
+test boot_change_never_rebinds_an_original_worker ... ok
+test authenticated_worker_trust_drift_revokes_original_not_just_wrapper ... ok
+test body_budget_nested_schema_and_hash_encoding_are_strict ... ok
+test checked_intent_refuses_original_state_peer_trust_and_packet_drift_stickily ... ok
+test collector_intent_tests::collector_original_worker_refusal_survives_guard_drop ... ok
+test collector_intent_tests::collector_projection_removes_regular_file_access_and_preserves_other_properties ... ok
+test collector_intent_tests::collector_and_legacy_domains_and_output_digests_cannot_be_relabelled ... ok
+test collector_intent_tests::collector_reserved_state_and_budget_grammar_cannot_be_relaxed ... ok
+test collector_intent_tests::collector_document_budget_canonical_schema_and_duplicate_fields_refuse ... ok
+test collector_intent_tests::collector_original_guard_latches_packet_state_peer_and_time_drift ... ok
+test collector_intent_tests::collector_strict_signature_key_and_encoding ... ok
+test collector_intent_tests::collector_four_modeled_cells_keep_distinct_exact_pins ... ok
+test collector_intent_tests::collector_signed_field_mutations_are_not_production_authority ... ok
+test collector_intent_tests::collector_every_output_requirement_is_hashed_not_supplied_as_authority ... ok
+test controller_and_peer_allowlists_cannot_be_supplied_by_the_envelope ... ok
+test collector_intent_tests::collector_window_is_bounded_and_expiry_exclusive ... ok
+test controller_fields_and_bounded_configuration_fail_closed ... ok
+test original_worker_refusal_survives_intent_drop_and_restoration ... ok
+test malformed_noncanonical_unknown_duplicate_and_oversize_refuse ... ok
+test state_hash_includes_every_field_and_unit_hash_changes_with_budget ... ok
+test state_projection_rejects_interrupted_expired_and_admission_states ... ok
+test independent_concurrent_checks_are_not_a_replay_ledger ... ok
+test collector_intent_tests::collector_principal_configuration_stays_independent_and_bounded ... ok
+test signature_domain_key_and_lowercase_encoding_are_strict ... ok
+test signed_binding_mutations_are_not_authority ... ok
+test four_cells_bind_exact_projection_without_execution ... ok
+test window_is_positive_bounded_and_expiry_exclusive ... ok
+test seeded_state_mutations_bind_full_state_not_only_cell ... ok
+test collector_intent_tests::collector_seeded_full_state_binding_and_independent_concurrency ... ok
+
+test result: ok. 30 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.88s
+
+     Running tests/diagnostic_original_collector_pipes.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_original_collector_pipes-b4a78c75d71b1cf3)
+
+running 1 test
+test original_pipe_api_consumes_acknowledged_starting ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/diagnostic_original_output_join.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_original_output_join-b68be85bf499e6bc)
+
+running 1 test
+test original_output_join_is_consuming_without_asserted_inputs ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/diagnostic_original_pipe_transport.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_original_pipe_transport-d2bd960b9d9cda4c)
+
+running 1 test
+test original_pipe_transport_consumes_material_without_replacement_inputs ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/diagnostic_original_start_material.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_original_start_material-470e6c28666b9e19)
+
+running 1 test
+test original_start_material_consumes_outputs_without_replacement_inputs ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/diagnostic_start_consent.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_start_consent-0a2c99f80a9967e2)
+
+running 7 tests
+test consent_contract_is_not_heartbeat_or_legacy_intent ... ok
+test consent_first_cell_time_epoch_and_integer_bounds_are_strict ... ok
+test consent_canonical_unknown_duplicate_partial_and_budget_refusals ... ok
+test consent_independent_concurrent_signature_checks_share_no_authority ... ok
+test consent_roundtrip_signature_and_repeat_inspection_are_data_only ... ok
+test consent_domains_and_old_messages_cannot_substitute ... ok
+test consent_seeded_all_signed_leaves_refuse_mutation ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.37s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.98s
+   Doc-tests hydracache_long_run_supervisor_074
+
+running 7 tests
+test tools/long-run-supervisor-074/src/diagnostic_original_grouped_preparation.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::OriginalGroupedPreparation (line 230) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_original_grouped_preparation.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::OriginalGroupedPreparation (line 222) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_original_grouped_preparation.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::OriginalGroupedPreparation (line 218) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_original_grouped_preparation.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::OriginalGroupedPreparation (line 234) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_original_grouped_preparation.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::OriginalGroupedPreparation (line 214) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_original_grouped_preparation.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::OriginalGroupedPreparation (line 238) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_original_grouped_preparation.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::OriginalGroupedPreparation (line 226) - compile fail ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 225 filtered out; finished in 0.40s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.39s
+   Doc-tests hydracache_long_run_supervisor_074
+
+running 1 test
+test tools/long-run-supervisor-074/src/diagnostic_original_grouped_preparation.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::OriginalCollectorSinks<'join,'storage,'o,'t,'r,'c,'b,'s,'a,'p>::prepare_original_grouped (line 441) - compile fail ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 231 filtered out; finished in 0.10s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.69s
+   Doc-tests hydracache_long_run_supervisor_074
+
+running 5 tests
+test tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::OriginalCollectorPipeTransport (line 236) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::OriginalCollectorPipeTransport (line 224) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::OriginalCollectorPipeTransport (line 242) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::OriginalCollectorPipeTransport (line 232) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::OriginalCollectorPipeTransport (line 228) - compile fail ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 227 filtered out; finished in 0.17s
+
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 32.62s
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 34.45s
+HC074-FIXED-GROUPED-PROCESS-CHECKS lane=194 completed=true
