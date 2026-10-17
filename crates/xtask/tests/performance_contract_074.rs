@@ -2,6 +2,9 @@ use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
 
+#[path = "support/performance_contract_074_fixed_grouped.rs"]
+mod fixed_grouped;
+
 #[path = "support/performance_contract_074_safety_alarm.rs"]
 mod safety_alarm;
 

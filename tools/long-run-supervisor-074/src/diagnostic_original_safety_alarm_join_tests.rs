@@ -1,4 +1,6 @@
 use super::*;
+#[path = "diagnostic_fixed_grouped_preparation_join_tests.rs"]
+mod fixed_grouped_tests;
 #[path = "diagnostic_grouped_preparation_join_tests.rs"]
 mod grouped_tests;
 #[path = "diagnostic_validation_leaf_cost_tests.rs"]

@@ -1,4 +1,6 @@
 //! An unsent FD-bearing message, never a connection or start capability.
+#[path = "diagnostic_original_grouped_preparation.rs"]
+pub mod grouped_preparation;
 #[cfg(test)]
 #[path = "diagnostic_original_safety_alarm.rs"]
 pub(crate) mod safety_alarm;

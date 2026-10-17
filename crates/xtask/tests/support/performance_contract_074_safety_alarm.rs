@@ -259,6 +259,8 @@ platform = "linux"
 # END ORIGINAL SAFETY ALARM GATES
 "###;
 pub(super) fn normalize(path: &str, raw: &str) -> String {
+    let current = super::fixed_grouped::normalize(path, raw);
+    let raw = current.as_str();
     if path == "tools/long-run-supervisor-074/src/diagnostic_original_output_join_crash_tests.rs" {
         let registration = "#[path = \"diagnostic_grouped_preparation_crash_tests.rs\"]\nmod grouped_process_tests;\n";
         assert_eq!(raw.matches(registration).count(), 1);
@@ -392,7 +394,7 @@ fn validation_leaf_attribution_keeps_all_runtime_and_observation_points_exact() 
         assert!(before.status.success());
         let current = std::fs::read_to_string(super::root().join(path)).unwrap();
         assert_eq!(
-            current.replace('\r', ""),
+            super::fixed_grouped::normalize(path, &current.replace('\r', "")),
             String::from_utf8(before.stdout).unwrap().replace('\r', ""),
             "{path}"
         );
@@ -446,7 +448,7 @@ fn grouped_preparation_candidate_is_test_only_and_preserves_all_runtime_guards()
         assert!(before.status.success());
         let current = std::fs::read_to_string(super::root().join(path)).unwrap();
         assert_eq!(
-            current.replace('\r', ""),
+            super::fixed_grouped::normalize(path, &current.replace('\r', "")),
             String::from_utf8(before.stdout).unwrap().replace('\r', ""),
             "{path}"
         );
