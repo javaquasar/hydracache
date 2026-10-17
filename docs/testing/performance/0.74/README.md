@@ -3723,3 +3723,18 @@ intermediate full observations are absent in the candidate, so restored transien
 drift is outside its endpoint guarantee. All predicates and original time origins
 are retained. Real process-loss/ack-loss, independent guardian, actual start and
 writer cessation remain the next execution gates, not results of this experiment.
+
+The [grouped process-loss harness](local-runs/grouped-process-loss-20261017/README.md)
+now exercises the unchanged candidate in real selected child processes at its
+five internal steps and after return before acknowledgement. It requires exact
+pidfd-directed SIGKILL, positive ACK controls, zero-exit ACK-loss controls and
+fresh-process refusal of retained history. These are nonexecuting preparation
+and synthetic return-ACK tests, not systemd delivery, autonomous guardian,
+P2/P3 writer cessation or a full production crash/qualification gate.
+
+The first screen and both three-repeat matrices now pass: the main cohorts have
+36 SIGKILLs, six ordinary controls and six zero-exit lost-ACK controls. Together
+with the separate screen they produce 100 fresh inspections, all refusing
+retained history without mutation. All 195 static contracts pass. Production
+composition, real manager delivery/ACK, guardian and all-writer cessation remain
+unfinished; the six preparation cuts are not the entire production fault matrix.

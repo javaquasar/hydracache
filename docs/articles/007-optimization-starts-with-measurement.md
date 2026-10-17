@@ -11996,3 +11996,48 @@ static contracts preserve the old runtime bodies. New real process-loss/ack-loss
 tests and a production adaptation are still needed; a retained timer alone is
 not an independent guardian. Authenticated original start, cessation of every
 writer, completion and later lifecycle cells retain their separate proof gates.
+
+## Real process loss tests refusal after a missing return acknowledgement
+
+The [next harness](../testing/performance/0.74/local-runs/grouped-process-loss-20261017/README.md)
+keeps the grouped candidate unchanged and moves the interruption outside its
+control flow. A selected child stops after each of five internal acquisition
+steps or just after successful return, before its private acknowledgement.
+The parent holds a pidfd opened for that exact unreaped Child before waiting
+for readiness. SIGKILL through that descriptor and the resulting signal wait
+status distinguish actual process death from a logical injected error. Rust
+destructors do not execute in the killed child.
+
+The recovery oracle is not merely that the child vanished. While it is stopped,
+the original flock must exclude another owner and the parent independently
+checks complete sealed records and empty sinks. After confirmed exit, kernel
+cleanup must permit lock acquisition without changing the original ancestry
+or authority snapshot. Two separately started inspectors must then reject a
+new empty context while preserving retained history. Process death must not
+turn an incomplete attempt into permission to adopt, repair or execute again.
+
+Two normal-exit controls keep the ACK conclusion honest. One completes unchanged
+reference validation, drops the owner and emits exactly one private ACK. The
+other follows the same healthy path but deliberately emits none. The latter is
+return-notice loss with zero exit, not a crash, a systemd StartTransientUnit
+response or network delivery evidence. Both still leave retained history that
+fresh processes refuse. Readiness is an independent test checkpoint, never an
+execution acknowledgement or capability.
+
+The original output-join crash harness remains exact after stripping only a
+two-line child registration; its ownership, snapshots, lock and output-inventory
+checks are reused. The new cases do not relax original time origins or add
+production APIs. They cover selected logical cuts, not arbitrary in-syscall
+death, power loss, authenticated original start or termination of every external
+writer. A retained one-shot timer remains distinct from an autonomous guardian,
+and these fault results supply no product throughput claim.
+
+The declared preparation matrix passes on both normal GNU release compilers.
+Three repeats each on Rust 1.94 and MSRV 1.88 produce 36 SIGKILLs, six ordinary
+ACK controls and six normal exits with ACK withheld. A separate first screen
+adds one SIGKILL and one ordinary control. Two fresh inspectors per case total
+100 independent refusals with unchanged retained evidence. All 195 static
+contracts pass and independent host postflight preserves the supervisor and
+installed artifacts. This closes the selected grouped-preparation interruption
+gate; authenticated production start, manager acknowledgement recovery,
+autonomous guardian and all-writer cessation remain separate unfinished work.

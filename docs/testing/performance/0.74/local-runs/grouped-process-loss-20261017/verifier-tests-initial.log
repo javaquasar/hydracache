@@ -1,0 +1,6 @@
+HC074-CAPSULE name=instrumentation.patch files=5 exact=true current=True
+Exception: C:\Workspace\prj\jq\cashe\hydracache-074\docs\testing\performance\0.74\local-runs\grouped-process-loss-20261017\verify.ps1:7
+Line |
+   7 |  … n Require($ok, [string]$message) { if (-not $ok) { throw $message } }
+     |                                                       ~~~~~~~~~~~~~~
+     | mutated process evidence must refuse

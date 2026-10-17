@@ -224,3 +224,26 @@ The initial screen, repeated original/reference controls and persistent refusal
 matrix pass with unchanged original deadlines. Production bodies and observation
 schedule remain exact. Process-loss/ack-loss, production adaptation, independent
 guardian lifetime, authenticated send/start and all-writer cessation remain open.
+
+## Grouped process loss and withheld return acknowledgement
+
+The [private process harness](local-runs/grouped-process-loss-20261017/README.md)
+adds selected child stops at opened, loaded, bound, message, armed and successful
+return before a private ACK. The parent pins its unreaped child with pidfd before
+waiting and uses that descriptor for SIGKILL. Snapshots and host-lock exclusion
+bracket termination; two fresh inspector processes must refuse retained history
+after every outcome. Ordinary controls emit one ACK; separate zero-exit controls
+complete reference validation and owner drop while withholding it.
+
+The ACK is a harness-only return notice, not a systemd result. No manager call,
+descriptor delivery, worker start or new durable record exists here. Confirmed
+process death releases the synthetic owner's kernel resources, but does not prove
+P2/P3 writer-tree revocation before resource release. Missing ACK never authorizes
+adoption or retry. Production composition and its execution gates remain closed.
+
+The declared six-cut matrix passes three repeats per compiler: 36 SIGKILLs,
+six positive ACK controls and six zero-exit lost-ACK controls across the main
+cohorts. The separate two-case screen and matrices total 100 fresh inspector
+processes with unchanged retained evidence. This closes the selected grouped
+nonexecuting process-loss gate, not arbitrary crash, actual manager ACK recovery
+or any production execution obligation above.

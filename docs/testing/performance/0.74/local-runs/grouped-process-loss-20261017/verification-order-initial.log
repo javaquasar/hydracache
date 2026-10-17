@@ -1,0 +1,9 @@
+HC074-CAPSULE name=instrumentation.patch files=5 exact=true current=True
+HC074-GROUPED-PROCESS-COHORT mode=screen lane=194 cases=2 inspections=4 exact=true
+HC074-GROUPED-PROCESS-COHORT mode=matrix lane=194 cases=24 inspections=48 exact=true
+HC074-GROUPED-PROCESS-COHORT mode=matrix lane=188 cases=24 inspections=48 exact=true
+Exception: C:\Workspace\prj\jq\cashe\hydracache-074\docs\testing\performance\0.74\local-runs\grouped-process-loss-20261017\verify.ps1:7
+Line |
+   7 |  … n Require($ok, [string]$message) { if (-not $ok) { throw $message } }
+     |                                                       ~~~~~~~~~~~~~~
+     | signed fixture data unchanged

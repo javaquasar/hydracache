@@ -1,0 +1,11 @@
+
+running 5 tests
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::crash_tests::grouped_process_tests::grouped_process_ack_codec_distinguishes_absent_exact_and_duplicate ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::crash_tests::grouped_process_tests::grouped_process_protocol_rejects_invalid_or_ambiguous_records ... HC074-GROUPED-PROTOCOL seed=0x07406c17 points=6 exact=true
+ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::crash_tests::grouped_process_tests::original_grouped_process_child ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::crash_tests::grouped_process_tests::original_grouped_process_matrix ... ignored, manual nonroot grouped preparation SIGKILL matrix and synthetic return ACK loss
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::crash_tests::grouped_process_tests::original_grouped_process_screen ... ignored, manual nonroot grouped process screen; exact owned SIGKILL and ordinary ACK control
+
+test result: ok. 3 passed; 0 failed; 2 ignored; 0 measured; 1047 filtered out; finished in 0.00s
+

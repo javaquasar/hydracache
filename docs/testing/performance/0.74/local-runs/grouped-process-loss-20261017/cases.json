@@ -1,0 +1,504 @@
+{
+  "rows": [
+    {
+      "cohort": "screen",
+      "lane": "194",
+      "repeat": 0,
+      "stage": "returned-unacknowledged",
+      "mode": "control",
+      "sigkill": false,
+      "acks": 1,
+      "inspections": 2
+    },
+    {
+      "cohort": "screen",
+      "lane": "194",
+      "repeat": 0,
+      "stage": "returned-unacknowledged",
+      "mode": "kill",
+      "sigkill": true,
+      "acks": 0,
+      "inspections": 2
+    },
+    {
+      "cohort": "matrix",
+      "lane": "194",
+      "repeat": 1,
+      "stage": "returned-unacknowledged",
+      "mode": "kill",
+      "sigkill": true,
+      "acks": 0,
+      "inspections": 2
+    },
+    {
+      "cohort": "matrix",
+      "lane": "194",
+      "repeat": 1,
+      "stage": "bound",
+      "mode": "kill",
+      "sigkill": true,
+      "acks": 0,
+      "inspections": 2
+    },
+    {
+      "cohort": "matrix",
+      "lane": "194",
+      "repeat": 1,
+      "stage": "message",
+      "mode": "kill",
+      "sigkill": true,
+      "acks": 0,
+      "inspections": 2
+    },
+    {
+      "cohort": "matrix",
+      "lane": "194",
+      "repeat": 1,
+      "stage": "opened",
+      "mode": "kill",
+      "sigkill": true,
+      "acks": 0,
+      "inspections": 2
+    },
+    {
+      "cohort": "matrix",
+      "lane": "194",
+      "repeat": 1,
+      "stage": "armed",
+      "mode": "kill",
+      "sigkill": true,
+      "acks": 0,
+      "inspections": 2
+    },
+    {
+      "cohort": "matrix",
+      "lane": "194",
+      "repeat": 1,
+      "stage": "loaded",
+      "mode": "kill",
+      "sigkill": true,
+      "acks": 0,
+      "inspections": 2
+    },
+    {
+      "cohort": "matrix",
+      "lane": "194",
+      "repeat": 1,
+      "stage": "returned-unacknowledged",
+      "mode": "control",
+      "sigkill": false,
+      "acks": 1,
+      "inspections": 2
+    },
+    {
+      "cohort": "matrix",
+      "lane": "194",
+      "repeat": 1,
+      "stage": "returned-unacknowledged",
+      "mode": "ack-lost",
+      "sigkill": false,
+      "acks": 0,
+      "inspections": 2
+    },
+    {
+      "cohort": "matrix",
+      "lane": "194",
+      "repeat": 2,
+      "stage": "returned-unacknowledged",
+      "mode": "kill",
+      "sigkill": true,
+      "acks": 0,
+      "inspections": 2
+    },
+    {
+      "cohort": "matrix",
+      "lane": "194",
+      "repeat": 2,
+      "stage": "bound",
+      "mode": "kill",
+      "sigkill": true,
+      "acks": 0,
+      "inspections": 2
+    },
+    {
+      "cohort": "matrix",
+      "lane": "194",
+      "repeat": 2,
+      "stage": "message",
+      "mode": "kill",
+      "sigkill": true,
+      "acks": 0,
+      "inspections": 2
+    },
+    {
+      "cohort": "matrix",
+      "lane": "194",
+      "repeat": 2,
+      "stage": "opened",
+      "mode": "kill",
+      "sigkill": true,
+      "acks": 0,
+      "inspections": 2
+    },
+    {
+      "cohort": "matrix",
+      "lane": "194",
+      "repeat": 2,
+      "stage": "armed",
+      "mode": "kill",
+      "sigkill": true,
+      "acks": 0,
+      "inspections": 2
+    },
+    {
+      "cohort": "matrix",
+      "lane": "194",
+      "repeat": 2,
+      "stage": "loaded",
+      "mode": "kill",
+      "sigkill": true,
+      "acks": 0,
+      "inspections": 2
+    },
+    {
+      "cohort": "matrix",
+      "lane": "194",
+      "repeat": 2,
+      "stage": "returned-unacknowledged",
+      "mode": "control",
+      "sigkill": false,
+      "acks": 1,
+      "inspections": 2
+    },
+    {
+      "cohort": "matrix",
+      "lane": "194",
+      "repeat": 2,
+      "stage": "returned-unacknowledged",
+      "mode": "ack-lost",
+      "sigkill": false,
+      "acks": 0,
+      "inspections": 2
+    },
+    {
+      "cohort": "matrix",
+      "lane": "194",
+      "repeat": 3,
+      "stage": "returned-unacknowledged",
+      "mode": "kill",
+      "sigkill": true,
+      "acks": 0,
+      "inspections": 2
+    },
+    {
+      "cohort": "matrix",
+      "lane": "194",
+      "repeat": 3,
+      "stage": "bound",
+      "mode": "kill",
+      "sigkill": true,
+      "acks": 0,
+      "inspections": 2
+    },
+    {
+      "cohort": "matrix",
+      "lane": "194",
+      "repeat": 3,
+      "stage": "message",
+      "mode": "kill",
+      "sigkill": true,
+      "acks": 0,
+      "inspections": 2
+    },
+    {
+      "cohort": "matrix",
+      "lane": "194",
+      "repeat": 3,
+      "stage": "opened",
+      "mode": "kill",
+      "sigkill": true,
+      "acks": 0,
+      "inspections": 2
+    },
+    {
+      "cohort": "matrix",
+      "lane": "194",
+      "repeat": 3,
+      "stage": "armed",
+      "mode": "kill",
+      "sigkill": true,
+      "acks": 0,
+      "inspections": 2
+    },
+    {
+      "cohort": "matrix",
+      "lane": "194",
+      "repeat": 3,
+      "stage": "loaded",
+      "mode": "kill",
+      "sigkill": true,
+      "acks": 0,
+      "inspections": 2
+    },
+    {
+      "cohort": "matrix",
+      "lane": "194",
+      "repeat": 3,
+      "stage": "returned-unacknowledged",
+      "mode": "control",
+      "sigkill": false,
+      "acks": 1,
+      "inspections": 2
+    },
+    {
+      "cohort": "matrix",
+      "lane": "194",
+      "repeat": 3,
+      "stage": "returned-unacknowledged",
+      "mode": "ack-lost",
+      "sigkill": false,
+      "acks": 0,
+      "inspections": 2
+    },
+    {
+      "cohort": "matrix",
+      "lane": "188",
+      "repeat": 1,
+      "stage": "returned-unacknowledged",
+      "mode": "kill",
+      "sigkill": true,
+      "acks": 0,
+      "inspections": 2
+    },
+    {
+      "cohort": "matrix",
+      "lane": "188",
+      "repeat": 1,
+      "stage": "bound",
+      "mode": "kill",
+      "sigkill": true,
+      "acks": 0,
+      "inspections": 2
+    },
+    {
+      "cohort": "matrix",
+      "lane": "188",
+      "repeat": 1,
+      "stage": "message",
+      "mode": "kill",
+      "sigkill": true,
+      "acks": 0,
+      "inspections": 2
+    },
+    {
+      "cohort": "matrix",
+      "lane": "188",
+      "repeat": 1,
+      "stage": "opened",
+      "mode": "kill",
+      "sigkill": true,
+      "acks": 0,
+      "inspections": 2
+    },
+    {
+      "cohort": "matrix",
+      "lane": "188",
+      "repeat": 1,
+      "stage": "armed",
+      "mode": "kill",
+      "sigkill": true,
+      "acks": 0,
+      "inspections": 2
+    },
+    {
+      "cohort": "matrix",
+      "lane": "188",
+      "repeat": 1,
+      "stage": "loaded",
+      "mode": "kill",
+      "sigkill": true,
+      "acks": 0,
+      "inspections": 2
+    },
+    {
+      "cohort": "matrix",
+      "lane": "188",
+      "repeat": 1,
+      "stage": "returned-unacknowledged",
+      "mode": "control",
+      "sigkill": false,
+      "acks": 1,
+      "inspections": 2
+    },
+    {
+      "cohort": "matrix",
+      "lane": "188",
+      "repeat": 1,
+      "stage": "returned-unacknowledged",
+      "mode": "ack-lost",
+      "sigkill": false,
+      "acks": 0,
+      "inspections": 2
+    },
+    {
+      "cohort": "matrix",
+      "lane": "188",
+      "repeat": 2,
+      "stage": "returned-unacknowledged",
+      "mode": "kill",
+      "sigkill": true,
+      "acks": 0,
+      "inspections": 2
+    },
+    {
+      "cohort": "matrix",
+      "lane": "188",
+      "repeat": 2,
+      "stage": "bound",
+      "mode": "kill",
+      "sigkill": true,
+      "acks": 0,
+      "inspections": 2
+    },
+    {
+      "cohort": "matrix",
+      "lane": "188",
+      "repeat": 2,
+      "stage": "message",
+      "mode": "kill",
+      "sigkill": true,
+      "acks": 0,
+      "inspections": 2
+    },
+    {
+      "cohort": "matrix",
+      "lane": "188",
+      "repeat": 2,
+      "stage": "opened",
+      "mode": "kill",
+      "sigkill": true,
+      "acks": 0,
+      "inspections": 2
+    },
+    {
+      "cohort": "matrix",
+      "lane": "188",
+      "repeat": 2,
+      "stage": "armed",
+      "mode": "kill",
+      "sigkill": true,
+      "acks": 0,
+      "inspections": 2
+    },
+    {
+      "cohort": "matrix",
+      "lane": "188",
+      "repeat": 2,
+      "stage": "loaded",
+      "mode": "kill",
+      "sigkill": true,
+      "acks": 0,
+      "inspections": 2
+    },
+    {
+      "cohort": "matrix",
+      "lane": "188",
+      "repeat": 2,
+      "stage": "returned-unacknowledged",
+      "mode": "control",
+      "sigkill": false,
+      "acks": 1,
+      "inspections": 2
+    },
+    {
+      "cohort": "matrix",
+      "lane": "188",
+      "repeat": 2,
+      "stage": "returned-unacknowledged",
+      "mode": "ack-lost",
+      "sigkill": false,
+      "acks": 0,
+      "inspections": 2
+    },
+    {
+      "cohort": "matrix",
+      "lane": "188",
+      "repeat": 3,
+      "stage": "returned-unacknowledged",
+      "mode": "kill",
+      "sigkill": true,
+      "acks": 0,
+      "inspections": 2
+    },
+    {
+      "cohort": "matrix",
+      "lane": "188",
+      "repeat": 3,
+      "stage": "bound",
+      "mode": "kill",
+      "sigkill": true,
+      "acks": 0,
+      "inspections": 2
+    },
+    {
+      "cohort": "matrix",
+      "lane": "188",
+      "repeat": 3,
+      "stage": "message",
+      "mode": "kill",
+      "sigkill": true,
+      "acks": 0,
+      "inspections": 2
+    },
+    {
+      "cohort": "matrix",
+      "lane": "188",
+      "repeat": 3,
+      "stage": "opened",
+      "mode": "kill",
+      "sigkill": true,
+      "acks": 0,
+      "inspections": 2
+    },
+    {
+      "cohort": "matrix",
+      "lane": "188",
+      "repeat": 3,
+      "stage": "armed",
+      "mode": "kill",
+      "sigkill": true,
+      "acks": 0,
+      "inspections": 2
+    },
+    {
+      "cohort": "matrix",
+      "lane": "188",
+      "repeat": 3,
+      "stage": "loaded",
+      "mode": "kill",
+      "sigkill": true,
+      "acks": 0,
+      "inspections": 2
+    },
+    {
+      "cohort": "matrix",
+      "lane": "188",
+      "repeat": 3,
+      "stage": "returned-unacknowledged",
+      "mode": "control",
+      "sigkill": false,
+      "acks": 1,
+      "inspections": 2
+    },
+    {
+      "cohort": "matrix",
+      "lane": "188",
+      "repeat": 3,
+      "stage": "returned-unacknowledged",
+      "mode": "ack-lost",
+      "sigkill": false,
+      "acks": 0,
+      "inspections": 2
+    }
+  ]
+}

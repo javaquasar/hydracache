@@ -1,0 +1,13 @@
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::crash_tests::grouped_process_tests::original_grouped_process_screen ... HC074-GROUPED-INSPECTION repeat=0 stage=returned-unacknowledged mode=control inspection=1 refused=true unchanged=true
+HC074-GROUPED-INSPECTION repeat=0 stage=returned-unacknowledged mode=control inspection=2 refused=true unchanged=true
+HC074-GROUPED-PROCESS seed=0x07406c17 repeat=0 stage=returned-unacknowledged mode=control sigkill=false acks=1 held=true unchanged=true send=false
+HC074-GROUPED-INSPECTION repeat=0 stage=returned-unacknowledged mode=kill inspection=1 refused=true unchanged=true
+HC074-GROUPED-INSPECTION repeat=0 stage=returned-unacknowledged mode=kill inspection=2 refused=true unchanged=true
+HC074-GROUPED-PROCESS seed=0x07406c17 repeat=0 stage=returned-unacknowledged mode=kill sigkill=true acks=0 held=true unchanged=true send=false
+HC074-GROUPED-PROCESS-SCREEN sigkills=1 controls=1 inspections=4 completed=true
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1051 filtered out; finished in 26.41s
+
