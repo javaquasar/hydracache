@@ -1,0 +1,2 @@
+HC074-SAFETY-ALARM-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-SAFETY-ALARM-POSTFLIGHT no_fixture_process=true diagnostic_install_absent=true

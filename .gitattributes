@@ -319,3 +319,7 @@ docs/testing/performance/0.74/local-runs/original-collector-start-material-*/*.p
 
 docs/testing/performance/0.74/local-runs/original-pipe-transport-*/** -text whitespace=cr-at-eol
 docs/testing/performance/0.74/local-runs/original-pipe-transport-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/original-safety-alarm-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/original-safety-alarm-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/original-safety-alarm-*/*.patch -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol

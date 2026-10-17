@@ -58,3 +58,14 @@ before sending, prove creator/thread/supervisor loss and handoff windows, bind
 the exact manager invocation/process/cgroup and revoke every writer. A timerfd
 alone cannot kill or drain anything and disappears when its final owner exits.
 Those remaining obligations are not marked complete by this slice.
+
+## Current disposition
+
+The candidate fails its first healthy original-chain server screen at
+Causal(Time), after constructing the timer. The production entry is withdrawn;
+the [negative packet](local-runs/original-safety-alarm-20261017/README.md) retains
+the complete candidate, failed screen and separate attribution. Kernel/reference
+probes remain test-only. Descriptor ownership is not certified by querying a
+reusable fd number after Drop. No original deadline or existing check changes.
+The proposed grouped observation schedule needs separate agreement; the full
+healthy/fault and subsequent guardian/SIGKILL gates remain open.

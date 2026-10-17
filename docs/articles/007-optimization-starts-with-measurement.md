@@ -11770,3 +11770,71 @@ manager invocation/process/cgroup, and revoke all writers before releasing the
 fence. Only then can authenticated completion, later cells and their new
 SIGKILL/lost-ack matrix proceed. Preparing an unsent message is not an installed
 production start or another completed crash matrix.
+
+## An absolute alarm exposes the remaining preparation budget
+
+The [next alarm experiment](../testing/performance/0.74/local-runs/original-safety-alarm-20261017/README.md)
+asks whether the original message owner can also retain a kernel deadline alarm
+without changing its authenticated inputs. This is only a timer prerequisite:
+it does not create an autonomous watchdog, send a systemd message or stop a writer.
+The first healthy server screen fails, so the new production entry is withdrawn
+and the candidate survives only as a test-only prototype and source capsule.
+
+The time origin matters before any optimization. Controller-loss allowance must
+start at the original authenticated progress packet's kernel receive point. Using
+the later Starting controller timestamp would grant more time. The prototype
+instead derives the minimum of original reservation plus 300 seconds, original
+cell Starting plus 60 seconds, and original progress receipt plus 10 seconds.
+Checked arithmetic, equality and reversed observations refuse. The existing
+consent challenge expiry remains an additional live check; the new timer does
+not supersede it or renew any allowance.
+
+Four fast probes exercise 4,096 deterministic boundary cases, the real one-shot
+timer, expiry readability without rearming, and refusal of changed clock, flags,
+interval, disarm, extended deadline and wrong descriptor. These establish useful
+primitive behavior, not the viability of the complete preparation chain. In the
+original-chain screen the alarm is constructed, but its first subsequent live
+revalidation returns Causal(Time) after 17 authentications. Neither the server
+MSRV lane nor the candidate's ten-case mutation family is dispatched on that red
+healthy gate.
+
+The separate current-compiler diagnostic records three fresh chains. Its first
+version incorrectly expected an unrefused original input after a sticky time
+failure; that failed postcondition is retained. Correcting only the test oracle
+allows the three-sample negative characterization to complete. All three still
+refuse Causal(Time), preserve the three intent documents, hold the fence until
+owner drop and reject retained context. A passing diagnostic is not a passing
+preparation or execution gate.
+
+| Inclusive fixture phase | Wall time in milliseconds across three samples | Authentications |
+| --- | --- | --- |
+| Original outputs | 7,213.016–7,281.236 | 782 |
+| Retained material | 349.178–350.771 | 34 |
+| Unsent pipe message | 322.211–327.467 | 34 |
+| Absolute alarm construction | 336.567–338.877 | 34 |
+| First revalidation, ending in time refusal | 139.881–140.816 | 17 |
+
+These are inclusive correctness-fixture spans on one host, not CPU attribution,
+a paired effect estimate or a product performance claim. Outputs dominate this
+sequence; their authentication span is only 25.637–25.791 milliseconds despite
+more than seven seconds of wall time. That contrast does not establish the cost
+of each filesystem walk, sync or scheduling delay. Nested authentication and
+signature spans must not be added to their enclosing wall span. The final raw
+clock samples are also not exact first-refusal events: the existing trace reports
+no such event for this error.
+
+The narrow follow-up hypothesis is to group only nonexecuting material, message
+and alarm preparation inside one fresh opening and closing full validation
+frame. It could remove repeated complete walks without extending a deadline,
+but changes observation frequency between internal steps. It therefore requires
+explicit agreement and a separate healthy and fault experiment; the current
+schedule is not silently replaced. If approved, changes to trust, outputs,
+bundle, message, timer and original context must be exercised at every newly
+grouped boundary, with the same anchored deadlines and exact refusal oracles.
+
+The useful outcome is a bounded negative result and a precise next hypothesis,
+not another claimed execution milestone. The supervisor, installed binary and
+receipt are unchanged. Independent guardian lifetime through creator loss,
+authenticated original start, complete writer revocation, completion, later
+cells and their new SIGKILL/lost-ack boundaries remain required before production
+admission. A timer that disappears with its final owner cannot prove any of them.

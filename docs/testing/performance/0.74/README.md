@@ -3677,3 +3677,12 @@ rounds/34 authentications; original deadlines and all frozen guards stay exact.
 The supervisor and installed artifacts remain unchanged. This is representation
 and ownership proof, not SCM_RIGHTS delivery, authenticated start, armed watchdog,
 all-writer cessation or production admission. Those execution gates remain next.
+
+The [absolute alarm experiment](local-runs/original-safety-alarm-20261017/README.md)
+then fails its first healthy original-chain screen at Causal(Time). The candidate
+production entry is withdrawn; only test-only kernel, boundary and attribution
+probes remain. The fixed controller-loss origin is the original progress packet's
+kernel receive time, not a later Starting timestamp. A one-shot timer is not an
+independent watchdog. The next composition experiment needs agreement to bracket
+nonexecuting preparation as one group while preserving every live predicate and
+original deadline. No existing observation schedule or server admission changes.

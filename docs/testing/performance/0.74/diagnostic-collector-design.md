@@ -161,3 +161,28 @@ independent watchdog before sending. Effective executable/environment, manager
 invocation, process/cgroup ownership and closure of every manager/creator writer
 remain actual-start obligations. Marshalled FD identities and temporary EOF
 tests alone cannot fulfill them or publish completion.
+
+## Absolute alarm origins and refused composition
+
+The [alarm experiment](diagnostic-original-safety-alarm-plan-20261017.md)
+anchors its controller-loss bound to the original authenticated progress packet's
+kernel receive time, not the later signed Starting controller timestamp. Total
+and cell limits likewise retain their original reservation and Starting origins.
+An absolute one-shot BOOTTIME timer is a candidate deadline primitive, not an
+autonomous guardian or writer-revocation mechanism. Original consent challenge
+expiry remains a separate live predicate and can refuse before that timer expires.
+
+The separately guarded material, message and alarm sequence failed its first
+healthy server screen at original Causal(Time). Its production entry is withdrawn;
+only cfg(test) kernel/reference and cost probes remain. The retained
+[negative packet](local-runs/original-safety-alarm-20261017/README.md) distinguishes
+this failed composition from the previously accepted message prerequisite.
+Do not extend deadlines or count a negative-characterization test as admission.
+
+A possible follow-up groups only nonexecuting preparation under one fresh full
+opening and closing validation frame. It must retain every predicate and original
+deadline, but changes observations between internal substeps. That experiment
+requires explicit agreement and an independent healthy/fault gate before adoption.
+The current schedule stays unchanged. Independent guardian lifetime, original
+authenticated send/start, all-writer cessation, completion and later cells remain
+subsequent execution obligations.

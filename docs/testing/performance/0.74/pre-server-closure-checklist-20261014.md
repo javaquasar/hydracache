@@ -319,6 +319,11 @@ The exact stable supervisor and installed binary/receipt stayed unchanged.
    Actual FD delivery, executable/effective environment, collector, process and
    manager invocation/cgroup requirements still need authenticated original start.
 3. Implement autonomous watchdog and exact original-cgroup revocation/emptiness.
+   The [absolute alarm composition](local-runs/original-safety-alarm-20261017/README.md)
+   failed its healthy control at Causal(Time) and is test-only. A timer neither
+   survives final-owner loss nor revokes writers. Review the proposed grouped
+   nonexecuting preparation before changing the current observation schedule;
+   original challenge, progress, cell and total deadlines cannot be renewed.
    Missing EOF, uncertain stop, collector loss and leaked writers retain failure;
    a stopped leader or replacement unit name grants no release.
 4. Join authenticated successful output/outcome and writer cessation to owned

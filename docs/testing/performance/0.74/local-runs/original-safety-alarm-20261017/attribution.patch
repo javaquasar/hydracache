@@ -1,0 +1,1341 @@
+diff --git a/crates/xtask/tests/performance_contract_074.rs b/crates/xtask/tests/performance_contract_074.rs
+index 009afded2626148b943f5356f73240b2e36f3b5a..f876b66a03ac434e32acf98d449af808b91251c4 100644
+--- a/crates/xtask/tests/performance_contract_074.rs
++++ b/crates/xtask/tests/performance_contract_074.rs
+@@ -2,6 +2,9 @@ use serde_json::{json, Value};
+ use sha2::{Digest, Sha256};
+ use std::path::{Path, PathBuf};
+ 
++#[path = "support/performance_contract_074_safety_alarm.rs"]
++mod safety_alarm;
++
+ #[path = "support/performance_contract_074_pipe_transport.rs"]
+ mod pipe_transport;
+ 
+diff --git a/crates/xtask/tests/support/performance_contract_074_pipe_transport.rs b/crates/xtask/tests/support/performance_contract_074_pipe_transport.rs
+index d7beb4769ff5993e1f5854937e139dea8d66ef19..abf0a00ef21d707cfe459bc5eff1e8fe7768ee47 100644
+--- a/crates/xtask/tests/support/performance_contract_074_pipe_transport.rs
++++ b/crates/xtask/tests/support/performance_contract_074_pipe_transport.rs
+@@ -100,6 +100,8 @@ platform = "linux"
+ # END ORIGINAL PIPE TRANSPORT GATES
+ "###;
+ pub(super) fn normalize(path: &str, raw: &str) -> String {
++    let current = super::safety_alarm::normalize(path, raw);
++    let raw = current.as_str();
+     let addition = match path {
+         "tools/long-run-supervisor-074/src/diagnostic_original_start_material.rs" =>
+             "#[path = \"diagnostic_original_pipe_transport.rs\"]\npub mod pipe_transport;\n",
+diff --git a/docs/testing/gated-test-registry.toml b/docs/testing/gated-test-registry.toml
+index e908d3f2b25a196054dc743334e0afe01c697c9b..7f46b5021cb747ecb1592842f47ab391bf329043 100644
+--- a/docs/testing/gated-test-registry.toml
++++ b/docs/testing/gated-test-registry.toml
+@@ -9825,3 +9825,134 @@ platform = "linux"
+ [gate.command.env]
+ 
+ # END ORIGINAL PIPE TRANSPORT GATES
++
++# BEGIN ORIGINAL SAFETY ALARM GATES
++[[gate]]
++id = "cfg.hydracache-long-run-supervisor-074.original-safety-alarm-api"
++kind = "cfg_test_target"
++source = "tools/long-run-supervisor-074/tests/diagnostic_original_safety_alarm.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "diagnostic_original_safety_alarm"
++test = ""
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Original absolute kernel alarm only; no guardian, clock change, send or execution"
++tier = "fast"
++required_features = []
++required_env = []
++required_tools = ["cargo"]
++timeout_seconds = 120
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "rust"
++step = "Release 0.74 Linux supervisor contracts"
++
++[gate.command]
++program = "cargo"
++args = ["test","-p","hydracache-long-run-supervisor-074","--test","diagnostic_original_safety_alarm","--locked"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.original-safety-alarm-healthy"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_original_safety_alarm_join_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "original_safety_alarm_joined_healthy"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Original absolute kernel alarm only; no guardian, clock change, send or execution"
++tier = "manual"
++required_features = []
++required_env = ["HC074_START_MATERIAL_BUNDLE"]
++required_tools = ["cargo"]
++timeout_seconds = 1800
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::original_safety_alarm_joined_healthy","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.original-safety-alarm-refusals"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_original_safety_alarm_join_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "original_safety_alarm_joined_refusals"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Original absolute kernel alarm only; no guardian, clock change, send or execution"
++tier = "manual"
++required_features = []
++required_env = ["HC074_START_MATERIAL_BUNDLE"]
++required_tools = ["cargo"]
++timeout_seconds = 1800
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::original_safety_alarm_joined_refusals","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.original-safety-alarm-cost-attribution"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_original_safety_alarm_join_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "original_safety_alarm_cost_attribution"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Cost diagnostic only; refusal is not successful preparation or admission"
++tier = "manual"
++required_features = []
++required_env = ["HC074_START_MATERIAL_BUNDLE"]
++required_tools = ["cargo"]
++timeout_seconds = 1800
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::original_safety_alarm_cost_attribution","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++# END ORIGINAL SAFETY ALARM GATES
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport.rs b/tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport.rs
+index a93a8a60884691d25444060b9bb829f07032d9b1..49e2948c3edbf79832c294d953c6301f81cda542 100644
+--- a/tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport.rs
++++ b/tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport.rs
+@@ -1,4 +1,6 @@
+ //! An unsent FD-bearing message, never a connection or start capability.
++#[path = "diagnostic_original_safety_alarm.rs"]
++pub mod safety_alarm;
+ use super::*;
+ use crate::systemd_unit::{TransientUnitSpec, UnitProperty};
+ use std::fs::File;
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport_join_tests.rs b/tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport_join_tests.rs
+index ed9fe573f634531a2b93f6490a7669a97603b5d8..e5fd5d57e30922a2e9378fc5e157dcf40f2c4826 100644
+--- a/tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport_join_tests.rs
++++ b/tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport_join_tests.rs
+@@ -1,4 +1,6 @@
+ use super::*;
++#[path = "diagnostic_original_safety_alarm_join_tests.rs"]
++mod safety_alarm_tests;
+ use crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::start_material::pipe_transport::OriginalPipeTransportError;
+ 
+ #[test]
+diff --git a/crates/xtask/tests/support/performance_contract_074_safety_alarm.rs b/crates/xtask/tests/support/performance_contract_074_safety_alarm.rs
+new file mode 100644
+index 0000000000000000000000000000000000000000..f4993bacb104afbc9aaca79311ddbda2f41c5d2b
+--- /dev/null
++++ b/crates/xtask/tests/support/performance_contract_074_safety_alarm.rs
+@@ -0,0 +1,226 @@
++//! Additive alarm entry; original observers, deadlines and message logic stay exact.
++const GATES: &str = r###"
++# BEGIN ORIGINAL SAFETY ALARM GATES
++[[gate]]
++id = "cfg.hydracache-long-run-supervisor-074.original-safety-alarm-api"
++kind = "cfg_test_target"
++source = "tools/long-run-supervisor-074/tests/diagnostic_original_safety_alarm.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "diagnostic_original_safety_alarm"
++test = ""
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Original absolute kernel alarm only; no guardian, clock change, send or execution"
++tier = "fast"
++required_features = []
++required_env = []
++required_tools = ["cargo"]
++timeout_seconds = 120
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "rust"
++step = "Release 0.74 Linux supervisor contracts"
++
++[gate.command]
++program = "cargo"
++args = ["test","-p","hydracache-long-run-supervisor-074","--test","diagnostic_original_safety_alarm","--locked"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.original-safety-alarm-healthy"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_original_safety_alarm_join_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "original_safety_alarm_joined_healthy"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Original absolute kernel alarm only; no guardian, clock change, send or execution"
++tier = "manual"
++required_features = []
++required_env = ["HC074_START_MATERIAL_BUNDLE"]
++required_tools = ["cargo"]
++timeout_seconds = 1800
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::original_safety_alarm_joined_healthy","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.original-safety-alarm-refusals"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_original_safety_alarm_join_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "original_safety_alarm_joined_refusals"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Original absolute kernel alarm only; no guardian, clock change, send or execution"
++tier = "manual"
++required_features = []
++required_env = ["HC074_START_MATERIAL_BUNDLE"]
++required_tools = ["cargo"]
++timeout_seconds = 1800
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::original_safety_alarm_joined_refusals","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.original-safety-alarm-cost-attribution"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_original_safety_alarm_join_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "original_safety_alarm_cost_attribution"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Cost diagnostic only; refusal is not successful preparation or admission"
++tier = "manual"
++required_features = []
++required_env = ["HC074_START_MATERIAL_BUNDLE"]
++required_tools = ["cargo"]
++timeout_seconds = 1800
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::original_safety_alarm_cost_attribution","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++# END ORIGINAL SAFETY ALARM GATES
++"###;
++pub(super) fn normalize(path: &str, raw: &str) -> String {
++    let addition = match path {
++        "tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport.rs" =>
++            "#[path = \"diagnostic_original_safety_alarm.rs\"]\npub mod safety_alarm;\n",
++        "tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport_join_tests.rs" =>
++            "#[path = \"diagnostic_original_safety_alarm_join_tests.rs\"]\nmod safety_alarm_tests;\n",
++        "crates/xtask/tests/performance_contract_074.rs" =>
++            "\n#[path = \"support/performance_contract_074_safety_alarm.rs\"]\nmod safety_alarm;\n",
++        "crates/xtask/tests/support/performance_contract_074_pipe_transport.rs" =>
++            "    let current = super::safety_alarm::normalize(path, raw);\n    let raw = current.as_str();\n",
++        "docs/testing/gated-test-registry.toml" => GATES,
++        _ => return raw.to_owned(),
++    };
++    assert_eq!(
++        raw.matches(addition).count(),
++        1,
++        "unexpected safety alarm registration: {path}"
++    );
++    raw.replacen(addition, "", 1)
++}
++#[test]
++fn original_safety_alarm_keeps_transport_guards_and_absolute_deadlines() {
++    let read = |p: &str| {
++        std::fs::read_to_string(super::root().join(p))
++            .unwrap()
++            .replace('\r', "")
++    };
++    for p in [
++        "tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport_join_tests.rs",
++        "crates/xtask/tests/performance_contract_074.rs",
++        "crates/xtask/tests/support/performance_contract_074_pipe_transport.rs",
++        "docs/testing/gated-test-registry.toml",
++        "tools/long-run-supervisor-074/src/diagnostic_original_start_material.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_original_output_join.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_kernel_progress.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_lease.rs",
++        "docs/testing/performance/0.74/qualification-manifest.toml",
++    ] {
++        let out = std::process::Command::new("git")
++            .args(["show", &format!("4c33c5ca:{p}")])
++            .current_dir(super::root())
++            .output()
++            .unwrap();
++        assert!(out.status.success());
++        assert_eq!(
++            normalize(p, &read(p)),
++            String::from_utf8(out.stdout).unwrap().replace('\r', ""),
++            "{p}"
++        );
++    }
++    let raw = read("tools/long-run-supervisor-074/src/diagnostic_original_safety_alarm.rs");
++    let runtime = raw
++        .lines()
++        .filter(|l| !l.trim_start().starts_with("///"))
++        .collect::<Vec<_>>()
++        .join("\n");
++    assert_eq!(runtime.matches("libc::timerfd_settime(").count(), 1);
++    for marker in [
++        "libc::CLOCK_BOOTTIME",
++        "libc::TFD_TIMER_ABSTIME",
++        "libc::timerfd_gettime",
++        "received_time().clone()",
++        "original_reservation_time(Some(previous))",
++        "now >= bounds.first()",
++        "self.original_round(allow_fixture)? != bounds",
++        "alarm.inspect()?",
++        "held: Box::new(held)",
++    ] {
++        assert!(runtime.contains(marker), "{marker}");
++    }
++    for denied in [
++        "pub fn rearm",
++        "pub fn into_",
++        "pub fn start",
++        "Connection",
++        "Proxy",
++        "Command::",
++        "libc::kill(",
++        "libc::read(",
++        "SystemTime",
++        "CLOCK_REALTIME",
++    ] {
++        assert!(!runtime.contains(denied), "{denied}");
++    }
++    assert!(std::panic::catch_unwind(|| normalize(
++        "tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport.rs",
++        &read("tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport.rs")
++            .replace("pub mod safety_alarm;", "pub mod unchecked;")
++    ))
++    .is_err());
++}
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_original_safety_alarm.rs b/tools/long-run-supervisor-074/src/diagnostic_original_safety_alarm.rs
+new file mode 100644
+index 0000000000000000000000000000000000000000..271d93443b18600d90eda48fad0d4f42da2d7c3c
+--- /dev/null
++++ b/tools/long-run-supervisor-074/src/diagnostic_original_safety_alarm.rs
+@@ -0,0 +1,456 @@
++//! Absolute kernel alarm only. No guardian, writer revocation or start authority.
++use super::*;
++use crate::diagnostic_kernel_admission::{KernelError, KernelTimePoint};
++use crate::diagnostic_lease::{
++    DiagnosticStage, CELL_SECONDS, CONTROLLER_LOSS_SECONDS, TOTAL_SECONDS,
++};
++use std::io::Read;
++use std::os::fd::FromRawFd;
++use std::os::unix::fs::OpenOptionsExt;
++
++const NS: u64 = 1_000_000_000;
++#[derive(Debug, thiserror::Error)]
++pub enum OriginalSafetyAlarmError {
++    #[error("original pipe message refused: {0}")]
++    Transport(#[from] OriginalPipeTransportError),
++    #[error("original kernel time refused: {0}")]
++    Kernel(#[from] KernelError),
++    #[error("original alarm binding or kernel timer differs")]
++    Binding,
++    #[error("an original absolute safety deadline has expired")]
++    Expired,
++    #[error("original alarm owner previously refused")]
++    Refused,
++    #[error("kernel alarm I/O failed: {0}")]
++    Io(#[from] std::io::Error),
++}
++#[derive(Debug, Clone, Copy, PartialEq, Eq)]
++struct Bounds {
++    total: u64,
++    cell: u64,
++    progress: u64,
++}
++impl Bounds {
++    fn first(self) -> u64 {
++        self.total.min(self.cell).min(self.progress)
++    }
++}
++fn boundaries(
++    reserved: u64,
++    cell: u64,
++    progress: u64,
++    last: u64,
++    now: u64,
++) -> Result<Bounds, OriginalSafetyAlarmError> {
++    if reserved == 0 || progress < reserved || cell < progress || last < cell || now < last {
++        return Err(OriginalSafetyAlarmError::Binding);
++    }
++    let add = |origin: u64, seconds: u64| {
++        origin
++            .checked_add(seconds * NS)
++            .ok_or(OriginalSafetyAlarmError::Binding)
++    };
++    let bounds = Bounds {
++        total: add(reserved, TOTAL_SECONDS)?,
++        cell: add(cell, CELL_SECONDS)?,
++        progress: add(progress, CONTROLLER_LOSS_SECONDS)?,
++    };
++    if now >= bounds.first() {
++        return Err(OriginalSafetyAlarmError::Expired);
++    }
++    Ok(bounds)
++}
++fn timespec(ns: u64) -> libc::timespec {
++    libc::timespec {
++        tv_sec: (ns / NS) as libc::time_t,
++        tv_nsec: (ns % NS) as libc::c_long,
++    }
++}
++fn nanos(t: libc::timespec) -> Result<u64, OriginalSafetyAlarmError> {
++    if t.tv_sec < 0 || !(0..NS as i64).contains(&t.tv_nsec) {
++        return Err(OriginalSafetyAlarmError::Binding);
++    }
++    (t.tv_sec as u64)
++        .checked_mul(NS)
++        .and_then(|v| v.checked_add(t.tv_nsec as u64))
++        .ok_or(OriginalSafetyAlarmError::Binding)
++}
++fn clock() -> Result<u64, OriginalSafetyAlarmError> {
++    let mut t = unsafe { std::mem::zeroed() };
++    if unsafe { libc::clock_gettime(libc::CLOCK_BOOTTIME, &mut t) } != 0 {
++        return Err(std::io::Error::last_os_error().into());
++    }
++    nanos(t)
++}
++struct Alarm {
++    file: File,
++    deadline: u64,
++}
++impl Alarm {
++    fn arm(deadline: u64) -> Result<Self, OriginalSafetyAlarmError> {
++        if clock()? >= deadline {
++            return Err(OriginalSafetyAlarmError::Expired);
++        }
++        let fd = unsafe {
++            libc::timerfd_create(libc::CLOCK_BOOTTIME, libc::TFD_CLOEXEC | libc::TFD_NONBLOCK)
++        };
++        if fd < 0 {
++            return Err(std::io::Error::last_os_error().into());
++        }
++        let alarm = Self {
++            file: unsafe { File::from_raw_fd(fd) },
++            deadline,
++        };
++        let spec = libc::itimerspec {
++            it_interval: timespec(0),
++            it_value: timespec(deadline),
++        };
++        if unsafe {
++            libc::timerfd_settime(
++                alarm.file.as_raw_fd(),
++                libc::TFD_TIMER_ABSTIME,
++                &spec,
++                std::ptr::null_mut(),
++            )
++        } != 0
++        {
++            return Err(std::io::Error::last_os_error().into());
++        }
++        alarm.inspect()?;
++        Ok(alarm)
++    }
++    fn inspect(&self) -> Result<(), OriginalSafetyAlarmError> {
++        let fd = self.file.as_raw_fd();
++        if unsafe { libc::fcntl(fd, libc::F_GETFD) } != libc::FD_CLOEXEC
++            || unsafe { libc::fcntl(fd, libc::F_GETFL) } != libc::O_RDWR | libc::O_NONBLOCK
++        {
++            return Err(OriginalSafetyAlarmError::Binding);
++        }
++        // Bounded current-thread kernel metadata, bracketed by the original
++        // receiver/origin rounds. It is never an authority or caller path.
++        let info = std::fs::OpenOptions::new()
++            .read(true)
++            .custom_flags(libc::O_NOFOLLOW | libc::O_CLOEXEC | libc::O_NONBLOCK)
++            .open(format!("/proc/thread-self/fdinfo/{fd}"))?;
++        let mut fs: libc::statfs = unsafe { std::mem::zeroed() };
++        if unsafe { libc::fstatfs(info.as_raw_fd(), &mut fs) } != 0 {
++            return Err(std::io::Error::last_os_error().into());
++        }
++        if fs.f_type != libc::PROC_SUPER_MAGIC as libc::c_long {
++            return Err(OriginalSafetyAlarmError::Binding);
++        }
++        let mut raw = Vec::new();
++        info.take(4097).read_to_end(&mut raw)?;
++        let text = std::str::from_utf8(&raw).map_err(|_| OriginalSafetyAlarmError::Binding)?;
++        let clocks: Vec<_> = text
++            .lines()
++            .filter_map(|l| l.strip_prefix("clockid:"))
++            .collect();
++        let flags: Vec<_> = text
++            .lines()
++            .filter_map(|l| l.strip_prefix("settime flags:"))
++            .collect();
++        if raw.len() > 4096
++            || clocks.len() != 1
++            || clocks[0].trim() != "7"
++            || flags.len() != 1
++            || flags[0].trim() != "01"
++        {
++            return Err(OriginalSafetyAlarmError::Binding);
++        }
++        let before = clock()?;
++        let mut spec = unsafe { std::mem::zeroed() };
++        if unsafe { libc::timerfd_gettime(fd, &mut spec) } != 0 {
++            return Err(std::io::Error::last_os_error().into());
++        }
++        let after = clock()?;
++        if after >= self.deadline {
++            return Err(OriginalSafetyAlarmError::Expired);
++        }
++        let remaining = nanos(spec.it_value)?;
++        if after < before
++            || nanos(spec.it_interval)? != 0
++            || remaining == 0
++            || remaining > self.deadline.saturating_sub(before)
++            || remaining < self.deadline - after
++        {
++            return Err(OriginalSafetyAlarmError::Binding);
++        }
++        Ok(())
++    }
++}
++
++/// Retained one-shot alarm, not an independently running watchdog.
++/// ```compile_fail
++/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::start_material::pipe_transport::safety_alarm::OriginalCollectorSafetyAlarm;
++/// fn start(p: OriginalCollectorSafetyAlarm<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { p.start_once(); }
++/// ```
++/// ```compile_fail
++/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::start_material::pipe_transport::safety_alarm::OriginalCollectorSafetyAlarm;
++/// fn rearm(p: OriginalCollectorSafetyAlarm<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { p.rearm(10); }
++/// ```
++/// ```compile_fail
++/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::start_material::pipe_transport::safety_alarm::OriginalCollectorSafetyAlarm;
++/// fn extract(p: OriginalCollectorSafetyAlarm<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { p.into_fd(); }
++/// ```
++/// ```compile_fail
++/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::start_material::pipe_transport::safety_alarm::OriginalCollectorSafetyAlarm;
++/// fn copy(p: OriginalCollectorSafetyAlarm<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { p.clone(); }
++/// ```
++/// ```compile_fail
++/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::start_material::pipe_transport::safety_alarm::OriginalCollectorSafetyAlarm;
++/// fn decode<T: serde::de::DeserializeOwned>() {}
++/// decode::<OriginalCollectorSafetyAlarm<'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static>>();
++/// ```
++pub struct OriginalCollectorSafetyAlarm<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p> {
++    alarm: Option<Alarm>,
++    bounds: Option<Bounds>,
++    last: Option<KernelTimePoint>,
++    transport: OriginalCollectorPipeTransport<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++}
++impl OriginalCollectorSafetyAlarm<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
++    pub fn is_refused(&self) -> bool {
++        self.transport.is_refused()
++    }
++    fn original_round(&mut self, allow_fixture: bool) -> Result<Bounds, OriginalSafetyAlarmError> {
++        let material = &mut self.transport.material;
++        material
++            .outputs
++            .material_round()
++            .map_err(OriginalStartMaterialError::from)
++            .map_err(OriginalPipeTransportError::from)?;
++        material
++            .bind(allow_fixture)
++            .map_err(OriginalPipeTransportError::from)?;
++        let prepared = &mut material.outputs.pipes.starting.original.original.prepared;
++        let previous = self
++            .last
++            .as_ref()
++            .or(prepared.point.as_ref())
++            .ok_or(OriginalSafetyAlarmError::Binding)?;
++        let progress = &mut prepared.original.original;
++        let state = material
++            .starting
++            .as_ref()
++            .ok_or(OriginalSafetyAlarmError::Binding)?;
++        crate::diagnostic_lease::validate_transition(&progress.reservation.state, state)
++            .map_err(|_| OriginalSafetyAlarmError::Binding)?;
++        if state.stage != DiagnosticStage::Starting
++            || state.completed_cells != 0
++            || state.revision != 2
++        {
++            return Err(OriginalSafetyAlarmError::Binding);
++        }
++        let received = progress.packet.received_time().clone();
++        let now = progress.packet.original_reservation_time(Some(previous))?;
++        if received.boot_id() != state.identity.boot_id || now.boot_id() != state.identity.boot_id {
++            return Err(OriginalSafetyAlarmError::Binding);
++        }
++        let bounds = boundaries(
++            state.reserved_monotonic_ns,
++            state
++                .cell_started_monotonic_ns
++                .ok_or(OriginalSafetyAlarmError::Binding)?,
++            received.boottime_ns(),
++            state.last_observed_monotonic_ns,
++            now.boottime_ns(),
++        )?;
++        let spec = worker(&progress.reservation.state, &material.projection)?;
++        let [Some(stdout), Some(stderr)] = &material.outputs.pipes.pipes else {
++            return Err(OriginalSafetyAlarmError::Binding);
++        };
++        inspect_message(
++            self.transport
++                .message
++                .as_ref()
++                .ok_or(OriginalSafetyAlarmError::Binding)?,
++            &spec,
++            &stdout.writer,
++            &stderr.writer,
++        )?;
++        self.last = Some(now);
++        Ok(bounds)
++    }
++    fn validate(
++        &mut self,
++        allow_fixture: bool,
++        construct: bool,
++    ) -> Result<(), OriginalSafetyAlarmError> {
++        if self.is_refused() || !self.transport.material.ready {
++            self.transport.material.outputs.refuse();
++            return Err(OriginalSafetyAlarmError::Refused);
++        }
++        let result = (|| {
++            let bounds = self.original_round(allow_fixture)?;
++            if construct {
++                self.bounds = Some(bounds);
++                self.alarm = Some(Alarm::arm(bounds.first())?);
++            }
++            if self.bounds != Some(bounds) {
++                return Err(OriginalSafetyAlarmError::Binding);
++            }
++            let alarm = self
++                .alarm
++                .as_ref()
++                .ok_or(OriginalSafetyAlarmError::Binding)?;
++            if alarm.deadline != bounds.first() {
++                return Err(OriginalSafetyAlarmError::Binding);
++            }
++            alarm.inspect()?;
++            if self.original_round(allow_fixture)? != bounds {
++                return Err(OriginalSafetyAlarmError::Binding);
++            }
++            self.alarm
++                .as_ref()
++                .ok_or(OriginalSafetyAlarmError::Binding)?
++                .inspect()
++        })();
++        if result.is_err() {
++            self.transport.material.outputs.refuse();
++        }
++        result
++    }
++    pub fn revalidate(&mut self) -> Result<(), OriginalSafetyAlarmError> {
++        self.validate(false, false)
++    }
++    #[cfg(test)]
++    pub(crate) fn revalidate_fixture_for_test(&mut self) -> Result<(), OriginalSafetyAlarmError> {
++        self.validate(true, false)
++    }
++    #[cfg(test)]
++    pub(crate) fn corrupt_for_test(&mut self, kind: usize) {
++        match kind {
++            0 => self.alarm = None,
++            1 => self.bounds.as_mut().unwrap().progress += NS,
++            2 => self.transport.remove_message_for_test(),
++            _ => unreachable!(),
++        }
++    }
++    #[cfg(test)]
++    pub(crate) fn offsets_for_test(&self) -> [u64; 3] {
++        let state = self.transport.material.starting.as_ref().unwrap();
++        let bounds = self.bounds.unwrap();
++        [
++            bounds.total - state.reserved_monotonic_ns,
++            bounds.cell - state.cell_started_monotonic_ns.unwrap(),
++            bounds.progress
++                - self
++                    .transport
++                    .material
++                    .outputs
++                    .pipes
++                    .starting
++                    .original
++                    .original
++                    .prepared
++                    .original
++                    .original
++                    .packet
++                    .received_time()
++                    .boottime_ns(),
++        ]
++    }
++    #[cfg(test)]
++    pub(crate) fn origins_for_test(&self) -> [u64; 6] {
++        let prepared = &self
++            .transport
++            .material
++            .outputs
++            .pipes
++            .starting
++            .original
++            .original
++            .prepared;
++        let progress = &prepared.original.original;
++        [
++            progress.reservation.state.reserved_monotonic_ns,
++            prepared.original.issued.boottime_ns(),
++            progress.packet.received_time().boottime_ns(),
++            self.transport
++                .material
++                .starting
++                .as_ref()
++                .unwrap()
++                .cell_started_monotonic_ns
++                .unwrap(),
++            self.last.as_ref().unwrap().boottime_ns(),
++            clock().unwrap(),
++        ]
++    }
++}
++impl fmt::Debug for OriginalCollectorSafetyAlarm<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
++    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++        f.debug_struct("OriginalCollectorSafetyAlarm")
++            .field("refused", &self.is_refused())
++            .finish_non_exhaustive()
++    }
++}
++pub struct OriginalSafetyAlarmFailure<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p> {
++    error: OriginalSafetyAlarmError,
++    held: Box<OriginalCollectorSafetyAlarm<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>>,
++}
++impl OriginalSafetyAlarmFailure<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
++    pub fn error(&self) -> &OriginalSafetyAlarmError {
++        &self.error
++    }
++    pub fn is_refused(&self) -> bool {
++        self.held.is_refused()
++    }
++}
++impl fmt::Debug for OriginalSafetyAlarmFailure<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
++    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++        fmt::Debug::fmt(&self.error, f)
++    }
++}
++impl fmt::Display for OriginalSafetyAlarmFailure<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
++    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++        fmt::Display::fmt(&self.error, f)
++    }
++}
++impl std::error::Error for OriginalSafetyAlarmFailure<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {}
++impl<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>
++    OriginalCollectorPipeTransport<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>
++{
++    pub fn prepare_original_safety_alarm(
++        self,
++    ) -> Result<
++        OriginalCollectorSafetyAlarm<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++        OriginalSafetyAlarmFailure<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++    > {
++        self.prepare_alarm_with(false)
++    }
++    #[cfg(test)]
++    pub(crate) fn prepare_original_safety_alarm_for_test(
++        self,
++    ) -> Result<
++        OriginalCollectorSafetyAlarm<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++        OriginalSafetyAlarmFailure<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++    > {
++        self.prepare_alarm_with(true)
++    }
++    fn prepare_alarm_with(
++        self,
++        allow_fixture: bool,
++    ) -> Result<
++        OriginalCollectorSafetyAlarm<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++        OriginalSafetyAlarmFailure<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++    > {
++        let mut held = OriginalCollectorSafetyAlarm {
++            alarm: None,
++            bounds: None,
++            last: None,
++            transport: self,
++        };
++        match held.validate(allow_fixture, true) {
++            Ok(()) => Ok(held),
++            Err(error) => Err(OriginalSafetyAlarmFailure {
++                error,
++                held: Box::new(held),
++            }),
++        }
++    }
++}
++
++#[cfg(test)]
++#[path = "diagnostic_original_safety_alarm_tests.rs"]
++mod tests;
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_original_safety_alarm_tests.rs b/tools/long-run-supervisor-074/src/diagnostic_original_safety_alarm_tests.rs
+new file mode 100644
+index 0000000000000000000000000000000000000000..b24948f85d5b369d901a137f9bc84a9cc1fd8a7d
+--- /dev/null
++++ b/tools/long-run-supervisor-074/src/diagnostic_original_safety_alarm_tests.rs
+@@ -0,0 +1,150 @@
++use super::*;
++
++#[test]
++fn original_alarm_bounds_exclude_equality_overflow_and_later_starting_renewal() {
++    let b = boundaries(NS, 4 * NS, 2 * NS, 4 * NS, 5 * NS).unwrap();
++    assert_eq!((b.total, b.cell, b.progress), (301 * NS, 64 * NS, 12 * NS));
++    assert_eq!(b.first(), 12 * NS);
++    assert_ne!(b.progress, 4 * NS + CONTROLLER_LOSS_SECONDS * NS);
++    for now in [12 * NS, 13 * NS] {
++        assert!(matches!(
++            boundaries(NS, 4 * NS, 2 * NS, 4 * NS, now),
++            Err(OriginalSafetyAlarmError::Expired)
++        ));
++    }
++    for args in [
++        (0, 4, 2, 4, 5),
++        (2, 4, 1, 4, 5),
++        (1, 2, 3, 4, 5),
++        (1, 4, 2, 3, 5),
++        (1, 4, 2, 4, 3),
++    ] {
++        assert!(matches!(
++            boundaries(args.0, args.1, args.2, args.3, args.4),
++            Err(OriginalSafetyAlarmError::Binding)
++        ));
++    }
++    assert!(matches!(
++        boundaries(u64::MAX - 1, u64::MAX, u64::MAX - 1, u64::MAX, u64::MAX),
++        Err(OriginalSafetyAlarmError::Binding)
++    ));
++    // Total/cell bounds also win independently; no round-up or one-second grace.
++    assert_eq!(
++        boundaries(NS, 295 * NS, 295 * NS, 295 * NS, 296 * NS)
++            .unwrap()
++            .first(),
++        301 * NS
++    );
++    assert!(matches!(
++        boundaries(NS, 295 * NS, 295 * NS, 295 * NS, 301 * NS),
++        Err(OriginalSafetyAlarmError::Expired)
++    ));
++    // In the current first-cell grammar progress precedes Starting, so the
++    // ten-second progress ceiling always precedes the sixty-second cell bound.
++}
++#[test]
++fn original_alarm_seeded_bounds_match_checked_reference_without_time_refresh() {
++    let mut seed = 0x0740_a117_u64;
++    for _ in 0..4096 {
++        seed ^= seed << 13;
++        seed ^= seed >> 7;
++        seed ^= seed << 17;
++        let reserved = 1 + seed % 1_000_000_000;
++        let progress = reserved + (seed.rotate_left(17) % (299 * NS));
++        let cell = progress + (seed.rotate_left(31) % NS);
++        let last = cell;
++        let now = cell + seed.rotate_left(41) % (12 * NS);
++        let expected = (reserved + TOTAL_SECONDS * NS)
++            .min(cell + CELL_SECONDS * NS)
++            .min(progress + CONTROLLER_LOSS_SECONDS * NS);
++        match boundaries(reserved, cell, progress, last, now) {
++            Ok(b) => {
++                assert!(now < expected);
++                assert_eq!(b.first(), expected);
++            }
++            Err(OriginalSafetyAlarmError::Expired) => assert!(now >= expected),
++            Err(e) => panic!("{e:?}"),
++        }
++    }
++    println!("HC074-ALARM-BOUNDS seed=0x0740a117 cases=4096 exact=true renewed=false");
++}
++fn set(alarm: &Alarm, deadline: u64, interval: u64, flags: i32) {
++    let spec = libc::itimerspec {
++        it_value: timespec(deadline),
++        it_interval: timespec(interval),
++    };
++    assert_eq!(
++        unsafe {
++            libc::timerfd_settime(alarm.file.as_raw_fd(), flags, &spec, std::ptr::null_mut())
++        },
++        0
++    );
++}
++#[test]
++fn original_alarm_kernel_flags_clock_interval_disarm_and_extension_refuse() {
++    for kind in 0..6 {
++        let mut alarm = Alarm::arm(clock().unwrap() + 30 * NS).unwrap();
++        alarm.inspect().unwrap();
++        match kind {
++            0 => set(&alarm, 0, 0, libc::TFD_TIMER_ABSTIME),
++            1 => set(&alarm, alarm.deadline + 60 * NS, 0, libc::TFD_TIMER_ABSTIME),
++            2 => set(&alarm, alarm.deadline, NS, libc::TFD_TIMER_ABSTIME),
++            3 => assert_eq!(
++                unsafe { libc::fcntl(alarm.file.as_raw_fd(), libc::F_SETFD, 0) },
++                0
++            ),
++            4 => alarm.file = tempfile::tempfile().unwrap(),
++            5 => {
++                let fd = unsafe {
++                    libc::timerfd_create(
++                        libc::CLOCK_MONOTONIC,
++                        libc::TFD_CLOEXEC | libc::TFD_NONBLOCK,
++                    )
++                };
++                assert!(fd >= 0);
++                alarm.file = unsafe { File::from_raw_fd(fd) };
++                set(&alarm, alarm.deadline, 0, libc::TFD_TIMER_ABSTIME);
++            }
++            _ => unreachable!(),
++        }
++        assert!(alarm.inspect().is_err(), "kind={kind}");
++    }
++}
++#[test]
++fn original_alarm_kernel_expiry_is_readable_and_validation_does_not_consume_or_rearm() {
++    let mut alarm = Alarm::arm(clock().unwrap() + 100_000_000).unwrap();
++    alarm.inspect().unwrap();
++    let mut p = libc::pollfd {
++        fd: alarm.file.as_raw_fd(),
++        events: libc::POLLIN,
++        revents: 0,
++    };
++    assert_eq!(unsafe { libc::poll(&mut p, 1, 5000) }, 1);
++    assert_eq!(p.revents, libc::POLLIN);
++    assert!(matches!(
++        alarm.inspect(),
++        Err(OriginalSafetyAlarmError::Expired)
++    ));
++    assert!(matches!(
++        alarm.inspect(),
++        Err(OriginalSafetyAlarmError::Expired)
++    ));
++    let mut b = [0; 8];
++    alarm.file.read_exact(&mut b).unwrap();
++    assert_eq!(u64::from_ne_bytes(b), 1);
++    assert!(matches!(
++        alarm.inspect(),
++        Err(OriginalSafetyAlarmError::Expired)
++    ));
++    assert_eq!(
++        alarm.file.read(&mut b).unwrap_err().kind(),
++        std::io::ErrorKind::WouldBlock
++    );
++    let fd = alarm.file.as_raw_fd();
++    drop(alarm);
++    assert_eq!(unsafe { libc::fcntl(fd, libc::F_GETFD) }, -1);
++    assert!(matches!(
++        Alarm::arm(clock().unwrap()),
++        Err(OriginalSafetyAlarmError::Expired)
++    ));
++}
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_original_safety_alarm_join_tests.rs b/tools/long-run-supervisor-074/src/diagnostic_original_safety_alarm_join_tests.rs
+new file mode 100644
+index 0000000000000000000000000000000000000000..93f4e6695fab25cce1158d0aa2d41454c4e28011
+--- /dev/null
++++ b/tools/long-run-supervisor-074/src/diagnostic_original_safety_alarm_join_tests.rs
+@@ -0,0 +1,281 @@
++use super::*;
++use crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::start_material::pipe_transport::safety_alarm::OriginalSafetyAlarmError;
++
++#[test]
++#[ignore = "manual nonroot original alarm cost attribution; a diagnostic pass is not healthy admission"]
++fn original_safety_alarm_cost_attribution() {
++    use crate::diagnostic_ipc::validation_trace::{self as trace, Stage};
++    for sample in 0..3 {
++        let bundle = Bundle::new();
++        with_original_at(false, None, |original, _, receiver, sender, model| {
++            with_owned_empty_fence_for_test(|fence, root, leaf| {
++                let original = accepted(original, fence, leaf, receiver, sender, model);
++                let (outputs, report) = trace::capture(|| {
++                    trace::stage(Stage::Bind);
++                    original
++                        .prepare_original_outputs_for_test(|_| Ok(()))
++                        .unwrap()
++                });
++                println!("HC074-ALARM-ATTRIBUTION sample={sample} phase=outputs report={report:?}");
++                let before = records(leaf);
++                let (material, report) = trace::capture(|| {
++                    trace::stage(Stage::Bind);
++                    outputs
++                        .prepare_original_start_material_for_test(&bundle.path, || {})
++                        .unwrap()
++                });
++                println!(
++                    "HC074-ALARM-ATTRIBUTION sample={sample} phase=material report={report:?}"
++                );
++                let (transport, report) = trace::capture(|| {
++                    trace::stage(Stage::Bind);
++                    material.prepare_original_pipe_transport_for_test().unwrap()
++                });
++                println!("HC074-ALARM-ATTRIBUTION sample={sample} phase=message report={report:?}");
++                let (result, report) = trace::capture(|| {
++                    trace::stage(Stage::Bind);
++                    transport.prepare_original_safety_alarm_for_test()
++                });
++                println!("HC074-ALARM-ATTRIBUTION sample={sample} phase=alarm report={report:?} result={result:?}");
++                match result {
++                    Err(failure) => {
++                        assert!(failure.is_refused());
++                        assert!(
++                            format!("{failure:?}").contains("Causal(Time)"),
++                            "{failure:?}"
++                        );
++                        busy(root);
++                        drop(failure);
++                    }
++                    Ok(mut alarm) => {
++                        println!(
++                            "HC074-ALARM-ORIGINS sample={sample} before={:?} offsets_ns={:?}",
++                            alarm.origins_for_test(),
++                            alarm.offsets_for_test()
++                        );
++                        let (result, report) = trace::capture(|| {
++                            trace::stage(Stage::Checks);
++                            alarm.revalidate_fixture_for_test()
++                        });
++                        println!("HC074-ALARM-ATTRIBUTION sample={sample} phase=revalidate report={report:?} result={result:?}");
++                        println!("HC074-ALARM-ORIGINS sample={sample} after={:?} post_error_clock_not_first_event=true", alarm.origins_for_test());
++                        if let Err(e) = result {
++                            assert!(format!("{e:?}").contains("Causal(Time)"), "{e:?}");
++                            assert!(alarm.is_refused());
++                            assert!(matches!(
++                                alarm.revalidate_fixture_for_test(),
++                                Err(OriginalSafetyAlarmError::Refused)
++                            ));
++                        }
++                        busy(root);
++                        drop(alarm);
++                    }
++                }
++                assert_eq!(records(leaf), before);
++                retained_context_refuses_for_test(root);
++                println!("HC074-ALARM-ATTRIBUTION-CLOSED sample={sample} accepted=false renewed=false guardian=false send=false");
++            });
++        });
++    }
++}
++
++#[test]
++#[ignore = "manual nonroot original safety timer and fixed deadline ownership; no guardian or execution"]
++fn original_safety_alarm_joined_healthy() {
++    use crate::diagnostic_ipc::validation_trace::{self as trace, Stage};
++    for sample in 0..3 {
++        let bundle = Bundle::new();
++        with_original_at(false, None, |original, _, receiver, sender, model| {
++            with_owned_empty_fence_for_test(|fence, root, leaf| {
++                let transport = accepted(original, fence, leaf, receiver, sender, model)
++                    .prepare_original_outputs_for_test(|_| Ok(()))
++                    .unwrap()
++                    .prepare_original_start_material_for_test(&bundle.path, || {})
++                    .unwrap()
++                    .prepare_original_pipe_transport_for_test()
++                    .unwrap();
++                let before = records(leaf);
++                let (mut alarm, prepare) = trace::capture(|| {
++                    trace::stage(Stage::Bind);
++                    transport.prepare_original_safety_alarm_for_test().unwrap()
++                });
++                let offsets = alarm.offsets_for_test();
++                assert_eq!(offsets, [300_000_000_000, 60_000_000_000, 10_000_000_000]);
++                let (_, validate) = trace::capture(|| {
++                    trace::stage(Stage::Checks);
++                    alarm.revalidate_fixture_for_test().unwrap()
++                });
++                assert_eq!(
++                    prepare.stages[Stage::Bind as usize].authentication_calls,
++                    34
++                );
++                assert_eq!(
++                    validate.stages[Stage::Checks as usize].authentication_calls,
++                    34
++                );
++                println!(
++                    "HC074-SAFETY-ALARM-COST sample={sample} phase=prepare report={prepare:?}"
++                );
++                println!(
++                    "HC074-SAFETY-ALARM-COST sample={sample} phase=validate report={validate:?}"
++                );
++                assert!(!alarm.is_refused());
++                busy(root);
++                assert_eq!(records(leaf), before);
++                assert_eq!(fs::read_dir(leaf).unwrap().count(), 3);
++                drop(alarm);
++                retained_context_refuses_for_test(root);
++                println!("HC074-SAFETY-ALARM-CONTROL sample={sample} offsets_ns={offsets:?} held=true unchanged=true renewed=false guardian=false send=false");
++            });
++        });
++    }
++}
++#[test]
++#[ignore = "manual nonroot original safety alarm live faults and expiry; no guardian or execution"]
++fn original_safety_alarm_joined_refusals() {
++    for case in [
++        "entry-fixture",
++        "entry-refused",
++        "alarm",
++        "bounds",
++        "message",
++        "build",
++        "output",
++        "trust",
++        "fixture",
++        "expiry",
++    ] {
++        let bundle = Bundle::new();
++        with_original_at(true, None, |original, paths, receiver, sender, model| {
++            with_owned_empty_fence_for_test(|fence, root, leaf| {
++                let mut transport = accepted(original, fence, leaf, receiver, sender, model)
++                    .prepare_original_outputs_for_test(|_| Ok(()))
++                    .unwrap()
++                    .prepare_original_start_material_for_test(&bundle.path, || {})
++                    .unwrap()
++                    .prepare_original_pipe_transport_for_test()
++                    .unwrap();
++                let before = records(leaf);
++                if case.starts_with("entry-") {
++                    if case == "entry-refused" {
++                        transport.remove_message_for_test();
++                        assert!(matches!(
++                            transport.revalidate_fixture_for_test(),
++                            Err(OriginalPipeTransportError::Binding)
++                        ));
++                    }
++                    let failure = if case == "entry-fixture" {
++                        transport.prepare_original_safety_alarm()
++                    } else {
++                        transport.prepare_original_safety_alarm_for_test()
++                    }
++                    .unwrap_err();
++                    assert!(failure.is_refused());
++                    match (case, failure.error()) {
++                        (
++                            "entry-fixture",
++                            OriginalSafetyAlarmError::Transport(
++                                OriginalPipeTransportError::Material(
++                                    OriginalStartMaterialError::Fixture,
++                                ),
++                            ),
++                        )
++                        | ("entry-refused", OriginalSafetyAlarmError::Refused) => (),
++                        _ => panic!("wrong entry {case}: {failure:?}"),
++                    }
++                    busy(root);
++                    drop(failure);
++                } else {
++                    let mut alarm = transport.prepare_original_safety_alarm_for_test().unwrap();
++                    match case {
++                        "alarm" => alarm.corrupt_for_test(0),
++                        "bounds" => alarm.corrupt_for_test(1),
++                        "message" => alarm.corrupt_for_test(2),
++                        "build" => bundle.change(),
++                        "output" => fs::write(
++                            output(leaf).join("collector-attempt-v1/collector-stderr.bin"),
++                            b"unowned",
++                        )
++                        .unwrap(),
++                        "trust" => fs::write(&paths.worker, b"trust drift").unwrap(),
++                        "fixture" => (),
++                        "expiry" => std::thread::sleep(std::time::Duration::from_secs(10)),
++                        _ => unreachable!(),
++                    }
++                    let (error, event) =
++                        crate::diagnostic_kernel_admission::refusal_trace::capture(|| {
++                            if case == "fixture" {
++                                alarm.revalidate().unwrap_err()
++                            } else {
++                                alarm.revalidate_fixture_for_test().unwrap_err()
++                            }
++                        });
++                    match (case, &error) {
++                        ("alarm" | "bounds" | "message", OriginalSafetyAlarmError::Binding)
++                        | (
++                            "build",
++                            OriginalSafetyAlarmError::Transport(
++                                OriginalPipeTransportError::Material(
++                                    OriginalStartMaterialError::Build(_),
++                                ),
++                            ),
++                        )
++                        | (
++                            "output",
++                            OriginalSafetyAlarmError::Transport(
++                                OriginalPipeTransportError::Material(
++                                    OriginalStartMaterialError::Outputs(OriginalSinkError::Invalid),
++                                ),
++                            ),
++                        )
++                        | (
++                            "fixture",
++                            OriginalSafetyAlarmError::Transport(
++                                OriginalPipeTransportError::Material(
++                                    OriginalStartMaterialError::Fixture,
++                                ),
++                            ),
++                        ) => (),
++                        ("trust", _) => {
++                            let s = format!("{error:?}");
++                            assert!(
++                                s.contains("Input(Invalid)")
++                                    && !s.contains("Time")
++                                    && !s.contains("Kernel("),
++                                "{s}"
++                            );
++                        }
++                        ("expiry", _) => {
++                            let e = event.expect("original progress-age event");
++                            assert_eq!(e.site, "progress-age");
++                            assert_eq!(e.clock[5], 10_000_000_000);
++                            assert!(
++                                e.clock[0] > e.clock[1]
++                                    && e.clock[2] >= e.clock[0]
++                                    && e.clock[2] - e.clock[0] >= e.clock[5]
++                            );
++                            assert!(
++                                format!("{error:?}")
++                                    .contains("Causal(Progress(Input(Kernel(Invalid))))"),
++                                "{error:?}"
++                            );
++                            println!("HC074-SAFETY-ALARM-EXPIRY event={e:?} renewed=false");
++                        }
++                        _ => panic!("wrong refusal {case}: {error:?}"),
++                    }
++                    assert!(alarm.is_refused());
++                    assert!(matches!(
++                        alarm.revalidate_fixture_for_test(),
++                        Err(OriginalSafetyAlarmError::Refused)
++                    ));
++                    busy(root);
++                    drop(alarm);
++                }
++                assert_eq!(records(leaf), before);
++                assert_eq!(fs::read_dir(leaf).unwrap().count(), 3);
++                retained_context_refuses_for_test(root);
++                println!("HC074-SAFETY-ALARM-REFUSAL case={case} exact=true sticky=true held=true unchanged=true guardian=false send=false");
++            });
++        });
++    }
++}
+diff --git a/tools/long-run-supervisor-074/tests/diagnostic_original_safety_alarm.rs b/tools/long-run-supervisor-074/tests/diagnostic_original_safety_alarm.rs
+new file mode 100644
+index 0000000000000000000000000000000000000000..7277b78c7a2da0d3576dfdc9fdf966b7bf586028
+--- /dev/null
++++ b/tools/long-run-supervisor-074/tests/diagnostic_original_safety_alarm.rs
+@@ -0,0 +1,9 @@
++#![cfg(all(target_os = "linux", target_arch = "x86_64"))]
++use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::start_material::pipe_transport::OriginalCollectorPipeTransport;
++#[test]
++fn original_safety_alarm_consumes_transport_without_supplied_clock_or_deadline() {
++    fn prepare(owner: OriginalCollectorPipeTransport<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) {
++        let _ = owner.prepare_original_safety_alarm();
++    }
++    let _ = prepare;
++}
+

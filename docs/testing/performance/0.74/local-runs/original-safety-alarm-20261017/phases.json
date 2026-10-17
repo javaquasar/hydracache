@@ -1,0 +1,143 @@
+{
+  "kind": "inclusive_fixture_cost_not_product_performance",
+  "source": "diagnostic-final.log",
+  "compiler": "1.94.0",
+  "samples": 3,
+  "rows": [
+    {
+      "sample": 0,
+      "phase": "outputs",
+      "wall_ns": 7281236115,
+      "authentications": 782,
+      "authentication_ns": 25637098,
+      "signatures": 782,
+      "signature_ns": 21727398
+    },
+    {
+      "sample": 0,
+      "phase": "material",
+      "wall_ns": 350626706,
+      "authentications": 34,
+      "authentication_ns": 1135786,
+      "signatures": 34,
+      "signature_ns": 956712
+    },
+    {
+      "sample": 0,
+      "phase": "message",
+      "wall_ns": 322211446,
+      "authentications": 34,
+      "authentication_ns": 1118828,
+      "signatures": 34,
+      "signature_ns": 944353
+    },
+    {
+      "sample": 0,
+      "phase": "alarm",
+      "wall_ns": 336566738,
+      "authentications": 34,
+      "authentication_ns": 1234875,
+      "signatures": 34,
+      "signature_ns": 1058780
+    },
+    {
+      "sample": 0,
+      "phase": "revalidate",
+      "wall_ns": 139880561,
+      "authentications": 17,
+      "authentication_ns": 558622,
+      "signatures": 17,
+      "signature_ns": 472403
+    },
+    {
+      "sample": 1,
+      "phase": "outputs",
+      "wall_ns": 7213040327,
+      "authentications": 782,
+      "authentication_ns": 25790652,
+      "signatures": 782,
+      "signature_ns": 21799108
+    },
+    {
+      "sample": 1,
+      "phase": "material",
+      "wall_ns": 350770703,
+      "authentications": 34,
+      "authentication_ns": 1140649,
+      "signatures": 34,
+      "signature_ns": 959175
+    },
+    {
+      "sample": 1,
+      "phase": "message",
+      "wall_ns": 327467366,
+      "authentications": 34,
+      "authentication_ns": 1129456,
+      "signatures": 34,
+      "signature_ns": 947642
+    },
+    {
+      "sample": 1,
+      "phase": "alarm",
+      "wall_ns": 338876559,
+      "authentications": 34,
+      "authentication_ns": 1238853,
+      "signatures": 34,
+      "signature_ns": 1061797
+    },
+    {
+      "sample": 1,
+      "phase": "revalidate",
+      "wall_ns": 140320873,
+      "authentications": 17,
+      "authentication_ns": 568452,
+      "signatures": 17,
+      "signature_ns": 474833
+    },
+    {
+      "sample": 2,
+      "phase": "outputs",
+      "wall_ns": 7213015720,
+      "authentications": 782,
+      "authentication_ns": 25673592,
+      "signatures": 782,
+      "signature_ns": 21744026
+    },
+    {
+      "sample": 2,
+      "phase": "material",
+      "wall_ns": 349177992,
+      "authentications": 34,
+      "authentication_ns": 1135140,
+      "signatures": 34,
+      "signature_ns": 958413
+    },
+    {
+      "sample": 2,
+      "phase": "message",
+      "wall_ns": 325308605,
+      "authentications": 34,
+      "authentication_ns": 1123018,
+      "signatures": 34,
+      "signature_ns": 946359
+    },
+    {
+      "sample": 2,
+      "phase": "alarm",
+      "wall_ns": 338291940,
+      "authentications": 34,
+      "authentication_ns": 1247507,
+      "signatures": 34,
+      "signature_ns": 1071537
+    },
+    {
+      "sample": 2,
+      "phase": "revalidate",
+      "wall_ns": 140816205,
+      "authentications": 17,
+      "authentication_ns": 562571,
+      "signatures": 17,
+      "signature_ns": 473384
+    }
+  ]
+}
