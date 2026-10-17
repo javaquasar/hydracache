@@ -63,3 +63,14 @@ Use only nonroot isolated temporary fixtures, with dedicated-host pre/post
 supervisor/receipt/context guards if exercised there. Preserve negative results;
 do not change an original deadline or omit a frame to obtain a positive result.
 Commit implementation separately from retained evidence and article conclusions.
+
+## Final deadline observation before process runs
+
+Source review finds that final custody metadata IO follows the grouped frame's
+last alarm observation. A delayed metadata read must not return a ready owner
+after the original absolute bound. Add a final inspection of the SAME original
+alarm after custody inspection in both construction and revalidation. Do not arm
+another timer or replace any original frame/observation. Authentication counts
+remain 68; only the already selected absolute deadline is reobserved. The first
+builds are provisional compilation checks, not process certificates for this
+review refinement. No new-owner process run preceded this correction.
