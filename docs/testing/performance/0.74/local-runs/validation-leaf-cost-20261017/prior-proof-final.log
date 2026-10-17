@@ -1,0 +1,5 @@
+HC074-CAPSULE name=candidate-c1.patch files=10 exact=true current=False
+HC074-CAPSULE name=attribution.patch files=10 exact=true current=False
+HC074-CAPSULE name=diagnostic-final.patch files=9 exact=true current=True
+HC074-SAFETY-ALARM-EVIDENCE verified=true accepted=false guardian=false ship=false
+Prior alarm negative evidence verified at exact source 48aa96b79554566196a9f761b2a50a8d94dafcbd; active index unchanged

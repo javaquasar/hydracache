@@ -11838,3 +11838,43 @@ receipt are unchanged. Independent guardian lifetime through creator loss,
 authenticated original start, complete writer revocation, completion, later
 cells and their new SIGKILL/lost-ack boundaries remain required before production
 admission. A timer that disappears with its final owner cannot prove any of them.
+
+## Locating the cost inside the original validation frame
+
+The [next attribution](../testing/performance/0.74/local-runs/validation-leaf-cost-20261017/README.md)
+uses the frame's existing test callback, without changing production code or
+observation frequency. Three fresh original chains on each normal GNU release
+compiler pass the full opening and closing rounds, 34 IPC authentications and
+signatures per sample. The two intent documents remain unchanged, the fence
+stays held until owner drop and fresh context rejects retained history. No
+Starting or output is created; no bundle, alarm or worker is run.
+
+ReservedLive is the largest separately measured opening check: 130.963–131.814
+milliseconds on Rust 1.94 and 131.334–134.037 on MSRV 1.88, with sixteen IPC
+authentications. Progress takes about 4.2–4.3 milliseconds and one authentication;
+the other separately measured buckets take about 0.1–6.6 milliseconds. These
+inclusive single-host fixture spans are not product measurements or an improvement
+estimate. The closing round is deliberately not split: the callback observes only
+opening boundaries, so its final bucket contains FinalClocks and the entire
+closing round, about 156.5–160.3 milliseconds across the six samples. Calling
+that isolated FinalClocks would misidentify the owner.
+
+The source explains the count, not yet the time. ReservedLive captures the
+original controller request twice. Each capture revalidates OIDC around its
+authority and record work; OIDC brackets build revalidation, and build brackets
+the original signed-controller checks. That nesting is consistent with the
+sixteen recorded authentications. The authentication/signature counters cover
+the diagnostic IPC verifier, not every build or OIDC cryptographic operation.
+Subtracting them from wall time cannot classify the remainder as filesystem
+overhead. The next useful attribution is inside this call tree, distinguishing
+live host/trust walks, authority, build and OIDC work while retaining all existing
+observations.
+
+This narrows the profiling target without accepting the failed alarm sequence or
+silently grouping material/message/alarm phases. That separate proposal still
+requires agreement and its own healthy/fault gate. The new packet preserves the
+private-import compilation failure and the old-proof LF/CRLF materialization
+failure, followed by corrected test-only checks and an unchanged historical
+verifier at its exact source. All 192 static contracts pass. Supervisor and
+installed artifacts are unchanged; execution admission and the later lifecycle
+SIGKILL matrix remain open.

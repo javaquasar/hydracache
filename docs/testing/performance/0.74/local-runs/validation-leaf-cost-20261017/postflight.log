@@ -1,0 +1,2 @@
+HC074-LEAF-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-LEAF-POSTFLIGHT no_fixture_executable=true diagnostic_install_absent=true

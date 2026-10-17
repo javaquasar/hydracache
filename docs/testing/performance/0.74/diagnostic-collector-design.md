@@ -186,3 +186,10 @@ requires explicit agreement and an independent healthy/fault gate before adoptio
 The current schedule stays unchanged. Independent guardian lifetime, original
 authenticated send/start, all-writer cessation, completion and later cells remain
 subsequent execution obligations.
+
+The [unchanged-frame leaf diagnostic](local-runs/validation-leaf-cost-20261017/README.md)
+passes six fresh controls and identifies ReservedLive as the largest separately
+measured opening leaf. This is a profiling target, not authorization to omit
+nested live observations. The existing callback leaves the full closing round
+in its final bucket; that bucket must not be described as isolated FinalClocks.
+No production source, observation frequency, deadline or admission changes.

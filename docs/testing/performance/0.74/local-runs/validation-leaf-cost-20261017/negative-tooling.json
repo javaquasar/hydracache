@@ -1,0 +1,12 @@
+{
+  "record_kind": "observed_failure_excerpt",
+  "full_process_stdout": false,
+  "command": "verify-prior.ps1 before checkout-line-ending materialization correction",
+  "exit_code": 1,
+  "error": "Require: qualification identity",
+  "retained_stdout": "prior-proof.log",
+  "reason": "git archive emits canonical LF; the historical verifier pins the frozen Windows checkout raw CRLF digest",
+  "correction": "prove frozen Git blob identity, copy only original pinned qualification bytes into the owned archive view, invoke unchanged historical verifier",
+  "historical_verifier_changed": false,
+  "expected_digest_changed": false
+}

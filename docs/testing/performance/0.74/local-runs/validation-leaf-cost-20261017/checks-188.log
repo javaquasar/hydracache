@@ -1,0 +1,190 @@
+rustc 1.88.0 (6b00bc388 2025-06-23)
+binary: rustc
+commit-hash: 6b00bc3880198600130e1cf62b8f8a93494488cc
+commit-date: 2025-06-23
+host: x86_64-unknown-linux-gnu
+release: 1.88.0
+LLVM version: 20.1.5
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0432]: unresolved import `ValidationFrameStep::*`
+ --> tools/long-run-supervisor-074/src/diagnostic_validation_leaf_cost_tests.rs:9:9
+  |
+9 |     use ValidationFrameStep::*;
+  |         ^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find value `StorageBefore` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_validation_leaf_cost_tests.rs:11:9
+   |
+11 |         StorageBefore,
+   |         ^^^^^^^^^^^^^ not found in this scope
+   |
+note: unit variant `crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::pipes::ValidationFrameStep::StorageBefore` exists but is inaccessible
+  --> tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs:9:5
+   |
+9  |     StorageBefore,
+   |     ^^^^^^^^^^^^^ not accessible
+help: consider importing this unit variant
+   |
+2  + use crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::preconsent::PreConsentStep::StorageBefore;
+   |
+
+error[E0425]: cannot find value `ReservedLive` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_validation_leaf_cost_tests.rs:12:9
+   |
+12 |         ReservedLive,
+   |         ^^^^^^^^^^^^ not found in this scope
+   |
+note: unit variant `crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::pipes::ValidationFrameStep::ReservedLive` exists but is inaccessible
+  --> tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs:10:5
+   |
+10 |     ReservedLive,
+   |     ^^^^^^^^^^^^ not accessible
+help: consider importing this unit variant
+   |
+2  + use crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::preconsent::PreConsentStep::ReservedLive;
+   |
+
+error[E0425]: cannot find value `Progress` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_validation_leaf_cost_tests.rs:13:9
+    |
+13  |         Progress,
+    |         ^^^^^^^^ not found in this scope
+    |
+note: these items exist but are inaccessible
+   --> tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs:21:5
+    |
+21  |     Progress(#[from] CollectorProgressError),
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::pipes::CollectorCausalError::Progress`: not accessible
+...
+324 |     Progress(Box<OriginalCausalProgress<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>>),
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::pipes::causal::Held::Progress`: not accessible
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs:11:5
+    |
+11  |     Progress,
+    |     ^^^^^^^^ `crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::pipes::ValidationFrameStep::Progress`: not accessible
+help: consider importing this unit variant
+    |
+2   + use crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::preconsent::PreConsentStep::Progress;
+    |
+
+error[E0425]: cannot find value `Causal` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_validation_leaf_cost_tests.rs:14:9
+   |
+14 |         Causal,
+   |         ^^^^^^ not found in this scope
+   |
+note: unit variant `crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::pipes::ValidationFrameStep::Causal` exists but is inaccessible
+  --> tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs:12:5
+   |
+12 |     Causal,
+   |     ^^^^^^ not accessible
+help: consider importing one of these items
+   |
+2  + use crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::OriginalStartConsentError::Causal;
+   |
+2  + use crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::preconsent::PreConsentStep::Causal;
+   |
+
+error[E0425]: cannot find value `Prepared` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_validation_leaf_cost_tests.rs:15:9
+   |
+15 |         Prepared,
+   |         ^^^^^^^^ not found in this scope
+   |
+note: unit variant `crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::pipes::ValidationFrameStep::Prepared` exists but is inaccessible
+  --> tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs:13:5
+   |
+13 |     Prepared,
+   |     ^^^^^^^^ not accessible
+help: consider importing one of these unit variants
+   |
+2  + use crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::preconsent::PreConsentStep::Prepared;
+   |
+2  + use crate::event::LifecycleEvent::Prepared;
+   |
+2  + use crate::state::CampaignState::Prepared;
+   |
+
+error[E0425]: cannot find value `Consent` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_validation_leaf_cost_tests.rs:16:9
+    |
+16  |           Consent,
+    |           ^^^^^^^ help: a function with a similar name exists (notice the capitalization): `consent`
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_original_start_consent_tests.rs:13:1
+    |
+13  | / fn consent(
+14  | |     body: crate::diagnostic_start_consent::StartConsentBody,
+15  | |     key: &ed25519_dalek::SigningKey,
+16  | | ) -> Vec<u8> {
+...   |
+28  | |     raw
+29  | | }
+    | |_- similarly named function `consent` defined here
+    |
+note: these items exist but are inaccessible
+   --> tools/long-run-supervisor-074/src/diagnostic_original_start_consent.rs:258:5
+    |
+258 |     Consent(Box<OriginalStartConsent<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>>),
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::pipes::Held::Consent`: not accessible
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_preconsent_frame.rs:283:5
+    |
+283 |     Consent(OriginalFramedConsentFailure<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>),
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::preconsent::Held::Consent`: not accessible
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs:14:5
+    |
+14  |     Consent,
+    |     ^^^^^^^ `crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::pipes::ValidationFrameStep::Consent`: not accessible
+
+error[E0425]: cannot find value `StorageAfter` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_validation_leaf_cost_tests.rs:17:9
+   |
+17 |         StorageAfter,
+   |         ^^^^^^^^^^^^ not found in this scope
+   |
+note: unit variant `crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::pipes::ValidationFrameStep::StorageAfter` exists but is inaccessible
+  --> tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs:15:5
+   |
+15 |     StorageAfter,
+   |     ^^^^^^^^^^^^ not accessible
+help: consider importing this unit variant
+   |
+2  + use crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::preconsent::PreConsentStep::StorageAfter;
+   |
+
+error[E0425]: cannot find value `FinalClocks` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_validation_leaf_cost_tests.rs:18:9
+   |
+18 |         FinalClocks,
+   |         ^^^^^^^^^^^ not found in this scope
+   |
+note: unit variant `crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::pipes::ValidationFrameStep::FinalClocks` exists but is inaccessible
+  --> tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs:16:5
+   |
+16 |     FinalClocks,
+   |     ^^^^^^^^^^^ not accessible
+help: consider importing this unit variant
+   |
+2  + use crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::preconsent::PreConsentStep::FinalClocks;
+   |
+
+error[E0603]: module `validation_frame` is private
+ --> tools/long-run-supervisor-074/src/diagnostic_validation_leaf_cost_tests.rs:4:220
+  |
+4 | ...usal::start_consent::validation_frame::ValidationFrameStep;
+  |                         ^^^^^^^^^^^^^^^^  ------------------- enum `ValidationFrameStep` is not publicly re-exported
+  |                         |
+  |                         private module
+  |
+note: the module `validation_frame` is defined here
+ --> tools/long-run-supervisor-074/src/diagnostic_original_start_consent.rs:4:1
+  |
+4 | mod validation_frame;
+  | ^^^^^^^^^^^^^^^^^^^^^
+
+Some errors have detailed explanations: E0425, E0432, E0603.
+For more information about an error, try `rustc --explain E0425`.
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 10 previous errors

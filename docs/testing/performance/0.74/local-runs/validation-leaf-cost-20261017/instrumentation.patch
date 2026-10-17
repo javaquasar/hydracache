@@ -1,0 +1,213 @@
+diff --git a/crates/xtask/tests/support/performance_contract_074_safety_alarm.rs b/crates/xtask/tests/support/performance_contract_074_safety_alarm.rs
+index d143913706c3892bfca516753715b878e6da7d56..871a21c12af32a3585203ed575c8653d27eff00e 100644
+--- a/crates/xtask/tests/support/performance_contract_074_safety_alarm.rs
++++ b/crates/xtask/tests/support/performance_contract_074_safety_alarm.rs
+@@ -1,4 +1,4 @@
+-//! Additive alarm entry; original observers, deadlines and message logic stay exact.
++//! Test-only alarm and leaf attribution; original runtime stays exact.
+ const GATES: &str = r###"
+ # BEGIN ORIGINAL SAFETY ALARM GATES
+ [[gate]]
+@@ -32,6 +32,38 @@ cwd = "."
+ platform = "linux"
+ 
+ [gate.command.env]
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.original-validation-leaf-cost-attribution"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_validation_leaf_cost_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "original_validation_leaf_cost_attribution"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Existing opening callback only; full closing round retained in explicit final bucket"
++tier = "manual"
++required_features = []
++required_env = []
++required_tools = ["cargo"]
++timeout_seconds = 180
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::leaf_cost_tests::original_validation_leaf_cost_attribution","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
+ # END ORIGINAL SAFETY ALARM GATES
+ "###;
+ pub(super) fn normalize(path: &str, raw: &str) -> String {
+@@ -136,3 +168,31 @@ fn rejected_original_alarm_stays_test_only_with_exact_original_guards() {
+     ))
+     .is_err());
+ }
++
++#[test]
++fn validation_leaf_attribution_keeps_all_runtime_and_observation_points_exact() {
++    for path in [
++        "tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_preconsent_frame.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_original_output_join.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_original_start_material.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_original_safety_alarm.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_validation_trace.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_lease.rs",
++        "docs/testing/performance/0.74/qualification-manifest.toml",
++    ] {
++        let before = std::process::Command::new("git")
++            .args(["show", &format!("48aa96b7:{path}")])
++            .current_dir(super::root())
++            .output()
++            .unwrap();
++        assert!(before.status.success());
++        let current = std::fs::read_to_string(super::root().join(path)).unwrap();
++        assert_eq!(
++            current.replace('\r', ""),
++            String::from_utf8(before.stdout).unwrap().replace('\r', ""),
++            "{path}"
++        );
++    }
++}
+diff --git a/docs/testing/gated-test-registry.toml b/docs/testing/gated-test-registry.toml
+index ebf1e4a2ebe47d6ccb8631daf4b027e718cff129..d15b5bae536ebad1f4b31d5069b9c5908c6b0630 100644
+--- a/docs/testing/gated-test-registry.toml
++++ b/docs/testing/gated-test-registry.toml
+@@ -9858,4 +9858,36 @@ cwd = "."
+ platform = "linux"
+ 
+ [gate.command.env]
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.original-validation-leaf-cost-attribution"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_validation_leaf_cost_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "original_validation_leaf_cost_attribution"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Existing opening callback only; full closing round retained in explicit final bucket"
++tier = "manual"
++required_features = []
++required_env = []
++required_tools = ["cargo"]
++timeout_seconds = 180
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::leaf_cost_tests::original_validation_leaf_cost_attribution","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
+ # END ORIGINAL SAFETY ALARM GATES
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_original_safety_alarm_join_tests.rs b/tools/long-run-supervisor-074/src/diagnostic_original_safety_alarm_join_tests.rs
+index ee8047355bf46fc300f7ae2f813fd62ffc94adaa..0291ba3bc68f10cb4643edb961acc790e61e5b51 100644
+--- a/tools/long-run-supervisor-074/src/diagnostic_original_safety_alarm_join_tests.rs
++++ b/tools/long-run-supervisor-074/src/diagnostic_original_safety_alarm_join_tests.rs
+@@ -1,4 +1,6 @@
+ use super::*;
++#[path = "diagnostic_validation_leaf_cost_tests.rs"]
++mod leaf_cost_tests;
+ use crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::start_material::pipe_transport::safety_alarm::OriginalSafetyAlarmError;
+ 
+ #[test]
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_validation_leaf_cost_tests.rs b/tools/long-run-supervisor-074/src/diagnostic_validation_leaf_cost_tests.rs
+new file mode 100644
+index 0000000000000000000000000000000000000000..948494e445866f28f6ed9e9fafd3941a59136530
+--- /dev/null
++++ b/tools/long-run-supervisor-074/src/diagnostic_validation_leaf_cost_tests.rs
+@@ -0,0 +1,74 @@
++//! Attribution through the existing callback, never a different validation schedule.
++use super::*;
++use crate::diagnostic_ipc::validation_trace::{self as trace, Stage};
++
++#[test]
++#[ignore = "manual nonroot original leaf attribution; no Starting, outputs, bundle, alarm or execution"]
++fn original_validation_leaf_cost_attribution() {
++    let channels = [
++        Stage::Unassigned,
++        Stage::Setup,
++        Stage::Fence,
++        Stage::Retain,
++        Stage::Observe,
++        Stage::Publish,
++        Stage::Bind,
++        Stage::Checks,
++    ];
++    for sample in 0..3 {
++        with_original_at(false, None, |original, _, receiver, sender, model| {
++            with_owned_empty_fence_for_test(|fence, root, leaf| {
++                let mut frame = accepted(original, fence, leaf, receiver, sender, model);
++                let names = [NAME, RESERVED_NAME];
++                let before: Vec<_> = names
++                    .iter()
++                    .map(|n| fs::read(leaf.join(n)).unwrap())
++                    .collect();
++                let mut visited = Vec::with_capacity(8);
++                let (result, report) = trace::capture(|| {
++                    frame.revalidate_with_for_test(|step| {
++                        let index = visited.len();
++                        // Ordinals of the frozen eight-step enum, without
++                        // widening its private module visibility for a probe.
++                        assert_eq!(step as usize, index);
++                        trace::stage(channels[index]);
++                        visited.push(step);
++                    })
++                });
++                println!("HC074-LEAF-RESULT sample={sample} result={result:?} report={report:?}");
++                result.unwrap();
++                assert_eq!(visited.len(), 8);
++                assert_eq!(
++                    report
++                        .stages
++                        .iter()
++                        .map(|s| s.authentication_calls)
++                        .sum::<u64>(),
++                    34
++                );
++                assert_eq!(
++                    report.stages.iter().map(|s| s.signature_calls).sum::<u64>(),
++                    34
++                );
++                assert!(report.first_time.is_none() && report.time_refusals == 0);
++                for index in 0..8 {
++                    println!(
++                        "HC074-LEAF-COST sample={sample} bucket={index} opening={:?} includes_whole_closing_round={} stats={:?}",
++                        visited[index], index == 7, report.stages[channels[index] as usize]
++                    );
++                }
++                let after: Vec<_> = names
++                    .iter()
++                    .map(|n| fs::read(leaf.join(n)).unwrap())
++                    .collect();
++                assert_eq!(after, before);
++                assert_eq!(fs::read_dir(leaf).unwrap().count(), 2);
++                assert!(!frame.is_refused());
++                busy(root);
++                drop(frame);
++                retained_context_refuses_for_test(root);
++                println!("HC074-LEAF-CONTROL sample={sample} opening=8 closing=8 authentications=34 held=true unchanged=true starting=false outputs=false alarm=false schedule_changed=false");
++            });
++        });
++    }
++}

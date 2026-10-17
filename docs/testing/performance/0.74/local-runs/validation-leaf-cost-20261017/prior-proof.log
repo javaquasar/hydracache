@@ -1,0 +1,3 @@
+HC074-CAPSULE name=candidate-c1.patch files=10 exact=true current=False
+HC074-CAPSULE name=attribution.patch files=10 exact=true current=False
+HC074-CAPSULE name=diagnostic-final.patch files=9 exact=true current=True

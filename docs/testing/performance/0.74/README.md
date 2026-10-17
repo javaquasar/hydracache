@@ -3686,3 +3686,12 @@ kernel receive time, not a later Starting timestamp. A one-shot timer is not an
 independent watchdog. The next composition experiment needs agreement to bracket
 nonexecuting preparation as one group while preserving every live predicate and
 original deadline. No existing observation schedule or server admission changes.
+
+The [original leaf attribution](local-runs/validation-leaf-cost-20261017/README.md)
+then passes six fresh opening/closing controls without changing any runtime
+source or observation point. ReservedLive is the largest separately observed
+opening leaf, about 131–134 milliseconds with sixteen IPC authentications.
+The final bucket includes FinalClocks and the whole untouched closing round;
+it is not an isolated leaf measurement. Profiling inside ReservedLive is the next
+safe attribution target. The failed alarm candidate remains test-only and grouped
+preparation still needs separate agreement; no production or crash gate is closed.
