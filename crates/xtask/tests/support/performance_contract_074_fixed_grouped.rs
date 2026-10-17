@@ -438,7 +438,7 @@ fn fixed_grouped_process_matrix_preserves_runtime_and_exact_owned_harness() {
         let current = if path.ends_with("diagnostic_original_output_join_crash_tests.rs") {
             normalize(path, &read(path))
         } else {
-            read(path)
+            fence_custody::restore_join(path, &read(path))
         };
         assert_eq!(current, at_baseline(path), "{path}");
     }
@@ -454,9 +454,9 @@ fn fixed_grouped_process_matrix_preserves_runtime_and_exact_owned_harness() {
             "    println!(\"HC074-FIXED-GROUPED-PROCESS-SCREEN sigkills=1 controls=1 inspections=4 completed=true\");",
             "    println!(\n        \"HC074-FIXED-GROUPED-PROCESS-SCREEN sigkills=1 controls=1 inspections=4 completed=true\"\n    );",
         );
-    let current = read(
-        "tools/long-run-supervisor-074/src/diagnostic_fixed_grouped_preparation_crash_tests.rs",
-    );
+    let path =
+        "tools/long-run-supervisor-074/src/diagnostic_fixed_grouped_preparation_crash_tests.rs";
+    let current = fence_custody::restore_join(path, &read(path));
     assert_eq!(current, expected);
     for (from, to) in [
         ("libc::SIGKILL", "libc::SIGTERM"),

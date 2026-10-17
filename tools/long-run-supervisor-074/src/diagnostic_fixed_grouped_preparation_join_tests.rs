@@ -1,4 +1,6 @@
 use super::*;
+#[path = "diagnostic_original_custody_join_tests.rs"]
+mod custody_tests;
 use crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::OriginalGroupedPrepError;
 use crate::diagnostic_ipc::validation_trace::{self as trace, Stage};
 

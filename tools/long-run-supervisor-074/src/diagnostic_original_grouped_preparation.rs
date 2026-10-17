@@ -1,4 +1,6 @@
 //! Fixed-origin grouped preparation, never a send/start or guardian capability.
+#[path = "diagnostic_original_custody_join.rs"]
+pub mod custody;
 use super::*;
 use crate::diagnostic_kernel_admission::{KernelError, KernelTimePoint};
 use crate::diagnostic_lease::{

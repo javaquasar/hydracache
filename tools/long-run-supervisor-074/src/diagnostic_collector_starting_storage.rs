@@ -1,5 +1,8 @@
 //! Private opt-in phase on the original storage; default two-file inspection is unchanged.
 #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+#[path = "diagnostic_original_collector_custody_storage.rs"]
+pub(crate) mod custody_storage;
+#[cfg(all(target_os = "linux", target_arch = "x86_64"))]
 #[path = "diagnostic_original_collector_sink_storage.rs"]
 mod sink_storage;
 use super::*;
@@ -201,6 +204,10 @@ impl CollectorReservationStorage<'_> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+    mod custody_tests {
+        include!("diagnostic_original_collector_custody_storage_tests.rs");
+    }
     use crate::diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::with_owned_empty_fence_for_test;
     use std::os::unix::fs::{symlink, PermissionsExt};
 

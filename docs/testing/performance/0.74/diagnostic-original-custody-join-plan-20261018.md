@@ -107,3 +107,9 @@ bind route; the new production constructor accepts only the original sinks and
 no replacement inputs. The same healthy, persistent-fault, lost-ACK and selected
 process-loss gates must pass on the new source before acceptance. A fixed-loader
 refusal is still never a fixture fallback.
+
+The last custody metadata observation also precedes a fresh call to the unchanged
+causal age predicate using the original challenge issue point and kernel BOOTTIME.
+This closes the older challenge's final-observation window as well as the alarm's
+progress/cell/total bounds. It adds no authentication frame, timer, input time or
+new limit; the predicate and its original origin remain unchanged.

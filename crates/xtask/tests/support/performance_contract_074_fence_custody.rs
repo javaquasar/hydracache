@@ -1,4 +1,6 @@
 //! Exact one-shot custody exception; original inspectors and old contracts freeze.
+#[path = "performance_contract_074_custody_join.rs"]
+mod custody_join;
 const OWNER: &str = "// Only Fence can construct this owner. No descriptor or execution API is exposed.\nstruct FenceCustody {\n    _lock: File,\n}\n";
 const METHOD: &str = r#"    // Nonexecuting prerequisite only; the original-start join is not enrolled.
     #[allow(dead_code)]
@@ -67,6 +69,8 @@ fn once(raw: &str, new: &str, old: &str) -> String {
     raw.replacen(new, old, 1)
 }
 pub(super) fn normalize(path: &str, raw: &str) -> String {
+    let current = custody_join::normalize(path, raw);
+    let raw = current.as_str();
     match path {
         "tools/long-run-supervisor-074/src/diagnostic_original_fence.rs" => {
             let mut raw = raw.to_owned();
@@ -90,6 +94,9 @@ pub(super) fn normalize(path: &str, raw: &str) -> String {
         "docs/testing/gated-test-registry.toml" => once(raw, GATE, ""),
         _ => raw.to_owned(),
     }
+}
+pub(super) fn restore_join(path: &str, raw: &str) -> String {
+    custody_join::normalize(path, raw)
 }
 fn old(path: &str) -> String {
     let out = std::process::Command::new("git")
@@ -145,9 +152,8 @@ fn original_custody_changes_only_one_shot_ownership_not_admission_or_old_guards(
         {
             continue;
         }
-        assert!(!std::fs::read_to_string(file)
-            .unwrap()
-            .contains("retain_custody("));
+        let raw = std::fs::read_to_string(&file).unwrap();
+        assert!(!custody_join::approved_caller(name, &raw).contains("retain_custody("));
     }
     assert_eq!(raw.matches("fn retain_custody(").count(), 1);
     assert!(!raw.contains("pub fn retain_custody"));

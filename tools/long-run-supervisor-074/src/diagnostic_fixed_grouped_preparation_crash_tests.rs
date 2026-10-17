@@ -1,5 +1,7 @@
 //! Owned nonexecuting process cuts; never systemd delivery or writer-tree proof.
 use super::*;
+#[path = "diagnostic_original_custody_join_process_tests.rs"]
+mod custody_process_tests;
 const GROUP_MODE: &str = "HC074_PRIVATE_FIXED_GROUPED_PREPARATION_CRASH_MODE";
 const GROUP_STAGE: &str = "HC074_PRIVATE_FIXED_GROUPED_PREPARATION_CRASH_STAGE";
 const GROUP_READY: &str = "HC074-FIXED-GROUPED-PROCESS-READY ";
