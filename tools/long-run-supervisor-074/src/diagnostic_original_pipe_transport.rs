@@ -1,4 +1,7 @@
 //! An unsent FD-bearing message, never a connection or start capability.
+#[cfg(test)]
+#[path = "diagnostic_original_safety_alarm.rs"]
+pub(crate) mod safety_alarm;
 use super::*;
 use crate::systemd_unit::{TransientUnitSpec, UnitProperty};
 use std::fs::File;
@@ -232,6 +235,11 @@ fn inspect_message(
 /// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::start_material::pipe_transport::OriginalCollectorPipeTransport;
 /// fn decode<T: serde::de::DeserializeOwned>() {}
 /// decode::<OriginalCollectorPipeTransport<'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static>>();
+/// ```
+/// The rejected alarm composition is test-only; it grants no production API.
+/// ```compile_fail
+/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::start_material::pipe_transport::OriginalCollectorPipeTransport;
+/// fn alarm(p: OriginalCollectorPipeTransport<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { p.prepare_original_safety_alarm(); }
 /// ```
 pub struct OriginalCollectorPipeTransport<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p> {
     // Message-owned duplicates close before the original pipes and fence owner.

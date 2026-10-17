@@ -100,6 +100,8 @@ platform = "linux"
 # END ORIGINAL PIPE TRANSPORT GATES
 "###;
 pub(super) fn normalize(path: &str, raw: &str) -> String {
+    let current = super::safety_alarm::normalize(path, raw);
+    let raw = current.as_str();
     let addition = match path {
         "tools/long-run-supervisor-074/src/diagnostic_original_start_material.rs" =>
             "#[path = \"diagnostic_original_pipe_transport.rs\"]\npub mod pipe_transport;\n",
