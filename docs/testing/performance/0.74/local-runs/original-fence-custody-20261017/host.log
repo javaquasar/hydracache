@@ -1,0 +1,104 @@
+4f33b1804bc3787af8e0d84c0629feed9deb412d0e26597a362dbb8dd07659d5  guard.sh
+4b47653eb2eb023116ef9c862130bb7b578e6983bf1acf4ba8a95979ac0de2c4  run.sh
+HC074-FENCE-CUSTODY-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-FENCE-CUSTODY-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-FENCE-CUSTODY-COHORT compiler=194
+8b6933d65085d1a3d8d603c1333c803a1d1fc925cad7872d7b604d2f712be683  tests-194
+
+running 14 tests
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::custody::custody_cannot_adopt_a_replaced_named_lock ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::custody::custody_first_drop_keeps_original_checks_and_refuses_a_second_transfer ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::custody::custody_survives_original_drop ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::custody::ordinary_drop_still_unlocks_a_retained_alias ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_all_contexts_refuse_initial_and_bound_dangling_symlinks ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_concurrent_independent_open_cannot_bypass_same_flock ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_deployed_mode_or_unsafe_campaign_directory_requires_enrollment ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_initial_busy_is_retryable_and_never_unlocks_legacy_owner ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_missing_or_unsafe_lock_never_created_repaired_or_adopted ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_named_lock_replacement_never_adopted_and_original_remains_held ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_policy_types_and_error_seams_remain_fail_closed ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_private_descriptor_substitutions_latch_without_refresh ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_same_legacy_lock_blocks_both_campaign_entry_points ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_seeded_bound_identity_state_and_metadata_failures_latch ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 1061 filtered out; finished in 0.05s
+
+
+running 1 test
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::custody::original_fence_custody_matrix ... HC074-FENCE-CUSTODY seed=0x0740c517 repeat=1 case=close original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=1 case=ack-omitted original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=1 case=ack-disconnected original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=1 case=holder-kill original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=1 case=original-last original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=1 case=repeat-refused original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=2 case=close original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=2 case=ack-omitted original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=2 case=ack-disconnected original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=2 case=holder-kill original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=2 case=original-last original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=2 case=repeat-refused original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=3 case=close original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=3 case=ack-omitted original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=3 case=ack-disconnected original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=3 case=holder-kill original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=3 case=original-last original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=3 case=repeat-refused original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY completed=true cases=18 product=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1074 filtered out; finished in 0.02s
+
+HC074-FENCE-CUSTODY-COHORT compiler=194 completed=true
+seed=0x746
+HC074-FENCE-CUSTODY-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-FENCE-CUSTODY-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-FENCE-CUSTODY-COHORT compiler=188
+484ca6fd3e481d37b810410fa079132f97eea76997050d604e30a7a7bbdbfb9e  tests-188
+
+running 14 tests
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::custody::custody_cannot_adopt_a_replaced_named_lock ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::custody::custody_first_drop_keeps_original_checks_and_refuses_a_second_transfer ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::custody::custody_survives_original_drop ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::custody::ordinary_drop_still_unlocks_a_retained_alias ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_all_contexts_refuse_initial_and_bound_dangling_symlinks ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_concurrent_independent_open_cannot_bypass_same_flock ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_deployed_mode_or_unsafe_campaign_directory_requires_enrollment ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_initial_busy_is_retryable_and_never_unlocks_legacy_owner ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_missing_or_unsafe_lock_never_created_repaired_or_adopted ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_named_lock_replacement_never_adopted_and_original_remains_held ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_policy_types_and_error_seams_remain_fail_closed ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_private_descriptor_substitutions_latch_without_refresh ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_same_legacy_lock_blocks_both_campaign_entry_points ... ok
+seed=0x746
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_seeded_bound_identity_state_and_metadata_failures_latch ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 1061 filtered out; finished in 0.05s
+
+
+running 1 test
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::custody::original_fence_custody_matrix ... HC074-FENCE-CUSTODY seed=0x0740c517 repeat=1 case=close original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=1 case=ack-omitted original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=1 case=ack-disconnected original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=1 case=holder-kill original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=1 case=original-last original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=1 case=repeat-refused original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=2 case=close original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=2 case=ack-omitted original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=2 case=ack-disconnected original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=2 case=holder-kill original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=2 case=original-last original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=2 case=repeat-refused original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=3 case=close original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=3 case=ack-omitted original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=3 case=ack-disconnected original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=3 case=holder-kill original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=3 case=original-last original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=3 case=repeat-refused original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY completed=true cases=18 product=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1074 filtered out; finished in 0.02s
+
+HC074-FENCE-CUSTODY-COHORT compiler=188 completed=true
+HC074-FENCE-CUSTODY-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-FENCE-CUSTODY-HOST completed=true supervisor_unchanged=true no_fixture_executable=true

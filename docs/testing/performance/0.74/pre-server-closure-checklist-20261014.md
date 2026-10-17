@@ -373,3 +373,19 @@ and controller overhead observation on that exact host. Reboot needs separate
 maintenance approval. Numerical pilot, product candidates, six-hour/24-hour
 qualification and release admission remain separate gates. Frozen numerical
 inputs and the inherited plan-digest mismatch are not changed here.
+
+## Original fence custody progress
+
+The [private custody prerequisite](local-runs/original-fence-custody-20261017/README.md)
+now prevents original-owner destruction from explicitly unlocking a successfully
+transferred common-lock description. Ordinary nontransferred owners keep their
+previous explicit unlock. The old-destructor negative is retained; 14 fast tests,
+18 WSL and 36 isolated two-compiler host cases pass, with 201 static contracts.
+The supervisor and installed receipt/binary remained unchanged.
+
+This does not close P2/P3 execution: the custody method has no production caller.
+Next compose it with the original full validation frame, sinks, parent alias
+closure, authenticated original start and complete cgroup revocation. Original
+live checks, absolute origins, durable-history exclusion and closed completion /
+later-cell admission remain mandatory. Killing the last holder still releases
+the kernel flock, as the explicit SIGKILL control requires.

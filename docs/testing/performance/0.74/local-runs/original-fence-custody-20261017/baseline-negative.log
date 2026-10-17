@@ -1,0 +1,19 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 28.44s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 1 test
+
+thread 'diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::custody::custody_survives_original_drop' (665) panicked at tools/long-run-supervisor-074/src/diagnostic_original_fence_custody_tests.rs:4:5:
+assertion failed: matches!(lock_host_root(root), Err(HostExecutionError::Busy))
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::custody::custody_survives_original_drop ... FAILED
+
+failures:
+
+failures:
+    diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::custody::custody_survives_original_drop
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1073 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p hydracache-long-run-supervisor-074 --lib`

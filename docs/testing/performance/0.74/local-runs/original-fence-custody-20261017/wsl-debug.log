@@ -1,0 +1,27 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.14s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 1 test
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::custody::original_fence_custody_matrix ... HC074-FENCE-CUSTODY seed=0x0740c517 repeat=1 case=close original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=1 case=ack-omitted original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=1 case=ack-disconnected original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=1 case=holder-kill original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=1 case=original-last original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=1 case=repeat-refused original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=2 case=close original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=2 case=ack-omitted original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=2 case=ack-disconnected original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=2 case=holder-kill original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=2 case=original-last original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=2 case=repeat-refused original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=3 case=close original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=3 case=ack-omitted original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=3 case=ack-disconnected original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=3 case=holder-kill original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=3 case=original-last original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY seed=0x0740c517 repeat=3 case=repeat-refused original=true terminal=true retained_state=true
+HC074-FENCE-CUSTODY completed=true cases=18 product=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1074 filtered out; finished in 0.13s
+

@@ -1,0 +1,58 @@
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_original_fence.rs b/tools/long-run-supervisor-074/src/diagnostic_original_fence.rs
+index b0e641e4..7f488641 100644
+--- a/tools/long-run-supervisor-074/src/diagnostic_original_fence.rs
++++ b/tools/long-run-supervisor-074/src/diagnostic_original_fence.rs
+@@ -45,6 +45,11 @@ struct Fence {
+     directory_stamp: DirectoryStamp,
+     lock: File,
+     lock_stamp: Stamp,
++    custody_retained: bool,
++}
++// Only Fence can construct this owner. No descriptor or execution API is exposed.
++struct FenceCustody {
++    _lock: File,
+ }
+ impl Fence {
+     fn acquire(parent: &File, uid: u32, gid: u32) -> Result<Self, OriginalHostFenceError> {
+@@ -71,6 +76,7 @@ impl Fence {
+             directory_stamp,
+             lock,
+             lock_stamp,
++            custody_retained: false,
+         })
+     }
+     fn inspect(&self, parent: &File) -> Result<(), OriginalHostFenceError> {
+@@ -90,6 +96,19 @@ impl Fence {
+         absent(parent, &PARENT_CONTEXTS)?;
+         Ok(())
+     }
++    // Nonexecuting prerequisite only; the original-start join is not enrolled.
++    #[allow(dead_code)]
++    fn retain_custody(&mut self, parent: &File) -> Result<FenceCustody, OriginalHostFenceError> {
++        if self.custody_retained {
++            return Err(OriginalHostFenceError::Refused);
++        }
++        self.inspect(parent)?;
++        let lock = self.lock.try_clone()?;
++        self.inspect(parent)?;
++        // Nothing fallible follows the irreversible selection of close-only drop.
++        self.custody_retained = true;
++        Ok(FenceCustody { _lock: lock })
++    }
+ }
+ impl Drop for Fence {
+     fn drop(&mut self) {
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_original_fence_tests.rs b/tools/long-run-supervisor-074/src/diagnostic_original_fence_tests.rs
+index 2b3873f4..4168805b 100644
+--- a/tools/long-run-supervisor-074/src/diagnostic_original_fence_tests.rs
++++ b/tools/long-run-supervisor-074/src/diagnostic_original_fence_tests.rs
+@@ -12,6 +12,9 @@ use std::fs;
+ use std::os::unix::fs::{symlink, PermissionsExt};
+ use std::path::{Path, PathBuf};
+ 
++#[path = "diagnostic_original_fence_custody_tests.rs"]
++mod custody;
++
+ fn campaigns(root: &Path) -> PathBuf {
+     at(root, 3).join("campaigns")
+ }

@@ -323,3 +323,26 @@ common-fence destructor, all validators and 300/60/10-second origins stay exact;
 there is no start/service route. Original ownership transfer, complete cgroup
 revocation, durable completion and external guardian supervision remain open.
 No standalone flock can survive its last guardian being killed or host loss.
+
+## Original fence custody prerequisite
+
+The [custody packet](local-runs/original-fence-custody-20261017/README.md)
+isolates the original destructor hazard without changing its default short
+observation behavior. A private one-shot transition brackets duplication of the
+already locked original description with the unchanged fence inspector. Only a
+successful transition selects close-only destruction for the original owner;
+the private custody owner also closes without explicit unlock. The existing
+ShortHostFence and campaign claim types are unchanged. No production caller,
+public descriptor export or send/start capability is added.
+
+The saved old-destructor counterexample fails independent common-lock contention
+after original drop. The corrected code passes 14 fast tests, 18 WSL process
+cases and 36 two-compiler host cases, including actual holder SIGKILL and omitted
+or disconnected private ACK. Original-first and custody-first destruction both
+preserve exclusion until the last owner closes. All 201 static contracts pass;
+the prior autonomous packet remains independently verifiable at its old source.
+
+This is not the full original-object transfer. The typed full validation frame,
+original sinks, parent writer/lock alias closure, authenticated start and complete
+cgroup revocation still need composition. Every original live predicate and
+300/60/10-second origin stays exact. No installation or supervisor stop was needed.

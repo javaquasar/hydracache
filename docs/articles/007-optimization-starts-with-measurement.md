@@ -12184,3 +12184,41 @@ process limits. The complete local and two-compiler server matrices were
 repeated on this corrected source, with the first positive cohort retained
 separately. Collector/guardian loops and original validation deadlines did not
 change during that correction.
+
+## A shared lock needs an explicit custody transition
+
+The next [ownership experiment](../testing/performance/0.74/local-runs/original-fence-custody-20261017/README.md)
+uses the actual original common-lock type. Merely duplicating that descriptor
+does not transfer protection: its original destructor explicitly unlocks the
+shared open-file description. A new regression test first reproduced the defect
+by dropping the original owner while retaining its duplicate. Both legacy entry
+points should still be excluded; the independent lock acquisition instead
+succeeded. That negative remains in the packet.
+
+Removing explicit unlock globally would also change short-observation lifetime.
+The isolated implementation instead adds a private, irreversible custody
+transition. The unchanged original inspector brackets duplication, and only
+successful completion selects close-only destruction. Ordinary owners still
+explicitly unlock. The custody owner has no public descriptor or execution API;
+dropping it first leaves the original owner healthy, and dropping the original
+first leaves custody holding the same lock. A second transfer refuses rather
+than mint another authority.
+
+The corrected source passes four new units and ten existing original-fence
+units. Its nonexecuting process holder passes three repeats of six cases in WSL
+and on each GNU release compiler: 18 local and 36 server cases. The controls
+cover both destruction orders, omitted and disconnected private ACK, repeat
+refusal and actual holder SIGKILL. A separate structural test barrier follows
+the optional ACK attempt; it is not substituted for an original start ACK.
+Independent common-lock exclusion, exact retained Reserved bytes, pidfd
+readiness and actual wait status are the oracles. All 201 static contracts pass,
+with previous live inspector bodies and deadline origins unchanged.
+
+This proves a narrow ownership rule, not an enrolled guardian. The method has
+no production caller and still needs the typed original validation frame,
+sink/writer transfer and parent alias closure before authenticated start.
+Whole-cgroup revocation and durable-history exclusion remain essential: the
+last-holder SIGKILL control demonstrates that the kernel itself releases flock
+when its final owner dies. No standalone lock can replace that history or
+external supervision. The server rehearsal changed neither installation nor
+supervisor and ran no product workload; no throughput result follows.

@@ -1,0 +1,4 @@
+# Preserve immutable evidence bytes independently of checkout line endings.
+* -text
+*.log whitespace=cr-at-eol,-blank-at-eof
+*.patch whitespace=-trailing-space

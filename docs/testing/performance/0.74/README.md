@@ -3773,3 +3773,17 @@ This closes isolated kernel mechanics only. Original common-fence/sink transfer,
 authenticated start, recursive cgroup revocation and external guardian
 supervision remain before production execution or any completion/later cell.
 The supervisor and installed artifacts were unchanged throughout this rehearsal.
+
+The [original fence custody prerequisite](local-runs/original-fence-custody-20261017/README.md)
+now addresses the explicit-unlock hazard on the actual original lock type. Its
+private one-shot custody transition preserves the unchanged inspector and default
+short-owner unlock; after successful custody, both owners close without unlocking
+the shared description. The baseline negative is retained. Four new and ten old
+units pass, plus 18 WSL and 36 isolated host process cases on Rust 1.94/1.88.
+The new matrix includes omitted/disconnected ACK, reverse destruction order and
+actual last-holder SIGKILL. All 201 static contracts pass, and the earlier packet
+is verified unchanged against its archived source. No production custody caller,
+sink transfer or authenticated start is introduced. Those joins, whole-cgroup
+revocation, external supervision and completion/later cells remain open; all
+original live checks and deadline origins are unchanged. Installed server state
+and qualification inputs remain exact, with no product workload or speedup claim.
