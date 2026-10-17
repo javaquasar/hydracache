@@ -1,5 +1,19 @@
 # HydraCache Compatibility Register
 
+The opt-in joined original collector output layout v1 creates
+`diagnostic-collector-output-074-<sha256 of original Reserved LF bytes>/collector-attempt-v1/{collector-stdout.bin,collector-stderr.bin}`
+under the original retained `/var/lib/hydracache-performance` parent. Both
+directories are exclusive root:root 0700; empty sinks are exclusive root:root
+0600 regular single-link files. File and containing-directory fsync precede
+runtime acknowledgement. Partial or complete context is never adopted,
+overwritten, repaired or automatically removed. Old three-document intent
+history and signed collector projections stay unchanged. Retained paths cannot
+recover an owner, execution permission, completion or a replay right. No
+installed consumer, migration or downgrade is provided. The consuming entry is
+Linux x86_64 only; exact F_GETFL includes its kernel-forced large-file bit.
+Nonroot modeled tests use only separately retained temporary ancestry.
+This layout is not an installed production execution capability.
+
 The opt-in collector start-consent byte artifact uses body
 `diagnostic-collector-start-consent-074-v1`, envelope
 `diagnostic-signed-collector-start-consent-074-v1` and Ed25519 domain

@@ -1,4 +1,7 @@
 //! Private opt-in phase on the original storage; default two-file inspection is unchanged.
+#[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+#[path = "diagnostic_original_collector_sink_storage.rs"]
+mod sink_storage;
 use super::*;
 
 pub(crate) const STARTING_NAME: &str = "diagnostic-collector-starting-074.json";

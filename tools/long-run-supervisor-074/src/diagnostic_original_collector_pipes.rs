@@ -1,4 +1,7 @@
 //! Original anonymous pipes retained under acknowledged Starting; never execution authority.
+#[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+#[path = "diagnostic_original_collector_sinks.rs"]
+pub mod sinks;
 use super::*;
 use std::fs::File;
 use std::os::fd::{AsRawFd, FromRawFd};

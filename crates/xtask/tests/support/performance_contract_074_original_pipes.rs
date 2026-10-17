@@ -9,6 +9,8 @@ const RESTORATIONS: &[(&str, &str, &str)] = &[
     ("docs/testing/gated-test-registry.toml", "\n# BEGIN ORIGINAL PIPE API GATE\n[[gate]]\nid = \"cfg.hydracache-long-run-supervisor-074.diagnostic-original-collector-pipes\"\nkind = \"cfg_test_target\"\nsource = \"tools/long-run-supervisor-074/tests/diagnostic_original_collector_pipes.rs\"\npackage = \"hydracache-long-run-supervisor-074\"\ntarget = \"diagnostic_original_collector_pipes\"\ntest = \"\"\ncfg = 'target_os = \"linux\"'\nenv = \"\"\nreason = \"Original anonymous pipes under acknowledged Starting; no FD export, output or execution\"\ntier = \"fast\"\nrequired_features = []\nrequired_env = []\nrequired_tools = [\"cargo\"]\ntimeout_seconds = 120\nowner_release = \"0.74.0\"\nship_mandatory = false\nartifacts = []\n\n[gate.ci]\nworkflow = \".github/workflows/ci.yml\"\njob = \"rust\"\nstep = \"Release 0.74 Linux supervisor contracts\"\n\n[gate.command]\nprogram = \"cargo\"\nargs = [\"test\", \"-p\", \"hydracache-long-run-supervisor-074\", \"--test\", \"diagnostic_original_collector_pipes\", \"--locked\"]\ncwd = \".\"\nplatform = \"linux\"\n\n[gate.command.env]\n# END ORIGINAL PIPE API GATE\n\n# BEGIN ORIGINAL PIPE LIVE GATE\n[[gate]]\nid = \"tool.hydracache-long-run-supervisor-074.original-collector-pipes-joined-fault-and-live-refusal\"\nkind = \"external_tool\"\nsource = \"tools/long-run-supervisor-074/src/diagnostic_original_collector_pipes_tests.rs\"\npackage = \"hydracache-long-run-supervisor-074\"\ntarget = \"hydracache_long_run_supervisor_074\"\ntest = \"original_collector_pipes_joined_fault_and_live_refusal\"\ncfg = 'target_os = \"linux\"'\nenv = \"\"\nreason = \"Original anonymous pipes under acknowledged Starting; no FD export, output or execution\"\ntier = \"manual\"\nrequired_features = []\nrequired_env = []\nrequired_tools = [\"cargo\"]\ntimeout_seconds = 1800\nowner_release = \"0.74.0\"\nship_mandatory = false\nartifacts = []\n\n[gate.ci]\nworkflow = \".github/workflows/ci.yml\"\njob = \"gated-proof-registry\"\nstep = \"Run registered gated proofs\"\n\n[gate.command]\nprogram = \"cargo\"\nargs = [\"test\", \"--release\", \"-p\", \"hydracache-long-run-supervisor-074\", \"--lib\", \"--locked\", \"diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::pipe_tests::original_collector_pipes_joined_fault_and_live_refusal\", \"--\", \"--ignored\", \"--exact\", \"--nocapture\", \"--test-threads=1\"]\ncwd = \".\"\nplatform = \"linux\"\n\n[gate.command.env]\n# END ORIGINAL PIPE LIVE GATE\n", ""),
 ];
 pub(super) fn normalize(path: &str, raw: &str) -> String {
+    let current = super::output_join::normalize(path, raw);
+    let raw = current.as_str();
     let mut clean = raw.to_owned();
     for (p, new, old) in RESTORATIONS {
         if path == *p {
@@ -73,7 +75,11 @@ fn original_pipes_preserve_publisher_deadlines_and_private_kernel_ownership() {
         "tools/long-run-supervisor-074/src/server.rs",
         "docs/testing/performance/0.74/qualification-manifest.toml",
     ] {
-        assert_eq!(read(p), old(p), "out of scope: {p}");
+        assert_eq!(
+            super::output_join::normalize(p, &read(p)),
+            old(p),
+            "out of scope: {p}"
+        );
     }
     let source = read("tools/long-run-supervisor-074/src/diagnostic_original_collector_pipes.rs");
     let runtime = source

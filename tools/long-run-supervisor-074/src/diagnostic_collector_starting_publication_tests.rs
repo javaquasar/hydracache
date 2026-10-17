@@ -7,6 +7,10 @@ mod crash_tests;
 #[path = "diagnostic_original_collector_pipes_tests.rs"]
 mod pipe_tests;
 
+#[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+#[path = "diagnostic_original_collector_sinks_tests.rs"]
+mod sink_tests;
+
 const STAGES: [CollectorStartingStage; 9] = [
     CollectorStartingStage::BeforeCreate,
     CollectorStartingStage::Created,

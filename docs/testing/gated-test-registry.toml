@@ -9423,3 +9423,207 @@ platform = "linux"
 
 [gate.command.env]
 # END ORIGINAL OUTPUT COST GATE
+
+# BEGIN ORIGINAL OUTPUT JOIN DIAGNOSTIC-ORIGINAL-OUTPUT-JOIN GATE
+[[gate]]
+id = "cfg.hydracache-long-run-supervisor-074.diagnostic-original-output-join"
+kind = "cfg_test_target"
+source = "tools/long-run-supervisor-074/tests/diagnostic_original_output_join.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "diagnostic_original_output_join"
+test = ""
+cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
+env = ""
+reason = "Original constant-depth Starting/pipes/sinks join; no execution or deadline change"
+tier = "fast"
+required_features = []
+required_env = []
+required_tools = ["cargo"]
+timeout_seconds = 120
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "rust"
+step = "Release 0.74 Linux supervisor contracts"
+
+[gate.command]
+program = "cargo"
+args = ["test","-p","hydracache-long-run-supervisor-074","--test","diagnostic_original_output_join","--locked"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+# END ORIGINAL OUTPUT JOIN DIAGNOSTIC-ORIGINAL-OUTPUT-JOIN GATE
+
+# BEGIN ORIGINAL OUTPUT JOIN ORIGINAL-OUTPUT-JOIN-COST-AND-HEALTHY-CONTROL GATE
+[[gate]]
+id = "tool.hydracache-long-run-supervisor-074.original-output-join-cost-and-healthy-control"
+kind = "external_tool"
+source = "tools/long-run-supervisor-074/src/diagnostic_original_collector_sinks_tests.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "hydracache_long_run_supervisor_074"
+test = "original_output_join_cost_and_healthy_control"
+cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
+env = ""
+reason = "Original constant-depth Starting/pipes/sinks join; no execution or deadline change"
+tier = "manual"
+required_features = []
+required_env = []
+required_tools = ["cargo"]
+timeout_seconds = 1800
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::original_output_join_cost_and_healthy_control","--","--ignored","--exact","--nocapture","--test-threads=1"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+# END ORIGINAL OUTPUT JOIN ORIGINAL-OUTPUT-JOIN-COST-AND-HEALTHY-CONTROL GATE
+
+# BEGIN ORIGINAL OUTPUT JOIN ORIGINAL-COLLECTOR-SINKS-JOINED-FAULT-AND-LIVE-REFUSAL GATE
+[[gate]]
+id = "tool.hydracache-long-run-supervisor-074.original-collector-sinks-joined-fault-and-live-refusal"
+kind = "external_tool"
+source = "tools/long-run-supervisor-074/src/diagnostic_original_collector_sinks_tests.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "hydracache_long_run_supervisor_074"
+test = "original_collector_sinks_joined_fault_and_live_refusal"
+cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
+env = ""
+reason = "Original constant-depth Starting/pipes/sinks join; no execution or deadline change"
+tier = "manual"
+required_features = []
+required_env = []
+required_tools = ["cargo"]
+timeout_seconds = 1800
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::original_collector_sinks_joined_fault_and_live_refusal","--","--ignored","--exact","--nocapture","--test-threads=1"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+# END ORIGINAL OUTPUT JOIN ORIGINAL-COLLECTOR-SINKS-JOINED-FAULT-AND-LIVE-REFUSAL GATE
+
+# BEGIN ORIGINAL OUTPUT JOIN ORIGINAL-OUTPUT-JOIN-ALL-EFFECTS-LIVE-REFUSAL GATE
+[[gate]]
+id = "tool.hydracache-long-run-supervisor-074.original-output-join-all-effects-live-refusal"
+kind = "external_tool"
+source = "tools/long-run-supervisor-074/src/diagnostic_original_output_join_fault_tests.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "hydracache_long_run_supervisor_074"
+test = "original_output_join_all_effects_live_refusal"
+cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
+env = ""
+reason = "Original constant-depth Starting/pipes/sinks join; no execution or deadline change"
+tier = "manual"
+required_features = []
+required_env = []
+required_tools = ["cargo"]
+timeout_seconds = 1800
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::join_fault_tests::original_output_join_all_effects_live_refusal","--","--ignored","--exact","--nocapture","--test-threads=1"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+# END ORIGINAL OUTPUT JOIN ORIGINAL-OUTPUT-JOIN-ALL-EFFECTS-LIVE-REFUSAL GATE
+
+# BEGIN ORIGINAL OUTPUT JOIN ORIGINAL-OUTPUT-JOIN-PROCESS-CRASH-ALL-STAGES-AND-LOST-ACK GATE
+[[gate]]
+id = "tool.hydracache-long-run-supervisor-074.original-output-join-process-crash-all-stages-and-lost-ack"
+kind = "external_tool"
+source = "tools/long-run-supervisor-074/src/diagnostic_original_output_join_crash_tests.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "hydracache_long_run_supervisor_074"
+test = "original_output_join_process_crash_all_stages_and_lost_ack"
+cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
+env = ""
+reason = "Original constant-depth Starting/pipes/sinks join; no execution or deadline change"
+tier = "manual"
+required_features = []
+required_env = []
+required_tools = ["cargo"]
+timeout_seconds = 1800
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::crash_tests::original_output_join_process_crash_all_stages_and_lost_ack","--","--ignored","--exact","--nocapture","--test-threads=1"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+# END ORIGINAL OUTPUT JOIN ORIGINAL-OUTPUT-JOIN-PROCESS-CRASH-ALL-STAGES-AND-LOST-ACK GATE
+
+# BEGIN ORIGINAL OUTPUT JOIN ORIGINAL-OUTPUT-JOIN-EXPIRY-SITE-ATTRIBUTION GATE
+[[gate]]
+id = "tool.hydracache-long-run-supervisor-074.original-output-join-expiry-site-attribution"
+kind = "external_tool"
+source = "tools/long-run-supervisor-074/src/diagnostic_original_output_join_fault_tests.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "hydracache_long_run_supervisor_074"
+test = "original_output_join_expiry_site_attribution"
+cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
+env = ""
+reason = "Original constant-depth Starting/pipes/sinks join; no execution or deadline change"
+tier = "manual"
+required_features = []
+required_env = []
+required_tools = ["cargo"]
+timeout_seconds = 1800
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::join_fault_tests::original_output_join_expiry_site_attribution","--","--ignored","--exact","--nocapture","--test-threads=1"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+# END ORIGINAL OUTPUT JOIN ORIGINAL-OUTPUT-JOIN-EXPIRY-SITE-ATTRIBUTION GATE
