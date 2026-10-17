@@ -45,6 +45,11 @@ struct Fence {
     directory_stamp: DirectoryStamp,
     lock: File,
     lock_stamp: Stamp,
+    custody_retained: bool,
+}
+// Only Fence can construct this owner. No descriptor or execution API is exposed.
+struct FenceCustody {
+    _lock: File,
 }
 impl Fence {
     fn acquire(parent: &File, uid: u32, gid: u32) -> Result<Self, OriginalHostFenceError> {
@@ -71,6 +76,7 @@ impl Fence {
             directory_stamp,
             lock,
             lock_stamp,
+            custody_retained: false,
         })
     }
     fn inspect(&self, parent: &File) -> Result<(), OriginalHostFenceError> {
@@ -90,11 +96,27 @@ impl Fence {
         absent(parent, &PARENT_CONTEXTS)?;
         Ok(())
     }
+    // Nonexecuting prerequisite only; the original-start join is not enrolled.
+    #[allow(dead_code)]
+    fn retain_custody(&mut self, parent: &File) -> Result<FenceCustody, OriginalHostFenceError> {
+        if self.custody_retained {
+            return Err(OriginalHostFenceError::Refused);
+        }
+        self.inspect(parent)?;
+        let lock = self.lock.try_clone()?;
+        self.inspect(parent)?;
+        // Nothing fallible follows the irreversible selection of close-only drop.
+        self.custody_retained = true;
+        Ok(FenceCustody { _lock: lock })
+    }
 }
 impl Drop for Fence {
     fn drop(&mut self) {
-        // Never remove state/markers or unlock a caller-supplied descriptor.
-        let _ = FileExt::unlock(&self.lock);
+        // Short observations retain explicit release. After custody transfer,
+        // LOCK_UN would also unlock the guardian's same open-file description.
+        if !self.custody_retained {
+            let _ = FileExt::unlock(&self.lock);
+        }
     }
 }
 fn absent(parent: &File, names: &[&str]) -> Result<(), OriginalHostFenceError> {

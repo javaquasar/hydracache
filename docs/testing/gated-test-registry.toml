@@ -10341,3 +10341,37 @@ platform = "linux"
 
 [gate.command.env]
 # END FIXED GROUPED PREPARATION GATES
+
+# BEGIN ORIGINAL FENCE CUSTODY GATE
+[[gate]]
+id = "tool.hydracache-long-run-supervisor-074.original-fence-custody"
+kind = "external_tool"
+source = "tools/long-run-supervisor-074/src/diagnostic_original_fence_custody_tests.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "hydracache_long_run_supervisor_074"
+test = "original_fence_custody_matrix"
+cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
+env = ""
+reason = "Nonroot original fence ownership, private ACK loss and holder SIGKILL; no authenticated execution"
+tier = "manual"
+required_features = []
+required_env = []
+required_tools = ["cargo"]
+timeout_seconds = 120
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::custody::original_fence_custody_matrix","--","--ignored","--exact","--nocapture","--test-threads=1"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+# END ORIGINAL FENCE CUSTODY GATE

@@ -12,6 +12,9 @@ use std::fs;
 use std::os::unix::fs::{symlink, PermissionsExt};
 use std::path::{Path, PathBuf};
 
+#[path = "diagnostic_original_fence_custody_tests.rs"]
+mod custody;
+
 fn campaigns(root: &Path) -> PathBuf {
     at(root, 3).join("campaigns")
 }

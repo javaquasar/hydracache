@@ -1,4 +1,6 @@
 //! Additive fixed-origin preparation; all prior validators remain frozen.
+#[path = "performance_contract_074_fence_custody.rs"]
+mod fence_custody;
 const GUARDIAN_COMPAT: &str = r###"
 ## Private diagnostic guardian notices
 
@@ -276,6 +278,8 @@ platform = "linux"
 "###;
 
 pub(super) fn normalize(path: &str, raw: &str) -> String {
+    let current = fence_custody::normalize(path, raw);
+    let raw = current.as_str();
     if path == "crates/xtask/tests/support/performance_contract_074_start_material.rs" {
         let addition = "super::fixed_grouped::normalize(p, &read(p)),";
         assert_eq!(raw.matches(addition).count(), 1);
