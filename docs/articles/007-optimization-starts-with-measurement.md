@@ -12041,3 +12041,57 @@ contracts pass and independent host postflight preserves the supervisor and
 installed artifacts. This closes the selected grouped-preparation interruption
 gate; authenticated production start, manager acknowledgement recovery,
 autonomous guardian and all-writer cessation remain separate unfinished work.
+
+## Fixed origin preparation does not grant execution authority
+
+The [fixed origin adaptation](../testing/performance/0.74/local-runs/fixed-grouped-preparation-20261017/README.md)
+turns the successful grouped schedule into a distinct nonexecuting production
+type. Its constructor consumes the acknowledged original sinks and accepts no
+replacement path, key, clock, descriptor, timeout or callback. It loads only the
+fixed installed bundle with the original checked builder policy and identity.
+The fixture loader and mutation checkpoints disappear from non-test builds;
+a failed fixed load cannot fall back to the signed test bundle.
+
+Grouping still changes observation frequency, not the admission predicates.
+One complete original output/material round precedes construction. The retained
+projection and Starting record bind the bundle and unsent two-FD message. A
+provisional one-shot timer uses the minimum absolute BOOTTIME boundary derived
+from Reserved, Starting and the original progress kernel receipt. Closing
+repeats the complete original-chain, build, transition, message/FD and deadline
+checks, compares the same bounds and inspects the timer before marking material
+ready. Persistent closing drift is rejected; a transient mutation restored
+between endpoints is not certified absent.
+
+The rejected separately bracketed alarm and previous grouped fixture stay
+unchanged as independent references. The new type deliberately retains its own
+small timer primitive and original_round copy. A static guard requires exact
+source equality after only the error-type rename, with negative controls for
+deadline equality and replacing progress receipt with a fresh time. Other guards
+strip only the exact additive registrations before comparing the older bodies.
+This avoids turning a reference refactor into an unmeasured admission change.
+
+The first screen and three fresh controls per compiler pass with the shared
+grouped construction body. Each construction and subsequent full revalidation
+makes 34 IPC authentications and signatures; the original offsets stay
+300/60/10 seconds. Repeated construction spans are 361.724–364.171 milliseconds
+on Rust 1.94 and 361.386–361.684 on MSRV 1.88. Revalidation spans are
+334.937–339.191 and 334.596–335.250 milliseconds respectively. These inclusive
+synthetic spans test the new composition's deadline and semantic feasibility,
+not cache throughput or a paired performance comparison with the old candidate.
+
+Both compilers also pass fourteen persistent-drift/expiry cases each. Separate
+origin controls require the actual fixed constructor to refuse an absent install
+without fallback, and a fixture owner to refuse production revalidation. All four
+expected origin refusals preserve records and hold the fence while latching the
+whole original chain. An initially wrong outer test expectation is retained as a
+negative; its two-line test-only correction and new binaries form a separate
+cohort rather than a replacement for the original timing evidence.
+
+The distinction between preparation and execution is structural. The new owner
+exports revalidation, not a message, timer descriptor, send, start or rearm
+capability. Any failure latches the original chain and retains all resources and
+the fence until explicit owner drop. Compile-fail checks also keep fixture entry,
+cloning and deserialization unavailable to production callers. No service route
+uses this type to start a worker. A private retained timer cannot terminate a
+writer when its observer dies: independent guardian lifetime, authenticated
+original delivery and P2/P3 cessation of every writer must precede that authority.

@@ -1,0 +1,3 @@
+HC074-CAPSULE name=implementation.patch files=10 exact=true current=False
+HC074-CAPSULE name=origin-harness-fix.patch files=1 exact=true current=True
+HC074-FIXED-GROUPED-EVIDENCE verified=true healthy=7 persistent_refusals=28 origin_refusals=4 guardian=false send=false admission=false

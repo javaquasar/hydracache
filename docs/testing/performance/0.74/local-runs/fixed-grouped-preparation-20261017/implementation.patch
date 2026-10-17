@@ -1,0 +1,1592 @@
+diff --git a/crates/xtask/tests/performance_contract_074.rs b/crates/xtask/tests/performance_contract_074.rs
+index f876b66a03ac434e32acf98d449af808b91251c4..a79fb4d5253ba3fae5c710c2703162c9086cc5c7 100644
+--- a/crates/xtask/tests/performance_contract_074.rs
++++ b/crates/xtask/tests/performance_contract_074.rs
+@@ -2,6 +2,9 @@ use serde_json::{json, Value};
+ use sha2::{Digest, Sha256};
+ use std::path::{Path, PathBuf};
+ 
++#[path = "support/performance_contract_074_fixed_grouped.rs"]
++mod fixed_grouped;
++
+ #[path = "support/performance_contract_074_safety_alarm.rs"]
+ mod safety_alarm;
+ 
+diff --git a/crates/xtask/tests/support/performance_contract_074_safety_alarm.rs b/crates/xtask/tests/support/performance_contract_074_safety_alarm.rs
+index 1cc3ebfe97843e726f29e9a8e54b9df6839e1bf5..038414c06b2c9cbf713d963791f62be195685518 100644
+--- a/crates/xtask/tests/support/performance_contract_074_safety_alarm.rs
++++ b/crates/xtask/tests/support/performance_contract_074_safety_alarm.rs
+@@ -259,6 +259,8 @@ platform = "linux"
+ # END ORIGINAL SAFETY ALARM GATES
+ "###;
+ pub(super) fn normalize(path: &str, raw: &str) -> String {
++    let current = super::fixed_grouped::normalize(path, raw);
++    let raw = current.as_str();
+     if path == "tools/long-run-supervisor-074/src/diagnostic_original_output_join_crash_tests.rs" {
+         let registration = "#[path = \"diagnostic_grouped_preparation_crash_tests.rs\"]\nmod grouped_process_tests;\n";
+         assert_eq!(raw.matches(registration).count(), 1);
+@@ -392,7 +394,7 @@ fn validation_leaf_attribution_keeps_all_runtime_and_observation_points_exact()
+         assert!(before.status.success());
+         let current = std::fs::read_to_string(super::root().join(path)).unwrap();
+         assert_eq!(
+-            current.replace('\r', ""),
++            super::fixed_grouped::normalize(path, &current.replace('\r', "")),
+             String::from_utf8(before.stdout).unwrap().replace('\r', ""),
+             "{path}"
+         );
+@@ -446,7 +448,7 @@ fn grouped_preparation_candidate_is_test_only_and_preserves_all_runtime_guards()
+         assert!(before.status.success());
+         let current = std::fs::read_to_string(super::root().join(path)).unwrap();
+         assert_eq!(
+-            current.replace('\r', ""),
++            super::fixed_grouped::normalize(path, &current.replace('\r', "")),
+             String::from_utf8(before.stdout).unwrap().replace('\r', ""),
+             "{path}"
+         );
+diff --git a/docs/testing/gated-test-registry.toml b/docs/testing/gated-test-registry.toml
+index e4b6ba15d1ee0747f09f5c3f2317290e9df35309..9fe6bdc9f91c4f638d134e4172f4576446427bc1 100644
+--- a/docs/testing/gated-test-registry.toml
++++ b/docs/testing/gated-test-registry.toml
+@@ -10083,3 +10083,166 @@ platform = "linux"
+ [gate.command.env]
+ 
+ # END ORIGINAL SAFETY ALARM GATES
++
++# BEGIN FIXED GROUPED PREPARATION GATES
++[[gate]]
++id = "cfg.hydracache-long-run-supervisor-074.fixed-grouped-preparation-api"
++kind = "cfg_test_target"
++source = "tools/long-run-supervisor-074/tests/diagnostic_fixed_grouped_preparation.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "diagnostic_fixed_grouped_preparation"
++test = ""
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Nonexecuting fixed-origin grouped owner; no send, guardian or execution admission"
++tier = "fast"
++required_features = []
++required_env = []
++required_tools = ["cargo"]
++timeout_seconds = 120
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "rust"
++step = "Release 0.74 Linux supervisor contracts"
++
++[gate.command]
++program = "cargo"
++args = ["test","-p","hydracache-long-run-supervisor-074","--test","diagnostic_fixed_grouped_preparation","--locked"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.fixed-grouped-preparation-screen"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_fixed_grouped_preparation_join_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "fixed_grouped_preparation_screen"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Nonexecuting fixed-origin grouped owner; no send, guardian or execution admission"
++tier = "manual"
++required_features = []
++required_env = ["HC074_START_MATERIAL_BUNDLE"]
++required_tools = ["cargo"]
++timeout_seconds = 600
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::fixed_grouped_preparation_screen","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.fixed-grouped-preparation-healthy"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_fixed_grouped_preparation_join_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "fixed_grouped_preparation_healthy"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Nonexecuting fixed-origin grouped owner; no send, guardian or execution admission"
++tier = "manual"
++required_features = []
++required_env = ["HC074_START_MATERIAL_BUNDLE"]
++required_tools = ["cargo"]
++timeout_seconds = 600
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::fixed_grouped_preparation_healthy","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.fixed-grouped-preparation-refusals"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_fixed_grouped_preparation_join_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "fixed_grouped_preparation_refusals"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Nonexecuting fixed-origin grouped owner; no send, guardian or execution admission"
++tier = "manual"
++required_features = []
++required_env = ["HC074_START_MATERIAL_BUNDLE"]
++required_tools = ["cargo"]
++timeout_seconds = 600
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::fixed_grouped_preparation_refusals","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.fixed-grouped-preparation-fixture-origin"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_fixed_grouped_preparation_join_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "fixed_grouped_preparation_fixture_cannot_enter_production"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Nonexecuting fixed-origin grouped owner; no send, guardian or execution admission"
++tier = "manual"
++required_features = []
++required_env = ["HC074_START_MATERIAL_BUNDLE"]
++required_tools = ["cargo"]
++timeout_seconds = 180
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::fixed_grouped_preparation_fixture_cannot_enter_production","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
++# END FIXED GROUPED PREPARATION GATES
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport.rs b/tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport.rs
+index e7b7f25ee5672efafee7466daad78b5a39af9b3f..8911efa8dd6ce03da299d0c057699d62bd0def48 100644
+--- a/tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport.rs
++++ b/tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport.rs
+@@ -1,4 +1,6 @@
+ //! An unsent FD-bearing message, never a connection or start capability.
++#[path = "diagnostic_original_grouped_preparation.rs"]
++pub mod grouped_preparation;
+ #[cfg(test)]
+ #[path = "diagnostic_original_safety_alarm.rs"]
+ pub(crate) mod safety_alarm;
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_original_safety_alarm_join_tests.rs b/tools/long-run-supervisor-074/src/diagnostic_original_safety_alarm_join_tests.rs
+index ca9dd45c116a31f7cc0c6e4110aabdb2cd3e040a..27c99d8a017909af2f08991d0ff4891331c13396 100644
+--- a/tools/long-run-supervisor-074/src/diagnostic_original_safety_alarm_join_tests.rs
++++ b/tools/long-run-supervisor-074/src/diagnostic_original_safety_alarm_join_tests.rs
+@@ -1,4 +1,6 @@
+ use super::*;
++#[path = "diagnostic_fixed_grouped_preparation_join_tests.rs"]
++mod fixed_grouped_tests;
+ #[path = "diagnostic_grouped_preparation_join_tests.rs"]
+ mod grouped_tests;
+ #[path = "diagnostic_validation_leaf_cost_tests.rs"]
+diff --git a/crates/xtask/tests/support/performance_contract_074_fixed_grouped.rs b/crates/xtask/tests/support/performance_contract_074_fixed_grouped.rs
+new file mode 100644
+index 0000000000000000000000000000000000000000..aa7ee8a4a7e44f7a581df0460f3861261d6acde8
+--- /dev/null
++++ b/crates/xtask/tests/support/performance_contract_074_fixed_grouped.rs
+@@ -0,0 +1,283 @@
++//! Additive fixed-origin preparation; all prior validators remain frozen.
++const GATES: &str = r###"
++# BEGIN FIXED GROUPED PREPARATION GATES
++[[gate]]
++id = "cfg.hydracache-long-run-supervisor-074.fixed-grouped-preparation-api"
++kind = "cfg_test_target"
++source = "tools/long-run-supervisor-074/tests/diagnostic_fixed_grouped_preparation.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "diagnostic_fixed_grouped_preparation"
++test = ""
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Nonexecuting fixed-origin grouped owner; no send, guardian or execution admission"
++tier = "fast"
++required_features = []
++required_env = []
++required_tools = ["cargo"]
++timeout_seconds = 120
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "rust"
++step = "Release 0.74 Linux supervisor contracts"
++
++[gate.command]
++program = "cargo"
++args = ["test","-p","hydracache-long-run-supervisor-074","--test","diagnostic_fixed_grouped_preparation","--locked"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.fixed-grouped-preparation-screen"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_fixed_grouped_preparation_join_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "fixed_grouped_preparation_screen"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Nonexecuting fixed-origin grouped owner; no send, guardian or execution admission"
++tier = "manual"
++required_features = []
++required_env = ["HC074_START_MATERIAL_BUNDLE"]
++required_tools = ["cargo"]
++timeout_seconds = 600
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::fixed_grouped_preparation_screen","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.fixed-grouped-preparation-healthy"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_fixed_grouped_preparation_join_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "fixed_grouped_preparation_healthy"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Nonexecuting fixed-origin grouped owner; no send, guardian or execution admission"
++tier = "manual"
++required_features = []
++required_env = ["HC074_START_MATERIAL_BUNDLE"]
++required_tools = ["cargo"]
++timeout_seconds = 600
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::fixed_grouped_preparation_healthy","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.fixed-grouped-preparation-refusals"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_fixed_grouped_preparation_join_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "fixed_grouped_preparation_refusals"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Nonexecuting fixed-origin grouped owner; no send, guardian or execution admission"
++tier = "manual"
++required_features = []
++required_env = ["HC074_START_MATERIAL_BUNDLE"]
++required_tools = ["cargo"]
++timeout_seconds = 600
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::fixed_grouped_preparation_refusals","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.fixed-grouped-preparation-fixture-origin"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_fixed_grouped_preparation_join_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "fixed_grouped_preparation_fixture_cannot_enter_production"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Nonexecuting fixed-origin grouped owner; no send, guardian or execution admission"
++tier = "manual"
++required_features = []
++required_env = ["HC074_START_MATERIAL_BUNDLE"]
++required_tools = ["cargo"]
++timeout_seconds = 180
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::fixed_grouped_preparation_fixture_cannot_enter_production","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
++# END FIXED GROUPED PREPARATION GATES
++"###;
++
++pub(super) fn normalize(path: &str, raw: &str) -> String {
++    let addition = match path {
++        "tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport.rs" =>
++            "#[path = \"diagnostic_original_grouped_preparation.rs\"]\npub mod grouped_preparation;\n",
++        "tools/long-run-supervisor-074/src/diagnostic_original_safety_alarm_join_tests.rs" =>
++            "#[path = \"diagnostic_fixed_grouped_preparation_join_tests.rs\"]\nmod fixed_grouped_tests;\n",
++        "crates/xtask/tests/performance_contract_074.rs" =>
++            "\n#[path = \"support/performance_contract_074_fixed_grouped.rs\"]\nmod fixed_grouped;\n",
++        "docs/testing/gated-test-registry.toml" => GATES,
++        _ => return raw.to_owned(),
++    };
++    assert_eq!(raw.matches(addition).count(), 1, "{path}");
++    raw.replacen(addition, "", 1)
++}
++fn read(path: &str) -> String {
++    std::fs::read_to_string(super::root().join(path))
++        .unwrap()
++        .replace('\r', "")
++}
++fn frozen(path: &str) -> String {
++    let out = std::process::Command::new("git")
++        .args(["show", &format!("8193e642:{path}")])
++        .current_dir(super::root())
++        .output()
++        .unwrap();
++    assert!(out.status.success(), "{path}");
++    String::from_utf8(out.stdout).unwrap().replace('\r', "")
++}
++fn slice<'a>(raw: &'a str, start: &str, end: &str) -> &'a str {
++    let tail = &raw[raw.find(start).unwrap()..];
++    &tail[..tail.find(end).unwrap()]
++}
++#[test]
++fn fixed_grouped_registration_does_not_normalize_away_old_behavior_mutations() {
++    for path in [
++        "tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_original_safety_alarm_join_tests.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_original_safety_alarm.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_grouped_preparation_candidate.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_grouped_preparation_join_tests.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_grouped_preparation_crash_tests.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs",
++        "docs/testing/performance/0.74/qualification-manifest.toml",
++    ] {
++        assert_eq!(normalize(path, &read(path)), frozen(path), "{path}");
++    }
++    let path = "tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport.rs";
++    let raw = read(path);
++    assert_ne!(
++        normalize(
++            path,
++            &raw.replace("self.validate(false, false)", "self.validate(true, false)")
++        ),
++        frozen(path)
++    );
++    assert!(std::panic::catch_unwind(|| normalize(
++        path,
++        &raw.replace(
++            "pub mod grouped_preparation;",
++            "pub(crate) mod grouped_preparation;"
++        )
++    ))
++    .is_err());
++}
++#[test]
++fn fixed_grouped_alarm_and_closing_round_match_the_frozen_reference_exactly() {
++    let original = frozen("tools/long-run-supervisor-074/src/diagnostic_original_safety_alarm.rs");
++    let new = read("tools/long-run-supervisor-074/src/diagnostic_original_grouped_preparation.rs")
++        .replace("OriginalGroupedPrepError", "OriginalSafetyAlarmError");
++    assert_eq!(
++        slice(&new, "use super::*;", "// No production path"),
++        slice(&original, "use super::*;", "/// Retained one-shot alarm"),
++    );
++    assert_eq!(
++        slice(&new, "    fn original_round(", "    fn validate("),
++        slice(&original, "    fn original_round(", "    fn validate("),
++    );
++    let mutant = new.replace("received.boottime_ns(),", "now.boottime_ns(),");
++    assert_ne!(
++        slice(&mutant, "    fn original_round(", "    fn validate("),
++        slice(&original, "    fn original_round(", "    fn validate(")
++    );
++    let mutant = new.replace("now >= bounds.first()", "now > bounds.first()");
++    assert_ne!(
++        slice(&mutant, "use super::*;", "// No production path"),
++        slice(&original, "use super::*;", "/// Retained one-shot alarm")
++    );
++}
++#[test]
++fn fixed_grouped_production_surface_has_no_replacement_or_execution_input() {
++    let raw = read("tools/long-run-supervisor-074/src/diagnostic_original_grouped_preparation.rs");
++    let constructor = slice(
++        &raw,
++        "    pub fn prepare_original_grouped(",
++        "    #[cfg(test)]\n    pub(crate) fn prepare_fixed_grouped_fixture_for_test",
++    );
++    assert!(constructor.starts_with("    pub fn prepare_original_grouped(\n        self,\n"));
++    assert!(constructor.contains("None,"));
++    assert!(raw.contains("inspect_fixed_install(identity, policy)"));
++    assert!(raw.contains("#[cfg(test)]\n    if let Some(path) = fixture"));
++    assert!(raw.contains("held.original_round(allow_fixture)? != bounds"));
++    assert!(raw.contains("held.transport.material.ready = true"));
++    assert_eq!(raw.matches("Alarm::arm(bounds.first())").count(), 1);
++    for forbidden in [
++        "Connection",
++        "Proxy",
++        "Command::",
++        "SystemTime",
++        "CLOCK_REALTIME",
++        "pub fn start",
++        "pub fn send",
++        "pub fn rearm",
++        "pub fn into_",
++    ] {
++        assert!(!raw.contains(forbidden), "{forbidden}");
++    }
++}
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_fixed_grouped_preparation_join_tests.rs b/tools/long-run-supervisor-074/src/diagnostic_fixed_grouped_preparation_join_tests.rs
+new file mode 100644
+index 0000000000000000000000000000000000000000..f9cce288c3c9687f359a5dd07257b8c08775bcee
+--- /dev/null
++++ b/tools/long-run-supervisor-074/src/diagnostic_fixed_grouped_preparation_join_tests.rs
+@@ -0,0 +1,232 @@
++use super::*;
++use crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::OriginalGroupedPrepError;
++use crate::diagnostic_ipc::validation_trace::{self as trace, Stage};
++
++fn healthy(samples: usize) {
++    for sample in 0..samples {
++        let bundle = Bundle::new();
++        with_original_at(false, None, |original, _, receiver, sender, model| {
++            with_owned_empty_fence_for_test(|fence, root, leaf| {
++                let outputs = accepted(original, fence, leaf, receiver, sender, model)
++                    .prepare_original_outputs_for_test(|_| Ok(()))
++                    .unwrap();
++                let before = records(leaf);
++                let mut visited = Vec::new();
++                let (mut alarm, preparation) = trace::capture(|| {
++                    trace::stage(Stage::Bind);
++                    outputs
++                        .prepare_fixed_grouped_fixture_for_test(&bundle.path, |at, _| {
++                            visited.push(at);
++                            busy(root);
++                        })
++                        .unwrap()
++                });
++                assert_eq!(visited, ["opened", "loaded", "bound", "message", "armed"]);
++                assert_eq!(
++                    preparation.stages[Stage::Bind as usize].authentication_calls,
++                    34
++                );
++                assert_eq!(preparation.stages[Stage::Bind as usize].signature_calls, 34);
++                assert!(preparation.first_time.is_none());
++                assert_eq!(
++                    alarm.offsets_for_test(),
++                    [300_000_000_000, 60_000_000_000, 10_000_000_000]
++                );
++                let origins = alarm.origins_for_test();
++                println!(
++                    "HC074-FIXED-GROUPED-COST sample={sample} phase=prepare report={preparation:?}"
++                );
++                let (_, validation) = trace::capture(|| {
++                    trace::stage(Stage::Checks);
++                    alarm.revalidate_fixture_for_test().unwrap();
++                });
++                assert_eq!(
++                    validation.stages[Stage::Checks as usize].authentication_calls,
++                    34
++                );
++                assert_eq!(
++                    validation.stages[Stage::Checks as usize].signature_calls,
++                    34
++                );
++                assert!(validation.first_time.is_none());
++                assert_eq!(&alarm.origins_for_test()[..4], &origins[..4]);
++                println!("HC074-FIXED-GROUPED-COST sample={sample} phase=reference-validate report={validation:?}");
++                assert!(!alarm.is_refused());
++                assert_eq!(records(leaf), before);
++                busy(root);
++                drop(alarm);
++                retained_context_refuses_for_test(root);
++                println!("HC074-FIXED-GROUPED-CONTROL sample={sample} original=true unchanged=true checkpoints=5 bounds_original=true reference=true guardian=false send=false admission=false");
++            });
++        });
++    }
++}
++#[test]
++#[ignore = "manual nonroot grouped preparation first healthy screen; no send or execution"]
++fn fixed_grouped_preparation_screen() {
++    healthy(1);
++}
++#[test]
++#[ignore = "manual nonroot grouped preparation repeated healthy gate; no send or execution"]
++fn fixed_grouped_preparation_healthy() {
++    healthy(3);
++}
++
++#[test]
++#[ignore = "manual nonroot grouped preparation persistent drift and expiry; no send or execution"]
++fn fixed_grouped_preparation_refusals() {
++    for (case, cut) in [
++        ("trust", "opened"),
++        ("trust", "loaded"),
++        ("trust", "bound"),
++        ("trust", "message"),
++        ("trust", "armed"),
++        ("bundle-content", "loaded"),
++        ("bundle-inode", "armed"),
++        ("output", "armed"),
++        ("projection", "armed"),
++        ("state", "armed"),
++        ("writer", "armed"),
++        ("message", "armed"),
++        ("alarm", "armed"),
++        ("expiry", "armed"),
++    ] {
++        let bundle = Bundle::new();
++        with_original_at(true, None, |original, paths, receiver, sender, model| {
++            with_owned_empty_fence_for_test(|fence, root, leaf| {
++                let outputs = accepted(original, fence, leaf, receiver, sender, model)
++                    .prepare_original_outputs_for_test(|_| Ok(()))
++                    .unwrap();
++                let before = records(leaf);
++                let mut injected = false;
++                let (result, event) =
++                    crate::diagnostic_kernel_admission::refusal_trace::capture(|| {
++                        outputs.prepare_fixed_grouped_fixture_for_test(&bundle.path, |at, held| {
++                            busy(root);
++                            if at == cut {
++                                assert!(!injected);
++                                injected = true;
++                                match case {
++                                    "trust" => {
++                                        fs::write(&paths.worker, b"original trust drift").unwrap()
++                                    }
++                                    "bundle-content" => bundle.change(),
++                                    "bundle-inode" => bundle.replace(),
++                                    "output" => fs::write(
++                                        output(leaf)
++                                            .join("collector-attempt-v1/collector-stderr.bin"),
++                                        b"unexpected",
++                                    )
++                                    .unwrap(),
++                                    "expiry" => {
++                                        std::thread::sleep(std::time::Duration::from_secs(10))
++                                    }
++                                    other => held.tamper_fixed_grouped_for_test(other),
++                                }
++                            }
++                        })
++                    });
++                assert!(injected, "{case}/{cut}");
++                let mut failure = result.unwrap_err();
++                let reason = format!("{:?}", failure.error());
++                assert!(failure.is_refused());
++                if case == "expiry" {
++                    let event = event.expect("original progress age refusal");
++                    assert_eq!(event.site, "progress-age");
++                    assert_eq!(event.clock[5], 10_000_000_000);
++                    assert!(
++                        reason.contains("Causal(Progress(Input(Kernel(Invalid))))"),
++                        "{reason}"
++                    );
++                } else {
++                    assert!(
++                        !reason.contains("Time"),
++                        "late time refusal is not {case}: {reason}"
++                    );
++                    match case {
++                        "trust" => assert!(reason.contains("Input(Invalid)"), "{reason}"),
++                        "bundle-content" | "bundle-inode" => {
++                            assert!(reason.contains("Material(Build("), "{reason}")
++                        }
++                        "output" => assert!(reason.contains("Outputs(Invalid)"), "{reason}"),
++                        "writer" => assert!(reason.contains("Invalid"), "{reason}"),
++                        "projection" | "state" | "message" | "alarm" => {
++                            assert!(reason.contains("Binding"), "{reason}")
++                        }
++                        _ => unreachable!(),
++                    }
++                }
++                assert!(matches!(
++                    failure.retry_fixed_grouped_for_test(),
++                    Err(OriginalGroupedPrepError::Refused)
++                ));
++                busy(root);
++                assert_eq!(records(leaf), before);
++                drop(failure);
++                retained_context_refuses_for_test(root);
++                println!("HC074-FIXED-GROUPED-REFUSAL case={case} cut={cut} exact=true sticky=true held=true unchanged=true send=false");
++            });
++        });
++    }
++}
++
++#[test]
++#[ignore = "manual nonroot production revalidation refuses the fixture origin; no installation"]
++fn fixed_grouped_preparation_fixture_cannot_enter_production() {
++    // Exercise the actual production constructor as well: absence is a refusal,
++    // never a fallback to the available signed fixture below.
++    assert_eq!(
++        fs::symlink_metadata(crate::diagnostic_artifacts::INSTALL_ROOT)
++            .unwrap_err()
++            .kind(),
++        std::io::ErrorKind::NotFound
++    );
++    with_original_at(false, None, |original, _, receiver, sender, model| {
++        with_owned_empty_fence_for_test(|fence, root, leaf| {
++            let outputs = accepted(original, fence, leaf, receiver, sender, model)
++                .prepare_original_outputs_for_test(|_| Ok(()))
++                .unwrap();
++            let before = records(leaf);
++            let mut failure = outputs.prepare_original_grouped().unwrap_err();
++            let reason = format!("{:?}", failure.error());
++            assert!(reason.contains("Material(Build(Io("), "{reason}");
++            assert!(failure.is_refused());
++            assert!(matches!(
++                failure.retry_fixed_grouped_for_test(),
++                Err(OriginalGroupedPrepError::Refused)
++            ));
++            busy(root);
++            assert_eq!(records(leaf), before);
++            drop(failure);
++            retained_context_refuses_for_test(root);
++            println!("HC074-FIXED-GROUPED-ORIGIN missing_fixed_install_refused=true fallback=false sticky=true held=true unchanged=true send=false");
++        });
++    });
++    let bundle = Bundle::new();
++    with_original_at(false, None, |original, _, receiver, sender, model| {
++        with_owned_empty_fence_for_test(|fence, root, leaf| {
++            let outputs = accepted(original, fence, leaf, receiver, sender, model)
++                .prepare_original_outputs_for_test(|_| Ok(()))
++                .unwrap();
++            let before = records(leaf);
++            let mut held = outputs
++                .prepare_fixed_grouped_fixture_for_test(&bundle.path, |_, _| busy(root))
++                .unwrap();
++            let error = held.revalidate().unwrap_err();
++            assert!(
++                format!("{error:?}").contains("Material(Fixture)"),
++                "{error:?}"
++            );
++            assert!(held.is_refused());
++            assert!(matches!(
++                held.revalidate_fixture_for_test(),
++                Err(OriginalGroupedPrepError::Refused)
++            ));
++            busy(root);
++            assert_eq!(records(leaf), before);
++            drop(held);
++            retained_context_refuses_for_test(root);
++            println!("HC074-FIXED-GROUPED-ORIGIN fixture_refused=true sticky=true held=true unchanged=true send=false");
++        });
++    });
++}
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_fixed_grouped_preparation_tests.rs b/tools/long-run-supervisor-074/src/diagnostic_fixed_grouped_preparation_tests.rs
+new file mode 100644
+index 0000000000000000000000000000000000000000..1162eff0ee92521376323169c94062fe8767e364
+--- /dev/null
++++ b/tools/long-run-supervisor-074/src/diagnostic_fixed_grouped_preparation_tests.rs
+@@ -0,0 +1,150 @@
++use super::*;
++
++#[test]
++fn fixed_grouped_alarm_bounds_exclude_equality_overflow_and_later_starting_renewal() {
++    let b = boundaries(NS, 4 * NS, 2 * NS, 4 * NS, 5 * NS).unwrap();
++    assert_eq!((b.total, b.cell, b.progress), (301 * NS, 64 * NS, 12 * NS));
++    assert_eq!(b.first(), 12 * NS);
++    assert_ne!(b.progress, 4 * NS + CONTROLLER_LOSS_SECONDS * NS);
++    for now in [12 * NS, 13 * NS] {
++        assert!(matches!(
++            boundaries(NS, 4 * NS, 2 * NS, 4 * NS, now),
++            Err(OriginalGroupedPrepError::Expired)
++        ));
++    }
++    for args in [
++        (0, 4, 2, 4, 5),
++        (2, 4, 1, 4, 5),
++        (1, 2, 3, 4, 5),
++        (1, 4, 2, 3, 5),
++        (1, 4, 2, 4, 3),
++    ] {
++        assert!(matches!(
++            boundaries(args.0, args.1, args.2, args.3, args.4),
++            Err(OriginalGroupedPrepError::Binding)
++        ));
++    }
++    assert!(matches!(
++        boundaries(u64::MAX - 1, u64::MAX, u64::MAX - 1, u64::MAX, u64::MAX),
++        Err(OriginalGroupedPrepError::Binding)
++    ));
++    // Total/cell bounds also win independently; no round-up or one-second grace.
++    assert_eq!(
++        boundaries(NS, 295 * NS, 295 * NS, 295 * NS, 296 * NS)
++            .unwrap()
++            .first(),
++        301 * NS
++    );
++    assert!(matches!(
++        boundaries(NS, 295 * NS, 295 * NS, 295 * NS, 301 * NS),
++        Err(OriginalGroupedPrepError::Expired)
++    ));
++    // In the current first-cell grammar progress precedes Starting, so the
++    // ten-second progress ceiling always precedes the sixty-second cell bound.
++}
++#[test]
++fn fixed_grouped_alarm_seeded_bounds_match_checked_reference_without_time_refresh() {
++    let mut seed = 0x0740_a117_u64;
++    for _ in 0..4096 {
++        seed ^= seed << 13;
++        seed ^= seed >> 7;
++        seed ^= seed << 17;
++        let reserved = 1 + seed % 1_000_000_000;
++        let progress = reserved + (seed.rotate_left(17) % (299 * NS));
++        let cell = progress + (seed.rotate_left(31) % NS);
++        let last = cell;
++        let now = cell + seed.rotate_left(41) % (12 * NS);
++        let expected = (reserved + TOTAL_SECONDS * NS)
++            .min(cell + CELL_SECONDS * NS)
++            .min(progress + CONTROLLER_LOSS_SECONDS * NS);
++        match boundaries(reserved, cell, progress, last, now) {
++            Ok(b) => {
++                assert!(now < expected);
++                assert_eq!(b.first(), expected);
++            }
++            Err(OriginalGroupedPrepError::Expired) => assert!(now >= expected),
++            Err(e) => panic!("{e:?}"),
++        }
++    }
++    println!("HC074-ALARM-BOUNDS seed=0x0740a117 cases=4096 exact=true renewed=false");
++}
++pub(super) fn set(alarm: &Alarm, deadline: u64, interval: u64, flags: i32) {
++    let spec = libc::itimerspec {
++        it_value: timespec(deadline),
++        it_interval: timespec(interval),
++    };
++    assert_eq!(
++        unsafe {
++            libc::timerfd_settime(alarm.file.as_raw_fd(), flags, &spec, std::ptr::null_mut())
++        },
++        0
++    );
++}
++#[test]
++fn fixed_grouped_alarm_kernel_flags_clock_interval_disarm_and_extension_refuse() {
++    for kind in 0..6 {
++        let mut alarm = Alarm::arm(clock().unwrap() + 30 * NS).unwrap();
++        alarm.inspect().unwrap();
++        match kind {
++            0 => set(&alarm, 0, 0, libc::TFD_TIMER_ABSTIME),
++            1 => set(&alarm, alarm.deadline + 60 * NS, 0, libc::TFD_TIMER_ABSTIME),
++            2 => set(&alarm, alarm.deadline, NS, libc::TFD_TIMER_ABSTIME),
++            3 => assert_eq!(
++                unsafe { libc::fcntl(alarm.file.as_raw_fd(), libc::F_SETFD, 0) },
++                0
++            ),
++            4 => alarm.file = tempfile::tempfile().unwrap(),
++            5 => {
++                let fd = unsafe {
++                    libc::timerfd_create(
++                        libc::CLOCK_MONOTONIC,
++                        libc::TFD_CLOEXEC | libc::TFD_NONBLOCK,
++                    )
++                };
++                assert!(fd >= 0);
++                alarm.file = unsafe { File::from_raw_fd(fd) };
++                set(&alarm, alarm.deadline, 0, libc::TFD_TIMER_ABSTIME);
++            }
++            _ => unreachable!(),
++        }
++        assert!(alarm.inspect().is_err(), "kind={kind}");
++    }
++}
++#[test]
++fn fixed_grouped_alarm_kernel_expiry_is_readable_and_validation_does_not_consume_or_rearm() {
++    let mut alarm = Alarm::arm(clock().unwrap() + 100_000_000).unwrap();
++    alarm.inspect().unwrap();
++    let mut p = libc::pollfd {
++        fd: alarm.file.as_raw_fd(),
++        events: libc::POLLIN,
++        revents: 0,
++    };
++    assert_eq!(unsafe { libc::poll(&mut p, 1, 5000) }, 1);
++    assert_eq!(p.revents, libc::POLLIN);
++    assert!(matches!(
++        alarm.inspect(),
++        Err(OriginalGroupedPrepError::Expired)
++    ));
++    assert!(matches!(
++        alarm.inspect(),
++        Err(OriginalGroupedPrepError::Expired)
++    ));
++    let mut b = [0; 8];
++    alarm.file.read_exact(&mut b).unwrap();
++    assert_eq!(u64::from_ne_bytes(b), 1);
++    assert!(matches!(
++        alarm.inspect(),
++        Err(OriginalGroupedPrepError::Expired)
++    ));
++    assert_eq!(
++        alarm.file.read(&mut b).unwrap_err().kind(),
++        std::io::ErrorKind::WouldBlock
++    );
++    // Do not inspect the numeric descriptor after Drop: parallel tests may
++    // immediately reuse it. File ownership closes it; this is not a guardian test.
++    drop(alarm);
++    assert!(matches!(
++        Alarm::arm(clock().unwrap()),
++        Err(OriginalGroupedPrepError::Expired)
++    ));
++}
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_original_grouped_preparation.rs b/tools/long-run-supervisor-074/src/diagnostic_original_grouped_preparation.rs
+new file mode 100644
+index 0000000000000000000000000000000000000000..3a8c2bee94acc3cc4c11d553483ad063db9fac99
+--- /dev/null
++++ b/tools/long-run-supervisor-074/src/diagnostic_original_grouped_preparation.rs
+@@ -0,0 +1,649 @@
++//! Fixed-origin grouped preparation, never a send/start or guardian capability.
++use super::*;
++use crate::diagnostic_kernel_admission::{KernelError, KernelTimePoint};
++use crate::diagnostic_lease::{
++    DiagnosticStage, CELL_SECONDS, CONTROLLER_LOSS_SECONDS, TOTAL_SECONDS,
++};
++use std::io::Read;
++use std::os::fd::FromRawFd;
++use std::os::unix::fs::OpenOptionsExt;
++
++const NS: u64 = 1_000_000_000;
++#[derive(Debug, thiserror::Error)]
++pub enum OriginalGroupedPrepError {
++    #[error("original pipe message refused: {0}")]
++    Transport(#[from] OriginalPipeTransportError),
++    #[error("original kernel time refused: {0}")]
++    Kernel(#[from] KernelError),
++    #[error("original alarm binding or kernel timer differs")]
++    Binding,
++    #[error("an original absolute safety deadline has expired")]
++    Expired,
++    #[error("original alarm owner previously refused")]
++    Refused,
++    #[error("kernel alarm I/O failed: {0}")]
++    Io(#[from] std::io::Error),
++}
++#[derive(Debug, Clone, Copy, PartialEq, Eq)]
++struct Bounds {
++    total: u64,
++    cell: u64,
++    progress: u64,
++}
++impl Bounds {
++    fn first(self) -> u64 {
++        self.total.min(self.cell).min(self.progress)
++    }
++}
++fn boundaries(
++    reserved: u64,
++    cell: u64,
++    progress: u64,
++    last: u64,
++    now: u64,
++) -> Result<Bounds, OriginalGroupedPrepError> {
++    if reserved == 0 || progress < reserved || cell < progress || last < cell || now < last {
++        return Err(OriginalGroupedPrepError::Binding);
++    }
++    let add = |origin: u64, seconds: u64| {
++        origin
++            .checked_add(seconds * NS)
++            .ok_or(OriginalGroupedPrepError::Binding)
++    };
++    let bounds = Bounds {
++        total: add(reserved, TOTAL_SECONDS)?,
++        cell: add(cell, CELL_SECONDS)?,
++        progress: add(progress, CONTROLLER_LOSS_SECONDS)?,
++    };
++    if now >= bounds.first() {
++        return Err(OriginalGroupedPrepError::Expired);
++    }
++    Ok(bounds)
++}
++fn timespec(ns: u64) -> libc::timespec {
++    libc::timespec {
++        tv_sec: (ns / NS) as libc::time_t,
++        tv_nsec: (ns % NS) as libc::c_long,
++    }
++}
++fn nanos(t: libc::timespec) -> Result<u64, OriginalGroupedPrepError> {
++    if t.tv_sec < 0 || !(0..NS as i64).contains(&t.tv_nsec) {
++        return Err(OriginalGroupedPrepError::Binding);
++    }
++    (t.tv_sec as u64)
++        .checked_mul(NS)
++        .and_then(|v| v.checked_add(t.tv_nsec as u64))
++        .ok_or(OriginalGroupedPrepError::Binding)
++}
++fn clock() -> Result<u64, OriginalGroupedPrepError> {
++    let mut t = unsafe { std::mem::zeroed() };
++    if unsafe { libc::clock_gettime(libc::CLOCK_BOOTTIME, &mut t) } != 0 {
++        return Err(std::io::Error::last_os_error().into());
++    }
++    nanos(t)
++}
++struct Alarm {
++    file: File,
++    deadline: u64,
++}
++impl Alarm {
++    fn arm(deadline: u64) -> Result<Self, OriginalGroupedPrepError> {
++        if clock()? >= deadline {
++            return Err(OriginalGroupedPrepError::Expired);
++        }
++        let fd = unsafe {
++            libc::timerfd_create(libc::CLOCK_BOOTTIME, libc::TFD_CLOEXEC | libc::TFD_NONBLOCK)
++        };
++        if fd < 0 {
++            return Err(std::io::Error::last_os_error().into());
++        }
++        let alarm = Self {
++            file: unsafe { File::from_raw_fd(fd) },
++            deadline,
++        };
++        let spec = libc::itimerspec {
++            it_interval: timespec(0),
++            it_value: timespec(deadline),
++        };
++        if unsafe {
++            libc::timerfd_settime(
++                alarm.file.as_raw_fd(),
++                libc::TFD_TIMER_ABSTIME,
++                &spec,
++                std::ptr::null_mut(),
++            )
++        } != 0
++        {
++            return Err(std::io::Error::last_os_error().into());
++        }
++        alarm.inspect()?;
++        Ok(alarm)
++    }
++    fn inspect(&self) -> Result<(), OriginalGroupedPrepError> {
++        let fd = self.file.as_raw_fd();
++        if unsafe { libc::fcntl(fd, libc::F_GETFD) } != libc::FD_CLOEXEC
++            || unsafe { libc::fcntl(fd, libc::F_GETFL) } != libc::O_RDWR | libc::O_NONBLOCK
++        {
++            return Err(OriginalGroupedPrepError::Binding);
++        }
++        // Bounded current-thread kernel metadata, bracketed by the original
++        // receiver/origin rounds. It is never an authority or caller path.
++        let info = std::fs::OpenOptions::new()
++            .read(true)
++            .custom_flags(libc::O_NOFOLLOW | libc::O_CLOEXEC | libc::O_NONBLOCK)
++            .open(format!("/proc/thread-self/fdinfo/{fd}"))?;
++        let mut fs: libc::statfs = unsafe { std::mem::zeroed() };
++        if unsafe { libc::fstatfs(info.as_raw_fd(), &mut fs) } != 0 {
++            return Err(std::io::Error::last_os_error().into());
++        }
++        if fs.f_type != libc::PROC_SUPER_MAGIC as libc::c_long {
++            return Err(OriginalGroupedPrepError::Binding);
++        }
++        let mut raw = Vec::new();
++        info.take(4097).read_to_end(&mut raw)?;
++        let text = std::str::from_utf8(&raw).map_err(|_| OriginalGroupedPrepError::Binding)?;
++        let clocks: Vec<_> = text
++            .lines()
++            .filter_map(|l| l.strip_prefix("clockid:"))
++            .collect();
++        let flags: Vec<_> = text
++            .lines()
++            .filter_map(|l| l.strip_prefix("settime flags:"))
++            .collect();
++        if raw.len() > 4096
++            || clocks.len() != 1
++            || clocks[0].trim() != "7"
++            || flags.len() != 1
++            || flags[0].trim() != "01"
++        {
++            return Err(OriginalGroupedPrepError::Binding);
++        }
++        let before = clock()?;
++        let mut spec = unsafe { std::mem::zeroed() };
++        if unsafe { libc::timerfd_gettime(fd, &mut spec) } != 0 {
++            return Err(std::io::Error::last_os_error().into());
++        }
++        let after = clock()?;
++        if after >= self.deadline {
++            return Err(OriginalGroupedPrepError::Expired);
++        }
++        let remaining = nanos(spec.it_value)?;
++        if after < before
++            || nanos(spec.it_interval)? != 0
++            || remaining == 0
++            || remaining > self.deadline.saturating_sub(before)
++            || remaining < self.deadline - after
++        {
++            return Err(OriginalGroupedPrepError::Binding);
++        }
++        Ok(())
++    }
++}
++
++// No production path, key, callback or fallback input. The fixture branch
++// is absent from non-test builds, and is never entered after a fixed refusal.
++fn load_bundle(
++    policy: &CheckedBuilderPolicy,
++    identity: &DiagnosticIdentity,
++    #[cfg(test)] fixture: Option<&std::path::Path>,
++) -> Result<BundleSnapshot, ArtifactError> {
++    #[cfg(test)]
++    if let Some(path) = fixture {
++        let policy: crate::diagnostic_builder::BuilderPolicy =
++            serde_json::from_slice(include_bytes!(
++                "../../../docs/testing/performance/0.74/diagnostic-builder-public-policy.json"
++            ))
++            .unwrap();
++        let trust = crate::diagnostic_artifacts::BuildTrust {
++            key: crate::diagnostic_builder::decode_key(&policy.builder_key_hex).unwrap(),
++            repository_id: policy.repository_id,
++            builder_id: policy.builder_id,
++        };
++        return crate::diagnostic_artifacts::linux::inspect_fixture(
++            path,
++            unsafe { libc::geteuid() },
++            unsafe { libc::getegid() },
++            identity,
++            &trust,
++        );
++    }
++    inspect_fixed_install(identity, policy)
++}
++
++/// Nonexecuting grouped owner. The timer is not an independent watchdog.
++/// ```compile_fail
++/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::OriginalGroupedPreparation;
++/// fn denied(p: OriginalGroupedPreparation<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { p.start_once(); }
++/// ```
++/// ```compile_fail
++/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::OriginalGroupedPreparation;
++/// fn denied(p: OriginalGroupedPreparation<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { p.send(); }
++/// ```
++/// ```compile_fail
++/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::OriginalGroupedPreparation;
++/// fn denied(p: OriginalGroupedPreparation<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { p.rearm(10); }
++/// ```
++/// ```compile_fail
++/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::OriginalGroupedPreparation;
++/// fn denied(p: OriginalGroupedPreparation<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { p.into_message(); }
++/// ```
++/// ```compile_fail
++/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::OriginalGroupedPreparation;
++/// fn denied(p: OriginalGroupedPreparation<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { p.clone(); }
++/// ```
++/// ```compile_fail
++/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::OriginalGroupedPreparation;
++/// fn denied(mut p: OriginalGroupedPreparation<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { p.revalidate_fixture_for_test(); }
++/// ```
++/// ```compile_fail
++/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::OriginalGroupedPreparation;
++/// fn decode<T: serde::de::DeserializeOwned>() {}
++/// decode::<OriginalGroupedPreparation<'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static>>();
++/// ```
++pub struct OriginalGroupedPreparation<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p> {
++    alarm: Option<Alarm>,
++    bounds: Option<Bounds>,
++    last: Option<KernelTimePoint>,
++    transport: OriginalCollectorPipeTransport<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++}
++impl OriginalGroupedPreparation<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
++    pub fn is_refused(&self) -> bool {
++        self.transport.is_refused()
++    }
++    fn original_round(&mut self, allow_fixture: bool) -> Result<Bounds, OriginalGroupedPrepError> {
++        let material = &mut self.transport.material;
++        material
++            .outputs
++            .material_round()
++            .map_err(OriginalStartMaterialError::from)
++            .map_err(OriginalPipeTransportError::from)?;
++        material
++            .bind(allow_fixture)
++            .map_err(OriginalPipeTransportError::from)?;
++        let prepared = &mut material.outputs.pipes.starting.original.original.prepared;
++        let previous = self
++            .last
++            .as_ref()
++            .or(prepared.point.as_ref())
++            .ok_or(OriginalGroupedPrepError::Binding)?;
++        let progress = &mut prepared.original.original;
++        let state = material
++            .starting
++            .as_ref()
++            .ok_or(OriginalGroupedPrepError::Binding)?;
++        crate::diagnostic_lease::validate_transition(&progress.reservation.state, state)
++            .map_err(|_| OriginalGroupedPrepError::Binding)?;
++        if state.stage != DiagnosticStage::Starting
++            || state.completed_cells != 0
++            || state.revision != 2
++        {
++            return Err(OriginalGroupedPrepError::Binding);
++        }
++        let received = progress.packet.received_time().clone();
++        let now = progress.packet.original_reservation_time(Some(previous))?;
++        if received.boot_id() != state.identity.boot_id || now.boot_id() != state.identity.boot_id {
++            return Err(OriginalGroupedPrepError::Binding);
++        }
++        let bounds = boundaries(
++            state.reserved_monotonic_ns,
++            state
++                .cell_started_monotonic_ns
++                .ok_or(OriginalGroupedPrepError::Binding)?,
++            received.boottime_ns(),
++            state.last_observed_monotonic_ns,
++            now.boottime_ns(),
++        )?;
++        let spec = worker(&progress.reservation.state, &material.projection)?;
++        let [Some(stdout), Some(stderr)] = &material.outputs.pipes.pipes else {
++            return Err(OriginalGroupedPrepError::Binding);
++        };
++        inspect_message(
++            self.transport
++                .message
++                .as_ref()
++                .ok_or(OriginalGroupedPrepError::Binding)?,
++            &spec,
++            &stdout.writer,
++            &stderr.writer,
++        )?;
++        self.last = Some(now);
++        Ok(bounds)
++    }
++    fn validate(&mut self, allow_fixture: bool) -> Result<(), OriginalGroupedPrepError> {
++        if self.is_refused() || !self.transport.material.ready {
++            self.transport.material.outputs.refuse();
++            return Err(OriginalGroupedPrepError::Refused);
++        }
++        let result = (|| {
++            let bounds = self.original_round(allow_fixture)?;
++            if self.bounds != Some(bounds) {
++                return Err(OriginalGroupedPrepError::Binding);
++            }
++            let alarm = self
++                .alarm
++                .as_ref()
++                .ok_or(OriginalGroupedPrepError::Binding)?;
++            if alarm.deadline != bounds.first() {
++                return Err(OriginalGroupedPrepError::Binding);
++            }
++            alarm.inspect()?;
++            if self.original_round(allow_fixture)? != bounds {
++                return Err(OriginalGroupedPrepError::Binding);
++            }
++            self.alarm
++                .as_ref()
++                .ok_or(OriginalGroupedPrepError::Binding)?
++                .inspect()
++        })();
++        if result.is_err() {
++            self.transport.material.outputs.refuse();
++        }
++        result
++    }
++    /// Reobserve the fixed installed origin; never sends or renews a deadline.
++    pub fn revalidate(&mut self) -> Result<(), OriginalGroupedPrepError> {
++        self.validate(false)
++    }
++    #[cfg(test)]
++    pub(crate) fn revalidate_fixture_for_test(&mut self) -> Result<(), OriginalGroupedPrepError> {
++        self.validate(true)
++    }
++    #[cfg(test)]
++    pub(crate) fn offsets_for_test(&self) -> [u64; 3] {
++        let state = self.transport.material.starting.as_ref().unwrap();
++        let bounds = self.bounds.unwrap();
++        [
++            bounds.total - state.reserved_monotonic_ns,
++            bounds.cell - state.cell_started_monotonic_ns.unwrap(),
++            bounds.progress
++                - self
++                    .transport
++                    .material
++                    .outputs
++                    .pipes
++                    .starting
++                    .original
++                    .original
++                    .prepared
++                    .original
++                    .original
++                    .packet
++                    .received_time()
++                    .boottime_ns(),
++        ]
++    }
++    #[cfg(test)]
++    pub(crate) fn origins_for_test(&self) -> [u64; 6] {
++        let prepared = &self
++            .transport
++            .material
++            .outputs
++            .pipes
++            .starting
++            .original
++            .original
++            .prepared;
++        let progress = &prepared.original.original;
++        [
++            progress.reservation.state.reserved_monotonic_ns,
++            prepared.original.issued.boottime_ns(),
++            progress.packet.received_time().boottime_ns(),
++            self.transport
++                .material
++                .starting
++                .as_ref()
++                .unwrap()
++                .cell_started_monotonic_ns
++                .unwrap(),
++            self.last.as_ref().unwrap().boottime_ns(),
++            clock().unwrap(),
++        ]
++    }
++}
++impl fmt::Debug for OriginalGroupedPreparation<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
++    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++        f.debug_struct("OriginalGroupedPreparation")
++            .field("refused", &self.is_refused())
++            .finish_non_exhaustive()
++    }
++}
++pub struct OriginalGroupedPreparationFailure<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p> {
++    error: OriginalGroupedPrepError,
++    held: Box<OriginalGroupedPreparation<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>>,
++}
++impl OriginalGroupedPreparationFailure<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
++    pub fn error(&self) -> &OriginalGroupedPrepError {
++        &self.error
++    }
++    pub fn is_refused(&self) -> bool {
++        self.held.is_refused()
++    }
++}
++impl fmt::Debug for OriginalGroupedPreparationFailure<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
++    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++        fmt::Debug::fmt(&self.error, f)
++    }
++}
++impl fmt::Display for OriginalGroupedPreparationFailure<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
++    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++        fmt::Display::fmt(&self.error, f)
++    }
++}
++impl std::error::Error
++    for OriginalGroupedPreparationFailure<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>
++{
++}
++impl<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>
++    OriginalCollectorSinks<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>
++{
++    /// Consume acknowledged original sinks using only the fixed trusted install.
++    /// This prepares private material, message and timer; it never starts a worker.
++    /// ```compile_fail
++    /// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::OriginalCollectorSinks;
++    /// fn denied(p: OriginalCollectorSinks<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { p.prepare_fixed_grouped_fixture_for_test(std::path::Path::new("/tmp/fixture"), |_, _| {}); }
++    /// ```
++    pub fn prepare_original_grouped(
++        self,
++    ) -> Result<
++        OriginalGroupedPreparation<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++        OriginalGroupedPreparationFailure<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++    > {
++        self.prepare_grouped_with(
++            #[cfg(test)]
++            None,
++            #[cfg(test)]
++            &mut |_, _| {},
++        )
++    }
++    #[cfg(test)]
++    pub(crate) fn prepare_fixed_grouped_fixture_for_test(
++        self,
++        path: &std::path::Path,
++        mut checkpoint: impl FnMut(
++            &'static str,
++            &mut OriginalGroupedPreparation<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++        ),
++    ) -> Result<
++        OriginalGroupedPreparation<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++        OriginalGroupedPreparationFailure<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++    > {
++        assert_ne!(unsafe { libc::geteuid() }, 0);
++        assert_ne!(unsafe { libc::getegid() }, 0);
++        self.prepare_grouped_with(Some(path), &mut checkpoint)
++    }
++    fn prepare_grouped_with(
++        self,
++        #[cfg(test)] fixture: Option<&std::path::Path>,
++        #[cfg(test)] checkpoint: &mut dyn FnMut(
++            &'static str,
++            &mut OriginalGroupedPreparation<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++        ),
++    ) -> Result<
++        OriginalGroupedPreparation<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++        OriginalGroupedPreparationFailure<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++    > {
++        #[cfg(test)]
++        let allow_fixture = fixture.is_some();
++        #[cfg(not(test))]
++        let allow_fixture = false;
++        let mut held = OriginalGroupedPreparation {
++            alarm: None,
++            bounds: None,
++            last: None,
++            transport: OriginalCollectorPipeTransport {
++                message: None,
++                material: OriginalCollectorStartMaterial {
++                    bundle: None,
++                    projection: Vec::new(),
++                    starting: None,
++                    ready: false,
++                    outputs: self,
++                },
++            },
++        };
++        let result = (|| {
++            held.transport
++                .material
++                .outputs
++                .material_round()
++                .map_err(OriginalStartMaterialError::from)
++                .map_err(OriginalPipeTransportError::from)?;
++            #[cfg(test)]
++            checkpoint("opened", &mut held);
++            let material = &mut held.transport.material;
++            let prepared = &material.outputs.pipes.starting.original.original.prepared;
++            let r = &prepared.original.original.reservation;
++            let body = prepared.consent_to_sign();
++            material.projection = requirements(
++                &r.state,
++                &body.collector_unit_sha256,
++                &body.reserved_state_sha256,
++            )
++            .map_err(OriginalPipeTransportError::from)?;
++            material.starting = Some(body.starting_state.clone());
++            material.bundle = Some(
++                load_bundle(
++                    &r.original.original.policy,
++                    r.original.original.build.identity(),
++                    #[cfg(test)]
++                    fixture,
++                )
++                .map_err(OriginalStartMaterialError::from)
++                .map_err(OriginalPipeTransportError::from)?,
++            );
++            #[cfg(test)]
++            checkpoint("loaded", &mut held);
++            held.transport
++                .material
++                .bind(allow_fixture)
++                .map_err(OriginalPipeTransportError::from)?;
++            #[cfg(test)]
++            checkpoint("bound", &mut held);
++            let material = &held.transport.material;
++            let r = &material
++                .outputs
++                .pipes
++                .starting
++                .original
++                .original
++                .prepared
++                .original
++                .original
++                .reservation;
++            let spec = worker(&r.state, &material.projection)?;
++            let [Some(stdout), Some(stderr)] = &material.outputs.pipes.pipes else {
++                return Err(OriginalGroupedPrepError::Binding);
++            };
++            held.transport.message = Some(message(&spec, &stdout.writer, &stderr.writer)?);
++            inspect_message(
++                held.transport.message.as_ref().unwrap(),
++                &spec,
++                &stdout.writer,
++                &stderr.writer,
++            )?;
++            #[cfg(test)]
++            checkpoint("message", &mut held);
++
++            // Provisional timer only. The unchanged original_round below must
++            // independently confirm every binding and these original bounds.
++            let material = &mut held.transport.material;
++            let prepared = &mut material.outputs.pipes.starting.original.original.prepared;
++            let previous = prepared
++                .point
++                .as_ref()
++                .ok_or(OriginalGroupedPrepError::Binding)?;
++            let progress = &mut prepared.original.original;
++            let state = material
++                .starting
++                .as_ref()
++                .ok_or(OriginalGroupedPrepError::Binding)?;
++            let now = progress.packet.original_reservation_time(Some(previous))?;
++            let bounds = boundaries(
++                state.reserved_monotonic_ns,
++                state
++                    .cell_started_monotonic_ns
++                    .ok_or(OriginalGroupedPrepError::Binding)?,
++                progress.packet.received_time().boottime_ns(),
++                state.last_observed_monotonic_ns,
++                now.boottime_ns(),
++            )?;
++            held.last = Some(now);
++            held.bounds = Some(bounds);
++            held.alarm = Some(Alarm::arm(bounds.first())?);
++            #[cfg(test)]
++            checkpoint("armed", &mut held);
++            // No caller callback occurs after this complete closing observation.
++            if held.original_round(allow_fixture)? != bounds {
++                return Err(OriginalGroupedPrepError::Binding);
++            }
++            let alarm = held
++                .alarm
++                .as_ref()
++                .ok_or(OriginalGroupedPrepError::Binding)?;
++            if alarm.deadline != bounds.first() {
++                return Err(OriginalGroupedPrepError::Binding);
++            }
++            alarm.inspect()?;
++            held.transport.material.ready = true;
++            Ok(())
++        })();
++        match result {
++            Ok(()) => Ok(held),
++            Err(error) => {
++                held.transport.material.outputs.refuse();
++                Err(OriginalGroupedPreparationFailure {
++                    error,
++                    held: Box::new(held),
++                })
++            }
++        }
++    }
++}
++
++#[cfg(test)]
++#[path = "diagnostic_fixed_grouped_preparation_tests.rs"]
++mod tests;
++
++#[cfg(test)]
++impl OriginalGroupedPreparation<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
++    pub(crate) fn tamper_fixed_grouped_for_test(&mut self, kind: &str) {
++        match kind {
++            "message" => self.transport.message = None,
++            "projection" => self.transport.material.projection.push(b' '),
++            "state" => self.transport.material.starting.as_mut().unwrap().revision += 1,
++            "writer" => self
++                .transport
++                .material
++                .outputs
++                .corrupt_descriptor_for_test(3),
++            "alarm" => tests::set(self.alarm.as_ref().unwrap(), 0, 0, libc::TFD_TIMER_ABSTIME),
++            _ => panic!("unknown grouped fault"),
++        }
++    }
++}
++#[cfg(test)]
++impl OriginalGroupedPreparationFailure<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
++    pub(crate) fn retry_fixed_grouped_for_test(&mut self) -> Result<(), OriginalGroupedPrepError> {
++        self.held.revalidate_fixture_for_test()
++    }
++}
+diff --git a/tools/long-run-supervisor-074/tests/diagnostic_fixed_grouped_preparation.rs b/tools/long-run-supervisor-074/tests/diagnostic_fixed_grouped_preparation.rs
+new file mode 100644
+index 0000000000000000000000000000000000000000..f823ede342f0f08f90e196788e16f014e54d8728
+--- /dev/null
++++ b/tools/long-run-supervisor-074/tests/diagnostic_fixed_grouped_preparation.rs
+@@ -0,0 +1,10 @@
++#![cfg(all(target_os = "linux", target_arch = "x86_64"))]
++use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::OriginalCollectorSinks;
++
++#[test]
++fn fixed_grouped_preparation_consumes_original_sinks_without_replacement_inputs() {
++    fn prepare(owner: OriginalCollectorSinks<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) {
++        let _ = owner.prepare_original_grouped();
++    }
++    let _ = prepare;
++}

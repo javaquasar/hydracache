@@ -1,0 +1,25 @@
+HC074-FIXED-GROUPED-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-FIXED-GROUPED-BINARY lane=188 mode=refusals bytes=18620760 sha256=c015107f95e5dfb2f0db87ed6b007de7039718523b32181b10a1cfc5ab62fe96
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::fixed_grouped_preparation_refusals ... HC074-FIXED-GROUPED-REFUSAL case=trust cut=opened exact=true sticky=true held=true unchanged=true send=false
+HC074-FIXED-GROUPED-REFUSAL case=trust cut=loaded exact=true sticky=true held=true unchanged=true send=false
+HC074-FIXED-GROUPED-REFUSAL case=trust cut=bound exact=true sticky=true held=true unchanged=true send=false
+HC074-FIXED-GROUPED-REFUSAL case=trust cut=message exact=true sticky=true held=true unchanged=true send=false
+HC074-FIXED-GROUPED-REFUSAL case=trust cut=armed exact=true sticky=true held=true unchanged=true send=false
+HC074-FIXED-GROUPED-REFUSAL case=bundle-content cut=loaded exact=true sticky=true held=true unchanged=true send=false
+HC074-FIXED-GROUPED-REFUSAL case=bundle-inode cut=armed exact=true sticky=true held=true unchanged=true send=false
+HC074-FIXED-GROUPED-REFUSAL case=output cut=armed exact=true sticky=true held=true unchanged=true send=false
+HC074-FIXED-GROUPED-REFUSAL case=projection cut=armed exact=true sticky=true held=true unchanged=true send=false
+HC074-FIXED-GROUPED-REFUSAL case=state cut=armed exact=true sticky=true held=true unchanged=true send=false
+HC074-FIXED-GROUPED-REFUSAL case=writer cut=armed exact=true sticky=true held=true unchanged=true send=false
+HC074-FIXED-GROUPED-REFUSAL case=message cut=armed exact=true sticky=true held=true unchanged=true send=false
+HC074-FIXED-GROUPED-REFUSAL case=alarm cut=armed exact=true sticky=true held=true unchanged=true send=false
+HC074-FIXED-GROUPED-REFUSAL case=expiry cut=armed exact=true sticky=true held=true unchanged=true send=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1059 filtered out; finished in 190.64s
+
+HC074-FIXED-GROUPED-EXIT lane=188 mode=refusals exit=0
+HC074-FIXED-GROUPED-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-FIXED-GROUPED-RUN lane=188 mode=refusals completed=true guardian=false send=false

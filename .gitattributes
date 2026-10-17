@@ -342,3 +342,7 @@ docs/testing/performance/0.74/local-runs/grouped-preparation-*/*.patch -text whi
 docs/testing/performance/0.74/local-runs/grouped-process-loss-*/** -text whitespace=cr-at-eol
 docs/testing/performance/0.74/local-runs/grouped-process-loss-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
 docs/testing/performance/0.74/local-runs/grouped-process-loss-*/*.patch -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/fixed-grouped-preparation-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/fixed-grouped-preparation-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/fixed-grouped-preparation-*/*.patch -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol

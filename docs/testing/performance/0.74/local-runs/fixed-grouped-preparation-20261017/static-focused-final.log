@@ -1,0 +1,11 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 8.01s
+     Running tests\performance_contract_074.rs (target\debug\deps\performance_contract_074-affcfab4e5118d5a.exe)
+
+running 3 tests
+test fixed_grouped::fixed_grouped_production_surface_has_no_replacement_or_execution_input ... ok
+test fixed_grouped::fixed_grouped_alarm_and_closing_round_match_the_frozen_reference_exactly ... ok
+test fixed_grouped::fixed_grouped_registration_does_not_normalize_away_old_behavior_mutations ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 195 filtered out; finished in 0.81s
+

@@ -247,3 +247,34 @@ cohorts. The separate two-case screen and matrices total 100 fresh inspector
 processes with unchanged retained evidence. This closes the selected grouped
 nonexecuting process-loss gate, not arbitrary crash, actual manager ACK recovery
 or any production execution obligation above.
+
+## Fixed origin grouped preparation
+
+The [fixed origin adaptation](local-runs/fixed-grouped-preparation-20261017/README.md)
+adds a separate nonexecuting production owner below the original pipe transport.
+prepare_original_grouped consumes acknowledged original sinks without caller
+path, policy, key, time, descriptor or callback inputs. Only inspect_fixed_install
+with the original checked builder policy and identity can supply its bundle.
+Fixture loading and checkpoints are cfg(test) only and cannot be a production
+fallback. Existing separate preparers and the rejected alarm remain unchanged.
+
+The shared construction body preserves the experimentally checked grouped
+opening/closing schedule and its endpoint observation tradeoff. It marks private
+material ready only after the complete closing original_round, equal original
+bounds and final timer inspection. Exact reference guards cover the separate
+timer primitive and closing-round copy. Refusal retains the original owner,
+message writer duplicates and fence until drop; no extraction, send or start
+capability exists. The entry is not connected to a service dispatch route.
+
+The new owner's shared fixture schedule passes one screen and six repeated
+healthy chains on both compilers. This is not a successful root-owned fixed
+installation or reuse of the previous SIGKILL certificate for a new type. Its
+process-loss/return-ACK matrix, independent watchdog, authenticated original
+send/start and P2/P3 all-writer cessation remain distinct prerequisites before
+completion, later cells, installation or measurement admission.
+
+Both compiler cohorts pass 28 persistent-drift/expiry cases in total. A separate
+two-line origin-test correction retains the first negative and original binaries;
+the corrected controls prove four expected refusals across both compilers:
+missing fixed install without fallback and fixture-to-production revalidation.
+All 198 static contracts pass. No fixture success enrolls root-owned installation.

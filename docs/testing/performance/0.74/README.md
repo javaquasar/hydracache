@@ -3738,3 +3738,17 @@ with the separate screen they produce 100 fresh inspections, all refusing
 retained history without mutation. All 195 static contracts pass. Production
 composition, real manager delivery/ACK, guardian and all-writer cessation remain
 unfinished; the six preparation cuts are not the entire production fault matrix.
+
+The [fixed origin grouped owner](local-runs/fixed-grouped-preparation-20261017/README.md)
+now adapts that schedule into a nonexecuting production API consuming the original
+sinks without replacement inputs. The fixed loader uses the original checked
+policy and identity; fixture loading/callbacks are absent from non-test builds.
+Seven shared-body healthy controls pass with the original 300/60/10-second bounds
+and complete subsequent validation. The old references and validator bodies stay
+unchanged. This type has no send/start, descriptor extraction, rearm or service
+route. Its own process-loss matrix, autonomous guardian and all-writer cessation
+remain prerequisites; no fixed production install or product pilot is admitted.
+Both compiler cohorts also pass 28 persistent-drift/expiry cases and four
+expected origin refusals. The latter use a separately identified two-line test
+correction; the original negative and timing cohort are retained. All 198 static
+contracts and local current/MSRV checks pass without deadline changes.

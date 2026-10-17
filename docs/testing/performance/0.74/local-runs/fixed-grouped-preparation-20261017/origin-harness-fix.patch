@@ -1,0 +1,22 @@
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_fixed_grouped_preparation_join_tests.rs b/tools/long-run-supervisor-074/src/diagnostic_fixed_grouped_preparation_join_tests.rs
+index f9cce288c3c9687f359a5dd07257b8c08775bcee..ccfeeafcfc7c62894e048f1b72c0382f1e9b0405 100644
+--- a/tools/long-run-supervisor-074/src/diagnostic_fixed_grouped_preparation_join_tests.rs
++++ b/tools/long-run-supervisor-074/src/diagnostic_fixed_grouped_preparation_join_tests.rs
+@@ -181,7 +181,7 @@ fn fixed_grouped_preparation_fixture_cannot_enter_production() {
+             .kind(),
+         std::io::ErrorKind::NotFound
+     );
+-    with_original_at(false, None, |original, _, receiver, sender, model| {
++    with_original_at(true, None, |original, _, receiver, sender, model| {
+         with_owned_empty_fence_for_test(|fence, root, leaf| {
+             let outputs = accepted(original, fence, leaf, receiver, sender, model)
+                 .prepare_original_outputs_for_test(|_| Ok(()))
+@@ -203,7 +203,7 @@ fn fixed_grouped_preparation_fixture_cannot_enter_production() {
+         });
+     });
+     let bundle = Bundle::new();
+-    with_original_at(false, None, |original, _, receiver, sender, model| {
++    with_original_at(true, None, |original, _, receiver, sender, model| {
+         with_owned_empty_fence_for_test(|fence, root, leaf| {
+             let outputs = accepted(original, fence, leaf, receiver, sender, model)
+                 .prepare_original_outputs_for_test(|_| Ok(()))
