@@ -1,0 +1,1848 @@
+diff --git a/crates/xtask/tests/support/performance_contract_074_custody_join.rs b/crates/xtask/tests/support/performance_contract_074_custody_join.rs
+new file mode 100644
+index 00000000..bf760031
+--- /dev/null
++++ b/crates/xtask/tests/support/performance_contract_074_custody_join.rs
+@@ -0,0 +1,465 @@
++//! Exact original custody/sink join; no live predicate or deadline is normalized.
++const GATES: &str = r###"
++# BEGIN ORIGINAL CUSTODY JOIN GATES
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.custody-join-screen"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_original_custody_join_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "original_custody_join_screen"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Original custody/sink full-frame ownership, nonexecuting fixtures only; no production start"
++tier = "manual"
++required_features = []
++required_env = ["HC074_START_MATERIAL_BUNDLE"]
++required_tools = ["cargo"]
++timeout_seconds = 180
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::original_custody_join_screen","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.custody-join-healthy"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_original_custody_join_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "original_custody_join_healthy"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Original custody/sink full-frame ownership, nonexecuting fixtures only; no production start"
++tier = "manual"
++required_features = []
++required_env = ["HC074_START_MATERIAL_BUNDLE"]
++required_tools = ["cargo"]
++timeout_seconds = 600
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::original_custody_join_healthy","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.custody-join-refusals"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_original_custody_join_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "original_custody_join_refusals"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Original custody/sink full-frame ownership, nonexecuting fixtures only; no production start"
++tier = "manual"
++required_features = []
++required_env = ["HC074_START_MATERIAL_BUNDLE"]
++required_tools = ["cargo"]
++timeout_seconds = 900
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::original_custody_join_refusals","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.custody-join-later-refusals"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_original_custody_join_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "original_custody_join_later_refusals"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Original custody/sink full-frame ownership, nonexecuting fixtures only; no production start"
++tier = "manual"
++required_features = []
++required_env = ["HC074_START_MATERIAL_BUNDLE"]
++required_tools = ["cargo"]
++timeout_seconds = 600
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::original_custody_join_later_refusals","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.custody-join-process-screen"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_original_custody_join_process_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "original_custody_join_process_screen"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Original custody/sink full-frame ownership, nonexecuting fixtures only; no production start"
++tier = "manual"
++required_features = []
++required_env = ["HC074_START_MATERIAL_BUNDLE"]
++required_tools = ["cargo"]
++timeout_seconds = 600
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::crash_tests::fixed_grouped_process_tests::custody_process_tests::original_custody_join_process_screen","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.custody-join-process-matrix"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_original_custody_join_process_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "original_custody_join_process_matrix"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Original custody/sink full-frame ownership, nonexecuting fixtures only; no production start"
++tier = "manual"
++required_features = []
++required_env = ["HC074_START_MATERIAL_BUNDLE"]
++required_tools = ["cargo"]
++timeout_seconds = 1800
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::crash_tests::fixed_grouped_process_tests::custody_process_tests::original_custody_join_process_matrix","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++# END ORIGINAL CUSTODY JOIN GATES
++"###;
++const GROUP_REG: &str = "#[path = \"diagnostic_original_custody_join.rs\"]\npub mod custody;\n";
++const STORAGE_REG: &str = "#[cfg(all(target_os = \"linux\", target_arch = \"x86_64\"))]\n#[path = \"diagnostic_original_collector_custody_storage.rs\"]\npub(crate) mod custody_storage;\n";
++const STORAGE_TEST_REG: &str = "    #[cfg(all(target_os = \"linux\", target_arch = \"x86_64\"))]\n    mod custody_tests {\n        include!(\"diagnostic_original_collector_custody_storage_tests.rs\");\n    }\n";
++const JOIN_REG: &str =
++    "#[path = \"diagnostic_original_custody_join_tests.rs\"]\nmod custody_tests;\n";
++const PROCESS_REG: &str =
++    "#[path = \"diagnostic_original_custody_join_process_tests.rs\"]\nmod custody_process_tests;\n";
++const SELF_REG: &str =
++    "#[path = \"performance_contract_074_custody_join.rs\"]\nmod custody_join;\n";
++const ADAPTER: &str =
++    "    let current = custody_join::normalize(path, raw);\n    let raw = current.as_str();\n";
++const BRIDGE: &str = "pub(super) fn restore_join(path: &str, raw: &str) -> String {\n    custody_join::normalize(path, raw)\n}\n";
++const CALLER: &str = "            .retain_custody(parent(original.storage)?)";
++const OLD_CALLER: &str = "        assert!(!std::fs::read_to_string(file)\n            .unwrap()\n            .contains(\"retain_custody(\"));";
++const NEW_CALLER: &str = "        let raw = std::fs::read_to_string(&file).unwrap();\n        assert!(!custody_join::approved_caller(name, &raw).contains(\"retain_custody(\"));";
++fn once(raw: &str, new: &str, old: &str) -> String {
++    assert_eq!(
++        raw.matches(new).count(),
++        1,
++        "original custody join exception differs"
++    );
++    raw.replacen(new, old, 1)
++}
++pub(super) fn approved_caller(name: &str, raw: &str) -> String {
++    if name == "diagnostic_original_collector_custody_storage.rs" {
++        once(raw, CALLER, "            .approved_original_custody_call()")
++    } else {
++        raw.to_owned()
++    }
++}
++pub(super) fn normalize(path: &str, raw: &str) -> String {
++    match path {
++        "tools/long-run-supervisor-074/src/diagnostic_original_grouped_preparation.rs" => {
++            once(raw, GROUP_REG, "")
++        }
++        "tools/long-run-supervisor-074/src/diagnostic_collector_starting_storage.rs" => {
++            once(&once(raw, STORAGE_REG, ""), STORAGE_TEST_REG, "")
++        }
++        "tools/long-run-supervisor-074/src/diagnostic_fixed_grouped_preparation_join_tests.rs" => {
++            once(raw, JOIN_REG, "")
++        }
++        "tools/long-run-supervisor-074/src/diagnostic_fixed_grouped_preparation_crash_tests.rs" => {
++            once(raw, PROCESS_REG, "")
++        }
++        "crates/xtask/tests/support/performance_contract_074_fence_custody.rs" => {
++            let raw = once(&once(&once(raw, SELF_REG, ""), ADAPTER, ""), BRIDGE, "");
++            once(&raw, NEW_CALLER, OLD_CALLER)
++        }
++        "crates/xtask/tests/support/performance_contract_074_fixed_grouped.rs" => {
++            let raw = once(
++                raw,
++                "            fence_custody::restore_join(path, &read(path))",
++                "            read(path)",
++            );
++            once(&raw,
++                "    let path =\n        \"tools/long-run-supervisor-074/src/diagnostic_fixed_grouped_preparation_crash_tests.rs\";\n    let current = fence_custody::restore_join(path, &read(path));",
++                "    let current = read(\n        \"tools/long-run-supervisor-074/src/diagnostic_fixed_grouped_preparation_crash_tests.rs\",\n    );")
++        }
++        "docs/testing/gated-test-registry.toml" => once(raw, GATES, ""),
++        _ => raw.to_owned(),
++    }
++}
++fn root() -> std::path::PathBuf {
++    super::super::super::root()
++}
++fn read(path: &str) -> String {
++    std::fs::read_to_string(root().join(path))
++        .unwrap()
++        .replace('\r', "")
++}
++fn frozen(path: &str, commit: &str) -> String {
++    let out = std::process::Command::new("git")
++        .args(["show", &format!("{commit}:{path}")])
++        .current_dir(root())
++        .output()
++        .unwrap();
++    assert!(out.status.success(), "{path}");
++    String::from_utf8(out.stdout).unwrap().replace('\r', "")
++}
++#[test]
++fn custody_join_preserves_every_old_runtime_body_and_guard() {
++    for path in [
++        "tools/long-run-supervisor-074/src/diagnostic_original_grouped_preparation.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_collector_starting_storage.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_fixed_grouped_preparation_join_tests.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_fixed_grouped_preparation_crash_tests.rs",
++        "crates/xtask/tests/support/performance_contract_074_fence_custody.rs",
++        "crates/xtask/tests/support/performance_contract_074_fixed_grouped.rs",
++        "docs/testing/gated-test-registry.toml",
++        "tools/long-run-supervisor-074/src/diagnostic_original_fence.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_original_collector_sinks.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_original_start_material.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_original_output_join.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_kernel_progress.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_autonomous_watchdog.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_lease.rs",
++        "docs/testing/performance/0.74/qualification-manifest.toml",
++    ] {
++        assert_eq!(
++            normalize(path, &read(path)),
++            frozen(path, "4f5c8a6f"),
++            "{path}"
++        );
++    }
++    let path = "tools/long-run-supervisor-074/src/diagnostic_original_grouped_preparation.rs";
++    let raw = read(path);
++    for (from, to) in [
++        ("received.boottime_ns(),", "now.boottime_ns(),"),
++        ("self.original_round(allow_fixture)? != bounds", "false"),
++        ("now >= bounds.first()", "now > bounds.first()"),
++    ] {
++        assert_ne!(
++            normalize(path, &raw.replace(from, to)),
++            frozen(path, "4f5c8a6f")
++        );
++    }
++    assert_ne!(
++        normalize(path, &format!("{raw}\nfn unapproved_tail() {{}}\n")),
++        frozen(path, "4f5c8a6f")
++    );
++    let bridge =
++        read("tools/long-run-supervisor-074/src/diagnostic_original_collector_custody_storage.rs");
++    assert!(
++        !approved_caller("diagnostic_original_collector_custody_storage.rs", &bridge)
++            .contains("retain_custody(")
++    );
++    assert!(approved_caller("foreign.rs", &bridge).contains("retain_custody("));
++    assert!(std::panic::catch_unwind(|| approved_caller(
++        "diagnostic_original_collector_custody_storage.rs",
++        &bridge.replace(CALLER, "")
++    ))
++    .is_err());
++}
++const VALIDATE: &str = r#"        let result = (|| {
++            self.original.validate(allow_fixture)?;
++            self.inspect_custody()?;
++            self.original.validate(allow_fixture)?;
++            self.inspect_custody()?;
++            self.inspect_deadline()
++        })();
++        if result.is_err() {
++            self.refuse();
++        }
++        result
++"#;
++fn enrolled(raw: &str) -> bool {
++    raw.matches(VALIDATE).count() == 1
++        && raw
++            .matches("held.original.validate(allow_fixture)?;")
++            .count()
++            == 2
++        && raw.matches("held.inspect_custody()?;").count() == 2
++        && raw.contains("held.custody = Some(storage.retain_original_collector_custody()?);")
++        && raw.find("held.custody = Some(") < raw.rfind("held.original.validate(allow_fixture)?;")
++        && raw.rfind("held.inspect_custody()?;") < raw.find("held.ready = true;")
++        && raw.contains("held.inspect_deadline()?;\n            held.ready = true;")
++}
++#[test]
++fn custody_join_requires_original_frames_before_ready_and_preserves_closed_execution() {
++    let raw = read("tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs");
++    assert!(enrolled(&raw));
++    for (from, to) in [
++        (
++            "self.original.validate(allow_fixture)?;",
++            "let _ = allow_fixture;",
++        ),
++        (
++            "held.original.validate(allow_fixture)?;",
++            "let _ = allow_fixture;",
++        ),
++        ("held.inspect_custody()?;", "let _ = ();"),
++        ("held.inspect_deadline()?;", "let _ = ();"),
++        (
++            "held.custody = Some(storage.retain_original_collector_custody()?);",
++            "let _ = storage;",
++        ),
++    ] {
++        assert!(!enrolled(&raw.replace(from, to)), "{from}");
++    }
++    assert!(
++        raw.find("    original: OriginalGroupedPreparation")
++            < raw.find("    custody: Option<OriginalCollectorFenceCustody>")
++    );
++    assert!(raw.contains("let allow_fixture = false;"));
++    assert!(raw.contains("Err(OriginalCustodyFailure {"));
++    assert!(raw.contains("held: Box::new(held),"));
++    assert_eq!(raw.matches("/// ```compile_fail").count(), 7);
++    for forbidden in [
++        "Command::",
++        "Connection",
++        "Proxy",
++        "pub fn start",
++        "pub fn send",
++        "pub fn into_",
++        "Alarm::arm",
++        "CLOCK_REALTIME",
++        "rearm(",
++    ] {
++        assert!(!raw.contains(forbidden), "{forbidden}");
++    }
++    let bridge =
++        read("tools/long-run-supervisor-074/src/diagnostic_original_collector_custody_storage.rs");
++    assert_eq!(bridge.matches(".retain_custody(").count(), 1);
++    assert!(bridge.contains("self.revalidate()?;"));
++    assert!(bridge.contains("self.latch_refusal();"));
++    assert!(bridge.contains("Stamp::of(&self.original._lock.metadata()?) != fence.lock_stamp"));
++    assert!(bridge.contains("libc::FD_CLOEXEC"));
++    assert!(!bridge.contains("pub fn"));
++    assert!(!bridge.contains("-> File"));
++    let tests = read("tools/long-run-supervisor-074/src/diagnostic_original_custody_join_tests.rs");
++    assert_eq!(tests.matches("authentication_calls,").count(), 2);
++    assert!(tests.contains("68"));
++    assert!(tests.contains("drop_eof_for_test"));
++    assert!(tests.contains("late time is not"));
++}
++#[test]
++fn custody_join_process_cuts_are_the_same_owned_sigkill_harness() {
++    let original = frozen(
++        "tools/long-run-supervisor-074/src/diagnostic_fixed_grouped_preparation_crash_tests.rs",
++        "3334ab74",
++    );
++    let mut expected = original
++        .replace("fixed_grouped_", "custody_join_")
++        .replace("FIXED_GROUPED", "CUSTODY_JOIN")
++        .replace("HC074-FIXED-GROUPED", "HC074-CUSTODY-JOIN")
++        .replace("0x0740_6c17", "0x0740_c618");
++    expected = once(&expected,
++        "const POINTS: [&str; 6] = [\n    \"opened\",\n    \"loaded\",\n    \"bound\",\n    \"message\",\n    \"armed\",\n    \"returned-unacknowledged\",\n];",
++        "const POINTS: [&str; 3] = [\"opened\", \"retained\", \"returned-unacknowledged\"];");
++    let start = expected
++        .find("                let mut alarm = outputs")
++        .unwrap();
++    let end = expected[start..]
++        .find("                assert_eq!(stage, \"returned-unacknowledged\");")
++        .unwrap()
++        + start;
++    let new = r#"                let prepared = outputs
++                    .prepare_fixed_grouped_fixture_for_test(&bundle, |_, _| {})
++                    .unwrap();
++                let mut alarm = prepared
++                    .bind_custody_fixture_for_test(|at, _| {
++                        visited.push(at);
++                        if at == stage {
++                            group_ready(at, true);
++                        }
++                    })
++                    .unwrap();
++                assert_eq!(visited, POINTS[..2]);
++"#;
++    expected.replace_range(start..end, new);
++    expected = expected
++        .replace("points=6 exact=true", "points=3 exact=true")
++        .replace(
++            "sigkills=6 controls=1 lost_acks=1 inspections=16 admission=false",
++            "sigkills=3 controls=1 lost_acks=1 inspections=10 admission=false",
++        );
++    let current =
++        read("tools/long-run-supervisor-074/src/diagnostic_original_custody_join_process_tests.rs");
++    assert_eq!(current, expected);
++    for (from, to) in [
++        ("libc::SIGKILL", "libc::SIGTERM"),
++        ("inspection in 1..=2", "inspection in 1..=1"),
++        ("repeat in 1..=3", "repeat in 1..=1"),
++    ] {
++        assert_ne!(current.replace(from, to), expected);
++    }
++}
+diff --git a/crates/xtask/tests/support/performance_contract_074_fence_custody.rs b/crates/xtask/tests/support/performance_contract_074_fence_custody.rs
+index a1242ed1..bc09fabc 100644
+--- a/crates/xtask/tests/support/performance_contract_074_fence_custody.rs
++++ b/crates/xtask/tests/support/performance_contract_074_fence_custody.rs
+@@ -1,4 +1,6 @@
+ //! Exact one-shot custody exception; original inspectors and old contracts freeze.
++#[path = "performance_contract_074_custody_join.rs"]
++mod custody_join;
+ const OWNER: &str = "// Only Fence can construct this owner. No descriptor or execution API is exposed.\nstruct FenceCustody {\n    _lock: File,\n}\n";
+ const METHOD: &str = r#"    // Nonexecuting prerequisite only; the original-start join is not enrolled.
+     #[allow(dead_code)]
+@@ -67,6 +69,8 @@ fn once(raw: &str, new: &str, old: &str) -> String {
+     raw.replacen(new, old, 1)
+ }
+ pub(super) fn normalize(path: &str, raw: &str) -> String {
++    let current = custody_join::normalize(path, raw);
++    let raw = current.as_str();
+     match path {
+         "tools/long-run-supervisor-074/src/diagnostic_original_fence.rs" => {
+             let mut raw = raw.to_owned();
+@@ -91,6 +95,9 @@ pub(super) fn normalize(path: &str, raw: &str) -> String {
+         _ => raw.to_owned(),
+     }
+ }
++pub(super) fn restore_join(path: &str, raw: &str) -> String {
++    custody_join::normalize(path, raw)
++}
+ fn old(path: &str) -> String {
+     let out = std::process::Command::new("git")
+         .args(["show", &format!("09b43743:{path}")])
+@@ -145,9 +152,8 @@ fn original_custody_changes_only_one_shot_ownership_not_admission_or_old_guards(
+         {
+             continue;
+         }
+-        assert!(!std::fs::read_to_string(file)
+-            .unwrap()
+-            .contains("retain_custody("));
++        let raw = std::fs::read_to_string(&file).unwrap();
++        assert!(!custody_join::approved_caller(name, &raw).contains("retain_custody("));
+     }
+     assert_eq!(raw.matches("fn retain_custody(").count(), 1);
+     assert!(!raw.contains("pub fn retain_custody"));
+diff --git a/crates/xtask/tests/support/performance_contract_074_fixed_grouped.rs b/crates/xtask/tests/support/performance_contract_074_fixed_grouped.rs
+index 59fabea0..25f84503 100644
+--- a/crates/xtask/tests/support/performance_contract_074_fixed_grouped.rs
++++ b/crates/xtask/tests/support/performance_contract_074_fixed_grouped.rs
+@@ -438,7 +438,7 @@ fn fixed_grouped_process_matrix_preserves_runtime_and_exact_owned_harness() {
+         let current = if path.ends_with("diagnostic_original_output_join_crash_tests.rs") {
+             normalize(path, &read(path))
+         } else {
+-            read(path)
++            fence_custody::restore_join(path, &read(path))
+         };
+         assert_eq!(current, at_baseline(path), "{path}");
+     }
+@@ -454,9 +454,9 @@ fn fixed_grouped_process_matrix_preserves_runtime_and_exact_owned_harness() {
+             "    println!(\"HC074-FIXED-GROUPED-PROCESS-SCREEN sigkills=1 controls=1 inspections=4 completed=true\");",
+             "    println!(\n        \"HC074-FIXED-GROUPED-PROCESS-SCREEN sigkills=1 controls=1 inspections=4 completed=true\"\n    );",
+         );
+-    let current = read(
+-        "tools/long-run-supervisor-074/src/diagnostic_fixed_grouped_preparation_crash_tests.rs",
+-    );
++    let path =
++        "tools/long-run-supervisor-074/src/diagnostic_fixed_grouped_preparation_crash_tests.rs";
++    let current = fence_custody::restore_join(path, &read(path));
+     assert_eq!(current, expected);
+     for (from, to) in [
+         ("libc::SIGKILL", "libc::SIGTERM"),
+diff --git a/docs/testing/gated-test-registry.toml b/docs/testing/gated-test-registry.toml
+index f5894371..be35a26d 100644
+--- a/docs/testing/gated-test-registry.toml
++++ b/docs/testing/gated-test-registry.toml
+@@ -10375,3 +10375,197 @@ platform = "linux"
+ 
+ [gate.command.env]
+ # END ORIGINAL FENCE CUSTODY GATE
++
++# BEGIN ORIGINAL CUSTODY JOIN GATES
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.custody-join-screen"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_original_custody_join_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "original_custody_join_screen"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Original custody/sink full-frame ownership, nonexecuting fixtures only; no production start"
++tier = "manual"
++required_features = []
++required_env = ["HC074_START_MATERIAL_BUNDLE"]
++required_tools = ["cargo"]
++timeout_seconds = 180
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::original_custody_join_screen","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.custody-join-healthy"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_original_custody_join_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "original_custody_join_healthy"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Original custody/sink full-frame ownership, nonexecuting fixtures only; no production start"
++tier = "manual"
++required_features = []
++required_env = ["HC074_START_MATERIAL_BUNDLE"]
++required_tools = ["cargo"]
++timeout_seconds = 600
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::original_custody_join_healthy","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.custody-join-refusals"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_original_custody_join_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "original_custody_join_refusals"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Original custody/sink full-frame ownership, nonexecuting fixtures only; no production start"
++tier = "manual"
++required_features = []
++required_env = ["HC074_START_MATERIAL_BUNDLE"]
++required_tools = ["cargo"]
++timeout_seconds = 900
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::original_custody_join_refusals","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.custody-join-later-refusals"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_original_custody_join_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "original_custody_join_later_refusals"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Original custody/sink full-frame ownership, nonexecuting fixtures only; no production start"
++tier = "manual"
++required_features = []
++required_env = ["HC074_START_MATERIAL_BUNDLE"]
++required_tools = ["cargo"]
++timeout_seconds = 600
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::original_custody_join_later_refusals","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.custody-join-process-screen"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_original_custody_join_process_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "original_custody_join_process_screen"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Original custody/sink full-frame ownership, nonexecuting fixtures only; no production start"
++tier = "manual"
++required_features = []
++required_env = ["HC074_START_MATERIAL_BUNDLE"]
++required_tools = ["cargo"]
++timeout_seconds = 600
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::crash_tests::fixed_grouped_process_tests::custody_process_tests::original_custody_join_process_screen","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.custody-join-process-matrix"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_original_custody_join_process_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "original_custody_join_process_matrix"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Original custody/sink full-frame ownership, nonexecuting fixtures only; no production start"
++tier = "manual"
++required_features = []
++required_env = ["HC074_START_MATERIAL_BUNDLE"]
++required_tools = ["cargo"]
++timeout_seconds = 1800
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::crash_tests::fixed_grouped_process_tests::custody_process_tests::original_custody_join_process_matrix","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++# END ORIGINAL CUSTODY JOIN GATES
+diff --git a/docs/testing/performance/0.74/diagnostic-original-custody-join-plan-20261018.md b/docs/testing/performance/0.74/diagnostic-original-custody-join-plan-20261018.md
+index 1dfc9769..db70c95f 100644
+--- a/docs/testing/performance/0.74/diagnostic-original-custody-join-plan-20261018.md
++++ b/docs/testing/performance/0.74/diagnostic-original-custody-join-plan-20261018.md
+@@ -74,3 +74,9 @@ another timer or replace any original frame/observation. Authentication counts
+ remain 68; only the already selected absolute deadline is reobserved. The first
+ builds are provisional compilation checks, not process certificates for this
+ review refinement. No new-owner process run preceded this correction.
++
++A cfg(test)-only final-observation delay waits for that exact existing BOOTTIME
++bound after the complete closing frame. The later-refusal gate must observe
++Original(Expired), latch refusal and retain the original owner. This specifically
++tests the added final alarm probe, rather than crediting an earlier causal-time
++refusal. Normal and production paths have no delay or new time input.
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_collector_starting_storage.rs b/tools/long-run-supervisor-074/src/diagnostic_collector_starting_storage.rs
+index fd1c4b5f..84e267c8 100644
+--- a/tools/long-run-supervisor-074/src/diagnostic_collector_starting_storage.rs
++++ b/tools/long-run-supervisor-074/src/diagnostic_collector_starting_storage.rs
+@@ -1,5 +1,8 @@
+ //! Private opt-in phase on the original storage; default two-file inspection is unchanged.
+ #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
++#[path = "diagnostic_original_collector_custody_storage.rs"]
++pub(crate) mod custody_storage;
++#[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+ #[path = "diagnostic_original_collector_sink_storage.rs"]
+ mod sink_storage;
+ use super::*;
+@@ -201,6 +204,10 @@ impl CollectorReservationStorage<'_> {
+ #[cfg(test)]
+ mod tests {
+     use super::*;
++    #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
++    mod custody_tests {
++        include!("diagnostic_original_collector_custody_storage_tests.rs");
++    }
+     use crate::diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::with_owned_empty_fence_for_test;
+     use std::os::unix::fs::{symlink, PermissionsExt};
+ 
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_fixed_grouped_preparation_crash_tests.rs b/tools/long-run-supervisor-074/src/diagnostic_fixed_grouped_preparation_crash_tests.rs
+index ec51d691..deaa5d99 100644
+--- a/tools/long-run-supervisor-074/src/diagnostic_fixed_grouped_preparation_crash_tests.rs
++++ b/tools/long-run-supervisor-074/src/diagnostic_fixed_grouped_preparation_crash_tests.rs
+@@ -1,5 +1,7 @@
+ //! Owned nonexecuting process cuts; never systemd delivery or writer-tree proof.
+ use super::*;
++#[path = "diagnostic_original_custody_join_process_tests.rs"]
++mod custody_process_tests;
+ const GROUP_MODE: &str = "HC074_PRIVATE_FIXED_GROUPED_PREPARATION_CRASH_MODE";
+ const GROUP_STAGE: &str = "HC074_PRIVATE_FIXED_GROUPED_PREPARATION_CRASH_STAGE";
+ const GROUP_READY: &str = "HC074-FIXED-GROUPED-PROCESS-READY ";
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_fixed_grouped_preparation_join_tests.rs b/tools/long-run-supervisor-074/src/diagnostic_fixed_grouped_preparation_join_tests.rs
+index ccfeeafc..5b6cd4f6 100644
+--- a/tools/long-run-supervisor-074/src/diagnostic_fixed_grouped_preparation_join_tests.rs
++++ b/tools/long-run-supervisor-074/src/diagnostic_fixed_grouped_preparation_join_tests.rs
+@@ -1,4 +1,6 @@
+ use super::*;
++#[path = "diagnostic_original_custody_join_tests.rs"]
++mod custody_tests;
+ use crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::OriginalGroupedPrepError;
+ use crate::diagnostic_ipc::validation_trace::{self as trace, Stage};
+ 
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_original_collector_custody_storage.rs b/tools/long-run-supervisor-074/src/diagnostic_original_collector_custody_storage.rs
+new file mode 100644
+index 00000000..f8ce62b8
+--- /dev/null
++++ b/tools/long-run-supervisor-074/src/diagnostic_original_collector_custody_storage.rs
+@@ -0,0 +1,67 @@
++//! Opaque custody from this original acknowledged Starting storage only.
++use super::*;
++use crate::diagnostic_output_preparation::fixed_intent_storage::reserved_state::{
++    original_fence::{
++        reservation_fence::{parent, EmptyReservationFenceError},
++        FenceCustody,
++    },
++    Stamp,
++};
++use std::os::fd::AsRawFd;
++
++pub(crate) struct OriginalCollectorFenceCustody {
++    original: FenceCustody,
++}
++impl CollectorReservationStorage<'_> {
++    pub(crate) fn retain_original_collector_custody(
++        &mut self,
++    ) -> Result<OriginalCollectorFenceCustody, StorageAttemptError> {
++        let result = (|| {
++            if self.is_refused() || !self.starting.as_ref().is_some_and(|s| s.acknowledged) {
++                return Err(StorageAttemptError::Refused);
++            }
++            self.revalidate()?;
++            let original = &mut self.original.empty;
++            let custody = original
++                .fence
++                .retain_custody(parent(original.storage)?)
++                .map_err(EmptyReservationFenceError::from)?;
++            Ok(OriginalCollectorFenceCustody { original: custody })
++        })();
++        if result.is_err() {
++            self.latch_refusal();
++        }
++        result
++    }
++}
++impl OriginalCollectorFenceCustody {
++    pub(crate) fn inspect(
++        &self,
++        storage: &CollectorReservationStorage<'_>,
++    ) -> Result<(), StorageAttemptError> {
++        if storage.is_refused() || !storage.starting.as_ref().is_some_and(|s| s.acknowledged) {
++            return Err(StorageAttemptError::Refused);
++        }
++        let fence = &storage.original.empty.fence;
++        if !fence.custody_retained
++            || Stamp::of(&self.original._lock.metadata()?) != fence.lock_stamp
++            || Stamp::of(&fence.lock.metadata()?) != fence.lock_stamp
++            || unsafe { libc::fcntl(self.original._lock.as_raw_fd(), libc::F_GETFD) }
++                != libc::FD_CLOEXEC
++        {
++            return Err(StorageAttemptError::Document);
++        }
++        Ok(())
++    }
++    #[cfg(test)]
++    pub(crate) fn tamper_for_test(&mut self, object: bool) {
++        if object {
++            self.original._lock = std::fs::File::open("/dev/null").unwrap();
++        } else {
++            assert_eq!(
++                unsafe { libc::fcntl(self.original._lock.as_raw_fd(), libc::F_SETFD, 0) },
++                0
++            );
++        }
++    }
++}
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_original_collector_custody_storage_tests.rs b/tools/long-run-supervisor-074/src/diagnostic_original_collector_custody_storage_tests.rs
+new file mode 100644
+index 00000000..0841c128
+--- /dev/null
++++ b/tools/long-run-supervisor-074/src/diagnostic_original_collector_custody_storage_tests.rs
+@@ -0,0 +1,82 @@
++use super::*;
++fn ready(storage: &mut CollectorReservationStorage<'_>) {
++    storage.begin_starting().unwrap();
++    for at in STAGES {
++        storage.starting_step(at, b"starting\n").unwrap();
++    }
++    storage.acknowledge_starting().unwrap();
++}
++#[test]
++fn original_collector_custody_requires_acknowledged_starting_and_sticks() {
++    with_storage(|storage, _| {
++        assert!(matches!(
++            storage.retain_original_collector_custody(),
++            Err(StorageAttemptError::Refused)
++        ));
++        assert!(storage.is_refused());
++        assert!(matches!(
++            storage.retain_original_collector_custody(),
++            Err(StorageAttemptError::Refused)
++        ));
++    });
++}
++#[test]
++fn original_collector_custody_checks_storage_before_acquisition_and_never_retries() {
++    with_storage(|storage, leaf| {
++        ready(storage);
++        std::fs::set_permissions(
++            leaf.join(STARTING_NAME),
++            std::fs::Permissions::from_mode(0o600),
++        )
++        .unwrap();
++        assert!(storage.retain_original_collector_custody().is_err());
++        assert!(storage.is_refused());
++        assert!(!storage.original.empty.fence.custody_retained);
++        assert!(matches!(
++            storage.retain_original_collector_custody(),
++            Err(StorageAttemptError::Refused)
++        ));
++    });
++}
++#[test]
++fn original_collector_custody_has_one_owner_and_latches_repeat_refusal() {
++    with_storage(|storage, _| {
++        ready(storage);
++        let custody = storage.retain_original_collector_custody().unwrap();
++        custody.inspect(storage).unwrap();
++        storage.revalidate().unwrap();
++        assert!(storage.retain_original_collector_custody().is_err());
++        assert!(storage.is_refused());
++        assert!(matches!(
++            custody.inspect(storage),
++            Err(StorageAttemptError::Refused)
++        ));
++        drop(custody);
++    });
++}
++#[test]
++fn original_collector_custody_rejects_foreign_original_and_descriptor_drift() {
++    for kind in 0..3 {
++        with_storage(|storage, _| {
++            ready(storage);
++            let mut custody = storage.retain_original_collector_custody().unwrap();
++            custody.inspect(storage).unwrap();
++            if kind == 0 {
++                with_storage(|other, _| {
++                    ready(other);
++                    assert!(matches!(
++                        custody.inspect(other),
++                        Err(StorageAttemptError::Document)
++                    ));
++                });
++                custody.inspect(storage).unwrap();
++            } else {
++                custody.tamper_for_test(kind == 1);
++                assert!(matches!(
++                    custody.inspect(storage),
++                    Err(StorageAttemptError::Document)
++                ));
++            }
++        });
++    }
++}
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs b/tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs
+new file mode 100644
+index 00000000..2b717af8
+--- /dev/null
++++ b/tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs
+@@ -0,0 +1,291 @@
++//! Same original sinks and fence through unchanged full validation frames.
++use super::*;
++use crate::diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::{
++    collector_reservation_storage::starting_storage::custody_storage::OriginalCollectorFenceCustody,
++    StorageAttemptError,
++};
++
++#[derive(Debug, thiserror::Error)]
++pub enum OriginalCustodyError {
++    #[error("original grouped validation refused: {0}")]
++    Original(#[from] OriginalGroupedPrepError),
++    #[error("original collector custody storage refused: {0}")]
++    Storage(#[from] StorageAttemptError),
++    #[error("original collector custody is absent")]
++    Binding,
++    #[error("original custodied preparation already refused")]
++    Refused,
++}
++
++/// Nonexecuting custody joined to the same original sinks and full live frames.
++/// No File, message, worker, completion or recovery capability can be extracted.
++/// ```
++/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::OriginalCustodiedPreparation;
++/// fn inspect(mut p: OriginalCustodiedPreparation<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) -> bool { let _ = p.revalidate(); p.is_refused() }
++/// ```
++/// ```compile_fail
++/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::OriginalCustodiedPreparation;
++/// fn denied(p: OriginalCustodiedPreparation<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { p.start_once(); }
++/// ```
++/// ```compile_fail
++/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::OriginalCustodiedPreparation;
++/// fn denied(p: OriginalCustodiedPreparation<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { p.send(); }
++/// ```
++/// ```compile_fail
++/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::OriginalCustodiedPreparation;
++/// fn denied(p: OriginalCustodiedPreparation<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { p.clone(); }
++/// ```
++/// ```compile_fail
++/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::OriginalCustodiedPreparation;
++/// fn denied(p: OriginalCustodiedPreparation<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { p.into_stdio(); }
++/// ```
++/// ```compile_fail
++/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::OriginalCustodiedPreparation;
++/// fn denied(p: OriginalCustodiedPreparation<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { p.into_message(); }
++/// ```
++/// ```compile_fail
++/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::OriginalGroupedPreparation;
++/// fn denied(mut p: OriginalGroupedPreparation<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { let held = p.bind_original_custody(); p.revalidate(); drop(held); }
++/// ```
++/// ```compile_fail
++/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::OriginalCustodiedPreparation;
++/// fn decode<T: serde::de::DeserializeOwned>() {}
++/// decode::<OriginalCustodiedPreparation<'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static>>();
++/// ```
++pub struct OriginalCustodiedPreparation<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p> {
++    // Original message/sink/pipe writers close before the last custody alias.
++    original: OriginalGroupedPreparation<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++    custody: Option<OriginalCollectorFenceCustody>,
++    ready: bool,
++    #[cfg(test)]
++    final_delay: bool,
++}
++impl OriginalCustodiedPreparation<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
++    pub fn is_refused(&self) -> bool {
++        self.original.is_refused()
++    }
++    fn refuse(&mut self) {
++        self.original.transport.material.outputs.refuse();
++    }
++    fn inspect_custody(&self) -> Result<(), OriginalCustodyError> {
++        self.custody
++            .as_ref()
++            .ok_or(OriginalCustodyError::Binding)?
++            .inspect(self.original.transport.material.outputs.reservation())?;
++        Ok(())
++    }
++    fn inspect_deadline(&self) -> Result<(), OriginalCustodyError> {
++        #[cfg(test)]
++        if self.final_delay {
++            let bound = self
++                .original
++                .bounds
++                .ok_or(OriginalGroupedPrepError::Binding)?
++                .first();
++            while clock()? < bound {
++                std::thread::sleep(std::time::Duration::from_millis(1));
++            }
++        }
++        self.original
++            .alarm
++            .as_ref()
++            .ok_or(OriginalGroupedPrepError::Binding)?
++            .inspect()?;
++        Ok(())
++    }
++    fn validate(&mut self, allow_fixture: bool) -> Result<(), OriginalCustodyError> {
++        if !self.ready || self.is_refused() {
++            self.refuse();
++            return Err(OriginalCustodyError::Refused);
++        }
++        let result = (|| {
++            self.original.validate(allow_fixture)?;
++            self.inspect_custody()?;
++            self.original.validate(allow_fixture)?;
++            self.inspect_custody()?;
++            self.inspect_deadline()
++        })();
++        if result.is_err() {
++            self.refuse();
++        }
++        result
++    }
++    pub fn revalidate(&mut self) -> Result<(), OriginalCustodyError> {
++        self.validate(false)
++    }
++    #[cfg(test)]
++    pub(crate) fn revalidate_fixture_for_test(&mut self) -> Result<(), OriginalCustodyError> {
++        self.validate(true)
++    }
++    #[cfg(test)]
++    pub(crate) fn tamper_for_test(&mut self, kind: &str) {
++        match kind {
++            "final-expiry" => self.final_delay = true,
++            "custody-missing" => self.custody = None,
++            "custody-object" | "custody-flags" => self
++                .custody
++                .as_mut()
++                .unwrap()
++                .tamper_for_test(kind == "custody-object"),
++            other => self.original.tamper_fixed_grouped_for_test(other),
++        }
++    }
++    #[cfg(test)]
++    pub(crate) fn offsets_for_test(&self) -> [u64; 3] {
++        self.original.offsets_for_test()
++    }
++    #[cfg(test)]
++    pub(crate) fn origins_for_test(&self) -> [u64; 6] {
++        self.original.origins_for_test()
++    }
++    #[cfg(test)]
++    pub(crate) fn drop_eof_for_test(self) {
++        use std::io::Read;
++        let outputs = &self.original.transport.material.outputs;
++        let mut readers = outputs
++            .pipes
++            .pipes
++            .each_ref()
++            .map(|p| p.as_ref().unwrap().reader.try_clone().unwrap());
++        let sink_fds = outputs
++            .sinks
++            .each_ref()
++            .map(|s| s.as_ref().unwrap().file.as_raw_fd());
++        drop(self);
++        for fd in sink_fds {
++            assert_eq!(unsafe { libc::fcntl(fd, libc::F_GETFD) }, -1);
++            assert_eq!(
++                std::io::Error::last_os_error().raw_os_error(),
++                Some(libc::EBADF)
++            );
++        }
++        for reader in &mut readers {
++            assert_eq!(reader.read(&mut [0; 1]).unwrap(), 0);
++        }
++    }
++}
++impl fmt::Debug for OriginalCustodiedPreparation<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
++    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++        f.debug_struct("OriginalCustodiedPreparation")
++            .field("refused", &self.is_refused())
++            .finish_non_exhaustive()
++    }
++}
++pub struct OriginalCustodyFailure<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p> {
++    error: OriginalCustodyError,
++    held: Box<OriginalCustodiedPreparation<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>>,
++}
++impl OriginalCustodyFailure<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
++    pub fn error(&self) -> &OriginalCustodyError {
++        &self.error
++    }
++    pub fn is_refused(&self) -> bool {
++        self.held.is_refused()
++    }
++    #[cfg(test)]
++    pub(crate) fn retry_for_test(&mut self) -> Result<(), OriginalCustodyError> {
++        self.held.revalidate_fixture_for_test()
++    }
++}
++impl fmt::Debug for OriginalCustodyFailure<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
++    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++        fmt::Debug::fmt(&self.error, f)
++    }
++}
++impl fmt::Display for OriginalCustodyFailure<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
++    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++        fmt::Display::fmt(&self.error, f)
++    }
++}
++impl std::error::Error for OriginalCustodyFailure<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {}
++impl<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>
++    OriginalGroupedPreparation<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>
++{
++    /// Retain original fence custody inside full live frames, without executing.
++    pub fn bind_original_custody(
++        self,
++    ) -> Result<
++        OriginalCustodiedPreparation<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++        OriginalCustodyFailure<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++    > {
++        self.bind_custody_with(
++            #[cfg(test)]
++            false,
++            #[cfg(test)]
++            &mut |_, _| {},
++        )
++    }
++    #[cfg(test)]
++    pub(crate) fn bind_custody_fixture_for_test(
++        self,
++        mut checkpoint: impl FnMut(
++            &'static str,
++            &mut OriginalCustodiedPreparation<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++        ),
++    ) -> Result<
++        OriginalCustodiedPreparation<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++        OriginalCustodyFailure<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++    > {
++        assert_ne!(unsafe { libc::geteuid() }, 0);
++        self.bind_custody_with(true, &mut checkpoint)
++    }
++    fn bind_custody_with(
++        self,
++        #[cfg(test)] allow_fixture: bool,
++        #[cfg(test)] checkpoint: &mut dyn FnMut(
++            &'static str,
++            &mut OriginalCustodiedPreparation<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++        ),
++    ) -> Result<
++        OriginalCustodiedPreparation<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++        OriginalCustodyFailure<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++    > {
++        #[cfg(not(test))]
++        let allow_fixture = false;
++        let mut held = OriginalCustodiedPreparation {
++            original: self,
++            custody: None,
++            ready: false,
++            #[cfg(test)]
++            final_delay: false,
++        };
++        let result = (|| {
++            held.original.validate(allow_fixture)?;
++            #[cfg(test)]
++            checkpoint("opened", &mut held);
++            let storage = &mut held
++                .original
++                .transport
++                .material
++                .outputs
++                .pipes
++                .starting
++                .original
++                .original
++                .prepared
++                .original
++                .original
++                .reservation
++                .storage;
++            held.custody = Some(storage.retain_original_collector_custody()?);
++            #[cfg(test)]
++            checkpoint("retained", &mut held);
++            held.inspect_custody()?;
++            held.original.validate(allow_fixture)?;
++            held.inspect_custody()?;
++            held.inspect_deadline()?;
++            held.ready = true;
++            Ok(())
++        })();
++        match result {
++            Ok(()) => Ok(held),
++            Err(error) => {
++                held.refuse();
++                Err(OriginalCustodyFailure {
++                    error,
++                    held: Box::new(held),
++                })
++            }
++        }
++    }
++}
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_original_custody_join_process_tests.rs b/tools/long-run-supervisor-074/src/diagnostic_original_custody_join_process_tests.rs
+new file mode 100644
+index 00000000..4e15cb66
+--- /dev/null
++++ b/tools/long-run-supervisor-074/src/diagnostic_original_custody_join_process_tests.rs
+@@ -0,0 +1,337 @@
++//! Owned nonexecuting process cuts; never systemd delivery or writer-tree proof.
++use super::*;
++const GROUP_MODE: &str = "HC074_PRIVATE_CUSTODY_JOIN_PREPARATION_CRASH_MODE";
++const GROUP_STAGE: &str = "HC074_PRIVATE_CUSTODY_JOIN_PREPARATION_CRASH_STAGE";
++const GROUP_READY: &str = "HC074-CUSTODY-JOIN-PROCESS-READY ";
++const ACK: &str = "HC074-CUSTODY-JOIN-RETURN-ACK ";
++const GROUP_SEED: u64 = 0x0740_c618;
++const POINTS: [&str; 3] = ["opened", "retained", "returned-unacknowledged"];
++
++fn group_line(line: &str) -> Option<(&str, u32)> {
++    if line.len() > BUDGET as usize || !line.ends_with('\n') || line.contains(['\r', '\0']) {
++        return None;
++    }
++    let (prefix, body) = line.split_once(GROUP_READY)?;
++    if !(prefix.is_empty() || prefix.starts_with("test ") && prefix.ends_with(" ... ")) {
++        return None;
++    }
++    let (stage, pid) = body.strip_suffix('\n')?.split_once(' ')?;
++    if !(POINTS.contains(&stage) || stage == "fresh-refused")
++        || pid.is_empty()
++        || !pid.bytes().all(|b| b.is_ascii_digit())
++    {
++        return None;
++    }
++    let pid = pid.parse().ok()?;
++    (pid > 0).then_some((stage, pid))
++}
++fn acknowledgements(tail: &[u8], pid: u32) -> Result<u8, ()> {
++    let text = std::str::from_utf8(tail).map_err(|_| ())?;
++    let mut count = 0;
++    for line in text.split_inclusive('\n').filter(|l| l.contains(ACK)) {
++        if line != format!("{ACK}{pid}\n") {
++            return Err(());
++        }
++        count += 1;
++        if count > 1 {
++            return Err(());
++        }
++    }
++    Ok(count)
++}
++fn group_ready(stage: &str, wait: bool) {
++    println!("{GROUP_READY}{stage} {}", std::process::id());
++    std::io::stdout().flush().unwrap();
++    if wait {
++        let mut command = [0];
++        std::io::stdin().read_exact(&mut command).unwrap();
++        assert_eq!(command, [b'q']);
++    }
++}
++fn order() -> Vec<&'static str> {
++    let mut points = POINTS.to_vec();
++    let mut seed = GROUP_SEED;
++    for i in (1..points.len()).rev() {
++        seed ^= seed << 13;
++        seed ^= seed >> 7;
++        seed ^= seed << 17;
++        points.swap(i, seed as usize % (i + 1));
++    }
++    points
++}
++#[test]
++fn custody_join_process_protocol_rejects_invalid_or_ambiguous_records() {
++    for prefix in ["", "test nested::owned_child ... "] {
++        for point in POINTS.into_iter().chain(["fresh-refused"]) {
++            assert_eq!(
++                group_line(&format!("{prefix}{GROUP_READY}{point} 123\n")),
++                Some((point, 123))
++            );
++        }
++    }
++    for line in [
++        format!("junk {GROUP_READY}opened 123\n"),
++        format!("{GROUP_READY}unknown 123\n"),
++        format!("{GROUP_READY}armed 0\n"),
++        format!("{GROUP_READY}armed -1\n"),
++        format!("{GROUP_READY}armed 4294967296\n"),
++        format!("{GROUP_READY}armed 123 extra\n"),
++        format!("{GROUP_READY}armed 123\r\n"),
++        format!("{GROUP_READY}armed 123\0\n"),
++        format!("{GROUP_READY}armed 123"),
++        format!("{GROUP_READY}armed 123 {GROUP_READY}armed 123\n"),
++        format!("{}{GROUP_READY}armed 123\n", "x".repeat(BUDGET as usize)),
++    ] {
++        assert_eq!(group_line(&line), None, "{line:?}");
++    }
++    let mut sorted = order();
++    sorted.sort_unstable();
++    let mut expected = POINTS.to_vec();
++    expected.sort_unstable();
++    assert_eq!(sorted, expected);
++    assert_eq!(order(), order());
++    println!("HC074-CUSTODY-JOIN-PROTOCOL seed=0x{GROUP_SEED:08x} points=3 exact=true");
++}
++#[test]
++fn custody_join_process_ack_codec_distinguishes_absent_exact_and_duplicate() {
++    assert_eq!(acknowledgements(b"ok\n", 123), Ok(0));
++    assert_eq!(
++        acknowledgements(format!("{ACK}123\nok\n").as_bytes(), 123),
++        Ok(1)
++    );
++    for raw in [
++        format!("{ACK}123\n{ACK}123\n"),
++        format!("{ACK}124\n"),
++        format!("junk {ACK}123\n"),
++        format!("{ACK}123"),
++        format!("{ACK}123\r\n"),
++    ] {
++        assert_eq!(acknowledgements(raw.as_bytes(), 123), Err(()));
++    }
++    assert_eq!(acknowledgements(&[255], 123), Err(()));
++}
++
++#[test]
++fn original_custody_join_process_child() {
++    let Some(mode) = std::env::var_os(GROUP_MODE) else {
++        return;
++    };
++    let root = owned_root();
++    let stage = std::env::var(GROUP_STAGE).unwrap();
++    assert!(POINTS.contains(&stage.as_str()));
++    if mode == "inspect" {
++        inspect_empty_fence_at_for_test(&root.join("origin"), false);
++        group_ready("fresh-refused", false);
++        return;
++    }
++    assert!(mode == "kill" || mode == "control" || mode == "ack-lost");
++    let authority = PathBuf::from(std::env::var_os(AUTHORITY).unwrap());
++    assert_eq!(authority.parent(), Some(Path::new("/tmp")));
++    assert_eq!(fs::canonicalize(&authority).unwrap(), authority);
++    let m = fs::symlink_metadata(&authority).unwrap();
++    assert!(m.is_dir() && !m.file_type().is_symlink());
++    assert_eq!(
++        (m.uid(), m.gid(), m.mode() & 0o7777),
++        (
++            unsafe { libc::geteuid() },
++            unsafe { libc::getegid() },
++            0o700
++        )
++    );
++    assert!(authority
++        .file_name()
++        .unwrap()
++        .to_str()
++        .unwrap()
++        .starts_with("hydracache-authority-"));
++    let bundle = PathBuf::from(std::env::var_os("HC074_START_MATERIAL_BUNDLE").unwrap());
++    assert!(bundle.is_absolute());
++    assert_ne!(bundle, Path::new(crate::diagnostic_artifacts::INSTALL_ROOT));
++    with_original_at(
++        false,
++        Some(&authority),
++        |original, _, receiver, sender, model| {
++            with_owned_empty_fence_at_for_test(&root.join("origin"), |fence, _, leaf| {
++                let outputs = accepted(original, fence, leaf, receiver, sender, model)
++                    .prepare_original_outputs_for_test(|_| Ok(()))
++                    .unwrap();
++                let mut visited = Vec::new();
++                let prepared = outputs
++                    .prepare_fixed_grouped_fixture_for_test(&bundle, |_, _| {})
++                    .unwrap();
++                let mut alarm = prepared
++                    .bind_custody_fixture_for_test(|at, _| {
++                        visited.push(at);
++                        if at == stage {
++                            group_ready(at, true);
++                        }
++                    })
++                    .unwrap();
++                assert_eq!(visited, POINTS[..2]);
++                assert_eq!(stage, "returned-unacknowledged");
++                assert_eq!(
++                    alarm.offsets_for_test(),
++                    [300_000_000_000, 60_000_000_000, 10_000_000_000]
++                );
++                group_ready("returned-unacknowledged", true);
++                alarm.revalidate_fixture_for_test().unwrap();
++                assert!(!alarm.is_refused());
++                drop(alarm);
++                if mode == "control" {
++                    println!("{ACK}{}", std::process::id());
++                    std::io::stdout().flush().unwrap();
++                }
++            });
++        },
++    );
++}
++
++impl OwnedChild {
++    fn custody_join_start(s: &Scratch, mode: &str, stage: &str) -> Self {
++        let full = format!("{}::original_custody_join_process_child", module_path!());
++        let (_, test) = full.split_once("::").unwrap();
++        let child = Command::new(std::env::current_exe().unwrap())
++            .args(["--exact", test, "--nocapture", "--test-threads=1"])
++            .env(ROOT, s.0.path())
++            .env(AUTHORITY, s.1.path())
++            .env(GROUP_MODE, mode)
++            .env(GROUP_STAGE, stage)
++            .env("TMPDIR", s.context())
++            .stdin(Stdio::piped())
++            .stdout(Stdio::piped())
++            .stderr(Stdio::inherit())
++            .spawn()
++            .unwrap();
++        let mut owned = Self {
++            child,
++            pidfd: None,
++            collector: None,
++            output: None,
++        };
++        let fd = unsafe { libc::syscall(libc::SYS_pidfd_open, owned.child.id(), 0) };
++        assert!(fd >= 0, "pin exact owned child before waiting");
++        owned.pidfd = Some(unsafe { OwnedFd::from_raw_fd(fd as i32) });
++        let output = owned.child.stdout.take().unwrap();
++        let (send, receive) = mpsc::sync_channel(1);
++        owned.collector = Some(thread::spawn(move || {
++            let mut reader = BufReader::new(output.take(BUDGET));
++            loop {
++                let mut line = String::new();
++                if reader.read_line(&mut line).unwrap() == 0 {
++                    let _ = send.send((None, reader));
++                    break;
++                }
++                if let Some((label, pid)) = group_line(&line) {
++                    let _ = send.send((Some((label.to_owned(), pid)), reader));
++                    break;
++                }
++            }
++        }));
++        let (message, reader) = receive
++            .recv_timeout(Duration::from_secs(60))
++            .expect("owned grouped checkpoint absent");
++        owned.output = Some(reader);
++        owned.collector.take().unwrap().join().unwrap();
++        let expected = if mode == "inspect" {
++            "fresh-refused"
++        } else {
++            stage
++        };
++        assert_eq!(message, Some((expected.to_owned(), owned.child.id())));
++        owned
++    }
++    fn custody_join_finish(&mut self, kill: bool, inspection: bool) -> u8 {
++        if kill {
++            assert_eq!(
++                unsafe {
++                    libc::syscall(
++                        libc::SYS_pidfd_send_signal,
++                        self.pidfd.as_ref().unwrap().as_raw_fd(),
++                        libc::SIGKILL,
++                        std::ptr::null::<libc::siginfo_t>(),
++                        0,
++                    )
++                },
++                0
++            );
++        } else if !inspection {
++            self.child.stdin.as_mut().unwrap().write_all(b"q").unwrap();
++        }
++        assert!(
++            terminal(self.pidfd.as_ref().unwrap(), 60_000),
++            "owned grouped child did not terminate"
++        );
++        let status = self.child.wait().unwrap();
++        if kill {
++            assert_eq!(status.signal(), Some(libc::SIGKILL));
++        } else {
++            assert!(status.success(), "owned grouped child failed: {status}");
++        }
++        let mut tail = Vec::new();
++        self.output
++            .as_mut()
++            .unwrap()
++            .read_to_end(&mut tail)
++            .unwrap();
++        assert!(
++            tail.len() < BUDGET as usize && self.output.as_ref().unwrap().get_ref().limit() > 0
++        );
++        acknowledgements(&tail, self.child.id()).expect("ambiguous or foreign ACK")
++    }
++}
++fn group_case(stage: &str, mode: &str, repeat: u32) {
++    let s = Scratch::new();
++    let mut child = OwnedChild::custody_join_start(&s, mode, stage);
++    assert!(!terminal(child.pidfd.as_ref().unwrap(), 0));
++    assert!(matches!(
++        lock_host_root(&s.campaigns()),
++        Err(HostExecutionError::Busy)
++    ));
++    let origin = snapshot(&s.origin());
++    let context = snapshot(&s.context());
++    let authority = snapshot(s.1.path());
++    // All grouped cuts occur after complete original Starting/pipes/sinks.
++    checkpoint_contents(&s, "AfterReturn", &context, &authority);
++    let kill = mode == "kill";
++    let acks = child.custody_join_finish(kill, false);
++    assert_eq!(acks, if mode == "control" { 1 } else { 0 });
++    drop(lock_host_root(&s.campaigns()).expect("original flock survived terminated grouped owner"));
++    assert_eq!(snapshot(&s.origin()), origin);
++    assert_eq!(snapshot(s.1.path()), authority);
++    if kill {
++        assert_eq!(snapshot(&s.context()), context);
++    } else {
++        assert_eq!(fs::read_dir(s.context()).unwrap().count(), 0);
++    }
++    let retained = snapshot(&s.context());
++    for inspection in 1..=2 {
++        let mut fresh = OwnedChild::custody_join_start(&s, "inspect", stage);
++        assert_eq!(fresh.custody_join_finish(false, true), 0);
++        assert_eq!(snapshot(&s.origin()), origin);
++        assert_eq!(snapshot(&s.context()), retained);
++        assert_eq!(snapshot(s.1.path()), authority);
++        println!("HC074-CUSTODY-JOIN-INSPECTION repeat={repeat} stage={stage} mode={mode} inspection={inspection} refused=true unchanged=true");
++    }
++    println!("HC074-CUSTODY-JOIN-PROCESS seed=0x{GROUP_SEED:08x} repeat={repeat} stage={stage} mode={mode} sigkill={kill} acks={acks} held=true unchanged=true send=false");
++}
++#[test]
++#[ignore = "manual nonroot grouped process screen; exact owned SIGKILL and ordinary ACK control"]
++fn original_custody_join_process_screen() {
++    group_case("returned-unacknowledged", "control", 0);
++    group_case("returned-unacknowledged", "kill", 0);
++    println!(
++        "HC074-CUSTODY-JOIN-PROCESS-SCREEN sigkills=1 controls=1 inspections=4 completed=true"
++    );
++}
++#[test]
++#[ignore = "manual nonroot grouped preparation SIGKILL matrix and synthetic return ACK loss"]
++fn original_custody_join_process_matrix() {
++    for repeat in 1..=3 {
++        for stage in order() {
++            group_case(stage, "kill", repeat);
++        }
++        group_case("returned-unacknowledged", "control", repeat);
++        group_case("returned-unacknowledged", "ack-lost", repeat);
++        println!("HC074-CUSTODY-JOIN-PROCESS-SUMMARY seed=0x{GROUP_SEED:08x} repeat={repeat} sigkills=3 controls=1 lost_acks=1 inspections=10 admission=false");
++    }
++}
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_original_custody_join_tests.rs b/tools/long-run-supervisor-074/src/diagnostic_original_custody_join_tests.rs
+new file mode 100644
+index 00000000..c0c4621d
+--- /dev/null
++++ b/tools/long-run-supervisor-074/src/diagnostic_original_custody_join_tests.rs
+@@ -0,0 +1,228 @@
++use super::*;
++use crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::OriginalCustodyError;
++
++fn custody_healthy(samples: usize) {
++    for sample in 0..samples {
++        let bundle = Bundle::new();
++        with_original_at(false, None, |original, _, receiver, sender, model| {
++            with_owned_empty_fence_for_test(|fence, root, leaf| {
++                let prepared = accepted(original, fence, leaf, receiver, sender, model)
++                    .prepare_original_outputs_for_test(|_| Ok(()))
++                    .unwrap()
++                    .prepare_fixed_grouped_fixture_for_test(&bundle.path, |_, _| busy(root))
++                    .unwrap();
++                let before = records(leaf);
++                let origins = prepared.origins_for_test();
++                let mut visited = Vec::new();
++                let (mut held, bind) = trace::capture(|| {
++                    trace::stage(Stage::Bind);
++                    prepared
++                        .bind_custody_fixture_for_test(|at, _| {
++                            visited.push(at);
++                            busy(root);
++                        })
++                        .unwrap()
++                });
++                assert_eq!(visited, ["opened", "retained"]);
++                assert_eq!(bind.stages[Stage::Bind as usize].authentication_calls, 68);
++                assert_eq!(bind.stages[Stage::Bind as usize].signature_calls, 68);
++                assert!(bind.first_time.is_none());
++                assert_eq!(&held.origins_for_test()[..4], &origins[..4]);
++                assert_eq!(
++                    held.offsets_for_test(),
++                    [300_000_000_000, 60_000_000_000, 10_000_000_000]
++                );
++                let (_, validation) = trace::capture(|| {
++                    trace::stage(Stage::Checks);
++                    held.revalidate_fixture_for_test().unwrap();
++                });
++                assert_eq!(
++                    validation.stages[Stage::Checks as usize].authentication_calls,
++                    68
++                );
++                assert_eq!(
++                    validation.stages[Stage::Checks as usize].signature_calls,
++                    68
++                );
++                assert!(validation.first_time.is_none());
++                assert_eq!(&held.origins_for_test()[..4], &origins[..4]);
++                assert!(!held.is_refused());
++                assert_eq!(records(leaf), before);
++                inventory_at_cut(leaf, 9);
++                busy(root);
++                held.drop_eof_for_test();
++                retained_context_refuses_for_test(root);
++                println!("HC074-CUSTODY-JOIN-CONTROL sample={sample} bind_ipc=68 validate_ipc=68 original_origins=true unchanged=true eof=true send=false admission=false");
++            });
++        });
++    }
++}
++#[test]
++#[ignore = "manual nonroot original custody/sink full-frame healthy screen; no execution"]
++fn original_custody_join_screen() {
++    custody_healthy(1);
++}
++#[test]
++#[ignore = "manual nonroot original custody/sink repeated full-frame healthy controls; no execution"]
++fn original_custody_join_healthy() {
++    custody_healthy(3);
++}
++
++#[test]
++#[ignore = "manual nonroot original custody full-frame persistent drift and expiry; no execution"]
++fn original_custody_join_refusals() {
++    let seed = 0x0740_c518_u64;
++    for (case, cut) in [
++        ("trust", "opened"),
++        ("trust", "retained"),
++        ("bundle-content", "retained"),
++        ("output", "retained"),
++        ("message", "retained"),
++        ("writer", "retained"),
++        ("projection", "retained"),
++        ("state", "retained"),
++        ("alarm", "retained"),
++        ("custody-missing", "retained"),
++        ("custody-object", "retained"),
++        ("custody-flags", "retained"),
++        ("expiry", "retained"),
++    ] {
++        let bundle = Bundle::new();
++        with_original_at(true, None, |original, paths, receiver, sender, model| {
++            with_owned_empty_fence_for_test(|fence, root, leaf| {
++                let prepared = accepted(original, fence, leaf, receiver, sender, model)
++                    .prepare_original_outputs_for_test(|_| Ok(()))
++                    .unwrap()
++                    .prepare_fixed_grouped_fixture_for_test(&bundle.path, |_, _| busy(root))
++                    .unwrap();
++                let before = records(leaf);
++                let mut injected = false;
++                let result = prepared.bind_custody_fixture_for_test(|at, held| {
++                    if at == cut {
++                        assert!(!injected);
++                        injected = true;
++                        match case {
++                            "trust" => fs::write(&paths.worker, b"original trust drift").unwrap(),
++                            "bundle-content" => bundle.change(),
++                            "output" => fs::write(
++                                output(leaf).join("collector-attempt-v1/collector-stderr.bin"),
++                                b"unexpected",
++                            )
++                            .unwrap(),
++                            "expiry" => std::thread::sleep(std::time::Duration::from_secs(10)),
++                            other => held.tamper_for_test(other),
++                        }
++                    }
++                });
++                assert!(injected);
++                let mut failure = result.unwrap_err();
++                let reason = format!("{:?}", failure.error());
++                assert!(failure.is_refused());
++                if case == "expiry" {
++                    assert!(
++                        reason.contains("Causal(Progress(Input(Kernel(Invalid))))"),
++                        "{reason}"
++                    );
++                } else {
++                    assert!(
++                        !reason.contains("Time"),
++                        "late time is not {case}: {reason}"
++                    );
++                    match case {
++                        "trust" => assert!(reason.contains("Input(Invalid)"), "{reason}"),
++                        "bundle-content" => assert!(reason.contains("Material(Build("), "{reason}"),
++                        "output" => assert!(reason.contains("Outputs(Invalid)"), "{reason}"),
++                        "custody-missing" => assert_eq!(reason, "Binding"),
++                        "custody-object" | "custody-flags" => {
++                            assert_eq!(reason, "Storage(Document)")
++                        }
++                        "writer" => assert!(reason.contains("Invalid"), "{reason}"),
++                        _ => assert!(reason.contains("Binding"), "{reason}"),
++                    }
++                }
++                assert!(matches!(
++                    failure.retry_for_test(),
++                    Err(OriginalCustodyError::Refused)
++                ));
++                busy(root);
++                assert_eq!(records(leaf), before);
++                drop(failure);
++                retained_context_refuses_for_test(root);
++                println!("HC074-CUSTODY-JOIN-REFUSAL seed=0x{seed:08x} case={case} cut={cut} sticky=true held=true unchanged=true send=false");
++            });
++        });
++    }
++}
++
++#[test]
++#[ignore = "manual nonroot original custody later live checks and fixed-origin refusal; no execution"]
++fn original_custody_join_later_refusals() {
++    for case in [
++        "trust",
++        "custody-object",
++        "custody-flags",
++        "custody-missing",
++        "fixture-origin",
++        "final-expiry",
++        "production-bind",
++    ] {
++        let bundle = Bundle::new();
++        with_original_at(true, None, |original, paths, receiver, sender, model| {
++            with_owned_empty_fence_for_test(|fence, root, leaf| {
++                let prepared = accepted(original, fence, leaf, receiver, sender, model)
++                    .prepare_original_outputs_for_test(|_| Ok(()))
++                    .unwrap()
++                    .prepare_fixed_grouped_fixture_for_test(&bundle.path, |_, _| busy(root))
++                    .unwrap();
++                let before = records(leaf);
++                if case == "production-bind" {
++                    let mut failure = prepared.bind_original_custody().unwrap_err();
++                    assert!(format!("{:?}", failure.error()).contains("Material(Fixture)"));
++                    assert!(failure.is_refused());
++                    assert!(matches!(
++                        failure.retry_for_test(),
++                        Err(OriginalCustodyError::Refused)
++                    ));
++                    busy(root);
++                    assert_eq!(records(leaf), before);
++                    drop(failure);
++                } else {
++                    let mut held = prepared
++                        .bind_custody_fixture_for_test(|_, _| busy(root))
++                        .unwrap();
++                    match case {
++                        "trust" => fs::write(&paths.worker, b"later original trust drift").unwrap(),
++                        "fixture-origin" => (),
++                        other => held.tamper_for_test(other),
++                    }
++                    let error = if case == "fixture-origin" {
++                        held.revalidate().unwrap_err()
++                    } else {
++                        held.revalidate_fixture_for_test().unwrap_err()
++                    };
++                    let reason = format!("{error:?}");
++                    assert!(!reason.contains("Time"), "{reason}");
++                    match case {
++                        "trust" => assert!(reason.contains("Input(Invalid)"), "{reason}"),
++                        "fixture-origin" => {
++                            assert!(reason.contains("Material(Fixture)"), "{reason}")
++                        }
++                        "custody-missing" => assert_eq!(reason, "Binding"),
++                        "final-expiry" => assert_eq!(reason, "Original(Expired)"),
++                        _ => assert_eq!(reason, "Storage(Document)"),
++                    }
++                    assert!(held.is_refused());
++                    assert!(matches!(
++                        held.revalidate_fixture_for_test(),
++                        Err(OriginalCustodyError::Refused)
++                    ));
++                    busy(root);
++                    assert_eq!(records(leaf), before);
++                    drop(held);
++                }
++                retained_context_refuses_for_test(root);
++                println!("HC074-CUSTODY-JOIN-LATER case={case} sticky=true held=true unchanged=true send=false");
++            });
++        });
++    }
++}
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_original_grouped_preparation.rs b/tools/long-run-supervisor-074/src/diagnostic_original_grouped_preparation.rs
+index 3a8c2bee..c15543fb 100644
+--- a/tools/long-run-supervisor-074/src/diagnostic_original_grouped_preparation.rs
++++ b/tools/long-run-supervisor-074/src/diagnostic_original_grouped_preparation.rs
+@@ -1,4 +1,6 @@
+ //! Fixed-origin grouped preparation, never a send/start or guardian capability.
++#[path = "diagnostic_original_custody_join.rs"]
++pub mod custody;
+ use super::*;
+ use crate::diagnostic_kernel_admission::{KernelError, KernelTimePoint};
+ use crate::diagnostic_lease::{

@@ -12222,3 +12222,73 @@ last-holder SIGKILL control demonstrates that the kernel itself releases flock
 when its final owner dies. No standalone lock can replace that history or
 external supervision. The server rehearsal changed neither installation nor
 supervisor and ran no product workload; no throughput result follows.
+
+## Compose ownership within the original validation frame
+
+Custody alone does not connect a lock to the exact outputs it must protect.
+The next experiment therefore joins the original sinks, pipe and unsent-message
+aliases, signed material, original alarm and opaque common-fence custody in one
+consuming owner. Neither a caller-provided descriptor nor a newly asserted time
+can establish that relationship. Custody must come from the same acknowledged
+Starting storage, checked through the unchanged live original chain.
+
+The first composition was intentionally conservative: validate the already
+prepared grouped owner twice around acquisition, then do the same on later
+revalidation. Its healthy screen failed on both GNU compilers at the original
+ten-second challenge age. Acquisition had completed; the added nested frames
+made the subsequent healthy validation too late. The complete rejected source
+and failures remain evidence. Increasing the challenge lifetime would hide the
+composition cost by changing the safety contract, so this candidate was withdrawn.
+
+The replacement does not remove an original predicate or modify the existing
+grouped API. It consumes OriginalCollectorSinks directly and inserts custody
+acquisition into that constructor's already approved full opening/closing frame.
+Preparation authenticates the original chain, binds the fixed bundle and worker
+projection, creates the unsent message and arms the original absolute alarm.
+It then acquires opaque custody from its own storage and performs the full
+closing original round. Custody identity and CLOEXEC checks surround the close.
+Only a successful complete close can mark the owner ready.
+
+There is a subtle final boundary: the last custody metadata read can itself
+consume remaining time. The implementation therefore observes the same alarm
+and unchanged causal-age predicate again after that IO. The challenge issue,
+progress receipt, Starting and Reserved origins never move. Revalidation likewise
+brackets the unchanged complete grouped frame with custody observations, rather
+than appending another pair of full frames. Its expected authentication count
+is the baseline's 34 for construction and 34 for revalidation. This is a checked
+call-count invariant, not a throughput, latency or safety-threshold claim.
+
+Ownership order is also part of the design. Original message and sink/pipe
+writers are fields before custody, so their destruction precedes custody close.
+A failure poisons the borrowed original chain and retains the refused owner,
+including acquired custody; no retry can reconstruct authority. The healthy
+oracle checks exact origins, unchanged retained records, common-lock contention,
+closed sink descriptors and actual EOF after dropping the owner. Persistent
+faults must fail for their own reason, not because an unrelated late clock check
+happened to reject them.
+
+The [join packet](../testing/performance/0.74/local-runs/original-custody-join-20261018/README.md)
+keeps rejected and replacement sources separate. Its process harness selects
+opening, custody-retained and returned-but-unacknowledged cuts, pins each owned
+child with pidfd, checks real SIGKILL wait status and distinguishes normal return
+from zero-exit omitted ACK. Two fresh inspectors must refuse retained history
+after every case. This is a synthetic return protocol, not actual manager delivery.
+
+The result remains narrower than execution permission. The type exports no
+File, message, clone, send, start or completion capability and does not yet enroll
+its objects in the independent guardian. Sole-writer descriptor transfer, parent
+alias closure, authenticated original start, full-cgroup writer cessation,
+durable completion and external guardian supervision still have to follow.
+No isolated success can substitute for those boundaries or open product load.
+
+Both GNU release compiler cohorts pass the declared join gates: six repeated
+healthy controls, forty persistent refusals and thirty selected process cases.
+Those cases include eighteen actual SIGKILLs, six normal returns, six zero-exit
+omitted ACKs and sixty fresh inspector refusals. A separate healthy screen also
+passes; 32 original-fence/storage units and three protocol/process units pass
+per compiler, alongside eight API doc checks per compiler and 204 static
+contracts. Independent final host guards preserve the same supervisor PID,
+zero restarts and installed executable/receipt hashes, with no surviving fixture
+executable. The negative composition remains negative; the corrected result is
+an ownership and refusal proof under the original deadlines, not product
+performance, full power-loss coverage or production admission.

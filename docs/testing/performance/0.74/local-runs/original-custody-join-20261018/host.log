@@ -1,0 +1,317 @@
+3c6ebb7495bf842871a718a8b62393c8fd63682c126f3d7fb18a85ae43f580a3  guard.sh
+2e9b172c7ac6ab0263e6576fd3264d0954d9b91b757c0d1049774714b3a22b75  screen.sh
+773dc1ef4c758f4b66670a87311244322595c7e560e4b741d52688b624377523  run.sh
+HC074-CUSTODY-JOIN-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-CUSTODY-JOIN-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-CUSTODY-JOIN-COHORT compiler=194
+e2f801a5004e0a3c63b093e5ba73f628c4cbad2224fa8ecde377b57822f7b64c  tests-194
+
+running 32 tests
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::starting_storage::tests::collector_starting_storage_exact_phase_order_and_old_inventory ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::starting_storage::tests::collector_starting_storage_exclusive_create_and_fd_mutations_refuse ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::starting_storage::tests::collector_starting_storage_refuses_reentry_skips_early_ack_and_unexpected_third_file ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::starting_storage::tests::custody_tests::original_collector_custody_checks_storage_before_acquisition_and_never_retries ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::starting_storage::tests::custody_tests::original_collector_custody_has_one_owner_and_latches_repeat_refusal ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::starting_storage::tests::custody_tests::original_collector_custody_rejects_foreign_original_and_descriptor_drift ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::starting_storage::tests::custody_tests::original_collector_custody_requires_acknowledged_starting_and_sticks ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_all_legacy_and_parent_contexts_refuse_dangling_links ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_bound_named_or_original_object_drift_never_adopted ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_every_fixed_leaf_entry_blocks_without_decode_or_cleanup ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_healthy_empty_repeat_excludes_legacy_and_releases_only_lock ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_independent_concurrent_storage_keeps_local_refusal ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_initial_busy_keeps_storage_and_other_owner_healthy ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_missing_unsafe_or_restored_storage_remains_refused ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_public_guard_is_original_thread_only ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_seeded_between_scan_context_is_seen_and_retained ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_unsafe_or_missing_lock_and_legacy_ownership_never_repaired ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_wrong_private_origin_and_nonroot_fixed_open_refuse ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::custody::custody_cannot_adopt_a_replaced_named_lock ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::custody::custody_first_drop_keeps_original_checks_and_refuses_a_second_transfer ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::custody::custody_survives_original_drop ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::custody::ordinary_drop_still_unlocks_a_retained_alias ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_all_contexts_refuse_initial_and_bound_dangling_symlinks ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_concurrent_independent_open_cannot_bypass_same_flock ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_deployed_mode_or_unsafe_campaign_directory_requires_enrollment ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_initial_busy_is_retryable_and_never_unlocks_legacy_owner ... ok
+seed=0x749
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_missing_or_unsafe_lock_never_created_repaired_or_adopted ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_named_lock_replacement_never_adopted_and_original_remains_held ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_policy_types_and_error_seams_remain_fail_closed ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_private_descriptor_substitutions_latch_without_refresh ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_same_legacy_lock_blocks_both_campaign_entry_points ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_seeded_bound_identity_state_and_metadata_failures_latch ... ok
+
+test result: ok. 32 passed; 0 failed; 0 ignored; 0 measured; 1056 filtered out; finished in 0.92s
+
+
+running 3 tests
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::crash_tests::fixed_grouped_process_tests::custody_process_tests::custody_join_process_ack_codec_distinguishes_absent_exact_and_duplicate ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::crash_tests::fixed_grouped_process_tests::custody_process_tests::custody_join_process_protocol_rejects_invalid_or_ambiguous_records ... HC074-CUSTODY-JOIN-PROTOCOL seed=0x0740c618 points=3 exact=true
+seed=0x746
+ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::crash_tests::fixed_grouped_process_tests::custody_process_tests::original_custody_join_process_child ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 1085 filtered out; finished in 0.00s
+
+HC074-CUSTODY-JOIN-PHASE name=healthy begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::original_custody_join_healthy ... HC074-CUSTODY-JOIN-CONTROL sample=0 bind_ipc=34 validate_ipc=34 original_origins=true unchanged=true eof=true send=false admission=false
+HC074-CUSTODY-JOIN-CONTROL sample=1 bind_ipc=34 validate_ipc=34 original_origins=true unchanged=true eof=true send=false admission=false
+HC074-CUSTODY-JOIN-CONTROL sample=2 bind_ipc=34 validate_ipc=34 original_origins=true unchanged=true eof=true send=false admission=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1087 filtered out; finished in 39.92s
+
+HC074-CUSTODY-JOIN-PHASE name=healthy completed=true
+HC074-CUSTODY-JOIN-PHASE name=refusals begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::original_custody_join_refusals ... HC074-CUSTODY-JOIN-REFUSAL seed=0x0740c518 case=trust cut=opened sticky=true held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-REFUSAL seed=0x0740c518 case=trust cut=retained sticky=true held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-REFUSAL seed=0x0740c518 case=bundle-content cut=retained sticky=true held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-REFUSAL seed=0x0740c518 case=output cut=retained sticky=true held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-REFUSAL seed=0x0740c518 case=message cut=retained sticky=true held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-REFUSAL seed=0x0740c518 case=writer cut=retained sticky=true held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-REFUSAL seed=0x0740c518 case=projection cut=retained sticky=true held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-REFUSAL seed=0x0740c518 case=state cut=retained sticky=true held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-REFUSAL seed=0x0740c518 case=alarm cut=retained sticky=true held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-REFUSAL seed=0x0740c518 case=custody-missing cut=retained sticky=true held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-REFUSAL seed=0x0740c518 case=custody-object cut=retained sticky=true held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-REFUSAL seed=0x0740c518 case=custody-flags cut=retained sticky=true held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-REFUSAL seed=0x0740c518 case=expiry cut=retained sticky=true held=true unchanged=true send=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1087 filtered out; finished in 177.06s
+
+HC074-CUSTODY-JOIN-PHASE name=refusals completed=true
+HC074-CUSTODY-JOIN-PHASE name=later begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::original_custody_join_later_refusals ... HC074-CUSTODY-JOIN-LATER case=trust sticky=true held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-LATER case=custody-object sticky=true held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-LATER case=custody-flags sticky=true held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-LATER case=custody-missing sticky=true held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-LATER case=fixture-origin sticky=true held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-LATER case=final-expiry sticky=true held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-LATER case=production-bind sticky=true held=true unchanged=true send=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1087 filtered out; finished in 91.69s
+
+HC074-CUSTODY-JOIN-PHASE name=later completed=true
+HC074-CUSTODY-JOIN-PHASE name=process begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::crash_tests::fixed_grouped_process_tests::custody_process_tests::original_custody_join_process_matrix ... HC074-CUSTODY-JOIN-INSPECTION repeat=1 stage=returned-unacknowledged mode=kill inspection=1 refused=true unchanged=true
+HC074-CUSTODY-JOIN-INSPECTION repeat=1 stage=returned-unacknowledged mode=kill inspection=2 refused=true unchanged=true
+HC074-CUSTODY-JOIN-PROCESS seed=0x0740c618 repeat=1 stage=returned-unacknowledged mode=kill sigkill=true acks=0 held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-INSPECTION repeat=1 stage=retained mode=kill inspection=1 refused=true unchanged=true
+HC074-CUSTODY-JOIN-INSPECTION repeat=1 stage=retained mode=kill inspection=2 refused=true unchanged=true
+HC074-CUSTODY-JOIN-PROCESS seed=0x0740c618 repeat=1 stage=retained mode=kill sigkill=true acks=0 held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-INSPECTION repeat=1 stage=opened mode=kill inspection=1 refused=true unchanged=true
+HC074-CUSTODY-JOIN-INSPECTION repeat=1 stage=opened mode=kill inspection=2 refused=true unchanged=true
+HC074-CUSTODY-JOIN-PROCESS seed=0x0740c618 repeat=1 stage=opened mode=kill sigkill=true acks=0 held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-INSPECTION repeat=1 stage=returned-unacknowledged mode=control inspection=1 refused=true unchanged=true
+HC074-CUSTODY-JOIN-INSPECTION repeat=1 stage=returned-unacknowledged mode=control inspection=2 refused=true unchanged=true
+HC074-CUSTODY-JOIN-PROCESS seed=0x0740c618 repeat=1 stage=returned-unacknowledged mode=control sigkill=false acks=1 held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-INSPECTION repeat=1 stage=returned-unacknowledged mode=ack-lost inspection=1 refused=true unchanged=true
+HC074-CUSTODY-JOIN-INSPECTION repeat=1 stage=returned-unacknowledged mode=ack-lost inspection=2 refused=true unchanged=true
+HC074-CUSTODY-JOIN-PROCESS seed=0x0740c618 repeat=1 stage=returned-unacknowledged mode=ack-lost sigkill=false acks=0 held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-PROCESS-SUMMARY seed=0x0740c618 repeat=1 sigkills=3 controls=1 lost_acks=1 inspections=10 admission=false
+HC074-CUSTODY-JOIN-INSPECTION repeat=2 stage=returned-unacknowledged mode=kill inspection=1 refused=true unchanged=true
+HC074-CUSTODY-JOIN-INSPECTION repeat=2 stage=returned-unacknowledged mode=kill inspection=2 refused=true unchanged=true
+HC074-CUSTODY-JOIN-PROCESS seed=0x0740c618 repeat=2 stage=returned-unacknowledged mode=kill sigkill=true acks=0 held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-INSPECTION repeat=2 stage=retained mode=kill inspection=1 refused=true unchanged=true
+HC074-CUSTODY-JOIN-INSPECTION repeat=2 stage=retained mode=kill inspection=2 refused=true unchanged=true
+HC074-CUSTODY-JOIN-PROCESS seed=0x0740c618 repeat=2 stage=retained mode=kill sigkill=true acks=0 held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-INSPECTION repeat=2 stage=opened mode=kill inspection=1 refused=true unchanged=true
+HC074-CUSTODY-JOIN-INSPECTION repeat=2 stage=opened mode=kill inspection=2 refused=true unchanged=true
+HC074-CUSTODY-JOIN-PROCESS seed=0x0740c618 repeat=2 stage=opened mode=kill sigkill=true acks=0 held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-INSPECTION repeat=2 stage=returned-unacknowledged mode=control inspection=1 refused=true unchanged=true
+HC074-CUSTODY-JOIN-INSPECTION repeat=2 stage=returned-unacknowledged mode=control inspection=2 refused=true unchanged=true
+HC074-CUSTODY-JOIN-PROCESS seed=0x0740c618 repeat=2 stage=returned-unacknowledged mode=control sigkill=false acks=1 held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-INSPECTION repeat=2 stage=returned-unacknowledged mode=ack-lost inspection=1 refused=true unchanged=true
+HC074-CUSTODY-JOIN-INSPECTION repeat=2 stage=returned-unacknowledged mode=ack-lost inspection=2 refused=true unchanged=true
+HC074-CUSTODY-JOIN-PROCESS seed=0x0740c618 repeat=2 stage=returned-unacknowledged mode=ack-lost sigkill=false acks=0 held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-PROCESS-SUMMARY seed=0x0740c618 repeat=2 sigkills=3 controls=1 lost_acks=1 inspections=10 admission=false
+HC074-CUSTODY-JOIN-INSPECTION repeat=3 stage=returned-unacknowledged mode=kill inspection=1 refused=true unchanged=true
+HC074-CUSTODY-JOIN-INSPECTION repeat=3 stage=returned-unacknowledged mode=kill inspection=2 refused=true unchanged=true
+HC074-CUSTODY-JOIN-PROCESS seed=0x0740c618 repeat=3 stage=returned-unacknowledged mode=kill sigkill=true acks=0 held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-INSPECTION repeat=3 stage=retained mode=kill inspection=1 refused=true unchanged=true
+HC074-CUSTODY-JOIN-INSPECTION repeat=3 stage=retained mode=kill inspection=2 refused=true unchanged=true
+HC074-CUSTODY-JOIN-PROCESS seed=0x0740c618 repeat=3 stage=retained mode=kill sigkill=true acks=0 held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-INSPECTION repeat=3 stage=opened mode=kill inspection=1 refused=true unchanged=true
+HC074-CUSTODY-JOIN-INSPECTION repeat=3 stage=opened mode=kill inspection=2 refused=true unchanged=true
+HC074-CUSTODY-JOIN-PROCESS seed=0x0740c618 repeat=3 stage=opened mode=kill sigkill=true acks=0 held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-INSPECTION repeat=3 stage=returned-unacknowledged mode=control inspection=1 refused=true unchanged=true
+HC074-CUSTODY-JOIN-INSPECTION repeat=3 stage=returned-unacknowledged mode=control inspection=2 refused=true unchanged=true
+HC074-CUSTODY-JOIN-PROCESS seed=0x0740c618 repeat=3 stage=returned-unacknowledged mode=control sigkill=false acks=1 held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-INSPECTION repeat=3 stage=returned-unacknowledged mode=ack-lost inspection=1 refused=true unchanged=true
+HC074-CUSTODY-JOIN-INSPECTION repeat=3 stage=returned-unacknowledged mode=ack-lost inspection=2 refused=true unchanged=true
+HC074-CUSTODY-JOIN-PROCESS seed=0x0740c618 repeat=3 stage=returned-unacknowledged mode=ack-lost sigkill=false acks=0 held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-PROCESS-SUMMARY seed=0x0740c618 repeat=3 sigkills=3 controls=1 lost_acks=1 inspections=10 admission=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1087 filtered out; finished in 196.19s
+
+HC074-CUSTODY-JOIN-PHASE name=process completed=true
+HC074-CUSTODY-JOIN-COHORT compiler=194 completed=true
+HC074-CUSTODY-JOIN-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-CUSTODY-JOIN-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-CUSTODY-JOIN-COHORT compiler=188
+e6b4d29057079fbf8d294affb42245f1e37abf28c41a634ca84f97e57eb00c7d  tests-188
+
+running 32 tests
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::starting_storage::tests::collector_starting_storage_exact_phase_order_and_old_inventory ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::starting_storage::tests::collector_starting_storage_exclusive_create_and_fd_mutations_refuse ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::starting_storage::tests::collector_starting_storage_refuses_reentry_skips_early_ack_and_unexpected_third_file ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::starting_storage::tests::custody_tests::original_collector_custody_checks_storage_before_acquisition_and_never_retries ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::starting_storage::tests::custody_tests::original_collector_custody_has_one_owner_and_latches_repeat_refusal ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::starting_storage::tests::custody_tests::original_collector_custody_rejects_foreign_original_and_descriptor_drift ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::starting_storage::tests::custody_tests::original_collector_custody_requires_acknowledged_starting_and_sticks ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_all_legacy_and_parent_contexts_refuse_dangling_links ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_bound_named_or_original_object_drift_never_adopted ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_every_fixed_leaf_entry_blocks_without_decode_or_cleanup ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_healthy_empty_repeat_excludes_legacy_and_releases_only_lock ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_independent_concurrent_storage_keeps_local_refusal ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_initial_busy_keeps_storage_and_other_owner_healthy ... ok
+seed=0x749
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_missing_unsafe_or_restored_storage_remains_refused ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_public_guard_is_original_thread_only ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_seeded_between_scan_context_is_seen_and_retained ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_unsafe_or_missing_lock_and_legacy_ownership_never_repaired ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_wrong_private_origin_and_nonroot_fixed_open_refuse ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::custody::custody_cannot_adopt_a_replaced_named_lock ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::custody::custody_first_drop_keeps_original_checks_and_refuses_a_second_transfer ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::custody::custody_survives_original_drop ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::custody::ordinary_drop_still_unlocks_a_retained_alias ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_all_contexts_refuse_initial_and_bound_dangling_symlinks ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_concurrent_independent_open_cannot_bypass_same_flock ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_deployed_mode_or_unsafe_campaign_directory_requires_enrollment ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_initial_busy_is_retryable_and_never_unlocks_legacy_owner ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_missing_or_unsafe_lock_never_created_repaired_or_adopted ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_named_lock_replacement_never_adopted_and_original_remains_held ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_policy_types_and_error_seams_remain_fail_closed ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_private_descriptor_substitutions_latch_without_refresh ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_same_legacy_lock_blocks_both_campaign_entry_points ... ok
+seed=0x746
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_seeded_bound_identity_state_and_metadata_failures_latch ... ok
+
+test result: ok. 32 passed; 0 failed; 0 ignored; 0 measured; 1056 filtered out; finished in 0.92s
+
+
+running 3 tests
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::crash_tests::fixed_grouped_process_tests::custody_process_tests::custody_join_process_ack_codec_distinguishes_absent_exact_and_duplicate ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::crash_tests::fixed_grouped_process_tests::custody_process_tests::custody_join_process_protocol_rejects_invalid_or_ambiguous_records ... HC074-CUSTODY-JOIN-PROTOCOL seed=0x0740c618 points=3 exact=true
+ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::crash_tests::fixed_grouped_process_tests::custody_process_tests::original_custody_join_process_child ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 1085 filtered out; finished in 0.00s
+
+HC074-CUSTODY-JOIN-PHASE name=healthy begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::original_custody_join_healthy ... HC074-CUSTODY-JOIN-CONTROL sample=0 bind_ipc=34 validate_ipc=34 original_origins=true unchanged=true eof=true send=false admission=false
+HC074-CUSTODY-JOIN-CONTROL sample=1 bind_ipc=34 validate_ipc=34 original_origins=true unchanged=true eof=true send=false admission=false
+HC074-CUSTODY-JOIN-CONTROL sample=2 bind_ipc=34 validate_ipc=34 original_origins=true unchanged=true eof=true send=false admission=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1087 filtered out; finished in 40.24s
+
+HC074-CUSTODY-JOIN-PHASE name=healthy completed=true
+HC074-CUSTODY-JOIN-PHASE name=refusals begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::original_custody_join_refusals ... HC074-CUSTODY-JOIN-REFUSAL seed=0x0740c518 case=trust cut=opened sticky=true held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-REFUSAL seed=0x0740c518 case=trust cut=retained sticky=true held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-REFUSAL seed=0x0740c518 case=bundle-content cut=retained sticky=true held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-REFUSAL seed=0x0740c518 case=output cut=retained sticky=true held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-REFUSAL seed=0x0740c518 case=message cut=retained sticky=true held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-REFUSAL seed=0x0740c518 case=writer cut=retained sticky=true held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-REFUSAL seed=0x0740c518 case=projection cut=retained sticky=true held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-REFUSAL seed=0x0740c518 case=state cut=retained sticky=true held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-REFUSAL seed=0x0740c518 case=alarm cut=retained sticky=true held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-REFUSAL seed=0x0740c518 case=custody-missing cut=retained sticky=true held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-REFUSAL seed=0x0740c518 case=custody-object cut=retained sticky=true held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-REFUSAL seed=0x0740c518 case=custody-flags cut=retained sticky=true held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-REFUSAL seed=0x0740c518 case=expiry cut=retained sticky=true held=true unchanged=true send=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1087 filtered out; finished in 178.32s
+
+HC074-CUSTODY-JOIN-PHASE name=refusals completed=true
+HC074-CUSTODY-JOIN-PHASE name=later begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::original_custody_join_later_refusals ... HC074-CUSTODY-JOIN-LATER case=trust sticky=true held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-LATER case=custody-object sticky=true held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-LATER case=custody-flags sticky=true held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-LATER case=custody-missing sticky=true held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-LATER case=fixture-origin sticky=true held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-LATER case=final-expiry sticky=true held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-LATER case=production-bind sticky=true held=true unchanged=true send=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1087 filtered out; finished in 92.26s
+
+HC074-CUSTODY-JOIN-PHASE name=later completed=true
+HC074-CUSTODY-JOIN-PHASE name=process begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::crash_tests::fixed_grouped_process_tests::custody_process_tests::original_custody_join_process_matrix ... HC074-CUSTODY-JOIN-INSPECTION repeat=1 stage=returned-unacknowledged mode=kill inspection=1 refused=true unchanged=true
+HC074-CUSTODY-JOIN-INSPECTION repeat=1 stage=returned-unacknowledged mode=kill inspection=2 refused=true unchanged=true
+HC074-CUSTODY-JOIN-PROCESS seed=0x0740c618 repeat=1 stage=returned-unacknowledged mode=kill sigkill=true acks=0 held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-INSPECTION repeat=1 stage=retained mode=kill inspection=1 refused=true unchanged=true
+HC074-CUSTODY-JOIN-INSPECTION repeat=1 stage=retained mode=kill inspection=2 refused=true unchanged=true
+HC074-CUSTODY-JOIN-PROCESS seed=0x0740c618 repeat=1 stage=retained mode=kill sigkill=true acks=0 held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-INSPECTION repeat=1 stage=opened mode=kill inspection=1 refused=true unchanged=true
+HC074-CUSTODY-JOIN-INSPECTION repeat=1 stage=opened mode=kill inspection=2 refused=true unchanged=true
+HC074-CUSTODY-JOIN-PROCESS seed=0x0740c618 repeat=1 stage=opened mode=kill sigkill=true acks=0 held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-INSPECTION repeat=1 stage=returned-unacknowledged mode=control inspection=1 refused=true unchanged=true
+HC074-CUSTODY-JOIN-INSPECTION repeat=1 stage=returned-unacknowledged mode=control inspection=2 refused=true unchanged=true
+HC074-CUSTODY-JOIN-PROCESS seed=0x0740c618 repeat=1 stage=returned-unacknowledged mode=control sigkill=false acks=1 held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-INSPECTION repeat=1 stage=returned-unacknowledged mode=ack-lost inspection=1 refused=true unchanged=true
+HC074-CUSTODY-JOIN-INSPECTION repeat=1 stage=returned-unacknowledged mode=ack-lost inspection=2 refused=true unchanged=true
+HC074-CUSTODY-JOIN-PROCESS seed=0x0740c618 repeat=1 stage=returned-unacknowledged mode=ack-lost sigkill=false acks=0 held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-PROCESS-SUMMARY seed=0x0740c618 repeat=1 sigkills=3 controls=1 lost_acks=1 inspections=10 admission=false
+HC074-CUSTODY-JOIN-INSPECTION repeat=2 stage=returned-unacknowledged mode=kill inspection=1 refused=true unchanged=true
+HC074-CUSTODY-JOIN-INSPECTION repeat=2 stage=returned-unacknowledged mode=kill inspection=2 refused=true unchanged=true
+HC074-CUSTODY-JOIN-PROCESS seed=0x0740c618 repeat=2 stage=returned-unacknowledged mode=kill sigkill=true acks=0 held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-INSPECTION repeat=2 stage=retained mode=kill inspection=1 refused=true unchanged=true
+HC074-CUSTODY-JOIN-INSPECTION repeat=2 stage=retained mode=kill inspection=2 refused=true unchanged=true
+HC074-CUSTODY-JOIN-PROCESS seed=0x0740c618 repeat=2 stage=retained mode=kill sigkill=true acks=0 held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-INSPECTION repeat=2 stage=opened mode=kill inspection=1 refused=true unchanged=true
+HC074-CUSTODY-JOIN-INSPECTION repeat=2 stage=opened mode=kill inspection=2 refused=true unchanged=true
+HC074-CUSTODY-JOIN-PROCESS seed=0x0740c618 repeat=2 stage=opened mode=kill sigkill=true acks=0 held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-INSPECTION repeat=2 stage=returned-unacknowledged mode=control inspection=1 refused=true unchanged=true
+HC074-CUSTODY-JOIN-INSPECTION repeat=2 stage=returned-unacknowledged mode=control inspection=2 refused=true unchanged=true
+HC074-CUSTODY-JOIN-PROCESS seed=0x0740c618 repeat=2 stage=returned-unacknowledged mode=control sigkill=false acks=1 held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-INSPECTION repeat=2 stage=returned-unacknowledged mode=ack-lost inspection=1 refused=true unchanged=true
+HC074-CUSTODY-JOIN-INSPECTION repeat=2 stage=returned-unacknowledged mode=ack-lost inspection=2 refused=true unchanged=true
+HC074-CUSTODY-JOIN-PROCESS seed=0x0740c618 repeat=2 stage=returned-unacknowledged mode=ack-lost sigkill=false acks=0 held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-PROCESS-SUMMARY seed=0x0740c618 repeat=2 sigkills=3 controls=1 lost_acks=1 inspections=10 admission=false
+HC074-CUSTODY-JOIN-INSPECTION repeat=3 stage=returned-unacknowledged mode=kill inspection=1 refused=true unchanged=true
+HC074-CUSTODY-JOIN-INSPECTION repeat=3 stage=returned-unacknowledged mode=kill inspection=2 refused=true unchanged=true
+HC074-CUSTODY-JOIN-PROCESS seed=0x0740c618 repeat=3 stage=returned-unacknowledged mode=kill sigkill=true acks=0 held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-INSPECTION repeat=3 stage=retained mode=kill inspection=1 refused=true unchanged=true
+HC074-CUSTODY-JOIN-INSPECTION repeat=3 stage=retained mode=kill inspection=2 refused=true unchanged=true
+HC074-CUSTODY-JOIN-PROCESS seed=0x0740c618 repeat=3 stage=retained mode=kill sigkill=true acks=0 held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-INSPECTION repeat=3 stage=opened mode=kill inspection=1 refused=true unchanged=true
+HC074-CUSTODY-JOIN-INSPECTION repeat=3 stage=opened mode=kill inspection=2 refused=true unchanged=true
+HC074-CUSTODY-JOIN-PROCESS seed=0x0740c618 repeat=3 stage=opened mode=kill sigkill=true acks=0 held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-INSPECTION repeat=3 stage=returned-unacknowledged mode=control inspection=1 refused=true unchanged=true
+HC074-CUSTODY-JOIN-INSPECTION repeat=3 stage=returned-unacknowledged mode=control inspection=2 refused=true unchanged=true
+HC074-CUSTODY-JOIN-PROCESS seed=0x0740c618 repeat=3 stage=returned-unacknowledged mode=control sigkill=false acks=1 held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-INSPECTION repeat=3 stage=returned-unacknowledged mode=ack-lost inspection=1 refused=true unchanged=true
+HC074-CUSTODY-JOIN-INSPECTION repeat=3 stage=returned-unacknowledged mode=ack-lost inspection=2 refused=true unchanged=true
+HC074-CUSTODY-JOIN-PROCESS seed=0x0740c618 repeat=3 stage=returned-unacknowledged mode=ack-lost sigkill=false acks=0 held=true unchanged=true send=false
+HC074-CUSTODY-JOIN-PROCESS-SUMMARY seed=0x0740c618 repeat=3 sigkills=3 controls=1 lost_acks=1 inspections=10 admission=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1087 filtered out; finished in 195.94s
+
+HC074-CUSTODY-JOIN-PHASE name=process completed=true
+HC074-CUSTODY-JOIN-COHORT compiler=188 completed=true
+HC074-CUSTODY-JOIN-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-CUSTODY-JOIN-HOST completed=true supervisor_unchanged=true no_fixture_executable=true admission=false

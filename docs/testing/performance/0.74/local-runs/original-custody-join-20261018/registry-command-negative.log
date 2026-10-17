@@ -1,0 +1,5 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 7.95s
+     Running `target\debug\xtask.exe gated-tests-check`
+Error: "unsupported xtask command: gated-tests-check"
+error: process didn't exit successfully: `target\debug\xtask.exe gated-tests-check` (exit code: 1)

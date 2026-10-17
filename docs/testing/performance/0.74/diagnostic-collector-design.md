@@ -346,3 +346,45 @@ This is not the full original-object transfer. The typed full validation frame,
 original sinks, parent writer/lock alias closure, authenticated start and complete
 cgroup revocation still need composition. Every original live predicate and
 300/60/10-second origin stays exact. No installation or supervisor stop was needed.
+
+## Custody joined to original sinks inside one complete frame
+
+The [registered join experiment](diagnostic-original-custody-join-plan-20261018.md)
+first composed two complete grouped validation frames around custody acquisition.
+Both compiler healthy screens rejected its subsequent revalidation at the original
+challenge age. That composition is withdrawn, not repaired by renewing time.
+Its full rejected source capsule and both failures are retained separately.
+
+The replacement consumes OriginalCollectorSinks directly. Its opening
+material_round, fixed bundle/projection/message and absolute alarm preparation,
+and closing original_round are the existing grouped constructor's full frame.
+An opaque storage bridge retains only that acknowledged Starting storage's own
+original fence description before the closing round. Custody metadata and
+CLOEXEC inspections bracket the close. A final observation checks the same
+absolute alarm and unchanged causal-age predicate after metadata IO. Only then
+are the original material and new owner marked ready. No original validator or
+original grouped API body changes, and no caller path, FD, key or time is accepted.
+
+OriginalCustodiedPreparation owns the same original sinks, pipe/message aliases,
+bundle and alarm before its private custody field. Revalidation brackets the
+unchanged complete grouped validate with custody inspections and final original
+deadline observations. Any failure poisons the complete borrowed chain and keeps
+the refused owner, including any acquired custody. Destruction closes original
+writers before custody. The new construction/revalidation count is the existing
+baseline's 34/34 authentications, not a revised release or safety threshold.
+
+This is still nonexecuting ownership, not guardian enrollment. No extraction,
+clone, send, start, completion or recovery method exists. The new storage bridge
+does not hand descriptors to the autonomous engine. Exclusive collector transfer,
+parent alias closure, authenticated original start, complete cgroup revocation,
+external guardian supervision and durable completion/later cells remain closed.
+The original 300/60/10-second origins and every live predicate remain mandatory.
+
+The [retained join packet](local-runs/original-custody-join-20261018/README.md)
+passes both GNU compiler cohorts: six repeated healthy controls, forty persistent
+refusals, thirty selected process cases and sixty fresh inspector refusals. The
+process cases include eighteen real SIGKILLs, six normal returns and six synthetic
+return-ACK omissions. A separate first healthy screen also passes. All 204 static
+contracts preserve old bodies and reject undeclared frame/origin changes. Stable
+host postflight preserves the supervisor, installed binary and receipt. These
+are nonexecuting correctness results, not descriptor enrollment or performance.

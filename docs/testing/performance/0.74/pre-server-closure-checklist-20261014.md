@@ -389,3 +389,27 @@ closure, authenticated original start and complete cgroup revocation. Original
 live checks, absolute origins, durable-history exclusion and closed completion /
 later-cell admission remain mandatory. Killing the last holder still releases
 the kernel flock, as the explicit SIGKILL control requires.
+
+## Original custody/sink join progress
+
+The new nonexecuting owner consumes original sinks inside a complete fixed
+opening/closing frame and retains opaque custody from their own acknowledged
+Starting storage. Old validator bodies and original 300/60/10-second origins
+remain exact. Final metadata IO is followed by the same absolute alarm and
+original challenge-age observations. The failed doubled-frame composition is
+withdrawn and archived; no deadline was relaxed to obtain a healthy result.
+
+This closes the typed nonexecuting ownership composition only after its declared
+healthy/fault/process gates pass; it does not close P2/P3 execution. Next transfer
+those exact descriptors to the independent guardian/collector with proven parent
+alias closure, then authenticated original start, full writer-tree revocation
+and external guardian supervision. Durable completion, cells 2–4, fixed server
+installation and any product/pilot admission remain separate gates. The isolated
+fixture permission still excludes release installation and supervisor mutation.
+
+The [completed evidence](local-runs/original-custody-join-20261018/README.md)
+now closes those declared nonexecuting join gates: both compiler cohorts pass
+six repeated healthy controls, forty refusals and thirty process cases with
+eighteen real SIGKILLs, six normal returns, six omitted ACKs and sixty fresh
+inspector refusals. All 204 static contracts pass; stable supervisor and installed
+digests remain unchanged. The execution prerequisites above are not waived.

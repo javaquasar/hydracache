@@ -3787,3 +3787,28 @@ sink transfer or authenticated start is introduced. Those joins, whole-cgroup
 revocation, external supervision and completion/later cells remain open; all
 original live checks and deadline origins are unchanged. Installed server state
 and qualification inputs remain exact, with no product workload or speedup claim.
+
+The [original custody/sink join](diagnostic-original-custody-join-plan-20261018.md)
+now consumes the same original sinks inside the complete fixed preparation
+opening/closing frame. An opaque bridge retains only its own acknowledged
+Starting storage's common fence; no caller descriptor or authority replacement
+is accepted. The unchanged grouped revalidation is bracketed by custody checks,
+then the same original absolute alarm and challenge age are observed after
+metadata IO. All prior validator bodies and time origins remain exact.
+
+The earlier doubled-frame candidate failed both healthy compiler screens at the
+original challenge age and is retained as negative evidence. Its replacement
+expects the baseline's 34 construction and 34 revalidation authentications,
+without a renewed deadline. This nonexecuting owner still grants no send/start,
+completion or recovery. Actual guardian descriptor enrollment, sole-writer
+transfer and parent alias closure, authenticated original start, whole-cgroup
+revocation and external supervision remain before production execution.
+
+The [completed join packet](local-runs/original-custody-join-20261018/README.md)
+passes six repeated healthy controls, forty persistent refusals and thirty
+selected process cases on Rust 1.94/1.88: eighteen actual SIGKILLs, six normal
+returns, six omitted ACKs and sixty fresh inspector refusals. A first healthy
+screen and 32+3 fast units per compiler also pass. All 204 static contracts,
+eight API doc checks per compiler, affected-package checks/strict Clippy,
+format/docs/registry and local non-promotable contract are green. Stable supervisor
+PID/restarts, installed digests and the qualification manifest remain unchanged.
