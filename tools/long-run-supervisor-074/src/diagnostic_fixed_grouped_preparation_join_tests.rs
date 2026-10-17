@@ -181,7 +181,7 @@ fn fixed_grouped_preparation_fixture_cannot_enter_production() {
             .kind(),
         std::io::ErrorKind::NotFound
     );
-    with_original_at(false, None, |original, _, receiver, sender, model| {
+    with_original_at(true, None, |original, _, receiver, sender, model| {
         with_owned_empty_fence_for_test(|fence, root, leaf| {
             let outputs = accepted(original, fence, leaf, receiver, sender, model)
                 .prepare_original_outputs_for_test(|_| Ok(()))
@@ -203,7 +203,7 @@ fn fixed_grouped_preparation_fixture_cannot_enter_production() {
         });
     });
     let bundle = Bundle::new();
-    with_original_at(false, None, |original, _, receiver, sender, model| {
+    with_original_at(true, None, |original, _, receiver, sender, model| {
         with_owned_empty_fence_for_test(|fence, root, leaf| {
             let outputs = accepted(original, fence, leaf, receiver, sender, model)
                 .prepare_original_outputs_for_test(|_| Ok(()))
