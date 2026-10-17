@@ -161,11 +161,77 @@ platform = "linux"
 
 [gate.command.env]
 
+[[gate]]
+id = "tool.hydracache-long-run-supervisor-074.fixed-grouped-process-screen"
+kind = "external_tool"
+source = "tools/long-run-supervisor-074/src/diagnostic_fixed_grouped_preparation_crash_tests.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "hydracache_long_run_supervisor_074"
+test = "original_fixed_grouped_process_screen"
+cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
+env = ""
+reason = "Shared fixed grouped owner, owned SIGKILL and private return ACK loss; no delivery or execution"
+tier = "manual"
+required_features = []
+required_env = ["HC074_START_MATERIAL_BUNDLE"]
+required_tools = ["cargo"]
+timeout_seconds = 1200
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::crash_tests::fixed_grouped_process_tests::original_fixed_grouped_process_screen","--","--ignored","--exact","--nocapture","--test-threads=1"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+
+[[gate]]
+id = "tool.hydracache-long-run-supervisor-074.fixed-grouped-process-matrix"
+kind = "external_tool"
+source = "tools/long-run-supervisor-074/src/diagnostic_fixed_grouped_preparation_crash_tests.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "hydracache_long_run_supervisor_074"
+test = "original_fixed_grouped_process_matrix"
+cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
+env = ""
+reason = "Shared fixed grouped owner, owned SIGKILL and private return ACK loss; no delivery or execution"
+tier = "manual"
+required_features = []
+required_env = ["HC074_START_MATERIAL_BUNDLE"]
+required_tools = ["cargo"]
+timeout_seconds = 1800
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::crash_tests::fixed_grouped_process_tests::original_fixed_grouped_process_matrix","--","--ignored","--exact","--nocapture","--test-threads=1"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+
 # END FIXED GROUPED PREPARATION GATES
 "###;
 
 pub(super) fn normalize(path: &str, raw: &str) -> String {
     let addition = match path {
+        "tools/long-run-supervisor-074/src/diagnostic_original_output_join_crash_tests.rs" =>
+            "#[path = \"diagnostic_fixed_grouped_preparation_crash_tests.rs\"]\nmod fixed_grouped_process_tests;\n",
         "tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport.rs" =>
             "#[path = \"diagnostic_original_grouped_preparation.rs\"]\npub mod grouped_preparation;\n",
         "tools/long-run-supervisor-074/src/diagnostic_original_safety_alarm_join_tests.rs" =>
@@ -279,5 +345,69 @@ fn fixed_grouped_production_surface_has_no_replacement_or_execution_input() {
         "pub fn into_",
     ] {
         assert!(!raw.contains(forbidden), "{forbidden}");
+    }
+}
+
+#[test]
+fn fixed_grouped_process_matrix_preserves_runtime_and_exact_owned_harness() {
+    let at_baseline = |path: &str| {
+        let out = std::process::Command::new("git")
+            .args(["show", &format!("49db0f7f:{path}")])
+            .current_dir(super::root())
+            .output()
+            .unwrap();
+        assert!(out.status.success(), "{path}");
+        String::from_utf8(out.stdout).unwrap().replace('\r', "")
+    };
+    for path in [
+        "tools/long-run-supervisor-074/src/diagnostic_original_grouped_preparation.rs",
+        "tools/long-run-supervisor-074/src/diagnostic_fixed_grouped_preparation_join_tests.rs",
+        "tools/long-run-supervisor-074/src/diagnostic_fixed_grouped_preparation_tests.rs",
+        "tools/long-run-supervisor-074/src/diagnostic_original_output_join_crash_tests.rs",
+        "tools/long-run-supervisor-074/src/diagnostic_grouped_preparation_crash_tests.rs",
+        "tools/long-run-supervisor-074/src/diagnostic_grouped_preparation_candidate.rs",
+        "tools/long-run-supervisor-074/src/diagnostic_original_safety_alarm.rs",
+        "tools/long-run-supervisor-074/src/diagnostic_original_output_join.rs",
+        "tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport.rs",
+        "tools/long-run-supervisor-074/src/diagnostic_original_start_material.rs",
+        "tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs",
+        "tools/long-run-supervisor-074/src/diagnostic_kernel_progress.rs",
+        "tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs",
+        "tools/long-run-supervisor-074/src/diagnostic_lease.rs",
+        "docs/testing/performance/0.74/qualification-manifest.toml",
+    ] {
+        let current = if path.ends_with("diagnostic_original_output_join_crash_tests.rs") {
+            normalize(path, &read(path))
+        } else {
+            read(path)
+        };
+        assert_eq!(current, at_baseline(path), "{path}");
+    }
+    let original = at_baseline(
+        "tools/long-run-supervisor-074/src/diagnostic_grouped_preparation_crash_tests.rs",
+    );
+    let expected = original
+        .replace("grouped_", "fixed_grouped_")
+        .replace("HC074-GROUPED", "HC074-FIXED-GROUPED")
+        .replace("HC074_PRIVATE_GROUPED", "HC074_PRIVATE_FIXED_GROUPED")
+        // Exactly one rustfmt fold caused by the longer private log namespace.
+        .replace(
+            "    println!(\"HC074-FIXED-GROUPED-PROCESS-SCREEN sigkills=1 controls=1 inspections=4 completed=true\");",
+            "    println!(\n        \"HC074-FIXED-GROUPED-PROCESS-SCREEN sigkills=1 controls=1 inspections=4 completed=true\"\n    );",
+        );
+    let current = read(
+        "tools/long-run-supervisor-074/src/diagnostic_fixed_grouped_preparation_crash_tests.rs",
+    );
+    assert_eq!(current, expected);
+    for (from, to) in [
+        ("libc::SIGKILL", "libc::SIGTERM"),
+        (
+            "prepare_fixed_grouped_fixture_for_test",
+            "prepare_grouped_fixture_for_test",
+        ),
+        ("inspection in 1..=2", "inspection in 1..=1"),
+        ("repeat in 1..=3", "repeat in 1..=1"),
+    ] {
+        assert_ne!(current.replace(from, to), expected, "{from}");
     }
 }
