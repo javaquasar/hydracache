@@ -1,0 +1,39 @@
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::leaf_cost_tests::component_cost_tests::original_controller_component_cost_controls ... HC074-COMPONENT-COST sample=0 order=0 component=worker-live stats=Stats { wall_ns: 1503464, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-COMPONENT-COST sample=0 order=1 component=controller-source stats=Stats { wall_ns: 19530, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-COMPONENT-COST sample=0 order=2 component=signed-controller stats=Stats { wall_ns: 6486477, authentication_calls: 1, authentication_ns: 38669, signature_calls: 1, signature_ns: 33399, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-COMPONENT-COST sample=0 order=3 component=builder-body-data-only stats=Stats { wall_ns: 104648, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-COMPONENT-COST sample=0 order=4 component=build-validator stats=Stats { wall_ns: 13094572, authentication_calls: 2, authentication_ns: 70218, signature_calls: 2, signature_ns: 58858, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-COMPONENT-COST sample=0 order=5 component=oidc-source stats=Stats { wall_ns: 20410, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-COMPONENT-COST sample=0 order=6 component=oidc-token-data-only stats=Stats { wall_ns: 31279, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-COMPONENT-COST sample=0 order=7 component=oidc-validator stats=Stats { wall_ns: 29650964, authentication_calls: 4, authentication_ns: 134327, signature_calls: 4, signature_ns: 111657, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-COMPONENT-COST sample=0 order=8 component=authority-binding stats=Stats { wall_ns: 3041167, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-COMPONENT-COST sample=0 order=9 component=worker-time stats=Stats { wall_ns: 3402491, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-COMPONENT-CONTROL sample=0 components=10 original=true unchanged=true reservation=false production_changed=false schedule_changed=false admission=false
+HC074-COMPONENT-COST sample=1 order=0 component=builder-body-data-only stats=Stats { wall_ns: 102719, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-COMPONENT-COST sample=1 order=1 component=build-validator stats=Stats { wall_ns: 13171710, authentication_calls: 2, authentication_ns: 66248, signature_calls: 2, signature_ns: 55198, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-COMPONENT-COST sample=1 order=2 component=oidc-source stats=Stats { wall_ns: 20390, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-COMPONENT-COST sample=1 order=3 component=oidc-token-data-only stats=Stats { wall_ns: 30850, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-COMPONENT-COST sample=1 order=4 component=oidc-validator stats=Stats { wall_ns: 29812181, authentication_calls: 4, authentication_ns: 132019, signature_calls: 4, signature_ns: 110118, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-COMPONENT-COST sample=1 order=5 component=authority-binding stats=Stats { wall_ns: 3067467, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-COMPONENT-COST sample=1 order=6 component=worker-time stats=Stats { wall_ns: 3456390, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-COMPONENT-COST sample=1 order=7 component=worker-live stats=Stats { wall_ns: 1522183, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-COMPONENT-COST sample=1 order=8 component=controller-source stats=Stats { wall_ns: 19940, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-COMPONENT-COST sample=1 order=9 component=signed-controller stats=Stats { wall_ns: 6570255, authentication_calls: 1, authentication_ns: 38639, signature_calls: 1, signature_ns: 33369, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-COMPONENT-CONTROL sample=1 components=10 original=true unchanged=true reservation=false production_changed=false schedule_changed=false admission=false
+HC074-COMPONENT-COST sample=2 order=0 component=oidc-token-data-only stats=Stats { wall_ns: 29720, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-COMPONENT-COST sample=2 order=1 component=oidc-validator stats=Stats { wall_ns: 29541376, authentication_calls: 4, authentication_ns: 132096, signature_calls: 4, signature_ns: 110407, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-COMPONENT-COST sample=2 order=2 component=authority-binding stats=Stats { wall_ns: 3036417, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-COMPONENT-COST sample=2 order=3 component=worker-time stats=Stats { wall_ns: 3390951, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-COMPONENT-COST sample=2 order=4 component=worker-live stats=Stats { wall_ns: 1494944, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-COMPONENT-COST sample=2 order=5 component=controller-source stats=Stats { wall_ns: 19310, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-COMPONENT-COST sample=2 order=6 component=signed-controller stats=Stats { wall_ns: 6459947, authentication_calls: 1, authentication_ns: 38169, signature_calls: 1, signature_ns: 32819, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-COMPONENT-COST sample=2 order=7 component=builder-body-data-only stats=Stats { wall_ns: 105468, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-COMPONENT-COST sample=2 order=8 component=build-validator stats=Stats { wall_ns: 13028364, authentication_calls: 2, authentication_ns: 66270, signature_calls: 2, signature_ns: 55410, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-COMPONENT-COST sample=2 order=9 component=oidc-source stats=Stats { wall_ns: 20409, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-COMPONENT-CONTROL sample=2 components=10 original=true unchanged=true reservation=false production_changed=false schedule_changed=false admission=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1043 filtered out; finished in 0.70s
+

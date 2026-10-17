@@ -1,0 +1,7 @@
+HC074-SYSCALL-SPAN invocation=194-plain family_seconds=0.72 rows=30
+HC074-SYSCALL-SPAN invocation=194-traced family_seconds=8.62 rows=30
+HC074-SYSCALL-SUMMARY lane=194 calls=605852 errors=1 rows=46
+HC074-SYSCALL-SPAN invocation=188-plain family_seconds=0.70 rows=30
+HC074-SYSCALL-SPAN invocation=188-traced family_seconds=8.64 rows=30
+HC074-SYSCALL-SUMMARY lane=188 calls=605851 errors=1 rows=46
+HC074-SYSCALL-EVIDENCE verified=true controls=12 rows=120 production_changed=false admission=false

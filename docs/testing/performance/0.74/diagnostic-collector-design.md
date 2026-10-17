@@ -200,3 +200,11 @@ without inserting hooks into or replacing any production body. Their separate
 data-only and nested live spans are not an exclusive ReservedLive profile and
 grant no cached authority. The current evidence favors profiling repeated
 worker/kernel/authority observation before proposing an immutable-crypto cache.
+
+The [syscall summary](local-runs/controller-syscall-cost-20261017/README.md)
+then observes about 606 thousand calls per complete component-control family
+on both existing compiler binaries. Metadata/open/filesystem/close calls have
+the largest counts. The family includes setup, all controls and teardown;
+tracing perturbs its duration substantially and does not isolate a validator
+or justify caching live inputs. The original schedule and execution boundaries
+stay unchanged pending the separately agreed grouped-preparation experiment.

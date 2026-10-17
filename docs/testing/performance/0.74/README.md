@@ -3703,3 +3703,12 @@ for the full live validators. These are separate pre-reservation controls, not
 a direct ReservedLive decomposition or optimization result. Original bodies,
 live observations and deadlines stay exact. Repeated worker/kernel/authority
 walks are the next profiling target; no production or crash gate is closed.
+
+The [syscall attribution](local-runs/controller-syscall-cost-20261017/README.md)
+reuses the exact component binaries under nonroot summary tracing. Each complete
+three-sample family makes about 606 thousand syscalls; statx/openat/fstatfs/close
+account for 544,762 calls. All four plain/traced invocations pass, but tracing
+raises family time from 0.70–0.72 to 8.62–8.64 seconds. These aggregate counts
+support investigating repeated live object walks, not an exclusive owner,
+CPU profile or speedup claim. Runtime, observations, deadlines and admission
+remain unchanged; grouped preparation still requires separate agreement.

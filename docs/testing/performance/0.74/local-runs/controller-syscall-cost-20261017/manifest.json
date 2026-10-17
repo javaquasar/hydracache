@@ -1,0 +1,145 @@
+{
+  "schema_version": 1,
+  "source": "b05bb9a2065627f560958517320dfca126d1b35f",
+  "preregistration": "fc3c19b1",
+  "production_changed": false,
+  "schedule_changed": false,
+  "deadlines_changed": false,
+  "reservation": false,
+  "admission": false,
+  "ship": false,
+  "server_root": "/tmp/hc074-controller-syscall-20261017.b2iAl8",
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "source_trees": [
+    {
+      "path": "tools/long-run-supervisor-074",
+      "git_tree": "1c8b917a3ffeece62e831e3837de4f211f1cf3ec"
+    },
+    {
+      "path": "crates/xtask",
+      "git_tree": "d9f0efb4b5923fa7d88a996808730cf17f308f0a"
+    }
+  ],
+  "binaries": [
+    {
+      "sha256": "6968ce30bab424fff57b36b1f298b80929f0a0188ee98e4c1083fad6f017de37",
+      "bytes": 18764168,
+      "lane": "194"
+    },
+    {
+      "sha256": "26f7e196bdc952164b0ae38a72608bf5f1f4c022c8060088db48880c7fac8aa9",
+      "bytes": 18450456,
+      "lane": "188"
+    }
+  ],
+  "invocations": 4,
+  "original_controls": 12,
+  "numeric_rows": 120,
+  "files": [
+    {
+      "path": "contracts.log",
+      "bytes": 17087,
+      "sha256": "638da7f0c340f4081cb830f2162937c666b4196724bd900dd3650c365fb03635"
+    },
+    {
+      "path": "doc-check.log",
+      "bytes": 167,
+      "sha256": "4a5aa9f4460a6570c8b07bd5c0181da1c1d642e09d980aa2a2565a8366490f2e"
+    },
+    {
+      "path": "fmt-wsl.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "fmt.log",
+      "bytes": 845,
+      "sha256": "b234a3f0ef4173e15c3d165444130ed53dd8b881c8f9e0611aaf18fc417cc19d"
+    },
+    {
+      "path": "guard.sh",
+      "bytes": 2252,
+      "sha256": "fddaff10e2ae92652bac97ec3715dd47c2382831ac0a16fe8b233c695314b43e"
+    },
+    {
+      "path": "host.log",
+      "bytes": 33854,
+      "sha256": "8d9a5d89b856524a3828d1c97179d8b8bd7eca7b62ea3b6d17a958531b2c704b"
+    },
+    {
+      "path": "performance-contract.log",
+      "bytes": 215,
+      "sha256": "459db9f17384b07ad78baf1bc06967647d977305cfc18d553dd0b5d6c1141c7f"
+    },
+    {
+      "path": "postflight.log",
+      "bytes": 150,
+      "sha256": "ccba011e1d47ba97048615035e9d5f1b74008207e922c5c0c190d018248b82fd"
+    },
+    {
+      "path": "postflight.sh",
+      "bytes": 465,
+      "sha256": "bcb5fb2b285c8087697ffa76b474f952fd9a46dad5844faa13f830eab8ab2806"
+    },
+    {
+      "path": "prior-proof.log",
+      "bytes": 201,
+      "sha256": "b04c8217062e16e54f0c9c7620395c6ec3d6d6d2f914bb311c6888d0fb2f2236"
+    },
+    {
+      "path": "README.md",
+      "bytes": 5156,
+      "sha256": "3bd0e2d58a7f74d5a0341d9ed20e0ad232b7cfc2ca2e097db85baec10817a56f"
+    },
+    {
+      "path": "run-188-plain.log",
+      "bytes": 7895,
+      "sha256": "4d3033f36a0d13a538e154caf5824387ca1324b5a9564442962d8c360d9144a5"
+    },
+    {
+      "path": "run-188-traced.log",
+      "bytes": 7919,
+      "sha256": "634939add77d78e2eaee46b1c8a0d18ca44fd35bb18480f0f3d0d6822771afc1"
+    },
+    {
+      "path": "run-194-plain.log",
+      "bytes": 7895,
+      "sha256": "20ccc71a41c10f38a7210d19ce015a88b95be682435c700e1d5d901aa4b85924"
+    },
+    {
+      "path": "run-194-traced.log",
+      "bytes": 7919,
+      "sha256": "82451ed2ed4d4acb15f4ef2123627d94da41ccca2fa47fbaca1817d115c5f8f3"
+    },
+    {
+      "path": "run.sh",
+      "bytes": 2583,
+      "sha256": "2f1a037ef3ebe4227a6bf4bd68e4c36728f454558143ba0a731e78d2a185a5fd"
+    },
+    {
+      "path": "script-hashes.log",
+      "bytes": 369,
+      "sha256": "d4340a21a1ec47de1eb14ea15a5e10573848b078741b6630ace354ea3fe38658"
+    },
+    {
+      "path": "syscalls-188.log",
+      "bytes": 2985,
+      "sha256": "1220b1d31d01a92d5525d30598ac9db4970d68e69d22a6131058f7cfeb63af49"
+    },
+    {
+      "path": "syscalls-194.log",
+      "bytes": 2985,
+      "sha256": "5744d7067221b962b69db030fdddc8a5a81395c38082dc9a56d90792d606d6b9"
+    },
+    {
+      "path": "verifier-tests.log",
+      "bytes": 59,
+      "sha256": "a4963f090c843de903687dbe34ad57dccae76dff28cd57f8464e91c228ef740e"
+    },
+    {
+      "path": "verify.ps1",
+      "bytes": 11980,
+      "sha256": "6eaf38b1b6a4412d2c2b5be491d53bf6132337f546fee5a8f86ec2340d33fe77"
+    }
+  ]
+}

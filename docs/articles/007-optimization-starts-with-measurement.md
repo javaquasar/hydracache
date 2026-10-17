@@ -11919,3 +11919,36 @@ profile. All 193 static contracts pass, including exact original validator bodie
 and the prior leaf proof passes at its immutable source. Supervisor and installed
 artifacts remain unchanged. Grouped preparation, production execution and the
 later SIGKILL matrix retain their separate agreement and proof requirements.
+
+## Repeated object walks dominate syscall counts in the controller fixture
+
+The [next diagnostic](../testing/performance/0.74/local-runs/controller-syscall-cost-20261017/README.md)
+reuses both original release binaries, without changing the validators or their
+observation schedule. Nonroot `strace -f -c -w` collects only aggregate syscall
+names, counts and wall-clock spans; it does not capture paths, payloads or
+credentials. Each compiler completes three fresh original-object samples under
+tracing and three without tracing, preserving all original consistency checks.
+
+The traced family makes 605,852 calls on Rust 1.94 and 605,851 on MSRV 1.88.
+Both contain exactly 145,473 statx, 127,037 openat, 140,808 fstatfs and 131,444
+close calls. That repeatability gives the repeated object-walk hypothesis a
+concrete syscall signature. The count belongs to the whole family, including
+fixture setup, full opening and closing OIDC validations, all ten controls and
+teardown. Dividing it by thirty would not yield the cost of a typical validator.
+
+Tracing changes the experiment. The plain families take 0.72 and 0.70 seconds;
+traced families take 8.62 and 8.64. The largest wall-time entry is futex, about
+68 percent of aggregate syscall time, but that does not establish application
+lock contention or CPU consumption: wall-clock syscall intervals include waits
+and can overlap across threads. The summary is not a sampling CPU profile and
+some vDSO operations are invisible to it. Its useful result is the repeated
+metadata/open/filesystem call pattern, not a latency estimate or speedup claim.
+
+This favors a narrowly scoped composition proposal over an assumed expensive
+immutable signature. Any grouping of nonexecuting material/message/alarm
+preparation must explicitly account for removed intermediate observations,
+retain all live predicates and original time origins, and pass a healthy/fault
+gate. It is not permission to cache mutable trust, epoch, peer, context or time.
+The supervisor and installed artifacts remain unchanged. The rejected alarm,
+authenticated start, independent guardian, all-writer cessation and later
+SIGKILL/lost-ack boundaries keep their separate admission requirements.
