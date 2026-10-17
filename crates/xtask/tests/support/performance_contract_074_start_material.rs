@@ -108,6 +108,8 @@ const CONTRACT_MODULE: &str =
 const NORMALIZER: &str = "    let current = super::start_material::normalize(path, raw);\n    let raw = current.as_str();\n";
 
 pub(super) fn normalize(path: &str, raw: &str) -> String {
+    let current = super::pipe_transport::normalize(path, raw);
+    let raw = current.as_str();
     let addition = match path {
         "tools/long-run-supervisor-074/src/diagnostic_original_collector_sinks.rs" => SINK_MODULE,
         "tools/long-run-supervisor-074/src/diagnostic_original_collector_sinks_tests.rs" => {

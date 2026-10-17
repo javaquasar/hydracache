@@ -1,4 +1,6 @@
 //! Retained installed contents under the original output owner, never start authority.
+#[path = "diagnostic_original_pipe_transport.rs"]
+pub mod pipe_transport;
 use super::*;
 use crate::diagnostic_artifacts::linux::{inspect_fixed_install, BundleSnapshot};
 use crate::diagnostic_artifacts::{ArtifactError, VerifiedBuild};

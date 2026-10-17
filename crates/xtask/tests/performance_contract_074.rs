@@ -2,6 +2,9 @@ use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
 
+#[path = "support/performance_contract_074_pipe_transport.rs"]
+mod pipe_transport;
+
 #[path = "support/performance_contract_074_kernel_refusal.rs"]
 mod kernel_refusal;
 
