@@ -1,0 +1,11 @@
+{
+  "key": "output-join-missing-entry",
+  "description": "Retained tool observation; some completion records contain only output since the preceding poll. Full remote test logs and saved runners are separate artifacts.",
+  "result": {
+    "chunk_id": "920efb",
+    "wall_time_seconds": 5.2213671,
+    "exit_code": 1,
+    "original_token_count": 192,
+    "output": "   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)\nerror[E0599]: no function or associated item named `prepare_original_outputs` found for struct `OriginalFramedConsent<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>` in the current scope\n --> tools/long-run-supervisor-074/tests/diagnostic_original_output_join.rs:6:41\n  |\n6 | ...t::prepare_original_outputs;\n  |       ^^^^^^^^^^^^^^^^^^^^^^^^ function o...tem not found in `OriginalFramedConsent<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>`\n\nFor more information about this error, try `rustc --explain E0599`.\nerror: could not compile `hydracache-long-run-supervisor-074` (test \"diagnostic_original_output_join\") due to 1 previous error\n"
+  }
+}

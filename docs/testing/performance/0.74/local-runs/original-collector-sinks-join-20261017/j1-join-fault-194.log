@@ -1,0 +1,55 @@
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::join_fault_tests::original_output_join_all_effects_live_refusal ... HC074-OUTPUT-JOIN-INTERRUPT cut=Starting(BeforeCreate) sticky=true retained=true no_output=true
+HC074-OUTPUT-JOIN-INTERRUPT cut=Starting(Created) sticky=true retained=true no_output=true
+HC074-OUTPUT-JOIN-INTERRUPT cut=Starting(CreateDirectorySynced) sticky=true retained=true no_output=true
+HC074-OUTPUT-JOIN-INTERRUPT cut=Starting(PrefixWritten) sticky=true retained=true no_output=true
+HC074-OUTPUT-JOIN-INTERRUPT cut=Starting(BytesWritten) sticky=true retained=true no_output=true
+HC074-OUTPUT-JOIN-INTERRUPT cut=Starting(Sealed) sticky=true retained=true no_output=true
+HC074-OUTPUT-JOIN-INTERRUPT cut=Starting(FileSynced) sticky=true retained=true no_output=true
+HC074-OUTPUT-JOIN-INTERRUPT cut=Starting(DirectorySynced) sticky=true retained=true no_output=true
+HC074-OUTPUT-JOIN-INTERRUPT cut=Starting(Acknowledging) sticky=true retained=true no_output=true
+HC074-OUTPUT-JOIN-INTERRUPT cut=Pipes(BeforeCreate) sticky=true retained=true no_output=true
+HC074-OUTPUT-JOIN-INTERRUPT cut=Pipes(StdoutCreated) sticky=true retained=true no_output=true
+HC074-OUTPUT-JOIN-INTERRUPT cut=Pipes(StdoutReady) sticky=true retained=true no_output=true
+HC074-OUTPUT-JOIN-INTERRUPT cut=Pipes(StderrCreated) sticky=true retained=true no_output=true
+HC074-OUTPUT-JOIN-INTERRUPT cut=Pipes(StderrReady) sticky=true retained=true no_output=true
+HC074-OUTPUT-JOIN-INTERRUPT cut=Pipes(Acknowledging) sticky=true retained=true no_output=true
+HC074-OUTPUT-JOIN-LIVE seed=0x074051e1 cut=Sinks(DirectorySynced) concurrent=true exact_invalid=true closing=true retained=true
+HC074-OUTPUT-JOIN-LIVE seed=0x074051e1 cut=Pipes(StdoutReady) concurrent=false exact_invalid=true closing=true retained=true
+HC074-OUTPUT-JOIN-LIVE seed=0x074051e1 cut=Sinks(DirectoryCreated) concurrent=true exact_invalid=true closing=true retained=true
+HC074-OUTPUT-JOIN-LIVE seed=0x074051e1 cut=Pipes(StdoutCreated) concurrent=false exact_invalid=true closing=true retained=true
+HC074-OUTPUT-JOIN-LIVE seed=0x074051e1 cut=Pipes(Acknowledging) concurrent=true exact_invalid=true closing=true retained=true
+HC074-OUTPUT-JOIN-LIVE seed=0x074051e1 cut=Sinks(StdoutCreated) concurrent=false exact_invalid=true closing=true retained=true
+HC074-OUTPUT-JOIN-LIVE seed=0x074051e1 cut=Starting(FileSynced) concurrent=true exact_invalid=true closing=true retained=true
+HC074-OUTPUT-JOIN-LIVE seed=0x074051e1 cut=Starting(DirectorySynced) concurrent=false exact_invalid=true closing=true retained=true
+HC074-OUTPUT-JOIN-LIVE seed=0x074051e1 cut=Sinks(RootSynced) concurrent=true exact_invalid=true closing=true retained=true
+HC074-OUTPUT-JOIN-LIVE seed=0x074051e1 cut=Pipes(StderrCreated) concurrent=false exact_invalid=true closing=true retained=true
+HC074-OUTPUT-JOIN-LIVE seed=0x074051e1 cut=Sinks(BeforeCreate) concurrent=true exact_invalid=true closing=true retained=true
+HC074-OUTPUT-JOIN-LIVE seed=0x074051e1 cut=Sinks(RootCreated) concurrent=false exact_invalid=true closing=true retained=true
+HC074-OUTPUT-JOIN-LIVE seed=0x074051e1 cut=Starting(PrefixWritten) concurrent=true exact_invalid=true closing=true retained=true
+HC074-OUTPUT-JOIN-LIVE seed=0x074051e1 cut=Starting(CreateDirectorySynced) concurrent=false exact_invalid=true closing=true retained=true
+HC074-OUTPUT-JOIN-LIVE seed=0x074051e1 cut=Sinks(Acknowledging) concurrent=true exact_invalid=true closing=true retained=true
+HC074-OUTPUT-JOIN-LIVE seed=0x074051e1 cut=Starting(Sealed) concurrent=false exact_invalid=true closing=true retained=true
+HC074-OUTPUT-JOIN-LIVE seed=0x074051e1 cut=Pipes(StderrReady) concurrent=true exact_invalid=true closing=true retained=true
+HC074-OUTPUT-JOIN-LIVE seed=0x074051e1 cut=Sinks(StderrSynced) concurrent=false exact_invalid=true closing=true retained=true
+HC074-OUTPUT-JOIN-LIVE seed=0x074051e1 cut=Sinks(StderrCreated) concurrent=true exact_invalid=true closing=true retained=true
+HC074-OUTPUT-JOIN-LIVE seed=0x074051e1 cut=Pipes(BeforeCreate) concurrent=false exact_invalid=true closing=true retained=true
+HC074-OUTPUT-JOIN-LIVE seed=0x074051e1 cut=Sinks(StdoutSynced) concurrent=true exact_invalid=true closing=true retained=true
+HC074-OUTPUT-JOIN-LIVE seed=0x074051e1 cut=Starting(Created) concurrent=false exact_invalid=true closing=true retained=true
+HC074-OUTPUT-JOIN-LIVE seed=0x074051e1 cut=Starting(BytesWritten) concurrent=true exact_invalid=true closing=true retained=true
+HC074-OUTPUT-JOIN-LIVE seed=0x074051e1 cut=Starting(BeforeCreate) concurrent=false exact_invalid=true closing=true retained=true
+HC074-OUTPUT-JOIN-LIVE seed=0x074051e1 cut=Starting(Acknowledging) concurrent=true exact_invalid=true closing=true retained=true
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::join_fault_tests::original_output_join_all_effects_live_refusal' (100671) panicked at tools/long-run-supervisor-074/src/diagnostic_original_output_join_fault_tests.rs:113:13:
+Original(Original(Original(Causal(Progress(Input(Kernel(Invalid)))))))
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::join_fault_tests::original_output_join_all_effects_live_refusal
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1023 filtered out; finished in 356.75s
+

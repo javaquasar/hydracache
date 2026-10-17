@@ -1,0 +1,11 @@
+{
+  "key": "output-join-postflight-final",
+  "description": "Actual completion/postflight tool observation; full raw test logs retained separately.",
+  "result": {
+    "chunk_id": "1db906",
+    "wall_time_seconds": 1.330606,
+    "exit_code": 0,
+    "original_token_count": 162,
+    "output": "HC074-ORIGINAL-SINK-SERVER preflight=ok supervisor_pid=8839 restarts=0\nMainPID=8839\nNRestarts=0\nExecMainStartTimestamp=Tue 2026-10-06 15:03:40 CEST\nUser=root\nGroup=root\nNoNewPrivileges=yes\nActiveState=active\nSubState=running\nf797629f65385ebfd4d94577a43a2d1d020f71c1e841028dad7d02a51b47ad62  /opt/hydracache-perf/bin/hydracache-long-run-supervisor-074\nb314953d4deedaeaade3e24468da4844b7f13d348a5d77b8e8f41c672ff44525  /var/lib/hydracache-performance/provisioning-receipt-074.json\nHC074-OUTPUT-JOIN-POSTFLIGHT test_processes=absent supervisor_unchanged=true installed_receipt_unchanged=true active_contexts=absent clock_changed=false product=false\n"
+  }
+}

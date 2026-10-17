@@ -1,0 +1,11 @@
+{
+  "key": "output-join-v2-source-and-expiry-check",
+  "description": "Retained tool observation; some completion records contain only output since the preceding poll. Full remote test logs and saved runners are separate artifacts.",
+  "result": {
+    "chunk_id": "99cbce",
+    "wall_time_seconds": 7.5244278,
+    "exit_code": 0,
+    "original_token_count": 33,
+    "output": "All four source snapshots reconstructed; first red retained; fresh expiry attribution valid; no joined/crash promotion inferred\r\n"
+  }
+}

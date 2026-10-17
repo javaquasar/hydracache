@@ -1,0 +1,432 @@
+{
+  "format_version": 1,
+  "kind": "original-output-join-attribution-and-process-loss",
+  "baseline_commit": "e06e2ceb83c3aeacbe5cd2aa6b541773e9e4c004",
+  "preregister_commit": "a8f4d604d5a3e4548256b195a17b00022622b042",
+  "expiry_preregister_commit": "cfa9eee3eb421ba4ffba0688cd870a75900f7060",
+  "scope": {
+    "attribution_complete": true,
+    "joined_complete": true,
+    "process_loss_complete": true,
+    "deadlines_unchanged": true,
+    "original_guards_unchanged": true,
+    "admission_closed": true,
+    "authenticated_start": false,
+    "writer_handoff": false,
+    "all_writer_cessation": false,
+    "completion": false,
+    "later_cells": false,
+    "production_enrollment": false,
+    "installed_release_changed": false,
+    "supervisor_stopped": false,
+    "clock_changed": false,
+    "product_workload": false,
+    "qualification_changed": false,
+    "performance_claim": false,
+    "server_ready": false
+  },
+  "source_snapshots": [
+    {
+      "patch": "j1-screen.patch",
+      "paths": 14,
+      "active": false
+    },
+    {
+      "patch": "j1-matrix.patch",
+      "paths": 16,
+      "active": false
+    },
+    {
+      "patch": "expiry-attribution.patch",
+      "paths": 16,
+      "active": false
+    },
+    {
+      "patch": "j1-oracle-v2.patch",
+      "paths": 16,
+      "active": true
+    }
+  ],
+  "runtime_blobs": [
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_collector_starting_storage.rs",
+      "git_blob": "fd1c4b5f34809447ff2575f289be32c5a4e61116"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_collector_pipes.rs",
+      "git_blob": "ff5a742adb2fa0c5261193c3137f062a28945fc2"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_collector_sink_storage.rs",
+      "git_blob": "fa34049d1a8fd6bd9381a9d5fa3c4476c2cdb299"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_collector_sinks.rs",
+      "git_blob": "8fba66376a96837595012355ab29d636b44f84e5"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_output_join.rs",
+      "git_blob": "7a409745e6584d39d3bf6ffc34ea5053e8782616"
+    }
+  ],
+  "binary_sha256": {
+    "baseline194": "394824e37576711b8d9ca76c8ad143a662cfa95d3d46c2f101ef569e3c945e7c",
+    "baseline188": "12b731c294a21582a924a3fed54715df6e24ced2d673c5bf9505ecf718357ad2",
+    "screen194": "5f12292a95795c6f7fc2a4cb6f84f575b40eb8e898cce71d04e9436cdd900210",
+    "screen188": "388d7584e82149ad89ced0571a9fa3fb3d8f4375384125045df721c0f290afab",
+    "matrix194": "60cd2c24355587aeb1e31cee8fe6683a63b9ab33fc1c67603a76679907c18286",
+    "matrix188_not_dispatched": "727508d3f7ad9fd4a62e58de9bf1ac59316064397f161c2594c2360a4928eb84",
+    "expiry194": "a048cd20994dad497708652d2a7445c0ef846a2352efbe6818cfb7116c71fa49",
+    "oracle_v2_194": "c9d0c16b726a326b066d758cae7e12da2e7e4e0914a5a1e674f449c4a6eec1ad",
+    "oracle_v2_188": "699e31d7568911f46bc0699924561ea9242c7d984f4466b050e2e250b564c0b0"
+  },
+  "server": {
+    "root": "/tmp/hc074-output-join-20261017.Spppak",
+    "uid": 1000,
+    "gid": 1000,
+    "mode": "0700",
+    "boot_id": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+    "supervisor_pid": 8839,
+    "supervisor_restarts": 0,
+    "supervisor_started": "Tue 2026-10-06 15:03:40 CEST",
+    "installed_sha256": "f797629f65385ebfd4d94577a43a2d1d020f71c1e841028dad7d02a51b47ad62",
+    "receipt_sha256": "b314953d4deedaeaade3e24468da4844b7f13d348a5d77b8e8f41c672ff44525"
+  },
+  "observed": {
+    "baseline_publication_chains_per_compiler": 3,
+    "baseline_leaf_chains_per_compiler": 3,
+    "healthy_chains_per_compiler": 3,
+    "constructor_full_rounds": 46,
+    "constructor_ipc_authentications": 782,
+    "first_joined_sink_cases": 27,
+    "first_joined_earlier_interruptions": 15,
+    "first_joined_trust_drifts": 25,
+    "first_joined_complete_pass": false,
+    "first_joined_error": "Original(Original(Original(Causal(Progress(Input(Kernel(Invalid)))))))",
+    "first_joined_kernel_site_recorded": false,
+    "first_joined_msrv_dispatched": false,
+    "fresh_expiry_site": "progress-age",
+    "fresh_expiry_age_ns": 11742320973,
+    "original_expiry_limit_ns": 10000000000,
+    "corrected_sink_cases_per_compiler": 27,
+    "corrected_other_cases_per_compiler": 41,
+    "expected_sigkills": 156,
+    "expected_controls": 6,
+    "expected_fresh_inspections": 324,
+    "legacy_broad_current_failures": 3,
+    "legacy_broad_msrv_failures": 10,
+    "sigkills": 156,
+    "controls": 6,
+    "fresh_inspections": 324,
+    "corrected_joined_complete": true,
+    "sigkill_current_seconds": 748.71,
+    "sigkill_msrv_seconds": 754.74
+  },
+  "original_runtime_inventory": "unchanged-runtime.json",
+  "local_checks": {
+    "integration_api_per_compiler": 68,
+    "selected_original_compile_fail_per_compiler": 64,
+    "sink_kernel_per_compiler": 4,
+    "pipe_kernel_per_compiler": 4,
+    "process_protocol_per_compiler": 2,
+    "static_contracts": 188,
+    "discovered_gates": 181,
+    "windows_linux_current_msrv_check_clippy": true,
+    "workspace_formatting": "WSL Rust1.94 pass; native Windows whole-workspace command-line limit failure retained in notes",
+    "ship_admission": "expected-red: unresolved candidate identity/release qualification",
+    "full_release_verify": false
+  },
+  "artifacts": [
+    {
+      "path": "attribution-built-test.rs.txt",
+      "bytes": 10784,
+      "sha256": "c6c2f263e8bb0a70d5db58614c2a890b023a50f45e1bb050ff5c5e05cce883da"
+    },
+    {
+      "path": "baseline-188.log",
+      "bytes": 18638,
+      "sha256": "4a50ea9943e47dde52a53cbd935e64eb83c26d98adc5628fc4bcdb6513eeb76e"
+    },
+    {
+      "path": "baseline-194.log",
+      "bytes": 18638,
+      "sha256": "e17b98eac5dc308a7154c49846390fd01ee579e75b7622d46abc83d716ed9bf6"
+    },
+    {
+      "path": "baseline.sh",
+      "bytes": 3089,
+      "sha256": "7ccb5bc800ac12bbea883bda05b2815c27ca0d26cd1dcf863293afa6adfd5b5d"
+    },
+    {
+      "path": "expiry-attribution-194.sh",
+      "bytes": 3208,
+      "sha256": "440a14fe401741a691a2053e7951d869832e7b2d5b6a86955ee3a51c21e59622"
+    },
+    {
+      "path": "expiry-attribution.patch",
+      "bytes": 114932,
+      "sha256": "007a2e1286ee66a521e0adf7cfc30cd5347d2f3cafd2a6bd8d0d1f8e333d7ec7"
+    },
+    {
+      "path": "guard.sh",
+      "bytes": 2251,
+      "sha256": "dba601872ba05853f1e3351b5571da89314b00ddcf908850f40453fe83f5691e"
+    },
+    {
+      "path": "j1-expiry-attribution-194.log",
+      "bytes": 783,
+      "sha256": "b29988f6dab73104a092e1709fae4454da90896c49729953b9f158bdf33008a9"
+    },
+    {
+      "path": "j1-fault-188.sh",
+      "bytes": 3686,
+      "sha256": "0d02b4e2f185e235ec87da5ef35cc7ed9823c9f19f545079c5320cafa6c43470"
+    },
+    {
+      "path": "j1-fault-194.sh",
+      "bytes": 3686,
+      "sha256": "2528abcb8ed1597e5896bf1c58a10787de2bdbfd1dd1e00142037015104ae1a0"
+    },
+    {
+      "path": "j1-join-fault-194.log",
+      "bytes": 6088,
+      "sha256": "f09696bc7d2a4945676596009b4c83c472ee5654d4a2ef0b106387857094355d"
+    },
+    {
+      "path": "j1-matrix-git-output.txt",
+      "bytes": 110705,
+      "sha256": "a2ff8f3dcd40c83f094230b45f954ff7efb93aef098fd53cb5212b892a5e15e9"
+    },
+    {
+      "path": "j1-matrix.patch",
+      "bytes": 109191,
+      "sha256": "6dec10350d8f208c463f20106b880e5934a9947635ccd695a04ae55cbd4de125"
+    },
+    {
+      "path": "j1-oracle-v2-crash.sh",
+      "bytes": 4168,
+      "sha256": "ce1742f40ae751762ca34e8a65e05f7382dbcd5a5c7c00721dc01d9262895100"
+    },
+    {
+      "path": "j1-oracle-v2-fault.sh",
+      "bytes": 3931,
+      "sha256": "64d480cd85e7e00ba197046e505fc3e414e4264f9bd3ebcf65ade433e7bc5cde"
+    },
+    {
+      "path": "j1-oracle-v2.patch",
+      "bytes": 114058,
+      "sha256": "84ad84b19c18525027850a8341c3b469a63c89a7405c41c50681b410afe73f56"
+    },
+    {
+      "path": "j1-screen-188.log",
+      "bytes": 4783,
+      "sha256": "52023ae66f87c3a80813387481bd512e37152f3bfbb676bfc42d8b9068194a28"
+    },
+    {
+      "path": "j1-screen-188.sh",
+      "bytes": 3108,
+      "sha256": "daed2ec91c10072606386beaf48e529505fa2e81ed7d3cd746466039bb3e836f"
+    },
+    {
+      "path": "j1-screen-194.log",
+      "bytes": 4783,
+      "sha256": "9f091fbdba80fccf43dae9117307e93da4365bff4e1bf1afb9896619277838da"
+    },
+    {
+      "path": "j1-screen-194.sh",
+      "bytes": 3108,
+      "sha256": "58d3314cd8a13ffc999162c977d2a04c732c5ce094ba50bec9ecc3fa389e3e5a"
+    },
+    {
+      "path": "j1-screen-git-output.txt",
+      "bytes": 75999,
+      "sha256": "7495286ea4ec9d32cad6631f74ec74d45002d39d15c8f9277d9d98b2f08893dd"
+    },
+    {
+      "path": "j1-screen.patch",
+      "bytes": 74831,
+      "sha256": "d2f96d98647704fb094683ba8915ab1011f91640c5a7e37fa853d2a1e3e07e5a"
+    },
+    {
+      "path": "j1-sink-fault-194.log",
+      "bytes": 2068,
+      "sha256": "aad29dc627c4197e8ebd82e9de025b84df519e91aa42c3034119464e287166b0"
+    },
+    {
+      "path": "j1v2-crash-188.log",
+      "bytes": 23242,
+      "sha256": "4b79bd626e393ac6665f84c260ec8169d642e8f6014dad286ffe18ae657f8b45"
+    },
+    {
+      "path": "j1v2-crash-194.log",
+      "bytes": 23242,
+      "sha256": "f4301d7db2ce5fa7635589736c69da1dee2a2a343ce295bad6d5a20ed005530f"
+    },
+    {
+      "path": "j1v2-join-fault-188.log",
+      "bytes": 5476,
+      "sha256": "ab769c9a288619e04e68a5cb2628d363a338808fb0216352ef9c0fdf1d43088e"
+    },
+    {
+      "path": "j1v2-join-fault-194.log",
+      "bytes": 5476,
+      "sha256": "9da119705e358b3b865ee8ed469b4dcfe52fbddc567fee63124ec132f545947d"
+    },
+    {
+      "path": "j1v2-sink-fault-188.log",
+      "bytes": 2068,
+      "sha256": "47fbb8877974c6961ab54a3de20809ff647593a6903c5f5ab5acba8f0d0eef34"
+    },
+    {
+      "path": "j1v2-sink-fault-194.log",
+      "bytes": 2068,
+      "sha256": "7a6bf4a33d6ecd13050945ab9d1d6f7be3ae7c435ae474842dd8d54757dfb4c6"
+    },
+    {
+      "path": "logs/output-join-crash-final-completion.json",
+      "bytes": 1824,
+      "sha256": "df22279aa41e556fd4a64097efb2fc5b08f0f0d31457fb19af0108a6d2de52db"
+    },
+    {
+      "path": "logs/output-join-expiry-attribution-completion.json",
+      "bytes": 1330,
+      "sha256": "fbddb295086c3e0cbb55244b9b680a1cea72a88a96e96aa5f8c88ecb7e4bde01"
+    },
+    {
+      "path": "logs/output-join-final-linux-checks.json",
+      "bytes": 791,
+      "sha256": "cd67bbe9aa8f1a48ba628f99837830818e67b056dd13b7824ec7313aa88aca7c"
+    },
+    {
+      "path": "logs/output-join-final-verifier.json",
+      "bytes": 480,
+      "sha256": "02826ca2d3f244d811e267075ccf23eee2982df00fabc22264a57fa3f92fe2b2"
+    },
+    {
+      "path": "logs/output-join-final-windows-contracts.json",
+      "bytes": 1830,
+      "sha256": "65b51af3bb09f277ff0b8a14301c7a107ec7c5cf98c7fdf73ef59d4d0cc4a859"
+    },
+    {
+      "path": "logs/output-join-kernel-protocol-final.json",
+      "bytes": 8682,
+      "sha256": "e2bea9879c4a52f902cd193b293db580d80bad02367764fb8fae4453def57bb6"
+    },
+    {
+      "path": "logs/output-join-missing-entry.json",
+      "bytes": 1151,
+      "sha256": "ae365a9690669a929d917f90448fcfe6d5cc3de4aea2d43e06db00b0c2fd0193"
+    },
+    {
+      "path": "logs/output-join-msrv-doc-final.json",
+      "bytes": 3637,
+      "sha256": "57b67e8c0eca31f2b12c79d3b4d20b25e454e200b92fc62d3d8043cb2910bd73"
+    },
+    {
+      "path": "logs/output-join-msrv-integration-completion.json",
+      "bytes": 8389,
+      "sha256": "55f6927778ee340e30dd3f6fe05fd1a84576b8cd516f4568bfe58ceb470ade95"
+    },
+    {
+      "path": "logs/output-join-oracle-v2-static-completion.json",
+      "bytes": 715,
+      "sha256": "57e86a13258710111bae8b5fcde234d8ef970775f3654236a7720b47e36fed3e"
+    },
+    {
+      "path": "logs/output-join-original-expiry-reference.json",
+      "bytes": 1239,
+      "sha256": "e35964c36ef9d7e87687b7ae58741ab2e813f1224168cc360ba7912d1bfc56c6"
+    },
+    {
+      "path": "logs/output-join-original-guard-equivalence.json",
+      "bytes": 384,
+      "sha256": "6772cee7f315c5d01223e50d5a285666acbc5537e5aacdc5874eefde35b53574"
+    },
+    {
+      "path": "logs/output-join-postflight-final.json",
+      "bytes": 959,
+      "sha256": "82ff0fc71f5e5b6c8232bf6dcf7b8f803ace3289ea25cdd7d715bcac3b877476"
+    },
+    {
+      "path": "logs/output-join-real-current-crash-verified.json",
+      "bytes": 457,
+      "sha256": "c8bcb8834f11b908c448b401b45647c22cffab0ee2b5d4a92e090e2c6bbc5846"
+    },
+    {
+      "path": "logs/output-join-server-inventory.json",
+      "bytes": 821,
+      "sha256": "66cd2ec3c85cec9a42e7a28d8de6e84cae9e80cb095e6a1e683e031f5e9d03b6"
+    },
+    {
+      "path": "logs/output-join-source-capsules-check-final.json",
+      "bytes": 434,
+      "sha256": "58780987f62f19e54dedb249e7812a8509d645c82669077c72ab1e1fd0fecf84"
+    },
+    {
+      "path": "logs/output-join-v2-fmt-completion.json",
+      "bytes": 375,
+      "sha256": "e8ba01558106c435e906cf44e23ee33aa6d165bbd19c0c1c4323ba98d28aee53"
+    },
+    {
+      "path": "logs/output-join-v2-joined-final.json",
+      "bytes": 1806,
+      "sha256": "74ffe8fef1b462888b6597db0c63204881bd2bedbfd874e2a44b5e9aedf8926d"
+    },
+    {
+      "path": "logs/output-join-v2-linux-lint-completion.json",
+      "bytes": 1079,
+      "sha256": "f7983511ddbbc9d81062318e0d4ca08f21174bf478987563b964b26f3a83a8c9"
+    },
+    {
+      "path": "logs/output-join-v2-source-and-expiry-check.json",
+      "bytes": 516,
+      "sha256": "78e152ac3c53fbe7b2d706b8dde8eb00116ea819a6f23aa25172f20ec61737ed"
+    },
+    {
+      "path": "logs/output-join-v2-windows-final.json",
+      "bytes": 427,
+      "sha256": "152e137ffb286bfb84dcb6de0471f8147a6a5c8a6aff32f32875b03b0571be5e"
+    },
+    {
+      "path": "logs/output-join-verifier-parser-model.json",
+      "bytes": 465,
+      "sha256": "5f7b2a97086c49d295edba28678a5ea6618512f1a1da74e0905578964584eb35"
+    },
+    {
+      "path": "original-progress-expiry-188.log",
+      "bytes": 348,
+      "sha256": "2a61c2754d16a6098d9d0527c79752159725a19ba1851960a5d47b3b010c6ba9"
+    },
+    {
+      "path": "original-progress-expiry-194.log",
+      "bytes": 348,
+      "sha256": "2a61c2754d16a6098d9d0527c79752159725a19ba1851960a5d47b3b010c6ba9"
+    },
+    {
+      "path": "original-progress-expiry.sh",
+      "bytes": 3032,
+      "sha256": "d74b3a5e8cbe7ef0e094ed0678e285d1b2064e1245a55e07509b3becea56572f"
+    },
+    {
+      "path": "postflight.log",
+      "bytes": 646,
+      "sha256": "d1e148998acbc29e02099c14fb0febdae4a149ccd19b8fc51f05a867105c287d"
+    },
+    {
+      "path": "postflight.sh",
+      "bytes": 2916,
+      "sha256": "bd8cf3ed8ef4431814c4d0b373587e8e2e81026b1102880502d939f6cdbca1f3"
+    },
+    {
+      "path": "ship-guard-expected-red.log",
+      "bytes": 189,
+      "sha256": "4fd72c787a7ff7ac5bf447f7e8ed317bb531a98030923302ce394db8c3d3789c"
+    },
+    {
+      "path": "unchanged-runtime.json",
+      "bytes": 27210,
+      "sha256": "8ac4f72d83cd21ee6bbce10972d03bb98f6af208365e658314cb9d65aedf28e8"
+    }
+  ],
+  "implementation_commit": "6baf3ee157e5c880ba07be2b7ac0195b0371ed3d"
+}

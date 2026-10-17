@@ -1,0 +1,7 @@
+
+running 1 test
+test diagnostic_kernel_admission::collector_inputs::progress::tests::collector_progress_real_packet_expires_without_receive_time_renewal ... collector_progress real_expiry=true receive_time_unchanged=true deadline_extended=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1023 filtered out; finished in 10.00s
+

@@ -11521,3 +11521,125 @@ The next proposal must flatten the composed validation orchestration with an
 explicit proof that every live predicate and effect bracket remains intact,
 without renewing a challenge, caching mutable authority or extending deadlines.
 This is a correctness and admission result, not a throughput measurement.
+
+### Attribute the validation walk before changing its schedule
+
+The next [attribution and join packet](../testing/performance/0.74/local-runs/original-collector-sinks-join-20261017/README.md)
+starts from the restored pipe milestone, not from a supposedly repaired sink
+result. Its first change is test-only instrumentation. Each normal GNU release
+compiler runs three fresh request-through-consent, Starting and pipe chains;
+three other chains isolate the offered first-round validation steps. Separating
+those chains matters: an extra diagnostic validation must not consume the very
+publication window being measured.
+
+Starting takes 5.873–5.884 seconds on Rust 1.94 and 5.788–5.808 on 1.88. Its
+nineteen ordinary validations perform thirty-eight complete rounds and 646
+instrumented IPC authentications. Pipes add eight rounds, 136 authentications
+and about 1.22–1.24 seconds. These are descriptive correctness-fixture timings,
+not matched HydraCache product benchmarks or a numerical release claim.
+
+The measured signature primitive does not explain that wall time. It contributes
+about nineteen to twenty-one milliseconds during Starting, already nested inside
+authentication time. Adding both counters would double-count it. ReservedLive
+is the largest individually measured first-round step, about 130–134 milliseconds;
+the two storage brackets are about 0.1 milliseconds each. The final-clock tail
+and entire unhooked second round remain a combined residual. This observation
+does not identify every syscall, crypto primitive or scheduler cost inside the
+ReservedLive walk, and it does not authorize rewriting its leaf checks.
+
+The preregistered J1 candidate therefore changes one thing: orchestration around
+effects. Instead of invoking a complete two-round validator on both sides of
+each effect, it runs a fresh complete working round before that effect and a
+fresh complete closing round after its hook. Every round still executes the
+same original storage, Reserved live, progress, causal, prepared-consent,
+signature and final-clock predicates in the same order. A previous postcheck
+never substitutes for a later precheck. Ordinary public revalidators and the
+standalone Starting and pipe publishers remain unchanged as references.
+
+This is an explicit frequency change, not a claim that a removed duplicate was
+free. Starting uses nineteen rounds; pipe preparation uses six, including fresh
+checks immediately before each allocation; sinks use twenty-one. The complete
+constructor now performs forty-six rounds. Its single consuming entry retains
+the same original consent and fence through durable Starting, actual anonymous
+pipes and exclusive empty files. Failure retains the partially initialized owner
+and latches the whole original chain. Neither live proofs nor mutable authority
+are cached, and no challenge, admission origin or deadline is renewed.
+
+The first three healthy chains on each compiler complete all twenty-five stages,
+then pass ordinary output revalidation, private pipe EOF after drop and retained
+context refusal. Construction takes 7.18–7.23 seconds and exactly 782 IPC
+authentications per chain. That is a new bounded constructor observation, not a
+speedup against a complete old sink baseline: the old sink composition never
+finished. It shows that a smaller traversal schedule can create the additional
+objects inside the original window; fault resistance still needs separate proof.
+
+The complete joined mutation/interruption matrices and the subsequent owned-child
+SIGKILL/lost-ack matrix are separate gates. Healthy construction alone does not
+admit authenticated original start, worker handoff, writer revocation, completion,
+later cells, an installed release or product qualification. Earlier sink failures
+and the broader local original-path audit failures remain retained, not waived by
+these narrower successes.
+
+The first complete joined attempt then exposes a test-oracle error rather than
+opening the crash gate. All twenty-seven sink cases, fifteen earlier interruptions
+and twenty-five trust drifts finish. The intentional ten-second delay refuses in
+Progress as Kernel(Invalid), while the test demanded the later Causal(Time).
+That complete attempt remains red; it does not become a pass because refusal
+itself was safe.
+
+Source order supplies a hypothesis: Progress precedes Causal and independently
+checks the original Heartbeat age. A separately named fresh-chain diagnostic
+captures the exact progress-age site and ordered original receive/after/now
+samples. The observed age is 11,742,320,973 ns against the unchanged
+10,000,000,000 ns exclusive bound. The old kernel expiry unit also passes on both
+compilers. These observations justify an oracle that requires the precise site,
+error and numeric expiry conditions, not one that accepts any Invalid. They do
+not retroactively reveal the first attempt's unrecorded site or rule out every
+alternative historical kernel refusal. The corrected full cohort strengthens
+trust substitutions to exclude kernel/time failures and changes no runtime code,
+deadline or admission origin. Its complete joined and process-loss gates still
+have to run under their own source identities.
+
+The separately retained oracle-v2 cohort subsequently passes both compiler
+lanes: twenty-seven sink cases and forty-one Starting/pipe/live/expiry cases
+per lane. It requires exact Input(Invalid) trust refusals rather than an incidental
+kernel/time error, and the expiry case records the unchanged progress-age limit
+from the original observations. Source reconstruction confirms that the five
+J1 runtime blobs are identical across the healthy, red-oracle and corrected
+cohorts; 188 existing runtime/configuration files remain byte-exact against the
+preregistered baseline. This establishes the new joined gate, not a retroactive
+pass for the failed oracle or a completed process-loss proof. The full SIGKILL
+and lost-ack matrix begins only after both joined lanes pass.
+
+### Process loss does not recover an original output owner
+
+The complete follow-up matrix covers twenty-five effect cuts plus death after
+successful return. Three exact-source repetitions on each compiler produce
+156 real SIGKILL cases, six uninterrupted controls and 324 fresh read-only
+inspections. Every expected case passes. The parent retains a pidfd for its own
+unreaped child, waits for a bounded logical barrier, checks that the original
+fence is Busy and records exact bytes/metadata before sending the signal. A
+timeout is only the harness fail-safe, never the correctness oracle.
+
+Starting may be absent, empty, prefix-only, completely written but unsealed,
+sealed or synced. Pipes may be only partly initialized. Output directories and
+empty sinks may be only partly created or synced. None of these retained states
+becomes a recovered permission to continue. Even a fully durable successful
+return followed by lost runtime acknowledgement refuses reconstruction in both
+fresh inspecting processes. The uninterrupted controls retain the same original
+process and close their private descriptors normally.
+
+These are process-loss facts, not power-loss, device-EIO or external wire-ACK
+guarantees. The writer descriptors are still private and no worker or pump ran,
+so the result does not certify revocation of exported writers. Independent final
+postflight checks leave the installed binary/receipt, original supervisor PID
+8839/start/restart count, boot and absent production contexts exact. No service,
+clock, product workload or qualification setting changed.
+
+The useful result is deliberately narrow: original output preparation now fits
+the unchanged admission window and refuses uncertain replay at real process
+boundaries. It is not a product throughput win or server-ready release. Real
+production trust and authenticated executable/streams/process/cgroup start,
+collector writing/watchdog, all-writer cessation and later lifecycle cells still
+follow under their own gates. The earlier red oracle and broader legacy audit
+failures remain evidence rather than being erased by this completed prerequisite.

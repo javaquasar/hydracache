@@ -1,0 +1,11 @@
+{
+  "key": "output-join-v2-fmt-completion",
+  "description": "Retained tool observation; some completion records contain only output since the preceding poll. Full remote test logs and saved runners are separate artifacts.",
+  "result": {
+    "chunk_id": "de5634",
+    "wall_time_seconds": 0.0000064,
+    "exit_code": 0,
+    "original_token_count": 0,
+    "output": ""
+  }
+}

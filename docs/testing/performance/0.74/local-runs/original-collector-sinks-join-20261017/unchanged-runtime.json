@@ -1,0 +1,754 @@
+[
+  {
+    "path": ".cargo/config.toml",
+    "git_blob": "b598585884041aba256257e7117c5fe2dfdb927e"
+  },
+  {
+    "path": "Cargo.lock",
+    "git_blob": "6719445160dd8e5dec3e097eaf0a146ada683b26"
+  },
+  {
+    "path": "Cargo.toml",
+    "git_blob": "93020db0f98eb9b3b22b39d0d9c7f191d22b23ed"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/Cargo.toml",
+    "git_blob": "f04328a58ace3f0bd0f1bc712abda91d2245cf27"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/abort_backend.rs",
+    "git_blob": "39f6f43d06ab6a061e54fd4fa6f044691897a0aa"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/abort_lifecycle.rs",
+    "git_blob": "92d159387b99c2cc4a4ef47ca403b6084bce620c"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/archive.rs",
+    "git_blob": "f19564b7fdf8b5fcc3db77026d32ff1d202d9192"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/artifact.rs",
+    "git_blob": "cc000e35d1740cb3f8e563cefe5cfab15be3d5f7"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/auth.rs",
+    "git_blob": "d714b1494da941dcc4de512856ff35a5f0e03738"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/bin/diagnostic_builder.rs",
+    "git_blob": "2c7cb5970b461b22a6e5811ec5aada29ea31085a"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/bin/diagnostic_controller.rs",
+    "git_blob": "4e45ac6c4db3febd26d9d56c55a24607d07cb4f2"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/bin/diagnostic_signer_isolation_probe.rs",
+    "git_blob": "d6af2c931dd653543b19f1af438e43da0fe4ee59"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/bin/diagnostic_signer_owned_probe.rs",
+    "git_blob": "c169e7a52ced8e8321bce1b1b40ae6c9505b7656"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/bin/diagnostic_signer_root_probe.rs",
+    "git_blob": "1aabf455e4634a13b1170993da8e0f5f9463483f"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/campaign_smoke.rs",
+    "git_blob": "d652266e0c293232ce4788c532ea3083c10a0ff4"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/checkpoint_evidence.rs",
+    "git_blob": "3d661c866507d9059a57d4b1766e30dea4101bcd"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/client.rs",
+    "git_blob": "4f0bf765e27c7d11018140ac63750ac89b3fc897"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/config.rs",
+    "git_blob": "fb3b3788f7b56c78890dd25c35b36606cc68ae39"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_artifacts.rs",
+    "git_blob": "67eafd825b94c70d887c69b221b854d16964ad25"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_artifacts_linux.rs",
+    "git_blob": "c9dd90398ab1775589b14eca52d3ab7ef0999065"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_attempt_publication.rs",
+    "git_blob": "e443db599ae7b28057234f650d8cfed07acb4ea1"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_authority_checkpoint.rs",
+    "git_blob": "75b7dd701bd958ead4dc6421d7e96b8ea7bb298f"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_authority_fixed.rs",
+    "git_blob": "d666a40a4725804ea1da5734fc76ce5aaf248b9b"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs",
+    "git_blob": "52c78c6250b8f812274b01aeecc920b2c0acb083"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_authority_intent.rs",
+    "git_blob": "3023b1c917cc54ec39f55f1d6b96f1a732c21875"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_authority_registry.rs",
+    "git_blob": "45ebf224f361e261cc4c8a01798f09cbe521672c"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_builder.rs",
+    "git_blob": "0d353279293a996581f13ffa7fc34489f8360cac"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_builder_linux.rs",
+    "git_blob": "a1b87942a91fbf12a69194b47e271420e6c59e70"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_collector.rs",
+    "git_blob": "7f365f5ca9b986379ada386c7286191bc4a1a95b"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+    "git_blob": "e17bd52bcd5157741fbc87fc711275097d06910f"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_collector_intent.rs",
+    "git_blob": "ba9a2676fec2b3ddeebbd2c241d56669cec75617"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_collector_progress.rs",
+    "git_blob": "605f05f58a6b7d3937d4335ece56281bc311e338"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_collector_reservation_storage.rs",
+    "git_blob": "aa3a0b9ae9890cc5d4060a41537086562d01afff"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_collector_reserved.rs",
+    "git_blob": "7058b02b5d190e4273b5b6ceecc6dd72f7cb4ff0"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_collector_starting_publication.rs",
+    "git_blob": "9c7a0bd454531ea01ee67a6d63976fcd4e2b1400"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_collector_starting_record.rs",
+    "git_blob": "604ad155ab75be61db3c6469fd1a70d6f8e0db3a"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_context_files.rs",
+    "git_blob": "1e3d7e42d4627cf80fee37d853cae6983d8d8f6f"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_controller_build_input.rs",
+    "git_blob": "b34b56abf0d728103db7b66f6cd4406ecf053dae"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_controller_fence_preflight.rs",
+    "git_blob": "3f95cd4cf5082f7e71b2e388e5380cae55c5061f"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_controller_producer.rs",
+    "git_blob": "5d0a02b8d26be21efac669f2fa68b4dc6223f57f"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_controller_producer_linux.rs",
+    "git_blob": "50d454647f3e68c19b824c105d04d7651edf669a"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_controller_request_attempt.rs",
+    "git_blob": "e0a53b2fe5f8816a73b5c7a5decfbf5095f37ef3"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_controller_trust_input.rs",
+    "git_blob": "9a80e0cae0ed6fb8eb471834e702fe0db5cf8848"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_early_attempt.rs",
+    "git_blob": "558c66a4ee9168881f29093275771aa3998f33f9"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_early_attempt_storage.rs",
+    "git_blob": "de1d33db2f0ecda120e793fff2c97639f2d59fd2"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_empty_fenced_intent.rs",
+    "git_blob": "3b5c7bc386b5743e7a6f38b914c7c49119494c4d"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_empty_reservation_fence.rs",
+    "git_blob": "2864bd2de8c6d425242159f460ec06541880453b"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_fenced_intent.rs",
+    "git_blob": "319ad9ae1cc25300578740b7f5a4dd38a873214a"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_fixed_campaign_admission.rs",
+    "git_blob": "59ce0b39f54755255360bac63c695fe95602d215"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_fixture_recovery.rs",
+    "git_blob": "36a9a26b01ffd5fa61a54a3715340f962b92aaf3"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_initial_consumption.rs",
+    "git_blob": "8ed7b6400b3851eb7866ebb187c7677cc1f44093"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_initial_consumption_storage.rs",
+    "git_blob": "d719cc1ea479d4bde3338db14f2a3d7208aab902"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_intent_fixed_storage.rs",
+    "git_blob": "8ed3941cf50461b7f89d9398e5f990af21610331"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_intent_journal.rs",
+    "git_blob": "e8f0edd509732083fc246f4e0505bceb3b95b7eb"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_intent_projection.rs",
+    "git_blob": "1f79458134fe26c40c71a5eb900b87eda662b63e"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_ipc.rs",
+    "git_blob": "87535fd644a65af0379c9be7f68a46be126519b8"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs",
+    "git_blob": "da06a8583df99bc414566a7cd6cf6929bffce145"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_ancillary.rs",
+    "git_blob": "1aeb69e8dcd8bf652141141193a73437e9494400"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_collector_inputs.rs",
+    "git_blob": "2e18032ca4c055750cbc8753c964e28ec7fe421f"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs",
+    "git_blob": "fc848af142e61068bd4f5460503b8df1186d5aaf"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_progress.rs",
+    "git_blob": "a8d64842c5e498216bf23892ebbd68c3a1dede22"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_refusal_trace.rs",
+    "git_blob": "2321646c4c82d59b831eda30f118bccc7c0b0114"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_start_consent.rs",
+    "git_blob": "3ce87d5f298df949663490cd63763dea8b087f82"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_lease.rs",
+    "git_blob": "ed9e30a164514f72e9556ddace46bea549191318"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_live_execution.rs",
+    "git_blob": "d502ff2f2ca44dcae195aa0eb9d4ce0d0392ab9a"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_live_identity.rs",
+    "git_blob": "0ed97dd0a9ddee2e1576478e4f48bbb1230a2156"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_loaded.rs",
+    "git_blob": "bb726aa443fdd5d08101bce06bb203292ddc5a21"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_manager.rs",
+    "git_blob": "029b26c10f3e0cf995006299ff895dc971b22af8"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_mount_namespace.rs",
+    "git_blob": "fdf49babeffcbe0b9de6b61f573858804f732f31"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_named_output.rs",
+    "git_blob": "08c1885463a07e05dcbb036199884bc7a21de9e3"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_namespace_credentials.rs",
+    "git_blob": "811a7198981b1ed87c21ed1a75287980ebbc0624"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_namespace_worker_binding.rs",
+    "git_blob": "237bfcc2f7d7be341dac0173267ffaab2ca96d16"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_observed_reservation.rs",
+    "git_blob": "005ab9ae432097f53fabcfe5a051728f054147b1"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_oidc_input.rs",
+    "git_blob": "1ed02217b184d4af0135b385792c7a8f9e0c1a0c"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_oidc_profile.rs",
+    "git_blob": "c75dc833b436fe29de3f9e53c076ab0970c3f026"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_collector.rs",
+    "git_blob": "cf2800c811825395ae8327907f0ee40c862d0fdd"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_fence.rs",
+    "git_blob": "b0e641e441eab6564f4908d395ad84905ad20fba"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_start_consent.rs",
+    "git_blob": "a59f03583ce09ce6d4b7096caf19a1d4e08c7b90"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_output_preparation.rs",
+    "git_blob": "1d4d9690790e297f5d60527f10a95aea2e3b7bc9"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_policy_credentials.rs",
+    "git_blob": "7108b3fef257c3c59ab9e571a52b70a490b49397"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_prebuilt_copy.rs",
+    "git_blob": "f41513505b65e36dafb2309646334476de247637"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_preconsent_frame.rs",
+    "git_blob": "4573c8391c9be22732fc23b2907bdb23e1e11253"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_process.rs",
+    "git_blob": "d40f9377d1130e22edba6a04972206262c8e95fd"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_process_credentials.rs",
+    "git_blob": "53ed1d25860ed03299e0fd3a75348aa2820b7dc8"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_process_executable.rs",
+    "git_blob": "43d279d18b4a3e83ab614837c94b075a6ab12a81"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_process_io.rs",
+    "git_blob": "08bf150de5afcdb0952ae80ae20168d54ea874b0"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_process_terminal.rs",
+    "git_blob": "7991d066b9b1574f2d98d05d3a14c6668338f83d"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_receipts.rs",
+    "git_blob": "698dde25a35210df4aa33361fda13e4929080212"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_reservation_publication.rs",
+    "git_blob": "136cdace7cf55b652df529e5a7a0b27d32cfabac"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_reservation_publication_storage.rs",
+    "git_blob": "1d3216a814f89a8579492ee41e134ffc719a9cfe"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_reserved_state.rs",
+    "git_blob": "da625532576062ed3aed943879145503f2a3b5e8"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_reviewed_trust.rs",
+    "git_blob": "ca8efe5012352b1b3f73d4b6a67cf582f9b43c8c"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_root_owned_input.rs",
+    "git_blob": "2d734aeaf2906526b10b61d346be338fbe3973ab"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signed_authority.rs",
+    "git_blob": "bb5514dda6fd3aaa166d24b59d285c4174067381"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signed_history.rs",
+    "git_blob": "bf4892256113f73643b110bfee742ef00a6e773b"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signed_mount.rs",
+    "git_blob": "d2dfd13b40cee3c161fd244ac46b8021087aef42"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signed_opening.rs",
+    "git_blob": "561f98e59d82b2b07eea148558a143bbd9ad8402"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signed_tasks.rs",
+    "git_blob": "0e709cb11e54f62c39ce79fc1c60c1078e527370"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_bootstrap_context.rs",
+    "git_blob": "bd15515a1b08adbcb31e170bb52133f1b263c8bb"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_build.rs",
+    "git_blob": "5913e29b89244c5b9f0ea07322c9ed3e44d39881"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_bundle.rs",
+    "git_blob": "ecf69c35891597ec3499e71707c8768877a66788"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_constructor_guard.rs",
+    "git_blob": "27f315fc18b6197451a72f0cf827946f498f7eea"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs",
+    "git_blob": "17653bc61611973eb3798807cb174fea0e2cfb96"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_creator_loss_fixture.rs",
+    "git_blob": "b5abe837f849a42de776776e223a114b4bc2f890"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_creator_task.rs",
+    "git_blob": "93ce83b1dc25fc780ebec7bb3ba7052bc3b8d86d"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_executable.rs",
+    "git_blob": "2b4b58b50d7bdf5895ef4a41981897ed600cb0db"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_first_exec_fixture.rs",
+    "git_blob": "193abed0fa0080216439d3cfc4055e4620a7ee7f"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_gnu.rs",
+    "git_blob": "6598638907f00239ae3242e6bb7fa00f68f921f1"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_handoff_fixture.rs",
+    "git_blob": "3a8e5657d4d1aec445a45b714d4424c46aef6381"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_handoff_helper.rs",
+    "git_blob": "12098560ddb5495543659576b2373037d79b4599"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_isolation.rs",
+    "git_blob": "0b9b71fe5e1533dec6afd57626569b492105b660"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_isolation_core.rs",
+    "git_blob": "44dedfb636e0c4d53545901d79e13eca357766f9"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_isolation_linux.rs",
+    "git_blob": "e67d40ae28978b2c1f216edf1c5a725a0031e52f"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_issuer.rs",
+    "git_blob": "651bc512d97fd539f17d7c7f5058ef736d64d11a"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_joined_fixture.rs",
+    "git_blob": "ecc0956fadf05e2e1538a623c54b04f664e55f22"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_joined_helper.rs",
+    "git_blob": "ef19c0b69f0b764713adaf198748b3f04faee1cc"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture.rs",
+    "git_blob": "93d1e34c568827b5189452c5e4cedd64056dcdc2"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_namespace_helper.rs",
+    "git_blob": "6592d047097f17ec149412520afbf33fd7b7e0f4"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_owned_probe.rs",
+    "git_blob": "a861827bf2f31ca39ad71e24404104114131a4e2"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root.rs",
+    "git_blob": "bf007e00c9e880076f7605ab0703118e7f721739"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_exec.rs",
+    "git_blob": "7219b4bb1a374d7882fb9ecae34c33d88cb11536"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_handoff.rs",
+    "git_blob": "87ec9ee8a95c53893b9bbc41aa32c1f416a6eee8"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_isolation.rs",
+    "git_blob": "7baa50f4359756bf84e6be1ff6fc5f593084d793"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_loss.rs",
+    "git_blob": "1168abbf6458af22d84fdbe360f5b4f52b006186"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_maps.rs",
+    "git_blob": "7635f6ef64ac9077e97987f31f8a19f25e69142b"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_root_fixture.rs",
+    "git_blob": "a3da13ba0615dd4fe29b90f3b35214bb309bd3ad"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture.rs",
+    "git_blob": "1965e8967964cde99272c247f5b3602dae393b51"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_rooted_maps.rs",
+    "git_blob": "ebc77d726f045d4b21f79d91aa9a48bda6af7787"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_runtime_elf.rs",
+    "git_blob": "d074cd0f3cf3543c86d244f72b7570a9093b97f6"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_runtime_fixture.rs",
+    "git_blob": "82cdbcf1f6fb4d2d7588f2b2b342be712fd8a215"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_runtime_input.rs",
+    "git_blob": "32a802187c8ab83b440b9564ebf4e78d6f19e1c4"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_seccomp_fixture.rs",
+    "git_blob": "54cc302b6684a7b31129c87e0e140ccab3c45074"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs",
+    "git_blob": "16ff383b5a127404961e0cbc7b1ff75639badbde"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_channel.rs",
+    "git_blob": "8fa47236c0f7cda53b76d51c82e857be06bfcdb7"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_fixture.rs",
+    "git_blob": "20d66eaedfa192e59a9a41b9a8359ea88496dbfd"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_spool.rs",
+    "git_blob": "c70447e5e3ad8a10f242473f1b959c39110f8687"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_start_consent.rs",
+    "git_blob": "17fd85f53c25d39d6cf7175ee80a5f832be47fac"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_starting_intent.rs",
+    "git_blob": "5dfe107a540ba2dfe63c8f0f234e9b4cc9211219"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_starting_intent_storage.rs",
+    "git_blob": "71f77f6fc177775781a46e282b144c37b48d8482"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_storage_preflight.rs",
+    "git_blob": "f0fe255c6dca8c3dff26432ba964b90f40d94c01"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_transition.rs",
+    "git_blob": "3cf3111046ebd5995e1b94c4d58be1032195340b"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_tree.rs",
+    "git_blob": "8ce4e72e38ac35751f1a6502b9854d22923ee036"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_unit.rs",
+    "git_blob": "3ffd7ef2e2713b0dac6487e987e5d1c01d3901d9"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_user_namespace.rs",
+    "git_blob": "9b58a5f03c09847b474dfdd64fd9da469ac36180"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs",
+    "git_blob": "57d99659aedfb86ebb4bd83ba4b29a379d9d93bd"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_validation_trace.rs",
+    "git_blob": "6d6756729d3f47e33c969acf3b7bc19f7f6bb8ad"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_worker_account.rs",
+    "git_blob": "457de2ac0775d7f3d122d1baa3726d5d43abcb31"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_worker_binding.rs",
+    "git_blob": "69d0f3de30b34094d6829a310d260ca17cf17317"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_worker_context.rs",
+    "git_blob": "7e0d76a5c3b27b8a820650f837f62d1cabb7ba10"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_worker_files.rs",
+    "git_blob": "150951292da4711042db9b3bc06a8d3e48f051f5"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_worker_kernel_binding.rs",
+    "git_blob": "7765a77625ba8d6cea97390e1692ff7ecf1ee4b7"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_worker_policy.rs",
+    "git_blob": "4dc16bfc6e2bfa2ebf22159848197e3abc412581"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_worker_progress.rs",
+    "git_blob": "b689f30647e9c5230ca65a3eba80af15ae55da3d"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_worker_start_consent.rs",
+    "git_blob": "79dbf6ba091813a89e2b7b8801d0735c20ecbc48"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_worker_tasks.rs",
+    "git_blob": "2fa71ef194400779852c251621e635acfdb22db8"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_worker_trust_input.rs",
+    "git_blob": "9374d84ccdcfa82d01a3acdd0385740a6dbacc9c"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/event.rs",
+    "git_blob": "e08a3c6e8752c7d3ed9fe9091953c23e50e67ceb"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/host_execution.rs",
+    "git_blob": "5cbbc31fc73e69ba5ce477e91d14fe02775a95e0"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/host_receipt.rs",
+    "git_blob": "b8253cb71dddcdf699fed16642f862799af9ea33"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/lease_expiry.rs",
+    "git_blob": "d734963a59af393f3ed988e0e6f9bdf6bad71566"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/lib.rs",
+    "git_blob": "1dffa56b5526530388184401882436620154c1a8"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/main.rs",
+    "git_blob": "84ea68b62a250f1c6b0420afdd3a0c885ca8c80b"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/manifest.rs",
+    "git_blob": "8c4b7646fe9b18f4a6f4290aeaaf78069e060e9b"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/manifest_evidence.rs",
+    "git_blob": "ffa2d75b7a8c49390a4f700a4b2b5bbe77a84d6f"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/measurement_loss.rs",
+    "git_blob": "8ed33afc06ec21af30fe2b31b840bcd7523a64a3"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/mutation.rs",
+    "git_blob": "2eabfffe071875fe34bd1ed7c95a1020d77b681f"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/process_identity.rs",
+    "git_blob": "559df87ea52de53eec3fd9204586795f5581d6cb"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/progress_loss.rs",
+    "git_blob": "cc390519dc0450a2fafc14bd94865a860e7d24f3"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/protocol.rs",
+    "git_blob": "89c68fb224ab3aeb0ccf25840ff8eb6c736c01cd"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/request_builder.rs",
+    "git_blob": "24d74dcbe054d50cd761b70458b085846a19b19b"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/role_overhead_smoke.rs",
+    "git_blob": "7e8978701c24d3d3fdf18dec521d29ce04b3ef2a"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/seal_artifact.rs",
+    "git_blob": "adbdc2388a64e096c6be3ee5ad21655f39ac499d"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/seal_input.rs",
+    "git_blob": "366e96218c792f0a07d65bbe8e0720b83003cc7e"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/seal_lifecycle.rs",
+    "git_blob": "4301c813865df03b46c7df9d5a30d383426d88cf"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/sealed_permissions.rs",
+    "git_blob": "a33ec434c2c31ca053bdc023bafa9d41aef03e0a"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/server.rs",
+    "git_blob": "b3e10ab6e314c555f1e46daa4683282f53cbb4d9"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/service.rs",
+    "git_blob": "1c7689cdf3b259db3cb3f22039f525d7eda1b4c8"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/spawn.rs",
+    "git_blob": "e391de517202860e6d7adde8e1340ddecfc3f0a5"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/start_evidence.rs",
+    "git_blob": "bcda871e39170f558b95132d09b69881b8f5ea28"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/start_lifecycle.rs",
+    "git_blob": "c8fda8a905711e4ab8989dff31948aa337e89c78"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/state.rs",
+    "git_blob": "d99ef5d004e14f958ff7f9ebaa95fa8c8c7e6850"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/state_store.rs",
+    "git_blob": "76df5a0fc82233471d08803525090774885ef210"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/systemd_notify.rs",
+    "git_blob": "58801866ee55afeb5323d69c00ac6eea62cf3977"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/systemd_smoke.rs",
+    "git_blob": "f447ae858dd6bcf590b6f98c3ee7bb91669918e6"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/systemd_spawn.rs",
+    "git_blob": "fac2cd43a91a8bae45bb7642fbfdabd8f82f7379"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/systemd_unit.rs",
+    "git_blob": "9977f11132f90ed961b6742ca6782f7d3fc62673"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/unix_transport.rs",
+    "git_blob": "623be446d0802e4668b09fe25299a0bbd6266eaa"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/watchdog.rs",
+    "git_blob": "5307bd144fb2d787f8cb4491d6e7138b0a5f5532"
+  }
+]

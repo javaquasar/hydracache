@@ -1,0 +1,11 @@
+{
+  "key": "output-join-final-windows-contracts",
+  "description": "Retained tool observation; some completion records contain only output since the preceding poll. Full remote test logs and saved runners are separate artifacts.",
+  "result": {
+    "chunk_id": "0cac3c",
+    "wall_time_seconds": 0.0000079,
+    "exit_code": 0,
+    "original_token_count": 349,
+    "output": "    Finished `test` profile [unoptimized + debuginfo] target(s) in 10.47s\n     Running tests\\performance_contract_074.rs (target\\debug\\deps\\performance_contract_074-affcfab4e5118d5a.exe)\n\nrunning 188 tests\n....................................................................................... 87/188\n....................................................................................... 174/188\n.............test w12_generic_evidence_report_retains_closed_ship_admission has been running for over 60 seconds\n.\ntest result: ok. 188 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 94.20s\n\ngated-test-check: OK (181 discovered gates, all registered)\ndoc-check: OK (releases.toml is consistent)\nperformance-contract-check 0.74: OK (local, non-promotable)\n    Checking xtask v0.73.0 (C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\crates\\xtask)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.75s\n    Checking xtask v0.73.0 (C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\crates\\xtask)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.75s\n    Checking xtask v0.73.0 (C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\crates\\xtask)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.03s\n    Checking xtask v0.73.0 (C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\crates\\xtask)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.51s\n"
+  }
+}

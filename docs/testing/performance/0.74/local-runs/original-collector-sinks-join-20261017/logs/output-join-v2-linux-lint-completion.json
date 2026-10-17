@@ -1,0 +1,11 @@
+{
+  "key": "output-join-v2-linux-lint-completion",
+  "description": "Retained tool observation; some completion records contain only output since the preceding poll. Full remote test logs and saved runners are separate artifacts.",
+  "result": {
+    "chunk_id": "dc9f2f",
+    "wall_time_seconds": 0.0000109,
+    "exit_code": 0,
+    "original_token_count": 172,
+    "output": "    Finished `dev` profile [unoptimized + debuginfo] target(s) in 14.59s\n    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 23.92s\n    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 12.72s\n    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 23.25s\n"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "key": "output-join-real-current-crash-verified",
+  "description": "Tool completion fragment; raw full host logs are separate. MODEL-ONLY parser record is not physical proof.",
+  "result": {
+    "chunk_id": "65b891",
+    "wall_time_seconds": 1.9764471000000001,
+    "exit_code": 0,
+    "original_token_count": 29,
+    "output": "REAL current-compiler crash log: complete 3-repeat stage/inspection set validated; MSRV acceptance still pending\r\n"
+  }
+}

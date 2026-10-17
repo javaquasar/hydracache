@@ -1,0 +1,11 @@
+{
+  "key": "output-join-original-expiry-reference",
+  "description": "Retained tool observation; some completion records contain only output since the preceding poll. Full remote test logs and saved runners are separate artifacts.",
+  "result": {
+    "chunk_id": "79daae",
+    "wall_time_seconds": 0.0000076,
+    "exit_code": 0,
+    "original_token_count": 210,
+    "output": "\nrunning 1 test\ntest diagnostic_kernel_admission::collector_inputs::progress::tests::collector_progress_real_packet_expires_without_receive_time_renewal ... collector_progress real_expiry=true receive_time_unchanged=true deadline_extended=false\nok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1023 filtered out; finished in 10.00s\n\nHC074-ORIGINAL-SINK-SERVER preflight=ok supervisor_pid=8839 restarts=0\n\nrunning 1 test\ntest diagnostic_kernel_admission::collector_inputs::progress::tests::collector_progress_real_packet_expires_without_receive_time_renewal ... collector_progress real_expiry=true receive_time_unchanged=true deadline_extended=false\nok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1023 filtered out; finished in 10.00s\n\nHC074-ORIGINAL-SINK-SERVER preflight=ok supervisor_pid=8839 restarts=0\n"
+  }
+}

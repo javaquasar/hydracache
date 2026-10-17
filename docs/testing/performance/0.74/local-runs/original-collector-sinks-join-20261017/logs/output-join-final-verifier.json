@@ -1,0 +1,11 @@
+{
+  "key": "output-join-final-verifier",
+  "description": "Independent complete-packet verifier including false-admission/missing-inspection canaries.",
+  "result": {
+    "chunk_id": "1a4c4c",
+    "wall_time_seconds": 0.0000075,
+    "exit_code": 0,
+    "original_token_count": 44,
+    "output": "Original J1 output join proof intact: attribution, live matrices and 156 SIGKILL / 6 controls / 324 fresh inspections; original deadlines exact, production admission CLOSED\r\n"
+  }
+}

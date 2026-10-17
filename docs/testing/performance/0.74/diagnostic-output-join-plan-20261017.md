@@ -125,3 +125,26 @@ in a separately identified complete cohort. Preserve the first red log and both
 source snapshots; do not retroactively assign its missing event. Change no
 runtime code, validation predicate, duration or origin. The corrected complete
 cohort must still pass both compilers before the full SIGKILL matrix.
+
+The fresh diagnostic confirms site progress-age, ordered original observations
+and age 11,742,320,973 ns against the exact 10,000,000,000 ns bound. The original
+kernel expiry reference also passes on both compilers. This establishes the
+fresh-chain mechanism, not the missing historical event. The corrected cohort
+uses this exact event/numeric oracle; trust-drift assertions additionally require
+Input(Invalid) and exclude Kernel/time refusals rather than accepting a generic
+Invalid. These are test-only strengthenings, with all runtime sources unchanged.
+
+## Completed narrow result
+
+The corrected cohort passes 27 sink cases and 41 other joined cases per compiler.
+Only then, the same frozen binaries pass all 25 effect cuts plus AfterReturn in
+three repetitions/compiler: 156 actual SIGKILL, six uninterrupted controls and
+324 fresh read-only inspections. Original metadata/bytes and no-replay behavior
+remain exact. Independent postflight confirms the unchanged installed receipt,
+binary, boot, supervisor identity and absent production contexts/test processes.
+The [packet](local-runs/original-collector-sinks-join-20261017/README.md) retains
+the first red oracle, independently attributed mechanism and all source variants.
+
+This closes output preparation and process-loss/lost-runtime-ack prerequisites,
+not power loss, authenticated original start, exported-writer cessation,
+completion/later cells, production enrollment or server/product admission.

@@ -1,11 +1,22 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The separately approved [constant-depth output join](local-runs/original-collector-sinks-join-20261017/README.md)
+has completed baseline attribution and three healthy full construction chains on
+each compiler. It retains all original live predicates and deadlines under an
+explicit effect-local round schedule; standalone validators remain unchanged.
+Complete joined gates now pass 27 sink and 41 Starting/pipe/live/expiry cases
+per compiler in the separately retained oracle-v2 cohort. Its separate complete
+process-loss gate passes 156 SIGKILL, six controls and 324 fresh inspections over
+three repetitions/compiler, including loss after successful return.
+No installation, supervisor change, product load or server admission follows.
+
 The first [original sink composition](local-runs/original-collector-sinks-20261017/README.md)
 is withdrawn after the server joined screen stops before RootCreated. A separate
 fresh-chain diagnostic reaches the unchanged Causal(Time) guard before output
-creation. Its patch and negative observations remain retained; the working
-runtime stays at the original pipe milestone below. No new SIGKILL matrix,
-authenticated start, all-writer cessation or server admission is claimed.
+creation. Its patch and negative observations remain retained; the newer join
+above is a distinct candidate, not a reclassification of that screen. The
+withdrawn packet claims no SIGKILL matrix, authenticated start, all-writer
+cessation or server admission.
 
 The next [original pipe preparation](local-runs/original-collector-pipes-20261016/README.md)
 is implemented as `a533e6df`. It consumes acknowledged Starting and owns two

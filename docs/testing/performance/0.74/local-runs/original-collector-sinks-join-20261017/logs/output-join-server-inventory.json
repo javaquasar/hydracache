@@ -1,0 +1,11 @@
+{
+  "key": "output-join-server-inventory",
+  "description": "Retained tool observation; some completion records contain only output since the preceding poll. Full remote test logs and saved runners are separate artifacts.",
+  "result": {
+    "chunk_id": "dc22ec",
+    "wall_time_seconds": 1.6419937999999998,
+    "exit_code": 0,
+    "original_token_count": 105,
+    "output": "uid=1000(hydracache-admin) gid=1000(hydracache-admin) groups=1000(hydracache-admin),27(sudo)\ne81671d6-bf23-4ebf-b8fe-5dad1f45866f\nMainPID=8839\nNRestarts=0\nExecMainStartTimestamp=Tue 2026-10-06 15:03:40 CEST\nActiveState=active\nSubState=running\nFilesystem      Size  Used Avail Use% Mounted on\n/dev/md2        437G   22G  393G   6% /\n\r\n        Used         Free\r\n        ----         ----\r\n894760546304 126709047296\r\n\r\n"
+  }
+}

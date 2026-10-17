@@ -46,6 +46,19 @@ challenge window. The full candidate patch is retained and runtime restored.
 A separately preregistered constant-depth join must prove unchanged live guards,
 effect ordering and deadlines before repeating a complete new candidate screen.
 
+The approved [J1 join plan](diagnostic-output-join-plan-20261017.md) now implements
+one consuming framed-consent-to-sinks producer with no asserted inputs. Its
+effect-local working/closing rounds reuse every original frame predicate, while
+the old standalone publishers remain exact. Both compilers pass three healthy
+25-stage construction controls with private EOF after drop. The corrected
+joined cohort also passes 27 sink and 41 other fault/live/expiry cases on each
+compiler; its first red oracle and independent attribution remain retained.
+The separate full process-loss gate passes all 25 effects plus AfterReturn in
+three repetitions/compiler: 156 SIGKILL, six controls and 324 fresh inspections.
+This is process loss, not power loss or exported-writer cessation. The
+[new packet](local-runs/original-collector-sinks-join-20261017/README.md) does not
+admit original start, sole-writer drain or an installed production route.
+
 First implement the actual bounded pipe-to-file writer and test its kernel EOF
 boundary locally. Retain both read ends and exclusively created evidence files;
 export only pipe write ends through a fixture-only Stdio transfer. Readers are

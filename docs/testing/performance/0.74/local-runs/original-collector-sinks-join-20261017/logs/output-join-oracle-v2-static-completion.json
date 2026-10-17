@@ -1,0 +1,11 @@
+{
+  "key": "output-join-oracle-v2-static-completion",
+  "description": "Retained tool observation; some completion records contain only output since the preceding poll. Full remote test logs and saved runners are separate artifacts.",
+  "result": {
+    "chunk_id": "fd7f5f",
+    "wall_time_seconds": 0.0000096,
+    "exit_code": 0,
+    "original_token_count": 79,
+    "output": ".\ntest result: ok. 188 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 126.10s\n\ngated-test-check: OK (181 discovered gates, all registered)\n    Checking xtask v0.73.0 (C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\crates\\xtask)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.67s\n"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "key": "output-join-source-capsules-check-final",
+  "description": "Tool completion fragment; raw full host logs are separate. MODEL-ONLY parser record is not physical proof.",
+  "result": {
+    "chunk_id": "4136e2",
+    "wall_time_seconds": 4.514976,
+    "exit_code": 0,
+    "original_token_count": 26,
+    "output": "J1 snapshots reconstructed: screen=14 matrix=16, active sources exact; no crash acceptance inferred\r\n"
+  }
+}

@@ -65,9 +65,20 @@ revocation of every exported writer remain open before completion/cells2–4.
 
 The first [sink preparation screen](local-runs/original-collector-sinks-20261017/README.md)
 stops before RootCreated and is withdrawn. Separate attribution reaches the
-original causal expiry without creating output. The complete SIGKILL/lost-ack
-matrix is still unexecuted for sinks; unchanged deadlines and guards are not
+original causal expiry without creating output. That candidate never reaches
+its complete SIGKILL/lost-ack matrix; unchanged deadlines and guards are not
 waived. A joined validation-cost/ordering proposal precedes a new candidate.
+
+The [approved J1 join](diagnostic-output-join-plan-20261017.md) now has repeated
+baseline attribution and three healthy complete output chains per compiler.
+It keeps every original predicate and anchored deadline, with a preregistered
+working/closing round schedule rather than recursive duplicate traversals.
+The separately retained corrected cohort passes 27 sink and 41 other joined
+fault/live/expiry cases per compiler. Its separate three-repeat/compiler
+process-loss gate passes 156 SIGKILL, six controls and 324 fresh inspections,
+including AfterReturn/lost acknowledgement. This does not test power loss or
+exported-writer cessation and does not establish production trust enrollment,
+original start or server admission.
 
 The [original controller attempt](diagnostic-controller-attempt-design.md) now
 consumes the original common-fence preflight into a durable Reserve request,

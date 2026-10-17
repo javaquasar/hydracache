@@ -1,0 +1,11 @@
+{
+  "key": "output-join-verifier-parser-model",
+  "description": "Tool completion fragment; raw full host logs are separate. MODEL-ONLY parser record is not physical proof.",
+  "result": {
+    "chunk_id": "1f1950",
+    "wall_time_seconds": 0.3709262,
+    "exit_code": 0,
+    "original_token_count": 35,
+    "output": "MODEL-ONLY verifier parser: complete grammar accepted, missing/duplicate rows refused. No process-loss or host observation is asserted.\r\n"
+  }
+}

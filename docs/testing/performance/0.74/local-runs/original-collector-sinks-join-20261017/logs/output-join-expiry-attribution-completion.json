@@ -1,0 +1,11 @@
+{
+  "key": "output-join-expiry-attribution-completion",
+  "description": "Retained tool observation; some completion records contain only output since the preceding poll. Full remote test logs and saved runners are separate artifacts.",
+  "result": {
+    "chunk_id": "0d767d",
+    "wall_time_seconds": 0.0000076,
+    "exit_code": 0,
+    "original_token_count": 232,
+    "output": "\nrunning 1 test\ntest diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::join_fault_tests::original_output_join_expiry_site_attribution ... HC074-OUTPUT-JOIN-EXPIRY-ATTRIBUTION event=Event { phase: \"output-join-expiry\", site: \"progress-age\", file: \"tools/long-run-supervisor-074/src/diagnostic_kernel_progress.rs\", line: 9, clock: [909012686481586, 909012417903484, 909024428802559, 0, 0, 10000000000] } exact=true renewed=false created=false\nok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1024 filtered out; finished in 15.75s\n\nHC074-ORIGINAL-SINK-SERVER preflight=ok supervisor_pid=8839 restarts=0\nHC074-OUTPUT-J1 lane=194 family=expiry-attribution exit=0 product=false\n"
+  }
+}
