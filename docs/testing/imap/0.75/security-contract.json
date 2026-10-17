@@ -1,0 +1,15 @@
+{
+  "release": "0.75",
+  "contract_version": 1,
+  "status": "provisional",
+  "threats": [
+    {"id": "tenant_substitution", "asset": "tenant-scoped key and dedup identity", "boundary": "client/proxy to owner", "mitigation": "bind authenticated tenant id into routing, mutation identity, proof, and audit context", "failure": "reject with tenant_mismatch before owner apply", "bound_or_proof": "HC-IMAP-PROOF-TENANT-BINDING", "test_id": "HC-IMAP-075-SEC-TENANT-SUBSTITUTION"},
+    {"id": "replay", "asset": "exactly-once mutation outcome", "boundary": "retry and reconnect", "mitigation": "tenant plus client plus request identity and canonical payload digest are deduplicated within a finite window", "failure": "same identity with a different digest is terminal", "bound_or_proof": "dedup_entries_per_tenant", "test_id": "HC-IMAP-075-SEC-REPLAY"},
+    {"id": "false_backup_ack", "asset": "acknowledged prefix", "boundary": "owner to backup", "mitigation": "acknowledgement requires replica proof for the same epoch and version", "failure": "fail closed without a valid replica proof", "bound_or_proof": "HC-IMAP-INV-ACK-REQUIRES-REPLICA-PROOF", "test_id": "HC-IMAP-075-SEC-FALSE-ACK"},
+    {"id": "redirect_loop", "asset": "client availability and bounded work", "boundary": "proxy routing", "mitigation": "epoch-fenced redirects have a finite hop budget", "failure": "return redirect_budget_exhausted", "bound_or_proof": "HC-IMAP-PROOF-REDIRECT-BOUND", "test_id": "HC-IMAP-075-SEC-REDIRECT-LOOP"},
+    {"id": "stale_generation", "asset": "namespace isolation after delete and recreate", "boundary": "namespace lifecycle", "mitigation": "every request and stored record is fenced by namespace generation", "failure": "reject stale generation before mutation", "bound_or_proof": "HC-IMAP-PROOF-NAMESPACE-GENERATION", "test_id": "HC-IMAP-075-SEC-STALE-GENERATION"},
+    {"id": "trust_rotation", "asset": "member and client trust", "boundary": "credential rotation", "mitigation": "overlap old and new trust epochs only for a bounded logical window and audit every transition", "failure": "unknown or expired trust epoch is rejected", "bound_or_proof": "HC-IMAP-PROOF-TRUST-EPOCH", "test_id": "HC-IMAP-075-SEC-TRUST-ROTATION"},
+    {"id": "audit_redaction", "asset": "secrets and tenant values", "boundary": "logs, traces, and evidence", "mitigation": "record stable hashes and metadata, never raw keys, values, tokens, or credentials", "failure": "receipt validation rejects forbidden cleartext fields", "bound_or_proof": "HC-IMAP-PROOF-AUDIT-REDACTION", "test_id": "HC-IMAP-075-SEC-AUDIT-REDACTION"},
+    {"id": "hostile_bounded_decode", "asset": "memory and CPU availability", "boundary": "all wire decoders", "mitigation": "validate declared lengths and collection counts before allocation using contract bounds", "failure": "reject oversized or malformed payload without partial apply", "bound_or_proof": "request_bytes", "test_id": "HC-IMAP-075-SEC-HOSTILE-DECODE"}
+  ]
+}

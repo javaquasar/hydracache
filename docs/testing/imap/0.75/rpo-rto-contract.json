@@ -1,0 +1,13 @@
+{
+  "release": "0.75",
+  "contract_version": 1,
+  "status": "provisional",
+  "cells": [
+    {"profile":"in_memory","fault":"owner_loss","support":"supported only after required synchronous replica proof","rpo":"zero acknowledged mutations under the admitted single-owner-loss model","rto_class":"bounded promotion workflow; final threshold blocked by 0.74 and W10 evidence","proof_id":"proof.imap075.rpo.memory.owner_loss","test_id":"imap075::rpo_rto::memory_owner_loss"},
+    {"profile":"in_memory","fault":"owner_plus_backup_loss","support":"unsupported when all admitted copies of a partition are lost","rpo":"unbounded for lost unacknowledged and acknowledged volatile state beyond the replica fault model","rto_class":"operator recovery or repopulation required","proof_id":"proof.imap075.rpo.memory.owner_backup_loss_unsupported","test_id":"imap075::rpo_rto::memory_owner_backup_loss"},
+    {"profile":"in_memory","fault":"whole_cluster_restart","support":"unsupported durability claim","rpo":"all volatile map state may be lost","rto_class":"application repopulation required","proof_id":"proof.imap075.rpo.memory.cluster_restart_unsupported","test_id":"imap075::rpo_rto::memory_cluster_restart"},
+    {"profile":"durable","fault":"owner_loss","support":"provisional pending frozen durable acknowledgement policy","rpo":"zero only for mutations carrying the final durable acknowledgement class","rto_class":"bounded recovery workflow; final threshold blocked by 0.74 and W10 evidence","proof_id":"proof.imap075.rpo.durable.owner_loss","test_id":"imap075::rpo_rto::durable_owner_loss"},
+    {"profile":"durable","fault":"owner_plus_backup_loss","support":"provisional pending retained durable quorum and recovery proof","rpo":"defined by final durable acknowledgement class; never inferred from memory ACK","rto_class":"durable recovery workflow; final threshold blocked by 0.74 and W10 evidence","proof_id":"proof.imap075.rpo.durable.owner_backup_loss","test_id":"imap075::rpo_rto::durable_owner_backup_loss"},
+    {"profile":"durable","fault":"whole_cluster_restart","support":"provisional pending exact-candidate full-restart evidence","rpo":"defined by committed durable watermark","rto_class":"full recovery and ownership rebuild; final threshold blocked by 0.74 and W10 evidence","proof_id":"proof.imap075.rpo.durable.cluster_restart","test_id":"imap075::rpo_rto::durable_cluster_restart"}
+  ]
+}
