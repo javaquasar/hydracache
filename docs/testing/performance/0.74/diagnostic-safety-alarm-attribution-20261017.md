@@ -27,3 +27,18 @@ preparation under one fresh opening and closing frame. It preserves every live
 predicate and original deadline but removes checks between internal substeps;
 therefore it is not silently substituted for the separately guarded candidate.
 Operator agreement and an independent full fault gate are required first.
+
+## Diagnostic oracle correction
+
+The first attribution attempt collected one complete phase trace but its outer
+fixture incorrectly expected an unrefused original input after Causal(Time).
+That postcondition failed. Keep its raw log as a failed diagnostic, not a
+three-sample result. Before the next dispatch, correct only that test oracle:
+expect sticky refusal throughout the original chain and require the observed
+time refusal in each fresh sample. A healthy revalidation now fails this
+negative-characterization diagnostic rather than being relabeled as admission.
+Remove the candidate's production entry and retain its kernel/reference probes
+only under cfg(test); preserve the original candidate and attribution source
+capsules. The descriptor-close unit must not inspect a reusable numeric fd
+after Drop in a multithreaded test process. None of these changes alters a
+production validator, origin, deadline or observation schedule.
