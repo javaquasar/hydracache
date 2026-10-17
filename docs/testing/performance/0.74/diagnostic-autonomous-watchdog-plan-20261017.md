@@ -84,3 +84,15 @@ writer, report expiry, and remain live with the fence busy. A stopped controller
 at that bound is also an expiry refusal, not successful execution. Add this
 twelfth case to all three repeats per compiler, with explicit failure notices.
 These are synthetic private objects, not original fixed-install/cgroup admission.
+
+## Fork signal mask review
+
+The first split implementation at 1f9e0e96 passes 36 WSL and 72 server cases.
+Final source review finds an unexercised signal-handler window before the child
+can block signals. Before accepting the primitive, block signals in the calling
+thread BEFORE the outer raw fork, restore its exact old mask on both parent
+success and fork failure, and let the child inherit the blocked mask. Preserve
+the collector/guardian bodies, every original validator and absolute deadline.
+Assert exact parent-mask restoration in each fixture and repeat all 36 WSL and
+72 server cases on the final source. Retain the first positive cohort separately;
+it is not a failed process experiment or a substitute final certificate.
