@@ -1,4 +1,6 @@
 use super::*;
+#[path = "diagnostic_grouped_preparation_candidate.rs"]
+mod grouped_candidate;
 
 #[test]
 fn original_alarm_bounds_exclude_equality_overflow_and_later_starting_renewal() {

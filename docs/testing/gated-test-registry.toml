@@ -9922,4 +9922,100 @@ platform = "linux"
 
 [gate.command.env]
 
+[[gate]]
+id = "tool.hydracache-long-run-supervisor-074.original-grouped-preparation-screen"
+kind = "external_tool"
+source = "tools/long-run-supervisor-074/src/diagnostic_grouped_preparation_join_tests.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "hydracache_long_run_supervisor_074"
+test = "original_grouped_preparation_screen"
+cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
+env = ""
+reason = "Test-only grouped nonexecuting schedule; no start, send or production admission"
+tier = "manual"
+required_features = []
+required_env = ["HC074_START_MATERIAL_BUNDLE"]
+required_tools = ["cargo"]
+timeout_seconds = 600
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::grouped_tests::original_grouped_preparation_screen","--","--ignored","--exact","--nocapture","--test-threads=1"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+
+[[gate]]
+id = "tool.hydracache-long-run-supervisor-074.original-grouped-preparation-healthy"
+kind = "external_tool"
+source = "tools/long-run-supervisor-074/src/diagnostic_grouped_preparation_join_tests.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "hydracache_long_run_supervisor_074"
+test = "original_grouped_preparation_healthy"
+cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
+env = ""
+reason = "Test-only grouped nonexecuting schedule; no start, send or production admission"
+tier = "manual"
+required_features = []
+required_env = ["HC074_START_MATERIAL_BUNDLE"]
+required_tools = ["cargo"]
+timeout_seconds = 600
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::grouped_tests::original_grouped_preparation_healthy","--","--ignored","--exact","--nocapture","--test-threads=1"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+
+[[gate]]
+id = "tool.hydracache-long-run-supervisor-074.original-grouped-preparation-refusals"
+kind = "external_tool"
+source = "tools/long-run-supervisor-074/src/diagnostic_grouped_preparation_join_tests.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "hydracache_long_run_supervisor_074"
+test = "original_grouped_preparation_refusals"
+cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
+env = ""
+reason = "Test-only grouped nonexecuting schedule; no start, send or production admission"
+tier = "manual"
+required_features = []
+required_env = ["HC074_START_MATERIAL_BUNDLE"]
+required_tools = ["cargo"]
+timeout_seconds = 600
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::grouped_tests::original_grouped_preparation_refusals","--","--ignored","--exact","--nocapture","--test-threads=1"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+
 # END ORIGINAL SAFETY ALARM GATES

@@ -1,4 +1,6 @@
 use super::*;
+#[path = "diagnostic_grouped_preparation_join_tests.rs"]
+mod grouped_tests;
 #[path = "diagnostic_validation_leaf_cost_tests.rs"]
 mod leaf_cost_tests;
 use crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::start_material::pipe_transport::safety_alarm::OriginalSafetyAlarmError;
