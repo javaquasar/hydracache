@@ -1451,3 +1451,22 @@ There is no named listener, external producer, CLI or independently versioned
 reader. No migration or durable artifact is introduced. Failure notification is
 best effort after receiver loss; the guardian retains the fence regardless.
 This protocol does not replace any signed lifecycle record or manager ACK.
+
+## Private original barred custody notices
+
+The separate original-barred-custody-notice-074-v1 protocol uses one inherited
+SOCK_SEQPACKET within the same executable image, with no external producer,
+listener, CLI or attach API. Each notice is exactly one byte: ASCII P means
+pending isolation only, E original-alarm expiry, F isolation/observation failure,
+and L unexpected peer activity or loss. P is accepted exactly once during initial
+pending construction; duplicate, unknown, empty, oversized or truncated notices
+refuse. A later notice, missing notice, disconnect or terminal child cannot
+authorize readiness, execution, collector release or recovered acknowledgement.
+
+The child accepts no command and never consumes/rearms the original alarm. Its
+failure notices are best effort; expiry or peer loss retains the fence regardless
+of delivery. Cancellation uses the atomically created child pidfd while the
+parent retains its exclusive original-owner borrow, not a protocol release or
+completion command. Deploy only the same-image matched parent/child; old guardian
+notice readers are separate and must not reinterpret this vocabulary. No durable
+artifact, migration, public wire protocol or production start admission is added.

@@ -1,4 +1,6 @@
 //! Private original descriptor inventory, not guardian enrollment or start.
+#[path = "diagnostic_original_barred_custody.rs"]
+mod barred_custody;
 use super::*;
 use std::os::fd::RawFd;
 

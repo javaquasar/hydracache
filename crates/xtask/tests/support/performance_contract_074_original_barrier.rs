@@ -1,4 +1,6 @@
 //! The new fork-ordering proof changes no existing runtime or raw child body.
+#[path = "performance_contract_074_barred_custody.rs"]
+mod barred_custody;
 const GATES: &str = r###"
 # BEGIN ORIGINAL BARRIER VALIDATION GATES
 [[gate]]
@@ -142,6 +144,8 @@ fn once(raw: &str, from: &str) -> String {
     raw.replacen(from, "", 1)
 }
 pub(super) fn normalize(path: &str, raw: &str) -> String {
+    let current = barred_custody::normalize(path, raw);
+    let raw = current.as_str();
     match path {
         "tools/long-run-supervisor-074/src/diagnostic_original_descriptor_plan_tests.rs" => {
             once(raw, "pub(super) use original_owner;\n")

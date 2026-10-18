@@ -1,4 +1,6 @@
 use super::*;
+#[path = "diagnostic_original_barred_custody_tests.rs"]
+mod barred_custody_tests;
 #[path = "diagnostic_original_descriptor_holder_tests.rs"]
 mod holder;
 
