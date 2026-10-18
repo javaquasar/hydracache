@@ -1,0 +1,23 @@
+HC074-BARRED-CUSTODY-SERVER preflight=ok supervisor_pid=8839 restarts=0
+f37e9384fe303864be8ca01ca88af4c726d05518ec51d03474c7f0a1c3e1aa79  tests-194
+HC074-BARRED-CUSTODY-SCREEN compiler=194 begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::original_barred_custody_screen ... HC074-BARRED-CUSTODY-CONTROL sample=0 create_ipc=34 validate_ipc=34 inherited=3 mask_exact=true unchanged=true start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1105 filtered out; finished in 13.68s
+
+HC074-BARRED-CUSTODY-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-BARRED-CUSTODY-SCREEN compiler=194 completed=true
+46f18dcce5bff1227b00e1f160face198f0fe5fe3fa4d462b8cdc33675bda879  tests-188
+HC074-BARRED-CUSTODY-SCREEN compiler=188 begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::original_barred_custody_screen ... HC074-BARRED-CUSTODY-CONTROL sample=0 create_ipc=34 validate_ipc=34 inherited=3 mask_exact=true unchanged=true start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1105 filtered out; finished in 13.67s
+
+HC074-BARRED-CUSTODY-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-BARRED-CUSTODY-SCREEN compiler=188 completed=true

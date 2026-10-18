@@ -1,0 +1,3 @@
+467566a7ffaab63edd073a92bc8d808925ac48b086cd5f91b23360f9551cda12  postflight.sh
+HC074-BARRED-CUSTODY-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-BARRED-CUSTODY-FINAL old_fixture_absent=true new_fixture_absent=true supervisor_unchanged=true admission=false

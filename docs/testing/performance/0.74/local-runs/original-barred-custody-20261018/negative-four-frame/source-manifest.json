@@ -1,0 +1,52 @@
+{
+  "qualification": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "sources": [
+    {
+      "path": "crates/xtask/tests/support/performance_contract_074_barred_custody.rs",
+      "sha256": "732e294bca9d4190283479c7be8fbb2bbb525920977e853b5d28f7c645d785bd",
+      "saved": "crates__xtask__tests__support__performance_contract_074_barred_custody.rs.source"
+    },
+    {
+      "path": "crates/xtask/tests/support/performance_contract_074_original_barrier.rs",
+      "sha256": "56fa1c2c3b52ec27f398f46c1452b9a2f525bf8638361b3d57730a1750215f40",
+      "saved": "crates__xtask__tests__support__performance_contract_074_original_barrier.rs.source"
+    },
+    {
+      "path": "docs/COMPAT.md",
+      "sha256": "afe8578034555aa9f3ebb2c562109dee9c42d8a69ca7c804066d1951d2bbf7ee",
+      "saved": "docs__COMPAT.md.source"
+    },
+    {
+      "path": "docs/testing/gated-test-registry.toml",
+      "sha256": "e4cc5e794e5ec468ebec4e03678ce7b47f41ba1be4a7cc9acdc0132f610500fe",
+      "saved": "docs__testing__gated-test-registry.toml.source"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_barred_custody.rs",
+      "sha256": "1e4adc13713d4e944c69f807acbc98ad0fde44e60a5820c19d180c9062ece2c5",
+      "saved": "tools__long-run-supervisor-074__src__diagnostic_original_barred_custody.rs.source"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_barred_custody_test_api.rs",
+      "sha256": "b97ec6c7704216cfe3700ecdf72b43fc7f7aca0b6c37ac50f48a551bc34b493e",
+      "saved": "tools__long-run-supervisor-074__src__diagnostic_original_barred_custody_test_api.rs.source"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_barred_custody_tests.rs",
+      "sha256": "b5b36deb12d6c67f1cbb2ef5f262fe5f017b35932785555a4ab197a30514b06b",
+      "saved": "tools__long-run-supervisor-074__src__diagnostic_original_barred_custody_tests.rs.source"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_descriptor_plan.rs",
+      "sha256": "62157d77b0e8b5d26a6e0d7802e593eb451872347320140a2d12869f9e1f4aaa",
+      "saved": "tools__long-run-supervisor-074__src__diagnostic_original_descriptor_plan.rs.source"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_descriptor_plan_tests.rs",
+      "sha256": "7978cd67bf5fca11aa06e17d949d1caf6f757b2e9f21735918875f9f147f63d4",
+      "saved": "tools__long-run-supervisor-074__src__diagnostic_original_descriptor_plan_tests.rs.source"
+    }
+  ],
+  "patch_sha256": "968f17f85475e64fe50fbeedf77f435f896e683bcea9949c0eb068609c749ba0",
+  "base": "5d55cf96510b70e70acfcffb6adeeb3d1e8c8c1e"
+}

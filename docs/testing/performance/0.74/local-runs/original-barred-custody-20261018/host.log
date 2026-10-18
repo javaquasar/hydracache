@@ -1,0 +1,122 @@
+HC074-BARRED-CUSTODY-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-BARRED-CUSTODY-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-BARRED-CUSTODY-COHORT compiler=194 begin=true
+f37e9384fe303864be8ca01ca88af4c726d05518ec51d03474c7f0a1c3e1aa79  tests-194
+
+running 5 tests
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::test_api::original_barred_clone_arguments_pin_atomically_without_shared_state ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::tests::original_descriptor_capture_refuses_a_closed_fd_without_replacement ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::tests::original_descriptor_capture_refuses_nonzero_sink_position ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::tests::original_descriptor_roles_exclude_all_four_writer_aliases ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::tests::original_descriptor_roles_refuse_any_duplicate_or_negative_slot ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 1101 filtered out; finished in 0.00s
+
+HC074-BARRED-CUSTODY-PHASE name=healthy begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::original_barred_custody_healthy ... HC074-BARRED-CUSTODY-CONTROL sample=0 create_ipc=34 validate_ipc=34 inherited=3 mask_exact=true unchanged=true start=false
+HC074-BARRED-CUSTODY-CONTROL sample=1 create_ipc=34 validate_ipc=34 inherited=3 mask_exact=true unchanged=true start=false
+HC074-BARRED-CUSTODY-CONTROL sample=2 create_ipc=34 validate_ipc=34 inherited=3 mask_exact=true unchanged=true start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1105 filtered out; finished in 40.91s
+
+HC074-BARRED-CUSTODY-PHASE name=healthy completed=true
+HC074-BARRED-CUSTODY-PHASE name=refusals begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::original_barred_custody_refusals ... HC074-BARRED-CUSTODY-REFUSAL seed=0x0740bc18 case=clone-error reason=Io(Os { code: 11, kind: WouldBlock, message: "Resource temporarily unavailable" }) mask_exact=true sticky=true unchanged=true start=false
+HC074-BARRED-CUSTODY-REFUSAL seed=0x0740bc18 case=restore-error reason=Io(Os { code: 5, kind: Uncategorized, message: "Input/output error" }) mask_exact=true sticky=true unchanged=true start=false
+HC074-BARRED-CUSTODY-REFUSAL seed=0x0740bc18 case=trust reason=Original(Original(Transport(Material(Outputs(Original(Original(Original(Causal(Reservation(Attempt(Controller(Original(Input(Invalid)))))))))))))) mask_exact=true sticky=true unchanged=true start=false
+HC074-BARRED-CUSTODY-REFUSAL seed=0x0740bc18 case=output reason=Original(Original(Transport(Material(Outputs(Invalid))))) mask_exact=true sticky=true unchanged=true start=false
+HC074-BARRED-CUSTODY-REFUSAL seed=0x0740bc18 case=message reason=Original(Original(Binding)) mask_exact=true sticky=true unchanged=true start=false
+HC074-BARRED-CUSTODY-REFUSAL seed=0x0740bc18 case=custody-flags reason=Original(Storage(Document)) mask_exact=true sticky=true unchanged=true start=false
+HC074-BARRED-CUSTODY-REFUSAL seed=0x0740bc18 case=child-kill reason=Child mask_exact=true sticky=true unchanged=true start=false
+HC074-BARRED-CUSTODY-REFUSAL seed=0x0740bc18 case=final-expiry reason=Original(Original(Expired)) mask_exact=true sticky=true unchanged=true start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1105 filtered out; finished in 105.24s
+
+HC074-BARRED-CUSTODY-PHASE name=refusals completed=true
+HC074-BARRED-CUSTODY-PHASE name=process_matrix begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::original_barred_custody_process_matrix ... HC074-BARRED-CUSTODY-PROCESS seed=0x0740bd18 repeat=1 case=parent-alias-close inherited=3 retained=true signal=9 unchanged=true start=false
+HC074-BARRED-CUSTODY-PROCESS seed=0x0740bd18 repeat=1 case=autonomous-expiry inherited=3 retained=true signal=9 unchanged=true start=false
+HC074-BARRED-CUSTODY-PROCESS seed=0x0740bd18 repeat=1 case=peer-lost inherited=3 retained=true signal=9 unchanged=true start=false
+HC074-BARRED-CUSTODY-PROCESS seed=0x0740bd18 repeat=2 case=parent-alias-close inherited=3 retained=true signal=9 unchanged=true start=false
+HC074-BARRED-CUSTODY-PROCESS seed=0x0740bd18 repeat=2 case=autonomous-expiry inherited=3 retained=true signal=9 unchanged=true start=false
+HC074-BARRED-CUSTODY-PROCESS seed=0x0740bd18 repeat=2 case=peer-lost inherited=3 retained=true signal=9 unchanged=true start=false
+HC074-BARRED-CUSTODY-PROCESS seed=0x0740bd18 repeat=3 case=parent-alias-close inherited=3 retained=true signal=9 unchanged=true start=false
+HC074-BARRED-CUSTODY-PROCESS seed=0x0740bd18 repeat=3 case=autonomous-expiry inherited=3 retained=true signal=9 unchanged=true start=false
+HC074-BARRED-CUSTODY-PROCESS seed=0x0740bd18 repeat=3 case=peer-lost inherited=3 retained=true signal=9 unchanged=true start=false
+HC074-BARRED-CUSTODY-PROCESS completed=true cases=9 product=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1105 filtered out; finished in 122.01s
+
+HC074-BARRED-CUSTODY-PHASE name=process_matrix completed=true
+HC074-BARRED-CUSTODY-COHORT compiler=194 completed=true
+HC074-BARRED-CUSTODY-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-BARRED-CUSTODY-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-BARRED-CUSTODY-COHORT compiler=188 begin=true
+46f18dcce5bff1227b00e1f160face198f0fe5fe3fa4d462b8cdc33675bda879  tests-188
+
+running 5 tests
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::test_api::original_barred_clone_arguments_pin_atomically_without_shared_state ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::tests::original_descriptor_capture_refuses_a_closed_fd_without_replacement ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::tests::original_descriptor_capture_refuses_nonzero_sink_position ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::tests::original_descriptor_roles_exclude_all_four_writer_aliases ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::tests::original_descriptor_roles_refuse_any_duplicate_or_negative_slot ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 1101 filtered out; finished in 0.00s
+
+HC074-BARRED-CUSTODY-PHASE name=healthy begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::original_barred_custody_healthy ... HC074-BARRED-CUSTODY-CONTROL sample=0 create_ipc=34 validate_ipc=34 inherited=3 mask_exact=true unchanged=true start=false
+HC074-BARRED-CUSTODY-CONTROL sample=1 create_ipc=34 validate_ipc=34 inherited=3 mask_exact=true unchanged=true start=false
+HC074-BARRED-CUSTODY-CONTROL sample=2 create_ipc=34 validate_ipc=34 inherited=3 mask_exact=true unchanged=true start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1105 filtered out; finished in 41.01s
+
+HC074-BARRED-CUSTODY-PHASE name=healthy completed=true
+HC074-BARRED-CUSTODY-PHASE name=refusals begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::original_barred_custody_refusals ... HC074-BARRED-CUSTODY-REFUSAL seed=0x0740bc18 case=clone-error reason=Io(Os { code: 11, kind: WouldBlock, message: "Resource temporarily unavailable" }) mask_exact=true sticky=true unchanged=true start=false
+HC074-BARRED-CUSTODY-REFUSAL seed=0x0740bc18 case=restore-error reason=Io(Os { code: 5, kind: Uncategorized, message: "Input/output error" }) mask_exact=true sticky=true unchanged=true start=false
+HC074-BARRED-CUSTODY-REFUSAL seed=0x0740bc18 case=trust reason=Original(Original(Transport(Material(Outputs(Original(Original(Original(Causal(Reservation(Attempt(Controller(Original(Input(Invalid)))))))))))))) mask_exact=true sticky=true unchanged=true start=false
+HC074-BARRED-CUSTODY-REFUSAL seed=0x0740bc18 case=output reason=Original(Original(Transport(Material(Outputs(Invalid))))) mask_exact=true sticky=true unchanged=true start=false
+HC074-BARRED-CUSTODY-REFUSAL seed=0x0740bc18 case=message reason=Original(Original(Binding)) mask_exact=true sticky=true unchanged=true start=false
+HC074-BARRED-CUSTODY-REFUSAL seed=0x0740bc18 case=custody-flags reason=Original(Storage(Document)) mask_exact=true sticky=true unchanged=true start=false
+HC074-BARRED-CUSTODY-REFUSAL seed=0x0740bc18 case=child-kill reason=Child mask_exact=true sticky=true unchanged=true start=false
+HC074-BARRED-CUSTODY-REFUSAL seed=0x0740bc18 case=final-expiry reason=Original(Original(Expired)) mask_exact=true sticky=true unchanged=true start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1105 filtered out; finished in 105.19s
+
+HC074-BARRED-CUSTODY-PHASE name=refusals completed=true
+HC074-BARRED-CUSTODY-PHASE name=process_matrix begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::original_barred_custody_process_matrix ... HC074-BARRED-CUSTODY-PROCESS seed=0x0740bd18 repeat=1 case=parent-alias-close inherited=3 retained=true signal=9 unchanged=true start=false
+HC074-BARRED-CUSTODY-PROCESS seed=0x0740bd18 repeat=1 case=autonomous-expiry inherited=3 retained=true signal=9 unchanged=true start=false
+HC074-BARRED-CUSTODY-PROCESS seed=0x0740bd18 repeat=1 case=peer-lost inherited=3 retained=true signal=9 unchanged=true start=false
+HC074-BARRED-CUSTODY-PROCESS seed=0x0740bd18 repeat=2 case=parent-alias-close inherited=3 retained=true signal=9 unchanged=true start=false
+HC074-BARRED-CUSTODY-PROCESS seed=0x0740bd18 repeat=2 case=autonomous-expiry inherited=3 retained=true signal=9 unchanged=true start=false
+HC074-BARRED-CUSTODY-PROCESS seed=0x0740bd18 repeat=2 case=peer-lost inherited=3 retained=true signal=9 unchanged=true start=false
+HC074-BARRED-CUSTODY-PROCESS seed=0x0740bd18 repeat=3 case=parent-alias-close inherited=3 retained=true signal=9 unchanged=true start=false
+HC074-BARRED-CUSTODY-PROCESS seed=0x0740bd18 repeat=3 case=autonomous-expiry inherited=3 retained=true signal=9 unchanged=true start=false
+HC074-BARRED-CUSTODY-PROCESS seed=0x0740bd18 repeat=3 case=peer-lost inherited=3 retained=true signal=9 unchanged=true start=false
+HC074-BARRED-CUSTODY-PROCESS completed=true cases=9 product=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1105 filtered out; finished in 122.05s
+
+HC074-BARRED-CUSTODY-PHASE name=process_matrix completed=true
+HC074-BARRED-CUSTODY-COHORT compiler=188 completed=true
+HC074-BARRED-CUSTODY-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-BARRED-CUSTODY-HOST completed=true supervisor_unchanged=true no_fixture_executable=true admission=false

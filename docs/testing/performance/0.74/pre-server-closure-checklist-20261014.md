@@ -463,3 +463,32 @@ controls, eighteen refusals, twenty-four selected SIGKILL cuts and separate
 cleanup. All 210 static contracts and focused local checks pass. The same
 supervisor/installed digests remain unchanged. This closes the test-holder
 ordering prerequisite only, not the production execution gates above.
+
+## Autonomous pending custodian before collector activation
+
+The [new custody component](diagnostic-original-barred-custody-plan-20261018.md)
+borrows the sealed original owner and inherits only its fence, original alarm and
+private socket. It remains output-incapable and barred, observes expiry without
+parent revalidation, and retains custody on expiry/peer loss. An atomic clone3
+pidfd replaces a numeric-PID pinning interval; no fallback is accepted. Complete
+unchanged original validation, exact draft comparison and final original deadline
+checks still close construction/revalidation. No ordinary detach or start exists.
+
+Both first-wrapper compiler screens reached the original Causal(Time) on later
+revalidation. Their complete rejected source is retained. The direct-owner
+replacement removes only that extra descriptor-plan construction frame and keeps
+the raw kernel code, all predicates and original origins unchanged. Its results
+cannot promote the withdrawn candidate.
+
+Before production, still enroll the actual collector and authenticated message
+delivery while the original message exists, controller/whole-cgroup writers,
+external guardian supervision and explicit active-cleanup failure handling.
+Pending cancellation is not proof of all-writer cessation or completion. Installed
+trust/receipt, installation and product/qualification admission remain separate.
+
+The [completed pending-custody packet](local-runs/original-barred-custody-20261018/README.md)
+passes six controls, sixteen refusals and eighteen selected process cases on
+both GNU compiler cohorts, plus two first screens, local 32+5 units per compiler
+and 213 static contracts. It retains both negative screens/source separately and
+verifies unchanged raw kernel code and host installation. Autonomous retention
+on the original alarm is established; the production gates above are still open.

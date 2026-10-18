@@ -12396,3 +12396,56 @@ first screens, 32+4 local fast units per compiler and all 210 static contracts
 pass. The supervisor, installed executable/receipt and original deadlines remain
 unchanged. This establishes the selected order under real process loss, while
 leaving production guardian enrollment and authenticated delivery as actual work.
+
+## Autonomous custody cannot depend on the next parent check
+
+A barred holder can prove descriptor inheritance without being a watchdog. The
+earlier fixture waits for a private command and does not inspect its alarm while
+waiting. The next [custody component](../testing/performance/0.74/diagnostic-original-barred-custody-plan-20261018.md)
+therefore creates a private ordinary-build custodian that inherits only the
+original fence, the same selected timer and a notice socket. It has no stream or
+output writer. After isolation it observes that timer without parent validation,
+never reads or rearms it, and keeps the fence after expiry or peer loss. Its
+pending notice is not permission to send, collect or start.
+
+The new process and its pidfd are created atomically with clone3. This removes
+the interval in which parent code would know only a numerical child PID. Handler
+blocking precedes creation; exact-mask restoration occurs only after an owned
+pidfd exists. Cleanup never falls back to signalling a numeric PID. The production
+wrapper retains an exclusive original-owner borrow until its child field drops;
+normal cancellation is tested through an independently duplicated pidfd. That
+cancellation is still not successful cessation of an active writer tree.
+
+The first composition exposed another cost boundary. It validated the original
+custody, created a separately validated descriptor plan, created the custodian
+under another complete frame, then attempted later full revalidation. Both
+compiler screens passed construction but refused that final frame with original
+Causal(Time). The rejected binaries, full nine-file source capsule and screens
+remain reproducible; its larger matrix was not run. Raising a timeout would have
+changed the safety claim rather than fixed the composition.
+
+The replacement removes the descriptor-plan construction layer, not checks inside
+the complete frame. It captures the same private draft directly from the sealed
+original owner, starts the output-incapable custodian, then closes with unchanged
+full validation, exact identity comparison, child observation and original deadline
+probes. Later revalidation repeats that complete frame. The raw kernel code is
+unchanged between candidates. Both new first screens pass construction and later
+validation with 34 authentication and signature calls each, under the same four
+immutable origins. This is a validated composition boundary, not a throughput gain.
+
+Collector transfer and authenticated delivery remain different responsibilities.
+The parent still owns the original unsent message and sinks; there is no ordinary
+detach or activation API. Future production execution must bind the real collector,
+all writers and controller, supervise the final guardian independently and retain
+durable history through uncertain acknowledgement and cleanup. A pending watchdog
+with no output capability is useful preparation, not a completed production launch.
+
+The [completed pending-custody packet](../testing/performance/0.74/local-runs/original-barred-custody-20261018/README.md)
+passes six repeated controls, sixteen refusals and eighteen selected process
+cases across both GNU compilers, with separate constructor-death and cleanup
+counts. Both first screens, local 32+5 units per compiler and 213 static contracts
+pass. Offline verification checks the full rejected source/input capsule, both
+negative screens and the unchanged raw kernel body alongside the new evidence.
+Final host checks retain the supervisor and installed digests and find no old/new
+fixture process. None of these correctness results is a product throughput claim
+or admission to execute an original worker.

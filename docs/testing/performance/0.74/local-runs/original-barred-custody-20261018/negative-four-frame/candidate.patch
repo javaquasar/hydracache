@@ -1,0 +1,1343 @@
+diff --git a/crates/xtask/tests/support/performance_contract_074_barred_custody.rs b/crates/xtask/tests/support/performance_contract_074_barred_custody.rs
+new file mode 100644
+index 00000000..35749553
+--- /dev/null
++++ b/crates/xtask/tests/support/performance_contract_074_barred_custody.rs
+@@ -0,0 +1,361 @@
++//! Original-only pending custody; no old predicate or activated engine changes.
++const GATES: &str = r###"
++# BEGIN ORIGINAL BARRED CUSTODY GATES
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.barred-custody-screen"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_original_barred_custody_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "original_barred_custody_screen"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Private autonomous original pending custody; no collector or authenticated start"
++tier = "manual"
++required_features = []
++required_env = ["HC074_START_MATERIAL_BUNDLE"]
++required_tools = ["cargo"]
++timeout_seconds = 180
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::original_barred_custody_screen","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.barred-custody-healthy"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_original_barred_custody_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "original_barred_custody_healthy"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Private autonomous original pending custody; no collector or authenticated start"
++tier = "manual"
++required_features = []
++required_env = ["HC074_START_MATERIAL_BUNDLE"]
++required_tools = ["cargo"]
++timeout_seconds = 600
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::original_barred_custody_healthy","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.barred-custody-refusals"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_original_barred_custody_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "original_barred_custody_refusals"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Private autonomous original pending custody; no collector or authenticated start"
++tier = "manual"
++required_features = []
++required_env = ["HC074_START_MATERIAL_BUNDLE"]
++required_tools = ["cargo"]
++timeout_seconds = 1200
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::original_barred_custody_refusals","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.barred-custody-process-matrix"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_original_barred_custody_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "original_barred_custody_process_matrix"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Private autonomous original pending custody; no collector or authenticated start"
++tier = "manual"
++required_features = []
++required_env = ["HC074_START_MATERIAL_BUNDLE"]
++required_tools = ["cargo"]
++timeout_seconds = 1800
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::original_barred_custody_process_matrix","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
++# END ORIGINAL BARRED CUSTODY GATES
++"###;
++const COMPAT: &str = r###"
++## Private original barred custody notices
++
++The separate original-barred-custody-notice-074-v1 protocol uses one inherited
++SOCK_SEQPACKET within the same executable image, with no external producer,
++listener, CLI or attach API. Each notice is exactly one byte: ASCII P means
++pending isolation only, E original-alarm expiry, F isolation/observation failure,
++and L unexpected peer activity or loss. P is accepted exactly once during initial
++pending construction; duplicate, unknown, empty, oversized or truncated notices
++refuse. A later notice, missing notice, disconnect or terminal child cannot
++authorize readiness, execution, collector release or recovered acknowledgement.
++
++The child accepts no command and never consumes/rearms the original alarm. Its
++failure notices are best effort; expiry or peer loss retains the fence regardless
++of delivery. Cancellation uses the atomically created child pidfd while the
++parent retains its exclusive original-owner borrow, not a protocol release or
++completion command. Deploy only the same-image matched parent/child; old guardian
++notice readers are separate and must not reinterpret this vocabulary. No durable
++artifact, migration, public wire protocol or production start admission is added.
++"###;
++const SELF_REG: &str =
++    "#[path = \"performance_contract_074_barred_custody.rs\"]\nmod barred_custody;\n";
++const ADAPTER: &str =
++    "    let current = barred_custody::normalize(path, raw);\n    let raw = current.as_str();\n";
++const RUNTIME_REG: &str =
++    "#[path = \"diagnostic_original_barred_custody.rs\"]\nmod barred_custody;\n";
++const TEST_REG: &str =
++    "#[path = \"diagnostic_original_barred_custody_tests.rs\"]\nmod barred_custody_tests;\n";
++fn once(raw: &str, from: &str) -> String {
++    assert_eq!(
++        raw.matches(from).count(),
++        1,
++        "barred custody exception drift"
++    );
++    raw.replacen(from, "", 1)
++}
++pub(super) fn normalize(path: &str, raw: &str) -> String {
++    match path {
++        "tools/long-run-supervisor-074/src/diagnostic_original_descriptor_plan.rs" => {
++            once(raw, RUNTIME_REG)
++        }
++        "tools/long-run-supervisor-074/src/diagnostic_original_descriptor_plan_tests.rs" => {
++            once(raw, TEST_REG)
++        }
++        "crates/xtask/tests/support/performance_contract_074_original_barrier.rs" => {
++            once(&once(raw, SELF_REG), ADAPTER)
++        }
++        "docs/testing/gated-test-registry.toml" => once(raw, GATES),
++        "docs/COMPAT.md" => once(raw, COMPAT),
++        _ => raw.to_owned(),
++    }
++}
++fn root() -> std::path::PathBuf {
++    super::super::root()
++}
++fn read(path: &str) -> String {
++    std::fs::read_to_string(root().join(path))
++        .unwrap()
++        .replace('\r', "")
++}
++fn frozen(path: &str) -> String {
++    let out = std::process::Command::new("git")
++        .args(["show", &format!("7e2f5725:{path}")])
++        .current_dir(root())
++        .output()
++        .unwrap();
++    assert!(out.status.success());
++    String::from_utf8(out.stdout).unwrap().replace('\r', "")
++}
++#[test]
++fn barred_custody_preserves_all_old_frames_timer_origins_and_engine_bodies() {
++    for path in [
++        "tools/long-run-supervisor-074/src/diagnostic_original_descriptor_plan.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_original_descriptor_plan_tests.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_original_collector_custody_storage.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_original_grouped_preparation.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_original_collector_sinks.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_original_collector_pipes.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_original_fence.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_original_descriptor_holder_tests.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_autonomous_watchdog.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_lease.rs",
++        "crates/xtask/tests/support/performance_contract_074_original_barrier.rs",
++        "docs/COMPAT.md",
++        "docs/testing/gated-test-registry.toml",
++        "docs/testing/performance/0.74/qualification-manifest.toml",
++    ] {
++        assert_eq!(normalize(path, &read(path)), frozen(path), "{path}");
++    }
++    let path = "tools/long-run-supervisor-074/src/diagnostic_original_descriptor_plan.rs";
++    let raw = read(path);
++    for (a, b) in [
++        (
++            "self.original.validate(self.allow_fixture)?;",
++            "let _ = ();",
++        ),
++        ("if capture(self.original)? != self.inventory", "if false"),
++        ("self.original.inspect_deadline()", "Ok(())"),
++    ] {
++        assert_ne!(normalize(path, &raw.replace(a, b)), frozen(path));
++    }
++    assert!(std::panic::catch_unwind(|| normalize(path, &raw.replace(RUNTIME_REG, ""))).is_err());
++    assert_ne!(
++        normalize(path, &format!("{raw}\nfn bypass() {{}}\n")),
++        frozen(path)
++    );
++}
++fn protocol_closed(raw: &str) -> bool {
++    raw.contains("self.plan.revalidate()?;")
++        && raw.contains("self.plan.original.inspect_deadline()?;")
++        && raw.contains("child.alive()?;")
++        && raw.contains("if result.is_err()")
++        && raw.contains("self.plan.original.refuse();")
++        && raw.contains("kernel: Option<KernelCustodian>,\n    plan: OriginalDescriptorPlan")
++}
++#[test]
++fn barred_custody_consumes_original_plan_and_keeps_child_below_full_live_checks() {
++    let raw = read("tools/long-run-supervisor-074/src/diagnostic_original_barred_custody.rs");
++    assert!(protocol_closed(&raw));
++    for needle in [
++        "self.plan.revalidate()?;",
++        "self.plan.original.inspect_deadline()?;",
++        "child.alive()?;",
++        "self.plan.original.refuse();",
++    ] {
++        assert!(!protocol_closed(&raw.replace(needle, "")), "{needle}");
++    }
++    for needed in [
++        "capture(held.plan.original)? != held.plan.inventory",
++        "held.plan.original.inspect_deadline()?;",
++        "[held.plan.inventory.fds[0], held.plan.inventory.fds[1]]",
++        "held.validate()?;",
++        "held.ready = true;",
++        "held: Box::new(held)",
++    ] {
++        assert!(raw.contains(needed), "{needed}");
++    }
++    for denied in [
++        "pub fn ",
++        "timerfd_create",
++        "timerfd_settime",
++        "libc::write",
++        "libc::fsync",
++        "libc::flock",
++        "Command::",
++        "Connection::",
++        "impl Clone",
++        "CLOCK_REALTIME",
++        "SYS_kill",
++        "SYS_pidfd_open",
++    ] {
++        assert!(!raw.contains(denied), "{denied}");
++    }
++    assert!(
++        raw.find("kernel: Option<KernelCustodian>").unwrap()
++            < raw.find("plan: OriginalDescriptorPlan").unwrap()
++    );
++}
++#[test]
++fn barred_custody_raw_continuation_has_no_output_or_activation_and_pins_atomically() {
++    let raw = read("tools/long-run-supervisor-074/src/diagnostic_original_barred_custody.rs");
++    let body = raw
++        .split("fn child(")
++        .nth(1)
++        .unwrap()
++        .split("fn clone_arguments")
++        .next()
++        .unwrap();
++    for denied in [
++        "File::",
++        "std::io",
++        "unwrap(",
++        "assert!",
++        "Vec::",
++        "format!",
++        "println!",
++        "libc::read",
++        "libc::recv",
++        "libc::close(",
++        "_exit",
++        "libc::write",
++        "timerfd_settime",
++    ] {
++        assert!(!body.contains(denied), "{denied}");
++    }
++    for needed in [
++        "SYS_close_range",
++        "notice(peer, b'P')",
++        "poll[0].fd = -1",
++        "poll[1].revents != 0",
++        "b'E'",
++        "b'F'",
++        "b'L'",
++    ] {
++        assert!(body.contains(needed), "{needed}");
++    }
++    assert!(raw.find("libc::SIG_SETMASK,").unwrap() < raw.find("libc::SYS_clone3").unwrap());
++    assert!(raw.find("let owned = (pid > 0)").unwrap() < raw.find("let restored =").unwrap());
++    assert!(raw.contains("arguments[0] = libc::CLONE_PIDFD as u64"));
++    assert!(raw.contains("arguments[4] = libc::SIGCHLD as u64"));
++    assert!(raw.contains("libc::SYS_pidfd_send_signal"));
++    assert!(raw.contains("libc::WTERMSIG(status) == libc::SIGKILL"));
++    let tests =
++        read("tools/long-run-supervisor-074/src/diagnostic_original_barred_custody_tests.rs");
++    for needed in [
++        "call_count(&report, Stage::Bind)",
++        "call_count(&report, Stage::Checks)",
++        "mask(), parent_mask",
++        "!reason.contains(\"Time\")",
++        "Original(Original(Expired))",
++        "repeat in 1..=3",
++        "kernel.wait_expired_for_test()",
++        "kernel.disconnect_for_test()",
++        "retained_context_refuses_for_test(root)",
++    ] {
++        assert!(tests.contains(needed), "{needed}");
++    }
++    assert!(read(
++        "tools/long-run-supervisor-074/src/diagnostic_original_barred_custody_test_api.rs"
++    )
++    .contains("fn detach_for_test"));
++    assert!(
++        raw.contains("#[cfg(test)]\n#[path = \"diagnostic_original_barred_custody_test_api.rs\"]")
++    );
++    assert!(read("docs/COMPAT.md").contains(COMPAT));
++}
+diff --git a/crates/xtask/tests/support/performance_contract_074_original_barrier.rs b/crates/xtask/tests/support/performance_contract_074_original_barrier.rs
+index 4f628967..956a5c1f 100644
+--- a/crates/xtask/tests/support/performance_contract_074_original_barrier.rs
++++ b/crates/xtask/tests/support/performance_contract_074_original_barrier.rs
+@@ -1,4 +1,6 @@
+ //! The new fork-ordering proof changes no existing runtime or raw child body.
++#[path = "performance_contract_074_barred_custody.rs"]
++mod barred_custody;
+ const GATES: &str = r###"
+ # BEGIN ORIGINAL BARRIER VALIDATION GATES
+ [[gate]]
+@@ -142,6 +144,8 @@ fn once(raw: &str, from: &str) -> String {
+     raw.replacen(from, "", 1)
+ }
+ pub(super) fn normalize(path: &str, raw: &str) -> String {
++    let current = barred_custody::normalize(path, raw);
++    let raw = current.as_str();
+     match path {
+         "tools/long-run-supervisor-074/src/diagnostic_original_descriptor_plan_tests.rs" => {
+             once(raw, "pub(super) use original_owner;\n")
+diff --git a/docs/COMPAT.md b/docs/COMPAT.md
+index a5da68d6..1c7cc45a 100644
+--- a/docs/COMPAT.md
++++ b/docs/COMPAT.md
+@@ -1451,3 +1451,22 @@ There is no named listener, external producer, CLI or independently versioned
+ reader. No migration or durable artifact is introduced. Failure notification is
+ best effort after receiver loss; the guardian retains the fence regardless.
+ This protocol does not replace any signed lifecycle record or manager ACK.
++
++## Private original barred custody notices
++
++The separate original-barred-custody-notice-074-v1 protocol uses one inherited
++SOCK_SEQPACKET within the same executable image, with no external producer,
++listener, CLI or attach API. Each notice is exactly one byte: ASCII P means
++pending isolation only, E original-alarm expiry, F isolation/observation failure,
++and L unexpected peer activity or loss. P is accepted exactly once during initial
++pending construction; duplicate, unknown, empty, oversized or truncated notices
++refuse. A later notice, missing notice, disconnect or terminal child cannot
++authorize readiness, execution, collector release or recovered acknowledgement.
++
++The child accepts no command and never consumes/rearms the original alarm. Its
++failure notices are best effort; expiry or peer loss retains the fence regardless
++of delivery. Cancellation uses the atomically created child pidfd while the
++parent retains its exclusive original-owner borrow, not a protocol release or
++completion command. Deploy only the same-image matched parent/child; old guardian
++notice readers are separate and must not reinterpret this vocabulary. No durable
++artifact, migration, public wire protocol or production start admission is added.
+diff --git a/docs/testing/gated-test-registry.toml b/docs/testing/gated-test-registry.toml
+index 2747fd7e..3cc37e81 100644
+--- a/docs/testing/gated-test-registry.toml
++++ b/docs/testing/gated-test-registry.toml
+@@ -10863,3 +10863,134 @@ platform = "linux"
+ [gate.command.env]
+ 
+ # END ORIGINAL BARRIER VALIDATION GATES
++
++# BEGIN ORIGINAL BARRED CUSTODY GATES
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.barred-custody-screen"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_original_barred_custody_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "original_barred_custody_screen"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Private autonomous original pending custody; no collector or authenticated start"
++tier = "manual"
++required_features = []
++required_env = ["HC074_START_MATERIAL_BUNDLE"]
++required_tools = ["cargo"]
++timeout_seconds = 180
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::original_barred_custody_screen","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.barred-custody-healthy"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_original_barred_custody_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "original_barred_custody_healthy"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Private autonomous original pending custody; no collector or authenticated start"
++tier = "manual"
++required_features = []
++required_env = ["HC074_START_MATERIAL_BUNDLE"]
++required_tools = ["cargo"]
++timeout_seconds = 600
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::original_barred_custody_healthy","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.barred-custody-refusals"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_original_barred_custody_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "original_barred_custody_refusals"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Private autonomous original pending custody; no collector or authenticated start"
++tier = "manual"
++required_features = []
++required_env = ["HC074_START_MATERIAL_BUNDLE"]
++required_tools = ["cargo"]
++timeout_seconds = 1200
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::original_barred_custody_refusals","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.barred-custody-process-matrix"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_original_barred_custody_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "original_barred_custody_process_matrix"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Private autonomous original pending custody; no collector or authenticated start"
++tier = "manual"
++required_features = []
++required_env = ["HC074_START_MATERIAL_BUNDLE"]
++required_tools = ["cargo"]
++timeout_seconds = 1800
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::original_barred_custody_process_matrix","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
++# END ORIGINAL BARRED CUSTODY GATES
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_original_barred_custody.rs b/tools/long-run-supervisor-074/src/diagnostic_original_barred_custody.rs
+new file mode 100644
+index 00000000..4d866e3e
+--- /dev/null
++++ b/tools/long-run-supervisor-074/src/diagnostic_original_barred_custody.rs
+@@ -0,0 +1,439 @@
++//! Autonomous pending custody only. No collector, authenticated send or start.
++use super::*;
++use std::os::fd::FromRawFd;
++
++#[derive(Debug, thiserror::Error)]
++pub(crate) enum BarredCustodyError {
++    #[error("original validation refused: {0}")]
++    Original(#[from] OriginalCustodyError),
++    #[error("pending custodian syscall failed: {0}")]
++    Io(#[from] std::io::Error),
++    #[error("pending custodian is terminal or its notice differs")]
++    Child,
++    #[error("original custodian alarm expired")]
++    Expired,
++    #[error("pending custody is already refused")]
++    Refused,
++}
++fn errno() -> i32 {
++    unsafe { *libc::__errno_location() }
++}
++fn park() -> ! {
++    loop {
++        unsafe { libc::poll(std::ptr::null_mut(), 0, -1) };
++    }
++}
++fn notice(fd: RawFd, byte: u8) {
++    unsafe { libc::send(fd, (&byte as *const u8).cast(), 1, libc::MSG_NOSIGNAL) };
++}
++// Raw clone continuation: stack and bounded syscalls only. Never invoke Rust
++// IO, validation, allocation, logging, unwinding, atfork hooks or destructors.
++fn child(keep: [RawFd; 3], alarm: RawFd, peer: RawFd) -> ! {
++    let mut first = 0u32;
++    for fd in keep {
++        if first < fd as u32
++            && unsafe { libc::syscall(libc::SYS_close_range, first, fd as u32 - 1, 0u32) } != 0
++        {
++            notice(peer, b'F');
++            park();
++        }
++        first = fd as u32 + 1;
++    }
++    if unsafe { libc::syscall(libc::SYS_close_range, first, u32::MAX, 0u32) } != 0 {
++        notice(peer, b'F');
++        park();
++    }
++    notice(peer, b'P');
++    let mut poll = [
++        libc::pollfd {
++            fd: alarm,
++            events: libc::POLLIN,
++            revents: 0,
++        },
++        libc::pollfd {
++            fd: peer,
++            events: libc::POLLIN,
++            revents: 0,
++        },
++    ];
++    loop {
++        let n = unsafe { libc::poll(poll.as_mut_ptr(), 2, -1) };
++        if n < 0 {
++            if errno() == libc::EINTR {
++                continue;
++            }
++            notice(peer, b'F');
++            park();
++        }
++        if poll[1].revents != 0 {
++            notice(peer, b'L');
++            park();
++        }
++        if poll[0].revents != 0 {
++            notice(
++                peer,
++                if poll[0].revents == libc::POLLIN {
++                    b'E'
++                } else {
++                    b'F'
++                },
++            );
++            // Sticky refusal: disable readiness polling, never consume/rearm
++            // the original timer or release custody after its absolute expiry.
++            poll[0].fd = -1;
++        }
++    }
++}
++fn clone_arguments(pidfd: &mut RawFd) -> [u64; 11] {
++    let mut arguments = [0u64; 11];
++    arguments[0] = libc::CLONE_PIDFD as u64;
++    arguments[1] = (pidfd as *mut RawFd) as u64;
++    arguments[4] = libc::SIGCHLD as u64;
++    arguments
++}
++pub(crate) struct KernelCustodian {
++    pid: libc::pid_t,
++    pinned: File,
++    peer: File,
++    #[cfg(test)]
++    child_peer: RawFd,
++}
++impl KernelCustodian {
++    fn spawn(original: [RawFd; 2], #[cfg(test)] fault: u8) -> Result<Self, BarredCustodyError> {
++        let mut fds = [-1; 2];
++        if unsafe {
++            libc::socketpair(
++                libc::AF_UNIX,
++                libc::SOCK_SEQPACKET | libc::SOCK_NONBLOCK | libc::SOCK_CLOEXEC,
++                0,
++                fds.as_mut_ptr(),
++            )
++        } != 0
++        {
++            return Err(std::io::Error::last_os_error().into());
++        }
++        let peer = unsafe { File::from_raw_fd(fds[0]) };
++        let send = unsafe { File::from_raw_fd(fds[1]) };
++        let mut keep = [original[0], original[1], send.as_raw_fd()];
++        keep.sort_unstable();
++        if keep[0] < 0 || keep.windows(2).any(|pair| pair[0] == pair[1]) {
++            return Err(BarredCustodyError::Child);
++        }
++        let mut pinned = -1;
++        let arguments = clone_arguments(&mut pinned);
++        let blocked = u64::MAX;
++        let mut previous = 0u64;
++        if unsafe {
++            libc::syscall(
++                libc::SYS_rt_sigprocmask,
++                libc::SIG_SETMASK,
++                &blocked,
++                &mut previous,
++                8usize,
++            )
++        } != 0
++        {
++            return Err(std::io::Error::last_os_error().into());
++        }
++        let pid = {
++            #[cfg(test)]
++            if fault == 1 {
++                unsafe { *libc::__errno_location() = libc::EAGAIN };
++                -1
++            } else {
++                unsafe {
++                    libc::syscall(
++                        libc::SYS_clone3,
++                        arguments.as_ptr(),
++                        std::mem::size_of_val(&arguments),
++                    )
++                }
++            }
++            #[cfg(not(test))]
++            unsafe {
++                libc::syscall(
++                    libc::SYS_clone3,
++                    arguments.as_ptr(),
++                    std::mem::size_of_val(&arguments),
++                )
++            }
++        };
++        if pid == 0 {
++            child(keep, original[1], send.as_raw_fd());
++        }
++        let creation_error = (pid < 0).then(std::io::Error::last_os_error);
++        // CLONE_PIDFD creates the exact owned pidfd atomically, with no PID-only
++        // pinning window. Own cleanup BEFORE signal restoration can fail.
++        let owned = (pid > 0).then(|| Self {
++            pid: pid as libc::pid_t,
++            pinned: unsafe { File::from_raw_fd(pinned) },
++            peer,
++            #[cfg(test)]
++            child_peer: send.as_raw_fd(),
++        });
++        let restored = unsafe {
++            libc::syscall(
++                libc::SYS_rt_sigprocmask,
++                libc::SIG_SETMASK,
++                &previous,
++                0usize,
++                8usize,
++            )
++        };
++        if restored != 0 {
++            return Err(std::io::Error::last_os_error().into());
++        }
++        #[cfg(test)]
++        if fault == 2 {
++            // Parent-only error propagation after REAL restoration; never
++            // leave the host thread's inherited handler mask changed.
++            return Err(std::io::Error::from_raw_os_error(libc::EIO).into());
++        }
++        if let Some(error) = creation_error {
++            return Err(error.into());
++        }
++        let owned = owned.ok_or(BarredCustodyError::Child)?;
++        if unsafe { libc::fcntl(owned.pinned.as_raw_fd(), libc::F_GETFD) } != libc::FD_CLOEXEC {
++            return Err(BarredCustodyError::Child);
++        }
++        Ok(owned)
++    }
++    fn alive(&self) -> Result<(), BarredCustodyError> {
++        let mut poll = libc::pollfd {
++            fd: self.pinned.as_raw_fd(),
++            events: libc::POLLIN,
++            revents: 0,
++        };
++        if unsafe { libc::poll(&mut poll, 1, 0) } != 0 || poll.revents != 0 {
++            return Err(BarredCustodyError::Child);
++        }
++        Ok(())
++    }
++    fn observe(&self, alarm: RawFd, initial: bool) -> Result<(), BarredCustodyError> {
++        loop {
++            let mut poll = [
++                libc::pollfd {
++                    fd: self.pinned.as_raw_fd(),
++                    events: libc::POLLIN,
++                    revents: 0,
++                },
++                libc::pollfd {
++                    fd: alarm,
++                    events: libc::POLLIN,
++                    revents: 0,
++                },
++                libc::pollfd {
++                    fd: self.peer.as_raw_fd(),
++                    events: libc::POLLIN,
++                    revents: 0,
++                },
++            ];
++            let n = unsafe { libc::poll(poll.as_mut_ptr(), 3, if initial { -1 } else { 0 }) };
++            if n < 0 {
++                if errno() == libc::EINTR {
++                    continue;
++                }
++                return Err(std::io::Error::last_os_error().into());
++            }
++            if poll[0].revents != 0 {
++                return Err(BarredCustodyError::Child);
++            }
++            if poll[1].revents != 0 {
++                return Err(BarredCustodyError::Expired);
++            }
++            if poll[2].revents != 0 {
++                let mut byte = 0u8;
++                let n = unsafe {
++                    libc::recv(
++                        self.peer.as_raw_fd(),
++                        (&mut byte as *mut u8).cast(),
++                        1,
++                        libc::MSG_TRUNC,
++                    )
++                };
++                if n == 1 && initial && byte == b'P' {
++                    return Ok(());
++                }
++                return Err(if n == 1 && byte == b'E' {
++                    BarredCustodyError::Expired
++                } else {
++                    BarredCustodyError::Child
++                });
++            }
++            if !initial {
++                return Ok(());
++            }
++        }
++    }
++    fn stop(&mut self) -> std::io::Result<()> {
++        if self.pid == 0 {
++            return Ok(());
++        }
++        loop {
++            if unsafe {
++                libc::syscall(
++                    libc::SYS_pidfd_send_signal,
++                    self.pinned.as_raw_fd(),
++                    libc::SIGKILL,
++                    0usize,
++                    0u32,
++                )
++            } == 0
++                || errno() == libc::ESRCH
++            {
++                break;
++            }
++            if errno() != libc::EINTR {
++                return Err(std::io::Error::last_os_error());
++            }
++        }
++        loop {
++            let mut status = 0;
++            let n = unsafe { libc::waitpid(self.pid, &mut status, 0) };
++            if n == self.pid {
++                self.pid = 0;
++                if libc::WIFSIGNALED(status) && libc::WTERMSIG(status) == libc::SIGKILL {
++                    return Ok(());
++                }
++                return Err(std::io::Error::new(
++                    std::io::ErrorKind::InvalidData,
++                    "unexpected barred custodian wait status",
++                ));
++            }
++            if n < 0 && errno() == libc::EINTR {
++                continue;
++            }
++            return Err(std::io::Error::last_os_error());
++        }
++    }
++}
++impl Drop for KernelCustodian {
++    fn drop(&mut self) {
++        // Cancellation only, while the production owner's original borrow is
++        // still live. Drop is not a successful writer-cessation/completion API.
++        let _ = self.stop();
++    }
++}
++
++/// Pending custody cannot detach, start, collect or send in an ordinary build.
++pub(crate) struct OriginalBarredCustody<'held, 'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p> {
++    // Stop/reap the pending child BEFORE ending the exclusive original borrow.
++    kernel: Option<KernelCustodian>,
++    plan: OriginalDescriptorPlan<'held, 'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++    ready: bool,
++}
++pub(crate) struct BarredCustodyFailure<'held, 'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p> {
++    error: BarredCustodyError,
++    held: Box<OriginalBarredCustody<'held, 'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>>,
++}
++impl std::fmt::Debug for OriginalBarredCustody<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
++    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
++        f.debug_struct("OriginalBarredCustody")
++            .field("refused", &self.is_refused())
++            .finish_non_exhaustive()
++    }
++}
++impl std::fmt::Debug for BarredCustodyFailure<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
++    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
++        self.error.fmt(f)
++    }
++}
++impl OriginalBarredCustody<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
++    pub(crate) fn is_refused(&self) -> bool {
++        self.plan.original.is_refused()
++    }
++    fn validate(&mut self) -> Result<(), BarredCustodyError> {
++        let result = (|| {
++            if self.is_refused() {
++                return Err(BarredCustodyError::Refused);
++            }
++            let child = self.kernel.as_ref().ok_or(BarredCustodyError::Child)?;
++            child.alive()?;
++            self.plan.revalidate()?;
++            child.observe(self.plan.inventory.fds[1], false)?;
++            self.plan.original.inspect_deadline()?;
++            Ok(())
++        })();
++        if result.is_err() {
++            self.plan.original.refuse();
++        }
++        result
++    }
++    pub(crate) fn revalidate(&mut self) -> Result<(), BarredCustodyError> {
++        if !self.ready {
++            self.plan.original.refuse();
++            return Err(BarredCustodyError::Refused);
++        }
++        self.validate()
++    }
++}
++impl<'held, 'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>
++    OriginalDescriptorPlan<'held, 'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>
++{
++    pub(crate) fn prepare_barred_custody(
++        self,
++    ) -> Result<
++        OriginalBarredCustody<'held, 'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++        BarredCustodyFailure<'held, 'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++    > {
++        self.prepare_barred_with(
++            #[cfg(test)]
++            0,
++            #[cfg(test)]
++            |_| {},
++        )
++    }
++    fn prepare_barred_with(
++        self,
++        #[cfg(test)] fault: u8,
++        #[cfg(test)] checkpoint: impl FnOnce(
++            &mut OriginalBarredCustody<'held, 'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++        ),
++    ) -> Result<
++        OriginalBarredCustody<'held, 'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++        BarredCustodyFailure<'held, 'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++    > {
++        let mut held = OriginalBarredCustody {
++            kernel: None,
++            plan: self,
++            ready: false,
++        };
++        let result = (|| {
++            if held.is_refused() {
++                return Err(BarredCustodyError::Refused);
++            }
++            if capture(held.plan.original)? != held.plan.inventory {
++                return Err(OriginalCustodyError::Binding.into());
++            }
++            held.plan.original.inspect_deadline()?;
++            held.kernel = Some(KernelCustodian::spawn(
++                [held.plan.inventory.fds[0], held.plan.inventory.fds[1]],
++                #[cfg(test)]
++                fault,
++            )?);
++            held.kernel
++                .as_ref()
++                .ok_or(BarredCustodyError::Child)?
++                .observe(held.plan.inventory.fds[1], true)?;
++            #[cfg(test)]
++            checkpoint(&mut held);
++            held.validate()?;
++            held.ready = true;
++            Ok(())
++        })();
++        match result {
++            Ok(()) => Ok(held),
++            Err(error) => {
++                held.plan.original.refuse();
++                Err(BarredCustodyFailure {
++                    error,
++                    held: Box::new(held),
++                })
++            }
++        }
++    }
++}
++
++#[cfg(test)]
++#[path = "diagnostic_original_barred_custody_test_api.rs"]
++mod test_api;
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_original_barred_custody_test_api.rs b/tools/long-run-supervisor-074/src/diagnostic_original_barred_custody_test_api.rs
+new file mode 100644
+index 00000000..4607f06f
+--- /dev/null
++++ b/tools/long-run-supervisor-074/src/diagnostic_original_barred_custody_test_api.rs
+@@ -0,0 +1,134 @@
++//! Test-only cuts: no detach, FD or process accessor exists in ordinary builds.
++use super::*;
++impl<'held, 'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>
++    OriginalDescriptorPlan<'held, 'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>
++{
++    pub(crate) fn prepare_barred_fixture_for_test(
++        self,
++        fault: u8,
++        checkpoint: impl FnOnce(
++            &mut OriginalBarredCustody<'held, 'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++        ),
++    ) -> Result<
++        OriginalBarredCustody<'held, 'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++        BarredCustodyFailure<'held, 'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++    > {
++        assert_ne!(unsafe { libc::geteuid() }, 0);
++        self.prepare_barred_with(fault, checkpoint)
++    }
++}
++impl OriginalBarredCustody<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
++    pub(crate) fn assert_original_for_test(&self) {
++        let kernel = self.kernel.as_ref().unwrap();
++        kernel.alive().unwrap();
++        let mut actual = std::fs::read_dir(format!("/proc/{}/fd", kernel.pid))
++            .unwrap()
++            .map(|fd| {
++                fd.unwrap()
++                    .file_name()
++                    .to_str()
++                    .unwrap()
++                    .parse::<RawFd>()
++                    .unwrap()
++            })
++            .collect::<Vec<_>>();
++        actual.sort_unstable();
++        let mut expected = vec![
++            self.plan.inventory.fds[0],
++            self.plan.inventory.fds[1],
++            kernel.child_peer,
++        ];
++        expected.sort_unstable();
++        assert_eq!(actual, expected);
++        let (guardian, _, writers, _) = self.plan.layout_for_test();
++        assert!(actual.iter().all(|fd| !writers.contains(fd)));
++        assert!(guardian
++            .iter()
++            .filter(|fd| !expected.contains(fd))
++            .all(|fd| !actual.contains(fd)));
++    }
++    pub(crate) fn origins_for_test(&self) -> [u64; 6] {
++        self.plan.layout_for_test().3
++    }
++    pub(crate) fn tamper_for_test(&mut self, kind: &str) {
++        self.plan.tamper_for_test(kind);
++    }
++    pub(crate) fn kill_for_test(&mut self) {
++        self.kernel.as_mut().unwrap().stop().unwrap();
++    }
++    pub(crate) fn detach_for_test(mut self) -> KernelCustodian {
++        self.kernel.take().unwrap()
++    }
++    pub(crate) fn pinned_for_test(&self) -> File {
++        self.kernel.as_ref().unwrap().pinned.try_clone().unwrap()
++    }
++}
++impl BarredCustodyFailure<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
++    pub(crate) fn reason_for_test(&self) -> String {
++        format!("{:?}", self.error)
++    }
++    pub(crate) fn refused_for_test(&self) -> bool {
++        self.held.is_refused()
++    }
++    pub(crate) fn retry_for_test(&mut self) -> Result<(), BarredCustodyError> {
++        self.held.revalidate()
++    }
++}
++impl KernelCustodian {
++    pub(crate) fn assert_retained_for_test(&self) {
++        self.alive().unwrap();
++    }
++    pub(crate) fn disconnect_for_test(&self) {
++        assert_eq!(
++            unsafe { libc::shutdown(self.peer.as_raw_fd(), libc::SHUT_RDWR) },
++            0
++        );
++    }
++    pub(crate) fn wait_expired_for_test(&self) {
++        let mut poll = [
++            libc::pollfd {
++                fd: self.peer.as_raw_fd(),
++                events: libc::POLLIN,
++                revents: 0,
++            },
++            libc::pollfd {
++                fd: self.pinned.as_raw_fd(),
++                events: libc::POLLIN,
++                revents: 0,
++            },
++        ];
++        assert_eq!(unsafe { libc::poll(poll.as_mut_ptr(), 2, -1) }, 1);
++        assert_eq!(poll[1].revents, 0);
++        let mut byte = 0u8;
++        assert_eq!(
++            unsafe {
++                libc::recv(
++                    self.peer.as_raw_fd(),
++                    (&mut byte as *mut u8).cast(),
++                    1,
++                    libc::MSG_TRUNC,
++                )
++            },
++            1
++        );
++        assert_eq!(byte, b'E');
++        self.alive().unwrap();
++    }
++    pub(crate) fn finish_for_test(&mut self) {
++        self.stop().unwrap();
++    }
++}
++#[test]
++fn original_barred_clone_arguments_pin_atomically_without_shared_state() {
++    let mut pidfd = -1;
++    let args = clone_arguments(&mut pidfd);
++    assert_eq!(std::mem::size_of_val(&args), 88);
++    assert_eq!(args[0], libc::CLONE_PIDFD as u64);
++    assert_eq!(args[1], (&mut pidfd as *mut RawFd) as u64);
++    assert_eq!(args[4], libc::SIGCHLD as u64);
++    assert!(args
++        .iter()
++        .enumerate()
++        .filter(|(i, _)| ![0, 1, 4].contains(i))
++        .all(|(_, value)| *value == 0));
++}
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_original_barred_custody_tests.rs b/tools/long-run-supervisor-074/src/diagnostic_original_barred_custody_tests.rs
+new file mode 100644
+index 00000000..5b4abb78
+--- /dev/null
++++ b/tools/long-run-supervisor-074/src/diagnostic_original_barred_custody_tests.rs
+@@ -0,0 +1,177 @@
++use super::*;
++use std::fs::File;
++fn mask() -> u64 {
++    let mut value = 0u64;
++    assert_eq!(
++        unsafe {
++            libc::syscall(
++                libc::SYS_rt_sigprocmask,
++                libc::SIG_SETMASK,
++                0usize,
++                &mut value,
++                8usize,
++            )
++        },
++        0
++    );
++    value
++}
++fn terminal(file: &File) {
++    let mut poll = libc::pollfd {
++        fd: file.as_raw_fd(),
++        events: libc::POLLIN,
++        revents: 0,
++    };
++    assert_eq!(unsafe { libc::poll(&mut poll, 1, 0) }, 1);
++    assert_ne!(poll.revents & libc::POLLIN, 0);
++}
++fn healthy(samples: usize) {
++    for sample in 0..samples {
++        original_owner!(false, |held, _paths, root, leaf| {
++            let before = records(leaf);
++            let origins = held.origins_for_test();
++            let plan = held.plan_descriptors_fixture_for_test(|_| {}).unwrap();
++            let parent_mask = mask();
++            let (mut barred, report) = trace::capture(|| {
++                trace::stage(Stage::Bind);
++                plan.prepare_barred_custody().unwrap()
++            });
++            assert_eq!(mask(), parent_mask);
++            call_count(&report, Stage::Bind);
++            barred.assert_original_for_test();
++            let after = barred.origins_for_test();
++            assert_eq!(&after[..4], &origins[..4]);
++            assert!(after[4] >= origins[4] && after[5] >= after[4]);
++            let (_, report) = trace::capture(|| {
++                trace::stage(Stage::Checks);
++                barred.revalidate().unwrap();
++            });
++            call_count(&report, Stage::Checks);
++            barred.assert_original_for_test();
++            let pinned = barred.pinned_for_test();
++            busy(root);
++            assert_eq!(records(leaf), before);
++            drop(barred);
++            terminal(&pinned);
++            busy(root);
++            drop(held);
++            drop(crate::host_execution::lock_host_root(root).unwrap());
++            assert_eq!(records(leaf), before);
++            retained_context_refuses_for_test(root);
++            println!("HC074-BARRED-CUSTODY-CONTROL sample={sample} create_ipc=34 validate_ipc=34 inherited=3 mask_exact=true unchanged=true start=false");
++        });
++    }
++}
++#[test]
++#[ignore = "manual nonroot original autonomous barred custody healthy screen; no execution"]
++fn original_barred_custody_screen() {
++    healthy(1);
++}
++#[test]
++#[ignore = "manual nonroot original autonomous barred custody repeated healthy controls; no execution"]
++fn original_barred_custody_healthy() {
++    healthy(3);
++}
++#[test]
++#[ignore = "manual nonroot original barred custody live drift, creation errors and expiry; no execution"]
++fn original_barred_custody_refusals() {
++    let seed = 0x0740_bc18_u64;
++    for case in [
++        "clone-error",
++        "restore-error",
++        "trust",
++        "output",
++        "message",
++        "custody-flags",
++        "child-kill",
++        "final-expiry",
++    ] {
++        original_owner!(true, |held, paths, root, leaf| {
++            let before = records(leaf);
++            let plan = held.plan_descriptors_fixture_for_test(|_| {}).unwrap();
++            let parent_mask = mask();
++            let fault = match case {
++                "clone-error" => 1,
++                "restore-error" => 2,
++                _ => 0,
++            };
++            let mut failure = plan
++                .prepare_barred_fixture_for_test(fault, |barred| match case {
++                    "trust" => fs::write(&paths.worker, b"barred trust drift").unwrap(),
++                    "output" => fs::write(
++                        output(leaf).join("collector-attempt-v1/collector-stderr.bin"),
++                        b"unexpected",
++                    )
++                    .unwrap(),
++                    "child-kill" => barred.kill_for_test(),
++                    other => barred.tamper_for_test(other),
++                })
++                .unwrap_err();
++            assert_eq!(mask(), parent_mask);
++            let reason = failure.reason_for_test();
++            assert!(
++                !reason.contains("Time"),
++                "late time is not {case}: {reason}"
++            );
++            match case {
++                "clone-error" => assert!(reason.contains("code: 11"), "{reason}"),
++                "restore-error" => assert!(reason.contains("code: 5"), "{reason}"),
++                "trust" => assert!(reason.contains("Input(Invalid)"), "{reason}"),
++                "output" => assert!(reason.contains("Outputs(Invalid)"), "{reason}"),
++                "message" => assert!(reason.contains("Binding"), "{reason}"),
++                "custody-flags" => assert!(reason.contains("Storage(Document)"), "{reason}"),
++                "child-kill" => assert_eq!(reason, "Child"),
++                _ => assert_eq!(reason, "Original(Original(Expired))"),
++            }
++            assert!(failure.refused_for_test());
++            assert_eq!(
++                format!("{:?}", failure.retry_for_test().unwrap_err()),
++                "Refused"
++            );
++            busy(root);
++            drop(failure);
++            busy(root);
++            drop(held);
++            drop(crate::host_execution::lock_host_root(root).unwrap());
++            assert_eq!(records(leaf), before);
++            retained_context_refuses_for_test(root);
++            println!("HC074-BARRED-CUSTODY-REFUSAL seed=0x{seed:08x} case={case} reason={reason} mask_exact=true sticky=true unchanged=true start=false");
++        });
++    }
++}
++#[test]
++#[ignore = "manual nonroot original autonomous expiry, peer loss and exact custodian SIGKILL; no execution"]
++fn original_barred_custody_process_matrix() {
++    let seed = 0x0740_bd18_u64;
++    for repeat in 1..=3 {
++        for case in ["parent-alias-close", "autonomous-expiry", "peer-lost"] {
++            original_owner!(false, |held, _paths, root, leaf| {
++                let before = records(leaf);
++                let plan = held.plan_descriptors_fixture_for_test(|_| {}).unwrap();
++                let (_, fds) = plan.inherited_for_test();
++                let barred = plan.prepare_barred_fixture_for_test(0, |_| {}).unwrap();
++                barred.assert_original_for_test();
++                let mut kernel = barred.detach_for_test();
++                if case == "peer-lost" {
++                    kernel.disconnect_for_test();
++                }
++                drop(held);
++                for fd in fds {
++                    assert_eq!(unsafe { libc::fcntl(fd, libc::F_GETFD) }, -1);
++                }
++                busy(root);
++                if case == "autonomous-expiry" {
++                    kernel.wait_expired_for_test();
++                }
++                kernel.assert_retained_for_test();
++                busy(root);
++                kernel.finish_for_test();
++                drop(crate::host_execution::lock_host_root(root).unwrap());
++                assert_eq!(records(leaf), before);
++                retained_context_refuses_for_test(root);
++                println!("HC074-BARRED-CUSTODY-PROCESS seed=0x{seed:08x} repeat={repeat} case={case} inherited=3 retained=true signal=9 unchanged=true start=false");
++            });
++        }
++    }
++    println!("HC074-BARRED-CUSTODY-PROCESS completed=true cases=9 product=false");
++}
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_original_descriptor_plan.rs b/tools/long-run-supervisor-074/src/diagnostic_original_descriptor_plan.rs
+index 34089f6a..ef2b4cc8 100644
+--- a/tools/long-run-supervisor-074/src/diagnostic_original_descriptor_plan.rs
++++ b/tools/long-run-supervisor-074/src/diagnostic_original_descriptor_plan.rs
+@@ -1,4 +1,6 @@
+ //! Private original descriptor inventory, not guardian enrollment or start.
++#[path = "diagnostic_original_barred_custody.rs"]
++mod barred_custody;
+ use super::*;
+ use std::os::fd::RawFd;
+ 
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_original_descriptor_plan_tests.rs b/tools/long-run-supervisor-074/src/diagnostic_original_descriptor_plan_tests.rs
+index ba0be749..c4eee59e 100644
+--- a/tools/long-run-supervisor-074/src/diagnostic_original_descriptor_plan_tests.rs
++++ b/tools/long-run-supervisor-074/src/diagnostic_original_descriptor_plan_tests.rs
+@@ -1,4 +1,6 @@
+ use super::*;
++#[path = "diagnostic_original_barred_custody_tests.rs"]
++mod barred_custody_tests;
+ #[path = "diagnostic_original_descriptor_holder_tests.rs"]
+ mod holder;
+ 

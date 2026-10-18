@@ -3849,3 +3849,22 @@ and separate refusal cleanup. Both compilers pass local 32+4 fast units and host
 descriptor units; all 210 static contracts and focused checks pass. The packet
 preserves source/binary/script identities and unchanged supervisor/installed
 digests. Actual production enrollment and authenticated start remain closed.
+
+The [autonomous pending custodian](diagnostic-original-barred-custody-plan-20261018.md)
+now adds a private ordinary-build kernel component, not an active execution path.
+It inherits the original fence/alarm and one socket only, pins its child atomically
+with clone3, autonomously retains custody on expiry/peer loss and accepts no
+activation command. The parent keeps the original message/sinks and exclusive
+borrow through a complete frame. The extra descriptor-plan wrapper failed the
+original challenge window on both compilers and is withdrawn; direct original
+draft composition keeps the raw kernel body and original checks/deadlines exact.
+Collector enrollment, authenticated send, whole-cgroup revocation, external
+supervision and durable completion remain required before production execution.
+
+Its [completed packet](local-runs/original-barred-custody-20261018/README.md)
+passes six repeated controls, sixteen refusals and eighteen selected process
+cases on Rust 1.94/1.88, plus two first screens and local 32+5 units per compiler.
+All 213 static contracts and focused checks pass. Complete rejected sources and
+both Causal(Time) screens stay separate; the raw kernel source is unchanged.
+The final host guard finds no old/new fixture process and preserves supervisor
+and installed digests. This still opens no collector, original-start or pilot.

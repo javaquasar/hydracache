@@ -464,3 +464,46 @@ refusal-cleanup kills are not successful transfers. Both first screens, 32+4
 local fast units per compiler and all 210 static contracts pass. The original
 runtime and raw holder bodies, supervisor and installed digests stay exact;
 these are ordering and refusal results, not production guardian enrollment.
+
+## Autonomous pending custody on the original alarm
+
+The [barred custody experiment](diagnostic-original-barred-custody-plan-20261018.md)
+adds an ordinary-build private custodian without activating a collector. It
+inherits only the original custody description, the same selected alarm and one
+private socket. No stream reader/sink, writer or message alias survives child
+isolation. The parent keeps those original objects and its exclusive owner borrow
+through complete validation and child cancellation. No File/PID/time/key input,
+start/send, detach, release or completion is exposed in the ordinary build.
+
+clone3 with only CLONE_PIDFD and SIGCHLD creates the exact pidfd atomically, before
+any fallible parent restoration/check. There is no numerical-PID signal fallback.
+The isolated raw child observes the original absolute alarm autonomously, never
+reads/rearms it, and retains the fence after expiry or private peer loss. P is
+pending isolation only, not manager acknowledgement; the private vocabulary is
+registered separately in COMPAT. Drop is cancellation under a retained parent
+borrow, not an active writer-cessation result.
+
+The first wrapper consumed a separately validated descriptor plan. Both compiler
+screens created custody, then refused the next full frame with Causal(Time).
+Its four-frame composition is withdrawn and its complete source/screens retained.
+The replacement captures the same draft Inventory directly from the sealed
+original owner and closes with one unchanged full custodied validation, exact
+inventory comparison, child observation and original deadline probes. Later
+revalidation repeats that same full frame. No old body, predicate or 300/60/10
+origin changes. The kernel implementation remains exact across the replacement.
+
+This closes neither original collector enrollment nor authenticated start. The
+original unsent message remains owned and cannot be destroyed/reconstructed as
+authority. Exact collector handoff, whole-writer-tree binding/revocation, external
+guardian supervision, durable completion and later cells still precede execution.
+Nonroot host fixtures do not install authority, modify the supervisor or admit a
+product/pilot workload.
+
+The [completed pending-custody packet](local-runs/original-barred-custody-20261018/README.md)
+passes six repeated healthy controls, sixteen refusals and eighteen selected
+process cases across Rust 1.94/1.88, with two new first screens and separately
+classified constructor-death/cleanup cases. Both compilers pass 32+5 local fast
+units and all 213 static contracts pass. Both rejected four-frame screens and
+complete source remain reproducible, with an identical raw kernel source body.
+Stable postflight finds no old/new fixture executable and no supervisor change.
+This establishes pending autonomous custody, not active writer-tree cessation.

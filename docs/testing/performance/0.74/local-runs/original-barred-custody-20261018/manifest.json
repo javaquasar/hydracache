@@ -1,0 +1,242 @@
+{
+  "schema": "hc074-original-barred-custody-v1",
+  "base_commit": "a4f29f9da60ce7a4be76b18541acdb9091129acd",
+  "source_commit": "c0527d94a4f3a83076cb639ead9a7887b3493b96",
+  "scratch": "/tmp/hc074-original-barred-custody-20261018.wI4c3h",
+  "qualification_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "rust194_binary_sha256": "f37e9384fe303864be8ca01ca88af4c726d05518ec51d03474c7f0a1c3e1aa79",
+  "rust188_binary_sha256": "46f18dcce5bff1227b00e1f160face198f0fe5fe3fa4d462b8cdc33675bda879",
+  "admission": false,
+  "source_files": [
+    {
+      "path": "crates/xtask/tests/support/performance_contract_074_barred_custody.rs",
+      "sha256": "618c38c361761a1e1844e0d73f88171a650df1e844f36578a1de971bc9d5ed4a"
+    },
+    {
+      "path": "crates/xtask/tests/support/performance_contract_074_original_barrier.rs",
+      "sha256": "56fa1c2c3b52ec27f398f46c1452b9a2f525bf8638361b3d57730a1750215f40"
+    },
+    {
+      "path": "docs/COMPAT.md",
+      "sha256": "43bd7ebd2a89f4841c450b77b8d6ece77b2e6a1fec7b4a525eaf15b78cf5cb95"
+    },
+    {
+      "path": "docs/testing/gated-test-registry.toml",
+      "sha256": "e7f25eccb4ee799ce3c8aa86f2f591950a2a3b4dc120c53e7bb004860261799e"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_barred_custody.rs",
+      "sha256": "56519ba679b25e104a946b91259683c3baab5abc3401cf97f61b54f67b46c3bb"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_barred_custody_test_api.rs",
+      "sha256": "f024af757175bab0c5647a023f23e41965a7e51ea985011aee69239dc5bd83f2"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_barred_custody_tests.rs",
+      "sha256": "e2e6bc5a2281e78977f372152293feb1c36c5e130d6c90d433f9cce2cfbc763a"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_descriptor_plan.rs",
+      "sha256": "62157d77b0e8b5d26a6e0d7802e593eb451872347320140a2d12869f9e1f4aaa"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_descriptor_plan_tests.rs",
+      "sha256": "7978cd67bf5fca11aa06e17d949d1caf6f757b2e9f21735918875f9f147f63d4"
+    }
+  ],
+  "files": [
+    {
+      "path": ".gitattributes",
+      "sha256": "27dfb0ebb758e011092c3e5ab403fd62acabba58aeb68fea8a5cd3fb2126f219"
+    },
+    {
+      "path": "188-build.log",
+      "sha256": "7d3a2683b3fb962022f4897b39ae785b1579da83ea257180ce4618f78d2c2ad6"
+    },
+    {
+      "path": "194-build.log",
+      "sha256": "99b931b70d72d9400696e1399b1feebe68e6ec0c3d329df4c0152ff061d4e48d"
+    },
+    {
+      "path": "binaries.log",
+      "sha256": "0bdff462ea27d0a7ee9864cffa2696868f06921536ff54f8750b695716df270f"
+    },
+    {
+      "path": "build-inputs-after.log",
+      "sha256": "46870692585f4785cf5d57b7969e78c4a61e9d3630898667163af4c001f91ff6"
+    },
+    {
+      "path": "build-inputs.log",
+      "sha256": "46870692585f4785cf5d57b7969e78c4a61e9d3630898667163af4c001f91ff6"
+    },
+    {
+      "path": "capture.ps1",
+      "sha256": "f2a55c05261800f67a5f030b50eb85ba66a07cd6ce726aa6522c1a72076dede7"
+    },
+    {
+      "path": "contract.log",
+      "sha256": "89ec3848ab627ef7c3c05fb7a2bc6db3b4697e9a582b78ab396dd2e2a2552a9c"
+    },
+    {
+      "path": "doc.log",
+      "sha256": "c2524da355f0eafa626b4d142ef23aece746797470ef8a0bf5975a15516154fb"
+    },
+    {
+      "path": "fast.log",
+      "sha256": "5b651a5a17528acd6617c3d59414eb4e180c3c87bc584d988120cb57a6999984"
+    },
+    {
+      "path": "format-final.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "guard.sh",
+      "sha256": "63395e5efbff486be38d39a2f01490d40aa36af9bfb09b5fcbb673b6132f2da1"
+    },
+    {
+      "path": "host.log",
+      "sha256": "2310f157fc1c18c3f7c6980659c775955bcecab280ed2eeafa763c56de414480"
+    },
+    {
+      "path": "implementation.patch",
+      "sha256": "72eb0c15a5b57c8d6e32ccd223e89eec01e74e81e96f10726cbd5884063018b9"
+    },
+    {
+      "path": "negative-check.log",
+      "sha256": "90bbdcd282761549ff0060e5f2c061228e4fff83405631db9d8e14230fea545a"
+    },
+    {
+      "path": "negative-four-frame/binaries.log",
+      "sha256": "34e5aa434957ac925a50de5005b88bd81153bdf37827d321f17ee695ba9ef521"
+    },
+    {
+      "path": "negative-four-frame/build-inputs.log",
+      "sha256": "e9b0b464d940fccd14a835d9d9b72b2fdb21ee5671352a907bb66919712e679d"
+    },
+    {
+      "path": "negative-four-frame/candidate.patch",
+      "sha256": "968f17f85475e64fe50fbeedf77f435f896e683bcea9949c0eb068609c749ba0"
+    },
+    {
+      "path": "negative-four-frame/crates__xtask__tests__support__performance_contract_074_barred_custody.rs.source",
+      "sha256": "732e294bca9d4190283479c7be8fbb2bbb525920977e853b5d28f7c645d785bd"
+    },
+    {
+      "path": "negative-four-frame/crates__xtask__tests__support__performance_contract_074_original_barrier.rs.source",
+      "sha256": "56fa1c2c3b52ec27f398f46c1452b9a2f525bf8638361b3d57730a1750215f40"
+    },
+    {
+      "path": "negative-four-frame/docs__COMPAT.md.source",
+      "sha256": "afe8578034555aa9f3ebb2c562109dee9c42d8a69ca7c804066d1951d2bbf7ee"
+    },
+    {
+      "path": "negative-four-frame/docs__testing__gated-test-registry.toml.source",
+      "sha256": "e4cc5e794e5ec468ebec4e03678ce7b47f41ba1be4a7cc9acdc0132f610500fe"
+    },
+    {
+      "path": "negative-four-frame/guard.sh",
+      "sha256": "63395e5efbff486be38d39a2f01490d40aa36af9bfb09b5fcbb673b6132f2da1"
+    },
+    {
+      "path": "negative-four-frame/postflight.log",
+      "sha256": "8711b7a526c2ee5a3dc102f4bfc9399d658363ade0756c214aadb4d8a8b7e0c8"
+    },
+    {
+      "path": "negative-four-frame/screen-188.log",
+      "sha256": "233fe26541edbc0d106a563c8704404948528a1ad37ae0b8d8c12c6ce9593d04"
+    },
+    {
+      "path": "negative-four-frame/screen-194.log",
+      "sha256": "1863cc9b82c5387abdb516c3a8e87b773e2b3b0dc2fd4c67ad8318ba1f0b0b20"
+    },
+    {
+      "path": "negative-four-frame/screen-msrv.sh",
+      "sha256": "b3c3183687c6a9da04e9ed6e8e98f70b3697b9471f79eafa15023c1d09afe6b2"
+    },
+    {
+      "path": "negative-four-frame/screen.sh",
+      "sha256": "18ff09abb8c8d43707113364f57692805568ee4238efeb6971b0851c6b8e5615"
+    },
+    {
+      "path": "negative-four-frame/source-manifest.json",
+      "sha256": "9b1b6cea2a21eb46d5e7c62e0869f845bbb80265955e906b6aad614b292085e7"
+    },
+    {
+      "path": "negative-four-frame/tools__long-run-supervisor-074__src__diagnostic_original_barred_custody_test_api.rs.source",
+      "sha256": "b97ec6c7704216cfe3700ecdf72b43fc7f7aca0b6c37ac50f48a551bc34b493e"
+    },
+    {
+      "path": "negative-four-frame/tools__long-run-supervisor-074__src__diagnostic_original_barred_custody_tests.rs.source",
+      "sha256": "b5b36deb12d6c67f1cbb2ef5f262fe5f017b35932785555a4ab197a30514b06b"
+    },
+    {
+      "path": "negative-four-frame/tools__long-run-supervisor-074__src__diagnostic_original_barred_custody.rs.source",
+      "sha256": "1e4adc13713d4e944c69f807acbc98ad0fde44e60a5820c19d180c9062ece2c5"
+    },
+    {
+      "path": "negative-four-frame/tools__long-run-supervisor-074__src__diagnostic_original_descriptor_plan_tests.rs.source",
+      "sha256": "7978cd67bf5fca11aa06e17d949d1caf6f757b2e9f21735918875f9f147f63d4"
+    },
+    {
+      "path": "negative-four-frame/tools__long-run-supervisor-074__src__diagnostic_original_descriptor_plan.rs.source",
+      "sha256": "62157d77b0e8b5d26a6e0d7802e593eb451872347320140a2d12869f9e1f4aaa"
+    },
+    {
+      "path": "offline-check.log",
+      "sha256": "c77130ead48c25557eacf9437fde1f5b67b8ebb39d5c9ac2e73dabc54ba331e6"
+    },
+    {
+      "path": "postflight.log",
+      "sha256": "d99cf16c356e46c490cc0c9d4afcf5052e812776c0aa4d0ee10dcfd823c22140"
+    },
+    {
+      "path": "postflight.sh",
+      "sha256": "467566a7ffaab63edd073a92bc8d808925ac48b086cd5f91b23360f9551cda12"
+    },
+    {
+      "path": "preflight.log",
+      "sha256": "8711b7a526c2ee5a3dc102f4bfc9399d658363ade0756c214aadb4d8a8b7e0c8"
+    },
+    {
+      "path": "README.md",
+      "sha256": "b2e012e270e48935bbccf11366cbbace162f9fcb4cf121692f994881efc468c3"
+    },
+    {
+      "path": "registry.log",
+      "sha256": "477f55a023d99a73afddb793aa6bded283b589a71c00bec615c02bbd004ac4e9"
+    },
+    {
+      "path": "run.sh",
+      "sha256": "cc949c3a1c926a6135f04fc2dc45b7c55c9a7c0247695116932e7c2da099811e"
+    },
+    {
+      "path": "screen.log",
+      "sha256": "75ded1d2c5b6912d98b05856984d8262435a01e3b2768a5b95ab6c3dd09064d7"
+    },
+    {
+      "path": "screen.sh",
+      "sha256": "18ff09abb8c8d43707113364f57692805568ee4238efeb6971b0851c6b8e5615"
+    },
+    {
+      "path": "static-final.log",
+      "sha256": "1e52d4604a891508293b3783563345e0fc3be92808c38b242ffe8c3e55019fea"
+    },
+    {
+      "path": "toolchains.log",
+      "sha256": "7a6994e45d4027bf627df9eaa4ee16597d97b5e48cc6791e96110251ec35f2b6"
+    },
+    {
+      "path": "verify.ps1",
+      "sha256": "12db736f476bcf350b9cd4ee303d93c53c63b51000d6c109af64ecbcdb1cb3b5"
+    },
+    {
+      "path": "windows-check.log",
+      "sha256": "91caeb40d86ce90b651811a7302ad98a4a9caec7e71364e8948021a0bfdb01f0"
+    },
+    {
+      "path": "windows-clippy.log",
+      "sha256": "8659eeb98cf8c880a5ced003a7a903a2c6fba50a4054ac60fae3632b32cc585c"
+    }
+  ]
+}
