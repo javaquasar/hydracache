@@ -1,6 +1,8 @@
 //! Test-only raw holder: no product, manager, collector or guardian admission.
 use std::fs::File;
 use std::os::fd::{AsRawFd, FromRawFd, RawFd};
+#[path = "diagnostic_original_descriptor_barrier_tests.rs"]
+mod barrier;
 
 pub(super) struct Holder {
     pid: libc::pid_t,

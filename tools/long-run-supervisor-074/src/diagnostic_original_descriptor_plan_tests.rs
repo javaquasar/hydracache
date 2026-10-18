@@ -17,6 +17,7 @@ macro_rules! original_owner {
         });
     }};
 }
+pub(super) use original_owner;
 fn call_count(report: &trace::Report, stage: Stage) {
     assert_eq!(report.stages[stage as usize].authentication_calls, 34);
     assert_eq!(report.stages[stage as usize].signature_calls, 34);

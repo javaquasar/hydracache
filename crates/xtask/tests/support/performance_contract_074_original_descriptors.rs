@@ -1,4 +1,6 @@
 //! Only the declared borrowed inventory exception; original runtime remains exact.
+#[path = "performance_contract_074_original_barrier.rs"]
+mod original_barrier;
 const GATES: &str = r###"
 # BEGIN ORIGINAL DESCRIPTOR PLAN GATES
 [[gate]]
@@ -187,6 +189,8 @@ fn once(raw: &str, new: &str, old: &str) -> String {
     raw.replacen(new, old, 1)
 }
 pub(super) fn normalize(path: &str, raw: &str) -> String {
+    let current = original_barrier::normalize(path, raw);
+    let raw = current.as_str();
     match path {
         "tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs" => {
             once(raw, REG, "")
