@@ -646,3 +646,13 @@ This narrows profiling to sender/origin/namespace/boot/clock observations; it
 does not close the critical-path margin or any P1/P2/P3 execution/cessation gate.
 All 46 effect/checkpoint brackets, original deadlines and live predicates remain.
 No full SIGKILL/lost-ack matrix for a new execution boundary is claimed here.
+
+The [kernel call-tree profile](local-runs/original-kernel-walk-20261018/README.md)
+at `da663790` now passes six fresh current/MSRV fixtures with 174 numeric rows,
+unchanged worker counters and exact node/edge accounting. Origin validations
+contribute 82.2–82.5 percent of the measured kernel-context span. This supports
+an isolated boot-reader buffer hypothesis after semantic/fault tests and
+allocation/plain-wall controls; no optimization is accepted yet. All 46 effect
+brackets and original deadlines remain. The critical-path margin and P1/P2/P3,
+completion/later cells, reconnect, real enrollment and installation gates are
+still open. No service or installed artifact changed.

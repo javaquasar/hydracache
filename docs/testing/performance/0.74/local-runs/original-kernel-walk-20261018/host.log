@@ -1,0 +1,208 @@
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-KERNEL-ADMISSION start=false install=false supervisor_changed=false
+6e9ed13742a64cb49d64d837b6e855bd05fa9ad129bc65c89444407629707017  ./tests-194
+2cf843a989fe5d73716411308a8ac6547f101242d58bba288ec5751b50324298  ./tests-188
+66eeb6be4621c60a46db4c88b631aed8cbde41bca5154c12dc1ad6d21f7771ea  ./guard.sh
+0bebb6e9548cd1e3c2dfbe6b74a878f651af0ef728fd35cf2a02d6bbc9968c4c  ./run.sh
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-KERNEL-HOST compiler=194 begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::leaf_cost_tests::component_cost_tests::live_walk_tests::kernel_walk_tests::original_kernel_context_walk_attribution ... HC074-KERNEL-WORKER sample=0 index=0 stats=Stats { calls: 32, inclusive_ns: 47419149, outside_children_ns: 9591 }
+HC074-KERNEL-WORKER sample=0 index=1 stats=Stats { calls: 64, inclusive_ns: 8152822, outside_children_ns: 190249 }
+HC074-KERNEL-WORKER sample=0 index=2 stats=Stats { calls: 128, inclusive_ns: 2401398, outside_children_ns: 2401398 }
+HC074-KERNEL-WORKER sample=0 index=3 stats=Stats { calls: 128, inclusive_ns: 5561175, outside_children_ns: 5561175 }
+HC074-KERNEL-WORKER sample=0 index=4 stats=Stats { calls: 64, inclusive_ns: 32540821, outside_children_ns: 32540821 }
+HC074-KERNEL-WORKER sample=0 index=5 stats=Stats { calls: 32, inclusive_ns: 6715915, outside_children_ns: 6715915 }
+HC074-KERNEL-NODE sample=0 index=0 stats=Stats { calls: 64, inclusive_ns: 32537732, outside_children_ns: 13513 }
+HC074-KERNEL-NODE sample=0 index=1 stats=Stats { calls: 128, inclusive_ns: 18926390, outside_children_ns: 1171273 }
+HC074-KERNEL-NODE sample=0 index=2 stats=Stats { calls: 256, inclusive_ns: 1675930, outside_children_ns: 1243140 }
+HC074-KERNEL-NODE sample=0 index=3 stats=Stats { calls: 256, inclusive_ns: 1029927, outside_children_ns: 1029927 }
+HC074-KERNEL-NODE sample=0 index=4 stats=Stats { calls: 512, inclusive_ns: 26756756, outside_children_ns: 6312178 }
+HC074-KERNEL-NODE sample=0 index=5 stats=Stats { calls: 1024, inclusive_ns: 12276643, outside_children_ns: 9388729 }
+HC074-KERNEL-NODE sample=0 index=6 stats=Stats { calls: 2048, inclusive_ns: 8167935, outside_children_ns: 8167935 }
+HC074-KERNEL-NODE sample=0 index=7 stats=Stats { calls: 64, inclusive_ns: 6702275, outside_children_ns: 12607 }
+HC074-KERNEL-NODE sample=0 index=8 stats=Stats { calls: 64, inclusive_ns: 6895554, outside_children_ns: 212047 }
+HC074-KERNEL-NODE sample=0 index=9 stats=Stats { calls: 1536, inclusive_ns: 4986383, outside_children_ns: 4986383 }
+HC074-KERNEL-EDGE sample=0 parent=0 child=1 calls=128 inclusive_ns=18926390
+HC074-KERNEL-EDGE sample=0 parent=0 child=8 calls=64 inclusive_ns=6895554
+HC074-KERNEL-EDGE sample=0 parent=0 child=7 calls=64 inclusive_ns=6702275
+HC074-KERNEL-EDGE sample=0 parent=1 child=4 calls=256 inclusive_ns=13383581
+HC074-KERNEL-EDGE sample=0 parent=1 child=2 calls=256 inclusive_ns=1675930
+HC074-KERNEL-EDGE sample=0 parent=1 child=3 calls=256 inclusive_ns=1029927
+HC074-KERNEL-EDGE sample=0 parent=1 child=9 calls=256 inclusive_ns=1665679
+HC074-KERNEL-EDGE sample=0 parent=4 child=5 calls=1024 inclusive_ns=12276643
+HC074-KERNEL-EDGE sample=0 parent=4 child=6 calls=2048 inclusive_ns=8167935
+HC074-KERNEL-EDGE sample=0 parent=2 child=9 calls=256 inclusive_ns=432790
+HC074-KERNEL-EDGE sample=0 parent=5 child=9 calls=1024 inclusive_ns=2887914
+HC074-KERNEL-EDGE sample=0 parent=7 child=4 calls=128 inclusive_ns=6689668
+HC074-KERNEL-EDGE sample=0 parent=8 child=4 calls=128 inclusive_ns=6683507
+HC074-KERNEL-CONTROL sample=0 iterations=32 roots=64 original=true unchanged=true reservation=false schedule_changed=false admission=false
+HC074-KERNEL-WORKER sample=1 index=0 stats=Stats { calls: 32, inclusive_ns: 47054252, outside_children_ns: 7952 }
+HC074-KERNEL-WORKER sample=1 index=1 stats=Stats { calls: 64, inclusive_ns: 7968200, outside_children_ns: 189650 }
+HC074-KERNEL-WORKER sample=1 index=2 stats=Stats { calls: 128, inclusive_ns: 2369018, outside_children_ns: 2369018 }
+HC074-KERNEL-WORKER sample=1 index=3 stats=Stats { calls: 128, inclusive_ns: 5409532, outside_children_ns: 5409532 }
+HC074-KERNEL-WORKER sample=1 index=4 stats=Stats { calls: 64, inclusive_ns: 32425485, outside_children_ns: 32425485 }
+HC074-KERNEL-WORKER sample=1 index=5 stats=Stats { calls: 32, inclusive_ns: 6652615, outside_children_ns: 6652615 }
+HC074-KERNEL-NODE sample=1 index=0 stats=Stats { calls: 64, inclusive_ns: 32422256, outside_children_ns: 13542 }
+HC074-KERNEL-NODE sample=1 index=1 stats=Stats { calls: 128, inclusive_ns: 18887188, outside_children_ns: 1151181 }
+HC074-KERNEL-NODE sample=1 index=2 stats=Stats { calls: 256, inclusive_ns: 1661414, outside_children_ns: 1226104 }
+HC074-KERNEL-NODE sample=1 index=3 stats=Stats { calls: 256, inclusive_ns: 1039737, outside_children_ns: 1039737 }
+HC074-KERNEL-NODE sample=1 index=4 stats=Stats { calls: 512, inclusive_ns: 26654849, outside_children_ns: 6224202 }
+HC074-KERNEL-NODE sample=1 index=5 stats=Stats { calls: 1024, inclusive_ns: 12277436, outside_children_ns: 9374333 }
+HC074-KERNEL-NODE sample=1 index=6 stats=Stats { calls: 2048, inclusive_ns: 8153211, outside_children_ns: 8153211 }
+HC074-KERNEL-NODE sample=1 index=7 stats=Stats { calls: 64, inclusive_ns: 6660345, outside_children_ns: 13448 }
+HC074-KERNEL-NODE sample=1 index=8 stats=Stats { calls: 64, inclusive_ns: 6861181, outside_children_ns: 209886 }
+HC074-KERNEL-NODE sample=1 index=9 stats=Stats { calls: 1536, inclusive_ns: 5016612, outside_children_ns: 5016612 }
+HC074-KERNEL-EDGE sample=1 parent=0 child=1 calls=128 inclusive_ns=18887188
+HC074-KERNEL-EDGE sample=1 parent=0 child=8 calls=64 inclusive_ns=6861181
+HC074-KERNEL-EDGE sample=1 parent=0 child=7 calls=64 inclusive_ns=6660345
+HC074-KERNEL-EDGE sample=1 parent=1 child=4 calls=256 inclusive_ns=13356657
+HC074-KERNEL-EDGE sample=1 parent=1 child=2 calls=256 inclusive_ns=1661414
+HC074-KERNEL-EDGE sample=1 parent=1 child=3 calls=256 inclusive_ns=1039737
+HC074-KERNEL-EDGE sample=1 parent=1 child=9 calls=256 inclusive_ns=1678199
+HC074-KERNEL-EDGE sample=1 parent=4 child=5 calls=1024 inclusive_ns=12277436
+HC074-KERNEL-EDGE sample=1 parent=4 child=6 calls=2048 inclusive_ns=8153211
+HC074-KERNEL-EDGE sample=1 parent=2 child=9 calls=256 inclusive_ns=435310
+HC074-KERNEL-EDGE sample=1 parent=5 child=9 calls=1024 inclusive_ns=2903103
+HC074-KERNEL-EDGE sample=1 parent=7 child=4 calls=128 inclusive_ns=6646897
+HC074-KERNEL-EDGE sample=1 parent=8 child=4 calls=128 inclusive_ns=6651295
+HC074-KERNEL-CONTROL sample=1 iterations=32 roots=64 original=true unchanged=true reservation=false schedule_changed=false admission=false
+HC074-KERNEL-WORKER sample=2 index=0 stats=Stats { calls: 32, inclusive_ns: 47095465, outside_children_ns: 7643 }
+HC074-KERNEL-WORKER sample=2 index=1 stats=Stats { calls: 64, inclusive_ns: 7983091, outside_children_ns: 189545 }
+HC074-KERNEL-WORKER sample=2 index=2 stats=Stats { calls: 128, inclusive_ns: 2371546, outside_children_ns: 2371546 }
+HC074-KERNEL-WORKER sample=2 index=3 stats=Stats { calls: 128, inclusive_ns: 5422000, outside_children_ns: 5422000 }
+HC074-KERNEL-WORKER sample=2 index=4 stats=Stats { calls: 64, inclusive_ns: 32439212, outside_children_ns: 32439212 }
+HC074-KERNEL-WORKER sample=2 index=5 stats=Stats { calls: 32, inclusive_ns: 6665519, outside_children_ns: 6665519 }
+HC074-KERNEL-NODE sample=2 index=0 stats=Stats { calls: 64, inclusive_ns: 32436156, outside_children_ns: 13447 }
+HC074-KERNEL-NODE sample=2 index=1 stats=Stats { calls: 128, inclusive_ns: 18873934, outside_children_ns: 1155509 }
+HC074-KERNEL-NODE sample=2 index=2 stats=Stats { calls: 256, inclusive_ns: 1652166, outside_children_ns: 1221813 }
+HC074-KERNEL-NODE sample=2 index=3 stats=Stats { calls: 256, inclusive_ns: 1035884, outside_children_ns: 1035884 }
+HC074-KERNEL-NODE sample=2 index=4 stats=Stats { calls: 512, inclusive_ns: 26701292, outside_children_ns: 6246996 }
+HC074-KERNEL-NODE sample=2 index=5 stats=Stats { calls: 1024, inclusive_ns: 12269508, outside_children_ns: 9395167 }
+HC074-KERNEL-NODE sample=2 index=6 stats=Stats { calls: 2048, inclusive_ns: 8184788, outside_children_ns: 8184788 }
+HC074-KERNEL-NODE sample=2 index=7 stats=Stats { calls: 64, inclusive_ns: 6679260, outside_children_ns: 12942 }
+HC074-KERNEL-NODE sample=2 index=8 stats=Stats { calls: 64, inclusive_ns: 6869515, outside_children_ns: 209299 }
+HC074-KERNEL-NODE sample=2 index=9 stats=Stats { calls: 1536, inclusive_ns: 4960311, outside_children_ns: 4960311 }
+HC074-KERNEL-EDGE sample=2 parent=0 child=1 calls=128 inclusive_ns=18873934
+HC074-KERNEL-EDGE sample=2 parent=0 child=8 calls=64 inclusive_ns=6869515
+HC074-KERNEL-EDGE sample=2 parent=0 child=7 calls=64 inclusive_ns=6679260
+HC074-KERNEL-EDGE sample=2 parent=1 child=4 calls=256 inclusive_ns=13374758
+HC074-KERNEL-EDGE sample=2 parent=1 child=2 calls=256 inclusive_ns=1652166
+HC074-KERNEL-EDGE sample=2 parent=1 child=3 calls=256 inclusive_ns=1035884
+HC074-KERNEL-EDGE sample=2 parent=1 child=9 calls=256 inclusive_ns=1655617
+HC074-KERNEL-EDGE sample=2 parent=4 child=5 calls=1024 inclusive_ns=12269508
+HC074-KERNEL-EDGE sample=2 parent=4 child=6 calls=2048 inclusive_ns=8184788
+HC074-KERNEL-EDGE sample=2 parent=2 child=9 calls=256 inclusive_ns=430353
+HC074-KERNEL-EDGE sample=2 parent=5 child=9 calls=1024 inclusive_ns=2874341
+HC074-KERNEL-EDGE sample=2 parent=7 child=4 calls=128 inclusive_ns=6666318
+HC074-KERNEL-EDGE sample=2 parent=8 child=4 calls=128 inclusive_ns=6660216
+HC074-KERNEL-CONTROL sample=2 iterations=32 roots=64 original=true unchanged=true reservation=false schedule_changed=false admission=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1178 filtered out; finished in 0.66s
+
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-KERNEL-HOST compiler=194 completed=true admission=false
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-KERNEL-HOST compiler=188 begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::leaf_cost_tests::component_cost_tests::live_walk_tests::kernel_walk_tests::original_kernel_context_walk_attribution ... HC074-KERNEL-WORKER sample=0 index=0 stats=Stats { calls: 32, inclusive_ns: 46924718, outside_children_ns: 6584 }
+HC074-KERNEL-WORKER sample=0 index=1 stats=Stats { calls: 64, inclusive_ns: 7952653, outside_children_ns: 180069 }
+HC074-KERNEL-WORKER sample=0 index=2 stats=Stats { calls: 128, inclusive_ns: 2378709, outside_children_ns: 2378709 }
+HC074-KERNEL-WORKER sample=0 index=3 stats=Stats { calls: 128, inclusive_ns: 5393875, outside_children_ns: 5393875 }
+HC074-KERNEL-WORKER sample=0 index=4 stats=Stats { calls: 64, inclusive_ns: 32315213, outside_children_ns: 32315213 }
+HC074-KERNEL-WORKER sample=0 index=5 stats=Stats { calls: 32, inclusive_ns: 6650268, outside_children_ns: 6650268 }
+HC074-KERNEL-NODE sample=0 index=0 stats=Stats { calls: 64, inclusive_ns: 32311922, outside_children_ns: 13622 }
+HC074-KERNEL-NODE sample=0 index=1 stats=Stats { calls: 128, inclusive_ns: 18782183, outside_children_ns: 1143205 }
+HC074-KERNEL-NODE sample=0 index=2 stats=Stats { calls: 256, inclusive_ns: 1635556, outside_children_ns: 1208690 }
+HC074-KERNEL-NODE sample=0 index=3 stats=Stats { calls: 256, inclusive_ns: 993508, outside_children_ns: 993508 }
+HC074-KERNEL-NODE sample=0 index=4 stats=Stats { calls: 512, inclusive_ns: 26646328, outside_children_ns: 6267068 }
+HC074-KERNEL-NODE sample=0 index=5 stats=Stats { calls: 1024, inclusive_ns: 12241066, outside_children_ns: 9349981 }
+HC074-KERNEL-NODE sample=0 index=6 stats=Stats { calls: 2048, inclusive_ns: 8138194, outside_children_ns: 8138194 }
+HC074-KERNEL-NODE sample=0 index=7 stats=Stats { calls: 64, inclusive_ns: 6654134, outside_children_ns: 11220 }
+HC074-KERNEL-NODE sample=0 index=8 stats=Stats { calls: 64, inclusive_ns: 6861983, outside_children_ns: 207167 }
+HC074-KERNEL-NODE sample=0 index=9 stats=Stats { calls: 1536, inclusive_ns: 4979267, outside_children_ns: 4979267 }
+HC074-KERNEL-EDGE sample=0 parent=0 child=1 calls=128 inclusive_ns=18782183
+HC074-KERNEL-EDGE sample=0 parent=0 child=8 calls=64 inclusive_ns=6861983
+HC074-KERNEL-EDGE sample=0 parent=0 child=7 calls=64 inclusive_ns=6654134
+HC074-KERNEL-EDGE sample=0 parent=1 child=4 calls=256 inclusive_ns=13348598
+HC074-KERNEL-EDGE sample=0 parent=1 child=2 calls=256 inclusive_ns=1635556
+HC074-KERNEL-EDGE sample=0 parent=1 child=3 calls=256 inclusive_ns=993508
+HC074-KERNEL-EDGE sample=0 parent=1 child=9 calls=256 inclusive_ns=1661316
+HC074-KERNEL-EDGE sample=0 parent=4 child=5 calls=1024 inclusive_ns=12241066
+HC074-KERNEL-EDGE sample=0 parent=4 child=6 calls=2048 inclusive_ns=8138194
+HC074-KERNEL-EDGE sample=0 parent=2 child=9 calls=256 inclusive_ns=426866
+HC074-KERNEL-EDGE sample=0 parent=5 child=9 calls=1024 inclusive_ns=2891085
+HC074-KERNEL-EDGE sample=0 parent=7 child=4 calls=128 inclusive_ns=6642914
+HC074-KERNEL-EDGE sample=0 parent=8 child=4 calls=128 inclusive_ns=6654816
+HC074-KERNEL-CONTROL sample=0 iterations=32 roots=64 original=true unchanged=true reservation=false schedule_changed=false admission=false
+HC074-KERNEL-WORKER sample=1 index=0 stats=Stats { calls: 32, inclusive_ns: 47090045, outside_children_ns: 7347 }
+HC074-KERNEL-WORKER sample=1 index=1 stats=Stats { calls: 64, inclusive_ns: 7990261, outside_children_ns: 182426 }
+HC074-KERNEL-WORKER sample=1 index=2 stats=Stats { calls: 128, inclusive_ns: 2384356, outside_children_ns: 2384356 }
+HC074-KERNEL-WORKER sample=1 index=3 stats=Stats { calls: 128, inclusive_ns: 5423479, outside_children_ns: 5423479 }
+HC074-KERNEL-WORKER sample=1 index=4 stats=Stats { calls: 64, inclusive_ns: 32409841, outside_children_ns: 32409841 }
+HC074-KERNEL-WORKER sample=1 index=5 stats=Stats { calls: 32, inclusive_ns: 6682596, outside_children_ns: 6682596 }
+HC074-KERNEL-NODE sample=1 index=0 stats=Stats { calls: 64, inclusive_ns: 32406434, outside_children_ns: 14575 }
+HC074-KERNEL-NODE sample=1 index=1 stats=Stats { calls: 128, inclusive_ns: 18861428, outside_children_ns: 1159991 }
+HC074-KERNEL-NODE sample=1 index=2 stats=Stats { calls: 256, inclusive_ns: 1648568, outside_children_ns: 1221030 }
+HC074-KERNEL-NODE sample=1 index=3 stats=Stats { calls: 256, inclusive_ns: 996262, outside_children_ns: 996262 }
+HC074-KERNEL-NODE sample=1 index=4 stats=Stats { calls: 512, inclusive_ns: 26707647, outside_children_ns: 6274762 }
+HC074-KERNEL-NODE sample=1 index=5 stats=Stats { calls: 1024, inclusive_ns: 12286812, outside_children_ns: 9392566 }
+HC074-KERNEL-NODE sample=1 index=6 stats=Stats { calls: 2048, inclusive_ns: 8146073, outside_children_ns: 8146073 }
+HC074-KERNEL-NODE sample=1 index=7 stats=Stats { calls: 64, inclusive_ns: 6658565, outside_children_ns: 12095 }
+HC074-KERNEL-NODE sample=1 index=8 stats=Stats { calls: 64, inclusive_ns: 6871866, outside_children_ns: 207087 }
+HC074-KERNEL-NODE sample=1 index=9 stats=Stats { calls: 1536, inclusive_ns: 4981993, outside_children_ns: 4981993 }
+HC074-KERNEL-EDGE sample=1 parent=0 child=1 calls=128 inclusive_ns=18861428
+HC074-KERNEL-EDGE sample=1 parent=0 child=8 calls=64 inclusive_ns=6871866
+HC074-KERNEL-EDGE sample=1 parent=0 child=7 calls=64 inclusive_ns=6658565
+HC074-KERNEL-EDGE sample=1 parent=1 child=4 calls=256 inclusive_ns=13396398
+HC074-KERNEL-EDGE sample=1 parent=1 child=2 calls=256 inclusive_ns=1648568
+HC074-KERNEL-EDGE sample=1 parent=1 child=3 calls=256 inclusive_ns=996262
+HC074-KERNEL-EDGE sample=1 parent=1 child=9 calls=256 inclusive_ns=1660209
+HC074-KERNEL-EDGE sample=1 parent=4 child=5 calls=1024 inclusive_ns=12286812
+HC074-KERNEL-EDGE sample=1 parent=4 child=6 calls=2048 inclusive_ns=8146073
+HC074-KERNEL-EDGE sample=1 parent=2 child=9 calls=256 inclusive_ns=427538
+HC074-KERNEL-EDGE sample=1 parent=5 child=9 calls=1024 inclusive_ns=2894246
+HC074-KERNEL-EDGE sample=1 parent=7 child=4 calls=128 inclusive_ns=6646470
+HC074-KERNEL-EDGE sample=1 parent=8 child=4 calls=128 inclusive_ns=6664779
+HC074-KERNEL-CONTROL sample=1 iterations=32 roots=64 original=true unchanged=true reservation=false schedule_changed=false admission=false
+HC074-KERNEL-WORKER sample=2 index=0 stats=Stats { calls: 32, inclusive_ns: 47016687, outside_children_ns: 6873 }
+HC074-KERNEL-WORKER sample=2 index=1 stats=Stats { calls: 64, inclusive_ns: 7967254, outside_children_ns: 185558 }
+HC074-KERNEL-WORKER sample=2 index=2 stats=Stats { calls: 128, inclusive_ns: 2370625, outside_children_ns: 2370625 }
+HC074-KERNEL-WORKER sample=2 index=3 stats=Stats { calls: 128, inclusive_ns: 5411071, outside_children_ns: 5411071 }
+HC074-KERNEL-WORKER sample=2 index=4 stats=Stats { calls: 64, inclusive_ns: 32382916, outside_children_ns: 32382916 }
+HC074-KERNEL-WORKER sample=2 index=5 stats=Stats { calls: 32, inclusive_ns: 6659644, outside_children_ns: 6659644 }
+HC074-KERNEL-NODE sample=2 index=0 stats=Stats { calls: 64, inclusive_ns: 32379447, outside_children_ns: 13648 }
+HC074-KERNEL-NODE sample=2 index=1 stats=Stats { calls: 128, inclusive_ns: 18822276, outside_children_ns: 1154774 }
+HC074-KERNEL-NODE sample=2 index=2 stats=Stats { calls: 256, inclusive_ns: 1645020, outside_children_ns: 1216326 }
+HC074-KERNEL-NODE sample=2 index=3 stats=Stats { calls: 256, inclusive_ns: 993989, outside_children_ns: 993989 }
+HC074-KERNEL-NODE sample=2 index=4 stats=Stats { calls: 512, inclusive_ns: 26696320, outside_children_ns: 6253154 }
+HC074-KERNEL-NODE sample=2 index=5 stats=Stats { calls: 1024, inclusive_ns: 12275269, outside_children_ns: 9385892 }
+HC074-KERNEL-NODE sample=2 index=6 stats=Stats { calls: 2048, inclusive_ns: 8167897, outside_children_ns: 8167897 }
+HC074-KERNEL-NODE sample=2 index=7 stats=Stats { calls: 64, inclusive_ns: 6670059, outside_children_ns: 11300 }
+HC074-KERNEL-NODE sample=2 index=8 stats=Stats { calls: 64, inclusive_ns: 6873464, outside_children_ns: 207515 }
+HC074-KERNEL-NODE sample=2 index=9 stats=Stats { calls: 1536, inclusive_ns: 4974952, outside_children_ns: 4974952 }
+HC074-KERNEL-EDGE sample=2 parent=0 child=1 calls=128 inclusive_ns=18822276
+HC074-KERNEL-EDGE sample=2 parent=0 child=8 calls=64 inclusive_ns=6873464
+HC074-KERNEL-EDGE sample=2 parent=0 child=7 calls=64 inclusive_ns=6670059
+HC074-KERNEL-EDGE sample=2 parent=1 child=4 calls=256 inclusive_ns=13371612
+HC074-KERNEL-EDGE sample=2 parent=1 child=2 calls=256 inclusive_ns=1645020
+HC074-KERNEL-EDGE sample=2 parent=1 child=3 calls=256 inclusive_ns=993989
+HC074-KERNEL-EDGE sample=2 parent=1 child=9 calls=256 inclusive_ns=1656881
+HC074-KERNEL-EDGE sample=2 parent=4 child=5 calls=1024 inclusive_ns=12275269
+HC074-KERNEL-EDGE sample=2 parent=4 child=6 calls=2048 inclusive_ns=8167897
+HC074-KERNEL-EDGE sample=2 parent=2 child=9 calls=256 inclusive_ns=428694
+HC074-KERNEL-EDGE sample=2 parent=5 child=9 calls=1024 inclusive_ns=2889377
+HC074-KERNEL-EDGE sample=2 parent=7 child=4 calls=128 inclusive_ns=6658759
+HC074-KERNEL-EDGE sample=2 parent=8 child=4 calls=128 inclusive_ns=6665949
+HC074-KERNEL-CONTROL sample=2 iterations=32 roots=64 original=true unchanged=true reservation=false schedule_changed=false admission=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1178 filtered out; finished in 0.65s
+
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-KERNEL-HOST compiler=188 completed=true admission=false
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-KERNEL-HOST completed=true supervisor_unchanged=true no_fixture_executable=true admission=false

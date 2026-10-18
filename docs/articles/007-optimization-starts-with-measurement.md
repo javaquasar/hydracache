@@ -13027,3 +13027,50 @@ or reuse mutable observations across an effect. These controls do not decompose
 the entire earlier 7.2-second join and establish no speedup or worst-case margin.
 The roughly 24 ms observed challenge margin, real authenticated bus start,
 all-writer cessation, completion and reconnect remain unresolved.
+
+### Origin walks explain most of the kernel context span
+
+The [kernel call-tree diagnostic](../testing/performance/0.74/local-runs/original-kernel-walk-20261018/README.md)
+adds ten test-only entry spans and records thirteen direct parent/child edges.
+It runs the same retained worker validator before reservation, preserving all
+live checks, effect boundaries and original deadlines. All 351 old Rust files
+must be recoverable exactly after removing the instrumentation. Six fresh
+current/MSRV fixtures pass on first execution, producing 192 worker validations
+and 174 checked numeric rows.
+
+One worker validation contains sixteen origin traversals, thirty-two boot
+document reads, sixty-four named namespace observations and forty-eight bounded
+proc reads. The two packet-context checks together take 1.010–1.017 ms in this
+instrumented cohort. Origin's nested inclusive span contributes 0.833–0.836 ms,
+82.2–82.5 percent of packet context. The verifier checks incoming node counts
+and times, each parent's direct-child accounting and an exact partition of
+packet context into outside-children spans. It does not add nested totals.
+
+The disjoint partition places roughly 29 percent in boot-document code outside
+its bounded-reader child, 25 percent in named namespace observations, 19 percent
+in origin code outside its children and 15 percent in bounded proc reads. The
+remaining spans cover sender checks, projection parsing and the surrounding
+joins. These are wall-scope contributions, not exclusive CPU or syscall costs.
+Destruction of returned files, strings and Vec buffers can occur in the parent
+scope, so its remaining time is not simply metadata work.
+
+Time sampling illustrates why nesting matters. Its inclusive contribution is
+about 0.208–0.209 ms, but it brackets the clocks with two full origin traversals.
+Only 0.000351–0.000420 ms remains outside those children, including clock calls,
+string creation and tracer overhead. Weakening clock validation would target
+the wrong measured cost as well as change the safety contract.
+
+The bounded reader currently creates a 65537-byte zeroed Vec even for the
+canonical 37-byte boot document. Its timer includes creation, positional read
+and truncation, but not the returned Vec's later destruction. This identifies
+a concrete small-buffer allocation hypothesis, not a measured allocation win.
+The next isolated experiment must first prove equivalent accepted documents and
+fail-closed short/EINTR/oversized behavior, preserve single-read and all live
+observation semantics, measure allocations and wall time separately, and then
+repeat the unchanged full preparation gate. No mutable boot, namespace, sender,
+time or authority result may be cached across an effect.
+
+These new timings are not an uninstrumented A/B comparison with the previous
+cohort and do not decompose the entire earlier preparation bucket. No speedup
+is accepted. The original challenge-margin risk, authenticated bus start,
+all-writer cessation, completion and same-attempt reconnect remain open.

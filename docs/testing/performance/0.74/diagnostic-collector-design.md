@@ -773,3 +773,15 @@ extrapolate an exclusive CPU/IO owner or transfer these results to the complete
 Starting/pipe/sink path. Preserve its 46 effect-local brackets. Kernel sender,
 origin, namespace/boot and clock observations are the next attribution target;
 real bus delivery/start and active all-writer cessation remain separate gates.
+
+The [nested kernel profile](local-runs/original-kernel-walk-20261018/README.md)
+in `da663790` retains every old runtime statement while adding ten cfg(test)
+entry spans. Six fresh current/MSRV fixtures verify the expected call graph:
+sixteen origin validations and forty-eight bounded proc reads per worker
+validation, with 174 raw rows and exact parent/child wall accounting. Origin's
+inclusive contribution is 82.2–82.5 percent of kernel context. Sampling mostly
+contains origin validation rather than clock work. A small fixed boot-read
+buffer is a possible allocation candidate; the profile does not measure
+allocator calls, deallocation in parent scopes or a product speedup. Preserve
+all 46 effect-local brackets and original deadlines. Actual authenticated
+start, active all-writer cessation, completion and reconnect remain unadmitted.

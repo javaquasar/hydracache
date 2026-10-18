@@ -55,3 +55,14 @@ old evidence. Run current/MSRV focused tests, affected all-target checks and
 strict Clippy, exact-source contracts, formatting, registry, documentation and
 local non-promotable performance contracts. Bind source, literal embedded
 inputs, compiler artifacts, raw transcripts and derived rows in a closed packet.
+
+## Result
+
+Source `da6637907b377597ae37675f7f6e5e125b553ac0` passes both exact host
+invocations on first execution: six fresh fixtures and 192 worker validations.
+All 174 node/edge/enclosing rows, counts and disjoint wall partitions verify in
+the [evidence](local-runs/original-kernel-walk-20261018/README.md). Origin's
+inclusive share is 82.2–82.5 percent of kernel context; clock sampling mostly
+contains origin checks. The large bounded buffer for the fixed boot document
+is a next allocation hypothesis, not an accepted win. Live checks, effect
+boundaries, deadlines, supervisor/install and execution admission are unchanged.

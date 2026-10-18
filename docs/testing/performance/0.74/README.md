@@ -4042,3 +4042,16 @@ not exclusive CPU/IO cost or a decomposition of the full preparation bucket.
 All original runtime bodies, 46 effect-local brackets and deadlines remain.
 Next attribute kernel sender/origin/namespace/boot/clock observations without
 removing checks. No optimization or execution gate is accepted by this packet.
+
+The [kernel call-tree diagnostic](local-runs/original-kernel-walk-20261018/README.md)
+at `da663790` passes six fresh current/MSRV fixtures, with 60 node, 78 direct-edge
+and 36 enclosing-worker rows. All preregistered counts and exact wall partitions
+verify. One worker validation performs sixteen origin traversals; their inclusive
+share is 82.2–82.5 percent of kernel context. Clock sampling's inclusive span
+mostly contains origin checks, not the clock reads themselves. Bounded proc
+reading contributes about 15 percent of the disjoint kernel-context partition,
+including creation of its large buffer but excluding its later destruction.
+A dedicated small boot-read buffer is the next isolated allocation hypothesis,
+subject to differential/fault tests and matched measurements, not an accepted
+optimization. All live checks, effect brackets, deadlines and execution gates
+remain unchanged.
