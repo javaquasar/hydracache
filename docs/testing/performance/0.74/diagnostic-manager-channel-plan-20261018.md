@@ -60,3 +60,30 @@ negative outcomes and an offline verifier. Update design/readiness/article with
 the established scope. No server SSH, installation, supervisor operation,
 product workload, qualification, original send/start, writer cessation or durable
 completion is part of this local package. Product admission remains false.
+
+## First refusal and second candidate preregistration
+
+The first selected cohort stops on Rust 1.94's root-positive Reply refusal,
+after nine ordinary units and the explicit nonroot namespace refusal pass.
+No MSRV live case follows that failure. Its eleven complete source capsules,
+333 input bindings, both image hashes and exact local archived images are
+retained under first-attempt. Separate test-only instrumentation reproduces the
+refusal: the returned message has METHOD_RETURN, flags=1, and every other
+envelope predicate true. This attribution is not a replacement passing cohort.
+
+The [D-Bus specification](https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-header-encoding)
+defines NO_REPLY_EXPECTED as having no meaning on method returns. Candidate two
+therefore permits only flags 0 or that single bit on the new producer's already
+required METHOD_RETURN. Add both positive forms and negative other/combined
+flags to the reply corpus. Do not change the old dispatch exchange's flags,
+requests, identity/namespace checks, original windows or any execution guard.
+Its separate interoperability review still precedes original delivery.
+
+The first complete source suite also reports 230 passes/three refusals: three
+legacy dependency-reference checks bypass the current restoration chain.
+Add marked exact adapters only for Cargo.lock and this tool's Cargo.toml so
+they restore the single preregistered Tokio edge before the old comparison.
+Freeze every other dependency edge/version/checksum and every other old source
+statement; test the adapters themselves against ff4f3b7e. No runtime guard moves.
+Run a fresh complete current/MSRV cohort and all source contracts for the second
+candidate; retain the first cohort, traced refusal and three static failures.
