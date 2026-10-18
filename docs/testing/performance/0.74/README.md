@@ -4078,3 +4078,16 @@ Maximum observed successful challenge age leaves about 451 ms, not a worst-case
 guarantee or permission to extend the window. The supervisor/install remain
 unchanged; authenticated bus start, all-writer cessation, completion, reconnect
 and production enrollment remain open.
+
+The [negotiated private bus component](local-runs/negotiated-dispatch-20261018/README.md)
+now passes nine real protocol/FD scenarios and three atomic-receiver units on
+both GNU compilers. The existing one-shot classifier rejects actual foreign
+senders, wrong serials and lost/delayed replies without retry. A bare zbus
+receiver remains an explicit CLOEXEC refusal; positive cases use an atomic
+test-only receiver and deliberately permissive private fault policy, neither
+installed nor promoted. Three stopped cohorts and the later lint-only image
+change remain separate. Received writers outlive exchange/connection destruction
+and can still write, so this closes no all-writer cessation or completion gate.
+Original production delivery/start, receiver behavior, enrollment, reconnect and
+new-boundary SIGKILL remain separate; runtime, qualification inputs and deadlines
+are unchanged. No dedicated server or product workload is used.

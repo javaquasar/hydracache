@@ -1,0 +1,665 @@
+# HydraCache — Enforcement Gates
+
+Private negotiated D-Bus delivery uses the manual registered
+`tool.hydracache-long-run-supervisor-074.negotiated-dispatch` gate. Run its exact
+ignored libtest with `/usr/bin/dbus-daemon` available as nonroot. Nine private
+bus cases cover negotiation, fragmented writes, actual reply routing and lost
+acknowledgement; no system bus, systemd operation or original admission is used.
+The [component plan](testing/performance/0.74/negotiated-dispatch-plan-20261018.md)
+keeps this distinct from authenticated original delivery and all-writer cessation.
+Three ordinary `negotiated_atomic_receiver_` units check atomic CLOEXEC receipt,
+actual ancillary truncation/excess cleanup, WouldBlock, disconnect and unexpected
+kernel credentials.
+
+The [original send-window diagnostic](testing/performance/0.74/diagnostic-signer-owned-root-send-windows-design.md)
+uses the same registered root targets. Require two creator-only SIGKILL losses,
+two healthy original continuations and two untraced no-EXITKILL controls after
+the existing25/14 cases, with no additional competing test fixture. Check sticky
+attempt/dispatch state, exact reset/ACK prefix and the unchanged EOF guard.
+All six MSRV extra-libm modes must refuse. An untraced ACK/zero exit must never
+be classified as a successful authenticated handoff or automatic-death proof.
+
+The same registered ordinary root targets cover the
+[six stopped transfer-loss cuts](testing/performance/0.74/diagnostic-signer-owned-root-handoff-loss-design.md).
+Require six actual original creator-only SIGKILL/worker-death controls, six
+ACK/close/zero-exit healthy continuations and two matched no-EXITKILL survivors,
+plus original socket identity and cut-state units. All 14 MSRV extra-libm modes
+must refuse explicitly. Run these cases after the old 25 in their existing
+process test, retaining default harness parallelism and the unchanged five-second
+outer guard. This is not a fix for the retained overlapping-load timeout.
+
+The existing ordinary root targets also cover the
+[one-shot dummy protocol](testing/performance/0.74/diagnostic-signer-owned-root-handoff-design.md).
+Require all 25 current-toolchain modes, eight new private units, unchanged old
+pipe/policy controls and attributed refusals of all 25 MSRV extra-libm modes.
+Full context checks at installed/recv/close bracket the exact bounded trace;
+the five-second wait/outer guard is unchanged. Child SIGKILL/Drop controls do
+not prove creator loss at transfer boundaries; the separate stopped-cut matrix
+above remains distinct from credential/start admission.
+
+The same ordinary root targets now cover fixed `root-loss-*` diagnostics at five
+owned stops, healthy acknowledgements and a matched no-EXITKILL negative. See the
+[design](testing/performance/0.74/diagnostic-signer-owned-root-loss-design.md).
+Require actual original creator/worker terminal and stream evidence on Rust1.94;
+all eight MSRV extra-libm invocations remain attributed refusals. Parser, kernel
+credentials, received-FD cleanup and original pipe binding have separate units.
+These checks neither establish full-entry loss nor open protected handoff,
+authenticated worker start, writers, server or release qualification.
+
+Ordinary proc-less root restriction composition uses the same root-probe targets
+plus `--test diagnostic_signer_child_entry` and `--test diagnostic_signer_isolation`.
+The [design](testing/performance/0.74/diagnostic-signer-owned-root-isolation-design.md)
+requires actual current-toolchain TSYNC/BPF/ND0-set observation, native EPERM,
+x32/i386 SIGSYS and installed-stop child SIGKILL/Drop cleanup. Old ordinary entry
+proc checks and the exact policy are retained; GET_DUMPABLE remains denied. Run
+targeted tests with default parallelism separately from the retained broad-load
+timeout case; success does not establish creator-loss, handoff or server admission.
+
+Normal fixed GNU root preparation uses `--bin diagnostic_signer_root_probe`,
+portable `--test diagnostic_signer_root_cli` and registered Linux x86_64
+`--test diagnostic_signer_root_probe` in package
+`hydracache-long-run-supervisor-074`. Linux process tests need `/usr/bin/strip`
+and `/usr/bin/readelf`; only private test copies are stripped. Rust1.94 must
+actually prepare the four-role root, while the observed Rust1.88 extra-libm
+profile must refuse without a parser exception. `prepare` launches no child.
+The [design/evidence](testing/performance/0.74/diagnostic-signer-owned-root-design.md)
+retains the earlier broader constructor-loss baseline failure; the subsequent
+peer barrier correction below does not establish full-release/server admission.
+
+The same binary also has the separate fixed `root-exec` diagnostic. Its normal
+process tests must actually observe selected original exec and loaded maps on
+Rust1.94; extra-libm MSRV remains an attributed refusal. Unit tests cover bounded
+maps/status, rooted/exec SIGKILL/drop, sticky wrong-phase refusal and preservation
+when stream EOF is missing. See the
+[root-exec design](testing/performance/0.74/diagnostic-signer-owned-root-exec-design.md).
+This is not restriction-policy composition, creator-loss qualification or signing.
+
+Constructor loss uses `--lib signer_constructor_loss` (11 cases), including a
+forced-EOF control before EXITKILL and the retained-original-peer barrier.
+Also run `--lib signer_root_` with default parallelism (83 tests) on current
+and MSRV, repeating the current group. Do not substitute serial success or
+widened terminal predicates.
+The [constructor design](testing/performance/0.74/diagnostic-signer-constructor-loss-design.md)
+records setup revision2, unchanged shared parser bounds and exact terminal checks.
+
+Tracer-thread loss fixtures require a kernel-proven group-stop for both rooted
+loss controls before EXITKILL options diverge. The `--lib signer_thread_exit`
+tests include exact GETSIGINFO/EINVAL and four concurrent negative controls;
+default parallel execution must pass without serialization or deadline changes.
+See the [thread-exit design](testing/performance/0.74/diagnostic-signer-thread-exit-design.md).
+
+The private-owner loss matrix is included in `--bin diagnostic_signer_owned_probe`
+unit tests (`owned_probe_parent_loss_matrix`). It kills the owner, observes the
+adopted original child and retains healthy/unrelated controls, unlike child-kill
+cleanup tests. It does not prove full normal-entry or all-boundary loss; see the
+[loss contract](testing/performance/0.74/diagnostic-signer-owned-loss-contract.toml).
+
+The ordinary original-self-exec probe uses `--bin diagnostic_signer_owned_probe`
+unit tests, portable `--test diagnostic_signer_owned_cli` and registered Linux
+x86_64 `--test diagnostic_signer_owned_probe`, package
+`hydracache-long-run-supervisor-074`. Existing supervisor CI includes all three.
+Owned child SIGKILL is not whole-parent-loss or authenticated signer-start proof;
+see the [original-owner contract](testing/performance/0.74/diagnostic-signer-owned-probe-contract.toml).
+
+Fixed ordinary child restrictions use portable `--test diagnostic_signer_isolation`
+and Linux x86_64 `--test diagnostic_signer_child_entry` in package
+`hydracache-long-run-supervisor-074`, plus `--lib diagnostic_signer_isolation::linux::tests`.
+The Linux target is registered and included by the existing supervisor CI command.
+Old namespace/rooted-exec/handoff fixtures remain independent regressions. Real
+EPERM/SIGSYS checks are only owned, core-disabled nonproduct child probes, never
+signing/start admission; see the [child-entry contract](testing/performance/0.74/diagnostic-signer-child-entry-contract.toml).
+
+Structured bootstrap context uses ordinary portable tests:
+`cargo test -p hydracache-long-run-supervisor-074 --test diagnostic_signer_bootstrap_context --locked`.
+Also run Linux original-runtime composition/OIDC regressions and doctests filtered
+by `diagnostic_signer_bootstrap_context` and `AssertedBootstrapRuntimeRead`.
+These validate declarations and consistency, not installed protection or runtime
+admission; see the [context contract](testing/performance/0.74/diagnostic-signer-bootstrap-context-contract.toml).
+
+Original GNU runtime/receipt consistency uses Linux ordinary tests:
+`cargo test -p hydracache-long-run-supervisor-074 --lib diagnostic_signer_runtime_input::tests --locked`
+plus the root-owned input corpus, signer build/GNU integration tests and five
+compile-fail doctests filtered by `diagnostic_signer_runtime_input`.
+Synthetic receipt consistency is not production custody or signing admission;
+see the [join contract](testing/performance/0.74/diagnostic-signer-runtime-join-contract.toml).
+
+The shared GNU signer catalog uses ordinary portable integration tests:
+`cargo test -p hydracache-long-run-supervisor-074 --test diagnostic_signer_gnu --locked`.
+On Linux also run `--example inspect_signer_gnu_catalog` tests and the unchanged
+`--lib diagnostic_signer_runtime_fixture::tests` corpus. Two compile-fail
+examples reject catalog-to-bootstrap and deserialization. This is byte/declaration
+inventory, not signing/start admission; see the
+[catalog contract](testing/performance/0.74/diagnostic-signer-gnu-catalog-contract.toml).
+
+Root-owned input inventory uses ordinary nonroot Linux tests:
+`cargo test -p hydracache-long-run-supervisor-074 --lib --locked diagnostic_root_owned_input::tests -- --nocapture`
+and `cargo test -p hydracache-long-run-supervisor-074 --test diagnostic_root_owned_input --locked`.
+Six compile-fail doctests prohibit FD/clone/owner override/deserialization/bundle/
+thread-transfer APIs. Current namespaces and numeric root ownership are observed,
+not initial-host or signing authority. No manual/server gate; see the
+[root-owned input design](testing/performance/0.74/diagnostic-root-owned-input-design.md).
+
+Unsigned prebuilt copy preparation uses ordinary nonroot Linux tests:
+`cargo test -p hydracache-long-run-supervisor-074 --lib --locked diagnostic_prebuilt_copy::tests -- --nocapture`
+and `cargo test -p hydracache-long-run-supervisor-074 --test diagnostic_prebuilt_copy --locked`.
+Doctests cover clone/FD export/bundle conversion refusal. The owned-child test
+SIGKILLs only its libtest subprocesses at seven copy checkpoints; it never runs
+the prepared executable. Foreign-writer survival after chmod is an explicit
+counterexample, not a passing revocation gate. No manual/server gate is added;
+see the [copy design](testing/performance/0.74/diagnostic-prebuilt-copy-design.md).
+
+The selected signer issuer uses ordinary portable tests:
+`cargo test -p hydracache-long-run-supervisor-074 --test diagnostic_signer_issuer --locked`.
+Six tests cover fixed key/fingerprint, old-role separation, the original public
+selfcheck/signature mutations, synthetic-issuer refusal, invalid asserted profiles,
+selection scope and independent concurrent factories. Compile-fail issuer-override
+coverage runs with doctests. This adds no manual or server gate; see the
+[selected-issuer design](testing/performance/0.74/diagnostic-signer-pin-design.md).
+
+The local separate signer-key helper uses
+`python -m unittest scripts.perf.test_diagnostic_signer_key_074` (nonroot Linux
+for actual disposable key fixtures; Windows reports those cases skipped).
+`cargo test -p hydracache-long-run-supervisor-074 --example verify_signer_issuer_public --locked`
+checks strict public selfcheck inventory with synthetic keys. No manual gate,
+issuer approval, installed workflow or server authority follows. See the
+[custody design](testing/performance/0.74/diagnostic-signer-custody-design.md).
+
+W11's post-options original tracing-thread loss uses ordinary Linux x86_64 tests:
+`cargo test -p hydracache-long-run-supervisor-074 --lib --locked signer_thread_exit -- --nocapture`.
+Six tests cover actual thread exit at six cuts while the original TGID survives,
+independent exact child reap, the rooted no-EXITKILL counterfactual, six healthy
+handoffs, frame/oracle mutations and independent concurrent observers. Negative
+control cleanup cannot establish positive proof. No new manual or server gate.
+See the [thread-exit contract](testing/performance/0.74/diagnostic-signer-thread-exit-contract.toml).
+
+W11's original creating-thread guard uses ordinary Linux x86_64 tests:
+`cargo test -p hydracache-long-run-supervisor-074 --lib --locked signer_creator_loss -- --nocapture`.
+Eight tests include actual thread-only exit at five cuts while the original TGID
+remains alive, independent child terminal/reap, the old-getppid counterfactual,
+healthy controls, status/frame mutations, retained-task/FD checks and concurrency.
+No manual gate, arbitrary signer-thread support or production/server enrollment.
+See the [creator-loss contract](testing/performance/0.74/diagnostic-signer-creator-loss-contract.toml).
+
+W11's pre-options original-parent guard uses ordinary Linux x86_64 tests:
+`cargo test -p hydracache-long-run-supervisor-074 --lib --locked signer_constructor_loss -- --nocapture`.
+Seven tests cover five actual whole-parent-loss cuts, exact original-child
+terminal/reap, healthy handovers, distinct negative controls, mutations and
+independent observers. Pre-arm creating-thread-only loss remains outside this
+proof. No manual gate, production enrollment or server admission is added.
+See the [constructor contract](testing/performance/0.74/diagnostic-signer-constructor-loss-contract.toml).
+
+W11's independent actual tracer-loss fixture uses ordinary Linux x86_64 tests:
+`cargo test -p hydracache-long-run-supervisor-074 --lib --locked signer_tracer_loss -- --nocapture`.
+Eleven tests include the closed role entry, six-stage actual tracer SIGKILL, exact
+child pidfd SIGKILL/reap, no-EXITKILL and healthy controls, attributed report faults,
+finite oracle/mutations, FD lifetime and independent monitors. Emergency cleanup is never a
+positive proof. No new manual gate, production custody, worker or server admission.
+See the [tracer-loss contract](testing/performance/0.74/diagnostic-signer-tracer-loss-contract.toml).
+
+W11's one-shot synthetic original-child handoff uses ordinary Linux x86_64 tests:
+`cargo test -p hydracache-long-run-supervisor-074 --lib --locked signer_handoff -- --nocapture`.
+Thirteen cases cover exact bounded transfer, pre-read withholding, malformed and
+duplicate protocol, FD/context faults, lost ACK, no retry and owned child SIGKILL.
+No manual gate, real credential, tracer-loss proof, worker or server admission.
+See the [handoff contract](testing/performance/0.74/diagnostic-signer-handoff-contract.toml).
+
+W11's local post-install mutation policy uses ordinary Linux x86_64 tests:
+`cargo test -p hydracache-long-run-supervisor-074 --lib --locked signer_namespace -- --nocapture`.
+Thirteen cases cover the exact 64-instruction candidate, fifteen native denials,
+old-policy controls, retained post-ND0 context sources, actual ABI kills and owned
+SIGKILL/drop. The regain prediction is retained as not reproduced, not an escape.
+No new manual gate, credential/handoff, production custody or server admission.
+See the [namespace contract](testing/performance/0.74/diagnostic-signer-namespace-contract.toml).
+
+W11's selected-root original-exec composition uses ordinary Linux x86_64 tests:
+`cargo test -p hydracache-long-run-supervisor-074 --lib --locked diagnostic_signer_root_fixture::rooted_exec::tests:: -- --nocapture`.
+Eleven cases check the original child exec, selected kernel VMA file identities,
+exact unchanged filter installation, refusals and SIGKILL at four boundaries.
+No new manual gate, production custody, post-install namespace policy, handoff or
+server admission follows. See the
+[rooted exec contract](testing/performance/0.74/diagnostic-signer-rooted-exec-contract.toml).
+
+W11's owned child root fixture uses ordinary Linux x86_64 tests:
+`cargo test -p hydracache-long-run-supervisor-074 --lib --locked diagnostic_signer_root_fixture::tests:: -- --nocapture`.
+Seven cases check fixed temporary tree and kernel child-only root/map/capability
+mechanics. No mount, host-root operation or new environment gate is used; missing
+unprivileged namespace capability refuses instead of falling back. Actual signer
+exec/runtime custody and server admission stay closed. See the
+[child root contract](testing/performance/0.74/diagnostic-signer-root-contract.toml).
+
+W11's bounded runtime inventory uses ordinary Linux x86_64 tests:
+`cargo test -p hydracache-long-run-supervisor-074 --lib --locked signer_runtime -- --nocapture`.
+Ten cases check bounded declared ELF edges and original readonly file consistency.
+No environment gate is added; loader-enforced root, loaded runtime closure,
+independent custody, handoff and server admission remain closed. See the
+[runtime contract](testing/performance/0.74/diagnostic-signer-runtime-contract.toml).
+
+W11's joined bootstrap fixture uses ordinary Linux x86_64 tests:
+`cargo test -p hydracache-long-run-supervisor-074 --lib --locked signer_joined -- --nocapture`.
+A fixed locally built GNU helper passes original first exec and exact kernel
+filter installation in one owner chain. Phase/refusal, bounded post-exec stack
+inputs, isolated image writing, native denial and owned child SIGKILL at two
+boundaries are checked. Runtime custody, handoff and actual tracer loss remain
+closed. No normal-library launch API or manual gate is introduced. See the
+[joined contract](testing/performance/0.74/diagnostic-signer-joined-contract.toml).
+
+W11's second approved bootstrap slice uses ordinary Linux x86_64 tests:
+`cargo test -p hydracache-long-run-supervisor-074 --lib --locked signer_seccomp -- --nocapture`.
+Exact original installation entry/memory/zero exit, non-dumpable hardening,
+native denial and actual x32/i386 SIGSYS are checked on owned raw-fork helpers.
+The first-exec fixture remains separate; TSYNC on this single-thread child is
+not multithreaded production signer support. Normal libraries exclude the
+module. No handoff, privileged dump, host mutation or manual gate is added.
+See the [seccomp contract](testing/performance/0.74/diagnostic-signer-seccomp-contract.toml).
+
+W11's approved first-exec prototype starts with ordinary Linux x86_64 library
+tests: `cargo test -p hydracache-long-run-supervisor-074 --lib --locked signer_first_exec -- --nocapture`.
+It launches/signals/reaps only owned temporary helpers in a test-build-only
+module. Exact kernel exec stops, descriptor closure before the initial stop,
+same-inode exec and independent tracer-thread regressions are checked. Normal
+libraries expose no fixture launch symbol; root contracts keep consumers absent.
+No credential handoff, seccomp, actual tracer-loss proof, host mutation or manual
+gate is introduced. See the [first-exec contract](testing/performance/0.74/diagnostic-signer-first-exec-contract.toml).
+
+W11 signer executable object observation has fast Linux cases
+`cargo test -p hydracache-long-run-supervisor-074 --lib --locked signer_executable -- --test-threads=1`
+plus an internal executable-only case and the existing registered API target.
+Owned cleared-environment helpers exercise exec/exit and actual procfs matching;
+same-inode re-exec remains an explicit counterexample to original-invocation
+proof. No signal, production process, secret or manual execution gate is added.
+See the [executable contract](testing/performance/0.74/diagnostic-signer-executable-contract.toml).
+
+W11 original signer-file retention has fast Linux library cases
+`cargo test -p hydracache-long-run-supervisor-074 --lib --locked signer_bundle -- --test-threads=1`
+and an API check in the existing registered kernel-binding target. Real owned
+fixture descriptors, streamed hashes, sticky drift and no export are checked;
+issuer selection, trusted ancestry and mapped executable/runtime stay asserted
+or absent. No manual SIGKILL or execution gate is added. See the
+[original file contract](testing/performance/0.74/diagnostic-signer-bundle-contract.toml).
+
+W11's separate signer-build model has the portable fast integration target
+`cargo test -p hydracache-long-run-supervisor-074 --test diagnostic_signer_build --locked`.
+It verifies synthetic signatures and supplied-byte consistency under explicitly
+asserted inputs, not independent issuer selection or actual bootstrap custody.
+Doctests refuse clone/deserialization/observer-build conversion; root performance
+contracts keep production consumers absent. It adds no manual process-loss gate
+because this model neither writes nor executes. See the
+[signer model contract](testing/performance/0.74/diagnostic-signer-build-contract.toml).
+
+W11 worker policy/kernel binding has a fast Linux API target
+`cfg.hydracache-long-run-supervisor-074.diagnostic-worker-kernel-binding`, plus
+ordinary library tests for original context/refusal and compile-fail doctests.
+It compares actual retained kernel objects with synthetic policy/model inputs;
+it does not enroll a production host, authenticate a controller or admit start.
+Run `cargo test -p hydracache-long-run-supervisor-074 --lib --locked worker_kernel_binding -- --test-threads=1`
+for the focused runtime cases. See the
+[binding contract](testing/performance/0.74/diagnostic-worker-kernel-binding-contract.toml).
+
+W11 kernel sender admission has an ignored/manual nonroot Linux/python3 gate:
+`tool.hydracache-long-run-supervisor-074.kernel-admission-inherited-socket-identifies-child`.
+It identifies the original per-message child sender through an inherited socket,
+then refuses that retained packet after exact owned SIGKILL while the parent's
+packet remains live. Its 180-second harness budget is not a performance threshold
+or production-key enrollment. Fast tests cover ancillary budgets/FD cleanup,
+kernel origin/time, signature and current credential consistency.
+
+W11 collector retention adds the ignored/manual nonroot Linux gate
+`tool.hydracache-long-run-supervisor-074.collector-owned-sigkill-matrix-retains-without-replay`.
+It exercises 15 owned SIGKILL cases, one uninterrupted control and 32 fresh
+refusals at a fixed 180-second harness budget. Run single-flight without relinking
+libtest. It proves local retained attempt behavior, not root isolation,
+authenticated original start, power-loss durability or original cgroup revocation.
+Fast collector tests separately cover actual pipe EOF, leaked writer copies,
+fixed byte ceilings, hashing, substitution and fault refusal.
+
+W11 terminal-process evidence has an ignored/manual nonroot Linux gate:
+`tool.hydracache-long-run-supervisor-074.terminal-process-owned-leader-exit-does-not-stop-descendant-writer`.
+It owns both fixture pidfds, kills only the leader and proves an actual
+descendant stream write afterward. Its 180-second budget is separate from the
+unchanged prior process-loss gates. This is a false-completion refusal proof,
+not cgroup emptiness or resource-release authority.
+
+W11 fresh-reader context replay has one ignored/manual Linux gate:
+`tool.hydracache-long-run-supervisor-074.diagnostic-process-crash-context-replay-refuses-after-loss`.
+It inspects eight explicit profiles after six owned SIGKILL cases and one
+control, with 112 fresh read-only processes. Boot/namespace changes are modeled;
+this gate never reboots a host or switches namespaces. Partial-tail Invalid
+is not evidence of a successful binding check. See the
+[context contract](testing/performance/0.74/diagnostic-context-replay-local-contract.toml).
+
+W11 owned Starting quarantine has an additional ignored/manual nonroot Linux
+gate: `tool.hydracache-long-run-supervisor-074.diagnostic-process-crash-quarantine-all-stages-and-post-return`.
+It covers six exact owned SIGKILL cases and one uninterrupted control, observing
+both retained reservation refusal and the authority journal in two fresh
+read-only processes per case. Test-only thread-local checkpoint hooks are absent
+from production builds. No repair, retry, recovered acknowledgement or writer
+cleanup is permitted. See the
+[process-loss contract](testing/performance/0.74/diagnostic-quarantine-crash-local-contract.toml).
+
+W11 owned Starting intent has one additional ignored/manual nonroot Linux gate:
+`tool.hydracache-long-run-supervisor-074.diagnostic-process-crash-starting-all-stages-and-post-return`.
+It kills only the owned test process at all eight departure publication
+boundaries and after return, then checks fresh read-only refusal, original lock
+release and helper termination. It is not ordinary fast execution, a production
+worker start or host enrollment. See the
+[Starting contract](testing/performance/0.74/diagnostic-starting-intent-local-contract.toml).
+
+W11 signed history inspection is covered by fast Linux unit/property tests and
+a compile-fail no-start test. It checks supplied bytes only and adds no manual
+process-loss gate: this API does not write or spawn. Existing fixed storage
+and process-loss gates are unchanged. See the
+[history contract](testing/performance/0.74/diagnostic-signed-history-local-contract.toml).
+
+W11 owned attempt transfer has two additional ignored/manual nonroot Linux
+gates: `tool.hydracache-long-run-supervisor-074.diagnostic-process-crash-attempt-publication-all-stages-and-post-return`
+and `tool.hydracache-long-run-supervisor-074.diagnostic-process-crash-attempt-consumption-all-stages-and-post-return`.
+They retain the original attempt through initial-state and cell-one SIGKILL
+boundaries, including lost acknowledgement. They are not ordinary fast tests,
+worker-start permission or host enrollment. See the
+[transfer contract](testing/performance/0.74/diagnostic-attempt-publication-local-design.md).
+
+The W11 early-attempt process-loss proof is registered separately as
+`tool.hydracache-long-run-supervisor-074.diagnostic-process-crash-attempt-all-stages-and-post-return`.
+Its ignored/manual nonroot Linux test checks nine exact owned SIGKILL cases and
+one uninterrupted control; ordinary fast tests do not run it. Retained context
+cannot authorize restart or execution. See the
+[local contract](testing/performance/0.74/diagnostic-early-attempt-local-design.md).
+
+This is the single map of every gate that guards `main`, and the one command to run
+the fast gates locally. **Enforcement lives in code/CI, not in prose**: a rule that
+is not in a gate here is not enforced. Fast CI gates and the local
+`cargo xtask verify` stay aligned so "what an agent runs for a milestone" matches
+"what CI enforces" for the same fast surface. Time-heavy scheduled gates are
+registered here and wired in CI, but intentionally stay out of `verify`.
+
+## One command
+
+```powershell
+cargo xtask verify
+```
+
+Runs the fast gates in order and fails on the first red one:
+formatting, clippy, the complete dependency policy, docs-consistency (`doc-check`), release
+feature-leak checks, workspace tests, rustdoc (`-D warnings`), the DST fast
+budget, the soak fast budget, raft failpoint crash-safety, and the performance-budget
+contract test. When Node/npm are installed, it also runs the read-only Management
+Center static check and Playwright specs; without Node/npm it logs a skip and
+continues. Use it before opening a PR. Time-heavy suites (criterion benchmark
+runs, chaos/soak, Docker/testcontainers) are nightly / scheduled and are **not**
+part of `verify`.
+
+On Windows, `cargo xtask verify` splits the test gate into
+`cargo test --workspace --exclude xtask --locked -j 1` and
+`cargo test -p xtask --lib --tests --locked -j 1`. This keeps the same coverage while
+avoiding the OS lock on the currently running `target/debug/xtask.exe` and transient
+linker locks on test binaries. The child cargo gates also use
+`CARGO_TARGET_DIR=target/xtask-verify-<process-id>` on Windows so stale default-target
+artifacts and locked test binaries from earlier verify runs cannot block the run.
+The format gate likewise enumerates unique workspace manifests and invokes `cargo fmt --check`
+per package, preserving `--all` coverage without exceeding the Windows process command-line limit.
+The allocator lint matrix omits jemalloc only on Windows, where its upstream build is unsupported;
+system and mimalloc remain checked there, while Linux CI checks system, mimalloc and jemalloc.
+
+## Gate registry
+
+| Gate | Command | Where | Guards |
+| --- | --- | --- | --- |
+| Format | `cargo fmt --all -- --check` | CI + verify | style |
+| Check | `cargo check --workspace --all-targets --locked` | CI | compiles |
+| HC/2 H01/H03/H18/H22 client-plane evidence | `cargo xtask client-plane-ci-check` + `cargo xtask client-plane-spike-check` (includes bake-off, two-pass generation, and complete retained compatibility replay) + pinned Docker `client-plane-docker-interop-check`; scheduled `fuzz_hc2_client_plane`; labelled fixed-host lifecycle soak; `cargo xtask client-plane-ci-admission --scope <hosted\|full>` | PR Linux/Docker + scheduled/tag/manual fuzz; separately enabled/manual fixed-host soak | Linux/Docker execute the accepted gRPC transport manifest, current generation-6 contract with bounded generation-5 compatibility/deprecation, hostile real-mTLS corpus, deterministic code generation, retained old/new daemon replay, and real production-daemon mTLS/coexistence/startup/drain gates. `cargo xtask client-plane-compat-check --require-complete` requires all nine cross-version rows. The Rust 0.68 release, including `hydracache-client-hc2`, requires exact same-SHA Linux/Docker/fuzz receipts. Java/Python registry promotion adds the fixed-host receipt through a distinct full admission. Intentional missing/red/mixed-SHA canaries, pinned toolchains/actions/images, and 30-day artifacts remain mandatory. Neither scope establishes absolute performance. See ADR-0019, ADR-0020, `docs/architecture/HC2_COMPATIBILITY_ARTIFACTS.md`, `docs/architecture/HC2_PRODUCTION_LISTENER.md`, and `docs/operations/HC2_CI_INTEROP_FUZZ_SOAK.md`. |
+| HC/2 0.68 schema, SDK conformance, packages, and release ledger | `cargo xtask client-schema-check` + `cargo xtask client-conformance --all-sdks` + `cargo xtask client-package-check` + `cargo xtask canary-check --release 0.68` + `cargo xtask release-evidence --release 0.68` | PR Linux + exact-candidate H22 admission | Pins generation 6 across schema and generated metadata, binds nine shared semantics to named Rust/Java/Python tests, consumes the produced crate/JARs/wheel outside the workspace, and maps W0-W12 to dynamic expected-red canaries. Rust ship mode requires `tool.hc2-hosted-admission-068`; missing Linux/Docker/fuzz receipts, mixed commits, or a green canary fail closed. The fixed-host receipt remains mandatory in `tool.hc2-release-admission-068` only for later Java/Python distribution promotion. |
+| Bench targets compile | `cargo check -p hydracache --benches` / `-p hydracache-db --benches` | CI | benches build |
+| Dependency policy | `cargo deny check` | CI + verify | advisories, bans, licenses and sources from `deny.toml` (including the sqlparser runtime ban — RULES R-9) |
+| DST fast budget | `cargo test -p hydracache-sim --test dst_budget --locked` | CI + verify | bounded deterministic simulation seed matrix (RULES R-5/R-8) |
+| Soak fast budget | `cargo test -p hydracache-sim --test soak_budget --locked` | CI + verify | bounded deterministic endurance soak with score-free `SOAK_REPORT` shape |
+| Management console | `npm --prefix console ci` + `npm --prefix console run build` + `npm --prefix console test` | CI + verify (verify skips only when Node/npm are absent) | read-only `/console/` renders the typed `/management/v1/**` surface, preserves live/modeled/stale/partial/unavailable truth, degrades when unreachable, stays accessible and keeps DOM/history rendering bounded |
+| Management Center 0.72 claim and evidence contract | `cargo test -p xtask --test management_center_072 --locked` + `cargo test -p hydracache-fuzz --test fuzz_corpus_regression --locked` + scheduled `fuzz_management_{envelope,recovery,placement,cursor}` + `cargo xtask management-center-check --release 0.72` + `cargo xtask canary-sweep --release 0.72 --tier fast` + `cargo xtask release-evidence --release 0.72 [--receipts-dir target/release-evidence/receipts --require-ship]` | CI fast corpus + scheduled bounded fuzz + exact-candidate admission | Maps every W0-W14 route/source/claim to executable tests, all 13 NATS-derived storage/cluster/recovery failure classes, reviewed changed-module branches, four bounded management decoder fuzz targets, 88% workspace floor, exact-SHA expected-red canaries and receipts. `--require-ship` rejects missing v0.71 baseline, mixed binaries, Linux resource/soak/fuzz evidence, coverage receipt, dirty state, stale SHA, skipped tests or any partial taxonomy row. |
+| Grafana dashboard drift | `cargo test -p hydracache-observability --test dashboard_metrics --locked` | CI + verify (via workspace tests) | dashboard PromQL references only metrics registered by `registered_metric_names()` |
+| SQL lint baseline drift | `cargo test -p hydracache-sql-lint --test lint_cli` + `lint --check-baseline` | CI + verify | no new un-baselined SQL lint findings |
+| Docs consistency | `cargo xtask doc-check` | CI + verify | `releases.toml` integrity (RULES R-11): file existence, version uniqueness, `depends_on` resolution, status validity, shipped release-note presence, 0.43 networked-control-plane status-drift sentinel |
+| Redis RESP conformance contract | `cargo xtask doc-check` + `cargo test -p xtask --test doc_check redis_compat --locked` | CI + verify via doc-check / xtask tests | `docs/integrations/redis_compat_conformance.json` is valid, uses pinned `redis-server` oracle images, keeps RESP2/RESP3 as the 0.63 dialects, gives every supported/candidate/extension command a covering test, records `MSET`, TTL, Redis auth, native `rediss://`, HydraCache tag extensions, and the bounded 0.68 keyspace-event listener as release scope, and keeps `redis-compat.md` present |
+| Redis 0.65 debt safety net (fast) | `cargo test -p hydracache-client-transport-axum --test client_surface_conformance --locked` + `cargo test -p hydracache-client-transport-axum --test protocol_compat --locked` + `cargo test -p hydracache-redis-compat --locked` + `cargo test -p hydracache-server --test server_lifecycle redis_listener_core_parity --locked` + `cargo test -p xtask --test doc_check redis_compat --locked` | CI + verify via workspace/xtask tests | W1/W2/W4/W5/W6 reusable client-surface contracts, manifest-linked route/case characterization, RESP2/RESP3 wire behavior, ordinary admission/audit/redaction invariants, native-lock isolation, real TCP server-owned listener parity, and the published v1/v2/v3 compatibility boundaries. This row does not replace the gated real-process W3 sentinels. |
+| Raft compaction control 0.66 (fast) | `cargo test -p hydracache-cluster-raft --test compaction_seam --locked` + `cargo test -p hydracache-cluster-raft --features sled-log-store --test compaction_seam --locked` + `cargo test -p hydracache-server compaction --locked` | CI fast + `0.66` release evidence | W0 reuses the typed `RaftLogStore`/Sled snapshot and compaction path, exposes an authenticated off-by-default daemon control, rejects compaction past applied progress, persists the exact boundary, and reports read-only progress without adding a raw snapshot-byte API. |
+| 0.66 operational proofs (fast) | `cargo test -p hydracache-cluster-raft --test membership_load --locked` + `--test differential_model` + `--test scheduler_tick` + `--features test-failpoints,sled-log-store --test io_chaos_boundaries` + focused server/client/operator/fuzz targets listed in `docs/TESTING.md` | CI fast + registered fast receipts | Executes the deterministic W2-W12 halves and compiles every daemon-process/operator target. W5 validates persistence by reopening the same Sled directory after injected snapshot/applied-index/commit failures; only transient Sled lock-release contention is retried for a bounded 500 ms, while all other reopen failures remain immediate. Env-gated tests may disclose their missing external capability, but their deterministic generator/checker/artifact guards still execute; this row does not replace Linux daemon, kind, or cargo-fuzz receipts. |
+| Redis RESP fast surface | `cargo test -p hydracache-redis-compat --locked` + `cargo test -p hydracache-server --test server_lifecycle redis --locked` | CI + verify via workspace tests | RESP2 codec, command translator, protocol v3 TTL metadata/expiry compatibility, atomic `MSET`, `SELECT 0` as the only supported logical database, minimal honest `INFO`, cache-subset `TYPE`, Redis `AUTH`/`HELLO AUTH` contract for auth-required listeners including hardened password comparison and credential redaction, unsupported/admin-disabled guardrails including `CONFIG`/`FLUSHDB`/`FLUSHALL` no-mutation behavior, HC namespace/tag extension classification and edge-local invalidation semantics, golden fixtures, fuzz boundary smoke, off-by-default config, distinct listen addresses, real TCP/TLS listener startup, `rediss://` handshake/plaintext/wrong-CA behavior, and drain gating |
+| Redis 0.68 keyspace event listener | `cargo test -p hydracache-client-transport-axum --test mutation_events --locked` + `cargo test -p hydracache-redis-compat --test redis_event_listeners --locked` + `cargo test -p hydracache-server --test server_lifecycle native_backend --locked` + `cargo test -p xtask --test doc_check redis_compat --locked` | PR Rust/MSRV/Docs via workspace, docs examples, and doc-check | Off-by-default, tenant-fenced metadata bus; Redis `SUBSCRIBE`/`UNSUBSCRIBE`/`PSUBSCRIBE`/`PUNSUBSCRIBE`; RESP2 arrays and RESP3 pushes; binary glob matching; exact/pattern admission bounds by count and retained bytes; auth-before-subscribe; shared RESP/HC2 mutation visibility; namespace-fenced native typed-cache `put` to Redis `set` projection; custom-prefix collision refusal; metadata-only value-store separation; receiver release at zero subscriptions; no replay after resubscribe; mixed-source no-duplicate proof; authenticated `rediss://` delivery; explicit native lag disconnect, non-blocking writers, recovery, and zero active-subscriber accounting. This gate does not claim arbitrary Pub/Sub, `PUBLISH`, replay, value-store unification, values in events, cross-daemon delivery, global order between independent sources, approximate native event mappings, or a durable event log. |
+| Native Rust event-listener client contract | `cargo test -p hydracache --test native_event_listeners --locked` + `cargo test -p hydracache --lib --locked events::` | PR Rust/MSRV via workspace tests | Black-box external-crate proof for the ordinary `HydraCache` and `TypedCache` public APIs: metadata filtering, physical namespace isolation, callback delivery and unsubscribe, access-event opt-in, bounded lag reporting, and post-gap continuation. The integration target may use only exported API; it does not replace the separate Redis or remote HC/2 wire-listener gates. |
+| Redis RESP Docker/client matrix | `HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1 HYDRACACHE_REQUIRE_REDIS_ORACLE=1 HYDRACACHE_FORCE_REDIS_CLIENT_DOCKER=1 HYDRACACHE_REQUIRE_REDIS_CLIENT_PYTHON=1 HYDRACACHE_REQUIRE_REDIS_CLIENT_NODE=1 HYDRACACHE_REQUIRE_REDIS_CLIENT_GO=1 HYDRACACHE_REQUIRE_REDIS_CLIENT_JVM=1 cargo test -p hydracache-redis-compat --test redis_clients --locked -- --ignored --nocapture` | CI scheduled/dispatch job `Redis Compatibility Release Proof` | mainstream Redis clients and pinned real Redis oracle scenarios for the supported subset, including `SELECT 0`, minimal `INFO`, cache-subset `TYPE`, `MSET`, `SET EX/PX`, `SETEX`/`PSETEX`, `TTL`/`PTTL`, post-expiry reads, `SET NX PX/EX` lock acquire/contention, token-safe lock release/extend script shims, redis-py `Lock`, Node `redlock` single-resource API coverage, HydraCache-only `HC.NAMESPACE`/tag extensions, auth-required startup, and `rediss://` startup; Docker/oracle and Python/Node/Go/JVM rows are required in the release-proof CI job |
+| Redis RESP resource smoke | `HYDRACACHE_RUN_REDIS_COMPAT_RESOURCE_SMOKE=1 cargo test -p hydracache-redis-compat --test resp_resource_smoke --locked -- --ignored --nocapture` | CI scheduled/dispatch job `Redis Compatibility Release Proof` | idle/pipelined connection resource bounds, bounded metric labels, slowloris/oversized frame behavior, and no key/value leakage in logs or metrics |
+| Redis RESP multi-node debt sentinels | `HYDRACACHE_RUN_REDIS_RESP_MULTINODE_E2E=1 cargo test -p hydracache-server --test redis_resp_multinode --locked -- --nocapture` | CI scheduled/dispatch job `DST and Soak Nightly` + `0.65` release evidence | real `hydracache-server` processes retain the current node-local RESP posture: selected-endpoint lifecycle coverage plus cross-endpoint `GET`, `MGET`/`DEL`/`EXISTS`, `MSET`, lock acquire, token-safe release, TTL visibility, listener-local script cache, HydraCache tag index, and TTL extension flip-sentinels. The stable debts `resp-cross-endpoint-key-visibility` and `resp-cross-endpoint-lock-safety` must be paid by inverting the sentinels and updating the compatibility claim together; the dedicated gate cannot be satisfied by the generic daemon-process target. |
+| Release feature leak | `cargo xtask verify-no-test-features` | CI + verify | default server/operator/raft release graphs do not enable `test-failpoints`, `test-support`, `fail`, or `hydracache-cluster-testkit` |
+| Performance budget (contract) | `cargo test -p xtask --test bench_budget` + `bench-budget --current benches/baseline/0_37.json` | CI + verify | budget parser + baseline contract |
+| Performance budget (run) | `cargo bench …` then `bench-budget --current target/criterion` | CI (scheduled/dispatch) | real regression vs `benches/budget.toml` |
+| Coverage ratchet | `cargo llvm-cov --workspace --all-targets --locked --ignore-filename-regex '(^|/)crates/(xtask|hydracache-loadgen)/' --summary-only --fail-under-lines 88` | CI (scheduled/dispatch) | mechanical product-source line coverage floor; the full workspace suite, including `xtask` and `hydracache-loadgen` tests, still executes, while development-harness source is governed by its dedicated canary, contract, mutation, and governance gates rather than folded into the product percentage; not a RULES R-7 numeric self-score |
+| Operator kind chaos | `cargo test -p hydracache-operator --test soak_kind --locked -- --ignored --nocapture` | CI (scheduled/dispatch) + pre-release live kind | pod crash, NetworkPolicy partition when CNI enforcement is proven, dedicated probe-pod baseline reachability so missing tools cannot pass wrong-green, and chaos-mesh IOChaos slow disk when the CRD exists; unsupported legs skip loud |
+| 0.66 operator kind release proof | `cargo xtask evidence-run --release 0.66 --gate env.hydracache-operator-kind-066` | Linux CI scheduled/dispatch prepared-kind lane + release evidence | W5/W11 jointly require the current server/controller image, public committed membership epoch, scale churn without ghost voters, a proven NetworkPolicy-enforcing CNI, and Chaos Mesh `IOChaos` for the slow-disk leg. The gate binds the host controller's own non-empty runtime marker to a current-run nonce, live PID, and exact inode of a SHA-named immutable candidate copied outside Cargo's relinked output, then snapshots capability markers, non-empty server-pod logs, expected-cluster resources, events, and the attested controller log into declared receipt-digested artifacts. A missing, empty, stale, replaced, or wrong-process artifact cannot produce the ship receipt. |
+| Real-process daemon cluster | `HYDRACACHE_RUN_DAEMON_PROCESS_E2E=1 cargo test -p hydracache-server --test daemon_process_cluster --locked -- --test-threads=1 --nocapture` | CI (scheduled/dispatch) | serialized child-process `hydracache-server` cluster scenarios, real leader kill/restart/suspend, no same-term double-vote, restart with durable state, responsive-node barrier before direct drain, two-second authoritative `2/2` non-resurrection observation after drained-storage restart, suspended-leader no-split-brain safety, and frozen-peer replay evidence with child logs/status snapshots/bounded-send error |
+| 0.66 real-process operational release proof | `cargo xtask evidence-run --release 0.66 --gate env.hydracache-run-066-daemon-process-e2e` | Linux CI scheduled/dispatch + release evidence | Runs W1 snapshot interruption, W2 composed nemesis, W6 mixed binaries, W7 external history, W8 differential process adapter, W10 real suspend/resume, and W12 exact sender/peer single-flight, stale-term cancellation, daemon-local monotonic task HWM (`<=1` in the one-lagger scenario), 200 ms event-checkpoint observations of cluster request/task current (`<=2`, not a continuous distributed maximum), post-quiescence current zero, and `/proc` RSS/VmHWM/FD budgets. Ship mode requires full Git history and the real `v0.65.0` tag; the pinned development fallback is rejected. |
+| Membership history | `HYDRACACHE_RUN_DAEMON_PROCESS_E2E=1 cargo test -p hydracache-server --test membership_history --locked -- --nocapture` | CI (scheduled/dispatch) | recorded daemon membership histories pass the shipped 0.44 invariant/linearizability checks and reject two leaders in one term |
+| Pre-vote nightly soak | `HYDRACACHE_RUN_PREVOTE_NIGHTLY_SOAK=1 cargo test -p hydracache-cluster-raft --test prevote_nightly_soak --locked -- --nocapture` | CI (scheduled/dispatch) | randomized pre-vote partition/rejoin schedules keep at most one leader per term |
+| Raft corner-case nightly | `HYDRACACHE_RUN_RAFT_NEMESIS_SOAK=1 HYDRACACHE_NEMESIS_BUDGET_SECS=300 cargo test -p hydracache-cluster-raft --test nemesis_membership nemesis_soak_over_seed_range_converges --locked -- --nocapture` + `HYDRACACHE_GRID_SCOPE=wide cargo test -p hydracache-cluster-raft --test snapshot_exhaustive_grid --locked -- --nocapture` + `cargo test -p hydracache-cluster-raft --features test-failpoints --test rejoin_after_compaction --locked -- --test-threads=1 --nocapture` + `cargo test -p hydracache-cluster-raft --features test-failpoints --test snapshot_resource_faults --locked -- --test-threads=1 --nocapture` + `cargo test -p hydracache-sim --test clock_skew_safety --locked -- --nocapture` | CI (scheduled/dispatch) | W7-W14 heavier/wide replay proof with long nemesis budget, wide exhaustive grid, snapshot install/rejoin, resource-fault failpoints, clock skew/fence safety, and uploaded replay artifacts when present |
+| Raft deterministic message filter | `cargo test -p hydracache-cluster-raft --test raft_message_filter --locked` | CI + verify (via workspace tests) | pre-vote partition rejoin, asymmetric partition, minority/majority commit behavior, duplicate/reordered raft messages, deterministic replay |
+| Raft wire/golden properties | `cargo test -p hydracache-cluster-raft --test wire_properties --locked` + `cargo test -p hydracache-cluster-raft --test golden_vectors --locked` + `cargo test -p hydracache-server --test id_mapping_properties --locked` | CI + verify (via workspace tests) | malformed raft wire decode rejects loud, metadata byte vectors remain stable, stable node id to raft id mapping does not parse-first |
+| 0.66 Raft wire fuzz and socket corpus | `cargo xtask evidence-run --release 0.66 --gate fast.fuzz-corpus-regression` + `cargo test -p hydracache-server --test raft_wire_socket_corpus --locked` + `cargo xtask evidence-run --release 0.66 --gate tool.cargo-fuzz.raft-wire-frame-066` | CI fast corpus/socket + scheduled bounded fuzz receipt | W9 replays every committed pure-decoder seed, sends malformed/oversized bodies to the real HTTP listener without durable-log mutation, and runs the fifth cargo-fuzz target with a bounded budget and retained reproducers. Read-index requests and responses must contain exactly one request-context entry: the wire decoder rejects missing or ambiguous contexts before calling `raft-rs`, and the committed `read-index-without-context.json` seed preserves the nightly crash as a deterministic regression. A missing nightly/cargo-fuzz tool is not release evidence. |
+| Raft failpoint crash-safety | `cargo test -p hydracache-cluster-raft --features test-failpoints --test failpoints_crash_safety --locked -- --test-threads=1` | CI + verify | test-only failpoints prove torn raft storage windows fail loud and canaries turn red |
+| Raft snapshot/replay fast proof | `cargo test -p hydracache-cluster-raft snapshot_immutability --locked` + `cargo test -p hydracache-cluster-raft --test raft_snapshot_membership --locked` + `cargo test -p hydracache-cluster-raft --features test-failpoints snapshot_apply --locked -- --test-threads=1` + `cargo test -p hydracache-cluster-raft snapshot_replay_manifest --locked` + `cargo test -p hydracache-server grid_host::tests::http_raft_sink_times_out_when_peer_accepts_without_reply --locked` + `cargo test -p hydracache-server grid_host::tests::drive_loop_counts_and_reports_send_failures --locked` + `cargo test -p hydracache-server grid_host::tests::raft_drive_continues_after_bounded_peer_send_timeout --locked` | CI + verify via explicit CI step/workspace tests | exported/durable snapshot immutability, mid-membership snapshot plus committed-tail replay, malformed snapshot apply fail-loud diagnostics, contradiction-ledger manifest shape, and bounded Raft HTTP/frozen-peer send behavior |
+| Raft nemesis membership | `cargo test -p hydracache-cluster-raft --test nemesis_membership --locked` | CI fast + scheduled soak | seeded composed-fault membership schedule covers partition/heal/drop/delay/duplicate/conf-change/snapshot-restore checks, keeps a replayable schedule, proves same-seed deterministic outcomes, shrinks fixture failures to a one-step-minimal reproducing schedule, replays `tests/vectors/bad_seeds.json`, and has an env-gated seed-range soak via `HYDRACACHE_RUN_RAFT_NEMESIS_SOAK=1` |
+| Raft corpus vectors | `cargo test -p hydracache-cluster-raft --test raft_corpus_vectors --locked` | CI fast + verify | reduced vectors derived from etcd/raft safety scenarios cover snapshot catch-up, stale-term snapshot rejection, single-step conf-change quorum safety, log matching, commit-index bounds, an explicit required-category coverage assertion, and stale-snapshot/category-missing canaries |
+| Snapshot corruption | `cargo test -p hydracache-cluster-raft --features sled-log-store --test snapshot_corruption --locked` | CI fast + verify | sled-backed snapshot bytes use a checksum envelope; bit-flipped and truncated snapshots fail loud before apply, legacy raw protobuf snapshots still reopen, and valid snapshots from the wrong identity are rejected by restore identity checks |
+| Raft rejoin after compaction | `cargo test -p hydracache-cluster-raft --features test-failpoints --test rejoin_after_compaction --locked -- --test-threads=1` | CI fast + verify | lagging runtime isolated past leader compaction is caught up through real raft-rs `MsgSnapshot`, installs the metadata snapshot payload, applies the committed tail, and rejects stale local membership via canary |
+| Raft snapshot resource faults | `cargo test -p hydracache-cluster-raft --features test-failpoints --test snapshot_resource_faults --locked -- --test-threads=1` | CI fast + verify | disk-full during snapshot save fails before mutating visible snapshot state, OOM during metadata snapshot install fails before partial apply, and canary preserves the partial-state forbidden outcome |
+| Raft snapshot exhaustive grid | `cargo test -p hydracache-cluster-raft --test snapshot_exhaustive_grid --locked` | CI fast + verify | exhaustive small-scope cross product of membership operation, real snapshot prefix, and restart point converges after committed-tail replay, preserving the `applied_index >= commands.len()` snapshot apply contract |
+| Raft proposal idempotency | `cargo test -p hydracache-cluster-raft --test proposal_idempotency --locked` | CI fast + verify | retried ConfChange after persisted raft snapshot and node restart is not double-applied, and retried metadata command ids after export/from_snapshot do not append duplicate membership commands |
+| Raft clock skew safety | `cargo test -p hydracache-sim --test clock_skew_safety --locked` | CI fast + verify | skewed per-node tick rates never produce two leaders in one term; backward logical-clock jump does not expire a fenced lock early, fences stay monotonic, and zombie release is rejected |
+| W39a/W39b cancellation safety | `cargo test -p hydracache --test cancellation_safety --locked -j 2` + `cargo test -p hydracache-client-transport-axum --test cancellation_safety --locked -j 2` | CI fast + verify via registered fast suites | named cancellation checkpoints prove cache/single-flight and Axum client/lock contracts; no generic poll-count claim and no wire-disconnect claim |
+| W39c Raft cancellation safety | `HYDRACACHE_RUN_CANCELLATION_RAFT=1 cargo test -p hydracache-cluster-raft --test cancellation_safety --locked -j 2 -- --ignored --nocapture` | CI scheduled/dispatch `Raft Corner-Case Nightly` + release evidence | classifies committed/not-committed/unknown proposal outcomes, proves command-id retry idempotency, and verifies consistent metadata after runtime shutdown/restart; release-blocking in 0.64 |
+| Raft corner-case execution evidence | `cargo test -p xtask --test release_governance --locked` + registered W7-W14 commands | CI fast `rust` + scheduled/dispatch `Raft Corner-Case Nightly` and `DST and Soak Nightly` | W6b mechanically verifies every named fast step and both heavy-job guards; nemesis soak, wide snapshot grid, feature-gated rejoin/resource faults, and daemon-process recovery execute through `evidence-run`, so their receipts bind the actual command and registry digest to the candidate commit |
+| Raft mutation baselines | `cargo test -p xtask --test mutants --locked` + `cargo xtask mutants --shard INDEX/8` + `cargo xtask mutants --scope proof-oracles --shard INDEX/2` | CI fast + scheduled/dispatch | W15 validates separate native cargo-mutants configs and baselines, runs eight product and two proof-oracle shards in isolated runner checkouts with pinned cargo-mutants `27.1.0`, and requires every shard receipt with no untriaged survivor; `--in-place` preserves `.git` for compatibility tests and prevents a duplicate Cargo target tree |
+| Raft Miri aliasing/UB | `cargo xtask miri-check` or exact evidence via `cargo xtask evidence-run --release 0.64 --gate tool.miri.snapshot-safety` | CI scheduled/dispatch + registered release proof | W16 pins `nightly-2026-07-01`, runs the synchronous snapshot clone/apply data paths under Miri, writes a commit-bound artifact, and skips loud locally when Miri is absent; async Tokio membership stays in normal Raft gates and the independent TSan canary proves the race detector itself goes red |
+| ThreadSanitizer ordinary concurrency | `cargo xtask tsan-check --scope suites` + `cargo xtask tsan-check --scope canary` | Linux scheduled/dispatch + registered release proof | pinned `nightly-2026-07-01` runs the parallel W34 cache matrix and Raft leadership/snapshot-delivery suites under TSan; the dedicated lane visibly prebuilds all instrumented proof targets before the receipt-bound execution, emits per-suite start/pass timing, and retains a bounded two-hour cold-build budget for generic registered runs; one structurally enforced `moka::MiniArc` fence suppression is digest-bound to evidence, the isolated ignored `UnsafeCell` canary must still exit non-zero with the normalized data-race signature, and both exact-candidate receipts are required for W16/W26 |
+| Canary completeness | `cargo test -p xtask --test canary_check --locked` + release-scoped `cargo xtask canary-check` and matching sweeps, including `--release 0.72` and `--release 0.73` | CI fast + scheduled complete sweep | 0.72 registers one exact-SHA reversible defect proof for every W0-W14 item; 0.73 registers one for every W0-W11 evidence row. Each normal guard and defect command must produce the registered invariant signature; zero tests, green canary, timeout, compile error, unrelated panic, unsupported-platform substitution, or stale receipt is non-evidence. |
+| 0.70 allocation/retention evidence | `evidence-run --release 0.70 --gate fast.memory-regression-070`; scheduled `tool.hydracache.retention-soak-070` and `tool.hydracache-client-transport-axum.retention-soak-070`; final `release-evidence --release 0.70 --require-ship` | required PR check + weekly/tag/manual soak + explicit/tag admission | Fast owner/reset coverage and behavioral W0-W7 canaries are SHA-bound. The slow lane proves 100 cleanup cycles and a million-mutation fixed-keyspace plateau. Admission rejects missing, red, dirty, stale, or mixed-SHA receipts. Weekly hosted HydraCache/Redis diagnostics retain raw data 30 days and compact fingerprinted non-gating trends 90 days; no absolute RSS threshold is a merge gate. |
+| 0.71 memory governance | `memory-owner-inventory --release 0.71 --check`; `memory-contract-check --release 0.71`; `memory-campaign-check --release 0.71`; final variants with `--require-ship` | required PR structural checks + dedicated-host D0-D4 campaign | Structural checks are green before host evidence and make no numerical claim. Ship admission requires an immutable successful M10 candidate receipt plus exact-commit W0-W13 evidence; see `docs/testing/MEMORY_0_71_GOVERNANCE.md`. |
+| 0.73 local performance screening foundation | `cargo test -p xtask --test performance_contract_073 --test performance_local_073 --locked`; `cargo xtask performance-contract-check --release 0.73 [--receipt <path>]`; `cargo xtask performance-local-context --release 0.73` | required local/PR structural gate; generated context is local-only; never release-promotable | Validates exact source/binary/scenario/host/raw-series identity, counterbalanced pair metadata, complete success/rejection/timeout/late/incomplete accounting, frozen 1/8/32/128 concurrency and 25%/60%/85% offered-load lanes. The context generator records a privacy-safe host/toolchain fingerprint without raw personal or hardware identifiers. Local artifacts remain `promotable=false` and `numerical_claim_eligible=false`; only `--require-ship` additionally requires and verifies the archived final 24-hour exact-candidate confirmation. |
+| 0.73 release evidence and long-run closure | `cargo xtask canary-check --release 0.73`; `cargo xtask canary-sweep --release 0.73 --tier fast`; `cargo xtask release-evidence --release 0.73 [--receipts-dir target/release-evidence/receipts --require-ship]`; final `cargo xtask performance-contract-check --release 0.73 --require-ship` | PR structural proof + explicitly approved protected-host qualification/confirmation + exact-candidate ship admission | Maps W0-W11 to owned sources, tests, terminal dispositions and expected-red receipts. Six-hour qualification run `36532416869` is archived byte-for-byte; 24-hour-per-role confirmation run `36622527013` is mandatory and remains a red ship boundary until its complete artifact, nested hashes, calibrations and guards are independently verified and checked in. No retry may replace a failed attempt, and no documentation descendant changes frozen product SHA `16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b`. |
+| Deterministic logical evidence | `cargo xtask determinism-sweep --release 0.64` | scheduled/dispatch + registered release proof | W18 runs every `deterministic=true` fast suite twice normally and once with `--test-threads=1`; canonical SHA-256 includes seed, ordered schedule/operations, invariant verdicts, and final logical state while excluding wall-clock, paths, ports, process/thread ids, and unordered object formatting |
+| Coverage non-regression evidence | `cargo xtask coverage-ratchet-check --structural` + `cargo xtask evidence-run --release 0.64 --gate tool.coverage-ratchet` + `cargo xtask management-center-check --release 0.72` | scheduled/dispatch `Coverage Ratchet` with full-history checkout | Pins `cargo-llvm-cov 0.8.7`, never permits a product-source floor below 88%, and requires a fresh exact-candidate receipt before ship. The 0.72 inventory additionally names every changed management module, behavioral tests and reviewed branch classes; an omission or unexplained exemption is red. |
+| Raft invariant catalog | `cargo test -p hydracache-cluster-testkit --test invariants --locked` | CI fast via workspace tests | W21 exposes `assert_cluster_invariants(&ClusterInvariantView)` and proves the shared catalog flags seeded multiple-leader, divergent-voter, divergent-member, and lost-committed-entry violations; nemesis and corpus convergence tests call the shared catalog |
+| Tests | `cargo test --workspace --locked` (Windows verify: split workspace excluding `xtask` + xtask lib/integration tests, serialized with `-j 1`) | CI + verify | unit + integration (RULES R-8) |
+| Docs | `RUSTDOCFLAGS=-D warnings cargo doc --workspace --no-deps` | CI + verify | rustdoc warnings |
+| Clippy | workspace all-features excluding `hydracache`, then the valid `hydracache` allocator-feature matrix; always `-D warnings` | CI + verify | lints without combining mutually exclusive allocators |
+| MSRV | `cargo check` + `cargo test` on Rust 1.88.0 | CI (separate job, full-history checkout) | minimum supported Rust; workspace governance tests can resolve the pinned `v0.63.0` compatibility baseline and ancestry |
+
+## Release 0.67 performance evidence
+
+Release 0.67 ships performance methodology and tooling without numerical performance claims. The ordinary fast implementation receipts remain ship-mandatory. Dedicated reference execution is deferred by [`TD-0013`](technical-debt/TD-0013-dedicated-performance-runner-and-baseline-bootstrap.md).
+
+| Gate | Command | Where | 0.67 role |
+| --- | --- | --- | --- |
+| 0.67 fast contracts | `evidence-run --release 0.67 --gate fast.performance-contract-067`; `fast.workspace-nextest`; W3-only `fast.performance-resp-external-067` | PR/shared CI | Mandatory structural and regression evidence for W0-W10 implementation; never capacity evidence. |
+| Runner stability preflight | `perf-runner-preflight --release 0.67 --profile reference-v1` | Protected manual bare-metal lane | Deferred evidence. Exactly seven probes; spread above 15% aborts before compilation. |
+| Exact performance prebuild | `evidence-run --release 0.67 --gate tool.perf-prebuild-067` | Serialized protected bare-metal lane | Deferred evidence. Binds the clean commit, build contract, lockfile, and binary identities. |
+| Core reference | `evidence-run --release 0.67 --gate env.hydracache-run-067-perf-core` | Serialized protected bare-metal lane | Deferred evidence for embedded, in-process client, and labeled model surfaces. |
+| RESP/Redis reference | `evidence-run --release 0.67 --gate env.hydracache-run-067-perf-resp` | Serialized protected Linux lane | Deferred node-local RESP, paired Redis, and exported-metrics evidence; no distributed or superiority claim. |
+| Control-plane reference | `evidence-run --release 0.67 --gate env.hydracache-run-067-perf-control-plane` | Serialized protected Linux lane | Deferred real 3/5/7-daemon admin/control-plane evidence; no value-plane capacity claim. |
+| W7 budget verdict | `evidence-run --release 0.67 --gate tool.perf-budget-check-067` | After all reference measurements | Historical 0.67 deferred gate; it was red at 0.67 ship time because `reference-v1` was then unbootstrapped. |
+| 0.67 release aggregation | `canary-sweep --release 0.67 --tier all` plus `release-evidence --release 0.67 --receipts-dir ... --require-ship` | Frozen candidate | Historical 0.67 aggregation. Its five reference receipts were deliberately outside the 0.67 ship manifest while TD-0013 was open. |
+
+The deferred gates remain registered, protected, serialized, and fail-closed. Missing tools, unstable spread, wrong fingerprints, stale artifacts, insufficient baseline history, or candidate self-baselining stays red. GitHub-hosted `ci-shared` results remain tripwires only and cannot support any numerical release claim.
+
+### Release 0.67.1 activation stages
+
+Release 0.67.1 adds explicit W5-W7 gates without changing the historical 0.67 measurement
+commands:
+
+| Gate | Command | Required result |
+|---|---|---|
+| Reviewed five-sample contract | `perf-reference --release 0.67.1 --profile reference-v1 --phase reviewed` | Rehashes the independently approved committed profile, budget, baseline, and anchor; retains transitive sample-set, five-sample, provisioning, and full-dress digests. |
+| Reference activation | `perf-reference --release 0.67.1 --profile reference-v1 --phase activate` | Exactly one reviewed fingerprint, bootstrapped contracts, no candidate self-baseline, TD-0013 resolved, and scoped release notes. |
+| Frozen candidate | `perf-reference --release 0.67.1 --profile reference-v1 --phase frozen-candidate` | Current-SHA activation, complete core/RESP/control evidence, passed 0.67.1 budget verdict, and every expected-red canary. |
+
+The three gates run in the trusted manual `release-0671-frozen-candidate` job. Bootstrap and frozen
+candidate are separate serialized campaigns. See
+[`testing/PERF_REFERENCE_0_67_1_REVIEW_AND_ACTIVATION.md`](testing/PERF_REFERENCE_0_67_1_REVIEW_AND_ACTIVATION.md).
+
+The reviewed-contract and activation gates are now green for the W6 activation change. The frozen
+candidate must still run from that change's exact merge SHA; it may consume but never join the five
+pre-candidate baseline members.
+
+## Chaos / soak / Docker (nightly / pre-release)
+
+The original-controller request attempt has a separate local Linux nonroot
+manual gate. Run `cargo test -p hydracache-long-run-supervisor-074 --lib --locked controller_attempt_process_crash_ -- --ignored --nocapture --test-threads=1`.
+Its private harness retains the actual local kernel message and original
+controller/OIDC/worker/authority/common-fence composition at eight write cuts
+and AfterReturn. Nine owned pidfd SIGKILL cases, an uninterrupted control and
+two fresh read-only inspections per case verify retained context and lock
+lifetime. The sender is the synthetic fixture child itself, not an independent
+production controller. No recovered acknowledgement, original start, host
+enrollment, power-loss/reboot proof or qualification follows. This gate is
+registered separately and does not replace the earlier storage/intent proofs.
+
+Release 0.74 P0 diagnostic process-loss proofs are local Linux nonroot manual
+gates, wired through the existing `gated-proof-registry` dispatch job and listed
+in `docs/testing/gated-test-registry.toml`. They remain ignored in the fast suite.
+Run `cargo test -p hydracache-long-run-supervisor-074 --lib --locked diagnostic_process_crash_ -- --ignored --nocapture --test-threads=1`
+for all three proofs: Reserved publication, initial consumption and uninterrupted
+controls. They operate only on owned test subprocesses and temporary fixtures;
+passing them does not admit a server, product workload or qualification.
+
+Per RULES R-5 these run behind `#[ignore]` and are not in `verify`:
+
+```powershell
+cargo test --workspace --locked -- --ignored
+cargo run -p hydracache-sim --bin vopr -- --seed 44 --steps 100000
+cargo run -p hydracache-sim --bin vopr -- soak --master-seed 22530 --budget-secs 60 --steps-per-seed 512 --max-seeds 128 > SOAK_REPORT.json
+```
+
+Each release plan lists its own focused gate block (the `cargo test -p … <suite>`
+lines) and a full-gate block. Those suites must be green for the release to claim its
+feature (RULES R-7). The per-release gate lists are the source for what a given
+release adds on top of this baseline.
+
+The operator lifecycle kind E2E is also opt-in because it needs a real cluster
+with the CRD/controller installed. The fast suite still proves its skip path and
+falsifiability model; the live driven chain runs in the nightly/pre-release kind
+tier. The operator kind chaos suite uses the same opt-in boundary: partition
+requires a NetworkPolicy-enforcing CNI, slow disk requires the chaos-mesh
+`IOChaos` CRD, and unsupported legs skip loud rather than passing wrong:
+
+The live W5 IOChaos test reads the target pod UID twice with a short stability
+gap before applying the name-based selector. This prevents a StatefulSet
+replacement from binding Chaos Mesh to a terminating pod. The receipt is
+accepted only when that UID is still current and Chaos Mesh reports
+`Selected=True` and `AllInjected=True` for exactly one container instance. The
+selector is checked as the exact `namespace/pod`, while the controller receipt
+uses Chaos Mesh's actual `namespace/pod/container` instance identifier.
+Readiness polling remains bounded (150 two-second attempts) and requires the
+desired replica count, quorum, and a reported leader; the longer bounded window
+covers normal Raft election/reconciliation without weakening safety assertions.
+All live Kind/Chaos tests are serialized inside the test binary because they
+intentionally operate on the same release cluster and named Chaos objects. This
+prevents one proof from replacing pods, network policies, or IOChaos state while
+another proof is collecting its commit-bound receipt.
+
+W5 treats an injected Raft-log `EIO` as process-fatal for recovery purposes.
+After proving that the targeted follower cannot persist the scale-up while the
+healthy majority commits it, the harness removes IOChaos, deletes that exact pod
+by UID, waits until the same pod name has a different non-terminating Ready UID,
+and only then accepts cluster readiness and durable catch-up. Kubernetes pod
+deletion is asynchronous, so observing the old Ready object after the delete
+response is explicitly not replacement evidence. The receipt therefore proves
+operational restart-and-catch-up, not unsupported in-process recovery of a Sled
+instance after filesystem I/O errors. Failed proofs perform the same targeted
+replacement wait before final scale cleanup, so the next serialized Kind test
+cannot inherit an EIO-poisoned pod.
+
+```powershell
+$env:HYDRACACHE_OPERATOR_KIND='1'
+$env:HYDRACACHE_OPERATOR_NAMESPACE='default'
+$env:HYDRACACHE_OPERATOR_CLUSTER='hydracache-e2e'
+cargo test -p hydracache-operator --locked --test e2e -- --nocapture
+cargo test -p hydracache-operator --locked --test soak_kind -- --ignored --nocapture
+Remove-Item Env:\HYDRACACHE_OPERATOR_KIND,Env:\HYDRACACHE_OPERATOR_NAMESPACE,Env:\HYDRACACHE_OPERATOR_CLUSTER -ErrorAction SilentlyContinue
+```
+
+For the `0.62.0` release proof, the partition injector was run twice on 2026-07-09:
+ordinary kind passed `partition_probe_skips_loud_on_non_enforcing_cni` after the
+probe was hardened to use a dedicated `busybox` network-probe pod and pre-policy
+baseline reachability check; that local kindnet build enforced NetworkPolicy and
+therefore reported `partition probe applied NetworkPolicy; healing`. A fresh
+`disableDefaultCNI` kind cluster with Calico 3.32.1 Available then passed
+`kind_partition_injection_isolates_and_heals`.
+
+The networked daemon grid E2E is opt-in because it opens loopback TCP/UDP
+listeners and drives live daemon membership changes. The fast `grid_host` suite
+proves the skip path; the live loopback gate forms three daemons, verifies the
+committed member set, drains a follower, then drains the active leader and waits
+for survivor re-election:
+
+```powershell
+$env:HYDRACACHE_RUN_NETWORKED_DAEMON_E2E='1'
+cargo test -p hydracache-server --test grid_host multi_node_members_form_a_cluster_and_elect_one_leader --locked -- --nocapture
+Remove-Item Env:\HYDRACACHE_RUN_NETWORKED_DAEMON_E2E -ErrorAction SilentlyContinue
+```
+
+The real-process daemon tier is separate from the loopback `grid_host` tier
+because it spawns child `hydracache-server` binaries and kills them as OS
+processes:
+
+```powershell
+$env:HYDRACACHE_RUN_DAEMON_PROCESS_E2E='1'
+cargo test -p hydracache-server --test daemon_process_cluster --locked -- --test-threads=1 --nocapture
+cargo test -p hydracache-server --test membership_history --locked -- --nocapture
+Remove-Item Env:\HYDRACACHE_RUN_DAEMON_PROCESS_E2E -ErrorAction SilentlyContinue
+```
+
+Failed randomized or nightly cluster gates must preserve the seed, replay
+manifest, and child logs in the issue. A quarantine may last at most one day and
+must point to that issue; silent retries do not turn a red gate green.
+
+## Adding a gate
+
+1. Implement the check as a single command (a test, a `cargo deny`/`clippy` rule, or
+   an `xtask` subcommand).
+2. Add fast gates to `cargo xtask verify` and CI. Add time-heavy gates to CI as
+   scheduled/dispatch jobs and record them in this registry.
+3. Add a row to the table above.
+
+Do not document a gate that is not wired into its stated enforcement surface; that
+is exactly the prose-only "enforcement" this file exists to prevent.
+## 0.69 migration conformance gates
+
+The 0.69 candidate adds three fast gates, two Java/tag-history gates, and a PostgreSQL support
+matrix with a bounded floor-version soak:
+
+```text
+cargo run -p xtask --locked -- migration-conformance-check --structural
+cargo test -p hydracache --test borrowed_cache_semantics --locked -j 2
+cargo test -p hydracache-db --features sqlx-outbox --test cached_vs_direct_differential --locked -j 2
+HYDRACACHE_RUN_JVM_COMPAT=1 cargo run -p xtask --locked -- borrowed-suite-check --suite hazelcast
+HYDRACACHE_RUN_LEGACY_CLIENTS=1 cargo run -p xtask --locked -- legacy-client-check --matrix hc1
+HYDRACACHE_TEST_POSTGRES_URL=postgres://... HYDRACACHE_POSTGRES_SERIES=16 HYDRACACHE_POSTGRES_IMAGE_ID=postgres:16.4-alpine@sha256:... cargo test -p hydracache-db --features sqlx-outbox --test cached_vs_direct_postgres --locked -- --ignored --nocapture
+```
+
+The last two commands fail skip-loud when their opt-in environment variable is absent. The normal
+workspace receipt covers the Rust structural/borrowed tests; SQLx uses
+`cfg.hydracache-db.cached-vs-direct-differential-069`. External evidence IDs are
+`tool.borrowed-hazelcast-069`, `tool.legacy-hc1-clients-069`,
+`ignored.hydracache-db.cached-vs-direct-postgres-069`,
+`ignored.hydracache-db.cached-vs-direct-postgres-18-069`, the floor-version soak, and the
+expected-red canary gate. The Java gate builds and starts the production
+daemon, then supplements the facade run with exact lease-expiry and SDK session-loss contracts.
+Both DB differentials use transactional outbox enqueue, the real drain worker, and
+commit-scoped `InvalidationWait`; the PostgreSQL row is required by `hc2-linux-required`. Its
+service matrix pins both the 16.4 floor digest
+`sha256:5660c2cbfea50c7a9127d17dc4e48543eedd3d7a41a595a2dfa572471e37e64c` and major-18 digest
+`sha256:9a8afca54e7861fd90fab5fdf4c42477a6b1cb7d293595148e674e0a3181de15`, runs three fixed
+12-writer seeds on both plus 24 bounded soak seeds on the floor, and retains version/image/seed/log evidence. W0-W5 use six distinct expected-red
+defects; the PostgreSQL target also has a real dropped-invalidation sentinel selected by
+`HYDRACACHE_CANARY_DEFECT=W4_PG_DROP`. CI runs that sentinel separately and accepts it only when
+the test exits non-zero and emits `HC-CANARY-RED:W4-PG`; an unexpectedly green canary fails the job.
+The final admission is `if: always()`, rejects non-successful `needs` results, and parses every
+downloaded lane-status JSON against the exact release/head/base/tested SHA. An upstream skip,
+tampered status, false-green outcome, or stale candidate is visible red evidence rather than an
+absent check.

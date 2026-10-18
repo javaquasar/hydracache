@@ -807,3 +807,15 @@ observed successful challenge age leaves 451 ms, not a guaranteed dispatch
 budget. Same-process rights transfers remain distinct from negotiated system-bus
 delivery. Authenticated original-start, all-writer cessation, completion/later
 cells and new-boundary SIGKILL/lost-ack/reconnect remain unadmitted.
+
+The [private negotiated delivery gate](local-runs/negotiated-dispatch-20261018/README.md)
+tests the unchanged exchange against actual D-Bus routing and rights negotiation,
+without constructing an original/fixed-channel owner. Both compilers pass nine
+matrix cases and three receiver units. Positive fixtures require an explicit
+atomic CLOEXEC receiver: the pinned library's bare receive path is a retained
+negative control. The private fault policy allows unsolicited replies only to
+exercise the unchanged classifier, not to model installed policy. A received
+Message keeps writing after exchange and connection closure; no reply, sender
+Drop or disconnect proves cessation. Keep original custody/fence ownership and
+all 46 live effect brackets until the future all-writer proof exists. Production
+original delivery, active execution, completion and reconnect remain closed.

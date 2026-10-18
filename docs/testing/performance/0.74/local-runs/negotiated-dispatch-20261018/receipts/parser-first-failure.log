@@ -1,0 +1,7 @@
+Exception: C:\Workspace\prj\jq\cashe\hydracache-074\docs\testing\performance\0.74\local-runs\negotiated-dispatch-20261018\verify.ps1:8
+Line |
+   8 |  … w -match 'FAILED|panicked at') {throw 'matrix incomplete or refused'}
+     |                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     | matrix incomplete or refused
+
+

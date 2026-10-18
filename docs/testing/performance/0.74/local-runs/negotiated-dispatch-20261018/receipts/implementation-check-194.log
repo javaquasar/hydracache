@@ -1,0 +1,48 @@
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0277]: the trait bound `Split<..., ...>: Into<...>` is not satisfied
+   --> tools/long-run-supervisor-074/src/diagnostic_dispatch_negotiated_tests.rs:162:47
+    |
+162 | ...   zbus:...ocket(socket)
+    |       -----...----- ^^^^^^ unsatisfied trait bound
+    |       |
+    |       required by a bound introduced by this call
+    |
+    = help: the trait `Socket` is not implemented for `Split<..., ...>`
+help: the following other types implement trait `Socket`
+   --> /home/artur/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zbus-5.19.0/src/connection/socket/tcp.rs:90:1
+    |
+ 90 |...::TcpStream {
+    |...^^^^^^^^^^^ `TcpStream`
+    |
+   ::: /home/artur/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zbus-5.19.0/src/connection/socket/unix.rs:117:1
+    |
+117 |...:UnixStream {
+    |...^^^^^^^^^^^ `UnixStream`
+    = note: required for `Split<..., ...>` to implement `From<Split<..., ...>>`
+    = note: required for `Split<..., ...>` to implement `Into<Split<..., ...>>`
+note: required by a bound in `zbus::connection::Builder::<'a>::socket`
+   --> /home/artur/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zbus-5.19.0/src/connection/builder.rs:286:22
+    |
+286 | ...S: Into<BoxedSpli.....
+    |       ^^^^^^^^^^^^^^...uired by this bound in `Builder::<'a>::socket`
+    = note: the full name for the type has been written to '/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-c23398a49c34280c.long-type-16187765470735646278.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+
+error[E0308]: mismatched types
+   --> tools/long-run-supervisor-074/src/diagnostic_dispatch_negotiated_tests.rs:367:17
+    |
+367 | ...   foreign.u...)
+    |       ^^^^^^^^^...^ expected `Option<&UniqueName<'_>>`, found `Option<UniqueName<'_>>`
+    |
+    = note: expected enum `std::option::Option<&UniqueName<'_>>`
+               found enum `std::option::Option<UniqueName<'_>>`
+    = note: the full name for the type has been written to '/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-c23398a49c34280c.long-type-2989542987628227833.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+help: try using `.as_ref()` to convert `Option<...>` to `Option<...>`
+    |
+367 |                 foreign.unique_name().map(|v| v.as_ref()).as_ref()
+    |                                                          +++++++++
+
+Some errors have detailed explanations: E0277, E0308.
+For more information about an error, try `rustc --explain E0277`.
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 2 previous errors

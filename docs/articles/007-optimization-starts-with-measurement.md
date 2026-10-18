@@ -13148,3 +13148,54 @@ to weaken the next effect's checks. Real negotiated bus FD delivery and start,
 all-writer cessation, durable completion/later cells and reconnect still need
 their own proofs. The installed supervisor, release and qualification inputs
 remain unchanged.
+
+### Negotiated delivery does not establish descriptor custody
+
+The [private bus component gate](../testing/performance/0.74/local-runs/negotiated-dispatch-20261018/README.md)
+adds an important boundary between preparation and execution. The earlier
+socket fixture transferred SCM_RIGHTS directly and explicitly requested
+MSG_CMSG_CLOEXEC on receipt. It could not establish that the selected D-Bus
+library negotiated rights or received them with the same descriptor flags.
+The new fixture uses an owned nonroot dbus-daemon and real EXTERNAL, Hello and
+Unix-FD negotiation. Its peer PID, UID and GID match the exact owned daemon;
+its manager role is only another same-user connection, not systemd.
+
+That distinction exposes a real difference. The pinned zbus 5.19 Unix reader
+uses recvmsg without MSG_CMSG_CLOEXEC. The new bare-reader control observes
+FD_CLOEXEC zero after delivery, while the original sender descriptors remain
+CLOEXEC. The existing strict writer-shape check correctly refuses the received
+aliases. CLOEXEC is local to a descriptor table entry; successful transmission
+does not preserve that bit in a newly received descriptor.
+
+The response is not to relax the writer check or repair the bit after receipt.
+Positive fixture cases use a separate test-only receiver requesting
+MSG_CMSG_CLOEXEC atomically. Its units exercise two rights, excess rights and
+actual ancillary truncation with 253 sent descriptors. All installed aliases
+must close on rejection, independently confirmed by pipe EOF after the original
+writers close. WouldBlock, disconnect and unexpected kernel credentials have
+separate controls. This establishes the fixture receiver's behavior, not the
+production systemd receiver or the fixed-channel library's default behavior.
+
+The full local matrix passes nine cases on both GNU compilers. Forced 17-byte
+fragments attach rights only once; the received body, serial, pipe identities,
+descriptor order and flags remain exact. Lost or delayed acknowledgement,
+foreign actual sender, wrong serial, disconnect and manager error cannot reopen
+the existing one-shot exchange. The private fault bus deliberately allows
+unsolicited replies so malformed responses reach that classifier. Its earlier
+default-policy rejection is retained separately; no installed bus policy changes.
+
+The strongest result is a counterexample to premature completion. After the
+exchange and both connections close, the received Message still writes into
+the original pipes. Only dropping that last Message produces EOF. A valid job
+reply, connection closure or sender destruction is therefore not whole-writer
+cessation. Future execution must retain custody and the fence until every
+writer is demonstrably quiescent.
+
+Three stopped cohorts remain visible: unsafe default fixture-directory mode,
+the stock reader's descriptor flags and a bus policy that prevented the intended
+fault input from reaching the classifier. A later lint-only predicate spelling
+change receives rebuilt images and repeated controls rather than being silently
+folded into earlier image identities. No cache API performance is measured in
+this package. Authenticated original-owner delivery, executable/streams/process/
+cgroup binding, active all-writer cessation and new execution-boundary SIGKILL,
+completion and reconnect checks remain open at the original admission deadlines.

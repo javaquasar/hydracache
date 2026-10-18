@@ -1,0 +1,4 @@
+/home/artur/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tempfile-3.27.0/src/lib.rs:234:            permissions: None,
+/home/artur/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tempfile-3.27.0/src/lib.rs:407:    /// Permissions default to `0o600` for tempfiles and `0o777` for tempdirs. Note, this doesn't
+/home/artur/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tempfile-3.27.0/src/dir/imp/unix.rs:16:            dir_options.mode(p.mode());
+0022

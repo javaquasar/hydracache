@@ -354,3 +354,6 @@ docs/testing/performance/0.74/local-runs/fixed-grouped-process-loss-*/*.patch -t
 docs/testing/performance/0.74/local-runs/autonomous-watchdog-*/** -text whitespace=cr-at-eol
 docs/testing/performance/0.74/local-runs/autonomous-watchdog-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
 docs/testing/performance/0.74/local-runs/autonomous-watchdog-*/*.patch -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+# Preserve raw negotiated-dispatch capsules; CRLF is a line ending, not a mutation.
+docs/testing/performance/0.74/local-runs/negotiated-dispatch-20261018/** -text whitespace=cr-at-eol

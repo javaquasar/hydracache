@@ -678,3 +678,16 @@ healthy margin does not open start admission. Next close negotiated original
 message/FD delivery and authenticated manager/process binding, then all-writer
 cessation before completion/later cells and their full new-boundary fault matrix.
 Supervisor, installed artifacts and qualification inputs remain unchanged.
+
+The [negotiated private bus matrix](local-runs/negotiated-dispatch-20261018/README.md)
+now passes nine cases and three receiver units per GNU compiler. It verifies
+actual negotiation, FD identity/order, partial writes and nonretrying response
+classification, not original-owner delivery or PID 1 authority. The stock zbus
+receive path fails CLOEXEC; positive tests use an explicit atomic fixture
+receiver, and malformed replies traverse a deliberately permissive private
+fault policy. Neither is a production enrollment decision. Retained writer
+aliases still write after exchange and connection destruction, reinforcing the
+all-writer cessation prerequisite. P1 still requires the real fixed-channel/
+original-owner transport and exact executable/streams/process/cgroup binding;
+P2/P3, completion/later cells, SIGKILL, reconnect and trust/enrollment stay open.
+No release installation, supervisor operation or server/product workload occurs.

@@ -1,0 +1,5 @@
+The [send|receive]_requested_reply attribute works similarly to the eavesdrop attribute\&. It controls whether the <deny> or <allow> matches a reply that is expected (corresponds to a previous method call message)\&. This attribute only makes sense for reply messages (errors and method returns), and is ignored for other message types\&.
+.PP
+For <allow>, [send|receive]_requested_reply="true" is the default and indicates that only requested replies are allowed by the rule\&. [send|receive]_requested_reply="false" means that the rule allows any reply even if unexpected\&.
+.PP
+For <deny>, [send|receive]_requested_reply="false" is the default but indicates that the rule matches only when the reply was not requested\&. [send|receive]_requested_reply="true" indicates that the rule applies always, regardless of pending reply state\&.

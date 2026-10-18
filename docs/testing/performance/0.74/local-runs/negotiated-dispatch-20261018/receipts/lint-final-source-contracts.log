@@ -1,0 +1,9 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.21s
+     Running tests\performance_contract_074.rs (target\debug\deps\performance_contract_074-affcfab4e5118d5a.exe)
+
+running 2 tests
+test live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::negotiated_dispatch_is_private_bus_only_and_does_not_bypass_exchange ... ok
+test live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::negotiated_dispatch_preserves_all_old_runtime_and_test_bodies ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 251 filtered out; finished in 47.64s
+
