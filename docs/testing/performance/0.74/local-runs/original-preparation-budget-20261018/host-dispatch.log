@@ -1,0 +1,156 @@
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PREPARATION-ADMISSION start=false install=false supervisor_changed=false
+e03ade6b69d784cc275256d0968400ff90c73d73941cab7cac298e5d7411881f  ./tests-194
+ce8d8a3d852ee49a484da83dc852d478700b438428c0362c3a4813d05fee1ced  ./tests-188
+3dc104c2b3d8f7a7fcee1443af5d3949f00a2f9f8c3e274bf03f9e9cb797f2e2  ./guard.sh
+5dbc9aa3c48fdb61a9b4c51ee615b5f2eb752f8a0b720c74deb43798223de963  ./run.sh
+8a2a495348bd317f7a2092a622838fc489bdcf077f4a8269210b2b78381b3c58  ./bundle/build-log.jsonl
+e32bb7cd9b6cbf1d91d52abc79cb1e0225b3a7f6602e82e5b9a303c3645a77d7  ./bundle/build-receipt-v1.json
+e3be470f5a1bff4e917e841fc5bfbd257ff12559206bbc1481c3c4bca528eb1d  ./bundle/Cargo.lock.observer
+be46eaf8e97e507bda5e3f2b671d0d622e6a639ce1d4613769a4693723d62b19  ./bundle/Cargo.lock.root
+5485b10f50906833006ad3f3a40b4909760ef01e3f2c86395e4366bf83cc6ef9  ./bundle/direct.json
+5c219730c8a782ed47dfa0b291a29f44f753c3688f8548c136174a89cee55149  ./bundle/embedded.json
+f0aba16dfe0354801d0b3c83ee9fc2d1b4751be5f50280634690ed4bcf3030ae  ./bundle/resp2.json
+b680683c291d0a4dadbac1901f051ba0fedcac0ac9127d197e0261fe6fdabdd7  ./bundle/resp3.json
+bda1c094f3de7c6d42ec45c757838c7a41a8ff1d63a025c661af84455169a101  ./bundle/timing-controls-074
+HC074-PREPARATION-HOST compiler=194 begin=true start=false
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::collector_tests::enrollment_tests::manager_tests::addressed_tests::budget::original_preparation_budget_attribution ... HC074-PREPARATION-POINT sample=0 point=challenge-ready issued_ns=1045026197095933 now_ns=1045026467254733 age_ns=270158800
+HC074-PREPARATION-POINT sample=0 point=response-ready issued_ns=1045026197095933 now_ns=1045027009570760 age_ns=812474827
+HC074-PREPARATION-POINT sample=0 point=consent-prepared issued_ns=1045026197095933 now_ns=1045027600051525 age_ns=1402955592
+HC074-PREPARATION-POINT sample=0 point=consent-ready issued_ns=1045026197095933 now_ns=1045027911084109 age_ns=1713988176
+HC074-PREPARATION-POINT sample=0 point=outputs-ready issued_ns=1045026197095933 now_ns=1045035133204116 age_ns=8936108183
+HC074-PREPARATION-POINT sample=0 point=enrollment-ready issued_ns=1045026197095933 now_ns=1045035498860315 age_ns=9301764382
+HC074-PREPARATION-POINT sample=0 point=manager-prepare-ready issued_ns=1045026197095933 now_ns=1045035835417276 age_ns=9638321343
+HC074-PREPARATION-POINT sample=0 point=manager-delivery-ready issued_ns=1045026197095933 now_ns=1045036172741134 age_ns=9975645201
+HC074-PREPARATION-COST sample=0 bucket=prechallenge-reservation stats=Stats { wall_ns: 3326116547, authentication_calls: 408, authentication_ns: 14468817, signature_calls: 408, signature_ns: 12317112, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-COST sample=0 bucket=challenge-creation stats=Stats { wall_ns: 536973749, authentication_calls: 64, authentication_ns: 2612420, signature_calls: 64, signature_ns: 2276917, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-COST sample=0 bucket=response-acceptance stats=Stats { wall_ns: 542313547, authentication_calls: 66, authentication_ns: 2187713, signature_calls: 66, signature_ns: 1840176, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-COST sample=0 bucket=consent-preparation stats=Stats { wall_ns: 590480765, authentication_calls: 68, authentication_ns: 2250010, signature_calls: 68, signature_ns: 1893956, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-COST sample=0 bucket=consent-acceptance stats=Stats { wall_ns: 311032724, authentication_calls: 34, authentication_ns: 1129620, signature_calls: 34, signature_ns: 951084, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-COST sample=0 bucket=joined-outputs stats=Stats { wall_ns: 7222119997, authentication_calls: 782, authentication_ns: 26089780, signature_calls: 782, signature_ns: 21935100, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-COST sample=0 bucket=enrollment stats=Stats { wall_ns: 365675128, authentication_calls: 34, authentication_ns: 1268518, signature_calls: 34, signature_ns: 1075055, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-COST sample=0 bucket=manager-bookkeeping-inclusive stats=Stats { wall_ns: 673952269, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-ROUND sample=0 pass=0 channel_checks=2 stats=Stats { wall_ns: 336090809, authentication_calls: 34, authentication_ns: 1251939, signature_calls: 34, signature_ns: 1068792, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-ROUND sample=0 pass=1 channel_checks=2 stats=Stats { wall_ns: 337221449, authentication_calls: 34, authentication_ns: 1263252, signature_calls: 34, signature_ns: 1079761, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-CONTROL sample=0 unchanged=true origins=true bounds=true rights=true test_channel_only=true start=false schedule_changed=false
+HC074-PREPARATION-POINT sample=1 point=challenge-ready issued_ns=1045039909006566 now_ns=1045040177402985 age_ns=268396419
+HC074-PREPARATION-POINT sample=1 point=response-ready issued_ns=1045039909006566 now_ns=1045040719308745 age_ns=810302179
+HC074-PREPARATION-POINT sample=1 point=consent-prepared issued_ns=1045039909006566 now_ns=1045041309320793 age_ns=1400314227
+HC074-PREPARATION-POINT sample=1 point=consent-ready issued_ns=1045039909006566 now_ns=1045041620351875 age_ns=1711345309
+HC074-PREPARATION-POINT sample=1 point=outputs-ready issued_ns=1045039909006566 now_ns=1045048814460276 age_ns=8905453710
+HC074-PREPARATION-POINT sample=1 point=enrollment-ready issued_ns=1045039909006566 now_ns=1045049176946326 age_ns=9267939760
+HC074-PREPARATION-POINT sample=1 point=manager-prepare-ready issued_ns=1045039909006566 now_ns=1045049514024177 age_ns=9605017611
+HC074-PREPARATION-POINT sample=1 point=manager-delivery-ready issued_ns=1045039909006566 now_ns=1045049852422804 age_ns=9943416238
+HC074-PREPARATION-COST sample=1 bucket=prechallenge-reservation stats=Stats { wall_ns: 3334781243, authentication_calls: 408, authentication_ns: 14496806, signature_calls: 408, signature_ns: 12382062, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-COST sample=1 bucket=challenge-creation stats=Stats { wall_ns: 533503655, authentication_calls: 64, authentication_ns: 2613145, signature_calls: 64, signature_ns: 2281648, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-COST sample=1 bucket=response-acceptance stats=Stats { wall_ns: 541903190, authentication_calls: 66, authentication_ns: 2181702, signature_calls: 66, signature_ns: 1838158, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-COST sample=1 bucket=consent-preparation stats=Stats { wall_ns: 590012029, authentication_calls: 68, authentication_ns: 2254769, signature_calls: 68, signature_ns: 1899938, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-COST sample=1 bucket=consent-acceptance stats=Stats { wall_ns: 311031111, authentication_calls: 34, authentication_ns: 1132701, signature_calls: 34, signature_ns: 954063, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-COST sample=1 bucket=joined-outputs stats=Stats { wall_ns: 7194108510, authentication_calls: 782, authentication_ns: 26049569, signature_calls: 782, signature_ns: 21929130, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-COST sample=1 bucket=enrollment stats=Stats { wall_ns: 362504581, authentication_calls: 34, authentication_ns: 1268769, signature_calls: 34, signature_ns: 1073943, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-COST sample=1 bucket=manager-bookkeeping-inclusive stats=Stats { wall_ns: 675543476, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-ROUND sample=1 pass=0 channel_checks=2 stats=Stats { wall_ns: 336614609, authentication_calls: 34, authentication_ns: 1254118, signature_calls: 34, signature_ns: 1071102, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-ROUND sample=1 pass=1 channel_checks=2 stats=Stats { wall_ns: 338294619, authentication_calls: 34, authentication_ns: 1245961, signature_calls: 34, signature_ns: 1065024, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-CONTROL sample=1 unchanged=true origins=true bounds=true rights=true test_channel_only=true start=false schedule_changed=false
+HC074-PREPARATION-POINT sample=2 point=challenge-ready issued_ns=1045053598633597 now_ns=1045053868166225 age_ns=269532628
+HC074-PREPARATION-POINT sample=2 point=response-ready issued_ns=1045053598633597 now_ns=1045054411326689 age_ns=812693092
+HC074-PREPARATION-POINT sample=2 point=consent-prepared issued_ns=1045053598633597 now_ns=1045055002650900 age_ns=1404017303
+HC074-PREPARATION-POINT sample=2 point=consent-ready issued_ns=1045053598633597 now_ns=1045055313066501 age_ns=1714432904
+HC074-PREPARATION-POINT sample=2 point=outputs-ready issued_ns=1045053598633597 now_ns=1045062509223045 age_ns=8910589448
+HC074-PREPARATION-POINT sample=2 point=enrollment-ready issued_ns=1045053598633597 now_ns=1045062871474708 age_ns=9272841111
+HC074-PREPARATION-POINT sample=2 point=manager-prepare-ready issued_ns=1045053598633597 now_ns=1045063209802574 age_ns=9611168977
+HC074-PREPARATION-POINT sample=2 point=manager-delivery-ready issued_ns=1045053598633597 now_ns=1045063551304795 age_ns=9952671198
+HC074-PREPARATION-COST sample=2 bucket=prechallenge-reservation stats=Stats { wall_ns: 3338011734, authentication_calls: 408, authentication_ns: 14428846, signature_calls: 408, signature_ns: 12271450, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-COST sample=2 bucket=challenge-creation stats=Stats { wall_ns: 535587966, authentication_calls: 64, authentication_ns: 2598822, signature_calls: 64, signature_ns: 2261966, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-COST sample=2 bucket=response-acceptance stats=Stats { wall_ns: 543157734, authentication_calls: 66, authentication_ns: 2170877, signature_calls: 66, signature_ns: 1828062, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-COST sample=2 bucket=consent-preparation stats=Stats { wall_ns: 591324201, authentication_calls: 68, authentication_ns: 2237434, signature_calls: 68, signature_ns: 1879677, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-COST sample=2 bucket=consent-acceptance stats=Stats { wall_ns: 310415621, authentication_calls: 34, authentication_ns: 1122740, signature_calls: 34, signature_ns: 940912, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-COST sample=2 bucket=joined-outputs stats=Stats { wall_ns: 7196156674, authentication_calls: 782, authentication_ns: 25938172, signature_calls: 782, signature_ns: 21804123, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-COST sample=2 bucket=enrollment stats=Stats { wall_ns: 362270202, authentication_calls: 34, authentication_ns: 1256507, signature_calls: 34, signature_ns: 1069352, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-COST sample=2 bucket=manager-bookkeeping-inclusive stats=Stats { wall_ns: 679895667, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-ROUND sample=2 pass=0 channel_checks=2 stats=Stats { wall_ns: 337865684, authentication_calls: 34, authentication_ns: 1247940, signature_calls: 34, signature_ns: 1063200, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-ROUND sample=2 pass=1 channel_checks=2 stats=Stats { wall_ns: 341398763, authentication_calls: 34, authentication_ns: 1241384, signature_calls: 34, signature_ns: 1057636, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-CONTROL sample=2 unchanged=true origins=true bounds=true rights=true test_channel_only=true start=false schedule_changed=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1166 filtered out; finished in 41.08s
+
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PREPARATION-HOST compiler=194 completed=true start=false
+HC074-PREPARATION-HOST compiler=188 begin=true start=false
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::collector_tests::enrollment_tests::manager_tests::addressed_tests::budget::original_preparation_budget_attribution ... HC074-PREPARATION-POINT sample=0 point=challenge-ready issued_ns=1045067878333921 now_ns=1045068148264361 age_ns=269930440
+HC074-PREPARATION-POINT sample=0 point=response-ready issued_ns=1045067878333921 now_ns=1045068689814039 age_ns=811480118
+HC074-PREPARATION-POINT sample=0 point=consent-prepared issued_ns=1045067878333921 now_ns=1045069279728730 age_ns=1401394809
+HC074-PREPARATION-POINT sample=0 point=consent-ready issued_ns=1045067878333921 now_ns=1045069589447250 age_ns=1711113329
+HC074-PREPARATION-POINT sample=0 point=outputs-ready issued_ns=1045067878333921 now_ns=1045076793267712 age_ns=8914933791
+HC074-PREPARATION-POINT sample=0 point=enrollment-ready issued_ns=1045067878333921 now_ns=1045077156992336 age_ns=9278658415
+HC074-PREPARATION-POINT sample=0 point=manager-prepare-ready issued_ns=1045067878333921 now_ns=1045077493250746 age_ns=9614916825
+HC074-PREPARATION-POINT sample=0 point=manager-delivery-ready issued_ns=1045067878333921 now_ns=1045077830120925 age_ns=9951787004
+HC074-PREPARATION-COST sample=0 bucket=prechallenge-reservation stats=Stats { wall_ns: 3329612095, authentication_calls: 408, authentication_ns: 13471094, signature_calls: 408, signature_ns: 11396782, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-COST sample=0 bucket=challenge-creation stats=Stats { wall_ns: 536358778, authentication_calls: 64, authentication_ns: 2106353, signature_calls: 64, signature_ns: 1783969, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-COST sample=0 bucket=response-acceptance stats=Stats { wall_ns: 541547369, authentication_calls: 66, authentication_ns: 2267710, signature_calls: 66, signature_ns: 1939234, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-COST sample=0 bucket=consent-preparation stats=Stats { wall_ns: 589914761, authentication_calls: 68, authentication_ns: 2495097, signature_calls: 68, signature_ns: 2154941, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-COST sample=0 bucket=consent-acceptance stats=Stats { wall_ns: 309718480, authentication_calls: 34, authentication_ns: 1122938, signature_calls: 34, signature_ns: 951180, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-COST sample=0 bucket=joined-outputs stats=Stats { wall_ns: 7203820552, authentication_calls: 782, authentication_ns: 28260247, signature_calls: 782, signature_ns: 24260876, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-COST sample=0 bucket=enrollment stats=Stats { wall_ns: 363746934, authentication_calls: 34, authentication_ns: 1147837, signature_calls: 34, signature_ns: 956890, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-COST sample=0 bucket=manager-bookkeeping-inclusive stats=Stats { wall_ns: 673191637, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-ROUND sample=0 pass=0 channel_checks=2 stats=Stats { wall_ns: 335787198, authentication_calls: 34, authentication_ns: 1120539, signature_calls: 34, signature_ns: 941692, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-ROUND sample=0 pass=1 channel_checks=2 stats=Stats { wall_ns: 336766601, authentication_calls: 34, authentication_ns: 1132015, signature_calls: 34, signature_ns: 946411, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-CONTROL sample=0 unchanged=true origins=true bounds=true rights=true test_channel_only=true start=false schedule_changed=false
+HC074-PREPARATION-POINT sample=1 point=challenge-ready issued_ns=1045081563680665 now_ns=1045081832172057 age_ns=268491392
+HC074-PREPARATION-POINT sample=1 point=response-ready issued_ns=1045081563680665 now_ns=1045082374097976 age_ns=810417311
+HC074-PREPARATION-POINT sample=1 point=consent-prepared issued_ns=1045081563680665 now_ns=1045082964232609 age_ns=1400551944
+HC074-PREPARATION-POINT sample=1 point=consent-ready issued_ns=1045081563680665 now_ns=1045083274845772 age_ns=1711165107
+HC074-PREPARATION-POINT sample=1 point=outputs-ready issued_ns=1045081563680665 now_ns=1045090468076289 age_ns=8904395624
+HC074-PREPARATION-POINT sample=1 point=enrollment-ready issued_ns=1045081563680665 now_ns=1045090829987502 age_ns=9266306837
+HC074-PREPARATION-POINT sample=1 point=manager-prepare-ready issued_ns=1045081563680665 now_ns=1045091168986062 age_ns=9605305397
+HC074-PREPARATION-POINT sample=1 point=manager-delivery-ready issued_ns=1045081563680665 now_ns=1045091506638545 age_ns=9942957880
+HC074-PREPARATION-COST sample=1 bucket=prechallenge-reservation stats=Stats { wall_ns: 3331099527, authentication_calls: 408, authentication_ns: 13513320, signature_calls: 408, signature_ns: 11425296, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-COST sample=1 bucket=challenge-creation stats=Stats { wall_ns: 533478835, authentication_calls: 64, authentication_ns: 2115624, signature_calls: 64, signature_ns: 1786517, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-COST sample=1 bucket=response-acceptance stats=Stats { wall_ns: 541923638, authentication_calls: 66, authentication_ns: 2290970, signature_calls: 66, signature_ns: 1953944, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-COST sample=1 bucket=consent-preparation stats=Stats { wall_ns: 590134614, authentication_calls: 68, authentication_ns: 2505829, signature_calls: 68, signature_ns: 2158070, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-COST sample=1 bucket=consent-acceptance stats=Stats { wall_ns: 310613473, authentication_calls: 34, authentication_ns: 1133114, signature_calls: 34, signature_ns: 956514, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-COST sample=1 bucket=joined-outputs stats=Stats { wall_ns: 7193230357, authentication_calls: 782, authentication_ns: 28319409, signature_calls: 782, signature_ns: 24291861, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-COST sample=1 bucket=enrollment stats=Stats { wall_ns: 361932503, authentication_calls: 34, authentication_ns: 1148566, signature_calls: 34, signature_ns: 953981, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-COST sample=1 bucket=manager-bookkeeping-inclusive stats=Stats { wall_ns: 676714532, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-ROUND sample=1 pass=0 channel_checks=2 stats=Stats { wall_ns: 338536428, authentication_calls: 34, authentication_ns: 1132118, signature_calls: 34, signature_ns: 946690, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-ROUND sample=1 pass=1 channel_checks=2 stats=Stats { wall_ns: 337544375, authentication_calls: 34, authentication_ns: 1137883, signature_calls: 34, signature_ns: 957324, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-CONTROL sample=1 unchanged=true origins=true bounds=true rights=true test_channel_only=true start=false schedule_changed=false
+HC074-PREPARATION-POINT sample=2 point=challenge-ready issued_ns=1045095224295657 now_ns=1045095492260237 age_ns=267964580
+HC074-PREPARATION-POINT sample=2 point=response-ready issued_ns=1045095224295657 now_ns=1045096038898990 age_ns=814603333
+HC074-PREPARATION-POINT sample=2 point=consent-prepared issued_ns=1045095224295657 now_ns=1045096633639210 age_ns=1409343553
+HC074-PREPARATION-POINT sample=2 point=consent-ready issued_ns=1045095224295657 now_ns=1045096941244063 age_ns=1716948406
+HC074-PREPARATION-POINT sample=2 point=outputs-ready issued_ns=1045095224295657 now_ns=1045104126522981 age_ns=8902227324
+HC074-PREPARATION-POINT sample=2 point=enrollment-ready issued_ns=1045095224295657 now_ns=1045104489673611 age_ns=9265377954
+HC074-PREPARATION-POINT sample=2 point=manager-prepare-ready issued_ns=1045095224295657 now_ns=1045104825424455 age_ns=9601128798
+HC074-PREPARATION-POINT sample=2 point=manager-delivery-ready issued_ns=1045095224295657 now_ns=1045105161284237 age_ns=9936988580
+HC074-PREPARATION-COST sample=2 bucket=prechallenge-reservation stats=Stats { wall_ns: 3315077313, authentication_calls: 408, authentication_ns: 13474751, signature_calls: 408, signature_ns: 11430370, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-COST sample=2 bucket=challenge-creation stats=Stats { wall_ns: 532593726, authentication_calls: 64, authentication_ns: 2109725, signature_calls: 64, signature_ns: 1784909, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-COST sample=2 bucket=response-acceptance stats=Stats { wall_ns: 546636394, authentication_calls: 66, authentication_ns: 2282064, signature_calls: 66, signature_ns: 1947221, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-COST sample=2 bucket=consent-preparation stats=Stats { wall_ns: 594740230, authentication_calls: 68, authentication_ns: 2500072, signature_calls: 68, signature_ns: 2155574, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-COST sample=2 bucket=consent-acceptance stats=Stats { wall_ns: 307604843, authentication_calls: 34, authentication_ns: 1127780, signature_calls: 34, signature_ns: 954165, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-COST sample=2 bucket=joined-outputs stats=Stats { wall_ns: 7185279018, authentication_calls: 782, authentication_ns: 28313704, signature_calls: 782, signature_ns: 24327309, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-COST sample=2 bucket=enrollment stats=Stats { wall_ns: 363170730, authentication_calls: 34, authentication_ns: 1152909, signature_calls: 34, signature_ns: 963074, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-COST sample=2 bucket=manager-bookkeeping-inclusive stats=Stats { wall_ns: 671675785, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-ROUND sample=2 pass=0 channel_checks=2 stats=Stats { wall_ns: 335283142, authentication_calls: 34, authentication_ns: 1128510, signature_calls: 34, signature_ns: 950945, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-ROUND sample=2 pass=1 channel_checks=2 stats=Stats { wall_ns: 335755384, authentication_calls: 34, authentication_ns: 1133989, signature_calls: 34, signature_ns: 951022, worker_policy_calls: 0, worker_policy_ns: 0 }
+HC074-PREPARATION-CONTROL sample=2 unchanged=true origins=true bounds=true rights=true test_channel_only=true start=false schedule_changed=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1166 filtered out; finished in 41.02s
+
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PREPARATION-HOST compiler=188 completed=true start=false
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PREPARATION-HOST completed=true supervisor_unchanged=true no_fixture_executable=true admission=false
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-ORIGINAL-MANAGER-HOST-DISPATCH complete=true supervisor_unchanged=true start=false

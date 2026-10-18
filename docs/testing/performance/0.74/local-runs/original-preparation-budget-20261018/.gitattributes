@@ -1,0 +1,5 @@
+* -text whitespace=cr-at-eol
+*.log -whitespace
+*.source -whitespace
+*.sh whitespace=cr-at-eol,-blank-at-eof
+*.ps1 whitespace=cr-at-eol,-blank-at-eof

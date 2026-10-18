@@ -12942,3 +12942,48 @@ attribute that budget and prove real FD negotiation, one-shot correlation,
 original process identity and active all-writer cessation without extending
 the deadline. Completion, later cells and reconnect cannot inherit authority
 from this nonexecuting success.
+
+### The remaining budget is spent before the manager message
+
+The [next diagnostic](../testing/performance/0.74/local-runs/original-preparation-budget-20261018/README.md)
+keeps every runtime body and observation boundary unchanged. It copies the
+existing fixture orchestration with test-only numeric stage markers; a source
+guard must recover the original helper exactly after removing those insertions.
+Three fresh scenarios on each GNU compiler follow the same original challenge
+through response, consent, output preparation, enrollment and both manager
+rounds. Printing is deferred until after the measured path and owned cleanup.
+
+The largest observed bucket is joined outputs: 7.185–7.222 seconds with 782 IPC
+authentications in every scenario. Response acceptance takes about 0.542–0.547
+seconds, consent preparation 0.590–0.595, consent acceptance 0.308–0.311 and
+enrollment 0.362–0.366. Prechallenge reservation is outside the issued window.
+Challenge creation also includes pre-issue work: challenge-ready age is only
+about 0.268–0.270 seconds, so charging that function's entire duration to the
+10-second window would be incorrect. At outputs-ready, the original challenge
+is already about 8.90–8.94 seconds old. Maximum final age is 9.975645201 seconds,
+leaving about 24 ms. These are scoped fixture observations, not product
+performance estimates or a worst-case guarantee.
+
+The output source explains the repeated count: nineteen single eight-step
+traversals around durable Starting publication, six through pipe preparation
+and twenty-one through sink preparation. Each traversal performs seventeen
+authentications, producing 46 × 17 = 782. The number is not itself proof of
+redundancy. Those traversals surround distinct effects and checkpoints; reusing
+an earlier success across them would change the safety contract.
+
+The measured IPC authentication spans inside that bucket total only
+25.938–28.319 ms. Request-signature spans, included in authentication, total
+21.804–24.327 ms. They do not cover every cryptographic operation. Subtracting
+them from seven seconds would not establish filesystem cost or CPU residency.
+Together with the separately scoped component and syscall controls, the result
+points toward repeated original worker/kernel/authority walks as the next
+attribution target, rather than assuming immutable signature verification is
+expensive. No optimization or speedup is accepted from that inference.
+
+All six scenarios preserve the original origins, journal bytes, child FD
+inventory, fence and deadlines. Twelve nested manager rounds still perform
+34 authentication/signature calls and two context checks each. The actual
+system-bus delivery/start, active all-writer cessation, completion and reconnect
+gates remain separate. The next change must reduce the cost of a live traversal
+without dropping the effect-local brackets, caching mutable authority/context
+or extending the original deadline.

@@ -1,0 +1,22 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 12.91s
+     Running tests\performance_contract_074.rs (target\debug\deps\performance_contract_074-affcfab4e5118d5a.exe)
+
+running 2 tests
+test fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::dispatch_exchange::manager_channel::reply_flags::preparation_budget::preparation_budget_helper_is_the_exact_original_schedule_with_numeric_observation_only ... ok
+
+thread 'fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::dispatch_exchange::manager_channel::reply_flags::preparation_budget::preparation_budget_preserves_all_existing_rust_sources_and_registered_frame' (300) panicked at crates\xtask\tests\support\performance_contract_074_preparation_budget.rs:119:5:
+assertion `left == right` failed
+  left: 348
+ right: 343
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::dispatch_exchange::manager_channel::reply_flags::preparation_budget::preparation_budget_preserves_all_existing_rust_sources_and_registered_frame ... FAILED
+
+failures:
+
+failures:
+    fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::dispatch_exchange::manager_channel::reply_flags::preparation_budget::preparation_budget_preserves_all_existing_rust_sources_and_registered_frame
+
+test result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured; 241 filtered out; finished in 0.15s
+
+error: test failed, to rerun pass `-p xtask --test performance_contract_074`

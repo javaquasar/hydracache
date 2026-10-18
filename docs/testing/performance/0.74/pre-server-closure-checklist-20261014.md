@@ -625,3 +625,14 @@ cost must be attributed before adding dispatch. P2/P3 active all-writer cessatio
 durable completion/later cells and their SIGKILL/lost-ack matrix, integrated
 reconnect, real trust/enrollment and approved installation remain unchanged
 prerequisites. No server execution or measurement gate is opened here.
+
+The [original budget diagnostic](local-runs/original-preparation-budget-20261018/README.md)
+now passes six fresh current/MSRV scenarios without changing runtime guards or
+their schedule. Joined outputs consume 7.185–7.222 seconds and 782
+authentications, corresponding to 46 effect-local traversals of seventeen each.
+Those effect/checkpoint boundaries remain required. Authentication's measured
+inclusive span is only 25.938–28.319 ms; the remaining owner is not established
+by subtraction. Target the repeated original worker/kernel/authority walks
+before dispatch and keep the about-24-ms observed final-margin risk explicit.
+This diagnostic closes no P1 execution, P2/P3 cessation or production enrollment
+gate and does not repair any older stopped cohort.

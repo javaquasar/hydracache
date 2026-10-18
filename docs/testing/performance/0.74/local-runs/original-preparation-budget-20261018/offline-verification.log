@@ -1,0 +1,2 @@
+HC074-PREPARATION-VERIFY negative_controls=16 passed=true
+HC074-PREPARATION-VERIFY status=accepted-diagnostic sources=5 inputs=352 admission=false start=false

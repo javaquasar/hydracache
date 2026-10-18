@@ -748,3 +748,16 @@ successful challenge age approaches 10 s with only about 25 ms remaining.
 Budget attribution, actual FD negotiation/correlated one-shot start, original
 process binding, active all-writer supervision, completion and reconnect remain
 required before admission. The failed earlier cohort remains withdrawn.
+
+The [subsequent budget attribution](local-runs/original-preparation-budget-20261018/README.md)
+keeps those runtime bodies and all observation boundaries unchanged. An exact
+original-helper equivalence guard permits only test-only numeric insertions.
+Six current/MSRV scenarios localize 7.185–7.222 seconds to joined outputs with
+782 authentications. The source performs nineteen single frame traversals for
+Starting publication, six for pipes and twenty-one for sinks: 46 traversals at
+seventeen authentications each. These are effect/checkpoint brackets, not
+permission to reuse a successful guard across a write or callback. Observed IPC
+authentication time is only 25.938–28.319 ms within that bucket; its signature
+subspan overlaps and other cryptographic work is outside that timer. Further
+attribution must examine the original worker/kernel/authority walks, preserving
+all live predicates and original deadlines. No dispatch or admission follows.

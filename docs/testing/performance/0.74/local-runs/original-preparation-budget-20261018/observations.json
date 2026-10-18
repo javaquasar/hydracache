@@ -1,0 +1,1115 @@
+{
+  "rounds": [
+    {
+      "worker_policy_calls": 0,
+      "compiler": "194",
+      "signature_calls": 34,
+      "sample": 0,
+      "authentication_calls": 34,
+      "worker_policy_ns": 0,
+      "signature_ns": 1068792,
+      "pass": 0,
+      "authentication_ns": 1251939,
+      "wall_ns": 336090809
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "194",
+      "signature_calls": 34,
+      "sample": 0,
+      "authentication_calls": 34,
+      "worker_policy_ns": 0,
+      "signature_ns": 1079761,
+      "pass": 1,
+      "authentication_ns": 1263252,
+      "wall_ns": 337221449
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "194",
+      "signature_calls": 34,
+      "sample": 1,
+      "authentication_calls": 34,
+      "worker_policy_ns": 0,
+      "signature_ns": 1071102,
+      "pass": 0,
+      "authentication_ns": 1254118,
+      "wall_ns": 336614609
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "194",
+      "signature_calls": 34,
+      "sample": 1,
+      "authentication_calls": 34,
+      "worker_policy_ns": 0,
+      "signature_ns": 1065024,
+      "pass": 1,
+      "authentication_ns": 1245961,
+      "wall_ns": 338294619
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "194",
+      "signature_calls": 34,
+      "sample": 2,
+      "authentication_calls": 34,
+      "worker_policy_ns": 0,
+      "signature_ns": 1063200,
+      "pass": 0,
+      "authentication_ns": 1247940,
+      "wall_ns": 337865684
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "194",
+      "signature_calls": 34,
+      "sample": 2,
+      "authentication_calls": 34,
+      "worker_policy_ns": 0,
+      "signature_ns": 1057636,
+      "pass": 1,
+      "authentication_ns": 1241384,
+      "wall_ns": 341398763
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "188",
+      "signature_calls": 34,
+      "sample": 0,
+      "authentication_calls": 34,
+      "worker_policy_ns": 0,
+      "signature_ns": 941692,
+      "pass": 0,
+      "authentication_ns": 1120539,
+      "wall_ns": 335787198
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "188",
+      "signature_calls": 34,
+      "sample": 0,
+      "authentication_calls": 34,
+      "worker_policy_ns": 0,
+      "signature_ns": 946411,
+      "pass": 1,
+      "authentication_ns": 1132015,
+      "wall_ns": 336766601
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "188",
+      "signature_calls": 34,
+      "sample": 1,
+      "authentication_calls": 34,
+      "worker_policy_ns": 0,
+      "signature_ns": 946690,
+      "pass": 0,
+      "authentication_ns": 1132118,
+      "wall_ns": 338536428
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "188",
+      "signature_calls": 34,
+      "sample": 1,
+      "authentication_calls": 34,
+      "worker_policy_ns": 0,
+      "signature_ns": 957324,
+      "pass": 1,
+      "authentication_ns": 1137883,
+      "wall_ns": 337544375
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "188",
+      "signature_calls": 34,
+      "sample": 2,
+      "authentication_calls": 34,
+      "worker_policy_ns": 0,
+      "signature_ns": 950945,
+      "pass": 0,
+      "authentication_ns": 1128510,
+      "wall_ns": 335283142
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "188",
+      "signature_calls": 34,
+      "sample": 2,
+      "authentication_calls": 34,
+      "worker_policy_ns": 0,
+      "signature_ns": 951022,
+      "pass": 1,
+      "authentication_ns": 1133989,
+      "wall_ns": 335755384
+    }
+  ],
+  "product_performance_claim": false,
+  "observation_schedule_changed": false,
+  "rows": [
+    {
+      "worker_policy_calls": 0,
+      "compiler": "194",
+      "signature_calls": 408,
+      "bucket": "prechallenge-reservation",
+      "sample": 0,
+      "authentication_calls": 408,
+      "worker_policy_ns": 0,
+      "signature_ns": 12317112,
+      "authentication_ns": 14468817,
+      "wall_ns": 3326116547
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "194",
+      "signature_calls": 64,
+      "bucket": "challenge-creation",
+      "sample": 0,
+      "authentication_calls": 64,
+      "worker_policy_ns": 0,
+      "signature_ns": 2276917,
+      "authentication_ns": 2612420,
+      "wall_ns": 536973749
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "194",
+      "signature_calls": 66,
+      "bucket": "response-acceptance",
+      "sample": 0,
+      "authentication_calls": 66,
+      "worker_policy_ns": 0,
+      "signature_ns": 1840176,
+      "authentication_ns": 2187713,
+      "wall_ns": 542313547
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "194",
+      "signature_calls": 68,
+      "bucket": "consent-preparation",
+      "sample": 0,
+      "authentication_calls": 68,
+      "worker_policy_ns": 0,
+      "signature_ns": 1893956,
+      "authentication_ns": 2250010,
+      "wall_ns": 590480765
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "194",
+      "signature_calls": 34,
+      "bucket": "consent-acceptance",
+      "sample": 0,
+      "authentication_calls": 34,
+      "worker_policy_ns": 0,
+      "signature_ns": 951084,
+      "authentication_ns": 1129620,
+      "wall_ns": 311032724
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "194",
+      "signature_calls": 782,
+      "bucket": "joined-outputs",
+      "sample": 0,
+      "authentication_calls": 782,
+      "worker_policy_ns": 0,
+      "signature_ns": 21935100,
+      "authentication_ns": 26089780,
+      "wall_ns": 7222119997
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "194",
+      "signature_calls": 34,
+      "bucket": "enrollment",
+      "sample": 0,
+      "authentication_calls": 34,
+      "worker_policy_ns": 0,
+      "signature_ns": 1075055,
+      "authentication_ns": 1268518,
+      "wall_ns": 365675128
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "194",
+      "signature_calls": 0,
+      "bucket": "manager-bookkeeping-inclusive",
+      "sample": 0,
+      "authentication_calls": 0,
+      "worker_policy_ns": 0,
+      "signature_ns": 0,
+      "authentication_ns": 0,
+      "wall_ns": 673952269
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "194",
+      "signature_calls": 408,
+      "bucket": "prechallenge-reservation",
+      "sample": 1,
+      "authentication_calls": 408,
+      "worker_policy_ns": 0,
+      "signature_ns": 12382062,
+      "authentication_ns": 14496806,
+      "wall_ns": 3334781243
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "194",
+      "signature_calls": 64,
+      "bucket": "challenge-creation",
+      "sample": 1,
+      "authentication_calls": 64,
+      "worker_policy_ns": 0,
+      "signature_ns": 2281648,
+      "authentication_ns": 2613145,
+      "wall_ns": 533503655
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "194",
+      "signature_calls": 66,
+      "bucket": "response-acceptance",
+      "sample": 1,
+      "authentication_calls": 66,
+      "worker_policy_ns": 0,
+      "signature_ns": 1838158,
+      "authentication_ns": 2181702,
+      "wall_ns": 541903190
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "194",
+      "signature_calls": 68,
+      "bucket": "consent-preparation",
+      "sample": 1,
+      "authentication_calls": 68,
+      "worker_policy_ns": 0,
+      "signature_ns": 1899938,
+      "authentication_ns": 2254769,
+      "wall_ns": 590012029
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "194",
+      "signature_calls": 34,
+      "bucket": "consent-acceptance",
+      "sample": 1,
+      "authentication_calls": 34,
+      "worker_policy_ns": 0,
+      "signature_ns": 954063,
+      "authentication_ns": 1132701,
+      "wall_ns": 311031111
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "194",
+      "signature_calls": 782,
+      "bucket": "joined-outputs",
+      "sample": 1,
+      "authentication_calls": 782,
+      "worker_policy_ns": 0,
+      "signature_ns": 21929130,
+      "authentication_ns": 26049569,
+      "wall_ns": 7194108510
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "194",
+      "signature_calls": 34,
+      "bucket": "enrollment",
+      "sample": 1,
+      "authentication_calls": 34,
+      "worker_policy_ns": 0,
+      "signature_ns": 1073943,
+      "authentication_ns": 1268769,
+      "wall_ns": 362504581
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "194",
+      "signature_calls": 0,
+      "bucket": "manager-bookkeeping-inclusive",
+      "sample": 1,
+      "authentication_calls": 0,
+      "worker_policy_ns": 0,
+      "signature_ns": 0,
+      "authentication_ns": 0,
+      "wall_ns": 675543476
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "194",
+      "signature_calls": 408,
+      "bucket": "prechallenge-reservation",
+      "sample": 2,
+      "authentication_calls": 408,
+      "worker_policy_ns": 0,
+      "signature_ns": 12271450,
+      "authentication_ns": 14428846,
+      "wall_ns": 3338011734
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "194",
+      "signature_calls": 64,
+      "bucket": "challenge-creation",
+      "sample": 2,
+      "authentication_calls": 64,
+      "worker_policy_ns": 0,
+      "signature_ns": 2261966,
+      "authentication_ns": 2598822,
+      "wall_ns": 535587966
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "194",
+      "signature_calls": 66,
+      "bucket": "response-acceptance",
+      "sample": 2,
+      "authentication_calls": 66,
+      "worker_policy_ns": 0,
+      "signature_ns": 1828062,
+      "authentication_ns": 2170877,
+      "wall_ns": 543157734
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "194",
+      "signature_calls": 68,
+      "bucket": "consent-preparation",
+      "sample": 2,
+      "authentication_calls": 68,
+      "worker_policy_ns": 0,
+      "signature_ns": 1879677,
+      "authentication_ns": 2237434,
+      "wall_ns": 591324201
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "194",
+      "signature_calls": 34,
+      "bucket": "consent-acceptance",
+      "sample": 2,
+      "authentication_calls": 34,
+      "worker_policy_ns": 0,
+      "signature_ns": 940912,
+      "authentication_ns": 1122740,
+      "wall_ns": 310415621
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "194",
+      "signature_calls": 782,
+      "bucket": "joined-outputs",
+      "sample": 2,
+      "authentication_calls": 782,
+      "worker_policy_ns": 0,
+      "signature_ns": 21804123,
+      "authentication_ns": 25938172,
+      "wall_ns": 7196156674
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "194",
+      "signature_calls": 34,
+      "bucket": "enrollment",
+      "sample": 2,
+      "authentication_calls": 34,
+      "worker_policy_ns": 0,
+      "signature_ns": 1069352,
+      "authentication_ns": 1256507,
+      "wall_ns": 362270202
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "194",
+      "signature_calls": 0,
+      "bucket": "manager-bookkeeping-inclusive",
+      "sample": 2,
+      "authentication_calls": 0,
+      "worker_policy_ns": 0,
+      "signature_ns": 0,
+      "authentication_ns": 0,
+      "wall_ns": 679895667
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "188",
+      "signature_calls": 408,
+      "bucket": "prechallenge-reservation",
+      "sample": 0,
+      "authentication_calls": 408,
+      "worker_policy_ns": 0,
+      "signature_ns": 11396782,
+      "authentication_ns": 13471094,
+      "wall_ns": 3329612095
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "188",
+      "signature_calls": 64,
+      "bucket": "challenge-creation",
+      "sample": 0,
+      "authentication_calls": 64,
+      "worker_policy_ns": 0,
+      "signature_ns": 1783969,
+      "authentication_ns": 2106353,
+      "wall_ns": 536358778
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "188",
+      "signature_calls": 66,
+      "bucket": "response-acceptance",
+      "sample": 0,
+      "authentication_calls": 66,
+      "worker_policy_ns": 0,
+      "signature_ns": 1939234,
+      "authentication_ns": 2267710,
+      "wall_ns": 541547369
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "188",
+      "signature_calls": 68,
+      "bucket": "consent-preparation",
+      "sample": 0,
+      "authentication_calls": 68,
+      "worker_policy_ns": 0,
+      "signature_ns": 2154941,
+      "authentication_ns": 2495097,
+      "wall_ns": 589914761
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "188",
+      "signature_calls": 34,
+      "bucket": "consent-acceptance",
+      "sample": 0,
+      "authentication_calls": 34,
+      "worker_policy_ns": 0,
+      "signature_ns": 951180,
+      "authentication_ns": 1122938,
+      "wall_ns": 309718480
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "188",
+      "signature_calls": 782,
+      "bucket": "joined-outputs",
+      "sample": 0,
+      "authentication_calls": 782,
+      "worker_policy_ns": 0,
+      "signature_ns": 24260876,
+      "authentication_ns": 28260247,
+      "wall_ns": 7203820552
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "188",
+      "signature_calls": 34,
+      "bucket": "enrollment",
+      "sample": 0,
+      "authentication_calls": 34,
+      "worker_policy_ns": 0,
+      "signature_ns": 956890,
+      "authentication_ns": 1147837,
+      "wall_ns": 363746934
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "188",
+      "signature_calls": 0,
+      "bucket": "manager-bookkeeping-inclusive",
+      "sample": 0,
+      "authentication_calls": 0,
+      "worker_policy_ns": 0,
+      "signature_ns": 0,
+      "authentication_ns": 0,
+      "wall_ns": 673191637
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "188",
+      "signature_calls": 408,
+      "bucket": "prechallenge-reservation",
+      "sample": 1,
+      "authentication_calls": 408,
+      "worker_policy_ns": 0,
+      "signature_ns": 11425296,
+      "authentication_ns": 13513320,
+      "wall_ns": 3331099527
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "188",
+      "signature_calls": 64,
+      "bucket": "challenge-creation",
+      "sample": 1,
+      "authentication_calls": 64,
+      "worker_policy_ns": 0,
+      "signature_ns": 1786517,
+      "authentication_ns": 2115624,
+      "wall_ns": 533478835
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "188",
+      "signature_calls": 66,
+      "bucket": "response-acceptance",
+      "sample": 1,
+      "authentication_calls": 66,
+      "worker_policy_ns": 0,
+      "signature_ns": 1953944,
+      "authentication_ns": 2290970,
+      "wall_ns": 541923638
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "188",
+      "signature_calls": 68,
+      "bucket": "consent-preparation",
+      "sample": 1,
+      "authentication_calls": 68,
+      "worker_policy_ns": 0,
+      "signature_ns": 2158070,
+      "authentication_ns": 2505829,
+      "wall_ns": 590134614
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "188",
+      "signature_calls": 34,
+      "bucket": "consent-acceptance",
+      "sample": 1,
+      "authentication_calls": 34,
+      "worker_policy_ns": 0,
+      "signature_ns": 956514,
+      "authentication_ns": 1133114,
+      "wall_ns": 310613473
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "188",
+      "signature_calls": 782,
+      "bucket": "joined-outputs",
+      "sample": 1,
+      "authentication_calls": 782,
+      "worker_policy_ns": 0,
+      "signature_ns": 24291861,
+      "authentication_ns": 28319409,
+      "wall_ns": 7193230357
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "188",
+      "signature_calls": 34,
+      "bucket": "enrollment",
+      "sample": 1,
+      "authentication_calls": 34,
+      "worker_policy_ns": 0,
+      "signature_ns": 953981,
+      "authentication_ns": 1148566,
+      "wall_ns": 361932503
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "188",
+      "signature_calls": 0,
+      "bucket": "manager-bookkeeping-inclusive",
+      "sample": 1,
+      "authentication_calls": 0,
+      "worker_policy_ns": 0,
+      "signature_ns": 0,
+      "authentication_ns": 0,
+      "wall_ns": 676714532
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "188",
+      "signature_calls": 408,
+      "bucket": "prechallenge-reservation",
+      "sample": 2,
+      "authentication_calls": 408,
+      "worker_policy_ns": 0,
+      "signature_ns": 11430370,
+      "authentication_ns": 13474751,
+      "wall_ns": 3315077313
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "188",
+      "signature_calls": 64,
+      "bucket": "challenge-creation",
+      "sample": 2,
+      "authentication_calls": 64,
+      "worker_policy_ns": 0,
+      "signature_ns": 1784909,
+      "authentication_ns": 2109725,
+      "wall_ns": 532593726
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "188",
+      "signature_calls": 66,
+      "bucket": "response-acceptance",
+      "sample": 2,
+      "authentication_calls": 66,
+      "worker_policy_ns": 0,
+      "signature_ns": 1947221,
+      "authentication_ns": 2282064,
+      "wall_ns": 546636394
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "188",
+      "signature_calls": 68,
+      "bucket": "consent-preparation",
+      "sample": 2,
+      "authentication_calls": 68,
+      "worker_policy_ns": 0,
+      "signature_ns": 2155574,
+      "authentication_ns": 2500072,
+      "wall_ns": 594740230
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "188",
+      "signature_calls": 34,
+      "bucket": "consent-acceptance",
+      "sample": 2,
+      "authentication_calls": 34,
+      "worker_policy_ns": 0,
+      "signature_ns": 954165,
+      "authentication_ns": 1127780,
+      "wall_ns": 307604843
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "188",
+      "signature_calls": 782,
+      "bucket": "joined-outputs",
+      "sample": 2,
+      "authentication_calls": 782,
+      "worker_policy_ns": 0,
+      "signature_ns": 24327309,
+      "authentication_ns": 28313704,
+      "wall_ns": 7185279018
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "188",
+      "signature_calls": 34,
+      "bucket": "enrollment",
+      "sample": 2,
+      "authentication_calls": 34,
+      "worker_policy_ns": 0,
+      "signature_ns": 963074,
+      "authentication_ns": 1152909,
+      "wall_ns": 363170730
+    },
+    {
+      "worker_policy_calls": 0,
+      "compiler": "188",
+      "signature_calls": 0,
+      "bucket": "manager-bookkeeping-inclusive",
+      "sample": 2,
+      "authentication_calls": 0,
+      "worker_policy_ns": 0,
+      "signature_ns": 0,
+      "authentication_ns": 0,
+      "wall_ns": 671675785
+    }
+  ],
+  "kind": "correctness-attribution",
+  "points": [
+    {
+      "now_ns": 1045026467254733,
+      "age_ns": 270158800,
+      "point": "challenge-ready",
+      "compiler": "194",
+      "sample": 0,
+      "issued_ns": 1045026197095933
+    },
+    {
+      "now_ns": 1045027009570760,
+      "age_ns": 812474827,
+      "point": "response-ready",
+      "compiler": "194",
+      "sample": 0,
+      "issued_ns": 1045026197095933
+    },
+    {
+      "now_ns": 1045027600051525,
+      "age_ns": 1402955592,
+      "point": "consent-prepared",
+      "compiler": "194",
+      "sample": 0,
+      "issued_ns": 1045026197095933
+    },
+    {
+      "now_ns": 1045027911084109,
+      "age_ns": 1713988176,
+      "point": "consent-ready",
+      "compiler": "194",
+      "sample": 0,
+      "issued_ns": 1045026197095933
+    },
+    {
+      "now_ns": 1045035133204116,
+      "age_ns": 8936108183,
+      "point": "outputs-ready",
+      "compiler": "194",
+      "sample": 0,
+      "issued_ns": 1045026197095933
+    },
+    {
+      "now_ns": 1045035498860315,
+      "age_ns": 9301764382,
+      "point": "enrollment-ready",
+      "compiler": "194",
+      "sample": 0,
+      "issued_ns": 1045026197095933
+    },
+    {
+      "now_ns": 1045035835417276,
+      "age_ns": 9638321343,
+      "point": "manager-prepare-ready",
+      "compiler": "194",
+      "sample": 0,
+      "issued_ns": 1045026197095933
+    },
+    {
+      "now_ns": 1045036172741134,
+      "age_ns": 9975645201,
+      "point": "manager-delivery-ready",
+      "compiler": "194",
+      "sample": 0,
+      "issued_ns": 1045026197095933
+    },
+    {
+      "now_ns": 1045040177402985,
+      "age_ns": 268396419,
+      "point": "challenge-ready",
+      "compiler": "194",
+      "sample": 1,
+      "issued_ns": 1045039909006566
+    },
+    {
+      "now_ns": 1045040719308745,
+      "age_ns": 810302179,
+      "point": "response-ready",
+      "compiler": "194",
+      "sample": 1,
+      "issued_ns": 1045039909006566
+    },
+    {
+      "now_ns": 1045041309320793,
+      "age_ns": 1400314227,
+      "point": "consent-prepared",
+      "compiler": "194",
+      "sample": 1,
+      "issued_ns": 1045039909006566
+    },
+    {
+      "now_ns": 1045041620351875,
+      "age_ns": 1711345309,
+      "point": "consent-ready",
+      "compiler": "194",
+      "sample": 1,
+      "issued_ns": 1045039909006566
+    },
+    {
+      "now_ns": 1045048814460276,
+      "age_ns": 8905453710,
+      "point": "outputs-ready",
+      "compiler": "194",
+      "sample": 1,
+      "issued_ns": 1045039909006566
+    },
+    {
+      "now_ns": 1045049176946326,
+      "age_ns": 9267939760,
+      "point": "enrollment-ready",
+      "compiler": "194",
+      "sample": 1,
+      "issued_ns": 1045039909006566
+    },
+    {
+      "now_ns": 1045049514024177,
+      "age_ns": 9605017611,
+      "point": "manager-prepare-ready",
+      "compiler": "194",
+      "sample": 1,
+      "issued_ns": 1045039909006566
+    },
+    {
+      "now_ns": 1045049852422804,
+      "age_ns": 9943416238,
+      "point": "manager-delivery-ready",
+      "compiler": "194",
+      "sample": 1,
+      "issued_ns": 1045039909006566
+    },
+    {
+      "now_ns": 1045053868166225,
+      "age_ns": 269532628,
+      "point": "challenge-ready",
+      "compiler": "194",
+      "sample": 2,
+      "issued_ns": 1045053598633597
+    },
+    {
+      "now_ns": 1045054411326689,
+      "age_ns": 812693092,
+      "point": "response-ready",
+      "compiler": "194",
+      "sample": 2,
+      "issued_ns": 1045053598633597
+    },
+    {
+      "now_ns": 1045055002650900,
+      "age_ns": 1404017303,
+      "point": "consent-prepared",
+      "compiler": "194",
+      "sample": 2,
+      "issued_ns": 1045053598633597
+    },
+    {
+      "now_ns": 1045055313066501,
+      "age_ns": 1714432904,
+      "point": "consent-ready",
+      "compiler": "194",
+      "sample": 2,
+      "issued_ns": 1045053598633597
+    },
+    {
+      "now_ns": 1045062509223045,
+      "age_ns": 8910589448,
+      "point": "outputs-ready",
+      "compiler": "194",
+      "sample": 2,
+      "issued_ns": 1045053598633597
+    },
+    {
+      "now_ns": 1045062871474708,
+      "age_ns": 9272841111,
+      "point": "enrollment-ready",
+      "compiler": "194",
+      "sample": 2,
+      "issued_ns": 1045053598633597
+    },
+    {
+      "now_ns": 1045063209802574,
+      "age_ns": 9611168977,
+      "point": "manager-prepare-ready",
+      "compiler": "194",
+      "sample": 2,
+      "issued_ns": 1045053598633597
+    },
+    {
+      "now_ns": 1045063551304795,
+      "age_ns": 9952671198,
+      "point": "manager-delivery-ready",
+      "compiler": "194",
+      "sample": 2,
+      "issued_ns": 1045053598633597
+    },
+    {
+      "now_ns": 1045068148264361,
+      "age_ns": 269930440,
+      "point": "challenge-ready",
+      "compiler": "188",
+      "sample": 0,
+      "issued_ns": 1045067878333921
+    },
+    {
+      "now_ns": 1045068689814039,
+      "age_ns": 811480118,
+      "point": "response-ready",
+      "compiler": "188",
+      "sample": 0,
+      "issued_ns": 1045067878333921
+    },
+    {
+      "now_ns": 1045069279728730,
+      "age_ns": 1401394809,
+      "point": "consent-prepared",
+      "compiler": "188",
+      "sample": 0,
+      "issued_ns": 1045067878333921
+    },
+    {
+      "now_ns": 1045069589447250,
+      "age_ns": 1711113329,
+      "point": "consent-ready",
+      "compiler": "188",
+      "sample": 0,
+      "issued_ns": 1045067878333921
+    },
+    {
+      "now_ns": 1045076793267712,
+      "age_ns": 8914933791,
+      "point": "outputs-ready",
+      "compiler": "188",
+      "sample": 0,
+      "issued_ns": 1045067878333921
+    },
+    {
+      "now_ns": 1045077156992336,
+      "age_ns": 9278658415,
+      "point": "enrollment-ready",
+      "compiler": "188",
+      "sample": 0,
+      "issued_ns": 1045067878333921
+    },
+    {
+      "now_ns": 1045077493250746,
+      "age_ns": 9614916825,
+      "point": "manager-prepare-ready",
+      "compiler": "188",
+      "sample": 0,
+      "issued_ns": 1045067878333921
+    },
+    {
+      "now_ns": 1045077830120925,
+      "age_ns": 9951787004,
+      "point": "manager-delivery-ready",
+      "compiler": "188",
+      "sample": 0,
+      "issued_ns": 1045067878333921
+    },
+    {
+      "now_ns": 1045081832172057,
+      "age_ns": 268491392,
+      "point": "challenge-ready",
+      "compiler": "188",
+      "sample": 1,
+      "issued_ns": 1045081563680665
+    },
+    {
+      "now_ns": 1045082374097976,
+      "age_ns": 810417311,
+      "point": "response-ready",
+      "compiler": "188",
+      "sample": 1,
+      "issued_ns": 1045081563680665
+    },
+    {
+      "now_ns": 1045082964232609,
+      "age_ns": 1400551944,
+      "point": "consent-prepared",
+      "compiler": "188",
+      "sample": 1,
+      "issued_ns": 1045081563680665
+    },
+    {
+      "now_ns": 1045083274845772,
+      "age_ns": 1711165107,
+      "point": "consent-ready",
+      "compiler": "188",
+      "sample": 1,
+      "issued_ns": 1045081563680665
+    },
+    {
+      "now_ns": 1045090468076289,
+      "age_ns": 8904395624,
+      "point": "outputs-ready",
+      "compiler": "188",
+      "sample": 1,
+      "issued_ns": 1045081563680665
+    },
+    {
+      "now_ns": 1045090829987502,
+      "age_ns": 9266306837,
+      "point": "enrollment-ready",
+      "compiler": "188",
+      "sample": 1,
+      "issued_ns": 1045081563680665
+    },
+    {
+      "now_ns": 1045091168986062,
+      "age_ns": 9605305397,
+      "point": "manager-prepare-ready",
+      "compiler": "188",
+      "sample": 1,
+      "issued_ns": 1045081563680665
+    },
+    {
+      "now_ns": 1045091506638545,
+      "age_ns": 9942957880,
+      "point": "manager-delivery-ready",
+      "compiler": "188",
+      "sample": 1,
+      "issued_ns": 1045081563680665
+    },
+    {
+      "now_ns": 1045095492260237,
+      "age_ns": 267964580,
+      "point": "challenge-ready",
+      "compiler": "188",
+      "sample": 2,
+      "issued_ns": 1045095224295657
+    },
+    {
+      "now_ns": 1045096038898990,
+      "age_ns": 814603333,
+      "point": "response-ready",
+      "compiler": "188",
+      "sample": 2,
+      "issued_ns": 1045095224295657
+    },
+    {
+      "now_ns": 1045096633639210,
+      "age_ns": 1409343553,
+      "point": "consent-prepared",
+      "compiler": "188",
+      "sample": 2,
+      "issued_ns": 1045095224295657
+    },
+    {
+      "now_ns": 1045096941244063,
+      "age_ns": 1716948406,
+      "point": "consent-ready",
+      "compiler": "188",
+      "sample": 2,
+      "issued_ns": 1045095224295657
+    },
+    {
+      "now_ns": 1045104126522981,
+      "age_ns": 8902227324,
+      "point": "outputs-ready",
+      "compiler": "188",
+      "sample": 2,
+      "issued_ns": 1045095224295657
+    },
+    {
+      "now_ns": 1045104489673611,
+      "age_ns": 9265377954,
+      "point": "enrollment-ready",
+      "compiler": "188",
+      "sample": 2,
+      "issued_ns": 1045095224295657
+    },
+    {
+      "now_ns": 1045104825424455,
+      "age_ns": 9601128798,
+      "point": "manager-prepare-ready",
+      "compiler": "188",
+      "sample": 2,
+      "issued_ns": 1045095224295657
+    },
+    {
+      "now_ns": 1045105161284237,
+      "age_ns": 9936988580,
+      "point": "manager-delivery-ready",
+      "compiler": "188",
+      "sample": 2,
+      "issued_ns": 1045095224295657
+    }
+  ]
+}

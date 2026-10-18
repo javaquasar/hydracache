@@ -1,0 +1,12 @@
+
+running 6 tests
+test diagnostic_ipc::validation_trace_tests::validation_trace_actual_authentication_early_error_is_counted_without_signature ... ok
+test diagnostic_ipc::validation_trace_tests::validation_trace_actual_signed_window_and_signature_errors_are_distinct ... ok
+test diagnostic_ipc::validation_trace_tests::validation_trace_disabled_and_success_do_not_invent_time_refusals ... ok
+test diagnostic_ipc::validation_trace_tests::validation_trace_first_time_facts_are_not_replaced_or_authority ... ok
+test diagnostic_ipc::validation_trace_tests::validation_trace_independent_threads_keep_numeric_reports_separate ... ok
+test diagnostic_ipc::validation_trace_tests::validation_trace_nested_unwind_and_ambient_scope_restore_original_frame ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 1161 filtered out; finished in 0.00s
+
+HC074-VALIDATION-COST Report { stages: [Stats { wall_ns: 111680, authentication_calls: 1, authentication_ns: 111298, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }], first_time: Some(TimeRefusal { stage: Unassigned, operation: Reserve, issued: 1, expires: 61, now: 0 }), time_refusals: 1 }

@@ -48,3 +48,13 @@ overlapping spans, choose thresholds from the observations or claim a product
 speedup. Further changes to observation boundaries require their own agreed
 experiment. No installation, supervisor/clock operation, real systemd dispatch,
 trust enrollment, product workload or expensive qualification is permitted.
+
+Source `b2b116e5` completes this diagnostic once on both compilers: six original
+scenarios, 48 bucket rows, twelve nested manager rounds and 48 immutable-origin
+landmarks. Joined outputs take 7.185–7.222 seconds with 782 authentications;
+source accounting identifies 46 effect-local eight-step traversals of seventeen
+authentications each. Do not remove those effect/checkpoint brackets. The
+measured IPC authentication spans are only 25.938–28.319 ms within that bucket,
+not proof of exclusive filesystem or total cryptographic cost. Preserve the
+current runtime and target original worker/kernel/authority traversal cost next.
+Exact evidence is in [the attribution packet](local-runs/original-preparation-budget-20261018/README.md).

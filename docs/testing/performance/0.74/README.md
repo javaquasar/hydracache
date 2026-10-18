@@ -4018,3 +4018,16 @@ unchanged. Maximum observed successful challenge age leaves only about 25 ms
 of its original 10 s window: attribute that critical-path budget before actual
 dispatch, then close real FD delivery/start, active all-writer cessation,
 completion/later cells, reconnect and trust/enrollment gates.
+
+The separate [original preparation budget diagnostic](local-runs/original-preparation-budget-20261018/README.md)
+at `b2b116e5` changes only test orchestration/registration. All existing runtime
+bodies and observation schedules remain exact. Six fresh current/MSRV scenarios
+report 48 bucket rows and twelve 34-check manager rounds. Joined outputs are
+the largest observed bucket at 7.185–7.222 seconds, with 782 authentications.
+Source accounting identifies 46 effect/checkpoint-local eight-step traversals;
+their boundaries must remain. IPC authentication spans account for only
+25.938–28.319 ms of that inclusive bucket, so the counter does not establish a
+cryptographic bottleneck or an exclusive CPU/filesystem owner. Next attribute
+original worker/kernel/authority traversal cost while retaining every effect
+bracket. The observed final challenge margin is about 24 ms; actual bus start,
+all-writer cessation, completion/reconnect and real enrollment remain unadmitted.
