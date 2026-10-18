@@ -1,4 +1,6 @@
 use super::*;
+#[path = "diagnostic_original_preparation_budget_tests.rs"]
+mod budget;
 #[test]
 #[ignore = "manual nonroot original addressed message full-frame and owned rights controls"]
 fn original_grouped_addressed_frame_controls() {

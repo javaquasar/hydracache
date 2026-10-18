@@ -3,6 +3,8 @@
 mod original_manager_join;
 #[path = "performance_contract_074_original_manager_message.rs"]
 mod original_manager_message;
+#[path = "performance_contract_074_preparation_budget.rs"]
+mod preparation_budget;
 const OLD: &str = "            || !reply.primary_header().flags().is_empty()\n";
 const NEW: &str = "            || reply.primary_header().flags().bits()\n                & !(zbus::message::Flags::NoReplyExpected as u8)\n                != 0\n            || (reply.message_type() != Type::MethodReturn\n                && !reply.primary_header().flags().is_empty())\n";
 const REG: &str =
@@ -21,7 +23,8 @@ the fixed read-only manager producer and every execution/admission limit stay ex
 "###;
 
 pub(super) fn normalize(path: &str, raw: &str) -> String {
-    let grouped = original_manager_message::normalize(path, raw);
+    let attributed = preparation_budget::normalize(path, raw);
+    let grouped = original_manager_message::normalize(path, &attributed);
     let normalized = original_manager_join::normalize(path, &grouped);
     let raw = normalized.as_str();
     let (changed, restored) = match path {
