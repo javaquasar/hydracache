@@ -34,6 +34,10 @@ release it performs a constant pipe effect and parks without monitoring its
 owner itself, so owner-loss termination actually depends on the guardian.
 Exercise Pending owner death, Armed owner death, channel loss, original expiry,
 lost ACK at a controlled stop, foreign sender, invalid rights and repeat refusal.
+Retain two additional expected-negative controls after release: killing the sole
+guardian must expose a still-live writer and released last-holder flock; stopping
+the guardian must expose inability to revoke at the original deadline until it
+resumes. Neither observation is an admission success or a reason to refresh time.
 An external nonroot subreaper receives exact pidfds with actual credentials,
 verifies direct parent/executable identity, and kills/reaps only owned children.
 
