@@ -1,0 +1,134 @@
+HC074-ORIGINAL-BARRIER-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-ORIGINAL-BARRIER-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-ORIGINAL-BARRIER-COHORT compiler=194 begin=true
+cdb2f261e5d509f42b27413b7e0410372467462fe78df31a6082f9af7dcfc667  tests-194
+
+running 4 tests
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::tests::original_descriptor_capture_refuses_a_closed_fd_without_replacement ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::tests::original_descriptor_capture_refuses_nonzero_sink_position ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::tests::original_descriptor_roles_exclude_all_four_writer_aliases ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::tests::original_descriptor_roles_refuse_any_duplicate_or_negative_slot ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 1097 filtered out; finished in 0.00s
+
+HC074-ORIGINAL-BARRIER-PHASE name=healthy begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::holder::barrier::original_barrier_validation_healthy ... HC074-ORIGINAL-BARRIER-CONTROL seed=0x0740b018 sample=0 case=normal frame_ipc=34 barred_during_frame=true eof=true unchanged=true send=false
+HC074-ORIGINAL-BARRIER-CONTROL seed=0x0740b018 sample=0 case=ack-lost frame_ipc=34 barred_during_frame=true eof=true unchanged=true send=false
+HC074-ORIGINAL-BARRIER-CONTROL seed=0x0740b018 sample=1 case=normal frame_ipc=34 barred_during_frame=true eof=true unchanged=true send=false
+HC074-ORIGINAL-BARRIER-CONTROL seed=0x0740b018 sample=1 case=ack-lost frame_ipc=34 barred_during_frame=true eof=true unchanged=true send=false
+HC074-ORIGINAL-BARRIER-CONTROL seed=0x0740b018 sample=2 case=normal frame_ipc=34 barred_during_frame=true eof=true unchanged=true send=false
+HC074-ORIGINAL-BARRIER-CONTROL seed=0x0740b018 sample=2 case=ack-lost frame_ipc=34 barred_during_frame=true eof=true unchanged=true send=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1100 filtered out; finished in 82.10s
+
+HC074-ORIGINAL-BARRIER-PHASE name=healthy completed=true
+HC074-ORIGINAL-BARRIER-PHASE name=refusals begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::holder::barrier::original_barrier_validation_refusals ... HC074-ORIGINAL-BARRIER-REFUSAL seed=0x0740b118 case=trust reason=Original(Transport(Material(Outputs(Original(Original(Original(Causal(Reservation(Attempt(Controller(Original(Input(Invalid))))))))))))) sticky=true command=false retained=true unchanged=true send=false
+HC074-ORIGINAL-BARRIER-REFUSAL seed=0x0740b118 case=output reason=Original(Transport(Material(Outputs(Invalid)))) sticky=true command=false retained=true unchanged=true send=false
+HC074-ORIGINAL-BARRIER-REFUSAL seed=0x0740b118 case=writer reason=Original(Transport(Material(Outputs(Original(Invalid))))) sticky=true command=false retained=true unchanged=true send=false
+HC074-ORIGINAL-BARRIER-REFUSAL seed=0x0740b118 case=message reason=Original(Binding) sticky=true command=false retained=true unchanged=true send=false
+HC074-ORIGINAL-BARRIER-REFUSAL seed=0x0740b118 case=alarm reason=Original(Binding) sticky=true command=false retained=true unchanged=true send=false
+HC074-ORIGINAL-BARRIER-REFUSAL seed=0x0740b118 case=custody-flags reason=Storage(Document) sticky=true command=false retained=true unchanged=true send=false
+HC074-ORIGINAL-BARRIER-REFUSAL seed=0x0740b118 case=custody-object reason=Storage(Document) sticky=true command=false retained=true unchanged=true send=false
+HC074-ORIGINAL-BARRIER-REFUSAL seed=0x0740b118 case=sink-offset reason=Binding sticky=true command=false retained=true unchanged=true send=false
+HC074-ORIGINAL-BARRIER-REFUSAL seed=0x0740b118 case=final-expiry reason=Original(Expired) sticky=true command=false retained=true unchanged=true send=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1100 filtered out; finished in 121.51s
+
+HC074-ORIGINAL-BARRIER-PHASE name=refusals completed=true
+HC074-ORIGINAL-BARRIER-PHASE name=sigkill begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::holder::barrier::original_barrier_validation_sigkill ... HC074-ORIGINAL-BARRIER-SIGKILL seed=0x0740b218 repeat=1 cut=before-frame frame_ipc=0 parent_retained=true signal=9 unchanged=true completion=false send=false
+HC074-ORIGINAL-BARRIER-SIGKILL seed=0x0740b218 repeat=1 cut=after-frame frame_ipc=34 parent_retained=true signal=9 unchanged=true completion=false send=false
+HC074-ORIGINAL-BARRIER-SIGKILL seed=0x0740b218 repeat=1 cut=after-alias-close frame_ipc=34 parent_retained=false signal=9 unchanged=true completion=false send=false
+HC074-ORIGINAL-BARRIER-SIGKILL seed=0x0740b218 repeat=1 cut=after-eof frame_ipc=34 parent_retained=false signal=9 unchanged=true completion=false send=false
+HC074-ORIGINAL-BARRIER-SIGKILL seed=0x0740b218 repeat=2 cut=before-frame frame_ipc=0 parent_retained=true signal=9 unchanged=true completion=false send=false
+HC074-ORIGINAL-BARRIER-SIGKILL seed=0x0740b218 repeat=2 cut=after-frame frame_ipc=34 parent_retained=true signal=9 unchanged=true completion=false send=false
+HC074-ORIGINAL-BARRIER-SIGKILL seed=0x0740b218 repeat=2 cut=after-alias-close frame_ipc=34 parent_retained=false signal=9 unchanged=true completion=false send=false
+HC074-ORIGINAL-BARRIER-SIGKILL seed=0x0740b218 repeat=2 cut=after-eof frame_ipc=34 parent_retained=false signal=9 unchanged=true completion=false send=false
+HC074-ORIGINAL-BARRIER-SIGKILL seed=0x0740b218 repeat=3 cut=before-frame frame_ipc=0 parent_retained=true signal=9 unchanged=true completion=false send=false
+HC074-ORIGINAL-BARRIER-SIGKILL seed=0x0740b218 repeat=3 cut=after-frame frame_ipc=34 parent_retained=true signal=9 unchanged=true completion=false send=false
+HC074-ORIGINAL-BARRIER-SIGKILL seed=0x0740b218 repeat=3 cut=after-alias-close frame_ipc=34 parent_retained=false signal=9 unchanged=true completion=false send=false
+HC074-ORIGINAL-BARRIER-SIGKILL seed=0x0740b218 repeat=3 cut=after-eof frame_ipc=34 parent_retained=false signal=9 unchanged=true completion=false send=false
+HC074-ORIGINAL-BARRIER-SIGKILL completed=true cases=12 product=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1100 filtered out; finished in 162.93s
+
+HC074-ORIGINAL-BARRIER-PHASE name=sigkill completed=true
+HC074-ORIGINAL-BARRIER-COHORT compiler=194 completed=true
+HC074-ORIGINAL-BARRIER-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-ORIGINAL-BARRIER-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-ORIGINAL-BARRIER-COHORT compiler=188 begin=true
+fea257627d79d899e920ff8d5c0dd37734134131cba944d1ddedff3ae4ac0ad9  tests-188
+
+running 4 tests
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::tests::original_descriptor_capture_refuses_a_closed_fd_without_replacement ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::tests::original_descriptor_capture_refuses_nonzero_sink_position ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::tests::original_descriptor_roles_exclude_all_four_writer_aliases ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::tests::original_descriptor_roles_refuse_any_duplicate_or_negative_slot ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 1097 filtered out; finished in 0.00s
+
+HC074-ORIGINAL-BARRIER-PHASE name=healthy begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::holder::barrier::original_barrier_validation_healthy ... HC074-ORIGINAL-BARRIER-CONTROL seed=0x0740b018 sample=0 case=normal frame_ipc=34 barred_during_frame=true eof=true unchanged=true send=false
+HC074-ORIGINAL-BARRIER-CONTROL seed=0x0740b018 sample=0 case=ack-lost frame_ipc=34 barred_during_frame=true eof=true unchanged=true send=false
+HC074-ORIGINAL-BARRIER-CONTROL seed=0x0740b018 sample=1 case=normal frame_ipc=34 barred_during_frame=true eof=true unchanged=true send=false
+HC074-ORIGINAL-BARRIER-CONTROL seed=0x0740b018 sample=1 case=ack-lost frame_ipc=34 barred_during_frame=true eof=true unchanged=true send=false
+HC074-ORIGINAL-BARRIER-CONTROL seed=0x0740b018 sample=2 case=normal frame_ipc=34 barred_during_frame=true eof=true unchanged=true send=false
+HC074-ORIGINAL-BARRIER-CONTROL seed=0x0740b018 sample=2 case=ack-lost frame_ipc=34 barred_during_frame=true eof=true unchanged=true send=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1100 filtered out; finished in 81.93s
+
+HC074-ORIGINAL-BARRIER-PHASE name=healthy completed=true
+HC074-ORIGINAL-BARRIER-PHASE name=refusals begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::holder::barrier::original_barrier_validation_refusals ... HC074-ORIGINAL-BARRIER-REFUSAL seed=0x0740b118 case=trust reason=Original(Transport(Material(Outputs(Original(Original(Original(Causal(Reservation(Attempt(Controller(Original(Input(Invalid))))))))))))) sticky=true command=false retained=true unchanged=true send=false
+HC074-ORIGINAL-BARRIER-REFUSAL seed=0x0740b118 case=output reason=Original(Transport(Material(Outputs(Invalid)))) sticky=true command=false retained=true unchanged=true send=false
+HC074-ORIGINAL-BARRIER-REFUSAL seed=0x0740b118 case=writer reason=Original(Transport(Material(Outputs(Original(Invalid))))) sticky=true command=false retained=true unchanged=true send=false
+HC074-ORIGINAL-BARRIER-REFUSAL seed=0x0740b118 case=message reason=Original(Binding) sticky=true command=false retained=true unchanged=true send=false
+HC074-ORIGINAL-BARRIER-REFUSAL seed=0x0740b118 case=alarm reason=Original(Binding) sticky=true command=false retained=true unchanged=true send=false
+HC074-ORIGINAL-BARRIER-REFUSAL seed=0x0740b118 case=custody-flags reason=Storage(Document) sticky=true command=false retained=true unchanged=true send=false
+HC074-ORIGINAL-BARRIER-REFUSAL seed=0x0740b118 case=custody-object reason=Storage(Document) sticky=true command=false retained=true unchanged=true send=false
+HC074-ORIGINAL-BARRIER-REFUSAL seed=0x0740b118 case=sink-offset reason=Binding sticky=true command=false retained=true unchanged=true send=false
+HC074-ORIGINAL-BARRIER-REFUSAL seed=0x0740b118 case=final-expiry reason=Original(Expired) sticky=true command=false retained=true unchanged=true send=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1100 filtered out; finished in 121.25s
+
+HC074-ORIGINAL-BARRIER-PHASE name=refusals completed=true
+HC074-ORIGINAL-BARRIER-PHASE name=sigkill begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::holder::barrier::original_barrier_validation_sigkill ... HC074-ORIGINAL-BARRIER-SIGKILL seed=0x0740b218 repeat=1 cut=before-frame frame_ipc=0 parent_retained=true signal=9 unchanged=true completion=false send=false
+HC074-ORIGINAL-BARRIER-SIGKILL seed=0x0740b218 repeat=1 cut=after-frame frame_ipc=34 parent_retained=true signal=9 unchanged=true completion=false send=false
+HC074-ORIGINAL-BARRIER-SIGKILL seed=0x0740b218 repeat=1 cut=after-alias-close frame_ipc=34 parent_retained=false signal=9 unchanged=true completion=false send=false
+HC074-ORIGINAL-BARRIER-SIGKILL seed=0x0740b218 repeat=1 cut=after-eof frame_ipc=34 parent_retained=false signal=9 unchanged=true completion=false send=false
+HC074-ORIGINAL-BARRIER-SIGKILL seed=0x0740b218 repeat=2 cut=before-frame frame_ipc=0 parent_retained=true signal=9 unchanged=true completion=false send=false
+HC074-ORIGINAL-BARRIER-SIGKILL seed=0x0740b218 repeat=2 cut=after-frame frame_ipc=34 parent_retained=true signal=9 unchanged=true completion=false send=false
+HC074-ORIGINAL-BARRIER-SIGKILL seed=0x0740b218 repeat=2 cut=after-alias-close frame_ipc=34 parent_retained=false signal=9 unchanged=true completion=false send=false
+HC074-ORIGINAL-BARRIER-SIGKILL seed=0x0740b218 repeat=2 cut=after-eof frame_ipc=34 parent_retained=false signal=9 unchanged=true completion=false send=false
+HC074-ORIGINAL-BARRIER-SIGKILL seed=0x0740b218 repeat=3 cut=before-frame frame_ipc=0 parent_retained=true signal=9 unchanged=true completion=false send=false
+HC074-ORIGINAL-BARRIER-SIGKILL seed=0x0740b218 repeat=3 cut=after-frame frame_ipc=34 parent_retained=true signal=9 unchanged=true completion=false send=false
+HC074-ORIGINAL-BARRIER-SIGKILL seed=0x0740b218 repeat=3 cut=after-alias-close frame_ipc=34 parent_retained=false signal=9 unchanged=true completion=false send=false
+HC074-ORIGINAL-BARRIER-SIGKILL seed=0x0740b218 repeat=3 cut=after-eof frame_ipc=34 parent_retained=false signal=9 unchanged=true completion=false send=false
+HC074-ORIGINAL-BARRIER-SIGKILL completed=true cases=12 product=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1100 filtered out; finished in 163.66s
+
+HC074-ORIGINAL-BARRIER-PHASE name=sigkill completed=true
+HC074-ORIGINAL-BARRIER-COHORT compiler=188 completed=true
+HC074-ORIGINAL-BARRIER-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-ORIGINAL-BARRIER-HOST completed=true supervisor_unchanged=true no_fixture_executable=true admission=false

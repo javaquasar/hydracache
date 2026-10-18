@@ -428,3 +428,39 @@ SIGKILL cleanup. Four new units and the 32-test original storage/fence subtree
 pass per compiler; all 207 static contracts pass. Host postflight preserves the
 same supervisor PID/restarts and installed digests. Parent alias closure is
 proved for this nonexecuting holder, not production original-start enrollment.
+
+## Full original frame behind an inherited process barrier
+
+The [post-fork ordering experiment](diagnostic-original-barrier-validation-20261018.md)
+adds no runtime constructor or guardian admission. It reuses the previous raw
+holder unchanged: the child is pinned and isolated before the parent runs the
+descriptor plan's complete revalidation. The child remains behind its private
+command barrier during all live authority checks, inventory comparison and the
+final original deadline probe. Parent descriptors remain present throughout.
+Only a healthy frame and a still-live pinned child precede parent destruction
+and the private EOF command. The four immutable origins stay exact; the two
+observation times must advance monotonically. No alarm is replaced or renewed.
+
+Persistent drift after fork must poison the original owner without sending the
+private command. Common-lock contention after parent destruction proves the
+barred child still retains custody. Selected child SIGKILL boundaries distinguish
+the parent's remaining ownership from the last holder's death; retained history
+must still forbid replay once kernel locks become available. A previous healthy
+frame cannot make a terminal child ready, and empty-sink EOF/fsync is not durable
+lifecycle completion.
+
+This orders checks for a test holder, not the independent production engine.
+Authenticated delivery must preserve the original unsent message until its send
+boundary; destroying that message and reconstructing it later cannot grant start.
+The production guardian must additionally bind the original alarm, controller and
+complete writer tree, remain autonomous while barred, and shed sink aliases before
+its collector runs. External guardian supervision and durable completion remain
+required. The test holder's blocked command wait is not that autonomous watchdog.
+
+The [completed barrier packet](local-runs/original-barrier-validation-20261018/README.md)
+passes both compiler cohorts: twelve repeated healthy controls, eighteen
+post-fork refusals and twenty-four selected SIGKILL cuts. Eighteen separate
+refusal-cleanup kills are not successful transfers. Both first screens, 32+4
+local fast units per compiler and all 210 static contracts pass. The original
+runtime and raw holder bodies, supervisor and installed digests stay exact;
+these are ordering and refusal results, not production guardian enrollment.

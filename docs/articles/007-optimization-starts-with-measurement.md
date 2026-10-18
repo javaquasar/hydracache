@@ -12353,3 +12353,46 @@ The corrected first screen passes too. Final host guards retain the same stable
 supervisor PID, zero restarts and installed executable/receipt digests, with no
 surviving fixture executable. These results establish selected original-object
 inheritance and parent-closure facts, not the still-missing production process join.
+
+## Fork does not preserve a validation result
+
+The next boundary is temporal rather than structural. A correct descriptor plan
+before fork says nothing about authority or file drift while the child is being
+created. The [barrier experiment](../testing/performance/0.74/diagnostic-original-barrier-validation-20261018.md)
+therefore pins and isolates the existing nonexecuting holder first, leaves it
+blocked before any pipe read or sink synchronization, and runs the complete live
+frame in the parent while all original aliases still exist. Identity comparison
+and the original deadline probe close that frame. A separate pinned-child check
+must then reject a process that died while those checks were running.
+
+Only after these observations does a healthy fixture destroy the parent owner
+and issue the private EOF command. Missing optional test ACK does not become
+authenticated manager delivery: the structural barrier is only a test oracle.
+Conversely, persistent trust, output, writer, message, alarm, custody or offset
+drift must refuse without issuing that command. Repeated validation of a poisoned
+owner cannot repair the refusal. Parent alias closure then leaves the barred
+child holding the common fence until explicit owned fixture cleanup.
+
+The selected SIGKILL cuts distinguish two cases that a successful pre-fork test
+would conflate. If the child dies while the original parent owner still exists,
+the common lock must stay busy. If that parent owner has already closed, killing
+the final holder makes the kernel lock available. Neither outcome authorizes
+replay: retained Starting history must still reject a fresh storage entry.
+An EOF notice after empty-sink fsync is also not a published completion record.
+
+These ordering checks prepare an actual process join; they do not replace it.
+Production must keep the original unsent message until authenticated delivery,
+bind guardian and collector to the same original objects, supervise the original
+absolute alarm even while barred, revoke the complete writer tree and protect
+the final guardian independently. The unchanged test holder deliberately lacks
+that autonomous supervision. No production start permission follows from its
+private command protocol, and no performance gain is inferred from fault tests.
+
+The [completed packet](../testing/performance/0.74/local-runs/original-barrier-validation-20261018/README.md)
+passes twelve repeated healthy controls, eighteen post-fork refusals and
+twenty-four selected SIGKILL cuts across GNU Rust 1.94 and MSRV 1.88. Eighteen
+additional kills are explicit refusal cleanup and are counted separately. Both
+first screens, 32+4 local fast units per compiler and all 210 static contracts
+pass. The supervisor, installed executable/receipt and original deadlines remain
+unchanged. This establishes the selected order under real process loss, while
+leaving production guardian enrollment and authenticated delivery as actual work.

@@ -438,3 +438,28 @@ SIGKILL cuts and six hidden-writer refusals with separate owned cleanup. All 207
 static contracts and original 32+4 fast units per compiler pass. Parent closure
 is established for this nonexecuting fixture only; the production gates above
 remain mandatory and the stable supervisor/installed digests are unchanged.
+
+## Full live validation after fork before any holder command
+
+The [barrier validation experiment](diagnostic-original-barrier-validation-20261018.md)
+checks the missing ordering boundary without changing production code: pin the
+exact isolated holder, keep it barred, run the unchanged complete original frame,
+compare descriptor identity and reobserve the original deadline, then check child
+liveness again before parent alias closure and the private EOF command. Drift
+must poison the owner without issuing that command. Selected real holder kills
+must preserve parent custody where it still exists and forbid replay through
+retained history after the last kernel lock disappears.
+
+This does not close the original guardian/collector join. The holder neither sends
+the original message nor supervises its timer while barred. Production still
+needs authenticated message delivery before message alias destruction, autonomous
+original guardian enrollment, exact controller/whole-cgroup writer binding and
+external supervision. Completion, later cells, installation and product admission
+remain closed; no old live check, deadline or qualification input is waived.
+
+The [completed barrier packet](local-runs/original-barrier-validation-20261018/README.md)
+now verifies this selected order on Rust 1.94/1.88: twelve repeated healthy
+controls, eighteen refusals, twenty-four selected SIGKILL cuts and separate
+cleanup. All 210 static contracts and focused local checks pass. The same
+supervisor/installed digests remain unchanged. This closes the test-holder
+ordering prerequisite only, not the production execution gates above.

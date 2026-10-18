@@ -1,0 +1,23 @@
+HC074-ORIGINAL-BARRIER-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-ORIGINAL-BARRIER-SCREEN compiler=194 begin=true
+cdb2f261e5d509f42b27413b7e0410372467462fe78df31a6082f9af7dcfc667  tests-194
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::holder::barrier::original_barrier_validation_screen ... HC074-ORIGINAL-BARRIER-CONTROL seed=0x0740b018 sample=0 case=normal frame_ipc=34 barred_during_frame=true eof=true unchanged=true send=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1100 filtered out; finished in 13.75s
+
+HC074-ORIGINAL-BARRIER-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-ORIGINAL-BARRIER-SCREEN compiler=194 completed=true
+HC074-ORIGINAL-BARRIER-SCREEN compiler=188 begin=true
+fea257627d79d899e920ff8d5c0dd37734134131cba944d1ddedff3ae4ac0ad9  tests-188
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::holder::barrier::original_barrier_validation_screen ... HC074-ORIGINAL-BARRIER-CONTROL seed=0x0740b018 sample=0 case=normal frame_ipc=34 barred_during_frame=true eof=true unchanged=true send=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1100 filtered out; finished in 13.65s
+
+HC074-ORIGINAL-BARRIER-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-ORIGINAL-BARRIER-SCREEN compiler=188 completed=true

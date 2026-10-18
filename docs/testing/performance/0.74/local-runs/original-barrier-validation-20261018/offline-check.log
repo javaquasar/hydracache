@@ -1,0 +1,2 @@
+HC074-ORIGINAL-BARRIER verifier_selftest=true positive=1 negative=10
+HC074-ORIGINAL-BARRIER verified=true healthy=12 refusals=18 selected_sigkill=24 cleanup_sigkill=18 admission=false

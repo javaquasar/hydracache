@@ -1,0 +1,56 @@
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error: cannot find macro `original_owner` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_original_descriptor_barrier_tests.rs:28:13
+   |
+28 | ...   origin...wner!(f...
+   |       ^^^^^^...^^^^
+   |
+   = help: have you added the `#[macro_use]` on the module/import?
+
+error: cannot find macro `original_owner` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_original_descriptor_barrier_tests.rs:85:9
+   |
+85 | ...   or...al_owner!(t...
+   |       ^^...^^^^^^^^
+   |
+   = help: have you added the `#[macro_use]` on the module/import?
+
+error: cannot find macro `original_owner` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_original_descriptor_barrier_tests.rs:139:13
+    |
+139 | ...   origi...owner!(f...
+    |       ^^^^^...^^^^^
+    |
+    = help: have you added the `#[macro_use]` on the module/import?
+
+error[E0659]: `child` is ambiguous
+ --> tools/long-run-supervisor-074/src/diagnostic_original_descriptor_barrier_tests.rs:5:11
+  |
+5 | ...ed(child: &...
+  |       ^^^^^ ambiguous name
+  |
+  = note: ambiguous because of multiple glob imports of a name in the same module
+note: `child` could refer to the function imported here
+ --> tools/long-run-supervisor-074/src/diagnostic_original_descriptor_barrier_tests.rs:3:5
+  |
+3 | use super::*;
+  |     ^^^^^^^^
+  = help: consider adding an explicit import of `child` to disambiguate
+note: `child` could also refer to the function imported here
+ --> tools/long-run-supervisor-074/src/diagnostic_original_descriptor_barrier_tests.rs:2:5
+  |
+2 | use s...:super::*;
+  |     ^...^^^^^^^^^
+  = help: consider adding an explicit import of `child` to disambiguate
+
+warning: unused import: `super::super::*`
+ --> tools/long-run-supervisor-074/src/diagnostic_original_descriptor_barrier_tests.rs:2:5
+  |
+2 | use s...:super::*;
+  |     ^...^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+For more information about this error, try `rustc --explain E0659`.
+warning: `hydracache-long-run-supervisor-074` (lib test) generated 1 warning
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 4 previous errors; 1 warning emitted

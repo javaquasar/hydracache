@@ -3833,3 +3833,19 @@ Both compilers pass 32+4 fast units, two API doc checks, check/strict Clippy;
 green. The two negative source capsules remain reproducible. The supervisor,
 installed executable/receipt and qualification input stay unchanged; actual
 production guardian/collector transfer and authenticated start remain closed.
+
+The next [barrier validation experiment](diagnostic-original-barrier-validation-20261018.md)
+runs that complete original frame after the exact holder is pinned and isolated,
+while its private disk-work command is still withheld. Persistent post-fork drift
+must poison the owner without issuing the command. Real holder kills distinguish
+parent-retained custody from death of the last holder and preserve durable replay
+exclusion. This is an ordering proof with the unchanged test holder, not production
+guardian enrollment, autonomous watchdog admission or authenticated message send.
+
+Its [completed barrier packet](local-runs/original-barrier-validation-20261018/README.md)
+passes twelve repeated healthy controls, eighteen post-fork refusals and
+twenty-four selected SIGKILL cuts across Rust 1.94/1.88, with two first screens
+and separate refusal cleanup. Both compilers pass local 32+4 fast units and host
+descriptor units; all 210 static contracts and focused checks pass. The packet
+preserves source/binary/script identities and unchanged supervisor/installed
+digests. Actual production enrollment and authenticated start remain closed.
