@@ -1532,3 +1532,23 @@ preparation failure and uncertain outcomes. No message/FD export API is provided
 Socket-pair SCM_RIGHTS fixtures carry byte-identical zbus-built messages and
 verify real local credentials/FDs; they are not system-bus authentication or
 original execution. Unknown shapes fail closed. No ordinary sender is connected.
+
+## Private fixed manager channel observations
+
+This private owner uses standard D-Bus version 1 EXTERNAL authentication and
+only Hello plus GetNameOwner, GetConnectionUnixUser and GetConnectionUnixProcessID
+on the fixed root-selected system bus. It adds no public/durable codec. Actual
+SO_PEERCRED and atomic SO_PEERPIDFD, retained procfs/nsfs identity and PID/user
+namespace equality precede trust in namespace-relative PID 1/UID 0 replies.
+Its METHOD_RETURN flags are exactly 0 or NO_REPLY_EXPECTED; that flag has no
+reply semantics under D-Bus. Other known flags, wrong types and correlations
+still refuse. The older exchange/request predicates remain unchanged.
+The daemon's actual UID need not be zero; root-selected socket ancestry and the
+retained kernel peer bind its provenance. Missing kernel access fails closed.
+
+Client name, manager name, server GUID, boot, socket ancestry and original pidfds
+remain owned by the live connection. A changed/closed/refused channel cannot
+heal. The absolute BOOTTIME two-second observation cap is not an admission lease
+and cannot renew any original window. There is no connection/name/FD export,
+snapshot constructor, fixture promotion, message sender or execution authority.
+Original frame/message joining and FD negotiation/delivery proof remain separate.

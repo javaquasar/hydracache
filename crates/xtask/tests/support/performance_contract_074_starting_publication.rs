@@ -84,7 +84,15 @@ fn collector_starting_publication_preserves_every_original_predicate_and_deadlin
         "tools/long-run-supervisor-074/src/server.rs",
         "docs/testing/performance/0.74/qualification-manifest.toml",
     ] {
-        assert_eq!(read(p), old(p), "out of scope: {p}");
+        // BEGIN FIXED MANAGER DEPENDENCY REFERENCE
+        let current = read(p);
+        let current = if matches!(p, "Cargo.lock" | "tools/long-run-supervisor-074/Cargo.toml") {
+            super::original_start_consent::normalize(p, &current)
+        } else {
+            current
+        };
+        assert_eq!(current, old(p), "out of scope: {p}");
+        // END FIXED MANAGER DEPENDENCY REFERENCE
     }
     // The rejected candidate remains the frozen publisher/control reference.
     let archived = read("docs/testing/performance/0.74/local-runs/collector-starting-publication-20261016/candidate-before-attribution.patch");

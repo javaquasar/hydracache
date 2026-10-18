@@ -1,4 +1,6 @@
 //! Message mechanics cannot become original execution authority.
+#[path = "performance_contract_074_manager_channel.rs"]
+mod manager_channel;
 const COMPAT: &str = r###"
 ## Private one shot dispatch exchange mechanics
 
@@ -21,6 +23,8 @@ original execution. Unknown shapes fail closed. No ordinary sender is connected.
 "###;
 const REG: &str = "\n#[path = \"diagnostic_dispatch_exchange.rs\"]\nmod dispatch_exchange;\n";
 pub(super) fn normalize(path: &str, raw: &str) -> String {
+    let normalized = manager_channel::normalize(path, raw);
+    let raw = normalized.as_str();
     let exception = match path {
         "docs/COMPAT.md" => COMPAT,
         "tools/long-run-supervisor-074/src/diagnostic_original_enrollment_frame.rs" => REG,

@@ -102,3 +102,6 @@ mod test_api;
 
 #[path = "diagnostic_dispatch_exchange.rs"]
 mod dispatch_exchange;
+
+#[path = "diagnostic_manager_channel.rs"]
+mod manager_channel;

@@ -11355,3 +11355,71 @@ platform = "linux"
 [gate.command.env]
 
 # END ORIGINAL ENROLLMENT FRAME GATES
+
+# BEGIN FIXED MANAGER CHANNEL LOCAL GATES
+
+[[gate]]
+id = "tool.hydracache-long-run-supervisor-074.manager-channel-nonroot-refusal"
+kind = "external_tool"
+source = "tools/long-run-supervisor-074/src/diagnostic_manager_channel_tests.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "hydracache_long_run_supervisor_074"
+test = "manager_channel_nonroot_fixed_context_refusal"
+cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
+env = ""
+reason = "manual local nonroot fixed manager namespace-access refusal; no mutation"
+tier = "manual"
+required_features = []
+required_env = ["HC074_LOCAL_MANAGER_READONLY"]
+required_tools = ["cargo"]
+timeout_seconds = 1200
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::tests::manager_channel_nonroot_fixed_context_refusal","--","--ignored","--exact","--nocapture","--test-threads=1"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+
+[[gate]]
+id = "tool.hydracache-long-run-supervisor-074.manager-channel-root-readonly"
+kind = "external_tool"
+source = "tools/long-run-supervisor-074/src/diagnostic_manager_channel_tests.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "hydracache_long_run_supervisor_074"
+test = "manager_channel_root_fixed_context"
+cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
+env = ""
+reason = "manual local root read-only fixed manager context; no mutation"
+tier = "manual"
+required_features = []
+required_env = ["HC074_LOCAL_MANAGER_READONLY"]
+required_tools = ["cargo"]
+timeout_seconds = 1200
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::tests::manager_channel_root_fixed_context","--","--ignored","--exact","--nocapture","--test-threads=1"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+
+# END FIXED MANAGER CHANNEL LOCAL GATES

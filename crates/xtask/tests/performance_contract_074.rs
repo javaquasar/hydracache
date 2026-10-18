@@ -1307,8 +1307,11 @@ fn diagnostic_oidc_keeps_configured_origin_separate_from_enrollment_replay_and_s
     assert!(baseline.status.success());
     let mut expected: toml::Value =
         toml::from_str(std::str::from_utf8(&baseline.stdout).unwrap()).unwrap();
+    // BEGIN FIXED MANAGER DEPENDENCY REFERENCE
+    let raw_lock = std::fs::read_to_string(root().join("Cargo.lock")).unwrap();
     let current: toml::Value =
-        toml::from_str(&std::fs::read_to_string(root().join("Cargo.lock")).unwrap()).unwrap();
+        toml::from_str(&original_start_consent::normalize("Cargo.lock", &raw_lock)).unwrap();
+    // END FIXED MANAGER DEPENDENCY REFERENCE
     let supervisor = expected["package"]
         .as_array_mut()
         .unwrap()

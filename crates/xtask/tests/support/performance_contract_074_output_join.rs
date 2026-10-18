@@ -77,7 +77,15 @@ fn output_join_preserves_original_guards_and_effect_closing_checks() {
         "tools/long-run-supervisor-074/src/server.rs",
         "docs/testing/performance/0.74/qualification-manifest.toml",
     ] {
-        assert_eq!(read(p), old(p), "out of scope: {p}");
+        // BEGIN FIXED MANAGER DEPENDENCY REFERENCE
+        let current = read(p);
+        let current = if matches!(p, "Cargo.lock" | "tools/long-run-supervisor-074/Cargo.toml") {
+            super::original_start_consent::normalize(p, &current)
+        } else {
+            current
+        };
+        assert_eq!(current, old(p), "out of scope: {p}");
+        // END FIXED MANAGER DEPENDENCY REFERENCE
     }
     let source = read("tools/long-run-supervisor-074/src/diagnostic_original_collector_sinks.rs");
     let join = read("tools/long-run-supervisor-074/src/diagnostic_original_output_join.rs");
