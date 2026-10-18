@@ -1578,3 +1578,21 @@ Only new private runtime types are added, not a public/durable codec or start
 operation. Separate test channels exercise shared frame ordering without
 constructing a fixed owner. Actual read-only channel/context tests do not prove
 production trust, message/FD delivery, start, all-writer cessation or completion.
+
+## Private original uniquely addressed message
+
+The private consuming message owner retains the original live manager join,
+unchanged legacy message and complete frame. A second unsent message uses only
+that connection's retained unique manager/client binding, canonical original
+body and serial, and two distinct pinned writer aliases for the original pipes.
+The extra aliases close before original custody. The constructor consumes the
+original frame directly, retaining the same fixed channel and receiver binding.
+Pure preparation occurs inside one complete frame
+with channel/context checks on both sides; later checks use that same round.
+All original live predicates, origins, alarms and deadlines remain. Failure
+retains and poisons the same owner, with no extraction, retry, reconstruction,
+send or start capability.
+
+No public/durable format changes. Same-process SCM_RIGHTS fixture delivery is
+not negotiated system-bus delivery, production enrollment, active start,
+whole-writer cessation, completion or server admission.

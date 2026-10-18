@@ -173,3 +173,10 @@ fn original_manager_join_requires_the_original_consuming_constructor() {
 #[cfg(test)]
 #[path = "diagnostic_original_manager_join_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "diagnostic_original_manager_message_red.rs"]
+mod message_contract;
+
+#[path = "diagnostic_original_manager_message.rs"]
+mod message_owner;

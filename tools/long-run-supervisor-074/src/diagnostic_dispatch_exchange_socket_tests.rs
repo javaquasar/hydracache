@@ -195,6 +195,9 @@ fn dispatch_real_rights_roundtrip_correlates_job_without_starting_a_process() {
     assert_eq!(out.read(&mut [0u8; 1]).unwrap(), 0);
     assert_eq!(err.read(&mut [0u8; 1]).unwrap(), 0);
 }
+
+#[path = "diagnostic_original_addressed_transfer_tests.rs"]
+mod original_addressed;
 #[test]
 fn dispatch_actual_delivery_with_lost_reply_preserves_writers_and_cannot_retry() {
     let [client, manager] = pair();

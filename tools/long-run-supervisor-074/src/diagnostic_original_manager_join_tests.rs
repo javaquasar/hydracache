@@ -121,3 +121,6 @@ fn original_manager_join_root_readonly_receiver_context() {
     assert!(channel.check(&mut receiver, &pin).is_err());
     println!("HC074-ORIGINAL-MANAGER real_fixed_channel=true original_receiver=true root_readonly=true full_admission=false start=false");
 }
+
+#[path = "diagnostic_original_manager_message_test_api.rs"]
+mod addressed_tests;

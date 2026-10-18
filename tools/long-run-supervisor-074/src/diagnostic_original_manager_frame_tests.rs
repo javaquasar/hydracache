@@ -123,3 +123,6 @@ fn original_manager_join_nonroot_fixed_refusal() {
         });
     });
 }
+
+#[path = "diagnostic_original_manager_message_frame_tests.rs"]
+mod addressed_tests;
