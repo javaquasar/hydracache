@@ -12641,3 +12641,67 @@ product work can start, authenticated original delivery/start, whole-writer
 enrollment and cessation, external active supervision and durable completion
 still need their own producers and fault proofs. Fewer redundant observations
 are useful only while those live authority checks remain real.
+
+## A job reply cannot prove a safe start or finish
+
+Before connecting original delivery, the [one-shot exchange experiment](../testing/performance/0.74/local-runs/dispatch-exchange-20261018/README.md)
+isolates message mechanics from execution authority. An unsent message is not
+a trusted manager channel. In particular, sending the old original message to
+systemd's well-known name would not pin the unique owner observed earlier. The
+future trusted channel must construct a uniquely addressed original message
+inside the complete live frame. The old original preparation stays unchanged
+and deliberately unsent throughout this experiment.
+
+The private owner consumes a supplied FD-bearing message and retains it even
+when preparation refuses. It checks the bounded request shape and distinct
+blocking CLOEXEC FIFO writers, then marks the outcome Uncertain before any
+transport side effect could occur. Exactly one reply can be considered: original
+serial, selected manager sender and client destination must agree, with no
+unexpected headers, flags or returned FDs. A canonical systemd job path is only
+observation data. These checks do not authenticate the name claims, signed unit
+settings, original ancestry or an actual system-bus connection.
+
+Lost acknowledgement is not evidence that the request was not delivered. The
+local socket fixture transfers the real rights, drops the peer without a reply
+and explicitly closes the reply window. Ownership of the writers survives;
+neither retry nor release is authorized. A separate late-reply test sends a
+correct response after that closure and still requires sticky refusal. The
+component has no transport timeout implementation; the future bounded driver
+must close the window on timeout, disconnect or error without renewing any
+original lease. Error payloads also stay out of diagnostics.
+
+The most useful counterexample concerns aliases. A test clones the zbus Message
+before preparation, obtains a valid job observation and destroys the exchange.
+Both pipe readers still report WouldBlock: the hidden clone holds the same
+writers. Only destroying the final clone yields EOF. A job reply and a local
+Drop therefore cannot justify fence release, all-writer cessation or completion.
+The future active watchdog and writer-tree revocation need their own proofs.
+
+The first implementation exposed an ordinary representation error before any
+integration: four tests passed and six refused because the signature comparison
+omitted the outer tuple parentheses used by zbus. The existing original message
+test already documented that representation. The negative result and logic
+snapshot are retained; fixing the literal did not increase a deadline or loosen
+the acceptance contract. Intermediate twelve-test results remain development
+logs. The final source passes fourteen tests on each GNU compiler, including two
+real SCM_RIGHTS socket cases, followed by descriptor/storage controls, compile-
+fail tests, strict checks and source-freeze/mutation contracts.
+
+Those socket peers are in the same test process. Kernel credentials and FD
+identities are real, but they do not prove PID 1 or production D-Bus authentication.
+Received bytes must equal the complete known-valid zbus-built message before
+the test's unsafe decoder is entered; it is not an untrusted wire decoder.
+No original process starts, no server operation runs and no throughput,
+allocation, CPU or wall-time gain is claimed. This accepts isolated reply and
+ownership mechanics while keeping authenticated delivery, active supervision,
+whole-writer cessation and durable completion visibly unfinished.
+
+Evidence verification also catches harness drift. The old descriptor filter
+started selecting the newly nested exchange tests as well: twenty-two passed,
+but that did not match the declared eight-control row. The packet verifier
+refused it. Excluding exchange tests from that filter while requiring their own
+fourteen-test run restores the intended two inventories without relaxing any
+runtime predicate. Review then adds oversized/wrong-type/extra-FD request and
+missing-CLOEXEC controls in a separate test-only commit. Both compiler cohorts
+and all 229 source contracts pass again on that reviewed source. The old broad
+filter run and its verification refusal remain evidence, not discarded noise.

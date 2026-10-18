@@ -52,3 +52,26 @@ original unique-owner message construction inside full live validation,
 authenticated original delivery/start, autonomous active collector/watchdog,
 whole-writer enrollment/cessation and durable completion. Qualification inputs
 and product admission remain unchanged and closed.
+
+## Selected local result
+
+Source 7fdb846aa7ebfdaed5cc866b403e131c78f56c63 passes fourteen message/FD
+tests on each GNU compiler, eight descriptor/notice units, thirty-two storage
+units and two private compile-fail doctests per compiler. Windows passes 44
+portable units; 229 source contracts and the final four mutation/freeze checks,
+affected checks/strict Clippy, format, registry/docs and local non-promotable
+contracts pass. The [packet](local-runs/dispatch-exchange-20261018/README.md)
+retains the expected missing-API red proof and the first implementation's four
+passes/six refusals from an incorrect zbus tuple-signature comparison. Correcting
+that representation does not change a time bound or acceptance threshold.
+Implementation 64226506 and its separate test-only review 7fdb846a remain
+distinct commits; the latter adds request bounds/type/extra-FD/CLOEXEC controls.
+
+Real local socket delivery with lost acknowledgement remains nonretryable.
+A delayed valid reply cannot reopen a closed unknown outcome. A hidden Message
+clone retains pipe writers even after a valid job observation and local owner
+destruction. These are explicit counterexamples to early release/completion,
+not authenticated systemd delivery or an active execution SIGKILL matrix.
+All original validation and child bodies remain frozen. The next producer is
+the fixed trusted manager channel and its uniquely addressed original message
+under the full frame; active supervision and whole-writer cessation still follow.

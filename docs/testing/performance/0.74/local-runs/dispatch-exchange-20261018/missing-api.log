@@ -1,0 +1,561 @@
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0425]: cannot find type `Message` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs:18:53
+   |
+18 | ...-> Message {
+   |       ^^^^^^^ not found in this scope
+   |
+   = note: struct `crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::pipes::sinks::start_material::pipe_transport::Message` exists but is inaccessible
+help: consider importing this struct
+   |
+ 1 + use zbus::Message;
+   |
+
+error[E0433]: failed to resolve: use of undeclared type `Message`
+  --> tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs:19:23
+   |
+19 | ... = Message::m...
+   |       ^^^^^^^ use of undeclared type `Message`
+   |
+   = note: struct `crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::pipes::sinks::start_material::pipe_transport::Message` exists but is inaccessible
+help: consider importing this struct
+   |
+ 1 + use zbus::Message;
+   |
+
+error[E0425]: cannot find value `PATH` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs:19:81
+   |
+19 | ...e {PATH},
+   |       ^^^^ not found in this scope
+   |
+note: constant `crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::pipes::sinks::start_material::pipe_transport::PATH` exists but is inaccessible
+  --> tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport.rs:15:1
+   |
+15 | ...systemd1";
+   | ...^^^^^^^^^^ not accessible
+
+error[E0425]: cannot find value `METHOD` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs:20:48
+   |
+20 | ...e {METHOD})....
+   |       ^^^^^^ not found in this scope
+   |
+note: constant `crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::pipes::sinks::start_material::pipe_transport::METHOD` exists but is inaccessible
+  --> tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport.rs:17:1
+   |
+17 | ...ientUnit";
+   | ...^^^^^^^^^^ not accessible
+
+error[E0425]: cannot find value `INTERFACE` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs:22:73
+   |
+22 | ...e {INTERFACE})....
+   |       ^^^^^^^^^ not found in this scope
+   |
+note: constant `crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::pipes::sinks::start_material::pipe_transport::INTERFACE` exists but is inaccessible
+  --> tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport.rs:16:1
+   |
+16 | ....Manager";
+   | ...^^^^^^^^^^ not accessible
+
+error[E0425]: cannot find type `DispatchExchange` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs:38:18
+   |
+38 | ...-> DispatchExc...{
+   |       ^^^^^^^^^^^...not found in this scope
+
+error[E0425]: cannot find type `DispatchExchange` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs:42:21
+   |
+42 | ...: &DispatchExchan.....
+   |       ^^^^^^^^^^^^^^... found in this scope
+
+error[E0425]: cannot find type `Message` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs:42:54
+   |
+42 | ...-> Message {
+   |       ^^^^^^^ not found in this scope
+   |
+   = note: struct `crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::pipes::sinks::start_material::pipe_transport::Message` exists but is inaccessible
+help: consider importing this struct
+   |
+ 1 + use zbus::Message;
+   |
+
+error[E0433]: failed to resolve: use of undeclared type `Message`
+  --> tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs:43:5
+   |
+43 |     Message::m...
+   |     ^^^^^^^ use of undeclared type `Message`
+   |
+   = note: struct `crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::pipes::sinks::start_material::pipe_transport::Message` exists but is inaccessible
+help: consider importing this struct
+   |
+ 1 + use zbus::Message;
+   |
+
+error[E0433]: failed to resolve: use of undeclared type `OwnedObjectPath`
+  --> tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs:44:46
+   |
+44 | ...d(&OwnedObjectPath::t...
+   |       ^^^^^^^^^^^^^^^ use of undeclared type ...dObjectPath`
+   |
+   = note: struct `crate::diagnostic_manager::tests::OwnedObjectPath` exists but is inaccessible
+
+error[E0433]: failed to resolve: use of undeclared type `Phase`
+   --> tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs:81:31
+    |
+ 81 | ...se,Phase::P...
+    |       ^^^^^ use of undeclared type `Phase`
+    |
+note: these enums exist but are inaccessible
+   --> tools/long-run-supervisor-074/src/diagnostic_signer_first_exec_fixture.rs:107:1
+    |
+107 | enum Phase {
+    | ^^^^^^^^^^ `crate::diagnostic_signer_first_exec_fixture::Phase`: not accessible
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_signer_joined_fixture.rs:286:1
+    |
+286 | enum Phase {
+    | ^^^^^^^^^^ `crate::diagnostic_signer_joined_fixture::Phase`: not accessible
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_signer_root_fixture.rs:340:1
+    |
+340 | enum Phase {
+    | ^^^^^^^^^^ `crate::diagnostic_signer_root_fixture::Phase`: not accessible
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture.rs:53:1
+    |
+ 53 | enum Phase {
+    | ^^^^^^^^^^ `crate::diagnostic_signer_root_fixture::rooted_exec::Phase`: not accessible
+help: consider importing this enum
+    |
+  1 + use crate::Phase;
+    |
+
+error[E0433]: failed to resolve: use of undeclared type `Phase`
+   --> tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs:83:31
+    |
+ 83 | ...se,Phase::U...
+    |       ^^^^^ use of undeclared type `Phase`
+    |
+note: these enums exist but are inaccessible
+   --> tools/long-run-supervisor-074/src/diagnostic_signer_first_exec_fixture.rs:107:1
+    |
+107 | enum Phase {
+    | ^^^^^^^^^^ `crate::diagnostic_signer_first_exec_fixture::Phase`: not accessible
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_signer_joined_fixture.rs:286:1
+    |
+286 | enum Phase {
+    | ^^^^^^^^^^ `crate::diagnostic_signer_joined_fixture::Phase`: not accessible
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_signer_root_fixture.rs:340:1
+    |
+340 | enum Phase {
+    | ^^^^^^^^^^ `crate::diagnostic_signer_root_fixture::Phase`: not accessible
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture.rs:53:1
+    |
+ 53 | enum Phase {
+    | ^^^^^^^^^^ `crate::diagnostic_signer_root_fixture::rooted_exec::Phase`: not accessible
+help: consider importing this enum
+    |
+  1 + use crate::Phase;
+    |
+
+error[E0433]: failed to resolve: use of undeclared type `Phase`
+   --> tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs:92:31
+    |
+ 92 | ...se,Phase::R...
+    |       ^^^^^ use of undeclared type `Phase`
+    |
+note: these enums exist but are inaccessible
+   --> tools/long-run-supervisor-074/src/diagnostic_signer_first_exec_fixture.rs:107:1
+    |
+107 | enum Phase {
+    | ^^^^^^^^^^ `crate::diagnostic_signer_first_exec_fixture::Phase`: not accessible
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_signer_joined_fixture.rs:286:1
+    |
+286 | enum Phase {
+    | ^^^^^^^^^^ `crate::diagnostic_signer_joined_fixture::Phase`: not accessible
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_signer_root_fixture.rs:340:1
+    |
+340 | enum Phase {
+    | ^^^^^^^^^^ `crate::diagnostic_signer_root_fixture::Phase`: not accessible
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture.rs:53:1
+    |
+ 53 | enum Phase {
+    | ^^^^^^^^^^ `crate::diagnostic_signer_root_fixture::rooted_exec::Phase`: not accessible
+help: consider importing this enum
+    |
+  1 + use crate::Phase;
+    |
+
+error[E0433]: failed to resolve: use of undeclared type `Phase`
+   --> tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs:101:35
+    |
+101 | ...se,Phase::J...
+    |       ^^^^^ use of undeclared type `Phase`
+    |
+note: these enums exist but are inaccessible
+   --> tools/long-run-supervisor-074/src/diagnostic_signer_first_exec_fixture.rs:107:1
+    |
+107 | enum Phase {
+    | ^^^^^^^^^^ `crate::diagnostic_signer_first_exec_fixture::Phase`: not accessible
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_signer_joined_fixture.rs:286:1
+    |
+286 | enum Phase {
+    | ^^^^^^^^^^ `crate::diagnostic_signer_joined_fixture::Phase`: not accessible
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_signer_root_fixture.rs:340:1
+    |
+340 | enum Phase {
+    | ^^^^^^^^^^ `crate::diagnostic_signer_root_fixture::Phase`: not accessible
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture.rs:53:1
+    |
+ 53 | enum Phase {
+    | ^^^^^^^^^^ `crate::diagnostic_signer_root_fixture::rooted_exec::Phase`: not accessible
+help: consider importing this enum
+    |
+  1 + use crate::Phase;
+    |
+
+error[E0433]: failed to resolve: use of undeclared type `Phase`
+   --> tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs:113:35
+    |
+113 | ...se,Phase::R...
+    |       ^^^^^ use of undeclared type `Phase`
+    |
+note: these enums exist but are inaccessible
+   --> tools/long-run-supervisor-074/src/diagnostic_signer_first_exec_fixture.rs:107:1
+    |
+107 | enum Phase {
+    | ^^^^^^^^^^ `crate::diagnostic_signer_first_exec_fixture::Phase`: not accessible
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_signer_joined_fixture.rs:286:1
+    |
+286 | enum Phase {
+    | ^^^^^^^^^^ `crate::diagnostic_signer_joined_fixture::Phase`: not accessible
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_signer_root_fixture.rs:340:1
+    |
+340 | enum Phase {
+    | ^^^^^^^^^^ `crate::diagnostic_signer_root_fixture::Phase`: not accessible
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture.rs:53:1
+    |
+ 53 | enum Phase {
+    | ^^^^^^^^^^ `crate::diagnostic_signer_root_fixture::rooted_exec::Phase`: not accessible
+help: consider importing this enum
+    |
+  1 + use crate::Phase;
+    |
+
+error[E0433]: failed to resolve: use of undeclared type `Message`
+   --> tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs:121:25
+    |
+121 | ...er=Message::m...
+    |       ^^^^^^^ use of undeclared type `Message`
+    |
+    = note: struct `crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::pipes::sinks::start_material::pipe_transport::Message` exists but is inaccessible
+help: consider importing this struct
+    |
+  1 + use zbus::Message;
+    |
+
+error[E0433]: failed to resolve: use of undeclared type `OwnedObjectPath`
+   --> tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs:130:18
+    |
+130 | ...th=OwnedObjec...::t...
+    |       ^^^^^^^^^^... use of undeclared type `OwnedObjectPath`
+    |
+    = note: struct `crate::diagnostic_manager::tests::OwnedObjectPath` exists but is inaccessible
+
+error[E0433]: failed to resolve: use of undeclared type `Message`
+   --> tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs:149:15
+    |
+149 | ...or=Message::e...
+    |       ^^^^^^^ use of undeclared type `Message`
+    |
+    = note: struct `crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::pipes::sinks::start_material::pipe_transport::Message` exists but is inaccessible
+help: consider importing this struct
+    |
+  1 + use zbus::Message;
+    |
+
+warning: unused import: `super::*`
+ --> tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs:1:5
+  |
+1 | use super::*;
+  |     ^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `super::*`
+ --> tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_socket_tests.rs:1:5
+  |
+1 | use super::*;
+  |     ^^^^^^^^
+
+error[E0433]: failed to resolve: use of undeclared type `DispatchExchange`
+  --> tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs:40:5
+   |
+40 |     ...chExchange::p...
+   |     ...^^^^^^^^^^ use of undeclared type `DispatchExchange`
+
+error[E0433]: failed to resolve: use of undeclared type `DispatchExchange`
+  --> tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs:52:21
+   |
+52 | ...re=DispatchExchan.....
+   |       ^^^^^^^^^^^^^^... of undeclared type `DispatchExchange`
+
+error[E0433]: failed to resolve: use of undeclared type `ExchangeError`
+  --> tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs:53:34
+   |
+53 | ...or,ExchangeError::R...
+   |       ^^^^^^^^^^^^^ use of undecl...d type `ExchangeError`
+
+error[E0433]: failed to resolve: use of undeclared type `DispatchExchange`
+  --> tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs:63:17
+   |
+63 | ...t!(DispatchEx...::p...
+   |       ^^^^^^^^^^... use of undeclared type `DispatchExchange`
+
+
+thread 'rustc' (392) panicked at /rustc-dev/4a4ef493e3a1488c6e321570238084b38948f6db/library/alloc/src/vec/mod.rs:2873:36:
+slice index starts at 18 but ends at 16
+stack backtrace:
+   0:     0x79ebf7a5c603 - <std::sys::backtrace::BacktraceLock::print::DisplayBacktrace as core::fmt::Display>::fmt::h93773fc827e3113d
+   1:     0x79ebf800e488 - core::fmt::write::hed7b5c73d82ecb7c
+   2:     0x79ebf94f8142 - std::io::Write::write_fmt::h6f0185aecf0ed75f
+   3:     0x79ebf7a29b65 - std::panicking::default_hook::{{closure}}::h2be84df4f189ae36
+   4:     0x79ebf7a29993 - std::panicking::default_hook::hf0ea8939246f43a9
+   5:     0x79ebf6a10aea - std[765ed69a96918746]::panicking::update_hook::<alloc[7a43974b6697a11c]::boxed::Box<rustc_driver_impl[252c3262fddb99f]::install_ice_hook::{closure#1}>>::{closure#0}
+   6:     0x79ebf7a29e92 - std::panicking::panic_with_hook::hb4bd9ac1123582a0
+   7:     0x79ebf7a29c28 - std::panicking::panic_handler::{{closure}}::hde00dd15f5637fe2
+   8:     0x79ebf7a23ac9 - std::sys::backtrace::__rust_end_short_backtrace::hb72197fa777c1785
+   9:     0x79ebf7a0448d - __rustc[4425a7e20b4c8619]::rust_begin_unwind
+  10:     0x79ebf458e35c - core::panicking::panic_fmt::ha59b517dd231f4da
+  11:     0x79ebf4266c1d - core::slice::index::slice_index_fail::h172ece6e023ae9aa
+  12:     0x79ebf63697f5 - <annotate_snippets[6ed311536602540c]::renderer::styled_buffer::StyledBuffer>::replace
+  13:     0x79ebf93d5d67 - annotate_snippets[6ed311536602540c]::renderer::render::render
+  14:     0x79ebf93c9180 - <rustc_errors[45351c624685c6c4]::annotate_snippet_emitter_writer::AnnotateSnippetEmitter>::emit_messages_default
+  15:     0x79ebf95004a1 - <rustc_errors[45351c624685c6c4]::annotate_snippet_emitter_writer::AnnotateSnippetEmitter as rustc_errors[45351c624685c6c4]::emitter::Emitter>::emit_diagnostic
+  16:     0x79ebf9502cc0 - <rustc_errors[45351c624685c6c4]::json::Diagnostic>::from_errors_diagnostic
+  17:     0x79ebf95023ea - <rustc_errors[45351c624685c6c4]::json::JsonEmitter as rustc_errors[45351c624685c6c4]::emitter::Emitter>::emit_diagnostic
+  18:     0x79ebf94fc46a - <rustc_errors[45351c624685c6c4]::DiagCtxtInner>::emit_diagnostic::{closure#3}
+  19:     0x79ebf94f9eb3 - rustc_interface[c6a26c9f392246cf]::callbacks::track_diagnostic::<core[32850a7867c2faaf]::option::Option<rustc_span[56e001752d96add4]::ErrorGuaranteed>>
+  20:     0x79ebf94f8f3c - <rustc_errors[45351c624685c6c4]::DiagCtxtInner>::emit_diagnostic
+  21:     0x79ebf94f8ded - <rustc_errors[45351c624685c6c4]::DiagCtxtHandle>::emit_diagnostic
+  22:     0x79ebf94f85a8 - <rustc_span[56e001752d96add4]::ErrorGuaranteed as rustc_errors[45351c624685c6c4]::diagnostic::EmissionGuarantee>::emit_producing_guarantee
+  23:     0x79ebf8467160 - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_call
+  24:     0x79ebf843dfb0 - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_with_expectation_and_args
+  25:     0x79ebf843c910 - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_unop
+  26:     0x79ebf843f3ff - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_with_expectation_and_args
+  27:     0x79ebf843c910 - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_unop
+  28:     0x79ebf843f3ff - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_with_expectation_and_args
+  29:     0x79ebf842f920 - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_if
+  30:     0x79ebf843f5be - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_with_expectation_and_args
+  31:     0x79ebf8439158 - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_block
+  32:     0x79ebf843df8b - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_with_expectation_and_args
+  33:     0x79ebf84177ab - rustc_hir_typeck[fff352aa671ae9c1]::check::check_fn
+  34:     0x79ebf8d28673 - rustc_hir_typeck[fff352aa671ae9c1]::typeck_with_inspect::{closure#0}
+  35:     0x79ebf8d26ff4 - rustc_query_impl[d9e05d596e7fb2e4]::plumbing::__rust_begin_short_backtrace::<rustc_query_impl[d9e05d596e7fb2e4]::query_impl::typeck::dynamic_query::{closure#2}::{closure#0}, rustc_middle[f9db403ed88df217]::query::erase::Erased<[u8; 8usize]>>
+  36:     0x79ebf8345e71 - rustc_query_system[5bf9c757c7651d1c]::query::plumbing::try_execute_query::<rustc_query_impl[d9e05d596e7fb2e4]::DynamicConfig<rustc_data_structures[721127a3047d6cb5]::vec_cache::VecCache<rustc_span[56e001752d96add4]::def_id::LocalDefId, rustc_middle[f9db403ed88df217]::query::erase::Erased<[u8; 8usize]>, rustc_query_system[5bf9c757c7651d1c]::dep_graph::graph::DepNodeIndex>, false, false, false>, rustc_query_impl[d9e05d596e7fb2e4]::plumbing::QueryCtxt, true>
+  37:     0x79ebf8345281 - rustc_query_impl[d9e05d596e7fb2e4]::query_impl::typeck::get_query_incr::__rust_end_short_backtrace
+  38:     0x79ebf8341235 - <rustc_middle[f9db403ed88df217]::ty::context::TyCtxt>::par_hir_body_owners::<rustc_hir_analysis[c14eb0767420332]::check_crate::{closure#2}>::{closure#0}
+  39:     0x79ebf8340c44 - rustc_hir_analysis[c14eb0767420332]::check_crate
+  40:     0x79ebf8f2909b - rustc_interface[c6a26c9f392246cf]::passes::analysis
+  41:     0x79ebf8f28cf5 - rustc_query_impl[d9e05d596e7fb2e4]::plumbing::__rust_begin_short_backtrace::<rustc_query_impl[d9e05d596e7fb2e4]::query_impl::analysis::dynamic_query::{closure#2}::{closure#0}, rustc_middle[f9db403ed88df217]::query::erase::Erased<[u8; 0usize]>>
+  42:     0x79ebf93874cf - rustc_query_system[5bf9c757c7651d1c]::query::plumbing::try_execute_query::<rustc_query_impl[d9e05d596e7fb2e4]::DynamicConfig<rustc_query_system[5bf9c757c7651d1c]::query::caches::SingleCache<rustc_middle[f9db403ed88df217]::query::erase::Erased<[u8; 0usize]>>, false, false, false>, rustc_query_impl[d9e05d596e7fb2e4]::plumbing::QueryCtxt, true>
+  43:     0x79ebf9386d7f - rustc_query_impl[d9e05d596e7fb2e4]::query_impl::analysis::get_query_incr::__rust_end_short_backtrace
+  44:     0x79ebf9390111 - <rustc_interface[c6a26c9f392246cf]::passes::create_and_enter_global_ctxt<core[32850a7867c2faaf]::option::Option<rustc_interface[c6a26c9f392246cf]::queries::Linker>, rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}::{closure#2}>::{closure#2} as core[32850a7867c2faaf]::ops::function::FnOnce<(&rustc_session[eab982bd009dcc5a]::session::Session, rustc_middle[f9db403ed88df217]::ty::context::CurrentGcx, alloc[7a43974b6697a11c]::sync::Arc<rustc_data_structures[721127a3047d6cb5]::jobserver::Proxy>, &std[765ed69a96918746]::sync::once_lock::OnceLock<rustc_middle[f9db403ed88df217]::ty::context::GlobalCtxt>, &rustc_data_structures[721127a3047d6cb5]::sync::worker_local::WorkerLocal<rustc_middle[f9db403ed88df217]::arena::Arena>, &rustc_data_structures[721127a3047d6cb5]::sync::worker_local::WorkerLocal<rustc_hir[41466cadac454391]::Arena>, rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}::{closure#2})>>::call_once::{shim:vtable#0}
+  45:     0x79ebf91810b4 - rustc_interface[c6a26c9f392246cf]::interface::run_compiler::<(), rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}>::{closure#1}
+  46:     0x79ebf9129b7a - std[765ed69a96918746]::sys::backtrace::__rust_begin_short_backtrace::<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_with_globals<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_pool_with_globals<rustc_interface[c6a26c9f392246cf]::interface::run_compiler<(), rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}>::{closure#1}, ()>::{closure#0}, ()>::{closure#0}::{closure#0}, ()>
+  47:     0x79ebf912993e - <std[765ed69a96918746]::thread::lifecycle::spawn_unchecked<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_with_globals<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_pool_with_globals<rustc_interface[c6a26c9f392246cf]::interface::run_compiler<(), rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}>::{closure#1}, ()>::{closure#0}, ()>::{closure#0}::{closure#0}, ()>::{closure#1} as core[32850a7867c2faaf]::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}
+  48:     0x79ebf912b702 - std::sys::thread::unix::Thread::new::thread_start::h982f9ea829d1b5fb
+  49:     0x79ebf2a9cb84 - <unknown>
+  50:     0x79ebf2b29ecc - <unknown>
+  51:                0x0 - <unknown>
+
+error: the compiler unexpectedly panicked. this is a bug.
+
+note: we would appreciate a bug report: https://github.com/rust-lang/rust/issues/new?labels=C-bug%2C+I-ICE%2C+T-compiler&template=ice.md
+
+note: rustc 1.94.0 (4a4ef493e 2026-03-02) running on x86_64-unknown-linux-gnu
+
+note: compiler flags: -C embed-bitcode=no -C debuginfo=2 -C incremental=[REDACTED]
+
+note: some of the compiler flags provided by cargo are hidden
+
+query stack during panic:
+#0 [typeck] type-checking `diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::dispatch_exchange::tests::dispatch_name_claims_are_distinct_bounded_data_not_manager_authentication`
+#1 [analysis] running analysis passes on crate `hydracache_long_run_supervisor_074`
+end of query stack
+error[E0433]: failed to resolve: use of undeclared type `DispatchExchange`
+  --> tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs:72:17
+   |
+72 | ...t!(DispatchEx...::p...
+   |       ^^^^^^^^^^... use of undeclared type `DispatchExchange`
+
+error[E0433]: failed to resolve: use of undeclared type `DispatchExchange`
+  --> tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs:75:13
+   |
+75 | ...t!(Dispat...ange::p...
+   |       ^^^^^^...^^^^ use of undeclared type `DispatchExchange`
+
+
+thread 'rustc' (392) panicked at /rustc-dev/4a4ef493e3a1488c6e321570238084b38948f6db/library/alloc/src/vec/mod.rs:2873:36:
+slice index starts at 17 but ends at 16
+stack backtrace:
+   0:     0x79ebf7a5c603 - <std::sys::backtrace::BacktraceLock::print::DisplayBacktrace as core::fmt::Display>::fmt::h93773fc827e3113d
+   1:     0x79ebf800e488 - core::fmt::write::hed7b5c73d82ecb7c
+   2:     0x79ebf94f8142 - std::io::Write::write_fmt::h6f0185aecf0ed75f
+   3:     0x79ebf7a29b65 - std::panicking::default_hook::{{closure}}::h2be84df4f189ae36
+   4:     0x79ebf7a29993 - std::panicking::default_hook::hf0ea8939246f43a9
+   5:     0x79ebf6a10aea - std[765ed69a96918746]::panicking::update_hook::<alloc[7a43974b6697a11c]::boxed::Box<rustc_driver_impl[252c3262fddb99f]::install_ice_hook::{closure#1}>>::{closure#0}
+   6:     0x79ebf7a29e92 - std::panicking::panic_with_hook::hb4bd9ac1123582a0
+   7:     0x79ebf7a29c28 - std::panicking::panic_handler::{{closure}}::hde00dd15f5637fe2
+   8:     0x79ebf7a23ac9 - std::sys::backtrace::__rust_end_short_backtrace::hb72197fa777c1785
+   9:     0x79ebf7a0448d - __rustc[4425a7e20b4c8619]::rust_begin_unwind
+  10:     0x79ebf458e35c - core::panicking::panic_fmt::ha59b517dd231f4da
+  11:     0x79ebf4266c1d - core::slice::index::slice_index_fail::h172ece6e023ae9aa
+  12:     0x79ebf63697f5 - <annotate_snippets[6ed311536602540c]::renderer::styled_buffer::StyledBuffer>::replace
+  13:     0x79ebf93d5d67 - annotate_snippets[6ed311536602540c]::renderer::render::render
+  14:     0x79ebf93c9180 - <rustc_errors[45351c624685c6c4]::annotate_snippet_emitter_writer::AnnotateSnippetEmitter>::emit_messages_default
+  15:     0x79ebf95004a1 - <rustc_errors[45351c624685c6c4]::annotate_snippet_emitter_writer::AnnotateSnippetEmitter as rustc_errors[45351c624685c6c4]::emitter::Emitter>::emit_diagnostic
+  16:     0x79ebf9502cc0 - <rustc_errors[45351c624685c6c4]::json::Diagnostic>::from_errors_diagnostic
+  17:     0x79ebf95023ea - <rustc_errors[45351c624685c6c4]::json::JsonEmitter as rustc_errors[45351c624685c6c4]::emitter::Emitter>::emit_diagnostic
+  18:     0x79ebf94fc46a - <rustc_errors[45351c624685c6c4]::DiagCtxtInner>::emit_diagnostic::{closure#3}
+  19:     0x79ebf94f9eb3 - rustc_interface[c6a26c9f392246cf]::callbacks::track_diagnostic::<core[32850a7867c2faaf]::option::Option<rustc_span[56e001752d96add4]::ErrorGuaranteed>>
+  20:     0x79ebf94f8f3c - <rustc_errors[45351c624685c6c4]::DiagCtxtInner>::emit_diagnostic
+  21:     0x79ebf94f8ded - <rustc_errors[45351c624685c6c4]::DiagCtxtHandle>::emit_diagnostic
+  22:     0x79ebf94f85a8 - <rustc_span[56e001752d96add4]::ErrorGuaranteed as rustc_errors[45351c624685c6c4]::diagnostic::EmissionGuarantee>::emit_producing_guarantee
+  23:     0x79ebf8467160 - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_call
+  24:     0x79ebf843dfb0 - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_with_expectation_and_args
+  25:     0x79ebf84040d5 - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_method_call
+  26:     0x79ebf843df6f - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_with_expectation_and_args
+  27:     0x79ebf843c910 - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_unop
+  28:     0x79ebf843f3ff - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_with_expectation_and_args
+  29:     0x79ebf842f920 - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_if
+  30:     0x79ebf843f5be - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_with_expectation_and_args
+  31:     0x79ebf8439158 - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_block
+  32:     0x79ebf843df8b - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_with_expectation_and_args
+  33:     0x79ebf84177ab - rustc_hir_typeck[fff352aa671ae9c1]::check::check_fn
+  34:     0x79ebf8d28673 - rustc_hir_typeck[fff352aa671ae9c1]::typeck_with_inspect::{closure#0}
+  35:     0x79ebf8d26ff4 - rustc_query_impl[d9e05d596e7fb2e4]::plumbing::__rust_begin_short_backtrace::<rustc_query_impl[d9e05d596e7fb2e4]::query_impl::typeck::dynamic_query::{closure#2}::{closure#0}, rustc_middle[f9db403ed88df217]::query::erase::Erased<[u8; 8usize]>>
+  36:     0x79ebf8345e71 - rustc_query_system[5bf9c757c7651d1c]::query::plumbing::try_execute_query::<rustc_query_impl[d9e05d596e7fb2e4]::DynamicConfig<rustc_data_structures[721127a3047d6cb5]::vec_cache::VecCache<rustc_span[56e001752d96add4]::def_id::LocalDefId, rustc_middle[f9db403ed88df217]::query::erase::Erased<[u8; 8usize]>, rustc_query_system[5bf9c757c7651d1c]::dep_graph::graph::DepNodeIndex>, false, false, false>, rustc_query_impl[d9e05d596e7fb2e4]::plumbing::QueryCtxt, true>
+  37:     0x79ebf8345281 - rustc_query_impl[d9e05d596e7fb2e4]::query_impl::typeck::get_query_incr::__rust_end_short_backtrace
+  38:     0x79ebf8341235 - <rustc_middle[f9db403ed88df217]::ty::context::TyCtxt>::par_hir_body_owners::<rustc_hir_analysis[c14eb0767420332]::check_crate::{closure#2}>::{closure#0}
+  39:     0x79ebf8340c44 - rustc_hir_analysis[c14eb0767420332]::check_crate
+  40:     0x79ebf8f2909b - rustc_interface[c6a26c9f392246cf]::passes::analysis
+  41:     0x79ebf8f28cf5 - rustc_query_impl[d9e05d596e7fb2e4]::plumbing::__rust_begin_short_backtrace::<rustc_query_impl[d9e05d596e7fb2e4]::query_impl::analysis::dynamic_query::{closure#2}::{closure#0}, rustc_middle[f9db403ed88df217]::query::erase::Erased<[u8; 0usize]>>
+  42:     0x79ebf93874cf - rustc_query_system[5bf9c757c7651d1c]::query::plumbing::try_execute_query::<rustc_query_impl[d9e05d596e7fb2e4]::DynamicConfig<rustc_query_system[5bf9c757c7651d1c]::query::caches::SingleCache<rustc_middle[f9db403ed88df217]::query::erase::Erased<[u8; 0usize]>>, false, false, false>, rustc_query_impl[d9e05d596e7fb2e4]::plumbing::QueryCtxt, true>
+  43:     0x79ebf9386d7f - rustc_query_impl[d9e05d596e7fb2e4]::query_impl::analysis::get_query_incr::__rust_end_short_backtrace
+  44:     0x79ebf9390111 - <rustc_interface[c6a26c9f392246cf]::passes::create_and_enter_global_ctxt<core[32850a7867c2faaf]::option::Option<rustc_interface[c6a26c9f392246cf]::queries::Linker>, rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}::{closure#2}>::{closure#2} as core[32850a7867c2faaf]::ops::function::FnOnce<(&rustc_session[eab982bd009dcc5a]::session::Session, rustc_middle[f9db403ed88df217]::ty::context::CurrentGcx, alloc[7a43974b6697a11c]::sync::Arc<rustc_data_structures[721127a3047d6cb5]::jobserver::Proxy>, &std[765ed69a96918746]::sync::once_lock::OnceLock<rustc_middle[f9db403ed88df217]::ty::context::GlobalCtxt>, &rustc_data_structures[721127a3047d6cb5]::sync::worker_local::WorkerLocal<rustc_middle[f9db403ed88df217]::arena::Arena>, &rustc_data_structures[721127a3047d6cb5]::sync::worker_local::WorkerLocal<rustc_hir[41466cadac454391]::Arena>, rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}::{closure#2})>>::call_once::{shim:vtable#0}
+  45:     0x79ebf91810b4 - rustc_interface[c6a26c9f392246cf]::interface::run_compiler::<(), rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}>::{closure#1}
+  46:     0x79ebf9129b7a - std[765ed69a96918746]::sys::backtrace::__rust_begin_short_backtrace::<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_with_globals<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_pool_with_globals<rustc_interface[c6a26c9f392246cf]::interface::run_compiler<(), rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}>::{closure#1}, ()>::{closure#0}, ()>::{closure#0}::{closure#0}, ()>
+  47:     0x79ebf912993e - <std[765ed69a96918746]::thread::lifecycle::spawn_unchecked<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_with_globals<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_pool_with_globals<rustc_interface[c6a26c9f392246cf]::interface::run_compiler<(), rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}>::{closure#1}, ()>::{closure#0}, ()>::{closure#0}::{closure#0}, ()>::{closure#1} as core[32850a7867c2faaf]::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}
+  48:     0x79ebf912b702 - std::sys::thread::unix::Thread::new::thread_start::h982f9ea829d1b5fb
+  49:     0x79ebf2a9cb84 - <unknown>
+  50:     0x79ebf2b29ecc - <unknown>
+  51:                0x0 - <unknown>
+
+error: the compiler unexpectedly panicked. this is a bug.
+
+note: we would appreciate a bug report: https://github.com/rust-lang/rust/issues/new?labels=C-bug%2C+I-ICE%2C+T-compiler&template=ice.md
+
+note: rustc 1.94.0 (4a4ef493e 2026-03-02) running on x86_64-unknown-linux-gnu
+
+note: compiler flags: -C embed-bitcode=no -C debuginfo=2 -C incremental=[REDACTED]
+
+note: some of the compiler flags provided by cargo are hidden
+
+query stack during panic:
+#0 [typeck] type-checking `diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::dispatch_exchange::tests::dispatch_writer_shape_and_aliases_are_checked`
+#1 [analysis] running analysis passes on crate `hydracache_long_run_supervisor_074`
+end of query stack
+error[E0433]: failed to resolve: use of undeclared type `ExchangeError`
+  --> tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs:84:35
+   |
+84 | ...rr(ExchangeError::A...
+   |       ^^^^^^^^^^^^^ use of undecla... type `ExchangeError`
+
+error[E0433]: failed to resolve: use of undeclared type `ExchangeError`
+  --> tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs:86:53
+   |
+86 | ...(),ExchangeError::R...
+   |       ^^^^^^^^^^^^^ use of undeclared type `Exchange...or`
+
+error[E0433]: failed to resolve: use of undeclared type `ExchangeError`
+  --> tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs:91:53
+   |
+91 | ...(),ExchangeError::R...
+   |       ^^^^^^^^^^^^^ use of undeclared type `Exchange...or`
+
+error[E0433]: failed to resolve: use of undeclared type `ExchangeError`
+  --> tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs:93:35
+   |
+93 | ...rr(ExchangeError::A...
+   |       ^^^^^^^^^^^^^ use of undecla... type `ExchangeError`
+
+error[E0433]: failed to resolve: use of undeclared type `ExchangeError`
+   --> tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs:102:57
+    |
+102 | ...(),ExchangeError::R...
+    |       ^^^^^^^^^^^^^ use of undeclared type `ExchangeErr...
+
+error[E0433]: failed to resolve: use of undeclared type `ExchangeError`
+   --> tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs:103:39
+    |
+103 | ...rr(ExchangeError::A...
+    |       ^^^^^^^^^^^^^ use of undeclared...pe `ExchangeError`
+
+error[E0433]: failed to resolve: use of undeclared type `ExchangeError`
+   --> tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs:112:56
+    |
+112 | ...(),ExchangeError::R...
+    |       ^^^^^^^^^^^^^ use of undeclared type `ExchangeEr...`
+
+error[E0433]: failed to resolve: use of undeclared type `ExchangeError`
+   --> tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs:141:56
+    |
+141 | ...(),ExchangeError::R...
+    |       ^^^^^^^^^^^^^ use of undeclared type `ExchangeEr...`
+
+error[E0433]: failed to resolve: use of undeclared type `ExchangeError`
+   --> tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs:143:57
+    |
+143 | ...(),ExchangeError::R...
+    |       ^^^^^^^^^^^^^ use of undeclared type `ExchangeErr...
+
+error[E0433]: failed to resolve: use of undeclared type `ExchangeError`
+   --> tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs:152:22
+    |
+152 | ...or,ExchangeError:.....
+    |       ^^^^^^^^^^^^^ ... of undeclared type `ExchangeError`
+
+error[E0433]: failed to resolve: use of undeclared type `ExchangeError`
+   --> tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs:154:35
+    |
+154 | ...rr(ExchangeError::A...
+    |       ^^^^^^^^^^^^^ use of undecl...d type `ExchangeError`
+
+error[E0433]: failed to resolve: use of undeclared type `DispatchExchange`
+   --> tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs:161:18
+    |
+161 | ...ld=DispatchEx...::p...
+    |       ^^^^^^^^^^... use of undeclared type `DispatchExchange`
+
+Some errors have detailed explanations: E0425, E0433.
+For more information about an error, try `rustc --explain E0425`.
+warning: `hydracache-long-run-supervisor-074` (lib test) generated 2 warnings
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 36 previous errors; 2 warnings emitted
+warning: build failed, waiting for other jobs to finish...

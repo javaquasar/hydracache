@@ -602,3 +602,29 @@ bound after owner death and collector I/O quarantine. Historical refusal stays
 separate. These synthetic barred proofs do not establish authenticated original
 send/start, whole-writer enrollment/cessation, external active supervision or
 durable completion. Installation, product workload and qualification stay closed.
+
+## One shot exchange before authenticated original delivery
+
+The [local message-mechanics packet](local-runs/dispatch-exchange-20261018/README.md)
+adds a private owner, not a manager connection or start capability. It retains
+the supplied FD-bearing message on preparation failure and uncertain delivery,
+arms Uncertain before transport entry and admits only one exactly correlated
+reply. Timeout/disconnect closure is sticky: a delayed valid reply cannot heal
+it. A canonical nonzero u32 job path is data, never unit/process identity or
+completion authority. Manager error bodies are not diagnostics.
+
+The selected manager/client names are checked claims only. Original signed
+settings, ancestry and authenticated channel ownership are not established by
+this primitive's shape checks or its same-process SCM_RIGHTS fixtures. The old
+well-known-addressed original message remains unsent and unchanged; the trusted
+channel must construct the uniquely addressed original message inside the full
+live join. It must not rewrite the old message or promote barred P/B notices.
+
+Fourteen units per GNU compiler include lost/late acknowledgement and a hidden
+Message clone that prevents EOF after job receipt and owner destruction. This
+demonstrates why local Drop cannot prove whole-writer cessation. No send/export
+API, authority conversion, new admission clock, original fence release or server
+operation is added. All old validation, manager/child/watchdog bodies and
+Reserved/Starting/progress/challenge origins remain frozen. Fixed trusted
+delivery, active supervision, whole-writer revocation and durable completion
+remain separate unclosed gates; the frozen qualification contract is unchanged.

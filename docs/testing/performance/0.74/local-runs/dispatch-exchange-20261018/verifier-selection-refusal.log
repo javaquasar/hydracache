@@ -1,0 +1,5 @@
+Exception: C:\Workspace\prj\jq\cashe\hydracache-074\docs\testing\performance\0.74\local-runs\dispatch-exchange-20261018\verify.ps1:5
+Line |
+   5 |  … ol]$Condition,[string]$Reason) {if (-not $Condition) {throw $Reason}}
+     |                                                          ~~~~~~~~~~~~~
+     | regression/doctest inventory

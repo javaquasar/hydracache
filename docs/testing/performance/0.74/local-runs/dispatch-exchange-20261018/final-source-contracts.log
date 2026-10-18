@@ -1,0 +1,12 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 17.64s
+     Running tests\performance_contract_074.rs (target\debug\deps\performance_contract_074-affcfab4e5118d5a.exe)
+
+running 4 tests
+test fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::dispatch_exchange::dispatch_socket_fixtures_are_byte_exact_owned_rights_not_a_system_bus ... ok
+test fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::dispatch_exchange::dispatch_exchange_has_no_sender_or_authority_conversion_and_retains_failures ... ok
+test fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::dispatch_exchange::dispatch_exchange_retry_and_reply_predicates_have_mutation_canaries ... ok
+test fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::dispatch_exchange::dispatch_exchange_keeps_original_owners_manager_and_kernels_frozen ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 225 filtered out; finished in 1.66s
+

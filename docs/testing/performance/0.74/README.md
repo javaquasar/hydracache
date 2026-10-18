@@ -3909,3 +3909,20 @@ later revalidation still performs 34. All predicates, old paths, raw children an
 original origins/deadlines remain. This accepts the selected barred boundary,
 not authenticated original start, active-writer revocation, completion or a
 product speedup. Product admission remains closed.
+
+The [one-shot exchange packet](local-runs/dispatch-exchange-20261018/README.md)
+implements local message ownership/correlation, not original activation. It
+arms an uncertain outcome before any possible transport action, rejects retry
+and delayed acknowledgement after closure, retains failed/uncertain message
+writers and treats canonical job paths as data only. Fourteen tests per GNU
+compiler include real same-process SCM_RIGHTS delivery, lost reply and a hidden
+message alias that prevents EOF after job receipt/owner destruction. Names and
+the request body shape do not authenticate PID 1 or signed original settings.
+
+The packet binds seven source capsules, 329 package/build inputs and both exact
+tested images; 229 source contracts, final four canaries, 44 Windows controls,
+affected checks/Clippy and local gates pass. Initial red and intermediate logs
+stay separate from the accepted gate. No product speed claim, host operation or
+admission change follows. Trusted fixed manager delivery, unique-owner original
+message construction under the full frame, active supervision and whole-writer
+cessation still precede an active fault matrix, completion and installation.

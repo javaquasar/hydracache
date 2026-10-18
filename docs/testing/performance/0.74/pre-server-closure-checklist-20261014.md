@@ -535,3 +535,18 @@ closes selected barred-child owner-loss cuts, not the full active execution
 matrix. Authenticated original send/start, all-writer revocation/cessation,
 external active supervision, explicit cleanup failure handling and durable
 completion remain ahead of installation or any product/qualification admission.
+
+The [one-shot exchange packet](local-runs/dispatch-exchange-20261018/README.md)
+closes only private request/reply mechanics: preparation retains messages,
+Uncertain precedes transport entry, serial/sender/destination are correlated,
+and missing/malformed/error/duplicate/late replies cannot authorize retry.
+Fourteen units pass on both GNU compilers; actual local SCM_RIGHTS delivery and
+lost acknowledgement are not a system-bus authentication or process-start proof.
+A hidden Message alias still prevents EOF after job receipt and owner Drop.
+
+Next bind a fixed authenticated manager channel and its original uniquely
+addressed message under the full live frame. Keep the old well-known-addressed
+original message unsent. Add active collector/watchdog supervision and prove
+whole-writer cessation before releasing custody or publishing completion. Then
+test the new active SIGKILL/write boundaries; the previous barred matrix does
+not cover them. All original deadlines and admission flags remain unchanged.
