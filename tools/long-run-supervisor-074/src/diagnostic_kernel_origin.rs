@@ -70,6 +70,8 @@ fn namespace(name: &str) -> Result<(File, (u64, u64)), KernelError> {
     let m = file.metadata()?;
     Ok((file, (m.dev(), m.ino())))
 }
+#[path = "diagnostic_boot_document.rs"]
+mod boot_document;
 fn boot(root: &File) -> Result<String, KernelError> {
     #[cfg(test)]
     let _kernel_walk = crate::diagnostic_ipc::validation_trace::kernel_walk::span(
@@ -78,8 +80,26 @@ fn boot(root: &File) -> Result<String, KernelError> {
     let sys = child(root, "sys", true)?;
     let kernel = child(&sys, "kernel", true)?;
     let random = child(&kernel, "random", true)?;
-    let raw = bounded(&child(&random, "boot_id", false)?)?;
-    if raw.len() != 37
+    let file = child(&random, "boot_id", false)?;
+    let raw = boot_read(|bytes| file.read_at(bytes, 0))?;
+    // As before, close the proc document before decoding the owned bytes.
+    drop(file);
+    boot_value(raw)
+}
+fn boot_read(
+    read: impl FnOnce(&mut [u8]) -> std::io::Result<usize>,
+) -> Result<([u8; 38], usize), KernelError> {
+    #[cfg(test)]
+    let _kernel_walk = crate::diagnostic_ipc::validation_trace::kernel_walk::span(
+        crate::diagnostic_ipc::validation_trace::kernel_walk::Kind::Document,
+    );
+    Ok(boot_document::read_once(read)?)
+}
+fn boot_value((raw, count): ([u8; 38], usize)) -> Result<String, KernelError> {
+    if count == 0 {
+        return Err(kernel_invalid!("proc-document-budget"));
+    }
+    if count != 37
         || raw[36] != b'\n'
         || raw[..36].iter().enumerate().any(|(i, c)| {
             if [8, 13, 18, 23].contains(&i) {
@@ -218,6 +238,10 @@ impl Origin {
         child(&self.root, name, directory)
     }
 }
+
+#[cfg(test)]
+#[path = "diagnostic_boot_buffer_tests.rs"]
+mod boot_buffer_tests;
 
 #[cfg(test)]
 mod tests {
