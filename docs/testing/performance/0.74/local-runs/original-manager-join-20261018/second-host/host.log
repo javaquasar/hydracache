@@ -1,0 +1,63 @@
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+431c56a37307120f90a0c1d952cf73367447d9375ad73dd7cfb00300e08b0638  ./tests-194
+f0db8f7a6285e75b0840a35de6b40f3fc14fc53492e51d92cb121bfc026ca5d9  ./tests-188
+5890b889927fdfb7310259848e4ce5918eab0b4e5ac49d4d624b7b17adfc4288  ./guard.sh
+07ee76728844bda51a42c843f4e3b086c908ea8aa47897c48b0dce625f6623ce  ./run.sh
+8a2a495348bd317f7a2092a622838fc489bdcf077f4a8269210b2b78381b3c58  ./bundle/build-log.jsonl
+e32bb7cd9b6cbf1d91d52abc79cb1e0225b3a7f6602e82e5b9a303c3645a77d7  ./bundle/build-receipt-v1.json
+e3be470f5a1bff4e917e841fc5bfbd257ff12559206bbc1481c3c4bca528eb1d  ./bundle/Cargo.lock.observer
+be46eaf8e97e507bda5e3f2b671d0d622e6a639ce1d4613769a4693723d62b19  ./bundle/Cargo.lock.root
+5485b10f50906833006ad3f3a40b4909760ef01e3f2c86395e4366bf83cc6ef9  ./bundle/direct.json
+5c219730c8a782ed47dfa0b291a29f44f753c3688f8548c136174a89cee55149  ./bundle/embedded.json
+f0aba16dfe0354801d0b3c83ee9fc2d1b4751be5f50280634690ed4bcf3030ae  ./bundle/resp2.json
+b680683c291d0a4dadbac1901f051ba0fedcac0ac9127d197e0261fe6fdabdd7  ./bundle/resp3.json
+bda1c094f3de7c6d42ec45c757838c7a41a8ff1d63a025c661af84455169a101  ./bundle/timing-controls-074
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::collector_tests::enrollment_tests::manager_tests::original_manager_join_frame_controls ... HC074-ORIGINAL-MANAGER-CONTROL sample=0 full_frame_ipc=34 channel_checks=2 original_bounds=true test_channel_only=true start=false
+HC074-ORIGINAL-MANAGER-CONTROL sample=1 full_frame_ipc=34 channel_checks=2 original_bounds=true test_channel_only=true start=false
+HC074-ORIGINAL-MANAGER-CONTROL sample=2 full_frame_ipc=34 channel_checks=2 original_bounds=true test_channel_only=true start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1157 filtered out; finished in 39.99s
+
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::collector_tests::enrollment_tests::manager_tests::original_manager_join_frame_refusals ... HC074-ORIGINAL-MANAGER-REFUSAL case=channel-before reason=Channel sticky=true test_channel_only=true start=false
+HC074-ORIGINAL-MANAGER-REFUSAL case=channel-after reason=Channel sticky=true test_channel_only=true start=false
+HC074-ORIGINAL-MANAGER-REFUSAL case=context-before reason=Kernel(Invalid) sticky=true test_channel_only=true start=false
+HC074-ORIGINAL-MANAGER-REFUSAL case=context-after reason=Kernel(Invalid) sticky=true test_channel_only=true start=false
+HC074-ORIGINAL-MANAGER-REFUSAL case=trust reason=Original(Original(Original(Transport(Material(Outputs(Original(Original(Original(Causal(Reservation(Attempt(Controller(Original(Input(Invalid))))))))))))))) sticky=true test_channel_only=true start=false
+HC074-ORIGINAL-MANAGER-REFUSAL case=message reason=Original(Original(Binding)) sticky=true test_channel_only=true start=false
+HC074-ORIGINAL-MANAGER-REFUSAL case=output reason=Original(Original(Binding)) sticky=true test_channel_only=true start=false
+HC074-ORIGINAL-MANAGER-REFUSAL case=collector-kill reason=Original(Child) sticky=true test_channel_only=true start=false
+HC074-ORIGINAL-MANAGER-REFUSAL case=custodian-kill reason=Original(Child) sticky=true test_channel_only=true start=false
+HC074-ORIGINAL-MANAGER-REFUSAL case=final-expiry reason=Original(Original(Original(Expired))) sticky=true test_channel_only=true start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1157 filtered out; finished in 131.81s
+
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::collector_tests::enrollment_tests::manager_tests::original_manager_join_nonroot_fixed_refusal ... HC074-ORIGINAL-MANAGER nonroot=true fixed_refused=true original_owner_retained=true start=false
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::collector_tests::enrollment_tests::manager_tests::original_manager_join_nonroot_fixed_refusal' (180670) panicked at tools/long-run-supervisor-074/src/diagnostic_collector_starting_publication_tests.rs:77:9:
+assertion `left == right` failed
+  left: true
+ right: false
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::collector_tests::enrollment_tests::manager_tests::original_manager_join_nonroot_fixed_refusal
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1157 filtered out; finished in 12.66s
+

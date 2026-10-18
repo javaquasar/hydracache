@@ -662,3 +662,28 @@ now admits only flags 0/NO_REPLY_EXPECTED on METHOD_RETURN in the old exchange;
 requests, ERROR classification and every correlation/FD/refusal check stay exact.
 Both compiler cohorts pass nineteen exchange tests. This closes its isolated
 reply interoperability prerequisite, not original message delivery or execution.
+
+## Original receiver and live manager under one frame
+
+The [original manager join](local-runs/original-manager-join-20261018/README.md)
+consumes OriginalEnrollmentFrame and retains that exact owner, its children,
+writers, alarm objects and custody together with the existing fixed live
+channel. An opaque binding clones the actual retained kernel Origin from the
+original progress packet after sender/hold revalidation. Boot and typed nsfs
+user/mount/PID/time objects must match the channel's selected caller view. A
+fresh caller namespace capture alone cannot replace original receiver proof.
+
+Construction and subsequent validation surround one unchanged complete frame
+with live channel/context checks and original observations. The full frame
+still performs 34 authentication and 34 signature checks. All old predicates,
+origins, absolute alarms and 300/60/10-second windows stay unchanged. Failure
+retains and poisons the original owner; no retry, channel/frame extraction,
+caller-supplied channel, serialization or message-send path is provided.
+
+The shared round is tested with a distinct test-only channel; the actual fixed
+channel/context component is separately tested read-only. These scopes must not
+be conflated with a positive production-enrolled full join. Local Challenge(Time)
+remains a stopped negative cohort. Host harness/test corrections and independent
+host results are recorded separately. Unique-owner original message construction,
+FD negotiation/delivery and authenticated start remain next, ahead of active
+watchdog/all-writer cessation, completion, reconnect and real host enrollment.

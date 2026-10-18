@@ -1,0 +1,8 @@
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::collector_tests::enrollment_tests::original_enrollment_frame_screen ... HC074-ENROLLMENT-CONTROL sample=0 create_ipc=34 validate_ipc=34 collector_fds=7 custody_fds=3 unchanged=true start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1157 filtered out; finished in 11.67s
+
+HC074-OLD-FRAME-ATTRIBUTION exit=0 selected_gate=false new_join_not_called=true

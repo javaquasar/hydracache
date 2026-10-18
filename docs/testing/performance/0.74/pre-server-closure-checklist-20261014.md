@@ -584,3 +584,14 @@ and all 235 source contracts; baseline and negative outcomes remain retained.
 The uniquely addressed original channel/message join, active supervision,
 all-writer cessation, completion/later cells and integrated reconnect remain
 required before real enrollment and server rehearsal. No start is connected.
+
+The [original receiver/live-channel join](local-runs/original-manager-join-20261018/README.md)
+now consumes the original full-frame owner and retains its actual kernel Origin
+with the fixed channel. Context comparisons bracket the unchanged full frame;
+old checks, deadlines and sticky refusal are preserved. Test-channel composition
+and actual read-only channel/context gates are separate evidence, not production
+enrollment or authenticated original-start. A stopped local Time cohort remains
+unresolved. Original uniquely addressed message/FD delivery, active watchdog and
+all-writer cessation, durable completion/later cells, reconnect and exact-host
+trust/enrollment are still required. Installation and supervisor changes remain
+separate approval boundaries.

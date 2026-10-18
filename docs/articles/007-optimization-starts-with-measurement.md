@@ -12799,3 +12799,52 @@ boundary for the conclusion: one interoperability obstacle is removed, but a
 passing reply still proves neither actual original process start nor cessation
 of every writer. No throughput, CPU or allocation improvement follows from this
 correctness result.
+
+## A live connection must retain its original authority
+
+The [next manager-join experiment](../testing/performance/0.74/local-runs/original-manager-join-20261018/README.md)
+addresses a correctness gap, not a throughput hypothesis. A verified connection
+and a verified original frame are not interchangeable snapshots. The connection
+must stay owned with the exact frame that admitted the attempt, and its kernel
+view must match the original receiver rather than a newly supplied context.
+
+The consuming join therefore retains the original frame and clones only its
+actual retained kernel Origin into an opaque context binding. Typed nsfs objects
+for user, mount, PID and time namespaces, plus boot identity, connect that binding
+to the fixed live channel. Sender/hold checks guard derivation. Later validation
+places live channel/context observations around the unchanged full frame and
+original deadline observations. There is no cached policy or signature result:
+the frame still performs 34 authentication and 34 signature checks. No original
+origin, alarm or 300/60/10-second admission window is refreshed.
+
+The tests deliberately separate two claims. A distinct test-only channel
+exercises healthy composition and faults against the real original frame; it
+cannot construct the production owner. A separate local root read-only case
+checks actual fixed-bus/receiver context and closed-channel refusal without
+launching a child or enrolling trust. Neither alone establishes a positive
+production-enrolled full join or original message/FD delivery.
+
+Negative results determine the scope. The first local fixture cohort stops
+before the new join at the unchanged Challenge(Time) check; a later old-frame
+screen passes but cannot explain or heal that historical failure. The first
+host launcher creates group-writable fixture directories under default umask
+0002, correctly refused by the old trust reader. Only the harness is corrected
+to private umask 077. A second host cohort reaches the intended fixed-channel
+refusal, but its new test wrongly expects the original owner not to be poisoned.
+Correcting that test expectation changes no runtime predicate or deadline.
+Each stopped cohort remains separate from any later scoped passing gate.
+
+This work yields an owning, fail-closed boundary, not a numerical speed claim.
+Unique-owner original-message addressing and FD delivery remain next. Active
+watchdog supervision must then account for every writer before completion or
+fence release; disconnect/reattach and real host enrollment still need their own
+end-to-end evidence. The stable installed supervisor is not modified by these
+isolated temporary-directory fixtures.
+
+The fresh host gate subsequently completes on both compilers: six healthy
+controls, twenty live refusals and two actual nonroot fixed-channel refusals in
+total. Both distinct local read-only channel/context gates pass, as do 238
+source contracts and 44 portable controls. These results support the narrow
+owning-composition boundary while preserving the unresolved local timing result.
+They do not establish production enrollment, active execution or a product
+performance improvement.

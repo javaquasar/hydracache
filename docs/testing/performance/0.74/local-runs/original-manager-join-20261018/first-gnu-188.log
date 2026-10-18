@@ -1,0 +1,19 @@
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 23.60s
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error: variables can be used directly in the `format!` string
+   --> tools/long-run-supervisor-074/src/diagnostic_original_manager_frame_tests.rs:116:13
+    |
+116 |             assert_eq!(format!("{:?}", failure), "Channel");
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+    = note: `-D clippy::uninlined-format-args` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::uninlined_format_args)]`
+help: change this to
+    |
+116 -             assert_eq!(format!("{:?}", failure), "Channel");
+116 +             assert_eq!(format!("{failure:?}"), "Channel");
+    |
+
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 1 previous error

@@ -3957,3 +3957,27 @@ preserving request flags, ERROR handling, correlation, FD checks and no retry.
 Both compilers pass nineteen exchange units; 235 source contracts and focused
 local checks pass. Negative results remain separate. This is interoperability,
 not authenticated original-start, whole-writer cessation or server admission.
+
+The [original manager context join](local-runs/original-manager-join-20261018/README.md)
+now owns the unchanged original enrollment frame and fixed live channel together.
+It compares the actual retained kernel receiver Origin, boot and typed
+user/mount/PID/time objects with that channel, enclosing one complete original
+frame between live checks. It exports neither a channel nor a former owner and
+does not send the original message. Original checks, alarm objects and absolute
+300/60/10-second windows remain; any error permanently refuses the same owner.
+
+The evidence distinguishes test-channel full-frame composition, actual read-only
+channel/context comparison and nonroot fixed-channel refusal. It also preserves
+the stopped local Challenge(Time) cohort, first host umask error and second host
+test-expectation error; later scoped passes cannot promote those negatives.
+No install, supervisor operation, product load or qualification is involved.
+Next is uniquely addressed original-message/FD delivery under the same frame,
+not completion or permission to release a fence while writers may remain.
+
+The fresh host gate completes on both compilers (six healthy controls, twenty
+live refusals, two real nonroot fixed-channel refusals total), with unchanged
+supervisor/installation and no remaining fixture executable. Separate actual
+local read-only context gates pass twice. All 238 source contracts, 44 Windows
+controls and affected checks/strict Clippy pass. This accepts source slice
+`698f808b` as a private nonexecuting join, not a positive production-enrolled
+original start, a repaired local timing cohort or a performance improvement.
