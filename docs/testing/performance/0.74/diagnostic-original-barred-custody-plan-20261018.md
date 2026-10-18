@@ -62,3 +62,28 @@ Authorized server tests stay nonroot in owned temporary fixtures with stable
 host pre/post guards. No install, supervisor mutation, product load or expensive
 qualification. Collector enrollment, authenticated original send, complete writer
 revocation, external guardian supervision and durable completion remain closed.
+
+## Withdrawn extra frame and direct original draft amendment
+
+The first current-compiler screen creates the custodian and passes its exact
+three-FD/full-construction-frame checks, but subsequent full revalidation refuses
+with the original Causal(Time). Its composition repeats the original custody
+constructor, descriptor-plan constructor, new custodian constructor and later
+revalidation frames. Preserve that complete nine-file source capsule, build-input
+inventory, exact binaries/scripts and screens before changing the candidate.
+Do not run its larger matrix or renew an origin to get a pass.
+
+Replace only the extra descriptor-plan construction layer. The pending entry
+borrows the sealed OriginalCustodiedPreparation directly and captures the same
+private Inventory without calling the old descriptor-plan constructor. Original
+readiness/refusal, custody metadata and the same original deadline precede raw
+custody creation; the child still has no stream, output or execution capability.
+Then run the unchanged complete original custodied validation, exact Inventory
+comparison, child observation and final original deadline probe once. Later
+revalidation repeats that same full frame. All old APIs and bodies stay exact;
+no predicate is skipped within the full frame or moved into cached authority.
+
+The new borrowed owner retains its original reference even if draft capture
+fails. The pending child's field drops before that exclusive borrow ends. This
+is direct constant-depth composition, not a relaxed numerical/time threshold
+or promotion of the withdrawn four-frame result.
