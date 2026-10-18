@@ -12498,3 +12498,49 @@ Rust units per compiler, six Python units and two private-descriptor compile-fai
 doctests pass. Read-only postflight finds no fixture from any retained cohort
 and preserves the supervisor, installed digests and frozen qualification input.
 This closes the selected pending-only fault boundary, not production execution.
+
+## A barred collector still holds writable capabilities
+
+Joining the original streams and sinks adds a different responsibility. Even
+before activation, an O_RDWR sink descriptor is a writable capability. Custody
+must cover its lifetime, not merely the interval in which the collector is
+expected to write. If the preparing owner and a separate custodian disappear,
+the collector must not be left holding sinks behind an available fence.
+
+The next private join therefore gives the barred collector an alias of the same
+original fence and alarm, alongside the original two readers and two sinks. Its
+seven-descriptor inventory includes its private notice endpoint but excludes all
+four pair/message writers and every unrelated descriptor. The parent retains
+the original unsent message and original objects: enrollment is not an exclusive
+transfer or an authenticated delivery. The child has no activation command and
+performs no stream read or sink write.
+
+At original-alarm expiry, unexpected peer activity or peer loss, the child closes
+the four I/O descriptors before its best-effort failure notice, then parks with
+the fence still held. A failed close is a refusal, never evidence of quiescence.
+Even successful closure does not grant completion or release authority. Ordinary
+cancellation stops and reaps the collector while the original exclusive borrow
+and separate custodian still exist.
+
+The typed join prepares both children before one unchanged closing validation
+frame. Construction and subsequent revalidation still perform all 34
+authentication and signature calls, preserve the four original time origins and
+recheck both process states and the original alarm. No extra recursively
+validated descriptor-plan constructor is inserted. This preserves a verified
+composition boundary; it is not a measured product speedup.
+
+The [barred collector packet](../testing/performance/0.74/local-runs/original-barred-collector-20261018/README.md)
+separates healthy controls, reason-specific refusals and selected child-process
+faults. Those tests cannot stand in for the next two-child owner-SIGKILL and
+lost-B matrix, authenticated original send/start or cessation of the entire
+active writer tree. The installed supervisor and product admission stay outside
+this component boundary.
+
+Both current/MSRV cohorts passed: eight healthy controls, eighteen specific
+refusals and eighteen selected child-process scenarios. Each process scenario
+observed four closed I/O FDs, a fence still busy after exact custodian death and
+retained-history refusal after exact collector death. All 219 static contracts
+and the focused format/lint/check gates passed. Postflight preserved the installed
+supervisor and frozen qualification input. This confirms the selected barred
+enrollment/quarantine boundary, not actual owner death in the two-child topology
+or a performance improvement.

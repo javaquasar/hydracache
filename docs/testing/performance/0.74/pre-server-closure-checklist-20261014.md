@@ -501,3 +501,14 @@ last custodian dies still cannot overcome retained storage history. These
 pending-only checks do not close collector enrollment, authenticated original
 send, all-writer revocation, independent active-guardian supervision or durable
 completion. No installation or product/qualification workload follows from them.
+
+The [barred original collector packet](local-runs/original-barred-collector-20261018/README.md)
+now enrolls original readers/sinks with the same fence/alarm in a nonexecuting
+child under the complete frame. Expiry and peer failure close its four I/O FDs
+without releasing custody; its fence alias survives separate-custodian death.
+This is not exclusive transfer, authenticated start or active-writer cessation.
+Next test actual owning-process SIGKILL with both children and uncertain B
+delivery, including failure ordering and retained history, before activation.
+Original send/start, whole-writer-tree revocation, independent active supervision,
+explicit active-cleanup errors and durable completion remain open. Installation
+and product/qualification admission are still separate and closed.

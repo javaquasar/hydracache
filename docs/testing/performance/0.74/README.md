@@ -3878,3 +3878,11 @@ postcondition, rejected nested authority root and upstream-Time tracer attempt
 as separate negative results. Ordinary pending code, live predicates, original
 origins and frozen qualification inputs stay exact; barred collector transfer
 and authenticated original start remain subsequent work.
+
+The [barred original collector packet](local-runs/original-barred-collector-20261018/README.md)
+joins the actual readers and O_RDWR sinks to a nonexecuting child with the same
+original fence and alarm. One complete closing frame covers both children.
+Expiry/peer failure sheds its four I/O FDs but retains the fence, including after
+separate-custodian SIGKILL. Original objects/message remain parent-owned. This
+does not open activation, original send/start, completion, installation or a
+product pilot; two-child owner death, notice-loss and all-writer gates remain.

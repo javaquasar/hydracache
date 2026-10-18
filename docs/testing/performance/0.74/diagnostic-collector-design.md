@@ -524,3 +524,28 @@ attempt refused upstream Time before pending creation and is retained separately
 it does not waive a live check or prove notice loss. Ordinary pending code and
 the frozen qualification inputs stay exact. Actual barred collector handoff,
 authenticated original send and active-writer cessation remain required.
+
+## Barred original I/O enrollment
+
+The [barred collector packet](local-runs/original-barred-collector-20261018/README.md)
+adds a private typed owner of the pending custodian and a second barred child.
+Collector cancellation/reaping precedes ending the exclusive original borrow
+and custodian lifetime. Failure objects retain that ownership. Both children
+are prepared before one unchanged full closing frame; revalidation brackets the
+same complete frame with collector pidfd/notice/alarm observations. No original
+predicate, time origin or recursive frame is removed from the old validators.
+
+The collector inherits exactly fence/alarm/readers/sinks/private endpoint: seven
+FDs, excluding all four pair/message writer aliases. Original O_RDWR sinks are
+not adapted into the separate generic O_WRONLY engine. Its B notice denotes
+barred isolation only. It accepts no command, performs no stream/sink I/O and
+neither reads nor rearms the original alarm. Expiry or peer failure quarantines
+all four I/O FDs before a best-effort E/L/F notice and sticky parking. Its fence
+alias persists, including after the separate custodian dies. A close error
+cannot establish writer cessation, and cancellation is not active completion.
+
+The preparing owner retains the original objects/message; enrollment is not
+exclusive transfer or authenticated delivery. Two-child owner death and lost-B
+proofs, malformed-notice runtime controls, authenticated activation, all-writer
+binding/revocation, external active-guardian supervision and durable completion
+remain distinct gates. No installed service or product workload changes here.
