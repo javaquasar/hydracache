@@ -27,6 +27,10 @@ enum Phase {
 // Names below are checked claims, NOT trusted manager or connection evidence.
 struct DispatchExchange {
     request: Message,
+    state: ReplyState,
+}
+// Correlation data only: no Message, file descriptor or original-owner capability.
+struct ReplyState {
     manager: String,
     client: String,
     serial: NonZeroU32,
@@ -102,14 +106,22 @@ fn request_matches(message: &Message, manager: &str, client: &str) -> Result<(),
     }
     Ok(())
 }
-impl DispatchExchange {
-    fn prepare(request: Message, manager: &str, client: &str) -> Result<Self, PreparationFailure> {
-        if let Err(error) = request_matches(&request, manager, client) {
-            return Err(PreparationFailure { error, request });
-        }
+impl std::ops::Deref for DispatchExchange {
+    type Target = ReplyState;
+    fn deref(&self) -> &ReplyState {
+        &self.state
+    }
+}
+impl std::ops::DerefMut for DispatchExchange {
+    fn deref_mut(&mut self) -> &mut ReplyState {
+        &mut self.state
+    }
+}
+impl ReplyState {
+    fn prepare(request: &Message, manager: &str, client: &str) -> Result<Self, ExchangeError> {
+        request_matches(request, manager, client)?;
         let serial = request.primary_header().serial_num();
         Ok(Self {
-            request,
             manager: manager.into(),
             client: client.into(),
             serial,
@@ -187,6 +199,25 @@ impl DispatchExchange {
         }
         self.phase = Phase::JobObserved;
         Ok(JobObservation { path })
+    }
+}
+
+impl DispatchExchange {
+    fn prepare(request: Message, manager: &str, client: &str) -> Result<Self, PreparationFailure> {
+        let state = match ReplyState::prepare(&request, manager, client) {
+            Ok(state) => state,
+            Err(error) => return Err(PreparationFailure { error, request }),
+        };
+        Ok(Self { request, state })
+    }
+    fn arm(&mut self) -> Result<(), ExchangeError> {
+        self.state.arm()
+    }
+    fn lose_reply(&mut self) {
+        self.state.lose_reply();
+    }
+    fn observe(&mut self, reply: &Message) -> Result<JobObservation, ExchangeError> {
+        self.state.observe(reply)
     }
 }
 

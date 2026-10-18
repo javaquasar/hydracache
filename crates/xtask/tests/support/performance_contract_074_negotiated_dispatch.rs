@@ -1,4 +1,6 @@
 //! Exact additive fixture registration; production owners and deadlines stay frozen.
+#[path = "performance_contract_074_reply_state.rs"]
+mod reply_state;
 const BASE: &str = "a36ac6e8";
 const PATH: &str = "tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs";
 const REG: &str =
@@ -41,6 +43,8 @@ platform = "linux"
 # END NEGOTIATED DISPATCH GATE
 "###;
 pub(super) fn normalize(path: &str, raw: &str) -> String {
+    let current = reply_state::normalize(path, raw);
+    let raw = current.as_str();
     let exact = match path {
         PATH => REG,
         "docs/testing/gated-test-registry.toml" => GATE,

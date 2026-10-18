@@ -149,9 +149,10 @@ fn root() -> std::path::PathBuf {
     std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..")
 }
 fn read(name: &str) -> String {
-    std::fs::read_to_string(root().join(name))
+    let raw = std::fs::read_to_string(root().join(name))
         .unwrap()
-        .replace('\r', "")
+        .replace('\r', "");
+    crate::live_walk::normalize(name, &raw)
 }
 fn compact(raw: &str) -> String {
     raw.split_whitespace().collect()
