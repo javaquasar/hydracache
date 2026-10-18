@@ -1,4 +1,6 @@
 //! Exact additive registration only; all original launch and validation remain.
+#[path = "performance_contract_074_prearmed.rs"]
+mod prearmed;
 const BASE: &str = "db35fdc3";
 const LIB: &str = "pub mod diagnostic_two_phase_launch;\n";
 const READER: &str = "super::live_walk::normalize(p, &read(p))";
@@ -67,6 +69,8 @@ platform = "linux"
 # END TWO PHASE BARRIER GATE
 "####;
 pub(super) fn normalize(path: &str, raw: &str) -> String {
+    let current = prearmed::normalize(path, raw);
+    let raw = current.as_str();
     let (addition, replacement) = match path {
         "tools/long-run-supervisor-074/src/lib.rs" => (LIB, ""),
         "docs/COMPAT.md" => (COMPAT, ""),

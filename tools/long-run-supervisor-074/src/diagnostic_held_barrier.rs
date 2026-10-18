@@ -168,3 +168,6 @@ fn wait_packet(
 #[cfg(test)]
 #[path = "diagnostic_held_barrier_tests.rs"]
 mod tests;
+
+#[path = "diagnostic_prearmed_watchdog.rs"]
+mod prearmed;

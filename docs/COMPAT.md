@@ -1621,3 +1621,30 @@ only. Other shapes/flags/nonces refuse. Its reader window is that original
 socketpair lifetime, with no adoption, reconnect, downgrade or migration.
 A future production barrier needs a distinct reviewed protocol; this prototype
 cannot construct an original execution owner.
+
+## Private prearmed guardian enrollment
+
+hc074-prearmed-guardian-v1 uses one ephemeral AF_UNIX SOCK_SEQPACKET pair.
+Packets are exactly 16 bytes: HCPG0741, kind byte (1 Pending, 2 Enroll, 3 Armed,
+4 Refused, 5 Revoking), then seven zero bytes. Enroll requires one atomic
+CLOEXEC pidfd and exactly one kernel SCM_CREDENTIALS record for the creating
+PID/UID/GID. Notices require no rights and the guardian's actual credentials.
+Only the echoed MSG_CMSG_CLOEXEC flag is allowed. Unknown versions, reserved
+bytes, kinds, shapes, extra/truncated rights or credentials refuse. The parent
+also retains its creating thread; SCM_CREDENTIALS itself does not prove a TID.
+
+The guardian accepts one live direct child under local procfs inspection,
+retains its pidfd before Armed, and treats a second message as revocation.
+Revoking means signal attempted, not cessation. No ACK, terminal pidfd or EOF
+unlocks the fence. The reader window is the original socketpair lifetime;
+there is no reconnect, adoption, downgrade, migration or production reader.
+This is not the historical original owner, trusted kernel host context,
+whole-cgroup admission, signed launch or all-writer completion proof.
+
+The private hc074-prearmed-owner-test-v1 carrier sends the fixed fixture JSON
+schema with creating-owner credentials and one guardian pidfd, optionally a
+target pidfd/read pipe and hidden write alias (at most four rights). A one-byte
+D without rights marks a completed harness command. Only the owning nonroot
+subreaper understands it during its temporary-directory lifetime; it grants no
+production identity or authority. The old v0 barrier and signed v2 requirements
+remain byte-identical.
