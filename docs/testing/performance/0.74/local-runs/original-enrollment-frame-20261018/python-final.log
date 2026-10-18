@@ -1,0 +1,14 @@
+test_before_frame_requires_false (test_original_enrollment_owner_loss.CollectorPacketTests.test_before_frame_requires_false) ... ok
+test_bool_float_and_malformed_origins_refuse (test_original_enrollment_owner_loss.CollectorPacketTests.test_bool_float_and_malformed_origins_refuse) ... ok
+test_exact_fixture_only (test_original_enrollment_owner_loss.CollectorPacketTests.test_exact_fixture_only) ... ok
+test_matched_ancillary (test_original_enrollment_owner_loss.CollectorPacketTests.test_matched_ancillary) ... ok
+test_matched_packet (test_original_enrollment_owner_loss.CollectorPacketTests.test_matched_packet) ... ok
+test_receive_rejects_unknown_ancillary_and_closes_later_rights (test_original_enrollment_owner_loss.CollectorPacketTests.test_receive_rejects_unknown_ancillary_and_closes_later_rights) ... ok
+test_role_cut_owner_and_frame_binding (test_original_enrollment_owner_loss.CollectorPacketTests.test_role_cut_owner_and_frame_binding) ... ok
+test_truncation_rights_and_credentials_refuse (test_original_enrollment_owner_loss.CollectorPacketTests.test_truncation_rights_and_credentials_refuse) ... ok
+test_unknown_extra_missing_and_duplicate_fields (test_original_enrollment_owner_loss.CollectorPacketTests.test_unknown_extra_missing_and_duplicate_fields) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.001s
+
+OK

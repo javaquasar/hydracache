@@ -576,6 +576,29 @@ challenge-age guard. A separate ABBA healthy diagnostic also refused on the
 previous retained image; later green screens do not replace the stopped cohort.
 The candidate's thirteen source files are archived and its fault seams/protocol
 registration are withdrawn. Only parser-only tests are accepted independently.
-Budget attribution must precede resuming the matrix. Combining custody and
-barred enrollment under one frame needs explicit agreement because it removes
-an intermediate full observation, even if predicates and deadlines stay exact.
+The subsequent explicitly approved composition has a separate gate; it does
+not replace or accept the withdrawn candidate.
+
+## Custody and barred enrollment inside one frame
+
+The [grouped enrollment packet](local-runs/original-enrollment-frame-20261018/README.md)
+owns original preparation and both children without a self-referential borrow.
+It enrolls the unchanged custodian/collector after opening observations and
+before the unchanged closing round. Failure retains all resources and refuses
+the original attempt. Child cancellation/reaping attempts precede original
+writers and the final custody alias; Drop is not active cleanup authority.
+
+Construction performs 34 authentication/signature calls rather than 68 across
+two sequential complete frames. Revalidation remains a complete 34-call frame.
+Custody, original inventory, both child states/notices, alarm and direct
+challenge age bracket closing; readiness is last. Existing constructors,
+validators and raw child bodies remain exact. The approved frequency change
+does not renew Reserved/Starting/progress/challenge origins or weaken a predicate.
+
+Both GNU toolchains complete eight healthy controls, eighteen specific refusals,
+six actual lost-B controls and twenty-four owner SIGKILL cases. The observer
+holds pidfds only; either surviving child retains the fence past the original
+bound after owner death and collector I/O quarantine. Historical refusal stays
+separate. These synthetic barred proofs do not establish authenticated original
+send/start, whole-writer enrollment/cessation, external active supervision or
+durable completion. Installation, product workload and qualification stay closed.

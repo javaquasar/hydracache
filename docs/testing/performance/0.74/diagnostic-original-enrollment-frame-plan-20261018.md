@@ -52,3 +52,16 @@ temporary directory with read-only pre/post guards. No release installation,
 supervisor operation, product workload, original send/start, completion, pilot
 or expensive qualification is authorized by this experiment. Whole-writer
 revocation and active lifecycle admission remain later work.
+
+## Selected gate result
+
+Source 08c4802f544a9787798b3e5db328e175d3a00435 passes the fresh current/MSRV
+cohorts: eight healthy controls, eighteen live refusals, six actual lost-B
+controls and twenty-four owner SIGKILL cases. The
+[retained packet](local-runs/original-enrollment-frame-20261018/README.md)
+contains exact images/scripts, fourteen source capsules, source-tree and input
+bindings, raw outcomes and a read-only verifier. Old constructors, validators,
+raw kernels and original origins/deadlines remain frozen. This accepts only the
+private grouped barred composition, not authenticated activation, active-writer
+cessation, production completion or product admission. The withdrawn previous
+matrix remains negative evidence rather than a passing prerequisite.

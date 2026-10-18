@@ -3900,5 +3900,12 @@ Current Rust completed twelve owner cases and three lost-B controls; no MSRV
 faults ran. ABBA healthy attribution reproduced the same refusal on the previous
 retained image, so later green controls do not constitute a passing replacement.
 The test candidate is withdrawn and archived; independent parser units remain.
-Preparation-budget attribution and an agreed observation-grouping experiment
-precede a fresh complete two-compiler matrix. Product admission remains closed.
+The separately approved [grouped enrollment packet](local-runs/original-enrollment-frame-20261018/README.md)
+now completes a fresh two-compiler gate: eight healthy controls, eighteen live
+refusals, six lost-B controls and twenty-four owner SIGKILL cases. Its private
+owning composition places barred enrollment inside the original opening/closing
+frame, reducing construction from 68 to 34 authentication/signature calls;
+later revalidation still performs 34. All predicates, old paths, raw children and
+original origins/deadlines remain. This accepts the selected barred boundary,
+not authenticated original start, active-writer revocation, completion or a
+product speedup. Product admission remains closed.

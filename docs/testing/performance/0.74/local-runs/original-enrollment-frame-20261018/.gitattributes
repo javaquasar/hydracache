@@ -1,0 +1,6 @@
+* -text whitespace=cr-at-eol
+*.log -whitespace
+*.source -whitespace
+# Preserve the executed script bytes, including their original EOF whitespace.
+*.sh -whitespace
+*.py -whitespace

@@ -12595,10 +12595,49 @@ regression. The later green observations cannot turn the interrupted matrix
 green. The new fault candidate is withdrawn and fully recoverable from its
 source capsule; only the independent parser units are accepted. The next
 optimization question is preparation cost within the original window, not a
-larger window. Grouping custody and barred enrollment would change intermediate
-observation frequency and requires agreement before that experiment.
+larger window. Grouping custody and barred enrollment changes intermediate
+observation frequency, so the subsequent experiment required explicit agreement.
 
 The independent [parser-only packet](../testing/performance/0.74/local-runs/original-collector-notices-20261018/README.md)
 passes eight descriptor/notice units per compiler and 221 static contracts,
 with the complete ordinary kernel and join frozen. It does not close the
 interrupted owner-fault gate.
+
+## Grouping preparation without renewing its deadline
+
+The approved [custody and enrollment experiment](../testing/performance/0.74/local-runs/original-enrollment-frame-20261018/README.md)
+targets repeated observation rather than an expensive cryptographic primitive.
+The old path closes a full custody frame, then opens and closes another full
+frame around barred enrollment. The new private path moves both nonexecuting
+child enrollments between the first opening and closing observations. Healthy
+controls assert 34 authentication calls and 34 signature calls at construction
+instead of 68 of each across the sequential path; later revalidation
+independently asserts 34 of each.
+That count reduction is established, but it is not a throughput, allocation or
+wall-time speedup claim for HydraCache product APIs.
+
+Ownership is part of the hypothesis. An owner containing a borrowed join into
+itself would create a self-reference. Instead, the new type owns original
+preparation and both children directly. Collector/custodian cancellation
+attempts precede destruction of original writers and the last custody alias.
+Failure retains that complete refused object. Neither the independent generic
+O_WRONLY watchdog nor the old original constructors/validators/raw children
+changes. The new composition reuses the exact original inventory and checks
+custody, both child states/notices, alarm and challenge age around closing.
+Readiness is last; P and B remain isolation notices, not execution authority.
+
+The fresh current/MSRV cohorts complete eight healthy controls, eighteen live
+refusals, six actual lost-B controls and twenty-four owning-process SIGKILL
+scenarios. Either child can die first, on either side of closing, without
+releasing the fence while the other survives past the original bound. Owner
+disconnect autonomously removes four collector I/O FDs; after both children die,
+retained history still refuses admission. All original origins and limits stay
+fixed, and the installed supervisor is unchanged. The first stopped matrix and
+its ABBA attribution remain separate negative evidence, not a retroactive pass.
+
+This accepts a selected barred composition, not active execution. Another slow
+host observation can still legitimately refuse the unchanged deadline. Before
+product work can start, authenticated original delivery/start, whole-writer
+enrollment and cessation, external active supervision and durable completion
+still need their own producers and fault proofs. Fewer redundant observations
+are useful only while those live authority checks remain real.

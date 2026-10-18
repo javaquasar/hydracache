@@ -69,6 +69,8 @@ The ABBA statuses were 101/0/0/0; the previous image also refused the same
 Challenge(Time) guard. The stopped candidate is withdrawn and recoverable from
 local-runs/original-collector-loss-20261018, including all thirteen source files.
 Only the independent notice/readiness units are accepted in 7d3a9edc. No later
-green observation closes the uncompleted MSRV gate. A proposed custody/enrollment
-frame-grouping experiment needs explicit agreement before implementation;
-its predicates, original origins/deadlines and start/send barriers must remain.
+green observation closes the uncompleted MSRV gate. The separately approved
+[custody/enrollment experiment](diagnostic-original-enrollment-frame-plan-20261018.md)
+has its own fresh complete two-compiler gate. It does not turn this withdrawn
+candidate green; predicates, original origins/deadlines and start/send barriers
+remain unchanged in the new composition.

@@ -1,0 +1,12 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.98s
+     Running tests\performance_contract_074.rs (target\debug\deps\performance_contract_074-affcfab4e5118d5a.exe)
+
+running 4 tests
+test fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::enrollment_owner_driver_retains_exact_pidfd_and_credential_guards ... ok
+test fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::enrollment_frame_owns_children_before_original_and_rechecks_live_inventory ... ok
+test fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::enrollment_frame_closes_original_predicates_before_any_ready_flag ... ok
+test fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::enrollment_frame_preserves_all_preexisting_original_code ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 221 filtered out; finished in 0.84s
+

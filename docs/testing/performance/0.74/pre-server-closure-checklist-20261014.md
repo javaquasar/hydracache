@@ -525,6 +525,13 @@ The first two-child matrix is stopped, not accepted: Rust 1.88's healthy screen
 refused Challenge(Time). The previous image also refused in separate healthy
 ABBA attribution. Rust 1.94's twelve owner cases/three lost-B controls remain
 scoped evidence only. Archived fault seams are withdrawn; parser units alone
-do not close the process gate. Attribute preparation budget before resuming;
-any custody/enrollment frame grouping requires explicit agreement and unchanged
-predicates/origins/deadlines, then fresh healthy/fault cohorts on both compilers.
+do not close the process gate. The separately approved
+[grouped enrollment packet](local-runs/original-enrollment-frame-20261018/README.md)
+now completes its own fresh current/MSRV gate: eight healthy controls, eighteen
+live refusals, six actual lost-B controls and twenty-four owner SIGKILL cases.
+The owning composition removes only the approved intermediate full observation;
+old predicates, original origins/deadlines and raw children remain exact. This
+closes selected barred-child owner-loss cuts, not the full active execution
+matrix. Authenticated original send/start, all-writer revocation/cessation,
+external active supervision, explicit cleanup failure handling and durable
+completion remain ahead of installation or any product/qualification admission.
