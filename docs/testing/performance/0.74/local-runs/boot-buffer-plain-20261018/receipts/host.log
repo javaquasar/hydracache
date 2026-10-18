@@ -1,0 +1,371 @@
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+tests-Baseline-194: OK
+tests-Candidate-194: OK
+tests-Baseline-188: OK
+tests-Candidate-188: OK
+guard.sh: OK
+run.sh: OK
+bundle/timing-controls-074: OK
+bundle/build-receipt-v1.json: OK
+bundle/build-log.jsonl: OK
+bundle/Cargo.lock.root: OK
+bundle/Cargo.lock.observer: OK
+bundle/embedded.json: OK
+bundle/direct.json: OK
+bundle/resp2.json: OK
+bundle/resp3.json: OK
+HC074-PLAIN-ADMISSION start=false install=false supervisor_changed=false
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-INVOCATION compiler=194 pair=0 role=Baseline begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::leaf_cost_tests::component_cost_tests::live_walk_tests::plain_worker_tests::original_plain_worker_batch ... HC074-PLAIN-WORKER iterations=128 wall_ns=192154441 original=true unchanged=true capture=false reservation=false start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1186 filtered out; finished in 0.37s
+
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-INVOCATION compiler=194 pair=0 role=Baseline completed=true
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-INVOCATION compiler=194 pair=0 role=Candidate begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::leaf_cost_tests::component_cost_tests::live_walk_tests::plain_worker_tests::original_plain_worker_batch ... HC074-PLAIN-WORKER iterations=128 wall_ns=183147972 original=true unchanged=true capture=false reservation=false start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1186 filtered out; finished in 0.36s
+
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-INVOCATION compiler=194 pair=0 role=Candidate completed=true
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-INVOCATION compiler=194 pair=1 role=Candidate begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::leaf_cost_tests::component_cost_tests::live_walk_tests::plain_worker_tests::original_plain_worker_batch ... HC074-PLAIN-WORKER iterations=128 wall_ns=184672374 original=true unchanged=true capture=false reservation=false start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1186 filtered out; finished in 0.36s
+
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-INVOCATION compiler=194 pair=1 role=Candidate completed=true
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-INVOCATION compiler=194 pair=1 role=Baseline begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::leaf_cost_tests::component_cost_tests::live_walk_tests::plain_worker_tests::original_plain_worker_batch ... HC074-PLAIN-WORKER iterations=128 wall_ns=191972034 original=true unchanged=true capture=false reservation=false start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1186 filtered out; finished in 0.37s
+
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-INVOCATION compiler=194 pair=1 role=Baseline completed=true
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-INVOCATION compiler=194 pair=2 role=Baseline begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::leaf_cost_tests::component_cost_tests::live_walk_tests::plain_worker_tests::original_plain_worker_batch ... HC074-PLAIN-WORKER iterations=128 wall_ns=192598792 original=true unchanged=true capture=false reservation=false start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1186 filtered out; finished in 0.38s
+
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-INVOCATION compiler=194 pair=2 role=Baseline completed=true
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-INVOCATION compiler=194 pair=2 role=Candidate begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::leaf_cost_tests::component_cost_tests::live_walk_tests::plain_worker_tests::original_plain_worker_batch ... HC074-PLAIN-WORKER iterations=128 wall_ns=183557074 original=true unchanged=true capture=false reservation=false start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1186 filtered out; finished in 0.35s
+
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-INVOCATION compiler=194 pair=2 role=Candidate completed=true
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-INVOCATION compiler=194 pair=3 role=Candidate begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::leaf_cost_tests::component_cost_tests::live_walk_tests::plain_worker_tests::original_plain_worker_batch ... HC074-PLAIN-WORKER iterations=128 wall_ns=183934978 original=true unchanged=true capture=false reservation=false start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1186 filtered out; finished in 0.36s
+
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-INVOCATION compiler=194 pair=3 role=Candidate completed=true
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-INVOCATION compiler=194 pair=3 role=Baseline begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::leaf_cost_tests::component_cost_tests::live_walk_tests::plain_worker_tests::original_plain_worker_batch ... HC074-PLAIN-WORKER iterations=128 wall_ns=193416228 original=true unchanged=true capture=false reservation=false start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1186 filtered out; finished in 0.37s
+
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-INVOCATION compiler=194 pair=3 role=Baseline completed=true
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-INVOCATION compiler=194 pair=4 role=Baseline begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::leaf_cost_tests::component_cost_tests::live_walk_tests::plain_worker_tests::original_plain_worker_batch ... HC074-PLAIN-WORKER iterations=128 wall_ns=195338424 original=true unchanged=true capture=false reservation=false start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1186 filtered out; finished in 0.38s
+
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-INVOCATION compiler=194 pair=4 role=Baseline completed=true
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-INVOCATION compiler=194 pair=4 role=Candidate begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::leaf_cost_tests::component_cost_tests::live_walk_tests::plain_worker_tests::original_plain_worker_batch ... HC074-PLAIN-WORKER iterations=128 wall_ns=183359218 original=true unchanged=true capture=false reservation=false start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1186 filtered out; finished in 0.36s
+
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-INVOCATION compiler=194 pair=4 role=Candidate completed=true
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-INVOCATION compiler=188 pair=0 role=Baseline begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::leaf_cost_tests::component_cost_tests::live_walk_tests::plain_worker_tests::original_plain_worker_batch ... HC074-PLAIN-WORKER iterations=128 wall_ns=186607569 original=true unchanged=true capture=false reservation=false start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1186 filtered out; finished in 0.36s
+
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-INVOCATION compiler=188 pair=0 role=Baseline completed=true
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-INVOCATION compiler=188 pair=0 role=Candidate begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::leaf_cost_tests::component_cost_tests::live_walk_tests::plain_worker_tests::original_plain_worker_batch ... HC074-PLAIN-WORKER iterations=128 wall_ns=183012514 original=true unchanged=true capture=false reservation=false start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1186 filtered out; finished in 0.36s
+
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-INVOCATION compiler=188 pair=0 role=Candidate completed=true
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-INVOCATION compiler=188 pair=1 role=Candidate begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::leaf_cost_tests::component_cost_tests::live_walk_tests::plain_worker_tests::original_plain_worker_batch ... HC074-PLAIN-WORKER iterations=128 wall_ns=182450205 original=true unchanged=true capture=false reservation=false start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1186 filtered out; finished in 0.35s
+
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-INVOCATION compiler=188 pair=1 role=Candidate completed=true
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-INVOCATION compiler=188 pair=1 role=Baseline begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::leaf_cost_tests::component_cost_tests::live_walk_tests::plain_worker_tests::original_plain_worker_batch ... HC074-PLAIN-WORKER iterations=128 wall_ns=192085652 original=true unchanged=true capture=false reservation=false start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1186 filtered out; finished in 0.37s
+
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-INVOCATION compiler=188 pair=1 role=Baseline completed=true
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-INVOCATION compiler=188 pair=2 role=Baseline begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::leaf_cost_tests::component_cost_tests::live_walk_tests::plain_worker_tests::original_plain_worker_batch ... HC074-PLAIN-WORKER iterations=128 wall_ns=191094769 original=true unchanged=true capture=false reservation=false start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1186 filtered out; finished in 0.37s
+
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-INVOCATION compiler=188 pair=2 role=Baseline completed=true
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-INVOCATION compiler=188 pair=2 role=Candidate begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::leaf_cost_tests::component_cost_tests::live_walk_tests::plain_worker_tests::original_plain_worker_batch ... HC074-PLAIN-WORKER iterations=128 wall_ns=183718841 original=true unchanged=true capture=false reservation=false start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1186 filtered out; finished in 0.36s
+
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-INVOCATION compiler=188 pair=2 role=Candidate completed=true
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-INVOCATION compiler=188 pair=3 role=Candidate begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::leaf_cost_tests::component_cost_tests::live_walk_tests::plain_worker_tests::original_plain_worker_batch ... HC074-PLAIN-WORKER iterations=128 wall_ns=183143882 original=true unchanged=true capture=false reservation=false start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1186 filtered out; finished in 0.36s
+
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-INVOCATION compiler=188 pair=3 role=Candidate completed=true
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-INVOCATION compiler=188 pair=3 role=Baseline begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::leaf_cost_tests::component_cost_tests::live_walk_tests::plain_worker_tests::original_plain_worker_batch ... HC074-PLAIN-WORKER iterations=128 wall_ns=193252341 original=true unchanged=true capture=false reservation=false start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1186 filtered out; finished in 0.38s
+
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-INVOCATION compiler=188 pair=3 role=Baseline completed=true
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-INVOCATION compiler=188 pair=4 role=Baseline begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::leaf_cost_tests::component_cost_tests::live_walk_tests::plain_worker_tests::original_plain_worker_batch ... HC074-PLAIN-WORKER iterations=128 wall_ns=192925926 original=true unchanged=true capture=false reservation=false start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1186 filtered out; finished in 0.36s
+
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-INVOCATION compiler=188 pair=4 role=Baseline completed=true
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-INVOCATION compiler=188 pair=4 role=Candidate begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::leaf_cost_tests::component_cost_tests::live_walk_tests::plain_worker_tests::original_plain_worker_batch ... HC074-PLAIN-WORKER iterations=128 wall_ns=183610473 original=true unchanged=true capture=false reservation=false start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1186 filtered out; finished in 0.36s
+
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-INVOCATION compiler=188 pair=4 role=Candidate completed=true
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-PREPARATION compiler=194 test=original_grouped_addressed_frame_controls begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::collector_tests::enrollment_tests::manager_tests::addressed_tests::original_grouped_addressed_frame_controls ... HC074-GROUPED-AGE sample=0 pass=0 issued_ns=1052577587189424 age_before_ns=8875490879 age_after_ns=9199054307 auth=34 signatures=34 channel_checks=2 result=Ok(())
+HC074-GROUPED-ADDRESSED-CONTROL sample=0 pass=0 frame_ipc=34 channel_checks=2 test_channel_only=true start=false
+HC074-GROUPED-AGE sample=0 pass=1 issued_ns=1052577587189424 age_before_ns=9199173565 age_after_ns=9521309079 auth=34 signatures=34 channel_checks=2 result=Ok(())
+HC074-GROUPED-ADDRESSED-CONTROL sample=0 pass=1 frame_ipc=34 channel_checks=2 test_channel_only=true start=false
+HC074-GROUPED-ADDRESSED-TRANSFER sample=0 original_writers=2 rights=true same_process_socket=true system_bus_delivery=false start=false
+HC074-GROUPED-AGE sample=1 pass=0 issued_ns=1052590687381341 age_before_ns=8878133673 age_after_ns=9200097040 auth=34 signatures=34 channel_checks=2 result=Ok(())
+HC074-GROUPED-ADDRESSED-CONTROL sample=1 pass=0 frame_ipc=34 channel_checks=2 test_channel_only=true start=false
+HC074-GROUPED-AGE sample=1 pass=1 issued_ns=1052590687381341 age_before_ns=9200213548 age_after_ns=9522443730 auth=34 signatures=34 channel_checks=2 result=Ok(())
+HC074-GROUPED-ADDRESSED-CONTROL sample=1 pass=1 frame_ipc=34 channel_checks=2 test_channel_only=true start=false
+HC074-GROUPED-ADDRESSED-TRANSFER sample=1 original_writers=2 rights=true same_process_socket=true system_bus_delivery=false start=false
+HC074-GROUPED-AGE sample=2 pass=0 issued_ns=1052603805807204 age_before_ns=8901236050 age_after_ns=9224528493 auth=34 signatures=34 channel_checks=2 result=Ok(())
+HC074-GROUPED-ADDRESSED-CONTROL sample=2 pass=0 frame_ipc=34 channel_checks=2 test_channel_only=true start=false
+HC074-GROUPED-AGE sample=2 pass=1 issued_ns=1052603805807204 age_before_ns=9224646891 age_after_ns=9548534663 auth=34 signatures=34 channel_checks=2 result=Ok(())
+HC074-GROUPED-ADDRESSED-CONTROL sample=2 pass=1 frame_ipc=34 channel_checks=2 test_channel_only=true start=false
+HC074-GROUPED-ADDRESSED-TRANSFER sample=2 original_writers=2 rights=true same_process_socket=true system_bus_delivery=false start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1186 filtered out; finished in 39.33s
+
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-PREPARATION compiler=194 test=original_grouped_addressed_frame_controls completed=true
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-PREPARATION compiler=194 test=original_grouped_addressed_frame_refusals begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::collector_tests::enrollment_tests::manager_tests::addressed_tests::original_grouped_addressed_frame_refusals ... HC074-GROUPED-ADDRESSED-REFUSAL case=alias reason=Binding sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=client reason=Binding sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=flags-fd reason=Canonical(Binding) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=body reason=Binding sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=swapped reason=Binding sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=serial reason=Binding sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=missing reason=Binding sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=channel-before reason=Frame(Channel) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=channel-after reason=Frame(Channel) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=context-before reason=Frame(Kernel(Invalid)) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=context-after reason=Frame(Kernel(Invalid)) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=message reason=Frame(Original(Original(Binding))) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=output reason=Frame(Original(Original(Binding))) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=custodian-kill reason=Frame(Original(Child)) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=inside-message reason=Frame(Original(Original(Binding))) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=inside-collector-kill reason=Frame(Original(Child)) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=inside-final-expiry reason=Frame(Original(Original(Original(Expired)))) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=trust reason=Frame(Original(Original(Original(Transport(Material(Outputs(Original(Original(Original(Causal(Reservation(Attempt(Controller(Original(Input(Invalid)))))))))))))))) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=collector-kill reason=Frame(Original(Child)) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=final-expiry reason=Frame(Original(Original(Original(Expired)))) sticky=true start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1186 filtered out; finished in 252.18s
+
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-PREPARATION compiler=194 test=original_grouped_addressed_frame_refusals completed=true
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-PREPARATION compiler=194 test=original_grouped_addressed_nonroot_fixed_refusal begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::collector_tests::enrollment_tests::manager_tests::addressed_tests::original_grouped_addressed_nonroot_fixed_refusal ... HC074-GROUPED-ADDRESSED nonroot=true fixed_refused=true original_owner_retained=true start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1186 filtered out; finished in 12.45s
+
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-PREPARATION compiler=194 test=original_grouped_addressed_nonroot_fixed_refusal completed=true
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-PREPARATION compiler=188 test=original_grouped_addressed_frame_controls begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::collector_tests::enrollment_tests::manager_tests::addressed_tests::original_grouped_addressed_frame_controls ... HC074-GROUPED-AGE sample=0 pass=0 issued_ns=1052883778990295 age_before_ns=8841673157 age_after_ns=9163535023 auth=34 signatures=34 channel_checks=2 result=Ok(())
+HC074-GROUPED-ADDRESSED-CONTROL sample=0 pass=0 frame_ipc=34 channel_checks=2 test_channel_only=true start=false
+HC074-GROUPED-AGE sample=0 pass=1 issued_ns=1052883778990295 age_before_ns=9163653251 age_after_ns=9486104647 auth=34 signatures=34 channel_checks=2 result=Ok(())
+HC074-GROUPED-ADDRESSED-CONTROL sample=0 pass=1 frame_ipc=34 channel_checks=2 test_channel_only=true start=false
+HC074-GROUPED-ADDRESSED-TRANSFER sample=0 original_writers=2 rights=true same_process_socket=true system_bus_delivery=false start=false
+HC074-GROUPED-AGE sample=1 pass=0 issued_ns=1052896825645714 age_before_ns=8852829496 age_after_ns=9174810980 auth=34 signatures=34 channel_checks=2 result=Ok(())
+HC074-GROUPED-ADDRESSED-CONTROL sample=1 pass=0 frame_ipc=34 channel_checks=2 test_channel_only=true start=false
+HC074-GROUPED-AGE sample=1 pass=1 issued_ns=1052896825645714 age_before_ns=9174929188 age_after_ns=9497415534 auth=34 signatures=34 channel_checks=2 result=Ok(())
+HC074-GROUPED-ADDRESSED-CONTROL sample=1 pass=1 frame_ipc=34 channel_checks=2 test_channel_only=true start=false
+HC074-GROUPED-ADDRESSED-TRANSFER sample=1 original_writers=2 rights=true same_process_socket=true system_bus_delivery=false start=false
+HC074-GROUPED-AGE sample=2 pass=0 issued_ns=1052909898582665 age_before_ns=8861176553 age_after_ns=9183432183 auth=34 signatures=34 channel_checks=2 result=Ok(())
+HC074-GROUPED-ADDRESSED-CONTROL sample=2 pass=0 frame_ipc=34 channel_checks=2 test_channel_only=true start=false
+HC074-GROUPED-AGE sample=2 pass=1 issued_ns=1052909898582665 age_before_ns=9183565950 age_after_ns=9506363981 auth=34 signatures=34 channel_checks=2 result=Ok(())
+HC074-GROUPED-ADDRESSED-CONTROL sample=2 pass=1 frame_ipc=34 channel_checks=2 test_channel_only=true start=false
+HC074-GROUPED-ADDRESSED-TRANSFER sample=2 original_writers=2 rights=true same_process_socket=true system_bus_delivery=false start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1186 filtered out; finished in 39.19s
+
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-PREPARATION compiler=188 test=original_grouped_addressed_frame_controls completed=true
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-PREPARATION compiler=188 test=original_grouped_addressed_frame_refusals begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::collector_tests::enrollment_tests::manager_tests::addressed_tests::original_grouped_addressed_frame_refusals ... HC074-GROUPED-ADDRESSED-REFUSAL case=alias reason=Binding sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=client reason=Binding sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=flags-fd reason=Canonical(Binding) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=body reason=Binding sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=swapped reason=Binding sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=serial reason=Binding sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=missing reason=Binding sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=channel-before reason=Frame(Channel) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=channel-after reason=Frame(Channel) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=context-before reason=Frame(Kernel(Invalid)) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=context-after reason=Frame(Kernel(Invalid)) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=message reason=Frame(Original(Original(Binding))) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=output reason=Frame(Original(Original(Binding))) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=custodian-kill reason=Frame(Original(Child)) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=inside-message reason=Frame(Original(Original(Binding))) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=inside-collector-kill reason=Frame(Original(Child)) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=inside-final-expiry reason=Frame(Original(Original(Original(Expired)))) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=trust reason=Frame(Original(Original(Original(Transport(Material(Outputs(Original(Original(Original(Causal(Reservation(Attempt(Controller(Original(Input(Invalid)))))))))))))))) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=collector-kill reason=Frame(Original(Child)) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=final-expiry reason=Frame(Original(Original(Original(Expired)))) sticky=true start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1186 filtered out; finished in 252.00s
+
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-PREPARATION compiler=188 test=original_grouped_addressed_frame_refusals completed=true
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-PREPARATION compiler=188 test=original_grouped_addressed_nonroot_fixed_refusal begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::collector_tests::enrollment_tests::manager_tests::addressed_tests::original_grouped_addressed_nonroot_fixed_refusal ... HC074-GROUPED-ADDRESSED nonroot=true fixed_refused=true original_owner_retained=true start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1186 filtered out; finished in 12.44s
+
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-PREPARATION compiler=188 test=original_grouped_addressed_nonroot_fixed_refusal completed=true
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-PLAIN-HOST completed=true supervisor_unchanged=true no_fixture_executable=true start=false

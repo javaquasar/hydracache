@@ -666,3 +666,15 @@ unchanged preparation healthy/fault gate pass. `2ed04dc8` remains the approved
 preparation source. No new authenticated-start, all-writer cessation,
 completion, SIGKILL/lost-ack, reconnect, enrollment or installation gate closes
 with this local experiment.
+
+The [matched plain and preparation gate](local-runs/boot-buffer-plain-20261018/README.md)
+now accepts `8e7e5da1` for nonexecuting preparation only. All twenty plain and
+six complete preparation invocations pass on first dispatch with unchanged
+live checks, 46 effect brackets and original deadlines. Whole-worker wall cost
+is about 4–5 percent lower in the scoped paired cohort; this is not product
+throughput or a guaranteed preparation margin. Forty sticky refusals and both
+nonroot fixed-channel controls remain intact. The roughly 451 ms observed
+healthy margin does not open start admission. Next close negotiated original
+message/FD delivery and authenticated manager/process binding, then all-writer
+cessation before completion/later cells and their full new-boundary fault matrix.
+Supervisor, installed artifacts and qualification inputs remain unchanged.

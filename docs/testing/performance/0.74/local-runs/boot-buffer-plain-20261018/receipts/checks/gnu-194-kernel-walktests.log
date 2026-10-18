@@ -1,0 +1,11 @@
+
+running 6 tests
+test diagnostic_ipc::validation_trace::kernel_walk::tests::kernel_numeric_capture_is_thread_local ... ok
+test diagnostic_ipc::validation_trace::kernel_walk::tests::kernel_numeric_empty_and_inactive_capture ... ok
+test diagnostic_ipc::validation_trace::kernel_walk::tests::kernel_numeric_escaping_span_cannot_complete_capture ... ok
+test diagnostic_ipc::validation_trace::kernel_walk::tests::kernel_numeric_nested_capture_and_unwind_restore_original ... ok
+test diagnostic_ipc::validation_trace::kernel_walk::tests::kernel_numeric_nested_edges_are_counted_once ... ok
+test diagnostic_ipc::validation_trace::kernel_walk::tests::kernel_numeric_recursive_kinds_keep_direct_edges ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 1181 filtered out; finished in 0.01s
+

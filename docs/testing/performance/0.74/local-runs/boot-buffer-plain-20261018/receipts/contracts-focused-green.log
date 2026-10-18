@@ -1,0 +1,10 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 9.52s
+     Running tests\performance_contract_074.rs (target\debug\deps\performance_contract_074-affcfab4e5118d5a.exe)
+
+running 2 tests
+test live_walk::kernel_walk::boot_buffer::plain_worker::plain_worker_has_one_fixed_uncaptured_batch_and_closing_original_checks ... ok
+test live_walk::kernel_walk::boot_buffer::plain_worker::plain_worker_preserves_all_old_runtime_and_test_sources_exactly ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 249 filtered out; finished in 21.05s
+

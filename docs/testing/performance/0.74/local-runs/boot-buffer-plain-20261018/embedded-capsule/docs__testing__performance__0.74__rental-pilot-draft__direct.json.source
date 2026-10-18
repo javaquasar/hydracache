@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "profile_id": "unprofiled-timing-controls-074-v1",
+  "surface": "direct",
+  "operation": "get",
+  "seed": 740074,
+  "keyspace": 16,
+  "payload_bytes": 4096,
+  "dataset_sha256": "d1f7bca83840d79ebea94a65bfe9389bf2465a5ca2ac3d74535bca3600663498",
+  "slots": 8,
+  "pipeline_depth": 0,
+  "warmup_calls": 64,
+  "minimum_usable_cpu_ns": 1000000000,
+  "minimum_usable_measurement_wall_ns": 1000000000,
+  "schedule": {
+    "operations": 10000,
+    "offered_rate_per_second": 5000,
+    "concurrency": 8,
+    "maximum_queued": 32,
+    "operation_timeout_ns": 2000000000,
+    "drain_timeout_ns": 5000000000,
+    "slo_ns": 10000000,
+    "highest_trackable_ns": 10000000000
+  }
+}

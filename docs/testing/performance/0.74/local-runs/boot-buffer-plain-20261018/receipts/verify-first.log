@@ -1,0 +1,3 @@
+HC074-PLAIN-INPUTS total=367 differing=1 origin_only=true within_role_identical=true
+HC074-PLAIN-PARSER synthetic_only=true constant_ratio=0.9 negative_controls=9 refused=true
+HC074-PLAIN-VERIFY source=8e7e5da13b4cf4219c8f9cd15d4fd72e2899dc45 inputs=367 differing=1 invocations=26 healthy_rounds=12 refusals=40 preparation_accepted=True start=false

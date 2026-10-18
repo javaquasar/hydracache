@@ -795,5 +795,15 @@ and original deadlines remain unchanged. The source adapter must exactly
 restore all 353 old Rust sources outside the declared substitution. Allocation
 counting is confined to a separate integration image; it establishes only the
 temporary-reader reduction. Plain matched original-worker timing and the full
-preparation healthy/fault gate are still required before accepting this source.
-The approved preparation identity remains `2ed04dc8`, not this branch candidate.
+preparation healthy/fault gate were still required at that local-only checkpoint.
+
+The [plain worker and complete preparation gate](local-runs/boot-buffer-plain-20261018/README.md)
+now accepts source `8e7e5da1` for nonexecuting preparation. The only active
+runtime comparison is the boot-buffer substitution. Five fresh pairs per GNU
+compiler pass the frozen local wall criteria; all twelve healthy message rounds,
+forty sticky refusals, six owned transfers and two real channel refusals pass.
+No original predicate, origin, effect bracket or deadline is removed. Maximum
+observed successful challenge age leaves 451 ms, not a guaranteed dispatch
+budget. Same-process rights transfers remain distinct from negotiated system-bus
+delivery. Authenticated original-start, all-writer cessation, completion/later
+cells and new-boundary SIGKILL/lost-ack/reconnect remain unadmitted.

@@ -1,0 +1,9 @@
+
+running 4 tests
+test diagnostic_ipc::validation_trace::live_walk::tests::empty_and_inactive_spans_cannot_leak_into_capture ... ok
+test diagnostic_ipc::validation_trace::live_walk::tests::nested_capture_and_panic_restore_original_frame ... ok
+test diagnostic_ipc::validation_trace::live_walk::tests::nested_spans_count_direct_children_once ... ok
+test diagnostic_ipc::validation_trace::live_walk::tests::thread_local_capture_does_not_observe_another_thread ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 1183 filtered out; finished in 0.02s
+

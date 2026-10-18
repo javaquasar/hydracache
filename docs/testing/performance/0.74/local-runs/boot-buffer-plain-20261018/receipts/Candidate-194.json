@@ -1,0 +1,10 @@
+{
+  "image": "/home/artur/.cache/hydracache-074-194-check/release/deps/hydracache_long_run_supervisor_074-b26b156d3dcd0098",
+  "origin_raw_sha256": "295924de6316c08eb2e9a2d1c676191455699b75f5a1b7df055e5c88df3c2d05",
+  "sha256": "b3c668bb28231d20d42eb0a0ce86ac16f24fea77b2db05a7f751f905252f2c44",
+  "role": "Candidate",
+  "compiler": "194",
+  "inputs": 367,
+  "copy": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\boot-buffer-plain-20261018\\tests-Candidate-194",
+  "version": "1.94.0"
+}

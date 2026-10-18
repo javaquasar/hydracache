@@ -1,0 +1,116 @@
+{
+  "selected_inputs": 367,
+  "sources": [
+    {
+      "capsule": "source-capsule/crates__xtask__tests__support__performance_contract_074_boot_buffer.rs.source",
+      "path": "crates/xtask/tests/support/performance_contract_074_boot_buffer.rs"
+    },
+    {
+      "capsule": "source-capsule/crates__xtask__tests__support__performance_contract_074_plain_worker.rs.source",
+      "path": "crates/xtask/tests/support/performance_contract_074_plain_worker.rs"
+    },
+    {
+      "capsule": "source-capsule/docs__testing__gated-test-registry.toml.source",
+      "path": "docs/testing/gated-test-registry.toml"
+    },
+    {
+      "capsule": "source-capsule/docs__testing__performance__0.74__local-runs__boot-buffer-plain-20261018__.gitattributes.source",
+      "path": "docs/testing/performance/0.74/local-runs/boot-buffer-plain-20261018/.gitattributes"
+    },
+    {
+      "capsule": "source-capsule/docs__testing__performance__0.74__local-runs__boot-buffer-plain-20261018__build.ps1.source",
+      "path": "docs/testing/performance/0.74/local-runs/boot-buffer-plain-20261018/build.ps1"
+    },
+    {
+      "capsule": "source-capsule/docs__testing__performance__0.74__local-runs__boot-buffer-plain-20261018__check.ps1.source",
+      "path": "docs/testing/performance/0.74/local-runs/boot-buffer-plain-20261018/check.ps1"
+    },
+    {
+      "capsule": "source-capsule/docs__testing__performance__0.74__local-runs__boot-buffer-plain-20261018__compare-inputs.ps1.source",
+      "path": "docs/testing/performance/0.74/local-runs/boot-buffer-plain-20261018/compare-inputs.ps1"
+    },
+    {
+      "capsule": "source-capsule/docs__testing__performance__0.74__local-runs__boot-buffer-plain-20261018__host-guard.sh.source",
+      "path": "docs/testing/performance/0.74/local-runs/boot-buffer-plain-20261018/host-guard.sh"
+    },
+    {
+      "capsule": "source-capsule/docs__testing__performance__0.74__local-runs__boot-buffer-plain-20261018__host-run.sh.source",
+      "path": "docs/testing/performance/0.74/local-runs/boot-buffer-plain-20261018/host-run.sh"
+    },
+    {
+      "capsule": "source-capsule/docs__testing__performance__0.74__local-runs__boot-buffer-plain-20261018__parser-selftest.ps1.source",
+      "path": "docs/testing/performance/0.74/local-runs/boot-buffer-plain-20261018/parser-selftest.ps1"
+    },
+    {
+      "capsule": "source-capsule/docs__testing__performance__0.74__local-runs__boot-buffer-plain-20261018__rows.ps1.source",
+      "path": "docs/testing/performance/0.74/local-runs/boot-buffer-plain-20261018/rows.ps1"
+    },
+    {
+      "capsule": "source-capsule/docs__testing__performance__0.74__local-runs__boot-buffer-plain-20261018__run-host.ps1.source",
+      "path": "docs/testing/performance/0.74/local-runs/boot-buffer-plain-20261018/run-host.ps1"
+    },
+    {
+      "capsule": "source-capsule/tools__long-run-supervisor-074__src__diagnostic_original_live_walk_cost_tests.rs.source",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_live_walk_cost_tests.rs"
+    },
+    {
+      "capsule": "source-capsule/tools__long-run-supervisor-074__src__diagnostic_original_plain_worker_tests.rs.source",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_plain_worker_tests.rs"
+    }
+  ],
+  "literal_embed_calls": 27,
+  "embedded": [
+    {
+      "capsule": "embedded-capsule/Cargo.lock.source",
+      "path": "Cargo.lock"
+    },
+    {
+      "capsule": "embedded-capsule/docs__testing__performance__0.74__diagnostic-builder-public-policy.json.source",
+      "path": "docs/testing/performance/0.74/diagnostic-builder-public-policy.json"
+    },
+    {
+      "capsule": "embedded-capsule/docs__testing__performance__0.74__local-runs__diagnostic-builder-hosted-37923423889__build-receipt-v1.json.source",
+      "path": "docs/testing/performance/0.74/local-runs/diagnostic-builder-hosted-37923423889/build-receipt-v1.json"
+    },
+    {
+      "capsule": "embedded-capsule/docs__testing__performance__0.74__rental-pilot-draft__direct.json.source",
+      "path": "docs/testing/performance/0.74/rental-pilot-draft/direct.json"
+    },
+    {
+      "capsule": "embedded-capsule/docs__testing__performance__0.74__rental-pilot-draft__embedded.json.source",
+      "path": "docs/testing/performance/0.74/rental-pilot-draft/embedded.json"
+    },
+    {
+      "capsule": "embedded-capsule/docs__testing__performance__0.74__rental-pilot-draft__resp2.json.source",
+      "path": "docs/testing/performance/0.74/rental-pilot-draft/resp2.json"
+    },
+    {
+      "capsule": "embedded-capsule/docs__testing__performance__0.74__rental-pilot-draft__resp3.json.source",
+      "path": "docs/testing/performance/0.74/rental-pilot-draft/resp3.json"
+    },
+    {
+      "capsule": "embedded-capsule/tools__get-owner-scheduled-controls-074__Cargo.lock.source",
+      "path": "tools/get-owner-scheduled-controls-074/Cargo.lock"
+    },
+    {
+      "capsule": "embedded-capsule/tools__long-run-supervisor-074__src__diagnostic_signer_handoff_helper.rs.source",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_handoff_helper.rs"
+    },
+    {
+      "capsule": "embedded-capsule/tools__long-run-supervisor-074__src__diagnostic_signer_joined_helper.rs.source",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_joined_helper.rs"
+    },
+    {
+      "capsule": "embedded-capsule/tools__long-run-supervisor-074__src__diagnostic_signer_namespace_helper.rs.source",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_namespace_helper.rs"
+    },
+    {
+      "capsule": "embedded-capsule/tools__long-run-supervisor-074__tests__fixtures__public-synthetic-oidc-rsa-2048.pk8.b64.source",
+      "path": "tools/long-run-supervisor-074/tests/fixtures/public-synthetic-oidc-rsa-2048.pk8.b64"
+    }
+  ],
+  "preregistration_commit": "3279fecfefd09802591bcff8353a3fe0d8fb0b4b",
+  "source_commit": "8e7e5da13b4cf4219c8f9cd15d4fd72e2899dc45",
+  "rust_sources": 356,
+  "complete_compiler_attestation": false
+}

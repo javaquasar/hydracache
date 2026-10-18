@@ -66,6 +66,11 @@ qualification is authorized by this experiment.
 Preregistered at `157a77b0` before implementing or measuring the candidate.
 Experimental source `dc00ebf9139c61d26750fe7875952483330c0453` passes the local
 semantic/fault, allocation and source gates; the [local packet](local-runs/boot-buffer-20261018/README.md)
-retains all receipts. Plain matched original-worker timing and full preparation
-healthy/fault gates remain unexecuted. The approved preparation source remains
-`2ed04dc866b39fefea8d81be2328f7f1382e3d46` until those gates pass.
+retains all receipts. The subsequent
+[plain comparison and preparation packet](local-runs/boot-buffer-plain-20261018/README.md)
+at `8e7e5da13b4cf4219c8f9cd15d4fd72e2899dc45` passes ten fresh matched pairs
+and the unchanged complete preparation healthy/fault gate. Both compiler
+intervals satisfy the preregistered lower-cost and non-regression criteria.
+This accepts the fixed buffer for nonexecuting preparation only, superseding
+`2ed04dc8` for that scoped source gate. Product/start/enrollment admission and
+a worst-case challenge-margin guarantee remain absent.

@@ -13106,8 +13106,45 @@ and allocation assertions, so the test distinguishes the proposed change.
 
 This proves a narrow allocation reduction, not a whole-worker allocation total
 or a throughput gain. The returned boot String and path allocations remain.
-Requested allocation bytes are not copied bytes or RSS. The runtime candidate
-remains experimental until plain matched original-worker timing and the full
-preparation healthy/fault gate pass at the original deadlines. All live
+Requested allocation bytes are not copied bytes or RSS. That local packet alone
+kept the runtime candidate experimental pending plain matched original-worker
+timing and the full preparation healthy/fault gate at the original deadlines. All live
 observations and 46 effect brackets remain required; the earlier challenge
 margin is not enlarged by source inspection or by this allocation result.
+
+### Plain worker pairs confirm a smaller validation cost
+
+The [next gate](../testing/performance/0.74/local-runs/boot-buffer-plain-20261018/README.md)
+separates that allocation observation from elapsed-time evidence. Baseline and
+candidate use identical GNU libtest harnesses and source paths; only the old
+versus fixed-buffer boot function differs. All 367 selected inputs agree
+within each role. Existing tracing hooks remain inactive, and the counting
+allocator is absent. Each fresh fixture times 128 actual retained worker
+validations, with full original checks before and after the loop.
+
+Five independently started pairs per compiler run in alternating AB/BA order.
+The paired geometric mean candidate/baseline wall ratio is 0.95153 for GNU
+1.94.0 and 0.95820 for MSRV 1.88.0: about 4.85 and 4.18 percent lower whole-worker
+wall cost. Their preregistered two-sided 95-percent log-ratio Student intervals
+are 0.94119–0.96199 and 0.94156–0.97513. Both clear the frozen one-percent
+lower-cost criterion and non-regression check. The 2,560 calls are not 2,560
+independent samples: the estimator has five pairs per compiler and assumes
+approximately normal paired log ratios. These are batch-average validation
+observations on one host, not CPU/op, tail latency or cache API throughput.
+
+The mechanism preserves observation frequency. Six subsequent healthy
+preparation fixtures pass twelve complete message rounds; forty live refusal
+scenarios remain sticky, six same-process rights transfers retain the original
+writers, and two real nonroot fixed-channel refusals preserve the owner/fence.
+The 46 effect brackets and original 300/60/10-second origins remain unchanged.
+All tests pass on first dispatch. This accepts the small buffer for the
+nonexecuting preparation path at source `8e7e5da1`.
+
+The maximum successful recorded challenge age is 9.548534663 seconds, leaving
+about 451 ms of the original ten-second window. That is an observation across
+six healthy fixtures, not a worst-case guarantee or a matched measurement of
+total preparation improvement. It must not become a new allowance or a reason
+to weaken the next effect's checks. Real negotiated bus FD delivery and start,
+all-writer cessation, durable completion/later cells and reconnect still need
+their own proofs. The installed supervisor, release and qualification inputs
+remain unchanged.

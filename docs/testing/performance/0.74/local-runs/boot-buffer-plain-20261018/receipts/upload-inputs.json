@@ -1,0 +1,62 @@
+[
+  {
+    "sha256": "47d8fb5248c12342fb98d3b08800f806a7ce9ccd2b2d3f1f9168e968ec73e6f6",
+    "path": "tests-Baseline-194"
+  },
+  {
+    "sha256": "b3c668bb28231d20d42eb0a0ce86ac16f24fea77b2db05a7f751f905252f2c44",
+    "path": "tests-Candidate-194"
+  },
+  {
+    "sha256": "a5575053f529ea1c71931131a46fc3b9551c70a3ba8708124e215b4eb4945bb1",
+    "path": "tests-Baseline-188"
+  },
+  {
+    "sha256": "24909da04cb237ede29a41516c12c1d80c2429f12e5c8812d3d004d7ca20b22c",
+    "path": "tests-Candidate-188"
+  },
+  {
+    "sha256": "d4374179e094d1d66289bf8a1bb8b650af5f2b982d2607b9881bffeb49f2305f",
+    "path": "guard.sh"
+  },
+  {
+    "sha256": "3f480ff965bd91fc3e197a01ae5ee00557a8687f5bc16154deec81e085a14c2a",
+    "path": "run.sh"
+  },
+  {
+    "sha256": "bda1c094f3de7c6d42ec45c757838c7a41a8ff1d63a025c661af84455169a101",
+    "path": "bundle/timing-controls-074"
+  },
+  {
+    "sha256": "e32bb7cd9b6cbf1d91d52abc79cb1e0225b3a7f6602e82e5b9a303c3645a77d7",
+    "path": "bundle/build-receipt-v1.json"
+  },
+  {
+    "sha256": "8a2a495348bd317f7a2092a622838fc489bdcf077f4a8269210b2b78381b3c58",
+    "path": "bundle/build-log.jsonl"
+  },
+  {
+    "sha256": "be46eaf8e97e507bda5e3f2b671d0d622e6a639ce1d4613769a4693723d62b19",
+    "path": "bundle/Cargo.lock.root"
+  },
+  {
+    "sha256": "e3be470f5a1bff4e917e841fc5bfbd257ff12559206bbc1481c3c4bca528eb1d",
+    "path": "bundle/Cargo.lock.observer"
+  },
+  {
+    "sha256": "5c219730c8a782ed47dfa0b291a29f44f753c3688f8548c136174a89cee55149",
+    "path": "bundle/embedded.json"
+  },
+  {
+    "sha256": "5485b10f50906833006ad3f3a40b4909760ef01e3f2c86395e4366bf83cc6ef9",
+    "path": "bundle/direct.json"
+  },
+  {
+    "sha256": "f0aba16dfe0354801d0b3c83ee9fc2d1b4751be5f50280634690ed4bcf3030ae",
+    "path": "bundle/resp2.json"
+  },
+  {
+    "sha256": "b680683c291d0a4dadbac1901f051ba0fedcac0ac9127d197e0261fe6fdabdd7",
+    "path": "bundle/resp3.json"
+  }
+]

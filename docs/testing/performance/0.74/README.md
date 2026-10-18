@@ -4063,6 +4063,18 @@ one-read/offset-zero behavior, public errors and all live checks. Separate
 Windows/current/MSRV allocation images each repeat five 32-read scopes:
 32 allocations and 2,097,184 requested bytes for the old temporary reader,
 zero for the candidate. This is not a whole-worker, RSS or throughput claim.
-The candidate remains experimental pending plain matched timing and unchanged
-full preparation healthy/fault checks. Approved preparation remains `2ed04dc8`;
-no server execution, enrollment or installation gate is opened.
+At that local-only checkpoint the candidate remained experimental pending plain
+matched timing and unchanged full preparation healthy/fault checks; no execution,
+enrollment or installation gate was opened.
+
+The subsequent [plain worker/preparation gate](local-runs/boot-buffer-plain-20261018/README.md)
+at `8e7e5da1` accepts the fixed buffer for nonexecuting preparation only. Ten
+fresh pairs produce whole-validator wall ratios of 0.95153 and 0.95820 for
+GNU current/MSRV, with separate paired intervals inside the frozen criteria.
+Twenty plain and six preparation invocations pass without retry: twelve healthy
+rounds, forty sticky refusals, six same-process rights transfers and two real
+fixed-channel refusals. Original 46 effect brackets and deadlines remain.
+Maximum observed successful challenge age leaves about 451 ms, not a worst-case
+guarantee or permission to extend the window. The supervisor/install remain
+unchanged; authenticated bus start, all-writer cessation, completion, reconnect
+and production enrollment remain open.

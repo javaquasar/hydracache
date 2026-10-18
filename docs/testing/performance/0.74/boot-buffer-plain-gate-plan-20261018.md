@@ -69,3 +69,13 @@ does not close authenticated original-start, negotiated bus FD delivery,
 all-writer cessation, completion/later cells, SIGKILL/lost-ack or same-attempt
 reconnect/enrollment/installation gates. Preserve the frozen qualification
 manifest digest and all older negative packets.
+
+## Result
+
+The [retained packet](local-runs/boot-buffer-plain-20261018/README.md) at
+`8e7e5da13b4cf4219c8f9cd15d4fd72e2899dc45` passes all twenty plain and six
+preparation invocations without retry. Candidate/baseline geometric mean wall
+ratios are 0.95153 (GNU 1.94.0) and 0.95820 (MSRV 1.88.0); both paired intervals
+meet the frozen local criteria. Twelve healthy rounds, forty sticky refusals,
+six owned rights transfers and two fixed-channel refusals pass. Preparation-only
+acceptance does not open any execution, installation or product measurement gate.

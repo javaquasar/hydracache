@@ -1,0 +1,16 @@
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+tests-Baseline-194: OK
+tests-Candidate-194: OK
+tests-Baseline-188: OK
+tests-Candidate-188: OK
+guard.sh: OK
+run.sh: OK
+bundle/timing-controls-074: OK
+bundle/build-receipt-v1.json: OK
+bundle/build-log.jsonl: OK
+bundle/Cargo.lock.root: OK
+bundle/Cargo.lock.observer: OK
+bundle/embedded.json: OK
+bundle/direct.json: OK
+bundle/resp2.json: OK
+bundle/resp3.json: OK

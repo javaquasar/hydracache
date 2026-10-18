@@ -1,0 +1,334 @@
+{
+  "preparation_accepted": true,
+  "statistics": [
+    {
+      "lower_cost_confirmed": true,
+      "compiler": "194",
+      "non_regression": true,
+      "pairs": [
+        {
+          "pair": 0,
+          "candidate_ns_per_validation": 1430843.53125,
+          "ratio": 0.9531290093888592,
+          "baseline_ns_per_validation": 1501206.5703125
+        },
+        {
+          "pair": 1,
+          "candidate_ns_per_validation": 1442752.921875,
+          "ratio": 0.9619753989792076,
+          "baseline_ns_per_validation": 1499781.515625
+        },
+        {
+          "pair": 2,
+          "candidate_ns_per_validation": 1434039.640625,
+          "ratio": 0.9530541292283911,
+          "baseline_ns_per_validation": 1504678.0625
+        },
+        {
+          "pair": 3,
+          "candidate_ns_per_validation": 1436992.015625,
+          "ratio": 0.9509800697798739,
+          "baseline_ns_per_validation": 1511064.28125
+        },
+        {
+          "pair": 4,
+          "candidate_ns_per_validation": 1432493.890625,
+          "ratio": 0.9386746050536375,
+          "baseline_ns_per_validation": 1526081.4375
+        }
+      ],
+      "ci95_upper": 0.9619902086022882,
+      "product_claim": false,
+      "geometric_mean_ratio": 0.9515331892624805,
+      "ci95_lower": 0.9411898397422773
+    },
+    {
+      "lower_cost_confirmed": true,
+      "compiler": "188",
+      "non_regression": true,
+      "pairs": [
+        {
+          "pair": 0,
+          "candidate_ns_per_validation": 1429785.265625,
+          "ratio": 0.9807346774878141,
+          "baseline_ns_per_validation": 1457871.6328125
+        },
+        {
+          "pair": 1,
+          "candidate_ns_per_validation": 1425392.2265625,
+          "ratio": 0.9498377577935909,
+          "baseline_ns_per_validation": 1500669.15625
+        },
+        {
+          "pair": 2,
+          "candidate_ns_per_validation": 1435303.4453125,
+          "ratio": 0.961401727328287,
+          "baseline_ns_per_validation": 1492927.8828125
+        },
+        {
+          "pair": 3,
+          "candidate_ns_per_validation": 1430811.578125,
+          "ratio": 0.9476929544672372,
+          "baseline_ns_per_validation": 1509783.9140625
+        },
+        {
+          "pair": 4,
+          "candidate_ns_per_validation": 1434456.8203125,
+          "ratio": 0.9517148721629046,
+          "baseline_ns_per_validation": 1507233.796875
+        }
+      ],
+      "ci95_upper": 0.9751312995850696,
+      "product_claim": false,
+      "geometric_mean_ratio": 0.9581997946272255,
+      "ci95_lower": 0.9415622766024839
+    }
+  ],
+  "product_claim": false,
+  "raw": {
+    "fixed_refusals": 2,
+    "rows": [
+      {
+        "pair": 0,
+        "role": "Baseline",
+        "compiler": "194",
+        "wall_ns": 192154441,
+        "iterations": 128
+      },
+      {
+        "pair": 0,
+        "role": "Candidate",
+        "compiler": "194",
+        "wall_ns": 183147972,
+        "iterations": 128
+      },
+      {
+        "pair": 1,
+        "role": "Candidate",
+        "compiler": "194",
+        "wall_ns": 184672374,
+        "iterations": 128
+      },
+      {
+        "pair": 1,
+        "role": "Baseline",
+        "compiler": "194",
+        "wall_ns": 191972034,
+        "iterations": 128
+      },
+      {
+        "pair": 2,
+        "role": "Baseline",
+        "compiler": "194",
+        "wall_ns": 192598792,
+        "iterations": 128
+      },
+      {
+        "pair": 2,
+        "role": "Candidate",
+        "compiler": "194",
+        "wall_ns": 183557074,
+        "iterations": 128
+      },
+      {
+        "pair": 3,
+        "role": "Candidate",
+        "compiler": "194",
+        "wall_ns": 183934978,
+        "iterations": 128
+      },
+      {
+        "pair": 3,
+        "role": "Baseline",
+        "compiler": "194",
+        "wall_ns": 193416228,
+        "iterations": 128
+      },
+      {
+        "pair": 4,
+        "role": "Baseline",
+        "compiler": "194",
+        "wall_ns": 195338424,
+        "iterations": 128
+      },
+      {
+        "pair": 4,
+        "role": "Candidate",
+        "compiler": "194",
+        "wall_ns": 183359218,
+        "iterations": 128
+      },
+      {
+        "pair": 0,
+        "role": "Baseline",
+        "compiler": "188",
+        "wall_ns": 186607569,
+        "iterations": 128
+      },
+      {
+        "pair": 0,
+        "role": "Candidate",
+        "compiler": "188",
+        "wall_ns": 183012514,
+        "iterations": 128
+      },
+      {
+        "pair": 1,
+        "role": "Candidate",
+        "compiler": "188",
+        "wall_ns": 182450205,
+        "iterations": 128
+      },
+      {
+        "pair": 1,
+        "role": "Baseline",
+        "compiler": "188",
+        "wall_ns": 192085652,
+        "iterations": 128
+      },
+      {
+        "pair": 2,
+        "role": "Baseline",
+        "compiler": "188",
+        "wall_ns": 191094769,
+        "iterations": 128
+      },
+      {
+        "pair": 2,
+        "role": "Candidate",
+        "compiler": "188",
+        "wall_ns": 183718841,
+        "iterations": 128
+      },
+      {
+        "pair": 3,
+        "role": "Candidate",
+        "compiler": "188",
+        "wall_ns": 183143882,
+        "iterations": 128
+      },
+      {
+        "pair": 3,
+        "role": "Baseline",
+        "compiler": "188",
+        "wall_ns": 193252341,
+        "iterations": 128
+      },
+      {
+        "pair": 4,
+        "role": "Baseline",
+        "compiler": "188",
+        "wall_ns": 192925926,
+        "iterations": 128
+      },
+      {
+        "pair": 4,
+        "role": "Candidate",
+        "compiler": "188",
+        "wall_ns": 183610473,
+        "iterations": 128
+      }
+    ],
+    "transfers": 6,
+    "healthy_rounds": 12,
+    "ages": [
+      {
+        "issued_ns": 1052577587189424,
+        "age_before_ns": 8875490879,
+        "sample": 0,
+        "age_after_ns": 9199054307,
+        "compiler": "194",
+        "pass": 0
+      },
+      {
+        "issued_ns": 1052577587189424,
+        "age_before_ns": 9199173565,
+        "sample": 0,
+        "age_after_ns": 9521309079,
+        "compiler": "194",
+        "pass": 1
+      },
+      {
+        "issued_ns": 1052590687381341,
+        "age_before_ns": 8878133673,
+        "sample": 1,
+        "age_after_ns": 9200097040,
+        "compiler": "194",
+        "pass": 0
+      },
+      {
+        "issued_ns": 1052590687381341,
+        "age_before_ns": 9200213548,
+        "sample": 1,
+        "age_after_ns": 9522443730,
+        "compiler": "194",
+        "pass": 1
+      },
+      {
+        "issued_ns": 1052603805807204,
+        "age_before_ns": 8901236050,
+        "sample": 2,
+        "age_after_ns": 9224528493,
+        "compiler": "194",
+        "pass": 0
+      },
+      {
+        "issued_ns": 1052603805807204,
+        "age_before_ns": 9224646891,
+        "sample": 2,
+        "age_after_ns": 9548534663,
+        "compiler": "194",
+        "pass": 1
+      },
+      {
+        "issued_ns": 1052883778990295,
+        "age_before_ns": 8841673157,
+        "sample": 0,
+        "age_after_ns": 9163535023,
+        "compiler": "188",
+        "pass": 0
+      },
+      {
+        "issued_ns": 1052883778990295,
+        "age_before_ns": 9163653251,
+        "sample": 0,
+        "age_after_ns": 9486104647,
+        "compiler": "188",
+        "pass": 1
+      },
+      {
+        "issued_ns": 1052896825645714,
+        "age_before_ns": 8852829496,
+        "sample": 1,
+        "age_after_ns": 9174810980,
+        "compiler": "188",
+        "pass": 0
+      },
+      {
+        "issued_ns": 1052896825645714,
+        "age_before_ns": 9174929188,
+        "sample": 1,
+        "age_after_ns": 9497415534,
+        "compiler": "188",
+        "pass": 1
+      },
+      {
+        "issued_ns": 1052909898582665,
+        "age_before_ns": 8861176553,
+        "sample": 2,
+        "age_after_ns": 9183432183,
+        "compiler": "188",
+        "pass": 0
+      },
+      {
+        "issued_ns": 1052909898582665,
+        "age_before_ns": 9183565950,
+        "sample": 2,
+        "age_after_ns": 9506363981,
+        "compiler": "188",
+        "pass": 1
+      }
+    ],
+    "refusals": 40
+  }
+}

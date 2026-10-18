@@ -1,0 +1,10 @@
+{
+  "role": "Baseline",
+  "origin_raw_sha256": "7b52c6e35421dc07b6843ac5080ced331262e4c3836dec6b0886ea0cf332fda8",
+  "image": "/home/artur/.cache/hydracache-074-188-check/release/deps/hydracache_long_run_supervisor_074-d2aba7f58d773234",
+  "copy": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\boot-buffer-plain-20261018\\tests-Baseline-188",
+  "inputs": 367,
+  "version": "1.88.0",
+  "compiler": "188",
+  "sha256": "a5575053f529ea1c71931131a46fc3b9551c70a3ba8708124e215b4eb4945bb1"
+}

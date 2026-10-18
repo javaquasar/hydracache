@@ -1,0 +1,2 @@
+warning: in the working copy of 'crates/xtask/tests/support/performance_contract_074_boot_buffer.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tools/long-run-supervisor-074/src/diagnostic_original_live_walk_cost_tests.rs', LF will be replaced by CRLF the next time Git touches it

@@ -1,0 +1,12 @@
+
+running 7 tests
+test diagnostic_kernel_admission::origin::boot_buffer_tests::boot_buffer_canonical_empty_short_and_overlength_differential ... ok
+test diagnostic_kernel_admission::origin::boot_buffer_tests::boot_buffer_empty_site_and_document_trace_are_preserved ... ok
+test diagnostic_kernel_admission::origin::boot_buffer_tests::boot_buffer_every_single_byte_mutation_matches_old_decoder ... ok
+test diagnostic_kernel_admission::origin::boot_buffer_tests::boot_buffer_io_faults_are_preserved_without_retry ... ok
+test diagnostic_kernel_admission::origin::boot_buffer_tests::boot_buffer_real_positional_reads_match_without_changing_cursor ... ok
+test diagnostic_kernel_admission::origin::boot_buffer_tests::boot_buffer_seeded_documents_match_old_decoder ... ok
+test diagnostic_kernel_admission::origin::boot_buffer_tests::boot_buffer_short_read_is_not_retried_and_does_not_claim_eof ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 1180 filtered out; finished in 0.04s
+
