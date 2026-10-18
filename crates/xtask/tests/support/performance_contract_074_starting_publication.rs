@@ -86,7 +86,13 @@ fn collector_starting_publication_preserves_every_original_predicate_and_deadlin
     ] {
         // BEGIN FIXED MANAGER DEPENDENCY REFERENCE
         let current = read(p);
-        let current = if matches!(p, "Cargo.lock" | "tools/long-run-supervisor-074/Cargo.toml") {
+        let current = if matches!(
+            p,
+            "Cargo.lock"
+                | "tools/long-run-supervisor-074/Cargo.toml"
+                | "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs"
+                | "tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs"
+        ) {
             super::original_start_consent::normalize(p, &current)
         } else {
             current

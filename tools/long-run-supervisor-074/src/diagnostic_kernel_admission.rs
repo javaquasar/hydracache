@@ -43,6 +43,7 @@ mod collector_inputs;
 #[path = "diagnostic_kernel_origin.rs"]
 mod origin;
 pub use origin::KernelTimePoint;
+pub(crate) use origin::OriginalReceiverBinding;
 use origin::{Origin, TimePoint};
 
 const DOC_BYTES: usize = 65_536;

@@ -1,6 +1,9 @@
 use super::*;
 #[path = "diagnostic_original_enrollment_fault_tests.rs"]
 mod faults;
+
+#[path = "diagnostic_original_manager_frame_tests.rs"]
+mod manager_tests;
 fn healthy(samples: usize) {
     for sample in 0..samples {
         let bundle = Bundle::new();

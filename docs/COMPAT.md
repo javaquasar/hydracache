@@ -1563,3 +1563,18 @@ remain unchanged. A permitted reply remains job-path data, not start, cessation,
 completion, retry or release authority. No public/durable format or sender is added.
 This supersedes only the old exchange's empty METHOD_RETURN flag predicate;
 the fixed read-only manager producer and every execution/admission limit stay exact.
+
+## Private original manager context join
+
+The private consuming join retains the same original enrollment frame and one
+fixed live manager channel. Actual retained receiver Origin and typed nsfs
+user/mount/PID/time objects are compared with the channel view; caller context
+claims cannot construct the production owner. Its light channel observations
+enclose one unchanged complete frame, retaining every old live check, absolute
+alarm and original deadline. Failure latches and owns the original frame,
+children, writers and custody; no retry or former-owner getter exists.
+
+Only new private runtime types are added, not a public/durable codec or start
+operation. Separate test channels exercise shared frame ordering without
+constructing a fixed owner. Actual read-only channel/context tests do not prove
+production trust, message/FD delivery, start, all-writer cessation or completion.

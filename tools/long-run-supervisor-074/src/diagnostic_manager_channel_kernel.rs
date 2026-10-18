@@ -9,6 +9,9 @@ use std::os::unix::ffi::OsStrExt;
 use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
 use std::path::Path;
 
+#[path = "diagnostic_manager_receiver_pin.rs"]
+pub(super) mod receiver;
+
 pub(super) fn clock() -> Result<u64> {
     let mut time: libc::timespec = unsafe { zeroed() };
     if unsafe { libc::clock_gettime(libc::CLOCK_BOOTTIME, &mut time) } != 0 {

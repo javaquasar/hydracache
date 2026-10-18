@@ -155,7 +155,10 @@ fn kernel_refusal_test_instrumentation_preserves_every_non_test_guard() {
             .unwrap();
         assert!(baseline.status.success());
         let baseline = String::from_utf8(baseline.stdout).unwrap();
-        let current = std::fs::read_to_string(super::root().join(path)).unwrap();
+        // BEGIN ORIGINAL MANAGER KERNEL REFERENCE
+        let current = std::fs::read_to_string(super::root().join(&path)).unwrap();
+        let current = super::original_start_consent::normalize(&path, &current.replace('\r', ""));
+        // END ORIGINAL MANAGER KERNEL REFERENCE
         let current = if name == "diagnostic_kernel_admission.rs" {
             // Explicit new private extension; every existing guard still compares exactly.
             let current = current.replace('\r', "");

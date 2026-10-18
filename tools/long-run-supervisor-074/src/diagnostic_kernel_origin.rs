@@ -27,6 +27,10 @@ pub(super) struct Origin {
     namespaces: [(File, (u64, u64)); 4],
 }
 const NAMES: [&str; 4] = ["user", "mnt", "pid", "time"];
+
+#[path = "diagnostic_kernel_manager_binding.rs"]
+mod manager_binding;
+pub(crate) use manager_binding::OriginalReceiverBinding;
 pub(super) fn filesystem(file: &File, magic: libc::c_long) -> Result<(), KernelError> {
     let mut stat: libc::statfs = unsafe { std::mem::zeroed() };
     if unsafe { libc::fstatfs(file.as_raw_fd(), &mut stat) } != 0 {

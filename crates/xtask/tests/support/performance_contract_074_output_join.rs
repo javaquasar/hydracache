@@ -79,7 +79,13 @@ fn output_join_preserves_original_guards_and_effect_closing_checks() {
     ] {
         // BEGIN FIXED MANAGER DEPENDENCY REFERENCE
         let current = read(p);
-        let current = if matches!(p, "Cargo.lock" | "tools/long-run-supervisor-074/Cargo.toml") {
+        let current = if matches!(
+            p,
+            "Cargo.lock"
+                | "tools/long-run-supervisor-074/Cargo.toml"
+                | "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs"
+                | "tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs"
+        ) {
             super::original_start_consent::normalize(p, &current)
         } else {
             current

@@ -1,4 +1,6 @@
 //! The interoperability exception cannot relax original requests or authority.
+#[path = "performance_contract_074_original_manager_join.rs"]
+mod original_manager_join;
 const OLD: &str = "            || !reply.primary_header().flags().is_empty()\n";
 const NEW: &str = "            || reply.primary_header().flags().bits()\n                & !(zbus::message::Flags::NoReplyExpected as u8)\n                != 0\n            || (reply.message_type() != Type::MethodReturn\n                && !reply.primary_header().flags().is_empty())\n";
 const REG: &str =
@@ -17,6 +19,8 @@ the fixed read-only manager producer and every execution/admission limit stay ex
 "###;
 
 pub(super) fn normalize(path: &str, raw: &str) -> String {
+    let normalized = original_manager_join::normalize(path, raw);
+    let raw = normalized.as_str();
     let (changed, restored) = match path {
         "tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange.rs" => (NEW, OLD),
         "tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs" => (REG, ""),

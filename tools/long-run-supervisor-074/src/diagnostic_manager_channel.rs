@@ -245,3 +245,6 @@ impl Operation {
 #[cfg(test)]
 #[path = "diagnostic_manager_channel_tests.rs"]
 mod tests;
+
+#[path = "diagnostic_original_manager_join.rs"]
+mod original_join;
