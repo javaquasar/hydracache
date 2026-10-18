@@ -1,4 +1,6 @@
 //! Test-only custody loss cuts; no ordinary pending implementation changes.
+#[path = "performance_contract_074_barred_collector.rs"]
+mod barred_collector;
 const GATES: &str = r###"
 # BEGIN ORIGINAL CUSTODY LOSS GATES
 [[gate]]
@@ -81,6 +83,8 @@ Only matched fixture and driver versions are supported; unknown fields/versions
 fail the test. This packet is neither a start permit nor a durable receipt.
 "###;
 pub(super) fn normalize(path: &str, raw: &str) -> String {
+    let current = barred_collector::normalize(path, raw);
+    let raw = current.as_str();
     match path {
         "docs/testing/gated-test-registry.toml" => strip(raw, GATES),
         "docs/COMPAT.md" => strip(raw, COMPAT),
@@ -110,7 +114,7 @@ fn custody_loss_preserves_the_entire_ordinary_pending_implementation() {
         .unwrap();
     assert!(out.status.success());
     let frozen = String::from_utf8(out.stdout).unwrap().replace('\r', "");
-    let raw = read(path);
+    let raw = barred_collector::normalize(path, &read(path));
     let start = raw
         .find("            #[cfg(test)]\n            if fault == 3 {")
         .unwrap();

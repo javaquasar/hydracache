@@ -1,4 +1,6 @@
 use super::*;
+#[path = "diagnostic_original_barred_collector_tests.rs"]
+mod collector_tests;
 #[path = "diagnostic_original_custody_loss_tests.rs"]
 mod loss_tests;
 use std::fs::File;

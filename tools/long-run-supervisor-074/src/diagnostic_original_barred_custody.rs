@@ -456,3 +456,6 @@ impl<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>
 #[cfg(test)]
 #[path = "diagnostic_original_barred_custody_test_api.rs"]
 mod test_api;
+
+#[path = "diagnostic_original_barred_collector.rs"]
+mod barred_collector;

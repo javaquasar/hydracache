@@ -1482,3 +1482,21 @@ kernel SCM_CREDENTIALS UID/GID/PID, and rejects truncated or ambiguous ancillary
 data. It never receives the original fence or private custodian notice peer.
 Only matched fixture and driver versions are supported; unknown fields/versions
 fail the test. This packet is neither a start permit nor a durable receipt.
+
+## Private original barred collector notices
+
+The original-barred-collector-notice-074-v1 protocol is a separate, same-image
+inherited SOCK_SEQPACKET, not the custodian or generic guardian vocabulary.
+Exactly one byte B denotes barred original descriptor isolation only; E denotes
+original-alarm expiry, L peer activity/loss and F isolation/observation/close
+failure. Initial observation accepts B once; missing, duplicate, unknown, empty,
+oversized or truncated notices and terminal children refuse. No notice grants
+activation, original send/start, release, writer cessation or completion.
+
+The child accepts no command and never reads/rearms the original alarm. Before
+best-effort E/L/F it attempts to close both original readers and both original
+O_RDWR sinks, then parks retaining its original fence alias. A failed close emits
+F and cannot prove quiescence. The ordinary owner keeps its exclusive original
+borrow through collector cancellation/reaping and subsequent custodian cleanup.
+Matched image only; unknown notices fail closed. No public wire or durable format
+is introduced, and the generic O_WRONLY engine remains unchanged.
