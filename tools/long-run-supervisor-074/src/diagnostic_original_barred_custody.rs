@@ -422,6 +422,14 @@ impl<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>
                 #[cfg(test)]
                 fault,
             )?);
+            #[cfg(test)]
+            if fault == 3 {
+                // Lose the REAL first notice, not a reconstructed acknowledgement.
+                held.kernel
+                    .as_ref()
+                    .unwrap()
+                    .observe(inventory.fds[1], true)?;
+            }
             held.kernel
                 .as_ref()
                 .ok_or(BarredCustodyError::Child)?

@@ -18,6 +18,9 @@ impl<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>
     }
 }
 impl OriginalBarredCustody<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
+    pub(crate) fn deadline_for_test(&self) -> u64 {
+        self.original.original.alarm.as_ref().unwrap().deadline
+    }
     pub(crate) fn assert_original_for_test(&self) {
         let kernel = self.kernel.as_ref().unwrap();
         kernel.alive().unwrap();
@@ -69,6 +72,9 @@ impl OriginalBarredCustody<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
     }
 }
 impl BarredCustodyFailure<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
+    pub(crate) fn origins_for_test(&self) -> [u64; 6] {
+        self.held.original.origins_for_test()
+    }
     pub(crate) fn reason_for_test(&self) -> String {
         format!("{:?}", self.error)
     }

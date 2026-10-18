@@ -1,4 +1,6 @@
 //! Original-only pending custody; no old predicate or activated engine changes.
+#[path = "performance_contract_074_custody_loss.rs"]
+mod custody_loss;
 const GATES: &str = r###"
 # BEGIN ORIGINAL BARRED CUSTODY GATES
 [[gate]]
@@ -168,6 +170,8 @@ fn once(raw: &str, from: &str) -> String {
     raw.replacen(from, "", 1)
 }
 pub(super) fn normalize(path: &str, raw: &str) -> String {
+    let current = custody_loss::normalize(path, raw);
+    let raw = current.as_str();
     match path {
         "tools/long-run-supervisor-074/src/diagnostic_original_descriptor_plan.rs" => {
             once(raw, RUNTIME_REG)

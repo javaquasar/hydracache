@@ -1,4 +1,6 @@
 use super::*;
+#[path = "diagnostic_original_custody_loss_tests.rs"]
+mod loss_tests;
 use std::fs::File;
 fn mask() -> u64 {
     let mut value = 0u64;

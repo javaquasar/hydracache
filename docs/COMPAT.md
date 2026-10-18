@@ -1470,3 +1470,15 @@ parent retains its exclusive original-owner borrow, not a protocol release or
 completion command. Deploy only the same-image matched parent/child; old guardian
 notice readers are separate and must not reinterpret this vocabulary. No durable
 artifact, migration, public wire protocol or production start admission is added.
+
+## Private original custody owner loss fixture
+
+The hc074-pending-owner-test-v1 packet exists only in the opt-in Linux libtest
+fault fixture, never an ordinary-build listener or installed command. A private
+owned Unix datagram carries bounded JSON (schema, owner, cut, deadline, origins,
+closing_authentication) and exactly one SCM_RIGHTS atomically created custodian
+pidfd. The test driver requires exact fields, the expected subprocess PID and
+kernel SCM_CREDENTIALS UID/GID/PID, and rejects truncated or ambiguous ancillary
+data. It never receives the original fence or private custodian notice peer.
+Only matched fixture and driver versions are supported; unknown fields/versions
+fail the test. This packet is neither a start permit nor a durable receipt.
