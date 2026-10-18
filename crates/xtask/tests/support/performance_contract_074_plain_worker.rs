@@ -1,4 +1,6 @@
 //! Exact test registration only; no runtime or deadline adaptation.
+#[path = "performance_contract_074_negotiated_dispatch.rs"]
+mod negotiated_dispatch;
 const BASE: &str = "290b550e1406c7a8350d845c0c0108312fdc6d3f";
 const PATH: &str = "tools/long-run-supervisor-074/src/diagnostic_original_live_walk_cost_tests.rs";
 const REG: &str =
@@ -69,6 +71,8 @@ fn original_plain_worker_batch() {
 }
 "###;
 pub(super) fn normalize(path: &str, raw: &str) -> String {
+    let current = negotiated_dispatch::normalize(path, raw);
+    let raw = current.as_str();
     let insertion = if path == PATH {
         REG
     } else if path == "docs/testing/gated-test-registry.toml" {

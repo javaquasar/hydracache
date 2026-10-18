@@ -12,6 +12,9 @@ mod socket_tests;
 #[path = "diagnostic_dispatch_reply_flags_tests.rs"]
 mod reply_flags_tests;
 
+#[path = "diagnostic_dispatch_negotiated_tests.rs"]
+mod negotiated_tests;
+
 fn pipe() -> [File; 2] {
     let mut fds = [-1; 2];
     assert_eq!(unsafe { libc::pipe2(fds.as_mut_ptr(), libc::O_CLOEXEC) }, 0);

@@ -11800,3 +11800,39 @@ platform = "linux"
 [gate.command.env]
 
 # END ORIGINAL PLAIN WORKER GATE
+
+# BEGIN NEGOTIATED DISPATCH GATE
+
+[[gate]]
+id = "tool.hydracache-long-run-supervisor-074.negotiated-dispatch"
+kind = "external_tool"
+source = "tools/long-run-supervisor-074/src/diagnostic_dispatch_negotiated_tests.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "hydracache_long_run_supervisor_074"
+test = "dispatch_negotiated_private_bus_fault_matrix"
+cfg = 'target_os = "linux"'
+env = ""
+reason = "manual nonroot private dbus-daemon negotiation; no system bus or execution"
+tier = "manual"
+required_features = []
+required_env = []
+required_tools = ["cargo", "dbus-daemon"]
+timeout_seconds = 120
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::dispatch_exchange::tests::negotiated_tests::dispatch_negotiated_private_bus_fault_matrix","--","--ignored","--exact","--nocapture","--test-threads=1"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+
+# END NEGOTIATED DISPATCH GATE

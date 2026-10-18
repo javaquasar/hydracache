@@ -1,5 +1,16 @@
 # HydraCache — Enforcement Gates
 
+Private negotiated D-Bus delivery uses the manual registered
+`tool.hydracache-long-run-supervisor-074.negotiated-dispatch` gate. Run its exact
+ignored libtest with `/usr/bin/dbus-daemon` available as nonroot. Nine private
+bus cases cover negotiation, fragmented writes, actual reply routing and lost
+acknowledgement; no system bus, systemd operation or original admission is used.
+The [component plan](testing/performance/0.74/negotiated-dispatch-plan-20261018.md)
+keeps this distinct from authenticated original delivery and all-writer cessation.
+Three ordinary `negotiated_atomic_receiver_` units check atomic CLOEXEC receipt,
+actual ancillary truncation/excess cleanup, WouldBlock, disconnect and unexpected
+kernel credentials.
+
 The [original send-window diagnostic](testing/performance/0.74/diagnostic-signer-owned-root-send-windows-design.md)
 uses the same registered root targets. Require two creator-only SIGKILL losses,
 two healthy original continuations and two untraced no-EXITKILL controls after
