@@ -317,3 +317,7 @@ impl Drop for KernelCollector {
         let _ = self.stop();
     }
 }
+
+#[cfg(test)]
+#[path = "diagnostic_original_collector_notice_tests.rs"]
+mod notice_tests;

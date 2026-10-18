@@ -1,4 +1,6 @@
 //! Original barred I/O enrollment must not weaken old frames or deadlines.
+#[path = "performance_contract_074_collector_notices.rs"]
+mod collector_notices;
 const GATES: &str = r###"
 # BEGIN ORIGINAL BARRED COLLECTOR GATES
 [[gate]]
