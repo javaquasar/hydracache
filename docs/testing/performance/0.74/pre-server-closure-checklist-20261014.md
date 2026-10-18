@@ -607,3 +607,21 @@ This candidate is withdrawn: host preparation passed, subsequent revalidation
 crossed the unchanged challenge deadline. Remaining host cases and new-path
 rights delivery did not pass. Exact sources/negative evidence are archived;
 the approved runtime is restored and production message/start stays absent.
+
+The new [grouped message gate](local-runs/original-manager-grouped-message-20261018/README.md)
+accepts private source `2ed04dc8` for nonexecuting preparation only. It keeps the
+original receiver/frame and fixed channel together, derives unique names from
+that channel and validates the exact canonical message/original writer aliases
+inside one complete round. Old predicates, alarm origins and deadlines remain;
+the earlier failed candidate is not promoted. Current/MSRV fixtures pass six
+healthy scenarios, forty refusals, two real nonroot channel refusals and six
+owned socket transfers. Local gates pass and the stable supervisor/install are
+unchanged.
+
+P1 is still open: same-process rights delivery is not negotiated system-bus
+delivery, positive production enrollment or authenticated original-start. The
+observed remaining challenge budget is only about 25 ms, so initial preparation
+cost must be attributed before adding dispatch. P2/P3 active all-writer cessation,
+durable completion/later cells and their SIGKILL/lost-ack matrix, integrated
+reconnect, real trust/enrollment and approved installation remain unchanged
+prerequisites. No server execution or measurement gate is opened here.

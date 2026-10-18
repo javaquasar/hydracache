@@ -3999,3 +3999,22 @@ FD delivery are unproved. One separate diagnostic observed challenge age
 at 10.116451429 s. Approved runtime was restored; the candidate survives only as
 exact evidence capsules. A changed nonexecuting observation frame needs a new
 agreed experiment, not an extended deadline or a retried acceptance cohort.
+
+The subsequently agreed [grouped manager/message experiment](local-runs/original-manager-grouped-message-20261018/README.md)
+passes at source `2ed04dc8`. A consuming original-frame constructor prepares the
+unsent unique-manager message inside one complete frame with both live
+channel/context checks. Old predicates, origins, alarms and deadlines remain;
+the old join is unchanged. Extra writer aliases close before original custody,
+and failure retains the same refused owner with no extraction or retry.
+
+Current/MSRV host fixtures pass six healthy scenarios, forty live refusals and
+two real nonroot fixed-channel refusals. Twelve healthy rounds each perform
+34 authentication/signature calls and two channel checks; six owned socket
+transfers occur before full closing validation. This is not production-enrolled
+construction, negotiated system-bus delivery or authenticated start. All 241
+source contracts, portable controls, affected checks/strict Clippy and local
+registry/documentation/performance contracts pass. Qualification inputs are
+unchanged. Maximum observed successful challenge age leaves only about 25 ms
+of its original 10 s window: attribute that critical-path budget before actual
+dispatch, then close real FD delivery/start, active all-writer cessation,
+completion/later cells, reconnect and trust/enrollment gates.

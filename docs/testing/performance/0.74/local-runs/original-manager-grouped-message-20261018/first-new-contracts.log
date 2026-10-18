@@ -1,0 +1,10 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 12.72s
+     Running tests\performance_contract_074.rs (target\debug\deps\performance_contract_074-affcfab4e5118d5a.exe)
+
+running 2 tests
+test fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::dispatch_exchange::manager_channel::reply_flags::original_manager_message::original_grouped_message_preserves_old_manager_frame_message_exchange_and_custody ... ok
+test fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::dispatch_exchange::manager_channel::reply_flags::original_manager_message::original_grouped_message_round_body_alias_order_and_refusal_have_canaries ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 239 filtered out; finished in 1.15s
+

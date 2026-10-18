@@ -1,0 +1,14 @@
+[
+  {
+    "version": "1.94.0",
+    "compiler": "194",
+    "image": "/home/artur/.cache/hydracache-074-194-check/release/deps/hydracache_long_run_supervisor_074-b26b156d3dcd0098",
+    "sha256": "d158588159072818ca9f3f80ccecabd5c169402ec9fef002e9a699754d4d9a15"
+  },
+  {
+    "version": "1.88.0",
+    "compiler": "188",
+    "image": "/home/artur/.cache/hydracache-074-188-check/release/deps/hydracache_long_run_supervisor_074-d2aba7f58d773234",
+    "sha256": "567bd06dc50b37174875d60cb5e4412edf77a6748fcb1464fd078630c39b3ee5"
+  }
+]

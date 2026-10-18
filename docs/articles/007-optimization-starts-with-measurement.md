@@ -12898,3 +12898,47 @@ intact. A future experiment may place only nonexecuting message preparation
 inside the existing complete frame with all original predicates and bounds;
 that is a changed observation boundary requiring explicit agreement. Extending
 the deadline or resetting the original challenge would invalidate the test.
+
+### One full frame can contain pure message preparation
+
+The next [separately agreed experiment](../testing/performance/0.74/local-runs/original-manager-grouped-message-20261018/README.md)
+tests a narrower hypothesis: place only nonexecuting manager/message preparation
+inside the existing complete validation round. It consumes the original frame
+directly rather than constructing a fully validated join and adding another
+complete preparation boundary. The old join and all original predicate bodies
+remain unchanged under source-equivalence guards.
+
+Original observations and the first live channel/context check precede message
+preparation. The retained canonical body, serial and original stdout/stderr
+objects are checked, followed by one complete original frame. A second live
+channel/context check, payload inspection and original observation close the
+round. Every original live predicate remains, but the rejected prototype's
+duplicate complete traversal is gone. This change is appropriate only for pure
+preparation while children remain barred; it does not justify moving a send,
+start or durable side effect outside its required guard.
+
+The new owner retains both additional message writer aliases and closes them
+before original custody can drop. Any error poisons the same original owner;
+missing payloads cannot reconstruct, and no message, FD, connection, retry or
+send API is exposed. Original origins, alarm objects and 300/60/10-second bounds
+stay exact. The old negative timing cohort is preserved rather than relabeled.
+
+The fresh GNU current/MSRV host gate passes six healthy scenarios and twelve
+full rounds, each with 34 authentication calls, 34 signature calls and two
+channel/context checks. Six test-only socket transfers carry the exact addressed
+message and original writers before closing full validation. Forty mutation,
+live-context, child-loss and expiry cases refuse permanently; two real nonroot
+fixed-channel constructor refusals retain the original owner. The test probe
+cannot construct a production owner, and socket transfer is not negotiated
+system-bus delivery or authenticated start.
+
+The BOOTTIME observation deltas of the twelve healthy rounds are 335723919 to
+339133566 ns. Maximum successful challenge age is 9974721890 ns, leaving only
+25278110 ns, about 25 ms, before the original bound. These are fixture
+observations, not product performance estimates or a worst-case safety margin.
+The grouping makes this gate usable, but the already consumed preparation
+budget remains a critical-path risk before actual dispatch. Further work must
+attribute that budget and prove real FD negotiation, one-shot correlation,
+original process identity and active all-writer cessation without extending
+the deadline. Completion, later cells and reconnect cannot inherit authority
+from this nonexecuting success.

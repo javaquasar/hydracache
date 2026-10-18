@@ -1,0 +1,144 @@
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-GROUPED-ADMISSION start=false install=false supervisor_changed=false
+f1c646c769c789ef0df949c56f7984552306ba6657b6f50e854db2802101407a  ./tests-194
+cc3a794f6985a83467bb96d1cabaab47b6e7d6c4f88b4d7e761721b98396f8bf  ./tests-188
+cd560ecce3661ad9c20e2580e5283638f88e2645c37c0b0f46c3c01f226b7198  ./guard.sh
+82b496c46af42b666904ddb97e96096f2961e77df3744e0b72e779d0237e5694  ./run.sh
+8a2a495348bd317f7a2092a622838fc489bdcf077f4a8269210b2b78381b3c58  ./bundle/build-log.jsonl
+e32bb7cd9b6cbf1d91d52abc79cb1e0225b3a7f6602e82e5b9a303c3645a77d7  ./bundle/build-receipt-v1.json
+e3be470f5a1bff4e917e841fc5bfbd257ff12559206bbc1481c3c4bca528eb1d  ./bundle/Cargo.lock.observer
+be46eaf8e97e507bda5e3f2b671d0d622e6a639ce1d4613769a4693723d62b19  ./bundle/Cargo.lock.root
+5485b10f50906833006ad3f3a40b4909760ef01e3f2c86395e4366bf83cc6ef9  ./bundle/direct.json
+5c219730c8a782ed47dfa0b291a29f44f753c3688f8548c136174a89cee55149  ./bundle/embedded.json
+f0aba16dfe0354801d0b3c83ee9fc2d1b4751be5f50280634690ed4bcf3030ae  ./bundle/resp2.json
+b680683c291d0a4dadbac1901f051ba0fedcac0ac9127d197e0261fe6fdabdd7  ./bundle/resp3.json
+bda1c094f3de7c6d42ec45c757838c7a41a8ff1d63a025c661af84455169a101  ./bundle/timing-controls-074
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::collector_tests::enrollment_tests::manager_tests::addressed_tests::original_grouped_addressed_frame_controls ... HC074-GROUPED-AGE sample=0 pass=0 issued_ns=1043035172463308 age_before_ns=9295353404 age_after_ns=9631077323 auth=34 signatures=34 channel_checks=2 result=Ok(())
+HC074-GROUPED-ADDRESSED-CONTROL sample=0 pass=0 frame_ipc=34 channel_checks=2 test_channel_only=true start=false
+HC074-GROUPED-AGE sample=0 pass=1 issued_ns=1043035172463308 age_before_ns=9631200731 age_after_ns=9970121046 auth=34 signatures=34 channel_checks=2 result=Ok(())
+HC074-GROUPED-ADDRESSED-CONTROL sample=0 pass=1 frame_ipc=34 channel_checks=2 test_channel_only=true start=false
+HC074-GROUPED-ADDRESSED-TRANSFER sample=0 original_writers=2 rights=true same_process_socket=true system_bus_delivery=false start=false
+HC074-GROUPED-AGE sample=1 pass=0 issued_ns=1043048857771469 age_before_ns=9270944837 age_after_ns=9607113393 auth=34 signatures=34 channel_checks=2 result=Ok(())
+HC074-GROUPED-ADDRESSED-CONTROL sample=1 pass=0 frame_ipc=34 channel_checks=2 test_channel_only=true start=false
+HC074-GROUPED-AGE sample=1 pass=1 issued_ns=1043048857771469 age_before_ns=9607239171 age_after_ns=9946372737 auth=34 signatures=34 channel_checks=2 result=Ok(())
+HC074-GROUPED-ADDRESSED-CONTROL sample=1 pass=1 frame_ipc=34 channel_checks=2 test_channel_only=true start=false
+HC074-GROUPED-ADDRESSED-TRANSFER sample=1 original_writers=2 rights=true same_process_socket=true system_bus_delivery=false start=false
+HC074-GROUPED-AGE sample=2 pass=0 issued_ns=1043062533029315 age_before_ns=9261246974 age_after_ns=9597010842 auth=34 signatures=34 channel_checks=2 result=Ok(())
+HC074-GROUPED-ADDRESSED-CONTROL sample=2 pass=0 frame_ipc=34 channel_checks=2 test_channel_only=true start=false
+HC074-GROUPED-AGE sample=2 pass=1 issued_ns=1043062533029315 age_before_ns=9597135230 age_after_ns=9932983595 auth=34 signatures=34 channel_checks=2 result=Ok(())
+HC074-GROUPED-ADDRESSED-CONTROL sample=2 pass=1 frame_ipc=34 channel_checks=2 test_channel_only=true start=false
+HC074-GROUPED-ADDRESSED-TRANSFER sample=2 original_writers=2 rights=true same_process_socket=true system_bus_delivery=false start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1165 filtered out; finished in 41.02s
+
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::collector_tests::enrollment_tests::manager_tests::addressed_tests::original_grouped_addressed_frame_refusals ... HC074-GROUPED-ADDRESSED-REFUSAL case=alias reason=Binding sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=client reason=Binding sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=flags-fd reason=Canonical(Binding) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=body reason=Binding sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=swapped reason=Binding sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=serial reason=Binding sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=missing reason=Binding sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=channel-before reason=Frame(Channel) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=channel-after reason=Frame(Channel) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=context-before reason=Frame(Kernel(Invalid)) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=context-after reason=Frame(Kernel(Invalid)) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=message reason=Frame(Original(Original(Binding))) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=output reason=Frame(Original(Original(Binding))) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=custodian-kill reason=Frame(Original(Child)) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=inside-message reason=Frame(Original(Original(Binding))) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=inside-collector-kill reason=Frame(Original(Child)) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=inside-final-expiry reason=Frame(Original(Original(Original(Expired)))) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=trust reason=Frame(Original(Original(Original(Transport(Material(Outputs(Original(Original(Original(Causal(Reservation(Attempt(Controller(Original(Input(Invalid)))))))))))))))) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=collector-kill reason=Frame(Original(Child)) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=final-expiry reason=Frame(Original(Original(Original(Expired)))) sticky=true start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1165 filtered out; finished in 262.89s
+
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::collector_tests::enrollment_tests::manager_tests::addressed_tests::original_grouped_addressed_nonroot_fixed_refusal ... HC074-GROUPED-ADDRESSED nonroot=true fixed_refused=true original_owner_retained=true start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1165 filtered out; finished in 12.93s
+
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-GROUPED-ADDRESSED-HOST compiler=194 completed=true start=false
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::collector_tests::enrollment_tests::manager_tests::addressed_tests::original_grouped_addressed_frame_controls ... HC074-GROUPED-AGE sample=0 pass=0 issued_ns=1043353561888099 age_before_ns=9270057042 age_after_ns=9607579409 auth=34 signatures=34 channel_checks=2 result=Ok(())
+HC074-GROUPED-ADDRESSED-CONTROL sample=0 pass=0 frame_ipc=34 channel_checks=2 test_channel_only=true start=false
+HC074-GROUPED-AGE sample=0 pass=1 issued_ns=1043353561888099 age_before_ns=9607699157 age_after_ns=9944568985 auth=34 signatures=34 channel_checks=2 result=Ok(())
+HC074-GROUPED-ADDRESSED-CONTROL sample=0 pass=1 frame_ipc=34 channel_checks=2 test_channel_only=true start=false
+HC074-GROUPED-ADDRESSED-TRANSFER sample=0 original_writers=2 rights=true same_process_socket=true system_bus_delivery=false start=false
+HC074-GROUPED-AGE sample=1 pass=0 issued_ns=1043367228310076 age_before_ns=9298793208 age_after_ns=9635043104 auth=34 signatures=34 channel_checks=2 result=Ok(())
+HC074-GROUPED-ADDRESSED-CONTROL sample=1 pass=0 frame_ipc=34 channel_checks=2 test_channel_only=true start=false
+HC074-GROUPED-AGE sample=1 pass=1 issued_ns=1043367228310076 age_before_ns=9635169662 age_after_ns=9972327512 auth=34 signatures=34 channel_checks=2 result=Ok(())
+HC074-GROUPED-ADDRESSED-CONTROL sample=1 pass=1 frame_ipc=34 channel_checks=2 test_channel_only=true start=false
+HC074-GROUPED-ADDRESSED-TRANSFER sample=1 original_writers=2 rights=true same_process_socket=true system_bus_delivery=false start=false
+HC074-GROUPED-AGE sample=2 pass=0 issued_ns=1043380917617570 age_before_ns=9302656497 age_after_ns=9638433568 auth=34 signatures=34 channel_checks=2 result=Ok(())
+HC074-GROUPED-ADDRESSED-CONTROL sample=2 pass=0 frame_ipc=34 channel_checks=2 test_channel_only=true start=false
+HC074-GROUPED-AGE sample=2 pass=1 issued_ns=1043380917617570 age_before_ns=9638550526 age_after_ns=9974721890 auth=34 signatures=34 channel_checks=2 result=Ok(())
+HC074-GROUPED-ADDRESSED-CONTROL sample=2 pass=1 frame_ipc=34 channel_checks=2 test_channel_only=true start=false
+HC074-GROUPED-ADDRESSED-TRANSFER sample=2 original_writers=2 rights=true same_process_socket=true system_bus_delivery=false start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1165 filtered out; finished in 41.06s
+
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::collector_tests::enrollment_tests::manager_tests::addressed_tests::original_grouped_addressed_frame_refusals ... HC074-GROUPED-ADDRESSED-REFUSAL case=alias reason=Binding sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=client reason=Binding sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=flags-fd reason=Canonical(Binding) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=body reason=Binding sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=swapped reason=Binding sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=serial reason=Binding sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=missing reason=Binding sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=channel-before reason=Frame(Channel) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=channel-after reason=Frame(Channel) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=context-before reason=Frame(Kernel(Invalid)) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=context-after reason=Frame(Kernel(Invalid)) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=message reason=Frame(Original(Original(Binding))) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=output reason=Frame(Original(Original(Binding))) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=custodian-kill reason=Frame(Original(Child)) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=inside-message reason=Frame(Original(Original(Binding))) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=inside-collector-kill reason=Frame(Original(Child)) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=inside-final-expiry reason=Frame(Original(Original(Original(Expired)))) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=trust reason=Frame(Original(Original(Original(Transport(Material(Outputs(Original(Original(Original(Causal(Reservation(Attempt(Controller(Original(Input(Invalid)))))))))))))))) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=collector-kill reason=Frame(Original(Child)) sticky=true start=false
+HC074-GROUPED-ADDRESSED-REFUSAL case=final-expiry reason=Frame(Original(Original(Original(Expired)))) sticky=true start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1165 filtered out; finished in 263.79s
+
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::collector_tests::enrollment_tests::manager_tests::addressed_tests::original_grouped_addressed_nonroot_fixed_refusal ... HC074-GROUPED-ADDRESSED nonroot=true fixed_refused=true original_owner_retained=true start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1165 filtered out; finished in 13.00s
+
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-GROUPED-ADDRESSED-HOST compiler=188 completed=true start=false
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-GROUPED-ADDRESSED-HOST completed=true supervisor_unchanged=true no_fixture_executable=true admission=false
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-ORIGINAL-MANAGER-HOST-DISPATCH complete=true supervisor_unchanged=true start=false

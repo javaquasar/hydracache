@@ -1,0 +1,126 @@
+use super::*;
+use std::fs::{File, OpenOptions};
+use std::os::fd::{AsRawFd, FromRawFd, OwnedFd};
+use std::os::unix::fs::OpenOptionsExt;
+
+struct TestChannel {
+    files: [File; 4],
+    boot: String,
+    calls: u8,
+    case: String,
+}
+impl TestChannel {
+    fn new(case: &str) -> Self {
+        Self {
+            files: ["user", "mnt", "pid", "time"].map(|kind| {
+                OpenOptions::new()
+                    .read(true)
+                    .custom_flags(libc::O_CLOEXEC)
+                    .open(format!("/proc/thread-self/ns/{kind}"))
+                    .unwrap()
+            }),
+            boot: super::super::kernel::boot().unwrap(),
+            calls: 0,
+            case: case.into(),
+        }
+    }
+}
+impl ChannelChecks for TestChannel {
+    fn check(
+        &mut self,
+        receiver: &mut OriginalReceiverBinding,
+        _pin: &ReceiverPin,
+    ) -> Result<(), JoinError> {
+        self.calls += 1;
+        if (self.case == "channel-before" && self.calls == 1)
+            || (self.case == "channel-after" && self.calls == 2)
+        {
+            return Err(JoinError::Channel);
+        }
+        if (self.case == "context-before" && self.calls == 1)
+            || (self.case == "context-after" && self.calls == 2)
+        {
+            self.files.swap(0, 1);
+        }
+        receiver.require_context(&self.boot, self.files.each_ref())?;
+        Ok(())
+    }
+}
+impl OriginalEnrollmentFrame<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
+    pub(crate) fn manager_round_for_test(&mut self, case: &str) -> (Result<(), JoinError>, u8) {
+        let mut channel = TestChannel::new(case);
+        let result = (|| {
+            let mut receiver = retain_receiver(self)?;
+            let pin = ReceiverPin::capture().map_err(|_| JoinError::Channel)?;
+            validation_round(self, &mut channel, &mut receiver, &pin)
+        })();
+        (result, channel.calls)
+    }
+}
+impl ManagerJoinFailure<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
+    pub(crate) fn assert_retained_for_test(&mut self) {
+        assert!(self.held.original.original.is_refused());
+        assert!(!self.held.ready);
+        assert!(matches!(self.held.revalidate(), Err(JoinError::Refused)));
+        self.held.original.assert_original_for_test();
+    }
+}
+fn receiver() -> OriginalReceiverBinding {
+    use crate::diagnostic_kernel_admission::KernelReceiver;
+    let mut fds = [-1; 2];
+    assert_eq!(
+        unsafe {
+            libc::socketpair(
+                libc::AF_UNIX,
+                libc::SOCK_SEQPACKET | libc::SOCK_CLOEXEC,
+                0,
+                fds.as_mut_ptr(),
+            )
+        },
+        0
+    );
+    let mut receiver = KernelReceiver::new(unsafe { OwnedFd::from_raw_fd(fds[0]) }).unwrap();
+    let sender = unsafe { OwnedFd::from_raw_fd(fds[1]) };
+    assert_eq!(
+        unsafe {
+            libc::send(
+                sender.as_raw_fd(),
+                b"context".as_ptr().cast(),
+                7,
+                libc::MSG_NOSIGNAL,
+            )
+        },
+        7
+    );
+    receiver
+        .try_receive()
+        .unwrap()
+        .unwrap()
+        .retain_original_receiver_binding()
+        .unwrap()
+}
+#[test]
+#[ignore = "manual local root read-only actual channel/original receiver comparison; no child launch"]
+fn original_manager_join_root_readonly_receiver_context() {
+    assert_eq!(
+        std::env::var("HC074_LOCAL_MANAGER_READONLY").as_deref(),
+        Ok("1")
+    );
+    assert_eq!(unsafe { libc::geteuid() }, 0);
+    let mut receiver = receiver();
+    let pin = ReceiverPin::capture().unwrap();
+    let mut channel = FixedManagerChannel::open_fixed().unwrap();
+    channel.check(&mut receiver, &pin).unwrap();
+    channel.check(&mut receiver, &pin).unwrap();
+    channel
+        .runtime
+        .block_on(channel.connection.clone().close())
+        .unwrap();
+    assert!(channel.check(&mut receiver, &pin).is_err());
+    assert!(channel.refused);
+    assert!(channel.check(&mut receiver, &pin).is_err());
+    println!("HC074-ORIGINAL-MANAGER real_fixed_channel=true original_receiver=true root_readonly=true full_admission=false start=false");
+}
+
+#[path = "diagnostic_original_manager_message_test_api.rs"]
+mod addressed_tests;

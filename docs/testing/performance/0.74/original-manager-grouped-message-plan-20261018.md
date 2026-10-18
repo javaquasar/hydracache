@@ -63,3 +63,13 @@ this candidate if gates fail. Do not install a release, operate the supervisor,
 enroll production trust, change clocks or execute product workloads. Active
 start, all-writer cessation, durable completion, later cells and their complete
 SIGKILL/lost-ack matrix remain separate prerequisites.
+
+The selected source `2ed04dc8` passes the fresh current/MSRV host cohort:
+six healthy scenarios, forty sticky refusals and two real nonroot fixed-channel
+refusals. Twelve healthy rounds each perform 34 authentication/signature calls
+and two channel/context checks; six owned socket transfers occur before closing
+validation. All old checks, origins and bounds remain. The maximum observed
+successful challenge age is 9974721890 ns, leaving only about 25 ms. Retain that
+headroom risk before adding dispatch; no deadline increase or production
+admission follows. Exact evidence is in
+[the grouped packet](local-runs/original-manager-grouped-message-20261018/README.md).

@@ -719,3 +719,32 @@ from 9.301862561 s to 9.976507282 s during the added 68-check round, followed by
 refusal at 10.116451429 s. No origin or deadline changed. The runtime candidate
 is withdrawn and archived; a proposed nonexecuting grouping under the existing
 full frame awaits agreement. The approved original manager join remains intact.
+
+## Grouped original manager message preparation
+
+The separately authorized [grouped source slice](local-runs/original-manager-grouped-message-20261018/README.md)
+consumes the original frame directly and initializes the retained receiver/pin
+and fixed channel without an extra already-validated join. Its sealed round
+observes original context and channel, prepares or inspects the exact canonical
+addressed message, validates the complete original frame once, then checks the
+same channel/context, payload and original observations again. Both live
+channel/context checks and every full-frame predicate remain; only duplicate
+full traversal of the rejected prototype disappears. This remains sequential
+observation, not atomic kernel attestation.
+
+Only the held connection supplies unique names. The body, serial and original
+typed pipe objects are pinned, with two explicitly owned message aliases that
+drop before the original custody. Missing/replaced payloads cannot reconstruct;
+failure retains and poisons the same owner. The approved old join, old legacy
+message, child descriptor inventory, alarm origins and 300/60/10-second windows
+stay exact. No send or execution authority is added.
+
+Source `2ed04dc8` passes current/MSRV scoped host fixtures: twelve healthy full
+rounds with 34 authentication/signature checks each, six same-process socket
+transfers, forty sticky refusals and two real nonroot channel refusals. Tests
+use a distinct channel probe, never a production-owner factory. They do not
+prove positive production enrollment or negotiated bus delivery. Observed
+successful challenge age approaches 10 s with only about 25 ms remaining.
+Budget attribution, actual FD negotiation/correlated one-shot start, original
+process binding, active all-writer supervision, completion and reconnect remain
+required before admission. The failed earlier cohort remains withdrawn.
