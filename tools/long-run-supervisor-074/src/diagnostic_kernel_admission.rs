@@ -143,6 +143,10 @@ impl KernelPacket {
         let _live_walk = crate::diagnostic_ipc::validation_trace::live_walk::span(
             crate::diagnostic_ipc::validation_trace::live_walk::Kind::KernelContext,
         );
+        #[cfg(test)]
+        let _kernel_walk = crate::diagnostic_ipc::validation_trace::kernel_walk::span(
+            crate::diagnostic_ipc::validation_trace::kernel_walk::Kind::PacketContext,
+        );
         if self.refused {
             return Err(KernelError::Refused);
         }
@@ -284,6 +288,10 @@ fn valid_hold(before: &TimePoint, after: &TimePoint) -> Result<(), KernelError> 
     Ok(())
 }
 fn bounded(file: &File) -> Result<Vec<u8>, KernelError> {
+    #[cfg(test)]
+    let _kernel_walk = crate::diagnostic_ipc::validation_trace::kernel_walk::span(
+        crate::diagnostic_ipc::validation_trace::kernel_walk::Kind::Document,
+    );
     let mut bytes = vec![0; DOC_BYTES + 1];
     let count = file.read_at(&mut bytes, 0)?;
     if count == 0 || count > DOC_BYTES {
@@ -299,6 +307,10 @@ struct Projection {
     groups: Vec<u32>,
 }
 fn projection(bytes: &[u8], credentials: &libc::ucred) -> Result<Projection, KernelError> {
+    #[cfg(test)]
+    let _kernel_walk = crate::diagnostic_ipc::validation_trace::kernel_walk::span(
+        crate::diagnostic_ipc::validation_trace::kernel_walk::Kind::Projection,
+    );
     let text = std::str::from_utf8(bytes).map_err(|_| kernel_invalid!("projection-utf8"))?;
     let field = |name: &str| -> Result<Vec<u32>, KernelError> {
         let prefix = format!("{name}:");
@@ -365,6 +377,10 @@ impl Sender {
         Ok(sender)
     }
     fn revalidate(&self, origin: &Origin) -> Result<(), KernelError> {
+        #[cfg(test)]
+        let _kernel_walk = crate::diagnostic_ipc::validation_trace::kernel_walk::span(
+            crate::diagnostic_ipc::validation_trace::kernel_walk::Kind::Sender,
+        );
         origin.revalidate()?;
         alive(&self.pidfd, self.credentials.pid)?;
         let directory = origin.child(&self.credentials.pid.to_string(), true)?;
@@ -388,6 +404,10 @@ impl Sender {
     }
 }
 fn alive(pidfd: &OwnedFd, pid: libc::pid_t) -> Result<(), KernelError> {
+    #[cfg(test)]
+    let _kernel_walk = crate::diagnostic_ipc::validation_trace::kernel_walk::span(
+        crate::diagnostic_ipc::validation_trace::kernel_walk::Kind::Alive,
+    );
     let mut poll = libc::pollfd {
         fd: pidfd.as_raw_fd(),
         events: libc::POLLIN,

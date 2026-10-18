@@ -57,6 +57,10 @@ pub(super) fn child(parent: &File, name: &str, directory: bool) -> Result<File, 
     Ok(file)
 }
 fn namespace(name: &str) -> Result<(File, (u64, u64)), KernelError> {
+    #[cfg(test)]
+    let _kernel_walk = crate::diagnostic_ipc::validation_trace::kernel_walk::span(
+        crate::diagnostic_ipc::validation_trace::kernel_walk::Kind::Namespace,
+    );
     // These fixed kernel magic links must be followed, then checked as nsfs.
     let file = OpenOptions::new()
         .read(true)
@@ -67,6 +71,10 @@ fn namespace(name: &str) -> Result<(File, (u64, u64)), KernelError> {
     Ok((file, (m.dev(), m.ino())))
 }
 fn boot(root: &File) -> Result<String, KernelError> {
+    #[cfg(test)]
+    let _kernel_walk = crate::diagnostic_ipc::validation_trace::kernel_walk::span(
+        crate::diagnostic_ipc::validation_trace::kernel_walk::Kind::Boot,
+    );
     let sys = child(root, "sys", true)?;
     let kernel = child(&sys, "kernel", true)?;
     let random = child(&kernel, "random", true)?;
@@ -140,6 +148,10 @@ impl Origin {
         Ok(origin)
     }
     pub(super) fn revalidate(&self) -> Result<(), KernelError> {
+        #[cfg(test)]
+        let _kernel_walk = crate::diagnostic_ipc::validation_trace::kernel_walk::span(
+            crate::diagnostic_ipc::validation_trace::kernel_walk::Kind::Origin,
+        );
         let named = OpenOptions::new()
             .read(true)
             .custom_flags(libc::O_DIRECTORY | libc::O_NOFOLLOW | libc::O_CLOEXEC)
@@ -161,6 +173,10 @@ impl Origin {
         Ok(())
     }
     pub(super) fn sample(&self) -> Result<KernelTimePoint, KernelError> {
+        #[cfg(test)]
+        let _kernel_walk = crate::diagnostic_ipc::validation_trace::kernel_walk::span(
+            crate::diagnostic_ipc::validation_trace::kernel_walk::Kind::Sample,
+        );
         self.revalidate()?;
         let boottime = clock(libc::CLOCK_BOOTTIME)?;
         let realtime_ns = clock(libc::CLOCK_REALTIME)?;
@@ -175,6 +191,10 @@ impl Origin {
         &self,
         expected: &crate::diagnostic_worker_policy::AssertedWorkerHost,
     ) -> Result<(), KernelError> {
+        #[cfg(test)]
+        let _kernel_walk = crate::diagnostic_ipc::validation_trace::kernel_walk::span(
+            crate::diagnostic_ipc::validation_trace::kernel_walk::Kind::WorkerOrigin,
+        );
         self.revalidate()?;
         if self.boot != expected.boot_id {
             return Err(kernel_invalid!("worker-boot"));

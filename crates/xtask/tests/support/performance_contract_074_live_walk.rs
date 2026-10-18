@@ -1,4 +1,6 @@
 //! Strip only exact test instrumentation; all old statements remain byte-exact.
+#[path = "performance_contract_074_kernel_walk.rs"]
+mod kernel_walk;
 const BASE: &str = "b2adb5b73a2f66fc690637260c100b5c8489aa35";
 const INSERTIONS: &[(&str, &str)] = &[
     ("crates/xtask/tests/performance_contract_074.rs", "\n#[path = \"support/performance_contract_074_live_walk.rs\"]\nmod live_walk;\n"),
@@ -50,6 +52,8 @@ platform = "linux"
 # END ORIGINAL LIVE WALK GATE
 "###;
 pub(super) fn normalize(path: &str, raw: &str) -> String {
+    let current = kernel_walk::normalize(path, raw);
+    let raw = current.as_str();
     let mut clean = raw.to_owned();
     for &(changed, exact) in INSERTIONS {
         if path == changed {

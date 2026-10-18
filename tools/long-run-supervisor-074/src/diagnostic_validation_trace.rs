@@ -9,6 +9,10 @@ use std::time::Instant;
 #[path = "diagnostic_live_walk_trace.rs"]
 pub(crate) mod live_walk;
 
+#[cfg(target_os = "linux")]
+#[path = "diagnostic_kernel_walk_trace.rs"]
+pub(crate) mod kernel_walk;
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) enum Stage {
     Unassigned,
