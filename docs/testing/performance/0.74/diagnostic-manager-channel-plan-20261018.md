@@ -14,7 +14,13 @@ actual SO_PEERCRED tuple and peer pidfd, without confusing that bus peer with
 PID 1. Obtain the systemd unique owner and UID 0/PID 1 from that same authenticated
 bus connection, retain a PID 1 pidfd and bracket the lookup with owner, boot,
 socket, connection and process-liveness observations. Unknown or changed context
-poisons the owner; later observations cannot heal it. No serialized snapshot or
+poisons the owner; later observations cannot heal it. Obtain the peer pidfd
+atomically with SO_PEERPIDFD, never pidfd_open on an observed reusable peer PID.
+Retain procfs/nsfs anchors and require equal PID/user namespaces for the caller,
+original bus peer and PID 1; retain the caller's time namespace as well. Bracket
+namespace reads with original pidfd liveness checks. An inaccessible namespace
+is refusal, not permission to trust a namespace-relative numeric claim.
+No serialized snapshot or
 injected test backend may mint the production owner.
 
 Use an owned current-thread Tokio runtime and the already locked Tokio version
@@ -37,10 +43,14 @@ API compile failure. Unit-test path/identity refusal, actual socket credentials,
 pidfd death without numeric-PID signalling, bounded pending/expiry, exact reply
 classification and sticky refusal with fixed enumeration seed 0x0740c518. Keep
 temporary-path/UID policies test-only and incapable of constructing the fixed
-producer. Register a separate opt-in nonroot local read-only system-bus test:
+producer. Register a separate opt-in local read-only system-bus test:
 capture the actual fixed channel, reobserve it, then refuse after connection
 closure. It sends only Hello and the three fixed bus identity queries, never a
-systemd mutation or unit lookup. Retain a failure as failure; do not substitute
+systemd mutation or unit lookup. Run nonroot first as an explicit missing-procfs-
+access refusal, then a distinct local WSL-root positive case for the mandatory
+kernel namespace observations; no privileged fault fixture or service operation
+is permitted. These are separate declared cases, not a retry of failed positive
+data. Retain a failure as failure; do not substitute
 a session bus or widen the operation cap.
 
 Run current GNU/MSRV tests, affected checks/strict Clippy, portable Windows
