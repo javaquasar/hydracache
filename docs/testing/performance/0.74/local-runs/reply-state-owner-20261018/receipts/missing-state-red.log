@@ -1,0 +1,9 @@
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0433]: failed to resolve: use of undeclared type `ReplyState`
+ --> tools/long-run-supervisor-074/src/diagnostic_dispatch_reply_state_tests.rs:6:18
+  |
+6 | ... = ReplyState::p...
+  |       ^^^^^^^^^^ use of undeclared type `ReplyState`
+
+For more information about this error, try `rustc --explain E0433`.
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 1 previous error

@@ -819,3 +819,12 @@ Message keeps writing after exchange and connection closure; no reply, sender
 Drop or disconnect proves cessation. Keep original custody/fence ownership and
 all 46 live effect brackets until the future all-writer proof exists. Production
 original delivery, active execution, completion and reconnect remain closed.
+
+The [FD-free reply-state prerequisite](local-runs/reply-state-owner-20261018/README.md)
+retains exactly one request owner while separating names/serial/phase/latch data.
+The existing exchange delegates to the original unchanged state-machine methods.
+A standalone state can classify data after request destruction, so it is not
+custody or admission proof. The original message/frame/channel implementation
+remains untouched; a later binding must keep this state under that same complete
+validation round, without cloning or extracting its Message. Private-bus and
+seeded model checks preserve the old behavior but open no execution/lifecycle gate.

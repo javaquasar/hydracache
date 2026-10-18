@@ -691,3 +691,11 @@ all-writer cessation prerequisite. P1 still requires the real fixed-channel/
 original-owner transport and exact executable/streams/process/cgroup binding;
 P2/P3, completion/later cells, SIGKILL, reconnect and trust/enrollment stay open.
 No release installation, supervisor operation or server/product workload occurs.
+
+The [reply-state refactor](local-runs/reply-state-owner-20261018/README.md)
+now supplies FD-free correlation data without changing the old request owner or
+classifier. Both compilers pass the seeded model and nine-case private-bus gate;
+all 256 source contracts pass. This is only the prerequisite for connecting
+correlation to the original owner inside its existing full frame. The real
+fixed-channel delivery, original process/streams/cgroup binding, all-writer
+cessation, completion and new-boundary fault/reconnect gates remain open.

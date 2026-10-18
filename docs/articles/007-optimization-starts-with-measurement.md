@@ -13199,3 +13199,33 @@ folded into earlier image identities. No cache API performance is measured in
 this package. Authenticated original-owner delivery, executable/streams/process/
 cgroup binding, active all-writer cessation and new execution-boundary SIGKILL,
 completion and reconnect checks remain open at the original admission deadlines.
+
+### Separate reply correlation from request custody
+
+Connecting an existing exchange to the original message owner should not require
+cloning its FD-bearing Message or removing it from the live frame. The
+[correlation prerequisite](../testing/performance/0.74/local-runs/reply-state-owner-20261018/README.md)
+therefore separates the old state machine from request ownership. ReplyState
+contains only names, original serial, phase and reply latch. The owning exchange
+still retains the same Message and delegates to that state; it acquires no new
+writer aliases. The request predicates and complete old transition/reply block
+remain unchanged, with byte-level source restoration and mutation controls.
+
+The new tests make the distinction explicit. A standalone state retains no pipe
+writer: after request destruction its readers reach EOF, yet it can still
+classify valid reply data. Correlation alone is therefore not custody or start
+authority. The owning exchange, in contrast, keeps its original writers through
+job observation until the Message itself drops.
+
+An independent phase/latch model checks both representations over 512 seeded
+histories and 17,150 operations on each GNU compiler, including early replies,
+lost acknowledgement, duplicate operations and manager errors. Both return the
+same six outcome counts. Existing dispatch regressions and the nine-case actual
+private-bus matrix also pass. These checks establish behavior preservation, not
+a speedup or independent process-crash coverage.
+
+The original full frame and fixed channel are deliberately unchanged in this
+prerequisite. Their next integration can retain correlation without a second
+request owner, but must still perform all live checks at the original deadlines.
+Neither the refactor nor its tests open real send/start, prove whole-writer
+cessation, or permit completion and fence release.

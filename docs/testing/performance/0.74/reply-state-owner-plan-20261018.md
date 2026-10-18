@@ -43,3 +43,22 @@ After this gate, bind the FD-free state inside the original message's complete
 validation round. That subsequent change must retain the same fixed channel,
 message, kernel receiver, custody, deadlines and sticky refusal; it must not use
 this refactor's tests as proof of production delivery or all-writer cessation.
+
+## Scoped result
+
+The current/MSRV baseline retains 22 dispatch tests and one ignored manual
+matrix per image. New images pass 27 ordinary dispatch tests and the separately
+selected nine-case private bus matrix on each compiler. The five new tests
+cover the borrowed API, invalid requests, FD-free state, owning request retention
+and 512 seeded histories with 17,150 modeled operations per compiler. The six
+outcome counts agree: 360, 1714, 117, 1636, 13265 and 58. These are deterministic
+unit coverage, not independent process-loss trials or performance samples.
+
+All 256 source contracts and 44 portable controls pass, as do affected checks,
+strict Clippy and the scoped local gates. The original method block is unchanged
+byte for byte. The seed generator constructs permitted reply flag bit one through
+Header, as the old flag corpus does: the high-level builder rejects that reply
+form even though the wire reader accepts it. This correction occurs before the
+selected final test cohort. No original frame, manager channel, custody, clock
+or admission bound is changed. The original-owner binding remains subsequent
+work, not an implicit consequence of data-only correlation state.

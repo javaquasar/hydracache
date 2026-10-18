@@ -4091,3 +4091,12 @@ and can still write, so this closes no all-writer cessation or completion gate.
 Original production delivery/start, receiver behavior, enrollment, reconnect and
 new-boundary SIGKILL remain separate; runtime, qualification inputs and deadlines
 are unchanged. No dedicated server or product workload is used.
+
+The [reply-state prerequisite](local-runs/reply-state-owner-20261018/README.md)
+separates borrowed correlation data from request custody without Message cloning.
+All old request and reply predicates remain; the owning exchange delegates to
+the unchanged transition/classifier block. Each GNU image passes 27 dispatch
+tests, 512 seeded histories and the existing nine-case private-bus matrix;
+256 source contracts pass. Standalone state retains no FD and is not an original
+owner or execution capability. Binding that state inside the original full frame
+remains next; start, all-writer cessation and subsequent lifecycle gates stay open.
