@@ -565,3 +565,22 @@ new operation cap as a lease. The old exchange still needs its separate reply
 interoperability review. Unix-FD negotiation/delivery, actual unit/process/cgroup,
 active watchdog, whole-writer cessation and completion remain unclosed. No
 installation, server or product/qualification admission follows from this gate.
+
+## Systemd and supervisor ownership audit
+
+The [boundary audit](supervisor-boundary-audit-20261018.md) keeps detached lifetime,
+unit/cgroup control, resource limits and no-restart settings in systemd. The
+custom layer retains original admission, one-shot side effects, useful progress,
+all-writer cessation and independent evidence verification. No scheduler or
+monitoring stack is added to the execution boundary. A status snapshot and the
+existing campaign attach route are not proof of reconnect on the new diagnostic
+path. The six remaining packages and the exchange reply correction are
+preregistered there; no source window or execution admission is changed.
+
+The [separate reply packet](local-runs/exchange-reply-flags-20261018/README.md)
+now closes the old exchange's METHOD_RETURN flag interoperability only. Current
+and MSRV pass nineteen exchange tests, targeted regressions, checks/strict Clippy
+and all 235 source contracts; baseline and negative outcomes remain retained.
+The uniquely addressed original channel/message join, active supervision,
+all-writer cessation, completion/later cells and integrated reconnect remain
+required before real enrollment and server rehearsal. No start is connected.

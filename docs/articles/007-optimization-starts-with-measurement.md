@@ -12749,3 +12749,53 @@ supervision or writer cessation. The gain here is a concrete trusted input
 producer and a corrected interoperability assumption, not a measured product
 throughput or allocation improvement. Installation and product admission remain
 closed until those consuming boundaries are proved.
+
+## Keep process management in systemd
+
+A disconnected SSH client is not a reason to invent another process manager.
+systemd already owns detached service lifetime, cgroups, resource limits and
+stop policy. Both of our workload unit builders already select Restart=no and
+KillMode=control-group. The [ownership audit](../testing/performance/0.74/supervisor-boundary-audit-20261018.md)
+therefore keeps these mechanisms in systemd. A reconnecting observer should
+retrieve current state, not start another execution or reconstruct a process
+from checkpoints.
+
+The experiment-specific responsibility is narrower but different. A service
+being active does not prove useful progress; a matching unit name does not prove
+the original executable, streams or process generation. A successful start-job
+reply does not prove that every inherited writer has stopped. The hidden message
+alias test demonstrates why: dropping the exchange owner still leaves a pipe
+open until its final alias disappears. An empty workload cgroup cannot by itself
+account for an alias retained outside that cgroup.
+
+This distinction also limits the watchdog. systemd can detect missing service
+notifications and stop a unit. Our controller must separately interpret useful
+progress, enforce the original execution authority and retain an uncertain
+outcome until cessation is established. A GitHub observer loss may leave a
+healthy original process running; expiry of execution authority may not. Neither
+event authorizes a transparent restart of measured work.
+
+The audit consequently retains the integrity and admission checks rather than
+adding a scheduler or a dashboard to the critical execution path. A monitoring
+adapter can remain replaceable and separately budgeted. The immediate code
+boundary is the old exchange's reply interoperability, followed by its consuming
+join with the original live manager channel. The remaining lifecycle, all-writer
+revocation, reconnect and exact-host enrollment gates are still required.
+
+The [next isolated exchange experiment](../testing/performance/0.74/local-runs/exchange-reply-flags-20261018/README.md)
+then applies the already attributed protocol fact to the old one-shot exchange.
+The fourteen old units pass on both compiler cohorts. A new typed positive fails
+on flags=1 before the correction, exposing the same invalid assumption without
+starting any service. The candidate permits 0/NO_REPLY_EXPECTED only on a required
+METHOD_RETURN. Exhaustive known-bit combinations and crossed correlation/body/FD
+refusals keep request flags, manager errors, uncertainty and no-retry behavior
+unchanged. Nineteen exchange tests per compiler and the complete local source
+contract suite pass after the correction.
+
+The first exact-source comparison also failed because its new restoration string
+did not match rustfmt's line wrapping. That negative is retained separately; the
+repair changes the reference string, not the runtime rule. This is a useful
+boundary for the conclusion: one interoperability obstacle is removed, but a
+passing reply still proves neither actual original process start nor cessation
+of every writer. No throughput, CPU or allocation improvement follows from this
+correctness result.

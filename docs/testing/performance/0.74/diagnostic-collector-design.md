@@ -654,3 +654,11 @@ nonroot access refusals and local controls pass; old dispatch/request predicates
 remain exact. Their own interoperability review, unique-owner original-message
 construction, Unix-FD delivery proof, active supervision and all-writer revocation
 still precede authenticated start, completion or installation.
+
+The [ownership audit](supervisor-boundary-audit-20261018.md) retains process and
+cgroup management in systemd and admission/progress/evidence rules in the custom
+layer. The [separate dispatch correction](local-runs/exchange-reply-flags-20261018/README.md)
+now admits only flags 0/NO_REPLY_EXPECTED on METHOD_RETURN in the old exchange;
+requests, ERROR classification and every correlation/FD/refusal check stay exact.
+Both compiler cohorts pass nineteen exchange tests. This closes its isolated
+reply interoperability prerequisite, not original message delivery or execution.

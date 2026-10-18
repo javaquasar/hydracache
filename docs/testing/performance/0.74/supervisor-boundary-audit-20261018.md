@@ -108,3 +108,13 @@ Record the unchanged baseline, a failing new positive test, the correction,
 current/MSRV unit cohorts, source canaries, checks/strict Clippy and portable
 controls. This correction alone cannot transmit a message or establish execution,
 cessation, completion, trust enrollment or server admission.
+
+## Exchange correction result
+
+Source `2076b5882a5ea47da4e426c7b3964f0a4c3f8b2b` passes nineteen exchange
+tests on current/MSRV, affected checks/strict Clippy, 235 source contracts and
+portable controls. The [retained packet](local-runs/exchange-reply-flags-20261018/README.md)
+keeps the original fourteen-test baseline, new positive test's expected failure
+and first exact-format source-comparison failure separate from the accepted
+gate. Only METHOD_RETURN flag interoperability is closed; the consuming original
+channel/message join is the next code boundary, not a newly admitted start.

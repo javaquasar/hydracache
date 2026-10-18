@@ -1,0 +1,70 @@
+diff --git a/crates/xtask/tests/support/performance_contract_074_manager_channel.rs b/crates/xtask/tests/support/performance_contract_074_manager_channel.rs
+index d1f8f767..6ada7545 100644
+--- a/crates/xtask/tests/support/performance_contract_074_manager_channel.rs
++++ b/crates/xtask/tests/support/performance_contract_074_manager_channel.rs
+@@ -1,4 +1,6 @@
+ //! A fixed read-only producer is not original launch authority.
++#[path = "performance_contract_074_reply_flags.rs"]
++mod reply_flags;
+ const COMPAT: &str = r###"
+ ## Private fixed manager channel observations
+ 
+@@ -153,6 +155,8 @@ fn restore_dependency_reference(path: &str, raw: &str) -> String {
+     format!("{}{}{}", &raw[..start], old, &raw[finish..])
+ }
+ pub(super) fn normalize(path: &str, raw: &str) -> String {
++    let normalized = reply_flags::normalize(path, raw);
++    let raw = normalized.as_str();
+     match path {
+         "docs/COMPAT.md" => strip(raw, COMPAT),
+         "docs/testing/gated-test-registry.toml" => strip(raw, GATES),
+diff --git a/docs/COMPAT.md b/docs/COMPAT.md
+index 8383979d..750804f8 100644
+--- a/docs/COMPAT.md
++++ b/docs/COMPAT.md
+@@ -1552,3 +1552,14 @@ heal. The absolute BOOTTIME two-second observation cap is not an admission lease
+ and cannot renew any original window. There is no connection/name/FD export,
+ snapshot constructor, fixture promotion, message sender or execution authority.
+ Original frame/message joining and FD negotiation/delivery proof remain separate.
++
++## Private dispatch method return interoperability
++
++The one-shot private dispatch exchange now accepts METHOD_RETURN flags 0 or
++NO_REPLY_EXPECTED only. D-Bus assigns that bit no reply semantics. All other
++known or unknown bits refuse; request flags and ERROR classification stay exact.
++Original serial/sender/destination, size/body/FD checks and refusal-before-parse
++remain unchanged. A permitted reply remains job-path data, not start, cessation,
++completion, retry or release authority. No public/durable format or sender is added.
++This supersedes only the old exchange's empty METHOD_RETURN flag predicate;
++the fixed read-only manager producer and every execution/admission limit stay exact.
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange.rs b/tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange.rs
+index d7c36e73..9ca05f66 100644
+--- a/tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange.rs
++++ b/tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange.rs
+@@ -149,7 +149,11 @@ impl DispatchExchange {
+             || h.reply_serial() != Some(self.serial)
+             || h.sender().map(|v| v.as_str()) != Some(self.manager.as_str())
+             || h.destination().map(|v| v.as_str()) != Some(self.client.as_str())
+-            || !reply.primary_header().flags().is_empty()
++            || reply.primary_header().flags().bits()
++                & !(zbus::message::Flags::NoReplyExpected as u8)
++                != 0
++            || (reply.message_type() != Type::MethodReturn
++                && !reply.primary_header().flags().is_empty())
+             || !reply.data().fds().is_empty()
+             || h.unix_fds().unwrap_or(0) != 0
+             || h.path().is_some()
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs b/tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs
+index 031f8369..7d77bb7a 100644
+--- a/tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs
++++ b/tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs
+@@ -9,6 +9,9 @@ const CLIENT: &str = ":1.75";
+ #[path = "diagnostic_dispatch_exchange_socket_tests.rs"]
+ mod socket_tests;
+ 
++#[path = "diagnostic_dispatch_reply_flags_tests.rs"]
++mod reply_flags_tests;
++
+ fn pipe() -> [File; 2] {
+     let mut fds = [-1; 2];
+     assert_eq!(unsafe { libc::pipe2(fds.as_mut_ptr(), libc::O_CLOEXEC) }, 0);

@@ -3942,3 +3942,18 @@ the new producer accepts the standard irrelevant 0x01 bit on METHOD_RETURN only.
 Old dispatch/request flags and original windows remain unchanged. Original
 message construction/delivery, active supervision, whole-writer cessation and
 completion are still ahead of installation or product admission.
+
+The [server ownership audit](supervisor-boundary-audit-20261018.md) maps systemd,
+the supervisor, harness, observer and offline verifier to their distinct duties.
+Existing unit/cgroup/process management is reused rather than replaced with a
+custom scheduler. The new diagnostic path still needs the consuming original
+channel/message join, active supervision, cessation/completion, later cells,
+exact-host trust enrollment and end-to-end disconnect/attach rehearsal. The
+audit changes no frozen workload, deadline or qualification input.
+
+The [dispatch reply packet](local-runs/exchange-reply-flags-20261018/README.md)
+corrects the old exchange's irrelevant NO_REPLY_EXPECTED return-bit refusal while
+preserving request flags, ERROR handling, correlation, FD checks and no retry.
+Both compilers pass nineteen exchange units; 235 source contracts and focused
+local checks pass. Negative results remain separate. This is interoperability,
+not authenticated original-start, whole-writer cessation or server admission.
