@@ -1,4 +1,6 @@
 //! One exact experimental substitution; never normalize other live checks.
+#[path = "performance_contract_074_plain_worker.rs"]
+mod plain_worker;
 const BASE: &str = "3b8e73feec8412e4090bf05575f06a05901e1010";
 const PATH: &str = "tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs";
 const OLD: &str = r###"fn boot(root: &File) -> Result<String, KernelError> {
@@ -83,6 +85,8 @@ pub(super) fn read_once(
 const TEST: &str =
     "#[cfg(test)]\n#[path = \"diagnostic_boot_buffer_tests.rs\"]\nmod boot_buffer_tests;\n\n";
 pub(super) fn normalize(path: &str, raw: &str) -> String {
+    let current = plain_worker::normalize(path, raw);
+    let raw = current.as_str();
     if path != PATH {
         return raw.to_owned();
     }

@@ -5,6 +5,9 @@ use crate::diagnostic_ipc::validation_trace::live_walk;
 #[path = "diagnostic_original_kernel_walk_cost_tests.rs"]
 mod kernel_walk_tests;
 
+#[path = "diagnostic_original_plain_worker_tests.rs"]
+mod plain_worker_tests;
+
 #[test]
 #[ignore = "manual nonroot original live worker walk attribution; no reservation or execution"]
 fn original_live_worker_walk_attribution() {

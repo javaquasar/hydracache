@@ -1,0 +1,4 @@
+* -text whitespace=cr-at-eol
+*.log -text -whitespace
+*.jsonl -text -whitespace
+*.source -text -whitespace
