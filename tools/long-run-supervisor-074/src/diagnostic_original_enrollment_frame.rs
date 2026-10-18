@@ -99,3 +99,6 @@ impl OriginalEnrollmentFrame<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
 #[cfg(test)]
 #[path = "diagnostic_original_enrollment_frame_test_api.rs"]
 mod test_api;
+
+#[path = "diagnostic_dispatch_exchange.rs"]
+mod dispatch_exchange;

@@ -1513,3 +1513,22 @@ boolean matching that cut, not an authentication count or execution permit.
 Reject extra/missing/duplicate keys, wrong types, credentials, roles, truncation
 or ambiguous rights. These test messages confer no start, release or completion
 authority. The ordinary P/B child protocols and absolute deadlines are unchanged.
+
+## Private one shot dispatch exchange mechanics
+
+The private dispatch exchange consumes existing D-Bus version 1 messages and
+introduces no new public or durable schema. Client/manager unique-name claims
+are data, not authenticated connection or PID 1 evidence. Preparation rejects
+well-known routing, malformed envelope/body signature and missing, aliased or
+nonblocking/non-CLOEXEC pipe writers. It does not check signed unit settings or
+original ancestry; those remain obligations of the future original join.
+
+Arming closes retry before transport entry. A reply must match the original
+serial, unique manager sender and client destination, with no returned FDs or
+unexpected headers/flags. A canonical nonzero u32 job path is observation data
+only; missing/malformed/error/duplicate replies never authorize retry, release,
+start or completion. Error bodies are not diagnostics. Message ownership survives
+preparation failure and uncertain outcomes. No message/FD export API is provided.
+Socket-pair SCM_RIGHTS fixtures carry byte-identical zbus-built messages and
+verify real local credentials/FDs; they are not system-bus authentication or
+original execution. Unknown shapes fail closed. No ordinary sender is connected.

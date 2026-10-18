@@ -1,4 +1,6 @@
 //! Approved frequency change only; old validation and raw child bodies freeze.
+#[path = "performance_contract_074_dispatch_exchange.rs"]
+mod dispatch_exchange;
 const GATES: &str = r###"
 # BEGIN ORIGINAL ENROLLMENT FRAME GATES
 [[gate]]
@@ -186,6 +188,8 @@ fn strip(raw: &str, allowed: &str) -> String {
     raw.replacen(allowed, "", 1)
 }
 pub(super) fn normalize(path: &str, raw: &str) -> String {
+    let normalized = dispatch_exchange::normalize(path, raw);
+    let raw = normalized.as_str();
     match path {
         "docs/COMPAT.md" => strip(raw, COMPAT),
         "docs/testing/gated-test-registry.toml" => strip(raw, GATES),
