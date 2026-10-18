@@ -44,3 +44,14 @@ first failure if any. Report all 36 span rows with source/image identity and
 unchanged live predicates, call order and original deadlines. Select any later
 optimization separately; these observations alone do not authorize caching or
 removing a live walk.
+
+## Result
+
+Selected test-only source `bd65514b144c6b3575f0255a2dc3f10fb23cdbc3` passes
+all six fresh current/MSRV host fixtures on first execution: 192 validations,
+36 span rows and unchanged original inputs. The
+[evidence](local-runs/original-live-walk-20261018/README.md) verifies exact
+parent/child accounting and preserves initial static-guard failures separately.
+Kernel context contributes about 69 percent of the measured worker wall span,
+active authority about 12 percent. This supports finer kernel-walk attribution,
+not an optimization, CPU/IO ownership claim, deadline change or server admission.

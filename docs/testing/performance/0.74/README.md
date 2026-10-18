@@ -4031,3 +4031,14 @@ cryptographic bottleneck or an exclusive CPU/filesystem owner. Next attribute
 original worker/kernel/authority traversal cost while retaining every effect
 bracket. The observed final challenge margin is about 24 ms; actual bus start,
 all-writer cessation, completion/reconnect and real enrollment remain unadmitted.
+
+The [nested live worker diagnostic](local-runs/original-live-walk-20261018/README.md)
+at `bd65514b` passes six fresh current/MSRV fixtures and 192 retained worker
+validations before reservation. All 36 numeric rows and their parent/child
+arithmetic verify. Two kernel-context calls contribute about 69 percent of
+the measured 1.490–1.504 ms whole-worker span; four authority inspections
+contribute about 12 percent. This is nested instrumented wall attribution,
+not exclusive CPU/IO cost or a decomposition of the full preparation bucket.
+All original runtime bodies, 46 effect-local brackets and deadlines remain.
+Next attribute kernel sender/origin/namespace/boot/clock observations without
+removing checks. No optimization or execution gate is accepted by this packet.

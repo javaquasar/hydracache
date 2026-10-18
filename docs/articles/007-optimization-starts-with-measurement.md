@@ -12987,3 +12987,43 @@ system-bus delivery/start, active all-writer cessation, completion and reconnect
 gates remain separate. The next change must reduce the cost of a live traversal
 without dropping the effect-local brackets, caching mutable authority/context
 or extending the original deadline.
+
+### Kernel context dominates the measured live worker walk
+
+The [nested worker diagnostic](../testing/performance/0.74/local-runs/original-live-walk-20261018/README.md)
+tests that inference on the actual retained validator. Six test-only entry
+spans distinguish the worker wrapper, policy, trust source, active authority,
+kernel context and local context. Removing the exact insertions must restore
+every pre-existing Rust file; the validator is not reproduced as an alternative
+implementation. The experiment runs before reservation and challenge issuance,
+so its instrumentation cannot consume or renew the ten-second progress window.
+
+Three fresh fixtures per GNU compiler each perform 32 consecutive worker
+validations, with full original OIDC validation before and after. All six
+fixtures pass without retries; original request and worker/OIDC bytes remain
+unchanged and the IPC authentication/signature counters are zero. There are
+192 observations, but only six independent fixtures. No output or execution is
+created.
+
+The observed whole-worker wall span is 1.490–1.504 ms. Its two kernel-context
+calls contribute 1.023–1.033 ms, about 69 percent. The local-context call
+contributes 0.211–0.215 ms, while the two worker-policy calls together contribute
+about 0.255–0.256 ms. Four active-authority inspections inside that policy cost
+about 0.174–0.175 ms, roughly 12 percent of the whole worker span. Four trust
+source checks contribute about 0.076 ms inside the same policy span.
+
+Unlike the earlier independent component controls, these measurements are
+nested in one real call tree. The numeric tracer accounts for time outside
+instrumented direct children, and the verifier checks the parent/child
+arithmetic exactly. This prevents adding the policy and its children twice.
+That outside-children time still is not exclusive CPU, filesystem or allocation
+cost: each span is instrumented wall time and includes uninstrumented work.
+
+The result narrows the next hypothesis, not the server admission boundary.
+Profile sender liveness/status, retained origin/namespace/boot walks and clock
+sampling inside kernel context before selecting a change. Do not optimize
+authority signatures merely because the preparation path repeats authentication,
+or reuse mutable observations across an effect. These controls do not decompose
+the entire earlier 7.2-second join and establish no speedup or worst-case margin.
+The roughly 24 ms observed challenge margin, real authenticated bus start,
+all-writer cessation, completion and reconnect remain unresolved.

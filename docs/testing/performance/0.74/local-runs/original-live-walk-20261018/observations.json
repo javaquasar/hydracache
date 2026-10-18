@@ -1,0 +1,297 @@
+{
+  "critical_path_claim": false,
+  "unit": "nanoseconds",
+  "optimization_accepted": false,
+  "rows": [
+    {
+      "inclusive_ns": 47846849,
+      "compiler": "194",
+      "sample": 0,
+      "kind": "kernel-worker",
+      "outside_children_ns": 8285,
+      "calls": 32
+    },
+    {
+      "inclusive_ns": 8156646,
+      "compiler": "194",
+      "sample": 0,
+      "kind": "worker-policy",
+      "outside_children_ns": 176573,
+      "calls": 64
+    },
+    {
+      "inclusive_ns": 2423519,
+      "compiler": "194",
+      "sample": 0,
+      "kind": "worker-source",
+      "outside_children_ns": 2423519,
+      "calls": 128
+    },
+    {
+      "inclusive_ns": 5556554,
+      "compiler": "194",
+      "sample": 0,
+      "kind": "active-authority",
+      "outside_children_ns": 5556554,
+      "calls": 128
+    },
+    {
+      "inclusive_ns": 32862600,
+      "compiler": "194",
+      "sample": 0,
+      "kind": "kernel-context",
+      "outside_children_ns": 32862600,
+      "calls": 64
+    },
+    {
+      "inclusive_ns": 6819318,
+      "compiler": "194",
+      "sample": 0,
+      "kind": "local-context",
+      "outside_children_ns": 6819318,
+      "calls": 32
+    },
+    {
+      "inclusive_ns": 47971644,
+      "compiler": "194",
+      "sample": 1,
+      "kind": "kernel-worker",
+      "outside_children_ns": 8862,
+      "calls": 32
+    },
+    {
+      "inclusive_ns": 8174144,
+      "compiler": "194",
+      "sample": 1,
+      "kind": "worker-policy",
+      "outside_children_ns": 175549,
+      "calls": 64
+    },
+    {
+      "inclusive_ns": 2427452,
+      "compiler": "194",
+      "sample": 1,
+      "kind": "worker-source",
+      "outside_children_ns": 2427452,
+      "calls": 128
+    },
+    {
+      "inclusive_ns": 5571143,
+      "compiler": "194",
+      "sample": 1,
+      "kind": "active-authority",
+      "outside_children_ns": 5571143,
+      "calls": 128
+    },
+    {
+      "inclusive_ns": 32991267,
+      "compiler": "194",
+      "sample": 1,
+      "kind": "kernel-context",
+      "outside_children_ns": 32991267,
+      "calls": 64
+    },
+    {
+      "inclusive_ns": 6797371,
+      "compiler": "194",
+      "sample": 1,
+      "kind": "local-context",
+      "outside_children_ns": 6797371,
+      "calls": 32
+    },
+    {
+      "inclusive_ns": 48121642,
+      "compiler": "194",
+      "sample": 2,
+      "kind": "kernel-worker",
+      "outside_children_ns": 9027,
+      "calls": 32
+    },
+    {
+      "inclusive_ns": 8178504,
+      "compiler": "194",
+      "sample": 2,
+      "kind": "worker-policy",
+      "outside_children_ns": 181157,
+      "calls": 64
+    },
+    {
+      "inclusive_ns": 2429034,
+      "compiler": "194",
+      "sample": 2,
+      "kind": "worker-source",
+      "outside_children_ns": 2429034,
+      "calls": 128
+    },
+    {
+      "inclusive_ns": 5568313,
+      "compiler": "194",
+      "sample": 2,
+      "kind": "active-authority",
+      "outside_children_ns": 5568313,
+      "calls": 128
+    },
+    {
+      "inclusive_ns": 33040960,
+      "compiler": "194",
+      "sample": 2,
+      "kind": "kernel-context",
+      "outside_children_ns": 33040960,
+      "calls": 64
+    },
+    {
+      "inclusive_ns": 6893151,
+      "compiler": "194",
+      "sample": 2,
+      "kind": "local-context",
+      "outside_children_ns": 6893151,
+      "calls": 32
+    },
+    {
+      "inclusive_ns": 48061193,
+      "compiler": "188",
+      "sample": 0,
+      "kind": "kernel-worker",
+      "outside_children_ns": 9073,
+      "calls": 32
+    },
+    {
+      "inclusive_ns": 8201142,
+      "compiler": "188",
+      "sample": 0,
+      "kind": "worker-policy",
+      "outside_children_ns": 177252,
+      "calls": 64
+    },
+    {
+      "inclusive_ns": 2435802,
+      "compiler": "188",
+      "sample": 0,
+      "kind": "worker-source",
+      "outside_children_ns": 2435802,
+      "calls": 128
+    },
+    {
+      "inclusive_ns": 5588088,
+      "compiler": "188",
+      "sample": 0,
+      "kind": "active-authority",
+      "outside_children_ns": 5588088,
+      "calls": 128
+    },
+    {
+      "inclusive_ns": 32971982,
+      "compiler": "188",
+      "sample": 0,
+      "kind": "kernel-context",
+      "outside_children_ns": 32971982,
+      "calls": 64
+    },
+    {
+      "inclusive_ns": 6878996,
+      "compiler": "188",
+      "sample": 0,
+      "kind": "local-context",
+      "outside_children_ns": 6878996,
+      "calls": 32
+    },
+    {
+      "inclusive_ns": 47776385,
+      "compiler": "188",
+      "sample": 1,
+      "kind": "kernel-worker",
+      "outside_children_ns": 9264,
+      "calls": 32
+    },
+    {
+      "inclusive_ns": 8172844,
+      "compiler": "188",
+      "sample": 1,
+      "kind": "worker-policy",
+      "outside_children_ns": 177744,
+      "calls": 64
+    },
+    {
+      "inclusive_ns": 2434625,
+      "compiler": "188",
+      "sample": 1,
+      "kind": "worker-source",
+      "outside_children_ns": 2434625,
+      "calls": 128
+    },
+    {
+      "inclusive_ns": 5560475,
+      "compiler": "188",
+      "sample": 1,
+      "kind": "active-authority",
+      "outside_children_ns": 5560475,
+      "calls": 128
+    },
+    {
+      "inclusive_ns": 32794627,
+      "compiler": "188",
+      "sample": 1,
+      "kind": "kernel-context",
+      "outside_children_ns": 32794627,
+      "calls": 64
+    },
+    {
+      "inclusive_ns": 6799650,
+      "compiler": "188",
+      "sample": 1,
+      "kind": "local-context",
+      "outside_children_ns": 6799650,
+      "calls": 32
+    },
+    {
+      "inclusive_ns": 47687460,
+      "compiler": "188",
+      "sample": 2,
+      "kind": "kernel-worker",
+      "outside_children_ns": 9111,
+      "calls": 32
+    },
+    {
+      "inclusive_ns": 8178213,
+      "compiler": "188",
+      "sample": 2,
+      "kind": "worker-policy",
+      "outside_children_ns": 179388,
+      "calls": 64
+    },
+    {
+      "inclusive_ns": 2436637,
+      "compiler": "188",
+      "sample": 2,
+      "kind": "worker-source",
+      "outside_children_ns": 2436637,
+      "calls": 128
+    },
+    {
+      "inclusive_ns": 5562188,
+      "compiler": "188",
+      "sample": 2,
+      "kind": "active-authority",
+      "outside_children_ns": 5562188,
+      "calls": 128
+    },
+    {
+      "inclusive_ns": 32739568,
+      "compiler": "188",
+      "sample": 2,
+      "kind": "kernel-context",
+      "outside_children_ns": 32739568,
+      "calls": 64
+    },
+    {
+      "inclusive_ns": 6760568,
+      "compiler": "188",
+      "sample": 2,
+      "kind": "local-context",
+      "outside_children_ns": 6760568,
+      "calls": 32
+    }
+  ],
+  "iterations_per_sample": 32,
+  "exclusive_cpu_claim": false
+}

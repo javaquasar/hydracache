@@ -1,0 +1,70 @@
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-LIVE-WALK-ADMISSION start=false install=false supervisor_changed=false
+1eb38b1ce6960d15d7ce4502d59f9177dc033fe4b4f748d40a3a070527c0c386  ./tests-194
+ed7947af0e56a26178e5eebb3c71500492333af31e187ae15006b8c2a6720bca  ./tests-188
+7b72e70d9111359a9dea02a55bde3f7a75963709545ad90f3064dba37a6ae585  ./guard.sh
+f3ac0ccbfbc0676269f1e0cc29cc9068854087a592fbf32e1ef4dd7b51b4a4a6  ./run.sh
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-LIVE-WALK-HOST compiler=194 begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::leaf_cost_tests::component_cost_tests::live_walk_tests::original_live_worker_walk_attribution ... HC074-LIVE-WALK sample=0 kind=kernel-worker stats=Stats { calls: 32, inclusive_ns: 47846849, outside_children_ns: 8285 }
+HC074-LIVE-WALK sample=0 kind=worker-policy stats=Stats { calls: 64, inclusive_ns: 8156646, outside_children_ns: 176573 }
+HC074-LIVE-WALK sample=0 kind=worker-source stats=Stats { calls: 128, inclusive_ns: 2423519, outside_children_ns: 2423519 }
+HC074-LIVE-WALK sample=0 kind=active-authority stats=Stats { calls: 128, inclusive_ns: 5556554, outside_children_ns: 5556554 }
+HC074-LIVE-WALK sample=0 kind=kernel-context stats=Stats { calls: 64, inclusive_ns: 32862600, outside_children_ns: 32862600 }
+HC074-LIVE-WALK sample=0 kind=local-context stats=Stats { calls: 32, inclusive_ns: 6819318, outside_children_ns: 6819318 }
+HC074-LIVE-WALK-CONTROL sample=0 iterations=32 original=true unchanged=true reservation=false schedule_changed=false admission=false
+HC074-LIVE-WALK sample=1 kind=kernel-worker stats=Stats { calls: 32, inclusive_ns: 47971644, outside_children_ns: 8862 }
+HC074-LIVE-WALK sample=1 kind=worker-policy stats=Stats { calls: 64, inclusive_ns: 8174144, outside_children_ns: 175549 }
+HC074-LIVE-WALK sample=1 kind=worker-source stats=Stats { calls: 128, inclusive_ns: 2427452, outside_children_ns: 2427452 }
+HC074-LIVE-WALK sample=1 kind=active-authority stats=Stats { calls: 128, inclusive_ns: 5571143, outside_children_ns: 5571143 }
+HC074-LIVE-WALK sample=1 kind=kernel-context stats=Stats { calls: 64, inclusive_ns: 32991267, outside_children_ns: 32991267 }
+HC074-LIVE-WALK sample=1 kind=local-context stats=Stats { calls: 32, inclusive_ns: 6797371, outside_children_ns: 6797371 }
+HC074-LIVE-WALK-CONTROL sample=1 iterations=32 original=true unchanged=true reservation=false schedule_changed=false admission=false
+HC074-LIVE-WALK sample=2 kind=kernel-worker stats=Stats { calls: 32, inclusive_ns: 48121642, outside_children_ns: 9027 }
+HC074-LIVE-WALK sample=2 kind=worker-policy stats=Stats { calls: 64, inclusive_ns: 8178504, outside_children_ns: 181157 }
+HC074-LIVE-WALK sample=2 kind=worker-source stats=Stats { calls: 128, inclusive_ns: 2429034, outside_children_ns: 2429034 }
+HC074-LIVE-WALK sample=2 kind=active-authority stats=Stats { calls: 128, inclusive_ns: 5568313, outside_children_ns: 5568313 }
+HC074-LIVE-WALK sample=2 kind=kernel-context stats=Stats { calls: 64, inclusive_ns: 33040960, outside_children_ns: 33040960 }
+HC074-LIVE-WALK sample=2 kind=local-context stats=Stats { calls: 32, inclusive_ns: 6893151, outside_children_ns: 6893151 }
+HC074-LIVE-WALK-CONTROL sample=2 iterations=32 original=true unchanged=true reservation=false schedule_changed=false admission=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1171 filtered out; finished in 0.67s
+
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-LIVE-WALK-HOST compiler=194 completed=true admission=false
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-LIVE-WALK-HOST compiler=188 begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::leaf_cost_tests::component_cost_tests::live_walk_tests::original_live_worker_walk_attribution ... HC074-LIVE-WALK sample=0 kind=kernel-worker stats=Stats { calls: 32, inclusive_ns: 48061193, outside_children_ns: 9073 }
+HC074-LIVE-WALK sample=0 kind=worker-policy stats=Stats { calls: 64, inclusive_ns: 8201142, outside_children_ns: 177252 }
+HC074-LIVE-WALK sample=0 kind=worker-source stats=Stats { calls: 128, inclusive_ns: 2435802, outside_children_ns: 2435802 }
+HC074-LIVE-WALK sample=0 kind=active-authority stats=Stats { calls: 128, inclusive_ns: 5588088, outside_children_ns: 5588088 }
+HC074-LIVE-WALK sample=0 kind=kernel-context stats=Stats { calls: 64, inclusive_ns: 32971982, outside_children_ns: 32971982 }
+HC074-LIVE-WALK sample=0 kind=local-context stats=Stats { calls: 32, inclusive_ns: 6878996, outside_children_ns: 6878996 }
+HC074-LIVE-WALK-CONTROL sample=0 iterations=32 original=true unchanged=true reservation=false schedule_changed=false admission=false
+HC074-LIVE-WALK sample=1 kind=kernel-worker stats=Stats { calls: 32, inclusive_ns: 47776385, outside_children_ns: 9264 }
+HC074-LIVE-WALK sample=1 kind=worker-policy stats=Stats { calls: 64, inclusive_ns: 8172844, outside_children_ns: 177744 }
+HC074-LIVE-WALK sample=1 kind=worker-source stats=Stats { calls: 128, inclusive_ns: 2434625, outside_children_ns: 2434625 }
+HC074-LIVE-WALK sample=1 kind=active-authority stats=Stats { calls: 128, inclusive_ns: 5560475, outside_children_ns: 5560475 }
+HC074-LIVE-WALK sample=1 kind=kernel-context stats=Stats { calls: 64, inclusive_ns: 32794627, outside_children_ns: 32794627 }
+HC074-LIVE-WALK sample=1 kind=local-context stats=Stats { calls: 32, inclusive_ns: 6799650, outside_children_ns: 6799650 }
+HC074-LIVE-WALK-CONTROL sample=1 iterations=32 original=true unchanged=true reservation=false schedule_changed=false admission=false
+HC074-LIVE-WALK sample=2 kind=kernel-worker stats=Stats { calls: 32, inclusive_ns: 47687460, outside_children_ns: 9111 }
+HC074-LIVE-WALK sample=2 kind=worker-policy stats=Stats { calls: 64, inclusive_ns: 8178213, outside_children_ns: 179388 }
+HC074-LIVE-WALK sample=2 kind=worker-source stats=Stats { calls: 128, inclusive_ns: 2436637, outside_children_ns: 2436637 }
+HC074-LIVE-WALK sample=2 kind=active-authority stats=Stats { calls: 128, inclusive_ns: 5562188, outside_children_ns: 5562188 }
+HC074-LIVE-WALK sample=2 kind=kernel-context stats=Stats { calls: 64, inclusive_ns: 32739568, outside_children_ns: 32739568 }
+HC074-LIVE-WALK sample=2 kind=local-context stats=Stats { calls: 32, inclusive_ns: 6760568, outside_children_ns: 6760568 }
+HC074-LIVE-WALK-CONTROL sample=2 iterations=32 original=true unchanged=true reservation=false schedule_changed=false admission=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1171 filtered out; finished in 0.66s
+
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-LIVE-WALK-HOST compiler=188 completed=true admission=false
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-LIVE-WALK-HOST completed=true supervisor_unchanged=true no_fixture_executable=true admission=false

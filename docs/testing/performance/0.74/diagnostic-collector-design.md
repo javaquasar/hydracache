@@ -761,3 +761,15 @@ authentication time is only 25.938–28.319 ms within that bucket; its signature
 subspan overlaps and other cryptographic work is outside that timer. Further
 attribution must examine the original worker/kernel/authority walks, preserving
 all live predicates and original deadlines. No dispatch or admission follows.
+
+The [retained live worker profile](local-runs/original-live-walk-20261018/README.md)
+in `bd65514b` adds only six cfg(test) entry spans and a before-reservation
+control. All 349 old Rust sources restore exactly after removing the approved
+insertions/registrations. Six current/MSRV fixtures pass 192 validations and
+36 nested numeric rows with zero IPC authentication/signature calls. Kernel
+context contributes about 69 percent of the whole-worker wall span; authority
+about 12 percent. Do not sum a policy parent with its source/authority children,
+extrapolate an exclusive CPU/IO owner or transfer these results to the complete
+Starting/pipe/sink path. Preserve its 46 effect-local brackets. Kernel sender,
+origin, namespace/boot and clock observations are the next attribution target;
+real bus delivery/start and active all-writer cessation remain separate gates.

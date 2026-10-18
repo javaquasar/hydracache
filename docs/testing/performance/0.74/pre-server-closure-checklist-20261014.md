@@ -636,3 +636,13 @@ by subtraction. Target the repeated original worker/kernel/authority walks
 before dispatch and keep the about-24-ms observed final-margin risk explicit.
 This diagnostic closes no P1 execution, P2/P3 cessation or production enrollment
 gate and does not repair any older stopped cohort.
+
+The [nested live worker controls](local-runs/original-live-walk-20261018/README.md)
+at `bd65514b` now pass six fresh GNU current/MSRV fixtures and 192 worker
+validations before reservation, without installation or supervisor changes.
+About 69 percent of this instrumented worker wall span is inside two kernel
+context checks, versus about 12 percent inside four authority inspections.
+This narrows profiling to sender/origin/namespace/boot/clock observations; it
+does not close the critical-path margin or any P1/P2/P3 execution/cessation gate.
+All 46 effect/checkpoint brackets, original deadlines and live predicates remain.
+No full SIGKILL/lost-ack matrix for a new execution boundary is claimed here.
