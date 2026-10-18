@@ -1552,3 +1552,14 @@ heal. The absolute BOOTTIME two-second observation cap is not an admission lease
 and cannot renew any original window. There is no connection/name/FD export,
 snapshot constructor, fixture promotion, message sender or execution authority.
 Original frame/message joining and FD negotiation/delivery proof remain separate.
+
+## Private dispatch method return interoperability
+
+The one-shot private dispatch exchange now accepts METHOD_RETURN flags 0 or
+NO_REPLY_EXPECTED only. D-Bus assigns that bit no reply semantics. All other
+known or unknown bits refuse; request flags and ERROR classification stay exact.
+Original serial/sender/destination, size/body/FD checks and refusal-before-parse
+remain unchanged. A permitted reply remains job-path data, not start, cessation,
+completion, retry or release authority. No public/durable format or sender is added.
+This supersedes only the old exchange's empty METHOD_RETURN flag predicate;
+the fixed read-only manager producer and every execution/admission limit stay exact.

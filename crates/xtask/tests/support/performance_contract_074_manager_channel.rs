@@ -1,4 +1,6 @@
 //! A fixed read-only producer is not original launch authority.
+#[path = "performance_contract_074_reply_flags.rs"]
+mod reply_flags;
 const COMPAT: &str = r###"
 ## Private fixed manager channel observations
 
@@ -153,6 +155,8 @@ fn restore_dependency_reference(path: &str, raw: &str) -> String {
     format!("{}{}{}", &raw[..start], old, &raw[finish..])
 }
 pub(super) fn normalize(path: &str, raw: &str) -> String {
+    let normalized = reply_flags::normalize(path, raw);
+    let raw = normalized.as_str();
     match path {
         "docs/COMPAT.md" => strip(raw, COMPAT),
         "docs/testing/gated-test-registry.toml" => strip(raw, GATES),

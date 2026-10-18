@@ -9,6 +9,9 @@ const CLIENT: &str = ":1.75";
 #[path = "diagnostic_dispatch_exchange_socket_tests.rs"]
 mod socket_tests;
 
+#[path = "diagnostic_dispatch_reply_flags_tests.rs"]
+mod reply_flags_tests;
+
 fn pipe() -> [File; 2] {
     let mut fds = [-1; 2];
     assert_eq!(unsafe { libc::pipe2(fds.as_mut_ptr(), libc::O_CLOEXEC) }, 0);

@@ -149,7 +149,11 @@ impl DispatchExchange {
             || h.reply_serial() != Some(self.serial)
             || h.sender().map(|v| v.as_str()) != Some(self.manager.as_str())
             || h.destination().map(|v| v.as_str()) != Some(self.client.as_str())
-            || !reply.primary_header().flags().is_empty()
+            || reply.primary_header().flags().bits()
+                & !(zbus::message::Flags::NoReplyExpected as u8)
+                != 0
+            || (reply.message_type() != Type::MethodReturn
+                && !reply.primary_header().flags().is_empty())
             || !reply.data().fds().is_empty()
             || h.unix_fds().unwrap_or(0) != 0
             || h.path().is_some()
