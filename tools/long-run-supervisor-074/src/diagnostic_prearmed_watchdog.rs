@@ -602,3 +602,6 @@ impl Watchdog {
 #[cfg(test)]
 #[path = "diagnostic_prearmed_watchdog_tests.rs"]
 mod tests;
+
+#[path = "diagnostic_redundant_watchdog.rs"]
+mod redundant;

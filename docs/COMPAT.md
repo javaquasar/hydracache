@@ -1648,3 +1648,17 @@ D without rights marks a completed harness command. Only the owning nonroot
 subreaper understands it during its temporary-directory lifetime; it grants no
 production identity or authority. The old v0 barrier and signed v2 requirements
 remain byte-identical.
+
+## Private redundant guardian test carrier
+
+hc074-redundant-owner-test-v1 is an owned nonroot test carrier, not a production
+reader. Its fixed JSON contains schema, case, creating owner PID, selected
+absolute BOOTTIME deadline, Pending and Armed. Actual kernel credentials must
+name that creator. Exactly four CLOEXEC rights carry two guardian pidfds, the
+target pidfd and read pipe; one explicit hidden write alias raises that to five.
+Only the echoed MSG_CMSG_CLOEXEC flag is accepted; truncation, unknown schema,
+extra fields/rights or foreign credentials refuse. D without rights marks one
+completed harness command. Reader lifetime is the original private temporary
+socket/directory, with no reconnect, adoption, downgrade or production consumer.
+Both guardians still use unchanged hc074-prearmed-guardian-v1. This composition
+adds no production protocol, original authority, completion or unlock operation.

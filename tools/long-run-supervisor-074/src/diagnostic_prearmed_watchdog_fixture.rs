@@ -311,3 +311,6 @@ fn prearmed_owner_victim() {
     command();
     panic!("fixture must end by owned SIGKILL, not cleanup/replay");
 }
+
+#[path = "diagnostic_redundant_watchdog_fixture.rs"]
+mod redundant;

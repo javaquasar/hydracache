@@ -1,4 +1,6 @@
 //! Exact additive prearmed mechanics; original predicates remain byte-exact.
+#[path = "performance_contract_074_redundant.rs"]
+mod redundant;
 const BASE: &str = "a44618c2";
 const MODULE: &str = r####"
 #[path = "diagnostic_prearmed_watchdog.rs"]
@@ -70,6 +72,8 @@ platform = "linux"
 # END PREARMED WATCHDOG GATE
 "####;
 pub(super) fn normalize(path: &str, raw: &str) -> String {
+    let current = redundant::normalize(path, raw);
+    let raw = current.as_str();
     let addition = match path {
         "tools/long-run-supervisor-074/src/diagnostic_held_barrier.rs" => MODULE,
         "docs/COMPAT.md" => COMPAT,
