@@ -3812,3 +3812,24 @@ screen and 32+3 fast units per compiler also pass. All 204 static contracts,
 eight API doc checks per compiler, affected-package checks/strict Clippy,
 format/docs/registry and local non-promotable contract are green. Stable supervisor
 PID/restarts, installed digests and the qualification manifest remain unchanged.
+
+The next [original descriptor plan](diagnostic-original-descriptor-plan-20261018.md)
+captures the exact custody/alarm/readers/sinks and four pipe/message writer aliases
+under the unchanged complete frame. Its initial guardian and collector allowlists
+exclude every such writer. The private borrowed type grants no execution or public
+FD access; the generic guardian's O_WRONLY check is unchanged rather than broadened
+to arbitrary O_RDWR inputs. The new plan additionally rejects nonzero sink position.
+Separate test-oracle and offset-regression negatives are retained. Its raw-holder
+gate addresses selected original inheritance/parent-closure facts only; actual
+barred guardian enrollment, authenticated original start, whole-cgroup revocation
+and external supervision still precede completion or production admission.
+
+Its [completed descriptor packet](local-runs/original-descriptor-plan-20261018/README.md)
+passes six repeated controls, twenty refusals and twenty-four raw-holder cases
+on Rust 1.94/1.88: twelve EOF controls, six holder SIGKILL cuts and six hidden-writer
+refusals followed by owned cleanup. The corrected first screen also passes.
+Both compilers pass 32+4 fast units, two API doc checks, check/strict Clippy;
+207 static contracts and local format/docs/registry/non-promotable contract are
+green. The two negative source capsules remain reproducible. The supervisor,
+installed executable/receipt and qualification input stay unchanged; actual
+production guardian/collector transfer and authenticated start remain closed.

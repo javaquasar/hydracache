@@ -388,3 +388,43 @@ return-ACK omissions. A separate first healthy screen also passes. All 204 stati
 contracts preserve old bodies and reject undeclared frame/origin changes. Stable
 host postflight preserves the supervisor, installed binary and receipt. These
 are nonexecuting correctness results, not descriptor enrollment or performance.
+
+## Original descriptor inventory before a barred transfer
+
+The [descriptor plan](diagnostic-original-descriptor-plan-20261018.md) borrows
+the exact original custodied owner and captures ten descriptors: custody, its
+selected alarm, readers/sinks and four pipe/message writers. The initial guardian
+allowlist includes custody, alarm, readers and sinks; the collector list contains
+only readers and sinks. All four pipe/message writers are excluded from both.
+The future guardian must still shed its sink aliases before the collector barrier.
+
+Capture is bracketed by the unchanged complete custodied validation and exact
+post-frame metadata comparison, then the existing final original deadline probe.
+The plan cannot export an FD publicly, clone, start, send, release or complete.
+It remains exclusively borrowed, not cached authority. No generic guardian
+predicate changes: its O_WRONLY requirement does not silently accept the original
+O_RDWR sinks. An explicit original-object process join remains necessary.
+
+The first screen exposed an oracle error: four immutable origins were mistakenly
+compared together with two advancing observation times. The correction preserves
+exact origins and requires monotonic observations. A separate regression then
+exposed preexisting nonzero sink offsets that equal snapshots alone would miss.
+The new inventory now requires zero position; old sink/guardian bodies and
+300/60/10-second origins remain exact. Both negatives have complete source capsules.
+
+A gated test-only raw holder uses these actual descriptors, excludes all inherited
+writer aliases and pins its exact child before parent destruction. Actual EOF,
+independent common-lock contention and terminal wait status are the ownership
+oracles. A hidden writer must refuse and retain custody even after later closure.
+This holder is not the production guardian: authenticated message delivery,
+barred original transfer, whole-cgroup revocation and external supervision remain
+execution gates; no test-only ACK or FD inventory substitutes for them.
+
+The [completed descriptor packet](local-runs/original-descriptor-plan-20261018/README.md)
+passes six repeated healthy controls, twenty refusals and twenty-four holder
+cases on GNU Rust 1.94/1.88. Those include twelve actual EOF controls, six explicit
+holder SIGKILL cuts and six sticky hidden-writer refusals with separate owned
+SIGKILL cleanup. Four new units and the 32-test original storage/fence subtree
+pass per compiler; all 207 static contracts pass. Host postflight preserves the
+same supervisor PID/restarts and installed digests. Parent alias closure is
+proved for this nonexecuting holder, not production original-start enrollment.

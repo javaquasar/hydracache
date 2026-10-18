@@ -1,0 +1,227 @@
+59e6bf9c47a9bd4b12125708417b0f3ead82717bd905905a77de47b9a186287d  guard.sh
+bb0081e264b2477de94540a96e3043ce8c8a3ed077416171321e8b5705ad3c2d  screen.sh
+7dcc084b0146213f0616b25ecb1da3efdcf963ee0bda94d8fc6f5fa689101c40  run.sh
+HC074-ORIGINAL-DESCRIPTORS-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-ORIGINAL-DESCRIPTORS-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-ORIGINAL-DESCRIPTORS-COHORT compiler=194
+17081d8c66638334c3f5674b78fe6fa28256b8907111c9d68f09c70f1033fcf3  tests-194
+
+running 32 tests
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::starting_storage::tests::collector_starting_storage_exact_phase_order_and_old_inventory ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::starting_storage::tests::collector_starting_storage_exclusive_create_and_fd_mutations_refuse ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::starting_storage::tests::collector_starting_storage_refuses_reentry_skips_early_ack_and_unexpected_third_file ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::starting_storage::tests::custody_tests::original_collector_custody_checks_storage_before_acquisition_and_never_retries ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::starting_storage::tests::custody_tests::original_collector_custody_has_one_owner_and_latches_repeat_refusal ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::starting_storage::tests::custody_tests::original_collector_custody_rejects_foreign_original_and_descriptor_drift ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::starting_storage::tests::custody_tests::original_collector_custody_requires_acknowledged_starting_and_sticks ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_all_legacy_and_parent_contexts_refuse_dangling_links ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_bound_named_or_original_object_drift_never_adopted ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_every_fixed_leaf_entry_blocks_without_decode_or_cleanup ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_healthy_empty_repeat_excludes_legacy_and_releases_only_lock ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_independent_concurrent_storage_keeps_local_refusal ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_initial_busy_keeps_storage_and_other_owner_healthy ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_missing_unsafe_or_restored_storage_remains_refused ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_public_guard_is_original_thread_only ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_seeded_between_scan_context_is_seen_and_retained ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_unsafe_or_missing_lock_and_legacy_ownership_never_repaired ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_wrong_private_origin_and_nonroot_fixed_open_refuse ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::custody::custody_cannot_adopt_a_replaced_named_lock ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::custody::custody_first_drop_keeps_original_checks_and_refuses_a_second_transfer ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::custody::custody_survives_original_drop ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::custody::ordinary_drop_still_unlocks_a_retained_alias ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_all_contexts_refuse_initial_and_bound_dangling_symlinks ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_concurrent_independent_open_cannot_bypass_same_flock ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_deployed_mode_or_unsafe_campaign_directory_requires_enrollment ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_initial_busy_is_retryable_and_never_unlocks_legacy_owner ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_missing_or_unsafe_lock_never_created_repaired_or_adopted ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_named_lock_replacement_never_adopted_and_original_remains_held ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_policy_types_and_error_seams_remain_fail_closed ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_private_descriptor_substitutions_latch_without_refresh ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_same_legacy_lock_blocks_both_campaign_entry_points ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_seeded_bound_identity_state_and_metadata_failures_latch ... ok
+
+test result: ok. 32 passed; 0 failed; 0 ignored; 0 measured; 1065 filtered out; finished in 0.93s
+
+
+running 4 tests
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::tests::original_descriptor_capture_refuses_a_closed_fd_without_replacement ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::tests::original_descriptor_capture_refuses_nonzero_sink_position ... ok
+seed=0x749
+seed=0x746
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::tests::original_descriptor_roles_exclude_all_four_writer_aliases ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::tests::original_descriptor_roles_refuse_any_duplicate_or_negative_slot ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 1093 filtered out; finished in 0.00s
+
+HC074-ORIGINAL-DESCRIPTORS-PHASE name=healthy begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::original_descriptor_plan_healthy ... HC074-ORIGINAL-DESCRIPTORS-CONTROL sample=0 plan_ipc=34 validate_ipc=34 guardian=6 collector=4 excluded_writers=4 unchanged=true send=false
+HC074-ORIGINAL-DESCRIPTORS-CONTROL sample=1 plan_ipc=34 validate_ipc=34 guardian=6 collector=4 excluded_writers=4 unchanged=true send=false
+HC074-ORIGINAL-DESCRIPTORS-CONTROL sample=2 plan_ipc=34 validate_ipc=34 guardian=6 collector=4 excluded_writers=4 unchanged=true send=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1096 filtered out; finished in 40.92s
+
+HC074-ORIGINAL-DESCRIPTORS-PHASE name=healthy completed=true
+HC074-ORIGINAL-DESCRIPTORS-PHASE name=refusals begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::original_descriptor_plan_refusals ... HC074-ORIGINAL-DESCRIPTORS-REFUSAL seed=0x0740d018 case=trust sticky=true held=true unchanged=true send=false
+HC074-ORIGINAL-DESCRIPTORS-REFUSAL seed=0x0740d018 case=output sticky=true held=true unchanged=true send=false
+HC074-ORIGINAL-DESCRIPTORS-REFUSAL seed=0x0740d018 case=writer sticky=true held=true unchanged=true send=false
+HC074-ORIGINAL-DESCRIPTORS-REFUSAL seed=0x0740d018 case=custody-flags sticky=true held=true unchanged=true send=false
+HC074-ORIGINAL-DESCRIPTORS-REFUSAL seed=0x0740d018 case=message sticky=true held=true unchanged=true send=false
+HC074-ORIGINAL-DESCRIPTORS-REFUSAL seed=0x0740d018 case=alarm sticky=true held=true unchanged=true send=false
+HC074-ORIGINAL-DESCRIPTORS-REFUSAL seed=0x0740d018 case=preexisting-offset sticky=true held=true unchanged=true send=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1096 filtered out; finished in 91.37s
+
+HC074-ORIGINAL-DESCRIPTORS-PHASE name=refusals completed=true
+HC074-ORIGINAL-DESCRIPTORS-PHASE name=later begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::original_descriptor_plan_later_refusals ... HC074-ORIGINAL-DESCRIPTORS-LATER case=trust sticky=true held=true unchanged=true send=false
+HC074-ORIGINAL-DESCRIPTORS-LATER case=custody-object sticky=true held=true unchanged=true send=false
+HC074-ORIGINAL-DESCRIPTORS-LATER case=final-expiry sticky=true held=true unchanged=true send=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1096 filtered out; finished in 40.68s
+
+HC074-ORIGINAL-DESCRIPTORS-PHASE name=later completed=true
+HC074-ORIGINAL-DESCRIPTORS-PHASE name=holder begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::original_descriptor_holder_matrix ... HC074-ORIGINAL-DESCRIPTOR-HOLDER seed=0x0740d118 repeat=1 case=normal eof=true retained=true unchanged=true send=false
+HC074-ORIGINAL-DESCRIPTOR-HOLDER seed=0x0740d118 repeat=1 case=ack-lost eof=true retained=true unchanged=true send=false
+HC074-ORIGINAL-DESCRIPTOR-HOLDER seed=0x0740d118 repeat=1 case=holder-kill eof=false retained=true unchanged=true send=false
+HC074-ORIGINAL-DESCRIPTOR-HOLDER seed=0x0740d118 repeat=1 case=hidden-writer eof=false retained=true unchanged=true send=false
+HC074-ORIGINAL-DESCRIPTOR-HOLDER seed=0x0740d118 repeat=2 case=normal eof=true retained=true unchanged=true send=false
+HC074-ORIGINAL-DESCRIPTOR-HOLDER seed=0x0740d118 repeat=2 case=ack-lost eof=true retained=true unchanged=true send=false
+HC074-ORIGINAL-DESCRIPTOR-HOLDER seed=0x0740d118 repeat=2 case=holder-kill eof=false retained=true unchanged=true send=false
+HC074-ORIGINAL-DESCRIPTOR-HOLDER seed=0x0740d118 repeat=2 case=hidden-writer eof=false retained=true unchanged=true send=false
+HC074-ORIGINAL-DESCRIPTOR-HOLDER seed=0x0740d118 repeat=3 case=normal eof=true retained=true unchanged=true send=false
+HC074-ORIGINAL-DESCRIPTOR-HOLDER seed=0x0740d118 repeat=3 case=ack-lost eof=true retained=true unchanged=true send=false
+HC074-ORIGINAL-DESCRIPTOR-HOLDER seed=0x0740d118 repeat=3 case=holder-kill eof=false retained=true unchanged=true send=false
+HC074-ORIGINAL-DESCRIPTOR-HOLDER seed=0x0740d118 repeat=3 case=hidden-writer eof=false retained=true unchanged=true send=false
+HC074-ORIGINAL-DESCRIPTOR-HOLDER completed=true cases=12 product=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1096 filtered out; finished in 160.06s
+
+HC074-ORIGINAL-DESCRIPTORS-PHASE name=holder completed=true
+HC074-ORIGINAL-DESCRIPTORS-COHORT compiler=194 completed=true
+HC074-ORIGINAL-DESCRIPTORS-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-ORIGINAL-DESCRIPTORS-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-ORIGINAL-DESCRIPTORS-COHORT compiler=188
+512833786d9ccfb2f9e7c3181db7ddc5634a556b0e58e05fcc259b9b78ceb253  tests-188
+
+running 32 tests
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::starting_storage::tests::collector_starting_storage_exact_phase_order_and_old_inventory ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::starting_storage::tests::collector_starting_storage_exclusive_create_and_fd_mutations_refuse ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::starting_storage::tests::collector_starting_storage_refuses_reentry_skips_early_ack_and_unexpected_third_file ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::starting_storage::tests::custody_tests::original_collector_custody_checks_storage_before_acquisition_and_never_retries ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::starting_storage::tests::custody_tests::original_collector_custody_has_one_owner_and_latches_repeat_refusal ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::starting_storage::tests::custody_tests::original_collector_custody_rejects_foreign_original_and_descriptor_drift ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::starting_storage::tests::custody_tests::original_collector_custody_requires_acknowledged_starting_and_sticks ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_all_legacy_and_parent_contexts_refuse_dangling_links ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_bound_named_or_original_object_drift_never_adopted ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_every_fixed_leaf_entry_blocks_without_decode_or_cleanup ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_healthy_empty_repeat_excludes_legacy_and_releases_only_lock ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_independent_concurrent_storage_keeps_local_refusal ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_initial_busy_keeps_storage_and_other_owner_healthy ... ok
+seed=0x749
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_missing_unsafe_or_restored_storage_remains_refused ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_public_guard_is_original_thread_only ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_seeded_between_scan_context_is_seen_and_retained ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_unsafe_or_missing_lock_and_legacy_ownership_never_repaired ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_wrong_private_origin_and_nonroot_fixed_open_refuse ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::custody::custody_cannot_adopt_a_replaced_named_lock ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::custody::custody_first_drop_keeps_original_checks_and_refuses_a_second_transfer ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::custody::custody_survives_original_drop ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::custody::ordinary_drop_still_unlocks_a_retained_alias ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_all_contexts_refuse_initial_and_bound_dangling_symlinks ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_concurrent_independent_open_cannot_bypass_same_flock ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_deployed_mode_or_unsafe_campaign_directory_requires_enrollment ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_initial_busy_is_retryable_and_never_unlocks_legacy_owner ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_missing_or_unsafe_lock_never_created_repaired_or_adopted ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_named_lock_replacement_never_adopted_and_original_remains_held ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_policy_types_and_error_seams_remain_fail_closed ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_private_descriptor_substitutions_latch_without_refresh ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_same_legacy_lock_blocks_both_campaign_entry_points ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_seeded_bound_identity_state_and_metadata_failures_latch ... ok
+
+test result: ok. 32 passed; 0 failed; 0 ignored; 0 measured; 1065 filtered out; finished in 0.91s
+
+
+running 4 tests
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::tests::original_descriptor_capture_refuses_a_closed_fd_without_replacement ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::tests::original_descriptor_capture_refuses_nonzero_sink_position ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::tests::original_descriptor_roles_exclude_all_four_writer_aliases ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::tests::original_descriptor_roles_refuse_any_duplicate_or_negative_slot ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 1093 filtered out; finished in 0.00s
+
+HC074-ORIGINAL-DESCRIPTORS-PHASE name=healthy begin=true
+
+running 1 test
+seed=0x746
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::original_descriptor_plan_healthy ... HC074-ORIGINAL-DESCRIPTORS-CONTROL sample=0 plan_ipc=34 validate_ipc=34 guardian=6 collector=4 excluded_writers=4 unchanged=true send=false
+HC074-ORIGINAL-DESCRIPTORS-CONTROL sample=1 plan_ipc=34 validate_ipc=34 guardian=6 collector=4 excluded_writers=4 unchanged=true send=false
+HC074-ORIGINAL-DESCRIPTORS-CONTROL sample=2 plan_ipc=34 validate_ipc=34 guardian=6 collector=4 excluded_writers=4 unchanged=true send=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1096 filtered out; finished in 40.90s
+
+HC074-ORIGINAL-DESCRIPTORS-PHASE name=healthy completed=true
+HC074-ORIGINAL-DESCRIPTORS-PHASE name=refusals begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::original_descriptor_plan_refusals ... HC074-ORIGINAL-DESCRIPTORS-REFUSAL seed=0x0740d018 case=trust sticky=true held=true unchanged=true send=false
+HC074-ORIGINAL-DESCRIPTORS-REFUSAL seed=0x0740d018 case=output sticky=true held=true unchanged=true send=false
+HC074-ORIGINAL-DESCRIPTORS-REFUSAL seed=0x0740d018 case=writer sticky=true held=true unchanged=true send=false
+HC074-ORIGINAL-DESCRIPTORS-REFUSAL seed=0x0740d018 case=custody-flags sticky=true held=true unchanged=true send=false
+HC074-ORIGINAL-DESCRIPTORS-REFUSAL seed=0x0740d018 case=message sticky=true held=true unchanged=true send=false
+HC074-ORIGINAL-DESCRIPTORS-REFUSAL seed=0x0740d018 case=alarm sticky=true held=true unchanged=true send=false
+HC074-ORIGINAL-DESCRIPTORS-REFUSAL seed=0x0740d018 case=preexisting-offset sticky=true held=true unchanged=true send=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1096 filtered out; finished in 91.41s
+
+HC074-ORIGINAL-DESCRIPTORS-PHASE name=refusals completed=true
+HC074-ORIGINAL-DESCRIPTORS-PHASE name=later begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::original_descriptor_plan_later_refusals ... HC074-ORIGINAL-DESCRIPTORS-LATER case=trust sticky=true held=true unchanged=true send=false
+HC074-ORIGINAL-DESCRIPTORS-LATER case=custody-object sticky=true held=true unchanged=true send=false
+HC074-ORIGINAL-DESCRIPTORS-LATER case=final-expiry sticky=true held=true unchanged=true send=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1096 filtered out; finished in 39.87s
+
+HC074-ORIGINAL-DESCRIPTORS-PHASE name=later completed=true
+HC074-ORIGINAL-DESCRIPTORS-PHASE name=holder begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::original_descriptor_holder_matrix ... HC074-ORIGINAL-DESCRIPTOR-HOLDER seed=0x0740d118 repeat=1 case=normal eof=true retained=true unchanged=true send=false
+HC074-ORIGINAL-DESCRIPTOR-HOLDER seed=0x0740d118 repeat=1 case=ack-lost eof=true retained=true unchanged=true send=false
+HC074-ORIGINAL-DESCRIPTOR-HOLDER seed=0x0740d118 repeat=1 case=holder-kill eof=false retained=true unchanged=true send=false
+HC074-ORIGINAL-DESCRIPTOR-HOLDER seed=0x0740d118 repeat=1 case=hidden-writer eof=false retained=true unchanged=true send=false
+HC074-ORIGINAL-DESCRIPTOR-HOLDER seed=0x0740d118 repeat=2 case=normal eof=true retained=true unchanged=true send=false
+HC074-ORIGINAL-DESCRIPTOR-HOLDER seed=0x0740d118 repeat=2 case=ack-lost eof=true retained=true unchanged=true send=false
+HC074-ORIGINAL-DESCRIPTOR-HOLDER seed=0x0740d118 repeat=2 case=holder-kill eof=false retained=true unchanged=true send=false
+HC074-ORIGINAL-DESCRIPTOR-HOLDER seed=0x0740d118 repeat=2 case=hidden-writer eof=false retained=true unchanged=true send=false
+HC074-ORIGINAL-DESCRIPTOR-HOLDER seed=0x0740d118 repeat=3 case=normal eof=true retained=true unchanged=true send=false
+HC074-ORIGINAL-DESCRIPTOR-HOLDER seed=0x0740d118 repeat=3 case=ack-lost eof=true retained=true unchanged=true send=false
+HC074-ORIGINAL-DESCRIPTOR-HOLDER seed=0x0740d118 repeat=3 case=holder-kill eof=false retained=true unchanged=true send=false
+HC074-ORIGINAL-DESCRIPTOR-HOLDER seed=0x0740d118 repeat=3 case=hidden-writer eof=false retained=true unchanged=true send=false
+HC074-ORIGINAL-DESCRIPTOR-HOLDER completed=true cases=12 product=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1096 filtered out; finished in 155.78s
+
+HC074-ORIGINAL-DESCRIPTORS-PHASE name=holder completed=true
+HC074-ORIGINAL-DESCRIPTORS-COHORT compiler=188 completed=true
+HC074-ORIGINAL-DESCRIPTORS-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-ORIGINAL-DESCRIPTORS-HOST completed=true supervisor_unchanged=true no_fixture_executable=true admission=false

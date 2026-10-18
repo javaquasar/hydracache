@@ -12292,3 +12292,64 @@ zero restarts and installed executable/receipt hashes, with no surviving fixture
 executable. The negative composition remains negative; the corrected result is
 an ownership and refusal proof under the original deadlines, not product
 performance, full power-loss coverage or production admission.
+
+## Descriptor identity does not establish exclusive ownership
+
+The next original-object audit finds an important interface mismatch. The checked
+original sinks are O_RDWR, while the isolated generic guardian accepts O_WRONLY.
+Changing its matcher to accept both would establish only access mode, not trusted
+origin. The private descriptor plan instead borrows the exact original custodied
+owner. It records custody, original selected alarm, readers, sinks and all four
+original pipe/message writer aliases. Neither guardian nor collector may inherit
+those writable pipe aliases. The guardian's initial list includes the sinks only
+so it can fork its collector, then shed its own aliases before releasing that
+collector's barrier. That later production join is still a distinct operation.
+
+The plan captures a draft inventory, runs the unchanged complete validation frame,
+compares identities, flags and positions after the frame, and observes the existing
+original deadline again. Revalidation repeats the full frame. It exposes no public
+descriptor, send, start, custody release or completion. A borrowed FD number and
+metadata snapshot are not an execution permit and cannot replace live authority.
+
+Two different failures sharpen the experiment. The first healthy screen incorrectly
+expected all six reported times to stay equal. Four are immutable origins, but the
+latest validation observation and current BOOTTIME must advance. Correcting that
+oracle keeps exact first-four equality and checks monotonic observations, without
+changing a runtime input or deadline. The failed source and screen remain separate.
+
+The second finding is a real new-boundary defect: an empty file can already have a
+nonzero shared file-description offset. Two equal snapshots could preserve that
+bad state. A regression using an owned empty O_RDWR file sought to offset 17 first
+failed its rejection assertion. The new inventory now requires zero position
+before capture as well as exact post-frame comparison; an original fixture also
+injects the offset before plan creation. Neither the old sink inspector nor the
+generic guardian is changed to obtain that result.
+
+The [descriptor packet](../testing/performance/0.74/local-runs/original-descriptor-plan-20261018/README.md)
+uses a separately gated raw holder to test the actual original descriptor lists.
+Allocation and sorting precede fork, signal handlers are blocked before inheritance,
+and the exact child is pinned before observation. The child closes everything
+outside its explicit list and verifies that original writer aliases are gone.
+Only then may the parent destroy its complete original owner. Independent common
+lock contention and actual pipe EOF, followed by empty-sink fsync/close and terminal
+wait status, establish the selected ownership boundary. A hidden writer produces
+EAGAIN rather than EOF and must leave custody retained; later closure cannot
+retroactively turn refusal into success.
+
+That holder is not the production guardian, and its private ACK is not manager
+delivery evidence. Barred original transfer, final live validation, authenticated
+message delivery, parent alias closure in the correct order, full-cgroup writer
+cessation and external supervision remain required. The experiment isolates
+descriptor ownership without installing a release, stopping the stable supervisor
+or using product load. It does not establish a performance gain or release admission.
+
+Both GNU compiler cohorts pass the descriptor gates: six repeated healthy controls,
+twenty construction/later refusals and twenty-four raw-holder cases. Twelve cases
+observe actual EOF after parent alias closure; six exercise holder SIGKILL, and
+six demonstrate sticky refusal with a hidden writer before separate owned
+SIGKILL cleanup. Four new fast units and the 32-test original storage/fence subtree
+pass per compiler, alongside two closed-API doc checks and 207 static contracts.
+The corrected first screen passes too. Final host guards retain the same stable
+supervisor PID, zero restarts and installed executable/receipt digests, with no
+surviving fixture executable. These results establish selected original-object
+inheritance and parent-closure facts, not the still-missing production process join.

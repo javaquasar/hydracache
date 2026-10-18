@@ -1,0 +1,1478 @@
+diff --git a/crates/xtask/tests/support/performance_contract_074_custody_join.rs b/crates/xtask/tests/support/performance_contract_074_custody_join.rs
+index a3a9b642..2dd9765a 100644
+--- a/crates/xtask/tests/support/performance_contract_074_custody_join.rs
++++ b/crates/xtask/tests/support/performance_contract_074_custody_join.rs
+@@ -1,4 +1,6 @@
+ //! Exact original custody/sink join; no live predicate or deadline is normalized.
++#[path = "performance_contract_074_original_descriptors.rs"]
++mod original_descriptors;
+ const GATES: &str = r###"
+ # BEGIN ORIGINAL CUSTODY JOIN GATES
+ [[gate]]
+@@ -225,6 +227,8 @@ pub(super) fn approved_caller(name: &str, raw: &str) -> String {
+     }
+ }
+ pub(super) fn normalize(path: &str, raw: &str) -> String {
++    let current = original_descriptors::normalize(path, raw);
++    let raw = current.as_str();
+     match path {
+         "tools/long-run-supervisor-074/src/diagnostic_original_grouped_preparation.rs" => {
+             once(raw, GROUP_REG, "")
+diff --git a/crates/xtask/tests/support/performance_contract_074_original_descriptors.rs b/crates/xtask/tests/support/performance_contract_074_original_descriptors.rs
+new file mode 100644
+index 00000000..7f840fc4
+--- /dev/null
++++ b/crates/xtask/tests/support/performance_contract_074_original_descriptors.rs
+@@ -0,0 +1,404 @@
++//! Only the declared borrowed inventory exception; original runtime remains exact.
++const GATES: &str = r###"
++# BEGIN ORIGINAL DESCRIPTOR PLAN GATES
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.original-descriptors-screen"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_original_descriptor_plan_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "original_descriptor_plan_screen"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Original descriptor inventory and test-only allowlist holder; no production execution"
++tier = "manual"
++required_features = []
++required_env = ["HC074_START_MATERIAL_BUNDLE"]
++required_tools = ["cargo"]
++timeout_seconds = 180
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::original_descriptor_plan_screen","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.original-descriptors-healthy"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_original_descriptor_plan_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "original_descriptor_plan_healthy"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Original descriptor inventory and test-only allowlist holder; no production execution"
++tier = "manual"
++required_features = []
++required_env = ["HC074_START_MATERIAL_BUNDLE"]
++required_tools = ["cargo"]
++timeout_seconds = 600
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::original_descriptor_plan_healthy","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.original-descriptors-refusals"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_original_descriptor_plan_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "original_descriptor_plan_refusals"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Original descriptor inventory and test-only allowlist holder; no production execution"
++tier = "manual"
++required_features = []
++required_env = ["HC074_START_MATERIAL_BUNDLE"]
++required_tools = ["cargo"]
++timeout_seconds = 900
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::original_descriptor_plan_refusals","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.original-descriptors-later-refusals"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_original_descriptor_plan_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "original_descriptor_plan_later_refusals"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Original descriptor inventory and test-only allowlist holder; no production execution"
++tier = "manual"
++required_features = []
++required_env = ["HC074_START_MATERIAL_BUNDLE"]
++required_tools = ["cargo"]
++timeout_seconds = 600
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::original_descriptor_plan_later_refusals","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.original-descriptors-holder-matrix"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_original_descriptor_plan_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "original_descriptor_holder_matrix"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Original descriptor inventory and test-only allowlist holder; no production execution"
++tier = "manual"
++required_features = []
++required_env = ["HC074_START_MATERIAL_BUNDLE"]
++required_tools = ["cargo"]
++timeout_seconds = 1800
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::original_descriptor_holder_matrix","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
++# END ORIGINAL DESCRIPTOR PLAN GATES
++"###;
++const SELF_REG: &str =
++    "#[path = \"performance_contract_074_original_descriptors.rs\"]\nmod original_descriptors;\n";
++const ADAPTER: &str = "    let current = original_descriptors::normalize(path, raw);\n    let raw = current.as_str();\n";
++const REG: &str = "#[allow(dead_code)]\n#[path = \"diagnostic_original_descriptor_plan.rs\"]\nmod descriptor_plan;\n";
++const TEST_REG: &str =
++    "#[path = \"diagnostic_original_descriptor_plan_tests.rs\"]\nmod descriptor_plan_tests;\n";
++const ACCESSOR: &str = r#"    // Borrow only this checked original description; never clone or extract it.
++    pub(crate) fn original_descriptor(
++        &self,
++        storage: &CollectorReservationStorage<'_>,
++    ) -> Result<BorrowedFd<'_>, StorageAttemptError> {
++        self.inspect(storage)?;
++        Ok(self.original._lock.as_fd())
++    }
++"#;
++fn once(raw: &str, new: &str, old: &str) -> String {
++    assert_eq!(
++        raw.matches(new).count(),
++        1,
++        "original descriptor exception differs: {new:?}"
++    );
++    raw.replacen(new, old, 1)
++}
++pub(super) fn normalize(path: &str, raw: &str) -> String {
++    match path {
++        "tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs" => {
++            once(raw, REG, "")
++        }
++        "tools/long-run-supervisor-074/src/diagnostic_original_custody_join_tests.rs" => {
++            once(raw, TEST_REG, "")
++        }
++        "tools/long-run-supervisor-074/src/diagnostic_original_collector_custody_storage.rs" => {
++            once(
++                &once(raw, ACCESSOR, ""),
++                "use std::os::fd::{AsFd, AsRawFd, BorrowedFd};",
++                "use std::os::fd::AsRawFd;",
++            )
++        }
++        "crates/xtask/tests/support/performance_contract_074_custody_join.rs" => {
++            once(&once(raw, SELF_REG, ""), ADAPTER, "")
++        }
++        "docs/testing/gated-test-registry.toml" => once(raw, GATES, ""),
++        _ => raw.to_owned(),
++    }
++}
++fn root() -> std::path::PathBuf {
++    super::super::super::super::root()
++}
++fn read(path: &str) -> String {
++    std::fs::read_to_string(root().join(path))
++        .unwrap()
++        .replace('\r', "")
++}
++fn frozen(path: &str) -> String {
++    let out = std::process::Command::new("git")
++        .args(["show", &format!("422aa5f2:{path}")])
++        .current_dir(root())
++        .output()
++        .unwrap();
++    assert!(out.status.success());
++    String::from_utf8(out.stdout).unwrap().replace('\r', "")
++}
++#[test]
++fn original_descriptor_plan_preserves_all_old_bodies_and_generic_guardian() {
++    for path in [
++        "tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_original_custody_join_tests.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_original_collector_custody_storage.rs",
++        "crates/xtask/tests/support/performance_contract_074_custody_join.rs",
++        "docs/testing/gated-test-registry.toml",
++        "tools/long-run-supervisor-074/src/diagnostic_original_collector_sinks.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_original_collector_pipes.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_original_grouped_preparation.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_autonomous_watchdog.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_original_fence.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_lease.rs",
++        "docs/testing/performance/0.74/qualification-manifest.toml",
++    ] {
++        assert_eq!(normalize(path, &read(path)), frozen(path), "{path}");
++    }
++    let path = "tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs";
++    let raw = read(path);
++    for (from, to) in [
++        (
++            "self.original.validate(allow_fixture)?;",
++            "let _ = allow_fixture;",
++        ),
++        ("self.inspect_deadline()", "Ok(())"),
++        (
++            "held.original.original_round(allow_fixture)? != bounds",
++            "false",
++        ),
++        ("clock()?", "0"),
++    ] {
++        assert_ne!(normalize(path, &raw.replace(from, to)), frozen(path));
++    }
++    assert_ne!(
++        normalize(path, &format!("{raw}\nfn unapproved() {{}}\n")),
++        frozen(path)
++    );
++    let path = "tools/long-run-supervisor-074/src/diagnostic_original_collector_custody_storage.rs";
++    assert!(
++        std::panic::catch_unwind(|| normalize(path, &read(path).replace(ACCESSOR, ""))).is_err()
++    );
++    assert_ne!(
++        normalize(
++            path,
++            &read(path).replace("self.revalidate()?;", "let _ = ();")
++        ),
++        frozen(path)
++    );
++}
++fn enrolled(raw: &str) -> bool {
++    raw.contains("original:\n        &'held mut OriginalCustodiedPreparation")
++        && raw.contains("let inventory = capture(self)?;")
++        && raw.contains("self.validate(allow_fixture)?;\n            if capture(self)? != inventory")
++        && raw.contains("self.inspect_deadline()?;\n            Ok(inventory)")
++        && raw.contains("self.original.validate(self.allow_fixture)?;\n            if capture(self.original)? != self.inventory")
++        && raw.contains("self.original.inspect_deadline()")
++        && raw.contains("self.plan_descriptors_with(\n            false,")
++        && raw.matches("self.refuse();").count() == 1
++        && raw.matches("self.original.refuse();").count() == 1
++}
++#[test]
++fn original_descriptor_plan_borrows_exact_objects_and_closes_with_full_validation() {
++    let raw = read("tools/long-run-supervisor-074/src/diagnostic_original_descriptor_plan.rs");
++    assert!(enrolled(&raw));
++    for (from, to) in [
++        ("self.validate(allow_fixture)?;", "let _ = allow_fixture;"),
++        ("if capture(self)? != inventory", "if false"),
++        ("self.inspect_deadline()?;", "let _ = ();"),
++        (
++            "self.original.validate(self.allow_fixture)?;",
++            "let _ = ();",
++        ),
++        ("self.original.inspect_deadline()", "Ok(())"),
++    ] {
++        assert!(!enrolled(&raw.replace(from, to)), "{from}");
++    }
++    for required in [
++        "custody.original_descriptor(outputs.reservation())?",
++        "message.data()",
++        "aliases.len() != 2",
++        "libc::F_GETFD",
++        "libc::F_GETFL",
++        "libc::fstat",
++        "libc::SEEK_CUR",
++    ] {
++        assert!(raw.contains(required), "{required}");
++    }
++    for denied in [
++        "pub fn ",
++        "Command::",
++        "libc::write",
++        "libc::fork",
++        "timerfd_create",
++        "File::open",
++        "CLOCK_REALTIME",
++        "impl Clone",
++        "impl Deserialize",
++        "impl AsRawFd",
++    ] {
++        assert!(!raw.contains(denied), "{denied}");
++    }
++    assert_eq!(raw.matches("/// \x60\x60\x60compile_fail").count(), 2);
++    assert_eq!(raw.matches(".try_clone()").count(), 1);
++    assert!(raw.contains("#[cfg(test)]\n    pub(crate) fn hidden_writer_for_test"));
++    let bridge =
++        read("tools/long-run-supervisor-074/src/diagnostic_original_collector_custody_storage.rs");
++    assert_eq!(bridge.matches(ACCESSOR).count(), 1);
++    let test =
++        read("tools/long-run-supervisor-074/src/diagnostic_original_descriptor_plan_tests.rs");
++    assert!(test.contains("authentication_calls, 34"));
++    assert!(test.contains("signature_calls, 34"));
++    assert!(test.contains("!reason.contains(\"Time\")"));
++    assert!(test.contains("Original(Expired)"));
++}
++#[test]
++fn original_descriptor_holder_remains_a_bounded_nonexecuting_owned_fixture() {
++    let raw =
++        read("tools/long-run-supervisor-074/src/diagnostic_original_descriptor_holder_tests.rs");
++    let child = raw
++        .split("fn child(")
++        .nth(1)
++        .unwrap()
++        .split("impl Holder")
++        .next()
++        .unwrap();
++    for denied in [
++        "assert!",
++        "unwrap(",
++        "File::",
++        "std::io",
++        "Command::",
++        "Vec::",
++        "format!",
++        "println!",
++        "libc::write",
++    ] {
++        assert!(!child.contains(denied), "{denied}");
++    }
++    for required in [
++        "SYS_close_range",
++        "&fds[6..10]",
++        "libc::EBADF",
++        "&fds[2..4]",
++        "n != 0",
++        "b'E'",
++        "libc::fsync",
++        "libc::close",
++        "libc::poll(&mut timer, 1, 0)",
++        "b'T'",
++    ] {
++        assert!(child.contains(required), "{required}");
++    }
++    assert!(raw.find("libc::SIG_SETMASK,").unwrap() < raw.find("libc::SYS_fork").unwrap());
++    assert!(raw.contains("Some(libc::EAGAIN)"));
++    assert!(raw.contains("libc::SYS_pidfd_open"));
++    assert!(raw.contains("libc::SYS_pidfd_send_signal"));
++    assert!(raw.contains("libc::WTERMSIG(status), libc::SIGKILL"));
++    let cases =
++        read("tools/long-run-supervisor-074/src/diagnostic_original_descriptor_plan_tests.rs");
++    assert!(cases.contains("repeat in 1..=3"));
++    assert!(cases.contains("[\"normal\", \"ack-lost\", \"holder-kill\", \"hidden-writer\"]"));
++    assert!(cases.find("Holder::spawn(").unwrap() < cases.rfind("drop(held);").unwrap());
++    assert!(cases.contains("child.assert_retained();"));
++    assert!(cases.contains("retained_context_refuses_for_test(root)"));
++    for (from, to) in [
++        ("repeat in 1..=3", "repeat in 1..=1"),
++        ("libc::SIGKILL", "libc::SIGTERM"),
++        ("n != 0", "false"),
++    ] {
++        assert_ne!(
++            raw.replace(from, to) + &cases.replace(from, to),
++            raw.clone() + &cases
++        );
++    }
++}
+diff --git a/docs/testing/gated-test-registry.toml b/docs/testing/gated-test-registry.toml
+index be35a26d..7f38fa47 100644
+--- a/docs/testing/gated-test-registry.toml
++++ b/docs/testing/gated-test-registry.toml
+@@ -10569,3 +10569,166 @@ platform = "linux"
+ 
+ [gate.command.env]
+ # END ORIGINAL CUSTODY JOIN GATES
++
++# BEGIN ORIGINAL DESCRIPTOR PLAN GATES
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.original-descriptors-screen"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_original_descriptor_plan_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "original_descriptor_plan_screen"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Original descriptor inventory and test-only allowlist holder; no production execution"
++tier = "manual"
++required_features = []
++required_env = ["HC074_START_MATERIAL_BUNDLE"]
++required_tools = ["cargo"]
++timeout_seconds = 180
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::original_descriptor_plan_screen","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.original-descriptors-healthy"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_original_descriptor_plan_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "original_descriptor_plan_healthy"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Original descriptor inventory and test-only allowlist holder; no production execution"
++tier = "manual"
++required_features = []
++required_env = ["HC074_START_MATERIAL_BUNDLE"]
++required_tools = ["cargo"]
++timeout_seconds = 600
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::original_descriptor_plan_healthy","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.original-descriptors-refusals"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_original_descriptor_plan_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "original_descriptor_plan_refusals"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Original descriptor inventory and test-only allowlist holder; no production execution"
++tier = "manual"
++required_features = []
++required_env = ["HC074_START_MATERIAL_BUNDLE"]
++required_tools = ["cargo"]
++timeout_seconds = 900
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::original_descriptor_plan_refusals","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.original-descriptors-later-refusals"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_original_descriptor_plan_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "original_descriptor_plan_later_refusals"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Original descriptor inventory and test-only allowlist holder; no production execution"
++tier = "manual"
++required_features = []
++required_env = ["HC074_START_MATERIAL_BUNDLE"]
++required_tools = ["cargo"]
++timeout_seconds = 600
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::original_descriptor_plan_later_refusals","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.original-descriptors-holder-matrix"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_original_descriptor_plan_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "original_descriptor_holder_matrix"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Original descriptor inventory and test-only allowlist holder; no production execution"
++tier = "manual"
++required_features = []
++required_env = ["HC074_START_MATERIAL_BUNDLE"]
++required_tools = ["cargo"]
++timeout_seconds = 1800
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::original_descriptor_holder_matrix","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
++# END ORIGINAL DESCRIPTOR PLAN GATES
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_original_collector_custody_storage.rs b/tools/long-run-supervisor-074/src/diagnostic_original_collector_custody_storage.rs
+index f8ce62b8..6f3c7632 100644
+--- a/tools/long-run-supervisor-074/src/diagnostic_original_collector_custody_storage.rs
++++ b/tools/long-run-supervisor-074/src/diagnostic_original_collector_custody_storage.rs
+@@ -7,7 +7,7 @@ use crate::diagnostic_output_preparation::fixed_intent_storage::reserved_state::
+     },
+     Stamp,
+ };
+-use std::os::fd::AsRawFd;
++use std::os::fd::{AsFd, AsRawFd, BorrowedFd};
+ 
+ pub(crate) struct OriginalCollectorFenceCustody {
+     original: FenceCustody,
+@@ -35,6 +35,14 @@ impl CollectorReservationStorage<'_> {
+     }
+ }
+ impl OriginalCollectorFenceCustody {
++    // Borrow only this checked original description; never clone or extract it.
++    pub(crate) fn original_descriptor(
++        &self,
++        storage: &CollectorReservationStorage<'_>,
++    ) -> Result<BorrowedFd<'_>, StorageAttemptError> {
++        self.inspect(storage)?;
++        Ok(self.original._lock.as_fd())
++    }
+     pub(crate) fn inspect(
+         &self,
+         storage: &CollectorReservationStorage<'_>,
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs b/tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs
+index dcb86c45..93823a89 100644
+--- a/tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs
++++ b/tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs
+@@ -1,4 +1,7 @@
+ //! Same original sinks and fence through unchanged full validation frames.
++#[allow(dead_code)]
++#[path = "diagnostic_original_descriptor_plan.rs"]
++mod descriptor_plan;
+ use super::*;
+ use crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::{self, CollectorCausalError};
+ use crate::diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::{
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_original_custody_join_tests.rs b/tools/long-run-supervisor-074/src/diagnostic_original_custody_join_tests.rs
+index 49b5ef45..669a27b4 100644
+--- a/tools/long-run-supervisor-074/src/diagnostic_original_custody_join_tests.rs
++++ b/tools/long-run-supervisor-074/src/diagnostic_original_custody_join_tests.rs
+@@ -1,4 +1,6 @@
+ use super::*;
++#[path = "diagnostic_original_descriptor_plan_tests.rs"]
++mod descriptor_plan_tests;
+ use crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::OriginalCustodyError;
+ 
+ fn custody_healthy(samples: usize) {
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_original_descriptor_holder_tests.rs b/tools/long-run-supervisor-074/src/diagnostic_original_descriptor_holder_tests.rs
+new file mode 100644
+index 00000000..3e32a053
+--- /dev/null
++++ b/tools/long-run-supervisor-074/src/diagnostic_original_descriptor_holder_tests.rs
+@@ -0,0 +1,301 @@
++//! Test-only raw holder: no product, manager, collector or guardian admission.
++use std::fs::File;
++use std::os::fd::{AsRawFd, FromRawFd, RawFd};
++
++pub(super) struct Holder {
++    pid: libc::pid_t,
++    pidfd: Option<File>,
++    control: File,
++    ack: File,
++}
++fn pair() -> [File; 2] {
++    let mut fds = [-1; 2];
++    assert_eq!(
++        unsafe {
++            libc::socketpair(
++                libc::AF_UNIX,
++                libc::SOCK_SEQPACKET | libc::SOCK_NONBLOCK | libc::SOCK_CLOEXEC,
++                0,
++                fds.as_mut_ptr(),
++            )
++        },
++        0
++    );
++    unsafe { [File::from_raw_fd(fds[0]), File::from_raw_fd(fds[1])] }
++}
++fn readable(file: &File, timeout: i32) -> i32 {
++    let mut poll = libc::pollfd {
++        fd: file.as_raw_fd(),
++        events: libc::POLLIN,
++        revents: 0,
++    };
++    let result = unsafe { libc::poll(&mut poll, 1, timeout) };
++    assert!(result >= 0);
++    result
++}
++fn receive(file: &File) -> (isize, u8) {
++    let mut byte = 0u8;
++    let n = unsafe {
++        libc::recv(
++            file.as_raw_fd(),
++            (&mut byte as *mut u8).cast(),
++            1,
++            libc::MSG_TRUNC,
++        )
++    };
++    (n, byte)
++}
++fn send(file: &File, byte: u8) {
++    assert_eq!(
++        unsafe {
++            libc::send(
++                file.as_raw_fd(),
++                (&byte as *const u8).cast(),
++                1,
++                libc::MSG_NOSIGNAL,
++            )
++        },
++        1
++    );
++}
++fn refused(control: RawFd, byte: u8) -> ! {
++    unsafe { libc::send(control, (&byte as *const u8).cast(), 1, libc::MSG_NOSIGNAL) };
++    loop {
++        unsafe { libc::poll(std::ptr::null_mut(), 0, -1) };
++    }
++}
++// Child continuation: stack data and raw bounded syscalls only, never Rust IO,
++// validation, allocation, logging, unwinding or destructors after SYS_fork.
++fn child(keep: [RawFd; 8], fds: [RawFd; 10], control: RawFd, ack: RawFd, notify: bool) -> ! {
++    let mut first = 0u32;
++    for fd in keep {
++        if first < fd as u32
++            && unsafe { libc::syscall(libc::SYS_close_range, first, fd as u32 - 1, 0u32) } != 0
++        {
++            unsafe { libc::_exit(81) };
++        }
++        first = fd as u32 + 1;
++    }
++    if unsafe { libc::syscall(libc::SYS_close_range, first, u32::MAX, 0u32) } != 0 {
++        unsafe { libc::_exit(82) };
++    }
++    for fd in &fds[6..10] {
++        if unsafe { libc::fcntl(*fd, libc::F_GETFD) } != -1
++            || unsafe { *libc::__errno_location() } != libc::EBADF
++        {
++            refused(control, b'W');
++        }
++    }
++    let a = b'A';
++    if notify {
++        unsafe { libc::send(ack, (&a as *const u8).cast(), 1, libc::MSG_NOSIGNAL) };
++    }
++    let b = b'B';
++    if unsafe { libc::send(control, (&b as *const u8).cast(), 1, libc::MSG_NOSIGNAL) } != 1 {
++        refused(control, b'R');
++    }
++    let mut poll = libc::pollfd {
++        fd: control,
++        events: libc::POLLIN,
++        revents: 0,
++    };
++    let mut byte = 0u8;
++    if unsafe { libc::poll(&mut poll, 1, -1) } != 1
++        || unsafe { libc::recv(control, (&mut byte as *mut u8).cast(), 1, libc::MSG_TRUNC) } != 1
++        || byte != b'C'
++    {
++        refused(control, b'R');
++    }
++    let mut timer = libc::pollfd {
++        fd: fds[1],
++        events: libc::POLLIN,
++        revents: 0,
++    };
++    if unsafe { libc::poll(&mut timer, 1, 0) } != 0 {
++        refused(control, b'T');
++    }
++    for fd in &fds[2..4] {
++        let n = unsafe { libc::read(*fd, (&mut byte as *mut u8).cast(), 1) };
++        if n != 0 {
++            if n < 0 && unsafe { *libc::__errno_location() } == libc::EAGAIN {
++                refused(control, b'E');
++            }
++            refused(control, b'R');
++        }
++    }
++    for fd in &fds[4..6] {
++        if unsafe { libc::fsync(*fd) } != 0 || unsafe { libc::close(*fd) } != 0 {
++            refused(control, b'R');
++        }
++    }
++    let done = b'D';
++    if unsafe { libc::send(control, (&done as *const u8).cast(), 1, libc::MSG_NOSIGNAL) } != 1 {
++        refused(control, b'R');
++    }
++    if unsafe { libc::poll(&mut poll, 1, -1) } != 1
++        || unsafe { libc::recv(control, (&mut byte as *mut u8).cast(), 1, libc::MSG_TRUNC) } != 1
++        || byte != b'Q'
++    {
++        refused(control, b'R');
++    }
++    // No completion record: this test-only holder may exit after actual EOF.
++    unsafe { libc::_exit(0) }
++}
++impl Holder {
++    pub(super) fn spawn(resources: [RawFd; 6], fds: [RawFd; 10], notify: bool) -> Self {
++        assert_ne!(unsafe { libc::geteuid() }, 0);
++        let [control, child_control] = pair();
++        let [ack, child_ack] = pair();
++        let mut keep = [
++            resources[0],
++            resources[1],
++            resources[2],
++            resources[3],
++            resources[4],
++            resources[5],
++            child_control.as_raw_fd(),
++            child_ack.as_raw_fd(),
++        ];
++        keep.sort_unstable();
++        assert!(keep
++            .windows(2)
++            .all(|pair| pair[0] >= 0 && pair[0] < pair[1]));
++        let blocked = u64::MAX;
++        let mut previous = 0u64;
++        assert_eq!(
++            unsafe {
++                libc::syscall(
++                    libc::SYS_rt_sigprocmask,
++                    libc::SIG_SETMASK,
++                    &blocked,
++                    &mut previous,
++                    8usize,
++                )
++            },
++            0
++        );
++        let pid = unsafe { libc::syscall(libc::SYS_fork) } as libc::pid_t;
++        if pid == 0 {
++            child(
++                keep,
++                fds,
++                child_control.as_raw_fd(),
++                child_ack.as_raw_fd(),
++                notify,
++            );
++        }
++        let restored = unsafe {
++            libc::syscall(
++                libc::SYS_rt_sigprocmask,
++                libc::SIG_SETMASK,
++                &previous,
++                0usize,
++                8usize,
++            )
++        };
++        assert!(pid > 0, "raw fork refused");
++        // Establish cleanup ownership before any subsequent fallible check.
++        let mut held = Self {
++            pid,
++            pidfd: None,
++            control,
++            ack,
++        };
++        assert_eq!(restored, 0);
++        let mut current = 0u64;
++        assert_eq!(
++            unsafe {
++                libc::syscall(
++                    libc::SYS_rt_sigprocmask,
++                    libc::SIG_SETMASK,
++                    0usize,
++                    &mut current,
++                    8usize,
++                )
++            },
++            0
++        );
++        assert_eq!(current, previous);
++        let pinned = unsafe { libc::syscall(libc::SYS_pidfd_open, pid, 0u32) };
++        assert!(pinned >= 0);
++        held.pidfd = Some(unsafe { File::from_raw_fd(pinned as RawFd) });
++        drop(child_control);
++        drop(child_ack);
++        assert_eq!(readable(&held.control, 5000), 1);
++        assert_eq!(receive(&held.control), (1, b'B'));
++        if notify {
++            assert_eq!(receive(&held.ack), (1, b'A'));
++        } else {
++            assert_eq!(receive(&held.ack).0, -1);
++            assert_eq!(
++                std::io::Error::last_os_error().raw_os_error(),
++                Some(libc::EAGAIN)
++            );
++        }
++        held.assert_retained();
++        held
++    }
++    pub(super) fn assert_retained(&self) {
++        assert_eq!(readable(self.pidfd.as_ref().unwrap(), 0), 0);
++    }
++    pub(super) fn observe_eof(&self, hidden: bool) -> bool {
++        send(&self.control, b'C');
++        assert_eq!(readable(&self.control, 5000), 1);
++        assert_eq!(
++            receive(&self.control),
++            (1, if hidden { b'E' } else { b'D' })
++        );
++        !hidden
++    }
++    pub(super) fn finish(&mut self, killed: bool) {
++        let pidfd = self.pidfd.as_ref().unwrap();
++        if killed {
++            assert_eq!(
++                unsafe {
++                    libc::syscall(
++                        libc::SYS_pidfd_send_signal,
++                        pidfd.as_raw_fd(),
++                        libc::SIGKILL,
++                        0usize,
++                        0u32,
++                    )
++                },
++                0
++            );
++        } else {
++            send(&self.control, b'Q');
++        }
++        assert_eq!(readable(pidfd, 5000), 1);
++        let mut status = 0;
++        assert_eq!(unsafe { libc::waitpid(self.pid, &mut status, 0) }, self.pid);
++        self.pid = 0;
++        if killed {
++            assert!(libc::WIFSIGNALED(status));
++            assert_eq!(libc::WTERMSIG(status), libc::SIGKILL);
++        } else {
++            assert!(libc::WIFEXITED(status));
++            assert_eq!(libc::WEXITSTATUS(status), 0);
++        }
++    }
++}
++impl Drop for Holder {
++    fn drop(&mut self) {
++        if self.pid == 0 {
++            return;
++        }
++        if let Some(fd) = &self.pidfd {
++            unsafe {
++                libc::syscall(
++                    libc::SYS_pidfd_send_signal,
++                    fd.as_raw_fd(),
++                    libc::SIGKILL,
++                    0usize,
++                    0u32,
++                )
++            };
++        } else {
++            unsafe { libc::kill(self.pid, libc::SIGKILL) };
++        }
++        unsafe { libc::waitpid(self.pid, std::ptr::null_mut(), 0) };
++    }
++}
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_original_descriptor_plan.rs b/tools/long-run-supervisor-074/src/diagnostic_original_descriptor_plan.rs
+new file mode 100644
+index 00000000..70bce503
+--- /dev/null
++++ b/tools/long-run-supervisor-074/src/diagnostic_original_descriptor_plan.rs
+@@ -0,0 +1,307 @@
++//! Private original descriptor inventory, not guardian enrollment or start.
++use super::*;
++use std::os::fd::RawFd;
++
++#[derive(Debug, PartialEq, Eq)]
++struct Roles {
++    // Initial guardian inheritance only: actual guardian must shed sink aliases
++    // before its collector barrier, as the unchanged kernel engine already does.
++    guardian: [RawFd; 6],
++    collector: [RawFd; 4],
++    writers: [RawFd; 4],
++}
++fn roles(fds: [RawFd; 10]) -> Result<Roles, OriginalCustodyError> {
++    if fds.iter().any(|fd| *fd < 0) || fds.iter().enumerate().any(|(i, fd)| fds[..i].contains(fd)) {
++        return Err(OriginalCustodyError::Binding);
++    }
++    let mut result = Roles {
++        guardian: [fds[0], fds[1], fds[2], fds[3], fds[4], fds[5]],
++        collector: [fds[2], fds[3], fds[4], fds[5]],
++        writers: [fds[6], fds[7], fds[8], fds[9]],
++    };
++    result.guardian.sort_unstable();
++    result.collector.sort_unstable();
++    result.writers.sort_unstable();
++    Ok(result)
++}
++#[derive(PartialEq, Eq)]
++struct Shape {
++    stat: [u64; 11],
++    descriptor: i32,
++    status: i32,
++    position: Option<i64>,
++}
++fn io_error() -> OriginalCustodyError {
++    OriginalGroupedPrepError::Io(std::io::Error::last_os_error()).into()
++}
++fn shape(fd: RawFd, sink: bool) -> Result<Shape, OriginalCustodyError> {
++    let mut stat: libc::stat = unsafe { std::mem::zeroed() };
++    if unsafe { libc::fstat(fd, &mut stat) } != 0 {
++        return Err(io_error());
++    }
++    let descriptor = unsafe { libc::fcntl(fd, libc::F_GETFD) };
++    let status = unsafe { libc::fcntl(fd, libc::F_GETFL) };
++    if descriptor < 0 || status < 0 {
++        return Err(io_error());
++    }
++    let position = if sink {
++        let position = unsafe { libc::lseek(fd, 0, libc::SEEK_CUR) };
++        if position < 0 {
++            return Err(io_error());
++        }
++        Some(position)
++    } else {
++        None
++    };
++    Ok(Shape {
++        stat: [
++            stat.st_dev,
++            stat.st_ino,
++            u64::from(stat.st_uid),
++            u64::from(stat.st_gid),
++            u64::from(stat.st_mode),
++            stat.st_nlink,
++            stat.st_size as u64,
++            stat.st_mtime as u64,
++            stat.st_mtime_nsec as u64,
++            stat.st_ctime as u64,
++            stat.st_ctime_nsec as u64,
++        ],
++        descriptor,
++        status,
++        position,
++    })
++}
++#[derive(PartialEq, Eq)]
++struct Inventory {
++    fds: [RawFd; 10],
++    shapes: [Shape; 10],
++    roles: Roles,
++}
++fn capture(
++    original: &OriginalCustodiedPreparation<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>,
++) -> Result<Inventory, OriginalCustodyError> {
++    let outputs = &original.original.transport.material.outputs;
++    let custody = original
++        .custody
++        .as_ref()
++        .ok_or(OriginalCustodyError::Binding)?;
++    let fence = custody.original_descriptor(outputs.reservation())?;
++    let alarm = original
++        .original
++        .alarm
++        .as_ref()
++        .ok_or(OriginalCustodyError::Binding)?;
++    let [Some(stdout), Some(stderr)] = &outputs.pipes.pipes else {
++        return Err(OriginalCustodyError::Binding);
++    };
++    let [Some(out_sink), Some(err_sink)] = &outputs.sinks else {
++        return Err(OriginalCustodyError::Binding);
++    };
++    let message = original
++        .original
++        .transport
++        .message
++        .as_ref()
++        .ok_or(OriginalCustodyError::Binding)?;
++    let aliases = message.data();
++    let aliases = aliases.fds();
++    if aliases.len() != 2 {
++        return Err(OriginalCustodyError::Binding);
++    }
++    let fds = [
++        fence.as_raw_fd(),
++        alarm.file.as_raw_fd(),
++        stdout.reader.as_raw_fd(),
++        stderr.reader.as_raw_fd(),
++        out_sink.file.as_raw_fd(),
++        err_sink.file.as_raw_fd(),
++        stdout.writer.as_raw_fd(),
++        stderr.writer.as_raw_fd(),
++        aliases[0].as_raw_fd(),
++        aliases[1].as_raw_fd(),
++    ];
++    let roles = roles(fds)?;
++    let mut shapes = Vec::with_capacity(10);
++    for (i, fd) in fds.iter().enumerate() {
++        shapes.push(shape(*fd, i == 4 || i == 5)?);
++    }
++    Ok(Inventory {
++        fds,
++        shapes: shapes
++            .try_into()
++            .map_err(|_| OriginalCustodyError::Binding)?,
++        roles,
++    })
++}
++
++/// Private borrowed plan; neither a raw-FD API nor an execution capability.
++/// ```compile_fail
++/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::OriginalCustodiedPreparation;
++/// fn denied(mut p: OriginalCustodiedPreparation<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { p.plan_original_descriptors(); }
++/// ```
++/// ```compile_fail
++/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::OriginalDescriptorPlan;
++/// fn denied<T: serde::de::DeserializeOwned>() {} denied::<OriginalDescriptorPlan>();
++/// ```
++pub(crate) struct OriginalDescriptorPlan<'held, 'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p> {
++    original:
++        &'held mut OriginalCustodiedPreparation<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++    inventory: Inventory,
++    allow_fixture: bool,
++}
++impl OriginalDescriptorPlan<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
++    pub(super) fn revalidate(&mut self) -> Result<(), OriginalCustodyError> {
++        let result = (|| {
++            self.original.validate(self.allow_fixture)?;
++            if capture(self.original)? != self.inventory {
++                return Err(OriginalCustodyError::Binding);
++            }
++            self.original.inspect_deadline()
++        })();
++        if result.is_err() {
++            self.original.refuse();
++        }
++        result
++    }
++    #[cfg(test)]
++    pub(crate) fn layout_for_test(&self) -> ([RawFd; 6], [RawFd; 4], [RawFd; 4], [u64; 6]) {
++        (
++            self.inventory.roles.guardian,
++            self.inventory.roles.collector,
++            self.inventory.roles.writers,
++            self.original.origins_for_test(),
++        )
++    }
++    #[cfg(test)]
++    pub(crate) fn inherited_for_test(&self) -> ([RawFd; 6], [RawFd; 10]) {
++        (self.inventory.roles.guardian, self.inventory.fds)
++    }
++    #[cfg(test)]
++    pub(crate) fn hidden_writer_for_test(&self) -> File {
++        self.original
++            .original
++            .transport
++            .material
++            .outputs
++            .pipes
++            .pipes[0]
++            .as_ref()
++            .unwrap()
++            .writer
++            .try_clone()
++            .unwrap()
++    }
++    #[cfg(test)]
++    pub(crate) fn revalidate_for_test(&mut self) -> Result<(), OriginalCustodyError> {
++        self.revalidate()
++    }
++    #[cfg(test)]
++    pub(crate) fn tamper_for_test(&mut self, kind: &str) {
++        self.original.tamper_for_test(kind);
++    }
++}
++impl<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>
++    OriginalCustodiedPreparation<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>
++{
++    pub(super) fn plan_original_descriptors(
++        &mut self,
++    ) -> Result<
++        OriginalDescriptorPlan<'_, 'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++        OriginalCustodyError,
++    > {
++        self.plan_descriptors_with(
++            false,
++            #[cfg(test)]
++            |_| {},
++        )
++    }
++    #[cfg(test)]
++    pub(crate) fn plan_descriptors_fixture_for_test(
++        &mut self,
++        checkpoint: impl FnOnce(&mut Self),
++    ) -> Result<
++        OriginalDescriptorPlan<'_, 'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++        OriginalCustodyError,
++    > {
++        assert_ne!(unsafe { libc::geteuid() }, 0);
++        self.plan_descriptors_with(true, checkpoint)
++    }
++    fn plan_descriptors_with(
++        &mut self,
++        allow_fixture: bool,
++        #[cfg(test)] checkpoint: impl FnOnce(&mut Self),
++    ) -> Result<
++        OriginalDescriptorPlan<'_, 'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++        OriginalCustodyError,
++    > {
++        let result = (|| {
++            if !self.ready || self.is_refused() {
++                return Err(OriginalCustodyError::Refused);
++            }
++            let inventory = capture(self)?;
++            #[cfg(test)]
++            checkpoint(self);
++            self.validate(allow_fixture)?;
++            if capture(self)? != inventory {
++                return Err(OriginalCustodyError::Binding);
++            }
++            self.inspect_deadline()?;
++            Ok(inventory)
++        })();
++        match result {
++            Ok(inventory) => Ok(OriginalDescriptorPlan {
++                original: self,
++                inventory,
++                allow_fixture,
++            }),
++            Err(error) => {
++                self.refuse();
++                Err(error)
++            }
++        }
++    }
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    #[test]
++    fn original_descriptor_roles_exclude_all_four_writer_aliases() {
++        let fds = [17, 3, 15, 8, 20, 12, 10, 6, 19, 5];
++        let split = roles(fds).unwrap();
++        assert_eq!(split.guardian, [3, 8, 12, 15, 17, 20]);
++        assert_eq!(split.collector, [8, 12, 15, 20]);
++        assert_eq!(split.writers, [5, 6, 10, 19]);
++        assert!(split
++            .writers
++            .iter()
++            .all(|fd| !split.guardian.contains(fd) && !split.collector.contains(fd)));
++    }
++    #[test]
++    fn original_descriptor_roles_refuse_any_duplicate_or_negative_slot() {
++        for i in 0..10 {
++            let mut fds = std::array::from_fn(|n| n as RawFd + 3);
++            fds[i] = -1;
++            assert!(matches!(roles(fds), Err(OriginalCustodyError::Binding)));
++            for j in 0..10 {
++                if i != j {
++                    let mut fds = std::array::from_fn(|n| n as RawFd + 3);
++                    fds[i] = fds[j];
++                    assert!(matches!(roles(fds), Err(OriginalCustodyError::Binding)));
++                }
++            }
++        }
++    }
++    #[test]
++    fn original_descriptor_capture_refuses_a_closed_fd_without_replacement() {
++        assert!(shape(-1, false).is_err());
++        assert!(shape(-1, true).is_err());
++    }
++    #[test]
++    fn original_descriptor_capture_refuses_nonzero_sink_position() {
++        let file = tempfile::tempfile().unwrap();
++        assert_eq!(unsafe { libc::lseek(file.as_raw_fd(), 17, libc::SEEK_SET) }, 17);
++        assert!(matches!(shape(file.as_raw_fd(), true), Err(OriginalCustodyError::Binding)));
++    }
++}
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_original_descriptor_plan_tests.rs b/tools/long-run-supervisor-074/src/diagnostic_original_descriptor_plan_tests.rs
+new file mode 100644
+index 00000000..b2a9ffe2
+--- /dev/null
++++ b/tools/long-run-supervisor-074/src/diagnostic_original_descriptor_plan_tests.rs
+@@ -0,0 +1,200 @@
++use super::*;
++#[path = "diagnostic_original_descriptor_holder_tests.rs"]
++mod holder;
++
++macro_rules! original_owner {
++    ($drift:expr, |$held:ident, $paths:ident, $root:ident, $leaf:ident| $body:block) => {{
++        let bundle = Bundle::new();
++        with_original_at($drift, None, |original, $paths, receiver, sender, model| {
++            with_owned_empty_fence_for_test(|fence, $root, $leaf| {
++                let mut $held = accepted(original, fence, $leaf, receiver, sender, model)
++                    .prepare_original_outputs_for_test(|_| Ok(()))
++                    .unwrap()
++                    .prepare_custodied_fixture_for_test(&bundle.path, |_, _| {})
++                    .unwrap();
++                $body
++            });
++        });
++    }};
++}
++fn call_count(report: &trace::Report, stage: Stage) {
++    assert_eq!(report.stages[stage as usize].authentication_calls, 34);
++    assert_eq!(report.stages[stage as usize].signature_calls, 34);
++    assert!(report.first_time.is_none());
++}
++fn healthy(samples: usize) {
++    for sample in 0..samples {
++        original_owner!(false, |held, _paths, root, leaf| {
++            let before = records(leaf);
++            let origins = held.origins_for_test();
++            let (mut plan, report) = trace::capture(|| {
++                trace::stage(Stage::Bind);
++                held.plan_descriptors_fixture_for_test(|_| {}).unwrap()
++            });
++            call_count(&report, Stage::Bind);
++            let (guardian, collector, writers, after) = plan.layout_for_test();
++            assert_eq!(&after[..4], &origins[..4]);
++            assert!(after[4] >= origins[4] && after[5] >= after[4]);
++            assert!(writers
++                .iter()
++                .all(|fd| !guardian.contains(fd) && !collector.contains(fd)));
++            assert!(collector.iter().all(|fd| guardian.contains(fd)));
++            let (_, fds) = plan.inherited_for_test();
++            for fd in &fds[4..6] {
++                assert_eq!(
++                    unsafe { libc::fcntl(*fd, libc::F_GETFL) } & libc::O_ACCMODE,
++                    libc::O_RDWR
++                );
++                assert_eq!(unsafe { libc::lseek(*fd, 0, libc::SEEK_CUR) }, 0);
++            }
++            let (_, report) = trace::capture(|| {
++                trace::stage(Stage::Checks);
++                plan.revalidate_for_test().unwrap();
++            });
++            call_count(&report, Stage::Checks);
++            let reobserved = plan.layout_for_test().3;
++            assert_eq!(&reobserved[..4], &origins[..4]);
++            assert!(reobserved[4] >= after[4] && reobserved[5] >= reobserved[4]);
++            assert!(!held.is_refused());
++            busy(root);
++            assert_eq!(records(leaf), before);
++            drop(held);
++            retained_context_refuses_for_test(root);
++            println!("HC074-ORIGINAL-DESCRIPTORS-CONTROL sample={sample} plan_ipc=34 validate_ipc=34 guardian=6 collector=4 excluded_writers=4 unchanged=true send=false");
++        });
++    }
++}
++#[test]
++#[ignore = "manual nonroot original descriptor full-frame healthy screen; no execution"]
++fn original_descriptor_plan_screen() {
++    healthy(1);
++}
++#[test]
++#[ignore = "manual nonroot original descriptor repeated full-frame controls; no execution"]
++fn original_descriptor_plan_healthy() {
++    healthy(3);
++}
++
++#[test]
++#[ignore = "manual nonroot original descriptor draft drift and sticky refusal; no execution"]
++fn original_descriptor_plan_refusals() {
++    let seed = 0x0740_d018_u64;
++    for case in [
++        "trust",
++        "output",
++        "writer",
++        "custody-flags",
++        "message",
++        "alarm",
++    ] {
++        original_owner!(true, |held, paths, root, leaf| {
++            let before = records(leaf);
++            let result = held.plan_descriptors_fixture_for_test(|owner| match case {
++                "trust" => fs::write(&paths.worker, b"descriptor trust drift").unwrap(),
++                "output" => fs::write(
++                    output(leaf).join("collector-attempt-v1/collector-stderr.bin"),
++                    b"unexpected",
++                )
++                .unwrap(),
++                other => owner.tamper_for_test(other),
++            });
++            let error = match result {
++                Ok(_) => panic!("draft drift accepted"),
++                Err(error) => error,
++            };
++            let reason = format!("{error:?}");
++            assert!(
++                !reason.contains("Time"),
++                "late time is not {case}: {reason}"
++            );
++            match case {
++                "trust" => assert!(reason.contains("Input(Invalid)"), "{reason}"),
++                "output" => assert!(reason.contains("Outputs(Invalid)"), "{reason}"),
++                "writer" => assert!(reason.contains("Invalid"), "{reason}"),
++                "custody-flags" => assert_eq!(reason, "Storage(Document)"),
++                _ => assert!(reason.contains("Binding"), "{reason}"),
++            }
++            assert!(held.is_refused());
++            assert!(matches!(
++                held.plan_descriptors_fixture_for_test(|_| {}),
++                Err(OriginalCustodyError::Refused)
++            ));
++            busy(root);
++            assert_eq!(records(leaf), before);
++            drop(held);
++            retained_context_refuses_for_test(root);
++            println!("HC074-ORIGINAL-DESCRIPTORS-REFUSAL seed=0x{seed:08x} case={case} sticky=true held=true unchanged=true send=false");
++        });
++    }
++}
++#[test]
++#[ignore = "manual nonroot original descriptor later drift and final absolute expiry; no execution"]
++fn original_descriptor_plan_later_refusals() {
++    for case in ["trust", "custody-object", "final-expiry"] {
++        original_owner!(true, |held, paths, root, leaf| {
++            let before = records(leaf);
++            let mut plan = held.plan_descriptors_fixture_for_test(|_| {}).unwrap();
++            if case == "trust" {
++                fs::write(&paths.worker, b"later descriptor trust drift").unwrap();
++            } else {
++                plan.tamper_for_test(case);
++            }
++            let reason = format!("{:?}", plan.revalidate_for_test().unwrap_err());
++            assert!(!reason.contains("Time"), "{reason}");
++            match case {
++                "trust" => assert!(reason.contains("Input(Invalid)"), "{reason}"),
++                "custody-object" => assert_eq!(reason, "Storage(Document)"),
++                _ => assert_eq!(reason, "Original(Expired)"),
++            }
++            assert!(matches!(
++                plan.revalidate_for_test(),
++                Err(OriginalCustodyError::Refused)
++            ));
++            assert!(held.is_refused());
++            busy(root);
++            assert_eq!(records(leaf), before);
++            drop(held);
++            retained_context_refuses_for_test(root);
++            println!("HC074-ORIGINAL-DESCRIPTORS-LATER case={case} sticky=true held=true unchanged=true send=false");
++        });
++    }
++}
++
++#[test]
++#[ignore = "manual nonroot original descriptor allowlist fork, actual EOF and holder SIGKILL; no execution"]
++fn original_descriptor_holder_matrix() {
++    let seed = 0x0740_d118_u64;
++    for repeat in 1..=3 {
++        for case in ["normal", "ack-lost", "holder-kill", "hidden-writer"] {
++            original_owner!(false, |held, _paths, root, leaf| {
++                let before = records(leaf);
++                let plan = held.plan_descriptors_fixture_for_test(|_| {}).unwrap();
++                let (keep, fds) = plan.inherited_for_test();
++                let hidden = (case == "hidden-writer").then(|| plan.hidden_writer_for_test());
++                let mut child = holder::Holder::spawn(keep, fds, case != "ack-lost");
++                busy(root);
++                drop(held);
++                for fd in fds {
++                    assert_eq!(unsafe { libc::fcntl(fd, libc::F_GETFD) }, -1);
++                }
++                busy(root);
++                let eof = if case == "holder-kill" {
++                    false
++                } else {
++                    child.observe_eof(case == "hidden-writer")
++                };
++                if case == "hidden-writer" {
++                    drop(hidden);
++                    child.assert_retained();
++                }
++                busy(root);
++                child.finish(case == "holder-kill" || case == "hidden-writer");
++                drop(crate::host_execution::lock_host_root(root).unwrap());
++                assert_eq!(records(leaf), before);
++                retained_context_refuses_for_test(root);
++                println!("HC074-ORIGINAL-DESCRIPTOR-HOLDER seed=0x{seed:08x} repeat={repeat} case={case} eof={eof} retained=true unchanged=true send=false");
++            });
++        }
++    }
++    println!("HC074-ORIGINAL-DESCRIPTOR-HOLDER completed=true cases=12 product=false");
++}

@@ -1,0 +1,21 @@
+59e6bf9c47a9bd4b12125708417b0f3ead82717bd905905a77de47b9a186287d  guard.sh
+bb0081e264b2477de94540a96e3043ce8c8a3ed077416171321e8b5705ad3c2d  screen.sh
+HC074-ORIGINAL-DESCRIPTORS-SERVER preflight=ok supervisor_pid=8839 restarts=0
+4eb6133d1a5813a1ffb46fe092f79bb9c7a498f98a29531892f958e72e6dc410  tests-194
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::original_descriptor_plan_screen ... FAILED
+
+failures:
+
+failures:
+    diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::original_descriptor_plan_screen
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1095 filtered out; finished in 13.36s
+
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::original_descriptor_plan_screen' (146838) panicked at tools/long-run-supervisor-074/src/diagnostic_original_descriptor_plan_tests.rs:36:13:
+assertion `left == right` failed
+  left: [995833726296911, 995836366661947, 995836639021304, 995837468236069, 995846001063785, 995846001464008]
+ right: [995833726296911, 995836366661947, 995836639021304, 995837468236069, 995845665424188, 995845665805771]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

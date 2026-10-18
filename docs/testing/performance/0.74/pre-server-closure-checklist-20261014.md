@@ -413,3 +413,28 @@ six repeated healthy controls, forty refusals and thirty process cases with
 eighteen real SIGKILLs, six normal returns, six omitted ACKs and sixty fresh
 inspector refusals. All 204 static contracts pass; stable supervisor and installed
 digests remain unchanged. The execution prerequisites above are not waived.
+
+## Original descriptor inventory and alias closure checks
+
+The [private descriptor plan](diagnostic-original-descriptor-plan-20261018.md)
+adds an exact borrowed inventory and initial guardian/collector allowlists without
+relaxing any old validator. Original O_RDWR sinks are not admitted through the
+generic O_WRONLY guardian interface. The new inventory requires zero sink offset
+before its complete frame and compares descriptor identity/flags afterwards,
+then reobserves the original deadlines. No public FD or execution API is added.
+
+The isolated raw-holder gate checks actual inherited originals, closure of parent
+message/pipe aliases, independent flock exclusion, EOF and sticky hidden-writer
+refusal. This is a test holder, not P2/P3 production enrollment. Next implement
+the barred original guardian/collector join and authenticated message delivery,
+with final live validation and parent alias closure in the correct sequence.
+Whole-cgroup writer cessation, external supervision, completion and later cells
+remain mandatory. Installation, supervisor mutation and product load stay closed.
+
+The [completed holder packet](local-runs/original-descriptor-plan-20261018/README.md)
+passes both compiler cohorts: six repeated controls, twenty refusals and
+twenty-four holder cases, including twelve actual EOF controls, six holder
+SIGKILL cuts and six hidden-writer refusals with separate owned cleanup. All 207
+static contracts and original 32+4 fast units per compiler pass. Parent closure
+is established for this nonexecuting fixture only; the production gates above
+remain mandatory and the stable supervisor/installed digests are unchanged.
