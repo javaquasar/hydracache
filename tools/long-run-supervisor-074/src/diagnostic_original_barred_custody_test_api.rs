@@ -72,6 +72,41 @@ impl OriginalBarredCustody<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
     }
 }
 impl BarredCustodyFailure<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
+    pub(crate) fn assert_lost_pending_for_test(&self) {
+        let kernel = self.held.kernel.as_ref().unwrap();
+        let mut poll = [
+            libc::pollfd {
+                fd: kernel.peer.as_raw_fd(),
+                events: libc::POLLIN,
+                revents: 0,
+            },
+            libc::pollfd {
+                fd: kernel.pinned.as_raw_fd(),
+                events: libc::POLLIN,
+                revents: 0,
+            },
+        ];
+        // Post-refusal harness fail-safe, NOT a new authority or progress window.
+        assert_eq!(unsafe { libc::poll(poll.as_mut_ptr(), 2, 5000) }, 1);
+        assert_eq!(poll[0].revents, libc::POLLIN);
+        assert_eq!(poll[1].revents, 0);
+        let mut byte = 0u8;
+        assert_eq!(
+            unsafe {
+                libc::recv(
+                    kernel.peer.as_raw_fd(),
+                    (&mut byte as *mut u8).cast(),
+                    1,
+                    libc::MSG_TRUNC,
+                )
+            },
+            1
+        );
+        // The child sends P before E, on the same ordered seqpacket. If initial
+        // observation expired BEFORE consuming P, this first packet is P, not E.
+        assert_eq!(byte, b'E');
+        kernel.alive().unwrap();
+    }
     pub(crate) fn origins_for_test(&self) -> [u64; 6] {
         self.held.original.origins_for_test()
     }

@@ -23,6 +23,7 @@ fn original_custody_lost_pending_notice() {
                 })
                 .unwrap_err();
             assert_eq!(failure.reason_for_test(), "Expired");
+            failure.assert_lost_pending_for_test();
             assert_eq!(&failure.origins_for_test()[..4], &origins[..4]);
             assert_eq!(mask(), parent_mask);
             assert!(failure.refused_for_test());
@@ -37,7 +38,7 @@ fn original_custody_lost_pending_notice() {
             drop(crate::host_execution::lock_host_root(root).unwrap());
             assert_eq!(records(leaf), before);
             retained_context_refuses_for_test(root);
-            println!("HC074-CUSTODY-LOSS-NOTICE seed=0x{seed:08x} repeat={repeat} reason=Expired origins_exact=true sticky=true unchanged=true start=false");
+            println!("HC074-CUSTODY-LOSS-NOTICE seed=0x{seed:08x} repeat={repeat} reason=Expired pending_consumed=true expiry_notice=E origins_exact=true sticky=true unchanged=true start=false");
         });
     }
 }

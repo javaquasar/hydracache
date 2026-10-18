@@ -135,6 +135,7 @@ fn custody_loss_fixture_keeps_actual_notice_and_exact_original_frame_cuts() {
         "failure.origins_for_test()[..4]",
         "mask(), parent_mask",
         "failure.retry_for_test()",
+        "failure.assert_lost_pending_for_test()",
         "records(leaf), before",
         "retained_context_refuses_for_test(root)",
         "barred.assert_original_for_test()",
@@ -147,6 +148,30 @@ fn custody_loss_fixture_keeps_actual_notice_and_exact_original_frame_cuts() {
         assert!(raw.contains(needed), "{needed}");
     }
     assert!(!raw.contains("detach_for_test"));
+    let api =
+        read("tools/long-run-supervisor-074/src/diagnostic_original_barred_custody_test_api.rs");
+    let api = api
+        .split("pub(crate) fn assert_lost_pending_for_test")
+        .nth(1)
+        .unwrap()
+        .split("pub(crate) fn origins_for_test")
+        .next()
+        .unwrap();
+    assert!(api.contains("assert_eq!(byte, b'E');"));
+    assert!(api.contains("libc::MSG_TRUNC"));
+    for needed in [
+        "assert_eq!(byte, b'E');",
+        "assert_eq!(poll[1].revents, 0);",
+        "kernel.alive().unwrap();",
+    ] {
+        let proof = |text: &str| {
+            text.contains("assert_eq!(byte, b'E');")
+                && text.contains("assert_eq!(poll[1].revents, 0);")
+                && text.contains("kernel.alive().unwrap();")
+        };
+        assert!(proof(api));
+        assert!(!proof(&api.replace(needed, "")));
+    }
     assert!(read("docs/COMPAT.md").contains(COMPAT));
 }
 fn driver_closed(raw: &str) -> bool {
