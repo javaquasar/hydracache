@@ -1,0 +1,14 @@
+HC074-PREARMED image_sha256=0ea6346c2b91b7169d369f497e33eb2b3b52ce4b6d30616720dfe8de2ea05ee4
+HC074-PREARMED case=pending-owner-loss seed=0x0740a019 deadline=463413217625 fence_retained=True product=false original_authority=false
+HC074-PREARMED case=armed-owner-loss seed=0x0740a019 deadline=473423645137 fence_retained=True product=false original_authority=false
+HC074-PREARMED case=peer-loss seed=0x0740a019 deadline=473429212622 fence_retained=True product=false original_authority=false
+HC074-PREARMED case=expiry seed=0x0740a019 deadline=473434628703 fence_retained=True product=false original_authority=false
+HC074-PREARMED case=hidden-writer seed=0x0740a019 deadline=483439500093 fence_retained=True product=false original_authority=false
+HC074-PREARMED case=lost-ack seed=0x0740a019 deadline=483445117085 fence_retained=True product=false original_authority=false
+HC074-PREARMED case=foreign-sender seed=0x0740a019 deadline=483455935847 fence_retained=True product=false original_authority=false
+HC074-PREARMED case=wrong-right seed=0x0740a019 deadline=483461553256 fence_retained=True product=false original_authority=false
+HC074-PREARMED case=duplicate-wire seed=0x0740a019 deadline=483466874236 fence_retained=True product=false original_authority=false
+HC074-PREARMED case=guardian-death seed=0x0740a019 deadline=483472676636 fence_retained=False product=false original_authority=false
+HC074-PREARMED case=guardian-death-after-release seed=0x0740a019 deadline=483477920871 fence_retained=False product=false original_authority=false
+HC074-PREARMED case=guardian-stopped-after-release seed=0x0740a019 deadline=483483574516 fence_retained=True product=false original_authority=false
+HC074-PREARMED completed=true cases=12

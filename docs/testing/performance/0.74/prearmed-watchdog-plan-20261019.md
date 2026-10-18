@@ -56,3 +56,24 @@ revoke unknown forks/FD copies or enable completion, later cells or reconnect.
 Actual original origins and 300/60/10-second windows must remain untouched.
 No release installation, supervisor operation, system-bus send, product workload,
 dedicated-server operation or expensive qualification is authorized here.
+
+## Local result
+
+Implementation `ddcd8aa89bc235603666e860a6b4f0f8a5996e0b` passes fourteen
+ordinary two-phase controls and all twelve new process cases on GNU 1.94 and
+MSRV 1.88. The actual guardian retains an accepted target before Armed, revokes
+it after creator death and keeps the fence after missing ACK, expiry and EOF.
+Existing twelve-case barrier and thirty-control exchange suites remain green.
+The full source suite passes 265 controls and restores all 366 previous Rust
+bodies exactly; affected lint, formatting, API, registry, docs and local contract
+checks pass. The [packet](local-runs/prearmed-watchdog-20261019/README.md) retains
+the source/image receipts, preliminary runs and initial strict-lint failure.
+
+The post-release guardian-death control exposes a live target and free last
+flock. The guardian-stop control exposes a live writer at the original fixture
+deadline, followed by SIGKILL only after guardian resume. These expected
+negatives keep independent revocation/custody and durable history mandatory.
+The local direct-child admission does not admit systemd-managed targets. Join
+retained original kernel/manager/cgroup and stream identities inside the full
+frame, preserve the existing collector/custodian holders, and prove every writer
+ceased before any completion or release. This package does not open that gate.

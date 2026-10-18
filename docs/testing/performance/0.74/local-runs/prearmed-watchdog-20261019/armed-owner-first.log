@@ -1,0 +1,3 @@
+HC074-PREARMED image_sha256=0d0e7c90fc9781a1e14ba019086a8653ed36c8f029a909f95a186f98f62d6efa
+HC074-PREARMED case=armed-owner-loss seed=0x0740a019 deadline=334419808662 fence_retained=True product=false original_authority=false
+HC074-PREARMED completed=true cases=1

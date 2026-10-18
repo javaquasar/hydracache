@@ -860,3 +860,37 @@ cannot prove watchdog readiness or whole-writer revocation. The guardian must
 also cover death after the barrier's last observation; a final liveness check
 alone cannot close that race. Both pipe EOFs, external writer closure and
 collector finalization remain necessary before any future fence release.
+
+## Private prearmed guardian boundary
+
+The [prearmed watchdog plan](prearmed-watchdog-plan-20261019.md) and
+[local contract](prearmed-watchdog-contract.toml) add private mechanics, not an
+original execution owner. A guardian is atomically pinned through CLONE_PIDFD,
+isolates inherited descriptors and retains a real fence, creating-owner pidfd
+and the same absolute BOOTTIME timer before Pending. Separate one-shot enrollment
+requires actual creator credentials and one live direct-child pidfd. That pidfd
+is retained before Armed, so owner loss before a lost ACK still triggers target
+revocation. Sender uncertainty is latched before send; no retry or renewal is
+available. Actual SIGKILL and EOF must be independently observed, not inferred
+from the guardian's notice. No completion or unlock operation exists here.
+
+The owned fixture intentionally stops target-side monitoring after its single
+constant pipe effect. Its owner-loss result therefore tests active guardian
+behavior, not a cooperative child exiting on owner death. Hidden writer aliases,
+foreign senders, malformed rights, repeat messages, expiry and lost ACK have
+separate controls. Guardian death before release refuses the barrier; guardian
+death after release instead exposes a still-live writer and a released last
+flock holder. A SIGSTOPed guardian cannot act at the original deadline until
+resumed. These last two are retained expected-negative results, not readiness
+proofs or reasons to change deadlines.
+
+The receiver's ambient procfs/direct-child check cannot authenticate a
+systemd-managed target or historical original admission. Future integration must
+retain the original trusted kernel/cgroup context and original collector and
+custodian owners, authenticate all artifact and stream identities inside the
+complete validation frame, and join independent revocation without discarding
+those existing fence holders. It must cover every writer, not just one pidfd.
+Original delivery, release, durable completion, later cells, reconnect and
+production policy/enrollment remain closed. The
+[evidence packet](local-runs/prearmed-watchdog-20261019/README.md) is local-only;
+it does not authorize installation, supervisor operations or a server workload.

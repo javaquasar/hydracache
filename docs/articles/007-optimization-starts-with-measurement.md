@@ -13309,3 +13309,54 @@ The [two-phase barrier packet](../testing/performance/0.74/local-runs/two-phase-
 retains the committed-source current/MSRV cohorts, original negative results and
 exact scope. Actual pre-armed guardian enrollment, original delivery and complete
 writer cessation still precede any production start or completion claim.
+
+## Prearmed watchdog ownership and failure controls
+
+The next experiment replaces the sleeping guardian surrogate with an actual
+independent guardian, while retaining a deliberately nonproduct target. It must
+publish Pending only after isolating its descriptors and retaining the creator
+pidfd, original absolute BOOTTIME alarm and exclusive fence. Only then may the
+fixture create and enroll its target. Armed is a separate acknowledgement, sent
+after the guardian owns the exact received target pidfd. This ordering closes
+the local lost-ACK gap: the sender cannot tell whether enrollment succeeded,
+but the guardian already has the authority needed to terminate that target.
+
+Enrollment uses a private versioned seqpacket protocol with kernel credentials
+and exactly one atomically CLOEXEC pidfd. The receiver rejects a copied socket
+used by another process, malformed or truncated ancillary data, ordinary files
+and repeat enrollment. Rejected descriptors are closed without signaling an
+untrusted process. The parent records uncertainty before its first send and
+cannot retry after a missing ACK. These are local process-identity checks, not
+proof that the creator is the historical admitted original owner.
+
+The external nonroot driver kills the actual creator process. After release,
+the target performs one constant pipe write and parks without observing its
+owner or clock, so termination must come from the independent guardian. Actual
+SIGKILL status and pipe EOF are checked separately from a Revoking notice.
+An additional retained write alias prevents EOF after target death; closing
+that alias is a separate observation. Neither notice, target exit nor EOF gives
+this prototype an unlock path.
+
+The negative controls are as important as successful owner-loss termination.
+Killing the sole guardian after release leaves a live target with its write FD
+and releases the last flock holder. Stopping that guardian prevents it from
+acting at the original deadline until resumed, although its pidfd stays live.
+A live pidfd therefore proves neither readiness nor responsiveness. Independent
+original custody, durable history exclusion and an independently enforced
+revocation path remain necessary; a final liveness check cannot replace them.
+
+This prototype inspects ambient procfs and admits only a live direct child of
+its creating process. A systemd-managed launcher normally belongs to PID 1, so
+it cannot be admitted through this check. The next integration must use retained
+original kernel, manager and cgroup context, not remove the parent predicate or
+promote this local helper into a production constructor. The existing original
+collector/custodian owners must remain retained through that integration.
+
+The [prearmed watchdog evidence](../testing/performance/0.74/local-runs/prearmed-watchdog-20261019/README.md)
+separates the preliminary ten-case runs from the committed-source twelve-case
+matrix, including these expected negatives. The experiment measures correctness
+of ownership and failure ordering, not throughput, allocations or guaranteed
+deadline latency. Existing original live checks, all 46 effect brackets and
+300/60/10-second admission origins remain unchanged. Original delivery,
+all-writer cessation, durable completion and reconnect still require their own
+integration gates before server admission.

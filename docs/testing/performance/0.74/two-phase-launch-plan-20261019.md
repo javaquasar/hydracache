@@ -83,3 +83,18 @@ revocation and the original artifact/channel/frame join. The private v0 packet
 is an ephemeral mechanics prototype, not the future production release protocol.
 Neither these data types nor kernel fixture results open original start,
 completion, later cells, reconnect, installation or server admission.
+
+## Prearmed guardian mechanics result
+
+The [next local packet](local-runs/prearmed-watchdog-20261019/README.md), source
+`ddcd8aa89bc235603666e860a6b4f0f8a5996e0b`, adds actual Pending before target
+creation and creator-authenticated one-shot enrollment with target retention
+before Armed. Both GNU compilers pass the same twelve owned process cases,
+including lost ACK and actual creator SIGKILL. This advances step two only;
+its ambient-procfs/direct-child admission is not the original-frame/cgroup join.
+
+Post-release death and SIGSTOP of the sole guardian expose live writers without
+timely revocation; death also releases its final flock. Preserve those negative
+results and existing original collector/custodian owners while implementing
+independent all-writer revocation. Original delivery, durable completion, later
+cells, reconnect and production/server admission remain subsequent gates.
