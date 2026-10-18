@@ -1,0 +1,2 @@
+HC074-BOOT-VERIFY negative_parser_controls=9 refused=true
+HC074-BOOT-VERIFY source_slice=7 allocation_scopes=15 contracts=249 runtime_accepted=false host_executed=false

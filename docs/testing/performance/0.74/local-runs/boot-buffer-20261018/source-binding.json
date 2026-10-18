@@ -1,0 +1,54 @@
+{
+  "sources": [
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_boot_document.rs",
+      "capsule": "source-00.txt"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_boot_buffer_tests.rs",
+      "capsule": "source-01.txt"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs",
+      "capsule": "source-02.txt"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/tests/diagnostic_boot_buffer_allocations.rs",
+      "capsule": "source-03.txt"
+    },
+    {
+      "path": "crates/xtask/tests/support/performance_contract_074_boot_buffer.rs",
+      "capsule": "source-04.txt"
+    },
+    {
+      "path": "crates/xtask/tests/support/performance_contract_074_kernel_walk.rs",
+      "capsule": "source-05.txt"
+    },
+    {
+      "path": "docs/testing/performance/0.74/local-runs/boot-buffer-20261018/check.ps1",
+      "capsule": "source-06.txt"
+    }
+  ],
+  "allocation_images": [
+    {
+      "sha256": "1b3c6eeaa5e64ac3b81cad2f20ccf4c9a9174c5747a731c0d1d938b13eab34f9",
+      "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\release\\deps\\diagnostic_boot_buffer_allocations-4a38cc439183af9a.exe",
+      "lane": "windows",
+      "fresh_after_execution": true
+    },
+    {
+      "sha256": "683db13e8860990946fe3c0946b2b4f954ed2faadcf0c6ee7019f07a799dfbdd",
+      "path": "/home/artur/.cache/hydracache-074-194-check/release/deps/diagnostic_boot_buffer_allocations-a73dfcb1646cd686",
+      "lane": "194",
+      "fresh_after_execution": true
+    },
+    {
+      "sha256": "ed265783a68dcb760949cc36759bd8fb83f399294add8a858b974fc62ed97d80",
+      "path": "/home/artur/.cache/hydracache-074-188-check/release/deps/diagnostic_boot_buffer_allocations-fbc788aa7f3e846d",
+      "lane": "188",
+      "fresh_after_execution": true
+    }
+  ],
+  "scope": "selected source slice, not a compiler input closure",
+  "source_commit": "dc00ebf9139c61d26750fe7875952483330c0453"
+}

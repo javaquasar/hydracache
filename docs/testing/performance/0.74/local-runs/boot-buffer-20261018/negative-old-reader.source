@@ -1,0 +1,8 @@
+//! One-read temporary storage only; no origin, clock, or admission state.
+pub(super) fn read_once(
+    read: impl FnOnce(&mut [u8]) -> std::io::Result<usize>,
+) -> std::io::Result<(Vec<u8>, usize)> {
+    let mut bytes = vec![0; 65_537];
+    let count = read(&mut bytes)?;
+    Ok((bytes, count))
+}

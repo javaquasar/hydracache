@@ -4055,3 +4055,14 @@ A dedicated small boot-read buffer is the next isolated allocation hypothesis,
 subject to differential/fault tests and matched measurements, not an accepted
 optimization. All live checks, effect brackets, deadlines and execution gates
 remain unchanged.
+
+The [fixed boot buffer experiment](local-runs/boot-buffer-20261018/README.md)
+replaces only the temporary 65,537-byte Vec for boot ID with a 38-byte stack
+buffer. Differential/fault controls preserve the accepted canonical document,
+one-read/offset-zero behavior, public errors and all live checks. Separate
+Windows/current/MSRV allocation images each repeat five 32-read scopes:
+32 allocations and 2,097,184 requested bytes for the old temporary reader,
+zero for the candidate. This is not a whole-worker, RSS or throughput claim.
+The candidate remains experimental pending plain matched timing and unchanged
+full preparation healthy/fault checks. Approved preparation remains `2ed04dc8`;
+no server execution, enrollment or installation gate is opened.

@@ -1,0 +1,188 @@
+[
+  {
+    "timing_claim": false,
+    "lane": "windows",
+    "whole_worker": false,
+    "rows": [
+      {
+        "whole_worker": false,
+        "reads": 32,
+        "baseline_allocations": 32,
+        "baseline_deallocations": 32,
+        "scope": 0,
+        "candidate_allocations": 0,
+        "candidate_requested": 0,
+        "candidate_deallocations": 0,
+        "baseline_requested": 2097184
+      },
+      {
+        "whole_worker": false,
+        "reads": 32,
+        "baseline_allocations": 32,
+        "baseline_deallocations": 32,
+        "scope": 1,
+        "candidate_allocations": 0,
+        "candidate_requested": 0,
+        "candidate_deallocations": 0,
+        "baseline_requested": 2097184
+      },
+      {
+        "whole_worker": false,
+        "reads": 32,
+        "baseline_allocations": 32,
+        "baseline_deallocations": 32,
+        "scope": 2,
+        "candidate_allocations": 0,
+        "candidate_requested": 0,
+        "candidate_deallocations": 0,
+        "baseline_requested": 2097184
+      },
+      {
+        "whole_worker": false,
+        "reads": 32,
+        "baseline_allocations": 32,
+        "baseline_deallocations": 32,
+        "scope": 3,
+        "candidate_allocations": 0,
+        "candidate_requested": 0,
+        "candidate_deallocations": 0,
+        "baseline_requested": 2097184
+      },
+      {
+        "whole_worker": false,
+        "reads": 32,
+        "baseline_allocations": 32,
+        "baseline_deallocations": 32,
+        "scope": 4,
+        "candidate_allocations": 0,
+        "candidate_requested": 0,
+        "candidate_deallocations": 0,
+        "baseline_requested": 2097184
+      }
+    ]
+  },
+  {
+    "timing_claim": false,
+    "lane": "194",
+    "whole_worker": false,
+    "rows": [
+      {
+        "whole_worker": false,
+        "reads": 32,
+        "baseline_allocations": 32,
+        "baseline_deallocations": 32,
+        "scope": 0,
+        "candidate_allocations": 0,
+        "candidate_requested": 0,
+        "candidate_deallocations": 0,
+        "baseline_requested": 2097184
+      },
+      {
+        "whole_worker": false,
+        "reads": 32,
+        "baseline_allocations": 32,
+        "baseline_deallocations": 32,
+        "scope": 1,
+        "candidate_allocations": 0,
+        "candidate_requested": 0,
+        "candidate_deallocations": 0,
+        "baseline_requested": 2097184
+      },
+      {
+        "whole_worker": false,
+        "reads": 32,
+        "baseline_allocations": 32,
+        "baseline_deallocations": 32,
+        "scope": 2,
+        "candidate_allocations": 0,
+        "candidate_requested": 0,
+        "candidate_deallocations": 0,
+        "baseline_requested": 2097184
+      },
+      {
+        "whole_worker": false,
+        "reads": 32,
+        "baseline_allocations": 32,
+        "baseline_deallocations": 32,
+        "scope": 3,
+        "candidate_allocations": 0,
+        "candidate_requested": 0,
+        "candidate_deallocations": 0,
+        "baseline_requested": 2097184
+      },
+      {
+        "whole_worker": false,
+        "reads": 32,
+        "baseline_allocations": 32,
+        "baseline_deallocations": 32,
+        "scope": 4,
+        "candidate_allocations": 0,
+        "candidate_requested": 0,
+        "candidate_deallocations": 0,
+        "baseline_requested": 2097184
+      }
+    ]
+  },
+  {
+    "timing_claim": false,
+    "lane": "188",
+    "whole_worker": false,
+    "rows": [
+      {
+        "whole_worker": false,
+        "reads": 32,
+        "baseline_allocations": 32,
+        "baseline_deallocations": 32,
+        "scope": 0,
+        "candidate_allocations": 0,
+        "candidate_requested": 0,
+        "candidate_deallocations": 0,
+        "baseline_requested": 2097184
+      },
+      {
+        "whole_worker": false,
+        "reads": 32,
+        "baseline_allocations": 32,
+        "baseline_deallocations": 32,
+        "scope": 1,
+        "candidate_allocations": 0,
+        "candidate_requested": 0,
+        "candidate_deallocations": 0,
+        "baseline_requested": 2097184
+      },
+      {
+        "whole_worker": false,
+        "reads": 32,
+        "baseline_allocations": 32,
+        "baseline_deallocations": 32,
+        "scope": 2,
+        "candidate_allocations": 0,
+        "candidate_requested": 0,
+        "candidate_deallocations": 0,
+        "baseline_requested": 2097184
+      },
+      {
+        "whole_worker": false,
+        "reads": 32,
+        "baseline_allocations": 32,
+        "baseline_deallocations": 32,
+        "scope": 3,
+        "candidate_allocations": 0,
+        "candidate_requested": 0,
+        "candidate_deallocations": 0,
+        "baseline_requested": 2097184
+      },
+      {
+        "whole_worker": false,
+        "reads": 32,
+        "baseline_allocations": 32,
+        "baseline_deallocations": 32,
+        "scope": 4,
+        "candidate_allocations": 0,
+        "candidate_requested": 0,
+        "candidate_deallocations": 0,
+        "baseline_requested": 2097184
+      }
+    ]
+  }
+]

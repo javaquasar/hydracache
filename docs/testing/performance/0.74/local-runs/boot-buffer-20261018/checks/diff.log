@@ -1,0 +1,2 @@
+warning: in the working copy of 'crates/xtask/tests/support/performance_contract_074_kernel_walk.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs', LF will be replaced by CRLF the next time Git touches it

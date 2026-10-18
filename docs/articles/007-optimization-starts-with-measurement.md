@@ -13060,7 +13060,7 @@ Only 0.000351–0.000420 ms remains outside those children, including clock call
 string creation and tracer overhead. Weakening clock validation would target
 the wrong measured cost as well as change the safety contract.
 
-The bounded reader currently creates a 65537-byte zeroed Vec even for the
+At that baseline, the bounded reader creates a 65537-byte zeroed Vec even for the
 canonical 37-byte boot document. Its timer includes creation, positional read
 and truncation, but not the returned Vec's later destruction. This identifies
 a concrete small-buffer allocation hypothesis, not a measured allocation win.
@@ -13074,3 +13074,40 @@ These new timings are not an uninstrumented A/B comparison with the previous
 cohort and do not decompose the entire earlier preparation bucket. No speedup
 is accepted. The original challenge-margin risk, authenticated bus start,
 all-writer cessation, completion and same-attempt reconnect remain open.
+
+### A fixed boot document does not need the generic heap buffer
+
+The [isolated boot-buffer candidate](../testing/performance/0.74/local-runs/boot-buffer-20261018/README.md)
+targets one allocation rather than reducing the frequency of safety checks.
+A canonical boot ID occupies 37 bytes including its newline. A 38-byte stack
+buffer therefore holds the valid document and one byte that detects an
+overlength read. The candidate still opens and checks the same procfs objects,
+performs one positional read, closes the document before decoding, and applies
+the same lowercase UUID predicate. It never retries a short read or EINTR.
+Status and pidfd documents retain the generic bounded reader.
+
+The semantic controls compare the actual reader and decoder with the old
+algorithm across 9,472 single-byte mutations, 1,024 seeded documents, empty and
+overlength inputs, every short prefix and injected I/O errors. A trailing byte
+refuses when observed. Neither implementation proves EOF when a short read
+returns only the canonical prefix. For oversized malformed input, the smaller
+buffer can change the test-only refusal site from the document budget to boot
+syntax; both still return the same public invalid result. Treating those
+diagnostic labels as identical would overstate the equivalence proof.
+
+Allocation counting runs in a separate integration image, not in the
+supervisor or the plain timing image. Windows and both GNU compilers each run
+five counterbalanced scopes of 32 identical reads. The old temporary reader
+per scope makes 32 allocations and requests 2,097,184 bytes; the new one makes
+zero temporary-reader allocations. The test destroys returned storage before
+leaving the counted scope and checks thread isolation, panic restoration and
+refusal of nested capture. An old-buffer control first fails both the width
+and allocation assertions, so the test distinguishes the proposed change.
+
+This proves a narrow allocation reduction, not a whole-worker allocation total
+or a throughput gain. The returned boot String and path allocations remain.
+Requested allocation bytes are not copied bytes or RSS. The runtime candidate
+remains experimental until plain matched original-worker timing and the full
+preparation healthy/fault gate pass at the original deadlines. All live
+observations and 46 effect brackets remain required; the earlier challenge
+margin is not enlarged by source inspection or by this allocation result.

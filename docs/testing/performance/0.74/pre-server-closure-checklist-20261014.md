@@ -656,3 +656,13 @@ allocation/plain-wall controls; no optimization is accepted yet. All 46 effect
 brackets and original deadlines remain. The critical-path margin and P1/P2/P3,
 completion/later cells, reconnect, real enrollment and installation gates are
 still open. No service or installed artifact changed.
+
+The [boot-buffer local candidate](local-runs/boot-buffer-20261018/README.md)
+now removes the generic temporary heap buffer from canonical boot reads without
+removing or caching any observation. Differential/fault tests and separate
+allocation images establish the narrow reader effect, not a new preparation
+margin. Keep it experimental until plain matched timing and the complete
+unchanged preparation healthy/fault gate pass. `2ed04dc8` remains the approved
+preparation source. No new authenticated-start, all-writer cessation,
+completion, SIGKILL/lost-ack, reconnect, enrollment or installation gate closes
+with this local experiment.

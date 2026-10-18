@@ -1,0 +1,24 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `release` profile [optimized] target(s) in 1m 46s
+     Running tests/diagnostic_boot_buffer_allocations.rs (/home/artur/.cache/hydracache-074-194-check/release/deps/diagnostic_boot_buffer_allocations-a73dfcb1646cd686)
+
+running 4 tests
+test allocator_capture_is_thread_local ... ok
+
+test allocator_capture_restores_on_panic_and_refuses_nesting ... ok
+thread 'allocator_capture_restores_on_panic_and_refuses_nesting' (3403) panicked at tools/long-run-supervisor-074/tests/diagnostic_boot_buffer_allocations.rs:65:5:
+nested allocator capture is forbidden
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'allocator_capture_restores_on_panic_and_refuses_nesting' (3403) panicked at tools/long-run-supervisor-074/tests/diagnostic_boot_buffer_allocations.rs:140:52:
+injected
+test fixed_boot_reader_allocation_pairs ... HC074-BOOT-ALLOCATION scope=0 reads=32 baseline_allocations=32 baseline_requested=2097184 baseline_deallocations=32 candidate_allocations=0 candidate_requested=0 candidate_deallocations=0 whole_worker=false
+HC074-BOOT-ALLOCATION scope=1 reads=32 baseline_allocations=32 baseline_requested=2097184 baseline_deallocations=32 candidate_allocations=0 candidate_requested=0 candidate_deallocations=0 whole_worker=false
+HC074-BOOT-ALLOCATION scope=2 reads=32 baseline_allocations=32 baseline_requested=2097184 baseline_deallocations=32 candidate_allocations=0 candidate_requested=0 candidate_deallocations=0 whole_worker=false
+HC074-BOOT-ALLOCATION scope=3 reads=32 baseline_allocations=32 baseline_requested=2097184 baseline_deallocations=32 candidate_allocations=0 candidate_requested=0 candidate_deallocations=0 whole_worker=false
+HC074-BOOT-ALLOCATION scope=4 reads=32 baseline_allocations=32 baseline_requested=2097184 baseline_deallocations=32 candidate_allocations=0 candidate_requested=0 candidate_deallocations=0 whole_worker=false
+ok
+test fixed_boot_reader_uses_one_small_read ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+

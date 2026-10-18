@@ -785,3 +785,15 @@ buffer is a possible allocation candidate; the profile does not measure
 allocator calls, deallocation in parent scopes or a product speedup. Preserve
 all 46 effect-local brackets and original deadlines. Actual authenticated
 start, active all-writer cessation, completion and reconnect remain unadmitted.
+
+The [boot document buffer candidate](local-runs/boot-buffer-20261018/README.md)
+is an isolated experimental runtime substitution after that profile. Its
+38-byte stack buffer retains one positional read, canonical validation and
+closing the document before decoding. Sender status/pidfd `bounded` reads,
+fresh origin/namespace/time/authority checks, latches, all 46 effect brackets
+and original deadlines remain unchanged. The source adapter must exactly
+restore all 353 old Rust sources outside the declared substitution. Allocation
+counting is confined to a separate integration image; it establishes only the
+temporary-reader reduction. Plain matched original-worker timing and the full
+preparation healthy/fault gate are still required before accepting this source.
+The approved preparation identity remains `2ed04dc8`, not this branch candidate.

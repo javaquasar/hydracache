@@ -63,6 +63,9 @@ qualification is authorized by this experiment.
 
 ## Status
 
-Preregistered before implementing or measuring the candidate. The approved
-preparation source remains `2ed04dc866b39fefea8d81be2328f7f1382e3d46` until the
-plain matched and full preparation gates pass.
+Preregistered at `157a77b0` before implementing or measuring the candidate.
+Experimental source `dc00ebf9139c61d26750fe7875952483330c0453` passes the local
+semantic/fault, allocation and source gates; the [local packet](local-runs/boot-buffer-20261018/README.md)
+retains all receipts. Plain matched original-worker timing and full preparation
+healthy/fault gates remain unexecuted. The approved preparation source remains
+`2ed04dc866b39fefea8d81be2328f7f1382e3d46` until those gates pass.
