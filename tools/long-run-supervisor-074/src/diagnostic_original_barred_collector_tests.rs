@@ -1,4 +1,6 @@
 use super::*;
+#[path = "diagnostic_original_enrollment_frame_tests.rs"]
+mod enrollment_tests;
 
 fn healthy(samples: usize) {
     for sample in 0..samples {

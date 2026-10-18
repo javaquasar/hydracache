@@ -1,4 +1,9 @@
 //! Parser-only acceptance; the two-child owner-fault candidate is withdrawn.
+#[path = "performance_contract_074_enrollment_frame.rs"]
+mod enrollment_frame;
+pub(super) fn normalize(path: &str, raw: &str) -> String {
+    enrollment_frame::normalize(path, raw)
+}
 fn root() -> std::path::PathBuf {
     super::super::super::root()
 }
@@ -24,7 +29,7 @@ fn collector_notice_tests_preserve_the_entire_ordinary_kernel_and_join() {
             .unwrap();
         assert!(out.status.success());
         let frozen = String::from_utf8(out.stdout).unwrap().replace('\r', "");
-        let raw = read(&path);
+        let raw = enrollment_frame::normalize(&path, &read(&path));
         let current = if name.ends_with("_kernel.rs") {
             let registration = "\n#[cfg(test)]\n#[path = \"diagnostic_original_collector_notice_tests.rs\"]\nmod notice_tests;\n";
             assert_eq!(raw.matches(registration).count(), 1);

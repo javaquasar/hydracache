@@ -156,3 +156,6 @@ impl<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>
 #[cfg(test)]
 #[path = "diagnostic_original_barred_collector_test_api.rs"]
 mod test_api;
+
+#[path = "diagnostic_original_enrollment_frame.rs"]
+mod enrollment_frame;

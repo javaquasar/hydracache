@@ -1500,3 +1500,16 @@ F and cannot prove quiescence. The ordinary owner keeps its exclusive original
 borrow through collector cancellation/reaping and subsequent custodian cleanup.
 Matched image only; unknown notices fail closed. No public wire or durable format
 is introduced, and the generic O_WRONLY engine remains unchanged.
+
+## Private combined original enrollment owner fixture
+
+The hc074-enrollment-owner-test-v1 datagram is cfg(test) only and matched-image
+only. A private credential-checked Unix datagram carries exactly two SCM_RIGHTS
+pidfds, in collector/custodian order, never original I/O, fence or notice peers.
+Closed JSON fields are schema, owner, roles, cut, deadline, origins and
+frame_closed. The before-frame cut is after real P/B isolation but before the
+closing round; after-frame is after all final observations. frame_closed is a
+boolean matching that cut, not an authentication count or execution permit.
+Reject extra/missing/duplicate keys, wrong types, credentials, roles, truncation
+or ambiguous rights. These test messages confer no start, release or completion
+authority. The ordinary P/B child protocols and absolute deadlines are unchanged.

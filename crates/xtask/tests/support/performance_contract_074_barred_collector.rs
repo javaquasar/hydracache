@@ -165,6 +165,8 @@ fn strip(raw: &str, allowed: &str) -> String {
     raw.replacen(allowed, "", 1)
 }
 pub(super) fn normalize(path: &str, raw: &str) -> String {
+    let normalized = collector_notices::normalize(path, raw);
+    let raw = normalized.as_str();
     match path {
         "docs/testing/gated-test-registry.toml" => strip(raw, GATES),
         "docs/COMPAT.md" => strip(raw, COMPAT),
