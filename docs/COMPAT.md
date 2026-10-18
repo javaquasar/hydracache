@@ -1596,3 +1596,28 @@ send or start capability.
 No public/durable format changes. Same-process SCM_RIGHTS fixture delivery is
 not negotiated system-bus delivery, production enrollment, active start,
 whole-writer cessation, completion or server admission.
+
+## Two phase diagnostic launch requirements
+
+The new data-only schemas diagnostic-two-phase-launch-requirements-074-v2,
+diagnostic-two-phase-launch-074-v2 and diagnostic-signed-two-phase-launch-074-v2
+use the distinct hydracache-diagnostic-two-phase-launch-074-v2 signature domain
+with a NUL separator and canonical JSON plus one newline. Body/envelope caps are
+16384/32768 bytes; all nested objects deny unknown fields. Unknown versions,
+noncanonical/duplicate input, malformed hashes/signatures and a mismatched
+requirements digest refuse. Readers accept only this exact version; old v1
+consent and collector-unit readers remain unchanged and reject the new envelope.
+
+The outer signature binds the original v1 consent claims and three artifact
+roles to expected held-launch semantics. The requirements projection is not a
+TransientUnitSpec and does not reinterpret the old executable projection.
+Supplied-key inspection proves no enrollment, live peer/time, armed watchdog,
+original delivery, execution, whole-cgroup revocation, completion or fence
+release. Signed timestamps do not renew the original 300/60/10-second windows.
+The private owned-held-barrier-mechanics-074-v0 prototype uses one ephemeral
+AF_UNIX SOCK_SEQPACKET pair and exactly 32 expected opaque nonce bytes. It
+accepts no rights; receive flags are zero or the echoed MSG_CMSG_CLOEXEC policy
+only. Other shapes/flags/nonces refuse. Its reader window is that original
+socketpair lifetime, with no adoption, reconnect, downgrade or migration.
+A future production barrier needs a distinct reviewed protocol; this prototype
+cannot construct an original execution owner.

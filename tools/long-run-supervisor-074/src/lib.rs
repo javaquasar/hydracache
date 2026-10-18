@@ -60,6 +60,7 @@ pub mod diagnostic_signer_issuer;
 #[cfg(target_os = "linux")]
 pub mod diagnostic_signer_runtime_input;
 pub mod diagnostic_start_consent;
+pub mod diagnostic_two_phase_launch;
 // Owned local mechanics only; no launch symbols exist in a normal library.
 #[cfg(target_os = "linux")]
 pub mod diagnostic_signer_bundle;

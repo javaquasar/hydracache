@@ -11872,3 +11872,39 @@ platform = "linux"
 [gate.command.env]
 
 # END ORIGINAL REPLY BINDING GATE
+
+# BEGIN TWO PHASE BARRIER GATE
+
+[[gate]]
+id = "tool.hydracache-long-run-supervisor-074.two-phase-barrier-owned-kernel"
+kind = "external_tool"
+source = "tools/long-run-supervisor-074/src/diagnostic_held_barrier_tests.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "hydracache_long_run_supervisor_074"
+test = "two_phase_barrier_owned_kernel_fault_matrix"
+cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
+env = ""
+reason = "owned nonroot barrier fork/pidfd faults; no product, systemd or original authority"
+tier = "manual"
+required_features = []
+required_env = []
+required_tools = ["cargo"]
+timeout_seconds = 180
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_two_phase_launch::held_barrier::tests::two_phase_barrier_owned_kernel_fault_matrix","--","--ignored","--exact","--nocapture","--test-threads=1"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+
+# END TWO PHASE BARRIER GATE

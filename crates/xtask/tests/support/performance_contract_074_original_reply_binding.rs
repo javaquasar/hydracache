@@ -1,4 +1,6 @@
 //! Exact original-owner additions only; old predicates and deadlines stay frozen.
+#[path = "performance_contract_074_two_phase_launch.rs"]
+mod two_phase_launch;
 const BASE: &str = "ba017a7d";
 const EDITS: &[(&str, &str, &str)] = &[
     (
@@ -265,7 +267,7 @@ mod reply_binding;
     ),
 ];
 pub(super) fn normalize(path: &str, raw: &str) -> String {
-    let mut clean = raw.to_owned();
+    let mut clean = two_phase_launch::normalize(path, raw);
     for &(changed, new, old) in EDITS {
         if path == changed {
             assert_eq!(

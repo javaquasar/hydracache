@@ -84,7 +84,7 @@ fn start_consent_is_data_only_and_preserves_all_original_runtime_and_static_guar
     ))
     .is_err());
     let p = "tools/long-run-supervisor-074/src/lib.rs";
-    let raw = read(p);
+    let raw = super::live_walk::normalize(p, &read(p));
     let registration = "pub mod diagnostic_start_consent;\n";
     assert_eq!(raw.matches(registration).count(), 1);
     assert_eq!(raw.replacen(registration, "", 1), old(p));
