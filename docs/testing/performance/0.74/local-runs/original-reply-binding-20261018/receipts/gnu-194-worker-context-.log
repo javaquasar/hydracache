@@ -1,0 +1,15 @@
+
+running 10 tests
+test diagnostic_kernel_admission::origin::tests::kernel_worker_context_namespace_type_and_object_are_independent_checks ... ok
+test diagnostic_kernel_admission::origin::tests::kernel_worker_context_original_typed_namespaces_and_drift_refuse ... ok
+test diagnostic_kernel_admission::tests::kernel_worker_context_packet_sender_clock_and_prior_refusal_are_sticky ... ok
+test diagnostic_worker_policy::local_context::tests::worker_context_fixed_security_and_nofollow_refuse_owned_fixtures ... ok
+test diagnostic_worker_policy::local_context::tests::worker_context_guard_cannot_be_sent_or_shared ... ok
+test diagnostic_worker_policy::local_context::tests::worker_context_namespace_descriptors_are_typed_readonly_cloexec ... ok
+test diagnostic_worker_policy::local_context::tests::worker_context_original_descriptor_and_thread_restoration_stay_refused ... ok
+test diagnostic_worker_policy::local_context::tests::worker_context_original_directory_and_named_document_objects_are_not_refreshed ... ok
+test diagnostic_worker_policy::local_context::tests::worker_context_policy_failure_precedes_broken_probe_io ... ok
+test diagnostic_worker_policy::local_context::tests::worker_context_single_read_refuses_short_overrun_error_and_midread_growth ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 1193 filtered out; finished in 0.03s
+

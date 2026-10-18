@@ -828,3 +828,15 @@ custody or admission proof. The original message/frame/channel implementation
 remains untouched; a later binding must keep this state under that same complete
 validation round, without cloning or extracting its Message. Private-bus and
 seeded model checks preserve the old behavior but open no execution/lifecycle gate.
+
+The [original reply binding](local-runs/original-reply-binding-20261018/README.md)
+now retains opaque preparation-only correlation in the original payload. It
+borrows the same Message and checks original serial, names and Prepared/closed
+state together with unchanged request predicates. The fixed channel's sealed
+names comparison runs at both boundaries of the existing complete round; its
+live authentication and receiver checks remain. Canonical body/FD identity,
+sticky original refusal, custody, all 46 effect brackets and original admission
+origins/deadlines remain intact. No new Message/FD owner, full walk, sender or
+arm/observe capability is introduced. Complete-frame fixture evidence is a
+separate gate from the ordinary correlation controls, never production enrollment
+or whole-writer cessation proof.

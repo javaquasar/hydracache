@@ -43,3 +43,14 @@ dedicated server, install a release, stop supervisor or run product workload.
 Retain source/image hashes and raw receipts in a new evidence directory. Commit
 the plan, implementation and evidence separately. No throughput, allocation or
 production-readiness claim follows from this ownership change.
+
+## Runtime result
+
+Both GNU compilers pass the corrected eleven-scenario complete-round fixture,
+including sticky refusal and unchanged 34 authentication/signature calls at
+closing. The initial harness expectation failure and source-adapter failures
+remain separate receipts. The selected images also pass ordinary ownership and
+existing private-bus controls. See the
+[binding packet](local-runs/original-reply-binding-20261018/README.md) for exact
+scope and hashes. Actual original delivery/start, all-writer cessation and later
+lifecycle gates are not admitted by this preparation change.

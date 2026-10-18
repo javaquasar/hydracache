@@ -1,0 +1,37 @@
+
+running 1 test
+
+thread 'claim_construction::campaign_claim_construction_preserves_admission_markers_and_successful_owner' (2300) panicked at crates\xtask\tests\support\performance_contract_074_claim_construction.rs:31:5:
+assertion `left == right` failed
+  left: 0
+ right: 1
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'claim_construction::campaign_claim_construction_preserves_admission_markers_and_successful_owner' (2300) panicked at crates\xtask\tests\support\performance_contract_074_claim_construction.rs:31:5:
+assertion `left == right` failed
+  left: 0
+ right: 1
+
+thread 'claim_construction::campaign_claim_construction_preserves_admission_markers_and_successful_owner' (2300) panicked at crates\xtask\tests\support\performance_contract_074_claim_construction.rs:32:5:
+assertion `left == right` failed
+  left: 0
+ right: 2
+
+thread 'claim_construction::campaign_claim_construction_preserves_admission_markers_and_successful_owner' (2300) panicked at crates\xtask\tests\support\performance_contract_074_claim_construction.rs:34:5:
+assertion `left == right` failed
+  left: 0
+ right: 2
+
+thread 'claim_construction::campaign_claim_construction_preserves_admission_markers_and_successful_owner' (2300) panicked at crates\xtask\tests\support\performance_contract_074_negotiated_dispatch.rs:53:5:
+assertion `left == right` failed: negotiated fixture registration drift
+  left: 0
+ right: 1
+test claim_construction::campaign_claim_construction_preserves_admission_markers_and_successful_owner ... FAILED
+
+failures:
+
+failures:
+    claim_construction::campaign_claim_construction_preserves_admission_markers_and_successful_owner
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 258 filtered out; finished in 0.81s
+

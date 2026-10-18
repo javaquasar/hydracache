@@ -699,3 +699,12 @@ all 256 source contracts pass. This is only the prerequisite for connecting
 correlation to the original owner inside its existing full frame. The real
 fixed-channel delivery, original process/streams/cgroup binding, all-writer
 cessation, completion and new-boundary fault/reconnect gates remain open.
+
+The [original reply binding](local-runs/original-reply-binding-20261018/README.md)
+adds preparation-only correlation beside the original Message. Both boundaries
+of its existing full round require exact serial/names/state and the same fixed
+channel's names, without a new Message/FD alias, validation walk or refreshed
+deadline. This is not authenticated delivery or start. Do not advance P1 until
+the complete-frame gate and actual original manager/process/streams/cgroup
+binding pass; all-writer cessation, completion/later cells, SIGKILL/lost-ack,
+reconnect and real enrollment remain separate prerequisites.

@@ -4100,3 +4100,17 @@ tests, 512 seeded histories and the existing nine-case private-bus matrix;
 256 source contracts pass. Standalone state retains no FD and is not an original
 owner or execution capability. Binding that state inside the original full frame
 remains next; start, all-writer cessation and subsequent lifecycle gates stay open.
+
+The [original reply binding](local-runs/original-reply-binding-20261018/README.md)
+retains preparation-only ReplyState beside the original Message and checks it
+against the fixed channel at both boundaries of the unchanged full round.
+No Message/FD clone, extra full walk, origin refresh, sender or arm/observe API
+is added. Ordinary ownership controls and full-frame admission remain distinct
+gates; real original delivery/start, all-writer cessation and subsequent
+lifecycle/reconnect/enrollment gates are still closed.
+
+The local binding gate passes eleven full-round scenarios on each GNU compiler,
+including both correlation boundaries, unchanged origins/deadlines and sticky
+refusal. All 259 source contracts and 44 Windows controls pass; the old
+classifier/model/private-bus checks remain intact. This closes preparation
+binding only, not authenticated original delivery or start.

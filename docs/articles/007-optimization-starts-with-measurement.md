@@ -13229,3 +13229,39 @@ prerequisite. Their next integration can retain correlation without a second
 request owner, but must still perform all live checks at the original deadlines.
 Neither the refactor nor its tests open real send/start, prove whole-writer
 cessation, or permit completion and fence release.
+
+### Bind prepared correlation inside the original frame
+
+The next integration keeps ReplyState beside the original addressed Message,
+not in another exchange owning a clone. A private preparation-only wrapper
+borrows that Message and exposes only prepare and check. Its check requires
+the original serial and retained manager/client names, Prepared phase and a
+closed reply latch, then repeats the existing request and live writer-shape
+checks. There is no arm, reply-observation, Message getter or transport callback
+at this boundary.
+
+The original payload checks the wrapper before and after its existing complete
+validation frame. At both boundaries a sealed channel method compares the names
+to the same fixed channel's retained binding and refuses a poisoned channel.
+The existing authenticated channel/context checks remain on both sides. These
+comparisons supplement the original canonical body, serial and descriptor
+identity checks; they do not replace any observation or create a cached
+authority decision. Failure poisons the original owner and keeps its custody.
+
+This design avoids a second request owner and another complete validation walk.
+It does not establish that execution fits the remaining preparation budget.
+The 46 effect brackets and original 300/60/10-second windows stay unchanged.
+The [binding evidence](../testing/performance/0.74/local-runs/original-reply-binding-20261018/README.md)
+separates ordinary ownership tests from the complete-frame gate. Actual original
+delivery, manager/process/stream/cgroup authentication and all-writer cessation
+are still required before completion or fence release.
+
+Both GNU compiler fixtures pass eleven complete-round scenarios: healthy
+preparation, missing/foreign correlation at opening and closing boundaries,
+serial drift and channel-name refusal. The closing scenarios retain 34 original
+authentication/signature calls and two channel/context checks; sticky refusal
+prevents any channel check on retry. The initial healthy harness mistakenly
+expected refusal after a successful frame; that failure remains separate from
+the corrected test images. No runtime predicate or deadline was changed to
+obtain the result. These controls establish preparation binding, not delivery,
+process-loss recovery or a measured performance gain.

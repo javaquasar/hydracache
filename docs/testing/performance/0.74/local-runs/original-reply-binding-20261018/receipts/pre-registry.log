@@ -1,0 +1,4 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2m 34s
+     Running `target\debug\xtask.exe gated-test-check`
+gated-test-check: OK (184 discovered gates, all registered)
