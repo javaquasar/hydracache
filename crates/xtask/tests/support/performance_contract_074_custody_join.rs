@@ -1,4 +1,6 @@
 //! Exact original custody/sink join; no live predicate or deadline is normalized.
+#[path = "performance_contract_074_original_descriptors.rs"]
+mod original_descriptors;
 const GATES: &str = r###"
 # BEGIN ORIGINAL CUSTODY JOIN GATES
 [[gate]]
@@ -225,6 +227,8 @@ pub(super) fn approved_caller(name: &str, raw: &str) -> String {
     }
 }
 pub(super) fn normalize(path: &str, raw: &str) -> String {
+    let current = original_descriptors::normalize(path, raw);
+    let raw = current.as_str();
     match path {
         "tools/long-run-supervisor-074/src/diagnostic_original_grouped_preparation.rs" => {
             once(raw, GROUP_REG, "")

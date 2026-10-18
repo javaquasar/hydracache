@@ -7,7 +7,7 @@ use crate::diagnostic_output_preparation::fixed_intent_storage::reserved_state::
     },
     Stamp,
 };
-use std::os::fd::AsRawFd;
+use std::os::fd::{AsFd, AsRawFd, BorrowedFd};
 
 pub(crate) struct OriginalCollectorFenceCustody {
     original: FenceCustody,
@@ -35,6 +35,14 @@ impl CollectorReservationStorage<'_> {
     }
 }
 impl OriginalCollectorFenceCustody {
+    // Borrow only this checked original description; never clone or extract it.
+    pub(crate) fn original_descriptor(
+        &self,
+        storage: &CollectorReservationStorage<'_>,
+    ) -> Result<BorrowedFd<'_>, StorageAttemptError> {
+        self.inspect(storage)?;
+        Ok(self.original._lock.as_fd())
+    }
     pub(crate) fn inspect(
         &self,
         storage: &CollectorReservationStorage<'_>,

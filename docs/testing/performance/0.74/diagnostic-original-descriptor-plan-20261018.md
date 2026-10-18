@@ -60,3 +60,26 @@ preserve all old contracts with exact exception normalization and mutation
 negatives. Run formatting, registry, docs and the local non-promotable contract.
 Retain source/binary identity, any failed hypothesis and scoped host pre/post
 guards for authorized isolated server fixtures. Commit code and evidence apart.
+
+## Correct original time oracle before any holder run
+
+The first healthy screen completes descriptor-plan construction and its full
+frame, then refuses the test's assertion comparing all six reported time values.
+Only the first four are immutable Reserved/challenge/progress/Starting origins;
+the last two are the last successful validation observation and current BOOTTIME.
+They must advance monotonically, not remain equal to earlier observations.
+Retain the first source capsule and failed screen. Correct only those two test
+assertions to exact first-four equality plus nondecreasing last/current values.
+No runtime, frame, authentication count, clock input, original bound or generic
+guardian predicate changes. No holder/fault run preceded this test correction.
+
+## Zero sink offset before inventory capture
+
+Source review finds that the old empty-sink inspector checks bytes and flags but
+not the shared file-description offset. Comparing two equal draft snapshots is
+insufficient if a nonzero offset exists before the first snapshot. Add a focused
+regression with an owned empty O_RDWR file sought to offset 17 before capture;
+record its rejection failure, then require zero offset in the new plan's sink
+capture. Preserve the old sink inspector and generic guardian exactly. Add a
+preexisting-offset original fixture before plan construction. This strengthens
+the new inventory boundary, not the old APIs or numerical/deadline thresholds.

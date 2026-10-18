@@ -1,4 +1,7 @@
 //! Same original sinks and fence through unchanged full validation frames.
+#[allow(dead_code)]
+#[path = "diagnostic_original_descriptor_plan.rs"]
+mod descriptor_plan;
 use super::*;
 use crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::{self, CollectorCausalError};
 use crate::diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::{
