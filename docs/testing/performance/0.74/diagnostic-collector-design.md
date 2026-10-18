@@ -687,3 +687,35 @@ remains a stopped negative cohort. Host harness/test corrections and independent
 host results are recorded separately. Unique-owner original message construction,
 FD negotiation/delivery and authenticated start remain next, ahead of active
 watchdog/all-writer cessation, completion, reconnect and real host enrollment.
+
+## Withdrawn original message addressing experiment
+
+The [addressed message slice](local-runs/original-manager-message-20261018/README.md)
+candidate consumed that private manager join without accepting a message, identity or
+factory argument. It derives both unique names from the held channel, keeps
+the legacy message intact and builds a distinct unsent message with its exact
+canonical body and serial. Old signed property validation stays unchanged.
+New envelope checks and typed original-pipe checks pin two extra writer aliases;
+missing/replaced aliases or manager/client drift permanently refuse the owner.
+
+Two unchanged complete channel/frame rounds surround payload preparation and
+later validation. This adds work (68 authentication/signature calls of each
+kind), preserving all old checks, child FD inventories, alarms and original
+300/60/10-second windows. Extra aliases close before original custody. The
+failed owner retains all resources; no getter, retry, reconstruction, serialization,
+send/start, completion or release interface is added.
+
+Test-only original-frame controls use a distinct channel. The same-process
+SCM_RIGHTS adapter transfers this exact message and original writer objects
+inside the opening/closing full round. It is mechanical socket evidence, not
+negotiated system-bus delivery or a positive production-enrolled full join.
+Authenticated original start, actual process/executable/cgroup binding, active
+watchdog/all-writer cessation and completion remain later gates.
+
+The selected healthy host case passed preparation, then refused Causal(Time)
+on the next call. No remaining current/MSRV host matrix or new-path delivery
+passed. A separate numeric diagnostic observed original challenge age increase
+from 9.301862561 s to 9.976507282 s during the added 68-check round, followed by
+refusal at 10.116451429 s. No origin or deadline changed. The runtime candidate
+is withdrawn and archived; a proposed nonexecuting grouping under the existing
+full frame awaits agreement. The approved original manager join remains intact.

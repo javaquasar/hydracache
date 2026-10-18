@@ -3981,3 +3981,21 @@ local read-only context gates pass twice. All 238 source contracts, 44 Windows
 controls and affected checks/strict Clippy pass. This accepts source slice
 `698f808b` as a private nonexecuting join, not a positive production-enrolled
 original start, a repaired local timing cohort or a performance improvement.
+
+The [uniquely addressed original message](local-runs/original-manager-message-20261018/README.md)
+experiment implemented a separate consuming owner, but its selected host gate
+failed Causal(Time) during the next validation and the candidate is withdrawn.
+Names came from the retained channel; body,
+serial and typed stdout/stderr objects come from the unchanged original frame.
+Two extra pinned writer aliases close before original custody. Two unchanged
+complete rounds bracket preparation and each later validation; old predicates,
+origins and deadlines remain. No sender or execution interface is exposed.
+Its planned same-process SCM_RIGHTS fixture is distinct from negotiated system-bus
+delivery and production manager authority. Those, actual original process binding
+and active watchdog/all-writer cessation still precede completion or admission.
+Only the first preparation passed; remaining current/MSRV host cases and new-path
+FD delivery are unproved. One separate diagnostic observed challenge age
+9.301862561 s before the added round and 9.976507282 s after it, then rejection
+at 10.116451429 s. Approved runtime was restored; the candidate survives only as
+exact evidence capsules. A changed nonexecuting observation frame needs a new
+agreed experiment, not an extended deadline or a retried acceptance cohort.

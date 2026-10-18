@@ -1,0 +1,32 @@
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+e0ec1ef345825a6c2ce2f62b92009807a57cc00c13bda2d24071f87e80ecdbae  ./tests-194
+ea4f922ec5427d568ca992f8566e394e477ea5a4e913720cf4938dc24385c631  ./tests-188
+8025a7e4f2f934770b88a41275f9dd6e63528bcfed24a815ba73794d3be4693d  ./guard.sh
+db824db8619d05337369163ed7a9e888ad6fa2e4e709b945506eab33d12daadf  ./run.sh
+8a2a495348bd317f7a2092a622838fc489bdcf077f4a8269210b2b78381b3c58  ./bundle/build-log.jsonl
+e32bb7cd9b6cbf1d91d52abc79cb1e0225b3a7f6602e82e5b9a303c3645a77d7  ./bundle/build-receipt-v1.json
+e3be470f5a1bff4e917e841fc5bfbd257ff12559206bbc1481c3c4bca528eb1d  ./bundle/Cargo.lock.observer
+be46eaf8e97e507bda5e3f2b671d0d622e6a639ce1d4613769a4693723d62b19  ./bundle/Cargo.lock.root
+5485b10f50906833006ad3f3a40b4909760ef01e3f2c86395e4366bf83cc6ef9  ./bundle/direct.json
+5c219730c8a782ed47dfa0b291a29f44f753c3688f8548c136174a89cee55149  ./bundle/embedded.json
+f0aba16dfe0354801d0b3c83ee9fc2d1b4751be5f50280634690ed4bcf3030ae  ./bundle/resp2.json
+b680683c291d0a4dadbac1901f051ba0fedcac0ac9127d197e0261fe6fdabdd7  ./bundle/resp3.json
+bda1c094f3de7c6d42ec45c757838c7a41a8ff1d63a025c661af84455169a101  ./bundle/timing-controls-074
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::collector_tests::enrollment_tests::manager_tests::addressed_tests::original_addressed_frame_controls ... HC074-ADDRESSED-CONTROL sample=0 pass=0 frame_ipc=68 channel_checks=4 test_channel_only=true start=false
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::collector_tests::enrollment_tests::manager_tests::addressed_tests::original_addressed_frame_controls' (190175) panicked at tools/long-run-supervisor-074/src/diagnostic_original_manager_message_frame_tests.rs:25:28:
+called `Result::unwrap()` on an `Err` value: Frame(Original(Original(Original(Transport(Material(Outputs(Original(Original(Original(Causal(Time)))))))))))
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::collector_tests::enrollment_tests::manager_tests::addressed_tests::original_addressed_frame_controls
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1163 filtered out; finished in 13.81s
+

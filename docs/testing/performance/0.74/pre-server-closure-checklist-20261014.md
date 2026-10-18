@@ -595,3 +595,15 @@ unresolved. Original uniquely addressed message/FD delivery, active watchdog and
 all-writer cessation, durable completion/later cells, reconnect and exact-host
 trust/enrollment are still required. Installation and supervisor changes remain
 separate approval boundaries.
+
+The [addressed-message owner](local-runs/original-manager-message-20261018/README.md)
+candidate kept the original manager/frame with its unsent uniquely addressed message,
+exact body/serial and two additional pinned original writer aliases. Complete
+live rounds bracket preparation and validation with no deadline change. Its
+test-only same-process FD transfer is not negotiated system-bus delivery, actual
+systemd activation or production enrollment. Those boundaries, active all-writer
+revocation, completion/later cells and integrated reconnect remain open.
+This candidate is withdrawn: host preparation passed, subsequent revalidation
+crossed the unchanged challenge deadline. Remaining host cases and new-path
+rights delivery did not pass. Exact sources/negative evidence are archived;
+the approved runtime is restored and production message/start stays absent.

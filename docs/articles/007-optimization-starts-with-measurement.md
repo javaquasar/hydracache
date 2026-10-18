@@ -12848,3 +12848,53 @@ source contracts and 44 portable controls. These results support the narrow
 owning-composition boundary while preserving the unresolved local timing result.
 They do not establish production enrollment, active execution or a product
 performance improvement.
+
+## Added validation can exhaust the original deadline
+
+A unique manager name is meaningful only on the live connection that verified
+it. The [withdrawn message-owner candidate](../testing/performance/0.74/local-runs/original-manager-message-20261018/README.md)
+therefore consumed the original manager/frame join rather than accepting a name
+or an arbitrary prepared message. It keeps the old well-known-addressed message
+unsent, preserving its checks and descriptor inventory. The new envelope uses
+the held manager's unique name, while body bytes and serial remain exactly those
+of the original canonical message. Typed descriptor checks bind the new stdout
+and stderr aliases to their original pipe objects, not just two valid FD numbers.
+
+Adding a message also adds two writers. Their ownership and destruction order
+matter: extra aliases must close before the original owner's final custody alias.
+The new type exposes no message, FD, connection, retry or send operation. A
+missing/replaced message, altered manager/client binding or descriptor drift
+poisons the same retained owner. The old signed property validator is reused;
+byte equality checks the complete encoded canonical body rather than a selected
+subset of properties.
+
+Preparation and later validation each perform the unchanged full manager/frame
+round both before and after the payload checks. That is 68 authentication and 68
+signature calls, not an optimization claim. Original origins, absolute alarms and
+300/60/10-second windows remain. If this added work cannot fit a healthy gate,
+the result must remain a refusal; a deadline increase is not an acceptable fix.
+
+The test-only SCM_RIGHTS transfer sits inside those opening/closing full rounds
+and reuses the existing owned credential/rights receiver. This can establish
+that the exact encoded message and both original writers cross a real local
+socket. It cannot establish negotiated Unix-FD delivery to the production bus,
+systemd authority or execution. Separating these claims prevents a mechanical
+transport success from silently becoming original-start permission.
+
+The selected experiment fails its timing contract. On the first host case,
+preparation completes but the subsequent validation refuses Causal(Time); later
+cases and the MSRV host matrix do not run. The new-path delivery claim therefore
+remains unproved. One separate diagnostic, with runtime checks unchanged, records
+challenge age 9.301862561 s before the new round and 9.976507282 s after 68
+authentication/signature checks. The next call refuses at 10.116451429 s after
+17 checks. The first round's observed wall cost is 674639851 ns; this single
+diagnostic is attribution, not a product performance estimate.
+
+The useful finding is that most of the immutable challenge window is already
+consumed before this boundary. Adding complete traversals can be semantically
+conservative yet make the preparation unusable. We preserve the failed sources
+and withdraw that runtime candidate, leaving the approved manager/frame join
+intact. A future experiment may place only nonexecuting message preparation
+inside the existing complete frame with all original predicates and bounds;
+that is a changed observation boundary requiring explicit agreement. Extending
+the deadline or resetting the original challenge would invalidate the test.

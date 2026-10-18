@@ -1,0 +1,3 @@
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+e0ec1ef345825a6c2ce2f62b92009807a57cc00c13bda2d24071f87e80ecdbae  ./tests-194
+ea4f922ec5427d568ca992f8566e394e477ea5a4e913720cf4938dc24385c631  ./tests-188

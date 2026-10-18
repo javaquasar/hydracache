@@ -1,0 +1,10 @@
+HC074-ORIGINAL-MANAGER-HOST preflight=ok supervisor_pid=8839 restarts=0
+dfa1acc0c17c7dc89671c0c8aa647b9fe2dd7dab63fc9590a3c2bfdd317e20b2  ./tests-attribution-194
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::collector_tests::enrollment_tests::manager_tests::addressed_tests::original_addressed_round_cost_attribution ... HC074-ADDRESSED-ATTRIBUTION pass=0 issued=1041384699095938 before=1041394000958499 after=1041394675603220 age_before_ns=9301862561 age_after_ns=9976507282 wall_ns=674639851 auth=68 signatures=68 channel_checks=4 result=Ok(()) admission=false
+HC074-ADDRESSED-ATTRIBUTION pass=1 issued=1041384699095938 before=1041394675613840 after=1041394815547367 age_before_ns=9976517902 age_after_ns=10116451429 wall_ns=139932877 auth=17 signatures=17 channel_checks=1 result=Err(Frame(Original(Original(Original(Transport(Material(Outputs(Original(Original(Original(Causal(Time)))))))))))) admission=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1164 filtered out; finished in 13.82s
+

@@ -1,0 +1,10 @@
+warning: in the working copy of 'crates/xtask/tests/support/performance_contract_074_reply_flags.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/articles/007-optimization-starts-with-measurement.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/performance/0.74/README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/performance/0.74/diagnostic-collector-design.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/performance/0.74/original-manager-message-plan-20261018.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/performance/0.74/pre-server-closure-checklist-20261014.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_socket_tests.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tools/long-run-supervisor-074/src/diagnostic_original_manager_frame_tests.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tools/long-run-supervisor-074/src/diagnostic_original_manager_join.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tools/long-run-supervisor-074/src/diagnostic_original_manager_join_tests.rs', LF will be replaced by CRLF the next time Git touches it

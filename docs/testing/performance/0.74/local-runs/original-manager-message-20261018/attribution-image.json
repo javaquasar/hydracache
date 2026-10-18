@@ -1,0 +1,6 @@
+{
+  "compiler": "194",
+  "sha256": "dfa1acc0c17c7dc89671c0c8aa647b9fe2dd7dab63fc9590a3c2bfdd317e20b2",
+  "purpose": "separate cost attribution, not acceptance",
+  "image": "/home/artur/.cache/hydracache-074-194-check/release/deps/hydracache_long_run_supervisor_074-b26b156d3dcd0098"
+}

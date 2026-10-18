@@ -41,3 +41,32 @@ No new durable write boundary or active writer/process is introduced. Active
 SIGKILL/lost-start-ack, authenticated process/cgroup identity, active watchdog,
 whole-writer cessation and completion remain later gates. Qualification inputs,
 release status and product admission remain unchanged.
+
+Before selecting the host cohort, code review moves the test-only rights
+transfer inside the shared opening/closing full message round. The earlier
+unit-only images and three changed test/hook sources are retained separately;
+they ran no full-frame host cohort. The final gate must observe actual transfer
+before the closing unchanged complete frame, not merely light observations
+after transfer. This changes only cfg(test) instrumentation and its controls,
+not the production round, names, body checks, origins or deadlines.
+
+The selected host cohort stops at its first healthy sample: preparation passes
+68 authentication/signature checks, then the next round refuses Causal(Time).
+No later cases or MSRV host fixtures run. Preserve the exact selected sources,
+images and failed log. Preregister one separate current-compiler attribution
+fixture that prints immutable challenge age, wall cost and actual counters for
+each round before handling its outcome. This changes only a new ignored test;
+no runtime guard, origin or deadline changes. Run it once under the same isolated
+nonroot host pre/post guards, not as a replacement acceptance cohort. Any green
+diagnostic cannot heal the selected failure. Until healthy timing is resolved,
+do not commit/push the production candidate or claim completion/delivery gates.
+
+The diagnostic reproduces actual freshness expiry: age before preparation
+9.301862561 s, after its 68-check round 9.976507282 s, then 10.116451429 s at
+refusal after 17 checks/one channel observation. The new delivery seam is not
+reached. Withdraw the runtime candidate only; preserve fourteen source capsules,
+346 selected build inputs, both images and the separate diagnostic test/image.
+No code candidate commit or admission follows. The next proposed grouping of
+nonexecuting manager/message preparation with the existing full frame requires
+explicit agreement before changing that observation boundary. Old checks,
+origins and deadlines must remain; approved runtime is restored exactly.

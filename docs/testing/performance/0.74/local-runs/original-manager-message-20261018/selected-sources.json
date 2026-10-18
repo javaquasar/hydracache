@@ -1,0 +1,58 @@
+[
+  {
+    "path": "crates/xtask/tests/support/performance_contract_074_reply_flags.rs",
+    "sha256": "d3c00858d73f3cc8c62008bcc9915f00f7554dd6dacf531e344ca9cda5cc3e5e"
+  },
+  {
+    "path": "crates/xtask/tests/support/performance_contract_074_original_manager_message.rs",
+    "sha256": "2988fda76a546857db6600c9f4e835f77b540f151a9aede8b4c92a6847bd65b6"
+  },
+  {
+    "path": "docs/COMPAT.md",
+    "sha256": "60829124ac5594dcda4adbf6e16fb251b6440236eead5c220a5a0914b87349c1"
+  },
+  {
+    "path": "docs/testing/gated-test-registry.toml",
+    "sha256": "b2898e529a85f9b38bf741d95fa139acf99065ced3e3dfb956b0b5459cdbab29"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_socket_tests.rs",
+    "sha256": "522bbcba6b114eee4713d0da18c557b550b743a81b347b047c3abfbf374b8bbd"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_manager_frame_tests.rs",
+    "sha256": "7e1d956d22760a0cbd7b2833bb828a8fbd2f02f23193e42336cde584f3ed5eb8"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_manager_join.rs",
+    "sha256": "37b7007e9ec9450e8a5330c3f7e44408a3c28a7a1f93944f87133f61f08012f8"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_manager_join_tests.rs",
+    "sha256": "e4013f0da725959e9115d2303a6b85489acada4012c4fec575abc0cf7a217633"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_addressed_transfer_tests.rs",
+    "sha256": "06d693658f5f140a06c13540cc23434f69509d3483cb25a7afa96d227f36d23a"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_manager_message.rs",
+    "sha256": "c56d4525cbbd1fdbcc03d25c94444bb25d7b1d09371596b753f27caf31fc0842"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_manager_message_frame_tests.rs",
+    "sha256": "ffcdb850686d6e51e60db923914864f378b98780343fe048c072e49615d895c9"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_manager_message_red.rs",
+    "sha256": "ebf700b47fad6f316c94e6c8f0790551c751ebe521e7b0b43a8d3807ca67f0a9"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_manager_message_test_api.rs",
+    "sha256": "08ac00ad29fb93e757e23d3a059ace77ef9dfaa7cd6ebbe91b09ecc1ee1a8e3b"
+  },
+  {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_manager_message_units.rs",
+    "sha256": "23c8c2bdfde920ba5fd975abe6009fa8ec0b584e8261af78f2d46ed719fd277c"
+  }
+]

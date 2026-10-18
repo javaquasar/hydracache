@@ -1,0 +1,7 @@
+#[test]
+fn original_manager_message_requires_consuming_constructor() {
+    fn contract(owner: super::OriginalManagerJoin<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) {
+        let _ = owner.prepare_original_message();
+    }
+    let _signature = contract;
+}
