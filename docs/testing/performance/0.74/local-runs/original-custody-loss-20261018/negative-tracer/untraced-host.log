@@ -1,0 +1,119 @@
+HC074-CUSTODY-LOSS-SERVER preflight=ok supervisor_pid=8839 restarts=0
+8e3dd7357fbe2c34ec87b820f2b159592c2ce0a098fdb60c52dacbd9485555b9  ./tests-194
+7d453f2b973889a89669f111ac84d380dbcc167e897dd359baf12ff82be2940a  ./tests-188
+6f721c02c861fbc430ddd56adfa35acc98e98251c8f97411da2e6cdf9ea9332a  ./guard.sh
+ce58ad1e9eaff98b586627ebc89216b0f66ad47ce4def1184f0619c2a80347f4  ./run.sh
+484d480c9a2a19149e262ea90d90bd9ec7a45cd7da4bbcb080b0026092618352  ./original_custody_owner_loss.py
+ed38273b823b3bec472b2f26a0a015c62a906b008a357d37dbd5a695a717557c  ./test_original_custody_owner_loss.py
+test_command_selects_only_one_ignored_fixture (test_original_custody_owner_loss.CustodyLossDriverTests.test_command_selects_only_one_ignored_fixture) ... ok
+test_explicit_refusal (test_original_custody_owner_loss.CustodyLossDriverTests.test_explicit_refusal) ... ok
+test_independent_lock_observer_never_keeps_the_original_lock (test_original_custody_owner_loss.CustodyLossDriverTests.test_independent_lock_observer_never_keeps_the_original_lock) ... ok
+test_pidfd_is_live_and_owned (test_original_custody_owner_loss.CustodyLossDriverTests.test_pidfd_is_live_and_owned) ... ok
+test_snapshot_detects_bytes_metadata_and_refuses_symlinks (test_original_custody_owner_loss.CustodyLossDriverTests.test_snapshot_detects_bytes_metadata_and_refuses_symlinks) ... ok
+test_snapshot_refuses_over_budget_data (test_original_custody_owner_loss.CustodyLossDriverTests.test_snapshot_refuses_over_budget_data) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.002s
+
+OK
+HC074-CUSTODY-LOSS-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-CUSTODY-LOSS-COHORT compiler=194 begin=true
+
+running 5 tests
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::test_api::original_barred_clone_arguments_pin_atomically_without_shared_state ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::tests::original_descriptor_capture_refuses_a_closed_fd_without_replacement ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::tests::original_descriptor_capture_refuses_nonzero_sink_position ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::tests::original_descriptor_roles_exclude_all_four_writer_aliases ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::tests::original_descriptor_roles_refuse_any_duplicate_or_negative_slot ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 1103 filtered out; finished in 0.00s
+
+HC074-CUSTODY-LOSS-PHASE name=screen begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::original_barred_custody_screen ... HC074-BARRED-CUSTODY-CONTROL sample=0 create_ipc=34 validate_ipc=34 inherited=3 mask_exact=true unchanged=true start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1107 filtered out; finished in 13.69s
+
+HC074-CUSTODY-LOSS-PHASE name=screen completed=true
+HC074-CUSTODY-LOSS-PHASE name=notice begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::loss_tests::original_custody_lost_pending_notice ... HC074-CUSTODY-LOSS-NOTICE seed=0x0740be18 repeat=1 reason=Expired origins_exact=true sticky=true unchanged=true start=false
+HC074-CUSTODY-LOSS-NOTICE seed=0x0740be18 repeat=2 reason=Expired origins_exact=true sticky=true unchanged=true start=false
+HC074-CUSTODY-LOSS-NOTICE seed=0x0740be18 repeat=3 reason=Expired origins_exact=true sticky=true unchanged=true start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1107 filtered out; finished in 42.00s
+
+HC074-CUSTODY-LOSS-PHASE name=notice completed=true
+HC074-CUSTODY-LOSS-PHASE name=owner begin=true
+HC074-CUSTODY-LOSS-DRIVER binary_sha256=8e3dd7357fbe2c34ec87b820f2b159592c2ce0a098fdb60c52dacbd9485555b9
+HC074-CUSTODY-LOSS-CHECKPOINT {"closing_authentication": 0, "custodian": 157183, "cut": "before-frame", "deadline": 1003033140803822, "origins": [1003020217382954, 1003022869537347, 1003023140803822, 1003023975733739, 1003032204349115, 1003032204744108], "owner": 157181, "repeat": 1, "schema": "hc074-pending-owner-test-v1"}
+HC074-CUSTODY-LOSS-OWNER seed=0x0740bf18 repeat=1 cut=before-frame owner_signal=9 custodian_signal=9 inherited=3 retained_past_original_bound=true unchanged=true replay_refused=true start=false
+HC074-CUSTODY-LOSS-CHECKPOINT {"closing_authentication": 34, "custodian": 157188, "cut": "after-frame", "deadline": 1003047143285037, "origins": [1003034237816464, 1003036874830804, 1003037143285037, 1003037971882915, 1003046113592219, 1003046113981802], "owner": 157186, "repeat": 1, "schema": "hc074-pending-owner-test-v1"}
+HC074-CUSTODY-LOSS-OWNER seed=0x0740bf18 repeat=1 cut=after-frame owner_signal=9 custodian_signal=9 inherited=3 retained_past_original_bound=true unchanged=true replay_refused=true start=false
+HC074-CUSTODY-LOSS-CHECKPOINT {"closing_authentication": 0, "custodian": 157195, "cut": "before-frame", "deadline": 1003061150609875, "origins": [1003048244515829, 1003050880582369, 1003051150609875, 1003051978775262, 1003060154205970, 1003060154598613], "owner": 157191, "repeat": 2, "schema": "hc074-pending-owner-test-v1"}
+HC074-CUSTODY-LOSS-OWNER seed=0x0740bf18 repeat=2 cut=before-frame owner_signal=9 custodian_signal=9 inherited=3 retained_past_original_bound=true unchanged=true replay_refused=true start=false
+HC074-CUSTODY-LOSS-CHECKPOINT {"closing_authentication": 34, "custodian": 157200, "cut": "after-frame", "deadline": 1003075157188803, "origins": [1003062255990008, 1003064888352105, 1003065157188803, 1003065991767109, 1003074141302186, 1003074141688279], "owner": 157198, "repeat": 2, "schema": "hc074-pending-owner-test-v1"}
+HC074-CUSTODY-LOSS-OWNER seed=0x0740bf18 repeat=2 cut=after-frame owner_signal=9 custodian_signal=9 inherited=3 retained_past_original_bound=true unchanged=true replay_refused=true start=false
+HC074-CUSTODY-LOSS-CHECKPOINT {"closing_authentication": 0, "custodian": 157207, "cut": "before-frame", "deadline": 1003089199024555, "origins": [1003076287235011, 1003078929884122, 1003079199024555, 1003080033356476, 1003088245306070, 1003088245700943], "owner": 157203, "repeat": 3, "schema": "hc074-pending-owner-test-v1"}
+HC074-CUSTODY-LOSS-OWNER seed=0x0740bf18 repeat=3 cut=before-frame owner_signal=9 custodian_signal=9 inherited=3 retained_past_original_bound=true unchanged=true replay_refused=true start=false
+HC074-CUSTODY-LOSS-CHECKPOINT {"closing_authentication": 34, "custodian": 157212, "cut": "after-frame", "deadline": 1003103205382798, "origins": [1003090303640876, 1003092937310126, 1003093205382798, 1003094035108170, 1003102200784265, 1003102201191428], "owner": 157210, "repeat": 3, "schema": "hc074-pending-owner-test-v1"}
+HC074-CUSTODY-LOSS-OWNER seed=0x0740bf18 repeat=3 cut=after-frame owner_signal=9 custodian_signal=9 inherited=3 retained_past_original_bound=true unchanged=true replay_refused=true start=false
+HC074-CUSTODY-LOSS-DRIVER completed=true cases=6 product=false
+HC074-CUSTODY-LOSS-PHASE name=owner completed=true
+HC074-CUSTODY-LOSS-COHORT compiler=194 completed=true
+HC074-CUSTODY-LOSS-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-CUSTODY-LOSS-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-CUSTODY-LOSS-COHORT compiler=188 begin=true
+
+running 5 tests
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::test_api::original_barred_clone_arguments_pin_atomically_without_shared_state ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::tests::original_descriptor_capture_refuses_a_closed_fd_without_replacement ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::tests::original_descriptor_capture_refuses_nonzero_sink_position ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::tests::original_descriptor_roles_exclude_all_four_writer_aliases ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::tests::original_descriptor_roles_refuse_any_duplicate_or_negative_slot ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 1103 filtered out; finished in 0.00s
+
+HC074-CUSTODY-LOSS-PHASE name=screen begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::original_barred_custody_screen ... HC074-BARRED-CUSTODY-CONTROL sample=0 create_ipc=34 validate_ipc=34 inherited=3 mask_exact=true unchanged=true start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1107 filtered out; finished in 13.69s
+
+HC074-CUSTODY-LOSS-PHASE name=screen completed=true
+HC074-CUSTODY-LOSS-PHASE name=notice begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::loss_tests::original_custody_lost_pending_notice ... HC074-CUSTODY-LOSS-NOTICE seed=0x0740be18 repeat=1 reason=Expired origins_exact=true sticky=true unchanged=true start=false
+HC074-CUSTODY-LOSS-NOTICE seed=0x0740be18 repeat=2 reason=Expired origins_exact=true sticky=true unchanged=true start=false
+HC074-CUSTODY-LOSS-NOTICE seed=0x0740be18 repeat=3 reason=Expired origins_exact=true sticky=true unchanged=true start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1107 filtered out; finished in 42.01s
+
+HC074-CUSTODY-LOSS-PHASE name=notice completed=true
+HC074-CUSTODY-LOSS-PHASE name=owner begin=true
+HC074-CUSTODY-LOSS-DRIVER binary_sha256=7d453f2b973889a89669f111ac84d380dbcc167e897dd359baf12ff82be2940a
+HC074-CUSTODY-LOSS-CHECKPOINT {"closing_authentication": 0, "custodian": 157405, "cut": "before-frame", "deadline": 1003173255507654, "origins": [1003160333858313, 1003162984527002, 1003163255507654, 1003164087056879, 1003172280224748, 1003172280612031], "owner": 157342, "repeat": 1, "schema": "hc074-pending-owner-test-v1"}
+HC074-CUSTODY-LOSS-OWNER seed=0x0740bf18 repeat=1 cut=before-frame owner_signal=9 custodian_signal=9 inherited=3 retained_past_original_bound=true unchanged=true replay_refused=true start=false
+HC074-CUSTODY-LOSS-CHECKPOINT {"closing_authentication": 34, "custodian": 157410, "cut": "after-frame", "deadline": 1003187276206174, "origins": [1003174374097821, 1003177007741557, 1003177276206174, 1003178106911884, 1003186320483067, 1003186320878240], "owner": 157408, "repeat": 1, "schema": "hc074-pending-owner-test-v1"}
+HC074-CUSTODY-LOSS-OWNER seed=0x0740bf18 repeat=1 cut=after-frame owner_signal=9 custodian_signal=9 inherited=3 retained_past_original_bound=true unchanged=true replay_refused=true start=false
+HC074-CUSTODY-LOSS-CHECKPOINT {"closing_authentication": 0, "custodian": 157415, "cut": "before-frame", "deadline": 1003201287386111, "origins": [1003188386586853, 1003191019099721, 1003191287386111, 1003192123225683, 1003200325125546, 1003200325515289], "owner": 157413, "repeat": 2, "schema": "hc074-pending-owner-test-v1"}
+HC074-CUSTODY-LOSS-OWNER seed=0x0740bf18 repeat=2 cut=before-frame owner_signal=9 custodian_signal=9 inherited=3 retained_past_original_bound=true unchanged=true replay_refused=true start=false
+HC074-CUSTODY-LOSS-CHECKPOINT {"closing_authentication": 34, "custodian": 157420, "cut": "after-frame", "deadline": 1003215296061584, "origins": [1003202390741012, 1003205026775762, 1003205296061584, 1003206134302745, 1003214314341334, 1003214314736437], "owner": 157418, "repeat": 2, "schema": "hc074-pending-owner-test-v1"}
+HC074-CUSTODY-LOSS-OWNER seed=0x0740bf18 repeat=2 cut=after-frame owner_signal=9 custodian_signal=9 inherited=3 retained_past_original_bound=true unchanged=true replay_refused=true start=false
+HC074-CUSTODY-LOSS-CHECKPOINT {"closing_authentication": 0, "custodian": 157431, "cut": "before-frame", "deadline": 1003229319496714, "origins": [1003216410301806, 1003219048807306, 1003219319496714, 1003220149805853, 1003228338879742, 1003228339269635], "owner": 157423, "repeat": 3, "schema": "hc074-pending-owner-test-v1"}
+HC074-CUSTODY-LOSS-OWNER seed=0x0740bf18 repeat=3 cut=before-frame owner_signal=9 custodian_signal=9 inherited=3 retained_past_original_bound=true unchanged=true replay_refused=true start=false
+HC074-CUSTODY-LOSS-CHECKPOINT {"closing_authentication": 34, "custodian": 157436, "cut": "after-frame", "deadline": 1003243324764801, "origins": [1003230419327945, 1003233056570079, 1003233324764801, 1003234158163277, 1003242352758137, 1003242353147550], "owner": 157434, "repeat": 3, "schema": "hc074-pending-owner-test-v1"}
+HC074-CUSTODY-LOSS-OWNER seed=0x0740bf18 repeat=3 cut=after-frame owner_signal=9 custodian_signal=9 inherited=3 retained_past_original_bound=true unchanged=true replay_refused=true start=false
+HC074-CUSTODY-LOSS-DRIVER completed=true cases=6 product=false
+HC074-CUSTODY-LOSS-PHASE name=owner completed=true
+HC074-CUSTODY-LOSS-COHORT compiler=188 completed=true
+HC074-CUSTODY-LOSS-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-CUSTODY-LOSS-HOST completed=true supervisor_unchanged=true no_fixture_executable=true admission=false

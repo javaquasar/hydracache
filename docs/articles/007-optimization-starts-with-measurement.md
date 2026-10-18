@@ -12449,3 +12449,52 @@ negative screens and the unchanged raw kernel body alongside the new evidence.
 Final host checks retain the supervisor and installed digests and find no old/new
 fixture process. None of these correctness results is a product throughput claim
 or admission to execute an original worker.
+
+## Process death and message loss need different observations
+
+Normal owner destruction exercises Rust cleanup. SIGKILL does not. The next
+[pending custody fault packet](../testing/performance/0.74/local-runs/original-custody-loss-20261018/README.md)
+therefore places the sealed original preparation in its own libtest process and
+kills that exact owner on either side of the closing validation frame. A separate
+driver receives only the custodian pidfd over a credential-checked private socket.
+It cannot accidentally keep the original fence or notice peer alive. Custody must
+survive owner death and the original absolute bound; after the custodian itself
+dies, retained durable history must still reject a fresh attempt. Kernel lock
+availability and permission to replay are different observations.
+
+Losing the pending P notice needs another distinction. Expired alone cannot tell
+whether P was consumed and lost or the observer expired before reading it. The
+strengthened fixture checks the first remaining ordered notice after refusal:
+it must be exactly E, with the custodian still live. Because the unchanged child
+sends P before E, a leftover P fails this control. The observation occurs only
+after sticky refusal, under retained custody; its harness fail-safe grants no
+new authority time, write permission or resource release.
+
+The attempted syscall observer demonstrated why that distinction matters. Its
+matched untraced control passed, but strace refused an upstream original Time
+check before pending custody and produced no P observation. The failed trace and
+its exact source/binary/script identities remain evidence, not a completed loss
+test or a reason to enlarge the window. Reading the already-ordered failure notice
+avoids adding a tracer to the live validation path.
+
+Two earlier fixture failures likewise stayed separate from product conclusions.
+One expected an unrefused owner after deliberate refusal; the other placed test
+authority below a directory rejected by the existing strict direct-/tmp rule.
+Fixing the fixture postcondition and giving authority its own private temporary
+root preserved the original checks. Neither justified changing runtime authority,
+validation predicates, deadlines or qualification thresholds.
+
+These checks concern an output-incapable pending custodian. They do not establish
+authenticated original send, collector transfer, active writer-tree revocation
+or production completion. The next executable component must join the actual
+original readers and sinks while start remains barred and the full live frame
+and custody remain intact. No throughput improvement follows from these fault
+results.
+
+The final current/MSRV cohorts pass twelve selected owner-death scenarios using
+twenty-four selected SIGKILL signals, six lost-P controls with first remaining E,
+and both complete-frame healthy screens. All 216 static contracts, local 32+5
+Rust units per compiler, six Python units and two private-descriptor compile-fail
+doctests pass. Read-only postflight finds no fixture from any retained cohort
+and preserves the supervisor, installed digests and frozen qualification input.
+This closes the selected pending-only fault boundary, not production execution.

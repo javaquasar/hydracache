@@ -1,0 +1,4 @@
+* -text whitespace=cr-at-eol
+*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+*.patch whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+*.source whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol

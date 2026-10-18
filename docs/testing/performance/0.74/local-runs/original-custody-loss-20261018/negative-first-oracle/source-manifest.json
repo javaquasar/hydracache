@@ -1,0 +1,58 @@
+{
+  "reason": "Fixture expected unrefused after deliberate sticky refusal; first lost notice reached Expired. Owner matrix and MSRV screen not run.",
+  "schema": "hc074-custody-loss-negative-v1",
+  "base_commit": "cd0f1a7a91c3cb1d31825942403dd4d8295227d7",
+  "capture_note": "The single fixture mode flag was restored in the archived copy after the working candidate changed; the restored complete raw file matches the pre-change build-input digest.",
+  "files": [
+    {
+      "copy": "crates__xtask__tests__support__performance_contract_074_barred_custody.rs.source",
+      "path": "crates/xtask/tests/support/performance_contract_074_barred_custody.rs",
+      "sha256": "cbdbb574bbdf9be481db09db5849aaef79406899712061ba52433084faad924c"
+    },
+    {
+      "copy": "crates__xtask__tests__support__performance_contract_074_custody_loss.rs.source",
+      "path": "crates/xtask/tests/support/performance_contract_074_custody_loss.rs",
+      "sha256": "ff01f76cb214f3ac5a53f608a7d0e7dbbb3f7cbce03da5a90a80a96c002284fa"
+    },
+    {
+      "copy": "docs__COMPAT.md.source",
+      "path": "docs/COMPAT.md",
+      "sha256": "c9bb10a6ec08c17072dd0b858248728ac9e9830a8e03483b8766e89872e6d545"
+    },
+    {
+      "copy": "docs__testing__gated-test-registry.toml.source",
+      "path": "docs/testing/gated-test-registry.toml",
+      "sha256": "57a0444b1fe240c254732b635d4898262f9b7b32aa1d2bd8754ec750c7a734a1"
+    },
+    {
+      "copy": "tools__long-run-supervisor-074__src__diagnostic_original_barred_custody_test_api.rs.source",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_barred_custody_test_api.rs",
+      "sha256": "497ea002f91c59b4ef6e9387f808245d4885869e5c8d7516cd1ffaeb2567f801"
+    },
+    {
+      "copy": "tools__long-run-supervisor-074__src__diagnostic_original_barred_custody_tests.rs.source",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_barred_custody_tests.rs",
+      "sha256": "239de5fc91d49d11b6a85a754945f2e5a6b8393cdb9009149b8a9fdb99c2820c"
+    },
+    {
+      "copy": "tools__long-run-supervisor-074__src__diagnostic_original_barred_custody.rs.source",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_barred_custody.rs",
+      "sha256": "c85ce51be93d9ce10634963b6a45b65760097274505dccf9285a628696fa0d4a"
+    },
+    {
+      "copy": "tools__long-run-supervisor-074__src__diagnostic_original_custody_loss_tests.rs.source",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_custody_loss_tests.rs",
+      "sha256": "da7177ac240a7905e5fbdd06e84fc7e57cf93f0d7ab5e593c5456ec497ac0c46"
+    },
+    {
+      "copy": "tools__long-run-supervisor-074__tests__original_custody_owner_loss.py.source",
+      "path": "tools/long-run-supervisor-074/tests/original_custody_owner_loss.py",
+      "sha256": "b5d69d93e4b6531fdee2011d436d3086850a35f34b59520477f1f1f236c8c1d5"
+    },
+    {
+      "copy": "tools__long-run-supervisor-074__tests__test_original_custody_owner_loss.py.source",
+      "path": "tools/long-run-supervisor-074/tests/test_original_custody_owner_loss.py",
+      "sha256": "ed38273b823b3bec472b2f26a0a015c62a906b008a357d37dbd5a695a717557c"
+    }
+  ]
+}

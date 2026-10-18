@@ -492,3 +492,12 @@ both GNU compiler cohorts, plus two first screens, local 32+5 units per compiler
 and 213 static contracts. It retains both negative screens/source separately and
 verifies unchanged raw kernel code and host installation. Autonomous retention
 on the original alarm is established; the production gates above are still open.
+
+The [pending owner loss packet](local-runs/original-custody-loss-20261018/README.md)
+separates actual owner SIGKILL from normal alias destruction and actual P loss
+from expiry before the first notice read. Its external observer holds neither
+the original fence nor the private notice peer. Kernel lock release after the
+last custodian dies still cannot overcome retained storage history. These
+pending-only checks do not close collector enrollment, authenticated original
+send, all-writer revocation, independent active-guardian supervision or durable
+completion. No installation or product/qualification workload follows from them.

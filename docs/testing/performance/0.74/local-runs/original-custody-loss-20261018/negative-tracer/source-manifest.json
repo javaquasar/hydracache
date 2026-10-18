@@ -1,0 +1,5 @@
+{
+  "source_commit": "879ccd983cd04fb262e77a7e9ed238e333169849",
+  "schema": "hc074-custody-loss-negative-tracer-v1",
+  "reason": "Tracing refuses upstream Time before pending custody. No P was consumed, zero traced cases completed, MSRV trace did not run."
+}

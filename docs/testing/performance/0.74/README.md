@@ -3868,3 +3868,13 @@ All 213 static contracts and focused checks pass. Complete rejected sources and
 both Causal(Time) screens stay separate; the raw kernel source is unchanged.
 The final host guard finds no old/new fixture process and preserves supervisor
 and installed digests. This still opens no collector, original-start or pilot.
+
+The [pending owner and notice loss packet](local-runs/original-custody-loss-20261018/README.md)
+adds actual SIGKILL of the original owning process at both closing-frame cuts,
+with an observer holding only a custodian pidfd. The strengthened lost-P control
+requires the first remaining ordered notice to be E after sticky refusal, rather
+than treating any Expired as proof of message loss. It retains the wrong fixture
+postcondition, rejected nested authority root and upstream-Time tracer attempt
+as separate negative results. Ordinary pending code, live predicates, original
+origins and frozen qualification inputs stay exact; barred collector transfer
+and authenticated original start remain subsequent work.

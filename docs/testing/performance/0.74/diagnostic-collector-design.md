@@ -507,3 +507,20 @@ units and all 213 static contracts pass. Both rejected four-frame screens and
 complete source remain reproducible, with an identical raw kernel source body.
 Stable postflight finds no old/new fixture executable and no supervisor change.
 This establishes pending autonomous custody, not active writer-tree cessation.
+
+## Pending owner death and ordered notice loss
+
+The [owner loss packet](local-runs/original-custody-loss-20261018/README.md)
+adds real SIGKILL of the original owning fixture process before and after the
+unchanged closing full frame. Its external subreaper receives only the exact
+custodian pidfd, not an original lock or notice-peer alias. The original fence
+must stay busy past its bound, and retained history must refuse even after the
+last custodian dies and the kernel flock becomes available.
+
+Lost initial P is distinguished from pre-read expiry by requiring the first
+remaining ordered notice after refusal to be E while the custodian remains live.
+This test-only observation cannot renew a window or authorize release. A traced
+attempt refused upstream Time before pending creation and is retained separately;
+it does not waive a live check or prove notice loss. Ordinary pending code and
+the frozen qualification inputs stay exact. Actual barred collector handoff,
+authenticated original send and active-writer cessation remain required.

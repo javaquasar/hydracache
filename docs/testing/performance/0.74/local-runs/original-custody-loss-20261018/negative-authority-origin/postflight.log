@@ -1,0 +1,2 @@
+HC074-CUSTODY-LOSS-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-CUSTODY-LOSS-NEGATIVE postflight=ok no_fixture_executable=true

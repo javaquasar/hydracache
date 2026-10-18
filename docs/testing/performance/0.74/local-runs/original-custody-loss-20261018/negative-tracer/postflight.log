@@ -1,0 +1,8 @@
+HC074-CUSTODY-LOSS-SERVER preflight=ok supervisor_pid=8839 restarts=0
+8e3dd7357fbe2c34ec87b820f2b159592c2ce0a098fdb60c52dacbd9485555b9  ./tests-194
+7d453f2b973889a89669f111ac84d380dbcc167e897dd359baf12ff82be2940a  ./tests-188
+6f721c02c861fbc430ddd56adfa35acc98e98251c8f97411da2e6cdf9ea9332a  ./guard.sh
+ce58ad1e9eaff98b586627ebc89216b0f66ad47ce4def1184f0619c2a80347f4  ./run.sh
+484d480c9a2a19149e262ea90d90bd9ec7a45cd7da4bbcb080b0026092618352  ./original_custody_owner_loss.py
+ed38273b823b3bec472b2f26a0a015c62a906b008a357d37dbd5a695a717557c  ./test_original_custody_owner_loss.py
+HC074-CUSTODY-LOSS-POSTFLIGHT unchanged=true negative_and_positive_absent=true admission=false

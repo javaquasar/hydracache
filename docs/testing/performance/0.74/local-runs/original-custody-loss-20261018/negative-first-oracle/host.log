@@ -1,0 +1,58 @@
+HC074-CUSTODY-LOSS-SERVER preflight=ok supervisor_pid=8839 restarts=0
+7868f89c70a43c1b8408fd03895b00f97aeae120de94de1aab1f0e010e5e552c  ./tests-194
+1b9f9ad628f15947c0f2e3c309f773822e0ef8b379ac909aae40ec5a8c95e700  ./tests-188
+6f721c02c861fbc430ddd56adfa35acc98e98251c8f97411da2e6cdf9ea9332a  ./guard.sh
+ce58ad1e9eaff98b586627ebc89216b0f66ad47ce4def1184f0619c2a80347f4  ./run.sh
+b5d69d93e4b6531fdee2011d436d3086850a35f34b59520477f1f1f236c8c1d5  ./original_custody_owner_loss.py
+ed38273b823b3bec472b2f26a0a015c62a906b008a357d37dbd5a695a717557c  ./test_original_custody_owner_loss.py
+test_command_selects_only_one_ignored_fixture (test_original_custody_owner_loss.CustodyLossDriverTests.test_command_selects_only_one_ignored_fixture) ... ok
+test_explicit_refusal (test_original_custody_owner_loss.CustodyLossDriverTests.test_explicit_refusal) ... ok
+test_independent_lock_observer_never_keeps_the_original_lock (test_original_custody_owner_loss.CustodyLossDriverTests.test_independent_lock_observer_never_keeps_the_original_lock) ... ok
+test_pidfd_is_live_and_owned (test_original_custody_owner_loss.CustodyLossDriverTests.test_pidfd_is_live_and_owned) ... ok
+test_snapshot_detects_bytes_metadata_and_refuses_symlinks (test_original_custody_owner_loss.CustodyLossDriverTests.test_snapshot_detects_bytes_metadata_and_refuses_symlinks) ... ok
+test_snapshot_refuses_over_budget_data (test_original_custody_owner_loss.CustodyLossDriverTests.test_snapshot_refuses_over_budget_data) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.002s
+
+OK
+HC074-CUSTODY-LOSS-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-CUSTODY-LOSS-COHORT compiler=194 begin=true
+
+running 5 tests
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::test_api::original_barred_clone_arguments_pin_atomically_without_shared_state ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::tests::original_descriptor_capture_refuses_a_closed_fd_without_replacement ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::tests::original_descriptor_capture_refuses_nonzero_sink_position ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::tests::original_descriptor_roles_exclude_all_four_writer_aliases ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::tests::original_descriptor_roles_refuse_any_duplicate_or_negative_slot ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 1103 filtered out; finished in 0.00s
+
+HC074-CUSTODY-LOSS-PHASE name=screen begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::original_barred_custody_screen ... HC074-BARRED-CUSTODY-CONTROL sample=0 create_ipc=34 validate_ipc=34 inherited=3 mask_exact=true unchanged=true start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1107 filtered out; finished in 13.66s
+
+HC074-CUSTODY-LOSS-PHASE name=screen completed=true
+HC074-CUSTODY-LOSS-PHASE name=notice begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::loss_tests::original_custody_lost_pending_notice ... HC074-CUSTODY-LOSS-NOTICE seed=0x0740be18 repeat=1 reason=Expired origins_exact=true sticky=true unchanged=true start=false
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::loss_tests::original_custody_lost_pending_notice' (154800) panicked at tools/long-run-supervisor-074/src/diagnostic_collector_starting_publication_tests.rs:77:9:
+assertion `left == right` failed
+  left: true
+ right: false
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::loss_tests::original_custody_lost_pending_notice
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1107 filtered out; finished in 14.01s
+

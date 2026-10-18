@@ -1,0 +1,22 @@
+HC074-CUSTODY-LOSS-SERVER preflight=ok supervisor_pid=8839 restarts=0
+strace -- version 6.8
+8e3dd7357fbe2c34ec87b820f2b159592c2ce0a098fdb60c52dacbd9485555b9  ./tests-194
+7d453f2b973889a89669f111ac84d380dbcc167e897dd359baf12ff82be2940a  ./tests-188
+11ef7d78e6bfd2f89ce0224a12b5776ca01cf8ca0644c95f3b16391aea73205b  ./trace.sh
+HC074-CUSTODY-LOSS-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-CUSTODY-LOSS-TRACE compiler=194 begin=true
+
+running 1 test
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::loss_tests::original_custody_lost_pending_notice' (158351) panicked at tools/long-run-supervisor-074/src/diagnostic_collector_starting_publication_tests.rs:116:10:
+called `Result::unwrap()` on an `Err` value: Time
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::loss_tests::original_custody_lost_pending_notice ... FAILED
+
+failures:
+
+failures:
+    diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::loss_tests::original_custody_lost_pending_notice
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1107 filtered out; finished in 57.69s
+
