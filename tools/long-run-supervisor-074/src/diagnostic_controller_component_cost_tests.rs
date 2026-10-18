@@ -1,6 +1,9 @@
 //! Separate original-object controls, not a replacement or decomposition of ReservedLive.
 use super::*;
 
+#[path = "diagnostic_original_live_walk_cost_tests.rs"]
+mod live_walk_tests;
+
 #[test]
 #[ignore = "manual nonroot original controller component controls; no reservation, execution or admission"]
 fn original_controller_component_cost_controls() {

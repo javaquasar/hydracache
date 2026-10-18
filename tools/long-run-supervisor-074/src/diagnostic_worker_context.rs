@@ -287,6 +287,10 @@ impl Probe {
         Ok(())
     }
     pub(super) fn observe(&self, expected: &AssertedWorkerHost) -> Result<(), WorkerContextError> {
+        #[cfg(test)]
+        let _live_walk = crate::diagnostic_ipc::validation_trace::live_walk::span(
+            crate::diagnostic_ipc::validation_trace::live_walk::Kind::LocalContext,
+        );
         for _ in 0..2 {
             self.namespace_bracket(expected)?;
             self.paths

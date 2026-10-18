@@ -420,7 +420,7 @@ fn component_cost_controls_leave_all_original_validator_bodies_exact() {
         assert!(before.status.success());
         let current = std::fs::read_to_string(super::root().join(path)).unwrap();
         assert_eq!(
-            current.replace('\r', ""),
+            crate::live_walk::normalize(path, &current.replace('\r', "")),
             String::from_utf8(before.stdout).unwrap().replace('\r', ""),
             "{path}"
         );

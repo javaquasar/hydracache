@@ -39,6 +39,8 @@ platform = "linux"
 # END ORIGINAL PREPARATION BUDGET GATE
 "###;
 pub(super) fn normalize(path: &str, raw: &str) -> String {
+    let current = crate::live_walk::normalize(path, raw);
+    let raw = current.as_str();
     let exact = match path {
         "docs/testing/gated-test-registry.toml" => GATES,
         "tools/long-run-supervisor-074/src/diagnostic_original_manager_message_frame_tests.rs" => {

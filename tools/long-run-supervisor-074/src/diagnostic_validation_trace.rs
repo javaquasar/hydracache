@@ -5,6 +5,10 @@ use std::io::Write;
 use std::rc::Rc;
 use std::time::Instant;
 
+#[cfg(target_os = "linux")]
+#[path = "diagnostic_live_walk_trace.rs"]
+pub(crate) mod live_walk;
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) enum Stage {
     Unassigned,

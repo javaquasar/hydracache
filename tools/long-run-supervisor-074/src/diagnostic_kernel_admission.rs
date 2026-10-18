@@ -139,6 +139,10 @@ impl KernelPacket {
         &mut self,
         host: &crate::diagnostic_worker_policy::AssertedWorkerHost,
     ) -> Result<(), KernelError> {
+        #[cfg(test)]
+        let _live_walk = crate::diagnostic_ipc::validation_trace::live_walk::span(
+            crate::diagnostic_ipc::validation_trace::live_walk::Kind::KernelContext,
+        );
         if self.refused {
             return Err(KernelError::Refused);
         }

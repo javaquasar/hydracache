@@ -333,6 +333,10 @@ fn active(
     trust: &WorkerPolicyTrust,
     host: &AssertedWorkerHost,
 ) -> Result<AuthorityView, TrustInputError> {
+    #[cfg(test)]
+    let _live_walk = crate::diagnostic_ipc::validation_trace::live_walk::span(
+        crate::diagnostic_ipc::validation_trace::live_walk::Kind::ActiveAuthority,
+    );
     let view = authority.inspect(trust, host)?;
     if view.refused {
         return Err(TrustInputError::Refused);
@@ -344,6 +348,10 @@ impl WorkerTrustInput {
         self.refused
     }
     fn check(&self) -> Result<(), TrustInputError> {
+        #[cfg(test)]
+        let _live_walk = crate::diagnostic_ipc::validation_trace::live_walk::span(
+            crate::diagnostic_ipc::validation_trace::live_walk::Kind::WorkerSource,
+        );
         if self.refused {
             return Err(TrustInputError::Refused);
         }
@@ -423,6 +431,10 @@ impl WorkerPolicyInput<'_, '_> {
         self.policy.is_refused() || self.input.refused || self.authority.is_failed()
     }
     pub fn revalidate(&mut self) -> Result<(), TrustInputError> {
+        #[cfg(test)]
+        let _live_walk = crate::diagnostic_ipc::validation_trace::live_walk::span(
+            crate::diagnostic_ipc::validation_trace::live_walk::Kind::WorkerPolicy,
+        );
         let result = (|| {
             if self.is_refused() {
                 return Err(TrustInputError::Refused);

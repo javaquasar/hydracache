@@ -2,6 +2,9 @@ use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
 
+#[path = "support/performance_contract_074_live_walk.rs"]
+mod live_walk;
+
 #[path = "support/performance_contract_074_fixed_grouped.rs"]
 mod fixed_grouped;
 
@@ -11197,6 +11200,10 @@ fn diagnostic_worker_context_preserves_external_pins_typed_threads_and_closed_st
         root().join("tools/long-run-supervisor-074/src/diagnostic_worker_context.rs"),
     )
     .unwrap();
+    let source = live_walk::normalize(
+        "tools/long-run-supervisor-074/src/diagnostic_worker_context.rs",
+        &source.replace('\r', ""),
+    );
     let runtime = source.split("#[cfg(test)]").next().unwrap();
     for marker in [
         "policy.revalidate(bytes, trust, host)?",

@@ -220,6 +220,10 @@ impl KernelWorkerPolicyInput<'_, '_, '_> {
         self.policy.is_refused() || self.packet.is_refused()
     }
     pub fn revalidate(&mut self) -> Result<(), TrustInputError> {
+        #[cfg(test)]
+        let _live_walk = crate::diagnostic_ipc::validation_trace::live_walk::span(
+            crate::diagnostic_ipc::validation_trace::live_walk::Kind::KernelWorker,
+        );
         let result = (|| {
             if self.is_refused() {
                 return Err(TrustInputError::Refused);
