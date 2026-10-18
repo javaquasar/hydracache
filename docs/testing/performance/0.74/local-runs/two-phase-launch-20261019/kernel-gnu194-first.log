@@ -1,0 +1,17 @@
+
+running 1 test
+
+thread 'diagnostic_two_phase_launch::held_barrier::tests::two_phase_barrier_owned_kernel_fault_matrix' (313) panicked at tools/long-run-supervisor-074/src/diagnostic_held_barrier_tests.rs:40:5:
+assertion `left == right` failed
+  left: 0
+ right: 1
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test diagnostic_two_phase_launch::held_barrier::tests::two_phase_barrier_owned_kernel_fault_matrix ... FAILED
+
+failures:
+
+failures:
+    diagnostic_two_phase_launch::held_barrier::tests::two_phase_barrier_owned_kernel_fault_matrix
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1210 filtered out; finished in 0.08s
+

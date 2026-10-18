@@ -1,0 +1,12 @@
+{
+  "source_commit": "fab1798c74f8a579184ec19893c2c76472421cbe",
+  "compiler": "1.94.0",
+  "nonroot_uid": "1000",
+  "image_before": "8211f0806e69d511a8bdb78699b0068a766e6d9c49d945b55b1417561be28129  /home/artur/.cache/hydracache-074-194-check/release/deps/hydracache_long_run_supervisor_074-b26b156d3dcd0098",
+  "image_after": "8211f0806e69d511a8bdb78699b0068a766e6d9c49d945b55b1417561be28129  /home/artur/.cache/hydracache-074-194-check/release/deps/hydracache_long_run_supervisor_074-b26b156d3dcd0098",
+  "qualification_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "kernel_cases": 12,
+  "product": false,
+  "systemd": false,
+  "original_authority": false
+}

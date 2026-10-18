@@ -840,3 +840,23 @@ origins/deadlines remain intact. No new Message/FD owner, full walk, sender or
 arm/observe capability is introduced. Complete-frame fixture evidence is a
 separate gate from the ordinary correlation controls, never production enrollment
 or whole-writer cessation proof.
+
+## Two phase launch boundary
+
+The approved [two-phase launch plan](two-phase-launch-plan-20261019.md) replaces
+direct worker execution with a held launcher only under a separate signed v2
+requirements schema and domain. Existing v1 consent and collector-unit bytes
+retain their meaning. The new document binds historical consent claims and
+launcher/watchdog/collector artifact roles; it is not an executable unit or an
+original-owner permit. The original live join must still authenticate and open
+the exact artifacts, pre-arm an independent guardian, negotiate original FD
+delivery, pin the complete cgroup, validate the complete frame and release the
+barrier once. All original 300/60/10-second origins and live predicates remain.
+
+The private barrier mechanics intentionally accept no executable, evidence sink,
+cgroup or fence. Their owned kernel fixture can establish packet handling,
+pidfd loss, absolute expiry and at-most-once delivery, but live surrogate pidfds
+cannot prove watchdog readiness or whole-writer revocation. The guardian must
+also cover death after the barrier's last observation; a final liveness check
+alone cannot close that race. Both pipe EOFs, external writer closure and
+collector finalization remain necessary before any future fence release.

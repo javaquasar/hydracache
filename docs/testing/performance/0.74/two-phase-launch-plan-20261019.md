@@ -44,6 +44,8 @@ post-fork child must not enter its inherited async runtime.
    delivery, collector custody and pinned complete cgroup revocation. Preserve
    every complete validation frame and original bound. No byte verifier or
    fixture may substitute for this join.
+   Consume the same original durable attempt rather than granting a second v2
+   replay slot; old and new protocols must never execute that attempt in parallel.
 4. Exercise real SIGKILL and lost ACK at every new durable/send/release/close
    boundary, then completion and later cells. Retain incomplete attempts and
    fence ownership after uncertain delivery. Verify monitoring reconnection
@@ -58,3 +60,26 @@ the new schema; keep the plan and measured result separate.
 This work authorizes no release installation, stable supervisor operation,
 system-bus send, product execution or expensive qualification. Server rehearsal
 and any production enrollment remain separate gates.
+
+## First local package result
+
+Source `fab1798c74f8a579184ec19893c2c76472421cbe` implements step one and owned
+barrier mechanics from step two, not a production held executable or an armed
+guardian. Both GNU 1.94 and MSRV 1.88 pass nine ordinary controls and the same
+twelve owned kernel cases, including real SIGKILL before release and after
+the constant pipe effect but before ACK. Failed send and lost ACK keep the
+same sender consumed. Existing exchange and hidden-writer controls remain green.
+
+The first healthy barrier's incorrect zero-flags predicate and two source-test
+adapter failures remain in the [local packet](local-runs/two-phase-launch-20261019/README.md).
+Only the new barrier's echoed CLOEXEC bit handling and exact test registrations
+were corrected; no original predicate, bound or assertion was relaxed.
+The final full source suite passes 262 controls, preserving all 362 old Rust
+sources and old schema/registry bytes. Current/MSRV checks, strict lint,
+Windows controls, documentation, registry and the local contract pass.
+
+Next is actual pre-armed guardian enrollment, complete cgroup/external-writer
+revocation and the original artifact/channel/frame join. The private v0 packet
+is an ephemeral mechanics prototype, not the future production release protocol.
+Neither these data types nor kernel fixture results open original start,
+completion, later cells, reconnect, installation or server admission.

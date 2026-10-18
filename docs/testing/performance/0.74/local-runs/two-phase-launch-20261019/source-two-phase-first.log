@@ -1,0 +1,52 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 38.79s
+     Running tests\performance_contract_074.rs (target\debug\deps\performance_contract_074-affcfab4e5118d5a.exe)
+
+running 3 tests
+
+thread 'live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::two_phase_launch_adapter_cannot_hide_predicate_or_registration_mutation' (3680) panicked at crates\xtask\tests\support\performance_contract_074_two_phase_launch.rs:69:5:
+assertion `left == right` failed: two phase registration drift: tools/long-run-supervisor-074/src/lib.rs
+  left: 0
+ right: 1
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::two_phase_launch_adapter_cannot_hide_predicate_or_registration_mutation' (3680) panicked at crates\xtask\tests\support\performance_contract_074_two_phase_launch.rs:69:5:
+assertion `left == right` failed: two phase registration drift: tools/long-run-supervisor-074/src/lib.rs
+  left: 2
+ right: 1
+test live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::two_phase_launch_signature_data_has_no_runtime_promotion_or_old_schema_upgrade ... ok
+
+thread 'live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::two_phase_launch_adapter_cannot_hide_predicate_or_registration_mutation' (3680) panicked at crates\xtask\tests\support\performance_contract_074_two_phase_launch.rs:69:5:
+assertion `left == right` failed: two phase registration drift: docs/COMPAT.md
+  left: 0
+ right: 1
+
+thread 'live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::two_phase_launch_adapter_cannot_hide_predicate_or_registration_mutation' (3680) panicked at crates\xtask\tests\support\performance_contract_074_two_phase_launch.rs:69:5:
+assertion `left == right` failed: two phase registration drift: docs/COMPAT.md
+  left: 2
+ right: 1
+
+thread 'live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::two_phase_launch_adapter_cannot_hide_predicate_or_registration_mutation' (3680) panicked at crates\xtask\tests\support\performance_contract_074_two_phase_launch.rs:69:5:
+assertion `left == right` failed: two phase registration drift: docs/testing/gated-test-registry.toml
+  left: 0
+ right: 1
+
+thread 'live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::two_phase_launch_adapter_cannot_hide_predicate_or_registration_mutation' (3680) panicked at crates\xtask\tests\support\performance_contract_074_two_phase_launch.rs:69:5:
+assertion `left == right` failed: two phase registration drift: docs/testing/gated-test-registry.toml
+  left: 2
+ right: 1
+
+thread 'live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::two_phase_launch_adapter_cannot_hide_predicate_or_registration_mutation' (3680) panicked at crates\xtask\tests\support\performance_contract_074_two_phase_launch.rs:141:9:
+payload.check(input)?;
+test live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::two_phase_launch_adapter_cannot_hide_predicate_or_registration_mutation ... FAILED
+test live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::two_phase_launch_preserves_every_prior_runtime_test_schema_and_registry ... ok
+
+failures:
+
+failures:
+    live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::two_phase_launch_adapter_cannot_hide_predicate_or_registration_mutation
+
+test result: FAILED. 2 passed; 1 failed; 0 ignored; 0 measured; 259 filtered out; finished in 32.24s
+
+error: test failed, to rerun pass `-p xtask --test performance_contract_074`

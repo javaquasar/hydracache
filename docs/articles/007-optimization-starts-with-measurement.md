@@ -13265,3 +13265,47 @@ expected refusal after a successful frame; that failure remains separate from
 the corrected test images. No runtime predicate or deadline was changed to
 obtain the result. These controls establish preparation binding, not delivery,
 process-loss recovery or a measured performance gain.
+
+## Why original delivery needs a held launcher
+
+The direct worker projection combines delivery and execution in one
+`StartTransientUnit` request. A lost reply can therefore leave an executing
+process before the receiver has pinned its cgroup. Neither a successful job
+reply nor connection closure proves that every manager-held pipe writer is
+closed. Adding a send operation to the preparation owner would not solve this
+gap.
+
+The approved two-phase design requires an independently armed watchdog before
+delivery, a launcher held behind a one-shot barrier, original live binding of
+its executable/streams/process/cgroup, then a complete validation frame before
+release. Its separately signed v2 requirements bind the historical consent and
+three artifact roles without changing the meaning of existing signed v1 bytes.
+The data inspector authenticates a supplied signature, not production enrollment
+or permission to execute. Signed time claims cannot refresh original admission
+origins.
+
+The first kernel experiment isolates the barrier from product execution and
+evidence ownership. It tests a constant pipe effect, a fixed absolute BOOTTIME timer,
+owner/guardian liveness pins and lost acknowledgment. It does not substitute a
+live pidfd for actual watchdog readiness. In particular, death after the last
+liveness observation still needs independent writer revocation; all-cgroup
+cessation, external descriptor closure and actual EOF remain separate gates.
+
+GNU 1.94 and MSRV 1.88 each pass nine ordinary controls and the same twelve
+owned kernel scenarios. In the lost-ACK case, the fixture proves its constant
+pipe effect, stops before acknowledgment, then receives real SIGKILL through
+its retained pidfd. The sender still cannot resend. This demonstrates the
+ambiguity to preserve, not permission to replay an incomplete attempt.
+
+The first healthy barrier failed because Linux reports the requested
+`MSG_CMSG_CLOEXEC` policy in output `msg_flags` even without ancillary data.
+A direct kernel probe reproduced that bit. The new predicate accepts only zero
+or that policy bit; a 32-bit mutation table and actual rights-transfer refusal
+keep truncation, descriptor transfer and every other bit closed. No old
+delivery predicate or deadline was changed. These are correctness results,
+not a throughput or allocation improvement.
+
+The [two-phase barrier packet](../testing/performance/0.74/local-runs/two-phase-launch-20261019/README.md)
+retains the committed-source current/MSRV cohorts, original negative results and
+exact scope. Actual pre-armed guardian enrollment, original delivery and complete
+writer cessation still precede any production start or completion claim.
