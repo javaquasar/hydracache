@@ -1,0 +1,209 @@
+diff --git a/crates/xtask/tests/support/performance_contract_074_barred_collector.rs b/crates/xtask/tests/support/performance_contract_074_barred_collector.rs
+index dc888c37..95e6ab44 100644
+--- a/crates/xtask/tests/support/performance_contract_074_barred_collector.rs
++++ b/crates/xtask/tests/support/performance_contract_074_barred_collector.rs
+@@ -1,4 +1,6 @@
+ //! Original barred I/O enrollment must not weaken old frames or deadlines.
++#[path = "performance_contract_074_collector_notices.rs"]
++mod collector_notices;
+ const GATES: &str = r###"
+ # BEGIN ORIGINAL BARRED COLLECTOR GATES
+ [[gate]]
+diff --git a/crates/xtask/tests/support/performance_contract_074_collector_notices.rs b/crates/xtask/tests/support/performance_contract_074_collector_notices.rs
+new file mode 100644
+index 00000000..dabdf394
+--- /dev/null
++++ b/crates/xtask/tests/support/performance_contract_074_collector_notices.rs
+@@ -0,0 +1,57 @@
++//! Parser-only acceptance; the two-child owner-fault candidate is withdrawn.
++fn root() -> std::path::PathBuf {
++    super::super::super::root()
++}
++fn read(path: &str) -> String {
++    std::fs::read_to_string(root().join(path))
++        .unwrap()
++        .replace('\r', "")
++}
++#[test]
++fn collector_notice_tests_preserve_the_entire_ordinary_kernel_and_join() {
++    let prefix = "tools/long-run-supervisor-074/src/";
++    for name in [
++        "diagnostic_original_barred_collector_kernel.rs",
++        "diagnostic_original_barred_collector.rs",
++        "diagnostic_original_barred_collector_test_api.rs",
++        "diagnostic_original_barred_collector_tests.rs",
++    ] {
++        let path = format!("{prefix}{name}");
++        let out = std::process::Command::new("git")
++            .args(["show", &format!("1c56d4a3:{path}")])
++            .current_dir(root())
++            .output()
++            .unwrap();
++        assert!(out.status.success());
++        let frozen = String::from_utf8(out.stdout).unwrap().replace('\r', "");
++        let raw = read(&path);
++        let current = if name.ends_with("_kernel.rs") {
++            let registration = "\n#[cfg(test)]\n#[path = \"diagnostic_original_collector_notice_tests.rs\"]\nmod notice_tests;\n";
++            assert_eq!(raw.matches(registration).count(), 1);
++            raw.replacen(registration, "", 1)
++        } else {
++            raw
++        };
++        assert_eq!(current, frozen, "{path}");
++    }
++}
++#[test]
++fn collector_notice_units_cover_shape_and_readiness_without_execution() {
++    let raw =
++        read("tools/long-run-supervisor-074/src/diagnostic_original_collector_notice_tests.rs");
++    for needed in [
++        "b\"BB\"",
++        "b\"P\"",
++        "b\"X\"",
++        "drop(peer)",
++        "original_collector_notice_alarm_precedes_queued_b",
++        "original_collector_notice_terminal_precedes_queued_b",
++        "assert_eq!(byte, b'B');",
++        "pid: 0",
++    ] {
++        assert!(raw.contains(needed), "{needed}");
++    }
++    for denied in ["SYS_clone3", "SYS_pidfd_send_signal", "timerfd_settime"] {
++        assert!(!raw.contains(denied));
++    }
++}
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_original_barred_collector_kernel.rs b/tools/long-run-supervisor-074/src/diagnostic_original_barred_collector_kernel.rs
+index dc4c0b0e..06c100d0 100644
+--- a/tools/long-run-supervisor-074/src/diagnostic_original_barred_collector_kernel.rs
++++ b/tools/long-run-supervisor-074/src/diagnostic_original_barred_collector_kernel.rs
+@@ -317,3 +317,7 @@ impl Drop for KernelCollector {
+         let _ = self.stop();
+     }
+ }
++
++#[cfg(test)]
++#[path = "diagnostic_original_collector_notice_tests.rs"]
++mod notice_tests;
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_original_collector_notice_tests.rs b/tools/long-run-supervisor-074/src/diagnostic_original_collector_notice_tests.rs
+new file mode 100644
+index 00000000..26494bff
+--- /dev/null
++++ b/tools/long-run-supervisor-074/src/diagnostic_original_collector_notice_tests.rs
+@@ -0,0 +1,117 @@
++//! Parser/readiness units only, not an original-alarm or process-identity proof.
++use super::*;
++use std::io::Write;
++fn event() -> File {
++    let fd = unsafe { libc::eventfd(0, libc::EFD_CLOEXEC | libc::EFD_NONBLOCK) };
++    assert!(fd >= 0);
++    unsafe { File::from_raw_fd(fd) }
++}
++fn fixture() -> (KernelCollector, File, File) {
++    let mut fds = [-1; 2];
++    assert_eq!(
++        unsafe {
++            libc::socketpair(
++                libc::AF_UNIX,
++                libc::SOCK_SEQPACKET | libc::SOCK_NONBLOCK | libc::SOCK_CLOEXEC,
++                0,
++                fds.as_mut_ptr(),
++            )
++        },
++        0
++    );
++    // pid=0 makes cancellation inert. The synthetic event FD exercises only
++    // poll precedence; manual tests use real atomically created child pidfds.
++    (
++        KernelCollector {
++            pid: 0,
++            pinned: event(),
++            peer: unsafe { File::from_raw_fd(fds[0]) },
++            child_peer: fds[1],
++        },
++        unsafe { File::from_raw_fd(fds[1]) },
++        event(),
++    )
++}
++fn send(peer: &File, bytes: &[u8]) {
++    assert_eq!(
++        unsafe {
++            libc::send(
++                peer.as_raw_fd(),
++                bytes.as_ptr().cast(),
++                bytes.len(),
++                libc::MSG_NOSIGNAL,
++            )
++        },
++        bytes.len() as isize
++    );
++}
++#[test]
++fn original_collector_notice_shape_and_duplicate_matrix() {
++    for bytes in [b"".as_slice(), b"P", b"X", b"L", b"F", b"BB", b"B\0"] {
++        for initial in [false, true] {
++            let (kernel, peer, alarm) = fixture();
++            send(&peer, bytes);
++            assert!(matches!(
++                kernel.observe(alarm.as_raw_fd(), initial),
++                Err(BarredCustodyError::Child)
++            ));
++        }
++    }
++    let (kernel, peer, alarm) = fixture();
++    send(&peer, b"B");
++    kernel.observe(alarm.as_raw_fd(), true).unwrap();
++    kernel.observe(alarm.as_raw_fd(), false).unwrap();
++    send(&peer, b"B");
++    assert!(matches!(
++        kernel.observe(alarm.as_raw_fd(), false),
++        Err(BarredCustodyError::Child)
++    ));
++    for initial in [false, true] {
++        let (kernel, peer, alarm) = fixture();
++        send(&peer, b"E");
++        assert!(matches!(
++            kernel.observe(alarm.as_raw_fd(), initial),
++            Err(BarredCustodyError::Expired)
++        ));
++    }
++    let (kernel, peer, alarm) = fixture();
++    drop(peer);
++    assert!(matches!(
++        kernel.observe(alarm.as_raw_fd(), true),
++        Err(BarredCustodyError::Child)
++    ));
++}
++#[test]
++fn original_collector_notice_alarm_precedes_queued_b() {
++    let (kernel, peer, mut alarm) = fixture();
++    send(&peer, b"B");
++    alarm.write_all(&1u64.to_ne_bytes()).unwrap();
++    assert!(matches!(
++        kernel.observe(alarm.as_raw_fd(), true),
++        Err(BarredCustodyError::Expired)
++    ));
++    let mut byte = 0u8;
++    assert_eq!(
++        unsafe {
++            libc::recv(
++                kernel.peer.as_raw_fd(),
++                (&mut byte as *mut u8).cast(),
++                1,
++                libc::MSG_TRUNC,
++            )
++        },
++        1
++    );
++    assert_eq!(byte, b'B');
++}
++#[test]
++fn original_collector_notice_terminal_precedes_queued_b() {
++    let (mut kernel, peer, alarm) = fixture();
++    send(&peer, b"B");
++    kernel.pinned.write_all(&1u64.to_ne_bytes()).unwrap();
++    assert!(matches!(
++        kernel.observe(alarm.as_raw_fd(), true),
++        Err(BarredCustodyError::Child)
++    ));
++    assert!(matches!(kernel.alive(), Err(BarredCustodyError::Child)));
++}

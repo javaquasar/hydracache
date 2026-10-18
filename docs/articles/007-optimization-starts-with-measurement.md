@@ -12544,3 +12544,61 @@ and the focused format/lint/check gates passed. Postflight preserved the install
 supervisor and frozen qualification input. This confirms the selected barred
 enrollment/quarantine boundary, not actual owner death in the two-child topology
 or a performance improvement.
+
+## Custody after the original owner is killed
+
+Normal cancellation proves an order of destructors; it cannot prove what survives
+SIGKILL. The two-child topology needs its own owner-death experiment. The external
+driver receives only atomically created collector and custodian pidfds, in fixed
+role order, from the fixture's kernel-authenticated sender. It receives no fence,
+stream, sink or private notice endpoint. That restriction matters: an observer
+holding an original lock alias could manufacture retention, while a peer alias
+could hide the owner disconnect that should quarantine the collector's I/O.
+
+The [two-child owner-loss packet](../testing/performance/0.74/local-runs/original-collector-loss-20261018/README.md)
+places the kill on either side of the unchanged closing frame. Before it, the
+barred children exist but the joint frame has not authorized the prepared owner;
+after it, the fixture has asserted all 34 authentication and signature calls.
+In either case, losing the real owner must leave both children alive and cause
+the collector to close its four I/O FDs autonomously. Killing either child first
+must leave the other holding the fence past the original bound. Kernel lock
+availability after both die still cannot authorize replay of retained history.
+
+Lost B is a separate observation. The test consumes the actual initial B and
+lets the unchanged observer expire on the original alarm. Its first remaining
+ordered notice must be E while the children retain custody; a leftover B is a
+failed loss experiment. Parser units additionally reject malformed, duplicate,
+empty and oversized notices and establish precedence of expiry or terminal
+readiness over queued B. Their synthetic readiness FDs test parsing, not process
+identity; the owner-death matrix uses real atomic pidfds.
+
+The fixture protocol also needs resource-safe refusal. Its receiver collects all
+SCM_RIGHTS descriptors before validating other ancillary fields, so an unknown
+field before the rights cannot leak later received FDs. Strict credentials,
+role/identity checks, duplicate-field rejection and matched-image checks precede
+any selected child signal. All changes remain test-only; the ordinary join,
+raw child, original validators and time bounds stay unchanged. These are barred
+failure proofs, not authenticated activation or cessation of active writers.
+
+The first matrix stopped at the MSRV healthy prerequisite. Rust 1.94 completed
+twelve owner-death scenarios and three lost-B controls, but Rust 1.88 refused
+Original(Challenge(Time)) on revalidation after all 34 authentication/signature
+calls. Its trace's zero time-refusal counter did not mean no refusal occurred:
+that counter does not cover the direct challenge-age guard. Error provenance
+and instrumentation coverage must be read together.
+
+A separately retained ABBA diagnostic then ran only the unchanged healthy test
+on previous/current/current/previous MSRV images. Statuses were 101/0/0/0; the
+previous image also hit the same challenge-age boundary. This demonstrates an
+existing unstable healthy boundary, not an attributed compiler or filesystem
+regression. The later green observations cannot turn the interrupted matrix
+green. The new fault candidate is withdrawn and fully recoverable from its
+source capsule; only the independent parser units are accepted. The next
+optimization question is preparation cost within the original window, not a
+larger window. Grouping custody and barred enrollment would change intermediate
+observation frequency and requires agreement before that experiment.
+
+The independent [parser-only packet](../testing/performance/0.74/local-runs/original-collector-notices-20261018/README.md)
+passes eight descriptor/notice units per compiler and 221 static contracts,
+with the complete ordinary kernel and join frozen. It does not close the
+interrupted owner-fault gate.

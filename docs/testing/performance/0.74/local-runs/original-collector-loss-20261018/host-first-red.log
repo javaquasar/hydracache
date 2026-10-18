@@ -1,0 +1,204 @@
+HC074-COLLECTOR-LOSS-SERVER preflight=ok supervisor_pid=8839 restarts=0
+36f6349c3c93f37a681a02644dae4376d183db4685cc3f13b7180b5b1c7e2c7a  ./tests-194
+767db888bc9d4b980a2eab002314a9ddd5f234e498656c6a1bf38e0a83fc9e4f  ./tests-188
+ddcea9b9d346a659f849c855200824bd4865184324251cc9177e1348a87fe80f  ./guard.sh
+3261defa1e2e1b6b7e17fb41799a1de0e5d5a1c2b272b3ea19522f639ab5ff7c  ./run.sh
+484d480c9a2a19149e262ea90d90bd9ec7a45cd7da4bbcb080b0026092618352  ./original_custody_owner_loss.py
+ed38273b823b3bec472b2f26a0a015c62a906b008a357d37dbd5a695a717557c  ./test_original_custody_owner_loss.py
+5d355cbbb931129333a0787f8331e598d8151d77982dba75e12dd5abef664fb9  ./original_collector_owner_loss.py
+2c0a8cbb6a55a3c789a9dfbe2a42c3d90c47b0118bcfe468dfd7cd906ab48701  ./test_original_collector_owner_loss.py
+test_before_frame_requires_zero (test_original_collector_owner_loss.CollectorPacketTests.test_before_frame_requires_zero) ... ok
+test_bool_float_and_malformed_origins_refuse (test_original_collector_owner_loss.CollectorPacketTests.test_bool_float_and_malformed_origins_refuse) ... ok
+test_exact_fixture_only (test_original_collector_owner_loss.CollectorPacketTests.test_exact_fixture_only) ... ok
+test_matched_ancillary (test_original_collector_owner_loss.CollectorPacketTests.test_matched_ancillary) ... ok
+test_matched_packet (test_original_collector_owner_loss.CollectorPacketTests.test_matched_packet) ... ok
+test_receive_rejects_unknown_ancillary_and_closes_later_rights (test_original_collector_owner_loss.CollectorPacketTests.test_receive_rejects_unknown_ancillary_and_closes_later_rights) ... ok
+test_role_cut_owner_and_frame_binding (test_original_collector_owner_loss.CollectorPacketTests.test_role_cut_owner_and_frame_binding) ... ok
+test_truncation_rights_and_credentials_refuse (test_original_collector_owner_loss.CollectorPacketTests.test_truncation_rights_and_credentials_refuse) ... ok
+test_unknown_extra_missing_and_duplicate_fields (test_original_collector_owner_loss.CollectorPacketTests.test_unknown_extra_missing_and_duplicate_fields) ... ok
+test_command_selects_only_one_ignored_fixture (test_original_custody_owner_loss.CustodyLossDriverTests.test_command_selects_only_one_ignored_fixture) ... ok
+test_explicit_refusal (test_original_custody_owner_loss.CustodyLossDriverTests.test_explicit_refusal) ... ok
+test_independent_lock_observer_never_keeps_the_original_lock (test_original_custody_owner_loss.CustodyLossDriverTests.test_independent_lock_observer_never_keeps_the_original_lock) ... ok
+test_pidfd_is_live_and_owned (test_original_custody_owner_loss.CustodyLossDriverTests.test_pidfd_is_live_and_owned) ... ok
+test_snapshot_detects_bytes_metadata_and_refuses_symlinks (test_original_custody_owner_loss.CustodyLossDriverTests.test_snapshot_detects_bytes_metadata_and_refuses_symlinks) ... ok
+test_snapshot_refuses_over_budget_data (test_original_custody_owner_loss.CustodyLossDriverTests.test_snapshot_refuses_over_budget_data) ... ok
+
+----------------------------------------------------------------------
+Ran 15 tests in 0.002s
+
+OK
+HC074-COLLECTOR-LOSS-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-COLLECTOR-LOSS-COHORT compiler=194 begin=true
+
+running 8 tests
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::kernel::notice_tests::original_collector_notice_alarm_precedes_queued_b ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::kernel::notice_tests::original_collector_notice_shape_and_duplicate_matrix ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::kernel::notice_tests::original_collector_notice_terminal_precedes_queued_b ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::test_api::original_barred_clone_arguments_pin_atomically_without_shared_state ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::tests::original_descriptor_capture_refuses_a_closed_fd_without_replacement ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::tests::original_descriptor_capture_refuses_nonzero_sink_position ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::tests::original_descriptor_roles_exclude_all_four_writer_aliases ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::tests::original_descriptor_roles_refuse_any_duplicate_or_negative_slot ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 1109 filtered out; finished in 0.00s
+
+
+running 32 tests
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::starting_storage::tests::collector_starting_storage_exact_phase_order_and_old_inventory ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::starting_storage::tests::collector_starting_storage_exclusive_create_and_fd_mutations_refuse ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::starting_storage::tests::collector_starting_storage_refuses_reentry_skips_early_ack_and_unexpected_third_file ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::starting_storage::tests::custody_tests::original_collector_custody_checks_storage_before_acquisition_and_never_retries ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::starting_storage::tests::custody_tests::original_collector_custody_has_one_owner_and_latches_repeat_refusal ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::starting_storage::tests::custody_tests::original_collector_custody_rejects_foreign_original_and_descriptor_drift ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::starting_storage::tests::custody_tests::original_collector_custody_requires_acknowledged_starting_and_sticks ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_all_legacy_and_parent_contexts_refuse_dangling_links ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_bound_named_or_original_object_drift_never_adopted ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_every_fixed_leaf_entry_blocks_without_decode_or_cleanup ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_healthy_empty_repeat_excludes_legacy_and_releases_only_lock ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_independent_concurrent_storage_keeps_local_refusal ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_initial_busy_keeps_storage_and_other_owner_healthy ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_missing_unsafe_or_restored_storage_remains_refused ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_public_guard_is_original_thread_only ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_seeded_between_scan_context_is_seen_and_retained ... seed=0x749
+ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_unsafe_or_missing_lock_and_legacy_ownership_never_repaired ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_wrong_private_origin_and_nonroot_fixed_open_refuse ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::custody::custody_cannot_adopt_a_replaced_named_lock ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::custody::custody_first_drop_keeps_original_checks_and_refuses_a_second_transfer ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::custody::custody_survives_original_drop ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::custody::ordinary_drop_still_unlocks_a_retained_alias ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_all_contexts_refuse_initial_and_bound_dangling_symlinks ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_concurrent_independent_open_cannot_bypass_same_flock ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_deployed_mode_or_unsafe_campaign_directory_requires_enrollment ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_initial_busy_is_retryable_and_never_unlocks_legacy_owner ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_missing_or_unsafe_lock_never_created_repaired_or_adopted ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_named_lock_replacement_never_adopted_and_original_remains_held ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_policy_types_and_error_seams_remain_fail_closed ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_private_descriptor_substitutions_latch_without_refresh ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_same_legacy_lock_blocks_both_campaign_entry_points ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_seeded_bound_identity_state_and_metadata_failures_latch ... seed=0x746
+ok
+
+test result: ok. 32 passed; 0 failed; 0 ignored; 0 measured; 1085 filtered out; finished in 0.94s
+
+HC074-COLLECTOR-LOSS-PHASE name=screen begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::collector_tests::original_barred_collector_screen ... HC074-BARRED-COLLECTOR-CONTROL sample=0 create_ipc=34 validate_ipc=34 collector_fds=7 custody_fds=3 mask_exact=true unchanged=true start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1116 filtered out; finished in 13.71s
+
+HC074-COLLECTOR-LOSS-PHASE name=screen completed=true
+HC074-COLLECTOR-LOSS-PHASE name=notice begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::collector_tests::loss_tests::original_collector_lost_b_notice ... HC074-COLLECTOR-LOSS-NOTICE seed=0x0740c318 repeat=1 reason=Expired barred_consumed=true expiry_notice=E origins_exact=true sticky=true unchanged=true start=false
+HC074-COLLECTOR-LOSS-NOTICE seed=0x0740c318 repeat=2 reason=Expired barred_consumed=true expiry_notice=E origins_exact=true sticky=true unchanged=true start=false
+HC074-COLLECTOR-LOSS-NOTICE seed=0x0740c318 repeat=3 reason=Expired barred_consumed=true expiry_notice=E origins_exact=true sticky=true unchanged=true start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1116 filtered out; finished in 42.05s
+
+HC074-COLLECTOR-LOSS-PHASE name=notice completed=true
+HC074-COLLECTOR-LOSS-PHASE name=owner begin=true
+HC074-COLLECTOR-LOSS-DRIVER binary_sha256=36f6349c3c93f37a681a02644dae4376d183db4685cc3f13b7180b5b1c7e2c7a
+HC074-COLLECTOR-LOSS-CHECKPOINT {"closing_authentication": 0, "collector": 165363, "custodian": 165362, "cut": "before-frame", "deadline": 1006911102633286, "order": "custodian-first", "origins": [1006898211378356, 1006900834810394, 1006901102633286, 1006901935857284, 1006910092405179, 1006910092779332], "owner": 165360, "repeat": 1, "roles": ["collector", "custodian"], "schema": "hc074-barred-owner-test-v1"}
+HC074-COLLECTOR-LOSS-OWNER seed=0x0740c418 repeat=1 cut=before-frame order=custodian-first owner_signal=9 first_signal=9 last_signal=9 io_closed=4 survivor_fds=3 retained_past_original_bound=true unchanged=true replay_refused=true start=false
+HC074-COLLECTOR-LOSS-CHECKPOINT {"closing_authentication": 0, "collector": 165369, "custodian": 165368, "cut": "before-frame", "deadline": 1006925117906113, "order": "collector-first", "origins": [1006912216984951, 1006914849848665, 1006915117906113, 1006915950408984, 1006924152639625, 1006924153023618], "owner": 165366, "repeat": 1, "roles": ["collector", "custodian"], "schema": "hc074-barred-owner-test-v1"}
+HC074-COLLECTOR-LOSS-OWNER seed=0x0740c418 repeat=1 cut=before-frame order=collector-first owner_signal=9 first_signal=9 last_signal=9 io_closed=4 survivor_fds=3 retained_past_original_bound=true unchanged=true replay_refused=true start=false
+HC074-COLLECTOR-LOSS-CHECKPOINT {"closing_authentication": 34, "collector": 165435, "custodian": 165434, "cut": "after-frame", "deadline": 1006939130057828, "order": "custodian-first", "origins": [1006926231085831, 1006928861670576, 1006929130057828, 1006929960899578, 1006938143484983, 1006938143868467], "owner": 165372, "repeat": 1, "roles": ["collector", "custodian"], "schema": "hc074-barred-owner-test-v1"}
+HC074-COLLECTOR-LOSS-OWNER seed=0x0740c418 repeat=1 cut=after-frame order=custodian-first owner_signal=9 first_signal=9 last_signal=9 io_closed=4 survivor_fds=3 retained_past_original_bound=true unchanged=true replay_refused=true start=false
+HC074-COLLECTOR-LOSS-CHECKPOINT {"closing_authentication": 34, "collector": 165443, "custodian": 165442, "cut": "after-frame", "deadline": 1006953121382500, "order": "collector-first", "origins": [1006940224946158, 1006942852906348, 1006943121382500, 1006943948982416, 1006952115784948, 1006952116170942], "owner": 165438, "repeat": 1, "roles": ["collector", "custodian"], "schema": "hc074-barred-owner-test-v1"}
+HC074-COLLECTOR-LOSS-OWNER seed=0x0740c418 repeat=1 cut=after-frame order=collector-first owner_signal=9 first_signal=9 last_signal=9 io_closed=4 survivor_fds=3 retained_past_original_bound=true unchanged=true replay_refused=true start=false
+HC074-COLLECTOR-LOSS-CHECKPOINT {"closing_authentication": 0, "collector": 165500, "custodian": 165499, "cut": "before-frame", "deadline": 1006967145639820, "order": "custodian-first", "origins": [1006954223443537, 1006956875581367, 1006957145639820, 1006957974179071, 1006966158770845, 1006966159158808], "owner": 165446, "repeat": 2, "roles": ["collector", "custodian"], "schema": "hc074-barred-owner-test-v1"}
+HC074-COLLECTOR-LOSS-OWNER seed=0x0740c418 repeat=2 cut=before-frame order=custodian-first owner_signal=9 first_signal=9 last_signal=9 io_closed=4 survivor_fds=3 retained_past_original_bound=true unchanged=true replay_refused=true start=false
+HC074-COLLECTOR-LOSS-CHECKPOINT {"closing_authentication": 0, "collector": 165506, "custodian": 165505, "cut": "before-frame", "deadline": 1006981156959670, "order": "collector-first", "origins": [1006968245863142, 1006970888718864, 1006971156959670, 1006971984553887, 1006980146408709, 1006980146793562], "owner": 165503, "repeat": 2, "roles": ["collector", "custodian"], "schema": "hc074-barred-owner-test-v1"}
+HC074-COLLECTOR-LOSS-OWNER seed=0x0740c418 repeat=2 cut=before-frame order=collector-first owner_signal=9 first_signal=9 last_signal=9 io_closed=4 survivor_fds=3 retained_past_original_bound=true unchanged=true replay_refused=true start=false
+HC074-COLLECTOR-LOSS-CHECKPOINT {"closing_authentication": 34, "collector": 165514, "custodian": 165513, "cut": "after-frame", "deadline": 1006995166356666, "order": "custodian-first", "origins": [1006982259068571, 1006984897346063, 1006985166356666, 1006985997134207, 1006994149973068, 1006994150354601], "owner": 165509, "repeat": 2, "roles": ["collector", "custodian"], "schema": "hc074-barred-owner-test-v1"}
+HC074-COLLECTOR-LOSS-OWNER seed=0x0740c418 repeat=2 cut=after-frame order=custodian-first owner_signal=9 first_signal=9 last_signal=9 io_closed=4 survivor_fds=3 retained_past_original_bound=true unchanged=true replay_refused=true start=false
+HC074-COLLECTOR-LOSS-CHECKPOINT {"closing_authentication": 34, "collector": 165520, "custodian": 165519, "cut": "after-frame", "deadline": 1007009155771313, "order": "collector-first", "origins": [1006996268410980, 1006998887542387, 1006999155771313, 1006999985716399, 1007008145740766, 1007008146131920], "owner": 165517, "repeat": 2, "roles": ["collector", "custodian"], "schema": "hc074-barred-owner-test-v1"}
+HC074-COLLECTOR-LOSS-OWNER seed=0x0740c418 repeat=2 cut=after-frame order=collector-first owner_signal=9 first_signal=9 last_signal=9 io_closed=4 survivor_fds=3 retained_past_original_bound=true unchanged=true replay_refused=true start=false
+HC074-COLLECTOR-LOSS-CHECKPOINT {"closing_authentication": 0, "collector": 165526, "custodian": 165525, "cut": "before-frame", "deadline": 1007023154664437, "order": "custodian-first", "origins": [1007010257025094, 1007012886506681, 1007013154664437, 1007013981811633, 1007022145745664, 1007022146133437], "owner": 165523, "repeat": 3, "roles": ["collector", "custodian"], "schema": "hc074-barred-owner-test-v1"}
+HC074-COLLECTOR-LOSS-OWNER seed=0x0740c418 repeat=3 cut=before-frame order=custodian-first owner_signal=9 first_signal=9 last_signal=9 io_closed=4 survivor_fds=3 retained_past_original_bound=true unchanged=true replay_refused=true start=false
+HC074-COLLECTOR-LOSS-CHECKPOINT {"closing_authentication": 0, "collector": 165534, "custodian": 165533, "cut": "before-frame", "deadline": 1007037180254250, "order": "collector-first", "origins": [1007024264134728, 1007026908192231, 1007027180254250, 1007028008713373, 1007036177867434, 1007036178251018], "owner": 165529, "repeat": 3, "roles": ["collector", "custodian"], "schema": "hc074-barred-owner-test-v1"}
+HC074-COLLECTOR-LOSS-OWNER seed=0x0740c418 repeat=3 cut=before-frame order=collector-first owner_signal=9 first_signal=9 last_signal=9 io_closed=4 survivor_fds=3 retained_past_original_bound=true unchanged=true replay_refused=true start=false
+HC074-COLLECTOR-LOSS-CHECKPOINT {"closing_authentication": 34, "collector": 165543, "custodian": 165542, "cut": "after-frame", "deadline": 1007051177058697, "order": "custodian-first", "origins": [1007038280587872, 1007040908355879, 1007041177058697, 1007042006054721, 1007050174011745, 1007050174395538], "owner": 165537, "repeat": 3, "roles": ["collector", "custodian"], "schema": "hc074-barred-owner-test-v1"}
+HC074-COLLECTOR-LOSS-OWNER seed=0x0740c418 repeat=3 cut=after-frame order=custodian-first owner_signal=9 first_signal=9 last_signal=9 io_closed=4 survivor_fds=3 retained_past_original_bound=true unchanged=true replay_refused=true start=false
+HC074-COLLECTOR-LOSS-CHECKPOINT {"closing_authentication": 34, "collector": 165549, "custodian": 165548, "cut": "after-frame", "deadline": 1007065207331603, "order": "collector-first", "origins": [1007052295516115, 1007054938607796, 1007055207331603, 1007056038456720, 1007064247905453, 1007064248295916], "owner": 165546, "repeat": 3, "roles": ["collector", "custodian"], "schema": "hc074-barred-owner-test-v1"}
+HC074-COLLECTOR-LOSS-OWNER seed=0x0740c418 repeat=3 cut=after-frame order=collector-first owner_signal=9 first_signal=9 last_signal=9 io_closed=4 survivor_fds=3 retained_past_original_bound=true unchanged=true replay_refused=true start=false
+HC074-COLLECTOR-LOSS-DRIVER completed=true cases=12 product=false
+HC074-COLLECTOR-LOSS-PHASE name=owner completed=true
+HC074-COLLECTOR-LOSS-COHORT compiler=194 completed=true
+HC074-COLLECTOR-LOSS-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-COLLECTOR-LOSS-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-COLLECTOR-LOSS-COHORT compiler=188 begin=true
+
+running 8 tests
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::kernel::notice_tests::original_collector_notice_alarm_precedes_queued_b ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::kernel::notice_tests::original_collector_notice_shape_and_duplicate_matrix ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::kernel::notice_tests::original_collector_notice_terminal_precedes_queued_b ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::test_api::original_barred_clone_arguments_pin_atomically_without_shared_state ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::tests::original_descriptor_capture_refuses_a_closed_fd_without_replacement ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::tests::original_descriptor_capture_refuses_nonzero_sink_position ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::tests::original_descriptor_roles_exclude_all_four_writer_aliases ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::tests::original_descriptor_roles_refuse_any_duplicate_or_negative_slot ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 1109 filtered out; finished in 0.00s
+
+
+running 32 tests
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::starting_storage::tests::collector_starting_storage_exact_phase_order_and_old_inventory ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::starting_storage::tests::collector_starting_storage_exclusive_create_and_fd_mutations_refuse ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::starting_storage::tests::collector_starting_storage_refuses_reentry_skips_early_ack_and_unexpected_third_file ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::starting_storage::tests::custody_tests::original_collector_custody_checks_storage_before_acquisition_and_never_retries ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::starting_storage::tests::custody_tests::original_collector_custody_has_one_owner_and_latches_repeat_refusal ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::starting_storage::tests::custody_tests::original_collector_custody_rejects_foreign_original_and_descriptor_drift ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::starting_storage::tests::custody_tests::original_collector_custody_requires_acknowledged_starting_and_sticks ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_all_legacy_and_parent_contexts_refuse_dangling_links ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_bound_named_or_original_object_drift_never_adopted ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_every_fixed_leaf_entry_blocks_without_decode_or_cleanup ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_healthy_empty_repeat_excludes_legacy_and_releases_only_lock ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_independent_concurrent_storage_keeps_local_refusal ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_initial_busy_keeps_storage_and_other_owner_healthy ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_missing_unsafe_or_restored_storage_remains_refused ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_public_guard_is_original_thread_only ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_seeded_between_scan_context_is_seen_and_retained ... seed=0x749
+ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_unsafe_or_missing_lock_and_legacy_ownership_never_repaired ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_wrong_private_origin_and_nonroot_fixed_open_refuse ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::custody::custody_cannot_adopt_a_replaced_named_lock ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::custody::custody_first_drop_keeps_original_checks_and_refuses_a_second_transfer ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::custody::custody_survives_original_drop ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::custody::ordinary_drop_still_unlocks_a_retained_alias ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_all_contexts_refuse_initial_and_bound_dangling_symlinks ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_concurrent_independent_open_cannot_bypass_same_flock ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_deployed_mode_or_unsafe_campaign_directory_requires_enrollment ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_initial_busy_is_retryable_and_never_unlocks_legacy_owner ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_missing_or_unsafe_lock_never_created_repaired_or_adopted ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_named_lock_replacement_never_adopted_and_original_remains_held ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_policy_types_and_error_seams_remain_fail_closed ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_private_descriptor_substitutions_latch_without_refresh ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_same_legacy_lock_blocks_both_campaign_entry_points ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_seeded_bound_identity_state_and_metadata_failures_latch ... seed=0x746
+ok
+
+test result: ok. 32 passed; 0 failed; 0 ignored; 0 measured; 1085 filtered out; finished in 0.92s
+
+HC074-COLLECTOR-LOSS-PHASE name=screen begin=true
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::collector_tests::original_barred_collector_screen ... 
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::collector_tests::original_barred_collector_screen' panicked at tools/long-run-supervisor-074/src/diagnostic_original_barred_collector_tests.rs:21:37:
+called `Result::unwrap()` on an `Err` value: Original(Challenge(Time))
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+HC074-VALIDATION-COST Report { stages: [Stats { wall_ns: 130, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 338684548, authentication_calls: 34, authentication_ns: 1128258, signature_calls: 34, signature_ns: 953771, worker_policy_calls: 0, worker_policy_ns: 0 }], first_time: None, time_refusals: 0 }
+FAILED
+
+failures:
+
+failures:
+    diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::collector_tests::original_barred_collector_screen
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1116 filtered out; finished in 13.73s
+

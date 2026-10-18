@@ -1,0 +1,258 @@
+//! Test-only two-child faults. All ordinary preparation and kernel code frozen.
+const GATES: &str = r###"
+# BEGIN ORIGINAL COLLECTOR LOSS GATES
+[[gate]]
+id = "tool.hydracache-long-run-supervisor-074.collector-lost-b"
+kind = "external_tool"
+source = "tools/long-run-supervisor-074/src/diagnostic_original_collector_loss_tests.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "hydracache_long_run_supervisor_074"
+test = "original_collector_lost_b_notice"
+cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
+env = ""
+reason = "Private barred collector notice and two-child owner loss; no start"
+tier = "manual"
+required_features = []
+required_env = ["HC074_START_MATERIAL_BUNDLE"]
+required_tools = ["cargo"]
+timeout_seconds = 1200
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::collector_tests::loss_tests::original_collector_lost_b_notice","--","--ignored","--exact","--nocapture","--test-threads=1"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+
+[[gate]]
+id = "tool.hydracache-long-run-supervisor-074.collector-owner-victim"
+kind = "external_tool"
+source = "tools/long-run-supervisor-074/src/diagnostic_original_collector_loss_tests.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "hydracache_long_run_supervisor_074"
+test = "original_collector_owner_victim"
+cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
+env = ""
+reason = "Private barred collector notice and two-child owner loss; no start"
+tier = "manual"
+required_features = []
+required_env = ["HC074_START_MATERIAL_BUNDLE","HC074_PRIVATE_COLLECTOR_LOSS_ROOT","HC074_PRIVATE_COLLECTOR_LOSS_CUT","HC074_PRIVATE_COLLECTOR_LOSS_AUTHORITY"]
+required_tools = ["cargo"]
+timeout_seconds = 1200
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::collector_tests::loss_tests::original_collector_owner_victim","--","--ignored","--exact","--nocapture","--test-threads=1"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+
+# END ORIGINAL COLLECTOR LOSS GATES
+"###;
+const COMPAT: &str = r###"
+## Private barred collector owner loss fixture
+
+The hc074-barred-owner-test-v1 packet is confined to the opt-in Linux libtest
+fixture. A private owned datagram carries bounded JSON schema, owner, roles,
+cut, deadline, origins and closing_authentication plus exactly two SCM_RIGHTS
+atomic pidfds in collector/custodian order. The driver requires exact kernel
+SCM_CREDENTIALS PID/UID/GID, fields/types/roles, distinct live direct children of
+the owned fixture and a matched executable. Duplicate JSON fields, unknown
+versions, extra/missing or truncated ancillary data and ambiguous rights refuse;
+all collected rights close on rejection. The observer receives no original fence,
+stream/sink or notice peer. Matched fixture/driver only, no production listener,
+start permission, durable receipt or recovered acknowledgement is introduced.
+"###;
+fn strip(raw: &str, seam: &str) -> String {
+    assert_eq!(
+        raw.matches(seam).count(),
+        1,
+        "collector loss exception drift"
+    );
+    raw.replacen(seam, "", 1)
+}
+pub(super) fn normalize(path: &str, raw: &str) -> String {
+    match path {
+        "docs/testing/gated-test-registry.toml" => strip(raw, GATES),
+        "docs/COMPAT.md" => strip(raw, COMPAT),
+        _ => raw.to_owned(),
+    }
+}
+fn read(path: &str) -> String {
+    std::fs::read_to_string(super::super::super::root().join(path))
+        .unwrap()
+        .replace('\r', "")
+}
+fn frozen(path: &str) -> String {
+    let out = std::process::Command::new("git")
+        .args(["show", &format!("1c56d4a3:{path}")])
+        .current_dir(super::super::super::root())
+        .output()
+        .unwrap();
+    assert!(out.status.success());
+    String::from_utf8(out.stdout).unwrap().replace('\r', "")
+}
+#[test]
+fn collector_loss_preserves_all_ordinary_join_kernel_and_existing_fixtures() {
+    let prefix = "tools/long-run-supervisor-074/src/";
+    let path = format!("{prefix}diagnostic_original_barred_collector.rs");
+    let raw = read(&path);
+    let start = raw
+        .find("            #[cfg(test)]\n            if fault == 3 {")
+        .unwrap();
+    let end = start + raw[start..].find("\n            held.collector\n").unwrap() + 1;
+    let seam = &raw[start..end];
+    assert!(seam.contains(".observe(inventory.fds[1], true)?;"));
+    assert_eq!(strip(&raw, seam), frozen(&path));
+    for (name, allowed) in [
+        ("diagnostic_original_barred_collector_kernel.rs", "\n#[cfg(test)]\n#[path = \"diagnostic_original_collector_notice_tests.rs\"]\nmod notice_tests;\n"),
+        ("diagnostic_original_barred_collector_test_api.rs", "#[path = \"diagnostic_original_collector_loss_test_api.rs\"]\nmod loss;\n"),
+        ("diagnostic_original_barred_collector_tests.rs", "#[path = \"diagnostic_original_collector_loss_tests.rs\"]\nmod loss_tests;\n"),
+    ] {
+        let path = format!("{prefix}{name}"); assert_eq!(strip(&read(&path), allowed), frozen(&path));
+    }
+    for path in [
+        "tools/long-run-supervisor-074/src/diagnostic_original_barred_custody.rs",
+        "tools/long-run-supervisor-074/src/diagnostic_original_custody_loss_tests.rs",
+        "tools/long-run-supervisor-074/tests/original_custody_owner_loss.py",
+        "tools/long-run-supervisor-074/tests/test_original_custody_owner_loss.py",
+        "tools/long-run-supervisor-074/src/diagnostic_autonomous_watchdog.rs",
+        "docs/testing/performance/0.74/qualification-manifest.toml",
+    ] {
+        assert_eq!(read(path), frozen(path), "{path}");
+    }
+    for needed in [
+        "self.custody.validate()?;",
+        "child.alive()?;",
+        "self.custody.original.inspect_deadline()?;",
+    ] {
+        assert_ne!(
+            strip(&raw.replace(needed, ""), seam),
+            frozen(&format!("{prefix}diagnostic_original_barred_collector.rs"))
+        );
+    }
+}
+#[test]
+fn collector_loss_requires_ordered_e_and_two_real_original_frame_cuts() {
+    let raw = read("tools/long-run-supervisor-074/src/diagnostic_original_collector_loss_tests.rs");
+    for needed in [
+        "prepare_collector_fixture_for_test(3,",
+        "failure.assert_lost_b_for_test()",
+        "failure.origins_for_test()[..4]",
+        "mask(), parent_mask",
+        "failure.retry_for_test()",
+        "records(leaf), before",
+        "retained_context_refuses_for_test(root)",
+        "libc::SCM_RIGHTS",
+        "barred.pinned_for_test()",
+        "call_count(&report, Stage::Bind)",
+        "\"before-frame\"",
+        "\"after-frame\"",
+        "hc074-barred-owner-test-v1",
+    ] {
+        assert!(raw.contains(needed), "{needed}");
+    }
+    let api =
+        read("tools/long-run-supervisor-074/src/diagnostic_original_collector_loss_test_api.rs");
+    let proof = |s: &str| {
+        [
+            "assert_eq!(byte, b'E');",
+            "assert_eq!(poll[1].revents, 0);",
+            "kernel.alive().unwrap();",
+            "self.held.custody.assert_original_for_test();",
+            "assert_fds(",
+        ]
+        .iter()
+        .all(|part| s.contains(part))
+    };
+    assert!(proof(&api));
+    for needed in [
+        "assert_eq!(byte, b'E');",
+        "assert_eq!(poll[1].revents, 0);",
+        "kernel.alive().unwrap();",
+    ] {
+        assert!(!proof(&api.replace(needed, "")));
+    }
+}
+#[test]
+fn collector_loss_driver_binds_two_children_and_never_receives_original_aliases() {
+    let raw = read("tools/long-run-supervisor-074/tests/original_collector_owner_loss.py");
+    let proof = |s: &str| {
+        [
+            "credentials == [(owner, os.getuid(), os.getgid())]",
+            "rights_headers == 1 and len(received) == 2",
+            "len(set(pids)) == 2",
+            "base.parent_pid(pid) == child.pid",
+            "signal.pidfd_send_signal(owner, signal.SIGKILL)",
+            "signal.pidfd_send_signal(received[first], signal.SIGKILL)",
+            "signal.pidfd_send_signal(received[last], signal.SIGKILL)",
+            "base.wait_killed(received[first])",
+            "base.wait_killed(received[last])",
+            "quarantined(pids[0], received[0], lock)",
+            "base.locked(lock, True)",
+            "base.snapshot(root / \"origin\") == before",
+            "restore subreaper",
+        ]
+        .iter()
+        .all(|part| s.contains(part))
+    };
+    assert!(proof(&raw));
+    for needed in [
+        "credentials == [(owner, os.getuid(), os.getgid())]",
+        "base.locked(lock, True)",
+        "base.wait_killed(received[last])",
+    ] {
+        assert!(!proof(&raw.replace(needed, "")));
+    }
+    for denied in [
+        "os.kill(",
+        "os.killpg(",
+        "child.kill(",
+        "systemctl",
+        "sudo",
+        "CLOCK_REALTIME",
+        "timerfd_settime",
+        "peer_for_test",
+    ] {
+        assert!(!raw.contains(denied), "{denied}");
+    }
+    assert!(read("docs/COMPAT.md").contains(COMPAT));
+}
+#[test]
+fn collector_notice_units_cover_shape_and_readiness_precedence_without_activation() {
+    let raw =
+        read("tools/long-run-supervisor-074/src/diagnostic_original_collector_notice_tests.rs");
+    for needed in [
+        "b\"BB\"",
+        "b\"P\"",
+        "b\"X\"",
+        "drop(peer)",
+        "original_collector_notice_alarm_precedes_queued_b",
+        "original_collector_notice_terminal_precedes_queued_b",
+        "assert_eq!(byte, b'B');",
+        "pid: 0",
+    ] {
+        assert!(raw.contains(needed), "{needed}");
+    }
+    for denied in ["SYS_clone3", "SYS_pidfd_send_signal", "timerfd_settime"] {
+        assert!(!raw.contains(denied));
+    }
+}

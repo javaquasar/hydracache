@@ -549,3 +549,33 @@ exclusive transfer or authenticated delivery. Two-child owner death and lost-B
 proofs, malformed-notice runtime controls, authenticated activation, all-writer
 binding/revocation, external active-guardian supervision and durable completion
 remain distinct gates. No installed service or product workload changes here.
+
+## Two-child barred owner loss
+
+The [collector owner-loss packet](local-runs/original-collector-loss-20261018/README.md)
+tests actual owner SIGKILL before/after the joint full frame. Only the two atomic
+pidfds leave the fixture, over exact kernel-credential-checked datagrams; neither
+fence nor private peer can remain alive through the observer. The collector must
+quarantine its four I/O FDs after owner disconnect, both children must be adopted
+by the temporary test subreaper, and either survivor must hold the fence past
+the original bound after its sibling dies. Fresh preparation must still refuse
+retained history after both exact children are killed/reaped.
+
+Lost B requires first remaining E rather than merely an Expired result. Parser
+units cover malformed notices and alarm/terminal precedence with synthetic
+readiness FDs, separately from the real-pidfd process matrix. The ordinary join,
+kernel, complete validation frames and four original time origins are frozen;
+test seams cannot enter an ordinary build. This covers selected barred loss cuts,
+not every instruction boundary, authenticated activation or active writer-tree
+revocation. Explicit active-cleanup errors, external active supervision and
+durable completion remain required before production execution.
+
+This two-child experiment is withheld: 1.94 completed its twelve owner cases and
+three lost-B controls, but the first 1.88 healthy screen refused the direct
+challenge-age guard. A separate ABBA healthy diagnostic also refused on the
+previous retained image; later green screens do not replace the stopped cohort.
+The candidate's thirteen source files are archived and its fault seams/protocol
+registration are withdrawn. Only parser-only tests are accepted independently.
+Budget attribution must precede resuming the matrix. Combining custody and
+barred enrollment under one frame needs explicit agreement because it removes
+an intermediate full observation, even if predicates and deadlines stay exact.

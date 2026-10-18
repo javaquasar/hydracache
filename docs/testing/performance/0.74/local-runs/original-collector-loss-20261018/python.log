@@ -1,0 +1,20 @@
+test_before_frame_requires_zero (test_original_collector_owner_loss.CollectorPacketTests.test_before_frame_requires_zero) ... ok
+test_bool_float_and_malformed_origins_refuse (test_original_collector_owner_loss.CollectorPacketTests.test_bool_float_and_malformed_origins_refuse) ... ok
+test_exact_fixture_only (test_original_collector_owner_loss.CollectorPacketTests.test_exact_fixture_only) ... ok
+test_matched_ancillary (test_original_collector_owner_loss.CollectorPacketTests.test_matched_ancillary) ... ok
+test_matched_packet (test_original_collector_owner_loss.CollectorPacketTests.test_matched_packet) ... ok
+test_receive_rejects_unknown_ancillary_and_closes_later_rights (test_original_collector_owner_loss.CollectorPacketTests.test_receive_rejects_unknown_ancillary_and_closes_later_rights) ... ok
+test_role_cut_owner_and_frame_binding (test_original_collector_owner_loss.CollectorPacketTests.test_role_cut_owner_and_frame_binding) ... ok
+test_truncation_rights_and_credentials_refuse (test_original_collector_owner_loss.CollectorPacketTests.test_truncation_rights_and_credentials_refuse) ... ok
+test_unknown_extra_missing_and_duplicate_fields (test_original_collector_owner_loss.CollectorPacketTests.test_unknown_extra_missing_and_duplicate_fields) ... ok
+test_command_selects_only_one_ignored_fixture (test_original_custody_owner_loss.CustodyLossDriverTests.test_command_selects_only_one_ignored_fixture) ... ok
+test_explicit_refusal (test_original_custody_owner_loss.CustodyLossDriverTests.test_explicit_refusal) ... ok
+test_independent_lock_observer_never_keeps_the_original_lock (test_original_custody_owner_loss.CustodyLossDriverTests.test_independent_lock_observer_never_keeps_the_original_lock) ... ok
+test_pidfd_is_live_and_owned (test_original_custody_owner_loss.CustodyLossDriverTests.test_pidfd_is_live_and_owned) ... ok
+test_snapshot_detects_bytes_metadata_and_refuses_symlinks (test_original_custody_owner_loss.CustodyLossDriverTests.test_snapshot_detects_bytes_metadata_and_refuses_symlinks) ... ok
+test_snapshot_refuses_over_budget_data (test_original_custody_owner_loss.CustodyLossDriverTests.test_snapshot_refuses_over_budget_data) ... ok
+
+----------------------------------------------------------------------
+Ran 15 tests in 0.004s
+
+OK

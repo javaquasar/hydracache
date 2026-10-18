@@ -47,3 +47,28 @@ Passing this matrix establishes only barred topology/notice-loss behavior.
 Authenticated original send/start, whole-writer enrollment and revocation,
 external active supervision, explicit active-cleanup failure handling, durable
 completion and later cells remain separate work.
+
+## Healthy screen refusal attribution
+
+The first Rust 1.94 cohort completed all twelve owner cases and three lost-B
+controls. The first MSRV screen refused Original(Challenge(Time)) on revalidation
+after all 34 authentication/signature calls; the script stopped before MSRV
+faults. Retain that result and both exact images/source capsules. No fault retry
+or admission follows from a later green observation.
+
+Before changing source, run a separate four-screen fixed ABBA diagnostic on the
+same host: previous retained 1.88 image (ordinary source 1c56d4a3), current 1.88
+image, current image, previous image. Verify both hashes, same signed data bundle
+and unchanged healthy function/body, use new fixture roots per invocation and
+retain each exit status/reason. Seed 0x0740c518 describes the fixed order only.
+This is attribution of the healthy boundary, not a replacement passing cohort,
+automatic retry or performance comparison. Preserve every original deadline,
+validator and host guard. Investigate budget before resuming the stopped matrix.
+
+The ABBA statuses were 101/0/0/0; the previous image also refused the same
+Challenge(Time) guard. The stopped candidate is withdrawn and recoverable from
+local-runs/original-collector-loss-20261018, including all thirteen source files.
+Only the independent notice/readiness units are accepted in 7d3a9edc. No later
+green observation closes the uncompleted MSRV gate. A proposed custody/enrollment
+frame-grouping experiment needs explicit agreement before implementation;
+its predicates, original origins/deadlines and start/send barriers must remain.

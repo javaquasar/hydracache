@@ -3886,3 +3886,19 @@ Expiry/peer failure sheds its four I/O FDs but retains the fence, including afte
 separate-custodian SIGKILL. Original objects/message remain parent-owned. This
 does not open activation, original send/start, completion, installation or a
 product pilot; two-child owner death, notice-loss and all-writer gates remain.
+
+The subsequent [two-child owner-loss packet](local-runs/original-collector-loss-20261018/README.md)
+targets the owner-death and lost-B gates separately: an external pidfd-only
+observer tests both closing-frame cuts and child-death orders, original-alarm
+retention, autonomous I/O quarantine and retained-history refusal. Parser tests
+separate malformed/duplicate notices and readiness precedence from real process
+identity. All implementation seams are cfg(test); original send/start, active
+writer revocation, external supervision and completion remain closed.
+
+That matrix stopped at the first MSRV healthy screen with Challenge(Time).
+Current Rust completed twelve owner cases and three lost-B controls; no MSRV
+faults ran. ABBA healthy attribution reproduced the same refusal on the previous
+retained image, so later green controls do not constitute a passing replacement.
+The test candidate is withdrawn and archived; independent parser units remain.
+Preparation-budget attribution and an agreed observation-grouping experiment
+precede a fresh complete two-compiler matrix. Product admission remains closed.

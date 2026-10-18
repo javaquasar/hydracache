@@ -512,3 +512,19 @@ delivery, including failure ordering and retained history, before activation.
 Original send/start, whole-writer-tree revocation, independent active supervision,
 explicit active-cleanup errors and durable completion remain open. Installation
 and product/qualification admission are still separate and closed.
+
+The [two-child owner-loss packet](local-runs/original-collector-loss-20261018/README.md)
+isolates selected real owner-SIGKILL cuts before/after the joint full frame,
+both child-death orders and lost B. Its observer holds pidfds only, not original
+fence or peer aliases. Malformed-notice parser units are not process-identity
+proofs. These selected barred faults do not close authenticated original send/
+start, all-writer revocation, externally supervised active cleanup or durable
+completion, and are not a complete active execution SIGKILL matrix.
+
+The first two-child matrix is stopped, not accepted: Rust 1.88's healthy screen
+refused Challenge(Time). The previous image also refused in separate healthy
+ABBA attribution. Rust 1.94's twelve owner cases/three lost-B controls remain
+scoped evidence only. Archived fault seams are withdrawn; parser units alone
+do not close the process gate. Attribute preparation budget before resuming;
+any custody/enrollment frame grouping requires explicit agreement and unchanged
+predicates/origins/deadlines, then fresh healthy/fault cohorts on both compilers.
