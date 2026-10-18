@@ -61,6 +61,10 @@ fn request_kind(writers: [&File; 2], kind: &str) -> Message {
             Value::from(Fd::from(writers[1])),
         ));
     }
+    let third = tempfile::tempfile().unwrap();
+    if kind == "extra-fd" {
+        props.push(("UnexpectedDescriptor", Value::from(Fd::from(&third))));
+    }
     if kind == "body" {
         return builder
             .build(&(Fd::from(writers[0]), Fd::from(writers[1])))
@@ -69,7 +73,11 @@ fn request_kind(writers: [&File; 2], kind: &str) -> Message {
     let auxiliary: Vec<(&str, Vec<(&str, Value<'_>)>)> = vec![];
     builder
         .build(&(
-            "hydracache-diagnostic-074-fixture-1.service",
+            if kind == "oversize" {
+                "x".repeat(65_537)
+            } else {
+                "hydracache-diagnostic-074-fixture-1.service".into()
+            },
             "fail",
             props,
             auxiliary,
@@ -105,6 +113,8 @@ fn dispatch_request_predicates_fail_without_releasing_owned_message() {
         "no-auto",
         "interactive",
         "missing-fd",
+        "extra-fd",
+        "oversize",
         "body",
     ] {
         let [_a, a] = pipe();
@@ -117,6 +127,18 @@ fn dispatch_request_predicates_fail_without_releasing_owned_message() {
             "seed={seed:#x} kind={kind}"
         );
         assert!(!failure.request.data().fds().is_empty());
+    }
+    for error in [false, true] {
+        let original = exchange();
+        let [_a, a] = pipe();
+        let [_b, b] = pipe();
+        let builder = if error {
+            Message::error(&original.request.header(), "org.example.Refused").unwrap()
+        } else {
+            Message::method_return(&original.request.header()).unwrap()
+        };
+        let wrong_type = builder.build(&(Fd::from(&a), Fd::from(&b))).unwrap();
+        assert!(DispatchExchange::prepare(wrong_type, MANAGER, CLIENT).is_err());
     }
 }
 #[test]
@@ -158,6 +180,14 @@ fn dispatch_writer_shape_and_aliases_are_checked() {
         DispatchExchange::prepare(request_kind([&write, &writer], "ok"), MANAGER, CLIENT).is_err()
     );
     assert!(writer_shape(-1).is_err());
+    let [_a, a] = pipe();
+    let [_b, b] = pipe();
+    let request = request_kind([&a, &b], "ok");
+    assert_eq!(
+        unsafe { libc::fcntl(request.data().fds()[0].as_raw_fd(), libc::F_SETFD, 0) },
+        0
+    );
+    assert!(DispatchExchange::prepare(request, MANAGER, CLIENT).is_err());
 }
 #[test]
 fn dispatch_arms_uncertain_before_transport_and_never_rearms() {
