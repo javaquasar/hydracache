@@ -1,0 +1,19 @@
+   Compiling tokio-macros v2.7.0
+    Checking tokio v1.52.3
+    Checking zbus v5.19.0
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+warning: unused `AsyncFdReadyGuard` that must be used
+   --> tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs:152:45
+    |
+152 | ... { readiness.map_err(|_|ChannelError::Io)?; E...
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: You must explicitly choose whether to clear the readiness state by calling a method on ReadyGuard
+    = note: `#[warn(unused_must_use)]` (part of `#[warn(unused)]`) on by default
+help: use `let _ = ...` to ignore the resulting value
+    |
+152 |             readiness=alarm.readable() => { let _ = readiness.map_err(|_|ChannelError::Io)?; Err(ChannelError::Deadline) }
+    |                                             +++++++
+
+warning: `hydracache-long-run-supervisor-074` (lib) generated 1 warning
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 28.52s

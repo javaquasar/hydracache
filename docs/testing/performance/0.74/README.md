@@ -3926,3 +3926,19 @@ stay separate from the accepted gate. No product speed claim, host operation or
 admission change follows. Trusted fixed manager delivery, unique-owner original
 message construction under the full frame, active supervision and whole-writer
 cessation still precede an active fault matrix, completion and installation.
+
+The [fixed manager channel packet](local-runs/manager-channel-20261018/README.md)
+adds an opaque live read-only producer instead of a deserializable manager
+snapshot. Fixed root-selected socket anchors, actual credentials, atomic peer
+pidfd, retained namespaces, PID 1 pin, boot, GUID and unique names stay bound to
+one EXTERNAL-authenticated connection. The selected kernel view still needs
+binding to the original admitted host and full frame; no sender is exposed.
+
+Both GNU compilers complete the fresh selected cohort, including nonroot access
+refusal and the distinct local WSL-root read-only positive/closed-latch case.
+Nine new units per compiler, 233 source contracts and local checks pass. The first
+root Reply refusal and separate protocol attribution remain negative evidence;
+the new producer accepts the standard irrelevant 0x01 bit on METHOD_RETURN only.
+Old dispatch/request flags and original windows remain unchanged. Original
+message construction/delivery, active supervision, whole-writer cessation and
+completion are still ahead of installation or product admission.

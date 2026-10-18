@@ -12705,3 +12705,47 @@ runtime predicate. Review then adds oversized/wrong-type/extra-FD request and
 missing-CLOEXEC controls in a separate test-only commit. Both compiler cohorts
 and all 229 source contracts pass again on that reviewed source. The old broad
 filter run and its verification refusal remain evidence, not discarded noise.
+
+## Keeping a live manager channel instead of trusting a snapshot
+
+A helper that observes a manager and then closes its connection cannot supply
+the channel for later original delivery. The [fixed channel experiment](../testing/performance/0.74/local-runs/manager-channel-20261018/README.md)
+therefore owns a separate current-thread runtime and live connection. It opens
+only the root-selected system-bus socket, retains nonsymlink ancestry and binds
+the actual peer with SO_PEERCRED and atomic SO_PEERPIDFD. Opening a pidfd later
+from an observed reusable foreign PID would leave an identity gap.
+
+Numeric UID 0/PID 1 also needs a namespace interpretation. Retained procfs/nsfs
+objects require the caller, original bus peer and PID 1 to share PID/user
+namespaces, with original pidfd liveness around proc lookups. The caller's time
+namespace and kernel boot are retained as well. Missing access refuses rather
+than turning the numeric reply into authority. Local tests deliberately separate
+the nonroot access refusal from a root read-only positive case; the latter runs
+only that exact test, not privileged fault fixtures or service operations.
+
+The first real-bus positive stopped at Reply after the ordinary units and
+nonroot control passed. Its source, images and partial cohort remain frozen.
+Separate test-only tracing found METHOD_RETURN with flags=1 and all other
+envelope checks matching. The [D-Bus specification](https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-header-encoding)
+makes NO_REPLY_EXPECTED irrelevant on replies. The 5.19 builder helper rejected
+that flag on synthetic replies, so its convenient defaults had hidden the real
+wire form. Safe typed Header/Builder construction now tests both supported
+forms without an unsafe byte decoder. Only the new read-only producer changes;
+the old exchange and request predicates stay frozen for their own later review.
+
+A fresh two-compiler cohort then passes the namespace refusal, root fixed-bus
+positive and sticky failure after closing its own client connection, plus the
+unit/regression controls. The whole connect/authenticate/Hello/query observation
+shares one absolute BOOTTIME two-second alarm, not a new timeout per query. The
+alarm counter is not consumed, and a post-work clock check refuses a late result.
+This observation cap does not renew the original reservation, cell, challenge
+or progress window.
+
+The accepted object is still not original launch authority. Its selected kernel
+view must join the original admitted host, signed material and full validation
+frame before uniquely addressed message construction and delivery. Connection
+ownership alone does not prove Unix-FD negotiation, unit/cgroup identity, active
+supervision or writer cessation. The gain here is a concrete trusted input
+producer and a corrected interoperability assumption, not a measured product
+throughput or allocation improvement. Installation and product admission remain
+closed until those consuming boundaries are proved.

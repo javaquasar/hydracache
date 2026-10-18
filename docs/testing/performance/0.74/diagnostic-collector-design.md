@@ -628,3 +628,29 @@ operation is added. All old validation, manager/child/watchdog bodies and
 Reserved/Starting/progress/challenge origins remain frozen. Fixed trusted
 delivery, active supervision, whole-writer revocation and durable completion
 remain separate unclosed gates; the frozen qualification contract is unchanged.
+
+## Fixed live manager producer before the original join
+
+The [channel packet](local-runs/manager-channel-20261018/README.md) owns a
+current-thread runtime and one fixed system-bus connection. Root-selected
+ancestry, actual SO_PEERCRED, atomic SO_PEERPIDFD and retained procfs/nsfs objects
+precede trust in namespace-relative UID 0/PID 1 replies. Caller, bus peer and
+PID 1 must share PID/user namespaces; the caller's time namespace is retained.
+Pidfd liveness brackets proc lookups. Client name, manager owner, GUID, boot and
+route are reobserved; closure or context failure latches refusal.
+
+The two-second absolute BOOTTIME operation alarm bounds the entire observation,
+including authentication/Hello and queries. It is never an original lease or
+permission to cross a challenge/progress deadline. There is no original frame,
+host-admission, message, unit/cgroup or writer-cessation capability in this
+producer, and no exported connection/name/FD or injected backend constructor.
+The consuming original join must enforce all original limits independently.
+
+The first real-bus screen stopped on a reply flag that mock builder defaults
+had omitted. Its frozen capsule and separate header attribution remain negative.
+The second producer accepts only 0/NO_REPLY_EXPECTED on METHOD_RETURN, retaining
+all other header/body/FD/context checks. Fresh current/MSRV root read-only cases,
+nonroot access refusals and local controls pass; old dispatch/request predicates
+remain exact. Their own interoperability review, unique-owner original-message
+construction, Unix-FD delivery proof, active supervision and all-writer revocation
+still precede authenticated start, completion or installation.

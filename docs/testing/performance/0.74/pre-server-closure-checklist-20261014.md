@@ -550,3 +550,18 @@ original message unsent. Add active collector/watchdog supervision and prove
 whole-writer cessation before releasing custody or publishing completion. Then
 test the new active SIGKILL/write boundaries; the previous barred matrix does
 not cover them. All original deadlines and admission flags remain unchanged.
+
+The [fixed live manager producer](local-runs/manager-channel-20261018/README.md)
+now passes a fresh current/MSRV local gate. Each has nine units, an explicit
+nonroot namespace-access refusal and a distinct root read-only fixed-bus positive
+with closed-channel refusal. Atomic peer pidfd and actual shared namespace
+checks avoid treating a bus snapshot's namespace-relative PID as an original
+process pin. The first stopped reply-flag cohort remains negative evidence.
+
+Next bind that owned connection and selected kernel view to the original
+admitted host/frame and uniquely addressed original message. Do not send the
+old well-known-addressed message, reuse a serialized snapshot or treat the
+new operation cap as a lease. The old exchange still needs its separate reply
+interoperability review. Unix-FD negotiation/delivery, actual unit/process/cgroup,
+active watchdog, whole-writer cessation and completion remain unclosed. No
+installation, server or product/qualification admission follows from this gate.

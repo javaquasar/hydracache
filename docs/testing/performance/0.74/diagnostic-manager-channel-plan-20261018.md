@@ -87,3 +87,17 @@ Freeze every other dependency edge/version/checksum and every other old source
 statement; test the adapters themselves against ff4f3b7e. No runtime guard moves.
 Run a fresh complete current/MSRV cohort and all source contracts for the second
 candidate; retain the first cohort, traced refusal and three static failures.
+
+## Selected second candidate result
+
+Source 3007e7df98e35aed301e81fafb467024110ed4c2 passes fresh complete
+current/MSRV cohorts: nine manager units, the explicit nonroot namespace refusal,
+one root read-only positive/closed-latch case, fourteen exchange controls, eight
+descriptor/notice controls and thirty-two storage/fence units per compiler.
+Two compile-fail tests per compiler, 233 source contracts, final four canaries,
+44 Windows controls, affected checks/strict Clippy and local gates also pass.
+The [packet](local-runs/manager-channel-20261018/README.md) binds fourteen full
+source capsules, 333 inputs and both exact tested images, preserving the stopped
+first cohort and traced negative separately. Only the live read-only producer
+is accepted: original admitted-host/frame/message binding, Unix-FD delivery,
+activation, all-writer cessation and durable completion remain unclosed.

@@ -1,0 +1,24 @@
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0425]: cannot find type `FixedManagerChannel` in this scope
+ --> tools/long-run-supervisor-074/src/diagnostic_manager_channel_tests.rs:4:19
+  |
+4 | ...on<FixedManagerC......
+  |       ^^^^^^^^^^^^^...t found in this scope
+  |
+help: you might be missing a type parameter
+  |
+3 | fn manager_channel_type_is_not_a_supplied_snapshot<FixedManagerChannel>() {
+  |                                                   +++++++++++++++++++++
+
+warning: unused import: `super::*`
+ --> tools/long-run-supervisor-074/src/diagnostic_manager_channel_tests.rs:1:5
+  |
+1 | use super::*;
+  |     ^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+For more information about this error, try `rustc --explain E0425`.
+warning: `hydracache-long-run-supervisor-074` (lib test) generated 1 warning
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 1 previous error; 1 warning emitted
+warning: build failed, waiting for other jobs to finish...

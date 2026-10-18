@@ -1,0 +1,18 @@
+e7533245d9afa1947ede7215227cd519345606a47f63d9f999439cdd7c5a7c33  /home/artur/.cache/hydracache-074-194-check/release/deps/hydracache_long_run_supervisor_074-b26b156d3dcd0098
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::tests::manager_channel_root_fixed_context ... HC074-MANAGER-REPLY member=GetNameOwner returned=true method_return=true flags=1 sender_bus=true destination_client=true serial=true error=false path=false interface=false member_header=false fd_count=0 unix_fds=0 signature_expected=true bounded=true
+FAILED
+
+failures:
+
+failures:
+    diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::tests::manager_channel_root_fixed_context
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1144 filtered out; finished in 0.00s
+
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::tests::manager_channel_root_fixed_context' (907) panicked at tools/long-run-supervisor-074/src/diagnostic_manager_channel_tests.rs:216:57:
+called `Result::unwrap()` on an `Err` value: Reply
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+HC074-MANAGER-ATTRIBUTION expected_exit=101 replacement_gate=false start=false
