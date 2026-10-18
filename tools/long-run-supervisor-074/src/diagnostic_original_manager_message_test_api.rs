@@ -28,6 +28,8 @@ impl OriginalEnrollmentFrame<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
         ]
         .contains(&case)
             || case.starts_with("inside-")
+            || case.starts_with("reply-")
+            || case.starts_with("closing-reply-")
         {
             Some(case)
         } else {

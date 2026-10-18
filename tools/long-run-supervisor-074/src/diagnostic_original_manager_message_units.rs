@@ -73,6 +73,28 @@ fn altered(input: &Inputs<'_>, kind: &str) -> Message {
 impl Payload {
     pub(super) fn tamper(&mut self, input: &Inputs<'_>, kind: &str) {
         match kind {
+            "reply-missing" => self.reply = None,
+            "reply-client" => {
+                self.reply = Some(
+                    OriginalReplyState::prepare(self.message.as_ref().unwrap(), MANAGER, ":1.99")
+                        .unwrap(),
+                );
+            }
+            "reply-manager" | "reply-serial" => {
+                let message = altered(input, kind.strip_prefix("reply-").unwrap());
+                self.reply = Some(
+                    OriginalReplyState::prepare(
+                        &message,
+                        if kind == "reply-manager" {
+                            ":1.99"
+                        } else {
+                            MANAGER
+                        },
+                        CLIENT,
+                    )
+                    .unwrap(),
+                );
+            }
             "missing" => self.message = None,
             "alias" => self.pinned.as_mut().unwrap().swap(0, 1),
             "client" => self.names.as_mut().unwrap().1 = ":1.99".into(),
@@ -86,6 +108,9 @@ impl Payload {
         }
     }
 }
+
+#[path = "diagnostic_original_reply_payload_tests.rs"]
+mod reply_binding;
 impl Payload {
     pub(in super::super) fn transfer_for_test(
         &self,

@@ -6,6 +6,7 @@ use std::fs::File;
 use std::num::NonZeroU32;
 use std::os::fd::AsRawFd;
 use zbus::message::{Message, Type};
+use super::super::super::dispatch_exchange::OriginalReplyState;
 
 #[derive(Debug, thiserror::Error)]
 pub(crate) enum MessageError {
@@ -132,6 +133,7 @@ fn inspect(
 #[derive(Default)]
 pub(super) struct Payload {
     message: Option<Message>,
+    reply: Option<OriginalReplyState>,
     pinned: Option<[i32; 2]>,
     serial: Option<NonZeroU32>,
     names: Option<(String, String)>,
@@ -150,9 +152,15 @@ impl Payload {
         if self.names.as_ref().map(|(m, c)| (m.as_str(), c.as_str())) != Some((manager, client)) {
             return Err(MessageError::Binding);
         }
+        let message = self.message.as_ref().ok_or(MessageError::Binding)?;
+        self.reply
+            .as_ref()
+            .ok_or(MessageError::Binding)?
+            .check(message, manager, client)
+            .map_err(|_| MessageError::Binding)?;
         inspect(
             input,
-            self.message.as_ref().ok_or(MessageError::Binding)?,
+            message,
             manager,
             client,
             self.pinned.ok_or(MessageError::Binding)?,
@@ -175,22 +183,31 @@ pub(super) fn round(
         }
         frame.observe().map_err(JoinError::from)?;
         channel.check(receiver, pin)?;
+        channel.require_names(manager, client)?;
         frame.observe().map_err(JoinError::from)?;
         let input = inputs(frame)?;
         if payload.message.is_none() {
-            if payload.pinned.is_some() || payload.serial.is_some() || payload.names.is_some() {
+            if payload.pinned.is_some()
+                || payload.serial.is_some()
+                || payload.names.is_some()
+                || payload.reply.is_some()
+            {
                 return Err(MessageError::Binding);
             }
             let message = encode(input.legacy, manager, client)?;
+            payload.reply = Some(
+                OriginalReplyState::prepare(&message, manager, client)
+                    .map_err(|_| MessageError::Binding)?,
+            );
             payload.pinned = Some(aliases(&message)?);
             payload.serial = Some(message.primary_header().serial_num());
             payload.names = Some((manager.into(), client.into()));
             payload.message = Some(message);
         }
         #[cfg(test)]
-        if let Some(fault) =
-            fault.filter(|fault| *fault != "delivery" && !fault.starts_with("inside-"))
-        {
+        if let Some(fault) = fault.filter(|fault| {
+            *fault != "delivery" && !fault.starts_with("inside-") && !fault.starts_with("closing-")
+        }) {
             payload.tamper(&input, fault);
         }
         payload.check(&input, manager, client)?;
@@ -205,6 +222,11 @@ pub(super) fn round(
         // One complete unchanged predicate set encloses the pure preparation.
         frame.revalidate().map_err(JoinError::from)?;
         channel.check(receiver, pin)?;
+        channel.require_names(manager, client)?;
+        #[cfg(test)]
+        if let Some(case) = fault.and_then(|case| case.strip_prefix("closing-")) {
+            payload.tamper(&inputs(frame)?, case);
+        }
         // Closing full frame may observe drift; also recheck message after it.
         payload.check(&inputs(frame)?, manager, client)?;
         frame.observe().map_err(JoinError::from)?;

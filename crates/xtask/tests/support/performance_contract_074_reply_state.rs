@@ -1,4 +1,6 @@
 //! Exact structural refactor only; no change to a request or reply predicate.
+#[path = "performance_contract_074_original_reply_binding.rs"]
+mod original_reply_binding;
 const BASE: &str = "926a3b6f";
 const PATH: &str = "tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange.rs";
 const TESTS: &str = "tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs";
@@ -96,6 +98,8 @@ impl DispatchExchange {
     ),
 ];
 pub(super) fn normalize(path: &str, raw: &str) -> String {
+    let current = original_reply_binding::normalize(path, raw);
+    let raw = current.as_str();
     if path == TESTS {
         assert_eq!(
             raw.matches(REG).count(),

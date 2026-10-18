@@ -221,6 +221,29 @@ impl DispatchExchange {
     }
 }
 
+// Preparation-only metadata held beside the original Message. No arm/observe,
+// transport, extraction or writer custody capability crosses this boundary.
+pub(super) struct OriginalReplyState {
+    state: ReplyState,
+}
+impl OriginalReplyState {
+    pub(super) fn prepare(request: &Message, manager: &str, client: &str) -> Result<Self, ()> {
+        let state = ReplyState::prepare(request, manager, client).map_err(|_| ())?;
+        Ok(Self { state })
+    }
+    pub(super) fn check(&self, request: &Message, manager: &str, client: &str) -> Result<(), ()> {
+        if self.state.phase != Phase::Prepared
+            || self.state.reply_open
+            || self.state.manager != manager
+            || self.state.client != client
+            || self.state.serial != request.primary_header().serial_num()
+        {
+            return Err(());
+        }
+        request_matches(request, manager, client).map_err(|_| ())
+    }
+}
+
 #[cfg(test)]
 #[path = "diagnostic_dispatch_exchange_tests.rs"]
 mod tests;

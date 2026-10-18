@@ -26,6 +26,14 @@ impl TestChannel {
     }
 }
 impl ChannelChecks for TestChannel {
+    fn require_names(&self, manager: &str, client: &str) -> Result<(), JoinError> {
+        if (self.case == "names-before" && self.calls == 1)
+            || (self.case == "names-after" && self.calls == 2)
+        {
+            return Err(JoinError::Channel);
+        }
+        require_channel_names(false, (":1.74", ":1.75"), (manager, client))
+    }
     fn check(
         &mut self,
         receiver: &mut OriginalReceiverBinding,

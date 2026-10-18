@@ -58,6 +58,7 @@ fn retain_receiver(
 
 // Sealed implementation detail; test channels never construct OriginalManagerJoin.
 trait ChannelChecks {
+    fn require_names(&self, manager: &str, client: &str) -> std::result::Result<(), JoinError>;
     fn check(
         &mut self,
         receiver: &mut OriginalReceiverBinding,
@@ -65,6 +66,13 @@ trait ChannelChecks {
     ) -> std::result::Result<(), JoinError>;
 }
 impl ChannelChecks for FixedManagerChannel {
+    fn require_names(&self, manager: &str, client: &str) -> std::result::Result<(), JoinError> {
+        require_channel_names(
+            self.refused,
+            (&self.manager, &self.client),
+            (manager, client),
+        )
+    }
     fn check(
         &mut self,
         receiver: &mut OriginalReceiverBinding,
@@ -74,6 +82,21 @@ impl ChannelChecks for FixedManagerChannel {
         pin.require(self, receiver)?;
         Ok(())
     }
+}
+fn require_channel_names(
+    refused: bool,
+    retained: (&str, &str),
+    claimed: (&str, &str),
+) -> std::result::Result<(), JoinError> {
+    if refused
+        || retained != claimed
+        || !super::unique(retained.0)
+        || !super::unique(retained.1)
+        || retained.0 == retained.1
+    {
+        return Err(JoinError::Channel);
+    }
+    Ok(())
 }
 fn validation_round(
     original: &mut OriginalEnrollmentFrame<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>,
