@@ -57,3 +57,25 @@ all-writer revocation, durable exclusion/completion and reconnect remain later
 gates. All original live checks, 46 effect brackets and 300/60/10-second origins
 remain unchanged. No server, system-bus/original send, release installation,
 supervisor operation, product workload or expensive qualification is permitted.
+
+## Local result
+
+Source `c3539d171118d796812a3d1dbad16cfdb4296f6e` passes eighteen ordinary
+two-phase controls and the same seventeen pair cases on GNU 1.94/MSRV 1.88.
+The unchanged twelve-case barrier, twelve-case single-guardian matrix and thirty
+old exchange controls also pass on both images. Receipts bind the same source
+and unchanged before/after binary hashes. The complete source suite passes
+268/268 and restores all 369 old supervisor Rust bodies exactly. Windows/API,
+strict affected lint, formatting, registry, docs and the local contract pass.
+The [packet](local-runs/redundant-watchdog-20261019/README.md) retains baseline,
+red, preliminary and selected-source results, including the corrected new
+fixture clock-path compile failure.
+
+Under one guardian death/stop, the remaining running guardian revokes the
+released target after creator SIGKILL or at the unchanged fixture deadline and
+keeps the fence. Partial second-ACK failure cannot retry the first send. Both
+guardians dead/stopped still expose live writers; a hidden external alias still
+prevents EOF. The in-memory pair latch is not durable replay exclusion. Original
+frame/kernel/manager/cgroup/stream binding, all-writer revocation, durable history
+and completion/later cells/reconnect remain unadmitted. This result does not
+select a production topology or authorize original delivery/server execution.

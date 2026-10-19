@@ -1,0 +1,24 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0425]: cannot find function `now` in module `super::super::super::super::super`
+   --> tools/long-run-supervisor-074/src/diagnostic_redundant_watchdog_fixture.rs:103:55
+    |
+103 | ...r::now()....
+    |       ^^^ not found in `super::super::super::super::super`
+    |
+note: function `crate::watchdog::autonomous::now` exists but is inaccessible
+   --> tools/long-run-supervisor-074/src/diagnostic_autonomous_watchdog.rs:51:1
+    |
+ 51 |...Result<u64> {
+    |...^^^^^^^^^^^ not accessible
+help: consider importing this function
+    |
+  2 + use crate::diagnostic_two_phase_launch::held_barrier::now;
+    |
+help: if you import `now`, refer to it directly
+    |
+103 -     let deadline = super::super::super::super::super::now().unwrap() + 10_000_000_000;
+103 +     let deadline = now().unwrap() + 10_000_000_000;
+    |
+
+For more information about this error, try `rustc --explain E0425`.
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 1 previous error

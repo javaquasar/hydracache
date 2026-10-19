@@ -1,0 +1,3 @@
+HC074-REDUNDANT image_sha256=9ff8c7f150b401c4b16bcd2e549889115757f9314fe4bdcf2163057ce5ccdf26
+HC074-REDUNDANT case=first-dead-owner-loss seed=0x0740d019 deadline=229721513286 fence_retained=True expected_negative=False product=false original_authority=false all_writers=false
+HC074-REDUNDANT completed=true cases=1

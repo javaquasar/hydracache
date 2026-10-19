@@ -894,3 +894,31 @@ Original delivery, release, durable completion, later cells, reconnect and
 production policy/enrollment remain closed. The
 [evidence packet](local-runs/prearmed-watchdog-20261019/README.md) is local-only;
 it does not authorize installation, supervisor operations or a server workload.
+
+## Redundant local guardian experiment
+
+The [redundant watchdog plan](redundant-watchdog-plan-20261019.md) composes two
+unchanged private guardians. Actual Pending from both precedes target creation;
+both enroll the same direct-child pidfd and retain aliases of the same fence
+OFD, with exactly the same selected absolute deadline. A global latch precedes
+the first enrollment send. Partial enrollment, lost ACK, retry or a failed
+closing live check poisons the pair; the fixture cannot release until both Armed
+and that closing check succeed. No completion, unlock or replacement is added.
+
+One dead/stopped guardian no longer removes all local revocation capacity: the
+survivor handles creating-owner loss or the unchanged original bound and keeps
+the fence. This is not immediate sibling-failure detection or a guarantee under
+common-mode failure. Both-dead and both-stopped controls still expose a live
+writer; the last flock is available after both holders die. A hidden external
+write alias remains outside the pair's revocation authority and prevents EOF.
+The [local contract](redundant-watchdog-contract.toml) explicitly keeps original
+admission, whole-cgroup/all-writer proof, production construction and server
+qualification closed.
+
+Retain the original collector/custodian holders and bind trusted original host,
+manager, signed artifacts, process/cgroup and streams inside the full frame
+before delivery. Do not remove the prototype's direct-child check to admit a
+systemd-managed process. The [evidence](local-runs/redundant-watchdog-20261019/README.md)
+tests local independent custody only; durable exclusion/completion, later cells,
+new-boundary crash coverage and reconnect remain separate gates. Original live
+predicates, 46 effect brackets and 300/60/10-second origins remain unchanged.

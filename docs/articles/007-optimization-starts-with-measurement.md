@@ -13360,3 +13360,46 @@ deadline latency. Existing original live checks, all 46 effect brackets and
 300/60/10-second admission origins remain unchanged. Original delivery,
 all-writer cessation, durable completion and reconnect still require their own
 integration gates before server admission.
+
+## Independent custody under a single guardian failure
+
+The single-guardian counterexamples motivate a narrow local experiment: two
+existing guardians independently retain the same target and aliases of the same
+exclusive fence. Both publish Pending before target creation; both must retain
+the target and return Armed before the fixture can pass its closing live check
+and release the held target. Each receives exactly the same selected absolute
+deadline. Creating another guardian does not extend the attempt's time window.
+
+The composition consumes one global uncertainty latch before sending the first
+enrollment. If the second guardian loses its ACK, the first may already own the
+target. Retrying the first enrollment would itself trigger its duplicate-message
+revocation and cannot reconstruct a known attempt. Instead the pair refuses
+permanently, retains its existing owners and offers no retry, replacement or
+completion operation. A real partial-enrollment test kills the second guardian
+before its ACK, checks that the first still owns the unreleased target, and
+verifies that a retry sends nothing.
+This is an in-memory latch, not durable replay exclusion after process restart.
+
+Actual SIGKILL and SIGSTOP tests exercise each guardian in turn. After the
+creating process is killed, the remaining running guardian kills the released
+target and retains the fence. When the creator stays alive, the remaining
+guardian still kills the target at the unchanged original fixture deadline.
+These results establish independent local revocation for that single-failure
+model, not immediate detection of a stopped sibling or a scheduling-latency
+guarantee. Separate terminal status and pipe EOF observations remain mandatory.
+
+The scope ends where the fault model ends. Killing both guardians leaves a live
+writer and releases the last flock; stopping both leaves a live writer at expiry
+until one resumes. An external write-FD alias also prevents EOF after the target
+dies. The pair neither revokes that alias nor proves whole-cgroup cessation.
+Those retained negatives prohibit promoting redundant pidfds to completion or
+durable exclusion authority.
+
+The [redundant watchdog evidence](../testing/performance/0.74/local-runs/redundant-watchdog-20261019/README.md)
+records the seventeen-case matrix, ordinary latch/thread controls and unchanged
+single-guardian counterexamples. The experiment leaves the existing guardian
+protocol/body and original collector/custodian owners intact. It is not a
+production topology decision: original kernel, manager, executable, stream and
+cgroup binding inside the full validation frame, all-writer revocation, durable
+history/completion and reconnect still need integration. No native/RESP product
+path or admission deadline changed, and no performance gain is inferred.

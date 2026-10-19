@@ -1,0 +1,11 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 20.85s
+     Running tests\performance_contract_074.rs (target\debug\deps\performance_contract_074-affcfab4e5118d5a.exe)
+
+running 3 tests
+test live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::prearmed::redundant::redundant_watchdog_adapter_rejects_changed_registration_and_old_body ... ok
+test live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::prearmed::redundant::redundant_watchdog_is_same_bound_same_ofd_and_not_original_authority ... ok
+test live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::prearmed::redundant::redundant_watchdog_preserves_every_previous_source_and_protocol ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 265 filtered out; finished in 35.72s
+

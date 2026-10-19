@@ -1,0 +1,6 @@
+parsed run.ps1
+parsed verify.ps1
+refused guard: Receipt cohort already exists
+refused guard: Cannot validate argument on parameter .Label.
+refused guard: Cannot validate argument on parameter .Compiler.
+reproduction syntax and 3 nonexecuting negative controls passed

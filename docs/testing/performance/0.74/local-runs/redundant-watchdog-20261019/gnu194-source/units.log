@@ -1,0 +1,28 @@
+    Finished `release` profile [optimized] target(s) in 6.59s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/release/deps/hydracache_long_run_supervisor_074-b26b156d3dcd0098)
+
+running 21 tests
+test diagnostic_two_phase_launch::held_barrier::prearmed::redundant::tests::redundant_guardian_closing_check_never_accepts_readable_surrogates ... ok
+test diagnostic_two_phase_launch::held_barrier::prearmed::redundant::tests::redundant_guardian_invalid_fence_refuses_before_any_child ... ok
+test diagnostic_two_phase_launch::held_barrier::prearmed::redundant::tests::redundant_guardian_retry_and_missing_readiness_are_sticky ... ok
+test diagnostic_two_phase_launch::held_barrier::prearmed::redundant::tests::redundant_guardian_thread_drift_refuses_before_first_send ... ok
+test diagnostic_two_phase_launch::held_barrier::prearmed::tests::prearmed_codec_refuses_every_changed_byte_and_shape ... ok
+test diagnostic_two_phase_launch::held_barrier::prearmed::tests::prearmed_proc_number_parser_is_bounded_and_exact ... ok
+test diagnostic_two_phase_launch::held_barrier::prearmed::tests::prearmed_rejected_multiple_and_truncated_rights_close_installed_aliases ... ok
+test diagnostic_two_phase_launch::held_barrier::prearmed::tests::prearmed_rights_credentials_and_rejected_alias_closure_are_actual ... ok
+test diagnostic_two_phase_launch::held_barrier::prearmed::tests::prearmed_thread_drift_refuses_before_any_enrollment_send ... ok
+test diagnostic_two_phase_launch::held_barrier::prearmed::tests::process::prearmed_owner_victim ... ignored, private nonroot subprocess for prearmed driver; no original authority
+test diagnostic_two_phase_launch::held_barrier::prearmed::tests::process::redundant::redundant_watchdog_owner_victim ... ignored, private nonroot redundant-guardian driver; no original authority
+test diagnostic_two_phase_launch::held_barrier::tests::two_phase_barrier_absolute_alarm_refuses_past_and_out_of_range ... ok
+test diagnostic_two_phase_launch::held_barrier::tests::two_phase_barrier_owned_kernel_fault_matrix ... ignored, owned nonroot fork/pidfd fault matrix; no product or systemd
+test diagnostic_two_phase_launch::held_barrier::tests::two_phase_barrier_packet_flags_reject_every_bit_except_cloexec_policy ... ok
+test diagnostic_two_phase_launch::held_barrier::tests::two_phase_barrier_queue_pressure_cannot_rearm_failed_send ... ok
+test diagnostic_two_phase_launch::held_barrier::tests::two_phase_barrier_send_is_sticky_after_success_failure_and_lost_ack ... ok
+test diagnostic_two_phase_launch::tests::two_phase_launch_digest_binds_every_consent_claim_and_artifact_role ... ok
+test diagnostic_two_phase_launch::tests::two_phase_launch_document_bounds_and_unknown_shapes_refuse ... ok
+test diagnostic_two_phase_launch::tests::two_phase_launch_domain_signature_and_digest_refuse_independent_drift ... ok
+test diagnostic_two_phase_launch::tests::two_phase_launch_inherits_old_consent_bounds_without_new_clock_or_renewal ... ok
+test diagnostic_two_phase_launch::tests::two_phase_launch_roundtrip_is_expected_bytes_not_start_authority ... ok
+
+test result: ok. 18 passed; 0 failed; 3 ignored; 0 measured; 1203 filtered out; finished in 0.05s
+

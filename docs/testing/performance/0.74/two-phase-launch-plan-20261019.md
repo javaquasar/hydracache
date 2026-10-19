@@ -98,3 +98,21 @@ timely revocation; death also releases its final flock. Preserve those negative
 results and existing original collector/custodian owners while implementing
 independent all-writer revocation. Original delivery, durable completion, later
 cells, reconnect and production/server admission remain subsequent gates.
+
+## Redundant local guardian result
+
+The [redundant guardian packet](local-runs/redundant-watchdog-20261019/README.md),
+source `c3539d171118d796812a3d1dbad16cfdb4296f6e`, composes two unchanged
+guardians with a common absolute bound and shared fence OFD. Both Pending
+precede target creation, both Armed precede fixture release, and global
+uncertainty precedes the first enrollment send. GNU 1.94 and MSRV 1.88 pass
+eighteen ordinary controls and the same seventeen pair cases, with original
+barrier/single-guardian/exchange regressions retained. The full source suite
+passes 268 controls, preserving all 369 old Rust bodies through exact adapters.
+
+One guardian failure leaves local creator-loss/deadline revocation and custody
+available. Both-guardian failure and hidden writers remain expected negatives.
+This advances local step-two mechanics, not a production topology or step-three
+original delivery/all-cgroup join. Retain the original collector/custodian
+owners and require durable exclusion, all-writer cessation and full-frame
+admission before completion, later cells, reconnect or server execution.
