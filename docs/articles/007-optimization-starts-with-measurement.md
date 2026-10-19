@@ -14231,3 +14231,46 @@ the older unobserved tuple stays unknown. Cold or contended admission still
 needs attention. Actual slice/artifact admission,
 held projection, original delivery, durable lifecycle and reconnect remain distinct
 from this local success. No server, supervisor or product workload was used.
+
+## Bind the revocation root to its actual named path before projecting a unit
+
+The same-owner matrix established consent, original context, deadline and
+guardian custody. It did not establish where that retained kernel root lived.
+A signature over system-hc074 plus an attempt digest does not move a temporary
+root into that slice, and does not place the old direct worker underneath it.
+That difference matters: a watchdog can kill exactly its pinned root while
+leaving a worker outside it untouched.
+
+The [fixed-path observer](../testing/performance/0.74/fixed-slice-design.md)
+therefore compares actual directory objects rather than accepting a caller's
+path string. It derives the name from the original enrollment attempt, retains
+the path anchors, refuses symlinks and unsafe ownership/modes, and requires the
+named child, original root and original parent to agree on their identities.
+Revalidation compares both retained descriptors and fresh named traversal.
+It never replaces the existing kill descriptor with a newly opened target.
+
+The new holder consumes the complete original placement chain. Path checks
+surround the unchanged signed placement join and full validation round; a failed
+opening, closing or original predicate retires both owners while retaining the
+failed holder. This is an additional invariant, not an optimization or permission
+to resend. It creates neither a clock nor a fresh relative deadline.
+
+Read-only path observations still cannot prove that a systemd manager owns the
+slice, prevent privileged later population or admit signed artifact hashes as
+actual executable objects. Those checks must join the held-unit construction
+before delivery. Model acceptance and reading the host's existing system.slice
+are not a successful actual attempt-root admission. Keeping that distinction
+explicit prevents a green low-level check from opening original start too early.
+
+The selected source passes 321 source contracts, and both GNU compilers pass
+77 selected ordinary controls, 247 doc tests and one actual read-only anchor
+check. This supports the new observation and composition boundaries, not a
+positive admission of a real attempt slice. No performance gain is claimed.
+
+A broader Windows integration invocation also exposes a pre-existing test
+assumption: its synthetic root lock is reconstructed from the moving workspace
+lock, then compared with an immutable production hash. The current and baseline
+reconstruction both differ from that pin, while the lock from the pinned worker
+source still matches exactly. Preserve this red instead of calling the entire
+suite green because scoped library/doc controls pass. The separate repair is
+to feed the synthetic test the exact frozen bytes, not weaken the hash check.

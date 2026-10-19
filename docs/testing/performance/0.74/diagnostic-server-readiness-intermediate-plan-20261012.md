@@ -504,3 +504,26 @@ are the next attribution direction. Do not cache live authority or remove checks
 to enlarge its budget. Actual fixed slice ancestry, approved artifact objects and
 held-unit projection still precede authenticated original delivery, all-writer
 revocation, completion, cells two through four, reconnect and server rehearsal.
+
+## P3 Read only fixed slice identity binding
+
+The [next private holder](fixed-slice-design.md) consumes that same placement
+owner and checks fixed-path directory identities before and after its unchanged
+full live join. Its original guardian root must be the derived named child of
+the observed system.slice; retained and fresh path anchors must agree. Refusal
+retains the consumed original chain and offers no replay or descriptor escape.
+
+This implements path observation, not systemd creation/ownership, continuously
+exclusive population or a successful actual fixed-root join. Temporary fixture
+roots are not promoted to that role. Approved artifact objects, held projection,
+authenticated delivery and the later P1–P5 gates still remain. The old direct
+worker message remains unsent. There is no server or supervisor operation.
+
+Selected source c59b677f passes 321 source contracts and both compiler scoped
+unit/doc/readonly-anchor gates. This does not close actual fixed-root acceptance.
+The broader Windows integration suite also exposes the unchanged synthetic
+root-lock reconstruction mismatch. Repair that fixture with the exact frozen
+lock bytes in a separate change before treating the broader integration gate
+as green; preserve the production hash. See the
+[selected-source packet](local-runs/fixed-slice-20261020/README.md) for the scoped
+successes and retained failures, rather than promoting either to server readiness.

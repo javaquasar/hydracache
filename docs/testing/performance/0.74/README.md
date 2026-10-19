@@ -4356,3 +4356,24 @@ The fixed-phase packet contains 69 hashed files plus its inventory, SHA256
 Its verifier rejects twenty mutations and separates the three cost observations
 from the complete 14-case normal matrix. Both earlier sealed packet verifiers
 still pass their twenty mutation controls; qualification identity is unchanged.
+
+The [read-only fixed-slice follow-up](fixed-slice-design.md) binds retained and
+named directory identities around the unchanged same-owner full join. Its
+[evidence packet](local-runs/fixed-slice-20261020/README.md) is separate from the
+previous phase measurements and normal live matrix. It creates no slice/unit,
+admits no executable and sends nothing. Actual fixed-root acceptance, manager
+ownership/exclusive population, artifact admission and held projection remain
+distinct gates before authenticated delivery or server admission.
+
+Selected source c59b677f passes all 321 source contracts. Each Linux compiler
+passes 77 selected ordinary units, all 247 doc tests, strict lint and one manual
+read-only anchor check. Portable scoped controls pass 60 units and twenty docs.
+The broader Windows invocation remains red at an unchanged synthetic root-lock
+fixture; baseline reconstruction and the correct frozen origin are retained,
+without changing a production pin. Do not describe the whole suite as green.
+
+The packet contains 63 hashed files plus its inventory, SHA256
+`9b74fc56bec3e885e3894f77cca996d9162e573cbb613cdc513e2c9d6f52d51b`.
+Its verifier refuses 22 metadata mutations. Actual fixed-root positive admission
+and a new original-frame live cohort are not claimed. No clock service change,
+cgroup creation, server/supervisor operation or product workload occurred.
