@@ -67,6 +67,38 @@ platform = "linux"
 
 [gate.command.env]
 
+[[gate]]
+id = "tool.hydracache-long-run-supervisor-074.fixed-leaf-path-single"
+kind = "external_tool"
+source = "tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_path_tests.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "hydracache_long_run_supervisor_074"
+test = "fixed_leaf_path_single_cost"
+cfg = 'target_os = "linux"'
+env = ""
+reason = "manual actual leaf for external image crossover; no admission or product"
+tier = "manual"
+required_features = []
+required_env = ["HC074_LEAF_SINGLE"]
+required_tools = ["cargo"]
+timeout_seconds = 1200
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","fixed_leaf_path_single_cost","--","--ignored","--nocapture","--test-threads=1"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+
 # END FIXED LEAF PATH GATE
 "#;
 fn root() -> std::path::PathBuf {

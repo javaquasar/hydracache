@@ -146,3 +146,28 @@ fn fixed_leaf_path_cost_abba() {
     origin.revalidate().unwrap();
     println!("HC074-LEAF-PATH-CLOSED observations_unchanged=true cached=false product=false");
 }
+
+#[test]
+#[ignore = "manual actual leaf in one image; external crossover only, no admission or product"]
+fn fixed_leaf_path_single_cost() {
+    assert_ne!(unsafe { libc::geteuid() }, 0);
+    let leaf = std::env::var("HC074_LEAF_SINGLE").unwrap();
+    assert!(matches!(leaf.as_str(), "boot" | "namespace"));
+    let origin = Origin::open().unwrap();
+    for _ in 0..32 {
+        boot(&origin.root).unwrap();
+        for name in NAMES {
+            namespace(name).unwrap();
+        }
+    }
+    let elapsed = if leaf == "boot" {
+        measure_boot(boot, &origin.root)
+    } else {
+        measure_namespace(namespace)
+    };
+    origin.revalidate().unwrap();
+    println!(
+        "HC074-LEAF-PATH-SINGLE {}",
+        serde_json::json!({"leaf":leaf,"iterations":16384,"elapsed_ns":elapsed,"actual":true,"product":false})
+    );
+}

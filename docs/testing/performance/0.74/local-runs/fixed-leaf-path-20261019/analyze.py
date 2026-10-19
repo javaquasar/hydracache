@@ -67,7 +67,8 @@ def main():
             part = [json.loads(x) for x in re.findall(r"HC074-LEAF-PATH (\{[^\r\n]+\})", raw)]
             if len(part) != 30:
                 raise ValueError("wrong block count")
-            if args.prefix != "aa2-" and any(r["order"] != "ABBA-BAAB" for r in part):
+            order = "ABBA-BAAB" if args.prefix == "aa3-" else "external-v3"
+            if args.prefix != "aa2-" and any(r["order"] != order for r in part):
                 raise ValueError("require balanced indirect-call harness")
             for leaf in ("boot", "namespace"):
                 if sorted(r["block"] for r in part if r["leaf"] == leaf) != list(range(15)):

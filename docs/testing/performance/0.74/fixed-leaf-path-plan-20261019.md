@@ -52,3 +52,15 @@ Perform one new complete A/A series with this v2 harness. If significant A/A
 bias persists, do not adopt this small-effect candidate from these measurements.
 This is a local measurement correction, not a change to any admission clock,
 qualification workload or release threshold.
+
+The v2 source-equivalent comparison still reports GNU namespace +3.38 percent
+with interval above zero, without a production substitution. It is not a valid
+counterfactual for a small path change; code generation and environmental noise
+have not been separated. Do not use either within-image series for adoption.
+The final v3 control compares the actual same leaf entry between executable
+images using an external ABBA/BAAB crossover. First use byte-identical images
+for one full A/A calibration. Only if its intervals contain zero on both leaves
+and compilers, implement the fixed-path candidate and compare the retained
+baseline image with it. Keep iterations, blocks, repetitions, bootstrap and
+adoption rule unchanged. Each subprocess reports only its internal leaf loop;
+launch/setup time is excluded and retained stdout proves the selected test.
