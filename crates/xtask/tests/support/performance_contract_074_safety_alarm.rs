@@ -523,9 +523,12 @@ fn grouped_process_loss_preserves_original_candidate_and_owned_crash_harness() {
             .unwrap();
         assert!(out.status.success());
         assert_eq!(
-            std::fs::read_to_string(super::root().join(path))
-                .unwrap()
-                .replace('\r', ""),
+            crate::live_walk::normalize(
+                path,
+                &std::fs::read_to_string(super::root().join(path))
+                    .unwrap()
+                    .replace('\r', "")
+            ),
             String::from_utf8(out.stdout).unwrap().replace('\r', ""),
             "{path}"
         );

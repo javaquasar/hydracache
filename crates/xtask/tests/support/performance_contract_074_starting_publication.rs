@@ -88,6 +88,15 @@ fn collector_starting_publication_preserves_every_original_predicate_and_deadlin
         let current = read(p);
         let current = if matches!(
             p,
+            "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs"
+                | "tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs"
+        ) {
+            crate::live_walk::normalize(p, &current)
+        } else {
+            current
+        };
+        let current = if matches!(
+            p,
             "Cargo.lock"
                 | "tools/long-run-supervisor-074/Cargo.toml"
                 | "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs"

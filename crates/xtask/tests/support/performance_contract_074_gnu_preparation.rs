@@ -1,5 +1,27 @@
 //! Test-only clock facts cannot change the frozen original validation bodies.
 const BASE: &str = "e9aff331";
+const REFERENCE: &str = r#"        let current = if matches!(
+            p,
+            "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs"
+                | "tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs"
+        ) {
+            crate::live_walk::normalize(p, &current)
+        } else {
+            current
+        };
+"#;
+const SAFETY_CURRENT: &str = r#"            crate::live_walk::normalize(
+                path,
+                &std::fs::read_to_string(super::root().join(path))
+                    .unwrap()
+                    .replace('\r', "")
+            ),"#;
+const RESTORATIONS: &[(&str, &str, &str)] = &[
+    ("crates/xtask/tests/support/performance_contract_074_output_join.rs", REFERENCE, ""),
+    ("crates/xtask/tests/support/performance_contract_074_starting_publication.rs", REFERENCE, ""),
+    ("crates/xtask/tests/support/performance_contract_074_safety_alarm.rs", SAFETY_CURRENT,
+     "            std::fs::read_to_string(super::root().join(path))\n                .unwrap()\n                .replace('\\r', \"\"),"),
+];
 const GATE: &str = r#"
 # BEGIN GNU PREPARATION GATE
 
@@ -57,6 +79,10 @@ pub(super) fn normalize(path: &str, raw: &str) -> String {
         );
         raw = raw.replacen(extra, "", 1);
     }
+    for (_, new, old) in RESTORATIONS.iter().filter(|(p, _, _)| *p == path) {
+        assert_eq!(raw.matches(new).count(), 1, "exact guard adapter: {path}");
+        raw = raw.replacen(new, old, 1);
+    }
     if path == "docs/testing/gated-test-registry.toml" {
         assert_eq!(
             raw.matches(GATE).count(),
@@ -102,6 +128,9 @@ fn gnu_preparation_preserves_every_previous_body_and_protocol() {
         "tools/long-run-supervisor-074/tests/prearmed_watchdog.py",
         "tools/long-run-supervisor-074/tests/redundant_watchdog.py",
         "tools/long-run-supervisor-074/tests/root_creator_sigkill.py",
+        "crates/xtask/tests/support/performance_contract_074_output_join.rs",
+        "crates/xtask/tests/support/performance_contract_074_starting_publication.rs",
+        "crates/xtask/tests/support/performance_contract_074_safety_alarm.rs",
     ]) {
         assert_eq!(
             normalize(path, &read(path)),
@@ -112,10 +141,15 @@ fn gnu_preparation_preserves_every_previous_body_and_protocol() {
 }
 #[test]
 fn gnu_preparation_exact_hooks_reject_deletion_duplication_and_body_drift() {
-    for (path, extra) in ADDITIONS.iter().chain(std::iter::once(&(
-        "docs/testing/gated-test-registry.toml",
-        GATE,
-    ))) {
+    for (path, extra) in ADDITIONS
+        .iter()
+        .copied()
+        .chain(RESTORATIONS.iter().map(|(p, new, _)| (*p, *new)))
+        .chain(std::iter::once((
+            "docs/testing/gated-test-registry.toml",
+            GATE,
+        )))
+    {
         let raw = read(path);
         assert!(std::panic::catch_unwind(|| normalize(path, &raw.replacen(extra, "", 1))).is_err());
         assert!(std::panic::catch_unwind(|| normalize(path, &format!("{raw}{extra}"))).is_err());
