@@ -14,6 +14,14 @@ pub(super) struct Relay {
     _executable: tempfile::TempDir,
 }
 impl Relay {
+    pub(super) fn creator_pin(&self) -> std::os::fd::RawFd {
+        self.pin.as_raw_fd()
+    }
+    pub(super) fn creator_scope(&self) -> serde_json::Value {
+        crate::diagnostic_two_phase_launch::root_enrollment::privileged_fixture::identity(
+            self._executable.path(),
+        )
+    }
     pub(super) fn new() -> Self {
         let mut fds = [-1; 2];
         assert_eq!(

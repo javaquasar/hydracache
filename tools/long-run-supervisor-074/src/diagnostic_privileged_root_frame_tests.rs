@@ -4,6 +4,8 @@ use crate::diagnostic_two_phase_launch::root_enrollment::RootSource;
 use std::os::fd::{AsFd, AsRawFd};
 #[path = "diagnostic_privileged_root_cgroup_fixture.rs"]
 mod cgroup;
+#[path = "diagnostic_owned_root_creator_fixture.rs"]
+mod creator;
 #[path = "diagnostic_privileged_controller_relay.rs"]
 mod relay;
 
@@ -61,6 +63,20 @@ fn privileged_original_root_manager_writer_matrix() {
     }
 }
 fn run(case: &str) {
+    run_inner(case, None);
+}
+#[test]
+#[ignore = "external local privileged original manager/root creator SIGKILL only; no product or original send"]
+fn privileged_original_root_manager_creator_victim() {
+    let carrier = creator::Carrier::inherited();
+    let case = if carrier.outside {
+        "outside-alias"
+    } else {
+        "creator"
+    };
+    run_inner(case, Some(carrier));
+}
+fn run_inner(case: &str, mut carrier: Option<creator::Carrier>) {
     use crate::diagnostic_worker_policy::trusted_input;
     let model = trusted_input::controller_input::tests::privileged_fixture::new();
     let request = request(&model);
@@ -88,6 +104,9 @@ fn run(case: &str) {
     let mut original = build.bind_oidc(&mut oidc.trust, &token).unwrap();
     crate::diagnostic_output_preparation::fixed_intent_storage::privileged_fixture::with_fence(
         |fence, campaigns, leaf| {
+            if let Some(carrier) = &mut carrier {
+                carrier.preparing(&cgroup, &relay, campaigns);
+            }
             let attempt = original
                 .bind_common_empty_fence(fence)
                 .unwrap()
@@ -155,6 +174,27 @@ fn run(case: &str) {
             }
             assert!(!cgroup::drain(&mut out));
             assert!(!cgroup::drain(&mut err));
+            if let Some(carrier) = &carrier {
+                let mut rights = vec![out.as_raw_fd(), err.as_raw_fd()];
+                rights.extend(
+                    cgroup
+                        .guardians
+                        .as_ref()
+                        .unwrap()
+                        .iter()
+                        .map(AsRawFd::as_raw_fd),
+                );
+                rights.extend(custodians.iter().map(AsRawFd::as_raw_fd));
+                rights.push(relay.creator_pin());
+                rights.extend(cgroup.writers.iter().map(cgroup::Dummy::creator_pin));
+                // Keep stdin writers in the external harness so creator death
+                // cannot make cats exit naturally by EOF instead of revocation.
+                rights.extend(cgroup.writers.iter().map(cgroup::Dummy::creator_input));
+                if let Some(outside) = &outside {
+                    rights.push(outside.as_raw_fd());
+                }
+                carrier.ready(origins, &rights);
+            }
             match case {
                 "guardian-dead" => cgroup.signal_guardian(0, libc::SIGKILL),
                 "guardian-stopped" => cgroup.signal_guardian(0, libc::SIGSTOP),

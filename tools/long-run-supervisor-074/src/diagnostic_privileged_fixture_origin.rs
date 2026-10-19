@@ -1,5 +1,17 @@
 //! Root-only temporary test origin. Never a production trust or root admission.
 use std::os::unix::fs::{MetadataExt, PermissionsExt};
+thread_local! {
+    static SCOPES: std::cell::RefCell<Vec<serde_json::Value>> = const {
+        std::cell::RefCell::new(Vec::new())
+    };
+}
+pub(crate) fn identity(path: &std::path::Path) -> serde_json::Value {
+    let info = std::fs::symlink_metadata(path).unwrap();
+    serde_json::json!({"path":path,"device":info.dev(),"inode":info.ino()})
+}
+pub(crate) fn scopes() -> Vec<serde_json::Value> {
+    SCOPES.with(|scopes| scopes.borrow().clone())
+}
 pub(crate) fn require(path: &std::path::Path) {
     assert_eq!(
         std::env::var("HC074_OWNED_ROOT_FIXTURE").as_deref(),
@@ -31,5 +43,6 @@ pub(crate) fn new() -> tempfile::TempDir {
         .unwrap();
     std::fs::set_permissions(root.path(), std::fs::Permissions::from_mode(0o700)).unwrap();
     require(root.path());
+    SCOPES.with(|scopes| scopes.borrow_mut().push(identity(root.path())));
     root
 }

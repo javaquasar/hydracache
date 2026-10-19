@@ -1760,3 +1760,19 @@ production host or authorize a held unit. Local Armed still grants no execution,
 completion or fence release. Existing v1 predicates and all source deadlines
 remain unchanged. Root kernel controls and nonroot original frame controls are
 separate gates, not proof of an end-to-end original privileged manager channel.
+
+## Local owned original manager creator fixture carrier
+
+The private local-only hc074-owned-root-creator-v1 JSON carrier is bounded below
+16384 bytes and uses an unnamed Unix seqpacket pair. The preparing phase carries
+no rights and inventories six root-owned fresh temporary scopes, a relay scope,
+the original fence path and fresh cgroup device/inode. The ready phase repeats
+these fields, adds four original origins/bounds and transfers exactly thirteen
+CLOEXEC rights: stdout/stderr readers, two guardian pidfds, collector/custodian
+pidfds, the controller relay pidfd, three dummy writer pidfds and three held
+stdin writers (preventing natural EOF exit). Only the outside-alias negative
+adds a fourteenth stdout writer. Exact creator kernel
+credentials, fields, version, phase, rights and truncation are checked; unknown
+values refuse. No migration, persisted replay or production reader exists.
+This ignored fixture carrier is not original delivery, host enrollment,
+completion, unlock or a new guardian protocol.

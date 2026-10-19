@@ -12507,4 +12507,37 @@ platform = "linux"
 
 [gate.command.env]
 
+
+[[gate]]
+id = "tool.hydracache-long-run-supervisor-074.privileged-owned-creator"
+kind = "external_tool"
+source = "tools/long-run-supervisor-074/src/diagnostic_privileged_root_frame_tests.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "hydracache_long_run_supervisor_074"
+test = "privileged_original_root_manager_creator_victim"
+cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
+env = ""
+reason = "external owning local root original manager creator SIGKILL; no product or send"
+tier = "manual"
+required_features = []
+required_env = ["HC074_OWNED_ROOT_FIXTURE", "HC074_START_MATERIAL_BUNDLE", "HC074_OWNED_CREATOR_BINARY", "HC074_OWNED_CREATOR_OUT"]
+required_tools = ["python3"]
+timeout_seconds = 1200
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "python3"
+args = ["-B","tools/long-run-supervisor-074/tests/owned_root_creator_sigkill.py","--binary-env","HC074_OWNED_CREATOR_BINARY","--out-env","HC074_OWNED_CREATOR_OUT"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+
 # END OWNED ROOT MANAGER GATES

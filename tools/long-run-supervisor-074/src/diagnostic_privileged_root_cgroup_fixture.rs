@@ -12,6 +12,12 @@ pub(super) struct Dummy {
     pin: File,
 }
 impl Dummy {
+    pub(super) fn creator_pin(&self) -> std::os::fd::RawFd {
+        self.pin.as_raw_fd()
+    }
+    pub(super) fn creator_input(&self) -> std::os::fd::RawFd {
+        self.child.stdin.as_ref().unwrap().as_raw_fd()
+    }
     pub(super) fn assert_live(&mut self) {
         assert!(
             self.child.try_wait().unwrap().is_none(),
@@ -66,6 +72,9 @@ pub(super) struct Cgroup {
     pub(super) guardians: Option<[File; 2]>,
 }
 impl Cgroup {
+    pub(super) fn creator_path(&self) -> &Path {
+        &self.path
+    }
     pub(super) fn new() -> Self {
         let temporary =
             crate::diagnostic_two_phase_launch::root_enrollment::privileged_fixture::new();

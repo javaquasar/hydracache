@@ -142,7 +142,57 @@ platform = "linux"
 
 [gate.command.env]
 
+
+[[gate]]
+id = "tool.hydracache-long-run-supervisor-074.privileged-owned-creator"
+kind = "external_tool"
+source = "tools/long-run-supervisor-074/src/diagnostic_privileged_root_frame_tests.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "hydracache_long_run_supervisor_074"
+test = "privileged_original_root_manager_creator_victim"
+cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
+env = ""
+reason = "external owning local root original manager creator SIGKILL; no product or send"
+tier = "manual"
+required_features = []
+required_env = ["HC074_OWNED_ROOT_FIXTURE", "HC074_START_MATERIAL_BUNDLE", "HC074_OWNED_CREATOR_BINARY", "HC074_OWNED_CREATOR_OUT"]
+required_tools = ["python3"]
+timeout_seconds = 1200
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "python3"
+args = ["-B","tools/long-run-supervisor-074/tests/owned_root_creator_sigkill.py","--binary-env","HC074_OWNED_CREATOR_BINARY","--out-env","HC074_OWNED_CREATOR_OUT"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+
 # END OWNED ROOT MANAGER GATES
+"#;
+const COMPAT: &str = r#"
+## Local owned original manager creator fixture carrier
+
+The private local-only hc074-owned-root-creator-v1 JSON carrier is bounded below
+16384 bytes and uses an unnamed Unix seqpacket pair. The preparing phase carries
+no rights and inventories six root-owned fresh temporary scopes, a relay scope,
+the original fence path and fresh cgroup device/inode. The ready phase repeats
+these fields, adds four original origins/bounds and transfers exactly thirteen
+CLOEXEC rights: stdout/stderr readers, two guardian pidfds, collector/custodian
+pidfds, the controller relay pidfd, three dummy writer pidfds and three held
+stdin writers (preventing natural EOF exit). Only the outside-alias negative
+adds a fourteenth stdout writer. Exact creator kernel
+credentials, fields, version, phase, rights and truncation are checked; unknown
+values refuse. No migration, persisted replay or production reader exists.
+This ignored fixture carrier is not original delivery, host enrollment,
+completion, unlock or a new guardian protocol.
 "#;
 pub(super) fn normalize(path: &str, raw: &str) -> String {
     let mut text = raw.to_owned();
@@ -159,6 +209,10 @@ pub(super) fn normalize(path: &str, raw: &str) -> String {
     if path == "docs/testing/gated-test-registry.toml" {
         assert_eq!(text.matches(GATES).count(), 1);
         text = text.replacen(GATES, "", 1);
+    }
+    if path == "docs/COMPAT.md" {
+        assert_eq!(text.matches(COMPAT).count(), 1);
+        text = text.replacen(COMPAT, "", 1);
     }
     text
 }
