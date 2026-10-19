@@ -1,4 +1,6 @@
 //! Exact additive original preparation only, never watchdog or target admission.
+#[path = "performance_contract_074_original_pending_watchdog.rs"]
+mod pending;
 const BASE: &str = "38f8ecb2";
 const OWNER: &str = r####"
 #[path = "diagnostic_original_watchdog_context.rs"]
@@ -50,6 +52,8 @@ platform = "linux"
 # END ORIGINAL WATCHDOG CONTEXT GATE
 "####;
 pub(super) fn normalize(path: &str, raw: &str) -> String {
+    let current = pending::normalize(path, raw);
+    let raw = current.as_str();
     let addition = match path {
         "tools/long-run-supervisor-074/src/diagnostic_original_manager_message.rs" => OWNER,
         "tools/long-run-supervisor-074/src/diagnostic_original_manager_message_test_api.rs" => API,

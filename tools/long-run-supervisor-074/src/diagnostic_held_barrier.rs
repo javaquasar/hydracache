@@ -171,3 +171,5 @@ mod tests;
 
 #[path = "diagnostic_prearmed_watchdog.rs"]
 mod prearmed;
+
+pub(crate) use prearmed::inherited_pending::InheritedPending;

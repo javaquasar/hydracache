@@ -206,3 +206,6 @@ impl<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>
 #[cfg(test)]
 #[path = "diagnostic_original_watchdog_context_tests.rs"]
 mod tests;
+
+#[path = "diagnostic_original_pending_watchdog.rs"]
+pub(in super::super) mod pending;

@@ -117,3 +117,6 @@ fn original_watchdog_context_frame_controls() {
         );
     }
 }
+
+#[path = "diagnostic_original_pending_watchdog_frame_tests.rs"]
+mod pending;

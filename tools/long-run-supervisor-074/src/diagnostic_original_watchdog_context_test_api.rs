@@ -43,3 +43,6 @@ impl OriginalEnrollmentFrame<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
         (result, message.channel.calls)
     }
 }
+
+#[path = "diagnostic_original_pending_watchdog_test_api.rs"]
+mod pending;

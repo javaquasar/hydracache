@@ -179,3 +179,6 @@ pub fn inspect_launch_signature(raw: &[u8], key: &VerifyingKey) -> Result<Launch
 #[cfg(test)]
 #[path = "diagnostic_two_phase_launch_tests.rs"]
 mod tests;
+
+#[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+pub(crate) use held_barrier::InheritedPending;

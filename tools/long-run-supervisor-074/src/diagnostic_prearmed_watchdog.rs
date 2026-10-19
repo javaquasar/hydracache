@@ -605,3 +605,6 @@ mod tests;
 
 #[path = "diagnostic_redundant_watchdog.rs"]
 mod redundant;
+
+#[path = "diagnostic_inherited_pending_watchdog.rs"]
+pub(super) mod inherited_pending;

@@ -12016,3 +12016,39 @@ platform = "linux"
 [gate.command.env]
 
 # END ORIGINAL WATCHDOG CONTEXT GATE
+
+# BEGIN ORIGINAL PENDING WATCHDOG GATE
+
+[[gate]]
+id = "tool.hydracache-long-run-supervisor-074.original-pending-watchdog-controls"
+kind = "external_tool"
+source = "tools/long-run-supervisor-074/src/diagnostic_original_pending_watchdog_frame_tests.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "hydracache_long_run_supervisor_074"
+test = "original_pending_watchdog_frame_controls"
+cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
+env = ""
+reason = "manual nonroot original Pending custody; no target enrollment or delivery"
+tier = "manual"
+required_features = []
+required_env = ["HC074_START_MATERIAL_BUNDLE"]
+required_tools = ["cargo"]
+timeout_seconds = 1200
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","original_pending_watchdog_frame_controls","--","--ignored","--nocapture","--test-threads=1"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+
+# END ORIGINAL PENDING WATCHDOG GATE
