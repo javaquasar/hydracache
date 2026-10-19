@@ -1,0 +1,8 @@
+{
+  "scope": "local-wsl-only",
+  "owned_cgroup_roots": [],
+  "clock": "active",
+  "server": false,
+  "supervisor": false,
+  "product": false
+}

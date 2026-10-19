@@ -1,0 +1,17 @@
+{
+  "source": "e917ab3e005ca4468aef30bfbedca1881c9b0814",
+  "image": "2431b19480123b7d9bc24af4dabe602794fd74eb8b0e3479f4e275a124ae71da  /home/artur/.cache/hydracache-074-194-check/release/deps/hydracache_long_run_supervisor_074-b26b156d3dcd0098",
+  "recipe": "8c1a194421eee6d7e39ed98bcf0f0c30a475835c0627025e13ff80210ccab453",
+  "matrix": false,
+  "repeats": 1,
+  "clock_before": "active",
+  "clock_after": "active",
+  "fixed_manager": true,
+  "real_root": true,
+  "test_issuers": true,
+  "original_send": false,
+  "completion": false,
+  "server": false,
+  "supervisor": false,
+  "product": false
+}

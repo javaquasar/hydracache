@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "source": "894e4df842da9a43a350259413f5dc654a0ee4d1",
+  "status": "msrv-closing-frame-refused-before-fault",
+  "images": [
+    "d2a4afd432af0e9305569bddc1bd44c6d528dbc7084bbebf5be94ed91a27dd05  /home/artur/.cache/hydracache-074-194-check/release/deps/hydracache_long_run_supervisor_074-b26b156d3dcd0098",
+    "b548e81b6f3f26cff6ca178a86b145a0daad41e5b9176a860e175f3f0fc77aee  /home/artur/.cache/hydracache-074-188-check/release/deps/hydracache_long_run_supervisor_074-d2aba7f58d773234"
+  ],
+  "recipe": "5bc6bc8e41f0d8621cd4b2001f159a479bd0ba541561ef144b387e90f2a0eb29",
+  "creator_sigkill_cases": 9,
+  "complete_matrix_passed": false,
+  "clock_after": "active",
+  "original_send": false,
+  "completion": false,
+  "server": false,
+  "supervisor": false,
+  "product": false,
+  "analysis_not_positive_run_receipt": true
+}

@@ -1,0 +1,33 @@
+HC074-OWNED-CREATOR image_sha256=b548e81b6f3f26cff6ca178a86b145a0daad41e5b9176a860e175f3f0fc77aee
+HC074-OWNED-CREATOR case=owner seed=0x074c2025 creator_sigkill=true writers_sigkill=3 before_original_deadline=true sinks_shed=true drained_eof=true fence_held=true test_issuers=true original_send=false completion=false product=false
+HC074-OWNED-CREATOR case=first-dead seed=0x074c2025 creator_sigkill=true writers_sigkill=3 before_original_deadline=true sinks_shed=true drained_eof=true fence_held=true test_issuers=true original_send=false completion=false product=false
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::privileged_original_root_manager_creator_victim ... HC074-OWNED-ENROLL success=true facts={"observations":8,"first":{"site":"window","issued_ns":605004379339,"now_ns":614371740958,"issued_boot":"a99c3c7c-c9ce-4a5e-8d54-294881096802","now_boot":"a99c3c7c-c9ce-4a5e-8d54-294881096802","age_ns":9367361619,"diagnostic_reason":"within-window"},"last":{"site":"final_clocks","issued_ns":605004379339,"now_ns":614728655961,"issued_boot":"a99c3c7c-c9ce-4a5e-8d54-294881096802","now_boot":"a99c3c7c-c9ce-4a5e-8d54-294881096802","age_ns":9724276622,"diagnostic_reason":"within-window"},"first_refusal":null}
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::privileged_original_root_manager_creator_victim' panicked at tools/long-run-supervisor-074/src/diagnostic_privileged_root_frame_tests.rs:160:32:
+called `Result::unwrap()` on an `Err` value: Context(Frame(Original(Original(Challenge(Time)))))
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::privileged_original_root_manager_creator_victim
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1277 filtered out; finished in 13.26s
+
+
+Traceback (most recent call last):
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/tests/owned_root_creator_sigkill.py", line 282, in <module>
+    main()
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/tests/owned_root_creator_sigkill.py", line 271, in main
+    run(binary, args.out, case)
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/tests/owned_root_creator_sigkill.py", line 134, in run
+    ready, rights = receive(peer, owner, "ready", 14 if case == "outside-alias" else 13)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/tests/owned_root_creator_sigkill.py", line 42, in receive
+    require(flags & ~socket.MSG_CMSG_CLOEXEC == 0 and 0 < len(raw) < 16384, "capsule truncation")
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/tests/original_custody_owner_loss.py", line 30, in require
+    raise RuntimeError(reason)
+RuntimeError: capsule truncation

@@ -43,8 +43,8 @@ After the ordinary privileged frame passes, add a separate owning subreaper
 harness. The creator must reach the real fixed-manager/root/guardian join and
 produce actual dummy output before its exact pidfd receives SIGKILL. A private
 test-only credential-checked carrier first inventories fresh temporary scopes
-for cleanup, then exports only pipe readers and exact child pidfds (plus an
-intentional outside writer in its negative case). This is not production
+for cleanup, then exports pipe readers, exact child pidfds and held dummy stdin
+writers (plus an intentional outside writer in its negative case). This is not production
 enrollment, a public FD getter or original product delivery.
 
 Require actual SIGKILL of all three original-stream dummy writers before the
@@ -69,3 +69,20 @@ Accept ECHILD only in cleanup and only with that exact pidfd already terminal.
 Never relax the writers' CLD_KILLED/SIGKILL assertions. Wait for the source suite
 and other compilation to finish before a single fresh complete GNU/MSRV cohort;
 retain every attempt, including refusals, and keep all production gates closed.
+
+### Selected outcome and next gate
+
+Source `894e4df8` passes the GNU external screen and six creator cuts. MSRV
+passes two cuts, then refuses the third before ready/fault injection in closing
+revalidation with `Challenge(Time)`. Its captured last enrollment causal age is
+9,724,276,622 ns; that is not the exact later failing tuple. Cleanup no longer
+double-panics and leaves no fixture root. The complete creator gate stays open.
+Preserve the partial outcome as negative evidence, not a positive receipt.
+
+Next attribute the closing original-frame work and its existing time comparisons
+with bounded test-only observations. Keep all live predicates, original call
+frequency, 46 effect brackets and 300/60/10 origins/bounds. Do not omit the closing
+round, retime progress or reuse an incomplete attempt to get a healthy run.
+Only after explaining the refusal should a separately declared complete MSRV
+cohort resume. Production root admission, original delivery, completion, unlock
+and server rehearsal remain separate gates and are not opened by this packet.

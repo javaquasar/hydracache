@@ -1,0 +1,40 @@
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::privileged_original_root_manager_creator_victim ... 
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::privileged_original_root_manager_creator_victim' (1307) panicked at tools/long-run-supervisor-074/src/diagnostic_privileged_root_frame_tests.rs:147:33:
+called `Result::unwrap()` on an `Err` value: Context(Frame(Original(Original(Original(Transport(Material(Outputs(Original(Original(Original(Causal(Time))))))))))))
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::privileged_original_root_manager_creator_victim' (1307) panicked at tools/long-run-supervisor-074/src/diagnostic_privileged_root_cgroup_fixture.rs:209:21:
+assertion `left == right` failed
+  left: Some(10)
+ right: Some(4)
+stack backtrace:
+   0:     0x61d8e16acee2 - <std::sys::backtrace::BacktraceLock::print::DisplayBacktrace as core::fmt::Display>::fmt::h93773fc827e3113d
+   1:     0x61d8e16be9aa - core::fmt::write::hed7b5c73d82ecb7c
+   2:     0x61d8e1673dd6 - std::io::Write::write_fmt::h6f0185aecf0ed75f
+   3:     0x61d8e16899a9 - std::panicking::default_hook::{{closure}}::h2be84df4f189ae36
+   4:     0x61d8e1689809 - std::panicking::default_hook::hf0ea8939246f43a9
+   5:     0x61d8e1689c9b - std::panicking::panic_with_hook::hb4bd9ac1123582a0
+   6:     0x61d8e1689a68 - std::panicking::panic_handler::{{closure}}::hde00dd15f5637fe2
+   7:     0x61d8e1683b79 - std::sys::backtrace::__rust_end_short_backtrace::hb72197fa777c1785
+   8:     0x61d8e16669bd - __rustc[4425a7e20b4c8619]::rust_begin_unwind
+   9:     0x61d8e16c74dc - core::panicking::panic_fmt::ha59b517dd231f4da
+  10:     0x61d8e16c73f3 - core::panicking::assert_failed_inner::h3c3301979dc81b81
+  11:     0x61d8e116fa87 - core::panicking::assert_failed::ha01323e22441c41f
+  12:     0x61d8e13c7500 - <hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::cgroup::Cgroup as core::ops::drop::Drop>::drop::h68f14798cb2741dd
+  13:     0x61d8e1167be1 - core::ptr::drop_in_place<hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::cgroup::Cgroup>::hf44ac3aaafb29a80
+  14:     0x61d8e113bfa4 - hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::run_inner::h1df3210799caf8ff
+  15:     0x61d8e0ae73af - core::ops::function::FnOnce::call_once::h855c61234dbb0747
+  16:     0x61d8e149b65b - test::__rust_begin_short_backtrace::h0b6a7601d9750bfa
+  17:     0x61d8e14af06a - test::run_test::{{closure}}::hddc4550da4871867
+  18:     0x61d8e14894c4 - std::sys::backtrace::__rust_begin_short_backtrace::h3ec4d1f21ad44588
+  19:     0x61d8e148ce62 - core::ops::function::FnOnce::call_once{{vtable.shim}}::h9e460d1d7fc83d35
+  20:     0x61d8e167e97f - std::sys::thread::unix::Thread::new::thread_start::h982f9ea829d1b5fb
+  21:     0x7b45e869cb84 - <unknown>
+  22:     0x7b45e8729ecc - <unknown>
+  23:                0x0 - <unknown>
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::privileged_original_root_manager_creator_victim' (1307) panicked at /rustc/4a4ef493e3a1488c6e321570238084b38948f6db/library/core/src/panicking.rs:233:5:
+panic in a destructor during cleanup
+thread caused non-unwinding panic. aborting.

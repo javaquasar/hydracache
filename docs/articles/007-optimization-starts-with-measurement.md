@@ -13931,3 +13931,63 @@ semantics, not credited with fixing the unobserved historical failure. Root
 controls in this particular frame gate are simulated; combined privileged
 original host admission, all-writer cessation, completion and reconnect remain
 separate work. The results do not authorize server installation or product load.
+
+## A refused owner can still hold a writer
+
+The next [ownership audit](../testing/performance/0.74/owned-root-manager-design.md)
+found a lifetime distinction that profiling cannot settle. The original guardian
+adapter borrowed its manager message. Retirement made that owner unusable, but
+the caller still owned the message and its output aliases. An empty cgroup and a
+refused API therefore did not establish that writing had ceased. This was an
+ownership gap, not a reason to remove live checks or lengthen a deadline.
+
+The separate consuming adapter takes the exact original manager message and
+retains its entire frame. It derives the guardian binding through the same full
+validation rounds and uses the existing root preparation/enrollment algorithms.
+Retirement first refuses the original owner; field destruction then closes its
+aliases and cancels/reaps its original collector and custodian. Enrolled root
+guardians remain independent with the original fence and alarm. A failed
+preparation retains the original owner rather than returning a reusable message.
+The borrowed implementation is unchanged, so existing behavior is not silently
+reinterpreted. No original delivery, completion or unlock capability is added.
+
+The test now combines a real fixed manager channel, numeric-root retained
+ancestry, actual kernel sender credentials and root cgroup guardians in one
+original frame. Synthetic issuers and a copied signed bundle are explicitly
+fixture inputs. Three harmless writers produce bytes through the original
+streams from direct and nested groups, including duplicated stdout/stderr roles.
+Before revocation the harness verifies their live pidfds and actual cgroup
+membership. Afterward it requires exact SIGKILL waits and drained EOF, not merely
+a successful kill call or an empty subtree. An intentionally external writer
+can still write and blocks EOF until closed. That negative prevents the test
+from presenting cgroup control as revocation of arbitrary external descriptors.
+
+Normal Rust destruction and creator death are measured separately. In the latter
+an external subreaper sends SIGKILL to the exact creator and keeps dummy stdin
+writers open; natural EOF exit cannot masquerade as watchdog revocation. The
+original collectors must shed output descriptors while retaining fence custody.
+The original deadline is observed without rearming it. The
+[evidence packet](../testing/performance/0.74/local-runs/owned-root-manager-20261019/README.md)
+records which boundaries actually pass, including preliminary refusals. None of
+these local safety checks is a product throughput result or production host
+admission. Authentication of original delivery and durable lifecycle/reconnect
+remain distinct gates even when this ownership boundary is green.
+
+The actual result is deliberately narrower than the intended gate. Both ordinary
+seven-case combined matrices pass, and the external GNU screen and six creator
+cases pass. MSRV passes creator loss and first-guardian loss, then refuses its
+next attempt during the unchanged closing validation frame with `Challenge(Time)`
+before the named fault can be injected. Its last enrollment observation was
+9,724,276,622 ns after challenge issuance, with matching boot identities. That
+observation precedes the failing closing comparison; it is context, not a captured
+explanation of that later error or the earlier GNU `Causal(Time)` refusal.
+
+The packet therefore records nine selected real creator-SIGKILL successes and
+an incomplete cross-compiler gate, not thirteen passes. It retains both refusals,
+does not create a positive run receipt and rejects metadata which promotes the
+MSRV result. The secondary fixture double-wait was fixed and regression-tested;
+the later refusal cleans up without a destructor panic. Original deadlines and
+all complete live rounds remain unchanged. The next question is the cost and
+exact time observations of closing validation, not which threshold to relax or
+how many retries eventually produce green. This is a local safety and attribution
+result, not a product speedup or permission to launch the server.

@@ -4170,3 +4170,28 @@ The packet contains 142 hashed files plus its inventory; inventory SHA256 is
 `bf70675f2d178fb0e5feb325d4161b2095cf2447f46a3b827462092e1c5dfd2e`.
 Its verifier rejects ten mutations. The qualification manifest remains unchanged
 at SHA256 `11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc`.
+
+The [consuming original manager/root design](owned-root-manager-design.md) closes
+an ownership gap left by the borrowed guardian path: refusing a borrowed owner
+does not close the original message's still-owned writer aliases. The new private
+owner consumes that exact message, keeps the full original validation rounds and
+destroys its original alias owners before returning the root borrow. The old
+borrowed path, all 46 effect brackets and original 300/60/10 bounds remain intact.
+The [local evidence](local-runs/owned-root-manager-20261019/README.md) distinguishes
+the actual fixed-manager/root composition, creator SIGKILL and outside-alias
+negative from production admission. No original product message is sent, and
+completion, fence release, server installation and product workload remain closed.
+
+Both seven-case combined retirement matrices pass. The later real creator-death
+gate is partial: GNU screen and six cases pass, MSRV owner/first-guardian loss
+pass, then the next MSRV attempt refuses in the unchanged closing full frame
+with `Challenge(Time)` before ready/fault injection. Its last enrollment causal
+age was 9,724,276,622 ns, not the unrecorded failing closing tuple. The packet
+retains that refusal and prohibits treating nine selected SIGKILL successes as
+the intended thirteen. Closing-frame attribution and the remaining MSRV cases
+are still open; no original deadline or live round is waived.
+
+This packet contains 150 hashed files plus its inventory. Inventory SHA256 is
+`a328705a7165f178dbf068a764f107585324d2bcec0630b41dc8ed658c5e9a7f`.
+Its verifier rejects thirteen mutations, including false promotion of the
+incomplete MSRV gate; historical packets and qualification manifest are unchanged.

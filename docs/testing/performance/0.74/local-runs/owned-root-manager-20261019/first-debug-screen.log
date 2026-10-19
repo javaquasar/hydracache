@@ -1,0 +1,15 @@
+
+running 1 test
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::privileged_original_root_manager_writer_screen' (386) panicked at tools/long-run-supervisor-074/src/diagnostic_privileged_controller_relay.rs:56:41:
+called `Result::unwrap()` on an `Err` value: Os { code: 13, kind: PermissionDenied, message: "Permission denied" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::privileged_original_root_manager_writer_screen ... FAILED
+
+failures:
+
+failures:
+    diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::privileged_original_root_manager_writer_screen
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1275 filtered out; finished in 0.77s
+

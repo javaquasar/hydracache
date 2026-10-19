@@ -1,0 +1,16 @@
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::privileged_original_root_manager_creator_victim ... HC074-OWNED-ENROLL success=true facts={"observations":8,"first":{"site":"window","issued_ns":605004379339,"now_ns":614371740958,"issued_boot":"a99c3c7c-c9ce-4a5e-8d54-294881096802","now_boot":"a99c3c7c-c9ce-4a5e-8d54-294881096802","age_ns":9367361619,"diagnostic_reason":"within-window"},"last":{"site":"final_clocks","issued_ns":605004379339,"now_ns":614728655961,"issued_boot":"a99c3c7c-c9ce-4a5e-8d54-294881096802","now_boot":"a99c3c7c-c9ce-4a5e-8d54-294881096802","age_ns":9724276622,"diagnostic_reason":"within-window"},"first_refusal":null}
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::privileged_original_root_manager_creator_victim' panicked at tools/long-run-supervisor-074/src/diagnostic_privileged_root_frame_tests.rs:160:32:
+called `Result::unwrap()` on an `Err` value: Context(Frame(Original(Original(Challenge(Time)))))
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::privileged_original_root_manager_creator_victim
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1277 filtered out; finished in 13.26s
+
