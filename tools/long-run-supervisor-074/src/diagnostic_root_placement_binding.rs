@@ -30,3 +30,6 @@ impl BoundGuardians<'_> {
         !super::super::raw::terminal(self.pair.alarm.as_raw_fd())
     }
 }
+
+#[path = "diagnostic_fixed_slice_guardians.rs"]
+mod fixed_slice;

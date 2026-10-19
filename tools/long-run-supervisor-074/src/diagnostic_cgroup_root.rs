@@ -246,3 +246,7 @@ mod transport;
 mod guardian;
 
 pub(crate) use guardian::original::{BoundGuardians, RootSource};
+
+#[path = "diagnostic_fixed_slice.rs"]
+mod fixed_slice;
+pub(crate) use fixed_slice::FixedSlice;

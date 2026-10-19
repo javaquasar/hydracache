@@ -1,4 +1,6 @@
 //! Exact test-only phase insertions, not a new runtime schedule.
+#[path = "performance_contract_074_fixed_slice.rs"]
+mod fixed_slice;
 const BASE: &str = "ad0347cb";
 const PREFIX: &str = "tools/long-run-supervisor-074/src/";
 const FILE: &str = "tools/long-run-supervisor-074/src/diagnostic_owned_placement_live_tests.rs";
@@ -39,7 +41,7 @@ platform = "linux"
 # END PLACEMENT COST GATE
 "##;
 pub(super) fn normalize(path: &str, raw: &str) -> String {
-    let mut text = raw.to_owned();
+    let mut text = fixed_slice::normalize(path, raw);
     if path == FILE {
         assert_eq!(text.matches(TEST).count(), 1, "exact cost fixture");
         text = text.replacen(TEST, "", 1);

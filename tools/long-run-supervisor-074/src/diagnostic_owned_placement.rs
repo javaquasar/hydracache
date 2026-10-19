@@ -193,3 +193,6 @@ impl OwnedPlacement<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
 #[cfg(test)]
 #[path = "diagnostic_owned_placement_fixture_api.rs"]
 mod fixture_api;
+
+#[path = "diagnostic_fixed_placement.rs"]
+mod fixed_slice;
