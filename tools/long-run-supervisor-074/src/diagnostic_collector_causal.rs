@@ -79,7 +79,10 @@ pub fn collector_challenge_nonce(raw: &[u8]) -> Result<String, CollectorCausalEr
     message.extend_from_slice(raw);
     Ok(sha256_hex(&message))
 }
+#[cfg_attr(test, track_caller)]
 fn age(issued: u64, now: u64) -> Result<(), CollectorCausalError> {
+    #[cfg(test)]
+    time_observation::closing::observe(issued, now);
     if issued == 0
         || now < issued
         || now - issued >= crate::diagnostic_lease::CONTROLLER_LOSS_SECONDS * 1_000_000_000

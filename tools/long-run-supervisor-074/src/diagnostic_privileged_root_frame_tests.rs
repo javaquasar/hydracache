@@ -4,6 +4,8 @@ use crate::diagnostic_two_phase_launch::root_enrollment::RootSource;
 use std::os::fd::{AsFd, AsRawFd};
 #[path = "diagnostic_privileged_root_cgroup_fixture.rs"]
 mod cgroup;
+#[path = "diagnostic_closing_validation_fixture.rs"]
+mod closing;
 #[path = "diagnostic_owned_root_creator_fixture.rs"]
 mod creator;
 #[path = "diagnostic_privileged_controller_relay.rs"]
@@ -157,7 +159,7 @@ fn run_inner(case: &str, mut carrier: Option<creator::Carrier>) {
             } else {
                 owned.enroll_once().unwrap();
             }
-            owned.revalidate().unwrap();
+            closing::run(|| owned.revalidate()).unwrap();
             assert_eq!(owned.fixture_origins(), origins);
             let [mut out, mut err, writer, other] = owned.fixture_streams();
             let custodians = owned.fixture_custodians();

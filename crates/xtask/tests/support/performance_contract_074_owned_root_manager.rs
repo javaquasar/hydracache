@@ -1,4 +1,6 @@
 //! Exact additive owned-root adapter, never a predicate or deadline waiver.
+#[path = "performance_contract_074_closing_validation.rs"]
+mod closing;
 const BASE: &str = "28bbba4a";
 const PREFIX: &str = "tools/long-run-supervisor-074/src/";
 const HOOKS: &[(&str, &str)] = &[
@@ -195,6 +197,8 @@ This ignored fixture carrier is not original delivery, host enrollment,
 completion, unlock or a new guardian protocol.
 "#;
 pub(super) fn normalize(path: &str, raw: &str) -> String {
+    let raw = closing::normalize(path, raw);
+    let raw = raw.as_str();
     let mut text = raw.to_owned();
     for (file, hook) in HOOKS {
         if path == format!("{PREFIX}{file}") {

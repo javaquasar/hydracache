@@ -2,6 +2,9 @@
 use super::KernelTimePoint;
 use std::cell::RefCell;
 
+#[path = "diagnostic_closing_age_trace.rs"]
+pub(crate) mod closing;
+
 #[derive(Clone, Debug, Default, PartialEq, Eq, serde::Serialize)]
 pub(crate) struct Report {
     observations: u64,
