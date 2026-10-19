@@ -7,6 +7,9 @@ pub(crate) struct MessageProbe {
     pin: ReceiverPin,
     channel: TestChannel,
 }
+
+#[path = "diagnostic_original_watchdog_context_test_api.rs"]
+mod watchdog;
 impl OriginalEnrollmentFrame<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
     pub(crate) fn message_probe_for_test(&mut self) -> MessageProbe {
         MessageProbe {

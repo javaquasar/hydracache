@@ -353,3 +353,6 @@ impl OriginalManagerMessage<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
 #[cfg(test)]
 #[path = "diagnostic_original_manager_message_units.rs"]
 mod units;
+
+#[path = "diagnostic_original_watchdog_context.rs"]
+pub(super) mod watchdog_context;

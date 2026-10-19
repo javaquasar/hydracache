@@ -1,4 +1,6 @@
 //! Local pair composition must not modify any prior runtime or wire body.
+#[path = "performance_contract_074_original_watchdog_context.rs"]
+mod original_context;
 const BASE: &str = "6f1dbfab";
 const MAIN: &str = r####"
 #[path = "diagnostic_redundant_watchdog.rs"]
@@ -61,6 +63,8 @@ platform = "linux"
 # END REDUNDANT WATCHDOG GATE
 "####;
 pub(super) fn normalize(path: &str, raw: &str) -> String {
+    let current = original_context::normalize(path, raw);
+    let raw = current.as_str();
     let addition = match path {
         "tools/long-run-supervisor-074/src/diagnostic_prearmed_watchdog.rs" => MAIN,
         "tools/long-run-supervisor-074/src/diagnostic_prearmed_watchdog_fixture.rs" => FIXTURE,

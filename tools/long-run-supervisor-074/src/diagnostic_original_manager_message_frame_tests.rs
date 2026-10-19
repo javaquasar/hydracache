@@ -3,6 +3,9 @@ use super::*;
 mod budget;
 #[path = "diagnostic_original_reply_binding_frame_tests.rs"]
 mod reply_binding;
+
+#[path = "diagnostic_original_watchdog_context_frame_tests.rs"]
+mod watchdog_context;
 #[test]
 #[ignore = "manual nonroot original addressed message full-frame and owned rights controls"]
 fn original_grouped_addressed_frame_controls() {
