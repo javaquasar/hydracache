@@ -58,6 +58,7 @@ pub(super) fn cut(pair: &RootPair<'_>, stage: u8) {
                         && fds[1].revents == 0
                         && fds[2].revents == 0
                 );
+                super::original::queued_ack_for_fixture(guard.peer.as_raw_fd(), &pair.frame.enroll);
                 break;
             }
         }

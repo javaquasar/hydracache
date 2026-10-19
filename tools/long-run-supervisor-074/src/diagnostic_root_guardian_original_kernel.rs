@@ -1,6 +1,28 @@
 //! Crate-private kernel adapter. A pinned root is NOT host admission.
 use super::*;
 
+#[cfg(test)]
+pub(super) fn queued_ack_for_fixture(peer: RawFd, enroll: &[u8; PACKET_BYTES]) {
+    let mut bytes = [0u8; PACKET_BYTES];
+    // No ancillary buffer: a peek must not install or retain any writer/FD alias.
+    // The real notice() separately authenticates credentials and ancillary shape.
+    let length = unsafe {
+        libc::recv(
+            peer,
+            bytes.as_mut_ptr().cast(),
+            bytes.len(),
+            libc::MSG_PEEK | libc::MSG_TRUNC | libc::MSG_DONTWAIT,
+        )
+    };
+    let mut expected = *enroll;
+    expected[8] = 2;
+    assert_eq!(length, PACKET_BYTES as isize);
+    assert_eq!(
+        bytes, expected,
+        "cut requires a queued Armed ACK, not refusal/readability"
+    );
+}
+
 pub(crate) struct RootSource {
     root: PinnedRoot,
 }

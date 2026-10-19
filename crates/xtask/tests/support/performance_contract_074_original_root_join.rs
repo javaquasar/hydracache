@@ -2,6 +2,10 @@
 const BASE: &str = "52d805da";
 const ADDITIONS: &[(&str, &str)] = &[
     (
+        "tools/long-run-supervisor-074/src/diagnostic_root_creator_tests.rs",
+        "                super::original::queued_ack_for_fixture(guard.peer.as_raw_fd(), &pair.frame.enroll);\n",
+    ),
+    (
         "tools/long-run-supervisor-074/src/diagnostic_root_guardian.rs",
         r####"
 #[path = "diagnostic_root_guardian_original_kernel.rs"]
