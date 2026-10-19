@@ -77,10 +77,7 @@ fn gnu_preparation_cost_attribution() {
                 }
                 Err(failure) => {
                     // The outer original fixture asserts sticky refusal after Drop.
-                    println!(
-                        "HC074-PREPARATION-OUTCOME phase=enrollment healthy=false error={:?}",
-                        failure
-                    );
+                    println!("HC074-PREPARATION-OUTCOME phase=enrollment healthy=false error={failure:?}");
                     busy(root);
                     drop(failure);
                 }
