@@ -1,0 +1,24 @@
+{
+  "source": "08253cca073bfe56b5ed6b8d30cbcae8042b2937",
+  "recipe": "d722360e4043ad402a23279c68ec8ebdfcdf3bbbb780f47b45997305ac188cda",
+  "images": [
+    "5639ee2ae3cd56de0a694b03fb6b78c27ce5fb50c4ae5a158cfd99b11b6c107d  /home/artur/.cache/hydracache-074-194-check/release/deps/hydracache_long_run_supervisor_074-b26b156d3dcd0098",
+    "6c815dc25af922549d03e936a3027663e17c9c810adf4d1a4cce9216d4804054  /home/artur/.cache/hydracache-074-188-check/release/deps/hydracache_long_run_supervisor_074-d2aba7f58d773234"
+  ],
+  "completed_cases": [
+    "healthy",
+    "revalidate"
+  ],
+  "failed_case": "unarmed",
+  "native_test_failed": true,
+  "native_test_exit_code_recorded": false,
+  "wrapper_exit_code": 1,
+  "reason": "Wrong post-destruction Busy oracle for never-Armed pair",
+  "msrv_attempted": false,
+  "clock_restored": true,
+  "fixture_roots": [],
+  "original_send": false,
+  "completion": false,
+  "server": false,
+  "product": false
+}

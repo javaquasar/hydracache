@@ -1,0 +1,17 @@
+{
+  "source": "67c2f41c1b9288297c95507986859883f5645949",
+  "compiler": "1.88.0",
+  "image": "94ba6fbff73c5c0b9cfcb346c0d7a390fe4a95bd0d96a77d1c8270c6ce61c67e  /home/artur/.cache/hydracache-074-188-check/release/deps/hydracache_long_run_supervisor_074-d2aba7f58d773234",
+  "recipe": "c2dea3f677847948b884cdb2f58c7e92b95b26bd781b6aaef963720b8cdd5e82",
+  "placement_units": 8,
+  "launch_units": 11,
+  "enrollment_units": 5,
+  "doc_tests": 247,
+  "profile": false,
+  "original_send": false,
+  "server": false,
+  "supervisor": false,
+  "product": false,
+  "clock_changed": false,
+  "new_fault_cohort": false
+}

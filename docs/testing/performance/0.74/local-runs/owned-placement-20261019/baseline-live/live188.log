@@ -1,0 +1,7 @@
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::privileged_original_root_manager_writer_screen ... HC074-OWNED-ROOT case=retire seed=0x074c2024 fixed_manager=true original_owner_consumed=true actual_root=true actual_guardians=true dummy_writers=3 duplicated_writers=true custodians_dead=true drained_eof=true original_bounds=true fence_held=true test_issuers=true original_send=false completion=false product=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1291 filtered out; finished in 12.99s
+

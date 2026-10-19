@@ -1,0 +1,68 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.05s
+     Running unittests src\lib.rs (target\debug\deps\hydracache_long_run_supervisor_074-91cc7594fd779cb0.exe)
+
+running 60 tests
+test diagnostic_artifacts::local_audit_tests::local_file_reader_enforces_exact_budget_and_regular_leaf ... ok
+test diagnostic_controller_producer::tests::producer_retained_audience_and_internal_body_corruption_refuse ... ok
+test diagnostic_controller_producer::tests::producer_roundtrip_exact_request_domain_audience_and_synthetic_signature ... ok
+test diagnostic_controller_producer::tests::producer_seeded_valid_messages_and_independent_preparations ... ok
+test diagnostic_controller_producer::tests::producer_strict_request_schema_builder_identity_and_budget ... ok
+test diagnostic_controller_producer::tests::producer_wrong_selected_key_time_and_retained_identity_refuse ... ok
+test diagnostic_ipc::validation_trace_tests::validation_trace_actual_authentication_early_error_is_counted_without_signature ... ok
+test diagnostic_ipc::validation_trace_tests::validation_trace_actual_signed_window_and_signature_errors_are_distinct ... ok
+test diagnostic_ipc::validation_trace_tests::validation_trace_disabled_and_success_do_not_invent_time_refusals ... ok
+test diagnostic_ipc::validation_trace_tests::validation_trace_first_time_facts_are_not_replaced_or_authority ... ok
+test diagnostic_ipc::validation_trace_tests::validation_trace_independent_threads_keep_numeric_reports_separate ... ok
+HC074-VALIDATION-COST Report { stages: [Stats { wall_ns: 391600, authentication_calls: 1, authentication_ns: 384800, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }], first_time: Some(TimeRefusal { stage: Unassigned, operation: Reserve, issued: 1, expires: 61, now: 0 }), time_refusals: 1 }
+test diagnostic_ipc::validation_trace_tests::validation_trace_nested_unwind_and_ambient_scope_restore_original_frame ... ok
+test diagnostic_lease::transition_tests::transition_completion_and_terminal_replay_never_skip_or_restart_cells ... ok
+test diagnostic_lease::transition_tests::transition_entire_stage_graph_is_explicit ... ok
+test diagnostic_lease::transition_tests::transition_four_cells_seeded_histories_and_mutations ... ok
+test diagnostic_lease::transition_tests::transition_identity_revision_clock_and_cell_drift_refuse_without_mutation ... ok
+test diagnostic_lease::transition_tests::transition_original_inode_and_stop_reason_are_sticky ... ok
+test diagnostic_lease::transition_tests::transition_publisher_refuses_invalid_candidate_before_any_write ... ok
+test diagnostic_lease::transition_tests::transition_publisher_refuses_stale_revision_without_replacing_state ... ok
+test diagnostic_lease::transition_tests::transition_start_and_heartbeat_cannot_revive_expired_budgets ... ok
+test diagnostic_receipts::tests::pinned_hdr_projection_checks_bucket_edges_and_ceil_rank ... ok
+test diagnostic_receipts::tests::seeded_hdr_projection_preserves_rank_bounds_and_overflow_accounting ... ok
+test diagnostic_receipts::tests::strict_json_rejects_nested_duplicates_and_depth_without_tail_repair ... ok
+test diagnostic_two_phase_launch::root_enrollment::tests::root_enrollment_all_kinds_roundtrip_with_exact_offsets ... ok
+test diagnostic_two_phase_launch::root_enrollment::tests::root_enrollment_every_ack_byte_mutation_refuses_and_cannot_restore ... ok
+test diagnostic_two_phase_launch::root_enrollment::tests::root_enrollment_invalid_shapes_versions_fields_and_old_packets_refuse ... ok
+test diagnostic_two_phase_launch::root_enrollment::tests::root_enrollment_seeded_bindings_roundtrip_without_deadline_renewal ... ok
+test diagnostic_two_phase_launch::root_enrollment::tests::root_enrollment_send_uncertainty_and_ack_are_sticky_without_authority ... ok
+test diagnostic_two_phase_launch::tests::held_placement::held_placement_all_packet_kinds_zero_fields_and_foreign_attempt_refuse ... ok
+test diagnostic_two_phase_launch::tests::held_placement::held_placement_changed_signed_fields_digest_and_key_refuse ... ok
+test diagnostic_two_phase_launch::tests::held_placement::held_placement_roundtrip_exact_root_and_data_only_scope ... ok
+test diagnostic_two_phase_launch::tests::held_placement::held_placement_seeded_names_and_identity_binding_are_deterministic ... ok
+test diagnostic_two_phase_launch::tests::held_placement::held_placement_unknown_duplicate_noncanonical_budget_and_hex_refuse ... ok
+test diagnostic_two_phase_launch::tests::held_placement::held_placement_versions_and_signature_domains_do_not_upgrade_old_claims ... ok
+test diagnostic_two_phase_launch::tests::two_phase_launch_digest_binds_every_consent_claim_and_artifact_role ... ok
+test diagnostic_two_phase_launch::tests::two_phase_launch_document_bounds_and_unknown_shapes_refuse ... ok
+test diagnostic_two_phase_launch::tests::two_phase_launch_domain_signature_and_digest_refuse_independent_drift ... ok
+test diagnostic_two_phase_launch::tests::two_phase_launch_inherits_old_consent_bounds_without_new_clock_or_renewal ... ok
+test diagnostic_two_phase_launch::tests::two_phase_launch_roundtrip_is_expected_bytes_not_start_authority ... ok
+test diagnostic_worker_policy::authority_registry::tests::authority_registry_canonical_record_and_independent_bindings_are_exact ... ok
+test diagnostic_worker_policy::authority_registry::tests::authority_registry_generation_capacity_is_finite_and_no_epoch_wrap_is_possible ... ok
+test diagnostic_worker_policy::authority_registry::tests::authority_registry_refusal_and_higher_epoch_are_distinct_monotonic_transitions ... ok
+test diagnostic_worker_policy::authority_registry::tests::authority_registry_rejects_malformed_future_duplicate_noncanonical_and_oversized_records ... ok
+test diagnostic_worker_policy::authority_registry::tests::authority_registry_seeded_history_mutations_never_adopt_gaps_or_changed_refusals ... ok
+test diagnostic_worker_policy::proof_reuse_tests::worker_proof_reuse_independent_concurrent_owners_share_no_cached_authority ... ok
+test diagnostic_worker_policy::proof_reuse_tests::worker_proof_reuse_reference_matches_every_retained_projection_field ... ok
+test diagnostic_worker_policy::proof_reuse_tests::worker_proof_reuse_reference_matches_seeded_input_trust_context_and_priority ... ok
+test diagnostic_worker_policy::proof_reuse_tests::worker_proof_reuse_two_constructors_are_not_one_shared_admission ... ok
+test diagnostic_worker_policy::proof_reuse_tests::worker_proof_reuse_verifies_once_and_retains_projection_integrity ... ok
+test host_receipt::tests::canonical_receipt_round_trips_and_detects_drift ... ok
+test host_receipt::tests::cpuset_parser_canonicalizes_ranges ... ok
+test host_receipt::tests::host_observation_v1_rejects_worker_authority_extensions ... ok
+test host_receipt::tests::installed_binary_identity_requires_every_manifest_field ... ok
+test host_receipt::tests::live_observation_ignores_only_namespace_local_mount_id ... ok
+test host_receipt::tests::partition_and_fixed_probe_set_are_fail_closed ... ok
+test host_receipt::tests::provisioning_source_is_strict_and_binary_bound ... ok
+test host_receipt::tests::provisioning_v1_rejects_worker_authority_extensions ... ok
+test host_receipt::tests::quarantine_recovery_allows_only_the_provisioned_supervisor_identity_to_change ... ok
+test start_evidence::tests::bounded_input_and_create_new_output_are_enforced ... ok
+test start_evidence::tests::rejects_non_start_and_invalid_campaign_before_touching_paths ... ok
+
+test result: ok. 60 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.57s
+

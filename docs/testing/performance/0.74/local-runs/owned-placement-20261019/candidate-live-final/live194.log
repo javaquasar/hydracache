@@ -1,0 +1,18 @@
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::owned_placement::privileged_owned_placement_live_join ... HC074-OWNED-PLACEMENT-LIVE case=healthy accepted=true seed=0x074e6a1d fixed_manager=true actual_root=true original_bounds=true eof=true fence_held_while_owned=true fence_held_after_drop=true retained_replay_refused=false timer_live_before_drop=true test_issuers=true actual_systemd_placement=false original_send=false completion=false product=false facts={"first":{"age_ns":8985079338,"diagnostic_reason":"within-window","issued_boot":"053256b8-e8da-427a-8cf1-ef7cbdcd4954","issued_ns":109628913304,"now_boot":"053256b8-e8da-427a-8cf1-ef7cbdcd4954","now_ns":118613992642,"site":"window"},"first_refusal":null,"last":{"age_ns":9096508779,"diagnostic_reason":"within-window","issued_boot":"053256b8-e8da-427a-8cf1-ef7cbdcd4954","issued_ns":109628913304,"now_boot":"053256b8-e8da-427a-8cf1-ef7cbdcd4954","now_ns":118725422083,"site":"final_clocks"},"observations":4}
+HC074-OWNED-PLACEMENT-LIVE case=revalidate accepted=true seed=0x074e6a1d fixed_manager=true actual_root=true original_bounds=true eof=true fence_held_while_owned=true fence_held_after_drop=true retained_replay_refused=false timer_live_before_drop=true test_issuers=true actual_systemd_placement=false original_send=false completion=false product=false facts={"first":{"age_ns":7802399261,"diagnostic_reason":"within-window","issued_boot":"053256b8-e8da-427a-8cf1-ef7cbdcd4954","issued_ns":121979648799,"now_boot":"053256b8-e8da-427a-8cf1-ef7cbdcd4954","now_ns":129782048060,"site":"window"},"first_refusal":null,"last":{"age_ns":8235511560,"diagnostic_reason":"within-window","issued_boot":"053256b8-e8da-427a-8cf1-ef7cbdcd4954","issued_ns":121979648799,"now_boot":"053256b8-e8da-427a-8cf1-ef7cbdcd4954","now_ns":130215160359,"site":"final_clocks"},"observations":8}
+HC074-OWNED-PLACEMENT-LIVE case=unarmed accepted=false seed=0x074e6a1d fixed_manager=true actual_root=true original_bounds=true eof=true fence_held_while_owned=true fence_held_after_drop=false retained_replay_refused=true timer_live_before_drop=true test_issuers=true actual_systemd_placement=false original_send=false completion=false product=false facts={"first":null,"first_refusal":null,"last":null,"observations":0}
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::owned_placement::privileged_owned_placement_live_join' (471) panicked at tools/long-run-supervisor-074/src/diagnostic_owned_placement_live_tests.rs:107:77:
+called `Result::unwrap()` on an `Err` value: Context(Frame(Original(Original(Original(Transport(Material(Outputs(Original(Original(Original(Causal(Time))))))))))))
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::owned_placement::privileged_owned_placement_live_join
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1300 filtered out; finished in 48.05s
+

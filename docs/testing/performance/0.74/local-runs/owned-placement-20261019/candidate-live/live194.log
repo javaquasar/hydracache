@@ -1,0 +1,18 @@
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::owned_placement::privileged_owned_placement_live_join ... HC074-OWNED-PLACEMENT-LIVE case=healthy accepted=true seed=0x074e6a1d fixed_manager=true actual_root=true original_bounds=true eof=true fence_held=true test_issuers=true actual_systemd_placement=false original_send=false completion=false product=false facts={"first":{"age_ns":9362998045,"diagnostic_reason":"within-window","issued_boot":"48cfe2d7-9e6a-4062-9f03-4020e3c2fd87","issued_ns":1296418718491,"now_boot":"48cfe2d7-9e6a-4062-9f03-4020e3c2fd87","now_ns":1305781716536,"site":"window"},"first_refusal":null,"last":{"age_ns":9491051980,"diagnostic_reason":"within-window","issued_boot":"48cfe2d7-9e6a-4062-9f03-4020e3c2fd87","issued_ns":1296418718491,"now_boot":"48cfe2d7-9e6a-4062-9f03-4020e3c2fd87","now_ns":1305909770471,"site":"final_clocks"},"observations":4}
+HC074-OWNED-PLACEMENT-LIVE case=revalidate accepted=true seed=0x074e6a1d fixed_manager=true actual_root=true original_bounds=true eof=true fence_held=true test_issuers=true actual_systemd_placement=false original_send=false completion=false product=false facts={"first":{"age_ns":6726945791,"diagnostic_reason":"within-window","issued_boot":"48cfe2d7-9e6a-4062-9f03-4020e3c2fd87","issued_ns":1308753069580,"now_boot":"48cfe2d7-9e6a-4062-9f03-4020e3c2fd87","now_ns":1315480015371,"site":"window"},"first_refusal":null,"last":{"age_ns":7059525507,"diagnostic_reason":"within-window","issued_boot":"48cfe2d7-9e6a-4062-9f03-4020e3c2fd87","issued_ns":1308753069580,"now_boot":"48cfe2d7-9e6a-4062-9f03-4020e3c2fd87","now_ns":1315812595087,"site":"final_clocks"},"observations":8}
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::owned_placement::privileged_owned_placement_live_join' (453) panicked at tools/long-run-supervisor-074/src/diagnostic_owned_placement_live_tests.rs:171:13:
+assertion failed: matches!(crate::host_execution::lock_host_root(campaigns),
+    Err(crate::host_execution::HostExecutionError::Busy))
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::owned_placement::privileged_owned_placement_live_join
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1300 filtered out; finished in 31.80s
+
