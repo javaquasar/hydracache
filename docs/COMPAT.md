@@ -1729,3 +1729,14 @@ not completion receipts. No unlock, all-writer cessation or original Armed
 capability follows. This local reader is not a production owner constructor,
 held-unit projection, trust enrollment or server execution API. Original v1
 direct-child predicates, original projections and old packet claims stay intact.
+
+## Local root guardian creator cut carrier
+
+The external local-only root fixture uses a test-only 104-byte HCRGCUT1 carrier:
+eight magic bytes, one stage byte 0 through 5 and 95 zero reserved bytes. Stage
+zero transfers exactly two guardian pidfds; later stages transfer no rights.
+The harness checks exact creator SCM_CREDENTIALS, atomic CLOEXEC rights, packet
+length, reserved bytes and truncation. Unknown versions or stages refuse; no
+migration, durable replay, reconnect or production reader exists. Only an
+explicit ignored libtest victim and owning local subreaper use this carrier.
+This does not change HCRG0742, its reader, or the original guardian v1 protocol.

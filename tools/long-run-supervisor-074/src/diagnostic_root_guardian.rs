@@ -516,14 +516,22 @@ impl<'a> RootPair<'a> {
         }
         // Both requests precede waiting for either ACK. One stopped child must
         // not prevent the other from retaining a root and its independent alarm.
+        #[cfg(test)]
+        creator::cut(self, 5);
         self.notice(0)?;
+        #[cfg(test)]
+        creator::cut(self, 1);
         self.notice(1)?;
+        #[cfg(test)]
+        creator::cut(self, 2);
         self.live()?;
         let closing = self.root.observe()?;
         if closing.populated || closing.frozen {
             return Err(refused());
         }
         self.armed = true;
+        #[cfg(test)]
+        creator::cut(self, 3);
         Ok(())
     }
     #[cfg(test)]
@@ -570,3 +578,7 @@ mod raw;
 #[cfg(test)]
 #[path = "diagnostic_root_guardian_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "diagnostic_root_creator_tests.rs"]
+mod creator;

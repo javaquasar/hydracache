@@ -1,4 +1,6 @@
 //! Freeze old mechanics while introducing a distinct local active v2 pair.
+#[path = "performance_contract_074_root_creator.rs"]
+mod creator;
 const BASE: &str = "037802aa";
 const MODULE: &str = "\n#[path = \"diagnostic_root_guardian.rs\"]\nmod guardian;\n";
 const FAULT_MODULE: &str =
@@ -65,6 +67,8 @@ platform = "linux"
 # END ROOT GUARDIAN GATE
 "####;
 pub(super) fn normalize(path: &str, raw: &str) -> String {
+    let current = creator::normalize(path, raw);
+    let raw = current.as_str();
     let extra = match path {
         "tools/long-run-supervisor-074/src/diagnostic_cgroup_root.rs" => MODULE,
         "tools/long-run-supervisor-074/src/diagnostic_cgroup_root_fault_tests.rs" => FAULT_MODULE,
