@@ -62,7 +62,9 @@ def main():
         rows = []
         for repeat in range(1, 4):
             raw = (args.directory / f"{args.prefix}{compiler}" / f"leaf-{repeat}.log").read_text(encoding="utf-8-sig")
-            if "test result: ok. 1 passed; 0 failed;" not in raw:
+            external = args.prefix not in ("aa2-", "aa3-")
+            marker = "external aggregate: ok children=240; 0 failed;" if external else "test result: ok. 1 passed; 0 failed;"
+            if marker not in raw:
                 raise ValueError("incomplete/zero test selection")
             part = [json.loads(x) for x in re.findall(r"HC074-LEAF-PATH (\{[^\r\n]+\})", raw)]
             if len(part) != 30:
@@ -73,6 +75,10 @@ def main():
             for leaf in ("boot", "namespace"):
                 if sorted(r["block"] for r in part if r["leaf"] == leaf) != list(range(15)):
                     raise ValueError("missing or duplicate paired block")
+            if external:
+                for row in part:
+                    if len(row["child_stdout"]) != 8 or any("test result: ok. 1 passed; 0 failed;" not in x for x in row["child_stdout"]):
+                        raise ValueError("missing actual child acceptance")
             rows.extend(part)
         results[compiler] = evaluate(rows)
     results["accepted_both"] = all(results[k]["accepted"] for k in ("gnu194", "gnu188"))

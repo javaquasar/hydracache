@@ -55,12 +55,13 @@ def main():
                     output.write("HC074-LEAF-PATH " + json.dumps(row) + "\n")
                     output.flush()
             output.write("HC074-LEAF-PATH-CLOSED observations_unchanged=true cached=false product=false\n")
-            output.write("test result: ok. 1 passed; 0 failed; external_aggregate=true\n")
+            output.write("external aggregate: ok children=240; 0 failed;\n")
         print(f"repeat={repeat} actual_children=240 leaves=2 complete=true", flush=True)
     if before != [digest(args.a), digest(args.b)]:
         raise ValueError("image drift")
     (args.out / "receipt.json").write_text(json.dumps(dict(
         a_image=before[0], b_image=before[1], repeats=3, actual_children=720,
+        recipe_sha256=digest(__file__),
         uid=os.geteuid(), server=False, product=False, admission=False,
     ), indent=2) + "\n", encoding="utf-8")
 
