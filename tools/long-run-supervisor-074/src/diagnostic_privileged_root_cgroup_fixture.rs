@@ -12,6 +12,19 @@ pub(super) struct Dummy {
     pin: File,
 }
 impl Dummy {
+    pub(super) fn assert_live(&mut self) {
+        assert!(
+            self.child.try_wait().unwrap().is_none(),
+            "writer exited before revocation"
+        );
+        let mut event = libc::pollfd {
+            fd: self.pin.as_raw_fd(),
+            events: libc::POLLIN,
+            revents: 0,
+        };
+        assert_eq!(unsafe { libc::poll(&mut event, 1, 0) }, 0);
+        assert_eq!(event.revents, 0);
+    }
     fn kill_wait(&mut self) {
         if self.child.try_wait().unwrap().is_none() {
             let n = unsafe {
@@ -198,6 +211,28 @@ pub(super) fn drain(reader: &mut File) -> bool {
             Err(e) => panic!("pipe drain: {e}"),
         }
     }
+}
+pub(super) fn ready(reader: &mut File, count: usize) {
+    let expected = b"hc074-live-writer\n".repeat(count);
+    let mut received = Vec::new();
+    let until = std::time::Instant::now() + std::time::Duration::from_secs(5);
+    while received.len() < expected.len() {
+        let mut bytes = [0; 4096];
+        match reader.read(&mut bytes) {
+            Ok(0) => panic!("writers reached EOF before revocation"),
+            Ok(n) => received.extend_from_slice(&bytes[..n]),
+            Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => {
+                assert!(
+                    std::time::Instant::now() < until,
+                    "writers did not produce readiness bytes"
+                );
+                std::thread::sleep(std::time::Duration::from_millis(1));
+            }
+            Err(e) if e.kind() == std::io::ErrorKind::Interrupted => (),
+            Err(e) => panic!("writer readiness: {e}"),
+        }
+    }
+    assert_eq!(received, expected);
 }
 pub(super) fn dead(pin: &File) {
     let mut event = libc::pollfd {

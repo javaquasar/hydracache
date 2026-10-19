@@ -149,6 +149,10 @@ fn run(case: &str) {
             );
             drop(writer);
             drop(other);
+            cgroup::ready(&mut out, 3);
+            for writer in &mut cgroup.writers {
+                writer.assert_live();
+            }
             assert!(!cgroup::drain(&mut out));
             assert!(!cgroup::drain(&mut err));
             match case {
