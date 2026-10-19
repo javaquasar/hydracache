@@ -1,0 +1,18 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.23s
+     Running tests\performance_contract_074.rs (target\debug\deps\performance_contract_074-affcfab4e5118d5a.exe)
+
+running 1 test
+
+thread 'live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::prearmed::redundant::original_context::pending::root_enrollment::cgroup_root_enrollment_gate_requires_separate_protocol_and_kernel_checks' (2824) panicked at crates\xtask\tests\support\performance_contract_074_cgroup_root_enrollment.rs:42:48:
+called `Result::unwrap()` on an `Err` value: Os { code: 2, kind: NotFound, message: "The system cannot find the file specified." }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::prearmed::redundant::original_context::pending::root_enrollment::cgroup_root_enrollment_gate_requires_separate_protocol_and_kernel_checks ... FAILED
+
+failures:
+
+failures:
+    live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::prearmed::redundant::original_context::pending::root_enrollment::cgroup_root_enrollment_gate_requires_separate_protocol_and_kernel_checks
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 276 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p xtask --test performance_contract_074`

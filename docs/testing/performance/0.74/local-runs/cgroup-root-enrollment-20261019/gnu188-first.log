@@ -1,0 +1,18 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `release` profile [optimized] target(s) in 3m 24s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-188-check/release/deps/hydracache_long_run_supervisor_074-d2aba7f58d773234)
+
+running 9 tests
+test diagnostic_two_phase_launch::root_enrollment::kernel::tests::cgroup_root_events_are_exact_bounded_and_never_a_completion_receipt ... ok
+test diagnostic_two_phase_launch::root_enrollment::kernel::tests::cgroup_root_regular_files_and_unsafe_components_cannot_be_kernel_roots ... ok
+test diagnostic_two_phase_launch::root_enrollment::kernel::tests::fault::cgroup_root_kernel_fault_matrix ... ignored, manual local root cgroup2 fixtures; no service, original start or product
+test diagnostic_two_phase_launch::root_enrollment::tests::root_enrollment_all_kinds_roundtrip_with_exact_offsets ... ok
+test diagnostic_two_phase_launch::root_enrollment::tests::root_enrollment_every_ack_byte_mutation_refuses_and_cannot_restore ... ok
+test diagnostic_two_phase_launch::root_enrollment::tests::root_enrollment_invalid_shapes_versions_fields_and_old_packets_refuse ... ok
+test diagnostic_two_phase_launch::root_enrollment::tests::root_enrollment_seeded_bindings_roundtrip_without_deadline_renewal ... ok
+root enrollment seed=0x74c2019
+test diagnostic_two_phase_launch::root_enrollment::tests::root_enrollment_send_uncertainty_and_ack_are_sticky_without_authority ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::tests::signed_authority_fixed_dispatch_model_is_not_root_enrollment ... ok
+
+test result: ok. 8 passed; 0 failed; 1 ignored; 0 measured; 1234 filtered out; finished in 0.10s
+

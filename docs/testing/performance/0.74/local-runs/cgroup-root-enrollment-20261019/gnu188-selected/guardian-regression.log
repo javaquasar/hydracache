@@ -1,0 +1,19 @@
+HC074-REDUNDANT image_sha256=3709240c8b8cf3958c2b47fc08d891c90d5134191f7165062825716c6ced0827
+HC074-REDUNDANT case=healthy-expiry seed=0x0740d019 deadline=394034380043 fence_retained=True expected_negative=False product=false original_authority=false all_writers=false
+HC074-REDUNDANT case=owner-loss seed=0x0740d019 deadline=404039301937 fence_retained=True expected_negative=False product=false original_authority=false all_writers=false
+HC074-REDUNDANT case=first-dead-owner-loss seed=0x0740d019 deadline=404045254621 fence_retained=True expected_negative=False product=false original_authority=false all_writers=false
+HC074-REDUNDANT case=second-dead-owner-loss seed=0x0740d019 deadline=404050956293 fence_retained=True expected_negative=False product=false original_authority=false all_writers=false
+HC074-REDUNDANT case=first-stopped-owner-loss seed=0x0740d019 deadline=404056555849 fence_retained=True expected_negative=False product=false original_authority=false all_writers=false
+HC074-REDUNDANT case=second-stopped-owner-loss seed=0x0740d019 deadline=404062344919 fence_retained=True expected_negative=False product=false original_authority=false all_writers=false
+HC074-REDUNDANT case=first-dead-expiry seed=0x0740d019 deadline=404068157674 fence_retained=True expected_negative=False product=false original_authority=false all_writers=false
+HC074-REDUNDANT case=second-dead-expiry seed=0x0740d019 deadline=414074492764 fence_retained=True expected_negative=False product=false original_authority=false all_writers=false
+HC074-REDUNDANT case=first-stopped-expiry seed=0x0740d019 deadline=424080774647 fence_retained=True expected_negative=False product=false original_authority=false all_writers=false
+HC074-REDUNDANT case=second-stopped-expiry seed=0x0740d019 deadline=434089888695 fence_retained=True expected_negative=False product=false original_authority=false all_writers=false
+HC074-REDUNDANT case=lost-second-ack-first-dead seed=0x0740d019 deadline=444094860264 fence_retained=True expected_negative=False product=false original_authority=false all_writers=false
+HC074-REDUNDANT case=lost-second-ack-first-stopped seed=0x0740d019 deadline=444105651690 fence_retained=True expected_negative=False product=false original_authority=false all_writers=false
+HC074-REDUNDANT case=partial-enrollment-loss seed=0x0740d019 deadline=444122151862 fence_retained=True expected_negative=False product=false original_authority=false all_writers=false
+HC074-REDUNDANT case=duplicate-global seed=0x0740d019 deadline=444133373187 fence_retained=True expected_negative=False product=false original_authority=false all_writers=false
+HC074-REDUNDANT case=hidden-writer-first-dead seed=0x0740d019 deadline=444139327004 fence_retained=True expected_negative=False product=false original_authority=false all_writers=false
+HC074-REDUNDANT case=both-dead seed=0x0740d019 deadline=444145100395 fence_retained=False expected_negative=True product=false original_authority=false all_writers=false
+HC074-REDUNDANT case=both-stopped seed=0x0740d019 deadline=444150779982 fence_retained=True expected_negative=True product=false original_authority=false all_writers=false
+HC074-REDUNDANT completed=true cases=17

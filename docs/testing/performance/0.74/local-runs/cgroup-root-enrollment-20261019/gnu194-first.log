@@ -1,0 +1,27 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0603]: function `checkpoint` is private
+   --> tools/long-run-supervisor-074/src/diagnostic_cgroup_root.rs:220:16
+    |
+220 | ...s::checkpoint(1);
+    |       ^^^^^^^^^^ private function
+    |
+note: the function `checkpoint` is defined here
+   --> tools/long-run-supervisor-074/src/diagnostic_cgroup_root_tests.rs:44:1
+    |
+ 44 |...(stage: u8) {
+    |...^^^^^^^^^^^
+
+error[E0603]: function `checkpoint` is private
+   --> tools/long-run-supervisor-074/src/diagnostic_cgroup_root.rs:223:16
+    |
+223 | ...s::checkpoint(2);
+    |       ^^^^^^^^^^ private function
+    |
+note: the function `checkpoint` is defined here
+   --> tools/long-run-supervisor-074/src/diagnostic_cgroup_root_tests.rs:44:1
+    |
+ 44 |...(stage: u8) {
+    |...^^^^^^^^^^^
+
+For more information about this error, try `rustc --explain E0603`.
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 2 previous errors

@@ -1,0 +1,26 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 20.73s
+   Doc-tests hydracache_long_run_supervisor_074
+
+running 18 tests
+test tools\long-run-supervisor-074\src\diagnostic_signer_bootstrap_context.rs - diagnostic_signer_bootstrap_context::CheckedSignerBootstrapModel (line 93) - compile fail ... ok
+test tools\long-run-supervisor-074\src\diagnostic_signer_bootstrap_context.rs - diagnostic_signer_bootstrap_context::CheckedSignerBootstrapModel (line 98) - compile fail ... ok
+test tools\long-run-supervisor-074\src\diagnostic_signer_build.rs - diagnostic_signer_build::CheckedSignerBuildModel (line 90) - compile fail ... ok
+test tools\long-run-supervisor-074\src\diagnostic_signer_bootstrap_context.rs - diagnostic_signer_bootstrap_context::CheckedSignerBootstrapModel (line 89) - compile fail ... ok
+test tools\long-run-supervisor-074\src\diagnostic_root_enrollment.rs - diagnostic_two_phase_launch::root_enrollment (line 3) - compile fail ... ok
+test tools\long-run-supervisor-074\src\diagnostic_controller_producer.rs - diagnostic_controller_producer::PreparedDiagnosticRequest (line 28) - compile fail ... ok
+test tools\long-run-supervisor-074\src\diagnostic_controller_producer.rs - diagnostic_controller_producer::PreparedDiagnosticRequest (line 24) - compile fail ... ok
+test tools\long-run-supervisor-074\src\diagnostic_signer_build.rs - diagnostic_signer_build::CheckedSignerBuildModel (line 94) - compile fail ... ok
+test tools\long-run-supervisor-074\src\diagnostic_signer_build.rs - diagnostic_signer_build::CheckedSignerBuildModel (line 99) - compile fail ... ok
+test tools\long-run-supervisor-074\src\diagnostic_signer_gnu.rs - diagnostic_signer_gnu::GnuDeclarationCatalog (line 35) - compile fail ... ok
+test tools\long-run-supervisor-074\src\diagnostic_signer_issuer.rs - diagnostic_signer_issuer::asserted_build_selection (line 34) - compile fail ... ok
+test tools\long-run-supervisor-074\src\diagnostic_signer_gnu.rs - diagnostic_signer_gnu::GnuDeclarationCatalog (line 39) - compile fail ... ok
+test tools\long-run-supervisor-074\src\diagnostic_start_consent.rs - diagnostic_start_consent (line 12) - compile fail ... ok
+test tools\long-run-supervisor-074\src\diagnostic_start_consent.rs - diagnostic_start_consent (line 8) - compile fail ... ok
+test tools\long-run-supervisor-074\src\diagnostic_start_consent.rs - diagnostic_start_consent::inspect_start_consent_signature (line 154) - compile fail ... ok
+test tools\long-run-supervisor-074\src\diagnostic_start_consent.rs - diagnostic_start_consent (line 4) - compile fail ... ok
+test tools\long-run-supervisor-074\src\diagnostic_two_phase_launch.rs - diagnostic_two_phase_launch (line 10) - compile fail ... ok
+test tools\long-run-supervisor-074\src\diagnostic_two_phase_launch.rs - diagnostic_two_phase_launch (line 6) - compile fail ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.10s
+

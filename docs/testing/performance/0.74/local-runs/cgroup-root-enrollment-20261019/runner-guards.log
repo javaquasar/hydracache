@@ -1,0 +1,8 @@
+Exception: C:\Workspace\prj\jq\cashe\hydracache-074\docs\testing\performance\0.74\local-runs\cgroup-root-enrollment-20261019\run.ps1:12
+Line |
+  12 |  … lPath $taskOut) { throw 'Refuse partial/completed cohort overwrite' }
+     |                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     | Refuse partial/completed cohort overwrite
+run.ps1: Cannot validate argument on parameter 'Label'. The argument "../escape" does not match the "^[a-z0-9-]+$" pattern. Supply an argument that matches "^[a-z0-9-]+$" and try the command again.
+run.ps1: Cannot validate argument on parameter 'Compiler'. The argument "1.80.0" does not belong to the set "1.94.0,1.88.0" specified by the ValidateSet attribute. Supply an argument that is in the set and then try the command again.
+3 runner guards refused before a new cohort or fixture
