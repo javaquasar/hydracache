@@ -2,6 +2,7 @@
 use super::*;
 use std::io::{Read, Write};
 use std::os::fd::{AsRawFd, FromRawFd, OwnedFd};
+use std::os::unix::fs::PermissionsExt;
 use std::os::unix::process::CommandExt;
 use std::process::{Child, ChildStdin, Command, Stdio};
 const MODE: &str = "HC074_PRIVATE_ROOT_CONTROLLER_RELAY";
@@ -10,6 +11,7 @@ pub(super) struct Relay {
     input: Option<ChildStdin>,
     pin: OwnedFd,
     pub(super) receiver: KernelReceiver,
+    _executable: tempfile::TempDir,
 }
 impl Relay {
     pub(super) fn new() -> Self {
@@ -28,7 +30,18 @@ impl Relay {
         let receiver = KernelReceiver::new(unsafe { OwnedFd::from_raw_fd(fds[0]) }).unwrap();
         let sender = unsafe { OwnedFd::from_raw_fd(fds[1]) };
         let fd = sender.as_raw_fd();
-        let mut command = Command::new(std::env::current_exe().unwrap());
+        // The build cache may be private to its owner. This is a root-owned
+        // read-only copy of the libtest image, not an installed product binary.
+        let executable = tempfile::Builder::new()
+            .prefix("hc074-controller-relay-")
+            .tempdir_in("/tmp")
+            .unwrap();
+        let program = executable.path().join("relay");
+        std::fs::copy(std::env::current_exe().unwrap(), &program).unwrap();
+        std::fs::set_permissions(&program, std::fs::Permissions::from_mode(0o555)).unwrap();
+        std::fs::set_permissions(executable.path(), std::fs::Permissions::from_mode(0o755))
+            .unwrap();
+        let mut command = Command::new(program);
         command
             .args([
                 "privileged_root_controller_relay_child",
@@ -66,6 +79,7 @@ impl Relay {
             input,
             pin: unsafe { OwnedFd::from_raw_fd(pin as _) },
             receiver,
+            _executable: executable,
         }
     }
     pub(super) fn receive(
