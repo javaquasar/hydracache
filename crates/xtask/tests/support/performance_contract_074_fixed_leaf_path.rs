@@ -1,4 +1,6 @@
 //! One optional fixed-path substitution; all live leaf operations stay exact.
+#[path = "performance_contract_074_owned_root_manager.rs"]
+mod owned_root;
 const BASE: &str = "a8a07600";
 const ORIGIN: &str = "tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs";
 const TEST: &str = "\n#[cfg(test)]\n#[path = \"diagnostic_fixed_leaf_path_tests.rs\"]\nmod fixed_leaf_path_tests;\n";
@@ -177,7 +179,8 @@ fn clean(path: &str, raw: &str, candidate: bool) -> String {
     text
 }
 pub(super) fn normalize(path: &str, raw: &str) -> String {
-    clean(path, raw, path == ORIGIN && enabled())
+    let raw = owned_root::normalize(path, raw);
+    clean(path, &raw, path == ORIGIN && enabled())
 }
 fn git(args: &[&str]) -> String {
     let result = std::process::Command::new("git")

@@ -1,4 +1,6 @@
 //! Owned nonroot modeled roots and synthetic issuer only; not installed enrollment.
+#[path = "diagnostic_privileged_worker_fixture.rs"]
+pub(crate) mod privileged_fixture;
 use super::super::authority_registry::{fixture, RefusalReason};
 use super::super::{
     NamespaceIdentity, SignedWorkerPolicy, WorkerPolicy, SIGNED_WORKER_POLICY_SCHEMA,

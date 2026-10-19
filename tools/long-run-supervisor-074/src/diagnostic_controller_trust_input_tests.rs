@@ -1,4 +1,6 @@
 //! Synthetic signers/nonroot roots and real local kernel messages, never enrollment.
+#[path = "diagnostic_privileged_controller_fixture.rs"]
+pub(crate) mod privileged_fixture;
 use super::*;
 use crate::diagnostic_ipc::{
     self, DiagnosticController, DiagnosticOperation, SignedDiagnosticRequest,

@@ -4,6 +4,10 @@ use std::os::unix::fs::{symlink, PermissionsExt};
 #[path = "diagnostic_collector_starting_crash_tests.rs"]
 mod crash_tests;
 
+#[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+#[path = "diagnostic_privileged_root_frame_tests.rs"]
+mod privileged_root;
+
 #[path = "diagnostic_original_collector_pipes_tests.rs"]
 mod pipe_tests;
 

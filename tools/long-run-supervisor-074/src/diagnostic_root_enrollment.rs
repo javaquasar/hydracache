@@ -8,6 +8,10 @@ pub const PACKET_BYTES: usize = 104;
 pub const PROTOCOL: &str = "hc074-cgroup-root-enrollment-v2";
 const MAGIC: &[u8; 8] = b"HCRG0742";
 
+#[cfg(all(test, target_os = "linux"))]
+#[path = "diagnostic_privileged_fixture_origin.rs"]
+pub(crate) mod privileged_fixture;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct RootBindingClaims {
     pub attempt_sha256: [u8; 32],

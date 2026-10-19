@@ -26,6 +26,16 @@ pub(super) fn queued_ack_for_fixture(peer: RawFd, enroll: &[u8; PACKET_BYTES]) {
 pub(crate) struct RootSource {
     root: PinnedRoot,
 }
+
+#[cfg(test)]
+impl BoundGuardians<'_> {
+    pub(crate) fn owned_fixture_pins(&self) -> [File; 2] {
+        self.pair
+            .guards
+            .each_ref()
+            .map(|guard| guard.pin.try_clone().unwrap())
+    }
+}
 impl RootSource {
     pub(crate) fn pin(parent: BorrowedFd<'_>, name: &CStr) -> io::Result<Self> {
         Ok(Self {

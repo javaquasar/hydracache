@@ -225,3 +225,7 @@ pub fn open_fixed_intent_storage() -> Result<FixedIntentStorageRead, FixedIntent
 #[cfg(test)]
 #[path = "diagnostic_intent_fixed_storage_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "diagnostic_privileged_fence_fixture.rs"]
+pub(crate) mod privileged_fixture;

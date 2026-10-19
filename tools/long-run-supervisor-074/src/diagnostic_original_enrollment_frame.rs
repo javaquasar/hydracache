@@ -2,6 +2,9 @@
 use super::*;
 #[path = "diagnostic_original_enrollment_frame_build.rs"]
 mod build;
+#[cfg(test)]
+#[path = "diagnostic_privileged_enrollment_fixture.rs"]
+mod privileged_fixture;
 
 pub(crate) struct OriginalEnrollmentFrame<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p> {
     // Cancellation/reaping precedes original writers and the last fence alias.

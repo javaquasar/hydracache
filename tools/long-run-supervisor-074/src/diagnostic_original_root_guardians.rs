@@ -200,3 +200,6 @@ impl Drop for OriginalRootGuardians<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_, '_, 
 #[cfg(test)]
 #[path = "diagnostic_original_root_retirement_tests.rs"]
 mod retirement_tests;
+
+#[path = "diagnostic_owned_root_manager.rs"]
+mod owned;
