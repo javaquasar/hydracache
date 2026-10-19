@@ -4134,3 +4134,13 @@ Retirement verification is mixed: the MSRV full-frame callback proof passes,
 but GNU refuses during the unchanged output-preparation causal window before
 that callback. The negative receipt does not waive the positive gate. GNU
 issued/now/boot and preparation-cost attribution precede any readiness claim.
+
+The [preparation attribution](local-runs/gnu-preparation-20261019/README.md)
+now records original issued/now BOOTTIME and boot identities at both causal
+comparison sites, with no new clock read or admission authority. Three fresh
+GNU 1.94 and three MSRV preparations complete inside the same original causal
+window; the old refusal is not reproduced or retrospectively explained. Cost
+is dominated by repeated live/kernel work rather than authentication. These
+are local diagnostic wall measurements, not a product optimization or the
+missing GNU retirement callback receipt. All original deadlines, predicates,
+effect brackets and closed server/execution boundaries remain intact.

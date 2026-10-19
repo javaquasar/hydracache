@@ -30,3 +30,30 @@ original start/send, product workload, completion or fence release is authorized
 Acceptance of diagnostics does not close the original GNU functional gate or
 authorize changes to observation frequency. Any optimization follows attribution
 as a separately reviewed hypothesis with unchanged live predicates and deadlines.
+
+## Local outcome
+
+Test-only instrumentation is committed at `42fcb5e5`, with an MSRV formatting
+lint correction at `7c523942`. The selected images use the latter exact source.
+Three fresh attempts on each compiler complete preparation with the original
+ten-second causal window intact. Both boot identities match; no captured
+causal point shows rollback or expiry. The historical GNU failure is not
+reproduced and its uncaptured tuple cannot be reconstructed from total duration.
+
+The [new raw packet](local-runs/gnu-preparation-20261019/README.md) separates
+consent, outputs and enrollment and retains both preliminary builds. The fixed
+782 authentication/signature calls in each output preparation consume only a
+small part of its wall time; repeated live/kernel checks dominate. This is
+attribution, not a product change or a passing original-retirement gate.
+
+The first full static suite catches three historical adapters which compare the
+new hooks directly. `2b984ff2` adds exact normalization to those independent
+comparisons, preserving the original assertions and negative body mutations.
+Focused controls and the three affected regressions pass. No measured Linux
+source or image changes; the initial failing source-suite log is retained.
+
+The final full static suite passes 295 controls. Both GNU toolchains pass
+strict clippy and the new units; Windows 54 units and 18 compile-fail tests,
+xtask strict clippy, formatting, docs, registry and local non-promotable
+performance checks pass. No functional retirement, server or product gate is
+promoted by these results.

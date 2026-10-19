@@ -13828,3 +13828,46 @@ and the eight-case prior frame regression. GNU's corresponding frame gate stays
 red before the new callback. The full source suite passes 292 controls, but this
 cannot substitute for the missing GNU dynamic receipt. Evidence records that
 mixed disposition, not an averaged score or a production-readiness claim.
+
+### Measure freshness from issuance rather than test entry
+
+The [preparation attribution](../testing/performance/0.74/local-runs/gnu-preparation-20261019/README.md)
+copies issued and observed BOOTTIME values and both boot identities at the
+existing causal comparisons. These test-only copies do not sample a new clock,
+renew an origin or participate in admission. The original comparisons and all
+live validation remain unchanged; source guards remove only exact test hooks
+before comparing the prior bodies and protocols.
+
+Three fresh GNU 1.94 preparations and three MSRV 1.88 controls complete without
+the earlier Causal(Time) refusal. The last observed challenge ages after
+enrollment are 7.73–8.23 seconds on GNU and 7.57–8.26 seconds on MSRV, below the
+unchanged ten-second limit. Both boot identities agree throughout the observed
+points. The overall tests take roughly eleven to thirteen seconds because
+challenge issuance happens after test entry. Comparing total test duration to
+challenge freshness would therefore diagnose the wrong interval.
+
+This series does not retrospectively explain the older failure: its original
+issued/now tuple is unavailable. Neither temporary local clock stabilization
+nor the new instrumentation is demonstrated to have fixed it. The earlier
+negative packet remains closed, and preparation success is not the separate
+retirement-frame callback proof or privileged host admission.
+
+The attribution does locate substantial cost in the unchanged preparation.
+Each fresh attempt uses 640 authentication/signature calls through consent,
+782 through output preparation and another 34 through enrollment preparation.
+GNU output preparation takes 5.90–6.62 seconds, while authentication occupies
+only 79–91 milliseconds, including 59–63 milliseconds of signature verification.
+About 65–66 percent of output wall time falls inside existing nested kernel
+spans. Boot and namespace checks are the largest individual categories outside
+their instrumented direct children. Each output phase performs 4,232 worker
+revalidations, 153,088 Boot spans and 306,176 Namespace spans.
+
+Those counts identify validation amplification; they are not permission to
+remove observations or cache a live decision. Authentication, live-walk and
+kernel spans overlap, and wall attribution is neither exclusive CPU time nor
+a syscall census. Instrumentation also has overhead and can change code
+generation, so these results do not establish a compiler speedup or a product
+throughput improvement. The next isolated hypothesis should reduce measured
+leaf work while preserving every live predicate, observation boundary and
+original deadline. It must then pass the actual GNU functional gate, not use
+the diagnostic harness's successful collection as a substitute.

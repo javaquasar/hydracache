@@ -1097,3 +1097,22 @@ guardians remain independent and keep the fence. The original-frame regression
 uses fresh simulated controls after retirement, so the old controls' refusal
 cannot conceal a still-usable owner. No clock renewal, completion or unlock is
 added, and the combined privileged constructor remains a separate gate.
+
+### Original causal clock facts and preparation cost
+
+The [local attribution](local-runs/gnu-preparation-20261019/README.md) copies
+the existing kernel-issued and observed BOOTTIME values and boot identities
+under `cfg(test)` at `window` and `final_clocks`. It neither reads another
+clock nor changes the original decision, call order, live observations, 46
+effect brackets or 300/60/10-second origins. Bounded diagnostic facts cannot
+construct a kernel time point or a fresh admission capability.
+
+Three fresh preparations on each GNU compiler complete without a causal time
+refusal. Final observed challenge ages are below ten seconds with matching
+boot identities. The old failed tuple remains unavailable; diagnostic success
+does not waive the earlier GNU retirement-frame gate. Existing numeric spans
+attribute most preparation cost to repeated live/kernel work, especially boot
+and namespace checks, rather than signature verification. Spans overlap and
+measure wall time, not CPU or product throughput. Any leaf optimization remains
+a separate hypothesis with unchanged observations and deadlines. Original root
+host admission, whole-writer cessation, completion and unlock stay closed.
