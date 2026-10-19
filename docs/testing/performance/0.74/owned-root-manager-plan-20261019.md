@@ -36,3 +36,21 @@ packets or the qualification manifest. Run formatting, strict lint, scoped
 unit/integration/fault tests, source contracts, registry, docs and local
 performance-contract checks before acceptance. Never refresh a deadline to
 obtain a healthy run; preserve failures and stop any unsafe dependent action.
+
+## Actual creator death on the combined path
+
+After the ordinary privileged frame passes, add a separate owning subreaper
+harness. The creator must reach the real fixed-manager/root/guardian join and
+produce actual dummy output before its exact pidfd receives SIGKILL. A private
+test-only credential-checked carrier first inventories fresh temporary scopes
+for cleanup, then exports only pipe readers and exact child pidfds (plus an
+intentional outside writer in its negative case). This is not production
+enrollment, a public FD getter or original product delivery.
+
+Require actual SIGKILL of all three original-stream dummy writers before the
+unchanged original deadline. Verify collector/custodian shed output roles,
+drained EOF and the still-held original fence. Exercise single guardian loss
+and stall on either side, plus the outside-alias negative. Kill/reap exact owned
+writers before fixture keeper cleanup; restore the prior subreaper setting and
+remove only independently checked fresh fixture paths. Never replace creator
+SIGKILL with channel closure, normal Rust Drop or a modeled error.
