@@ -922,3 +922,43 @@ systemd-managed process. The [evidence](local-runs/redundant-watchdog-20261019/R
 tests local independent custody only; durable exclusion/completion, later cells,
 new-boundary crash coverage and reconnect remain separate gates. Original live
 predicates, 46 effect brackets and 300/60/10-second origins remain unchanged.
+
+## Borrowed original watchdog context
+
+The [original-context plan](original-watchdog-context-plan-20261019.md) adds an
+opaque preparation view from an exclusive borrow of the same ready
+OriginalManagerMessage. It retains the original frame/collector/custodian,
+receiver and fixed channel. Derived state/identity, four origins, three bounds
+and existing selected timer deadline, descriptor/pidfd roles, serial/names and
+addressed aliases are compared around one unchanged complete addressed round.
+Actual current process/thread and real/effective credentials are also retained.
+No caller supplies those inputs or obtains their raw descriptors.
+
+The healthy fixture still performs 34 authentication/signature calls and two
+channel checks; comparison is not cached admission. Opening/closing mismatch or
+any original-frame failure poisons the payload and original chain, so retry
+cannot enter another round. The view retains no new FD owner and creates no
+timer or child, has no send/release/completion API, and cannot be constructed by a
+test-channel probe. Dropping it only returns the original borrow; it produces no
+transferable or durable capability.
+The contract's new_fd_owners=false concerns retained aliases in the view, not
+temporary kernel-document descriptors opened by the required live observations.
+
+The [contract](original-watchdog-context-contract.toml) keeps guardian spawn,
+v2 artifact binding, original send, all-cgroup/writer cessation and production
+admission closed. The retained message is still original v1. Future enrollment
+must bind the reviewed v2 roles and retained original kernel, timer/fence and
+process/cgroup ownership instead of promoting asserted metadata or loosening
+the local prototype's direct-child check. The
+[evidence](local-runs/original-watchdog-context-20261019/README.md) separates the
+unchanged-baseline refusal from isolated healthy/drift controls. All original
+predicates, effect brackets and admission origins remain unchanged; server and
+supervisor operations are not part of this package.
+
+Both GNU 1.94 and MSRV 1.88 pass fourteen explicit full-frame context scenarios,
+four ordinary controls and retained exchange/guardian regressions. The complete
+271-control source suite preserves all 372 old Rust bodies through exact additive
+registrations. Evidence binds each executed image to the same committed source
+and nine unchanged inputs. The context does not enroll the local guardian pair;
+that pair's separate regression harness must not be mistaken for original
+watchdog admission or a proof that every writer has stopped.

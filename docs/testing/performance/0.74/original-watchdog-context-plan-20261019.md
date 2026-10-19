@@ -48,3 +48,30 @@ Original delivery, all-writer revocation, durable completion/later cells/reconne
 and server admission remain closed. No release installation, supervisor operation,
 original/system-bus send, product workload, dedicated server or expensive
 qualification is authorized by this package.
+
+## Local result
+
+Implementation `c9b0651bbd0042c5c67217731ad4f96de73e690f` adds the exclusive
+original-owner preparation view and distinct metadata-only test probe. GNU 1.94
+and MSRV 1.88 each pass four ordinary controls, fourteen full-frame scenarios,
+thirty old exchange controls and the unchanged seventeen guardian fault cases.
+Healthy preparation and revalidation retain 34 authentication/signature calls
+and two channel checks; retained drift refuses before the round, closing drift
+after it, and all refusals prevent another round. Existing original origins,
+records, fence ownership and 300/60/10-second offsets are checked independently.
+
+The complete source suite passes 271 controls and preserves all 372 prior Rust
+bodies, compatibility and registry bytes through exact additive registrations.
+Windows passes 49 ordinary and 17 compile-fail controls. Current/MSRV all-target
+checks and strict all-feature lint pass. The [evidence packet](local-runs/original-watchdog-context-20261019/README.md)
+binds committed source, executed images and nine unchanged input hashes, and
+retains the original baseline refusal rather than explaining it away. Local WSL
+time synchronization is restored and verified after each isolated frame cohort.
+
+This completes preparation binding only. The view creates no new retained FD
+alias, timer, guardian or delivery authority; required observations can still
+open temporary kernel documents. Its original v1 consent cannot authorize the
+separately signed v2 launcher roles. Actual retained kernel/timer/fence enrollment,
+live executable/process/streams/cgroup binding, all-writer revocation and original
+delivery remain before durable completion, later cells, reconnect and server
+admission. No performance gain or production readiness follows from these tests.

@@ -1,0 +1,5 @@
+parsed run.ps1
+parsed verify.ps1
+refused guard: Cohort already exists
+refused guard: Cannot validate argument on parameter .Label.
+refused guard: Cannot validate argument on parameter .Compiler.

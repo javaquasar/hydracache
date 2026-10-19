@@ -1,0 +1,7 @@
+parsed run.ps1
+parsed verify.ps1
+refused guard: existing
+refused guard: escape
+refused guard: compiler
+refused guard: frame-replay
+local systemd-timesyncd=active; four preflight guards refused

@@ -13403,3 +13403,56 @@ production topology decision: original kernel, manager, executable, stream and
 cgroup binding inside the full validation frame, all-writer revocation, durable
 history/completion and reconnect still need integration. No native/RESP product
 path or admission deadline changed, and no performance gain is inferred.
+
+## Original watchdog preparation under the full validation frame
+
+The next boundary is input ownership. A local guardian that accepts a File and
+deadline cannot establish that either came from the admitted original attempt.
+The new preparation view instead exclusively borrows the ready original message
+owner, retaining its frame, collector/custodian, receiver and fixed manager
+channel. No caller supplies a replacement PID, descriptor list or time window.
+
+The view derives the Starting state and identity, reservation/receive/challenge/
+cell origins, three absolute bounds and selected existing timer deadline from
+that owner. It also binds the original descriptor roles, retained child-pidfd
+roles, message serial/names and addressed writer aliases, together with the
+actual current process/thread and real/effective credentials. Opening and
+closing observations enclose one call to the unchanged complete message round.
+Comparing that context does not replace authentication: a healthy preparation
+and repeat still execute 34 authentication/signature calls and both channel
+checks. A mismatch poisons the original chain and prevents another full round.
+
+The view retains no additional descriptor aliases and introduces no timer,
+child or callback. Existing observations can still open temporary kernel
+documents; this is not a claim of zero FD or allocation cost. The view cannot
+expose descriptors, construct a guardian or release the held target. Its borrow
+prevents the original owner from being independently used while the view is
+live; dropping the view returns that same owner, not a detached admission
+certificate. Existing live predicates, effect brackets and 300/60/10-second
+origins remain unchanged.
+
+The fourteen full-frame controls distinguish healthy preparation/revalidation,
+retained-context refusal before authentication, closing drift after the complete
+round, channel-name refusal and actual original custody loss. Records and fence
+ownership are checked independently. Test channels remain separate from the
+production owner; these controls do not authenticate an installed system-bus
+delivery or production policy. The original v1 message also remains v1: retaining
+its consent cannot authorize separately signed v2 held-launcher artifacts.
+
+The [context evidence](../testing/performance/0.74/local-runs/original-watchdog-context-20261019/README.md)
+retains an initial unchanged-baseline Kernel(Invalid) refusal and the isolated
+baseline/candidate runs. Local WSL automatic time synchronization is paused only
+for the approved frame checks and restored afterward; clocks are never manually
+changed. A passing isolated run does not retroactively identify the first refusal
+or justify weakening its kernel predicate. The result is a preparation binding,
+not a measured performance gain, watchdog readiness or all-writer cessation.
+Actual original guardian enrollment, v2 artifacts/process/cgroup binding,
+delivery, durable completion and reconnect remain subsequent gates.
+
+GNU 1.94 and MSRV 1.88 both pass those fourteen scenarios, four ordinary context
+controls, thirty retained exchange controls and seventeen guardian regression
+cases. The complete source suite passes 271 controls, preserving all 372 prior
+Rust bodies through exact additive registrations. Source/image/input receipts
+separate the new preparation path from the existing guardian fault harness,
+which does create local nonproduct children. None of these correctness counts
+is a throughput result or proof of production enrollment.

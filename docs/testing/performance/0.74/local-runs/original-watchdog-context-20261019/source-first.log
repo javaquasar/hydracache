@@ -1,0 +1,11 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 14.38s
+     Running tests\performance_contract_074.rs (target\debug\deps\performance_contract_074-affcfab4e5118d5a.exe)
+
+running 3 tests
+test live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::prearmed::redundant::original_context::original_watchdog_context_adapter_refuses_old_predicate_or_registration_mutations ... ok
+test live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::prearmed::redundant::original_context::original_watchdog_context_preserves_every_old_rust_and_wire_body ... ok
+test live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::prearmed::redundant::original_context::original_watchdog_context_retains_original_owner_and_one_full_round_without_effects ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 268 filtered out; finished in 30.75s
+

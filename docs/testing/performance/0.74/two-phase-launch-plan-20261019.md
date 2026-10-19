@@ -116,3 +116,23 @@ This advances local step-two mechanics, not a production topology or step-three
 original delivery/all-cgroup join. Retain the original collector/custodian
 owners and require durable exclusion, all-writer cessation and full-frame
 admission before completion, later cells, reconnect or server execution.
+
+## Original preparation binding result
+
+The [original context packet](local-runs/original-watchdog-context-20261019/README.md),
+source `c9b0651bbd0042c5c67217731ad4f96de73e690f`, advances the input-ownership
+part of step three without sending or arming anything. An opaque exclusive
+borrow derives the ready original message's state, origins, absolute bounds,
+existing timer/FD roles, actual owner credentials and fixed channel context.
+Prepare/revalidate enclose one unchanged complete message round with live
+opening/closing observations; a mismatch poisons the same original chain.
+
+GNU 1.94 and MSRV 1.88 each pass fourteen full-frame context cases, four ordinary
+controls, thirty retained exchange controls and seventeen guardian regression
+cases. The full source suite passes 271 controls, preserving all 372 old Rust
+bodies through exact additive registrations. This does not construct a guardian
+from the original context or join the separately signed v2 artifacts. Complete
+original kernel/timer/fence ownership, executable/process/cgroup/stream binding,
+actual delivery and all-writer revocation remain. Durable completion, later cells,
+full new-boundary SIGKILL/lost-ACK coverage, reconnect and server admission stay
+closed; the original 300/60/10-second origins and all live checks are unchanged.
