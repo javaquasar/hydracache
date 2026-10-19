@@ -1004,3 +1004,21 @@ Earlier clock-preflight refusals remain refused; bounded environment settling
 precedes the unchanged strict probe and creates no admission. No source predicate
 or original bound is waived. Best-effort Drop is not a successful cleanup receipt:
 the future completion path must independently prove cessation before unlock.
+
+## Original Armed topology boundary
+
+The [arming audit](original-arming-boundary-audit-20261019.md) requires an
+explicit production topology decision before target enrollment. The private
+guardian requires a creator's direct child, while the systemd-created held
+target only appears after delivery. The signed v2 order requires Armed before
+that delivery. Current read-only process/tree/manager checks do not provide a
+pre-delivery revocation root, and original material still binds the v1 worker
+projection.
+
+An attempt-specific empty cgroup root, potentially a dedicated systemd slice,
+is the recommended design for review. It requires its own enrolled kernel
+identity, guardian protocol, held-unit projection and host setup; none is granted
+by Pending or by this audit. Preserve old protocols, direct-child predicates,
+the full validation frame and original deadlines. Even an armed cgroup revoker
+cannot establish closure of external writer aliases or exclusive finalization.
+Wait for approval of that topology before adding production enrollment or sends.

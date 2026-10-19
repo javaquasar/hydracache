@@ -13529,3 +13529,37 @@ append-only audit binds all 182 unchanged files in four historical packets to
 their full Git baseline without rewriting them. Those legacy verifiers are not
 safe for new inventories; neither old nor corrected checksums grant runtime or
 release authority. Product signatures and binary digests did not use this helper.
+
+## Original arming needs a revocation topology decision
+
+The next transition exposes a dependency that another ownership wrapper cannot
+solve. The unchanged private guardian accepts only a live direct child of its
+creator and retains that target before Armed. A worker created by systemd has a
+different parent and appears only after delivery. Meanwhile, the separately
+signed two-phase requirements put independent Armed before the first held
+launcher delivery. The original Pending pair therefore cannot become production
+Armed just by accepting the eventual worker pidfd.
+
+The [arming boundary audit](../testing/performance/0.74/original-arming-boundary-audit-20261019.md)
+separates actual capabilities from read-only observations. A retained process
+generation and consistent cgroup tree do not authenticate original-start
+provenance or confer kill authority. A unit's KillMode setting does not connect
+the autonomous guardian to complete cgroup revocation. The original message
+still carries the v1 worker projection; its consent cannot authorize a different
+held executable.
+
+The recommended design to review is an attempt-specific empty revocation root,
+possibly a dedicated systemd slice, enrolled before held delivery. A new guardian
+protocol could arm against its pinned kernel identity and the unchanged original
+timer. Actual executable, process, streams and descendant cgroup would still be
+bound under the full validation frame before release. Creating that root changes
+the host topology and requires explicit approval, a separate versioned projection
+and trust/epoch binding. It is not implemented or proved by the existing tests.
+
+Even that topology cannot close writer copies outside its root. Creator and
+manager aliases, both actual pipe EOFs after drain, exclusive collector
+finalization and durable attempt exclusion remain mandatory. Moving Armed after
+delivery instead would change the signed ordering contract and introduce a
+delivered-FD window without an armed target revoker. Neither weakening the old
+parent check nor changing a readiness label is an acceptable substitute for
+resolving this architecture boundary.

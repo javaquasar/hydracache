@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "kind": "local-architecture-audit-regression-inventory",
+  "source_commit": "1fa0a920fe09919f235cdc0f684fd0e281d2c3f9",
+  "normalization": "none-raw-bytes",
+  "qualification_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "architecture_decision_required": true,
+  "runtime_source_changed": false,
+  "target_enrollment": false,
+  "original_send": false,
+  "server_operation": false,
+  "product": false,
+  "files": [
+    {
+      "path": ".gitattributes",
+      "bytes": 105,
+      "sha256": "5e1fc984f8d0b8c0ae7bbb2ae9335bf11dc6b4ee65a7ffa6fb0ef8947cc5e60d"
+    },
+    {
+      "path": "docs-final.log",
+      "bytes": 167,
+      "sha256": "6d32870a358991ab0ad4bedd967123fb957db74ed2d805ced585afe255932234"
+    },
+    {
+      "path": "docs.log",
+      "bytes": 251,
+      "sha256": "43afaf6457080772fdfb6f7cd56cd87f61ff83ad60dbfd9803265ff3d3ee0136"
+    },
+    {
+      "path": "format.log",
+      "bytes": 26,
+      "sha256": "695b513b675b098fe482dac0071c427794e52c9425d09cc79a5dca2e8d4d3fa6"
+    },
+    {
+      "path": "gnu188-image-after.log",
+      "bytes": 176,
+      "sha256": "115d1284b21a1107bea0cddd8505ce4594f641d82cf75f171541d49c673e8f9c"
+    },
+    {
+      "path": "gnu188-image-before.log",
+      "bytes": 176,
+      "sha256": "115d1284b21a1107bea0cddd8505ce4594f641d82cf75f171541d49c673e8f9c"
+    },
+    {
+      "path": "gnu188-kernel.log",
+      "bytes": 3638,
+      "sha256": "d14bdb51c05c1c63845962495f3f9b87a115a8606a1abc3d31957582cf90b2a4"
+    },
+    {
+      "path": "gnu194-image-after.log",
+      "bytes": 176,
+      "sha256": "f02b8bd66f5585d480844392137b4f2c383e630b56bac3c748544628e2814a60"
+    },
+    {
+      "path": "gnu194-image-before.log",
+      "bytes": 176,
+      "sha256": "f02b8bd66f5585d480844392137b4f2c383e630b56bac3c748544628e2814a60"
+    },
+    {
+      "path": "gnu194-kernel.log",
+      "bytes": 3638,
+      "sha256": "d5d9f91b311fe4421231be3f8241b6863269ef16d016efd162ce2b5606542b4a"
+    },
+    {
+      "path": "historical-audit.log",
+      "bytes": 102,
+      "sha256": "261225d9c177dadfdf5ce4b424bfb7edf6ec4983499c37fe739da395f2a9543b"
+    },
+    {
+      "path": "pending-inventory.log",
+      "bytes": 112,
+      "sha256": "6ccd97f9cafbfd7f1f564dc2a2aece0c0ed8c6b084a59d7321c2da139318653f"
+    },
+    {
+      "path": "performance-contract.log",
+      "bytes": 215,
+      "sha256": "ac84ce70b6c681ba6084c565be9f05592236053b8e5f809ac6a201e7489fa420"
+    },
+    {
+      "path": "README.md",
+      "bytes": 3482,
+      "sha256": "580cfc98e7c53730d7387fd078c932b0a2723988277b98a500a2b4df41e5911e"
+    },
+    {
+      "path": "registry.log",
+      "bytes": 190,
+      "sha256": "be4e8106023a7102253f6cb9aaea44dc247b588f6af15abe17cdca214de59af9"
+    },
+    {
+      "path": "source-pending.log",
+      "bytes": 1197,
+      "sha256": "41310fbc1945d7fbbd6f46f7e0d58e1e7fc17a9991e6c10099291774af45ca71"
+    },
+    {
+      "path": "source-unchanged.log",
+      "bytes": 74,
+      "sha256": "e32ed6f31b6575fff99c35271f9104d7c9194a7e4b212002e5c7af5e6ec166f8"
+    },
+    {
+      "path": "windows-api.log",
+      "bytes": 2805,
+      "sha256": "25538ac5430f42815be025a4734f201b18bfe8d3998967954ffdaee89fb22583"
+    },
+    {
+      "path": "windows-unit.log",
+      "bytes": 7219,
+      "sha256": "9bb79a8d0981d17565045866fa45ff03065901c36911c8db522b7b8b821f3b7a"
+    },
+    {
+      "path": "wsl-timesync.log",
+      "bytes": 8,
+      "sha256": "c014d9fa5085ac3f59efae76db06be26d8dd53ad9749532a5328dda500b11974"
+    }
+  ]
+}

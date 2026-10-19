@@ -1,0 +1,2 @@
+# Preserve the exact raw bytes bound by this audit inventory.
+* -text whitespace=cr-at-eol,-blank-at-eof

@@ -160,3 +160,23 @@ topology. Actual v2 artifact/target/process/stream/cgroup enrollment, original
 delivery, durable exclusion/completion, later cells, complete new-boundary fault
 coverage and same-attempt reconnect remain. Do not bypass the old direct-child
 predicate or use Drop as a successful cleanup/fence-release receipt.
+
+## Production arming topology decision
+
+The [boundary audit](original-arming-boundary-audit-20261019.md) identifies a
+missing production design choice, not a failed Pending regression. The current
+guardian arms only after retaining a live direct-child pidfd. A systemd-created
+worker is not that child and does not exist before held delivery, whereas the
+signed v2 order requires independent Armed before the first held delivery.
+Read-only process/tree observations and unit KillMode properties do not supply
+the missing pre-delivery revocation capability.
+
+Review an attempt-specific empty cgroup root, potentially a dedicated systemd
+slice, admitted before delivery. This would need a separate guardian enrollment
+protocol and held-unit projection, original trust/epoch/artifact/frame binding,
+and controlled host setup. It is a recommendation awaiting approval, not a
+selected topology or permission for cgroup/systemd writes. Keep all old protocols,
+direct-child checks, 46 brackets and original 300/60/10-second origins unchanged.
+External writer closure and actual EOF/finalization remain necessary even with
+a pinned complete cgroup. Do not proceed to original delivery by relabeling
+Pending or silently moving Armed after delivery.
