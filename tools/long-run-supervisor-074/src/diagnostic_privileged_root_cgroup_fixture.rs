@@ -101,6 +101,7 @@ impl Cgroup {
             panic!("dummy pidfd");
         }
         let pin = unsafe { File::from_raw_fd(raw as _) };
+        let mut dummy = Dummy { child, pin };
         let target = if nested {
             self.path.join("nested")
         } else {
@@ -111,15 +112,16 @@ impl Cgroup {
             .custom_flags(libc::O_CLOEXEC | libc::O_NOFOLLOW)
             .open(target.join("cgroup.procs"))
             .unwrap();
-        let id = child.id().to_string();
+        let id = dummy.child.id().to_string();
         assert_eq!(procs.write_at(id.as_bytes(), 0).unwrap(), id.len());
-        child
+        dummy
+            .child
             .stdin
             .as_mut()
             .unwrap()
             .write_all(b"hc074-live-writer\n")
             .unwrap();
-        self.writers.push(Dummy { child, pin });
+        self.writers.push(dummy);
     }
     pub(super) fn signal_guardian(&self, index: usize, signal: i32) {
         assert_eq!(

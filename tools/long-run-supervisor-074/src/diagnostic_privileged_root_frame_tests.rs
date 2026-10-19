@@ -122,13 +122,14 @@ fn run(case: &str) {
             );
             let message = frame.prepare_fixed_manager_message().unwrap();
             let mut owned = message.prepare_owned_root_guardians(&mut root).unwrap();
+            // Own exact cleanup handles before any possibly uncertain enrollment.
+            cgroup.guardians = Some(owned.fixture_guardians());
             let origins = owned.fixture_origins();
             owned.enroll_once().unwrap();
             owned.revalidate().unwrap();
             assert_eq!(owned.fixture_origins(), origins);
             let [mut out, mut err, writer, other] = owned.fixture_streams();
             let custodians = owned.fixture_custodians();
-            cgroup.guardians = Some(owned.fixture_guardians());
             let outside = (case == "outside-alias").then(|| writer.try_clone().unwrap());
             cgroup.writer(
                 false,
