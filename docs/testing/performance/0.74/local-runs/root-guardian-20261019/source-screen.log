@@ -1,0 +1,11 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 21.74s
+     Running tests\performance_contract_074.rs (target\debug\deps\performance_contract_074-affcfab4e5118d5a.exe)
+
+running 3 tests
+test live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::prearmed::redundant::original_context::pending::root_enrollment::transport::guardian::root_guardian_exact_adapter_rejects_missing_duplicate_and_old_body_mutation ... ok
+test live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::prearmed::redundant::original_context::pending::root_enrollment::transport::guardian::root_guardian_preserves_every_previous_source_and_protocol ... ok
+test live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::prearmed::redundant::original_context::pending::root_enrollment::transport::guardian::root_guardian_requires_stack_only_child_and_closed_original_capabilities ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 280 filtered out; finished in 34.72s
+

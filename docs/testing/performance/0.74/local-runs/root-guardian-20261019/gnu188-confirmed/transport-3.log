@@ -1,0 +1,20 @@
+
+running 1 test
+seed=0x074c2020 scope=local-root-descriptor-transfer armed=false
+case=exact-three-roles-one-shot-no-ack pass
+case=role-substitution-[1, 0, 2] pass
+case=role-substitution-[0, 2, 1] pass
+case=role-substitution-[2, 1, 0] pass
+case=role-substitution-[0, 1, 1] pass
+case=role-substitution-[0, 0, 2] pass
+case=foreign-root-role-0 pass
+case=foreign-root-role-1 pass
+case=foreign-root-role-2 pass
+case=peer-loss-send-failure-no-retry pass
+case=post-send-permission-drift-sticky pass
+case=pre-send-root-binding-refused pass
+cases=12 root_transport_matrix=pass original_admission=false completion=false
+test diagnostic_two_phase_launch::root_enrollment::kernel::transport::tests::fault::cgroup_root_transport_role_matrix ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1255 filtered out; finished in 0.00s
+

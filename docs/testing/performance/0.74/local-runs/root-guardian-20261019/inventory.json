@@ -1,0 +1,321 @@
+{
+  "schema_version": 1,
+  "kind": "local-root-guardian-inventory",
+  "source_commit": "72f538063aa03d460843ed813a2c249e36223b24",
+  "baseline_commit": "037802aa0efc0e87ad847f1f285a0d043148535b",
+  "normalization": "none-raw-bytes",
+  "qualification_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "server": false,
+  "product": false,
+  "original_send": false,
+  "original_armed": false,
+  "creator_sigkill_tested": false,
+  "completion_allowed": false,
+  "files": [
+    {
+      "path": ".gitattributes",
+      "bytes": 43,
+      "sha256": "50524bc54be6323af4266e11f2ca0b4d574bad39253c8c5293eca7d3173fa822"
+    },
+    {
+      "path": "doc-check-final.log",
+      "bytes": 167,
+      "sha256": "957b593cd547a16efe74a1097e1c4b25a72e84f502b9b5f443bd90c8e3b40aa6"
+    },
+    {
+      "path": "doc-check.log",
+      "bytes": 252,
+      "sha256": "e782bb72610a7dfeb57c97d94ec7ec805fc7031ed30026e2df836055a7c2fb37"
+    },
+    {
+      "path": "gnu188-clippy-screen.log",
+      "bytes": 207,
+      "sha256": "020cfc8aa763d2e9f63404b6b8db0a7c895d485e394f5dc5334ddc427cf5a80d"
+    },
+    {
+      "path": "gnu188-confirmed/check.log",
+      "bytes": 74,
+      "sha256": "d80da59033ac3acfc2bd2ec331c5cc89b4f41e7c3f0a6b3256839e1a151fe9ec"
+    },
+    {
+      "path": "gnu188-confirmed/clippy.log",
+      "bytes": 73,
+      "sha256": "6803b7b6aa63627aaeff2b361021ba068b162030703d0c4658fc98542acd6329"
+    },
+    {
+      "path": "gnu188-confirmed/exchange-regression.log",
+      "bytes": 15794,
+      "sha256": "690b157236198570884f0d28a6ec8312df0a2e054e6480cafa67b952b99bb1a0"
+    },
+    {
+      "path": "gnu188-confirmed/guardian-regression.log",
+      "bytes": 3220,
+      "sha256": "bba03dd70969fa7fc438d85b290d2f14b9fef02e829bea5b72a906a834e011a5"
+    },
+    {
+      "path": "gnu188-confirmed/kernel-1.log",
+      "bytes": 1240,
+      "sha256": "fb67ab51dbb04d47350aba0e2b3e6d32c6fb924ee5a20f3b27fb06c09b9ce445"
+    },
+    {
+      "path": "gnu188-confirmed/kernel-2.log",
+      "bytes": 1240,
+      "sha256": "5aa9a7d50d18d0048936cfb8f981c87e51b13038f5287187fc2c553317d5b1eb"
+    },
+    {
+      "path": "gnu188-confirmed/kernel-3.log",
+      "bytes": 1240,
+      "sha256": "fb67ab51dbb04d47350aba0e2b3e6d32c6fb924ee5a20f3b27fb06c09b9ce445"
+    },
+    {
+      "path": "gnu188-confirmed/new-controls.log",
+      "bytes": 3575,
+      "sha256": "9adfc17c2816cdd956ebae7f1f4d470fc7fcc27ead2b9cba6a1476a16c56bfe2"
+    },
+    {
+      "path": "gnu188-confirmed/receipt.json",
+      "bytes": 1051,
+      "sha256": "e128e129cb77ea214e600c3965929b9d5ef8de56bceb7e112255aa535543767b"
+    },
+    {
+      "path": "gnu188-confirmed/root-pair-1.log",
+      "bytes": 1927,
+      "sha256": "7d0c3f08aafe1eb4020ebde9a74c3f6a1d1791832e8df72681838ebae2ac3127"
+    },
+    {
+      "path": "gnu188-confirmed/root-pair-2.log",
+      "bytes": 1927,
+      "sha256": "7d0c3f08aafe1eb4020ebde9a74c3f6a1d1791832e8df72681838ebae2ac3127"
+    },
+    {
+      "path": "gnu188-confirmed/root-pair-3.log",
+      "bytes": 1927,
+      "sha256": "7d0c3f08aafe1eb4020ebde9a74c3f6a1d1791832e8df72681838ebae2ac3127"
+    },
+    {
+      "path": "gnu188-confirmed/transport-1.log",
+      "bytes": 853,
+      "sha256": "be3e185cb92c4503a684915687a9696cd79ce2291dcc798599b7ab9568a0dcd9"
+    },
+    {
+      "path": "gnu188-confirmed/transport-2.log",
+      "bytes": 853,
+      "sha256": "be3e185cb92c4503a684915687a9696cd79ce2291dcc798599b7ab9568a0dcd9"
+    },
+    {
+      "path": "gnu188-confirmed/transport-3.log",
+      "bytes": 853,
+      "sha256": "be3e185cb92c4503a684915687a9696cd79ce2291dcc798599b7ab9568a0dcd9"
+    },
+    {
+      "path": "gnu188-confirmed/two-phase-regression.log",
+      "bytes": 6881,
+      "sha256": "aba59a13df10520389ea18d6aaa7c22cd653cefba2884a2df2f9379f76286228"
+    },
+    {
+      "path": "gnu188-prebuild.log",
+      "bytes": 396,
+      "sha256": "8cd42927fa295b4cd311e96c74509125184b68c249f90cf33f2ebe8220943f66"
+    },
+    {
+      "path": "gnu188-selected/check.log",
+      "bytes": 207,
+      "sha256": "ea59e4482fc76a39703d80ad9fabc153479e847c1660405eba55c402fb9e5628"
+    },
+    {
+      "path": "gnu188-selected/clippy.log",
+      "bytes": 207,
+      "sha256": "85b46394c071ec543409fdbd55db309bcb21178386c71d1e98c3c7089ec5997b"
+    },
+    {
+      "path": "gnu188-selected/exchange-regression.log",
+      "bytes": 15794,
+      "sha256": "416ce33b8904c5e734a53cac8aa85e114a38c465ae39a10f68d502e5e103971b"
+    },
+    {
+      "path": "gnu188-selected/guardian-regression.log",
+      "bytes": 2747,
+      "sha256": "515340f3cb3ed2b12d76c87fddcf72fc95cf8f469667a8d22ab5903d25da0c02"
+    },
+    {
+      "path": "gnu188-selected/new-controls.log",
+      "bytes": 3575,
+      "sha256": "56adb0ad505f38659405ba937feee047aed174b3f7b1df2570567c7187eb8f03"
+    },
+    {
+      "path": "gnu188-selected/two-phase-regression.log",
+      "bytes": 6881,
+      "sha256": "573c0bd0a73760893f8d48ee46662bfac71c362b2e3ef040b3782b7ac7218b31"
+    },
+    {
+      "path": "gnu194-clippy-screen.log",
+      "bytes": 207,
+      "sha256": "074d78c15be2851b2adf60b8e6b8d511882e947b0ff2d3a070e9d661626e9f2f"
+    },
+    {
+      "path": "gnu194-selected/check.log",
+      "bytes": 260,
+      "sha256": "41e86089f3dabe72b7f3214c7e84426809c68101c25d9d424b771b00444c8f57"
+    },
+    {
+      "path": "gnu194-selected/clippy.log",
+      "bytes": 207,
+      "sha256": "10bfc3468b1587c081a3c54d2969c8d327689298ce5e48b186b61f1267d492a1"
+    },
+    {
+      "path": "gnu194-selected/exchange-regression.log",
+      "bytes": 15794,
+      "sha256": "416ce33b8904c5e734a53cac8aa85e114a38c465ae39a10f68d502e5e103971b"
+    },
+    {
+      "path": "gnu194-selected/guardian-regression.log",
+      "bytes": 3220,
+      "sha256": "2e66a06e0a578d7b6eac2db4919fe1034b3e5356d7ccb4bf5a3764265e67629e"
+    },
+    {
+      "path": "gnu194-selected/kernel-1.log",
+      "bytes": 1240,
+      "sha256": "22d902d28451b7ba9cf6284c79f7a70fc09e8e076561c0916dc7da4ceb4fa710"
+    },
+    {
+      "path": "gnu194-selected/kernel-2.log",
+      "bytes": 1240,
+      "sha256": "22d902d28451b7ba9cf6284c79f7a70fc09e8e076561c0916dc7da4ceb4fa710"
+    },
+    {
+      "path": "gnu194-selected/kernel-3.log",
+      "bytes": 1240,
+      "sha256": "22d902d28451b7ba9cf6284c79f7a70fc09e8e076561c0916dc7da4ceb4fa710"
+    },
+    {
+      "path": "gnu194-selected/new-controls.log",
+      "bytes": 3709,
+      "sha256": "93ec7726a59b7592d0d71e61197a1e543f6b2f1ed07015a2253aa0905b4164ab"
+    },
+    {
+      "path": "gnu194-selected/receipt.json",
+      "bytes": 1051,
+      "sha256": "175632163c90ebc8d74d94a3321c2c9d785450924772724d1bb22d80eae4f3f2"
+    },
+    {
+      "path": "gnu194-selected/root-pair-1.log",
+      "bytes": 1927,
+      "sha256": "b6b2ccd531be66ce6356c1c37782b6ed1273a7c4d9ae9fa11a9eec281c123f64"
+    },
+    {
+      "path": "gnu194-selected/root-pair-2.log",
+      "bytes": 1927,
+      "sha256": "b6b2ccd531be66ce6356c1c37782b6ed1273a7c4d9ae9fa11a9eec281c123f64"
+    },
+    {
+      "path": "gnu194-selected/root-pair-3.log",
+      "bytes": 1927,
+      "sha256": "1b27e60a4b96ad1d45b7f65134031fbed1ed4b51bc0a7edef1610eb9738a3499"
+    },
+    {
+      "path": "gnu194-selected/transport-1.log",
+      "bytes": 853,
+      "sha256": "be3e185cb92c4503a684915687a9696cd79ce2291dcc798599b7ab9568a0dcd9"
+    },
+    {
+      "path": "gnu194-selected/transport-2.log",
+      "bytes": 853,
+      "sha256": "a5f0d597d55c926b4a9faceda63fa56a6a4f43edcad5ebe54f55587655e3e6fc"
+    },
+    {
+      "path": "gnu194-selected/transport-3.log",
+      "bytes": 853,
+      "sha256": "be3e185cb92c4503a684915687a9696cd79ce2291dcc798599b7ab9568a0dcd9"
+    },
+    {
+      "path": "gnu194-selected/two-phase-regression.log",
+      "bytes": 6881,
+      "sha256": "a9d5845662422abf6a08cb949830ce5c95062ef038ff5ed81ab374c0d5e4c17c"
+    },
+    {
+      "path": "gnu194-units-corrected.log",
+      "bytes": 1223,
+      "sha256": "5ba28e2984a700b369f9cbe633bcd0e6f7c5b7b753a978c2aa2974bbf29c7963"
+    },
+    {
+      "path": "gnu194-units-screen.log",
+      "bytes": 1927,
+      "sha256": "2fdd4edbd2c61872dcd9e306cedd0fd202d0733df143c73d7db5f8adc9aef184"
+    },
+    {
+      "path": "kernel-screen.log",
+      "bytes": 1927,
+      "sha256": "899ab864d29a428560d29138e839bce10774ff052bee9a3073edd4afc7fb8356"
+    },
+    {
+      "path": "performance-contract.log",
+      "bytes": 215,
+      "sha256": "2a99ea49bf8cc70d99560839abf2a5a793067c1eb10d34a9cf4fcbf406196df5"
+    },
+    {
+      "path": "prior-packets.log",
+      "bytes": 161,
+      "sha256": "81cfb4c2b2e5ffe34d87b80191b88b7a16b0cd63f6c55791422b75daa8778366"
+    },
+    {
+      "path": "README.md",
+      "bytes": 10129,
+      "sha256": "d39f9a263e60b550a2ec7a4cb3e27ad4ff4a948177cefbe73522e135cca061e8"
+    },
+    {
+      "path": "red-missing-contract.log",
+      "bytes": 1699,
+      "sha256": "531e1f4eff0c726580c77626284d58be5094e3cc94d026ecac2fceb23218bd00"
+    },
+    {
+      "path": "red-missing-tests.log",
+      "bytes": 3921,
+      "sha256": "b6a675fcd170d936d86172430495db7e4e4dbf3245ea9235b1bd0de1e8ca196b"
+    },
+    {
+      "path": "registry.log",
+      "bytes": 190,
+      "sha256": "334830407b5316aa75fe0c41d17b43ef88ad41633a015b717c14dbc18f703694"
+    },
+    {
+      "path": "run.ps1",
+      "bytes": 5890,
+      "sha256": "23e3f1cebf8861efb38efbb2351f72e895f9775cb98f70c4e2545f743391372a"
+    },
+    {
+      "path": "seal.ps1",
+      "bytes": 1312,
+      "sha256": "e82ceaf37def3cbfbe546c7089df36bdcd716df841611dd63d481cecbaadf3c2"
+    },
+    {
+      "path": "source-contracts.log",
+      "bytes": 36202,
+      "sha256": "d87a1b3e620cf32fc9f9b48969c45c92a98cc1908308ca1596a7953bb83380d2"
+    },
+    {
+      "path": "source-screen.log",
+      "bytes": 1280,
+      "sha256": "97153e812c412cf6e6eb34e9966f73f613343558b65799188deb5823fd883455"
+    },
+    {
+      "path": "verify.ps1",
+      "bytes": 7549,
+      "sha256": "290ef0a4a4a16b69752480eb56951654ca72f3d7ae25e3038359d938efbdab4a"
+    },
+    {
+      "path": "windows-clippy.log",
+      "bytes": 157,
+      "sha256": "0adedd1668c1028a97417510f2f79fe337edd7b71e60d37dc052c82e679349e6"
+    },
+    {
+      "path": "windows-doc.log",
+      "bytes": 3012,
+      "sha256": "fa5995af6e7939d7565d220dc7c447908d3eca684ce369cacec5ca197f728cb8"
+    },
+    {
+      "path": "windows-units.log",
+      "bytes": 7881,
+      "sha256": "f9166bf662c16583ab04bdd493676eb0e436af971e9fe67f9677e073b51a3614"
+    }
+  ]
+}

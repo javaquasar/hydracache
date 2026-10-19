@@ -1,0 +1,87 @@
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0658]: attributes on expressions are experimental
+   --> tools/long-run-supervisor-074/src/diagnostic_root_guardian.rs:145:74
+    |
+145 | ...e, #[cfg(test)] st...
+    |       ^^^^^^^^^^^^
+    |
+    = note: see issue #15701 <https://github.com/rust-lang/rust/issues/15701> for more information
+
+error: removing an expression is not supported in this position
+   --> tools/long-run-supervisor-074/src/diagnostic_root_guardian.rs:145:74
+    |
+145 | ...e, #[cfg(test)] st...
+    |       ^^^^^^^^^^^^
+
+error[E0658]: attributes on expressions are experimental
+   --> tools/long-run-supervisor-074/src/diagnostic_root_guardian.rs:146:75
+    |
+146 | ...e, #[cfg(test)] st...
+    |       ^^^^^^^^^^^^
+    |
+    = note: see issue #15701 <https://github.com/rust-lang/rust/issues/15701> for more information
+
+error: removing an expression is not supported in this position
+   --> tools/long-run-supervisor-074/src/diagnostic_root_guardian.rs:146:75
+    |
+146 | ...e, #[cfg(test)] st...
+    |       ^^^^^^^^^^^^
+
+error: couldn't read `tools/long-run-supervisor-074/src/diagnostic_root_guardian_tests.rs`: No such file or directory (os error 2)
+   --> tools/long-run-supervisor-074/src/diagnostic_root_guardian.rs:218:1
+    |
+218 | mod tests;
+    | ^^^^^^^^^^
+
+For more information about this error, try `rustc --explain E0658`.
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 3 previous errors
+warning: build failed, waiting for other jobs to finish...
+error[E0425]: cannot find value `stop_before_ack` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_root_guardian.rs:145:87
+    |
+145 | ...)] stop_before_ack ==...
+    |       ^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `stop_before_ack` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_root_guardian.rs:146:88
+    |
+146 | ...)] stop_before_ack ==...
+    |       ^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0061]: this function takes 4 arguments but 5 arguments were supplied
+   --> tools/long-run-supervisor-074/src/diagnostic_root_guardian.rs:145:21
+    |
+145 | ... = spawn_one(fence_file.as_fd(), &alarm, origin, frame, #[cfg(test)] ...
+    |       ^^^^^^^^^                                            -------------...expected argument #5 of type `bool`
+    |
+note: function defined here
+   --> tools/long-run-supervisor-074/src/diagnostic_root_guardian.rs:99:4
+    |
+ 99 | fn spawn_one(fe...
+    |    ^^^^^^^^^
+help: remove the extra argument
+    |
+145 -         let first = spawn_one(fence_file.as_fd(), &alarm, origin, frame, #[cfg(test)] stop_before_ack == 1)?;
+145 +         let first = spawn_one(fence_file.as_fd(), &alarm, origin, frame)?;
+    |
+
+error[E0061]: this function takes 4 arguments but 5 arguments were supplied
+   --> tools/long-run-supervisor-074/src/diagnostic_root_guardian.rs:146:22
+    |
+146 | ... = spawn_one(fence_file.as_fd(), &alarm, origin, frame, #[cfg(test)] stop_before_ack == 2)?;
+    |       ^^^^^^^^^                                            --------------...xpected argument #5 of type `bool`
+    |
+note: function defined here
+   --> tools/long-run-supervisor-074/src/diagnostic_root_guardian.rs:99:4
+    |
+ 99 | fn spawn_one(fe...
+    |    ^^^^^^^^^
+help: remove the extra argument
+    |
+146 -         let second = spawn_one(fence_file.as_fd(), &alarm, origin, frame, #[cfg(test)] stop_before_ack == 2)?;
+146 +         let second = spawn_one(fence_file.as_fd(), &alarm, origin, frame)?;
+    |
+
+Some errors have detailed explanations: E0061, E0425, E0658.
+For more information about an error, try `rustc --explain E0061`.
+error: could not compile `hydracache-long-run-supervisor-074` (lib) due to 8 previous errors

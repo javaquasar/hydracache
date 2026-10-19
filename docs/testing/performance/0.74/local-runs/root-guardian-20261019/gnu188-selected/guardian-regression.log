@@ -1,0 +1,23 @@
+HC074-REDUNDANT image_sha256=7bc3292e4729295853f8aa75d1206a5ebc99bca3c20d8ddc9e4951da5c85550f
+HC074-REDUNDANT case=healthy-expiry seed=0x0740d019 deadline=619225749883 fence_retained=True expected_negative=False product=false original_authority=false all_writers=false
+HC074-REDUNDANT case=owner-loss seed=0x0740d019 deadline=629230814240 fence_retained=True expected_negative=False product=false original_authority=false all_writers=false
+HC074-REDUNDANT case=first-dead-owner-loss seed=0x0740d019 deadline=629236739693 fence_retained=True expected_negative=False product=false original_authority=false all_writers=false
+HC074-REDUNDANT case=second-dead-owner-loss seed=0x0740d019 deadline=629242511347 fence_retained=True expected_negative=False product=false original_authority=false all_writers=false
+HC074-REDUNDANT case=first-stopped-owner-loss seed=0x0740d019 deadline=629248165336 fence_retained=True expected_negative=False product=false original_authority=false all_writers=false
+HC074-REDUNDANT case=second-stopped-owner-loss seed=0x0740d019 deadline=629254114520 fence_retained=True expected_negative=False product=false original_authority=false all_writers=false
+HC074-REDUNDANT case=first-dead-expiry seed=0x0740d019 deadline=629260165383 fence_retained=True expected_negative=False product=false original_authority=false all_writers=false
+HC074-REDUNDANT case=second-dead-expiry seed=0x0740d019 deadline=639264532597 fence_retained=True expected_negative=False product=false original_authority=false all_writers=false
+HC074-REDUNDANT case=first-stopped-expiry seed=0x0740d019 deadline=649269428958 fence_retained=True expected_negative=False product=false original_authority=false all_writers=false
+HC074-REDUNDANT case=second-stopped-expiry seed=0x0740d019 deadline=659274668547 fence_retained=True expected_negative=False product=false original_authority=false all_writers=false
+
+running 1 test
+test diagnostic_two_phase_launch::held_barrier::prearmed::tests::process::redundant::redundant_watchdog_owner_victim ... 
+Traceback (most recent call last):
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/tests/redundant_watchdog.py", line 229, in <module>
+    main()
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/tests/redundant_watchdog.py", line 219, in main
+    run(binary, case)
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/tests/redundant_watchdog.py", line 179, in run
+    require(str(fence) in [os.readlink(p) for p in Path(f"/proc/{pid}/fd").iterdir()], "custody alias lost")
+                           ^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/proc/4000/fd/10'
