@@ -67,11 +67,14 @@ fn boot_comparison_allocation_attribution() {
             assert_eq!(reference.reallocations, 0);
             assert_eq!(candidate.reallocations, 0);
             assert!(candidate.allocations <= reference.allocations);
-            println!("HC074-BOOT-COMPARE-ALLOC {}", serde_json::json!({
-                "sample":sample,"operation":operation,"iterations":1024,
-                "reference":reference,"candidate":candidate,
-                "rust_requests_only":true,"product":false
-            }));
+            println!(
+                "HC074-BOOT-COMPARE-ALLOC {}",
+                serde_json::json!({
+                    "sample":sample,"operation":operation,"iterations":1024,
+                    "reference":reference,"candidate":candidate,
+                    "rust_requests_only":true,"product":false
+                })
+            );
         }
     }
     origin.revalidate().unwrap();

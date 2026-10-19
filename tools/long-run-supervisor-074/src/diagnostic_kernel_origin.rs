@@ -73,6 +73,14 @@ fn namespace(name: &str) -> Result<(File, (u64, u64)), KernelError> {
 #[path = "diagnostic_boot_document.rs"]
 mod boot_document;
 fn boot(root: &File) -> Result<String, KernelError> {
+    boot_apply(root, boot_value)
+}
+#[path = "diagnostic_boot_comparison.rs"]
+mod boot_comparison;
+fn boot_apply<T>(
+    root: &File,
+    decode: impl FnOnce(([u8; 38], usize)) -> Result<T, KernelError>,
+) -> Result<T, KernelError> {
     #[cfg(test)]
     let _kernel_walk = crate::diagnostic_ipc::validation_trace::kernel_walk::span(
         crate::diagnostic_ipc::validation_trace::kernel_walk::Kind::Boot,
@@ -84,7 +92,7 @@ fn boot(root: &File) -> Result<String, KernelError> {
     let raw = boot_read(|bytes| file.read_at(bytes, 0))?;
     // As before, close the proc document before decoding the owned bytes.
     drop(file);
-    boot_value(raw)
+    decode(raw)
 }
 
 fn fixed_child(parent: &File, name: &std::ffi::CStr, directory: bool) -> Result<File, KernelError> {
@@ -120,23 +128,8 @@ fn boot_read(
     );
     Ok(boot_document::read_once(read)?)
 }
-fn boot_value((raw, count): ([u8; 38], usize)) -> Result<String, KernelError> {
-    if count == 0 {
-        return Err(kernel_invalid!("proc-document-budget"));
-    }
-    if count != 37
-        || raw[36] != b'\n'
-        || raw[..36].iter().enumerate().any(|(i, c)| {
-            if [8, 13, 18, 23].contains(&i) {
-                *c != b'-'
-            } else {
-                !c.is_ascii_digit() && !(b'a'..=b'f').contains(c)
-            }
-        })
-    {
-        return Err(kernel_invalid!("boot-document"));
-    }
-    String::from_utf8(raw[..36].to_vec()).map_err(|_| kernel_invalid!("boot-utf8"))
+fn boot_value(raw: ([u8; 38], usize)) -> Result<String, KernelError> {
+    boot_comparison::view(&raw).map(str::to_owned)
 }
 fn clock(id: libc::clockid_t) -> Result<u64, KernelError> {
     let mut value: libc::timespec = unsafe { std::mem::zeroed() };
@@ -204,7 +197,7 @@ impl Origin {
         for file in [&named, &self.root] {
             filesystem(file, 0x9fa0)?;
             let m = file.metadata()?;
-            if (m.dev(), m.ino()) != self.id || boot(file)? != self.boot {
+            if (m.dev(), m.ino()) != self.id || !boot_comparison::matches(file, &self.boot)? {
                 return Err(kernel_invalid!("proc-origin-or-boot"));
             }
         }
@@ -271,6 +264,10 @@ mod boot_buffer_tests;
 #[cfg(test)]
 #[path = "diagnostic_fixed_leaf_path_tests.rs"]
 mod fixed_leaf_path_tests;
+
+#[cfg(test)]
+#[path = "diagnostic_boot_comparison_tests.rs"]
+mod boot_comparison_tests;
 
 #[cfg(test)]
 mod tests {

@@ -1,4 +1,6 @@
 //! Exact test-only argument recording; no change to any original live operation.
+#[path = "performance_contract_074_boot_comparison.rs"]
+mod boot_comparison;
 const PREFIX: &str = "tools/long-run-supervisor-074/src/";
 const HOOKS: &[(&str,&str,&str)] = &[
     ("diagnostic_collector_causal.rs", "#[cfg_attr(test, track_caller)]\n", ""),
@@ -8,7 +10,7 @@ const HOOKS: &[(&str,&str,&str)] = &[
     ("diagnostic_privileged_root_frame_tests.rs", "            closing::run(|| owned.revalidate()).unwrap();\n            assert_eq!(owned.fixture_origins(), origins);", "            owned.revalidate().unwrap();\n            assert_eq!(owned.fixture_origins(), origins);"),
 ];
 pub(super) fn normalize(path: &str, raw: &str) -> String {
-    let mut text = raw.to_owned();
+    let mut text = boot_comparison::normalize(path, raw);
     for (file, addition, original) in HOOKS {
         if path == format!("{PREFIX}{file}") {
             assert_eq!(
