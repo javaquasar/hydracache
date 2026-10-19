@@ -13737,3 +13737,94 @@ snapshot race or turn the failed first cohort into evidence of success. Its
 descriptor role was not captured, so the exception does not establish lost
 fence custody or a product regression. This tooling reliability risk stays
 visible alongside the still-closed original constructor and creator-loss gates.
+
+### Real creator death is a separate boundary
+
+The next [local package](../testing/performance/0.74/local-runs/root-creator-20261019/README.md)
+distinguishes three events that must not be conflated: closing a control socket,
+dropping an ordinary Rust owner, and killing the actual creator process. Its
+external Python subreaper receives exact guardian pidfds through a
+credential-checked test carrier, then kills its exec-created creator through
+the creator's own pidfd. It checks SIGKILL status and adoption of the same
+guardians. The Rust implementation, not a copied enrollment routine, pauses at
+the selected boundaries.
+
+The cuts cover the first ACK read, second ACK read, local armed assignment,
+API return and both ACKs queued but unread. Controlled direct and nested writers
+must still be alive immediately before the creator is killed. Surviving
+guardians must then kill those writers before the unchanged fixture alarm,
+retain the original flock after every creator alias closes, and revoke later
+population. This prevents an expiry or an already dead writer from masquerading
+as proof of creator-loss handling. Both-dead and both-stopped controls remain
+explicit negatives; an outside pipe alias still blocks EOF after scoped kills.
+
+The original validation join is a separate change. Its opaque owner supplies
+the original fence and existing timer. The packet digest binds actual owner
+IDs, original state, origins and bounds, all retained descriptor roles,
+collector/custodian pins, fixed manager names, original serial and addressed
+writer aliases to the pinned root identity. No caller supplies a replacement
+deadline or context digest. Preparation and enrollment each bracket their
+kernel work with complete original validation rounds. Closing failure poisons
+both sides; possible enrollment never becomes permission to retry.
+
+The testing boundary matters as much as the type boundary. Existing nonroot
+original-frame fixtures keep their restriction and use a distinct simulated
+kernel to exercise the same join. Root-only fixtures exercise the actual kernel
+adapter separately. These results cannot be multiplied into a claim that a
+privileged original manager exchange has passed end to end. Pinning a real
+cgroup also does not authenticate that it is the production attempt root.
+Binding holder pidfds identifies them; it does not establish confinement of
+every holder and descriptor copy to that root. An outside writer can still
+keep the stream open after the scoped processes die.
+Protected host enrollment, the combined original privileged fixture and
+whole-writer cessation remain necessary before held-unit start or completion.
+No throughput or allocation improvement is claimed from these functional gates.
+
+### Returning a borrow must not reopen an attempt
+
+The creator and frame baseline passed its local gates, but a final source audit
+found a different lifetime boundary. Dropping the new root wrapper closed its
+channels and requested independent revocation, yet left the borrowed original
+owner unrefused. Per-pair consumption prevented reuse of that pair; it did not
+exclude preparing a fresh pair after the exclusive borrow returned. This was
+an internal preparation gap, not a demonstrated production replay: production
+original-root admission and execution were still closed.
+
+The [retirement follow-up](../testing/performance/0.74/local-runs/root-retirement-20261019/README.md)
+adds unconditional refusal in wrapper Drop, before its fields release. It first
+refuses the original owner, then the kernel controls. Targetless Pending cleanup
+remains exact; possibly enrolled guardians are not cancelled and keep their
+revocation/fence obligation. Refusal neither reads nor renews an admission
+clock, and no completion or unlock path is introduced.
+
+A source regression first fails on the missing destructor. Callback controls
+check owner-before-kernel ordering for both pending and consumed states. The
+full original-frame regression then retires the owner and creates fresh
+simulated controls for a new attempt: rejection must come from the original
+owner, not merely from the old controls' refused bit. The existing kernel
+refusal controls remain a separate concrete gate. This closes the owner
+retirement boundary without pretending to prove the combined privileged
+original constructor or confinement of every writer.
+Normal wrapper retirement is not itself the durable enrollment/replay protocol;
+that production admission boundary remains separate.
+
+The follow-up also retains a negative result. GNU refuses during the unchanged
+output-preparation path with Causal(Time), before the new retirement callback
+can run. A same-source retry after the heavy source suite finishes refuses at
+the same boundary. Passing unit/static/kernel controls cannot turn this into
+a passing full-frame gate. The error distinguishes neither a ten-second causal
+age from BOOTTIME rollback nor a boot change without the issued/now tuple.
+A separate preflight observes a backwards CLOCK_REALTIME step before creating
+an attempt, but that does not identify the BOOTTIME failure's cause. Attribution
+of this original preparation boundary remains required; its threshold is not
+adjusted to obtain a green result.
+
+The confirmed creator/frame baseline retains 72 creator-SIGKILL scenarios,
+24 real kernel-adapter scenarios and 48 original-frame scenarios across GNU
+1.94 and MSRV 1.88. After retirement hardening, both compilers pass its ordinary
+ordering control, additional twelve-case creator and four-case kernel smoke
+matrices. MSRV also passes three fresh-controls retirement-frame repetitions
+and the eight-case prior frame regression. GNU's corresponding frame gate stays
+red before the new callback. The full source suite passes 292 controls, but this
+cannot substitute for the missing GNU dynamic receipt. Evidence records that
+mixed disposition, not an averaged score or a production-readiness claim.

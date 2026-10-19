@@ -35,3 +35,26 @@ Record preliminary failures as failures, not successful cohorts. No server
 contact, installation, supervisor operation, original send or product workload
 is part of this package. Preserve all original 300/60/10 origins and effect
 brackets; runtime code must not create, reset or consume the original timer.
+
+## Implemented boundary
+
+The external harness is implemented in `52d805da`; the original frame adapter
+is implemented in `5468524b`. The frame test deliberately retries enrollment
+after its healthy pass, so `c1799824` corrects its outer expectation to require
+original refusal in that case too. This changes no runtime predicate or deadline.
+`f48fd4bf` additionally checks queued Armed bytes through test-only MSG_PEEK,
+without consuming their acknowledgements.
+
+The root adapter retains an actual pinned root and the opaque original owner
+supplies fence, timer and a digest derived from its retained source. Preparation
+uses two complete rounds; enrollment uses two more, with kernel observations
+around the same rounds and sticky refusal on either side. Revalidation uses one
+complete round. No original start/Armed execution capability or release API is
+provided. A pinned kernel root is not production host admission.
+
+Two dynamic gates remain deliberately distinct: nonroot original full-frame
+controls use a simulated kernel, while root-only controls exercise the real
+adapter and actual cgroup kills. Combining them with a privileged original
+manager/host-root fixture, and admitting the exact root from protected host
+context, remains required before a production original constructor is usable.
+Existing nonroot fixture restrictions are not removed to obtain a green test.

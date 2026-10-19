@@ -4114,3 +4114,23 @@ including both correlation boundaries, unchanged origins/deadlines and sticky
 refusal. All 259 source contracts and 44 Windows controls pass; the old
 classifier/model/private-bus checks remain intact. This closes preparation
 binding only, not authenticated original delivery or start.
+
+The [root creator and frame join](local-runs/root-creator-20261019/README.md)
+extends local checks to actual creator SIGKILL under an external owning
+subreaper. The original owner now has a crate-private typed root-guardian join
+with unchanged full validation rounds and deadlines. Full-frame probes and real
+root kernel faults remain separate dynamic gates; a protected host-root binding
+and combined privileged original manager fixture are still needed. This package
+does not open original held-unit start, completion, fence release or server use.
+
+The [owner retirement follow-up](local-runs/root-retirement-20261019/README.md)
+closes the normal-Drop gap found in that baseline: the wrapper refuses its
+original owner before returning the borrow or closing kernel controls. Fresh
+controls cannot reopen that owner. Active guardians are not cancelled, and the
+remaining original-host admission, writer confinement and lifecycle gates stay
+closed.
+
+Retirement verification is mixed: the MSRV full-frame callback proof passes,
+but GNU refuses during the unchanged output-preparation causal window before
+that callback. The negative receipt does not waive the positive gate. GNU
+issued/now/boot and preparation-cost attribution precede any readiness claim.

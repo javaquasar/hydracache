@@ -1066,3 +1066,34 @@ creation before any send retains exact-child cleanup. Both-dead and both-stopped
 failures, outside aliases and untested creator SIGKILL remain explicit limits.
 Original frame/trust/manager/held projection, durable completion and server
 operation are still closed; this is not a new original runtime constructor.
+
+### Creator death and the original root frame join
+
+The [creator and frame package](local-runs/root-creator-20261019/README.md)
+adds an external subreaper and actual pidfd SIGKILL of the exec-created creator.
+Cut notices and exported guardian pidfds are test-only. A channel shutdown or
+normal Rust Drop is not substituted for creator death. Writers must be alive
+before the cut; late population and outside pipe aliases remain separate checks.
+
+The crate-private `OriginalRootGuardians` consumes the opaque original context
+and borrows a pinned root. It derives its packet binding from the original
+owner/state/origins/bounds/FD roles, fixed manager names, serial and addressed
+aliases, rather than accepting caller digests or deadlines. Preparation and
+enrollment each retain two full rounds; revalidation retains one. A closing
+round failure refuses both original owner and kernel controls. Possibly enrolled
+guardians keep their independent revocation obligation and original fence.
+
+The dynamic original-frame gate still uses a distinct simulated kernel; the
+real root adapter has its own root-only fault gate. Neither gate alone proves
+the combined privileged original manager path. Root pinning verifies kernel
+objects, not protected host admission. Held-unit projection, whole-writer
+cessation, durable completion, fence release and server operations stay closed.
+
+The [retirement follow-up](local-runs/root-retirement-20261019/README.md)
+also refuses the original owner before kernel controls in wrapper Drop. Channel
+closure alone cannot exclude constructing a fresh pair once the exclusive
+borrow returns. Both pending and consumed retirement are fail-closed; active
+guardians remain independent and keep the fence. The original-frame regression
+uses fresh simulated controls after retirement, so the old controls' refusal
+cannot conceal a still-usable owner. No clock renewal, completion or unlock is
+added, and the combined privileged constructor remains a separate gate.
