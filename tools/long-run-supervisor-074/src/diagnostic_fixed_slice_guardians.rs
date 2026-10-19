@@ -8,7 +8,7 @@ impl BoundGuardians<'_> {
             if self.binding_for_placement()?.attempt_sha256 != attempt {
                 return Err(refused());
             }
-            FixedSlice::pin(&self.pair.root, attempt)
+            FixedSlice::pin(self.pair.root, attempt)
         })();
         if result.is_err() {
             self.refuse();
@@ -24,7 +24,7 @@ impl BoundGuardians<'_> {
             if self.binding_for_placement()?.attempt_sha256 != attempt {
                 return Err(refused());
             }
-            slice.revalidate(&self.pair.root, attempt)
+            slice.revalidate(self.pair.root, attempt)
         })();
         if result.is_err() {
             self.refuse();
