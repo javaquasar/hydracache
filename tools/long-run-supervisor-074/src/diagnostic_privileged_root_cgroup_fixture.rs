@@ -127,6 +127,15 @@ impl Cgroup {
             .unwrap();
         let id = dummy.child.id().to_string();
         assert_eq!(procs.write_at(id.as_bytes(), 0).unwrap(), id.len());
+        let membership = target
+            .strip_prefix("/sys/fs/cgroup")
+            .unwrap()
+            .to_str()
+            .unwrap();
+        assert_eq!(
+            fs::read_to_string(format!("/proc/{id}/cgroup")).unwrap(),
+            format!("0::/{membership}\n")
+        );
         dummy
             .child
             .stdin
