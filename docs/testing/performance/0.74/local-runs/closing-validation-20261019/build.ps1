@@ -24,7 +24,7 @@ try {
     $taskHash=(& wsl.exe -d Ubuntu -- sha256sum $taskImage).Trim()
     if($LASTEXITCODE -ne 0 -or $taskHash -notmatch '^[0-9a-f]{64}  /'){throw 'Image missing'}
     Run 'origin-units' @('-d','Ubuntu','--',$taskImage,'diagnostic_kernel_admission::origin::','--nocapture','--test-threads=1') 18
-    Run 'closing-units' @('-d','Ubuntu','--',$taskImage,'closing_','--nocapture','--test-threads=1') 4
+    Run 'closing-units' @('-d','Ubuntu','--',$taskImage,'::closing::closing_','--nocapture','--test-threads=1') 4
     Run 'root-units' @('-d','Ubuntu','--',$taskImage,'root_guardian_','--nocapture','--test-threads=1')
     if((Get-Content -Raw -LiteralPath (Join-Path $taskOut 'root-units.log')) -notmatch 'test result: ok\. [1-9][0-9]* passed; 0 failed;'){throw 'No root units'}
     Stable

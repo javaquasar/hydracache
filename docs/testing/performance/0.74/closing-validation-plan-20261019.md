@@ -30,7 +30,9 @@ Preregister three cost attempts per compiler and one facts-only boundary refusal
 control using the exact age predicate. Keep failures; do not retry until green.
 After interpreting those observations, run each of the four missing MSRV creator
 cases once with facts only: second-dead, first-stopped, second-stopped and
-outside-alias. Fresh contexts/output paths are mandatory. No uncompleted attempt
+outside-alias. Then run owner and first-dead once as same-source regressions so
+the new MSRV cohort contains all six distinct cases, not a stitched cross-source
+matrix. Fresh contexts/output paths are mandatory. No uncompleted attempt
 is reused. Stop a cohort on pre-fault refusal and preserve the remaining cases
 as unexecuted rather than manufacturing readiness.
 
