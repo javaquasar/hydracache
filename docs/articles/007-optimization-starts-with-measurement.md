@@ -14171,3 +14171,28 @@ and raw age observations, including unwind. This is a concrete observability
 gap to close before choosing a cost optimization, not a reason to extend the
 ten-second window or rerun the matrix until a fortunate pass. Both partial
 cohorts remain in the [evidence](../testing/performance/0.74/local-runs/owned-placement-20261019/README.md).
+
+## Observe the failing preparation comparison before changing its cost
+
+The [next capture](../testing/performance/0.74/placement-preparation-design.md)
+wraps the entire unchanged fixture, catches unwind inside the existing causal
+and raw-age observers, emits their bounded facts and resumes the same panic.
+It adds no clock or retry. Kernel-time facts carry their actual boot IDs;
+raw-only comparisons retain integer arguments and caller location, not an
+invented boot sampled elsewhere.
+
+The new GNU attempt now proves the refused predicate: issued 884474515163 ns,
+now 894476360325 ns and age 10001845162 ns, with identical boot IDs. Both
+observers agree at the original causal-window check. The age exceeds the
+unchanged exclusive ten-second limit, so this refusal is expiry rather than
+backward BOOTTIME or boot mismatch. It occurs during root preparation before
+healthy placement binding. It is a fresh reproduction, not recovery of the
+previous unobserved tuple.
+
+The independent MSRV run passes all seven scenarios once, including the binding
+and trust negatives that were missing before. GNU remains red and the combined
+matrix remains incomplete despite all 315 source contracts and both ordinary
+compiler regression cohorts passing. First custody observation in the failed
+GNU attempt already occurs at age 8.736 seconds. That identifies elapsed budget,
+not its CPU or I/O owner. Fixed-phase cost attribution must precede an isolated
+optimization; a blind repeat or a longer deadline would not answer that question.

@@ -4309,3 +4309,24 @@ SHA256 is `f7d3784659c43e0f1f325b828fbc350476037b4f9b55793fd562f198ef562c06`.
 Its verifier rejects twenty mutations, including false promotion of the partial
 live result to a completed gate. The previous signed-placement verifier still
 passes all sixteen mutation controls without modifying that sealed packet.
+
+The subsequent [preparation trace](placement-preparation-design.md) preserves all
+430 prior source bodies and expands only the test capture across preparation.
+All 315 source contracts and both compiler regression cohorts pass. A new GNU
+healthy attempt reproduces actual expiry: issued 884474515163, now 894476360325,
+age 10001845162 ns, identical boot IDs. Both causal and raw-age observers agree
+at the original causal-window comparison before placement binding. This is a
+new observed cause, not recovery of the unobserved historical failing tuple.
+
+The [new local packet](local-runs/placement-preparation-20261020/README.md)
+separately retains the complete seven-case MSRV success and GNU failure; the
+two-compiler gate remains false. First custody is already at age 8.736 seconds
+in the failed GNU attempt. Preparation cost still needs phase attribution before
+any isolated optimization. No live check or original deadline changes, and no
+server, supervisor or product operation occurs.
+
+The preparation packet contains 57 hashed files plus its inventory, SHA256
+`a2df2a1122fc24201d31aa56b6bcd971e3edcda735309523924b6c18c9cbe43a`.
+Its verifier refuses twenty mutations, including fabricated complete-matrix
+promotion and recovery of the missing historical tuple. The preceding packet
+and qualification digest remain unchanged.

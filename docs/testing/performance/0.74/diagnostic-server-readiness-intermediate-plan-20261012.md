@@ -478,3 +478,14 @@ Capture the actual preparation comparison with test-only existing causal/raw-age
 observers before proposing an isolated cost improvement, preserving all checks
 and original deadlines. P1 through P5 and server admission remain open; no
 installation, supervisor operation or product workload was performed.
+
+## P3 Actual preparation expiry and remaining GNU gate
+
+The [expanded preparation trace](placement-preparation-design.md) now copies the
+new GNU refusal's actual issued/now/boot: 884474515163 → 894476360325 ns, age
+10001845162 ns with identical boot IDs. It is original-window expiry before
+placement binding, not a wrong-key negative. This does not recover the missing
+historical tuple. The independent MSRV seven-case cohort passes once; GNU and
+the complete two-compiler gate remain open. Attribute preparation cost by fixed
+phases next, preserving every live check and original origin/bound. Actual slice,
+artifact admission, held projection and subsequent P1–P5 work remain unchanged.
