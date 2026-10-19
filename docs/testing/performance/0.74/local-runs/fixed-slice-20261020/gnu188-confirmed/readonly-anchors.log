@@ -1,0 +1,7 @@
+
+running 1 test
+test diagnostic_two_phase_launch::root_enrollment::kernel::fixed_slice::tests::privileged_fixed_slice_readonly_anchors ... HC074-FIXED-SLICE-ANCHORS device=23 inode=60 readonly=true fixed_root_admitted=false original_send=false server=false product=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1318 filtered out; finished in 0.00s
+

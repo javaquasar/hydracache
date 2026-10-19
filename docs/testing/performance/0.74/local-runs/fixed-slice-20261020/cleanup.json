@@ -1,0 +1,12 @@
+{
+  "scan_exit": 0,
+  "roots": [],
+  "clock_service": "active",
+  "clock_changed": false,
+  "cgroup_directories_created": false,
+  "systemd_writes": false,
+  "original_send": false,
+  "server": false,
+  "supervisor": false,
+  "product": false
+}

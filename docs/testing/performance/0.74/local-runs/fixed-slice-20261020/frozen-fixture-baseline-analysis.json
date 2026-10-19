@@ -1,0 +1,14 @@
+{
+  "baseline": "a33bd9a4d0e910ec71b78f640f19b8404517ce2f",
+  "reconstructed_lock_sha256": "629b483af08c2bb9137e9bd8fd120fde6c7a3d33ca9afba07e7de98097ed7b99",
+  "expected_frozen_lock_sha256": "be46eaf8e97e507bda5e3f2b671d0d622e6a639ce1d4613769a4693723d62b19",
+  "matches_test_actual": true,
+  "unchanged_files": [
+    "Cargo.lock",
+    "tools/long-run-supervisor-074/tests/diagnostic_artifacts.rs",
+    "tools/long-run-supervisor-074/src/diagnostic_artifacts.rs"
+  ],
+  "baseline_broad_test_executed": false,
+  "frozen_hash_changed": false,
+  "existing_tests_changed": false
+}

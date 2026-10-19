@@ -1,0 +1,269 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 56.80s
+     Running unittests src\lib.rs (target\debug\deps\hydracache_long_run_supervisor_074-91cc7594fd779cb0.exe)
+
+running 60 tests
+test diagnostic_artifacts::local_audit_tests::local_file_reader_enforces_exact_budget_and_regular_leaf ... ok
+test diagnostic_controller_producer::tests::producer_roundtrip_exact_request_domain_audience_and_synthetic_signature ... ok
+test diagnostic_controller_producer::tests::producer_strict_request_schema_builder_identity_and_budget ... ok
+test diagnostic_controller_producer::tests::producer_retained_audience_and_internal_body_corruption_refuse ... ok
+test diagnostic_ipc::validation_trace_tests::validation_trace_actual_authentication_early_error_is_counted_without_signature ... ok
+test diagnostic_ipc::validation_trace_tests::validation_trace_disabled_and_success_do_not_invent_time_refusals ... ok
+test diagnostic_controller_producer::tests::producer_wrong_selected_key_time_and_retained_identity_refuse ... ok
+test diagnostic_ipc::validation_trace_tests::validation_trace_first_time_facts_are_not_replaced_or_authority ... ok
+test diagnostic_ipc::validation_trace_tests::validation_trace_actual_signed_window_and_signature_errors_are_distinct ... ok
+HC074-VALIDATION-COST Report { stages: [Stats { wall_ns: 229000, authentication_calls: 1, authentication_ns: 222700, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }], first_time: Some(TimeRefusal { stage: Unassigned, operation: Reserve, issued: 1, expires: 61, now: 0 }), time_refusals: 1 }
+test diagnostic_lease::transition_tests::transition_completion_and_terminal_replay_never_skip_or_restart_cells ... ok
+test diagnostic_lease::transition_tests::transition_entire_stage_graph_is_explicit ... ok
+test diagnostic_lease::transition_tests::transition_identity_revision_clock_and_cell_drift_refuse_without_mutation ... ok
+test diagnostic_ipc::validation_trace_tests::validation_trace_independent_threads_keep_numeric_reports_separate ... ok
+test diagnostic_lease::transition_tests::transition_original_inode_and_stop_reason_are_sticky ... ok
+test diagnostic_ipc::validation_trace_tests::validation_trace_nested_unwind_and_ambient_scope_restore_original_frame ... ok
+test diagnostic_lease::transition_tests::transition_publisher_refuses_invalid_candidate_before_any_write ... ok
+test diagnostic_lease::transition_tests::transition_four_cells_seeded_histories_and_mutations ... ok
+test diagnostic_lease::transition_tests::transition_publisher_refuses_stale_revision_without_replacing_state ... ok
+test diagnostic_lease::transition_tests::transition_start_and_heartbeat_cannot_revive_expired_budgets ... ok
+test diagnostic_receipts::tests::pinned_hdr_projection_checks_bucket_edges_and_ceil_rank ... ok
+test diagnostic_receipts::tests::seeded_hdr_projection_preserves_rank_bounds_and_overflow_accounting ... ok
+test diagnostic_receipts::tests::strict_json_rejects_nested_duplicates_and_depth_without_tail_repair ... ok
+test diagnostic_two_phase_launch::root_enrollment::tests::root_enrollment_all_kinds_roundtrip_with_exact_offsets ... ok
+test diagnostic_two_phase_launch::root_enrollment::tests::root_enrollment_every_ack_byte_mutation_refuses_and_cannot_restore ... ok
+test diagnostic_two_phase_launch::root_enrollment::tests::root_enrollment_invalid_shapes_versions_fields_and_old_packets_refuse ... ok
+test diagnostic_two_phase_launch::root_enrollment::tests::root_enrollment_seeded_bindings_roundtrip_without_deadline_renewal ... ok
+test diagnostic_two_phase_launch::root_enrollment::tests::root_enrollment_send_uncertainty_and_ack_are_sticky_without_authority ... ok
+test diagnostic_two_phase_launch::tests::held_placement::held_placement_all_packet_kinds_zero_fields_and_foreign_attempt_refuse ... ok
+test diagnostic_two_phase_launch::tests::held_placement::held_placement_roundtrip_exact_root_and_data_only_scope ... ok
+test diagnostic_two_phase_launch::tests::held_placement::held_placement_changed_signed_fields_digest_and_key_refuse ... ok
+test diagnostic_two_phase_launch::tests::held_placement::held_placement_unknown_duplicate_noncanonical_budget_and_hex_refuse ... ok
+test diagnostic_two_phase_launch::tests::held_placement::held_placement_versions_and_signature_domains_do_not_upgrade_old_claims ... ok
+test diagnostic_two_phase_launch::tests::two_phase_launch_digest_binds_every_consent_claim_and_artifact_role ... ok
+test diagnostic_two_phase_launch::tests::two_phase_launch_domain_signature_and_digest_refuse_independent_drift ... ok
+test diagnostic_two_phase_launch::tests::two_phase_launch_inherits_old_consent_bounds_without_new_clock_or_renewal ... ok
+test diagnostic_controller_producer::tests::producer_seeded_valid_messages_and_independent_preparations ... ok
+test diagnostic_two_phase_launch::tests::two_phase_launch_roundtrip_is_expected_bytes_not_start_authority ... ok
+test diagnostic_worker_policy::authority_registry::tests::authority_registry_canonical_record_and_independent_bindings_are_exact ... ok
+test diagnostic_worker_policy::authority_registry::tests::authority_registry_refusal_and_higher_epoch_are_distinct_monotonic_transitions ... ok
+test diagnostic_worker_policy::authority_registry::tests::authority_registry_rejects_malformed_future_duplicate_noncanonical_and_oversized_records ... ok
+test diagnostic_two_phase_launch::tests::held_placement::held_placement_seeded_names_and_identity_binding_are_deterministic ... ok
+test diagnostic_worker_policy::authority_registry::tests::authority_registry_seeded_history_mutations_never_adopt_gaps_or_changed_refusals ... ok
+test diagnostic_worker_policy::proof_reuse_tests::worker_proof_reuse_two_constructors_are_not_one_shared_admission ... ok
+test diagnostic_two_phase_launch::tests::two_phase_launch_document_bounds_and_unknown_shapes_refuse ... ok
+test host_receipt::tests::canonical_receipt_round_trips_and_detects_drift ... ok
+test diagnostic_worker_policy::proof_reuse_tests::worker_proof_reuse_verifies_once_and_retains_projection_integrity ... ok
+test host_receipt::tests::cpuset_parser_canonicalizes_ranges ... ok
+test diagnostic_worker_policy::proof_reuse_tests::worker_proof_reuse_independent_concurrent_owners_share_no_cached_authority ... ok
+test host_receipt::tests::host_observation_v1_rejects_worker_authority_extensions ... ok
+test host_receipt::tests::installed_binary_identity_requires_every_manifest_field ... ok
+test host_receipt::tests::live_observation_ignores_only_namespace_local_mount_id ... ok
+test host_receipt::tests::partition_and_fixed_probe_set_are_fail_closed ... ok
+test host_receipt::tests::provisioning_source_is_strict_and_binary_bound ... ok
+test host_receipt::tests::provisioning_v1_rejects_worker_authority_extensions ... ok
+test host_receipt::tests::quarantine_recovery_allows_only_the_provisioned_supervisor_identity_to_change ... ok
+test diagnostic_worker_policy::proof_reuse_tests::worker_proof_reuse_reference_matches_every_retained_projection_field ... ok
+test diagnostic_worker_policy::authority_registry::tests::authority_registry_generation_capacity_is_finite_and_no_epoch_wrap_is_possible ... ok
+test start_evidence::tests::bounded_input_and_create_new_output_are_enforced ... ok
+test start_evidence::tests::rejects_non_start_and_invalid_campaign_before_touching_paths ... ok
+test diagnostic_worker_policy::proof_reuse_tests::worker_proof_reuse_reference_matches_seeded_input_trust_context_and_priority ... ok
+
+test result: ok. 60 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.84s
+
+     Running unittests src\bin\diagnostic_builder.rs (target\debug\deps\diagnostic_builder-9cfe5afc0176de71.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\bin\diagnostic_controller.rs (target\debug\deps\diagnostic_controller-45cc9f7b6f40cd55.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\bin\diagnostic_signer_isolation_probe.rs (target\debug\deps\diagnostic_signer_isolation_probe-c5617a88413a8eb1.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\bin\diagnostic_signer_owned_probe.rs (target\debug\deps\diagnostic_signer_owned_probe-4e82bb8ced9d1037.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\bin\diagnostic_signer_root_probe.rs (target\debug\deps\diagnostic_signer_root_probe-72c9762bda97222a.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\main.rs (target\debug\deps\hydracache_long_run_supervisor_074-4661872b50370bf0.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\abort_lifecycle.rs (target\debug\deps\abort_lifecycle-a1d9dcfb8c0c47b5.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\archive.rs (target\debug\deps\archive-188d3841b04ee4a6.exe)
+
+running 4 tests
+test hardlinked_input_is_rejected_without_creating_an_archive ... ok
+test create_new_limits_and_output_placement_fail_closed ... ok
+test archive_replay_verification_rejects_digest_and_extra_file_drift ... ok
+test archive_bytes_and_headers_are_deterministic ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.23s
+
+     Running tests\authorization.rs (target\debug\deps\authorization-5e322e1c40221c3d.exe)
+
+running 3 tests
+test exact_signed_authorization_is_accepted ... ok
+test digest_signature_and_request_binding_tamper_fail_closed ... ok
+test repository_actor_and_time_window_are_enforced ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+     Running tests\chain.rs (target\debug\deps\chain-37140bce31940985.exe)
+
+running 6 tests
+test complete_json_without_terminal_newline_is_still_a_torn_record ... ok
+test rejects_middle_corruption_sequence_gap_hash_break_and_identity_drift ... ok
+test verifies_complete_chain_and_recovers_only_incomplete_tail ... ok
+test append_refuses_to_write_after_a_torn_tail_without_explicit_recovery ... ok
+test refuses_replaying_a_sequence_or_reusing_a_stale_head ... ok
+test append_syncs_chain_and_exact_head ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running tests\checkpoint_evidence.rs (target\debug\deps\checkpoint_evidence-2001ba711ef3a308.exe)
+
+running 7 tests
+test live_chain_can_be_observed_before_a_controller_attaches_its_head ... ok
+test exact_chain_head_role_and_process_identity_are_required ... ok
+test non_regular_checkpoint_journal_is_rejected_before_parsing ... ok
+test terminal_evidence_requires_the_final_phase_and_retains_role_identity ... ok
+test live_observation_retries_an_incomplete_appended_record ... ok
+test stale_head_and_non_live_state_fail_closed ... ok
+test live_observation_retries_a_journal_and_head_commit_window ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.27s
+
+     Running tests\config.rs (target\debug\deps\config-b21e1b7af3fc821a.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\diagnostic_artifacts.rs (target\debug\deps\diagnostic_artifacts-5c314b19b63a9f42.exe)
+
+running 15 tests
+test builder_policy_requires_external_pin_and_distinct_controller_key ... FAILED
+test builder_signing_checks_observation_and_contents_before_signing ... FAILED
+test cargo_local_path_accepts_exact_version_fragment_not_foreign_sources ... FAILED
+test cargo_log_requires_one_unprofiled_binary_and_final_success ... FAILED
+test checked_statement_binds_exact_model_intent_without_enrolling_execution ... FAILED
+test diagnostic_build_attestation_has_a_separate_domain ... ok
+test elf_checks_are_structural_only_and_refuse_truncated_or_wrong_architecture ... FAILED
+test even_resigned_source_toolchain_features_and_limits_cannot_drift ... FAILED
+test every_artifact_is_hash_bound_and_p0_configs_cannot_drift ... FAILED
+test every_signed_top_level_field_refuses_unsigned_mutation ... FAILED
+test signed_build_statement_binds_all_fields_and_rejects_other_domains ... FAILED
+test signed_receipt_is_strict_canonical_bounded_and_lease_bound ... FAILED
+test unsigned_content_inspection_never_becomes_build_or_execution_authority ... FAILED
+test unsigned_file_audit_has_read_only_cli_and_refuses_changed_inputs ... FAILED
+test builder_signer_cli_refuses_missing_or_unknown_commands ... ok
+
+failures:
+
+---- builder_policy_requires_external_pin_and_distinct_controller_key stdout ----
+
+thread 'builder_policy_requires_external_pin_and_distinct_controller_key' (14976) panicked at tools\long-run-supervisor-074\tests\diagnostic_artifacts.rs:35:9:
+assertion `left == right` failed
+  left: "629b483af08c2bb9137e9bd8fd120fde6c7a3d33ca9afba07e7de98097ed7b99"
+ right: "be46eaf8e97e507bda5e3f2b671d0d622e6a639ce1d4613769a4693723d62b19"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- builder_signing_checks_observation_and_contents_before_signing stdout ----
+
+thread 'builder_signing_checks_observation_and_contents_before_signing' (28780) panicked at /rustc/4a4ef493e3a1488c6e321570238084b38948f6db/library\std\src\sync\lazy_lock.rs:410:5:
+LazyLock instance has previously been poisoned
+
+---- cargo_local_path_accepts_exact_version_fragment_not_foreign_sources stdout ----
+
+thread 'cargo_local_path_accepts_exact_version_fragment_not_foreign_sources' (19912) panicked at /rustc/4a4ef493e3a1488c6e321570238084b38948f6db/library\std\src\sync\lazy_lock.rs:410:5:
+LazyLock instance has previously been poisoned
+
+---- cargo_log_requires_one_unprofiled_binary_and_final_success stdout ----
+
+thread 'cargo_log_requires_one_unprofiled_binary_and_final_success' (34092) panicked at /rustc/4a4ef493e3a1488c6e321570238084b38948f6db/library\std\src\sync\lazy_lock.rs:410:5:
+LazyLock instance has previously been poisoned
+
+---- checked_statement_binds_exact_model_intent_without_enrolling_execution stdout ----
+
+thread 'checked_statement_binds_exact_model_intent_without_enrolling_execution' (33560) panicked at /rustc/4a4ef493e3a1488c6e321570238084b38948f6db/library\std\src\sync\lazy_lock.rs:410:5:
+LazyLock instance has previously been poisoned
+
+---- elf_checks_are_structural_only_and_refuse_truncated_or_wrong_architecture stdout ----
+
+thread 'elf_checks_are_structural_only_and_refuse_truncated_or_wrong_architecture' (21656) panicked at /rustc/4a4ef493e3a1488c6e321570238084b38948f6db/library\std\src\sync\lazy_lock.rs:410:5:
+LazyLock instance has previously been poisoned
+
+---- even_resigned_source_toolchain_features_and_limits_cannot_drift stdout ----
+
+thread 'even_resigned_source_toolchain_features_and_limits_cannot_drift' (34536) panicked at /rustc/4a4ef493e3a1488c6e321570238084b38948f6db/library\std\src\sync\lazy_lock.rs:410:5:
+LazyLock instance has previously been poisoned
+
+---- every_artifact_is_hash_bound_and_p0_configs_cannot_drift stdout ----
+
+thread 'every_artifact_is_hash_bound_and_p0_configs_cannot_drift' (17548) panicked at /rustc/4a4ef493e3a1488c6e321570238084b38948f6db/library\std\src\sync\lazy_lock.rs:410:5:
+LazyLock instance has previously been poisoned
+
+---- every_signed_top_level_field_refuses_unsigned_mutation stdout ----
+
+thread 'every_signed_top_level_field_refuses_unsigned_mutation' (35780) panicked at /rustc/4a4ef493e3a1488c6e321570238084b38948f6db/library\std\src\sync\lazy_lock.rs:410:5:
+LazyLock instance has previously been poisoned
+
+---- signed_build_statement_binds_all_fields_and_rejects_other_domains stdout ----
+
+thread 'signed_build_statement_binds_all_fields_and_rejects_other_domains' (31452) panicked at /rustc/4a4ef493e3a1488c6e321570238084b38948f6db/library\std\src\sync\lazy_lock.rs:410:5:
+LazyLock instance has previously been poisoned
+
+---- signed_receipt_is_strict_canonical_bounded_and_lease_bound stdout ----
+
+thread 'signed_receipt_is_strict_canonical_bounded_and_lease_bound' (24884) panicked at /rustc/4a4ef493e3a1488c6e321570238084b38948f6db/library\std\src\sync\lazy_lock.rs:410:5:
+LazyLock instance has previously been poisoned
+
+---- unsigned_content_inspection_never_becomes_build_or_execution_authority stdout ----
+
+thread 'unsigned_content_inspection_never_becomes_build_or_execution_authority' (11524) panicked at /rustc/4a4ef493e3a1488c6e321570238084b38948f6db/library\std\src\sync\lazy_lock.rs:410:5:
+LazyLock instance has previously been poisoned
+
+---- unsigned_file_audit_has_read_only_cli_and_refuses_changed_inputs stdout ----
+
+thread 'unsigned_file_audit_has_read_only_cli_and_refuses_changed_inputs' (17632) panicked at /rustc/4a4ef493e3a1488c6e321570238084b38948f6db/library\std\src\sync\lazy_lock.rs:410:5:
+LazyLock instance has previously been poisoned
+
+
+failures:
+    builder_policy_requires_external_pin_and_distinct_controller_key
+    builder_signing_checks_observation_and_contents_before_signing
+    cargo_local_path_accepts_exact_version_fragment_not_foreign_sources
+    cargo_log_requires_one_unprofiled_binary_and_final_success
+    checked_statement_binds_exact_model_intent_without_enrolling_execution
+    elf_checks_are_structural_only_and_refuse_truncated_or_wrong_architecture
+    even_resigned_source_toolchain_features_and_limits_cannot_drift
+    every_artifact_is_hash_bound_and_p0_configs_cannot_drift
+    every_signed_top_level_field_refuses_unsigned_mutation
+    signed_build_statement_binds_all_fields_and_rejects_other_domains
+    signed_receipt_is_strict_canonical_bounded_and_lease_bound
+    unsigned_content_inspection_never_becomes_build_or_execution_authority
+    unsigned_file_audit_has_read_only_cli_and_refuses_changed_inputs
+
+test result: FAILED. 2 passed; 13 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.30s
+
+error: test failed, to rerun pass `-p hydracache-long-run-supervisor-074 --test diagnostic_artifacts`

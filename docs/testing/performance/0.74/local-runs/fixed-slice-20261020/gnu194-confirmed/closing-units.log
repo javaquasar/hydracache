@@ -1,0 +1,16 @@
+
+running 4 tests
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::time_observation::closing::closing_age_boundary_does_not_replace_original_decision ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::time_observation::closing::closing_age_storage_is_bounded_and_restores_nested_unwind_and_threads ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::closing::closing_validation_cost_capture_keeps_nested_observers_balanced ... HC074-CLOSING {"age":{"sites":[{"calls":0,"first":null,"first_refusal":null,"last":null},{"calls":0,"first":null,"first_refusal":null,"last":null},{"calls":0,"first":null,"first_refusal":null,"last":null}]},"causal":{"first":null,"first_refusal":null,"last":null,"observations":0},"cost":{"authentication_calls":0,"authentication_ns":0,"kernel":[[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[1,380,380],[0,0,0],[0,0,0],[0,0,0],[0,0,0]],"live":[[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]],"overlapping_spans":true,"signature_calls":0,"signature_ns":0,"wall_not_cpu":true},"deadline_changed":false,"mode":"cost","product":false,"schedule_changed":false,"success":true,"wall_ns":87124}
+ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::closing::closing_validation_wrapper_calls_once_and_returns_original_error ... HC074-CLOSING {"age":{"sites":[{"calls":0,"first":null,"first_refusal":null,"last":null},{"calls":0,"first":null,"first_refusal":null,"last":null},{"calls":0,"first":null,"first_refusal":null,"last":null}]},"causal":{"first":null,"first_refusal":null,"last":null,"observations":0},"cost":null,"deadline_changed":false,"mode":"facts","product":false,"schedule_changed":false,"success":false,"wall_ns":9131}
+ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 1315 filtered out; finished in 0.00s
+
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::time_observation::closing::closing_age_storage_is_bounded_and_restores_nested_unwind_and_threads' (2745) panicked at tools/long-run-supervisor-074/src/diagnostic_closing_age_trace.rs:111:52:
+closing observer canary
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+HC074-CLOSING-AGE Some(Report { sites: [Site { calls: 0, first: None, last: None, first_refusal: None }, Site { calls: 0, first: None, last: None, first_refusal: None }, Site { calls: 0, first: None, last: None, first_refusal: None }] })

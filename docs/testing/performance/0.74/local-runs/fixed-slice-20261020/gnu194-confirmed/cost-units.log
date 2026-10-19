@@ -1,0 +1,11 @@
+
+running 2 tests
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::owned_placement::preparation_trace::cost::tests::placement_cost_keeps_refusal_and_original_panic_payload' (2687) panicked at tools/long-run-supervisor-074/src/diagnostic_placement_preparation_cost.rs:87:13:
+Box<dyn Any>
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::owned_placement::preparation_trace::cost::tests::placement_cost_keeps_refusal_and_original_panic_payload ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::owned_placement::preparation_trace::cost::tests::placement_cost_preserves_value_once_and_balanced_spans ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 1317 filtered out; finished in 0.00s
+
