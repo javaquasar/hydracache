@@ -1,0 +1,12 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 09s
+     Running tests\performance_contract_074.rs (target\debug\deps\performance_contract_074-affcfab4e5118d5a.exe)
+
+running 3 tests
+test live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::prearmed::redundant::original_context::pending::original_pending_watchdog_adapter_refuses_removed_duplicate_and_old_body_mutations ... ok
+test live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::prearmed::redundant::original_context::pending::original_pending_watchdog_has_full_rounds_owned_cleanup_and_no_target_or_new_timer ... ok
+test live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::prearmed::redundant::original_context::pending::original_pending_watchdog_preserves_all_old_sources_protocols_and_helpers ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 271 filtered out; finished in 33.05s
+

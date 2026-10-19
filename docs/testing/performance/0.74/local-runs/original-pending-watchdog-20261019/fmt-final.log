@@ -1,0 +1,1 @@
+cargo fmt -p hydracache-long-run-supervisor-074 -p xtask -- --check: completed=true exit=0

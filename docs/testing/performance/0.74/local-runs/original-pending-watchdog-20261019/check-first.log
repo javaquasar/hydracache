@@ -1,0 +1,135 @@
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0365]: `InheritedPending` is private, and cannot be re-exported
+   --> tools/long-run-supervisor-074/src/diagnostic_two_phase_launch.rs:184:16
+    |
+184 | ...se held_bar...ng;
+    |       ^^^^^^^^...^^ re-export of private `InheritedPending`
+    |
+    = note: consider declaring type or module `InheritedPending` with `pub`
+
+error[E0603]: struct import `InheritedPending` is private
+   --> tools/long-run-supervisor-074/src/diagnostic_original_pending_watchdog.rs:3:41
+    |
+  3 | ...h::InheritedPending;
+    |       ^^^^^^^^^^^^^^^^ private struct import
+    |
+note: the struct import `InheritedPending` is defined here...
+   --> tools/long-run-supervisor-074/src/diagnostic_two_phase_launch.rs:184:16
+    |
+184 | ...se held_bar...ng;
+    |       ^^^^^^^^...^^
+note: ...and refers to the struct import `InheritedPending` which is defined here...
+   --> tools/long-run-supervisor-074/src/diagnostic_held_barrier.rs:175:16
+    |
+175 | ...se prearmed...ng;
+    |       ^^^^^^^^...^^
+note: ...and refers to the struct `InheritedPending` which is defined here
+   --> tools/long-run-supervisor-074/src/diagnostic_inherited_pending_watchdog.rs:179:1
+    |
+179 |...itedPending {
+    |...^^^^^^^^^^^
+help: import `InheritedPending` through the re-export
+    |
+  3 - use crate::diagnostic_two_phase_launch::InheritedPending;
+  3 + use inherited_pending::InheritedPending;
+    |
+
+error[E0277]: the trait bound `BarredCustodyError: From<...>` is not satisfied
+  --> tools/long-run-supervisor-074/src/diagnostic_original_pending_watchdog.rs:70:17
+   |
+70 |       let fence = custody
+   |  _________________^
+71 | |         .original_descriptor(outputs.reservat...
+72 | |         .map_err(BarredCustodyError::from)
+   | |__________________________________________^ unsatisfied trait bound
+   |
+help: the trait `From<attempt_storage::StorageAttemptError>` is not implemented for `BarredCustodyError`
+  --> tools/long-run-supervisor-074/src/diagnostic_original_barred_custody.rs:6:1
+   |
+ 6 | ...stodyError {
+   | ...^^^^^^^^^^
+help: the following other types implement trait `From<T>`
+  --> tools/long-run-supervisor-074/src/diagnostic_original_barred_custody.rs:8:16
+   |
+ 8 | ...iginal(#[from] O...
+   |             ^^^^ `BarredCustodyError` implements `From<OriginalCustodyError>`
+ 9 | ...error("pending c...
+10 | ...(#[from] std::io...
+   |       ^^^^ `BarredCustodyError` implements `From<Error>`
+   = note: the full name for the type has been written to '/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-b1b053d5a48ce88a.long-type-15409601897490624240.txt'
+   = note: consider using `--verbose` to print the full type name to the console
+
+error[E0277]: the trait bound `BarredCustodyError: From<...>` is not satisfied
+  --> tools/long-run-supervisor-074/src/diagnostic_original_pending_watchdog.rs:72:18
+   |
+72 | ...rr(BarredCusto...:f...
+   |       ^^^^^^^^^^^...unsatisfied trait bound
+   |
+help: the trait `From<attempt_storage::StorageAttemptError>` is not implemented for `BarredCustodyError`
+  --> tools/long-run-supervisor-074/src/diagnostic_original_barred_custody.rs:6:1
+   |
+ 6 | ...stodyError {
+   | ...^^^^^^^^^^
+help: the following other types implement trait `From<T>`
+  --> tools/long-run-supervisor-074/src/diagnostic_original_barred_custody.rs:8:16
+   |
+ 8 | ...iginal(#[from] O...
+   |             ^^^^ `BarredCustodyError` implements `From<OriginalCustodyError>`
+ 9 | ...error("pending c...
+10 | ...(#[from] std::io...
+   |       ^^^^ `BarredCustodyError` implements `From<Error>`
+   = note: the full name for the type has been written to '/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-b1b053d5a48ce88a.long-type-15409601897490624240.txt'
+   = note: consider using `--verbose` to print the full type name to the console
+
+Some errors have detailed explanations: E0277, E0365, E0603.
+For more information about an error, try `rustc --explain E0277`.
+error: could not compile `hydracache-long-run-supervisor-074` (lib) due to 4 previous errors
+warning: build failed, waiting for other jobs to finish...
+error[E0277]: the trait bound `BarredCustodyError: From<...>` is not satisfied
+  --> tools/long-run-supervisor-074/src/diagnostic_original_pending_watchdog.rs:70:17
+   |
+70 |       let fence = custody
+   |  _________________^
+71 | |         .original_descriptor(outputs.reservat...
+72 | |         .map_err(BarredCustodyError::from)
+   | |__________________________________________^ unsatisfied trait bound
+   |
+help: the trait `From<attempt_storage::StorageAttemptError>` is not implemented for `BarredCustodyError`
+  --> tools/long-run-supervisor-074/src/diagnostic_original_barred_custody.rs:6:1
+   |
+ 6 | ...stodyError {
+   | ...^^^^^^^^^^
+help: the following other types implement trait `From<T>`
+  --> tools/long-run-supervisor-074/src/diagnostic_original_barred_custody.rs:8:16
+   |
+ 8 | ...iginal(#[from] O...
+   |             ^^^^ `BarredCustodyError` implements `From<OriginalCustodyError>`
+ 9 | ...error("pending c...
+10 | ...(#[from] std::io...
+   |       ^^^^ `BarredCustodyError` implements `From<Error>`
+   = note: the full name for the type has been written to '/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-c23398a49c34280c.long-type-17044311440454530497.txt'
+   = note: consider using `--verbose` to print the full type name to the console
+
+error[E0277]: the trait bound `BarredCustodyError: From<...>` is not satisfied
+  --> tools/long-run-supervisor-074/src/diagnostic_original_pending_watchdog.rs:72:18
+   |
+72 | ...rr(BarredCusto...:f...
+   |       ^^^^^^^^^^^...unsatisfied trait bound
+   |
+help: the trait `From<attempt_storage::StorageAttemptError>` is not implemented for `BarredCustodyError`
+  --> tools/long-run-supervisor-074/src/diagnostic_original_barred_custody.rs:6:1
+   |
+ 6 | ...stodyError {
+   | ...^^^^^^^^^^
+help: the following other types implement trait `From<T>`
+  --> tools/long-run-supervisor-074/src/diagnostic_original_barred_custody.rs:8:16
+   |
+ 8 | ...iginal(#[from] O...
+   |             ^^^^ `BarredCustodyError` implements `From<OriginalCustodyError>`
+ 9 | ...error("pending c...
+10 | ...(#[from] std::io...
+   |       ^^^^ `BarredCustodyError` implements `From<Error>`
+   = note: the full name for the type has been written to '/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-c23398a49c34280c.long-type-17044311440454530497.txt'
+   = note: consider using `--verbose` to print the full type name to the console
+
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 4 previous errors

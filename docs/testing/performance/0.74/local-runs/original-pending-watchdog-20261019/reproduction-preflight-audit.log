@@ -1,0 +1,6 @@
+parsed run.ps1
+parsed run-before-settle.ps1
+parsed verify.ps1
+strict 65-second preflight byte-equivalent after declared text normalization
+build recipe matched: gnu194-settled
+build recipe matched: gnu188-settled

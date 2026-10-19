@@ -1,0 +1,11 @@
+    Finished `release` profile [optimized] target(s) in 5.18s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/release/deps/hydracache_long_run_supervisor_074-b26b156d3dcd0098)
+
+running 4 tests
+test diagnostic_two_phase_launch::held_barrier::prearmed::inherited_pending::tests::inherited_pending_layout_refuses_every_duplicate_and_negative_role ... ok
+test diagnostic_two_phase_launch::held_barrier::prearmed::inherited_pending::tests::inherited_pending_partial_clone_and_restore_failures_reap_only_owned_children ... ok
+test diagnostic_two_phase_launch::held_barrier::prearmed::inherited_pending::tests::inherited_pending_refuses_a_different_current_thread ... ok
+test diagnostic_two_phase_launch::held_barrier::prearmed::inherited_pending::tests::inherited_pending_uses_same_timer_ofd_and_excludes_unrelated_writers ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 1231 filtered out; finished in 0.01s
+

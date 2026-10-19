@@ -1,0 +1,5 @@
+Exception: C:\Workspace\prj\jq\cashe\hydracache-074\docs\testing\performance\0.74\local-runs\original-pending-watchdog-20261019\verify.ps1:55
+Line |
+  55 |  … bject { $_.path -ceq 'run.ps1' })[0].sha256) { throw 'Cohort drift' }
+     |                                                   ~~~~~~~~~~~~~~~~~~~~
+     | Cohort drift

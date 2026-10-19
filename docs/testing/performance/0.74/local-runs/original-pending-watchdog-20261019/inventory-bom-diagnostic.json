@@ -1,0 +1,8 @@
+{
+  "raw_sha256": "18aba0bb7be9679d93e6205edf196784e073334bbadedf20195e9f8d23a0c9d8",
+  "first_character": 112,
+  "culture_starts_bom": true,
+  "ordinal_starts_bom": false,
+  "correct_canonical_sha256": "18aba0bb7be9679d93e6205edf196784e073334bbadedf20195e9f8d23a0c9d8",
+  "incorrect_prefix_stripped_sha256": "bb2f5a7df726d47e656fd457bc6f95b71dd9de28a332b6f04faa08917fc22ac8"
+}

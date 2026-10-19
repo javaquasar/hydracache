@@ -1,0 +1,22 @@
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0515]: cannot return value referencing local variable `fence`
+  --> tools/long-run-supervisor-074/src/diagnostic_original_pending_watchdog.rs:81:5
+   |
+81 |     ....as_fd()])
+   |     ...^^^^^^^^^^
+   |     |   |
+   |     |   `fence` is borrowed here
+   |     returns a value referencing data owned by the current function
+
+For more information about this error, try `rustc --explain E0515`.
+error: could not compile `hydracache-long-run-supervisor-074` (lib) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error[E0616]: field `refused` of struct `message_owner::Payload` is private
+  --> tools/long-run-supervisor-074/src/diagnostic_original_pending_watchdog_test_api.rs:30:36
+   |
+30 | ...ad.refused = ...
+   |       ^^^^^^^ private field
+
+Some errors have detailed explanations: E0515, E0616.
+For more information about an error, try `rustc --explain E0515`.
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 2 previous errors

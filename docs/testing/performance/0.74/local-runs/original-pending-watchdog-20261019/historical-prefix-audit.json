@@ -1,0 +1,945 @@
+{
+  "schema_version": 1,
+  "kind": "historical-prefix-audit-local",
+  "git_baseline": "f94b4b56b5d0050a5b100989dc84c99a8e0ca4bf",
+  "normalization": "utf8-lf-no-bom-ordinal",
+  "legacy_verifiers_safe_for_new_inventories": false,
+  "runtime_authority": false,
+  "product": false,
+  "packets": [
+    {
+      "name": "two-phase-launch-20261019",
+      "original_files_unchanged": true,
+      "files": [
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/baseline-gnu194-dispatch.log",
+          "bytes": 116,
+          "sha256": "812e7c1b5d188269d3c3f763367066ad1d5158eea26bbffa44999084f7f44e58"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/baseline-gnu194-exchange.log",
+          "bytes": 17268,
+          "sha256": "907a0a3b3892afb4406582085f6d25203fe5eb07c37f5230345169e190cd999d"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/baseline-windows.log",
+          "bytes": 6586,
+          "sha256": "70bfd526a1d0eddd7c96ed39e24c48bfd9013edc53016c4fd198c5d29fe1ef15"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/check-windows.log",
+          "bytes": 284,
+          "sha256": "6231c061008ae1581e8ca0cfb11f5d7f06f08d1e57d32879394ff37414045210"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/clippy-gnu188.log",
+          "bytes": 205,
+          "sha256": "8eedfea1559e63a8d78e2edc7c5c79a114dfd6f3836fe68fbefe4f1e8c7bea58"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/clippy-gnu194-first.log",
+          "bytes": 205,
+          "sha256": "30124ec4f4854adff9646de8276c5ce0129e1393abdfc2a9ecd55b66d7d7f996"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/clippy-windows-first.log",
+          "bytes": 284,
+          "sha256": "3c3e6608e4b703331db2e66aa5582b34e0ee5856c5944bc22cabdcd29e26e82e"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/clippy-windows-protocol.log",
+          "bytes": 155,
+          "sha256": "4808b66f51a5e10a0c6d0b00af49552c9534260b6519f184b1e724933e1174b5"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/clippy-windows-selected.log",
+          "bytes": 155,
+          "sha256": "f25602e91482b2e2e72f10e0f086f35027c0c2dad7a301266b638c70d3365775"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/doc-check-final.log",
+          "bytes": 164,
+          "sha256": "fc342497bd2a36763a6528699ddeadc706ee79b01e5771f488f56cf373a6aa58"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/doc-check-selected.log",
+          "bytes": 164,
+          "sha256": "95d668d9e819a9954757801591e60dc7ede69a9887ad3628fd8ff04395b5521b"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/doc-check.log",
+          "bytes": 305,
+          "sha256": "8c05300e138da10dbeeef58b3e163600cae7791aac1cb5e45af9f4f65b0bf4ae"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/doctests-windows.log",
+          "bytes": 627,
+          "sha256": "80bd750255d34571a9ece90de5d415164cd99900cd68362950b9c1bacbce4ea2"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/format-selected.log",
+          "bytes": 44,
+          "sha256": "3aaa90ad3c228ae38a31957d55f400171f91eb8a32a099efa59fef7509886264"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/gated-test-check-selected.log",
+          "bytes": 270,
+          "sha256": "130de1d50947022dcc42f39ac189c70e348e2dca35bdc296930350f80a4c484c"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/gated-test-check.log",
+          "bytes": 270,
+          "sha256": "160aa6cc33a247bc4b2749e8a4d9725a6c438c39529348fac86b8b75ec143825"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/gnu188-source/check.log",
+          "bytes": 205,
+          "sha256": "2b87cca7e27dbfcfdeef3cde8926d2054c1e691f2231bb3175dc577dd4280869"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/gnu188-source/clippy.log",
+          "bytes": 73,
+          "sha256": "757f335ca0750c22e280ffcc9585242fd5d7a39abe81635a328fc27968cd0e75"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/gnu188-source/hidden-writer.log",
+          "bytes": 605,
+          "sha256": "78783c95612c97e27b464e008dfc9a2eb739b2c6e317d3f12689713234bd85a2"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/gnu188-source/kernel-matrix.log",
+          "bytes": 1743,
+          "sha256": "d304edf4b6898a36ec27dd5f0c819bfd5c94286332bf06b3637f4ecfef7624af"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/gnu188-source/old-exchange.log",
+          "bytes": 15757,
+          "sha256": "504c2935115e9e543be53f7b829491490fcbfa76280dc812e845b1f26e5d3da5"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/gnu188-source/receipt.json",
+          "bytes": 693,
+          "sha256": "2cec5e85ba9eaa73aa8fad103bb2a6c6ecc26aa81f5df653ec80bbb1c27f9a80"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/gnu188-source/units.log",
+          "bytes": 1580,
+          "sha256": "9e5199c8f7e6bff9b25ab6e32c1e9dc8c6fafc3e928bcb11098bb6e5a1a010ca"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/gnu194-source/check.log",
+          "bytes": 205,
+          "sha256": "6c2c6f3cff6069a7cffa2d811aeb7b1f4c4f6669cb7df202e6b8434982619dbb"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/gnu194-source/clippy.log",
+          "bytes": 73,
+          "sha256": "ba14878f218c0425bcff85fd8270c418b35232edc7c91e420de8b175f1257c52"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/gnu194-source/hidden-writer.log",
+          "bytes": 605,
+          "sha256": "78783c95612c97e27b464e008dfc9a2eb739b2c6e317d3f12689713234bd85a2"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/gnu194-source/kernel-matrix.log",
+          "bytes": 1743,
+          "sha256": "d304edf4b6898a36ec27dd5f0c819bfd5c94286332bf06b3637f4ecfef7624af"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/gnu194-source/old-exchange.log",
+          "bytes": 15757,
+          "sha256": "12c510d18f17c7b8893b24f94fb5542424ae973938a5907c050ab6f82ddab282"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/gnu194-source/receipt.json",
+          "bytes": 693,
+          "sha256": "baf068207b7b9d360b2e7695c2b7f6e771631e1d3b4b13a42859668fc2ea985d"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/gnu194-source/units.log",
+          "bytes": 1580,
+          "sha256": "0facca1d5849a462d277f690bfbd441a96d2ea083d5e342a3f283e074c98fef5"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/kernel-gnu188-corrected.log",
+          "bytes": 1743,
+          "sha256": "d304edf4b6898a36ec27dd5f0c819bfd5c94286332bf06b3637f4ecfef7624af"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/kernel-gnu194-corrected.log",
+          "bytes": 1743,
+          "sha256": "d304edf4b6898a36ec27dd5f0c819bfd5c94286332bf06b3637f4ecfef7624af"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/kernel-gnu194-first.log",
+          "bytes": 675,
+          "sha256": "7dc4c440dff77df1a0fb81753fa3ce22125fffb1dfb31fb7f9e50fe435a04d41"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/launch-tests-windows-first.log",
+          "bytes": 1002,
+          "sha256": "1948da64ec9fbf81e5a5a5c5d3291572f15611777bd8012d02f59f2acc1f8af1"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/local-contract-selected.log",
+          "bytes": 212,
+          "sha256": "8f99678f8bf04f4ccd87414a60fdbca358d27abc786cf538c295ce3e374aeb3d"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/local-contract.log",
+          "bytes": 212,
+          "sha256": "5cc8035b4c8247b77aa3ab4f24bec6810b88b14526d8cb6bb5cc37b7330ba03b"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/manifest.json",
+          "bytes": 8273,
+          "sha256": "d828fba961133cae90fc94f69d03901dfaab813114a4e1cad0b5c12df1e888a1"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/README.md",
+          "bytes": 7597,
+          "sha256": "43dfe33120daa475ec823d16b5b45986ab9c06d382eb74e1b55fc6bb8ab1ec43"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/recvmsg-flags-kernel-probe.log",
+          "bytes": 63,
+          "sha256": "74ae83f9093a86fb1a578953d5fe126907e7a113b799b544afc03f484113cd3e"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/red-missing-module.log",
+          "bytes": 857,
+          "sha256": "0db414ce0f77152aebd02a5de85f8c4e49c6c8988989690bb3783082fb3a20e6"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/run.ps1",
+          "bytes": 4572,
+          "sha256": "76dc76db2cabaf3779bc56ea111f7849b45a569b970631d49d64db412798a6d3"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/source-contracts-first-full.log",
+          "bytes": 72644,
+          "sha256": "c91b981ea9ad9cdc9357502f62313c8dd9833825633a146fcca4a28b456e2c7b"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/source-contracts-protocol-registered.log",
+          "bytes": 30652,
+          "sha256": "427e029222a6f737dcbc3887e54a39e6b0ff2f612221b0e9ef8959a0aabbf7e4"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/source-contracts-selected.log",
+          "bytes": 30652,
+          "sha256": "3da850e76d8325eef36d65beaaff2bc7fca8192d8ab11960abe2223b3f353a49"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/source-two-phase-first.log",
+          "bytes": 4400,
+          "sha256": "50c01bfc962e16a2b3e3435dd1d57c7d7107e914f5f3a52737e03cf28ef5409b"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/two-phase-gnu188-corrected.log",
+          "bytes": 1713,
+          "sha256": "aa29f5646eec3ac697bd4d0ab4e30a85763213359eaec825ad9c7d97eecf0e82"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/two-phase-gnu188-first.log",
+          "bytes": 1460,
+          "sha256": "0353fa96fe51a0dea0a187d12cf267b240bbbd25dd5fc3884534f3699a920344"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/two-phase-gnu194-corrected.log",
+          "bytes": 1713,
+          "sha256": "b0f479d33ad749788fd8d180ece4af5b746daf235bd717e0644885e5f827d4e6"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/two-phase-gnu194-first.log",
+          "bytes": 1460,
+          "sha256": "0c8ba4e4f22a1bf38ce7844e7fa08b74e05c8ec1b38815b539cc70b6756810f6"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/verify.ps1",
+          "bytes": 4459,
+          "sha256": "f8e14fe35bb5982c0396a2a5d6a3e609f8a989ed6e041f913777a1a6ba45482e"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/two-phase-launch-20261019/windows-selected.log",
+          "bytes": 7292,
+          "sha256": "e99e60eac9b7061ce604eb35a930281579f24adb5bd0e25d57ec16001b83aa41"
+        }
+      ]
+    },
+    {
+      "name": "prearmed-watchdog-20261019",
+      "original_files_unchanged": true,
+      "files": [
+        {
+          "path": "docs/testing/performance/0.74/local-runs/prearmed-watchdog-20261019/armed-owner-first.log",
+          "bytes": 265,
+          "sha256": "93b591fd4a8dfde615cb147cde5a3a4212a2efaa4ce6a95e99ae31cae2a9d974"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/prearmed-watchdog-20261019/baseline-barrier.log",
+          "bytes": 1743,
+          "sha256": "202bb34ddd9fe49d3cb6efacca5de9fc2ac2ba5c4f37ef322e220d81ab176864"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/prearmed-watchdog-20261019/baseline-gnu194.log",
+          "bytes": 1373,
+          "sha256": "bd3d3b231d3db3add667c46c68acc54dde6490710b7bd6a8e3cb581b896481a6"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/prearmed-watchdog-20261019/clippy-gnu188-corrected.log",
+          "bytes": 205,
+          "sha256": "ebc75d860031680d1d84a07b397f25088fb7fdd511cef9a6752cc439abb554f3"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/prearmed-watchdog-20261019/clippy-gnu188.log",
+          "bytes": 205,
+          "sha256": "d3f5f806ac09e30de036faa117b5dec5e22be407e2bba6cb452c0927f01cb89a"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/prearmed-watchdog-20261019/clippy-gnu194-corrected.log",
+          "bytes": 205,
+          "sha256": "6099bc29a7995c5dd1bc19b6cd33e8686275c0f84803006721d43b2c01a0e6de"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/prearmed-watchdog-20261019/clippy-gnu194.log",
+          "bytes": 935,
+          "sha256": "af4e2a4ecc2460ee9fe0274d0702a06ce3b10a587bc35cbf29c6795afa0f6b5c"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/prearmed-watchdog-20261019/clippy-windows-selected.log",
+          "bytes": 72,
+          "sha256": "098d6a86ce5d9b0f2f8bb0090e051425dc93e0b34876dc820d08ec4a3e153a26"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/prearmed-watchdog-20261019/clippy-windows.log",
+          "bytes": 155,
+          "sha256": "c2a48bfcc8fa5e5353dc359c81ce61d89575909021b29484df73d59372154f81"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/prearmed-watchdog-20261019/docs-final.log",
+          "bytes": 164,
+          "sha256": "8f1283e48582575db90b86bb0da94cba057296ce4a839a3818a3202876f87050"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/prearmed-watchdog-20261019/docs-selected.log",
+          "bytes": 164,
+          "sha256": "079abc8a8eddeaeb4b73b722c9af59e3c045f2862f7948165ec0520502345d7a"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/prearmed-watchdog-20261019/docs.log",
+          "bytes": 164,
+          "sha256": "bc32379d49c03fef48d28e330702d2757734fe026b760db53289c0d58b02883c"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/prearmed-watchdog-20261019/doctests-selected.log",
+          "bytes": 2781,
+          "sha256": "cdb655a91ef6706b4b26be9d45c575c9a864c7c9d879277b8c06eea22e8b2a85"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/prearmed-watchdog-20261019/format.log",
+          "bytes": 32,
+          "sha256": "424bc5b507e4cb4b567fcf96ed0e66ede1fc9e0190470a4da51bd908cd8245e3"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/prearmed-watchdog-20261019/gnu188-source/check.log",
+          "bytes": 205,
+          "sha256": "207a5440e3a55cb1779742b179ea51c966efe02de1e8d8be7818916d1ff3d74a"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/prearmed-watchdog-20261019/gnu188-source/clippy.log",
+          "bytes": 205,
+          "sha256": "f67e8116de32dde921d727c237d70cafb61da4af2efa62d46273f2ea021214ff"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/prearmed-watchdog-20261019/gnu188-source/old-barrier.log",
+          "bytes": 1743,
+          "sha256": "93d7d04ee243687cf86308671d18a7e4e8d2ae88fd7ff6da595e3b525b11c1ba"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/prearmed-watchdog-20261019/gnu188-source/old-exchange.log",
+          "bytes": 15757,
+          "sha256": "b6c9d88d709e2b28309bc419801d7e25159ae774f68f189df91f8ebf3f9d4fc3"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/prearmed-watchdog-20261019/gnu188-source/owner-matrix.log",
+          "bytes": 1731,
+          "sha256": "73fdb16027ed6d6bb182c32a3184b71e3edb1447e113583849c89ff6f26329e5"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/prearmed-watchdog-20261019/gnu188-source/receipt.json",
+          "bytes": 697,
+          "sha256": "55c94374b94613ed818f8726b138069f7414187bf89998bdb58c617188bba0ce"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/prearmed-watchdog-20261019/gnu188-source/units.log",
+          "bytes": 2601,
+          "sha256": "05a6a32727c13290bdeafa8ae0e902ab4eb694cb2fe4102979c97294747663de"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/prearmed-watchdog-20261019/gnu194-source/check.log",
+          "bytes": 257,
+          "sha256": "1f02603bc9b5d61ca47446f8ff51ef61477ed96630ca654364d353fce889e977"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/prearmed-watchdog-20261019/gnu194-source/clippy.log",
+          "bytes": 205,
+          "sha256": "bfef7855371f8e1cbfb2a460a3bd17d0be936e8f3ca8918dce39e04c574d494d"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/prearmed-watchdog-20261019/gnu194-source/old-barrier.log",
+          "bytes": 1743,
+          "sha256": "4bc571477422118881dea10f69aad9c76c809e1328f08b7380ab75ae5570f6ef"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/prearmed-watchdog-20261019/gnu194-source/old-exchange.log",
+          "bytes": 15757,
+          "sha256": "62f1d2d9dd2e9e24e00a052fcb6017f8c0295895912573b22373fdab6a0259ed"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/prearmed-watchdog-20261019/gnu194-source/owner-matrix.log",
+          "bytes": 1731,
+          "sha256": "70e3b0c2ff55fd30ed1eb7c2fbafaae4052a61eb09445f3c7f255717d81c1e18"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/prearmed-watchdog-20261019/gnu194-source/receipt.json",
+          "bytes": 697,
+          "sha256": "5eb8589fae2e80170750880e39ff26bc8ca46274712c65a0be0e18354690e934"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/prearmed-watchdog-20261019/gnu194-source/units.log",
+          "bytes": 2601,
+          "sha256": "5ecc52bfe1cad3d3e661a89583a1045901f1f558f06775e69c2573862f6968f6"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/prearmed-watchdog-20261019/local-contract-selected.log",
+          "bytes": 212,
+          "sha256": "4160c33909358adb9e552e55c7c14f11d1738404522f590a461f86deaf555c06"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/prearmed-watchdog-20261019/local-contract.log",
+          "bytes": 212,
+          "sha256": "4160c33909358adb9e552e55c7c14f11d1738404522f590a461f86deaf555c06"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/prearmed-watchdog-20261019/manifest.json",
+          "bytes": 7970,
+          "sha256": "16403e91baeafc56a1b3ea7fc56d124c296e3d5df300f9cf5bf44766eef527b7"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/prearmed-watchdog-20261019/matrix-gnu188-first.log",
+          "bytes": 1436,
+          "sha256": "6c0bfe6ec3dd4cc67e8710cfd8826112416ca6309745302be7c5d9b82e93b28c"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/prearmed-watchdog-20261019/matrix-gnu194-first.log",
+          "bytes": 1436,
+          "sha256": "5e9c026ab8a90f5ae1ca5b721acb071781b8bcba9cb27635d17488bc67199917"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/prearmed-watchdog-20261019/previous-packet-inventory-confirmed.log",
+          "bytes": 82,
+          "sha256": "728d51c504bee1a0a77d02a1ede7a28f7305647d86a67f1a45492242adfe171c"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/prearmed-watchdog-20261019/previous-packet-inventory.log",
+          "bytes": 82,
+          "sha256": "728d51c504bee1a0a77d02a1ede7a28f7305647d86a67f1a45492242adfe171c"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/prearmed-watchdog-20261019/README.md",
+          "bytes": 8612,
+          "sha256": "c48b7e494dcd02d396931e5ec098f0004a11e3d28ff712e9574264d3cce3afbb"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/prearmed-watchdog-20261019/red-module.log",
+          "bytes": 474,
+          "sha256": "ca97459a7dee332ef0de32403411b149b6384ffaa0ec1fc9625349510506bd65"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/prearmed-watchdog-20261019/registry-selected.log",
+          "bytes": 270,
+          "sha256": "fc56a7b34ba1a7c73e22cca79921a30bfd0735c03d0a87ad9b3dd977b909f01f"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/prearmed-watchdog-20261019/registry.log",
+          "bytes": 270,
+          "sha256": "7bf67f65dd9505cea1027c0a578ec46d9c7646802f77fa372399dc080aaace2f"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/prearmed-watchdog-20261019/reproduction-guards.log",
+          "bytes": 275,
+          "sha256": "c0d12fe79cc7fa8ba36c036e82d57cb90407466d3115cd251a3e1806fca20cbb"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/prearmed-watchdog-20261019/run.ps1",
+          "bytes": 4764,
+          "sha256": "60320cad511b7441666dda7253b76c0bfdba74dfb5b3b2aa04e9f6fe185a6525"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/prearmed-watchdog-20261019/source-contracts-first.log",
+          "bytes": 31300,
+          "sha256": "8a147c2045a0e106e346d9032b78984551b15e17502e836625ba080369ff744b"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/prearmed-watchdog-20261019/source-contracts-selected.log",
+          "bytes": 31299,
+          "sha256": "bd9b48567efb57e9b9784f95995889ade663bc6e7b05a90b44e0ab35c5035225"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/prearmed-watchdog-20261019/units-first.log",
+          "bytes": 701,
+          "sha256": "e0344f3e9c61c26488f4b5e08649ecc3f21ba958098ccbd773a7fc6a687486fe"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/prearmed-watchdog-20261019/units-fixture.log",
+          "bytes": 1147,
+          "sha256": "bb1c285e123a444d294e4efd812ea3356f135eb3db163bb4fb3e3a7b62db8c4d"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/prearmed-watchdog-20261019/units-gnu188-final.log",
+          "bytes": 1343,
+          "sha256": "8de68a7c1f3a37d6c9eeba045dfd6c06e7be118daf78c2f9df2e22eabed2cc74"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/prearmed-watchdog-20261019/units-gnu194-final.log",
+          "bytes": 1343,
+          "sha256": "2ff225742b489b8ad930ff5907d19b1fa0a2a04e0da6f1e5482107a00f639a9b"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/prearmed-watchdog-20261019/verify.ps1",
+          "bytes": 5539,
+          "sha256": "193b38ed85bb3e170e8d5a6206cd3760e0a282f6d26ca49d42929342f3070f11"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/prearmed-watchdog-20261019/windows-selected.log",
+          "bytes": 7162,
+          "sha256": "c60d9c7544e62d7d281004c60403c34fccc86581983020e6fa6f5100c2ff1048"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/prearmed-watchdog-20261019/windows.log",
+          "bytes": 7166,
+          "sha256": "04781c51e6d1c51478be6c750e1b237dac309dd52d8a2fe17ae68ac363bb02dc"
+        }
+      ]
+    },
+    {
+      "name": "redundant-watchdog-20261019",
+      "original_files_unchanged": true,
+      "files": [
+        {
+          "path": "docs/testing/performance/0.74/local-runs/redundant-watchdog-20261019/barrier-inventory.log",
+          "bytes": 82,
+          "sha256": "728d51c504bee1a0a77d02a1ede7a28f7305647d86a67f1a45492242adfe171c"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/redundant-watchdog-20261019/baseline-matrix.log",
+          "bytes": 1719,
+          "sha256": "9ab7f05b3ea87c8fc529d744ecb512eacf56f0a02ac4298c23ab02de53f8db61"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/redundant-watchdog-20261019/baseline-units.log",
+          "bytes": 2209,
+          "sha256": "fe4e39a15e4587586810dd492092cc30af694c47c40fa1907c84c112c212563a"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/redundant-watchdog-20261019/clippy-windows.log",
+          "bytes": 155,
+          "sha256": "3a07668c5db6ecfc36c76529f187eaff7b84f4d2017151a5ae4285fc6f59f4fd"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/redundant-watchdog-20261019/docs-final.log",
+          "bytes": 164,
+          "sha256": "bc32379d49c03fef48d28e330702d2757734fe026b760db53289c0d58b02883c"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/redundant-watchdog-20261019/docs.log",
+          "bytes": 164,
+          "sha256": "5a01c2248caf791dfa8f7438c8f76996ffc08e5c97471faa40899946f5082eb7"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/redundant-watchdog-20261019/doctests.log",
+          "bytes": 2781,
+          "sha256": "8e45820f936d56350016b247f5bc540a02d024955d8dcc0e9704bea094bac666"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/redundant-watchdog-20261019/first-dead-owner-first.log",
+          "bytes": 315,
+          "sha256": "db74bce4f1731d3809a503793f3a3c5cc24f093169d4603dfbf2b549b991bd3f"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/redundant-watchdog-20261019/gnu188-source/check.log",
+          "bytes": 257,
+          "sha256": "92ebbbe3b8e00163e0e4f3644e3169784bd9d39d018bf962a6c56af88e2bd7e3"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/redundant-watchdog-20261019/gnu188-source/clippy.log",
+          "bytes": 257,
+          "sha256": "80e442d8f327ac263577462aa34a08a6d2b4c95da7b90bcf03d0ccf8a1adec1e"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/redundant-watchdog-20261019/gnu188-source/old-barrier.log",
+          "bytes": 1743,
+          "sha256": "776e20baf8f066e63c0fa9a840e7a30f7a5953c98eb3877864bbe07a5d68c27c"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/redundant-watchdog-20261019/gnu188-source/old-exchange.log",
+          "bytes": 15757,
+          "sha256": "4befe885b99632300d2aa5515e5012b1ba9c4017a008b1e94bebb265193829c2"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/redundant-watchdog-20261019/gnu188-source/old-owner-matrix.log",
+          "bytes": 1731,
+          "sha256": "b47db655ed7e9d0ab354805162f14acc6ca12fd4de19ae6886565feb9433db6e"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/redundant-watchdog-20261019/gnu188-source/pair-matrix.log",
+          "bytes": 3201,
+          "sha256": "6e7893eedf96be3e97d96453fc52f47eed2b477f6c51c31bc552dc5a5121ae65"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/redundant-watchdog-20261019/gnu188-source/receipt.json",
+          "bytes": 696,
+          "sha256": "c954e184f3e0e9a79bf87b38aba4b534c8fbd97da3aa858784ecae00dbd7378a"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/redundant-watchdog-20261019/gnu188-source/units.log",
+          "bytes": 3317,
+          "sha256": "68db5a16a5e689150e1d80ae7f5046346588125c4da0e552c317595fb4cf9d4a"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/redundant-watchdog-20261019/gnu194-source/check.log",
+          "bytes": 257,
+          "sha256": "92ebbbe3b8e00163e0e4f3644e3169784bd9d39d018bf962a6c56af88e2bd7e3"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/redundant-watchdog-20261019/gnu194-source/clippy.log",
+          "bytes": 368,
+          "sha256": "913faee01696e8ce991db4f9bf4ebde304973c4fc5f898c08fe95384f4e9c721"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/redundant-watchdog-20261019/gnu194-source/old-barrier.log",
+          "bytes": 1743,
+          "sha256": "776e20baf8f066e63c0fa9a840e7a30f7a5953c98eb3877864bbe07a5d68c27c"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/redundant-watchdog-20261019/gnu194-source/old-exchange.log",
+          "bytes": 15757,
+          "sha256": "c296f46c14de0d06658057f6f687db7db7007685b902429f89aa6b4891f8fe58"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/redundant-watchdog-20261019/gnu194-source/old-owner-matrix.log",
+          "bytes": 1731,
+          "sha256": "0ec30ffb0bd3fa2bce410ed14de9e75864f593fe5187886a3aa0a99a1075e210"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/redundant-watchdog-20261019/gnu194-source/pair-matrix.log",
+          "bytes": 3201,
+          "sha256": "84b7032f540c59dfe77a6b7a733d2766e0f7fc496f664b1f420ed6f8233e5709"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/redundant-watchdog-20261019/gnu194-source/receipt.json",
+          "bytes": 696,
+          "sha256": "5df6371ead643628fd7de790b2142467b262f4b4e779b67cb920cf2472092223"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/redundant-watchdog-20261019/gnu194-source/units.log",
+          "bytes": 3184,
+          "sha256": "55497452bf0c69439510441c269fcc3b4def3615d319dcaebadb298f2cea0d2d"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/redundant-watchdog-20261019/local-contract.log",
+          "bytes": 212,
+          "sha256": "3a46fadc410fcf57a014e16913891e854a6e15bd9338d747a373dd3b6b0a010a"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/redundant-watchdog-20261019/manifest.json",
+          "bytes": 6236,
+          "sha256": "79cf07ee5113e6c4b38864325c9768664b42cb35f9354b3ba9b1afc626ae7322"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/redundant-watchdog-20261019/matrix-gnu194-first.log",
+          "bytes": 3201,
+          "sha256": "10927ee75f4c640c35e86a35c921cc62237c276e4346dc592af53469ae1b2b6d"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/redundant-watchdog-20261019/previous-inventory.log",
+          "bytes": 82,
+          "sha256": "e35355afe18e15a397b9b156e535344b1fd3b11c65203c19fb8aa4dfac6d9d23"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/redundant-watchdog-20261019/README.md",
+          "bytes": 7798,
+          "sha256": "7a3894211fc15e3c9451e4b33eda5aac7b21729a009352e503d3c964a80b2569"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/redundant-watchdog-20261019/red-module.log",
+          "bytes": 480,
+          "sha256": "4fbee90db3c33429b47b2db18d7272418f43a5995245c21d3f7b4a2450d8c2f2"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/redundant-watchdog-20261019/registry.log",
+          "bytes": 271,
+          "sha256": "4e6f51989a54150b0076d3143a41c602a108672b93254f111fbf531b03f10777"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/redundant-watchdog-20261019/reproduction-guards.log",
+          "bytes": 267,
+          "sha256": "a82b301f21075da71c2fed5f98c79f03dd88237a3cbfe09c8990aa79cc2f71cd"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/redundant-watchdog-20261019/run.ps1",
+          "bytes": 5162,
+          "sha256": "cd47da81df7db6e1083ded935d44659385ec29fd7f132eaf8f214c8532e9cd9c"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/redundant-watchdog-20261019/source-first.log",
+          "bytes": 1068,
+          "sha256": "3d30128d18e8176f1002cd27df9adb824958541934092cfb7ba3844f6dd7df61"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/redundant-watchdog-20261019/source-selected.log",
+          "bytes": 31898,
+          "sha256": "e806a3b2ebc5f6001744eed86ee343df4df6508ec7dd8139041dc216df488eb2"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/redundant-watchdog-20261019/units-corrected.log",
+          "bytes": 1029,
+          "sha256": "634f80f3670bfaa8d223ea51f797cd7c0a927668ceed5b17266cc809d7876748"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/redundant-watchdog-20261019/units-first.log",
+          "bytes": 1120,
+          "sha256": "fb0cb6f8e4d3a02a1a97eb9ea33b9225a451d8d9d952143d7f24e483bc903b28"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/redundant-watchdog-20261019/verify.ps1",
+          "bytes": 5971,
+          "sha256": "33090cb5da3cf48acd2c8bc090da6667c1581764c2fc9cc8c0007bbebdf504bb"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/redundant-watchdog-20261019/windows.log",
+          "bytes": 7164,
+          "sha256": "b926d226e6fdf6beb91382c9c316cdee474302a1dfb1071fd4998d93a22f650b"
+        }
+      ]
+    },
+    {
+      "name": "original-watchdog-context-20261019",
+      "original_files_unchanged": true,
+      "files": [
+        {
+          "path": "docs/testing/performance/0.74/local-runs/original-watchdog-context-20261019/baseline-frame-isolated.log",
+          "bytes": 2101,
+          "sha256": "0c74499c37e303852f255882b80b5a8af2e1303aef3dd706c0925309d2e46c30"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/original-watchdog-context-20261019/baseline-frame.log",
+          "bytes": 2420,
+          "sha256": "aa34e35a90814e1577d43c11e7acd701b1672aa001ea0ee281c7c0fa670bbf20"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/original-watchdog-context-20261019/clippy-windows.log",
+          "bytes": 155,
+          "sha256": "d04dbc345c67bf238055219f07f9d865cc8000a356813554bf3260c5c2a03c95"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/original-watchdog-context-20261019/docs-final.log",
+          "bytes": 165,
+          "sha256": "d8edc1d384c2b31910dfb12dcfd1e8fde61c8dcd9e5a71366bd278d316fb754e"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/original-watchdog-context-20261019/docs.log",
+          "bytes": 164,
+          "sha256": "079abc8a8eddeaeb4b73b722c9af59e3c045f2862f7948165ec0520502345d7a"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/original-watchdog-context-20261019/doctests.log",
+          "bytes": 2781,
+          "sha256": "995bee5f219cb17c55dc0b3b8f3a601429842f2283fc47a1aef0b8793effaa65"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/original-watchdog-context-20261019/fmt-final.log",
+          "bytes": 91,
+          "sha256": "f4e3ecb69f7595d69ed313ae666ef1b8a526575ec295b66da8ff279bd9f033c5"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/original-watchdog-context-20261019/frame-first.log",
+          "bytes": 2694,
+          "sha256": "c638022cc3e8b4bf7ae28774987cbd887ecb1348a1f543bb03f0ece5f827c94b"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/original-watchdog-context-20261019/gnu188-source/build.json",
+          "bytes": 304,
+          "sha256": "3654795be2401d36f8acb4f55a54e3fe9748829c4eb67e50727fe48d25526d76"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/original-watchdog-context-20261019/gnu188-source/bundle-after.log",
+          "bytes": 736,
+          "sha256": "380ffa135dba7e829292f475d25a9bcdd3470ba1137d626224a13c68fcc13772"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/original-watchdog-context-20261019/gnu188-source/bundle-before.log",
+          "bytes": 736,
+          "sha256": "380ffa135dba7e829292f475d25a9bcdd3470ba1137d626224a13c68fcc13772"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/original-watchdog-context-20261019/gnu188-source/check.log",
+          "bytes": 205,
+          "sha256": "8080d9dfa55f27e89d09df3432fcb06e6612c5577bbb1580c469014660d129f2"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/original-watchdog-context-20261019/gnu188-source/clippy.log",
+          "bytes": 257,
+          "sha256": "4132159197b42a9e2b1e0e8db53c75e0210b4b5696cf9fb30ef0f9d3c24a2e59"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/original-watchdog-context-20261019/gnu188-source/frame.log",
+          "bytes": 2694,
+          "sha256": "33e8f6497caa60b52cc371035860824b76146f5338b604816ab5d47077a626f3"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/original-watchdog-context-20261019/gnu188-source/guardian-matrix.log",
+          "bytes": 3201,
+          "sha256": "5b45371ed5566eb92123107da2cf7062cd53584a2bb4fd612350c36b33ffcf25"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/original-watchdog-context-20261019/gnu188-source/old-exchange.log",
+          "bytes": 15757,
+          "sha256": "da14eb49c95b8a853bbe41fc6b05b9e4ed0965c7f9b0a7b53fba872e27498f7e"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/original-watchdog-context-20261019/gnu188-source/receipt.json",
+          "bytes": 794,
+          "sha256": "09f686b2a3cf08cf2f906e2ed072ca462e5184c72d06bf4cfac9ae08d17853a5"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/original-watchdog-context-20261019/gnu188-source/units.log",
+          "bytes": 3290,
+          "sha256": "ba35c0bfa162f25a34114312b6634f8ae46f4e43fa8ad68230e143f4ab65e737"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/original-watchdog-context-20261019/gnu194-source/build.json",
+          "bytes": 304,
+          "sha256": "01401181e77488ed61a3ea4c0b021bd53d68457ec361733c803fb334c1f76bd8"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/original-watchdog-context-20261019/gnu194-source/bundle-after.log",
+          "bytes": 736,
+          "sha256": "380ffa135dba7e829292f475d25a9bcdd3470ba1137d626224a13c68fcc13772"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/original-watchdog-context-20261019/gnu194-source/bundle-before.log",
+          "bytes": 736,
+          "sha256": "380ffa135dba7e829292f475d25a9bcdd3470ba1137d626224a13c68fcc13772"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/original-watchdog-context-20261019/gnu194-source/check.log",
+          "bytes": 257,
+          "sha256": "7f94964c1fa909f50ef8d5af64df919f9c02c839831c3daebeba0da83f268b9f"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/original-watchdog-context-20261019/gnu194-source/clippy.log",
+          "bytes": 257,
+          "sha256": "be9e9ea6448984bd320fe64a7e94291e887461ea354075df53172cc812fb4e44"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/original-watchdog-context-20261019/gnu194-source/frame.log",
+          "bytes": 2694,
+          "sha256": "796f94981579918045228c89230d9592cc95fc2dbd29a8ffb2765f34162c455f"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/original-watchdog-context-20261019/gnu194-source/guardian-matrix.log",
+          "bytes": 3201,
+          "sha256": "601f131f91ceab441d5033ee5d5eb4e87413a81f03983416726efc082759054f"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/original-watchdog-context-20261019/gnu194-source/old-exchange.log",
+          "bytes": 15757,
+          "sha256": "bb392d0bdd7d56961fbc3710bf1c438df40200d912c11e769d4d6af16df58ba8"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/original-watchdog-context-20261019/gnu194-source/receipt.json",
+          "bytes": 794,
+          "sha256": "903f8d5d8d9049a818f0118da4ebe31fb2bf5dbc37f5f271076246168cdd741a"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/original-watchdog-context-20261019/gnu194-source/units.log",
+          "bytes": 3157,
+          "sha256": "184111ad046776d74f8ff692d7ab4a95d70ac090f2eb64ed55eb9e8e210f45cf"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/original-watchdog-context-20261019/local-contract.log",
+          "bytes": 212,
+          "sha256": "27ee0dd3700ef0c7a0355c53cad17972403455cd2c69a48d52f605bf0250678b"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/original-watchdog-context-20261019/manifest.json",
+          "bytes": 6697,
+          "sha256": "d74308c63994b0a378d9fce291621f84b917c53b1c7fa9c83cec19e36fc56429"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/original-watchdog-context-20261019/previous-inventory.log",
+          "bytes": 82,
+          "sha256": "bbd0055fba003800db53baa18124de85f8b32b052b209aec33fcff44f66a00e0"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/original-watchdog-context-20261019/README.md",
+          "bytes": 9646,
+          "sha256": "222950d6f7ccbbb49e19353b14bd2f7af92559b2fc42fb29a685bc3615c7b921"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/original-watchdog-context-20261019/red-module.log",
+          "bytes": 494,
+          "sha256": "1b77695af796e9d013d867242cbe7c3ac8fac877c7fc9b63e5c9bf09f2d36a23"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/original-watchdog-context-20261019/registry.log",
+          "bytes": 270,
+          "sha256": "9b1dbe61f1fba417f8e839305e1aaeb853f606fba82d4b67b4a2be792828e180"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/original-watchdog-context-20261019/reproduction-final.log",
+          "bytes": 193,
+          "sha256": "35a4afc3bcdbf8f3f4808e514522402d01666eea3febb8d08fe6b8bef7ad43c6"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/original-watchdog-context-20261019/reproduction-guards.log",
+          "bytes": 195,
+          "sha256": "56fb3221ab039e7cc5b4a78ed58c1a1b5161ab5cc40dcc576009a8eb2bd7ec8f"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/original-watchdog-context-20261019/run.ps1",
+          "bytes": 7675,
+          "sha256": "818817b8af987370a9564950245fe1f5f22114405eec8e04d23dcdca0b21f8db"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/original-watchdog-context-20261019/source-first.log",
+          "bytes": 1151,
+          "sha256": "c9561a63df296b0c7470d0fe307085afbabcb6ceb0fe36e47c0402d856750c69"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/original-watchdog-context-20261019/source-selected.log",
+          "bytes": 32747,
+          "sha256": "6872e2f7e3941489da5ea972311444a137c5cea1bb7abbdf0df8fd661bbb16a5"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/original-watchdog-context-20261019/units-first.log",
+          "bytes": 3290,
+          "sha256": "13e9c61deafc16791427e1a22800a0ac3c95c4b30881b7db1f377b4cd5844f6f"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/original-watchdog-context-20261019/verify.ps1",
+          "bytes": 6741,
+          "sha256": "5275df603fb1477d586f8626b883c1547ff49e0b976a1cb8279f9c4cdfc65cfe"
+        },
+        {
+          "path": "docs/testing/performance/0.74/local-runs/original-watchdog-context-20261019/windows.log",
+          "bytes": 7162,
+          "sha256": "06cedbd937b7cd5887676288c312ab0f6e3855a8a4086429f3649df61c7ae2ca"
+        }
+      ]
+    }
+  ]
+}

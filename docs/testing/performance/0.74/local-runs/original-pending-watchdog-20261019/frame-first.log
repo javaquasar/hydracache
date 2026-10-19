@@ -1,0 +1,20 @@
+26ba8af8fca72af906cb3994aa22129b7a8edf8c4fe14520068c8bc256bbb26a  /home/artur/.cache/hydracache-074-194-check/release/deps/hydracache_long_run_supervisor_074-b26b156d3dcd0098
+clock_probe_started=true seconds=65
+clock_probe_complete=true backward_samples=0 samples=6442
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::collector_tests::enrollment_tests::manager_tests::addressed_tests::watchdog_context::pending::original_pending_watchdog_frame_controls ... HC074-ORIGINAL-PENDING case=ok frame_auth=68 channel_checks=4 original_bounds=true test_channel_only=true enroll=false send=false
+HC074-ORIGINAL-PENDING case=clone-first frame_auth=34 channel_checks=2 original_bounds=true test_channel_only=true enroll=false send=false
+HC074-ORIGINAL-PENDING case=clone-second frame_auth=34 channel_checks=2 original_bounds=true test_channel_only=true enroll=false send=false
+HC074-ORIGINAL-PENDING case=restore-first frame_auth=34 channel_checks=2 original_bounds=true test_channel_only=true enroll=false send=false
+HC074-ORIGINAL-PENDING case=restore-second frame_auth=34 channel_checks=2 original_bounds=true test_channel_only=true enroll=false send=false
+HC074-ORIGINAL-PENDING case=guardian-first-dead frame_auth=34 channel_checks=2 original_bounds=true test_channel_only=true enroll=false send=false
+HC074-ORIGINAL-PENDING case=guardian-second-dead frame_auth=34 channel_checks=2 original_bounds=true test_channel_only=true enroll=false send=false
+HC074-ORIGINAL-PENDING case=retained-origin frame_auth=0 channel_checks=0 original_bounds=true test_channel_only=true enroll=false send=false
+HC074-ORIGINAL-PENDING case=closing-origin frame_auth=34 channel_checks=2 original_bounds=true test_channel_only=true enroll=false send=false
+HC074-ORIGINAL-PENDING case=inside-custody-missing frame_auth=34 channel_checks=3 original_bounds=true test_channel_only=true enroll=false send=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1234 filtered out; finished in 99.80s
+
+local_timesyncd_restored=active

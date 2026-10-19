@@ -1,0 +1,3 @@
+diagnostic_only=true max_seconds=180 required_stable_seconds=65 admission_created=false
+observed_stable_seconds=65 backward_steps=0 elapsed_seconds=65.00829733599998 no_admission=true
+local_timesyncd_restored=active

@@ -1,0 +1,22 @@
+baseline_source=c9b0651bbd0042c5c67217731ad4f96de73e690f image=a99a5ecc6974f6cb85f1b94a38f71310400900cd7d54b94d2171ee816eaf4fc6  /home/artur/.cache/hydracache-074-194-check/release/deps/hydracache_long_run_supervisor_074-b26b156d3dcd0098
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::collector_tests::enrollment_tests::manager_tests::addressed_tests::watchdog_context::original_watchdog_context_frame_controls ... HC074-ORIGINAL-WATCHDOG case=ok frame_auth=34 channel_checks=2 original_bounds=true test_channel_only=true spawn=false send=false
+HC074-ORIGINAL-WATCHDOG case=retained-owner frame_auth=0 channel_checks=0 original_bounds=true test_channel_only=true spawn=false send=false
+HC074-ORIGINAL-WATCHDOG case=retained-identity frame_auth=0 channel_checks=0 original_bounds=true test_channel_only=true spawn=false send=false
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::collector_tests::enrollment_tests::manager_tests::addressed_tests::watchdog_context::original_watchdog_context_frame_controls' (438) panicked at tools/long-run-supervisor-074/src/diagnostic_collector_starting_publication_tests.rs:103:42:
+called `Result::unwrap()` on an `Err` value: Attempt(Controller(Source(Kernel(Invalid))))
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+HC074-KERNEL-FIRST-REFUSAL Event { phase: "unassigned", site: "clock-order", file: "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs", line: 259, clock: [39856045060, 40473337723, 1792370255968957841, 1792370250568576142, 1, 60000000000] }
+HC074-VALIDATION-COST Report { stages: [Stats { wall_ns: 1137878592, authentication_calls: 119, authentication_ns: 9053614, signature_calls: 119, signature_ns: 7258274, worker_policy_calls: 2, worker_policy_ns: 145300 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }], first_time: None, time_refusals: 0 }
+FAILED
+
+failures:
+
+failures:
+    diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::collector_tests::enrollment_tests::manager_tests::addressed_tests::watchdog_context::original_watchdog_context_frame_controls
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1228 filtered out; finished in 32.99s
+
+local_timesyncd_restored=active

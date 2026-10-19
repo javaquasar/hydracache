@@ -1,0 +1,20 @@
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::custody_tests::descriptor_plan_tests::barred_custody_tests::collector_tests::enrollment_tests::manager_tests::addressed_tests::watchdog_context::original_watchdog_context_frame_controls ... HC074-ORIGINAL-WATCHDOG case=ok frame_auth=34 channel_checks=2 original_bounds=true test_channel_only=true spawn=false send=false
+HC074-ORIGINAL-WATCHDOG case=retained-owner frame_auth=0 channel_checks=0 original_bounds=true test_channel_only=true spawn=false send=false
+HC074-ORIGINAL-WATCHDOG case=retained-identity frame_auth=0 channel_checks=0 original_bounds=true test_channel_only=true spawn=false send=false
+HC074-ORIGINAL-WATCHDOG case=retained-origin frame_auth=0 channel_checks=0 original_bounds=true test_channel_only=true spawn=false send=false
+HC074-ORIGINAL-WATCHDOG case=retained-bounds frame_auth=0 channel_checks=0 original_bounds=true test_channel_only=true spawn=false send=false
+HC074-ORIGINAL-WATCHDOG case=retained-deadline frame_auth=0 channel_checks=0 original_bounds=true test_channel_only=true spawn=false send=false
+HC074-ORIGINAL-WATCHDOG case=retained-fence frame_auth=0 channel_checks=0 original_bounds=true test_channel_only=true spawn=false send=false
+HC074-ORIGINAL-WATCHDOG case=retained-alarm frame_auth=0 channel_checks=0 original_bounds=true test_channel_only=true spawn=false send=false
+HC074-ORIGINAL-WATCHDOG case=retained-alias frame_auth=0 channel_checks=0 original_bounds=true test_channel_only=true spawn=false send=false
+HC074-ORIGINAL-WATCHDOG case=closing-context-fence frame_auth=34 channel_checks=2 original_bounds=true test_channel_only=true spawn=false send=false
+HC074-ORIGINAL-WATCHDOG case=closing-context-deadline frame_auth=34 channel_checks=2 original_bounds=true test_channel_only=true spawn=false send=false
+HC074-ORIGINAL-WATCHDOG case=closing-context-origin frame_auth=34 channel_checks=2 original_bounds=true test_channel_only=true spawn=false send=false
+HC074-ORIGINAL-WATCHDOG case=names-after frame_auth=34 channel_checks=2 original_bounds=true test_channel_only=true spawn=false send=false
+HC074-ORIGINAL-WATCHDOG case=inside-custody-missing frame_auth=0 channel_checks=1 original_bounds=true test_channel_only=true spawn=false send=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1234 filtered out; finished in 132.29s
+
