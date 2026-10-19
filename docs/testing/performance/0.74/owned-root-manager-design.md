@@ -68,3 +68,14 @@ These controls cannot publish completion, release a production fence, recover
 an execution capability, install a server or start a product campaign. Production
 trust/pins, authenticated delivery, complete writer confinement and durable
 lifecycle/reconnect still require their own admission and evidence.
+
+## Expected placement is a separate data-only boundary
+
+The [held placement v3 design](held-placement-design.md) binds exact Enroll
+bytes to the same original identity and deterministic expected slice/child
+names. It does not replace this owner's manager message or pin a live slice.
+The existing direct-worker message still cannot be sent safely as a held unit.
+Join the new claims with this same original owner, retained root, context and
+bound inside the complete frame before projecting a complete held unit.
+No production trust, barrier release, completion or unlock follows from the
+new supplied-key inspection.

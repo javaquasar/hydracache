@@ -4250,3 +4250,30 @@ The packet contains 110 hashed files plus its inventory; inventory SHA256 is
 Its verifier rejects sixteen mutations, including false full-gate promotion
 and fabricated preparation-wall improvement. The signed fixture data, all
 historical packet digests and frozen qualification manifest remain unchanged.
+
+The subsequent [signed held placement contract](held-placement-design.md)
+addresses the gap between the old direct-worker system.slice message and the
+separate root retained by guardians. A new supplied-key v3 reader binds exact
+104-byte v2 Enroll bytes, complete nested launch claims and deterministic
+expected slice/child names. It does not construct a held unit, observe live
+placement, enroll a production issuer or authorize delivery. Old v1/v2 bytes,
+all 423 previous supervisor sources/test bodies, 46 effect brackets and original
+300/60/10 origins remain intact apart from two exact additive module hooks.
+
+The [separate data-only packet](local-runs/held-placement-20261019/README.md)
+retains baseline, missing-module red test, seeded identities and complete
+packet-byte mutations, compiler/source/image receipts and local regression.
+All 309 source contracts pass. This is not a new creator SIGKILL cohort or a
+preparation/product-speed claim. Original owner/context/bound and actual root
+join, complete held projection, authenticated delivery and later lifecycle
+remain open; no installation, supervisor operation or server workload occurs.
+
+Final GNU/MSRV ordinary-image selections and all 247 Linux doc tests per
+compiler pass, as do 60 Windows units and twenty portable doc tests. Initial
+wrappers refused a mistaken Windows-only doc count after all Linux doc tests
+had actually passed; their raw logs and recipe remain separate from the fresh
+final receipts. No predicate, origin or runtime bound was changed to pass.
+
+The held-placement packet contains 70 hashed files plus its inventory; inventory
+SHA256 is `f86588ec9eff80ddab1a5fc3acd027adb98082c1e16b314bbe9dfea02d2f7e82`.
+Its verifier refuses sixteen mutations and rejects runtime-admission promotion.

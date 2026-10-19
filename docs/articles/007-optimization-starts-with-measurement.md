@@ -14086,3 +14086,39 @@ to the allocation change. The allocator reduction and this complete local
 functional result stand independently. Historical partial outcomes remain
 unchanged; original delivery, production trust, lifecycle/reconnect and server
 admission remain separate work.
+
+## A signature does not put the worker inside the revocation root
+
+After the local MSRV fault gate passed, the next audit asked what would happen
+if the prepared original manager message were actually delivered. Its old
+specification still runs a direct worker in system.slice, while the guardians
+pin another attempt-specific root. The dummy fault fixtures explicitly move
+their writers into that root. Their success therefore does not establish
+confinement of the original worker, and sending the old message would also
+execute it before the held-launcher barrier.
+
+The [isolated next package](../testing/performance/0.74/held-placement-design.md)
+binds the exact root Enroll packet and complete nested launch claims under a
+new signature domain. Expected slice and child names derive from the same
+attempt identity rather than accepting caller-supplied paths or commands.
+The original device/inode, context digest and absolute bound are signed without
+renewing them. Old readers and signatures are not upgraded.
+
+This is deliberately a data-reader result. Seeded identities, changed packet
+bytes, wrong domains/keys and malformed documents test what the signature
+actually covers. They do not observe a live slice, select a production issuer,
+construct a complete held unit or grant execution. The six admission fields
+remain false. The next proof must join these expectations with the same live
+owned manager/root and full validation frame, then establish actual held
+placement before any send or release. No throughput, allocation or preparation
+speedup is asserted for this package; it addresses a concrete execution-boundary
+gap without weakening the original checks or deadlines.
+
+All 309 source contracts pass. Both GNU and MSRV ordinary images pass the new
+reader cases and unchanged selected kernel/root regression, with 247 Linux doc
+tests each; Windows passes 60 unit and twenty doc tests. The first wrapper
+incorrectly expected the Windows doc count on Linux. Its two refused results
+and exact recipe remain in evidence; fresh final runs correct only that count,
+not test predicates or a runtime deadline. A green wrapper is not allowed to
+erase its earlier diagnostic mistake or promote these reader checks to start
+authority.

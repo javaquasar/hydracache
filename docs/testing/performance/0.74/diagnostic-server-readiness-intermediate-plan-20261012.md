@@ -449,3 +449,14 @@ still has no lifecycle/start conversion. Keep authentic original-start,
 collector/output ownership and autonomous all-writer revocation ahead of
 completion and cells two through four; P1 through P5 and server admission
 remain open.
+
+## P3 Signed expected placement does not open original delivery
+
+The [separate held placement contract](held-placement-design.md) binds exact
+v2 Enroll bytes and nested launch claims under a new v3 domain, deriving safe
+expected slice/child names from the same identity. This closes only the signed
+placement-data slice. The old direct-worker manager message remains unsent;
+actual root placement, original owner/context/bound join and a complete held
+unit must precede authenticated delivery. All live checks and original bounds
+are unchanged. Production enrollment, all-writer cessation, completion, cells
+two through four, reconnect and server rehearsal remain separate open gates.
