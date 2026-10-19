@@ -16,7 +16,7 @@ fn original_root_guardian_frame_controls() {
         let (_, refusal) = crate::diagnostic_kernel_admission::refusal_trace::capture(|| {
             let bundle = Bundle::new();
             with_original_at(
-                case != "ok",
+                true, // even healthy case deliberately attempts duplicate enrollment below
                 None,
                 |original, _paths, receiver, sender, model| {
                     with_owned_empty_fence_for_test(|fence, root, leaf| {
