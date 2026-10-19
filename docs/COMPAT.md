@@ -1776,3 +1776,30 @@ credentials, fields, version, phase, rights and truncation are checked; unknown
 values refuse. No migration, persisted replay or production reader exists.
 This ignored fixture carrier is not original delivery, host enrollment,
 completion, unlock or a new guardian protocol.
+
+## Signed expected held placement v3
+
+The additive diagnostic-held-placement-requirements-074-v3,
+diagnostic-held-placement-074-v3 and diagnostic-signed-held-placement-074-v3
+schemas bind complete historical v2 launch claims and the exact lowercase hex
+encoding of the 104-byte HCRG0742 Enroll packet. Its attempt digest must equal
+the unchanged hc074-original-root-attempt-v1 serde JSON identity tuple digest.
+Armed, Refused and Revoking packets are not placement requests. No v1/v2 reader,
+signature, packet or requirement changes; no upgrade or fallback exists.
+
+Signing bytes are hydracache-diagnostic-held-placement-074-v3, one NUL byte and
+the canonical newline-terminated body. The body action is project-held-cell-one.
+The requirements digest covers canonical newline-terminated requirements JSON;
+its launch_signing_message_sha256 covers the complete existing v2 signing
+message, including its domain and NUL. Bodies/envelopes retain 16384/32768-byte
+limits. Unknown/duplicate fields, noncanonical JSON, wrong domains/keys, changed
+bindings and non-lowercase hex refuse. Inspection uses only a supplied key.
+
+Expected placement derives system-hc074 followed by the full attempt digest and
+.slice directly beneath system.slice, with the existing fixed cell-one unit as
+its child. No caller supplies arbitrary paths, commands or a renewed deadline.
+These are data-only expectations, not a live root, trusted issuer, held unit,
+systemd request or original-owner capability. Actual placement, complete live
+frame, issuer enrollment, barrier, writer cessation and completion stay separate.
+All six runtime admission fields and renewal are false. No send/start, host
+creation, completion or fence release follows from this new signature.

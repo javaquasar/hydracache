@@ -185,3 +185,6 @@ pub(crate) use held_barrier::InheritedPending;
 
 #[path = "diagnostic_root_enrollment.rs"]
 pub mod root_enrollment;
+
+#[path = "diagnostic_held_placement.rs"]
+pub mod held_placement;

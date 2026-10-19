@@ -6,6 +6,9 @@ use crate::diagnostic_lease::{
 use ed25519_dalek::{Signer, SigningKey};
 use serde_json::{json, Value};
 
+#[path = "diagnostic_held_placement_tests.rs"]
+mod held_placement;
+
 fn fixture() -> LaunchBody {
     let consent = StartConsentBody {
         schema_version: crate::diagnostic_start_consent::BODY_SCHEMA.into(),

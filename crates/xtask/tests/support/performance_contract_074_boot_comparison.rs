@@ -1,4 +1,6 @@
 //! Exact reversible ownership-only substitution; never a live-check waiver.
+#[path = "performance_contract_074_held_placement.rs"]
+mod held_placement;
 const BASE: &str = "aa84aeb8";
 const PREFIX: &str = "tools/long-run-supervisor-074/src/";
 const HOOKS: &[(&str, &str, &str)] = &[
@@ -125,7 +127,7 @@ const OLD_VALUE: &str = r##"fn boot_value((raw, count): ([u8; 38], usize)) -> Re
 }
 "##;
 pub(super) fn normalize(path: &str, raw: &str) -> String {
-    let mut text = raw.to_owned();
+    let mut text = held_placement::normalize(path, raw);
     for (file, new, old) in HOOKS {
         if path == format!("{PREFIX}{file}") {
             assert_eq!(
