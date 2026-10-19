@@ -234,7 +234,7 @@ fn root_guardian_fixture_cleanup_accepts_only_terminal_already_reaped_pidfd() {
     let pin = unsafe { File::from_raw_fd(fd as _) };
     cleanup_guardian(&pin);
     dead(&pin);
-    child.wait().unwrap();
+    assert_eq!(child.wait().unwrap_err().raw_os_error(), Some(libc::ECHILD));
     cleanup_guardian(&pin); // ECHILD after the exact child has been reaped.
     dead(&pin);
 }
