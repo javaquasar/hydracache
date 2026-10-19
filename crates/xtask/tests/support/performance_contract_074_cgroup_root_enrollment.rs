@@ -1,4 +1,6 @@
 //! Preserve prior admission while adding a distinct root enrollment protocol.
+#[path = "performance_contract_074_cgroup_root_transport.rs"]
+mod transport;
 const BASE: &str = "7fb289c5";
 const GATE: &str = r####"
 # BEGIN CGROUP ROOT ENROLLMENT GATE
@@ -64,6 +66,8 @@ unchanged. Root kill submission or empty-at-read never authorizes completion,
 fence release or server execution, including when external pipe aliases remain.
 "####;
 pub(super) fn normalize(path: &str, raw: &str) -> String {
+    let current = transport::normalize(path, raw);
+    let raw = current.as_str();
     let extra = match path {
         "docs/testing/gated-test-registry.toml" => GATE,
         "tools/long-run-supervisor-074/src/diagnostic_two_phase_launch.rs" => MODULE,

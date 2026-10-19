@@ -1686,3 +1686,23 @@ not live observations or permission to renew the original 300/60/10 bounds.
 Existing v1 guardian, signed v2 launch and original worker projections remain
 unchanged. Root kill submission or empty-at-read never authorizes completion,
 fence release or server execution, including when external pipe aliases remain.
+
+## Local cgroup root descriptor transport
+
+The private ordinary-process reader of hc074-cgroup-root-enrollment-v2 accepts
+only the existing 104-byte Enroll packet and exactly directory/kill/events
+SCM_RIGHTS on an unnamed UNIX seqpacket pair. SO_PASSCRED is required before
+send; exactly one SCM_CREDENTIALS must match the actual pair creator PID and
+real UID/GID. No numeric caller credentials or old guardian-v1 fallback exist.
+All received rights require atomic MSG_CMSG_CLOEXEC, exact access modes and
+matching retained/named root-owned cgroup2 objects. Unknown ancillary data,
+truncation, extra/missing/substituted rights, binding or owner drift refuse.
+Every installed rejected right is closed. Both sides consume their single
+operation before its syscall; uncertainty or absent ACK never permits retry.
+
+This reader retains descriptors but emits no Armed or other acknowledgement.
+It is not a post-clone-safe guardian, original-owner constructor or runtime
+admission API. Replies, guardian credentials, original fence/timer, full-frame
+join and durable completion remain separate gates. Reader compatibility is
+only v2 as above, with no migration, reconnect or durable replay slot. Existing
+packet claims, v1 direct-child guardian and original projections are unchanged.

@@ -238,3 +238,6 @@ impl PinnedRoot {
 #[cfg(test)]
 #[path = "diagnostic_cgroup_root_tests.rs"]
 mod tests;
+
+#[path = "diagnostic_cgroup_root_transport.rs"]
+mod transport;
