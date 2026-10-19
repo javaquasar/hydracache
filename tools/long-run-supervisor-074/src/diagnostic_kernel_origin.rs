@@ -65,7 +65,7 @@ fn namespace(name: &str) -> Result<(File, (u64, u64)), KernelError> {
     let file = OpenOptions::new()
         .read(true)
         .custom_flags(libc::O_CLOEXEC)
-        .open(format!("/proc/thread-self/ns/{name}"))?;
+        .open(namespace_path(name).as_ref())?;
     filesystem(&file, 0x6e736673)?;
     let m = file.metadata()?;
     Ok((file, (m.dev(), m.ino())))
@@ -77,14 +77,39 @@ fn boot(root: &File) -> Result<String, KernelError> {
     let _kernel_walk = crate::diagnostic_ipc::validation_trace::kernel_walk::span(
         crate::diagnostic_ipc::validation_trace::kernel_walk::Kind::Boot,
     );
-    let sys = child(root, "sys", true)?;
-    let kernel = child(&sys, "kernel", true)?;
-    let random = child(&kernel, "random", true)?;
-    let file = child(&random, "boot_id", false)?;
+    let sys = fixed_child(root, c"sys", true)?;
+    let kernel = fixed_child(&sys, c"kernel", true)?;
+    let random = fixed_child(&kernel, c"random", true)?;
+    let file = fixed_child(&random, c"boot_id", false)?;
     let raw = boot_read(|bytes| file.read_at(bytes, 0))?;
     // As before, close the proc document before decoding the owned bytes.
     drop(file);
     boot_value(raw)
+}
+
+fn fixed_child(parent: &File, name: &std::ffi::CStr, directory: bool) -> Result<File, KernelError> {
+    let flags = libc::O_RDONLY
+        | libc::O_NOFOLLOW
+        | libc::O_CLOEXEC
+        | libc::O_NONBLOCK
+        | if directory { libc::O_DIRECTORY } else { 0 };
+    let fd = unsafe { libc::openat(parent.as_raw_fd(), name.as_ptr(), flags) };
+    if fd < 0 {
+        return Err(std::io::Error::last_os_error().into());
+    }
+    let file = unsafe { File::from_raw_fd(fd) };
+    filesystem(&file, 0x9fa0)?;
+    Ok(file)
+}
+fn namespace_path(name: &str) -> std::borrow::Cow<'static, str> {
+    use std::borrow::Cow;
+    match name {
+        "user" => Cow::Borrowed("/proc/thread-self/ns/user"),
+        "mnt" => Cow::Borrowed("/proc/thread-self/ns/mnt"),
+        "pid" => Cow::Borrowed("/proc/thread-self/ns/pid"),
+        "time" => Cow::Borrowed("/proc/thread-self/ns/time"),
+        _ => Cow::Owned(format!("/proc/thread-self/ns/{name}")),
+    }
 }
 fn boot_read(
     read: impl FnOnce(&mut [u8]) -> std::io::Result<usize>,
