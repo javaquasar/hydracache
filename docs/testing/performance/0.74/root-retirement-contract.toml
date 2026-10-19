@@ -1,0 +1,16 @@
+schema_version = 1
+scope = "original-root-retirement-074-v1"
+baseline_commit = "f48fd4bf1de242d4130cd61459a3daed8437f33e"
+drop_refuses_original_before_kernel = true
+pending_and_consumed_retirement_refuse = true
+retirement_renews_or_reads_time = false
+active_guardians_cancelled = false
+borrow_return_reopens_attempt = false
+original_predicates_and_bounds_preserved = true
+end_to_end_original_constructor_tested = false
+original_armed_execution_capability = false
+completion_allowed = false
+fence_release_allowed = false
+server_operation_allowed = false
+product_allowed = false
+qualification_allowed = false

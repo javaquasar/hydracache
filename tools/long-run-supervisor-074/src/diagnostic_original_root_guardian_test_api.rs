@@ -66,3 +66,9 @@ impl PendingProbe<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
         (result, self.calls)
     }
 }
+
+impl PendingProbe<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
+    pub(crate) fn root_retire_for_test(&mut self, controls: &mut RootProbeControls) {
+        root_guardians::retire(self, controls);
+    }
+}

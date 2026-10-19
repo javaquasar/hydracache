@@ -181,3 +181,22 @@ impl<'held, 'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>
         }
     }
 }
+
+pub(in super::super::super) fn retire(
+    owner: &mut impl RootOwner,
+    controls: &mut impl RootControls,
+) {
+    // Returning the exclusive borrow must never reopen this original attempt.
+    // Refusal precedes field Drop; active kernel holders still revoke and fence.
+    owner.refuse();
+    controls.refuse();
+}
+impl Drop for OriginalRootGuardians<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
+    fn drop(&mut self) {
+        retire(&mut self.original, &mut self.controls);
+    }
+}
+
+#[cfg(test)]
+#[path = "diagnostic_original_root_retirement_tests.rs"]
+mod retirement_tests;

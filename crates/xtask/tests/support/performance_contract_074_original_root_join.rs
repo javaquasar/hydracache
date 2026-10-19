@@ -1,4 +1,6 @@
 //! Exact forward adapter for original root frame joins.
+#[path = "performance_contract_074_root_retirement.rs"]
+mod retirement;
 const BASE: &str = "52d805da";
 const ADDITIONS: &[(&str, &str)] = &[
     (
@@ -162,6 +164,8 @@ platform = "linux"
     ),
 ];
 pub(super) fn normalize(path: &str, raw: &str) -> String {
+    let current = retirement::normalize(path, raw);
+    let raw = current.as_str();
     let Some((_, extra)) = ADDITIONS.iter().find(|(p, _)| *p == path) else {
         return raw.to_owned();
     };
