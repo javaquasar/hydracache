@@ -91,3 +91,22 @@ under the original fence/timer, original trust/epoch/artifact/channel/full-frame
 binding and the separately projected held unit. No additional topology approval
 is needed for this approved local sequence, but production installation, server
 operations, original send and product workloads remain closed.
+
+## Descriptor transfer within step four
+
+Source `65b02f3b` adds the separately scoped
+[local creator request transport](cgroup-root-transport-plan-20261019.md).
+Actual socket credentials, three received FD roles, root identity/access and
+empty-domain checks precede retention. Sender and receiver consume once before
+their syscall. Rejection closes installed rights; missing confirmation never
+permits replay. This ordinary-process reader emits no ACK or Armed and is not
+safe to execute inside a raw post-clone child.
+
+The [transport contract](cgroup-root-transport-contract.toml) keeps guardian
+reply, original-owner construction, autonomous revocation, held projection,
+completion and server admission false. The first packet/root contract remains
+unchanged as its earlier scoped result. Next, independent stack-safe guardians
+must retain original process-pidfd/fence/timer custody, validate this same root
+under the unchanged frame and authenticate their replies before held delivery.
+Use the [transport evidence](local-runs/cgroup-root-transport-20261019/README.md)
+for its selected-source controls, not as proof of that future integration.

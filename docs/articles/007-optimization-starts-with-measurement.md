@@ -13616,3 +13616,59 @@ Windows passes 54 ordinary and eighteen compile-fail controls; affected strict
 lint passes on both GNU compilers and Windows. These results close the local
 packet/root-mechanics package, not authenticated FD transfer, an autonomous
 root guardian or the original-start gate.
+
+### Credentials identify a message but do not arm a guardian
+
+The next hypothesis concerns enrollment integrity rather than throughput:
+receiving the right-looking packet must not allow the wrong process or the
+wrong kernel objects to become the revocation root. Source `65b02f3b` adds a
+private ordinary-process sender and receiver to test that boundary independently
+of the original runtime. It does not alter the old guardian or weaken its
+direct-child predicate.
+
+The pair captures the actual creating process and thread and its real/effective
+credentials. Each request then needs matching per-message kernel credentials
+and exactly three atomic-CLOEXEC rights in directory, kill, events order. The
+reader checks actual cgroup2 ownership, access modes, directory identity, named
+document correspondence and repeated empty unfrozen domain observations.
+Correct packet bytes cannot substitute another root or swap the file roles.
+These checks follow the Linux
+[UNIX socket](https://man7.org/linux/man-pages/man7/unix.7.html) and
+[recvmsg](https://man7.org/linux/man-pages/man2/recvmsg.2.html) interfaces; they
+do not claim protection against a privileged adversary controlling the host.
+
+Refusal must also release received aliases. Ordinary controls transfer pipe
+writers as unwanted rights and require actual EOF after rejection, including
+ancillary truncation. A separate exec process sends through an inherited
+endpoint to verify that possession of the socket does not make its PID the
+creator. Both operation objects consume before their first syscall, so failed
+send, early receive, bad input or missing confirmation cannot reopen the same
+attempt. The local root matrix additionally substitutes each role with another
+real root and changes directory permissions after send.
+
+The [evidence packet](../testing/performance/0.74/local-runs/cgroup-root-transport-20261019/README.md)
+keeps these request checks separate from guardian readiness. No ACK is emitted,
+and the received object offers no kill, launch, completion or unlock method.
+It allocates in an ordinary process and must not run inside a raw post-clone
+guardian. Original live process-pidfd/fence/timer custody and a reply from the
+actual independent guardian still need their own join. The selected root
+SIGKILL regression cuts concern the older private kill caller, not this future
+authenticated reply or original-start boundary. This package supplies no
+allocation, latency or throughput claim and opens no server execution.
+
+On the selected source, GNU 1.94 and MSRV 1.88 each pass six new ordinary
+transport controls and three twelve-case actual root-role matrices, for 72
+selected scenario executions. The prior root matrix also repeats three times
+per compiler, retaining 24 actual kill-caller SIGKILL cuts in total. Both keep
+the old two-phase, exchange and seventeen-case guardian controls green, including
+their explicit common-mode and external-writer limits. Windows retains 54
+ordinary and eighteen compile-fail passes; strict affected lint passes on both
+GNU compilers and Windows. Functional repetition establishes the scoped request
+mechanics, not the still-closed independent guardian or original-start join.
+
+The complete 280-control source suite preserves all 386 previous supervisor
+Rust bodies through exact additive registrations. The qualification manifest
+digest and all old live predicates, effect brackets and absolute origins stay
+unchanged. The next package must connect independent guardians to that original
+context and keep revoking late population after owner loss or expiry; an empty
+read alone cannot authorize completion or fence release.

@@ -1035,3 +1035,15 @@ remain explicit limits. This does not construct an autonomous root guardian,
 authenticate enrollment FD transfer or bind a production held unit. The
 [contract](cgroup-root-enrollment-contract.toml) keeps Armed, original constructor,
 completion and server admission false pending that next integration.
+
+The next [descriptor transport package](local-runs/cgroup-root-transport-20261019/README.md),
+source `65b02f3b`, authenticates per-message creator credentials on a private
+seqpacket pair and validates exactly three atomic-CLOEXEC directory/kill/events
+rights against actual root-owned cgroup2 objects. Both operation objects consume
+before their first syscall, including a failed send or empty receive. Rejected
+installed rights close, and no retry follows missing confirmation. The private
+ordinary-process result has no kill or ACK method; it cannot replace a
+stack-safe guardian or original-owner constructor. That integration must retain
+the original process pidfd, fence and existing timer, preserve every full-frame
+predicate and original bound, and authenticate the actual guardian reply. Held
+delivery, cessation/completion and server installation remain closed.
