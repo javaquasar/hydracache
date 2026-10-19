@@ -54,3 +54,18 @@ and stall on either side, plus the outside-alias negative. Kill/reap exact owned
 writers before fixture keeper cleanup; restore the prior subreaper setting and
 remove only independently checked fresh fixture paths. Never replace creator
 SIGKILL with channel closure, normal Rust Drop or a modeled error.
+
+### Refused enrollment and cleanup follow-up
+
+The first external screen and matrix owner case passed at `f57b974c`. The next
+case refused with original `Causal(Time)` before fault injection. Do not infer
+the cause from total test elapsed time or retry parameters. Keep that negative;
+copy the existing issued/now/boot observations around enrollment with the already
+available test-only observer, adding no clock read or changed comparison.
+
+The refusal also exposed fixture double-wait: original control destruction had
+already reaped a guardian before fixture cleanup waited on its cloned pidfd.
+Accept ECHILD only in cleanup and only with that exact pidfd already terminal.
+Never relax the writers' CLD_KILLED/SIGKILL assertions. Wait for the source suite
+and other compilation to finish before a single fresh complete GNU/MSRV cohort;
+retain every attempt, including refusals, and keep all production gates closed.

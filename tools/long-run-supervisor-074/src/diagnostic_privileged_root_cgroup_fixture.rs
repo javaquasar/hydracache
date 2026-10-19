@@ -206,10 +206,14 @@ impl Drop for Cgroup {
                     {
                         break;
                     }
-                    assert_eq!(
-                        std::io::Error::last_os_error().raw_os_error(),
-                        Some(libc::EINTR)
-                    );
+                    let error = std::io::Error::last_os_error().raw_os_error();
+                    if error == Some(libc::ECHILD) {
+                        // Original controls may already have reaped this exact
+                        // pinned guardian while unwinding an enrollment refusal.
+                        dead(&pin);
+                        break;
+                    }
+                    assert_eq!(error, Some(libc::EINTR));
                 }
             }
         }

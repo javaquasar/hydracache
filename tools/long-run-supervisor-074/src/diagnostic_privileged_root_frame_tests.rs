@@ -144,7 +144,19 @@ fn run_inner(case: &str, mut carrier: Option<creator::Carrier>) {
             // Own exact cleanup handles before any possibly uncertain enrollment.
             cgroup.guardians = Some(owned.fixture_guardians());
             let origins = owned.fixture_origins();
-            owned.enroll_once().unwrap();
+            if carrier.is_some() {
+                // Copy only the existing comparison's issued/now/boot values.
+                // This neither samples another clock nor replaces its decision.
+                let (result, report) = crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::time_observation::capture(|| owned.enroll_once());
+                println!(
+                    "HC074-OWNED-ENROLL success={} facts={}",
+                    result.is_ok(),
+                    serde_json::to_string(&report).unwrap()
+                );
+                result.unwrap();
+            } else {
+                owned.enroll_once().unwrap();
+            }
             owned.revalidate().unwrap();
             assert_eq!(owned.fixture_origins(), origins);
             let [mut out, mut err, writer, other] = owned.fixture_streams();

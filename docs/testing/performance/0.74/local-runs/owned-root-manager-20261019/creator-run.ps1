@@ -10,6 +10,9 @@ try {
     & git diff --quiet $Source -- tools/long-run-supervisor-074/src tools/long-run-supervisor-074/tests
     if($LASTEXITCODE -ne 0){throw 'Wrong selected source'}
     $taskHead=(& git rev-parse HEAD).Trim()
+    $taskWslOut=(& wsl.exe -d Ubuntu -- wslpath -u ($taskOut.Replace('\','/')))
+    if($LASTEXITCODE -ne 0 -or -not $taskWslOut){throw 'Evidence path conversion failed before attempt'}
+    $taskWslOut=$taskWslOut.Trim()
     $taskHashes=@($GnuImage,$MsrvImage) | ForEach-Object {
         $taskHash=(& wsl.exe -d Ubuntu -- sha256sum $_).Trim()
         if($LASTEXITCODE -ne 0 -or $taskHash -notmatch '^[0-9a-f]{64}  /'){throw 'Image missing'}
@@ -39,8 +42,6 @@ while time.monotonic()-start<65:
  if now<prev: raise RuntimeError('REALTIME backwards; no attempt')
  prev=now; n+=1; time.sleep(.01)
 print(json.dumps(dict(backward_samples=0,samples=n,boot=pathlib.Path('/proc/sys/kernel/random/boot_id').read_text().strip())))")
-        $taskWslOut=(& wsl.exe -d Ubuntu -- wslpath -u $taskOut).Trim()
-        if($LASTEXITCODE -ne 0){throw 'Evidence path conversion failed'}
         foreach($taskCohort in @(@('screen-gnu194',$GnuImage,'owner'),@('matrix-gnu194',$GnuImage,''),@('matrix-gnu188',$MsrvImage,''))){
             $taskArgs=@('-d','Ubuntu','-u','root','--','env','HC074_OWNED_ROOT_FIXTURE=local-only-v1','HC074_START_MATERIAL_BUNDLE=/mnt/c/Workspace/prj/jq/cashe/hydracache-074/target/diagnostic-start-material-bundle-20261017','python3','-B','-u','tools/long-run-supervisor-074/tests/owned_root_creator_sigkill.py','--binary',$taskCohort[1],'--out',"$taskWslOut/$($taskCohort[0])")
             if($taskCohort[2]){$taskArgs+=@('--case',$taskCohort[2])}
