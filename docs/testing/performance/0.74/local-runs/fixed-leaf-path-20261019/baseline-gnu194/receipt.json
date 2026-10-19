@@ -1,0 +1,14 @@
+{
+  "source": "7c523942f0ecba1011a09d63ec1e2531923b7538",
+  "kind": "baseline",
+  "image": "60a114158989e84db95a5a77ecc1b5c37031ed54f5d45d0b784ef9c05733b649  /home/artur/.cache/hydracache-074-leaf-path-20261019/gnu194-baseline",
+  "uid": "1000",
+  "retirement_repeats": 3,
+  "frame_cases": 8,
+  "clock_before": "active",
+  "clock_after": "active",
+  "original_constructor": false,
+  "server": false,
+  "supervisor": false,
+  "product": false
+}

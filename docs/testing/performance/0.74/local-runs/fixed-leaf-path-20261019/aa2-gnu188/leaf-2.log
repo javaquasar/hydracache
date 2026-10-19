@@ -1,0 +1,37 @@
+
+running 1 test
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::fixed_leaf_path_cost_abba ... HC074-LEAF-PATH {"a_ns":117681489,"all_ns":[138647733,136391978,125342728,96715246],"b_ns":130867353,"block":0,"iterations":16384,"leaf":"boot","order":"ABBA"}
+HC074-LEAF-PATH {"a_ns":49026328,"all_ns":[36988814,38024482,40681328,61063842],"b_ns":39352905,"block":0,"iterations":16384,"leaf":"namespace","order":"ABBA"}
+HC074-LEAF-PATH {"a_ns":59538570,"all_ns":[58669493,76682461,61397585,60407648],"b_ns":69040023,"block":1,"iterations":16384,"leaf":"namespace","order":"ABBA"}
+HC074-LEAF-PATH {"a_ns":133158271,"all_ns":[152313824,143761471,130455699,114002719],"b_ns":137108585,"block":1,"iterations":16384,"leaf":"boot","order":"ABBA"}
+HC074-LEAF-PATH {"a_ns":134269850,"all_ns":[121911004,143901587,141540131,146628696],"b_ns":142720859,"block":2,"iterations":16384,"leaf":"boot","order":"ABBA"}
+HC074-LEAF-PATH {"a_ns":61902023,"all_ns":[65884223,55723204,72089690,57919824],"b_ns":63906447,"block":2,"iterations":16384,"leaf":"namespace","order":"ABBA"}
+HC074-LEAF-PATH {"a_ns":69427252,"all_ns":[64057391,65200839,50853661,74797113],"b_ns":58027250,"block":3,"iterations":16384,"leaf":"namespace","order":"ABBA"}
+HC074-LEAF-PATH {"a_ns":136426822,"all_ns":[138545010,147217009,159568292,134308634],"b_ns":153392650,"block":3,"iterations":16384,"leaf":"boot","order":"ABBA"}
+HC074-LEAF-PATH {"a_ns":133775456,"all_ns":[135279757,151540265,158085762,132271155],"b_ns":154813013,"block":4,"iterations":16384,"leaf":"boot","order":"ABBA"}
+HC074-LEAF-PATH {"a_ns":68976980,"all_ns":[70516651,74484450,57561141,67437310],"b_ns":66022795,"block":4,"iterations":16384,"leaf":"namespace","order":"ABBA"}
+HC074-LEAF-PATH {"a_ns":55667518,"all_ns":[55959847,57117102,57354196,55375190],"b_ns":57235649,"block":5,"iterations":16384,"leaf":"namespace","order":"ABBA"}
+HC074-LEAF-PATH {"a_ns":137983585,"all_ns":[129463496,101113798,133185781,146503674],"b_ns":117149789,"block":5,"iterations":16384,"leaf":"boot","order":"ABBA"}
+HC074-LEAF-PATH {"a_ns":146811247,"all_ns":[156089086,151060458,144465293,137533408],"b_ns":147762875,"block":6,"iterations":16384,"leaf":"boot","order":"ABBA"}
+HC074-LEAF-PATH {"a_ns":60299450,"all_ns":[56987481,54049769,47845451,63611420],"b_ns":50947610,"block":6,"iterations":16384,"leaf":"namespace","order":"ABBA"}
+HC074-LEAF-PATH {"a_ns":59446515,"all_ns":[57192638,68302132,57676471,61700393],"b_ns":62989301,"block":7,"iterations":16384,"leaf":"namespace","order":"ABBA"}
+HC074-LEAF-PATH {"a_ns":153870672,"all_ns":[147201321,148029347,160396680,160540023],"b_ns":154213013,"block":7,"iterations":16384,"leaf":"boot","order":"ABBA"}
+HC074-LEAF-PATH {"a_ns":141430747,"all_ns":[139121641,142270226,146386077,143739853],"b_ns":144328151,"block":8,"iterations":16384,"leaf":"boot","order":"ABBA"}
+HC074-LEAF-PATH {"a_ns":62385285,"all_ns":[60933759,59831981,58893575,63836812],"b_ns":59362778,"block":8,"iterations":16384,"leaf":"namespace","order":"ABBA"}
+HC074-LEAF-PATH {"a_ns":65027680,"all_ns":[65740149,55040339,56865163,64315212],"b_ns":55952751,"block":9,"iterations":16384,"leaf":"namespace","order":"ABBA"}
+HC074-LEAF-PATH {"a_ns":128408099,"all_ns":[138226976,147816259,144185035,118589223],"b_ns":146000647,"block":9,"iterations":16384,"leaf":"boot","order":"ABBA"}
+HC074-LEAF-PATH {"a_ns":135146256,"all_ns":[134843270,151509486,130174106,135449243],"b_ns":140841796,"block":10,"iterations":16384,"leaf":"boot","order":"ABBA"}
+HC074-LEAF-PATH {"a_ns":59493850,"all_ns":[61659811,58362082,51648147,57327890],"b_ns":55005114,"block":10,"iterations":16384,"leaf":"namespace","order":"ABBA"}
+HC074-LEAF-PATH {"a_ns":53916496,"all_ns":[57894932,64650709,54213675,49938061],"b_ns":59432192,"block":11,"iterations":16384,"leaf":"namespace","order":"ABBA"}
+HC074-LEAF-PATH {"a_ns":152465807,"all_ns":[164664661,150642802,147275467,140266953],"b_ns":148959134,"block":11,"iterations":16384,"leaf":"boot","order":"ABBA"}
+HC074-LEAF-PATH {"a_ns":107861770,"all_ns":[115604297,114620155,105364889,100119244],"b_ns":109992522,"block":12,"iterations":16384,"leaf":"boot","order":"ABBA"}
+HC074-LEAF-PATH {"a_ns":71513162,"all_ns":[73260744,58817752,58742242,69765581],"b_ns":58779997,"block":12,"iterations":16384,"leaf":"namespace","order":"ABBA"}
+HC074-LEAF-PATH {"a_ns":59425529,"all_ns":[62306969,66101895,66595513,56544089],"b_ns":66348704,"block":13,"iterations":16384,"leaf":"namespace","order":"ABBA"}
+HC074-LEAF-PATH {"a_ns":126283907,"all_ns":[148155749,142257183,140454739,104412066],"b_ns":141355961,"block":13,"iterations":16384,"leaf":"boot","order":"ABBA"}
+HC074-LEAF-PATH {"a_ns":127403129,"all_ns":[99045362,140608650,147618983,155760897],"b_ns":144113816,"block":14,"iterations":16384,"leaf":"boot","order":"ABBA"}
+HC074-LEAF-PATH {"a_ns":51907901,"all_ns":[61532899,55697092,63568524,42282904],"b_ns":59632808,"block":14,"iterations":16384,"leaf":"namespace","order":"ABBA"}
+HC074-LEAF-PATH-CLOSED observations_unchanged=true cached=false product=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1269 filtered out; finished in 11.84s
+

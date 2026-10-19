@@ -1,0 +1,12 @@
+{
+  "source": "bde39e343566d7e7158318f4230af6cd80c358d6",
+  "compiler": "1.88.0",
+  "image": "32004447be007335aef90deabb1691f9436a1571b5a69b693767ba63ffaca462  /home/artur/.cache/hydracache-074-188-check/release/deps/hydracache_long_run_supervisor_074-d2aba7f58d773234",
+  "recipe": "524e8145dc08e401db914c393123ba808de42dcef0adec91b6c88ac233fea34c",
+  "repeats": 3,
+  "blocks_per_leaf": 45,
+  "iterations": 16384,
+  "server": false,
+  "product": false,
+  "admission": false
+}

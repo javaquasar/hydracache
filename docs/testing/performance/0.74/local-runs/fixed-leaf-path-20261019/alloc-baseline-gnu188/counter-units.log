@@ -1,0 +1,11 @@
+
+running 2 tests
+
+thread 'diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::fixed_leaf_alloc_counter_restores_nested_unwind_and_thread_state' panicked at tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs:90:48:
+allocation capture unwind canary
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::fixed_leaf_alloc_counter_restores_nested_unwind_and_thread_state ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::fixed_leaf_alloc_counter_zeroed_reallocation_and_inactive_forwarding ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 1272 filtered out; finished in 0.00s
+

@@ -1,0 +1,35 @@
+{
+  "gnu194": {
+    "boot": {
+      "blocks": 45,
+      "improvement_percent": -0.3487376843692047,
+      "low95": -3.23626695896273,
+      "high95": 2.3941424759580276
+    },
+    "namespace": {
+      "blocks": 45,
+      "improvement_percent": -0.288985312932577,
+      "low95": -2.8541411684422036,
+      "high95": 2.2546721727697006
+    },
+    "accepted": false
+  },
+  "gnu188": {
+    "boot": {
+      "blocks": 45,
+      "improvement_percent": -1.5867214869257795,
+      "low95": -4.3619853191941615,
+      "high95": 1.035701085875973
+    },
+    "namespace": {
+      "blocks": 45,
+      "improvement_percent": -2.4475562925526217,
+      "low95": -4.5193031563362185,
+      "high95": -0.4200208983597298
+    },
+    "accepted": false
+  },
+  "accepted_both": false,
+  "seed": "0x0740f17e",
+  "resamples": 5000
+}

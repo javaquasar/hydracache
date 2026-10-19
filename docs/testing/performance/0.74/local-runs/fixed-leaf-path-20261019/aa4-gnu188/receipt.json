@@ -1,0 +1,11 @@
+{
+  "a_image": "228ee9ca574d26ac5f26478f73c9edc2eedfc6e2b7c890bce8c1c82666c32199",
+  "b_image": "228ee9ca574d26ac5f26478f73c9edc2eedfc6e2b7c890bce8c1c82666c32199",
+  "repeats": 3,
+  "actual_children": 720,
+  "recipe_sha256": "00e8d3ee193c5a42fb5882853b112f4cbd827f999d317e96603be4c0fffa3ba4",
+  "uid": 1000,
+  "server": false,
+  "product": false,
+  "admission": false
+}

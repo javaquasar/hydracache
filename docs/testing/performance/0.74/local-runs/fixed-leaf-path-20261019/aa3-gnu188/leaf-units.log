@@ -1,0 +1,11 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `release` profile [optimized] target(s) in 3m 28s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-188-check/release/deps/hydracache_long_run_supervisor_074-d2aba7f58d773234)
+
+running 3 tests
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::fixed_leaf_path_cost_abba ... ignored, manual local paired fixed path leaf costs; no admission or product workload
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::fixed_leaf_path_differential_identity_flags_and_unknown_names ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::fixed_leaf_path_preserves_original_trace_counts_and_sticky_drift ... ok
+
+test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 1267 filtered out; finished in 0.00s
+

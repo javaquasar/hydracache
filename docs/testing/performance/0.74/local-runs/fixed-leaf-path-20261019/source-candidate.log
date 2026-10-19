@@ -1,0 +1,9 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.01s
+     Running tests\performance_contract_074.rs (target\debug\deps\performance_contract_074-affcfab4e5118d5a.exe)
+
+running 2 tests
+test live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::prearmed::redundant::original_context::pending::root_enrollment::transport::guardian::creator::original_join::retirement::preparation::leaf_path::fixed_leaf_path_adapter_rejects_changed_operations_and_missing_hooks ... ok
+test live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::prearmed::redundant::original_context::pending::root_enrollment::transport::guardian::creator::original_join::retirement::preparation::leaf_path::fixed_leaf_path_preserves_previous_sources_protocols_and_all_live_operations ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 295 filtered out; finished in 31.76s
+

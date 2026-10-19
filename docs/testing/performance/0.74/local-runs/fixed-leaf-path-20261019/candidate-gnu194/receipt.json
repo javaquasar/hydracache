@@ -1,0 +1,14 @@
+{
+  "source": "0317f3dc7b977741cfb9491ad2ac417d3a62704e",
+  "kind": "candidate",
+  "image": "f0ed6849c788fd889802bdcb81331110c6ad8874d770606283480b931b67e7dc  /home/artur/.cache/hydracache-074-194-check/release/deps/hydracache_long_run_supervisor_074-b26b156d3dcd0098",
+  "uid": "1000",
+  "retirement_repeats": 3,
+  "frame_cases": 8,
+  "clock_before": "active",
+  "clock_after": "active",
+  "original_constructor": false,
+  "server": false,
+  "supervisor": false,
+  "product": false
+}

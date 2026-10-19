@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "baseline_source": "13cdf24e316bf25c4a5695d5a9702450607915fb",
+  "candidate_source": "0317f3dc7b977741cfb9491ad2ac417d3a62704e",
+  "source_contract_revision": "16a66316",
+  "source_contracts": 297,
+  "allocation_rule_passed": true,
+  "local_retirement_gate_passed": true,
+  "retirement_scope": "local-simulated-root-controls",
+  "manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "wall_speedup_claimed": false,
+  "original_constructor": false,
+  "original_start": false,
+  "all_writer_cessation": false,
+  "completion": false,
+  "unlock": false,
+  "server": false,
+  "supervisor": false,
+  "product": false
+}

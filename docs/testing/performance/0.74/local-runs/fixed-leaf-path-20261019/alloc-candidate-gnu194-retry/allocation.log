@@ -1,0 +1,13 @@
+
+running 1 test
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::fixed_leaf_path_allocation_attribution ... HC074-LEAF-ALLOC {"candidate":{"allocations":1024,"reallocations":0,"requested_bytes":36864},"iterations":1024,"leaf":"boot","reference":{"allocations":5120,"reallocations":0,"requested_bytes":63488},"rust_requests_only":true,"sample":0}
+HC074-LEAF-ALLOC {"candidate":{"allocations":0,"reallocations":0,"requested_bytes":0},"iterations":1024,"leaf":"namespace","reference":{"allocations":1024,"reallocations":0,"requested_bytes":43008},"rust_requests_only":true,"sample":0}
+HC074-LEAF-ALLOC {"candidate":{"allocations":1024,"reallocations":0,"requested_bytes":36864},"iterations":1024,"leaf":"boot","reference":{"allocations":5120,"reallocations":0,"requested_bytes":63488},"rust_requests_only":true,"sample":1}
+HC074-LEAF-ALLOC {"candidate":{"allocations":0,"reallocations":0,"requested_bytes":0},"iterations":1024,"leaf":"namespace","reference":{"allocations":1024,"reallocations":0,"requested_bytes":43008},"rust_requests_only":true,"sample":1}
+HC074-LEAF-ALLOC {"candidate":{"allocations":1024,"reallocations":0,"requested_bytes":36864},"iterations":1024,"leaf":"boot","reference":{"allocations":5120,"reallocations":0,"requested_bytes":63488},"rust_requests_only":true,"sample":2}
+HC074-LEAF-ALLOC {"candidate":{"allocations":0,"reallocations":0,"requested_bytes":0},"iterations":1024,"leaf":"namespace","reference":{"allocations":1024,"reallocations":0,"requested_bytes":43008},"rust_requests_only":true,"sample":2}
+HC074-LEAF-ALLOC-CLOSED timer_changed=false server=false product=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1273 filtered out; finished in 0.18s
+

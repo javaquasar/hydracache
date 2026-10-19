@@ -1,0 +1,194 @@
+{
+  "schema": 1,
+  "endpoint": "rust-allocation-requests-only",
+  "allocation_rule_passed": true,
+  "wall_speedup_claimed": false,
+  "server": false,
+  "product": false,
+  "compilers": {
+    "194": [
+      {
+        "sample": 0,
+        "leaf": "boot",
+        "iterations": 1024,
+        "before": {
+          "allocations": 5120,
+          "reallocations": 0,
+          "requested_bytes": 63488
+        },
+        "after": {
+          "allocations": 1024,
+          "reallocations": 0,
+          "requested_bytes": 36864
+        }
+      },
+      {
+        "sample": 1,
+        "leaf": "boot",
+        "iterations": 1024,
+        "before": {
+          "allocations": 5120,
+          "reallocations": 0,
+          "requested_bytes": 63488
+        },
+        "after": {
+          "allocations": 1024,
+          "reallocations": 0,
+          "requested_bytes": 36864
+        }
+      },
+      {
+        "sample": 2,
+        "leaf": "boot",
+        "iterations": 1024,
+        "before": {
+          "allocations": 5120,
+          "reallocations": 0,
+          "requested_bytes": 63488
+        },
+        "after": {
+          "allocations": 1024,
+          "reallocations": 0,
+          "requested_bytes": 36864
+        }
+      },
+      {
+        "sample": 0,
+        "leaf": "namespace",
+        "iterations": 1024,
+        "before": {
+          "allocations": 1024,
+          "reallocations": 0,
+          "requested_bytes": 43008
+        },
+        "after": {
+          "allocations": 0,
+          "reallocations": 0,
+          "requested_bytes": 0
+        }
+      },
+      {
+        "sample": 1,
+        "leaf": "namespace",
+        "iterations": 1024,
+        "before": {
+          "allocations": 1024,
+          "reallocations": 0,
+          "requested_bytes": 43008
+        },
+        "after": {
+          "allocations": 0,
+          "reallocations": 0,
+          "requested_bytes": 0
+        }
+      },
+      {
+        "sample": 2,
+        "leaf": "namespace",
+        "iterations": 1024,
+        "before": {
+          "allocations": 1024,
+          "reallocations": 0,
+          "requested_bytes": 43008
+        },
+        "after": {
+          "allocations": 0,
+          "reallocations": 0,
+          "requested_bytes": 0
+        }
+      }
+    ],
+    "188": [
+      {
+        "sample": 0,
+        "leaf": "boot",
+        "iterations": 1024,
+        "before": {
+          "allocations": 5120,
+          "reallocations": 0,
+          "requested_bytes": 63488
+        },
+        "after": {
+          "allocations": 1024,
+          "reallocations": 0,
+          "requested_bytes": 36864
+        }
+      },
+      {
+        "sample": 1,
+        "leaf": "boot",
+        "iterations": 1024,
+        "before": {
+          "allocations": 5120,
+          "reallocations": 0,
+          "requested_bytes": 63488
+        },
+        "after": {
+          "allocations": 1024,
+          "reallocations": 0,
+          "requested_bytes": 36864
+        }
+      },
+      {
+        "sample": 2,
+        "leaf": "boot",
+        "iterations": 1024,
+        "before": {
+          "allocations": 5120,
+          "reallocations": 0,
+          "requested_bytes": 63488
+        },
+        "after": {
+          "allocations": 1024,
+          "reallocations": 0,
+          "requested_bytes": 36864
+        }
+      },
+      {
+        "sample": 0,
+        "leaf": "namespace",
+        "iterations": 1024,
+        "before": {
+          "allocations": 1024,
+          "reallocations": 0,
+          "requested_bytes": 43008
+        },
+        "after": {
+          "allocations": 0,
+          "reallocations": 0,
+          "requested_bytes": 0
+        }
+      },
+      {
+        "sample": 1,
+        "leaf": "namespace",
+        "iterations": 1024,
+        "before": {
+          "allocations": 1024,
+          "reallocations": 0,
+          "requested_bytes": 43008
+        },
+        "after": {
+          "allocations": 0,
+          "reallocations": 0,
+          "requested_bytes": 0
+        }
+      },
+      {
+        "sample": 2,
+        "leaf": "namespace",
+        "iterations": 1024,
+        "before": {
+          "allocations": 1024,
+          "reallocations": 0,
+          "requested_bytes": 43008
+        },
+        "after": {
+          "allocations": 0,
+          "reallocations": 0,
+          "requested_bytes": 0
+        }
+      }
+    ]
+  }
+}
