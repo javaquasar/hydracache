@@ -108,3 +108,10 @@ fn owned_root_manager_requires_consumed_original_message_and_root_borrow() {
     }
     let _contract = signature;
 }
+
+#[cfg(test)]
+#[path = "diagnostic_owned_placement_tests.rs"]
+mod placement_tests;
+
+#[path = "diagnostic_owned_placement.rs"]
+mod placement;

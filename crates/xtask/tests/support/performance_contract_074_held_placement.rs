@@ -1,4 +1,6 @@
 //! Exact additive data-only boundary; no original live predicate is normalized.
+#[path = "performance_contract_074_owned_placement.rs"]
+mod owned_placement;
 const BASE: &str = "b23a503b";
 const PREFIX: &str = "tools/long-run-supervisor-074/src/";
 const HOOKS: &[(&str, &str)] = &[
@@ -40,7 +42,7 @@ All six runtime admission fields and renewal are false. No send/start, host
 creation, completion or fence release follows from this new signature.
 "##;
 pub(super) fn normalize(path: &str, raw: &str) -> String {
-    let mut text = raw.to_owned();
+    let mut text = owned_placement::normalize(path, raw);
     for (file, hook) in HOOKS {
         if path == format!("{PREFIX}{file}") {
             assert_eq!(

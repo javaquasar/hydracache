@@ -99,3 +99,6 @@ impl BoundGuardians<'_> {
         self.pair.cleanup_for_fixture();
     }
 }
+
+#[path = "diagnostic_root_placement_binding.rs"]
+mod placement;

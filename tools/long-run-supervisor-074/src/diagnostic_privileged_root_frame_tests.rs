@@ -11,6 +11,9 @@ mod creator;
 #[path = "diagnostic_privileged_controller_relay.rs"]
 mod relay;
 
+#[path = "diagnostic_owned_placement_live_tests.rs"]
+mod owned_placement;
+
 fn bundle() -> tempfile::TempDir {
     let source = PathBuf::from(std::env::var_os("HC074_START_MATERIAL_BUNDLE").unwrap());
     assert!(source.is_absolute());
