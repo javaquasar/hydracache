@@ -38,3 +38,17 @@ Record failures, never retry an unfinished attempt. Only local WSL fixtures and
 previously authorized local timesyncd stabilization with finally restoration
 are permitted. No server access/installation, supervisor operations, product
 load, original manager send, qualification, completion or fence release.
+
+## Calibration correction before any candidate
+
+The first A/A series at `bde39e34` reports GNU boot +4.55 percent with a
+95-percent interval above zero for identical source bodies; MSRV does not pass
+the adoption rule. This cannot establish a path optimization. Keep those raw
+controls. Before implementing any candidate, use the same opaque function-pointer
+caller loop for both bodies and a balanced ABBA followed by BAAB inside each
+block. Iterations, 15 blocks, three repetitions, 45 ratios, bootstrap seed and
+the adoption rule are unchanged; each block now averages four timings per body.
+Perform one new complete A/A series with this v2 harness. If significant A/A
+bias persists, do not adopt this small-effect candidate from these measurements.
+This is a local measurement correction, not a change to any admission clock,
+qualification workload or release threshold.

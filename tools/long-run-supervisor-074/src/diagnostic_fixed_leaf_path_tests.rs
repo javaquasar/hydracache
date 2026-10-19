@@ -86,25 +86,20 @@ fn fixed_leaf_path_preserves_original_trace_counts_and_sticky_drift() {
     assert!(origin.sample().is_err());
 }
 
-fn measure(candidate: bool, boot_leaf: bool, root: &File) -> u128 {
+fn measure_boot(call: fn(&File) -> Result<String, KernelError>, root: &File) -> u128 {
+    let call = std::hint::black_box(call);
+    let start = std::time::Instant::now();
+    for _ in 0..16384 {
+        std::hint::black_box(call(root)).unwrap();
+    }
+    start.elapsed().as_nanos()
+}
+type NamespaceCall = fn(&str) -> Result<(File, (u64, u64)), KernelError>;
+fn measure_namespace(call: NamespaceCall) -> u128 {
+    let call = std::hint::black_box(call);
     let start = std::time::Instant::now();
     for i in 0..16384 {
-        if boot_leaf {
-            std::hint::black_box(if candidate {
-                boot(root)
-            } else {
-                reference_boot(root)
-            })
-            .unwrap();
-        } else {
-            let name = NAMES[i % 4];
-            std::hint::black_box(if candidate {
-                namespace(name)
-            } else {
-                reference_namespace(name)
-            })
-            .unwrap();
-        }
+        std::hint::black_box(call(NAMES[i % 4])).unwrap();
     }
     start.elapsed().as_nanos()
 }
@@ -131,11 +126,20 @@ fn fixed_leaf_path_cost_abba() {
         } else {
             [false, true]
         } {
-            let values = [false, true, true, false]
-                .map(|candidate| measure(candidate, boot_leaf, &origin.root));
+            let values = [false, true, true, false, true, false, false, true].map(|candidate| {
+                if boot_leaf {
+                    measure_boot(if candidate { boot } else { reference_boot }, &origin.root)
+                } else {
+                    measure_namespace(if candidate {
+                        namespace
+                    } else {
+                        reference_namespace
+                    })
+                }
+            });
             println!(
                 "HC074-LEAF-PATH {}",
-                serde_json::json!({"block":block,"leaf":if boot_leaf {"boot"} else {"namespace"},"iterations":16384,"order":"ABBA","a_ns":(values[0]+values[3])/2,"b_ns":(values[1]+values[2])/2,"all_ns":values})
+                serde_json::json!({"block":block,"leaf":if boot_leaf {"boot"} else {"namespace"},"iterations":16384,"order":"ABBA-BAAB","a_ns":(values[0]+values[3]+values[5]+values[6])/4,"b_ns":(values[1]+values[2]+values[4]+values[7])/4,"all_ns":values})
             );
         }
     }
