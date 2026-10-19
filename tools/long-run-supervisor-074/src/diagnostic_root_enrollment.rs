@@ -142,3 +142,6 @@ mod kernel;
 #[cfg(test)]
 #[path = "diagnostic_root_enrollment_tests.rs"]
 mod tests;
+
+#[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+pub(crate) use kernel::{BoundGuardians, RootSource};

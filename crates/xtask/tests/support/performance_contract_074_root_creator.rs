@@ -1,4 +1,6 @@
 //! Exact test-only cuts; every pre-existing runtime predicate is preserved.
+#[path = "performance_contract_074_original_root_join.rs"]
+mod original_join;
 const BASE: &str = "4e940734";
 const MODULE: &str =
     "\n#[cfg(test)]\n#[path = \"diagnostic_root_creator_tests.rs\"]\nmod creator;\n";
@@ -58,6 +60,8 @@ platform = "linux"
 # END ROOT CREATOR GATE
 "####;
 pub(super) fn normalize(path: &str, raw: &str) -> String {
+    let current = original_join::normalize(path, raw);
+    let raw = current.as_str();
     let additions: Vec<&str> = match path {
         "tools/long-run-supervisor-074/src/diagnostic_root_guardian.rs" => {
             std::iter::once(MODULE).chain(HOOKS).collect()

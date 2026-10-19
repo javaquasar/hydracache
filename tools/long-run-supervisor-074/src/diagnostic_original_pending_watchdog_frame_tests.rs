@@ -111,3 +111,6 @@ fn original_pending_watchdog_frame_controls() {
         );
     }
 }
+
+#[path = "diagnostic_original_root_guardian_frame_tests.rs"]
+mod root_guardians;

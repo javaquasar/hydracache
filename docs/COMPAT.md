@@ -1740,3 +1740,23 @@ length, reserved bytes and truncation. Unknown versions or stages refuse; no
 migration, durable replay, reconnect or production reader exists. Only an
 explicit ignored libtest victim and owning local subreaper use this carrier.
 This does not change HCRG0742, its reader, or the original guardian v1 protocol.
+
+## Original frame binding for local root guardians
+
+The internal HCRG0742 context digest uses the domain
+hc074-original-root-context-v1 and a serde JSON tuple of actual owner IDs,
+original state, origins, bounds, ten descriptor roles, collector/custodian
+pidfd roles, fixed manager/client names, original serial, addressed writer
+aliases and pinned root device/inode. The attempt digest uses
+hc074-original-root-attempt-v1 and the original diagnostic identity.
+These are opaque same-build bindings, not credentials or a new trust reader.
+No persisted migration or cross-build replay is admitted.
+
+The exclusive original context supplies its own fence and existing timer;
+callers cannot provide a replacement deadline, context digest or owner PID.
+Preparation and enrollment retain the unchanged complete validation rounds.
+The crate-private pinned root verifies kernel objects but does not enroll a
+production host or authorize a held unit. Local Armed still grants no execution,
+completion or fence release. Existing v1 predicates and all source deadlines
+remain unchanged. Root kernel controls and nonroot original frame controls are
+separate gates, not proof of an end-to-end original privileged manager channel.

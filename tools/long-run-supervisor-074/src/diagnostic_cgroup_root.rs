@@ -244,3 +244,5 @@ mod transport;
 
 #[path = "diagnostic_root_guardian.rs"]
 mod guardian;
+
+pub(crate) use guardian::original::{BoundGuardians, RootSource};

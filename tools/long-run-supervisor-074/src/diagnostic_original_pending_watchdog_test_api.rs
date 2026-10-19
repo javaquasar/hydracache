@@ -77,3 +77,6 @@ impl<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>
         }
     }
 }
+
+#[path = "diagnostic_original_root_guardian_test_api.rs"]
+mod root_guardians;

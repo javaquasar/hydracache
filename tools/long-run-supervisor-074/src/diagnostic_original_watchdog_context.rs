@@ -209,3 +209,6 @@ mod tests;
 
 #[path = "diagnostic_original_pending_watchdog.rs"]
 pub(in super::super) mod pending;
+
+#[path = "diagnostic_original_root_guardians.rs"]
+pub(in super::super) mod root_guardians;

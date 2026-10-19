@@ -319,3 +319,6 @@ fn cgroup_root_guardian_fault_matrix() {
     }
     eprintln!("HC074-ROOT-GUARDIAN completed=true cases=16 creator_sigkill_tested=false original_armed=false completion=false");
 }
+
+#[path = "diagnostic_root_guardian_original_kernel_fault_tests.rs"]
+mod original_adapter;

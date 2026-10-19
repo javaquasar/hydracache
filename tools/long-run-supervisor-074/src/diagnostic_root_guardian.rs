@@ -582,3 +582,6 @@ mod tests;
 #[cfg(test)]
 #[path = "diagnostic_root_creator_tests.rs"]
 mod creator;
+
+#[path = "diagnostic_root_guardian_original_kernel.rs"]
+pub(crate) mod original;

@@ -113,3 +113,6 @@ fn original_watchdog_context_constructor_requires_an_exclusive_original_owner() 
     }
     let _contract = signature;
 }
+
+#[path = "diagnostic_original_root_guardian_tests.rs"]
+mod root_guardians;
