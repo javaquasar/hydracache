@@ -1,0 +1,14 @@
+HC074-ROOT-CREATOR image_sha256=3a0a57076cae07d53661022f1a58aeaab54a62eff62638173bcbbb49c8ed0903
+HC074-ROOT-CREATOR case=cut-1 seed=0x074c2022 cut=1 creator_sigkill=true expected_negative=False deadline=271691968231 original_authority=false completion=false
+HC074-ROOT-CREATOR case=cut-2 seed=0x074c2022 cut=2 creator_sigkill=true expected_negative=False deadline=271823635791 original_authority=false completion=false
+HC074-ROOT-CREATOR case=cut-3 seed=0x074c2022 cut=3 creator_sigkill=true expected_negative=False deadline=271917837141 original_authority=false completion=false
+HC074-ROOT-CREATOR case=cut-4 seed=0x074c2022 cut=4 creator_sigkill=true expected_negative=False deadline=272001751598 original_authority=false completion=false
+HC074-ROOT-CREATOR case=cut-5 seed=0x074c2022 cut=5 creator_sigkill=true expected_negative=False deadline=272093818360 original_authority=false completion=false
+HC074-ROOT-CREATOR case=first-dead seed=0x074c2022 cut=4 creator_sigkill=true expected_negative=False deadline=272177805607 original_authority=false completion=false
+HC074-ROOT-CREATOR case=second-dead seed=0x074c2022 cut=4 creator_sigkill=true expected_negative=False deadline=272265724698 original_authority=false completion=false
+HC074-ROOT-CREATOR case=first-stopped seed=0x074c2022 cut=4 creator_sigkill=true expected_negative=False deadline=272361716382 original_authority=false completion=false
+HC074-ROOT-CREATOR case=second-stopped seed=0x074c2022 cut=4 creator_sigkill=true expected_negative=False deadline=272453838691 original_authority=false completion=false
+HC074-ROOT-CREATOR case=lost-second-ack seed=0x074c2022 cut=1 creator_sigkill=true expected_negative=False deadline=272545848921 original_authority=false completion=false
+HC074-ROOT-CREATOR case=both-dead seed=0x074c2022 cut=4 creator_sigkill=true expected_negative=True deadline=272645807916 original_authority=false completion=false
+HC074-ROOT-CREATOR case=both-stopped seed=0x074c2022 cut=4 creator_sigkill=true expected_negative=True deadline=272857001026 original_authority=false completion=false
+HC074-ROOT-CREATOR completed=true cases=12 server=false product=false

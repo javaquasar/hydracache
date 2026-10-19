@@ -1,0 +1,20 @@
+HC074-ROOT-CREATOR image_sha256=4d8a7661e8b8dc80ed4565a10532c0fbd8fc76e11aaf33eaf47eb441f8eef1ba
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 1256 filtered out; finished in 0.00s
+
+
+Traceback (most recent call last):
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/tests/root_creator_sigkill.py", line 224, in <module>
+    main()
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/tests/root_creator_sigkill.py", line 214, in main
+    run(binary, libc, *case)
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/tests/root_creator_sigkill.py", line 100, in run
+    guardians = receive(peer, owner, 0, 2)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/tests/root_creator_sigkill.py", line 40, in receive
+    require(flags & ~socket.MSG_CMSG_CLOEXEC == 0 and raw == packet(stage), "cut carrier shape")
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/tests/original_custody_owner_loss.py", line 30, in require
+    raise RuntimeError(reason)
+RuntimeError: cut carrier shape

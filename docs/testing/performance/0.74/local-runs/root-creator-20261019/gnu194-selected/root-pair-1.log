@@ -1,0 +1,24 @@
+
+running 1 test
+HC074-ROOT-GUARDIAN seed=0x074c2021 local_only=true original_authority=false
+HC074-ROOT-GUARDIAN case=construction-3 exact_children_reaped=true signal_mask_unchanged=true
+HC074-ROOT-GUARDIAN case=construction-4 exact_children_reaped=true signal_mask_unchanged=true
+HC074-ROOT-GUARDIAN case=construction-5 exact_children_reaped=true signal_mask_unchanged=true
+HC074-ROOT-GUARDIAN case=construction-6 exact_children_reaped=true signal_mask_unchanged=true
+HC074-ROOT-GUARDIAN case=0 actual_target_sigkill=true fence_guardian_only=true completion=false
+HC074-ROOT-GUARDIAN case=1 actual_target_sigkill=true fence_guardian_only=true completion=false
+HC074-ROOT-GUARDIAN case=2 actual_target_sigkill=true fence_guardian_only=true completion=false
+HC074-ROOT-GUARDIAN case=3 actual_target_sigkill=true fence_guardian_only=true completion=false
+HC074-ROOT-GUARDIAN case=4 actual_target_sigkill=true fence_guardian_only=true completion=false
+HC074-ROOT-GUARDIAN case=5 actual_target_sigkill=true fence_guardian_only=true completion=false
+HC074-ROOT-GUARDIAN case=6 actual_target_sigkill=true fence_guardian_only=true completion=false
+HC074-ROOT-GUARDIAN case=7 actual_target_sigkill=true fence_guardian_only=true completion=false
+HC074-ROOT-GUARDIAN case=8 actual_target_sigkill=true fence_guardian_only=true completion=false
+HC074-ROOT-GUARDIAN case=9 actual_target_sigkill=true fence_guardian_only=true completion=false
+HC074-ROOT-GUARDIAN case=10 expected_negative=true all_writers=false
+HC074-ROOT-GUARDIAN case=11 expected_negative=true all_writers=false
+HC074-ROOT-GUARDIAN completed=true cases=16 creator_sigkill_tested=false original_armed=false completion=false
+test diagnostic_two_phase_launch::root_enrollment::kernel::tests::fault::guardians::cgroup_root_guardian_fault_matrix ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1261 filtered out; finished in 18.28s
+

@@ -1,0 +1,54 @@
+
+running 48 tests
+test diagnostic_two_phase_launch::held_barrier::prearmed::inherited_pending::tests::inherited_pending_layout_refuses_every_duplicate_and_negative_role ... ok
+test diagnostic_two_phase_launch::held_barrier::prearmed::inherited_pending::tests::inherited_pending_partial_clone_and_restore_failures_reap_only_owned_children ... ok
+test diagnostic_two_phase_launch::held_barrier::prearmed::inherited_pending::tests::inherited_pending_refuses_a_different_current_thread ... ok
+test diagnostic_two_phase_launch::held_barrier::prearmed::inherited_pending::tests::inherited_pending_uses_same_timer_ofd_and_excludes_unrelated_writers ... ok
+test diagnostic_two_phase_launch::held_barrier::prearmed::redundant::tests::redundant_guardian_closing_check_never_accepts_readable_surrogates ... ok
+test diagnostic_two_phase_launch::held_barrier::prearmed::redundant::tests::redundant_guardian_invalid_fence_refuses_before_any_child ... ok
+test diagnostic_two_phase_launch::held_barrier::prearmed::redundant::tests::redundant_guardian_retry_and_missing_readiness_are_sticky ... ok
+test diagnostic_two_phase_launch::held_barrier::prearmed::redundant::tests::redundant_guardian_thread_drift_refuses_before_first_send ... ok
+test diagnostic_two_phase_launch::held_barrier::prearmed::tests::prearmed_codec_refuses_every_changed_byte_and_shape ... ok
+test diagnostic_two_phase_launch::held_barrier::prearmed::tests::prearmed_proc_number_parser_is_bounded_and_exact ... ok
+test diagnostic_two_phase_launch::held_barrier::prearmed::tests::prearmed_rejected_multiple_and_truncated_rights_close_installed_aliases ... ok
+test diagnostic_two_phase_launch::held_barrier::prearmed::tests::prearmed_rights_credentials_and_rejected_alias_closure_are_actual ... ok
+test diagnostic_two_phase_launch::held_barrier::prearmed::tests::prearmed_thread_drift_refuses_before_any_enrollment_send ... ok
+test diagnostic_two_phase_launch::held_barrier::prearmed::tests::process::prearmed_owner_victim ... ignored, private nonroot subprocess for prearmed driver; no original authority
+test diagnostic_two_phase_launch::held_barrier::prearmed::tests::process::redundant::redundant_watchdog_owner_victim ... ignored, private nonroot redundant-guardian driver; no original authority
+test diagnostic_two_phase_launch::held_barrier::tests::two_phase_barrier_absolute_alarm_refuses_past_and_out_of_range ... ok
+test diagnostic_two_phase_launch::held_barrier::tests::two_phase_barrier_owned_kernel_fault_matrix ... ignored, owned nonroot fork/pidfd fault matrix; no product or systemd
+test diagnostic_two_phase_launch::held_barrier::tests::two_phase_barrier_packet_flags_reject_every_bit_except_cloexec_policy ... ok
+test diagnostic_two_phase_launch::held_barrier::tests::two_phase_barrier_queue_pressure_cannot_rearm_failed_send ... ok
+test diagnostic_two_phase_launch::held_barrier::tests::two_phase_barrier_send_is_sticky_after_success_failure_and_lost_ack ... ok
+test diagnostic_two_phase_launch::root_enrollment::kernel::guardian::creator::root_creator_victim ... ignored, external local root creator SIGKILL harness only; no service or product
+test diagnostic_two_phase_launch::root_enrollment::kernel::guardian::tests::root_guardian_existing_timer_inspection_never_renews_or_reads_counter ... ok
+test diagnostic_two_phase_launch::root_enrollment::kernel::guardian::tests::root_guardian_stack_packet_matches_every_byte_flag_and_credential ... ok
+test diagnostic_two_phase_launch::root_enrollment::kernel::guardian::tests::root_guardian_stack_receive_closes_all_extra_and_truncated_aliases ... ok
+test diagnostic_two_phase_launch::root_enrollment::kernel::guardian::tests::root_guardian_stack_rights_free_reply_and_empty_receive_are_distinct ... ok
+test diagnostic_two_phase_launch::root_enrollment::kernel::guardian::tests::root_guardian_whitelist_is_exact_and_regular_files_cannot_be_roots ... ok
+test diagnostic_two_phase_launch::root_enrollment::kernel::tests::cgroup_root_events_are_exact_bounded_and_never_a_completion_receipt ... ok
+test diagnostic_two_phase_launch::root_enrollment::kernel::tests::cgroup_root_regular_files_and_unsafe_components_cannot_be_kernel_roots ... ok
+test diagnostic_two_phase_launch::root_enrollment::kernel::tests::fault::cgroup_root_kernel_fault_matrix ... ignored, manual local root cgroup2 fixtures; no service, original start or product
+test diagnostic_two_phase_launch::root_enrollment::kernel::tests::fault::guardians::cgroup_root_guardian_fault_matrix ... ignored, manual isolated local-root guardian pair; no service or product
+test diagnostic_two_phase_launch::root_enrollment::kernel::tests::fault::guardians::original_adapter::root_guardian_original_kernel_controls ... ignored, manual isolated local root guardian adapter; no original channel or product
+test diagnostic_two_phase_launch::root_enrollment::kernel::transport::tests::cgroup_root_transport_empty_read_consumes_attempt_and_late_packet_cannot_retry ... ok
+test diagnostic_two_phase_launch::root_enrollment::kernel::transport::tests::cgroup_root_transport_every_bound_byte_refuses_and_closes_rights ... ok
+test diagnostic_two_phase_launch::root_enrollment::kernel::transport::tests::cgroup_root_transport_foreign_sender_process_is_not_the_pair_creator ... ok
+test diagnostic_two_phase_launch::root_enrollment::kernel::transport::tests::cgroup_root_transport_kernel_credentials_and_atomic_cloexec ... ok
+test diagnostic_two_phase_launch::root_enrollment::kernel::transport::tests::cgroup_root_transport_rejected_right_counts_and_truncation_close_all_aliases ... ok
+test diagnostic_two_phase_launch::root_enrollment::kernel::transport::tests::cgroup_root_transport_size_flags_missing_credentials_and_fake_roots_refuse ... ok
+test diagnostic_two_phase_launch::root_enrollment::kernel::transport::tests::fault::cgroup_root_transport_role_matrix ... ignored, explicit isolated local-root cgroup2 fixture only
+test diagnostic_two_phase_launch::root_enrollment::tests::root_enrollment_all_kinds_roundtrip_with_exact_offsets ... ok
+test diagnostic_two_phase_launch::root_enrollment::tests::root_enrollment_every_ack_byte_mutation_refuses_and_cannot_restore ... ok
+test diagnostic_two_phase_launch::root_enrollment::tests::root_enrollment_invalid_shapes_versions_fields_and_old_packets_refuse ... ok
+test diagnostic_two_phase_launch::root_enrollment::tests::root_enrollment_seeded_bindings_roundtrip_without_deadline_renewal ... ok
+root enrollment seed=0x74c2019
+test diagnostic_two_phase_launch::root_enrollment::tests::root_enrollment_send_uncertainty_and_ack_are_sticky_without_authority ... ok
+test diagnostic_two_phase_launch::tests::two_phase_launch_digest_binds_every_consent_claim_and_artifact_role ... ok
+test diagnostic_two_phase_launch::tests::two_phase_launch_document_bounds_and_unknown_shapes_refuse ... ok
+test diagnostic_two_phase_launch::tests::two_phase_launch_domain_signature_and_digest_refuse_independent_drift ... ok
+test diagnostic_two_phase_launch::tests::two_phase_launch_inherits_old_consent_bounds_without_new_clock_or_renewal ... ok
+test diagnostic_two_phase_launch::tests::two_phase_launch_roundtrip_is_expected_bytes_not_start_authority ... ok
+
+test result: ok. 40 passed; 0 failed; 8 ignored; 0 measured; 1214 filtered out; finished in 0.15s
+

@@ -1,0 +1,10 @@
+HC074-CUT-CARRIER case=valid expected_refusal=False installed_rights_closed=true
+HC074-CUT-CARRIER case=magic expected_refusal=True installed_rights_closed=true
+HC074-CUT-CARRIER case=reserved expected_refusal=True installed_rights_closed=true
+HC074-CUT-CARRIER case=short expected_refusal=True installed_rights_closed=true
+HC074-CUT-CARRIER case=truncated expected_refusal=True installed_rights_closed=true
+HC074-CUT-CARRIER case=stage expected_refusal=True installed_rights_closed=true
+HC074-CUT-CARRIER case=creator expected_refusal=True installed_rights_closed=true
+HC074-CUT-CARRIER case=extra-right expected_refusal=True installed_rights_closed=true
+HC074-CUT-CARRIER case=missing-right expected_refusal=True installed_rights_closed=true
+HC074-CUT-CARRIER completed=true cases=9
