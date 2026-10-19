@@ -962,3 +962,45 @@ registrations. Evidence binds each executed image to the same committed source
 and nine unchanged inputs. The context does not enroll the local guardian pair;
 that pair's separate regression harness must not be mistaken for original
 watchdog admission or a proof that every writer has stopped.
+
+## Original Pending guardian custody
+
+The [Pending plan](original-pending-watchdog-plan-20261019.md) consumes the same
+OriginalWatchdogContext into an original Pending owner. Its private mechanics
+adapter borrows the real fence and existing timer from original storage/alarm
+objects and checks their retained roles. Two independent children inherit the
+same fence OFD and aliases of the same timer OFD. No timer creation/read/rearm,
+flock operation, target enrollment, original send or barrier release is added.
+The old credentialed Pending wire/body and direct-child guard remain unchanged.
+
+The complete original context round executes before and after kernel setup:
+68 authentication calls, 68 signature calls and four channel checks in the
+healthy fixture. Revalidation keeps one full round and both Pending observations.
+The production wrapper retains the original frame, collector/custodian,
+receiver/channel and payload aliases. Its failure owner retains the refused
+original borrow; the distinct test probe cannot construct it.
+
+Parent cleanup is owned before signal restoration can fail. Cancellation
+signals and waits through the atomic clone3 pidfd of only a newly created,
+targetless Pending child. Partial setup cancels those new children while
+original custody remains live; cancellation is not completion or fence release.
+New parent-side timer aliases and process/channel handles are retained, not
+hidden behind a zero-FD-cost claim. Required original live checks and all
+300/60/10-second origins stay unchanged.
+
+The [contract](original-pending-watchdog-contract.toml) keeps Armed/target
+enrollment, responsiveness, common-mode guarantees, v2 artifact/cgroup/all-writer
+proof, original delivery and server admission closed. The
+[evidence](local-runs/original-pending-watchdog-20261019/README.md) covers ordinary
+kernel mechanics and full-frame refusal cases, not the future complete send,
+release and durable-write fault matrix. Actual target admission must bind trusted
+original artifacts/process/streams/cgroup rather than deleting the old local
+prototype's direct-child predicate or passing an asserted pidfd as authority.
+
+Both GNU compilers pass ten new Pending and fourteen retained context frame
+cases, with kernel/type/exchange/guardian regressions. The full source suite
+passes 274 controls and preserves all 376 old Rust bodies, protocols and harnesses.
+Earlier clock-preflight refusals remain refused; bounded environment settling
+precedes the unchanged strict probe and creates no admission. No source predicate
+or original bound is waived. Best-effort Drop is not a successful cleanup receipt:
+the future completion path must independently prove cessation before unlock.

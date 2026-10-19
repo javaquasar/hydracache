@@ -13456,3 +13456,76 @@ Rust bodies through exact additive registrations. Source/image/input receipts
 separate the new preparation path from the existing guardian fault harness,
 which does create local nonproduct children. None of these correctness counts
 is a throughput result or proof of production enrollment.
+
+## Pending guardians inherit the original timer and fence
+
+The borrowed context now has a consuming Pending preparation path. Its kernel
+adapter receives the actual borrowed fence and existing timer from retained
+original objects. It inherits the fence OFD into two independent children and
+duplicates only the existing timer OFD; it does not replace its absolute bound,
+consume its readiness or call flock. Acknowledged children retain exactly the fence,
+timer, creating-owner pidfd and private channel, shedding unrelated writer FDs.
+The existing credentialed Pending protocol and targetless child loop are reused
+unchanged. There is no target enrollment operation on the returned adapter.
+
+Creating a process also creates a cleanup obligation. The parent owns the
+atomic clone3 pidfd and cancellation object before restoring its signal mask.
+If restoration or the second clone fails, cleanup signals and waits through
+the exact child pidfd while the original borrow and collector/custodian still
+hold the original fence. Cancelling these Pending children cannot declare an
+attempt complete or establish that another process stopped writing.
+
+Original admission surrounds this kernel preparation with two unchanged full
+context rounds. The healthy fixture retains 68 authentication calls, 68
+signature calls and four manager-channel checks. Revalidation retains one
+full round with 34 of each and two channel checks, surrounded by Pending
+observations. A kernel or context failure refuses that same original chain;
+the failure owner retains its original borrow. The low-level borrowed-FD
+adapter alone cannot manufacture this original owner or a start permission.
+
+The [Pending evidence](../testing/performance/0.74/local-runs/original-pending-watchdog-20261019/README.md)
+separates four kernel controls from ten full-frame cases. The first checks
+actual shared timer OFD status, descriptor exclusion, exact signal-mask
+restoration, partial-child cleanup and thread ownership. The second includes
+real SIGKILL of either new guardian before closing admission, context drift and
+loss of original custody. The OFD-status mutation belongs only to an owned unit
+fixture; original frame timers are never modified. These tests establish a
+preparation/custody boundary, not a faster native/RESP path.
+
+The repeated old-image baseline supplies a useful environmental refusal:
+CLOCK_REALTIME moves backward by about 5.4 seconds while BOOTTIME advances.
+The unchanged kernel ordering check stops fixture preparation. A subsequent
+local clock observation runs before new receive/admission origins are created;
+it changes no clock, renews no window and does not guarantee later stability.
+Live frame checks remain active, and local WSL time synchronization is restored
+after each approved isolated gate. The backward step's external cause is not
+established by this trace.
+
+Pending still does not mean Armed or responsive. A stopped child can retain a
+nonterminal pidfd, and a targetless child parks with its fence on creator loss
+or expiry. Both-failure safety, authenticated executable/stream/process/cgroup
+enrollment, original delivery and all external writer copies remain separate
+obligations. The old direct-child predicate is not removed to admit a systemd
+worker. New timer aliases and child/channel owners also have a real resource
+cost; no zero-allocation or numerical performance improvement is claimed.
+
+Both GNU 1.94 and MSRV 1.88 pass ten new Pending and fourteen retained context
+frame cases on source `4b946bbe`. The full source suite passes 274 controls,
+preserving all 376 previous Rust bodies and old protocols/harnesses. Earlier
+clock-preflight failures remain refused evidence, not accepted cohorts. The
+final recipe adds bounded environment settling before the exact previous strict
+clock probe; all actual admission origins are created afterward, and every live
+frame predicate remains. This does not repair or establish the external clock's
+trust. Best-effort destructor cancellation is likewise not a completion receipt;
+future writer enrollment must provide independent, observed cessation proof.
+
+Evidence tooling exposed another boundary: a culture-sensitive BOM-prefix check
+treated ordinary ASCII as matching an ignorable Unicode prefix and removed the
+first character before hashing. A separate execution-recipe hash caught the
+mismatch. The corrected local inventory uses ordinal BOM comparison and six
+prefix/encoding controls, including a mutation of the first byte. Its eight
+inventory mutations remain separate. The failed inventory is retained, and an
+append-only audit binds all 182 unchanged files in four historical packets to
+their full Git baseline without rewriting them. Those legacy verifiers are not
+safe for new inventories; neither old nor corrected checksums grant runtime or
+release authority. Product signatures and binary digests did not use this helper.

@@ -136,3 +136,27 @@ original kernel/timer/fence ownership, executable/process/cgroup/stream binding,
 actual delivery and all-writer revocation remain. Durable completion, later cells,
 full new-boundary SIGKILL/lost-ACK coverage, reconnect and server admission stay
 closed; the original 300/60/10-second origins and all live checks are unchanged.
+
+## Original Pending custody result
+
+The [Pending custody packet](local-runs/original-pending-watchdog-20261019/README.md),
+source `4b946bbeee1341088c2a1af9504ae3ae4f57da60`, advances retained kernel inputs
+in step three. It consumes the original context into a private Pending owner,
+derives the actual fence/timer from original objects, and creates two targetless
+guardians using the unchanged child/Pending protocol. No original timer is
+created/read/rearmed and no target is enrolled. Two complete original rounds
+surround setup; revalidation retains one complete round. Errors refuse the same
+original chain, and partial-child cancellation precedes returning its borrow.
+
+GNU 1.94 and MSRV 1.88 each pass ten Pending plus fourteen old context frame
+cases, with kernel/type/exchange/guardian regressions retained. The 274-control
+source suite preserves all 376 previous Rust bodies, old protocols and harnesses.
+Clock-order/preflight refusals remain in the packet, separate from accepted
+cohorts; workstation settling precedes an unchanged strict probe and creates no
+admission. Original 300/60/10-second origins, predicates and old brackets remain.
+
+Pending is not Armed, responsiveness, all-writer cessation or a production
+topology. Actual v2 artifact/target/process/stream/cgroup enrollment, original
+delivery, durable exclusion/completion, later cells, complete new-boundary fault
+coverage and same-attempt reconnect remain. Do not bypass the old direct-child
+predicate or use Drop as a successful cleanup/fence-release receipt.

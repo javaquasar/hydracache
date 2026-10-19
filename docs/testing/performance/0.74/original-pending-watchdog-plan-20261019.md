@@ -43,3 +43,44 @@ Target/artifact/process/cgroup/stream binding, original delivery, completion,
 later cells, full new-boundary SIGKILL/lost-ACK coverage and reconnect remain
 subsequent gates. No installation, supervisor operation, dedicated-server action,
 product workload or expensive qualification is authorized by this package.
+
+## Local result
+
+Source `4b946bbeee1341088c2a1af9504ae3ae4f57da60` implements the consuming
+original Pending owner and private borrowed-FD mechanics. GNU 1.94 and MSRV 1.88
+each pass four kernel controls, one constructor type control, ten new full-frame
+cases, fourteen retained context cases, four retained context unit controls,
+thirty exchange controls and seventeen guardian regression cases. Healthy
+preparation retains 68 authentication calls, 68 signature calls and four channel
+checks; revalidation retains 34 of each and two channel checks. Original records,
+origins, absolute timer, 300/60/10-second offsets and fence custody remain checked.
+
+The full source suite passes 274 controls, preserving all 376 prior Rust bodies,
+old wire formats and imported harnesses through exact additive registrations.
+Windows passes 49 unit and 17 compile-fail controls. Both compilers pass all-target
+checking and strict all-feature Clippy. Formatting, registry/docs and the local
+non-promotable contract also pass. The [closed evidence packet](local-runs/original-pending-watchdog-20261019/README.md)
+binds source, executed image, runner and unchanged fixed inputs for each cohort.
+
+The old-image baseline and two later clock-preflight refusals are retained.
+They observe real backward CLOCK_REALTIME steps; no original admission starts
+in the refused preflights. A separate bounded workstation stabilization phase
+precedes the byte-equivalent original strict clock probe and all fixture creation.
+It neither changes clocks nor renews a request. Every actual frame still runs
+the unchanged live predicates and original bounds. Local WSL timesyncd is restored
+and verified after each gate; Windows/server time settings are untouched.
+
+This closes Pending custody binding only, not Armed or production enrollment.
+The adapter has no target/send/release/completion operation. Best-effort Drop
+cannot supply a cessation receipt. Trusted v2 artifacts, actual target/stream/
+cgroup binding and all-writer revocation remain before original delivery,
+durable completion, later cells, full new-boundary crash/lost-ACK coverage,
+reconnect or server admission. No numerical performance improvement is claimed.
+
+Final evidence sealing also fixes a local culture-sensitive BOM-prefix defect.
+The new packet uses ordinal comparison and six prefix/encoding controls while
+retaining the failed inventory. An append-only audit separately binds all 182
+unchanged files in four affected historical packets to their full Git baseline;
+their original files are not modified and their legacy verifiers must not create
+new inventories. This integrity repair changes no product signature, binary
+digest, original frame predicate or qualification artifact.
