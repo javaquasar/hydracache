@@ -1,0 +1,2 @@
+Verifier mutation checks passed: 16
+Boot comparison evidence verified; files=110; full_msrv_gate=True; server=false; product=false

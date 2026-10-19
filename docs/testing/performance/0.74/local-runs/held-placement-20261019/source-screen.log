@@ -1,0 +1,12 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 29.71s
+     Running tests\performance_contract_074.rs (target\debug\deps\performance_contract_074-affcfab4e5118d5a.exe)
+
+running 3 tests
+test live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::prearmed::redundant::original_context::pending::root_enrollment::transport::guardian::creator::original_join::retirement::preparation::leaf_path::owned_root::closing::boot_comparison::held_placement::held_placement_is_bounded_versioned_and_has_no_runtime_capability ... ok
+test live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::prearmed::redundant::original_context::pending::root_enrollment::transport::guardian::creator::original_join::retirement::preparation::leaf_path::owned_root::closing::boot_comparison::held_placement::held_placement_adapter_rejects_missing_duplicate_and_unrelated_drift ... ok
+test live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::prearmed::redundant::original_context::pending::root_enrollment::transport::guardian::creator::original_join::retirement::preparation::leaf_path::owned_root::closing::boot_comparison::held_placement::held_placement_preserves_all_423_sources_and_external_fault_harness ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 306 filtered out; finished in 37.29s
+

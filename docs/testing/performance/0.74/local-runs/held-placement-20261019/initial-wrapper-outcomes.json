@@ -1,0 +1,14 @@
+{
+  "source": "11e8a588a3b05b60f5c466e3fce7ca7ecb4ab923",
+  "recipe": "58d4c2238ea688672207a236890a3aa1b2bdc0936bf6c1ba85461e962f3a5a8d",
+  "compilers": [
+    "1.94.0",
+    "1.88.0"
+  ],
+  "expected_doc_tests": 20,
+  "actual_doc_tests": 247,
+  "wrapper_exit_code": 1,
+  "reason": "Wrong test selection after all Linux doc tests passed",
+  "receipt_produced": false,
+  "runtime_changed": false
+}

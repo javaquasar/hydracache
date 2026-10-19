@@ -1,0 +1,15 @@
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+error[E0432]: unresolved import `crate::diagnostic_two_phase_launch::held_placement`
+ --> tools\long-run-supervisor-074\src\diagnostic_held_placement_tests.rs:2:5
+  |
+2 | use crate::diagnostic_two_phase_launch::held_placement as placement;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no `held_placement` in `diagnostic_two_phase_launch`
+  |
+help: consider importing this module instead
+  |
+2 | use crate::diagnostic_two_phase_launch::tests::held_placement as placement;
+  |                                         +++++++
+
+For more information about this error, try `rustc --explain E0432`.
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
