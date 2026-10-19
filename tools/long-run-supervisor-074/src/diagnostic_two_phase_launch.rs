@@ -182,3 +182,6 @@ mod tests;
 
 #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
 pub(crate) use held_barrier::InheritedPending;
+
+#[path = "diagnostic_root_enrollment.rs"]
+pub mod root_enrollment;

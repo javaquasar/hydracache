@@ -1,4 +1,6 @@
 //! Exact old predicates and private borrowed original Pending custody only.
+#[path = "performance_contract_074_cgroup_root_enrollment.rs"]
+mod root_enrollment;
 const BASE: &str = "f94b4b56";
 fn addition(path: &str) -> Option<&'static str> {
     Some(match path {
@@ -53,6 +55,8 @@ platform = "linux"
     raw.replacen(REGISTRY, "", 1)
 }
 pub(super) fn normalize(path: &str, raw: &str) -> String {
+    let current = root_enrollment::normalize(path, raw);
+    let raw = current.as_str();
     if path == "docs/testing/gated-test-registry.toml" {
         return strip_registry(raw);
     }

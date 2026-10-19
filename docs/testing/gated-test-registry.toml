@@ -12052,3 +12052,39 @@ platform = "linux"
 [gate.command.env]
 
 # END ORIGINAL PENDING WATCHDOG GATE
+
+# BEGIN CGROUP ROOT ENROLLMENT GATE
+
+[[gate]]
+id = "tool.hydracache-long-run-supervisor-074.cgroup-root-fault-controls"
+kind = "external_tool"
+source = "tools/long-run-supervisor-074/src/diagnostic_cgroup_root_fault_tests.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "hydracache_long_run_supervisor_074"
+test = "cgroup_root_kernel_fault_matrix"
+cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
+env = ""
+reason = "manual isolated local root cgroup2 fixtures; no systemd or product"
+tier = "manual"
+required_features = []
+required_env = ["HC074_ROOT_FAULT_FIXTURE"]
+required_tools = ["cargo"]
+timeout_seconds = 180
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","cgroup_root_kernel_fault_matrix","--","--ignored","--nocapture","--test-threads=1"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+
+# END CGROUP ROOT ENROLLMENT GATE

@@ -1662,3 +1662,27 @@ completed harness command. Reader lifetime is the original private temporary
 socket/directory, with no reconnect, adoption, downgrade or production consumer.
 Both guardians still use unchanged hc074-prearmed-guardian-v1. This composition
 adds no production protocol, original authority, completion or unlock operation.
+
+
+## Attempt cgroup root enrollment packet
+
+hc074-cgroup-root-enrollment-v2 uses exactly 104 bytes: HCRG0742 magic,
+one kind byte (Enroll=1, Armed=2, Refused=3, Revoking=4), seven zero reserved
+bytes, 32-byte attempt digest, little-endian root device/inode (8 bytes each),
+little-endian absolute BOOTTIME deadline (8 bytes), and 32-byte original-context
+digest. Digests must be nonzero, root IDs positive and deadline in 1..=i64::MAX.
+Unknown version/kind, reserved bytes, invalid fields or any size change refuse.
+The reader window is this version only; old guardian-v1 packets cannot upgrade
+or downgrade. There is no migration, reconnect or new durable replay slot.
+
+This package defines data-only bytes and private pinned cgroup2 mechanics, not
+an authenticated transport, Armed capability or original-start permit. The
+future Enroll transport must require exact creator credentials and three
+atomic-CLOEXEC rights in directory/kill/events order, validate those roles and
+retain the root before Armed. Replies carry no rights and must echo every bound
+field. A model sender consumes its one send before the syscall boundary;
+missing or malformed ACK cannot reset it. Context/deadline bytes are claims,
+not live observations or permission to renew the original 300/60/10 bounds.
+Existing v1 guardian, signed v2 launch and original worker projections remain
+unchanged. Root kill submission or empty-at-read never authorizes completion,
+fence release or server execution, including when external pipe aliases remain.
