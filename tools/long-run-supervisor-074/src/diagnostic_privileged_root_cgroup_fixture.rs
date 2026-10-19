@@ -181,46 +181,62 @@ impl Drop for Cgroup {
         self.writers.clear();
         if let Some(pins) = self.guardians.take() {
             for pin in pins {
-                let n = unsafe {
-                    libc::syscall(
-                        libc::SYS_pidfd_send_signal,
-                        pin.as_raw_fd(),
-                        libc::SIGKILL,
-                        0usize,
-                        0u32,
-                    )
-                };
-                assert!(
-                    n == 0 || std::io::Error::last_os_error().raw_os_error() == Some(libc::ESRCH)
-                );
-                loop {
-                    let mut info: libc::siginfo_t = unsafe { std::mem::zeroed() };
-                    if unsafe {
-                        libc::waitid(
-                            libc::P_PIDFD,
-                            pin.as_raw_fd() as _,
-                            &mut info,
-                            libc::WEXITED,
-                        )
-                    } == 0
-                    {
-                        break;
-                    }
-                    let error = std::io::Error::last_os_error().raw_os_error();
-                    if error == Some(libc::ECHILD) {
-                        // Original controls may already have reaped this exact
-                        // pinned guardian while unwinding an enrollment refusal.
-                        dead(&pin);
-                        break;
-                    }
-                    assert_eq!(error, Some(libc::EINTR));
-                }
+                cleanup_guardian(&pin);
             }
         }
         self.empty();
         fs::remove_dir(self.path.join("nested")).unwrap();
         fs::remove_dir(&self.path).unwrap();
     }
+}
+fn cleanup_guardian(pin: &File) {
+    let n = unsafe {
+        libc::syscall(
+            libc::SYS_pidfd_send_signal,
+            pin.as_raw_fd(),
+            libc::SIGKILL,
+            0usize,
+            0u32,
+        )
+    };
+    assert!(n == 0 || std::io::Error::last_os_error().raw_os_error() == Some(libc::ESRCH));
+    loop {
+        let mut info: libc::siginfo_t = unsafe { std::mem::zeroed() };
+        if unsafe {
+            libc::waitid(
+                libc::P_PIDFD,
+                pin.as_raw_fd() as _,
+                &mut info,
+                libc::WEXITED,
+            )
+        } == 0
+        {
+            break;
+        }
+        let error = std::io::Error::last_os_error().raw_os_error();
+        if error == Some(libc::ECHILD) {
+            // Original controls may already have reaped this exact guardian.
+            dead(pin);
+            break;
+        }
+        assert_eq!(error, Some(libc::EINTR));
+    }
+}
+#[test]
+fn root_guardian_fixture_cleanup_accepts_only_terminal_already_reaped_pidfd() {
+    let mut child = Command::new("/bin/sleep").arg("30").spawn().unwrap();
+    let fd = unsafe { libc::syscall(libc::SYS_pidfd_open, child.id(), 0u32) };
+    if fd < 0 {
+        child.kill().unwrap();
+        child.wait().unwrap();
+        panic!("cleanup test pidfd");
+    }
+    let pin = unsafe { File::from_raw_fd(fd as _) };
+    cleanup_guardian(&pin);
+    dead(&pin);
+    child.wait().unwrap();
+    cleanup_guardian(&pin); // ECHILD after the exact child has been reaped.
+    dead(&pin);
 }
 pub(super) fn drain(reader: &mut File) -> bool {
     let mut bytes = [0; 4096];
