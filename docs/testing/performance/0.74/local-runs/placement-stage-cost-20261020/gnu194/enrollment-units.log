@@ -1,0 +1,11 @@
+
+running 5 tests
+test diagnostic_two_phase_launch::root_enrollment::tests::root_enrollment_all_kinds_roundtrip_with_exact_offsets ... ok
+test diagnostic_two_phase_launch::root_enrollment::tests::root_enrollment_every_ack_byte_mutation_refuses_and_cannot_restore ... ok
+test diagnostic_two_phase_launch::root_enrollment::tests::root_enrollment_invalid_shapes_versions_fields_and_old_packets_refuse ... ok
+test diagnostic_two_phase_launch::root_enrollment::tests::root_enrollment_seeded_bindings_roundtrip_without_deadline_renewal ... ok
+test diagnostic_two_phase_launch::root_enrollment::tests::root_enrollment_send_uncertainty_and_ack_are_sticky_without_authority ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 1304 filtered out; finished in 0.00s
+
+root enrollment seed=0x74c2019

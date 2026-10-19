@@ -1,0 +1,70 @@
+               total        used        free      shared  buff/cache   available
+Mem:           15652         525       14912           3         408       15126
+Swap:           4096           0        4096
+your 131072x1 screen size is bogus. expect trouble
+    PID ELAPSED %CPU S COMMAND
+    313       0  100 R landscape-sysin
+    113       2 41.6 S (udev-worker)
+      1       2 19.2 S systemd
+    171       1 15.4 S snapd
+    213       1 12.0 S unattended-upgr
+    121       2 10.2 S (udev-worker)
+    172       1  7.7 S systemd-logind
+    175       1  6.6 S wsl-pro-service
+    152       1  5.6 S systemd-resolve
+     52       2  5.2 S systemd-journal
+    100       2  3.8 S systemd-udevd
+    253       1  3.8 S systemd-timedat
+    193       1  3.0 S rsyslogd
+    155       1  2.1 S systemd-timesyn
+    145       2  1.9 S (udev-worker)
+    165       1  1.1 S dbus-daemon
+    122       2  0.9 S (udev-worker)
+    105       2  0.9 S (udev-worker)
+    115       2  0.9 S (udev-worker)
+    125       2  0.4 S (udev-worker)
+    119       2  0.4 S (udev-worker)
+    120       2  0.4 S (udev-worker)
+    106       2  0.4 S (udev-worker)
+      2       2  0.0 S init-systemd(Ub
+      6       2  0.0 S init
+    107       2  0.0 S (udev-worker)
+    108       2  0.0 S (udev-worker)
+    109       2  0.0 S (udev-worker)
+    111       2  0.0 S (udev-worker)
+    117       2  0.0 S (udev-worker)
+    118       2  0.0 S (udev-worker)
+    123       2  0.0 S (udev-worker)
+    124       2  0.0 S (udev-worker)
+    128       2  0.0 S (udev-worker)
+    129       2  0.0 S (udev-worker)
+    130       2  0.0 S (udev-worker)
+    132       2  0.0 S (udev-worker)
+    134       2  0.0 S (udev-worker)
+    136       2  0.0 S (udev-worker)
+    137       2  0.0 S (udev-worker)
+    138       2  0.0 S (udev-worker)
+    139       2  0.0 S (udev-worker)
+    140       2  0.0 S (udev-worker)
+    141       2  0.0 S (udev-worker)
+    142       2  0.0 S (udev-worker)
+    143       2  0.0 S (udev-worker)
+    144       2  0.0 S (udev-worker)
+    164       1  0.0 S cron
+    189       1  0.0 S agetty
+    196       1  0.0 S agetty
+    296       0  0.0 S login
+    297       0  0.0 S sh
+    298       0  0.0 S run-parts
+    304       0  0.0 S 50-landscape-sy
+    311       0  0.0 S 50-landscape-sy
+    314       0  0.0 S SessionLeader
+    315       0  0.0 S Relay(316)
+    316       0  0.0 R ps
+time (GNU Time) UNKNOWN
+Copyright (C) 2018 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+Written by David Keppel, David MacKenzie, and Assaf Gordon.

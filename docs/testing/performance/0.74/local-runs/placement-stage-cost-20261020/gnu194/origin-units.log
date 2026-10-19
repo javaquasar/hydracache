@@ -1,0 +1,32 @@
+
+running 24 tests
+test diagnostic_kernel_admission::origin::boot_buffer_tests::boot_buffer_canonical_empty_short_and_overlength_differential ... ok
+test diagnostic_kernel_admission::origin::boot_buffer_tests::boot_buffer_empty_site_and_document_trace_are_preserved ... ok
+test diagnostic_kernel_admission::origin::boot_buffer_tests::boot_buffer_every_single_byte_mutation_matches_old_decoder ... ok
+test diagnostic_kernel_admission::origin::boot_buffer_tests::boot_buffer_io_faults_are_preserved_without_retry ... ok
+test diagnostic_kernel_admission::origin::boot_buffer_tests::boot_buffer_real_positional_reads_match_without_changing_cursor ... ok
+test diagnostic_kernel_admission::origin::boot_buffer_tests::boot_buffer_seeded_documents_match_old_decoder ... HC074-BOOT-DIFFERENTIAL seed=0x0740b038 generated=1024 mutations=9472 single_read=true
+ok
+test diagnostic_kernel_admission::origin::boot_buffer_tests::boot_buffer_short_read_is_not_retried_and_does_not_claim_eof ... ok
+test diagnostic_kernel_admission::origin::boot_comparison_tests::boot_comparison_byte_mutations_lengths_and_original_failure_sites ... ok
+test diagnostic_kernel_admission::origin::boot_comparison_tests::boot_comparison_fresh_trace_counts_and_original_sticky_drift ... ok
+test diagnostic_kernel_admission::origin::boot_comparison_tests::boot_comparison_real_proc_and_filesystem_failures_match ... ok
+test diagnostic_kernel_admission::origin::boot_comparison_tests::boot_comparison_seeded_documents_and_single_read_faults ... HC074-BOOT-COMPARE seed=0x074cb036 documents=1024 mutations=9728 unchanged_read=true
+ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::fixed_leaf_path_cost_abba ... ignored, manual local paired fixed path leaf costs; no admission or product workload
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::fixed_leaf_path_differential_identity_flags_and_unknown_names ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::fixed_leaf_path_preserves_original_trace_counts_and_sticky_drift ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::fixed_leaf_path_single_cost ... ignored, manual actual leaf in one image; external crossover only, no admission or product
+test diagnostic_kernel_admission::origin::manager_binding::tests::manager_receiver_binding_cannot_mint_from_refused_or_wrong_original_clock ... ok
+test diagnostic_kernel_admission::origin::manager_binding::tests::manager_receiver_binding_retains_actual_origin_without_packet_or_claim_adoption ... ok
+test diagnostic_kernel_admission::origin::manager_binding::tests::manager_receiver_binding_wrong_boot_type_object_and_descriptor_latch ... ok
+test diagnostic_kernel_admission::origin::tests::kernel_refusal_capture_seeded_clock_and_namespace_classification ... kernel_refusal_classification seed=0x0740c096 clock_cases=6 namespace_cases=3 historical_cause_proved=false
+ok
+test diagnostic_kernel_admission::origin::tests::kernel_time_original_proc_boot_and_namespace_drift_refuse ... ok
+test diagnostic_kernel_admission::origin::tests::kernel_time_packet_hold_has_exclusive_boottime_boundary ... ok
+test diagnostic_kernel_admission::origin::tests::kernel_time_timespec_and_ordering_edges_refuse ... ok
+test diagnostic_kernel_admission::origin::tests::kernel_worker_context_namespace_type_and_object_are_independent_checks ... ok
+test diagnostic_kernel_admission::origin::tests::kernel_worker_context_original_typed_namespaces_and_drift_refuse ... ok
+
+test result: ok. 22 passed; 0 failed; 2 ignored; 0 measured; 1285 filtered out; finished in 0.03s
+

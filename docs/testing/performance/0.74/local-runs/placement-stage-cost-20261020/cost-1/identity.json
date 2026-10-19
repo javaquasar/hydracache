@@ -1,0 +1,21 @@
+{
+  "source": "bb426070f7bcccab8e182fca100b62cba420aa21",
+  "images": [
+    "1d0f3cce19d538ffb64606b418cc25b5d620ceedd1dc3c227d67766b9fed3aa7  /home/artur/.cache/hydracache-074-194-check/release/deps/hydracache_long_run_supervisor_074-b26b156d3dcd0098",
+    "6f67481a1b63aaa30e09e47d272ef64916884649b86884e2935a173f30a4b412  /home/artur/.cache/hydracache-074-188-check/release/deps/hydracache_long_run_supervisor_074-d2aba7f58d773234"
+  ],
+  "recipe": "51991f95f0101185608b7a9915d837472305f16293086226bf3062163c3281e1",
+  "clock_before": "active",
+  "original_offsets_ns": [
+    300000000000,
+    60000000000,
+    10000000000
+  ],
+  "test_issuers": true,
+  "actual_systemd_placement": false,
+  "original_send": false,
+  "completion": false,
+  "server": false,
+  "supervisor": false,
+  "product": false
+}

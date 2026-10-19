@@ -1,0 +1,142 @@
+[
+  {
+    "compiler": "194",
+    "case": "healthy",
+    "returned": true,
+    "first_custody_age_ns": 5396813878,
+    "last_custody_age_ns": 6856393390,
+    "causal_first_refusal": null,
+    "raw_first_refusals": [],
+    "boot": "300aaaba-77ef-4c35-b019-a167d0151f16"
+  },
+  {
+    "compiler": "194",
+    "case": "revalidate",
+    "returned": true,
+    "first_custody_age_ns": 5361425541,
+    "last_custody_age_ns": 7190441652,
+    "causal_first_refusal": null,
+    "raw_first_refusals": [],
+    "boot": "300aaaba-77ef-4c35-b019-a167d0151f16"
+  },
+  {
+    "compiler": "194",
+    "case": "unarmed",
+    "returned": true,
+    "first_custody_age_ns": 5285895615,
+    "last_custody_age_ns": 6207782084,
+    "causal_first_refusal": null,
+    "raw_first_refusals": [],
+    "boot": "300aaaba-77ef-4c35-b019-a167d0151f16"
+  },
+  {
+    "compiler": "194",
+    "case": "wrong-key",
+    "returned": true,
+    "first_custody_age_ns": 5349645109,
+    "last_custody_age_ns": 6707673696,
+    "causal_first_refusal": null,
+    "raw_first_refusals": [],
+    "boot": "300aaaba-77ef-4c35-b019-a167d0151f16"
+  },
+  {
+    "compiler": "194",
+    "case": "different-consent",
+    "returned": true,
+    "first_custody_age_ns": 5118537789,
+    "last_custody_age_ns": 6851106274,
+    "causal_first_refusal": null,
+    "raw_first_refusals": [],
+    "boot": "300aaaba-77ef-4c35-b019-a167d0151f16"
+  },
+  {
+    "compiler": "194",
+    "case": "foreign-root",
+    "returned": true,
+    "first_custody_age_ns": 5342903442,
+    "last_custody_age_ns": 6708969827,
+    "causal_first_refusal": null,
+    "raw_first_refusals": [],
+    "boot": "300aaaba-77ef-4c35-b019-a167d0151f16"
+  },
+  {
+    "compiler": "194",
+    "case": "trust-drift",
+    "returned": true,
+    "first_custody_age_ns": 6152439185,
+    "last_custody_age_ns": 7513476208,
+    "causal_first_refusal": null,
+    "raw_first_refusals": [],
+    "boot": "300aaaba-77ef-4c35-b019-a167d0151f16"
+  },
+  {
+    "compiler": "188",
+    "case": "healthy",
+    "returned": true,
+    "first_custody_age_ns": 6158348717,
+    "last_custody_age_ns": 7795883667,
+    "causal_first_refusal": null,
+    "raw_first_refusals": [],
+    "boot": "300aaaba-77ef-4c35-b019-a167d0151f16"
+  },
+  {
+    "compiler": "188",
+    "case": "revalidate",
+    "returned": true,
+    "first_custody_age_ns": 5384520155,
+    "last_custody_age_ns": 7185172843,
+    "causal_first_refusal": null,
+    "raw_first_refusals": [],
+    "boot": "300aaaba-77ef-4c35-b019-a167d0151f16"
+  },
+  {
+    "compiler": "188",
+    "case": "unarmed",
+    "returned": true,
+    "first_custody_age_ns": 5528315963,
+    "last_custody_age_ns": 6619650901,
+    "causal_first_refusal": null,
+    "raw_first_refusals": [],
+    "boot": "300aaaba-77ef-4c35-b019-a167d0151f16"
+  },
+  {
+    "compiler": "188",
+    "case": "wrong-key",
+    "returned": true,
+    "first_custody_age_ns": 6412030122,
+    "last_custody_age_ns": 8553517721,
+    "causal_first_refusal": null,
+    "raw_first_refusals": [],
+    "boot": "300aaaba-77ef-4c35-b019-a167d0151f16"
+  },
+  {
+    "compiler": "188",
+    "case": "different-consent",
+    "returned": true,
+    "first_custody_age_ns": 6265549137,
+    "last_custody_age_ns": 8061296705,
+    "causal_first_refusal": null,
+    "raw_first_refusals": [],
+    "boot": "300aaaba-77ef-4c35-b019-a167d0151f16"
+  },
+  {
+    "compiler": "188",
+    "case": "foreign-root",
+    "returned": true,
+    "first_custody_age_ns": 6508555458,
+    "last_custody_age_ns": 8130828809,
+    "causal_first_refusal": null,
+    "raw_first_refusals": [],
+    "boot": "300aaaba-77ef-4c35-b019-a167d0151f16"
+  },
+  {
+    "compiler": "188",
+    "case": "trust-drift",
+    "returned": true,
+    "first_custody_age_ns": 6548053631,
+    "last_custody_age_ns": 8282345265,
+    "causal_first_refusal": null,
+    "raw_first_refusals": [],
+    "boot": "300aaaba-77ef-4c35-b019-a167d0151f16"
+  }
+]

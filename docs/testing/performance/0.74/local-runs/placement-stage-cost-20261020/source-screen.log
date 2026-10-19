@@ -1,0 +1,11 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 19.88s
+     Running tests\performance_contract_074.rs (target\debug\deps\performance_contract_074-affcfab4e5118d5a.exe)
+
+running 3 tests
+test live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::prearmed::redundant::original_context::pending::root_enrollment::transport::guardian::creator::original_join::retirement::preparation::leaf_path::owned_root::closing::boot_comparison::held_placement::owned_placement::preparation::cost::placement_stage_cost_is_observational_and_cannot_be_a_healthy_gate ... ok
+test live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::prearmed::redundant::original_context::pending::root_enrollment::transport::guardian::creator::original_join::retirement::preparation::leaf_path::owned_root::closing::boot_comparison::held_placement::owned_placement::preparation::cost::placement_stage_cost_adapter_rejects_missing_duplicate_and_changed_original ... ok
+test live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::prearmed::redundant::original_context::pending::root_enrollment::transport::guardian::creator::original_join::retirement::preparation::leaf_path::owned_root::closing::boot_comparison::held_placement::owned_placement::preparation::cost::placement_stage_cost_preserves_all_431_sources_wire_and_harness ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 315 filtered out; finished in 32.98s
+

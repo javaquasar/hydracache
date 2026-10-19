@@ -1,0 +1,11 @@
+{
+  "source": "bb426070f7bcccab8e182fca100b62cba420aa21",
+  "cost_observations": 3,
+  "local_live_gate_passed": false,
+  "healthy_gate": false,
+  "clock_after": "active",
+  "original_send": false,
+  "server": false,
+  "supervisor": false,
+  "product": false
+}

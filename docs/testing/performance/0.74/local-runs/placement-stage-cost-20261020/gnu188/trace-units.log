@@ -1,0 +1,21 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `release` profile [optimized] target(s) in 4m 42s
+
+running 5 tests
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::owned_placement::preparation_trace::tests::preparation_trace_capture_resumes_the_same_panic_without_retry ... HC074-PLACEMENT-PREPARATION {"age":{"sites":[{"calls":0,"first":null,"first_refusal":null,"last":null},{"calls":0,"first":null,"first_refusal":null,"last":null},{"calls":0,"first":null,"first_refusal":null,"last":null}]},"case":"unit-panic","causal":{"first":null,"first_refusal":null,"last":null,"observations":0},"deadline_changed":false,"new_clock":false,"original_send":false,"product":false,"returned":false,"schedule_changed":false,"server":false}
+ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::owned_placement::preparation_trace::tests::preparation_trace_copies_already_received_kernel_time_and_boot_exactly ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::owned_placement::preparation_trace::tests::preparation_trace_nested_and_concurrent_captures_restore_outer_facts ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::owned_placement::preparation_trace::tests::preparation_trace_retains_first_raw_refusal_and_original_panic_identity ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::owned_placement::preparation_trace::tests::preparation_trace_returns_the_original_value_error_and_calls_once ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 1304 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-188-check/release/deps/hydracache_long_run_supervisor_074-d2aba7f58d773234)
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::owned_placement::preparation_trace::tests::preparation_trace_capture_resumes_the_same_panic_without_retry' panicked at tools/long-run-supervisor-074/src/diagnostic_placement_preparation_trace.rs:85:17:
+Box<dyn Any>
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::owned_placement::preparation_trace::tests::preparation_trace_retains_first_raw_refusal_and_original_panic_identity' panicked at tools/long-run-supervisor-074/src/diagnostic_placement_preparation_trace.rs:64:13:
+Box<dyn Any>

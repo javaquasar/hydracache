@@ -1,0 +1,26 @@
+[
+  {
+    "attempt": 0,
+    "wsl_exit_code": 0,
+    "returned": true,
+    "healthy_gate": false,
+    "fixture_scan_exit_code": 0,
+    "fixture_roots": []
+  },
+  {
+    "attempt": 1,
+    "wsl_exit_code": 0,
+    "returned": true,
+    "healthy_gate": false,
+    "fixture_scan_exit_code": 0,
+    "fixture_roots": []
+  },
+  {
+    "attempt": 2,
+    "wsl_exit_code": 0,
+    "returned": true,
+    "healthy_gate": false,
+    "fixture_scan_exit_code": 0,
+    "fixture_roots": []
+  }
+]

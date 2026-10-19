@@ -1,0 +1,338 @@
+[
+  {
+    "attempt": 0,
+    "returned": true,
+    "wall_ns": 10720160074,
+    "phases": [
+      {
+        "authentication_calls": 102,
+        "authentication_ns": 6407824,
+        "phase": "enroll-join-cleanup",
+        "signature_calls": 102,
+        "signature_ns": 5050863,
+        "wall_ns": 615177799,
+        "worker_policy_calls": 0,
+        "worker_policy_ns": 0
+      },
+      {
+        "authentication_calls": 11,
+        "authentication_ns": 693566,
+        "phase": "cold-setup-original-admission",
+        "signature_calls": 11,
+        "signature_ns": 539445,
+        "wall_ns": 432665647,
+        "worker_policy_calls": 2,
+        "worker_policy_ns": 175805
+      },
+      {
+        "authentication_calls": 472,
+        "authentication_ns": 34822900,
+        "phase": "fence-reserve-publish-challenge",
+        "signature_calls": 472,
+        "signature_ns": 27116552,
+        "wall_ns": 2849557242,
+        "worker_policy_calls": 0,
+        "worker_policy_ns": 0
+      },
+      {
+        "authentication_calls": 168,
+        "authentication_ns": 15691760,
+        "phase": "response-consent",
+        "signature_calls": 168,
+        "signature_ns": 12652447,
+        "wall_ns": 1060369020,
+        "worker_policy_calls": 0,
+        "worker_policy_ns": 0
+      },
+      {
+        "authentication_calls": 782,
+        "authentication_ns": 64721126,
+        "phase": "outputs",
+        "signature_calls": 782,
+        "signature_ns": 48749155,
+        "wall_ns": 4683842729,
+        "worker_policy_calls": 0,
+        "worker_policy_ns": 0
+      },
+      {
+        "authentication_calls": 34,
+        "authentication_ns": 2621485,
+        "phase": "enrollment-frame",
+        "signature_calls": 34,
+        "signature_ns": 2171058,
+        "wall_ns": 222943974,
+        "worker_policy_calls": 0,
+        "worker_policy_ns": 0
+      },
+      {
+        "authentication_calls": 34,
+        "authentication_ns": 2476060,
+        "phase": "fixed-manager-message",
+        "signature_calls": 34,
+        "signature_ns": 2066483,
+        "wall_ns": 206709434,
+        "worker_policy_calls": 0,
+        "worker_policy_ns": 0
+      },
+      {
+        "authentication_calls": 102,
+        "authentication_ns": 6786387,
+        "phase": "owned-root-preparation",
+        "signature_calls": 102,
+        "signature_ns": 5348558,
+        "wall_ns": 648866381,
+        "worker_policy_calls": 0,
+        "worker_policy_ns": 0
+      }
+    ],
+    "kernel_counts": [
+      17862,
+      41549,
+      83101,
+      83101,
+      160415,
+      320831,
+      641664,
+      20782,
+      17862,
+      487033
+    ],
+    "live_counts": [
+      8930,
+      17861,
+      35725,
+      35992,
+      17862,
+      8931
+    ],
+    "last_custody_age_ns": 7582271824,
+    "user_seconds": 3.3,
+    "system_seconds": 6.98,
+    "max_rss_kbytes": 14484,
+    "major_faults": 0
+  },
+  {
+    "attempt": 1,
+    "returned": true,
+    "wall_ns": 11162554913,
+    "phases": [
+      {
+        "authentication_calls": 102,
+        "authentication_ns": 6863264,
+        "phase": "enroll-join-cleanup",
+        "signature_calls": 102,
+        "signature_ns": 5243692,
+        "wall_ns": 656758735,
+        "worker_policy_calls": 0,
+        "worker_policy_ns": 0
+      },
+      {
+        "authentication_calls": 11,
+        "authentication_ns": 1306995,
+        "phase": "cold-setup-original-admission",
+        "signature_calls": 11,
+        "signature_ns": 913181,
+        "wall_ns": 795292099,
+        "worker_policy_calls": 2,
+        "worker_policy_ns": 174815
+      },
+      {
+        "authentication_calls": 472,
+        "authentication_ns": 40947288,
+        "phase": "fence-reserve-publish-challenge",
+        "signature_calls": 472,
+        "signature_ns": 31285695,
+        "wall_ns": 3052330386,
+        "worker_policy_calls": 0,
+        "worker_policy_ns": 0
+      },
+      {
+        "authentication_calls": 168,
+        "authentication_ns": 13427016,
+        "phase": "response-consent",
+        "signature_calls": 168,
+        "signature_ns": 9907303,
+        "wall_ns": 1059960532,
+        "worker_policy_calls": 0,
+        "worker_policy_ns": 0
+      },
+      {
+        "authentication_calls": 782,
+        "authentication_ns": 62274376,
+        "phase": "outputs",
+        "signature_calls": 782,
+        "signature_ns": 47752001,
+        "wall_ns": 4521971150,
+        "worker_policy_calls": 0,
+        "worker_policy_ns": 0
+      },
+      {
+        "authentication_calls": 34,
+        "authentication_ns": 2143016,
+        "phase": "enrollment-frame",
+        "signature_calls": 34,
+        "signature_ns": 1643874,
+        "wall_ns": 241500684,
+        "worker_policy_calls": 0,
+        "worker_policy_ns": 0
+      },
+      {
+        "authentication_calls": 34,
+        "authentication_ns": 2191247,
+        "phase": "fixed-manager-message",
+        "signature_calls": 34,
+        "signature_ns": 1724056,
+        "wall_ns": 214589911,
+        "worker_policy_calls": 0,
+        "worker_policy_ns": 0
+      },
+      {
+        "authentication_calls": 102,
+        "authentication_ns": 6961140,
+        "phase": "owned-root-preparation",
+        "signature_calls": 102,
+        "signature_ns": 5569142,
+        "wall_ns": 620121679,
+        "worker_policy_calls": 0,
+        "worker_policy_ns": 0
+      }
+    ],
+    "kernel_counts": [
+      17862,
+      41549,
+      83101,
+      83101,
+      160415,
+      320831,
+      641664,
+      20782,
+      17862,
+      487033
+    ],
+    "live_counts": [
+      8930,
+      17861,
+      35725,
+      35992,
+      17862,
+      8931
+    ],
+    "last_custody_age_ns": 7500510291,
+    "user_seconds": 3.45,
+    "system_seconds": 6.91,
+    "max_rss_kbytes": 14100,
+    "major_faults": 0
+  },
+  {
+    "attempt": 2,
+    "returned": true,
+    "wall_ns": 10739481159,
+    "phases": [
+      {
+        "authentication_calls": 102,
+        "authentication_ns": 6558592,
+        "phase": "enroll-join-cleanup",
+        "signature_calls": 102,
+        "signature_ns": 5137585,
+        "wall_ns": 647079067,
+        "worker_policy_calls": 0,
+        "worker_policy_ns": 0
+      },
+      {
+        "authentication_calls": 11,
+        "authentication_ns": 819674,
+        "phase": "cold-setup-original-admission",
+        "signature_calls": 11,
+        "signature_ns": 629819,
+        "wall_ns": 678433674,
+        "worker_policy_calls": 2,
+        "worker_policy_ns": 168027
+      },
+      {
+        "authentication_calls": 472,
+        "authentication_ns": 40985973,
+        "phase": "fence-reserve-publish-challenge",
+        "signature_calls": 472,
+        "signature_ns": 31976962,
+        "wall_ns": 3011306246,
+        "worker_policy_calls": 0,
+        "worker_policy_ns": 0
+      },
+      {
+        "authentication_calls": 168,
+        "authentication_ns": 12031082,
+        "phase": "response-consent",
+        "signature_calls": 168,
+        "signature_ns": 9455189,
+        "wall_ns": 1024076539,
+        "worker_policy_calls": 0,
+        "worker_policy_ns": 0
+      },
+      {
+        "authentication_calls": 782,
+        "authentication_ns": 60360738,
+        "phase": "outputs",
+        "signature_calls": 782,
+        "signature_ns": 46235804,
+        "wall_ns": 4310994409,
+        "worker_policy_calls": 0,
+        "worker_policy_ns": 0
+      },
+      {
+        "authentication_calls": 34,
+        "authentication_ns": 2203889,
+        "phase": "enrollment-frame",
+        "signature_calls": 34,
+        "signature_ns": 1764879,
+        "wall_ns": 230956988,
+        "worker_policy_calls": 0,
+        "worker_policy_ns": 0
+      },
+      {
+        "authentication_calls": 34,
+        "authentication_ns": 2612630,
+        "phase": "fixed-manager-message",
+        "signature_calls": 34,
+        "signature_ns": 2136379,
+        "wall_ns": 249168522,
+        "worker_policy_calls": 0,
+        "worker_policy_ns": 0
+      },
+      {
+        "authentication_calls": 102,
+        "authentication_ns": 6749948,
+        "phase": "owned-root-preparation",
+        "signature_calls": 102,
+        "signature_ns": 5407805,
+        "wall_ns": 587437781,
+        "worker_policy_calls": 0,
+        "worker_policy_ns": 0
+      }
+    ],
+    "kernel_counts": [
+      17862,
+      41549,
+      83101,
+      83101,
+      160415,
+      320831,
+      641664,
+      20782,
+      17862,
+      487033
+    ],
+    "live_counts": [
+      8930,
+      17861,
+      35725,
+      35992,
+      17862,
+      8931
+    ],
+    "last_custody_age_ns": 7224583640,
+    "user_seconds": 3.22,
+    "system_seconds": 6.83,
+    "max_rss_kbytes": 14252,
+    "major_faults": 0
+  }
+]
