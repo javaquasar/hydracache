@@ -1,0 +1,24 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `release` profile [optimized] target(s) in 2m 19s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/release/deps/hydracache_long_run_supervisor_074-b26b156d3dcd0098)
+
+running 15 tests
+test diagnostic_two_phase_launch::root_enrollment::kernel::tests::cgroup_root_events_are_exact_bounded_and_never_a_completion_receipt ... ok
+test diagnostic_two_phase_launch::root_enrollment::kernel::tests::cgroup_root_regular_files_and_unsafe_components_cannot_be_kernel_roots ... ok
+test diagnostic_two_phase_launch::root_enrollment::kernel::tests::fault::cgroup_root_kernel_fault_matrix ... ignored, manual local root cgroup2 fixtures; no service, original start or product
+test diagnostic_two_phase_launch::root_enrollment::kernel::transport::tests::cgroup_root_transport_empty_read_consumes_attempt_and_late_packet_cannot_retry ... ok
+test diagnostic_two_phase_launch::root_enrollment::kernel::transport::tests::cgroup_root_transport_every_bound_byte_refuses_and_closes_rights ... ok
+test diagnostic_two_phase_launch::root_enrollment::kernel::transport::tests::cgroup_root_transport_foreign_sender_process_is_not_the_pair_creator ... ok
+test diagnostic_two_phase_launch::root_enrollment::kernel::transport::tests::cgroup_root_transport_kernel_credentials_and_atomic_cloexec ... ok
+test diagnostic_two_phase_launch::root_enrollment::kernel::transport::tests::cgroup_root_transport_rejected_right_counts_and_truncation_close_all_aliases ... ok
+test diagnostic_two_phase_launch::root_enrollment::kernel::transport::tests::cgroup_root_transport_size_flags_missing_credentials_and_fake_roots_refuse ... ok
+test diagnostic_two_phase_launch::root_enrollment::kernel::transport::tests::fault::cgroup_root_transport_role_matrix ... ignored, explicit isolated local-root cgroup2 fixture only
+test diagnostic_two_phase_launch::root_enrollment::tests::root_enrollment_all_kinds_roundtrip_with_exact_offsets ... ok
+test diagnostic_two_phase_launch::root_enrollment::tests::root_enrollment_every_ack_byte_mutation_refuses_and_cannot_restore ... ok
+test diagnostic_two_phase_launch::root_enrollment::tests::root_enrollment_invalid_shapes_versions_fields_and_old_packets_refuse ... ok
+root enrollment seed=0x74c2019
+test diagnostic_two_phase_launch::root_enrollment::tests::root_enrollment_seeded_bindings_roundtrip_without_deadline_renewal ... ok
+test diagnostic_two_phase_launch::root_enrollment::tests::root_enrollment_send_uncertainty_and_ack_are_sticky_without_authority ... ok
+
+test result: ok. 13 passed; 0 failed; 2 ignored; 0 measured; 1235 filtered out; finished in 0.01s
+
