@@ -3,6 +3,9 @@ use super::*;
 use std::alloc::{GlobalAlloc, Layout, System};
 use std::cell::Cell;
 
+#[path = "diagnostic_boot_comparison_alloc_tests.rs"]
+mod boot_comparison;
+
 #[derive(Clone, Copy, Default, Debug, PartialEq, Eq, serde::Serialize)]
 struct Counts {
     allocations: u64,
