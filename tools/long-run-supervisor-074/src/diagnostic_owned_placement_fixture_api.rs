@@ -64,4 +64,13 @@ impl OwnedPlacement<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
     pub(crate) fn placement_origins_for_fixture(&self) -> ([u64; 4], [u64; 4]) {
         self.held.fixture_origins()
     }
+
+    pub(crate) fn placement_timer_live_for_fixture(&self) -> bool {
+        self.held.controls.placement_timer_live_for_fixture()
+    }
+}
+impl PlacementFailure<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
+    pub(crate) fn placement_timer_live_for_fixture(&self) -> bool {
+        self.held.controls.placement_timer_live_for_fixture()
+    }
 }

@@ -23,3 +23,10 @@ impl BoundGuardians<'_> {
         result
     }
 }
+
+#[cfg(test)]
+impl BoundGuardians<'_> {
+    pub(crate) fn placement_timer_live_for_fixture(&self) -> bool {
+        !super::super::raw::terminal(self.pair.alarm.as_raw_fd())
+    }
+}

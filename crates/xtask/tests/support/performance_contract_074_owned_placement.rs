@@ -172,4 +172,15 @@ fn owned_placement_reuses_original_round_key_and_retirement_without_execution() 
     ] {
         assert!(units.contains(required), "{required}");
     }
+    let live = read(&format!("{PREFIX}diagnostic_owned_placement_live_tests.rs"));
+    for required in [
+        "retained_context_refuses_for_test(campaigns)",
+        "fence_held_while_owned=true",
+        "timer_live_before_drop=true",
+        "error.placement_timer_live_for_fixture()",
+        "assert!(!cgroup::drain(&mut out))",
+        "case != \"unarmed\"",
+    ] {
+        assert!(live.contains(required), "{required}");
+    }
 }

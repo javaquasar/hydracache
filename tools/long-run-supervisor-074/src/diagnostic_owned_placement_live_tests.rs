@@ -3,6 +3,14 @@ use super::*;
 use crate::diagnostic_two_phase_launch::held_placement as wire;
 use crate::diagnostic_two_phase_launch::root_enrollment::{Kind, PacketClaims};
 use ed25519_dalek::{Signer, SigningKey};
+use crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::time_observation;
+
+fn busy(campaigns: &Path) {
+    assert!(matches!(
+        crate::host_execution::lock_host_root(campaigns),
+        Err(crate::host_execution::HostExecutionError::Busy)
+    ));
+}
 
 fn sign(body: wire::PlacementBody, key: &SigningKey) -> Vec<u8> {
     let signature = key.sign(&wire::placement_signing_message(&body).unwrap());
@@ -150,16 +158,38 @@ fn run(case: &str) {
             let custodians = owned.fixture_custodians();
             drop(writer);
             drop(other);
-            let (result,facts)=crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::time_observation::capture(|| {
-            let result=owned.bind_signed_placement(raw);
-            if case=="healthy" || case=="revalidate" {
-                let mut joined=result.unwrap();assert_eq!(joined.placement_origins_for_fixture(),origins);
-                if case=="revalidate" {joined.revalidate().unwrap();assert_eq!(joined.placement_origins_for_fixture(),origins);}
-                drop(joined);true
-            }else{
-                let error=result.err().expect("negative must refuse");let reason=format!("{error:?}");assert!(!reason.contains("Time") && !reason.contains("Expired"),"{case}: {reason}");drop(error);false
-            }
-        });
+            let (result, facts) = time_observation::capture(|| {
+                let result = owned.bind_signed_placement(raw);
+                if case == "healthy" || case == "revalidate" {
+                    let mut joined = result.unwrap();
+                    assert_eq!(joined.placement_origins_for_fixture(), origins);
+                    if case == "revalidate" {
+                        joined.revalidate().unwrap();
+                        assert_eq!(joined.placement_origins_for_fixture(), origins);
+                    }
+                    assert!(joined.placement_timer_live_for_fixture());
+                    busy(campaigns);
+                    drop(joined);
+                    true
+                } else {
+                    let error = result.err().expect("negative must refuse");
+                    let reason = format!("{error:?}");
+                    assert!(
+                        !reason.contains("Time") && !reason.contains("Expired"),
+                        "{case}: {reason}"
+                    );
+                    assert!(
+                        error.placement_timer_live_for_fixture(),
+                        "{case}: original timer must still be live"
+                    );
+                    // Retained failed custody, not a fabricated Armed keeper.
+                    busy(campaigns);
+                    assert!(!cgroup::drain(&mut out));
+                    assert!(!cgroup::drain(&mut err));
+                    drop(error);
+                    false
+                }
+            });
             let facts = serde_json::to_value(facts).unwrap();
             assert!(facts["first_refusal"].is_null(), "{case}: {facts}");
             cgroup.empty();
@@ -168,11 +198,16 @@ fn run(case: &str) {
             }
             assert!(cgroup::drain(&mut out));
             assert!(cgroup::drain(&mut err));
-            assert!(matches!(
-                crate::host_execution::lock_host_root(campaigns),
-                Err(crate::host_execution::HostExecutionError::Busy)
-            ));
-            println!("HC074-OWNED-PLACEMENT-LIVE case={case} accepted={result} seed=0x074e6a1d fixed_manager=true actual_root=true original_bounds=true eof=true fence_held=true test_issuers=true actual_systemd_placement=false original_send=false completion=false product=false facts={facts}");
+            let armed = case != "unarmed";
+            if armed {
+                busy(campaigns);
+            } else {
+                // All writers/custodians are already stopped. A raw flock is
+                // not permission to replay the retained incomplete attempt.
+                drop(crate::host_execution::lock_host_root(campaigns).unwrap());
+                crate::diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::retained_context_refuses_for_test(campaigns);
+            }
+            println!("HC074-OWNED-PLACEMENT-LIVE case={case} accepted={result} seed=0x074e6a1d fixed_manager=true actual_root=true original_bounds=true eof=true fence_held_while_owned=true fence_held_after_drop={armed} retained_replay_refused={} timer_live_before_drop=true test_issuers=true actual_systemd_placement=false original_send=false completion=false product=false facts={facts}", !armed);
         },
     );
 }

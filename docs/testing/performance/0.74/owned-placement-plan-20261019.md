@@ -57,3 +57,23 @@ code, raw selected-source evidence and article conclusions separate. Preserve
 failed attempts and tooling errors. No throughput, allocation or preparation
 wall speedup is claimed by this package. If full-frame cost expires a new case,
 retain the negative and attribute it rather than changing the original bounds.
+
+## Unarmed refusal custody oracle correction
+
+The first actual GNU cohort at 08253cca passes healthy and revalidation, then
+fails the unarmed case's post-destruction Busy assertion. The root pair was
+never Armed; after the complete failed holder is destroyed, its pending children
+and original custodians are reaped and both readers reach EOF. There is no
+independent enrolled fence keeper then. The old empty-reservation implementation
+separately refuses retained context even when the raw flock can be acquired.
+No runtime deadline or fence predicate is changed in response to this result.
+
+Before repeating, strengthen the fixture to prove Busy and non-EOF while the
+failed consumed holder is still retained. After its destruction require EOF
+and dead custodians. For the never-Armed case, demonstrate raw-lock availability
+only then and separately prove fresh typed admission refuses retained context.
+Keep post-destruction Busy mandatory for all six already-Armed cases. Also
+require the retained original timer to remain live on the intended refusals,
+so timer expiry cannot substitute for a wrong-key/consent/root negative.
+Retain the failed source/images/raw logs and record MSRV as unexecuted there.
+Repeat fresh complete cohorts; do not relabel that initial partial as a pass.
