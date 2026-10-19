@@ -489,3 +489,18 @@ historical tuple. The independent MSRV seven-case cohort passes once; GNU and
 the complete two-compiler gate remain open. Attribute preparation cost by fixed
 phases next, preserving every live check and original origin/bound. Actual slice,
 artifact admission, held projection and subsequent P1–P5 work remain unchanged.
+
+## P3 Complete local placement constraints matrix
+
+The [fixed phase source](placement-stage-cost-design.md) retains three GNU cost
+probes separately from one subsequent normal two-compiler matrix. All seven
+same-owner cases pass once on GNU and once on MSRV with cost capture disabled,
+keeping every original timer, EOF/custody/fence/replay assertion and absolute
+bound. This closes that local matrix only. The preceding GNU expiry remains a
+valid retained negative; runtime code is unchanged and no speedup is claimed.
+
+Outputs is the largest measured phase and repeated kernel/context observations
+are the next attribution direction. Do not cache live authority or remove checks
+to enlarge its budget. Actual fixed slice ancestry, approved artifact objects and
+held-unit projection still precede authenticated original delivery, all-writer
+revocation, completion, cells two through four, reconnect and server rehearsal.

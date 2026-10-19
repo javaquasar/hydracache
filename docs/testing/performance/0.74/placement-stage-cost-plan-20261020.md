@@ -27,6 +27,13 @@ attempt must not become a healthy functional gate. No retry of a failed attempt
 or changed timer follows. Select at most one isolated cost hypothesis from the
 measured phases before another complete unprofiled matrix.
 
+Also perform exactly one normal two-compiler matrix on the instrumentation
+source after the three cost probes, with cost capture disabled. This is the
+normal regression of the changed cfg(test) fixture, not an accepted optimization
+or a retry of the old source until green. Report ordering and cache/load limits;
+do not attribute a changed result to faster runtime code when none changed.
+Keep the full gate false if either compiler refuses or leaves any case unexecuted.
+
 No server, installation, supervisor operation, original send/start, product
 workload or qualification is authorized. All earlier sealed packets and the
 qualification manifest remain unchanged. Production enrollment, actual slice,

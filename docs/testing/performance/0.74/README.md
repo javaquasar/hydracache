@@ -4330,3 +4330,29 @@ The preparation packet contains 57 hashed files plus its inventory, SHA256
 Its verifier refuses twenty mutations, including fabricated complete-matrix
 promotion and recovery of the missing historical tuple. The preceding packet
 and qualification digest remain unchanged.
+
+The [fixed phase follow-up](placement-stage-cost-design.md) attributes the same
+original healthy preparation without changing runtime code, live counts or
+deadlines. Three GNU cost probes all complete: outputs takes 4.311–4.684 wall
+seconds with 782 authentication calls, whose measured spans total only
+60.361–64.721 ms. The same 320831 Boot and 641664 Namespace observations recur
+in each probe; these are not syscall counts. Whole-probe system CPU dominates
+user CPU. Repeated kernel/context work is the measured next direction, not an
+accepted signature optimization or a product-performance claim.
+
+The [separate packet](local-runs/placement-stage-cost-20261020/README.md) also
+retains exactly one subsequent normal matrix: seven cases pass on GNU 1.94 and
+seven on MSRV 1.88 with cost capture disabled. This completes the specified
+local same-owner functional matrix on bb426070; original timer, EOF, custody,
+fence and replay assertions all pass. Previous expiry stays sealed and is not
+relabelled a fix or a speedup: runtime is unchanged and probe ordering/cache/load
+effects were not isolated. Cold/contended admission can still legitimately refuse.
+All 318 source contracts pass. Each Linux compiler passes 68 selected units and
+247 doc tests; portable regression, strict lint and local contracts pass. Actual slice/artifact
+admission, held projection and server/product execution remain closed.
+
+The fixed-phase packet contains 69 hashed files plus its inventory, SHA256
+`6496027c263416ba0939b243878401682287c19e02d64e9a8fb1ca6f10e4c4cb`.
+Its verifier rejects twenty mutations and separates the three cost observations
+from the complete 14-case normal matrix. Both earlier sealed packet verifiers
+still pass their twenty mutation controls; qualification identity is unchanged.

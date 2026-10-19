@@ -14196,3 +14196,38 @@ compiler regression cohorts passing. First custody observation in the failed
 GNU attempt already occurs at age 8.736 seconds. That identifies elapsed budget,
 not its CPU or I/O owner. Fixed-phase cost attribution must precede an isolated
 optimization; a blind repeat or a longer deadline would not answer that question.
+
+## Separate preparation phase cost from a healthy functional result
+
+The [fixed phase probe](../testing/performance/0.74/placement-stage-cost-design.md)
+adds only exact test markers to the original fixture and uses existing bounded
+authentication, live-walk and kernel-walk counters. Disabled markers read no
+diagnostic timer. Three independent GNU probes complete on the selected source,
+with outputs taking 4.311–4.684 wall seconds. Its 782 authentication calls take
+60.361–64.721 ms; signature time is included in that figure, not additional.
+That gap does not justify calling the remainder I/O, but it does not support
+prioritizing signature optimization either.
+
+Every probe records 320831 Boot, 641664 Namespace and 160415 Origin observations.
+Whole-probe resource usage is 6.83–6.98 system seconds and 3.22–3.45 user seconds,
+with zero major page faults. Those scopes include pre-challenge work and waited
+descendants; they are neither syscall counts nor CPU/op. Together they identify
+repeated context/kernel work as the next cost direction, without proving an
+exclusive cost for one predicate. Any candidate should first measure and trim
+per-observation cost while retaining every fresh check and refusal boundary.
+
+One preregistered normal regression follows the three probes with cost capture
+disabled. All seven scenarios pass on GNU 1.94 and all seven on MSRV 1.88, once
+each, including intended binding/trust refusals, original timer readiness, EOF,
+custody/fence and typed replay refusal. All 318 source contracts and compiler
+regressions pass; clock/root cleanup and signed fixture identity are verified.
+The local same-owner functional gate is now complete on that exact source.
+
+No runtime optimization caused this positive result: runtime code is unchanged,
+and prior probes ran on the same boot. Cache/load/sample variation was not isolated
+by an A/B experiment, so neither faster preparation nor repair of the historical
+expiry follows. The measured GNU refusal remains a correct expiry refusal, while
+the older unobserved tuple stays unknown. Cold or contended admission still
+needs attention. Actual slice/artifact admission,
+held projection, original delivery, durable lifecycle and reconnect remain distinct
+from this local success. No server, supervisor or product workload was used.
