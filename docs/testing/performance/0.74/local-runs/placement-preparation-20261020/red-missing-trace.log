@@ -1,0 +1,9 @@
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error: couldn't read `tools/long-run-supervisor-074/src/diagnostic_placement_preparation_trace.rs`: No such file or directory (os error 2)
+ --> tools/long-run-supervisor-074/src/diagnostic_owned_placement_live_tests.rs:9:1
+  |
+9 | m...on_trace;
+  | ^...^^^^^^^^^
+
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...

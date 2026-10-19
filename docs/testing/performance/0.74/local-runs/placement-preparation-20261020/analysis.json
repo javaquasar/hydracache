@@ -1,0 +1,91 @@
+[
+  {
+    "compiler": "194",
+    "case": "healthy",
+    "returned": false,
+    "kernel_first_refusal": {
+      "age_ns": 10001845162,
+      "diagnostic_reason": "expired",
+      "issued_boot": "c56f74ec-65b5-4a21-964d-cd04ce280385",
+      "issued_ns": 884474515163,
+      "now_boot": "c56f74ec-65b5-4a21-964d-cd04ce280385",
+      "now_ns": 894476360325,
+      "site": "window"
+    },
+    "first_custody_age_ns": 8736206870,
+    "last_custody_age_ns": 9804013033,
+    "raw_refusals": [
+      {
+        "age_ns": 10001845162,
+        "file": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+        "issued_ns": 884474515163,
+        "line": 109,
+        "now_ns": 894476360325,
+        "reason": "expired"
+      }
+    ]
+  },
+  {
+    "compiler": "188",
+    "case": "healthy",
+    "returned": true,
+    "kernel_first_refusal": null,
+    "first_custody_age_ns": 6134862995,
+    "last_custody_age_ns": 7940786597,
+    "raw_refusals": []
+  },
+  {
+    "compiler": "188",
+    "case": "revalidate",
+    "returned": true,
+    "kernel_first_refusal": null,
+    "first_custody_age_ns": 6019058818,
+    "last_custody_age_ns": 8016654204,
+    "raw_refusals": []
+  },
+  {
+    "compiler": "188",
+    "case": "unarmed",
+    "returned": true,
+    "kernel_first_refusal": null,
+    "first_custody_age_ns": 6433233352,
+    "last_custody_age_ns": 7537857433,
+    "raw_refusals": []
+  },
+  {
+    "compiler": "188",
+    "case": "wrong-key",
+    "returned": true,
+    "kernel_first_refusal": null,
+    "first_custody_age_ns": 8013462519,
+    "last_custody_age_ns": 9803213256,
+    "raw_refusals": []
+  },
+  {
+    "compiler": "188",
+    "case": "different-consent",
+    "returned": true,
+    "kernel_first_refusal": null,
+    "first_custody_age_ns": 7466979505,
+    "last_custody_age_ns": 9233659322,
+    "raw_refusals": []
+  },
+  {
+    "compiler": "188",
+    "case": "foreign-root",
+    "returned": true,
+    "kernel_first_refusal": null,
+    "first_custody_age_ns": 6173794881,
+    "last_custody_age_ns": 7622514036,
+    "raw_refusals": []
+  },
+  {
+    "compiler": "188",
+    "case": "trust-drift",
+    "returned": true,
+    "kernel_first_refusal": null,
+    "first_custody_age_ns": 5714110758,
+    "last_custody_age_ns": 7392394267,
+    "raw_refusals": []
+  }
+]

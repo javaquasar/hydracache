@@ -1,0 +1,30 @@
+[
+  {
+    "compiler": "194",
+    "wsl_exit_code": 101,
+    "full_cohort_passed": false,
+    "completed_cases": [],
+    "failed_cases": [
+      "healthy"
+    ],
+    "fixture_scan_exit_code": 0,
+    "fixture_roots": []
+  },
+  {
+    "compiler": "188",
+    "wsl_exit_code": 0,
+    "full_cohort_passed": true,
+    "completed_cases": [
+      "healthy",
+      "revalidate",
+      "unarmed",
+      "wrong-key",
+      "different-consent",
+      "foreign-root",
+      "trust-drift"
+    ],
+    "failed_cases": [],
+    "fixture_scan_exit_code": 0,
+    "fixture_roots": []
+  }
+]
