@@ -4130,8 +4130,8 @@ controls cannot reopen that owner. Active guardians are not cancelled, and the
 remaining original-host admission, writer confinement and lifecycle gates stay
 closed.
 
-Retirement verification is mixed: the MSRV full-frame callback proof passes,
-but GNU refuses during the unchanged output-preparation causal window before
+Earlier retirement verification was mixed: the MSRV full-frame callback proof passed,
+but GNU refused during the unchanged output-preparation causal window before
 that callback. The negative receipt does not waive the positive gate. GNU
 issued/now/boot and preparation-cost attribution precede any readiness claim.
 
@@ -4144,3 +4144,29 @@ is dominated by repeated live/kernel work rather than authentication. These
 are local diagnostic wall measurements, not a product optimization or the
 missing GNU retirement callback receipt. All original deadlines, predicates,
 effect brackets and closed server/execution boundaries remain intact.
+
+The [fixed boot/namespace path packet](local-runs/fixed-leaf-path-20261019/README.md)
+reduces temporary path allocation without caching any live result or descriptor.
+GNU 1.94 and MSRV 1.88 each reproduce three samples: boot 5 → 1 Rust allocations
+and 62 → 36 requested bytes per fresh call; namespace 1 → 0 allocations and
+42 → 0 bytes. Unknown namespace inputs retain their old behavior. These are
+allocation-request counts, not wall, CPU, RSS or product-throughput gains.
+Timing A/A calibration is negative and retained separately; no timing rule or
+deadline is waived. All 297 source contracts, both ordinary Linux origin
+regressions, strict lint and local non-promotable contracts pass. Original host
+admission, held-unit start, whole-writer cessation, completion and unlock remain
+closed.
+
+The separate local GNU retirement gate now passes on the unprofiled candidate
+image: three fresh callbacks plus the original eight-case frame regression,
+with original bounds, zero retired retry work and local clock-service
+restoration. The pre-candidate baseline also passes, so this does not attribute
+recovery to the path change or explain the closed historical failure. Root
+controls in this gate are simulated; privileged original host admission remains
+open. The packet preserves all failed calibrations and the initial source-test
+bookkeeping refusal rather than overwriting them with the final green run.
+
+The packet contains 142 hashed files plus its inventory; inventory SHA256 is
+`bf70675f2d178fb0e5feb325d4161b2095cf2447f46a3b827462092e1c5dfd2e`.
+Its verifier rejects ten mutations. The qualification manifest remains unchanged
+at SHA256 `11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc`.

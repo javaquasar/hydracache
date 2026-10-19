@@ -13871,3 +13871,63 @@ throughput improvement. The next isolated hypothesis should reduce measured
 leaf work while preserving every live predicate, observation boundary and
 original deadline. It must then pass the actual GNU functional gate, not use
 the diagnostic harness's successful collection as a substitute.
+
+### Fixed paths: allocation cost is not wall speed
+
+The next isolated proposal changes path construction, not validation frequency.
+Boot lookup still opens `sys/kernel/random/boot_id` relative to the retained
+proc root, checks each filesystem, performs the same bounded positional read
+and closes the document before decoding. Four compile-time C strings replace
+four temporary `CString` values. The four known namespace names use borrowed
+literal paths; unknown names keep the old formatting and error behavior. Every
+namespace is still opened afresh, checked as nsfs and identified by metadata.
+Neither file descriptors nor observations are cached. Original full rounds,
+46 effect brackets and the 300/60/10-second origins and deadlines remain intact.
+
+The timing experiment did not establish a reliable small-effect endpoint.
+Reference and actual functions initially used equivalent source in one image;
+an A/A control nevertheless attributed a positive interval to one leaf. An
+opaque shared caller and balanced ABBA/BAAB order did not remove all false
+attribution. Finally an external crossover invoked the actual entry in two
+byte-identical images. GNU namespace results included zero, but the MSRV
+namespace control produced a spurious negative interval. These are calibration
+failures before runtime optimization, not evidence for adopting or rejecting
+the path candidate. Their raw logs remain separate, and no wall-speedup claim
+or timing-rule waiver follows. The experiment does not identify which mixture
+of host noise, layout, compilation or scheduling caused those differences.
+
+Before changing runtime paths, a separate allocation-cost protocol was recorded.
+An opt-in test-only observer forwards Rust allocator requests unchanged to
+`System` and counts successful requests in the current capture thread. It
+checks nesting, unwind restoration, thread isolation, zeroed allocation and
+reallocation. Three baseline samples per leaf and compiler each execute 1,024
+fresh real-kernel calls; their actual and frozen-reference counts must agree
+exactly. Acceptance requires fewer allocation/reallocation requests for both
+leaves on both compilers, no request or requested-byte increase, differential
+identity/error/flag checks and the unprofiled GNU retirement gate. Requested
+bytes are not retained memory, and Rust requests are not a libc malloc census.
+The observer is absent from ordinary test and production binaries; it never
+supplies retirement evidence or authority to start a workload.
+
+GNU 1.94 and MSRV 1.88 reproduce the same counts in all three samples. Each
+fresh boot call drops from five Rust allocations and 62 requested bytes to one
+allocation and 36 bytes; each known namespace call drops from one allocation
+and 42 bytes to zero. Reallocations remain zero, no counter increases and the
+frozen reference retains its original counts in each candidate image. The
+remaining boot allocation owns the validated UUID. This supports a narrow
+allocation-cost reduction, not faster kernel syscalls, lower retained memory
+or higher HydraCache throughput. All the expensive live observations remain;
+the failed wall calibration cannot be turned into a performance claim simply
+because a different, deterministic endpoint improved.
+
+The [retained evidence packet](../testing/performance/0.74/local-runs/fixed-leaf-path-20261019/README.md)
+also separates functional acceptance from cost attribution. Before implementation
+the old unprofiled GNU image passed three retirement callbacks and the existing
+eight-case full-frame regression. After implementation the new ordinary image
+passes the same controls, with the original bounds and zero retired retry work.
+Local clock service restoration and unchanged fixture hashes are verified.
+The path change is retained for its measured allocation reduction and preserved
+semantics, not credited with fixing the unobserved historical failure. Root
+controls in this particular frame gate are simulated; combined privileged
+original host admission, all-writer cessation, completion and reconnect remain
+separate work. The results do not authorize server installation or product load.

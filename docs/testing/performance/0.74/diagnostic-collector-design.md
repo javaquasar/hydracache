@@ -1116,3 +1116,29 @@ and namespace checks, rather than signature verification. Spans overlap and
 measure wall time, not CPU or product throughput. Any leaf optimization remains
 a separate hypothesis with unchanged observations and deadlines. Original root
 host admission, whole-writer cessation, completion and unlock stay closed.
+
+### Fixed paths without reduced observation
+
+The [fixed path packet](local-runs/fixed-leaf-path-20261019/README.md) removes
+only temporary path construction: literal C strings for the four boot children,
+borrowed literal paths for four known namespaces, original formatting for
+unknown names. The generic child function and every open/filesystem/metadata/
+read/close operation remain unchanged. No retained FD or cached observation is
+substituted for fresh reads. Whole-source comparison protects the original
+revalidate/sample/context bodies, 46 effect brackets and original deadlines.
+
+Separate preregistered allocation observations reproduce boot 5 → 1 requests
+and namespace 1 → 0 requests per call on GNU current/MSRV, without a requested
+byte or reallocation increase. The test-only observer cannot supply retirement
+evidence and is absent from ordinary test and production images. Local timing
+calibration failed even with byte-identical images, so no wall-time, CPU or
+product-throughput improvement is inferred. Protected root enrollment and the
+combined privileged original constructor remain distinct from these leaf tests
+and simulated-root full-frame controls; all execution/lifecycle gates stay closed.
+
+The unprofiled GNU candidate subsequently passes three fresh original retirement
+callbacks and the old eight-case frame regression. The pre-candidate baseline
+also passes; neither result diagnoses the older closed `Causal(Time)` refusal.
+This closes the local simulated-root retirement verification only. It does not
+establish protected root enrollment, authenticated original start, whole-writer
+cessation, completion, fence release or server readiness.

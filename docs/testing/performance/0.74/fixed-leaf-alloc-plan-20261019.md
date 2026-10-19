@@ -30,3 +30,18 @@ validation results, new original start/completion capability, product API change
 server access/installation, supervisor operation or product load is allowed.
 After the decision run three fresh unprofiled GNU retirement-frame controls
 and its eight-case regression. Profiling binaries are never retirement evidence.
+
+## Outcome
+
+The separate allocation endpoint passes at runtime source `0317f3dc` on GNU
+1.94 and MSRV 1.88: three identical samples each show boot 5 → 1 Rust requests
+and 62 → 36 requested bytes, namespace 1 → 0 requests and 42 → 0 bytes, with
+zero reallocations and no counter increase. Baseline A/A and frozen-reference
+counts agree exactly. The ordinary GNU candidate passes three retirement
+callbacks and the old eight-case regression; the pre-candidate baseline also
+passes. All 297 source contracts and scoped semantic checks pass.
+
+The [closed packet](local-runs/fixed-leaf-path-20261019/README.md) preserves all
+raw observations, failures and the scope of the local simulated-root gate.
+The runtime substitution is retained for allocation cost only. No wall-speedup,
+product claim, original privileged constructor or server admission follows.

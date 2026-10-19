@@ -64,3 +64,18 @@ and compilers, implement the fixed-path candidate and compare the retained
 baseline image with it. Keep iterations, blocks, repetitions, bootstrap and
 adoption rule unchanged. Each subprocess reports only its internal leaf loop;
 launch/setup time is excluded and retained stdout proves the selected test.
+
+## Timing disposition
+
+The byte-identical v3 A/A calibration fails: the MSRV namespace interval excludes
+zero. The timing route is therefore closed negative; no optimized-image timing
+comparison is promoted and none of the estimator, repetitions, iterations or
+acceptance thresholds is changed. Earlier false positive controls remain raw
+evidence, not successful optimization results.
+
+The later [allocation protocol](fixed-leaf-alloc-plan-20261019.md) preregisters
+a different deterministic cost endpoint before runtime implementation. Its
+subsequent successful candidate does not pass or waive this wall experiment.
+See the [separate closed evidence](local-runs/fixed-leaf-path-20261019/README.md)
+for request counts and unprofiled local retirement verification. No CPU,
+latency, product-throughput or privileged original-start claim is established.
