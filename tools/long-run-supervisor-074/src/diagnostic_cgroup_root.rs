@@ -241,3 +241,6 @@ mod tests;
 
 #[path = "diagnostic_cgroup_root_transport.rs"]
 mod transport;
+
+#[path = "diagnostic_root_guardian.rs"]
+mod guardian;

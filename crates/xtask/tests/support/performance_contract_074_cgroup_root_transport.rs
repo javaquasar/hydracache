@@ -1,4 +1,6 @@
 //! Exact forward adapter; old enrollment/guardian predicates remain immutable.
+#[path = "performance_contract_074_root_guardian.rs"]
+mod guardian;
 const BASE: &str = "f183134c";
 const MODULE: &str = "\n#[path = \"diagnostic_cgroup_root_transport.rs\"]\nmod transport;\n";
 const COMPAT: &str = r####"
@@ -60,6 +62,8 @@ platform = "linux"
 # END CGROUP ROOT TRANSPORT GATE
 "####;
 pub(super) fn normalize(path: &str, raw: &str) -> String {
+    let current = guardian::normalize(path, raw);
+    let raw = current.as_str();
     let extra = match path {
         "tools/long-run-supervisor-074/src/diagnostic_cgroup_root.rs" => MODULE,
         "docs/COMPAT.md" => COMPAT,

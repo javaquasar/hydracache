@@ -384,3 +384,6 @@ fn cgroup_root_kernel_fault_matrix() {
     }
     println!("HC074-CGROUP-ROOT completed=true cases=11 original_authority=false guardian_armed=false completion=false");
 }
+
+#[path = "diagnostic_root_guardian_fault_tests.rs"]
+mod guardians;

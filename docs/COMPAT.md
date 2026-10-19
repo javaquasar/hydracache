@@ -1706,3 +1706,26 @@ admission API. Replies, guardian credentials, original fence/timer, full-frame
 join and durable completion remain separate gates. Reader compatibility is
 only v2 as above, with no migration, reconnect or durable replay slot. Existing
 packet claims, v1 direct-child guardian and original projections are unchanged.
+
+## Active local cgroup root guardian reader
+
+The private local guardian reader uses hc074-cgroup-root-enrollment-v2 without
+changing its 104-byte HCRG0742 packet. It accepts one creator-authenticated Enroll
+with three CLOEXEC directory/kill/events rights. Actual root-owned cgroup2
+retained/named identities and empty unfrozen domain must match the inherited
+snapshot before a rights-free Armed reply. The ordinary parent requires the
+exact clone3 child PID, live pidfd, real UID/GID, binding and original timer.
+Both requests precede waiting for replies. Missing/extra rights, malformed or
+unknown bytes, truncation, substituted credentials/binding or replay refuse.
+No Pending packet, downgrade, reconnect, migration or durable replay slot exists.
+
+Each isolated child retains its root and the same original fence/timer OFDs.
+Each additionally opens its own read-only events watch OFD on the bound inode;
+notification consumption must not be shared between guardians. Owner pidfd,
+timer or channel termination and observed root drift enter permanent revocation.
+Only the retained original kill FD is used, including for late population.
+Refused and Revoking replies echo the binding with no rights and are best effort
+not completion receipts. No unlock, all-writer cessation or original Armed
+capability follows. This local reader is not a production owner constructor,
+held-unit projection, trust enrollment or server execution API. Original v1
+direct-child predicates, original projections and old packet claims stay intact.
