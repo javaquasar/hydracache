@@ -43,3 +43,19 @@ signed-bundle hashes, original refusal, exact writer SIGKILL, EOF and busy fence
 Attribution is not functional admission: missing cases need their own actual
 external SIGKILL receipts. A positive result does not open production enrollment,
 original execution, durable completion, unlock or server rehearsal.
+
+## Recorded outcome and next work
+
+Six fixed cost attempts capture both previously missing raw comparisons and
+the live/kernel cost forest. GNU reproduces custody expiry at 10,003,292,291 ns
+and causal-window expiry at 10,068,131,423 ns; the historical MSRV tuple remains
+unrecovered. Three complete MSRV closing rounds take 218.287–303.411 ms.
+
+All four missing MSRV writer-fault cases and owner regression pass. The final
+first-dead regression refuses on enrollment at 10,024,697,034 ns before closing
+or any named signal. The fresh complete gate remains open; no repeat-until-green
+or source deadline change is authorized by this outcome. Next preregister one
+cost-reduction hypothesis for fresh live/kernel work across preparation and
+enrollment, retaining all observations and original time origins. Establish its
+baseline and test before implementation; cost-only diagnostics and positive
+functional fault receipts remain separate gates.

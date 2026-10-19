@@ -18,7 +18,7 @@ struct Site {
 }
 #[derive(Clone, Debug, Default, PartialEq, Eq, serde::Serialize)]
 pub(crate) struct Report {
-    // Bounded order: custody-final, causal-window, other (units only).
+    // Bounded order: custody-final, causal-window, other age sites (also units).
     sites: [Site; 3],
 }
 thread_local! { static FRAME: RefCell<Option<Report>> = const { RefCell::new(None) }; }

@@ -1,0 +1,1170 @@
+{
+  "schema": 1,
+  "source": "659855a3c83f5185cd290ab26fdd43122e7cb396",
+  "stage": "cost",
+  "rows": [
+    {
+      "label": "cost-gnu194-0",
+      "case": "owner",
+      "exit_code": 1,
+      "actual_creator_sigkill": false,
+      "report": {
+        "age": {
+          "sites": [
+            {
+              "calls": 9,
+              "first": {
+                "age_ns": 9741756501,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs",
+                "issued_ns": 825973503312,
+                "line": 121,
+                "now_ns": 835715259813,
+                "reason": "within-window"
+              },
+              "first_refusal": {
+                "age_ns": 10003292291,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs",
+                "issued_ns": 825973503312,
+                "line": 121,
+                "now_ns": 835976795603,
+                "reason": "expired"
+              },
+              "last": {
+                "age_ns": 10003292291,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs",
+                "issued_ns": 825973503312,
+                "line": 121,
+                "now_ns": 835976795603,
+                "reason": "expired"
+              }
+            },
+            {
+              "calls": 2,
+              "first": {
+                "age_ns": 9829277866,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+                "issued_ns": 825973503312,
+                "line": 109,
+                "now_ns": 835802781178,
+                "reason": "within-window"
+              },
+              "first_refusal": null,
+              "last": {
+                "age_ns": 9972423935,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+                "issued_ns": 825973503312,
+                "line": 109,
+                "now_ns": 835945927247,
+                "reason": "within-window"
+              }
+            },
+            {
+              "calls": 2,
+              "first": {
+                "age_ns": 9840946137,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs",
+                "issued_ns": 825973503312,
+                "line": 139,
+                "now_ns": 835814449449,
+                "reason": "within-window"
+              },
+              "first_refusal": null,
+              "last": {
+                "age_ns": 9985119124,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs",
+                "issued_ns": 825973503312,
+                "line": 139,
+                "now_ns": 835958622436,
+                "reason": "within-window"
+              }
+            }
+          ]
+        },
+        "causal": {
+          "first": {
+            "age_ns": 9829277866,
+            "diagnostic_reason": "within-window",
+            "issued_boot": "4d57fe71-b619-413b-ab1c-b9a580df9886",
+            "issued_ns": 825973503312,
+            "now_boot": "4d57fe71-b619-413b-ab1c-b9a580df9886",
+            "now_ns": 835802781178,
+            "site": "window"
+          },
+          "first_refusal": null,
+          "last": {
+            "age_ns": 9985119124,
+            "diagnostic_reason": "within-window",
+            "issued_boot": "4d57fe71-b619-413b-ab1c-b9a580df9886",
+            "issued_ns": 825973503312,
+            "now_boot": "4d57fe71-b619-413b-ab1c-b9a580df9886",
+            "now_ns": 835958622436,
+            "site": "final_clocks"
+          },
+          "observations": 4
+        },
+        "cost": {
+          "authentication_calls": 34,
+          "authentication_ns": 2800939,
+          "kernel": [
+            [
+              368,
+              125159579,
+              170732
+            ],
+            [
+              868,
+              95930299,
+              5951795
+            ],
+            [
+              1736,
+              13393172,
+              7315530
+            ],
+            [
+              1736,
+              12110174,
+              12110174
+            ],
+            [
+              3342,
+              102060318,
+              23665141
+            ],
+            [
+              6684,
+              43108444,
+              37929242
+            ],
+            [
+              13368,
+              35286733,
+              35286733
+            ],
+            [
+              434,
+              24964961,
+              145493
+            ],
+            [
+              368,
+              24544802,
+              694047
+            ],
+            [
+              10156,
+              22392768,
+              22392768
+            ]
+          ],
+          "live": [
+            [
+              184,
+              199624134,
+              186893
+            ],
+            [
+              368,
+              53455054,
+              3436980
+            ],
+            [
+              736,
+              10955459,
+              10955459
+            ],
+            [
+              742,
+              39250956,
+              39250956
+            ],
+            [
+              368,
+              125215854,
+              125215854
+            ],
+            [
+              184,
+              20766333,
+              20766333
+            ]
+          ],
+          "overlapping_spans": true,
+          "signature_calls": 34,
+          "signature_ns": 2237336,
+          "wall_not_cpu": true
+        },
+        "deadline_changed": false,
+        "mode": "cost",
+        "product": false,
+        "schedule_changed": false,
+        "success": false,
+        "wall_ns": 261749189
+      }
+    },
+    {
+      "label": "cost-gnu194-1",
+      "case": "owner",
+      "exit_code": 0,
+      "actual_creator_sigkill": true,
+      "report": {
+        "age": {
+          "sites": [
+            {
+              "calls": 15,
+              "first": {
+                "age_ns": 8644980204,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs",
+                "issued_ns": 842083156516,
+                "line": 121,
+                "now_ns": 850728136720,
+                "reason": "within-window"
+              },
+              "first_refusal": null,
+              "last": {
+                "age_ns": 8887841044,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs",
+                "issued_ns": 842083156516,
+                "line": 121,
+                "now_ns": 850970997560,
+                "reason": "within-window"
+              }
+            },
+            {
+              "calls": 2,
+              "first": {
+                "age_ns": 8727408532,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+                "issued_ns": 842083156516,
+                "line": 109,
+                "now_ns": 850810565048,
+                "reason": "within-window"
+              },
+              "first_refusal": null,
+              "last": {
+                "age_ns": 8864478708,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+                "issued_ns": 842083156516,
+                "line": 109,
+                "now_ns": 850947635224,
+                "reason": "within-window"
+              }
+            },
+            {
+              "calls": 2,
+              "first": {
+                "age_ns": 8735276297,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs",
+                "issued_ns": 842083156516,
+                "line": 139,
+                "now_ns": 850818432813,
+                "reason": "within-window"
+              },
+              "first_refusal": null,
+              "last": {
+                "age_ns": 8871937875,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs",
+                "issued_ns": 842083156516,
+                "line": 139,
+                "now_ns": 850955094391,
+                "reason": "within-window"
+              }
+            }
+          ]
+        },
+        "causal": {
+          "first": {
+            "age_ns": 8727408532,
+            "diagnostic_reason": "within-window",
+            "issued_boot": "4d57fe71-b619-413b-ab1c-b9a580df9886",
+            "issued_ns": 842083156516,
+            "now_boot": "4d57fe71-b619-413b-ab1c-b9a580df9886",
+            "now_ns": 850810565048,
+            "site": "window"
+          },
+          "first_refusal": null,
+          "last": {
+            "age_ns": 8871937875,
+            "diagnostic_reason": "within-window",
+            "issued_boot": "4d57fe71-b619-413b-ab1c-b9a580df9886",
+            "issued_ns": 842083156516,
+            "now_boot": "4d57fe71-b619-413b-ab1c-b9a580df9886",
+            "now_ns": 850955094391,
+            "site": "final_clocks"
+          },
+          "observations": 4
+        },
+        "cost": {
+          "authentication_calls": 34,
+          "authentication_ns": 2452613,
+          "kernel": [
+            [
+              368,
+              119508215,
+              141266
+            ],
+            [
+              868,
+              95425699,
+              4656490
+            ],
+            [
+              1736,
+              13511437,
+              7043983
+            ],
+            [
+              1736,
+              15984914,
+              15984914
+            ],
+            [
+              3344,
+              93694767,
+              21071836
+            ],
+            [
+              6688,
+              39986473,
+              35945289
+            ],
+            [
+              13376,
+              32636458,
+              32636458
+            ],
+            [
+              434,
+              21656123,
+              117786
+            ],
+            [
+              368,
+              18704163,
+              596697
+            ],
+            [
+              10160,
+              17837320,
+              17837320
+            ]
+          ],
+          "live": [
+            [
+              184,
+              187992055,
+              335031
+            ],
+            [
+              368,
+              41644794,
+              2489722
+            ],
+            [
+              736,
+              7666509,
+              7666509
+            ],
+            [
+              742,
+              31659503,
+              31659503
+            ],
+            [
+              368,
+              119555298,
+              119555298
+            ],
+            [
+              184,
+              26456932,
+              26456932
+            ]
+          ],
+          "overlapping_spans": true,
+          "signature_calls": 34,
+          "signature_ns": 1920074,
+          "wall_not_cpu": true
+        },
+        "deadline_changed": false,
+        "mode": "cost",
+        "product": false,
+        "schedule_changed": false,
+        "success": true,
+        "wall_ns": 243204056
+      }
+    },
+    {
+      "label": "cost-gnu194-2",
+      "case": "owner",
+      "exit_code": 1,
+      "actual_creator_sigkill": false,
+      "report": {
+        "age": {
+          "sites": [
+            {
+              "calls": 8,
+              "first": {
+                "age_ns": 9952578585,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs",
+                "issued_ns": 855471221925,
+                "line": 121,
+                "now_ns": 865423800510,
+                "reason": "within-window"
+              },
+              "first_refusal": null,
+              "last": {
+                "age_ns": 9953952739,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs",
+                "issued_ns": 855471221925,
+                "line": 121,
+                "now_ns": 865425174664,
+                "reason": "within-window"
+              }
+            },
+            {
+              "calls": 1,
+              "first": {
+                "age_ns": 10068131423,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+                "issued_ns": 855471221925,
+                "line": 109,
+                "now_ns": 865539353348,
+                "reason": "expired"
+              },
+              "first_refusal": {
+                "age_ns": 10068131423,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+                "issued_ns": 855471221925,
+                "line": 109,
+                "now_ns": 865539353348,
+                "reason": "expired"
+              },
+              "last": {
+                "age_ns": 10068131423,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+                "issued_ns": 855471221925,
+                "line": 109,
+                "now_ns": 865539353348,
+                "reason": "expired"
+              }
+            },
+            {
+              "calls": 0,
+              "first": null,
+              "first_refusal": null,
+              "last": null
+            }
+          ]
+        },
+        "causal": {
+          "first": {
+            "age_ns": 10068131423,
+            "diagnostic_reason": "expired",
+            "issued_boot": "4d57fe71-b619-413b-ab1c-b9a580df9886",
+            "issued_ns": 855471221925,
+            "now_boot": "4d57fe71-b619-413b-ab1c-b9a580df9886",
+            "now_ns": 865539353348,
+            "site": "window"
+          },
+          "first_refusal": {
+            "age_ns": 10068131423,
+            "diagnostic_reason": "expired",
+            "issued_boot": "4d57fe71-b619-413b-ab1c-b9a580df9886",
+            "issued_ns": 855471221925,
+            "now_boot": "4d57fe71-b619-413b-ab1c-b9a580df9886",
+            "now_ns": 865539353348,
+            "site": "window"
+          },
+          "last": {
+            "age_ns": 10068131423,
+            "diagnostic_reason": "expired",
+            "issued_boot": "4d57fe71-b619-413b-ab1c-b9a580df9886",
+            "issued_ns": 855471221925,
+            "now_boot": "4d57fe71-b619-413b-ab1c-b9a580df9886",
+            "now_ns": 865539353348,
+            "site": "window"
+          },
+          "observations": 1
+        },
+        "cost": {
+          "authentication_calls": 17,
+          "authentication_ns": 1362294,
+          "kernel": [
+            [
+              168,
+              65078698,
+              87552
+            ],
+            [
+              388,
+              47125566,
+              3848853
+            ],
+            [
+              776,
+              7218184,
+              4221646
+            ],
+            [
+              776,
+              6809822,
+              6809822
+            ],
+            [
+              1502,
+              50188843,
+              11349595
+            ],
+            [
+              3004,
+              20131925,
+              18534460
+            ],
+            [
+              6008,
+              18707323,
+              18707323
+            ],
+            [
+              194,
+              15042307,
+              73498
+            ],
+            [
+              168,
+              11355179,
+              357246
+            ],
+            [
+              4556,
+              9685796,
+              9685796
+            ]
+          ],
+          "live": [
+            [
+              84,
+              101992824,
+              190831
+            ],
+            [
+              168,
+              23565164,
+              1597273
+            ],
+            [
+              336,
+              4358277,
+              4358277
+            ],
+            [
+              338,
+              17679874,
+              17679874
+            ],
+            [
+              168,
+              65108206,
+              65108206
+            ],
+            [
+              84,
+              13128623,
+              13128623
+            ]
+          ],
+          "overlapping_spans": true,
+          "signature_calls": 17,
+          "signature_ns": 1021236,
+          "wall_not_cpu": true
+        },
+        "deadline_changed": false,
+        "mode": "cost",
+        "product": false,
+        "schedule_changed": false,
+        "success": false,
+        "wall_ns": 117334169
+      }
+    },
+    {
+      "label": "cost-gnu188-0",
+      "case": "owner",
+      "exit_code": 0,
+      "actual_creator_sigkill": true,
+      "report": {
+        "age": {
+          "sites": [
+            {
+              "calls": 15,
+              "first": {
+                "age_ns": 8469200799,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs",
+                "issued_ns": 872041051832,
+                "line": 121,
+                "now_ns": 880510252631,
+                "reason": "within-window"
+              },
+              "first_refusal": null,
+              "last": {
+                "age_ns": 8705763171,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs",
+                "issued_ns": 872041051832,
+                "line": 121,
+                "now_ns": 880746815003,
+                "reason": "within-window"
+              }
+            },
+            {
+              "calls": 2,
+              "first": {
+                "age_ns": 8581583230,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+                "issued_ns": 872041051832,
+                "line": 109,
+                "now_ns": 880622635062,
+                "reason": "within-window"
+              },
+              "first_refusal": null,
+              "last": {
+                "age_ns": 8680182892,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+                "issued_ns": 872041051832,
+                "line": 109,
+                "now_ns": 880721234724,
+                "reason": "within-window"
+              }
+            },
+            {
+              "calls": 2,
+              "first": {
+                "age_ns": 8591680295,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs",
+                "issued_ns": 872041051832,
+                "line": 139,
+                "now_ns": 880632732127,
+                "reason": "within-window"
+              },
+              "first_refusal": null,
+              "last": {
+                "age_ns": 8689806212,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs",
+                "issued_ns": 872041051832,
+                "line": 139,
+                "now_ns": 880730858044,
+                "reason": "within-window"
+              }
+            }
+          ]
+        },
+        "causal": {
+          "first": {
+            "age_ns": 8581583230,
+            "diagnostic_reason": "within-window",
+            "issued_boot": "4d57fe71-b619-413b-ab1c-b9a580df9886",
+            "issued_ns": 872041051832,
+            "now_boot": "4d57fe71-b619-413b-ab1c-b9a580df9886",
+            "now_ns": 880622635062,
+            "site": "window"
+          },
+          "first_refusal": null,
+          "last": {
+            "age_ns": 8689806212,
+            "diagnostic_reason": "within-window",
+            "issued_boot": "4d57fe71-b619-413b-ab1c-b9a580df9886",
+            "issued_ns": 872041051832,
+            "now_boot": "4d57fe71-b619-413b-ab1c-b9a580df9886",
+            "now_ns": 880730858044,
+            "site": "final_clocks"
+          },
+          "observations": 4
+        },
+        "cost": {
+          "authentication_calls": 34,
+          "authentication_ns": 2742225,
+          "kernel": [
+            [
+              368,
+              109883924,
+              169716
+            ],
+            [
+              868,
+              84496343,
+              4918907
+            ],
+            [
+              1736,
+              12984079,
+              9024761
+            ],
+            [
+              1736,
+              10415222,
+              10415222
+            ],
+            [
+              3344,
+              89795526,
+              22551212
+            ],
+            [
+              6688,
+              36153343,
+              32361229
+            ],
+            [
+              13376,
+              31090971,
+              31090971
+            ],
+            [
+              434,
+              21469317,
+              141934
+            ],
+            [
+              368,
+              19803629,
+              593408
+            ],
+            [
+              10160,
+              14777474,
+              14777474
+            ]
+          ],
+          "live": [
+            [
+              184,
+              177897566,
+              151472
+            ],
+            [
+              368,
+              45629046,
+              3452691
+            ],
+            [
+              736,
+              7652194,
+              7652194
+            ],
+            [
+              742,
+              34710512,
+              34710512
+            ],
+            [
+              368,
+              109932409,
+              109932409
+            ],
+            [
+              184,
+              22184639,
+              22184639
+            ]
+          ],
+          "overlapping_spans": true,
+          "signature_calls": 34,
+          "signature_ns": 1869569,
+          "wall_not_cpu": true
+        },
+        "deadline_changed": false,
+        "mode": "cost",
+        "product": false,
+        "schedule_changed": false,
+        "success": true,
+        "wall_ns": 236779278
+      }
+    },
+    {
+      "label": "cost-gnu188-1",
+      "case": "owner",
+      "exit_code": 0,
+      "actual_creator_sigkill": true,
+      "report": {
+        "age": {
+          "sites": [
+            {
+              "calls": 15,
+              "first": {
+                "age_ns": 9044143432,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs",
+                "issued_ns": 885005860402,
+                "line": 121,
+                "now_ns": 894050003834,
+                "reason": "within-window"
+              },
+              "first_refusal": null,
+              "last": {
+                "age_ns": 9347358508,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs",
+                "issued_ns": 885005860402,
+                "line": 121,
+                "now_ns": 894353218910,
+                "reason": "within-window"
+              }
+            },
+            {
+              "calls": 2,
+              "first": {
+                "age_ns": 9165639800,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+                "issued_ns": 885005860402,
+                "line": 109,
+                "now_ns": 894171500202,
+                "reason": "within-window"
+              },
+              "first_refusal": null,
+              "last": {
+                "age_ns": 9314365336,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+                "issued_ns": 885005860402,
+                "line": 109,
+                "now_ns": 894320225738,
+                "reason": "within-window"
+              }
+            },
+            {
+              "calls": 2,
+              "first": {
+                "age_ns": 9179465440,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs",
+                "issued_ns": 885005860402,
+                "line": 139,
+                "now_ns": 894185325842,
+                "reason": "within-window"
+              },
+              "first_refusal": null,
+              "last": {
+                "age_ns": 9327697874,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs",
+                "issued_ns": 885005860402,
+                "line": 139,
+                "now_ns": 894333558276,
+                "reason": "within-window"
+              }
+            }
+          ]
+        },
+        "causal": {
+          "first": {
+            "age_ns": 9165639800,
+            "diagnostic_reason": "within-window",
+            "issued_boot": "4d57fe71-b619-413b-ab1c-b9a580df9886",
+            "issued_ns": 885005860402,
+            "now_boot": "4d57fe71-b619-413b-ab1c-b9a580df9886",
+            "now_ns": 894171500202,
+            "site": "window"
+          },
+          "first_refusal": null,
+          "last": {
+            "age_ns": 9327697874,
+            "diagnostic_reason": "within-window",
+            "issued_boot": "4d57fe71-b619-413b-ab1c-b9a580df9886",
+            "issued_ns": 885005860402,
+            "now_boot": "4d57fe71-b619-413b-ab1c-b9a580df9886",
+            "now_ns": 894333558276,
+            "site": "final_clocks"
+          },
+          "observations": 4
+        },
+        "cost": {
+          "authentication_calls": 34,
+          "authentication_ns": 2664870,
+          "kernel": [
+            [
+              368,
+              152182809,
+              265784
+            ],
+            [
+              868,
+              108727047,
+              8896430
+            ],
+            [
+              1736,
+              16339096,
+              10947650
+            ],
+            [
+              1736,
+              14847610,
+              14847610
+            ],
+            [
+              3344,
+              118381959,
+              30492898
+            ],
+            [
+              6688,
+              47062833,
+              42442121
+            ],
+            [
+              13376,
+              40826228,
+              40826228
+            ],
+            [
+              434,
+              29614984,
+              153007
+            ],
+            [
+              368,
+              30144950,
+              749696
+            ],
+            [
+              10160,
+              19253940,
+              19253940
+            ]
+          ],
+          "live": [
+            [
+              184,
+              238712860,
+              190825
+            ],
+            [
+              368,
+              64462648,
+              4737193
+            ],
+            [
+              736,
+              11415897,
+              11415897
+            ],
+            [
+              742,
+              48533409,
+              48533409
+            ],
+            [
+              368,
+              152244431,
+              152244431
+            ],
+            [
+              184,
+              21814956,
+              21814956
+            ]
+          ],
+          "overlapping_spans": true,
+          "signature_calls": 34,
+          "signature_ns": 2072135,
+          "wall_not_cpu": true
+        },
+        "deadline_changed": false,
+        "mode": "cost",
+        "product": false,
+        "schedule_changed": false,
+        "success": true,
+        "wall_ns": 303410849
+      }
+    },
+    {
+      "label": "cost-gnu188-2",
+      "case": "owner",
+      "exit_code": 0,
+      "actual_creator_sigkill": true,
+      "report": {
+        "age": {
+          "sites": [
+            {
+              "calls": 15,
+              "first": {
+                "age_ns": 8840351499,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs",
+                "issued_ns": 898812380882,
+                "line": 121,
+                "now_ns": 907652732381,
+                "reason": "within-window"
+              },
+              "first_refusal": null,
+              "last": {
+                "age_ns": 9058489236,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs",
+                "issued_ns": 898812380882,
+                "line": 121,
+                "now_ns": 907870870118,
+                "reason": "within-window"
+              }
+            },
+            {
+              "calls": 2,
+              "first": {
+                "age_ns": 8930225755,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+                "issued_ns": 898812380882,
+                "line": 109,
+                "now_ns": 907742606637,
+                "reason": "within-window"
+              },
+              "first_refusal": null,
+              "last": {
+                "age_ns": 9036846474,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+                "issued_ns": 898812380882,
+                "line": 109,
+                "now_ns": 907849227356,
+                "reason": "within-window"
+              }
+            },
+            {
+              "calls": 2,
+              "first": {
+                "age_ns": 8938816971,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs",
+                "issued_ns": 898812380882,
+                "line": 139,
+                "now_ns": 907751197853,
+                "reason": "within-window"
+              },
+              "first_refusal": null,
+              "last": {
+                "age_ns": 9044696442,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs",
+                "issued_ns": 898812380882,
+                "line": 139,
+                "now_ns": 907857077324,
+                "reason": "within-window"
+              }
+            }
+          ]
+        },
+        "causal": {
+          "first": {
+            "age_ns": 8930225755,
+            "diagnostic_reason": "within-window",
+            "issued_boot": "4d57fe71-b619-413b-ab1c-b9a580df9886",
+            "issued_ns": 898812380882,
+            "now_boot": "4d57fe71-b619-413b-ab1c-b9a580df9886",
+            "now_ns": 907742606637,
+            "site": "window"
+          },
+          "first_refusal": null,
+          "last": {
+            "age_ns": 9044696442,
+            "diagnostic_reason": "within-window",
+            "issued_boot": "4d57fe71-b619-413b-ab1c-b9a580df9886",
+            "issued_ns": 898812380882,
+            "now_boot": "4d57fe71-b619-413b-ab1c-b9a580df9886",
+            "now_ns": 907857077324,
+            "site": "final_clocks"
+          },
+          "observations": 4
+        },
+        "cost": {
+          "authentication_calls": 34,
+          "authentication_ns": 2456516,
+          "kernel": [
+            [
+              368,
+              106237794,
+              159543
+            ],
+            [
+              868,
+              79468764,
+              4784618
+            ],
+            [
+              1736,
+              11663145,
+              7606914
+            ],
+            [
+              1736,
+              9620748,
+              9620748
+            ],
+            [
+              3344,
+              86949204,
+              21868434
+            ],
+            [
+              6688,
+              33974937,
+              30932378
+            ],
+            [
+              13376,
+              31105833,
+              31105833
+            ],
+            [
+              434,
+              22509035,
+              135561
+            ],
+            [
+              368,
+              19029501,
+              576317
+            ],
+            [
+              10160,
+              14479075,
+              14479075
+            ]
+          ],
+          "live": [
+            [
+              184,
+              164166299,
+              135152
+            ],
+            [
+              368,
+              39095848,
+              2803119
+            ],
+            [
+              736,
+              8257992,
+              8257992
+            ],
+            [
+              742,
+              28316087,
+              28316087
+            ],
+            [
+              368,
+              106285290,
+              106285290
+            ],
+            [
+              184,
+              18650009,
+              18650009
+            ]
+          ],
+          "overlapping_spans": true,
+          "signature_calls": 34,
+          "signature_ns": 1859824,
+          "wall_not_cpu": true
+        },
+        "deadline_changed": false,
+        "mode": "cost",
+        "product": false,
+        "schedule_changed": false,
+        "success": true,
+        "wall_ns": 218287104
+      }
+    }
+  ],
+  "historical_failing_tuple_recovered": false,
+  "product_speedup_claimed": false,
+  "production_admission": false
+}

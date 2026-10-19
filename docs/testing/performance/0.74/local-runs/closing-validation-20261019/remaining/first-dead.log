@@ -1,0 +1,31 @@
+HC074-OWNED-CREATOR image_sha256=8caf881c93fc93f9ba870d2b64492016da079fec6f300bcdbbbb00905337f440
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::privileged_original_root_manager_creator_victim ... HC074-OWNED-ENROLL success=false facts={"observations":1,"first":{"site":"window","issued_ns":1160431594530,"now_ns":1170456291564,"issued_boot":"4d57fe71-b619-413b-ab1c-b9a580df9886","now_boot":"4d57fe71-b619-413b-ab1c-b9a580df9886","age_ns":10024697034,"diagnostic_reason":"expired"},"last":{"site":"window","issued_ns":1160431594530,"now_ns":1170456291564,"issued_boot":"4d57fe71-b619-413b-ab1c-b9a580df9886","now_boot":"4d57fe71-b619-413b-ab1c-b9a580df9886","age_ns":10024697034,"diagnostic_reason":"expired"},"first_refusal":{"site":"window","issued_ns":1160431594530,"now_ns":1170456291564,"issued_boot":"4d57fe71-b619-413b-ab1c-b9a580df9886","now_boot":"4d57fe71-b619-413b-ab1c-b9a580df9886","age_ns":10024697034,"diagnostic_reason":"expired"}}
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::privileged_original_root_manager_creator_victim' panicked at tools/long-run-supervisor-074/src/diagnostic_privileged_root_frame_tests.rs:158:24:
+called `Result::unwrap()` on an `Err` value: Context(Frame(Original(Original(Original(Transport(Material(Outputs(Original(Original(Original(Causal(Time))))))))))))
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::privileged_original_root_manager_creator_victim
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1281 filtered out; finished in 13.96s
+
+
+Traceback (most recent call last):
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/tests/owned_root_creator_sigkill.py", line 282, in <module>
+    main()
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/tests/owned_root_creator_sigkill.py", line 271, in main
+    run(binary, args.out, case)
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/tests/owned_root_creator_sigkill.py", line 134, in run
+    ready, rights = receive(peer, owner, "ready", 14 if case == "outside-alias" else 13)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/tests/owned_root_creator_sigkill.py", line 42, in receive
+    require(flags & ~socket.MSG_CMSG_CLOEXEC == 0 and 0 < len(raw) < 16384, "capsule truncation")
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/tests/original_custody_owner_loss.py", line 30, in require
+    raise RuntimeError(reason)
+RuntimeError: capsule truncation

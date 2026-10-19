@@ -1,0 +1,66 @@
+{
+  "source": "659855a3c83f5185cd290ab26fdd43122e7cb396",
+  "stage": "remaining",
+  "images": [
+    "527eb954a7f28b492796262f7340200cef8f109f9408c103618ed9dcd5398dde  /home/artur/.cache/hydracache-074-194-check/release/deps/hydracache_long_run_supervisor_074-b26b156d3dcd0098",
+    "8caf881c93fc93f9ba870d2b64492016da079fec6f300bcdbbbb00905337f440  /home/artur/.cache/hydracache-074-188-check/release/deps/hydracache_long_run_supervisor_074-d2aba7f58d773234"
+  ],
+  "recipe": "5379f6de03496baa1b2f33eb8443f3bf8488d55502fc7a88686182de9193234e",
+  "rows": [
+    {
+      "label": "second-dead",
+      "case": "second-dead",
+      "exit_code": 0,
+      "actual_creator_sigkill": true,
+      "diagnostic_mode": "facts"
+    },
+    {
+      "label": "first-stopped",
+      "case": "first-stopped",
+      "exit_code": 0,
+      "actual_creator_sigkill": true,
+      "diagnostic_mode": "facts"
+    },
+    {
+      "label": "second-stopped",
+      "case": "second-stopped",
+      "exit_code": 0,
+      "actual_creator_sigkill": true,
+      "diagnostic_mode": "facts"
+    },
+    {
+      "label": "outside-alias",
+      "case": "outside-alias",
+      "exit_code": 0,
+      "actual_creator_sigkill": true,
+      "diagnostic_mode": "facts"
+    },
+    {
+      "label": "owner",
+      "case": "owner",
+      "exit_code": 0,
+      "actual_creator_sigkill": true,
+      "diagnostic_mode": "facts"
+    },
+    {
+      "label": "first-dead",
+      "case": "first-dead",
+      "exit_code": 1,
+      "actual_creator_sigkill": false,
+      "diagnostic_mode": "facts"
+    }
+  ],
+  "functional_gate_passed": false,
+  "missing_four_cases_passed": true,
+  "actual_creator_sigkill_cases": 5,
+  "analysis_not_positive_run_receipt": true,
+  "not_a_combined_cross_source_matrix": true,
+  "clock_before": "active",
+  "clock_after": "active",
+  "test_issuers": true,
+  "original_send": false,
+  "completion": false,
+  "server": false,
+  "supervisor": false,
+  "product": false
+}

@@ -13991,3 +13991,51 @@ all complete live rounds remain unchanged. The next question is the cost and
 exact time observations of closing validation, not which threshold to relax or
 how many retries eventually produce green. This is a local safety and attribution
 result, not a product speedup or permission to launch the server.
+
+## Closing validation can consume the last part of the freshness window
+
+The next [attribution](../testing/performance/0.74/closing-validation-design.md)
+identified a comparison missing from the earlier report. After the complete
+grouped validation, custody inspects its existing alarm and calls the original
+challenge-age predicate with another BOOTTIME sample. The alarm and challenge
+freshness checks are independent; a healthy earlier sample is not permission
+to omit either later check. Test-only recording now copies the actual age
+arguments and caller location without reading a replacement clock. Removing
+the exact observation hooks recovers all 418 earlier source bodies, and all
+303 source contracts pass.
+
+Six fixed cost attempts use the existing authentication, live-walk and kernel
+observers around one unchanged closing call. A new GNU attempt reproduces the
+custody error at age 10,003,292,291 ns, after the last earlier final-clock sample
+still reported 9,985,119,124 ns. Closing validation took 261.749 ms. Another GNU
+attempt refuses at the causal-window comparison at 10,068,131,423 ns; its round
+ends early and must not be averaged with completed rounds. The original
+exclusive ten-second guard makes both decisions. These new tuples explain the
+error mechanism, not the exact missing tuple of the historical MSRV attempt.
+
+All three MSRV cost rounds complete in 218.287–303.411 ms. Each performs 34
+authentication/signature checks, 6,688 Boot and 13,376 Namespace observations.
+Authentication occupies 2.457–2.742 ms; kernel-context inclusive wall spans
+occupy 106.285–152.244 ms. These are instrumented, overlapping wall spans, not
+exclusive CPU or syscall counts. The evidence points toward the cost of repeated
+fresh live/kernel work rather than treating signature verification as the
+dominant target. It does not establish a product speedup or justify caching a
+live result, removing an observation or changing the deadline origin.
+
+The [separate evidence packet](../testing/performance/0.74/local-runs/closing-validation-20261019/README.md)
+retains every cost refusal and keeps its functional gate false. A separate
+facts-only cohort checks the previously missing MSRV creator faults with the
+original real-writer SIGKILL, EOF and busy-fence requirements. Cost observations
+and actual fault receipts remain separate, as do local fixture success and
+production host admission.
+
+All four previously missing MSRV fault cases pass in facts-only mode, along
+with owner loss as a regression. The final first-guardian-loss regression
+refuses before closing validation: its actual enrollment observation reaches
+10,024,697,034 ns after challenge issuance. No named fault is injected into that
+expired attempt, and no positive complete-cohort receipt is produced. Five
+actual SIGKILL proofs are kept separate from the refused sixth case. This places
+the next optimization question across the full preparation/enrollment budget,
+not just closing latency. The new diagnostic evidence never refreshes an old
+attempt, changes its ten-second window or turns local fixture success into
+permission to install or launch the server.

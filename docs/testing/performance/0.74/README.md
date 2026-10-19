@@ -4195,3 +4195,28 @@ This packet contains 150 hashed files plus its inventory. Inventory SHA256 is
 `a328705a7165f178dbf068a764f107585324d2bcec0630b41dc8ed658c5e9a7f`.
 Its verifier rejects thirteen mutations, including false promotion of the
 incomplete MSRV gate; historical packets and qualification manifest are unchanged.
+
+The [closing-validation attribution](closing-validation-design.md) now copies
+the previously unobserved raw custody age comparison without adding a guard
+clock or changing the original schedule. Three complete MSRV cost samples take
+218.287–303.411 ms, each with 34 authentication/signature checks, 6,688 Boot and
+13,376 Namespace observations. A new GNU attempt reproduces custody expiry at
+10,003,292,291 ns after an earlier healthy final-clock sample; another expires
+at the causal-window comparison. Instrumented overlapping wall spans are not
+exclusive CPU, product latency or a speedup, and these new tuples do not recover
+the missing historical MSRV tuple.
+
+All four previously missing facts-only MSRV fault cases pass, as does owner
+regression. The final first-dead regression refuses before closing/fault at
+observed enrollment age 10,024,697,034 ns. Five actual creator SIGKILL proofs
+are retained separately from this negative; the fresh full MSRV gate remains
+open. The next cost hypothesis must address preparation/enrollment too, keeping
+all live observations and original time origins. No positive complete-cohort
+receipt, original execution or server admission is manufactured.
+
+The [new packet](local-runs/closing-validation-20261019/README.md) contains 96
+hashed files plus its inventory; inventory SHA256 is
+`7b1c508b1cdd83118765e3400872c0a0e8378d1e0cd7bbb05b22c65da1e9b23e`.
+Its verifier rejects sixteen mutations. All 303 source contracts, scoped Linux
+and Windows units, strict lint, formatting and local non-promotable contracts
+pass. The older partial packet and qualification manifest are unchanged.

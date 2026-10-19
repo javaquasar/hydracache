@@ -2,15 +2,19 @@ param([Parameter(Mandatory)][ValidateSet('cost','remaining')][string]$Stage,[Par
 $ErrorActionPreference='Stop'
 $taskOut=Join-Path $PSScriptRoot "$Label-analysis.json"
 if(Test-Path -LiteralPath $taskOut){throw 'Retain existing analysis'}
-$taskReceipt=Get-Content -Raw -LiteralPath (Join-Path $PSScriptRoot "$Label/receipt.json") | ConvertFrom-Json
+$taskReceiptPath=Join-Path $PSScriptRoot "$Label/receipt.json"
+if(-not (Test-Path -LiteralPath $taskReceiptPath)){$taskReceiptPath=Join-Path $PSScriptRoot "$Label/outcome.json"}
+$taskReceipt=Get-Content -Raw -LiteralPath $taskReceiptPath | ConvertFrom-Json
 if($taskReceipt.stage -cne $Stage){throw 'Wrong cohort stage'}
 $taskRows=@()
 foreach($taskRow in $taskReceipt.rows){
     $taskDir=Join-Path $PSScriptRoot "$Label/$($taskRow.label)/$($taskRow.case)"
     $taskRaw=Get-Content -Raw -LiteralPath (Join-Path $taskDir 'creator.log')
     $taskMatch=[regex]::Matches($taskRaw,'HC074-CLOSING (\{[^\r\n]+\})')
-    if($taskMatch.Count -eq 0 -and $Stage -ceq 'cost' -and $taskRow.exit_code -ne 0){
-        $taskRows+=[ordered]@{label=$taskRow.label;case=$taskRow.case;exit_code=$taskRow.exit_code;actual_creator_sigkill=$false;closing_not_reached=$true;report=$null}
+    if($taskMatch.Count -eq 0 -and $taskRow.exit_code -ne 0){
+        $taskEnrollment=[regex]::Match($taskRaw,'HC074-OWNED-ENROLL success=false facts=(\{[^\r\n]+\})')
+        if(-not $taskEnrollment.Success){throw 'Missing preclosing refusal observations'}
+        $taskRows+=[ordered]@{label=$taskRow.label;case=$taskRow.case;exit_code=$taskRow.exit_code;actual_creator_sigkill=$false;closing_not_reached=$true;report=$null;enrollment_report=($taskEnrollment.Groups[1].Value | ConvertFrom-Json)}
         continue
     }
     if($taskMatch.Count -ne 1){throw 'Closing call did not produce exactly one report'}

@@ -1,0 +1,3 @@
+HC074-OWNED-CREATOR image_sha256=8caf881c93fc93f9ba870d2b64492016da079fec6f300bcdbbbb00905337f440
+HC074-OWNED-CREATOR case=first-stopped seed=0x074c2025 creator_sigkill=true writers_sigkill=3 before_original_deadline=true sinks_shed=true drained_eof=true fence_held=true test_issuers=true original_send=false completion=false product=false
+HC074-OWNED-CREATOR completed=true cases=1 server=false product=false

@@ -1,0 +1,11 @@
+{
+  "source": "659855a3c83f5185cd290ab26fdd43122e7cb396",
+  "compiler": "1.88.0",
+  "image": "8caf881c93fc93f9ba870d2b64492016da079fec6f300bcdbbbb00905337f440  /home/artur/.cache/hydracache-074-188-check/release/deps/hydracache_long_run_supervisor_074-d2aba7f58d773234",
+  "recipe": "c657e67c1be056276dff2fe0e69cd59cafa3e9c1cc6a8b8a3859eff38776e192",
+  "owned_units": 2,
+  "origin_units": 18,
+  "profile": false,
+  "server": false,
+  "product": false
+}
