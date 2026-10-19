@@ -77,3 +77,19 @@ require the retained original timer to remain live on the intended refusals,
 so timer expiry cannot substitute for a wrong-key/consent/root negative.
 Retain the failed source/images/raw logs and record MSRV as unexecuted there.
 Repeat fresh complete cohorts; do not relabel that initial partial as a pass.
+
+## Selected-source time refusal and next attribution
+
+At 67c2f41c, the corrected GNU cohort completes healthy, revalidation and unarmed.
+The next fresh wrong-key attempt refuses Causal(Time) in original owned-root
+preparation before binding. The current join-only trace has no failing tuple;
+the earlier successful call's age cannot supply it. MSRV is not executed. Retain
+this distinct negative, restored clock and empty-root scan; the local live gate
+must remain false even when all ordinary/source tests and evidence checks pass.
+
+Next, extend only test-scoped existing causal and raw-age capture across the
+preparation, preserving unwind output and all original checks/origins. Do not
+add clock reads or refresh progress. Obtain the actual refusal tuple and stage
+before selecting a cost candidate. A fresh complete cohort is still required
+before treating this boundary as locally verified; no blind retry, original
+delivery, server operation or threshold change follows from this partial result.

@@ -4277,3 +4277,35 @@ final receipts. No predicate, origin or runtime bound was changed to pass.
 The held-placement packet contains 70 hashed files plus its inventory; inventory
 SHA256 is `f86588ec9eff80ddab1a5fc3acd027adb98082c1e16b314bbe9dfea02d2f7e82`.
 Its verifier refuses sixteen mutations and rejects runtime-admission promotion.
+
+The new [same-owner placement join](owned-placement-design.md) consumes the exact
+original manager/root holder, selects its retained policy key and compares all
+original consent fields and exact Armed enrollment. Signature/root constraints
+surround the unchanged full live round; refusal retains and poisons the complete
+holder. All 425 previous source bodies, wire contracts, 46 effect brackets and
+300/60/10 origins remain intact through exact additive hooks. No held projection,
+new peer authentication, artifact admission or original delivery is added.
+
+The [local packet](local-runs/owned-placement-20261019/README.md) separates two
+partial live cohorts. The first exposed an incorrect post-Drop Busy oracle for
+a never-Armed pair. A test-only correction strengthens while-owned Busy/non-EOF,
+requires dead custodians/EOF before raw-lock availability and fresh typed replay
+refusal, and leaves all Armed post-Drop Busy checks intact. Its fresh GNU run
+passes healthy, revalidation and unarmed, then refuses Causal(Time) in the next
+root preparation before the wrong-key join. MSRV is not run in that cohort.
+The full local live gate stays false; no failing tuple or complete receipt is
+invented. Preparation attribution must precede a new full cohort.
+
+All 312 source contracts, strict lint, formatting and local contracts pass.
+Each GNU/MSRV image passes 61 selected ordinary units and 247 Linux doc tests;
+Windows passes 60 units and twenty doc tests. Both clock restorations are
+verified, temporary roots are absent and nine signed fixture hashes are stable.
+There is no new creator-SIGKILL, preparation-speed or product-performance claim.
+Qualification inputs and prior sealed packets are unchanged; server operations,
+completion, cells two through four and reconnect remain closed.
+
+The same-owner packet contains 95 hashed files plus its inventory. Inventory
+SHA256 is `f7d3784659c43e0f1f325b828fbc350476037b4f9b55793fd562f198ef562c06`.
+Its verifier rejects twenty mutations, including false promotion of the partial
+live result to a completed gate. The previous signed-placement verifier still
+passes all sixteen mutation controls without modifying that sealed packet.

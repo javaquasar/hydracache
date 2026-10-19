@@ -79,3 +79,10 @@ Join the new claims with this same original owner, retained root, context and
 bound inside the complete frame before projecting a complete held unit.
 No production trust, barrier release, completion or unlock follows from the
 new supplied-key inspection.
+
+The [same-owner placement constraints join](owned-placement-design.md) now
+consumes this complete holder, selects only its retained controller-policy key
+and requires its exact Armed enrollment and original consent. Revalidation
+keeps the old full round; failure poisons and retains the entire consumed owner.
+This supplies no descriptor getter, retry owner, held-unit projection or send.
+Actual slice ancestry, artifact admission and production enrollment stay open.

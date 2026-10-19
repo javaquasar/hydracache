@@ -460,3 +460,21 @@ actual root placement, original owner/context/bound join and a complete held
 unit must precede authenticated delivery. All live checks and original bounds
 are unchanged. Production enrollment, all-writer cessation, completion, cells
 two through four, reconnect and server rehearsal remain separate open gates.
+
+## P3 Same-owner placement constraints and incomplete live gate
+
+The [consuming join](owned-placement-design.md) now connects signed expectations
+to the original retained controller-policy key, complete consent and exact Armed
+guardian root/context/deadline. It owns the whole manager/root chain on success
+or refusal and repeats the unchanged full live round. Actual fixed slice ancestry,
+approved executable artifacts and a held-unit projection remain unimplemented;
+this is not authenticated original delivery or production enrollment.
+
+Ordinary GNU/MSRV regression and all 312 source guards pass. The fresh privileged
+GNU cohort passes healthy, revalidation and never-Armed custody/replay refusal,
+then fails the old Causal(Time) check during the next root preparation, before
+wrong-key binding. MSRV is unexecuted and the complete live gate remains false.
+Capture the actual preparation comparison with test-only existing causal/raw-age
+observers before proposing an isolated cost improvement, preserving all checks
+and original deadlines. P1 through P5 and server admission remain open; no
+installation, supervisor operation or product workload was performed.

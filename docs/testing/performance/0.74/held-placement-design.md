@@ -63,3 +63,9 @@ authenticated executable/stream roles and barrier, never the direct-worker
 specification. Delivery uncertainty, autonomous revocation of every writer,
 durable lifecycle and reconnect remain subsequent gates. No server operation,
 supervisor maintenance or product workload is opened by this local package.
+
+The subsequent [same-owner constraints join](owned-placement-design.md) selects
+the retained original policy key and joins exact consent/enrollment bytes under
+the unchanged full frame. It still does not prove actual systemd slice ancestry,
+admit declared artifacts or project a held unit. Keep those gates separate from
+successful local root custody.

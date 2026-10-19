@@ -14122,3 +14122,52 @@ and exact recipe remain in evidence; fresh final runs correct only that count,
 not test predicates or a runtime deadline. A green wrapper is not allowed to
 erase its earlier diagnostic mistake or promote these reader checks to start
 authority.
+
+## Bind signed constraints to the owner that still holds the resources
+
+The next [local join](../testing/performance/0.74/owned-placement-design.md)
+does not accept a caller-selected key or a reconstructed root. It consumes the
+same manager/root holder, selects the retained controller-policy key, compares
+the complete original consent and requires the exact already Armed enrollment.
+The independently derived original context, root identity and absolute bound
+must all match. A valid signature for another root or consent is insufficient.
+
+Pure comparisons surround the unchanged complete live round inside the old root
+join. Revalidation repeats both signature checks and the full round; its retained
+hash prevents changing constraints rather than replacing live authorization.
+Errors poison both owners and retain the complete consumed holder, whose old
+destruction order closes the original aliases while independent guardians keep
+fence/timer custody. No successful check releases the barrier or the fence.
+
+This binds constraints to actual local custody, not to proven systemd placement.
+Temporary fixture roots need not have the expected slice ancestry, and the v2
+declared artifact hashes are not admitted executable objects. Those must be
+checked before a separate held-unit projection. Production enrollment, a fresh
+authenticated peer exchange and original delivery remain distinct gates. The
+package tests this ownership boundary without asserting a throughput, allocation
+or preparation-wall improvement.
+
+The first actual cohort reveals a mistaken test oracle rather than a reason to
+change the runtime fence policy. A never-Armed pair has no independent enrolled
+keeper after its full failed holder is destroyed. The corrected test therefore
+requires Busy and non-EOF while that failed holder is retained, then EOF and dead
+custodians before checking raw-lock availability and fresh typed replay refusal.
+All already-Armed cases still require Busy after destruction. The original timer
+must remain live on intended refusals. The failed cohort remains a partial
+negative; no deadline or numeric acceptance threshold is relaxed to replace it.
+
+The corrected selected-source run passes healthy, revalidation and never-Armed
+custody/replay checks on GNU. The fourth fresh attempt instead refuses the
+original Causal(Time) guard during root preparation, before it can test the
+wrong-key binding. MSRV is not executed in that cohort. The full live gate is
+therefore still false despite all 312 source contracts, selected ordinary
+Linux regression, strict lint and documentation tests passing.
+
+The final observed ages in the two completed positive calls are 9.097 and
+8.236 seconds. Those values do not recover the failing preparation tuple or
+prove a speedup. The current facts capture begins at the later join; the next
+attribution must encompass preparation and copy its existing issued/now/boot
+and raw age observations, including unwind. This is a concrete observability
+gap to close before choosing a cost optimization, not a reason to extend the
+ten-second window or rerun the matrix until a fortunate pass. Both partial
+cohorts remain in the [evidence](../testing/performance/0.74/local-runs/owned-placement-20261019/README.md).
