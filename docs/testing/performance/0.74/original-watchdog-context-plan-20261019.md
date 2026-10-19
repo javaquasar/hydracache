@@ -41,8 +41,10 @@ update the article and design with the resulting admission boundary.
 
 Actual original watchdog enrollment must later use retained original kernel and
 timer/fence ownership, reviewed launch artifacts and complete process/cgroup
-binding, not loosen the prototype's direct-child check. Original delivery,
-all-writer revocation, durable completion/later cells/reconnect and server
-admission remain closed. No release installation, supervisor operation,
+binding, not loosen the prototype's direct-child check.
+The view still retains the original v1 message; it cannot convert that consent
+into authority for the separately signed v2 held-launcher artifacts.
+Original delivery, all-writer revocation, durable completion/later cells/reconnect
+and server admission remain closed. No release installation, supervisor operation,
 original/system-bus send, product workload, dedicated server or expensive
 qualification is authorized by this package.
