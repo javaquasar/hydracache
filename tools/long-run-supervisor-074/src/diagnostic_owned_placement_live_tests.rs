@@ -5,6 +5,9 @@ use crate::diagnostic_two_phase_launch::root_enrollment::{Kind, PacketClaims};
 use ed25519_dalek::{Signer, SigningKey};
 use crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::time_observation;
 
+#[path = "diagnostic_placement_preparation_trace.rs"]
+mod preparation_trace;
+
 fn busy(campaigns: &Path) {
     assert!(matches!(
         crate::host_execution::lock_host_root(campaigns),
@@ -43,6 +46,9 @@ fn privileged_owned_placement_live_join() {
     }
 }
 fn run(case: &str) {
+    preparation_trace::capture(case, || run_original(case));
+}
+fn run_original(case: &str) {
     use crate::diagnostic_worker_policy::trusted_input;
     let model = trusted_input::controller_input::tests::privileged_fixture::new();
     let request = request(&model);

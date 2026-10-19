@@ -1,4 +1,6 @@
 //! Exact additive same-owner join; old validation bodies and wire stay frozen.
+#[path = "performance_contract_074_placement_preparation.rs"]
+mod preparation;
 const BASE: &str = "f4d7f44c";
 const PREFIX: &str = "tools/long-run-supervisor-074/src/";
 const HOOKS: &[(&str, &str)] = &[
@@ -39,7 +41,7 @@ platform = "linux"
 # END OWNED PLACEMENT GATE
 "##;
 pub(super) fn normalize(path: &str, raw: &str) -> String {
-    let mut text = raw.to_owned();
+    let mut text = preparation::normalize(path, raw);
     for (file, hook) in HOOKS {
         if path == format!("{PREFIX}{file}") {
             assert_eq!(
