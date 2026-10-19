@@ -1,0 +1,17 @@
+{
+  "source_commit": "7c523942f0ecba1011a09d63ec1e2531923b7538",
+  "compiler": "1.94.0",
+  "image": "60a114158989e84db95a5a77ecc1b5c37031ed54f5d45d0b784ef9c05733b649  /home/artur/.cache/hydracache-074-194-check/release/deps/hydracache_long_run_supervisor_074-b26b156d3dcd0098",
+  "runner_sha256": "3b5a503ec8ca968df00001ffe3a55a1677847847667983951b319238ae1cf8eb",
+  "repeats": 3,
+  "clock_service_before": "active",
+  "clock_service_after": "active",
+  "diagnostic_only": true,
+  "functional_gate_passed": false,
+  "kernel_simulated": true,
+  "end_to_end_original": false,
+  "server": false,
+  "product": false,
+  "original_send": false,
+  "completion_allowed": false
+}

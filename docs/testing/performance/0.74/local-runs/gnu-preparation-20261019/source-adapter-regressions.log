@@ -1,0 +1,8 @@
+
+running 3 tests
+test safety_alarm::grouped_process_loss_preserves_original_candidate_and_owned_crash_harness ... ok
+test output_join::output_join_preserves_original_guards_and_effect_closing_checks ... ok
+test starting_publication::collector_starting_publication_preserves_every_original_predicate_and_deadline ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 292 filtered out; finished in 4.45s
+

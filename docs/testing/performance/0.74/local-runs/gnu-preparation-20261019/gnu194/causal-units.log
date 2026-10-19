@@ -1,0 +1,15 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `release` profile [optimized] target(s) in 2m 06s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/release/deps/hydracache_long_run_supervisor_074-b26b156d3dcd0098)
+
+running 2 tests
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::time_observation::tests::causal_facts_boundary_classification_does_not_replace_original_guard ... ok
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::time_observation::tests::causal_facts_first_refusal_and_nested_unwind_are_isolated' (1555) panicked at tools/long-run-supervisor-074/src/diagnostic_causal_time_observation.rs:120:56:
+trace restoration canary
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+HC074-CAUSAL-FACTS Some(Report { observations: 0, first: None, last: None, first_refusal: None })
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::time_observation::tests::causal_facts_first_refusal_and_nested_unwind_are_isolated ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 1265 filtered out; finished in 0.01s
+

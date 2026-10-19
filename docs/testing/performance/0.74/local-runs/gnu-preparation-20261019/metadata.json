@@ -1,0 +1,12 @@
+{
+  "kind": "local-gnu-preparation-attribution",
+  "source_commit": "7c523942f0ecba1011a09d63ec1e2531923b7538",
+  "source_contract_commit": "2b984ff2a3e74ec3855af39af065bd996790a2a9",
+  "repeats": 3,
+  "functional_gate_passed": false,
+  "preparation_completed_each": true,
+  "historical_refusal_reproduced": false,
+  "server": false,
+  "product": false,
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+}

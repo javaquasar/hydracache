@@ -1,0 +1,10 @@
+{
+  "source_commit": "7c523942f0ecba1011a09d63ec1e2531923b7538",
+  "compiler": "1.88.0",
+  "image": "0a5c681925cce90f12fed9c028702401d6c5baa976ade957501b62a325cf0c5e  /home/artur/.cache/hydracache-074-188-check/release/deps/hydracache_long_run_supervisor_074-d2aba7f58d773234",
+  "runner_sha256": "3b5a503ec8ca968df00001ffe3a55a1677847847667983951b319238ae1cf8eb",
+  "uid": "1000",
+  "unit_tests": 2,
+  "server": false,
+  "product": false
+}

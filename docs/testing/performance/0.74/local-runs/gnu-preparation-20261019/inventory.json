@@ -1,0 +1,226 @@
+[
+  {
+    "path": ".gitattributes",
+    "sha256": "3e2996e70cfa175633297e96a0db336f916ecb7fdf0a6919c2f598dd122ed61b"
+  },
+  {
+    "path": "docs-final.log",
+    "sha256": "3cd9d96ce27960d56707e435acbdabfd8db3056aa18a6ea4a242531aa19664f6"
+  },
+  {
+    "path": "docs.log",
+    "sha256": "9be007af98bf611eff5925fa6ed4b76a14b49e9f00b5ce92ef2af412196b5341"
+  },
+  {
+    "path": "final-identity.log",
+    "sha256": "f54a96ab63540cfe8f791f48af0a9e6ee864f2931c51f11508da2c2e36129425"
+  },
+  {
+    "path": "format-final.log",
+    "sha256": "d6798bff9fb83c5f5d23235db95e4a21b216ede7cb29c600826a0bfaddd90d55"
+  },
+  {
+    "path": "gnu188-confirmed/build.json",
+    "sha256": "73b6771859c0771064ce2ba3bf9bd70a2fe7f01bb55b35eda16d453cbe949654"
+  },
+  {
+    "path": "gnu188-confirmed/bundle-after.log",
+    "sha256": "2734f364f8640fbe7c31a6b0eb9cdeeaeffb34578d6feeae9d204014859e9fff"
+  },
+  {
+    "path": "gnu188-confirmed/bundle-before.log",
+    "sha256": "2734f364f8640fbe7c31a6b0eb9cdeeaeffb34578d6feeae9d204014859e9fff"
+  },
+  {
+    "path": "gnu188-confirmed/causal-units.log",
+    "sha256": "9418ac6588698aaf713f4acd7275be125e4244ae0c5ad631986a9b642d696f66"
+  },
+  {
+    "path": "gnu188-confirmed/clippy.log",
+    "sha256": "0e5f84fe7442aa5aa58a5c8c775b49c5e2e083b36fa6a63d0a95768b0bcb5e35"
+  },
+  {
+    "path": "gnu188-confirmed/clock-probe.log",
+    "sha256": "a48f421b0e610fd8b4a1697eed54a67d4d7fe4ba7bc390707e97e06543021d4c"
+  },
+  {
+    "path": "gnu188-confirmed/clock-restored.log",
+    "sha256": "c014d9fa5085ac3f59efae76db06be26d8dd53ad9749532a5328dda500b11974"
+  },
+  {
+    "path": "gnu188-confirmed/clock-settle.log",
+    "sha256": "1dbb7121144904ac7962065b947a4220737ab5cbe0c0ac287a7f2d2a06ffd170"
+  },
+  {
+    "path": "gnu188-confirmed/compiler.log",
+    "sha256": "9d8b3d0cd0c404f92cc74c670363a320431ff08d9a37909204ae6ccdf198770d"
+  },
+  {
+    "path": "gnu188-confirmed/preparation-1.log",
+    "sha256": "75cc577872acad5056aee060b9e6fb44e2bd93b7fd6193bad4f9f3a5d2722eab"
+  },
+  {
+    "path": "gnu188-confirmed/preparation-2.log",
+    "sha256": "7c84ae3874205b080682dac250bdb5c82618ede6c34025ad08fb2de221cbf7c4"
+  },
+  {
+    "path": "gnu188-confirmed/preparation-3.log",
+    "sha256": "3af670ce29b7639f1b6a85670dfb7b239ad3afc1b6d2a7dba72bbe9c263f0273"
+  },
+  {
+    "path": "gnu188-confirmed/receipt.json",
+    "sha256": "1b206f9e2b0aad5b9faf8b189cff89e3de5c5ebb2b6c96a01364fc1c7db156df"
+  },
+  {
+    "path": "gnu188/clippy.log",
+    "sha256": "8892070775cc4ca16e62e50e5f6390a4e196e7675d8aca47c0d51c0f78e8bc33"
+  },
+  {
+    "path": "gnu194-confirmed/build.json",
+    "sha256": "3c136f0712636c474ffcc596d8912ab8adae2414f4669e5e149dd4aeb2d3e725"
+  },
+  {
+    "path": "gnu194-confirmed/bundle-after.log",
+    "sha256": "2734f364f8640fbe7c31a6b0eb9cdeeaeffb34578d6feeae9d204014859e9fff"
+  },
+  {
+    "path": "gnu194-confirmed/bundle-before.log",
+    "sha256": "2734f364f8640fbe7c31a6b0eb9cdeeaeffb34578d6feeae9d204014859e9fff"
+  },
+  {
+    "path": "gnu194-confirmed/causal-units.log",
+    "sha256": "8e41893bdef114f4b17868b950ed54a9ff3eb9eb1648a9fdc5dc2503603eca3e"
+  },
+  {
+    "path": "gnu194-confirmed/clippy.log",
+    "sha256": "000b4ff1fc4bb81b90056cdf740f85c4f20bc64d3fd0551b2c9d6a0561fb4458"
+  },
+  {
+    "path": "gnu194-confirmed/clock-probe.log",
+    "sha256": "95891cd4d29a9ed1b9c337c947831dc68aeca65d8b1cd52405af71058ea10498"
+  },
+  {
+    "path": "gnu194-confirmed/clock-restored.log",
+    "sha256": "c014d9fa5085ac3f59efae76db06be26d8dd53ad9749532a5328dda500b11974"
+  },
+  {
+    "path": "gnu194-confirmed/clock-settle.log",
+    "sha256": "1dbb7121144904ac7962065b947a4220737ab5cbe0c0ac287a7f2d2a06ffd170"
+  },
+  {
+    "path": "gnu194-confirmed/compiler.log",
+    "sha256": "8671116332a32469c2c9894e1edb0ec1ac78261823269501986b5c9ad2a53b51"
+  },
+  {
+    "path": "gnu194-confirmed/preparation-1.log",
+    "sha256": "4d06d5294e109673aa7d04cb78c392af1e875850b3998f36f6f3078e3542320c"
+  },
+  {
+    "path": "gnu194-confirmed/preparation-2.log",
+    "sha256": "9a0e7bda0303601e1a90dc39900ff686995ccfdc069ecf721756126fe8b9f1ca"
+  },
+  {
+    "path": "gnu194-confirmed/preparation-3.log",
+    "sha256": "e52e4f027dafa081b269b3f3c38a8f982b3493c4c047c88de3ff30b682cdcd97"
+  },
+  {
+    "path": "gnu194-confirmed/receipt.json",
+    "sha256": "147dc088dd7a611c2b8a6a00294ed96573ba862cf8c1fa6feb7c4ac2af749b0e"
+  },
+  {
+    "path": "gnu194/build.json",
+    "sha256": "dc928607bfeebe64c69078c6f2722420229775f7f8cde72134dbc56bdfbb0f66"
+  },
+  {
+    "path": "gnu194/causal-units.log",
+    "sha256": "2778af4e75c4cad397c78bc94bfac68be29820aee2d4b19b374678cd2b572794"
+  },
+  {
+    "path": "gnu194/clippy.log",
+    "sha256": "05f0f6e7329799c9881fdde420e33adb15525392d32ab4bc1ba476daa14b1941"
+  },
+  {
+    "path": "gnu194/compiler.log",
+    "sha256": "8671116332a32469c2c9894e1edb0ec1ac78261823269501986b5c9ad2a53b51"
+  },
+  {
+    "path": "metadata.json",
+    "sha256": "4de05dfbbea61f0cd4f89074e5e7faa1c4e9114ba0e762509105c511ac8993a9"
+  },
+  {
+    "path": "performance-final.log",
+    "sha256": "e185f5527ad4f4e5850f07b9172b66ad4d329f7761efeaf08f051a7ec925a7cb"
+  },
+  {
+    "path": "performance.log",
+    "sha256": "d9ee93a20161f5e16e0282885411160588fa61c10099a743937071cb7599055c"
+  },
+  {
+    "path": "README.md",
+    "sha256": "12b91e205f868a8d491cd2c5382864e513c7d6a0a03ca58f3579df6f4b3f9385"
+  },
+  {
+    "path": "registry-final.log",
+    "sha256": "ee9259680c9ba82f76c1d9c6158e2deb7174feec32302bfc908b07c5571eb78b"
+  },
+  {
+    "path": "registry.log",
+    "sha256": "ab12bf3de3d8eab1b2497ec1af5fa2403087a79e3116faae212941f9e3382b48"
+  },
+  {
+    "path": "run.ps1",
+    "sha256": "3b5a503ec8ca968df00001ffe3a55a1677847847667983951b319238ae1cf8eb"
+  },
+  {
+    "path": "seal.ps1",
+    "sha256": "0436e040c9726d402e0aea8978f9f7453a323578d1340e380269bbb69c478074"
+  },
+  {
+    "path": "source-adapter-focused.log",
+    "sha256": "7da6e69bb999fdb35ad616f16b674114fb0eba59fb747e941057fe82757c8148"
+  },
+  {
+    "path": "source-adapter-regressions.log",
+    "sha256": "2fe6e24458796701babc199b7ef0ecbeb1ecad4308887347b86e6579cf8ebb1b"
+  },
+  {
+    "path": "source-contract-identity.log",
+    "sha256": "9b5ccad0651f070bca5f904b75a0aa7e56b9090e3127b4ca0ff42c33ea0edb68"
+  },
+  {
+    "path": "source-focused.log",
+    "sha256": "166598688889e905f2ffc64b9a2ccf41a983153447315881c6f53d97982e3201"
+  },
+  {
+    "path": "source-full-confirmed.log",
+    "sha256": "ed2798e67ae5d07a946cc026868acd98350ff9b995580e079d2c4db7a8fd5641"
+  },
+  {
+    "path": "source-full.log",
+    "sha256": "9a7fd857e8f0fb6137ed55fcfa5698fa65a9ce95f6bf191464b66775cd786435"
+  },
+  {
+    "path": "summarize.ps1",
+    "sha256": "db4794b7d82f9a66fd4015c382e0cbec5a0069fe1b02ee1ca092b5c9e32b32e6"
+  },
+  {
+    "path": "summary.json",
+    "sha256": "764468d70050cc00eaa6ecff7380b60877fae6cd83afc6d3dfe9ac960f3da400"
+  },
+  {
+    "path": "verify.ps1",
+    "sha256": "3b371d02615083b7b9c9dd773d3d7d1b42ca97901e75b61a1086dcb58ce891a4"
+  },
+  {
+    "path": "windows-doc.log",
+    "sha256": "61aaa8324fca17895c304493811b1503dc39de665339c51b6a48390fe49b7aa1"
+  },
+  {
+    "path": "windows-unit.log",
+    "sha256": "f7fdb2650416a177c049f4dcc9c5546e9fb9e5dd5449e0427128e5434afb0004"
+  },
+  {
+    "path": "xtask-clippy.log",
+    "sha256": "20b872e9fa74d5b8c78d1f8406318da0a5e5cee1d77d0b6b3a62629c2c2649a7"
+  }
+]
