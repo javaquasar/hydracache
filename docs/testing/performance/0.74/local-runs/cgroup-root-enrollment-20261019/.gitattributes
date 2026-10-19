@@ -1,0 +1,2 @@
+# Exact raw local evidence bytes, including native line endings.
+* -text whitespace=cr-at-eol,-blank-at-eof
