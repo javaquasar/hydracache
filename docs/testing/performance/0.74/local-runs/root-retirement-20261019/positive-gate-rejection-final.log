@@ -1,0 +1,9 @@
+expected_positive_gate_rejection=true
+Get-Content: C:\Workspace\prj\jq\cashe\hydracache-074\docs\testing\performance\0.74\local-runs\root-retirement-20261019\verify.ps1:14
+Line |
+  14 |  … ng]$Path) { Get-Content -LiteralPath (Join-Path $taskRoot $Path) -Raw …
+     |                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     | Cannot find path
+     | 'C:\Workspace\prj\jq\cashe\hydracache-074\docs\testing\performance\0.74\local-runs\root-retirement-20261019\gnu194-quiescent\receipt.json' because it does not exist.
+
+

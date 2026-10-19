@@ -1,0 +1,403 @@
+{
+  "schema_version": 1,
+  "kind": "local-root-retirement-negative-inventory",
+  "source_commit": "6098ab02fc5b7ed23cc5fa80e1ce221c8edbbbce",
+  "baseline_commit": "f48fd4bf1de242d4130cd61459a3daed8437f33e",
+  "normalization": "none-raw-bytes",
+  "qualification_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "retirement_frame_gate_passed": false,
+  "creator_sigkill_tested": true,
+  "server": false,
+  "product": false,
+  "original_send": false,
+  "original_armed": false,
+  "end_to_end_original": false,
+  "completion_allowed": false,
+  "files": [
+    {
+      "path": ".gitattributes",
+      "bytes": 84,
+      "sha256": "ce2350dc287b67f0bcf34db253def2bf3c9bb8f63acb1cd1eed24d701413a6cf"
+    },
+    {
+      "path": "clippy-188-screen.log",
+      "bytes": 207,
+      "sha256": "6270f8526713049ec354c5bb121838e2860b56f4aae8f95c85a87ab02247a766"
+    },
+    {
+      "path": "clippy-194-screen.log",
+      "bytes": 207,
+      "sha256": "a18d1428eac14dca9c3c625edef23cd18d077476520521cdee35ca7514383b00"
+    },
+    {
+      "path": "clock-restored-final.log",
+      "bytes": 8,
+      "sha256": "c014d9fa5085ac3f59efae76db06be26d8dd53ad9749532a5328dda500b11974"
+    },
+    {
+      "path": "doc-check-final.log",
+      "bytes": 167,
+      "sha256": "f63fbf43a358d3b8758272cfd0f42a1a77109b06429ca0cf244a046005a4f569"
+    },
+    {
+      "path": "doc-check.log",
+      "bytes": 252,
+      "sha256": "e7c729fc088278816474ad72ca2989e937f28d1df4a9a0d6516b0232abd01058"
+    },
+    {
+      "path": "gnu188-confirmed/build.json",
+      "bytes": 915,
+      "sha256": "6c92053da5eadf6454c894d6c60d7e0f9c8b002d0b32e94c290cb941eff766e4"
+    },
+    {
+      "path": "gnu188-confirmed/bundle-after.log",
+      "bytes": 745,
+      "sha256": "2734f364f8640fbe7c31a6b0eb9cdeeaeffb34578d6feeae9d204014859e9fff"
+    },
+    {
+      "path": "gnu188-confirmed/bundle-before.log",
+      "bytes": 745,
+      "sha256": "2734f364f8640fbe7c31a6b0eb9cdeeaeffb34578d6feeae9d204014859e9fff"
+    },
+    {
+      "path": "gnu188-confirmed/check.log",
+      "bytes": 207,
+      "sha256": "b1d2977d180b05e5cd9a270415221e603d10fd9ca76e1600a65ad5c2bf92cd37"
+    },
+    {
+      "path": "gnu188-confirmed/clippy.log",
+      "bytes": 207,
+      "sha256": "7d5a10098bc2ccebca975167862583674370706c24f97f9c17b3ecd747867f11"
+    },
+    {
+      "path": "gnu188-confirmed/clock-probe.log",
+      "bytes": 59,
+      "sha256": "f779c67331a766a3a34818263f43802c698616228c28133d7a65cef7f23d4ba6"
+    },
+    {
+      "path": "gnu188-confirmed/clock-settle.log",
+      "bytes": 88,
+      "sha256": "a1b754ce6842c439c44c86ad239bd8d2d19da67e9c40799fa1b200854d42a8ed"
+    },
+    {
+      "path": "gnu188-confirmed/creator-smoke.log",
+      "bytes": 2160,
+      "sha256": "125bc23f85ffe22027e261cc9ad25d08d803232aa0b20490d393d59f731d662f"
+    },
+    {
+      "path": "gnu188-confirmed/join-units.log",
+      "bytes": 2483,
+      "sha256": "46c46928197c3b7cf4653b07e4b874f1415a0495d8edf80d50e41ce7872a4040"
+    },
+    {
+      "path": "gnu188-confirmed/kernel-smoke.log",
+      "bytes": 689,
+      "sha256": "b51722143009ed91d681efbb93749cbe402aff3670396fdce06d263542870b2e"
+    },
+    {
+      "path": "gnu188-confirmed/original-frame-regression.log",
+      "bytes": 1898,
+      "sha256": "1a13f18c63c4a9cfb58da417147fe0540d9905fcc30dcaca2dd7b7a6fd406b7c"
+    },
+    {
+      "path": "gnu188-confirmed/receipt.json",
+      "bytes": 697,
+      "sha256": "6d9355f5d69412d13ddf3f341002ea2b51c66a3f1edeee86dc905a867fd8a37d"
+    },
+    {
+      "path": "gnu188-confirmed/retirement-frame-1.log",
+      "bytes": 909,
+      "sha256": "f029b8232bbca537faf8f6d0e96907970c1a5c16d5b9c61b6c55af432aadb632"
+    },
+    {
+      "path": "gnu188-confirmed/retirement-frame-2.log",
+      "bytes": 909,
+      "sha256": "db31cdab95d27b3a49f9dcbb7c2b197557c199fcfa6fec40997453b7f3cdd9e7"
+    },
+    {
+      "path": "gnu188-confirmed/retirement-frame-3.log",
+      "bytes": 909,
+      "sha256": "ca5691ac8c58b750d2406b240a48710f63c44135ffca5901beeb4c350fc6afc3"
+    },
+    {
+      "path": "gnu188-confirmed/retirement-units.log",
+      "bytes": 1732,
+      "sha256": "431d9f8fa2545dcfe7ed85c745e12129bba3eb822124354c0886f9cc3caf61ef"
+    },
+    {
+      "path": "gnu188-selected/build.json",
+      "bytes": 915,
+      "sha256": "f99eb1dc1e50a2b50cae3877e45d2675ee96a54f6327498d9a2ddd2988bb985a"
+    },
+    {
+      "path": "gnu188-selected/check.log",
+      "bytes": 207,
+      "sha256": "6a060b4e3bb9b64bfd5694c9951115aa03c1cf32a9b741563a3425ef7c17d60b"
+    },
+    {
+      "path": "gnu188-selected/clippy.log",
+      "bytes": 73,
+      "sha256": "69f24e42b5fe5f4f0acdce7bc6efded8b05411978cc1f61cb9f3ea45d43960d1"
+    },
+    {
+      "path": "gnu188-selected/creator-smoke.log",
+      "bytes": 2160,
+      "sha256": "7ce56e80919583ead46da7c0eb4376eea69f3fe998becadce4798683d0448f14"
+    },
+    {
+      "path": "gnu188-selected/join-units.log",
+      "bytes": 2483,
+      "sha256": "46c46928197c3b7cf4653b07e4b874f1415a0495d8edf80d50e41ce7872a4040"
+    },
+    {
+      "path": "gnu188-selected/kernel-smoke.log",
+      "bytes": 689,
+      "sha256": "06fd2b7dbe98d08fa081c9f490393fc3970ea4a721b3e7109f4cd07258a02977"
+    },
+    {
+      "path": "gnu188-selected/retirement-units.log",
+      "bytes": 1599,
+      "sha256": "6471dab423dd2dd923282d0e37b123b25dadf78d40f71094d5c8799d376ce9f4"
+    },
+    {
+      "path": "gnu194-confirmed/build.json",
+      "bytes": 915,
+      "sha256": "632ab68bd097da3a7ada32c71ec22f7fd0784f322f3e2c9235e5d62d2bd91bea"
+    },
+    {
+      "path": "gnu194-confirmed/bundle-before.log",
+      "bytes": 745,
+      "sha256": "2734f364f8640fbe7c31a6b0eb9cdeeaeffb34578d6feeae9d204014859e9fff"
+    },
+    {
+      "path": "gnu194-confirmed/check.log",
+      "bytes": 207,
+      "sha256": "ae9d465e283999092016300a130d8f1174394378d21ad7419397a6c81a0f6bc8"
+    },
+    {
+      "path": "gnu194-confirmed/clippy.log",
+      "bytes": 207,
+      "sha256": "6a060b4e3bb9b64bfd5694c9951115aa03c1cf32a9b741563a3425ef7c17d60b"
+    },
+    {
+      "path": "gnu194-confirmed/clock-probe.log",
+      "bytes": 59,
+      "sha256": "06ef94c2aba8f5ef4e9f5ebf9b9dc7111a6d358edc653bcb2cfb3bb141472c6d"
+    },
+    {
+      "path": "gnu194-confirmed/clock-settle.log",
+      "bytes": 64,
+      "sha256": "1dbb7121144904ac7962065b947a4220737ab5cbe0c0ac287a7f2d2a06ffd170"
+    },
+    {
+      "path": "gnu194-confirmed/creator-smoke.log",
+      "bytes": 2160,
+      "sha256": "1028565e87987cc51a18829cbe0683369a0d44896cf160b3a9cd06ca77b7db3c"
+    },
+    {
+      "path": "gnu194-confirmed/join-units.log",
+      "bytes": 2483,
+      "sha256": "46c46928197c3b7cf4653b07e4b874f1415a0495d8edf80d50e41ce7872a4040"
+    },
+    {
+      "path": "gnu194-confirmed/kernel-smoke.log",
+      "bytes": 689,
+      "sha256": "43f1a1a7081554e70baf7dc775d2cec9780a02c480b20c52da4fe197e30d4515"
+    },
+    {
+      "path": "gnu194-confirmed/retirement-frame-1.log",
+      "bytes": 3573,
+      "sha256": "411e0065d3aa130228bd7c8a5cb759ee000749b6e313c6bb4fc7a37c7c1470c5"
+    },
+    {
+      "path": "gnu194-confirmed/retirement-units.log",
+      "bytes": 1732,
+      "sha256": "fed32fff4caac91e93c376ef64595dcce984b5ea2211c10edfe6dc2302e0f077"
+    },
+    {
+      "path": "gnu194-quiescent/build.json",
+      "bytes": 915,
+      "sha256": "632ab68bd097da3a7ada32c71ec22f7fd0784f322f3e2c9235e5d62d2bd91bea"
+    },
+    {
+      "path": "gnu194-quiescent/bundle-before.log",
+      "bytes": 745,
+      "sha256": "2734f364f8640fbe7c31a6b0eb9cdeeaeffb34578d6feeae9d204014859e9fff"
+    },
+    {
+      "path": "gnu194-quiescent/check.log",
+      "bytes": 74,
+      "sha256": "aa731ad42db5cc2e6f649eac8b65e0d08f8d0d0e832f198f4875650d813b22d9"
+    },
+    {
+      "path": "gnu194-quiescent/clippy.log",
+      "bytes": 74,
+      "sha256": "0edcb7cabdb50c0ec5a50f5cf694427b1b6540bb0852ef601b5decfca7c38036"
+    },
+    {
+      "path": "gnu194-quiescent/clock-probe.log",
+      "bytes": 59,
+      "sha256": "8b1959be1d33d759545ea104671d3fb33c06822dda14c1a77776cdd26e938c54"
+    },
+    {
+      "path": "gnu194-quiescent/clock-settle.log",
+      "bytes": 88,
+      "sha256": "eca95408506af720d50c4e91e4c894b57c9f4a493cb7d875d400f05abc839f3e"
+    },
+    {
+      "path": "gnu194-quiescent/creator-smoke.log",
+      "bytes": 2148,
+      "sha256": "4dc2c1b81a12ff0f0748d6940bc66650116bae6cfe9d4b40dd404d58e9b86395"
+    },
+    {
+      "path": "gnu194-quiescent/join-units.log",
+      "bytes": 2483,
+      "sha256": "46c46928197c3b7cf4653b07e4b874f1415a0495d8edf80d50e41ce7872a4040"
+    },
+    {
+      "path": "gnu194-quiescent/kernel-smoke.log",
+      "bytes": 689,
+      "sha256": "b51722143009ed91d681efbb93749cbe402aff3670396fdce06d263542870b2e"
+    },
+    {
+      "path": "gnu194-quiescent/retirement-frame-1.log",
+      "bytes": 3572,
+      "sha256": "b3b7b3863b238817f4a19c6bb635807fafe0ab4b2b585f065020583c8e837d45"
+    },
+    {
+      "path": "gnu194-quiescent/retirement-units.log",
+      "bytes": 1599,
+      "sha256": "a9ceefc6a843ed769355c4eb09bd02f0ba5fc8e25029f6fcd85221c3c83378b8"
+    },
+    {
+      "path": "gnu194-selected/build.json",
+      "bytes": 915,
+      "sha256": "5148767da1a063a2b271f3227519af031291dd1cede5b94ead0dcf1a27f86c58"
+    },
+    {
+      "path": "gnu194-selected/check.log",
+      "bytes": 207,
+      "sha256": "1340ef0fdb3303f4cde9346515bfc538b65136b7414d5fe61e21191353d55ffc"
+    },
+    {
+      "path": "gnu194-selected/clippy.log",
+      "bytes": 74,
+      "sha256": "14245bf41ce361c59f3604c057eb468bdd66860677126c16944bd731d24dc11c"
+    },
+    {
+      "path": "gnu194-selected/creator-smoke.log",
+      "bytes": 2160,
+      "sha256": "bf6f62fe4f970da641bef163d05debfa9a16b913aed95fcdef36a0106ae81a42"
+    },
+    {
+      "path": "gnu194-selected/join-units.log",
+      "bytes": 2483,
+      "sha256": "46c46928197c3b7cf4653b07e4b874f1415a0495d8edf80d50e41ce7872a4040"
+    },
+    {
+      "path": "gnu194-selected/kernel-smoke.log",
+      "bytes": 689,
+      "sha256": "43f1a1a7081554e70baf7dc775d2cec9780a02c480b20c52da4fe197e30d4515"
+    },
+    {
+      "path": "gnu194-selected/retirement-units.log",
+      "bytes": 1599,
+      "sha256": "6d368a85812ddadbe628ac9d4e777d48c26070b0ccc23dcdfecfbce546cc1005"
+    },
+    {
+      "path": "performance.log",
+      "bytes": 215,
+      "sha256": "1a9e2e9aa79e17c9616d576434b366fac3cce400c4152154b5da49f2616c6c58"
+    },
+    {
+      "path": "positive-gate-rejection-final.log",
+      "bytes": 553,
+      "sha256": "6d91ffdd1f8d7d4c8f6d998605db7e8f54144e4f4158fa4ea39a9d5d52203385"
+    },
+    {
+      "path": "README.md",
+      "bytes": 6910,
+      "sha256": "c940f3809816b68ac89e58f61553048384b00029052ad2a5677c9271b58ef2cf"
+    },
+    {
+      "path": "red-missing-drop.log",
+      "bytes": 1628,
+      "sha256": "0434a2c4bdf05aba9c5e6cabf8c3309ca5efa90f3d6f7a1d29033b0a13657344"
+    },
+    {
+      "path": "registry.log",
+      "bytes": 190,
+      "sha256": "704da0cb485a4f07c62b8f109a6ab4bc165ad5b186908e02fa305819f7737097"
+    },
+    {
+      "path": "run.ps1",
+      "bytes": 9174,
+      "sha256": "c40f0e20216924a1a58faa56a6bfa23029b33e57d975ee6334074e3d2c1d5687"
+    },
+    {
+      "path": "script-parse-final.log",
+      "bytes": 181,
+      "sha256": "53d9e5cb15ede8a30bf27e70ec1d7e33d1634af8afac4ca046a39260d94dcb60"
+    },
+    {
+      "path": "script-parse.log",
+      "bytes": 97,
+      "sha256": "5f65ab75947b6c8f2b37f4f78a71b3697cbaf24913e82631e16b7b0af8309b59"
+    },
+    {
+      "path": "seal-negative.ps1",
+      "bytes": 1337,
+      "sha256": "4004b9e1417fdc65e86152c6a899dd163060d4c8bb24dbd1612f81d90aee9f87"
+    },
+    {
+      "path": "seal.ps1",
+      "bytes": 1284,
+      "sha256": "ed13a1b7c551164cbbd6a6007615e56991a42fb7994be753fa00d983d530a56b"
+    },
+    {
+      "path": "source-retirement-screen.log",
+      "bytes": 1371,
+      "sha256": "5b251e7c8cda8b6d24ad503a35d53fd1189605f25e0ca27deaabd2acab78262f"
+    },
+    {
+      "path": "source-suite.log",
+      "bytes": 39053,
+      "sha256": "be31b873feed8990f5ccd755e30c85e660fa65661256068fe6dff3bb29cb8cfc"
+    },
+    {
+      "path": "unit-188-screen.log",
+      "bytes": 1732,
+      "sha256": "7cc77fe6927a21d3e4bb0d92bf921b7a5f3313714664ae574a7f097a4ed52fc9"
+    },
+    {
+      "path": "unit-194-screen.log",
+      "bytes": 1732,
+      "sha256": "6de9de242454f632a57d7c2842af6d7431ebee77c9810ef5b5fe85f438d00bb6"
+    },
+    {
+      "path": "verify-negative.ps1",
+      "bytes": 9823,
+      "sha256": "9c81532025c315de3d2bc9cfc034ec87ee44edcc111838a82d6889bc9a03739c"
+    },
+    {
+      "path": "verify.ps1",
+      "bytes": 9526,
+      "sha256": "5d1bcb8b38d12390086d23645d1b50a2bdf1c2cc6ddc28f8c1ff8ce52f356820"
+    },
+    {
+      "path": "windows-clippy.log",
+      "bytes": 157,
+      "sha256": "8337fecc97b2c49a7d5ae2543b7ab8269405ae5a2a2b923b1c118999c2dcd417"
+    },
+    {
+      "path": "windows-doc.log",
+      "bytes": 2953,
+      "sha256": "4e921c8a8bce0ba6b2731e3529a07968812d17c91cb400e131fc82db3e2d8609"
+    },
+    {
+      "path": "windows-unit.log",
+      "bytes": 7881,
+      "sha256": "b8682e5665160fb06a6f5f714bf8325e611b1a674b619c498d59e0456ad5f2f1"
+    }
+  ]
+}

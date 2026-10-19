@@ -1,0 +1,10 @@
+
+running 1 test
+test diagnostic_two_phase_launch::root_enrollment::kernel::tests::fault::guardians::original_adapter::root_guardian_original_kernel_controls ... HC074-ROOT-JOIN-KERNEL case=0 seed=0x074c2023 actual_sigkill=true original_frame=false completion=false
+HC074-ROOT-JOIN-KERNEL case=1 seed=0x074c2023 actual_sigkill=true original_frame=false completion=false
+HC074-ROOT-JOIN-KERNEL case=2 seed=0x074c2023 actual_sigkill=true original_frame=false completion=false
+HC074-ROOT-JOIN-KERNEL case=3 seed=0x074c2023 actual_sigkill=true original_frame=false completion=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1263 filtered out; finished in 2.04s
+

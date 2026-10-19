@@ -1,0 +1,19 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 21.78s
+     Running tests\performance_contract_074.rs (target\debug\deps\performance_contract_074-affcfab4e5118d5a.exe)
+
+running 1 test
+
+thread 'live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::prearmed::redundant::original_context::pending::root_enrollment::transport::guardian::creator::original_join::retirement::original_root_retirement_must_poison_on_drop' (11476) panicked at crates\xtask\tests\support\performance_contract_074_root_retirement.rs:9:5:
+missing original owner Drop refusal
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::prearmed::redundant::original_context::pending::root_enrollment::transport::guardian::creator::original_join::retirement::original_root_retirement_must_poison_on_drop ... FAILED
+
+failures:
+
+failures:
+    live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::prearmed::redundant::original_context::pending::root_enrollment::transport::guardian::creator::original_join::retirement::original_root_retirement_must_poison_on_drop
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 289 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p xtask --test performance_contract_074`

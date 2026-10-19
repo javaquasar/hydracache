@@ -1,0 +1,20 @@
+{
+  "source_commit": "6098ab02fc5b7ed23cc5fa80e1ce221c8edbbbce",
+  "compiler": "1.88.0",
+  "image_before": "290ddcd1408dfe15a76ef8ea6fe408de07d035870fea0615d45010da08aeddd2  /home/artur/.cache/hydracache-074-188-check/release/deps/hydracache_long_run_supervisor_074-d2aba7f58d773234",
+  "image_after": "290ddcd1408dfe15a76ef8ea6fe408de07d035870fea0615d45010da08aeddd2  /home/artur/.cache/hydracache-074-188-check/release/deps/hydracache_long_run_supervisor_074-d2aba7f58d773234",
+  "runner_sha256": "c40f0e20216924a1a58faa56a6bfa23029b33e57d975ee6334074e3d2c1d5687",
+  "build_uid": "1000",
+  "fixture_uid": 0,
+  "creator_cases": 12,
+  "join_kernel_cases": 4,
+  "kernel_repeats": 1,
+  "retirement_units": 1,
+  "fixture_roots_before": 0,
+  "fixture_roots_after": 0,
+  "creator_sigkill_tested": true,
+  "server": false,
+  "product": false,
+  "original_send": false,
+  "completion_allowed": false
+}
