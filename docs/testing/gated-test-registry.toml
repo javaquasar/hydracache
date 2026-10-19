@@ -12407,4 +12407,36 @@ platform = "linux"
 
 [gate.command.env]
 
+[[gate]]
+id = "tool.hydracache-long-run-supervisor-074.fixed-leaf-allocation"
+kind = "external_tool"
+source = "tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "hydracache_long_run_supervisor_074"
+test = "fixed_leaf_path_allocation_attribution"
+cfg = 'all (target_os = "linux" , feature = "fixed-leaf-alloc-probe")'
+env = ""
+reason = "manual opt-in Rust allocation requests; no latency or admission claim"
+tier = "manual"
+required_features = ["fixed-leaf-alloc-probe"]
+required_env = []
+required_tools = ["cargo"]
+timeout_seconds = 1200
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["test","--release","-p","hydracache-long-run-supervisor-074","--features","fixed-leaf-alloc-probe","--lib","--locked","fixed_leaf_path_allocation_attribution","--","--ignored","--nocapture","--test-threads=1"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+
 # END FIXED LEAF PATH GATE

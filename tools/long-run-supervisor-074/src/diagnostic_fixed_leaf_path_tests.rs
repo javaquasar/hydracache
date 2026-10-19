@@ -1,6 +1,10 @@
 //! Frozen old leaf references; no clock, admission or observation cache.
 use super::*;
 
+#[cfg(feature = "fixed-leaf-alloc-probe")]
+#[path = "diagnostic_fixed_leaf_alloc_tests.rs"]
+mod allocations;
+
 fn reference_namespace(name: &str) -> Result<(File, (u64, u64)), KernelError> {
     #[cfg(test)]
     let _kernel_walk = crate::diagnostic_ipc::validation_trace::kernel_walk::span(

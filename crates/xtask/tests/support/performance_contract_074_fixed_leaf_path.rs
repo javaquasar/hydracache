@@ -99,6 +99,38 @@ platform = "linux"
 
 [gate.command.env]
 
+[[gate]]
+id = "tool.hydracache-long-run-supervisor-074.fixed-leaf-allocation"
+kind = "external_tool"
+source = "tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "hydracache_long_run_supervisor_074"
+test = "fixed_leaf_path_allocation_attribution"
+cfg = 'all (target_os = "linux" , feature = "fixed-leaf-alloc-probe")'
+env = ""
+reason = "manual opt-in Rust allocation requests; no latency or admission claim"
+tier = "manual"
+required_features = ["fixed-leaf-alloc-probe"]
+required_env = []
+required_tools = ["cargo"]
+timeout_seconds = 1200
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["test","--release","-p","hydracache-long-run-supervisor-074","--features","fixed-leaf-alloc-probe","--lib","--locked","fixed_leaf_path_allocation_attribution","--","--ignored","--nocapture","--test-threads=1"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+
 # END FIXED LEAF PATH GATE
 "#;
 fn root() -> std::path::PathBuf {
@@ -118,6 +150,11 @@ fn enabled() -> bool {
 }
 fn clean(path: &str, raw: &str, candidate: bool) -> String {
     let mut text = raw.to_owned();
+    if path == "tools/long-run-supervisor-074/Cargo.toml" {
+        let feature = "[features]\nfixed-leaf-alloc-probe = []\n\n";
+        assert_eq!(text.matches(feature).count(), 1);
+        text = text.replacen(feature, "", 1);
+    }
     if path == ORIGIN {
         assert_eq!(text.matches(TEST).count(), 1);
         text = text.replacen(TEST, "", 1);
@@ -162,6 +199,7 @@ fn fixed_leaf_path_preserves_previous_sources_protocols_and_all_live_operations(
     ]);
     assert_eq!(files.lines().count(), 404);
     for path in files.lines().chain([
+        "tools/long-run-supervisor-074/Cargo.toml",
         "docs/COMPAT.md",
         "docs/testing/gated-test-registry.toml",
         "tools/long-run-supervisor-074/tests/prearmed_watchdog.py",

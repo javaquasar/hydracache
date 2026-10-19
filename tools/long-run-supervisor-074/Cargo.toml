@@ -6,6 +6,9 @@ license.workspace = true
 publish = false
 default-run = "hydracache-long-run-supervisor-074"
 
+[features]
+fixed-leaf-alloc-probe = []
+
 [dependencies]
 ed25519-dalek.workspace = true
 fs2.workspace = true
