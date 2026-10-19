@@ -37,9 +37,9 @@ try {
         Run 'clippy' ($taskCargo+@('clippy','--locked','-p','hydracache-long-run-supervisor-074','--all-targets','--all-features','--','-D','warnings'))
         Run 'leaf-units' ($taskCargo+@('test','--release','--locked','-p','hydracache-long-run-supervisor-074','--lib','fixed_leaf_path_','--','--nocapture','--test-threads=1')) 2
         $taskHash=HashImage
-        Run 'origin-regressions' @('-d','Ubuntu','--',$taskImage,'diagnostic_kernel_admission::origin::','--nocapture','--test-threads=1') 15
+        Run 'origin-regressions' @('-d','Ubuntu','--',$taskImage,'diagnostic_kernel_admission::origin::','--nocapture','--test-threads=1') 18
         Stable
-        [ordered]@{source=$taskSource;compiler=$Compiler;image=$taskHash;recipe=$taskRecipe;server=$false;product=$false;leaf_units=2;origin_units=15} | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $taskOut 'build.json') -Encoding utf8NoBOM
+        [ordered]@{source=$taskSource;compiler=$Compiler;image=$taskHash;recipe=$taskRecipe;server=$false;product=$false;leaf_units=2;origin_units=18} | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $taskOut 'build.json') -Encoding utf8NoBOM
         return
     }
     $taskBuild=Get-Content -Raw -LiteralPath (Join-Path $taskOut 'build.json') | ConvertFrom-Json
