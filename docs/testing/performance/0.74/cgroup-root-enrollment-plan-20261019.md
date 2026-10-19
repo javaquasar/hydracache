@@ -110,3 +110,23 @@ must retain original process-pidfd/fence/timer custody, validate this same root
 under the unchanged frame and authenticate their replies before held delivery.
 Use the [transport evidence](local-runs/cgroup-root-transport-20261019/README.md)
 for its selected-source controls, not as proof of that future integration.
+
+## Independent local guardians within step four
+
+Source `72f53806` adds the [local active pair](root-guardian-plan-20261019.md).
+Two stack-only children inherit the same existing fence/timer OFDs and monitor
+actual creator process pidfds. They authenticate and retain the three root
+roles before rights-free v2 Armed replies; the parent authenticates exact clone
+children and consumes both sends before waiting for either reply. Each child
+uses a separate read-only events watch OFD on the same inode. Notification
+acknowledgement precedes kill so late population cannot be cleared and slept
+through after a previous kill.
+
+The [evidence scope](local-runs/root-guardian-20261019/README.md) separates local
+expiry/channel-loss and single-guardian faults from actual creator SIGKILL,
+which still needs its own subprocess matrix. Common-mode failures and an
+external writer remain negative controls. The
+[contract](root-guardian-contract.toml) keeps original owner/Armed, held unit,
+whole-writer cessation, completion and server admission false. Next is actual
+creator process loss and the original policy/epoch/artifact/channel/full-frame
+constructor, not a reinterpretation of local Armed as original permission.

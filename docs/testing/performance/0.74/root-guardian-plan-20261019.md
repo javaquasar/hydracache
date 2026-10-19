@@ -46,3 +46,32 @@ guardian regressions, raw-byte evidence, source-contract/fmt/lint/docs/registry
 and local non-promotable performance-contract checks. Keep evidence and article
 conclusions separate from implementation. The qualification manifest stays
 byte-identical.
+
+## Implemented local boundary
+
+Source `72f53806` implements the private pair and stack-only v2 child. The
+received events descriptor stays retained while each guardian opens its own
+read-only watch description on that same inode. Revocation acknowledges the
+watch before kill and remains active for late population. Timer inspection uses
+fdinfo only; even gettime was excluded because of expired-periodic forwarding.
+The exact original absolute-bound inequality was not widened.
+
+The marked matrix has four construction/cancellation controls and twelve active
+cases, including single-guardian faults, missing ACK, late waves and explicit
+common-mode/outside-writer negatives. Actual initial descriptor inventories
+contain nine roles after ACK. The new
+[evidence packet](local-runs/root-guardian-20261019/README.md) retains preliminary
+compile/parser failures separately from selected source receipts.
+
+Next are actual creator SIGKILL with an external owning harness and the original
+full-frame constructor. The local packet must not supply either result by
+inference. Joined held delivery and new SIGKILL/lost-result boundaries, then
+durable completion/later cells and same-attempt reconnect remain subsequent
+gates. The topology is already approved locally; server operation still needs
+its separate admission.
+
+The raw failed MSRV log retains libtest's trailing space on its interrupted
+test-name line. Do not trim it or reseal the 61-file inventory. Commit whitespace
+checking excludes only that exact raw log while checking all other staged files;
+raw SHA256 verification still includes every byte of that log. This packaging
+exception changes no runtime predicate, fault check, bound or acceptance result.

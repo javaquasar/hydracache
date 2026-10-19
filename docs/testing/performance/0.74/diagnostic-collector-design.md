@@ -1047,3 +1047,22 @@ stack-safe guardian or original-owner constructor. That integration must retain
 the original process pidfd, fence and existing timer, preserve every full-frame
 predicate and original bound, and authenticate the actual guardian reply. Held
 delivery, cessation/completion and server installation remain closed.
+
+The [local root guardian pair](local-runs/root-guardian-20261019/README.md),
+source `72f53806`, adds stack-only v2 child handling instead of calling the
+allocator-based reader after clone. Both children keep the existing fence/timer
+open descriptions and actual creator process pidfds. Each retains three
+authenticated root roles before replying, then opens an independent event watch
+on the same inode. Shared event notification state would invalidate the claimed
+single-guardian independence. Revocation acknowledges its watch before writing
+the original kill FD and continues across empty roots and late population.
+
+No timer counter is read or timer rewritten. The parent reads timer fdinfo under
+a BOOTTIME consistency bracket; this does not reconstruct original expiry
+identity or supply an original owner. Initial local ACKs are checked against
+actual clone3 PID/pidfd/credentials. Closing a possibly enrolled parent's
+channels requests revocation without cancelling independent holders. Partial
+creation before any send retains exact-child cleanup. Both-dead and both-stopped
+failures, outside aliases and untested creator SIGKILL remain explicit limits.
+Original frame/trust/manager/held projection, durable completion and server
+operation are still closed; this is not a new original runtime constructor.

@@ -13672,3 +13672,68 @@ digest and all old live predicates, effect brackets and absolute origins stay
 unchanged. The next package must connect independent guardians to that original
 context and keep revoking late population after owner loss or expiry; an empty
 read alone cannot authorize completion or fence release.
+
+### Independent notification cursors keep late revocation active
+
+Source `72f53806` adds a local active root-guardian pair rather than promoting
+the earlier ordinary-process reader into original admission. Two clone3
+children isolate their descriptors, retain the existing fence and timer open
+descriptions, and monitor actual creator process pidfds. Their new request
+handling uses bounded stack buffers and syscalls, without the allocator-based
+Rust reader after clone. The parent submits both requests before waiting for
+either reply, then checks the real child credentials and live pidfds. A missing
+ACK cannot reopen the consumed attempt.
+
+The useful distinction is which open descriptions should be shared. Sharing
+the fence preserves its lock until the last holder closes it; sharing the
+existing timer preserves its unchanged expiry without renewal or counter reads.
+Sharing the events notification cursor is unsafe for independent observers.
+Linux [kernfs](https://raw.githubusercontent.com/torvalds/linux/v6.6/fs/kernfs/file.c)
+tracks acknowledged events per open file. One observer could consume another's
+notification. Each guardian therefore retains the authenticated original events
+descriptor but opens its own read-only watcher on the same bound inode.
+
+The other ordering decision concerns late writers. Revocation acknowledges its
+own event before kill, never kill followed by acknowledgement and sleep. A
+writer admitted between those latter two operations could otherwise be observed
+and cleared without being killed. The local fixture admits eight later waves
+after the first descendants are dead and requires actual SIGKILL each time.
+Only the original retained kill descriptor is used; reopening a replacement
+target is not a recovery strategy. Observed frame drift refuses readiness and
+does not erase an already retained revocation obligation.
+
+Timer inspection also needed a narrower primitive. The initial unit screen
+refused the kernel's space-separated clockid line because the prototype expected
+a tab. That was a parser error, not grounds to widen the absolute-bound check.
+Reviewing Linux's [timer implementation](https://raw.githubusercontent.com/torvalds/linux/v6.6/fs/timerfd.c)
+also showed that gettime can forward an expired periodic timer. The final
+mechanics use fdinfo under opening/closing BOOTTIME samples and never call that
+getter. A negative expired-periodic fixture requires the event and expired
+value to remain unchanged after refusal. The bracket checks consistency with
+the selected bound; it does not reconstruct expiry identity or grant authority.
+
+The [local evidence](../testing/performance/0.74/local-runs/root-guardian-20261019/README.md)
+separates actual channel disconnection from still-untested creator SIGKILL.
+Positive cases close all parent copies of the original fence and require a
+surviving guardian to retain its lock. Killing both guardians loses that lock;
+stopping both leaves writers alive despite the retained lock. An outside pipe
+alias likewise prevents EOF after the scoped writers die. These negatives
+remain necessary gates, not inconveniences removed from the model. Local v2
+Armed replies therefore do not enable original delivery, durable completion or
+server execution. The original full-frame/trust/manager join and whole-writer
+cessation still precede those actions; no throughput or allocation gain follows
+from this functional package.
+
+GNU 1.94 and the accepted MSRV 1.88 repetition each pass five new ordinary
+controls and three sixteen-case active-pair matrices: 96 selected scenario
+executions. Old transport, root SIGKILL and seventeen-case guardian controls
+remain green in the accepted cohorts. The complete source suite passes 283
+controls and preserves all 389 prior Rust bodies; Windows retains 54 ordinary
+and eighteen compile-fail passes. Strict affected lint passes on both GNU
+compilers and Windows. The first MSRV cohort remains separately failed: a live
+fd-directory entry disappeared before readlink in the unchanged old guardian
+harness. Repeating the same source and checks passed, but does not resolve that
+snapshot race or turn the failed first cohort into evidence of success. Its
+descriptor role was not captured, so the exception does not establish lost
+fence custody or a product regression. This tooling reliability risk stays
+visible alongside the still-closed original constructor and creator-loss gates.
