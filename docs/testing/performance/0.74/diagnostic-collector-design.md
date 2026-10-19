@@ -1021,4 +1021,17 @@ identity, guardian protocol, held-unit projection and host setup; none is grante
 by Pending or by this audit. Preserve old protocols, direct-child predicates,
 the full validation frame and original deadlines. Even an armed cgroup revoker
 cannot establish closure of external writer aliases or exclusive finalization.
-Wait for approval of that topology before adding production enrollment or sends.
+The operator approved the attempt contour and new protocol on 2026-10-19. Follow
+the [local implementation plan](cgroup-root-enrollment-plan-20261019.md); approval
+allows isolated local fixtures, not production enrollment, installation or sends.
+
+The first [root enrollment package](local-runs/cgroup-root-enrollment-20261019/README.md),
+source `593e5148`, adds fixed 104-byte claims and a private pinned cgroup2 root
+with root-owned type/events/procs/kill descriptors. Actual name replacement
+cannot redirect kill submission. GNU 1.94/MSRV 1.88 each pass three eleven-case
+local kernel matrices plus ordinary and retained guardian/exchange controls.
+Before-write kill-caller death, late population and outside writer aliases
+remain explicit limits. This does not construct an autonomous root guardian,
+authenticate enrollment FD transfer or bind a production held unit. The
+[contract](cgroup-root-enrollment-contract.toml) keeps Armed, original constructor,
+completion and server admission false pending that next integration.

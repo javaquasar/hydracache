@@ -5,6 +5,11 @@ custody is implemented, but the transition to Armed needs a production revocatio
 topology decision. This audit does not select one or authorize a host operation.
 It inherits R-3, R-4, R-7, R-8 and R-10 from `docs/RULES.md`.
 
+The operator subsequently approved a separate attempt cgroup contour and new
+enrollment protocol on 2026-10-19. The [local implementation plan](cgroup-root-enrollment-plan-20261019.md)
+supersedes the pending decision, not the baseline findings below. Approval does
+not authorize release installation, server operations or a production workload.
+
 ## Existing authority and the missing transition
 
 | Retained mechanism | What it establishes | What it does not establish |

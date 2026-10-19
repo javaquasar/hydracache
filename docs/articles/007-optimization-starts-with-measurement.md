@@ -13563,3 +13563,56 @@ delivery instead would change the signed ordering contract and introduce a
 delivered-FD window without an armed target revoker. Neither weakening the old
 parent check nor changing a readiness label is an acceptable substitute for
 resolving this architecture boundary.
+
+## An attempt root separates revocation from a future worker PID
+
+The approved next component introduces a distinct root enrollment packet and
+private pinned-cgroup mechanics. Its fixed 104 bytes bind an attempt digest,
+original-context digest, root device/inode and selected absolute BOOTTIME bound.
+Unknown versions, kinds, reserved bytes, field violations or size changes
+refuse; the old direct-child guardian packet remains unchanged. A one-shot
+claim tracker consumes its send before the future syscall boundary and refuses
+a second send after failed delivery or uncertain acknowledgment. These are
+expected bytes and per-instance accounting, not a runtime Armed capability or
+durable replay exclusion.
+
+The kernel handle opens one child of a retained parent without following a
+symlink, requires a root-owned empty unfrozen cgroup2 domain, and retains the
+directory and original type/events/procs/kill descriptors. Observation checks
+their named and retained identities and refuses drift permanently. The kill
+operation writes only the retained original control descriptor; a later name
+replacement cannot redirect it to a new root. A kill submission cannot return
+an EOF, completion or fence-release receipt.
+
+The [kernel interface](https://docs.kernel.org/admin-guide/cgroup-v2.html)
+provides recursive `cgroup.kill` and hierarchical populated observations.
+Neither prevents a new writer from being admitted after an empty observation,
+nor closes a pipe alias outside the tree. The owned local tests retain those
+limits explicitly: a newly populated root needs another revocation, and an
+external write alias blocks actual EOF after the scoped writers die. The old
+direct-child predicate has not been generalized to arbitrary systemd PIDs.
+
+The [local evidence](../testing/performance/0.74/local-runs/cgroup-root-enrollment-20261019/README.md)
+separates parser/mutation controls, private kernel-root checks and real process
+cuts around kill submission. The before-write kill-caller SIGKILL is deliberately
+negative: without an autonomous guardian, its target remains live until exact
+fixture cleanup. Later cuts verify actual target SIGKILL, not invented recovered
+success. These cuts concern the private kill operation; authenticated enrollment
+ACK loss and joined launch/release/completion still need their own matrices.
+
+Next, actual creator credentials and three atomic-CLOEXEC FD roles must be
+checked by the new transport, then retained by independent guardians under the
+same original fence/timer. Original policy/epoch/artifact/channel/frame binding
+and the separately projected held unit remain necessary before Armed can enable
+delivery. Local root privileges in this package belong only to fresh temporary
+cgroup fixtures; no unit is installed, no supervisor is stopped and no product
+workload is run. Functional case counts are not an allocation or throughput gain.
+
+On source `593e5148`, GNU 1.94 and MSRV 1.88 each pass seven new ordinary
+controls and three eleven-case root matrices: 66 selected scenario executions
+and 24 actual SIGKILL cuts of the private kill caller in total. The complete
+source suite passes 277 controls and preserves all 381 previous Rust bodies.
+Windows passes 54 ordinary and eighteen compile-fail controls; affected strict
+lint passes on both GNU compilers and Windows. These results close the local
+packet/root-mechanics package, not authenticated FD transfer, an autonomous
+root guardian or the original-start gate.

@@ -171,11 +171,12 @@ signed v2 order requires independent Armed before the first held delivery.
 Read-only process/tree observations and unit KillMode properties do not supply
 the missing pre-delivery revocation capability.
 
-Review an attempt-specific empty cgroup root, potentially a dedicated systemd
-slice, admitted before delivery. This would need a separate guardian enrollment
+The operator approved an attempt-specific empty cgroup root and new enrollment
+protocol on 2026-10-19; follow the [local implementation plan](cgroup-root-enrollment-plan-20261019.md).
+A production systemd slice still needs a separate guardian enrollment
 protocol and held-unit projection, original trust/epoch/artifact/frame binding,
-and controlled host setup. It is a recommendation awaiting approval, not a
-selected topology or permission for cgroup/systemd writes. Keep all old protocols,
+and controlled host setup. Local temporary cgroup fixtures are allowed, but
+production cgroup/systemd writes and installation remain closed. Keep all old protocols,
 direct-child checks, 46 brackets and original 300/60/10-second origins unchanged.
 External writer closure and actual EOF/finalization remain necessary even with
 a pinned complete cgroup. Do not proceed to original delivery by relabeling

@@ -60,3 +60,34 @@ exclusive population and manager identity; this package installs no unit.
 No server access, release installation, supervisor operation, original/system-bus
 send or product workload is authorized. Local WSL root privileges are limited
 to isolated temporary cgroup fixtures and their exact owned subprocesses.
+
+## First implementation result
+
+Source `593e51481d78cfd3a917b81d22f46b153ae1c57a` completes steps one through
+three as separate packet claims and private pinned-root mechanics, not an
+original runtime constructor. GNU 1.94 and MSRV 1.88 each pass seven new ordinary
+controls and three eleven-case actual cgroup matrices. Across selected cohorts
+there are 66 scenario executions and 24 actual SIGKILL cuts of the private kill
+caller. Old two-phase, exchange and seventeen-case guardian regressions remain
+green, including their common-mode and hidden-writer negatives.
+
+The before-write caller death leaves its target alive; the harness performs
+exact owned cleanup. Empty-at-read also does not prevent late population or
+close an outside pipe alias. These are retained limits, not failures to remove
+or proofs of autonomous revocation. Cuts after write/API return/empty observation
+establish only the private kill operation's uncertain-confirmation behavior.
+New authenticated enrollment ACK loss and joined durable boundaries remain.
+
+Windows passes 54 ordinary and eighteen compile-fail controls. Both GNU
+compilers pass all-target check and strict all-feature Clippy. The complete
+source suite passes 277 controls, preserving every previous Rust body, old
+protocol and original bound through exact additive registrations. The
+[evidence packet](local-runs/cgroup-root-enrollment-20261019/README.md) binds
+source, images and recipe and retains the initial test-visibility compile error
+and an ineffective zero-test filter separately from accepted receipts.
+
+Next is step four: authenticated three-FD transport, independent root guardians
+under the original fence/timer, original trust/epoch/artifact/channel/full-frame
+binding and the separately projected held unit. No additional topology approval
+is needed for this approved local sequence, but production installation, server
+operations, original send and product workloads remain closed.
