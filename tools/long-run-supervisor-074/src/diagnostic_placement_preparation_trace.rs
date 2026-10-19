@@ -7,6 +7,9 @@ struct Observation {
     causal: time::Report,
     age: time::closing::Report,
 }
+
+#[path = "diagnostic_placement_preparation_cost.rs"]
+pub(super) mod cost;
 type Unwind<T> = Result<T, Box<dyn Any + Send>>;
 fn inspect<T>(call: impl FnOnce() -> T) -> (Unwind<T>, Observation) {
     // Catch inside both captures so failed preparation facts survive unwind.

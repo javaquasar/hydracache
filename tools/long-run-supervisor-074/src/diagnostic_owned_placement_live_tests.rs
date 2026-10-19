@@ -77,6 +77,7 @@ fn run_original(case: &str) {
     let mut original = build.bind_oidc(&mut oidc.trust, &token).unwrap();
     crate::diagnostic_output_preparation::fixed_intent_storage::privileged_fixture::with_fence(
         |fence, campaigns, leaf| {
+            preparation_trace::cost::phase(2);
             let attempt = original
                 .bind_common_empty_fence(fence)
                 .unwrap()
@@ -89,6 +90,7 @@ fn run_original(case: &str) {
                 .publish_reserved(&signed(&body(&request, &state, &raw)))
                 .unwrap();
             let challenge = reserved.issue_progress_challenge().unwrap();
+            preparation_trace::cost::phase(3);
             let nonce=crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::collector_challenge_nonce(challenge.challenge_to_sign()).unwrap();
             let mut response = request.clone();
             response.operation = DiagnosticOperation::Heartbeat;
@@ -101,7 +103,9 @@ fn run_original(case: &str) {
             let prepared = causal.prepare_framed_consent("1".repeat(64)).unwrap();
             let bytes = consent(prepared.consent_to_sign().clone(), &model.key);
             let accepted = prepared.accept_consent(relay.receive(&bytes)).unwrap();
+            preparation_trace::cost::phase(4);
             let outputs = accepted.prepare_original_outputs().unwrap();
+            preparation_trace::cost::phase(5);
             let frame = outputs
                 .prepare_privileged_enrollment_for_test(&bundle.path().join("bundle"))
                 .unwrap();
@@ -109,8 +113,11 @@ fn run_original(case: &str) {
                 frame.offsets_for_test(),
                 [300000000000, 60000000000, 10000000000]
             );
+            preparation_trace::cost::phase(6);
             let message = frame.prepare_fixed_manager_message().unwrap();
+            preparation_trace::cost::phase(7);
             let mut owned = message.prepare_owned_root_guardians(&mut root).unwrap();
+            preparation_trace::cost::phase(0);
             cgroup.guardians = Some(owned.fixture_guardians());
             let origins = owned.fixture_origins();
             let (mut body, mut binding) = owned.placement_for_fixture(identity);
@@ -216,4 +223,10 @@ fn run_original(case: &str) {
             println!("HC074-OWNED-PLACEMENT-LIVE case={case} accepted={result} seed=0x074e6a1d fixed_manager=true actual_root=true original_bounds=true eof=true fence_held_while_owned=true fence_held_after_drop={armed} retained_replay_refused={} timer_live_before_drop=true test_issuers=true actual_systemd_placement=false original_send=false completion=false product=false facts={facts}", !armed);
         },
     );
+}
+
+#[test]
+#[ignore = "manual local original placement phase cost; never a healthy gate or product"]
+fn privileged_placement_preparation_cost() {
+    preparation_trace::cost::capture("healthy", || run_original("healthy"));
 }

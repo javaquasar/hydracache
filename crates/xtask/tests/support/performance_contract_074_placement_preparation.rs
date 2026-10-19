@@ -1,4 +1,6 @@
 //! The new observer wraps, but never rewrites, the old complete fixture.
+#[path = "performance_contract_074_placement_stage_cost.rs"]
+mod cost;
 const BASE: &str = "ddbfe9ed";
 const PREFIX: &str = "tools/long-run-supervisor-074/src/";
 const FILE: &str = "tools/long-run-supervisor-074/src/diagnostic_owned_placement_live_tests.rs";
@@ -6,6 +8,8 @@ const HOOK: &str =
     "\n#[path = \"diagnostic_placement_preparation_trace.rs\"]\nmod preparation_trace;\n";
 const WRAPPER: &str = "fn run(case: &str) {\n    preparation_trace::capture(case, || run_original(case));\n}\nfn run_original(case: &str) {";
 pub(super) fn normalize(path: &str, raw: &str) -> String {
+    let text = cost::normalize(path, raw);
+    let raw = text.as_str();
     if path != FILE {
         return raw.to_owned();
     }
