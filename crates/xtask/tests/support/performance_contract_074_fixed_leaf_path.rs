@@ -133,6 +133,7 @@ platform = "linux"
 
 # END FIXED LEAF PATH GATE
 "#;
+const PREPARATION_GUARD: &str = "    let registry = leaf_path::normalize(\n        \"docs/testing/gated-test-registry.toml\",\n        &read(\"docs/testing/gated-test-registry.toml\"),\n    );";
 fn root() -> std::path::PathBuf {
     std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..")
 }
@@ -189,6 +190,18 @@ fn git(args: &[&str]) -> String {
 }
 #[test]
 fn fixed_leaf_path_preserves_previous_sources_protocols_and_all_live_operations() {
+    let path = "crates/xtask/tests/support/performance_contract_074_gnu_preparation.rs";
+    let current = read(path);
+    assert_eq!(current.matches(PREPARATION_GUARD).count(), 1);
+    assert_eq!(
+        current.replacen(
+            PREPARATION_GUARD,
+            "    let registry = read(\"docs/testing/gated-test-registry.toml\");",
+            1,
+        ),
+        git(&["show", &format!("13cdf24e:{path}")]),
+        "unchanged preparation predicates after exact registry adapter"
+    );
     let files = git(&[
         "ls-tree",
         "-r",
@@ -234,6 +247,15 @@ fn fixed_leaf_path_preserves_previous_sources_protocols_and_all_live_operations(
 }
 #[test]
 fn fixed_leaf_path_adapter_rejects_changed_operations_and_missing_hooks() {
+    let registry = read("docs/testing/gated-test-registry.toml");
+    for bad in [registry.replacen(GATE, "", 1), format!("{registry}{GATE}")] {
+        assert!(std::panic::catch_unwind(|| clean(
+            "docs/testing/gated-test-registry.toml",
+            &bad,
+            false
+        ))
+        .is_err());
+    }
     let old = git(&["show", &format!("{BASE}:{ORIGIN}")]);
     let trial = old
         .replacen(BOOT_OLD, BOOT_NEW, 1)

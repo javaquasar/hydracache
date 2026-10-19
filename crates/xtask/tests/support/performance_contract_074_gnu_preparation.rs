@@ -178,7 +178,10 @@ fn gnu_preparation_observations_have_no_clock_or_execution_authority() {
     assert!(raw.contains("issued.boot_id()"));
     assert!(raw.contains("now.boot_id()"));
     assert!(raw.contains("CONTROLLER_LOSS_SECONDS * 1_000_000_000"));
-    let registry = read("docs/testing/gated-test-registry.toml");
+    let registry = leaf_path::normalize(
+        "docs/testing/gated-test-registry.toml",
+        &read("docs/testing/gated-test-registry.toml"),
+    );
     let extra = registry
         .split_once("# BEGIN GNU PREPARATION GATE")
         .unwrap()
