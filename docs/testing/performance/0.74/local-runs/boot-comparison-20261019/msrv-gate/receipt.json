@@ -1,0 +1,64 @@
+{
+  "source": "22b7a297a49665d5b7f85b0253dd982c2ab9f5c7",
+  "images": [
+    "0a70454a1bbf3b94257b5c9ba881794b29f8c6347622bfecffbd55863089698c  /home/artur/.cache/hydracache-074-194-check/release/deps/hydracache_long_run_supervisor_074-b26b156d3dcd0098",
+    "155de08349a7e7d8b28a95cc71ba893544e73707d1b7d13d4c978214b67c6ecb  /home/artur/.cache/hydracache-074-188-check/release/deps/hydracache_long_run_supervisor_074-d2aba7f58d773234"
+  ],
+  "recipe": "6cbe8998dc7fd8521ff04e57037b415486d37e02c7628daaa4da72dd5aee1281",
+  "stage": "remaining",
+  "rows": [
+    {
+      "label": "second-dead",
+      "case": "second-dead",
+      "exit_code": 0,
+      "actual_creator_sigkill": true,
+      "diagnostic_mode": "facts"
+    },
+    {
+      "label": "first-stopped",
+      "case": "first-stopped",
+      "exit_code": 0,
+      "actual_creator_sigkill": true,
+      "diagnostic_mode": "facts"
+    },
+    {
+      "label": "second-stopped",
+      "case": "second-stopped",
+      "exit_code": 0,
+      "actual_creator_sigkill": true,
+      "diagnostic_mode": "facts"
+    },
+    {
+      "label": "outside-alias",
+      "case": "outside-alias",
+      "exit_code": 0,
+      "actual_creator_sigkill": true,
+      "diagnostic_mode": "facts"
+    },
+    {
+      "label": "owner",
+      "case": "owner",
+      "exit_code": 0,
+      "actual_creator_sigkill": true,
+      "diagnostic_mode": "facts"
+    },
+    {
+      "label": "first-dead",
+      "case": "first-dead",
+      "exit_code": 0,
+      "actual_creator_sigkill": true,
+      "diagnostic_mode": "facts"
+    }
+  ],
+  "functional_gate_passed": true,
+  "unexecuted_cases": [],
+  "not_a_combined_cross_source_matrix": true,
+  "clock_before": "active",
+  "clock_after": "active",
+  "test_issuers": true,
+  "original_send": false,
+  "completion": false,
+  "server": false,
+  "supervisor": false,
+  "product": false
+}

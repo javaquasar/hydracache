@@ -1,0 +1,35 @@
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0433]: failed to resolve: use of unresolved module or unlinked crate `boot_comparison`
+  --> tools/long-run-supervisor-074/src/diagnostic_boot_comparison_tests.rs:25:41
+   |
+25 | ...|| boot_comparison::v...
+   |       ^^^^^^^^^^^^^^^ use of unresolved ...e or unlinked crate `boot_comparison`
+   |
+   = help: if you wanted to use a crate named `boot_comparison`, use `cargo add boot_comparison` to add it to your `Cargo.toml`
+
+error[E0433]: failed to resolve: use of unresolved module or unlinked crate `boot_comparison`
+  --> tools/long-run-supervisor-074/src/diagnostic_boot_comparison_tests.rs:75:13
+   |
+75 | ...t!(boot_c...ison::m...
+   |       ^^^^^^...^^^^ use of unresolved module or unlinked crate `boot_comparison`
+   |
+   = help: if you wanted to use a crate named `boot_comparison`, use `cargo add boot_comparison` to add it to your `Cargo.toml`
+
+error[E0433]: failed to resolve: use of unresolved module or unlinked crate `boot_comparison`
+  --> tools/long-run-supervisor-074/src/diagnostic_boot_comparison_tests.rs:77:18
+   |
+77 | ...!(!boot_compar...:m...
+   |       ^^^^^^^^^^^...use of unresolved module or unlinked crate `boot_comparison`
+   |
+   = help: if you wanted to use a crate named `boot_comparison`, use `cargo add boot_comparison` to add it to your `Cargo.toml`
+
+error[E0433]: failed to resolve: use of unresolved module or unlinked crate `boot_comparison`
+  --> tools/long-run-supervisor-074/src/diagnostic_boot_comparison_tests.rs:81:19
+   |
+81 | ... = boot_compari...m...
+   |       ^^^^^^^^^^^^...se of unresolved module or unlinked crate `boot_comparison`
+   |
+   = help: if you wanted to use a crate named `boot_comparison`, use `cargo add boot_comparison` to add it to your `Cargo.toml`
+
+For more information about this error, try `rustc --explain E0433`.
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 4 previous errors

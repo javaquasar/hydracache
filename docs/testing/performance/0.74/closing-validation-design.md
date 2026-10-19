@@ -1,6 +1,6 @@
 # Closing validation observations and unchanged time guards
 
-Inherits `docs/RULES.md`. All implementation changes are test-only observations.
+Inherits `docs/RULES.md`. This attribution adds only test-only observations.
 The production age predicate, clock reads, validation calls and deadlines remain
 unchanged. The [plan](closing-validation-plan-20261019.md) separates cost
 attribution from the real external writer-fault gate.
@@ -67,3 +67,10 @@ The packet preserves five real SIGKILL proofs and this exact negative, not a
 completed six-case gate. All original comparisons and deadlines remain intact.
 The next cost hypothesis must cover preparation/enrollment as well as closing;
 changing the clock origin or removing the last round would change the contract.
+
+The subsequent [fresh boot comparison](boot-comparison-design.md) tests one
+allocation reduction within those same live checks. It preserves the original
+decoder, traversal and observation counts, and measures complete revalidation
+and sampling with the existing opt-in Rust allocator counter. The repeated
+allocation reduction is separate from elapsed preparation cost and the fresh
+unprofiled MSRV fault gate; no historical negative is retroactively promoted.

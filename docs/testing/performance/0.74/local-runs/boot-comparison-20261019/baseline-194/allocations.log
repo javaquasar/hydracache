@@ -1,0 +1,12 @@
+
+running 1 test
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::boot_comparison::boot_comparison_allocation_attribution ... HC074-BOOT-COMPARE-ALLOC {"candidate":{"allocations":2048,"reallocations":0,"requested_bytes":73728},"iterations":1024,"operation":"revalidate","product":false,"reference":{"allocations":2048,"reallocations":0,"requested_bytes":73728},"rust_requests_only":true,"sample":0}
+HC074-BOOT-COMPARE-ALLOC {"candidate":{"allocations":5120,"reallocations":0,"requested_bytes":184320},"iterations":1024,"operation":"sample","product":false,"reference":{"allocations":5120,"reallocations":0,"requested_bytes":184320},"rust_requests_only":true,"sample":0}
+HC074-BOOT-COMPARE-ALLOC {"candidate":{"allocations":2048,"reallocations":0,"requested_bytes":73728},"iterations":1024,"operation":"revalidate","product":false,"reference":{"allocations":2048,"reallocations":0,"requested_bytes":73728},"rust_requests_only":true,"sample":1}
+HC074-BOOT-COMPARE-ALLOC {"candidate":{"allocations":5120,"reallocations":0,"requested_bytes":184320},"iterations":1024,"operation":"sample","product":false,"reference":{"allocations":5120,"reallocations":0,"requested_bytes":184320},"rust_requests_only":true,"sample":1}
+HC074-BOOT-COMPARE-ALLOC {"candidate":{"allocations":2048,"reallocations":0,"requested_bytes":73728},"iterations":1024,"operation":"revalidate","product":false,"reference":{"allocations":2048,"reallocations":0,"requested_bytes":73728},"rust_requests_only":true,"sample":2}
+HC074-BOOT-COMPARE-ALLOC {"candidate":{"allocations":5120,"reallocations":0,"requested_bytes":184320},"iterations":1024,"operation":"sample","product":false,"reference":{"allocations":5120,"reallocations":0,"requested_bytes":184320},"rust_requests_only":true,"sample":2}
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1285 filtered out; finished in 0.80s
+

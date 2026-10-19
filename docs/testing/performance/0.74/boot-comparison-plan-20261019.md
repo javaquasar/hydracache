@@ -38,3 +38,18 @@ Retain exact source, image, recipe and input hashes in a new evidence packet.
 
 Passing these local fixtures does not admit production trust/enrollment,
 authenticated original send, durable completion, unlock or server rehearsal.
+
+## Recorded outcome
+
+The [packet](local-runs/boot-comparison-20261019/README.md) confirms three paired
+samples per compiler: revalidation changes 2/72 Rust requests/bytes per call
+to zero, and sampling changes 5/180 to 1/36. The owned returned boot ID remains.
+The decoder stays in its original module after an old mutation guard rejects
+its relocation; no old test is weakened. All 306 source contracts pass.
+
+The separate fixed six-case MSRV cohort passes once in facts-only mode, with
+actual creator/writer SIGKILL before original bounds, EOF and a held fence.
+All original comparisons and deadlines remain intact, clocks are restored,
+and historical negatives stay sealed. This confirms a local functional gate
+and an allocation reduction separately, not elapsed preparation improvement
+or a production/server admission.

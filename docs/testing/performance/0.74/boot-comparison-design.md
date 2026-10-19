@@ -51,3 +51,18 @@ all builds and source checks finish, supply the separate MSRV creator fault gate
 Neither a lower allocation count nor a completed local fault cohort opens
 production enrollment, authenticated original delivery, lifecycle completion,
 fence release, server installation or product workload.
+
+## Measured outcome
+
+The [evidence packet](local-runs/boot-comparison-20261019/README.md) reproduces
+the reduction in all three paired samples on both compilers. Each revalidation
+changes two allocation requests/72 bytes to zero; each sample changes five/180
+to one/36, retaining the owned returned identity. There is no elapsed preparation
+or product-speedup claim.
+
+The ordinary MSRV six-case creator fault cohort also passes once in its fixed
+order. Each case kills the exact creator and proves three dummy writers stopped
+before original expiry, drained readers and a held fence. Last custody ages
+remain between 8,272,658,234 and 8,764,277,764 ns under the unchanged exclusive
+ten-second check. These are facts about new attempts, not a causal timing
+comparison with historical refusals or a new cross-compiler functional matrix.

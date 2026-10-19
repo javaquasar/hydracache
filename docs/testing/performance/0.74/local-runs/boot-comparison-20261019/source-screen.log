@@ -1,0 +1,72 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 15s
+     Running tests\performance_contract_074.rs (target\debug\deps\performance_contract_074-affcfab4e5118d5a.exe)
+
+running 3 tests
+
+thread 'live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::prearmed::redundant::original_context::pending::root_enrollment::transport::guardian::creator::original_join::retirement::preparation::leaf_path::owned_root::closing::boot_comparison::boot_comparison_adapter_rejects_missing_duplicate_and_live_operation_drift' (5128) panicked at crates\xtask\tests\support\performance_contract_074_boot_comparison.rs:128:13:
+assertion `left == right` failed: exact boot comparison hook: tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs
+  left: 0
+ right: 1
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::prearmed::redundant::original_context::pending::root_enrollment::transport::guardian::creator::original_join::retirement::preparation::leaf_path::owned_root::closing::boot_comparison::boot_comparison_adapter_rejects_missing_duplicate_and_live_operation_drift' (5128) panicked at crates\xtask\tests\support\performance_contract_074_boot_comparison.rs:128:13:
+assertion `left == right` failed: exact boot comparison hook: tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs
+  left: 2
+ right: 1
+
+thread 'live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::prearmed::redundant::original_context::pending::root_enrollment::transport::guardian::creator::original_join::retirement::preparation::leaf_path::owned_root::closing::boot_comparison::boot_comparison_adapter_rejects_missing_duplicate_and_live_operation_drift' (5128) panicked at crates\xtask\tests\support\performance_contract_074_boot_comparison.rs:128:13:
+assertion `left == right` failed: exact boot comparison hook: tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs
+  left: 0
+ right: 1
+
+thread 'live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::prearmed::redundant::original_context::pending::root_enrollment::transport::guardian::creator::original_join::retirement::preparation::leaf_path::owned_root::closing::boot_comparison::boot_comparison_adapter_rejects_missing_duplicate_and_live_operation_drift' (5128) panicked at crates\xtask\tests\support\performance_contract_074_boot_comparison.rs:128:13:
+assertion `left == right` failed: exact boot comparison hook: tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs
+  left: 2
+ right: 1
+
+thread 'live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::prearmed::redundant::original_context::pending::root_enrollment::transport::guardian::creator::original_join::retirement::preparation::leaf_path::owned_root::closing::boot_comparison::boot_comparison_adapter_rejects_missing_duplicate_and_live_operation_drift' (5128) panicked at crates\xtask\tests\support\performance_contract_074_boot_comparison.rs:128:13:
+assertion `left == right` failed: exact boot comparison hook: tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs
+  left: 0
+ right: 1
+
+thread 'live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::prearmed::redundant::original_context::pending::root_enrollment::transport::guardian::creator::original_join::retirement::preparation::leaf_path::owned_root::closing::boot_comparison::boot_comparison_adapter_rejects_missing_duplicate_and_live_operation_drift' (5128) panicked at crates\xtask\tests\support\performance_contract_074_boot_comparison.rs:128:13:
+assertion `left == right` failed: exact boot comparison hook: tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs
+  left: 2
+ right: 1
+
+thread 'live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::prearmed::redundant::original_context::pending::root_enrollment::transport::guardian::creator::original_join::retirement::preparation::leaf_path::owned_root::closing::boot_comparison::boot_comparison_adapter_rejects_missing_duplicate_and_live_operation_drift' (5128) panicked at crates\xtask\tests\support\performance_contract_074_boot_comparison.rs:128:13:
+assertion `left == right` failed: exact boot comparison hook: tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs
+  left: 0
+ right: 1
+
+thread 'live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::prearmed::redundant::original_context::pending::root_enrollment::transport::guardian::creator::original_join::retirement::preparation::leaf_path::owned_root::closing::boot_comparison::boot_comparison_adapter_rejects_missing_duplicate_and_live_operation_drift' (5128) panicked at crates\xtask\tests\support\performance_contract_074_boot_comparison.rs:128:13:
+assertion `left == right` failed: exact boot comparison hook: tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs
+  left: 2
+ right: 1
+
+thread 'live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::prearmed::redundant::original_context::pending::root_enrollment::transport::guardian::creator::original_join::retirement::preparation::leaf_path::owned_root::closing::boot_comparison::boot_comparison_adapter_rejects_missing_duplicate_and_live_operation_drift' (5128) panicked at crates\xtask\tests\support\performance_contract_074_boot_comparison.rs:128:13:
+assertion `left == right` failed: exact boot comparison hook: tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs
+  left: 0
+ right: 1
+
+thread 'live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::prearmed::redundant::original_context::pending::root_enrollment::transport::guardian::creator::original_join::retirement::preparation::leaf_path::owned_root::closing::boot_comparison::boot_comparison_adapter_rejects_missing_duplicate_and_live_operation_drift' (5128) panicked at crates\xtask\tests\support\performance_contract_074_boot_comparison.rs:128:13:
+assertion `left == right` failed: exact boot comparison hook: tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs
+  left: 2
+ right: 1
+
+thread 'live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::prearmed::redundant::original_context::pending::root_enrollment::transport::guardian::creator::original_join::retirement::preparation::leaf_path::owned_root::closing::boot_comparison::boot_comparison_adapter_rejects_missing_duplicate_and_live_operation_drift' (5128) panicked at crates\xtask\tests\support\performance_contract_074_boot_comparison.rs:128:13:
+assertion `left == right` failed: exact boot comparison hook: tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs
+  left: 0
+ right: 1
+
+thread 'live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::prearmed::redundant::original_context::pending::root_enrollment::transport::guardian::creator::original_join::retirement::preparation::leaf_path::owned_root::closing::boot_comparison::boot_comparison_adapter_rejects_missing_duplicate_and_live_operation_drift' (5128) panicked at crates\xtask\tests\support\performance_contract_074_boot_comparison.rs:128:13:
+assertion `left == right` failed: exact boot comparison hook: tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs
+  left: 2
+ right: 1
+test live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::prearmed::redundant::original_context::pending::root_enrollment::transport::guardian::creator::original_join::retirement::preparation::leaf_path::owned_root::closing::boot_comparison::boot_comparison_adapter_rejects_missing_duplicate_and_live_operation_drift ... ok
+test live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::prearmed::redundant::original_context::pending::root_enrollment::transport::guardian::creator::original_join::retirement::preparation::leaf_path::owned_root::closing::boot_comparison::boot_comparison_helper_and_frozen_reference_preserve_strict_decoder_and_owned_api ... ok
+test live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::prearmed::redundant::original_context::pending::root_enrollment::transport::guardian::creator::original_join::retirement::preparation::leaf_path::owned_root::closing::boot_comparison::boot_comparison_preserves_all_420_previous_sources_and_external_fault_harness ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 303 filtered out; finished in 45.31s
+

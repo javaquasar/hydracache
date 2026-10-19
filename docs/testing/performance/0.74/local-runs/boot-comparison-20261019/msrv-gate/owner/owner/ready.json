@@ -1,0 +1,61 @@
+{
+  "bounds": [
+    493935518058,
+    257300981339,
+    206615189381,
+    206615189381
+  ],
+  "completion": false,
+  "fence": "/tmp/hc074-owned-root-ViP6tA/var/lib/hydracache-performance/campaigns/.host-execution.lock",
+  "original_send": false,
+  "origins": [
+    193935518058,
+    196615189381,
+    196372875693,
+    197300981339
+  ],
+  "phase": "ready",
+  "product": false,
+  "relay": {
+    "device": 2096,
+    "inode": 333307,
+    "path": "/tmp/hc074-controller-relay-Dg4nef"
+  },
+  "root": "/sys/fs/cgroup/hc074-owned-root-7RKKFh",
+  "root_device": 23,
+  "root_inode": 3005,
+  "schema": "hc074-owned-root-creator-v1",
+  "scopes": [
+    {
+      "device": 2096,
+      "inode": 325750,
+      "path": "/tmp/hc074-owned-root-ki0U0x"
+    },
+    {
+      "device": 2096,
+      "inode": 331332,
+      "path": "/tmp/hc074-owned-root-zK05HH"
+    },
+    {
+      "device": 2096,
+      "inode": 325699,
+      "path": "/tmp/hc074-owned-root-21v6Ku"
+    },
+    {
+      "device": 2096,
+      "inode": 331339,
+      "path": "/tmp/hc074-owned-root-tAWc1d"
+    },
+    {
+      "device": 2096,
+      "inode": 333306,
+      "path": "/tmp/hc074-owned-root-7RKKFh"
+    },
+    {
+      "device": 2096,
+      "inode": 333330,
+      "path": "/tmp/hc074-owned-root-ViP6tA"
+    }
+  ],
+  "test_issuers": true
+}

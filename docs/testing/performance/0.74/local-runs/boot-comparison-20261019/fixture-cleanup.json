@@ -1,0 +1,16 @@
+{
+  "command": [
+    "find",
+    "/sys/fs/cgroup",
+    "-maxdepth",
+    "1",
+    "-name",
+    "hc074-owned-root-*",
+    "-print"
+  ],
+  "exit_code": 0,
+  "roots": [],
+  "server": false,
+  "supervisor": false,
+  "product": false
+}

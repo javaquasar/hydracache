@@ -14039,3 +14039,50 @@ the next optimization question across the full preparation/enrollment budget,
 not just closing latency. The new diagnostic evidence never refreshes an old
 attempt, changes its ten-second window or turns local fixture success into
 permission to install or launch the server.
+
+## Fresh boot comparisons do not need a temporary String
+
+The next [isolated change](../testing/performance/0.74/boot-comparison-design.md)
+uses the kernel attribution without treating its overlapping spans as exclusive
+CPU costs. Revalidation repeatedly reads and strictly validates the boot UUID,
+then compares a newly allocated String with the retained identity. Equality
+does not need temporary ownership. The candidate therefore borrows the just-read
+stack bytes for that comparison while preserving owned boot IDs in retained
+origins and returned time points.
+
+Every observation is still fresh: the same path components, open flags,
+filesystem checks and positional read run each time. The document is still
+closed before decoding, strict UUID and UTF-8 checks remain, and read errors
+are not retried. No file descriptor, boot result or namespace observation is
+cached. The original module retains the actual decoder predicates so its old
+mutation tests remain effective. The first version's relocation failed that
+structural guard; the correction preserves the guard rather than teaching it
+to ignore the missing predicates.
+
+The [new evidence](../testing/performance/0.74/local-runs/boot-comparison-20261019/README.md)
+first measures three baseline pairs, then repeats three pairs on each GNU and
+MSRV candidate, with 1,024 complete calls per operation. All pairs agree.
+Revalidation falls from two Rust allocation requests for 72 bytes per call to
+zero. Sampling falls from five requests for 180 bytes to one for 36 bytes; the
+remaining request owns the returned boot ID. Differential cases cover every
+single-byte mutation, malformed lengths and seeded documents, and actual kernel
+tests retain the original fresh-observation counts and refusal sites.
+
+This is a confirmed reduction in temporary Rust allocation requests on a path
+used throughout preparation and enrollment. It is not a measured reduction in
+elapsed preparation, libc allocation, RSS or product latency. An unchanged
+ten-second window can still expire because of the remaining live/kernel work.
+The separate unprofiled MSRV creator-SIGKILL cohort therefore remains a necessary
+functional check; allocator counts cannot stand in for actual writer cessation,
+completion or permission to launch the server.
+
+The new unprofiled MSRV cohort passes all six fixed cases once, including the
+previously refused first-guardian-loss regression. Each actually kills the
+creator, stops three dummy writers before original expiry, drains both readers
+and keeps the fence busy. Last observed custody ages span 8.273–8.764 seconds
+within the original exclusive ten-second window. This is not a paired timing
+experiment against the old failures, so the successful gate is not attributed
+to the allocation change. The allocator reduction and this complete local
+functional result stand independently. Historical partial outcomes remain
+unchanged; original delivery, production trust, lifecycle/reconnect and server
+admission remain separate work.

@@ -1,0 +1,12 @@
+{
+  "source": "22b7a297a49665d5b7f85b0253dd982c2ab9f5c7",
+  "compiler": "1.94.0",
+  "image": "6a9118f4c1753f547087073949d7c36f3afca4940ea4fd7ee72e43e6c5b50754  /home/artur/.cache/hydracache-074-194-check/release/deps/hydracache_long_run_supervisor_074-c3c253bf49d23fef",
+  "recipe": "be4a03e616f674f67036696b82ec8f60ff82a6351d90a17bdbeb403042ed9e06",
+  "samples": 3,
+  "iterations": 1024,
+  "profile": true,
+  "functional_gate": false,
+  "server": false,
+  "product": false
+}

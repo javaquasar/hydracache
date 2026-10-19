@@ -4220,3 +4220,33 @@ hashed files plus its inventory; inventory SHA256 is
 Its verifier rejects sixteen mutations. All 303 source contracts, scoped Linux
 and Windows units, strict lint, formatting and local non-promotable contracts
 pass. The older partial packet and qualification manifest are unchanged.
+
+The subsequent [fresh boot equality design](boot-comparison-design.md) removes
+only temporary String ownership from newly read UUID comparisons. All fresh
+traversals, flags, strict decoding, refusal sites, live observation counts,
+46 effect brackets and original origins/bounds remain intact. Retained boot
+identity and returned time points still own their values. The original decoder
+stays in its original module and all earlier mutation tests remain unchanged.
+
+Three paired samples of 1,024 complete calls on each GNU 1.94/MSRV 1.88 image
+confirm revalidation moving from 2/72 Rust allocation requests/bytes per call
+to zero, and sampling from 5/180 to 1/36. The remaining sample allocation owns
+the returned boot ID. These are allocation-request results, not elapsed
+preparation, CPU, RSS or product-speedup claims. The
+[new evidence packet](local-runs/boot-comparison-20261019/README.md) separates
+this opt-in allocation feature from the ordinary-image MSRV creator fault gate.
+The older partial results are not rewritten or combined into a completed gate.
+
+The new ordinary-image MSRV fault cohort passes all six fixed cases once. All
+three dummy writers stop before original expiry after actual creator SIGKILL,
+both readers drain and the fence stays busy. Last observed custody ages are
+8,272,658,234–8,764,277,764 ns; no origin or bound is changed. This is a complete
+new local MSRV gate, not a new GNU/MSRV matrix, proof of faster preparation,
+original product delivery, production enrollment, completion or server admission.
+All 306 source contracts and both compiler regression cohorts pass.
+
+The packet contains 110 hashed files plus its inventory; inventory SHA256 is
+`4cf7556728a2146a8b07e8edbffb64951f3cb4c96e3232c60c26abc1047e80d0`.
+Its verifier rejects sixteen mutations, including false full-gate promotion
+and fabricated preparation-wall improvement. The signed fixture data, all
+historical packet digests and frozen qualification manifest remain unchanged.
