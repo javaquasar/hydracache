@@ -98,6 +98,8 @@ fn window(
         .original
         .worker
         .original_reservation_time(Some(issued))?;
+    #[cfg(test)]
+    time_observation::observe("window", issued, &now);
     if now.boot_id() != issued.boot_id() {
         return Err(CollectorCausalError::Time);
     }
@@ -411,3 +413,7 @@ impl<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>
 #[cfg(test)]
 #[path = "diagnostic_collector_causal_codec_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "diagnostic_causal_time_observation.rs"]
+pub(crate) mod time_observation;

@@ -1,4 +1,6 @@
 //! Retirement must fail closed before returning the original exclusive borrow.
+#[path = "performance_contract_074_gnu_preparation.rs"]
+mod preparation;
 fn root() -> std::path::PathBuf {
     std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..")
 }
@@ -99,6 +101,7 @@ platform = "linux"
     ),
 ];
 pub(super) fn normalize(path: &str, raw: &str) -> String {
+    let raw = &preparation::normalize(path, raw);
     let Some((_, addition)) = ADDITIONS.iter().find(|(p, _)| *p == path) else {
         return raw.to_owned();
     };

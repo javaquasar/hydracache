@@ -134,6 +134,8 @@ impl OriginalFramedConsent<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
             .as_ref()
             .ok_or(OriginalStartConsentError::Binding)?;
         let loss = crate::diagnostic_lease::CONTROLLER_LOSS_SECONDS;
+        #[cfg(test)]
+        super::super::time_observation::observe("final_clocks", &causal.issued, &now);
         super::super::age(causal.issued.boottime_ns(), now.boottime_ns())?;
         if now.boot_id() != r.state.identity.boot_id
             || !valid_age(heartbeat, now.boottime_ns(), loss)

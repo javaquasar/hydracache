@@ -93,3 +93,6 @@ fn original_root_guardian_frame_controls() {
 
 #[path = "diagnostic_original_root_retirement_frame_tests.rs"]
 mod retirement;
+
+#[path = "diagnostic_gnu_preparation_cost_tests.rs"]
+mod preparation_cost;

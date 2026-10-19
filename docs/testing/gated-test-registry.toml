@@ -12304,3 +12304,39 @@ platform = "linux"
 [gate.command.env]
 
 # END ROOT RETIREMENT GATE
+
+# BEGIN GNU PREPARATION GATE
+
+[[gate]]
+id = "tool.hydracache-long-run-supervisor-074.gnu-preparation-attribution"
+kind = "external_tool"
+source = "tools/long-run-supervisor-074/src/diagnostic_gnu_preparation_cost_tests.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "hydracache_long_run_supervisor_074"
+test = "gnu_preparation_cost_attribution"
+cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
+env = ""
+reason = "manual nonroot unchanged preparation cost and causal clock facts; not healthy admission"
+tier = "manual"
+required_features = []
+required_env = ["HC074_START_MATERIAL_BUNDLE"]
+required_tools = ["cargo"]
+timeout_seconds = 1200
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","gnu_preparation_cost_attribution","--","--ignored","--nocapture","--test-threads=1"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+
+# END GNU PREPARATION GATE
