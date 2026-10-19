@@ -30,7 +30,9 @@ fn original_root_retirement_frame_control() {
                 let ((retry, calls), report) = trace::capture(|| {
                     trace::stage(Stage::Checks);
                     probe.root_retire_for_test(&mut controls);
-                    probe.root_join_for_test(&mut controls, true)
+                    // A new capsule cannot hide behind the old one's refusal.
+                    let mut fresh = probe.root_controls_for_test(0);
+                    probe.root_join_for_test(&mut fresh, true)
                 });
                 assert!(retry.is_err());
                 assert_eq!(calls, 0);
