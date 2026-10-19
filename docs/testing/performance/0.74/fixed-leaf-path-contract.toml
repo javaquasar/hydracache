@@ -1,0 +1,7 @@
+schema_version = 1
+scope = "fixed-leaf-path-074-v1"
+candidate_enabled = false
+live_observations_preserved = true
+original_deadlines_preserved = true
+server_allowed = false
+product_allowed = false

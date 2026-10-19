@@ -1,4 +1,6 @@
 //! Test-only clock facts cannot change the frozen original validation bodies.
+#[path = "performance_contract_074_fixed_leaf_path.rs"]
+mod leaf_path;
 const BASE: &str = "e9aff331";
 const REFERENCE: &str = r#"        let current = if matches!(
             p,
@@ -70,6 +72,7 @@ const ADDITIONS: &[(&str, &str)] = &[
      "\n#[path = \"diagnostic_gnu_preparation_cost_tests.rs\"]\nmod preparation_cost;\n"),
 ];
 pub(super) fn normalize(path: &str, raw: &str) -> String {
+    let raw = &leaf_path::normalize(path, raw);
     let mut raw = raw.to_owned();
     for (_, extra) in ADDITIONS.iter().filter(|(p, _)| *p == path) {
         assert_eq!(

@@ -244,6 +244,10 @@ impl Origin {
 mod boot_buffer_tests;
 
 #[cfg(test)]
+#[path = "diagnostic_fixed_leaf_path_tests.rs"]
+mod fixed_leaf_path_tests;
+
+#[cfg(test)]
 mod tests {
     use super::*;
     #[test]
