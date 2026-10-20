@@ -1,0 +1,10 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.60s
+     Running tests\authority_expected_name_074.rs (target\debug\deps\authority_expected_name_074-d683cf929132d807.exe)
+
+running 2 tests
+test authority_expected_name_contract_keeps_exact_formatter_and_closed_gates ... ok
+test authority_expected_name_exact_view_preserves_baseline_and_refuses_drift ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.27s
+

@@ -1,0 +1,76 @@
+{
+  "stage": "Before",
+  "source": "c5a427f313ba6ae853192b462cff771c6208766f",
+  "recipe_sha256": "530e21a3b54a0f21bb7928579332b7883c215c7e5ba5f49bd8f1e86ea9d9de5a",
+  "steps": [
+    {
+      "log": "Before-check-194-authority_.log",
+      "exit": 0,
+      "name": "authority_",
+      "sha256": "bd8346c735a28a70e82759ef52f8ef8ccaf6f6e0d2c7a5cb8a4337b2cdfce1e6"
+    },
+    {
+      "log": "Before-check-194-validation_leaf_requests_.log",
+      "exit": 0,
+      "name": "validation_leaf_requests_",
+      "sha256": "5d25ecaa4c7fd1035c9af697798ed06ad60cbc83ee96709631d809a24ef2e62b"
+    },
+    {
+      "log": "Before-check-194-fixed_leaf_alloc_counter.log",
+      "exit": 0,
+      "name": "fixed_leaf_alloc_counter",
+      "sha256": "1c4ef193292d1611c1e37e358dbcddf2e873b1668204f240a219b5909f68bdee"
+    },
+    {
+      "log": "Before-check-194-fixed_leaf_path_differential.log",
+      "exit": 0,
+      "name": "fixed_leaf_path_differential",
+      "sha256": "3055e99c243f4ec8dcb6808719cf29e3f9f37b6702a1ac2dc82f63781c74ff0d"
+    },
+    {
+      "log": "Before-check-194-fixed_leaf_path_preserves.log",
+      "exit": 0,
+      "name": "fixed_leaf_path_preserves",
+      "sha256": "278e674f704b2b865eb2776e5a5ef07a6b1621d6cb9ccd3d984e58988bf3f9f4"
+    },
+    {
+      "log": "Before-check-194-kernel_time_.log",
+      "exit": 0,
+      "name": "kernel_time_",
+      "sha256": "ca34c13fdb751e3160418f294970ab0ac3ef1138079d1b75278b3126cfe34e61"
+    },
+    {
+      "log": "Before-check-194-kernel_worker_context_.log",
+      "exit": 0,
+      "name": "kernel_worker_context_",
+      "sha256": "08a4752c69d25f9370645f878516cbdb66a9ec15fdc6f63860a5a5b500724e2f"
+    },
+    {
+      "log": "Before-check-194-worker_trust_input_.log",
+      "exit": 0,
+      "name": "worker_trust_input_",
+      "sha256": "006bb7a4b71dc51ae1f2efda0918b39bf594af8318bc92d42e354a012cdf4d71"
+    },
+    {
+      "log": "Before-check-194-check.log",
+      "exit": 0,
+      "name": "check",
+      "sha256": "4d4ecc62aa08a06d163d1ad25c46d5b7e05702e31a82f70ce4144ba7b0793738"
+    },
+    {
+      "log": "Before-check-194-lint.log",
+      "exit": 0,
+      "name": "lint",
+      "sha256": "770f8b7604e665b12d4c685d68f7b21a7db8f33d20d6c987f5527afb3b7a6571"
+    },
+    {
+      "log": "Before-check-194-build.log",
+      "exit": 0,
+      "name": "build",
+      "sha256": "488834b05299937df806f282bb37cf668eaea63c2efb020c9c1fd59d23c9cd48"
+    }
+  ],
+  "failure": null,
+  "server": false,
+  "product": false
+}

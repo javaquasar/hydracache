@@ -1,0 +1,41 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.76s
+     Running tests\authority_context_074.rs (target\debug\deps\authority_context_074-6287c06552dbfff4.exe)
+
+running 2 tests
+test authority_context_candidate_matches_contract_and_frozen_prefix_order ... ok
+test authority_context_restores_preceding_sources_without_changing_key_encoder ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.19s
+
+     Running tests\authority_expected_name_074.rs (target\debug\deps\authority_expected_name_074-d683cf929132d807.exe)
+
+running 2 tests
+test authority_expected_name_contract_keeps_exact_formatter_and_closed_gates ... ok
+test authority_expected_name_exact_view_preserves_baseline_and_refuses_drift ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s
+
+     Running tests\authority_inventory_074.rs (target\debug\deps\authority_inventory_074-8e86af1042e9bbf2.exe)
+
+running 2 tests
+test authority_inventory_contract_preserves_observed_prefix_formatter_and_deadlines ... ok
+test authority_inventory_exact_view_restores_baseline_and_rejects_unknown_or_duplicate_hooks ... FAILED
+
+failures:
+
+---- authority_inventory_exact_view_restores_baseline_and_rejects_unknown_or_duplicate_hooks stdout ----
+
+thread 'authority_inventory_exact_view_restores_baseline_and_rejects_unknown_or_duplicate_hooks' (38280) panicked at crates\xtask\tests\authority_inventory_074.rs:41:13:
+assertion `left == right` failed: one known complete inventory
+  left: 0
+ right: 1
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    authority_inventory_exact_view_restores_baseline_and_rejects_unknown_or_duplicate_hooks
+
+test result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+
+error: test failed, to rerun pass `-p xtask --test authority_inventory_074`

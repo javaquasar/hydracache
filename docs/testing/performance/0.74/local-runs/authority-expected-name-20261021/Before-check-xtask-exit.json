@@ -1,0 +1,16 @@
+{
+  "stage": "Before",
+  "source": "c5a427f313ba6ae853192b462cff771c6208766f",
+  "recipe_sha256": "530e21a3b54a0f21bb7928579332b7883c215c7e5ba5f49bd8f1e86ea9d9de5a",
+  "steps": [
+    {
+      "name": "focused",
+      "log": "Before-check-xtask-focused.log",
+      "sha256": "9f386c6cc08d75f86d02d31ea95efc8ce2a8e248469e9a61aec7c0e4e594a9c5",
+      "exit": 101
+    }
+  ],
+  "failure": "Failed focused (101)",
+  "server": false,
+  "product": false
+}
