@@ -18,10 +18,12 @@ macro_rules! hc074_remaining_preparation_view {
         {
             let before = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../tools/long-run-supervisor-074/tests/support/projection_reference.rs")).replace('\r', "");
             let after = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../tools/long-run-supervisor-074/tests/support/projection_candidate.rs")).replace('\r', "");
-            let function = |text: &str| format!("fn projection({}", text.split_once("fn projection(").unwrap().1.trim_end());
+            let function = |text: &str| format!("fn projection(bytes: &[u8], credentials: &libc::ucred) -> Result<Projection, KernelError> {{{}", text.split_once(") -> Result<Projection, KernelError> {").unwrap().1.trim_end());
             let after = function(&after);
             assert_eq!(raw.matches(&after).count(), 1, "exact bounded projection parser");
-            raw = raw.replacen(&after, &function(&before), 1);
+            let old_body = before.split_once(") -> Result<Projection, KernelError> {").unwrap().1;
+            let before = format!("fn projection(bytes: &[u8], credentials: &libc::ucred) -> Result<Projection, KernelError> {{{}", old_body.trim_end());
+            raw = raw.replacen(&after, &before, 1);
         }
         for (file, indent, names) in [
             ("tools/long-run-supervisor-074/src/diagnostic_original_output_join.rs", 12, &["outputs-enter", "outputs-starting", "outputs-pipes", "outputs-sinks"][..]),

@@ -194,11 +194,11 @@ fn projection_fields_runtime_binding_is_exact_frozen_candidate() {
     let runtime = include_str!("../../src/diagnostic_kernel_admission.rs").replace('\r', "");
     let body = include_str!("projection_candidate.rs").replace('\r', "");
     let body = body
-        .split_once("pub(in crate::diagnostic_kernel_admission) fn projection(")
+        .split_once(") -> Result<Projection, KernelError> {")
         .unwrap()
         .1;
     assert!(
-        runtime.contains(&format!("fn projection({}", body.trim_end())),
+        runtime.contains(&format!("fn projection(bytes: &[u8], credentials: &libc::ucred) -> Result<Projection, KernelError> {{{}", body.trim_end())),
         "test-first projection candidate not adopted"
     );
 }
