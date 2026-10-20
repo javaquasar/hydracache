@@ -1,9 +1,28 @@
 //! Exact local observations and bounded-parser substitutions only.
 #[macro_export]
-macro_rules! hc074_round_cost_view {
+macro_rules! hc074_leaf_requests_view {
     ($path:expr, $source:expr) => {{
         let path: &str = $path;
         let mut raw: String = $source.to_owned();
+        let hook = "\n#[path = \"../tests/support/validation_leaf_requests.rs\"]\nmod validation_leaf_requests;\n";
+        let gate = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/tests/support/validation_leaf_requests_gate.txt")).replace('\r', "");
+        for (file, exact, marker) in [
+            ("tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs", hook, "validation_leaf_requests"),
+            ("docs/testing/gated-test-registry.toml", gate.as_str(), "# BEGIN VALIDATION LEAF REQUEST GATE"),
+        ] {
+            if path == file && raw.contains(marker) {
+                assert_eq!(raw.matches(exact).count(), 1, "exact leaf request test hook");
+                raw = raw.replacen(exact, "", 1);
+            }
+        }
+        raw
+    }};
+}
+#[macro_export]
+macro_rules! hc074_round_cost_view {
+    ($path:expr, $source:expr) => {{
+        let path: &str = $path;
+        let mut raw: String = $crate::hc074_leaf_requests_view!(path, $source);
         for (file, hooks) in [
             ("tools/long-run-supervisor-074/src/diagnostic_validation_trace.rs", &[
                 "#[cfg(target_os = \"linux\")]\n#[path = \"../tests/support/round_cost.rs\"]\npub(crate) mod round_cost;\n\n",
