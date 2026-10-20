@@ -1,0 +1,12 @@
+
+running 1 test
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::fresh_status::fresh_status_opener_allocation_attribution ... HC074-FRESH-STATUS-ALLOC {"candidate":{"allocations":0,"reallocations":0,"requested_bytes":0},"candidate_first":false,"iterations":1024,"product":false,"reference":{"allocations":1024,"reallocations":0,"requested_bytes":7168},"rust_requests_only":true,"sample":0,"server":false}
+HC074-FRESH-STATUS-ALLOC {"candidate":{"allocations":0,"reallocations":0,"requested_bytes":0},"candidate_first":true,"iterations":1024,"product":false,"reference":{"allocations":1024,"reallocations":0,"requested_bytes":7168},"rust_requests_only":true,"sample":1,"server":false}
+HC074-FRESH-STATUS-ALLOC {"candidate":{"allocations":0,"reallocations":0,"requested_bytes":0},"candidate_first":false,"iterations":1024,"product":false,"reference":{"allocations":1024,"reallocations":0,"requested_bytes":7168},"rust_requests_only":true,"sample":2,"server":false}
+HC074-FRESH-STATUS-TIME {"allocation_counter_active":false,"candidate_first":false,"candidate_wall_ns":4339438,"iterations":4096,"product":false,"reference_wall_ns":4473271,"sample":0,"server":false}
+HC074-FRESH-STATUS-TIME {"allocation_counter_active":false,"candidate_first":true,"candidate_wall_ns":4162738,"iterations":4096,"product":false,"reference_wall_ns":4077850,"sample":1,"server":false}
+HC074-FRESH-STATUS-TIME {"allocation_counter_active":false,"candidate_first":false,"candidate_wall_ns":4256406,"iterations":4096,"product":false,"reference_wall_ns":4396478,"sample":2,"server":false}
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1380 filtered out; finished in 0.04s
+
