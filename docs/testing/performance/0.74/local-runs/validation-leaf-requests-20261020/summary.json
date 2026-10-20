@@ -1,0 +1,512 @@
+{
+  "schema": "validation-leaf-request-control-074-v1",
+  "complete_request_cohort": true,
+  "runtime_candidate": false,
+  "latency_gain_claimed": false,
+  "all_syscalls_observed": false,
+  "full_active_authority_measured": false,
+  "existing_live_refusals_retained": true,
+  "native_gate_open": false,
+  "server": false,
+  "product": false,
+  "lanes": [
+    {
+      "lane": "194",
+      "source": "a574a8ae32ff37ff029f6798a7a1efde1cddd909",
+      "image_sha256": "ba63fd4d8194bf9705578c9ee9c1706562328a3d9fa859e82d6e17c8e1665318",
+      "origin": {
+        "boot_id": "8bb31f38-cbcc-4081-8cae-e4bc496179fd",
+        "iterations": 1024,
+        "pid": 312,
+        "product": false,
+        "samples": 3,
+        "server": false,
+        "uid": 1000,
+        "warmups": 32
+      },
+      "rows": [
+        {
+          "case": "boot",
+          "iterations": 1024,
+          "allocations": [
+            0,
+            0,
+            0
+          ],
+          "reallocations": [
+            0,
+            0,
+            0
+          ],
+          "requested_bytes": [
+            0,
+            0,
+            0
+          ],
+          "read_requests_minus_empty": [
+            1024,
+            1024,
+            1024
+          ],
+          "write_requests": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "case": "namespace-user",
+          "iterations": 1024,
+          "allocations": [
+            0,
+            0,
+            0
+          ],
+          "reallocations": [
+            0,
+            0,
+            0
+          ],
+          "requested_bytes": [
+            0,
+            0,
+            0
+          ],
+          "read_requests_minus_empty": [
+            0,
+            0,
+            0
+          ],
+          "write_requests": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "case": "namespace-mnt",
+          "iterations": 1024,
+          "allocations": [
+            0,
+            0,
+            0
+          ],
+          "reallocations": [
+            0,
+            0,
+            0
+          ],
+          "requested_bytes": [
+            0,
+            0,
+            0
+          ],
+          "read_requests_minus_empty": [
+            0,
+            0,
+            0
+          ],
+          "write_requests": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "case": "namespace-pid",
+          "iterations": 1024,
+          "allocations": [
+            0,
+            0,
+            0
+          ],
+          "reallocations": [
+            0,
+            0,
+            0
+          ],
+          "requested_bytes": [
+            0,
+            0,
+            0
+          ],
+          "read_requests_minus_empty": [
+            0,
+            0,
+            0
+          ],
+          "write_requests": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "case": "namespace-time",
+          "iterations": 1024,
+          "allocations": [
+            0,
+            0,
+            0
+          ],
+          "reallocations": [
+            0,
+            0,
+            0
+          ],
+          "requested_bytes": [
+            0,
+            0,
+            0
+          ],
+          "read_requests_minus_empty": [
+            0,
+            0,
+            0
+          ],
+          "write_requests": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "case": "origin",
+          "iterations": 1024,
+          "allocations": [
+            0,
+            0,
+            0
+          ],
+          "reallocations": [
+            0,
+            0,
+            0
+          ],
+          "requested_bytes": [
+            0,
+            0,
+            0
+          ],
+          "read_requests_minus_empty": [
+            2048,
+            2048,
+            2048
+          ],
+          "write_requests": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "case": "authority-1",
+          "iterations": 1024,
+          "allocations": [
+            69632,
+            69632,
+            69632
+          ],
+          "reallocations": [
+            11264,
+            11264,
+            11264
+          ],
+          "requested_bytes": [
+            3086336,
+            3086336,
+            3086336
+          ],
+          "read_requests_minus_empty": [
+            4096,
+            4096,
+            4096
+          ],
+          "write_requests": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "case": "authority-7",
+          "iterations": 1024,
+          "allocations": [
+            188416,
+            188416,
+            188416
+          ],
+          "reallocations": [
+            60416,
+            60416,
+            60416
+          ],
+          "requested_bytes": [
+            13611008,
+            13611008,
+            13611008
+          ],
+          "read_requests_minus_empty": [
+            28672,
+            28672,
+            28672
+          ],
+          "write_requests": [
+            0,
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "lane": "188",
+      "source": "a574a8ae32ff37ff029f6798a7a1efde1cddd909",
+      "image_sha256": "e2489d5384b339534b156a7705a49810359cfd10434e15f23c6d26e207628fb2",
+      "origin": {
+        "boot_id": "8bb31f38-cbcc-4081-8cae-e4bc496179fd",
+        "iterations": 1024,
+        "pid": 371,
+        "product": false,
+        "samples": 3,
+        "server": false,
+        "uid": 1000,
+        "warmups": 32
+      },
+      "rows": [
+        {
+          "case": "boot",
+          "iterations": 1024,
+          "allocations": [
+            0,
+            0,
+            0
+          ],
+          "reallocations": [
+            0,
+            0,
+            0
+          ],
+          "requested_bytes": [
+            0,
+            0,
+            0
+          ],
+          "read_requests_minus_empty": [
+            1024,
+            1024,
+            1024
+          ],
+          "write_requests": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "case": "namespace-user",
+          "iterations": 1024,
+          "allocations": [
+            0,
+            0,
+            0
+          ],
+          "reallocations": [
+            0,
+            0,
+            0
+          ],
+          "requested_bytes": [
+            0,
+            0,
+            0
+          ],
+          "read_requests_minus_empty": [
+            0,
+            0,
+            0
+          ],
+          "write_requests": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "case": "namespace-mnt",
+          "iterations": 1024,
+          "allocations": [
+            0,
+            0,
+            0
+          ],
+          "reallocations": [
+            0,
+            0,
+            0
+          ],
+          "requested_bytes": [
+            0,
+            0,
+            0
+          ],
+          "read_requests_minus_empty": [
+            0,
+            0,
+            0
+          ],
+          "write_requests": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "case": "namespace-pid",
+          "iterations": 1024,
+          "allocations": [
+            0,
+            0,
+            0
+          ],
+          "reallocations": [
+            0,
+            0,
+            0
+          ],
+          "requested_bytes": [
+            0,
+            0,
+            0
+          ],
+          "read_requests_minus_empty": [
+            0,
+            0,
+            0
+          ],
+          "write_requests": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "case": "namespace-time",
+          "iterations": 1024,
+          "allocations": [
+            0,
+            0,
+            0
+          ],
+          "reallocations": [
+            0,
+            0,
+            0
+          ],
+          "requested_bytes": [
+            0,
+            0,
+            0
+          ],
+          "read_requests_minus_empty": [
+            0,
+            0,
+            0
+          ],
+          "write_requests": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "case": "origin",
+          "iterations": 1024,
+          "allocations": [
+            0,
+            0,
+            0
+          ],
+          "reallocations": [
+            0,
+            0,
+            0
+          ],
+          "requested_bytes": [
+            0,
+            0,
+            0
+          ],
+          "read_requests_minus_empty": [
+            2048,
+            2048,
+            2048
+          ],
+          "write_requests": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "case": "authority-1",
+          "iterations": 1024,
+          "allocations": [
+            69632,
+            69632,
+            69632
+          ],
+          "reallocations": [
+            11264,
+            11264,
+            11264
+          ],
+          "requested_bytes": [
+            3086336,
+            3086336,
+            3086336
+          ],
+          "read_requests_minus_empty": [
+            4096,
+            4096,
+            4096
+          ],
+          "write_requests": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "case": "authority-7",
+          "iterations": 1024,
+          "allocations": [
+            188416,
+            188416,
+            188416
+          ],
+          "reallocations": [
+            60416,
+            60416,
+            60416
+          ],
+          "requested_bytes": [
+            13611008,
+            13611008,
+            13611008
+          ],
+          "read_requests_minus_empty": [
+            28672,
+            28672,
+            28672
+          ],
+          "write_requests": [
+            0,
+            0,
+            0
+          ]
+        }
+      ]
+    }
+  ]
+}

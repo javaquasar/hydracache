@@ -1,0 +1,15 @@
+{
+  "source": "45b218eba1b3907acdbeab395f4dcf811b3c1291",
+  "recipe_sha256": "081ed1f3c90f69daa8f8217f0365fc9281cbb23e5f9735834664d218a281ea4d",
+  "steps": [
+    {
+      "name": "historical",
+      "log": "check-contracts-historical.log",
+      "exit": 0,
+      "sha256": "fb04199570755f3efd38a92edb49c8f6f84df512972903268a4d87dbe962b641"
+    }
+  ],
+  "failure": null,
+  "server": false,
+  "product": false
+}

@@ -1,0 +1,35 @@
+{
+  "source": "a574a8ae32ff37ff029f6798a7a1efde1cddd909",
+  "exit": 0,
+  "lane": "188",
+  "image": "/home/artur/.cache/hydracache-074-188-check/release/deps/hydracache_long_run_supervisor_074-1dbb29096ebc6338",
+  "image_sha256": "e2489d5384b339534b156a7705a49810359cfd10434e15f23c6d26e207628fb2",
+  "image_after_sha256": "e2489d5384b339534b156a7705a49810359cfd10434e15f23c6d26e207628fb2",
+  "inputs": [
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs",
+      "sha256": "7c00426564deb26b8f825048c9c5141c443ae8a0a4cf2529ce5cbe5b6efcd7ad"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/tests/support/validation_leaf_requests.rs",
+      "sha256": "29d46c2111289fa21793a6b578eef1c25bcb84aea5193dba03670ac7c8c9ff69"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs",
+      "sha256": "b9090e2d318e6cc49d44f29300b9542fb67f183662098261494070e8a02a92da"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs",
+      "sha256": "2705f09f40c6907a258ca6255494ae83917953739cb2b8699bac1a08189ebec7"
+    },
+    {
+      "path": "docs/testing/performance/0.74/qualification-manifest.toml",
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    }
+  ],
+  "recipe_sha256": "2c6853598e607177b02c0cff89cc4d5a245b763172eb36003b72d0f16285cc52",
+  "server": false,
+  "product": false,
+  "native_gate_open": false,
+  "runtime_candidate": false
+}

@@ -1,0 +1,33 @@
+{
+  "source": "45b218eba1b3907acdbeab395f4dcf811b3c1291",
+  "recipe_sha256": "081ed1f3c90f69daa8f8217f0365fc9281cbb23e5f9735834664d218a281ea4d",
+  "steps": [
+    {
+      "name": "format",
+      "log": "check-repository-format.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit": 0
+    },
+    {
+      "name": "docs",
+      "log": "check-repository-docs.log",
+      "sha256": "3481929925b5523e860aeca732d275e10c7b2510f2ce5637ac4bb1889f458fef",
+      "exit": 0
+    },
+    {
+      "name": "registry",
+      "log": "check-repository-registry.log",
+      "sha256": "4479ab25c52dba34d62fc710bb8bcca29b1acf950a3024a65c8410173e57f607",
+      "exit": 0
+    },
+    {
+      "name": "performance",
+      "log": "check-repository-performance.log",
+      "sha256": "396ae5ee2a06425e01afaa95654e5daf123f89a361c83f2c454861c3f4df70f5",
+      "exit": 0
+    }
+  ],
+  "failure": null,
+  "server": false,
+  "product": false
+}

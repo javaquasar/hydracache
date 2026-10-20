@@ -17,6 +17,8 @@ function Facts{
         Require ($taskReceipt.recipe_sha256 -ceq (Hash (Join-Path $PSScriptRoot 'profile.ps1'))) 'Profile recipe drift'
         $taskAlloc=@();$taskIo=@();$taskOrigins=@()
         foreach($taskLine in Get-Content (Join-Path $PSScriptRoot "profile-$taskLane.log")){
+            $taskHarnessPrefix='test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::validation_leaf_requests::validation_leaf_requests_attribution ... '
+            if($taskLine.StartsWith($taskHarnessPrefix+'HC074-VALIDATION-LEAF-ORIGIN ')){$taskLine=$taskLine.Substring($taskHarnessPrefix.Length)}
             if($taskLine.StartsWith('HC074-VALIDATION-LEAF-ALLOC ')){$taskAlloc+=($taskLine.Substring(28)|ConvertFrom-Json)}
             if($taskLine.StartsWith('HC074-VALIDATION-LEAF-IO ')){$taskIo+=($taskLine.Substring(25)|ConvertFrom-Json)}
             if($taskLine.StartsWith('HC074-VALIDATION-LEAF-ORIGIN ')){$taskOrigins+=($taskLine.Substring(29)|ConvertFrom-Json)}

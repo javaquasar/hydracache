@@ -1,0 +1,81 @@
+{
+  "source": "45b218eba1b3907acdbeab395f4dcf811b3c1291",
+  "recipe_sha256": "081ed1f3c90f69daa8f8217f0365fc9281cbb23e5f9735834664d218a281ea4d",
+  "steps": [
+    {
+      "log": "check-188-validation_leaf_requests_.log",
+      "exit": 0,
+      "name": "validation_leaf_requests_",
+      "sha256": "b0ae41897e31519fc045c022d16e3f30558145f74417e799f3a9fe3cd322796f"
+    },
+    {
+      "log": "check-188-fixed_leaf_alloc_counter.log",
+      "exit": 0,
+      "name": "fixed_leaf_alloc_counter",
+      "sha256": "06024de35517aeae501f239078a850297571dfeb9efdaf1076be00ea463003c7"
+    },
+    {
+      "log": "check-188-fixed_leaf_path_differential.log",
+      "exit": 0,
+      "name": "fixed_leaf_path_differential",
+      "sha256": "af089ff69d2867e900f0435f8ce8015f2fe673949c059450170aa6c7eed40bbb"
+    },
+    {
+      "log": "check-188-fixed_leaf_path_preserves.log",
+      "exit": 0,
+      "name": "fixed_leaf_path_preserves",
+      "sha256": "50f3535dc8193d7a5dbdc1830f1a3d0f28ee91daa62d95dd39d4c922e14ac1ed"
+    },
+    {
+      "log": "check-188-kernel_time_.log",
+      "exit": 0,
+      "name": "kernel_time_",
+      "sha256": "8a91250aa039c186dd0721c4520d581791fabce17c87776e67344f93e7ee394c"
+    },
+    {
+      "log": "check-188-kernel_worker_context_.log",
+      "exit": 0,
+      "name": "kernel_worker_context_",
+      "sha256": "5e32b26db4c611fb8325ba96fe763e3fa6f1a99db2f8fd272d0bd7abfa55c65f"
+    },
+    {
+      "log": "check-188-authority_fixed_.log",
+      "exit": 0,
+      "name": "authority_fixed_",
+      "sha256": "5e12327bb151600f9986b7c84dae7180aa446776038f11d2a89d68bf96993072"
+    },
+    {
+      "log": "check-188-authority_fixture_.log",
+      "exit": 0,
+      "name": "authority_fixture_",
+      "sha256": "16c0b09fb8310e700439962e7112e18099bc04c0894b3565be5d0f3a9dc1f94b"
+    },
+    {
+      "log": "check-188-worker_trust_input_.log",
+      "exit": 0,
+      "name": "worker_trust_input_",
+      "sha256": "bbf0e1cece0619de060c81548e3528e0dde9f8a6e4691a2d22e3d9f9b66bb09c"
+    },
+    {
+      "log": "check-188-check.log",
+      "exit": 0,
+      "name": "check",
+      "sha256": "32591292786da2873aab99f897bf4fa7840b5fa67781a2810b135434eb8bf41f"
+    },
+    {
+      "log": "check-188-lint.log",
+      "exit": 0,
+      "name": "lint",
+      "sha256": "c1f6774759b187a1d8f6121556cbdd295cf25688ad1ecdd65059fe3862c3b5a5"
+    },
+    {
+      "log": "check-188-build.log",
+      "exit": 0,
+      "name": "build",
+      "sha256": "7c207a9e90b8f4e8c1e72b82c1558a04a46bf0b2ac99a13bca5ed5ea275d6cbe"
+    }
+  ],
+  "failure": null,
+  "server": false,
+  "product": false
+}

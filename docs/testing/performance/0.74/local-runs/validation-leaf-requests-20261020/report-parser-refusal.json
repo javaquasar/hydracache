@@ -1,0 +1,13 @@
+{
+  "recipe_source": "a574a8ae32ff37ff029f6798a7a1efde1cddd909",
+  "retained_recipe": "review-refused.ps1",
+  "stage": "WriteSummary",
+  "tool_process_exit": 1,
+  "error": "Incomplete cohort",
+  "cause": "The native harness prefixes the first ORIGIN line with its exact test name. The old parser accepted only a line beginning directly with the ORIGIN marker.",
+  "summary_written": false,
+  "profiles_repeated": false,
+  "fix": "Accept only that exact harness prefix before ORIGIN, retaining all row-count and scope checks. Reprocess unchanged successful logs.",
+  "server": false,
+  "product": false
+}

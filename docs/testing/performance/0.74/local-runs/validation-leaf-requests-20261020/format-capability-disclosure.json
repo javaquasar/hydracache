@@ -1,0 +1,12 @@
+{
+  "command": "cargo fmt --all",
+  "platform": "Windows",
+  "observed_error": "The filename or extension is too long. (os error 206)",
+  "native_exit_captured": false,
+  "tool_command_final_exit": 0,
+  "explanation": "The first compound inspection did not capture fmt exit separately; its last command succeeded. This is not a formatting pass.",
+  "followup": "Direct rustfmt on changed files, then recorded WSL cargo fmt --all -- --check. No old log is replaced.",
+  "tracer_capability": "command -v strace and command -v perf returned no PATH entries; no installation attempted",
+  "server": false,
+  "product": false
+}

@@ -1,0 +1,9 @@
+    Finished `release` profile [optimized] target(s) in 2.71s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-188-check/release/deps/hydracache_long_run_supervisor_074-1dbb29096ebc6338)
+
+running 2 tests
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::fixed_leaf_alloc_counter_restores_nested_unwind_and_thread_state ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::fixed_leaf_alloc_counter_zeroed_reallocation_and_inactive_forwarding ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 1400 filtered out; finished in 0.00s
+
