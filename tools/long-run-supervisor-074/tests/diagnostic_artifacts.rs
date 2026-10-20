@@ -19,25 +19,17 @@ struct Synthetic {
     log: Vec<u8>,
     configs: BTreeMap<String, &'static [u8]>,
 }
-// Synthetic observer fixtures need its frozen lock, not the newer controller's
-// two crypto dependency edges. Reconstruct only that package block and require
-// the original fixed SHA. This also works in the builder's shallow checkout.
+// Exact worker-source bytes, independent of moving workspace dependencies.
+// This test-only fixture also works offline and in a shallow checkout.
 fn frozen_root_lock() -> &'static [u8] {
-    static ORIGINAL: std::sync::LazyLock<Vec<u8>> = std::sync::LazyLock::new(|| {
-        let current = include_str!("../../../Cargo.lock").replace("\r\n", "\n");
-        let marker = "[[package]]\nname = \"hydracache-long-run-supervisor-074\"";
-        let (before, rest) = current.split_once(marker).unwrap();
-        let (package, after) = rest.split_once("\n[[package]]").unwrap();
-        let package = package
-            .replace("\n \"base64\",", "")
-            .replace("\n \"ring\",", "");
-        let raw = format!("{before}{marker}{package}\n[[package]]{after}").into_bytes();
-        assert_eq!(ArtifactDigest::of(&raw).sha256, ROOT_LOCK_SHA256);
-        raw
-    });
-    ORIGINAL.as_slice()
+    const ORIGINAL: &[u8] = include_bytes!("fixtures/diagnostic-pilot-root-Cargo.lock");
+    assert_eq!(ArtifactDigest::of(ORIGINAL).sha256, ROOT_LOCK_SHA256);
+    ORIGINAL
 }
 const OBSERVER_LOCK: &[u8] = include_bytes!("../../get-owner-scheduled-controls-074/Cargo.lock");
+
+#[path = "support/frozen_lock_fixture_tests.rs"]
+mod frozen_fixture_tests;
 
 fn artifact_event() -> serde_json::Value {
     serde_json::json!({
