@@ -6,6 +6,7 @@ use ed25519_dalek::Signer;
 use sha2::{Digest, Sha256};
 use std::time::Instant;
 use trusted_input::controller_input::held_runtime::late_join::live_fixture::Fixture;
+use crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::time_observation as time;
 
 #[path = "consuming_held_live_namespace.rs"]
 mod namespace;
@@ -127,6 +128,58 @@ fn privileged_consuming_held_live_matrix() {
     }
 }
 fn run(case: &str) {
+    let (result, mut facts) = captured(|| run_original(case));
+    facts["case"] = case.into();
+    println!("HC074-HELD-LIVE-ORIGINAL {facts}");
+    if let Err(payload) = result {
+        std::panic::resume_unwind(payload);
+    }
+}
+fn captured<T>(call: impl FnOnce() -> T) -> (std::thread::Result<T>, serde_json::Value) {
+    let (((result, causal), age), kernel) =
+        crate::diagnostic_kernel_admission::refusal_trace::capture(|| {
+            time::closing::capture(|| {
+                time::capture(|| std::panic::catch_unwind(std::panic::AssertUnwindSafe(call)))
+            })
+        });
+    let kernel=kernel.map(|event|serde_json::json!({"site":event.site,"phase":event.phase,"file":event.file,"line":event.line,"clock":event.clock}));
+    let facts = serde_json::json!({"returned":result.is_ok(),"causal":causal,"age":age,"kernel":kernel,"guard_clock_added":false,"deadline_changed":false,"server":false,"product":false});
+    (result, facts)
+}
+#[test]
+fn consuming_held_trace_keeps_first_original_refusal_and_same_panic_without_retry() {
+    let calls = std::cell::Cell::new(0);
+    let marker = std::sync::Arc::new(74u32);
+    let (result, facts) = captured(|| {
+        calls.set(calls.get() + 1);
+        crate::diagnostic_kernel_admission::refusal_trace::record(
+            "test-first",
+            file!(),
+            line!(),
+            [1, 2, 3, 4, 1, 60],
+        );
+        crate::diagnostic_kernel_admission::refusal_trace::record(
+            "test-later",
+            file!(),
+            line!(),
+            [5; 6],
+        );
+        std::panic::panic_any(std::sync::Arc::clone(&marker));
+    });
+    assert_eq!(calls.get(), 1);
+    assert_eq!(facts["kernel"]["site"], "test-first");
+    assert!(std::sync::Arc::ptr_eq(
+        &result
+            .unwrap_err()
+            .downcast::<std::sync::Arc<u32>>()
+            .unwrap(),
+        &marker
+    ));
+    let (value, facts) = captured(|| 74);
+    assert_eq!(value.unwrap(), 74);
+    assert!(facts["kernel"].is_null());
+}
+fn run_original(case: &str) {
     let _namespace = namespace::Private::new();
     let model = trusted_input::controller_input::tests::privileged_fixture::new();
     let request = request(&model);
