@@ -696,3 +696,12 @@ all these refusals; do not use model passes or a coarse observer to admit the
 real holder. Resolve original-clock input reproducibility on a stable Linux
 context or through a separately scoped investigation before cost/SIGKILL and
 server rehearsal. No server or Windows clock configuration was modified.
+
+The separate [isolated Linux comparison](held-consuming-server-plan-20261020.md)
+passes both GNU/MSRV rounds of the unchanged 17/26/5/38 selections, without CPU
+affinity, service/clock operations, installation or product workload. Stable
+Linux reproduction of these models and actual kernel/authority/FD bridges is
+therefore established. The prior WSL gate remains red, and its clock actor is
+not diagnosed by this environment difference. The actual privileged consuming
+holder and its full-hash/four-frame cost remain the next P3 gate; neither this
+comparison nor the model passes replace joined SIGKILL/lost-ACK or launch consent.

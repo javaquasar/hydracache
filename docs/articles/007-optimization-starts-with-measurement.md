@@ -14724,3 +14724,40 @@ The final evidence packet seals 201 hashed members plus inventory and rejects
 reports local_join_gate_passed=false. Preserving that distinction allows the
 implementation and reproducible model checks to be reviewed without promoting
 an unresolved original-input failure into launch permission.
+
+## The unchanged consuming tests on native Linux
+
+The next hypothesis was environmental: can the same binaries satisfy the
+original guards outside WSL without pinning a CPU, changing a clock service or
+relaxing a deadline? The isolated native Linux comparison answers that narrower
+question. GNU 1.94 and MSRV 1.88 each pass two rounds of 17 consuming tests,
+26 preceding trust tests, five placement models and 38 integration tests.
+All 16 selections complete, totaling 344 test executions. The original
+mismatch-assertion wrapper also records no first kernel refusal in its eight
+samples per invocation. No failed selection is retried.
+
+Only the existing hash-bound test executables and reviewed runner enter a new
+private temporary directory. The installed binary and receipt, supervisor PID
+and restart count, boot and checked campaign/fixture markers remain unchanged
+around the selections and in independent postflight. Tests run as the existing
+unprivileged account with one test thread and unrestricted CPUs. The comparison
+does not install a release or generate product traffic. Original live checks,
+clock source, signed inputs, assertions and 300/60/10 origins remain intact.
+
+This result establishes reproducibility of the selected models and actual
+kernel/authority/sealed-FD bridges on that host. It does not identify which
+component produced the earlier WSL timestamp discrepancy: a different
+environment passing is not a controlled isolation of one clock actor. The
+earlier refusals remain sealed, and their local execution gate remains red.
+Raw server streams and exit files are retained separately, with transfer and
+postflight hashes, rather than replacing the negative local evidence.
+
+Nor does test duration measure the cost of the production consuming holder.
+The ten orchestration models check ordering and retained failure; the bridge
+tests use real kernel inputs and sealed descriptors but do not instantiate the
+complete privileged FixedPlacement. The next measurement must construct that
+actual holder, retain the same original signed placement and role provenance,
+and attribute all four complete frames and full-file hashing before accepting
+any optimization. Joined SIGKILL/lost-ACK and all-writer lifecycle checks remain
+later gates. Passing this environment comparison is useful progress, not
+permission to skip them or open a production campaign.

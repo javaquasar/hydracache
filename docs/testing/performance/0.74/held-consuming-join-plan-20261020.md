@@ -66,3 +66,10 @@ Linux context or with a separately scoped clock investigation, then exercise
 the privileged complete holder and attribute its four-frame/full-hash cost.
 Only after those gates can original delivery, all-writer lifecycle and joined
 SIGKILL/lost-ACK/server-readiness work advance. This plan is not marked complete.
+
+The separately authorized [isolated server comparison](held-consuming-server-plan-20261020.md)
+now passes the unchanged 17/26/5/38 selections twice on both compilers with
+unrestricted CPUs. The original WSL refusals remain sealed and unresolved.
+Stable Linux reproduction of these selected bridges/models is established;
+the actual privileged holder, real role hashing cost and joined fault gates
+remain open. No production candidate or installed supervisor was changed.

@@ -4627,3 +4627,24 @@ The negative/partial evidence is sealed as 201 hashed members plus inventory,
 SHA256 `617f703d5b931e3156d4d2a4a5a60db1cfb9a338e5281a3d090e51f677299f1a`.
 Its verifier refuses 72 metadata mutations and explicitly reports
 local_join_gate_passed=false. Evidence integrity is not live execution acceptance.
+
+## Isolated Linux comparison of the consuming candidate
+
+The [server comparison](held-consuming-server-plan-20261020.md) uses the same
+already-hashed test images without rebuilding or installing a release. GNU 1.94
+and MSRV 1.88 each pass two rounds of the 17 new tests, 26 preceding trust tests,
+five placement models and 38 integration tests: 16 selections, 344 executions.
+No CPU affinity or clock/service change is used. Pre/postflight retains the same
+supervisor PID/restarts, boot, installed hashes and quiescent checked markers.
+
+The [new evidence](local-runs/held-consuming-server-20261020/README.md) closes this
+environment comparison, not the actual privileged consuming-holder or its cost
+gate. The negative local packet remains unchanged and its local gate stays red;
+passing on native Linux does not uniquely identify the WSL clock actor. Next
+exercise the real holder under full original frames before joined SIGKILL,
+lost-ACK, delivery, all-writer/lifecycle/reconnect and production admission.
+
+The comparison packet seals 53 hashed members plus inventory, SHA256
+`c5cf5d51dfe44ae33d59358daaca4afa43106d8bad7803f60abb663124dd0d12`.
+Its verifier rejects 42 metadata mutations and reports comparison_passed=true
+while privileged_full_join, clock_cause_established and product remain false.

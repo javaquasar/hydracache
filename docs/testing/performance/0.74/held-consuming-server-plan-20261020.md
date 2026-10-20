@@ -33,3 +33,14 @@ environment; it neither identifies the WSL clock actor nor exercises the actual
 privileged FixedPlacement holder, original delivery, all-writer cessation or the
 joined SIGKILL/lost-ACK matrix. The next gate remains that complete holder and
 its four-frame/full-hash attribution, with separate scope for any privilege need.
+
+## Comparison result
+
+Both compilers pass both rounds on the dedicated host without CPU affinity:
+all 16 selections and 344 test executions succeed. The
+[new packet](local-runs/held-consuming-server-20261020/README.md) retains exact
+image hashes, raw logs/exit files, host observations and the unchanged preceding
+negative packet. Supervisor PID, restart count, installed hashes, boot and checked
+markers remain unchanged. No original predicate or expiry was relaxed. This
+closes the environment comparison, not the privileged consuming-holder gate or
+the still-red local WSL gate, and does not uniquely diagnose the clock actor.
