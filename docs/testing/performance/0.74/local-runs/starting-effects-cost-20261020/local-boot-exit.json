@@ -1,0 +1,8 @@
+{
+  "source": "9471afb4f2ce297c5c2d9ece77603c7e6a3e5bfe",
+  "selection": "local-boot",
+  "exit": 0,
+  "recipe_sha256": "2ccc8909259a99b6c0e3eba44f0d5c5bb2c4b393fdb73381f68e1c5e091f6a24",
+  "server": false,
+  "product": false
+}

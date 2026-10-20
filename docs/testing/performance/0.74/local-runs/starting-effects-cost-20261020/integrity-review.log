@@ -1,0 +1,2214 @@
+{
+  "schema": "starting-effects-cost-v1",
+  "baseline": "4d0f461c638d158ff62dbd3e0f8f9914d523581e",
+  "sources": {
+    "baseline": "4d0f461c638d158ff62dbd3e0f8f9914d523581e",
+    "instrumentation": "00f2c84b62247a54135a9560b4fc41843d2227d5",
+    "measured": "9471afb4f2ce297c5c2d9ece77603c7e6a3e5bfe"
+  },
+  "samples": [
+    {
+      "lane": "194",
+      "sample": 0,
+      "outputs_wall_ns": 3462869466,
+      "starting_wall_ns": 1349377520,
+      "kernel_calls": [
+        8464,
+        19872,
+        39744,
+        39744,
+        76544,
+        153088,
+        306176,
+        9936,
+        8464,
+        232576
+      ],
+      "live_calls": [
+        4232,
+        8464,
+        16928,
+        17066,
+        8464,
+        4232
+      ],
+      "authentication_calls": 782,
+      "complete_phase_count": 10
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "outputs_wall_ns": 3077672122,
+      "starting_wall_ns": 1263504110,
+      "kernel_calls": [
+        8464,
+        19872,
+        39744,
+        39744,
+        76544,
+        153088,
+        306176,
+        9936,
+        8464,
+        232576
+      ],
+      "live_calls": [
+        4232,
+        8464,
+        16928,
+        17066,
+        8464,
+        4232
+      ],
+      "authentication_calls": 782,
+      "complete_phase_count": 10
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "outputs_wall_ns": 3148200409,
+      "starting_wall_ns": 1291830490,
+      "kernel_calls": [
+        8464,
+        19872,
+        39744,
+        39744,
+        76544,
+        153088,
+        306176,
+        9936,
+        8464,
+        232576
+      ],
+      "live_calls": [
+        4232,
+        8464,
+        16928,
+        17066,
+        8464,
+        4232
+      ],
+      "authentication_calls": 782,
+      "complete_phase_count": 10
+    }
+  ],
+  "stages": [
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "BeforeCreate",
+      "kind": "opening-round",
+      "wall_ns": 65384380,
+      "process_cpu_ns": 65052853
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "BeforeCreate",
+      "kind": "storage-opening",
+      "wall_ns": 38654,
+      "process_cpu_ns": 38665
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "BeforeCreate",
+      "kind": "phase-checks",
+      "wall_ns": 532,
+      "process_cpu_ns": 478
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "BeforeCreate",
+      "kind": "effect",
+      "wall_ns": 801,
+      "process_cpu_ns": 801
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "BeforeCreate",
+      "kind": "storage-closing",
+      "wall_ns": 33894,
+      "process_cpu_ns": 33933
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "BeforeCreate",
+      "kind": "checkpoint",
+      "wall_ns": 462,
+      "process_cpu_ns": 424
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "BeforeCreate",
+      "kind": "closing-round",
+      "wall_ns": 64571586,
+      "process_cpu_ns": 64572891
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "Created",
+      "kind": "opening-round",
+      "wall_ns": 62797217,
+      "process_cpu_ns": 62799430
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "Created",
+      "kind": "storage-opening",
+      "wall_ns": 59201,
+      "process_cpu_ns": 59286
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "Created",
+      "kind": "phase-checks",
+      "wall_ns": 1601,
+      "process_cpu_ns": 1524
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "Created",
+      "kind": "effect",
+      "wall_ns": 50591,
+      "process_cpu_ns": 50600
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "Created",
+      "kind": "storage-closing",
+      "wall_ns": 47941,
+      "process_cpu_ns": 47947
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "Created",
+      "kind": "checkpoint",
+      "wall_ns": 533,
+      "process_cpu_ns": 496
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "Created",
+      "kind": "closing-round",
+      "wall_ns": 69123147,
+      "process_cpu_ns": 69125337
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "CreateDirectorySynced",
+      "kind": "opening-round",
+      "wall_ns": 84268377,
+      "process_cpu_ns": 84108613
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "CreateDirectorySynced",
+      "kind": "storage-opening",
+      "wall_ns": 64950,
+      "process_cpu_ns": 64978
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "CreateDirectorySynced",
+      "kind": "phase-checks",
+      "wall_ns": 958,
+      "process_cpu_ns": 909
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "CreateDirectorySynced",
+      "kind": "effect",
+      "wall_ns": 1787526,
+      "process_cpu_ns": 32662
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "CreateDirectorySynced",
+      "kind": "storage-closing",
+      "wall_ns": 167997,
+      "process_cpu_ns": 165980
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "CreateDirectorySynced",
+      "kind": "checkpoint",
+      "wall_ns": 1112,
+      "process_cpu_ns": 981
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "CreateDirectorySynced",
+      "kind": "closing-round",
+      "wall_ns": 72936416,
+      "process_cpu_ns": 72937703
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "PrefixWritten",
+      "kind": "opening-round",
+      "wall_ns": 73472716,
+      "process_cpu_ns": 73474654
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "PrefixWritten",
+      "kind": "storage-opening",
+      "wall_ns": 59802,
+      "process_cpu_ns": 59766
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "PrefixWritten",
+      "kind": "phase-checks",
+      "wall_ns": 610,
+      "process_cpu_ns": 563
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "PrefixWritten",
+      "kind": "effect",
+      "wall_ns": 32465,
+      "process_cpu_ns": 32485
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "PrefixWritten",
+      "kind": "storage-closing",
+      "wall_ns": 46211,
+      "process_cpu_ns": 46201
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "PrefixWritten",
+      "kind": "checkpoint",
+      "wall_ns": 624,
+      "process_cpu_ns": 615
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "PrefixWritten",
+      "kind": "closing-round",
+      "wall_ns": 71062233,
+      "process_cpu_ns": 71064118
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "BytesWritten",
+      "kind": "opening-round",
+      "wall_ns": 69144631,
+      "process_cpu_ns": 69145726
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "BytesWritten",
+      "kind": "storage-opening",
+      "wall_ns": 39728,
+      "process_cpu_ns": 39739
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "BytesWritten",
+      "kind": "phase-checks",
+      "wall_ns": 611,
+      "process_cpu_ns": 564
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "BytesWritten",
+      "kind": "effect",
+      "wall_ns": 18283,
+      "process_cpu_ns": 18311
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "BytesWritten",
+      "kind": "storage-closing",
+      "wall_ns": 38976,
+      "process_cpu_ns": 38963
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "BytesWritten",
+      "kind": "checkpoint",
+      "wall_ns": 390,
+      "process_cpu_ns": 374
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "BytesWritten",
+      "kind": "closing-round",
+      "wall_ns": 68741892,
+      "process_cpu_ns": 68743420
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "Sealed",
+      "kind": "opening-round",
+      "wall_ns": 69830131,
+      "process_cpu_ns": 69831485
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "Sealed",
+      "kind": "storage-opening",
+      "wall_ns": 42595,
+      "process_cpu_ns": 42621
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "Sealed",
+      "kind": "phase-checks",
+      "wall_ns": 654,
+      "process_cpu_ns": 608
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "Sealed",
+      "kind": "effect",
+      "wall_ns": 14306,
+      "process_cpu_ns": 14330
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "Sealed",
+      "kind": "storage-closing",
+      "wall_ns": 39011,
+      "process_cpu_ns": 39005
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "Sealed",
+      "kind": "checkpoint",
+      "wall_ns": 444,
+      "process_cpu_ns": 429
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "Sealed",
+      "kind": "closing-round",
+      "wall_ns": 69268787,
+      "process_cpu_ns": 69270332
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "FileSynced",
+      "kind": "opening-round",
+      "wall_ns": 86731834,
+      "process_cpu_ns": 86733647
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "FileSynced",
+      "kind": "storage-opening",
+      "wall_ns": 75088,
+      "process_cpu_ns": 75119
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "FileSynced",
+      "kind": "phase-checks",
+      "wall_ns": 913,
+      "process_cpu_ns": 872
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "FileSynced",
+      "kind": "effect",
+      "wall_ns": 2917496,
+      "process_cpu_ns": 130508
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "FileSynced",
+      "kind": "storage-closing",
+      "wall_ns": 131832,
+      "process_cpu_ns": 129539
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "FileSynced",
+      "kind": "checkpoint",
+      "wall_ns": 2031,
+      "process_cpu_ns": 1943
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "FileSynced",
+      "kind": "closing-round",
+      "wall_ns": 86321966,
+      "process_cpu_ns": 86323308
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "DirectorySynced",
+      "kind": "opening-round",
+      "wall_ns": 67532047,
+      "process_cpu_ns": 67533335
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "DirectorySynced",
+      "kind": "storage-opening",
+      "wall_ns": 45358,
+      "process_cpu_ns": 45334
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "DirectorySynced",
+      "kind": "phase-checks",
+      "wall_ns": 579,
+      "process_cpu_ns": 549
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "DirectorySynced",
+      "kind": "effect",
+      "wall_ns": 2257,
+      "process_cpu_ns": 2258
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "DirectorySynced",
+      "kind": "storage-closing",
+      "wall_ns": 38255,
+      "process_cpu_ns": 38277
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "DirectorySynced",
+      "kind": "checkpoint",
+      "wall_ns": 461,
+      "process_cpu_ns": 438
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "DirectorySynced",
+      "kind": "closing-round",
+      "wall_ns": 62823171,
+      "process_cpu_ns": 62805795
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "Acknowledging",
+      "kind": "opening-round",
+      "wall_ns": 63716197,
+      "process_cpu_ns": 63717873
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "Acknowledging",
+      "kind": "storage-opening",
+      "wall_ns": 65850,
+      "process_cpu_ns": 65934
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "Acknowledging",
+      "kind": "phase-checks",
+      "wall_ns": 869,
+      "process_cpu_ns": 781
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "Acknowledging",
+      "kind": "effect",
+      "wall_ns": 541,
+      "process_cpu_ns": 527
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "Acknowledging",
+      "kind": "storage-closing",
+      "wall_ns": 39061,
+      "process_cpu_ns": 39102
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "Acknowledging",
+      "kind": "checkpoint",
+      "wall_ns": 490,
+      "process_cpu_ns": 448
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "stage": "Acknowledging",
+      "kind": "closing-round",
+      "wall_ns": 66049786,
+      "process_cpu_ns": 66051061
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "BeforeCreate",
+      "kind": "opening-round",
+      "wall_ns": 66543770,
+      "process_cpu_ns": 66544992
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "BeforeCreate",
+      "kind": "storage-opening",
+      "wall_ns": 40833,
+      "process_cpu_ns": 40858
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "BeforeCreate",
+      "kind": "phase-checks",
+      "wall_ns": 452,
+      "process_cpu_ns": 411
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "BeforeCreate",
+      "kind": "effect",
+      "wall_ns": 904,
+      "process_cpu_ns": 904
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "BeforeCreate",
+      "kind": "storage-closing",
+      "wall_ns": 32535,
+      "process_cpu_ns": 32560
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "BeforeCreate",
+      "kind": "checkpoint",
+      "wall_ns": 429,
+      "process_cpu_ns": 403
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "BeforeCreate",
+      "kind": "closing-round",
+      "wall_ns": 65350259,
+      "process_cpu_ns": 65346346
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "Created",
+      "kind": "opening-round",
+      "wall_ns": 67725179,
+      "process_cpu_ns": 67726398
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "Created",
+      "kind": "storage-opening",
+      "wall_ns": 45839,
+      "process_cpu_ns": 45862
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "Created",
+      "kind": "phase-checks",
+      "wall_ns": 1138,
+      "process_cpu_ns": 1094
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "Created",
+      "kind": "effect",
+      "wall_ns": 28664,
+      "process_cpu_ns": 28689
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "Created",
+      "kind": "storage-closing",
+      "wall_ns": 47547,
+      "process_cpu_ns": 47560
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "Created",
+      "kind": "checkpoint",
+      "wall_ns": 435,
+      "process_cpu_ns": 402
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "Created",
+      "kind": "closing-round",
+      "wall_ns": 66286440,
+      "process_cpu_ns": 66288621
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "CreateDirectorySynced",
+      "kind": "opening-round",
+      "wall_ns": 68621173,
+      "process_cpu_ns": 68623941
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "CreateDirectorySynced",
+      "kind": "storage-opening",
+      "wall_ns": 63989,
+      "process_cpu_ns": 63963
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "CreateDirectorySynced",
+      "kind": "phase-checks",
+      "wall_ns": 1235,
+      "process_cpu_ns": 1199
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "CreateDirectorySynced",
+      "kind": "effect",
+      "wall_ns": 2121057,
+      "process_cpu_ns": 49012
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "CreateDirectorySynced",
+      "kind": "storage-closing",
+      "wall_ns": 130711,
+      "process_cpu_ns": 128580
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "CreateDirectorySynced",
+      "kind": "checkpoint",
+      "wall_ns": 808,
+      "process_cpu_ns": 741
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "CreateDirectorySynced",
+      "kind": "closing-round",
+      "wall_ns": 67108953,
+      "process_cpu_ns": 66313276
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "PrefixWritten",
+      "kind": "opening-round",
+      "wall_ns": 64784429,
+      "process_cpu_ns": 64787122
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "PrefixWritten",
+      "kind": "storage-opening",
+      "wall_ns": 65038,
+      "process_cpu_ns": 65088
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "PrefixWritten",
+      "kind": "phase-checks",
+      "wall_ns": 874,
+      "process_cpu_ns": 816
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "PrefixWritten",
+      "kind": "effect",
+      "wall_ns": 59381,
+      "process_cpu_ns": 59408
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "PrefixWritten",
+      "kind": "storage-closing",
+      "wall_ns": 49202,
+      "process_cpu_ns": 49196
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "PrefixWritten",
+      "kind": "checkpoint",
+      "wall_ns": 525,
+      "process_cpu_ns": 503
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "PrefixWritten",
+      "kind": "closing-round",
+      "wall_ns": 65040246,
+      "process_cpu_ns": 65041616
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "BytesWritten",
+      "kind": "opening-round",
+      "wall_ns": 68181559,
+      "process_cpu_ns": 68183656
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "BytesWritten",
+      "kind": "storage-opening",
+      "wall_ns": 75251,
+      "process_cpu_ns": 75337
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "BytesWritten",
+      "kind": "phase-checks",
+      "wall_ns": 1157,
+      "process_cpu_ns": 1039
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "BytesWritten",
+      "kind": "effect",
+      "wall_ns": 20474,
+      "process_cpu_ns": 20491
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "BytesWritten",
+      "kind": "storage-closing",
+      "wall_ns": 47278,
+      "process_cpu_ns": 47289
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "BytesWritten",
+      "kind": "checkpoint",
+      "wall_ns": 501,
+      "process_cpu_ns": 470
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "BytesWritten",
+      "kind": "closing-round",
+      "wall_ns": 64006973,
+      "process_cpu_ns": 64008093
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "Sealed",
+      "kind": "opening-round",
+      "wall_ns": 64068913,
+      "process_cpu_ns": 64070020
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "Sealed",
+      "kind": "storage-opening",
+      "wall_ns": 44477,
+      "process_cpu_ns": 44460
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "Sealed",
+      "kind": "phase-checks",
+      "wall_ns": 639,
+      "process_cpu_ns": 600
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "Sealed",
+      "kind": "effect",
+      "wall_ns": 13588,
+      "process_cpu_ns": 13615
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "Sealed",
+      "kind": "storage-closing",
+      "wall_ns": 38933,
+      "process_cpu_ns": 38942
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "Sealed",
+      "kind": "checkpoint",
+      "wall_ns": 400,
+      "process_cpu_ns": 364
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "Sealed",
+      "kind": "closing-round",
+      "wall_ns": 65588083,
+      "process_cpu_ns": 65589192
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "FileSynced",
+      "kind": "opening-round",
+      "wall_ns": 64569197,
+      "process_cpu_ns": 64048977
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "FileSynced",
+      "kind": "storage-opening",
+      "wall_ns": 46635,
+      "process_cpu_ns": 46697
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "FileSynced",
+      "kind": "phase-checks",
+      "wall_ns": 585,
+      "process_cpu_ns": 513
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "FileSynced",
+      "kind": "effect",
+      "wall_ns": 2687804,
+      "process_cpu_ns": 76362
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "FileSynced",
+      "kind": "storage-closing",
+      "wall_ns": 81235,
+      "process_cpu_ns": 79999
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "FileSynced",
+      "kind": "checkpoint",
+      "wall_ns": 1530,
+      "process_cpu_ns": 1426
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "FileSynced",
+      "kind": "closing-round",
+      "wall_ns": 64123476,
+      "process_cpu_ns": 64124543
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "DirectorySynced",
+      "kind": "opening-round",
+      "wall_ns": 66697362,
+      "process_cpu_ns": 66698845
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "DirectorySynced",
+      "kind": "storage-opening",
+      "wall_ns": 48726,
+      "process_cpu_ns": 48741
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "DirectorySynced",
+      "kind": "phase-checks",
+      "wall_ns": 566,
+      "process_cpu_ns": 518
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "DirectorySynced",
+      "kind": "effect",
+      "wall_ns": 2742,
+      "process_cpu_ns": 2744
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "DirectorySynced",
+      "kind": "storage-closing",
+      "wall_ns": 38286,
+      "process_cpu_ns": 38318
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "DirectorySynced",
+      "kind": "checkpoint",
+      "wall_ns": 408,
+      "process_cpu_ns": 372
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "DirectorySynced",
+      "kind": "closing-round",
+      "wall_ns": 66759043,
+      "process_cpu_ns": 66760532
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "Acknowledging",
+      "kind": "opening-round",
+      "wall_ns": 67917661,
+      "process_cpu_ns": 67919125
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "Acknowledging",
+      "kind": "storage-opening",
+      "wall_ns": 43200,
+      "process_cpu_ns": 43190
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "Acknowledging",
+      "kind": "phase-checks",
+      "wall_ns": 694,
+      "process_cpu_ns": 653
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "Acknowledging",
+      "kind": "effect",
+      "wall_ns": 464,
+      "process_cpu_ns": 453
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "Acknowledging",
+      "kind": "storage-closing",
+      "wall_ns": 38489,
+      "process_cpu_ns": 38502
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "Acknowledging",
+      "kind": "checkpoint",
+      "wall_ns": 419,
+      "process_cpu_ns": 406
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "stage": "Acknowledging",
+      "kind": "closing-round",
+      "wall_ns": 66771392,
+      "process_cpu_ns": 66772512
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "BeforeCreate",
+      "kind": "opening-round",
+      "wall_ns": 67735963,
+      "process_cpu_ns": 67737132
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "BeforeCreate",
+      "kind": "storage-opening",
+      "wall_ns": 36534,
+      "process_cpu_ns": 36515
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "BeforeCreate",
+      "kind": "phase-checks",
+      "wall_ns": 498,
+      "process_cpu_ns": 468
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "BeforeCreate",
+      "kind": "effect",
+      "wall_ns": 933,
+      "process_cpu_ns": 923
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "BeforeCreate",
+      "kind": "storage-closing",
+      "wall_ns": 34598,
+      "process_cpu_ns": 34616
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "BeforeCreate",
+      "kind": "checkpoint",
+      "wall_ns": 416,
+      "process_cpu_ns": 401
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "BeforeCreate",
+      "kind": "closing-round",
+      "wall_ns": 67559150,
+      "process_cpu_ns": 67560253
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "Created",
+      "kind": "opening-round",
+      "wall_ns": 68613628,
+      "process_cpu_ns": 68614884
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "Created",
+      "kind": "storage-opening",
+      "wall_ns": 50423,
+      "process_cpu_ns": 50391
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "Created",
+      "kind": "phase-checks",
+      "wall_ns": 987,
+      "process_cpu_ns": 951
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "Created",
+      "kind": "effect",
+      "wall_ns": 31208,
+      "process_cpu_ns": 31243
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "Created",
+      "kind": "storage-closing",
+      "wall_ns": 293293,
+      "process_cpu_ns": 296623
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "Created",
+      "kind": "checkpoint",
+      "wall_ns": 8255,
+      "process_cpu_ns": 4979
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "Created",
+      "kind": "closing-round",
+      "wall_ns": 67919939,
+      "process_cpu_ns": 67922447
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "CreateDirectorySynced",
+      "kind": "opening-round",
+      "wall_ns": 66851205,
+      "process_cpu_ns": 66833514
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "CreateDirectorySynced",
+      "kind": "storage-opening",
+      "wall_ns": 66503,
+      "process_cpu_ns": 66515
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "CreateDirectorySynced",
+      "kind": "phase-checks",
+      "wall_ns": 694,
+      "process_cpu_ns": 663
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "CreateDirectorySynced",
+      "kind": "effect",
+      "wall_ns": 3814334,
+      "process_cpu_ns": 602792
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "CreateDirectorySynced",
+      "kind": "storage-closing",
+      "wall_ns": 89388,
+      "process_cpu_ns": 88133
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "CreateDirectorySynced",
+      "kind": "checkpoint",
+      "wall_ns": 795,
+      "process_cpu_ns": 741
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "CreateDirectorySynced",
+      "kind": "closing-round",
+      "wall_ns": 68116488,
+      "process_cpu_ns": 68117559
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "PrefixWritten",
+      "kind": "opening-round",
+      "wall_ns": 68669767,
+      "process_cpu_ns": 68671928
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "PrefixWritten",
+      "kind": "storage-opening",
+      "wall_ns": 45715,
+      "process_cpu_ns": 45736
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "PrefixWritten",
+      "kind": "phase-checks",
+      "wall_ns": 692,
+      "process_cpu_ns": 661
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "PrefixWritten",
+      "kind": "effect",
+      "wall_ns": 50927,
+      "process_cpu_ns": 50955
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "PrefixWritten",
+      "kind": "storage-closing",
+      "wall_ns": 40602,
+      "process_cpu_ns": 40595
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "PrefixWritten",
+      "kind": "checkpoint",
+      "wall_ns": 486,
+      "process_cpu_ns": 461
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "PrefixWritten",
+      "kind": "closing-round",
+      "wall_ns": 65229647,
+      "process_cpu_ns": 65232070
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "BytesWritten",
+      "kind": "opening-round",
+      "wall_ns": 69900131,
+      "process_cpu_ns": 69901149
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "BytesWritten",
+      "kind": "storage-opening",
+      "wall_ns": 39548,
+      "process_cpu_ns": 39538
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "BytesWritten",
+      "kind": "phase-checks",
+      "wall_ns": 598,
+      "process_cpu_ns": 578
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "BytesWritten",
+      "kind": "effect",
+      "wall_ns": 17227,
+      "process_cpu_ns": 17246
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "BytesWritten",
+      "kind": "storage-closing",
+      "wall_ns": 39073,
+      "process_cpu_ns": 39071
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "BytesWritten",
+      "kind": "checkpoint",
+      "wall_ns": 448,
+      "process_cpu_ns": 424
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "BytesWritten",
+      "kind": "closing-round",
+      "wall_ns": 66967863,
+      "process_cpu_ns": 66969164
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "Sealed",
+      "kind": "opening-round",
+      "wall_ns": 68979229,
+      "process_cpu_ns": 68981432
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "Sealed",
+      "kind": "storage-opening",
+      "wall_ns": 48917,
+      "process_cpu_ns": 48923
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "Sealed",
+      "kind": "phase-checks",
+      "wall_ns": 748,
+      "process_cpu_ns": 727
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "Sealed",
+      "kind": "effect",
+      "wall_ns": 21971,
+      "process_cpu_ns": 21994
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "Sealed",
+      "kind": "storage-closing",
+      "wall_ns": 39531,
+      "process_cpu_ns": 39524
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "Sealed",
+      "kind": "checkpoint",
+      "wall_ns": 401,
+      "process_cpu_ns": 385
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "Sealed",
+      "kind": "closing-round",
+      "wall_ns": 63928871,
+      "process_cpu_ns": 63930231
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "FileSynced",
+      "kind": "opening-round",
+      "wall_ns": 61777216,
+      "process_cpu_ns": 61778610
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "FileSynced",
+      "kind": "storage-opening",
+      "wall_ns": 50002,
+      "process_cpu_ns": 49913
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "FileSynced",
+      "kind": "phase-checks",
+      "wall_ns": 570,
+      "process_cpu_ns": 524
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "FileSynced",
+      "kind": "effect",
+      "wall_ns": 18409113,
+      "process_cpu_ns": 72251
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "FileSynced",
+      "kind": "storage-closing",
+      "wall_ns": 180438,
+      "process_cpu_ns": 178617
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "FileSynced",
+      "kind": "checkpoint",
+      "wall_ns": 3162,
+      "process_cpu_ns": 3080
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "FileSynced",
+      "kind": "closing-round",
+      "wall_ns": 64655028,
+      "process_cpu_ns": 64656174
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "DirectorySynced",
+      "kind": "opening-round",
+      "wall_ns": 64626643,
+      "process_cpu_ns": 64628139
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "DirectorySynced",
+      "kind": "storage-opening",
+      "wall_ns": 43740,
+      "process_cpu_ns": 43750
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "DirectorySynced",
+      "kind": "phase-checks",
+      "wall_ns": 483,
+      "process_cpu_ns": 451
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "DirectorySynced",
+      "kind": "effect",
+      "wall_ns": 2157,
+      "process_cpu_ns": 2159
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "DirectorySynced",
+      "kind": "storage-closing",
+      "wall_ns": 39170,
+      "process_cpu_ns": 39193
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "DirectorySynced",
+      "kind": "checkpoint",
+      "wall_ns": 407,
+      "process_cpu_ns": 386
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "DirectorySynced",
+      "kind": "closing-round",
+      "wall_ns": 66895144,
+      "process_cpu_ns": 66896363
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "Acknowledging",
+      "kind": "opening-round",
+      "wall_ns": 67075491,
+      "process_cpu_ns": 67076837
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "Acknowledging",
+      "kind": "storage-opening",
+      "wall_ns": 64409,
+      "process_cpu_ns": 64463
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "Acknowledging",
+      "kind": "phase-checks",
+      "wall_ns": 929,
+      "process_cpu_ns": 844
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "Acknowledging",
+      "kind": "effect",
+      "wall_ns": 634,
+      "process_cpu_ns": 635
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "Acknowledging",
+      "kind": "storage-closing",
+      "wall_ns": 40031,
+      "process_cpu_ns": 40047
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "Acknowledging",
+      "kind": "checkpoint",
+      "wall_ns": 454,
+      "process_cpu_ns": 437
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "stage": "Acknowledging",
+      "kind": "closing-round",
+      "wall_ns": 67143775,
+      "process_cpu_ns": 67145136
+    }
+  ],
+  "aggregates": [
+    {
+      "lane": "194",
+      "sample": 0,
+      "kind": "acknowledge",
+      "wall_ns": 46986,
+      "process_cpu_ns": 45860
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "kind": "begin",
+      "wall_ns": 49392,
+      "process_cpu_ns": 49237
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "kind": "checkpoint",
+      "wall_ns": 6547,
+      "process_cpu_ns": 6148
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "kind": "closing-round",
+      "wall_ns": 630898984,
+      "process_cpu_ns": 630893965
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "kind": "create",
+      "wall_ns": 50591,
+      "process_cpu_ns": 50600
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "kind": "effect",
+      "wall_ns": 4824266,
+      "process_cpu_ns": 282482
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "kind": "encode",
+      "wall_ns": 528747,
+      "process_cpu_ns": 528976
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "kind": "final-round",
+      "wall_ns": 69006391,
+      "process_cpu_ns": 68989457
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "kind": "fsync",
+      "wall_ns": 4707279,
+      "process_cpu_ns": 165428
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "kind": "no-op",
+      "wall_ns": 1342,
+      "process_cpu_ns": 1328
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "kind": "opening-round",
+      "wall_ns": 642877530,
+      "process_cpu_ns": 642397616
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "kind": "phase-checks",
+      "wall_ns": 7327,
+      "process_cpu_ns": 6848
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "kind": "starting-total",
+      "wall_ns": 1349377520,
+      "process_cpu_ns": 1344300463
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "kind": "storage-closing",
+      "wall_ns": 583178,
+      "process_cpu_ns": 578947
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "kind": "storage-opening",
+      "wall_ns": 491226,
+      "process_cpu_ns": 491442
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "kind": "write-seal",
+      "wall_ns": 65054,
+      "process_cpu_ns": 65126
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "kind": "acknowledge",
+      "wall_ns": 42803,
+      "process_cpu_ns": 41623
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "kind": "begin",
+      "wall_ns": 50990,
+      "process_cpu_ns": 50943
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "kind": "checkpoint",
+      "wall_ns": 5455,
+      "process_cpu_ns": 5087
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "kind": "closing-round",
+      "wall_ns": 591034865,
+      "process_cpu_ns": 590244731
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "kind": "create",
+      "wall_ns": 28664,
+      "process_cpu_ns": 28689
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "kind": "effect",
+      "wall_ns": 4935078,
+      "process_cpu_ns": 251678
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "kind": "encode",
+      "wall_ns": 559769,
+      "process_cpu_ns": 559966
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "kind": "final-round",
+      "wall_ns": 66723405,
+      "process_cpu_ns": 66724600
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "kind": "fsync",
+      "wall_ns": 4811603,
+      "process_cpu_ns": 128118
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "kind": "no-op",
+      "wall_ns": 1368,
+      "process_cpu_ns": 1357
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "kind": "opening-round",
+      "wall_ns": 599109243,
+      "process_cpu_ns": 598603076
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "kind": "phase-checks",
+      "wall_ns": 7340,
+      "process_cpu_ns": 6843
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "kind": "starting-total",
+      "wall_ns": 1263504110,
+      "process_cpu_ns": 1257493026
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "kind": "storage-closing",
+      "wall_ns": 504216,
+      "process_cpu_ns": 500946
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "kind": "storage-opening",
+      "wall_ns": 473988,
+      "process_cpu_ns": 474196
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "kind": "write-seal",
+      "wall_ns": 93443,
+      "process_cpu_ns": 93514
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "kind": "acknowledge",
+      "wall_ns": 44785,
+      "process_cpu_ns": 43535
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "kind": "begin",
+      "wall_ns": 106485,
+      "process_cpu_ns": 105315
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "kind": "checkpoint",
+      "wall_ns": 14824,
+      "process_cpu_ns": 11294
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "kind": "closing-round",
+      "wall_ns": 598415905,
+      "process_cpu_ns": 598429397
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "kind": "create",
+      "wall_ns": 31208,
+      "process_cpu_ns": 31243
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "kind": "effect",
+      "wall_ns": 22348504,
+      "process_cpu_ns": 800198
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "kind": "encode",
+      "wall_ns": 670172,
+      "process_cpu_ns": 671747
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "kind": "final-round",
+      "wall_ns": 64697393,
+      "process_cpu_ns": 64698639
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "kind": "fsync",
+      "wall_ns": 22225604,
+      "process_cpu_ns": 677202
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "kind": "no-op",
+      "wall_ns": 1567,
+      "process_cpu_ns": 1558
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "kind": "opening-round",
+      "wall_ns": 604229273,
+      "process_cpu_ns": 604223625
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "kind": "phase-checks",
+      "wall_ns": 6199,
+      "process_cpu_ns": 5867
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "kind": "starting-total",
+      "wall_ns": 1291830490,
+      "process_cpu_ns": 1270259564
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "kind": "storage-closing",
+      "wall_ns": 796124,
+      "process_cpu_ns": 796419
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "kind": "storage-opening",
+      "wall_ns": 445791,
+      "process_cpu_ns": 445744
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "kind": "write-seal",
+      "wall_ns": 90125,
+      "process_cpu_ns": 90195
+    }
+  ],
+  "ranges": [
+    {
+      "kind": "acknowledge",
+      "samples": 3,
+      "wall": {
+        "min_ns": 42803,
+        "max_ns": 46986
+      },
+      "process_cpu": {
+        "min_ns": 41623,
+        "max_ns": 45860
+      }
+    },
+    {
+      "kind": "begin",
+      "samples": 3,
+      "wall": {
+        "min_ns": 49392,
+        "max_ns": 106485
+      },
+      "process_cpu": {
+        "min_ns": 49237,
+        "max_ns": 105315
+      }
+    },
+    {
+      "kind": "checkpoint",
+      "samples": 3,
+      "wall": {
+        "min_ns": 5455,
+        "max_ns": 14824
+      },
+      "process_cpu": {
+        "min_ns": 5087,
+        "max_ns": 11294
+      }
+    },
+    {
+      "kind": "closing-round",
+      "samples": 3,
+      "wall": {
+        "min_ns": 591034865,
+        "max_ns": 630898984
+      },
+      "process_cpu": {
+        "min_ns": 590244731,
+        "max_ns": 630893965
+      }
+    },
+    {
+      "kind": "create",
+      "samples": 3,
+      "wall": {
+        "min_ns": 28664,
+        "max_ns": 50591
+      },
+      "process_cpu": {
+        "min_ns": 28689,
+        "max_ns": 50600
+      }
+    },
+    {
+      "kind": "effect",
+      "samples": 3,
+      "wall": {
+        "min_ns": 4824266,
+        "max_ns": 22348504
+      },
+      "process_cpu": {
+        "min_ns": 251678,
+        "max_ns": 800198
+      }
+    },
+    {
+      "kind": "encode",
+      "samples": 3,
+      "wall": {
+        "min_ns": 528747,
+        "max_ns": 670172
+      },
+      "process_cpu": {
+        "min_ns": 528976,
+        "max_ns": 671747
+      }
+    },
+    {
+      "kind": "final-round",
+      "samples": 3,
+      "wall": {
+        "min_ns": 64697393,
+        "max_ns": 69006391
+      },
+      "process_cpu": {
+        "min_ns": 64698639,
+        "max_ns": 68989457
+      }
+    },
+    {
+      "kind": "fsync",
+      "samples": 3,
+      "wall": {
+        "min_ns": 4707279,
+        "max_ns": 22225604
+      },
+      "process_cpu": {
+        "min_ns": 128118,
+        "max_ns": 677202
+      }
+    },
+    {
+      "kind": "no-op",
+      "samples": 3,
+      "wall": {
+        "min_ns": 1342,
+        "max_ns": 1567
+      },
+      "process_cpu": {
+        "min_ns": 1328,
+        "max_ns": 1558
+      }
+    },
+    {
+      "kind": "opening-round",
+      "samples": 3,
+      "wall": {
+        "min_ns": 599109243,
+        "max_ns": 642877530
+      },
+      "process_cpu": {
+        "min_ns": 598603076,
+        "max_ns": 642397616
+      }
+    },
+    {
+      "kind": "phase-checks",
+      "samples": 3,
+      "wall": {
+        "min_ns": 6199,
+        "max_ns": 7340
+      },
+      "process_cpu": {
+        "min_ns": 5867,
+        "max_ns": 6848
+      }
+    },
+    {
+      "kind": "starting-total",
+      "samples": 3,
+      "wall": {
+        "min_ns": 1263504110,
+        "max_ns": 1349377520
+      },
+      "process_cpu": {
+        "min_ns": 1257493026,
+        "max_ns": 1344300463
+      }
+    },
+    {
+      "kind": "storage-closing",
+      "samples": 3,
+      "wall": {
+        "min_ns": 504216,
+        "max_ns": 796124
+      },
+      "process_cpu": {
+        "min_ns": 500946,
+        "max_ns": 796419
+      }
+    },
+    {
+      "kind": "storage-opening",
+      "samples": 3,
+      "wall": {
+        "min_ns": 445791,
+        "max_ns": 491226
+      },
+      "process_cpu": {
+        "min_ns": 445744,
+        "max_ns": 491442
+      }
+    },
+    {
+      "kind": "write-seal",
+      "samples": 3,
+      "wall": {
+        "min_ns": 65054,
+        "max_ns": 93443
+      },
+      "process_cpu": {
+        "min_ns": 65126,
+        "max_ns": 93514
+      }
+    }
+  ],
+  "matrices": [
+    {
+      "lane": "194",
+      "cases": [],
+      "exit": 101,
+      "passed": false,
+      "first_case": "healthy",
+      "refusal": {
+        "site": "clock-order",
+        "file": "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs",
+        "line": 259,
+        "clock": [
+          74978211610,
+          80333759557,
+          1792521709228727021,
+          1792521707509723093,
+          1,
+          60000000000
+        ],
+        "boottime_forward_ns": 5355547947,
+        "realtime_backward_ns": 1719003928,
+        "same_boot": true,
+        "causal_deadline_refused": false,
+        "actor_attributed": false
+      }
+    },
+    {
+      "lane": "188",
+      "cases": [
+        "healthy",
+        "revalidate",
+        "role-before",
+        "role-after",
+        "trust-after"
+      ],
+      "exit": 0,
+      "passed": true
+    }
+  ],
+  "msrv_profile_refusal": {
+    "site": "clock-order",
+    "file": "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs",
+    "line": 259,
+    "clock": [
+      28128975894,
+      32242690309,
+      1792521662378680125,
+      1792521659374787972,
+      1,
+      60000000000
+    ],
+    "boottime_forward_ns": 4113714415,
+    "realtime_backward_ns": 3003892153,
+    "same_boot": true,
+    "causal_deadline_refused": false,
+    "actor_attributed": false
+  },
+  "initial_boot": "9360d8a9-50f9-4818-9509-21aca8f02f71",
+  "sample_boot": "cf619cb0-6679-4f52-a5b8-f6a9802d9ec4",
+  "environment_boot_continuity": false,
+  "complete_profile_cohort": false,
+  "both_local_matrices_passed": false,
+  "runtime_candidate_adopted": false,
+  "live_checks_changed": false,
+  "deadline_changed": false,
+  "fsync_removed": false,
+  "latency_gain_accepted": false,
+  "native_gate_open": false,
+  "joined_crash_retested": false,
+  "all_writers_proved": false,
+  "enrollment_admitted": false,
+  "server": false,
+  "product": false
+}

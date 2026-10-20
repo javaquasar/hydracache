@@ -1,0 +1,10 @@
+{
+   "filesystems": [
+      {
+         "target": "/",
+         "source": "/dev/sdd",
+         "fstype": "ext4",
+         "options": "rw,relatime,discard,errors=remount-ro,data=ordered"
+      }
+   ]
+}

@@ -1,0 +1,84 @@
+
+running 65 tests
+test diagnostic_kernel_admission::ancillary::tests::kernel_ancillary_bounded_malformed_headers_refuse_without_panic ... ok
+test diagnostic_kernel_admission::ancillary::tests::kernel_ancillary_model_rejects_unknown_flags_and_duplicate_tags_without_fd_leaks ... ok
+test diagnostic_kernel_admission::collector_inputs::progress::tests::collector_progress_exclusive_age_and_strict_receive_order ... ok
+test diagnostic_kernel_admission::collector_inputs::progress::tests::collector_progress_real_kernel_origin_signature_order_and_sticky_refusal ... collector_progress kernel_cases=7 renewed_receive_time=false
+ok
+test diagnostic_kernel_admission::collector_inputs::progress::tests::collector_progress_real_packet_expires_without_receive_time_renewal ... collector_progress real_expiry=true receive_time_unchanged=true deadline_extended=false
+ok
+test diagnostic_kernel_admission::collector_inputs::start_consent::tests::original_start_consent_exclusive_age_and_principal_time_boundaries ... ok
+test diagnostic_kernel_admission::collector_inputs::start_consent::tests::original_start_consent_real_kernel_origin_peer_signature_order_and_refusal ... original_start_consent kernel_cases=12 real_peer=true original_receive_time_unchanged=true replay_admission=false
+ok
+test diagnostic_kernel_admission::collector_inputs::tests::original_collector_peer_uses_canonical_primary_group_union_without_truncation ... ok
+test diagnostic_kernel_admission::origin::boot_buffer_tests::boot_buffer_canonical_empty_short_and_overlength_differential ... ok
+test diagnostic_kernel_admission::origin::boot_buffer_tests::boot_buffer_empty_site_and_document_trace_are_preserved ... ok
+test diagnostic_kernel_admission::origin::boot_buffer_tests::boot_buffer_every_single_byte_mutation_matches_old_decoder ... ok
+test diagnostic_kernel_admission::origin::boot_buffer_tests::boot_buffer_io_faults_are_preserved_without_retry ... ok
+test diagnostic_kernel_admission::origin::boot_buffer_tests::boot_buffer_real_positional_reads_match_without_changing_cursor ... ok
+test diagnostic_kernel_admission::origin::boot_buffer_tests::boot_buffer_seeded_documents_match_old_decoder ... HC074-BOOT-DIFFERENTIAL seed=0x0740b038 generated=1024 mutations=9472 single_read=true
+ok
+test diagnostic_kernel_admission::origin::boot_buffer_tests::boot_buffer_short_read_is_not_retried_and_does_not_claim_eof ... ok
+test diagnostic_kernel_admission::origin::boot_comparison_tests::boot_comparison_byte_mutations_lengths_and_original_failure_sites ... ok
+test diagnostic_kernel_admission::origin::boot_comparison_tests::boot_comparison_fresh_trace_counts_and_original_sticky_drift ... ok
+test diagnostic_kernel_admission::origin::boot_comparison_tests::boot_comparison_real_proc_and_filesystem_failures_match ... ok
+test diagnostic_kernel_admission::origin::boot_comparison_tests::boot_comparison_seeded_documents_and_single_read_faults ... HC074-BOOT-COMPARE seed=0x074cb036 documents=1024 mutations=9728 unchanged_read=true
+ok
+test diagnostic_kernel_admission::origin::document_scratch_tests::document_scratch_single_read_seeded_short_poison_error_and_budget ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::fixed_leaf_path_cost_abba ... ignored, manual local paired fixed path leaf costs; no admission or product workload
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::fixed_leaf_path_differential_identity_flags_and_unknown_names ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::fixed_leaf_path_preserves_original_trace_counts_and_sticky_drift ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::fixed_leaf_path_single_cost ... ignored, manual actual leaf in one image; external crossover only, no admission or product
+test diagnostic_kernel_admission::origin::fresh_kernel_cost::fresh_kernel_observation_attribution ... ignored, manual local nonroot fresh kernel observation attribution; no start authority
+test diagnostic_kernel_admission::origin::fresh_kernel_cost::fresh_status_observation_does_not_reuse_previous_bytes ... ok
+test diagnostic_kernel_admission::origin::fresh_kernel_cost::fresh_status_openers_preserve_identity_flags_and_refusals ... ok
+test diagnostic_kernel_admission::origin::fresh_kernel_cost::fresh_status_runtime_uses_the_measured_fixed_openers ... ok
+test diagnostic_kernel_admission::origin::manager_binding::tests::manager_receiver_binding_cannot_mint_from_refused_or_wrong_original_clock ... ok
+test diagnostic_kernel_admission::origin::manager_binding::tests::manager_receiver_binding_retains_actual_origin_without_packet_or_claim_adoption ... ok
+test diagnostic_kernel_admission::origin::manager_binding::tests::manager_receiver_binding_wrong_boot_type_object_and_descriptor_latch ... ok
+test diagnostic_kernel_admission::origin::pid_path::pid_path_open_differential_preserves_identity_flags_and_refusals ... ok
+test diagnostic_kernel_admission::origin::pid_path::pid_path_runtime_sites_use_fresh_numeric_key_without_string_allocation ... ok
+test diagnostic_kernel_admission::origin::pid_path::pid_path_signed_edges_and_seeded_values_match_complete_decimal ... HC074-PID-FORMAT seed=0x07401d32 mutations=16384 complete_signed_i32=true
+ok
+test diagnostic_kernel_admission::origin::tests::kernel_refusal_capture_seeded_clock_and_namespace_classification ... kernel_refusal_classification seed=0x0740c096 clock_cases=6 namespace_cases=3 historical_cause_proved=false
+ok
+test diagnostic_kernel_admission::origin::tests::kernel_time_original_proc_boot_and_namespace_drift_refuse ... ok
+test diagnostic_kernel_admission::origin::tests::kernel_time_packet_hold_has_exclusive_boottime_boundary ... ok
+test diagnostic_kernel_admission::origin::tests::kernel_time_timespec_and_ordering_edges_refuse ... ok
+test diagnostic_kernel_admission::origin::tests::kernel_worker_context_namespace_type_and_object_are_independent_checks ... ok
+test diagnostic_kernel_admission::origin::tests::kernel_worker_context_original_typed_namespaces_and_drift_refuse ... ok
+test diagnostic_kernel_admission::refusal_trace::tests::kernel_refusal_capture_first_event_and_phase_are_not_overwritten ... ok
+
+thread 'diagnostic_kernel_admission::refusal_trace::tests::kernel_refusal_capture_nested_and_unwind_restore_original_scope' panicked at tools/long-run-supervisor-074/src/diagnostic_kernel_refusal_trace.rs:104:21:
+owned trace unwind canary
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+HC074-KERNEL-FIRST-REFUSAL Event { phase: "unwind", site: "unwinding", file: "tools/long-run-supervisor-074/src/diagnostic_kernel_refusal_trace.rs", line: 103, clock: [0, 0, 0, 0, 0, 0] }
+test diagnostic_kernel_admission::refusal_trace::tests::kernel_refusal_capture_nested_and_unwind_restore_original_scope ... ok
+test diagnostic_kernel_admission::refusal_trace::tests::kernel_refusal_capture_threads_are_independent ... ok
+test diagnostic_kernel_admission::tests::document_scratch::document_scratch_actual_documents_exclude_previous_bytes_and_preserve_errors ... ok
+test diagnostic_kernel_admission::tests::document_scratch::document_scratch_runtime_binding_requires_one_call_owned_buffer ... ok
+test diagnostic_kernel_admission::tests::document_scratch::document_scratch_sender_preserves_fresh_counts_and_original_refusals ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_actual_sender_and_nonblocking_empty_receive ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_authentication_has_no_caller_peer_or_time ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_empty_disconnect_and_socket_option_drift_refuse ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_exact_budget_and_oversized_packet_refuse ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_inherited_socket_identifies_child_and_refuses_after_sigkill ... ignored, manual nonroot Linux/python3 inherited sender and original message pidfd; no live service
+test diagnostic_kernel_admission::tests::kernel_admission_packet_projection_drift_latches_refusal ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_received_rights_close_all_copies_on_refusal ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_reviewed_controller_refuses_fixture_trust_and_fallback ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_seeded_status_mutations_refuse_wrong_credentials ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_signature_principal_and_clock_refusals_are_sticky ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_wrong_socket_type_refuses_without_fallback ... ok
+test diagnostic_kernel_admission::tests::kernel_oidc_original_clock_sampler_preserves_context_and_prior_refusal ... ok
+test diagnostic_kernel_admission::tests::kernel_refusal_capture_healthy_has_no_event ... ok
+test diagnostic_kernel_admission::tests::kernel_refusal_capture_projection_is_lazy_and_redacted ... ok
+test diagnostic_kernel_admission::tests::kernel_worker_context_packet_sender_clock_and_prior_refusal_are_sticky ... ok
+test diagnostic_kernel_admission::tests::projection_cost::projection_fields_complete_sender_preserves_reads_counts_and_original_refusals ... ok
+test diagnostic_kernel_admission::tests::projection_cost::projection_fields_differential_seeded_boundaries_duplicates_and_error_order ... HC074-PROJECTION-DIFFERENTIAL cases=804 seed=0x074f1e1d server=false product=false
+ok
+test diagnostic_kernel_admission::tests::projection_cost::projection_fields_runtime_binding_is_exact_frozen_candidate ... ok
+test diagnostic_kernel_admission::tests::projection_prefix::projection_prefix_differential_seeded_bytes_and_first_refusal ... HC074-PROJECTION-DIFFERENTIAL seed=0x07401d5e mutations=1024 original_refusals=true product=false
+ok
+
+test result: ok. 61 passed; 0 failed; 4 ignored; 0 measured; 1321 filtered out; finished in 10.32s
+

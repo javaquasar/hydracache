@@ -1,0 +1,15 @@
+{
+  "source": "9471afb4f2ce297c5c2d9ece77603c7e6a3e5bfe",
+  "tool_process_exit": 1,
+  "recorded_from_tool_transcript": true,
+  "original_log_bytes": 0,
+  "exit_receipt_written": false,
+  "exception": "Local boot or fixture residue",
+  "refused_verifier_sha256": "1d0174556790aa53cc639ea614bb53cc23db5be507bb4ad9d61f8498350714b1",
+  "initial_boot": "9360d8a9-50f9-4818-9509-21aca8f02f71",
+  "postflight_boot": "cf619cb0-6679-4f52-a5b8-f6a9802d9ec4",
+  "original_log_replaced": false,
+  "gate_promoted": false,
+  "server": false,
+  "product": false
+}
