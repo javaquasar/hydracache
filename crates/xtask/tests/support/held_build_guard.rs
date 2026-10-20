@@ -1,4 +1,6 @@
 //! Exact additive build-authority normalization; never excludes old source files.
+#[path = "held_launcher_guard.rs"]
+pub(crate) mod launcher;
 pub(crate) const BUILDER: &str = "tools/long-run-supervisor-074/src/diagnostic_builder.rs";
 pub(crate) const HOOK: &str = "\n#[path = \"diagnostic_held_build.rs\"]\npub mod held_build;\n";
 pub(crate) const COMPAT: &str = "docs/COMPAT.md";
@@ -40,10 +42,11 @@ executable or permission to replace the original worker ExecStart.
 <!-- END HELD BUILD AUTHORITY V1 -->
 "##;
 pub(crate) fn normalize(path: &str, raw: &str) -> String {
+    let raw = launcher::normalize(path, raw);
     let exact = match path {
         BUILDER => HOOK,
         COMPAT => BLOCK,
-        _ => return raw.to_owned(),
+        _ => return raw,
     };
     assert_eq!(
         raw.matches(exact).count(),

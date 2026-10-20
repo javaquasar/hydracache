@@ -7,6 +7,24 @@ mod namespace;
 
 const BASE: &str = "23c57b77523ad1cc16b1a79fc90b02a125f8d9b8";
 const NEW_SOURCE: &str = "tools/long-run-supervisor-074/src/diagnostic_held_build.rs";
+const LAUNCHER_SOURCES: [&str; 2] = [
+    "tools/long-run-supervisor-074/src/bin/diagnostic_held_launcher.rs",
+    "tools/long-run-supervisor-074/src/diagnostic_held_launcher_kernel.rs",
+];
+fn previous_runtime_list(current: &str) -> String {
+    for path in LAUNCHER_SOURCES {
+        assert_eq!(
+            current.lines().filter(|p| *p == path).count(),
+            1,
+            "exact new launcher source"
+        );
+    }
+    current
+        .lines()
+        .filter(|p| !LAUNCHER_SOURCES.contains(p))
+        .map(|p| format!("{p}\n"))
+        .collect()
+}
 fn only_new_source(old: &str, current: &str) -> bool {
     let old_set: std::collections::BTreeSet<_> = old.lines().collect();
     let current_set: std::collections::BTreeSet<_> = current.lines().collect();
@@ -97,7 +115,7 @@ fn immutable_fixture_preserves_all_437_runtime_sources_and_production_inputs() {
         "tools/long-run-supervisor-074/tests/owned_root_creator_sigkill.py",
     ];
     let old = git(&["ls-tree", "-r", "--name-only", BASE, "--", paths[0]]);
-    let current = git(&["ls-files", "--", paths[0]]);
+    let current = previous_runtime_list(&git(&["ls-files", "--", paths[0]]));
     assert_eq!(old.lines().count(), 437);
     assert!(only_new_source(&old, &current));
     for path in old.lines().chain(paths[1..].iter().copied()) {
@@ -251,5 +269,66 @@ fn held_build_source_allowlist_requires_all_old_files_and_exactly_one_named_addi
         format!("{old}{NEW_SOURCE}\n{NEW_SOURCE}\n"),
     ] {
         assert!(!only_new_source(old, &bad));
+    }
+}
+
+#[test]
+fn launcher_preserves_all_438_preceding_sources_and_exact_old_formats() {
+    const BASELINE: &str = "2a86c1fd";
+    let old = git(&[
+        "ls-tree",
+        "-r",
+        "--name-only",
+        BASELINE,
+        "--",
+        "tools/long-run-supervisor-074/src",
+    ]);
+    assert_eq!(old.lines().count(), 438);
+    assert_eq!(
+        previous_runtime_list(&git(&[
+            "ls-files",
+            "--",
+            "tools/long-run-supervisor-074/src"
+        ])),
+        old
+    );
+    for path in old.lines().chain([
+        "Cargo.lock",
+        "docs/COMPAT.md",
+        "docs/testing/gated-test-registry.toml",
+        "docs/testing/performance/0.74/qualification-manifest.toml",
+    ]) {
+        assert_eq!(
+            namespace::held_build::launcher::normalize(path, &read(path)),
+            git(&["show", &format!("{BASELINE}:{path}")]),
+            "preceding bytes: {path}"
+        );
+    }
+}
+#[test]
+fn launcher_adapter_refuses_missing_duplicate_and_unrelated_drift() {
+    use namespace::held_build::launcher;
+    for (path, exact) in [
+        (launcher::COMPAT, launcher::BLOCK),
+        (launcher::REGISTRY, launcher::GATE),
+    ] {
+        let raw = read(path);
+        for bad in [raw.replacen(exact, "", 1), format!("{raw}{exact}")] {
+            assert!(std::panic::catch_unwind(|| launcher::normalize(path, &bad)).is_err());
+        }
+        assert_ne!(
+            launcher::normalize(path, &format!("{raw}\n// drift\n")),
+            git(&["show", &format!("2a86c1fd:{path}")])
+        );
+    }
+    let good = format!("old.rs\n{}\n{}\n", LAUNCHER_SOURCES[0], LAUNCHER_SOURCES[1]);
+    assert_eq!(previous_runtime_list(&good), "old.rs\n");
+    for file in LAUNCHER_SOURCES {
+        for bad in [
+            good.replacen(&format!("{file}\n"), "", 1),
+            format!("{good}{file}\n"),
+        ] {
+            assert!(std::panic::catch_unwind(|| previous_runtime_list(&bad)).is_err());
+        }
     }
 }

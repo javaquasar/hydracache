@@ -12666,3 +12666,63 @@ platform = "linux"
 [gate.command.env]
 HC074_FIXED_SLICE_NAMESPACE = "1"
 # END FIXED SLICE NAMESPACE GATE
+
+# BEGIN LOCAL HELD LAUNCHER GATES
+[[gate]]
+id = "cfg.hydracache-long-run-supervisor-074.held-launcher"
+kind = "cfg_test_target"
+source = "tools/long-run-supervisor-074/tests/held_launcher.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "held_launcher"
+test = ""
+cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
+env = ""
+reason = "local held launcher synthetic ELF fixture target; process matrix remains manual"
+tier = "fast"
+required_features = []
+required_env = []
+required_tools = ["cargo"]
+timeout_seconds = 180
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "rust"
+step = "Release 0.74 Linux supervisor contracts"
+[gate.command]
+program = "cargo"
+args = ["test","--locked","-p","hydracache-long-run-supervisor-074","--test","held_launcher"]
+cwd = "."
+platform = "linux"
+[gate.command.env]
+
+[[gate]]
+id = "ignored.hydracache-long-run-supervisor-074.held-launcher.owned-launcher-process-fault-matrix"
+kind = "ignored_test"
+source = "tools/long-run-supervisor-074/tests/held_launcher.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "held_launcher"
+test = "owned_launcher_process_fault_matrix"
+cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
+env = ""
+reason = "owned nonroot synthetic ELF process/FD fault matrix; no systemd or product"
+tier = "manual"
+required_features = []
+required_env = []
+required_tools = ["cargo","/bin/sleep"]
+timeout_seconds = 180
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+[gate.command]
+program = "cargo"
+args = ["test","--locked","-p","hydracache-long-run-supervisor-074","--test","held_launcher","owned_launcher_process_fault_matrix","--","--ignored","--exact","--nocapture","--test-threads=1"]
+cwd = "."
+platform = "linux"
+[gate.command.env]
+# END LOCAL HELD LAUNCHER GATES
