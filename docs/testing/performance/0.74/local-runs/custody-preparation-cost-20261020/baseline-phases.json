@@ -1,0 +1,5918 @@
+[
+  {
+    "cohort": "Baseline",
+    "lane": "194",
+    "sample": 0,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "prepare-consent",
+    "returned": true,
+    "wall_ns": 245104981,
+    "process_cpu_ns": 245019522,
+    "authentication_calls": 68,
+    "kernel": [
+      {
+        "calls": 712,
+        "inclusive_ns": 137695149,
+        "outside_children_ns": 172422
+      },
+      {
+        "calls": 1646,
+        "inclusive_ns": 100363508,
+        "outside_children_ns": 6198348
+      },
+      {
+        "calls": 3292,
+        "inclusive_ns": 11942627,
+        "outside_children_ns": 7585917
+      },
+      {
+        "calls": 3292,
+        "inclusive_ns": 13543205,
+        "outside_children_ns": 13543205
+      },
+      {
+        "calls": 6362,
+        "inclusive_ns": 112475029,
+        "outside_children_ns": 26264980
+      },
+      {
+        "calls": 12724,
+        "inclusive_ns": 48721892,
+        "outside_children_ns": 44896354
+      },
+      {
+        "calls": 25448,
+        "inclusive_ns": 37488157,
+        "outside_children_ns": 37488157
+      },
+      {
+        "calls": 823,
+        "inclusive_ns": 27773832,
+        "outside_children_ns": 181074
+      },
+      {
+        "calls": 712,
+        "inclusive_ns": 26522210,
+        "outside_children_ns": 790336
+      },
+      {
+        "calls": 19308,
+        "inclusive_ns": 17711179,
+        "outside_children_ns": 17711179
+      }
+    ],
+    "live": [
+      {
+        "calls": 356,
+        "inclusive_ns": 214245219,
+        "outside_children_ns": 146191
+      },
+      {
+        "calls": 712,
+        "inclusive_ns": 51047794,
+        "outside_children_ns": 3734265
+      },
+      {
+        "calls": 1424,
+        "inclusive_ns": 9779430,
+        "outside_children_ns": 9779430
+      },
+      {
+        "calls": 1435,
+        "inclusive_ns": 37865999,
+        "outside_children_ns": 37865999
+      },
+      {
+        "calls": 712,
+        "inclusive_ns": 137745886,
+        "outside_children_ns": 137745886
+      },
+      {
+        "calls": 356,
+        "inclusive_ns": 25305348,
+        "outside_children_ns": 25305348
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "194",
+    "sample": 0,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "accept-consent",
+    "returned": true,
+    "wall_ns": 124831487,
+    "process_cpu_ns": 123716380,
+    "authentication_calls": 34,
+    "kernel": [
+      {
+        "calls": 368,
+        "inclusive_ns": 68047623,
+        "outside_children_ns": 82289
+      },
+      {
+        "calls": 865,
+        "inclusive_ns": 50492225,
+        "outside_children_ns": 2942747
+      },
+      {
+        "calls": 1731,
+        "inclusive_ns": 6180250,
+        "outside_children_ns": 3791136
+      },
+      {
+        "calls": 1731,
+        "inclusive_ns": 6583196,
+        "outside_children_ns": 6583196
+      },
+      {
+        "calls": 3336,
+        "inclusive_ns": 56509921,
+        "outside_children_ns": 13182006
+      },
+      {
+        "calls": 6672,
+        "inclusive_ns": 25190900,
+        "outside_children_ns": 22473026
+      },
+      {
+        "calls": 13344,
+        "inclusive_ns": 18137015,
+        "outside_children_ns": 18137015
+      },
+      {
+        "calls": 435,
+        "inclusive_ns": 14483808,
+        "outside_children_ns": 91047
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 12988248,
+        "outside_children_ns": 379839
+      },
+      {
+        "calls": 10134,
+        "inclusive_ns": 10428020,
+        "outside_children_ns": 10428020
+      }
+    ],
+    "live": [
+      {
+        "calls": 184,
+        "inclusive_ns": 106772694,
+        "outside_children_ns": 68370
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 25707471,
+        "outside_children_ns": 1422921
+      },
+      {
+        "calls": 736,
+        "inclusive_ns": 4925816,
+        "outside_children_ns": 4925816
+      },
+      {
+        "calls": 742,
+        "inclusive_ns": 19491858,
+        "outside_children_ns": 19491858
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 68073677,
+        "outside_children_ns": 68073677
+      },
+      {
+        "calls": 184,
+        "inclusive_ns": 12923176,
+        "outside_children_ns": 12923176
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "194",
+    "sample": 0,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "outputs",
+    "returned": true,
+    "wall_ns": 2932228761,
+    "process_cpu_ns": 3029992877,
+    "authentication_calls": 782,
+    "kernel": [
+      {
+        "calls": 8464,
+        "inclusive_ns": 1607249099,
+        "outside_children_ns": 2314894
+      },
+      {
+        "calls": 19872,
+        "inclusive_ns": 1195681518,
+        "outside_children_ns": 75217599
+      },
+      {
+        "calls": 39744,
+        "inclusive_ns": 155975120,
+        "outside_children_ns": 98364914
+      },
+      {
+        "calls": 39744,
+        "inclusive_ns": 154305180,
+        "outside_children_ns": 154305180
+      },
+      {
+        "calls": 76544,
+        "inclusive_ns": 1329717507,
+        "outside_children_ns": 316427551
+      },
+      {
+        "calls": 153088,
+        "inclusive_ns": 572626679,
+        "outside_children_ns": 521745448
+      },
+      {
+        "calls": 306176,
+        "inclusive_ns": 440663277,
+        "outside_children_ns": 440663277
+      },
+      {
+        "calls": 9936,
+        "inclusive_ns": 340432903,
+        "outside_children_ns": 3235004
+      },
+      {
+        "calls": 8464,
+        "inclusive_ns": 304732126,
+        "outside_children_ns": 9480218
+      },
+      {
+        "calls": 232576,
+        "inclusive_ns": 221407356,
+        "outside_children_ns": 221407356
+      }
+    ],
+    "live": [
+      {
+        "calls": 4232,
+        "inclusive_ns": 2520486751,
+        "outside_children_ns": 1926268
+      },
+      {
+        "calls": 8464,
+        "inclusive_ns": 606510687,
+        "outside_children_ns": 40841455
+      },
+      {
+        "calls": 16928,
+        "inclusive_ns": 119743582,
+        "outside_children_ns": 119743582
+      },
+      {
+        "calls": 17066,
+        "inclusive_ns": 449111003,
+        "outside_children_ns": 449111003
+      },
+      {
+        "calls": 8464,
+        "inclusive_ns": 1607940147,
+        "outside_children_ns": 1607940147
+      },
+      {
+        "calls": 4232,
+        "inclusive_ns": 304109649,
+        "outside_children_ns": 304109649
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "194",
+    "sample": 0,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "enrollment-frame",
+    "returned": true,
+    "wall_ns": 158131814,
+    "process_cpu_ns": 171928721,
+    "authentication_calls": 34,
+    "kernel": [
+      {
+        "calls": 368,
+        "inclusive_ns": 66786023,
+        "outside_children_ns": 81953
+      },
+      {
+        "calls": 868,
+        "inclusive_ns": 50045716,
+        "outside_children_ns": 2862777
+      },
+      {
+        "calls": 1736,
+        "inclusive_ns": 7024099,
+        "outside_children_ns": 4739267
+      },
+      {
+        "calls": 1736,
+        "inclusive_ns": 6218144,
+        "outside_children_ns": 6218144
+      },
+      {
+        "calls": 3340,
+        "inclusive_ns": 54068579,
+        "outside_children_ns": 12352745
+      },
+      {
+        "calls": 6680,
+        "inclusive_ns": 24300311,
+        "outside_children_ns": 21777433
+      },
+      {
+        "calls": 13360,
+        "inclusive_ns": 17415523,
+        "outside_children_ns": 17415523
+      },
+      {
+        "calls": 434,
+        "inclusive_ns": 13983778,
+        "outside_children_ns": 89616
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 11817619,
+        "outside_children_ns": 365455
+      },
+      {
+        "calls": 10152,
+        "inclusive_ns": 10026153,
+        "outside_children_ns": 10026153
+      }
+    ],
+    "live": [
+      {
+        "calls": 184,
+        "inclusive_ns": 104310506,
+        "outside_children_ns": 68539
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 24667129,
+        "outside_children_ns": 1503377
+      },
+      {
+        "calls": 736,
+        "inclusive_ns": 5387633,
+        "outside_children_ns": 5387633
+      },
+      {
+        "calls": 742,
+        "inclusive_ns": 17922690,
+        "outside_children_ns": 17922690
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 66815699,
+        "outside_children_ns": 66815699
+      },
+      {
+        "calls": 184,
+        "inclusive_ns": 12759139,
+        "outside_children_ns": 12759139
+      }
+    ],
+    "boundaries": [
+      {
+        "name": "before-first-custody",
+        "process_cpu_ns": 98160716,
+        "wall_ns": 90022758
+      },
+      {
+        "name": "closing-enter",
+        "process_cpu_ns": 98558859,
+        "wall_ns": 90603942
+      },
+      {
+        "name": "closing-exit",
+        "process_cpu_ns": 171895970,
+        "wall_ns": 158100015
+      }
+    ]
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "194",
+    "sample": 0,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "fixed-manager-message",
+    "returned": true,
+    "wall_ns": 152747724,
+    "process_cpu_ns": 155311847,
+    "authentication_calls": 34,
+    "kernel": [
+      {
+        "calls": 368,
+        "inclusive_ns": 69123271,
+        "outside_children_ns": 82743
+      },
+      {
+        "calls": 870,
+        "inclusive_ns": 51389266,
+        "outside_children_ns": 3306781
+      },
+      {
+        "calls": 1740,
+        "inclusive_ns": 7360394,
+        "outside_children_ns": 5135008
+      },
+      {
+        "calls": 1740,
+        "inclusive_ns": 6133754,
+        "outside_children_ns": 6133754
+      },
+      {
+        "calls": 3350,
+        "inclusive_ns": 56339449,
+        "outside_children_ns": 13772023
+      },
+      {
+        "calls": 6700,
+        "inclusive_ns": 24292746,
+        "outside_children_ns": 22321377
+      },
+      {
+        "calls": 13400,
+        "inclusive_ns": 18274680,
+        "outside_children_ns": 18274680
+      },
+      {
+        "calls": 435,
+        "inclusive_ns": 14252074,
+        "outside_children_ns": 91136
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 12527563,
+        "outside_children_ns": 368402
+      },
+      {
+        "calls": 10180,
+        "inclusive_ns": 8841047,
+        "outside_children_ns": 8841047
+      }
+    ],
+    "live": [
+      {
+        "calls": 184,
+        "inclusive_ns": 105976291,
+        "outside_children_ns": 71455
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 24511066,
+        "outside_children_ns": 2009253
+      },
+      {
+        "calls": 736,
+        "inclusive_ns": 5052343,
+        "outside_children_ns": 5052343
+      },
+      {
+        "calls": 742,
+        "inclusive_ns": 17587056,
+        "outside_children_ns": 17587056
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 69146453,
+        "outside_children_ns": 69146453
+      },
+      {
+        "calls": 184,
+        "inclusive_ns": 12247317,
+        "outside_children_ns": 12247317
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "194",
+    "sample": 0,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "owned-root-preparation",
+    "returned": true,
+    "wall_ns": 419773594,
+    "process_cpu_ns": 455456539,
+    "authentication_calls": 102,
+    "kernel": [
+      {
+        "calls": 1104,
+        "inclusive_ns": 195613370,
+        "outside_children_ns": 252128
+      },
+      {
+        "calls": 2604,
+        "inclusive_ns": 147064716,
+        "outside_children_ns": 8410794
+      },
+      {
+        "calls": 5208,
+        "inclusive_ns": 18700631,
+        "outside_children_ns": 12435077
+      },
+      {
+        "calls": 5208,
+        "inclusive_ns": 19504158,
+        "outside_children_ns": 19504158
+      },
+      {
+        "calls": 10032,
+        "inclusive_ns": 163456273,
+        "outside_children_ns": 36946197
+      },
+      {
+        "calls": 20064,
+        "inclusive_ns": 71815438,
+        "outside_children_ns": 65467972
+      },
+      {
+        "calls": 40128,
+        "inclusive_ns": 54694638,
+        "outside_children_ns": 54694638
+      },
+      {
+        "calls": 1302,
+        "inclusive_ns": 40023173,
+        "outside_children_ns": 271442
+      },
+      {
+        "calls": 1104,
+        "inclusive_ns": 36925812,
+        "outside_children_ns": 1090354
+      },
+      {
+        "calls": 30480,
+        "inclusive_ns": 25402690,
+        "outside_children_ns": 25402690
+      }
+    ],
+    "live": [
+      {
+        "calls": 552,
+        "inclusive_ns": 310879219,
+        "outside_children_ns": 262995
+      },
+      {
+        "calls": 1104,
+        "inclusive_ns": 74949244,
+        "outside_children_ns": 4226574
+      },
+      {
+        "calls": 2208,
+        "inclusive_ns": 14558956,
+        "outside_children_ns": 14558956
+      },
+      {
+        "calls": 2226,
+        "inclusive_ns": 56565233,
+        "outside_children_ns": 56565233
+      },
+      {
+        "calls": 1104,
+        "inclusive_ns": 195684989,
+        "outside_children_ns": 195684989
+      },
+      {
+        "calls": 552,
+        "inclusive_ns": 39981991,
+        "outside_children_ns": 39981991
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "194",
+    "sample": 0,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "enrollment",
+    "returned": true,
+    "wall_ns": 273449908,
+    "process_cpu_ns": 296523928,
+    "authentication_calls": 68,
+    "kernel": [
+      {
+        "calls": 736,
+        "inclusive_ns": 128061236,
+        "outside_children_ns": 161683
+      },
+      {
+        "calls": 1736,
+        "inclusive_ns": 94829119,
+        "outside_children_ns": 5548275
+      },
+      {
+        "calls": 3472,
+        "inclusive_ns": 12639949,
+        "outside_children_ns": 8401865
+      },
+      {
+        "calls": 3472,
+        "inclusive_ns": 12115398,
+        "outside_children_ns": 12115398
+      },
+      {
+        "calls": 6688,
+        "inclusive_ns": 107062299,
+        "outside_children_ns": 26211036
+      },
+      {
+        "calls": 13376,
+        "inclusive_ns": 45667818,
+        "outside_children_ns": 41937524
+      },
+      {
+        "calls": 26752,
+        "inclusive_ns": 35183445,
+        "outside_children_ns": 35183445
+      },
+      {
+        "calls": 868,
+        "inclusive_ns": 28599442,
+        "outside_children_ns": 206812
+      },
+      {
+        "calls": 736,
+        "inclusive_ns": 23823973,
+        "outside_children_ns": 700583
+      },
+      {
+        "calls": 20320,
+        "inclusive_ns": 17080599,
+        "outside_children_ns": 17080599
+      }
+    ],
+    "live": [
+      {
+        "calls": 368,
+        "inclusive_ns": 201078695,
+        "outside_children_ns": 151335
+      },
+      {
+        "calls": 736,
+        "inclusive_ns": 47887400,
+        "outside_children_ns": 3868205
+      },
+      {
+        "calls": 1472,
+        "inclusive_ns": 9568571,
+        "outside_children_ns": 9568571
+      },
+      {
+        "calls": 1484,
+        "inclusive_ns": 34696637,
+        "outside_children_ns": 34696637
+      },
+      {
+        "calls": 736,
+        "inclusive_ns": 128107385,
+        "outside_children_ns": 128107385
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 24932575,
+        "outside_children_ns": 24932575
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "194",
+    "sample": 0,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "placement",
+    "returned": true,
+    "wall_ns": 141471080,
+    "process_cpu_ns": 153670902,
+    "authentication_calls": 34,
+    "kernel": [
+      {
+        "calls": 368,
+        "inclusive_ns": 64476545,
+        "outside_children_ns": 85500
+      },
+      {
+        "calls": 868,
+        "inclusive_ns": 48007017,
+        "outside_children_ns": 2825190
+      },
+      {
+        "calls": 1736,
+        "inclusive_ns": 5952296,
+        "outside_children_ns": 3858035
+      },
+      {
+        "calls": 1736,
+        "inclusive_ns": 7001473,
+        "outside_children_ns": 7001473
+      },
+      {
+        "calls": 3344,
+        "inclusive_ns": 54673143,
+        "outside_children_ns": 13192088
+      },
+      {
+        "calls": 6688,
+        "inclusive_ns": 23267456,
+        "outside_children_ns": 21320271
+      },
+      {
+        "calls": 13376,
+        "inclusive_ns": 18213599,
+        "outside_children_ns": 18213599
+      },
+      {
+        "calls": 434,
+        "inclusive_ns": 15204194,
+        "outside_children_ns": 92376
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 11839989,
+        "outside_children_ns": 387401
+      },
+      {
+        "calls": 10160,
+        "inclusive_ns": 8228752,
+        "outside_children_ns": 8228752
+      }
+    ],
+    "live": [
+      {
+        "calls": 184,
+        "inclusive_ns": 105244732,
+        "outside_children_ns": 75494
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 27925136,
+        "outside_children_ns": 1517222
+      },
+      {
+        "calls": 736,
+        "inclusive_ns": 5174720,
+        "outside_children_ns": 5174720
+      },
+      {
+        "calls": 742,
+        "inclusive_ns": 21355608,
+        "outside_children_ns": 21355608
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 64500303,
+        "outside_children_ns": 64500303
+      },
+      {
+        "calls": 184,
+        "inclusive_ns": 12743799,
+        "outside_children_ns": 12743799
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "194",
+    "sample": 0,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "fixed-slice",
+    "returned": true,
+    "wall_ns": 143112113,
+    "process_cpu_ns": 154195458,
+    "authentication_calls": 34,
+    "kernel": [
+      {
+        "calls": 368,
+        "inclusive_ns": 68450967,
+        "outside_children_ns": 89731
+      },
+      {
+        "calls": 868,
+        "inclusive_ns": 48743347,
+        "outside_children_ns": 2896594
+      },
+      {
+        "calls": 1736,
+        "inclusive_ns": 5907568,
+        "outside_children_ns": 3800918
+      },
+      {
+        "calls": 1736,
+        "inclusive_ns": 6004862,
+        "outside_children_ns": 6004862
+      },
+      {
+        "calls": 3344,
+        "inclusive_ns": 57831915,
+        "outside_children_ns": 13826154
+      },
+      {
+        "calls": 6688,
+        "inclusive_ns": 26546781,
+        "outside_children_ns": 24576695
+      },
+      {
+        "calls": 13376,
+        "inclusive_ns": 17458980,
+        "outside_children_ns": 17458980
+      },
+      {
+        "calls": 434,
+        "inclusive_ns": 17274591,
+        "outside_children_ns": 94272
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 11622294,
+        "outside_children_ns": 362534
+      },
+      {
+        "calls": 10160,
+        "inclusive_ns": 8691425,
+        "outside_children_ns": 8691425
+      }
+    ],
+    "live": [
+      {
+        "calls": 184,
+        "inclusive_ns": 106194335,
+        "outside_children_ns": 93774
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 25172614,
+        "outside_children_ns": 1454739
+      },
+      {
+        "calls": 736,
+        "inclusive_ns": 4923780,
+        "outside_children_ns": 4923780
+      },
+      {
+        "calls": 742,
+        "inclusive_ns": 18935183,
+        "outside_children_ns": 18935183
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 68475726,
+        "outside_children_ns": 68475726
+      },
+      {
+        "calls": 184,
+        "inclusive_ns": 12452221,
+        "outside_children_ns": 12452221
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "194",
+    "sample": 0,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "consuming",
+    "returned": true,
+    "wall_ns": 646760105,
+    "process_cpu_ns": 701812376,
+    "authentication_calls": 158,
+    "kernel": [
+      {
+        "calls": 1752,
+        "inclusive_ns": 314991230,
+        "outside_children_ns": 415398
+      },
+      {
+        "calls": 4076,
+        "inclusive_ns": 230447652,
+        "outside_children_ns": 13510522
+      },
+      {
+        "calls": 8152,
+        "inclusive_ns": 31119836,
+        "outside_children_ns": 19898274
+      },
+      {
+        "calls": 8152,
+        "inclusive_ns": 28582860,
+        "outside_children_ns": 28582860
+      },
+      {
+        "calls": 15748,
+        "inclusive_ns": 259215061,
+        "outside_children_ns": 58148177
+      },
+      {
+        "calls": 31496,
+        "inclusive_ns": 115014243,
+        "outside_children_ns": 105813693
+      },
+      {
+        "calls": 62992,
+        "inclusive_ns": 86052641,
+        "outside_children_ns": 86052641
+      },
+      {
+        "calls": 2038,
+        "inclusive_ns": 66410504,
+        "outside_children_ns": 425860
+      },
+      {
+        "calls": 1752,
+        "inclusive_ns": 59356028,
+        "outside_children_ns": 1712778
+      },
+      {
+        "calls": 47800,
+        "inclusive_ns": 42345314,
+        "outside_children_ns": 42345314
+      }
+    ],
+    "live": [
+      {
+        "calls": 876,
+        "inclusive_ns": 494121373,
+        "outside_children_ns": 333783
+      },
+      {
+        "calls": 1752,
+        "inclusive_ns": 119047705,
+        "outside_children_ns": 7139355
+      },
+      {
+        "calls": 3504,
+        "inclusive_ns": 22526020,
+        "outside_children_ns": 22526020
+      },
+      {
+        "calls": 3554,
+        "inclusive_ns": 90401122,
+        "outside_children_ns": 90401122
+      },
+      {
+        "calls": 1752,
+        "inclusive_ns": 315106038,
+        "outside_children_ns": 315106038
+      },
+      {
+        "calls": 876,
+        "inclusive_ns": 59633847,
+        "outside_children_ns": 59633847
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "194",
+    "sample": 1,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "prepare-consent",
+    "returned": true,
+    "wall_ns": 228304973,
+    "process_cpu_ns": 248733026,
+    "authentication_calls": 68,
+    "kernel": [
+      {
+        "calls": 712,
+        "inclusive_ns": 126389562,
+        "outside_children_ns": 162038
+      },
+      {
+        "calls": 1646,
+        "inclusive_ns": 96338306,
+        "outside_children_ns": 5258153
+      },
+      {
+        "calls": 3292,
+        "inclusive_ns": 10731376,
+        "outside_children_ns": 6767367
+      },
+      {
+        "calls": 3292,
+        "inclusive_ns": 12452735,
+        "outside_children_ns": 12452735
+      },
+      {
+        "calls": 6362,
+        "inclusive_ns": 107954118,
+        "outside_children_ns": 24164009
+      },
+      {
+        "calls": 12724,
+        "inclusive_ns": 48994981,
+        "outside_children_ns": 44934634
+      },
+      {
+        "calls": 25448,
+        "inclusive_ns": 34795128,
+        "outside_children_ns": 34795128
+      },
+      {
+        "calls": 823,
+        "inclusive_ns": 25019160,
+        "outside_children_ns": 169374
+      },
+      {
+        "calls": 712,
+        "inclusive_ns": 24018665,
+        "outside_children_ns": 708328
+      },
+      {
+        "calls": 19308,
+        "inclusive_ns": 16126403,
+        "outside_children_ns": 16126403
+      }
+    ],
+    "live": [
+      {
+        "calls": 356,
+        "inclusive_ns": 195835794,
+        "outside_children_ns": 122487
+      },
+      {
+        "calls": 712,
+        "inclusive_ns": 45513056,
+        "outside_children_ns": 2698412
+      },
+      {
+        "calls": 1424,
+        "inclusive_ns": 8599247,
+        "outside_children_ns": 8599247
+      },
+      {
+        "calls": 1435,
+        "inclusive_ns": 34438016,
+        "outside_children_ns": 34438016
+      },
+      {
+        "calls": 712,
+        "inclusive_ns": 126434424,
+        "outside_children_ns": 126434424
+      },
+      {
+        "calls": 356,
+        "inclusive_ns": 23765827,
+        "outside_children_ns": 23765827
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "194",
+    "sample": 1,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "accept-consent",
+    "returned": true,
+    "wall_ns": 116260420,
+    "process_cpu_ns": 126800627,
+    "authentication_calls": 34,
+    "kernel": [
+      {
+        "calls": 368,
+        "inclusive_ns": 65439143,
+        "outside_children_ns": 82567
+      },
+      {
+        "calls": 865,
+        "inclusive_ns": 48935166,
+        "outside_children_ns": 2800980
+      },
+      {
+        "calls": 1731,
+        "inclusive_ns": 6830687,
+        "outside_children_ns": 4059850
+      },
+      {
+        "calls": 1731,
+        "inclusive_ns": 6000493,
+        "outside_children_ns": 6000493
+      },
+      {
+        "calls": 3334,
+        "inclusive_ns": 54460911,
+        "outside_children_ns": 12353372
+      },
+      {
+        "calls": 6668,
+        "inclusive_ns": 23001856,
+        "outside_children_ns": 20921736
+      },
+      {
+        "calls": 13336,
+        "inclusive_ns": 19105683,
+        "outside_children_ns": 19105683
+      },
+      {
+        "calls": 434,
+        "inclusive_ns": 14940158,
+        "outside_children_ns": 89111
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 11221222,
+        "outside_children_ns": 365767
+      },
+      {
+        "calls": 10130,
+        "inclusive_ns": 9429274,
+        "outside_children_ns": 9429274
+      }
+    ],
+    "live": [
+      {
+        "calls": 184,
+        "inclusive_ns": 100580917,
+        "outside_children_ns": 66885
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 22687980,
+        "outside_children_ns": 1365761
+      },
+      {
+        "calls": 736,
+        "inclusive_ns": 4372967,
+        "outside_children_ns": 4372967
+      },
+      {
+        "calls": 742,
+        "inclusive_ns": 17072282,
+        "outside_children_ns": 17072282
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 65462950,
+        "outside_children_ns": 65462950
+      },
+      {
+        "calls": 184,
+        "inclusive_ns": 12363102,
+        "outside_children_ns": 12363102
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "194",
+    "sample": 1,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "outputs",
+    "returned": true,
+    "wall_ns": 2827822598,
+    "process_cpu_ns": 3067392091,
+    "authentication_calls": 782,
+    "kernel": [
+      {
+        "calls": 8464,
+        "inclusive_ns": 1559569362,
+        "outside_children_ns": 2602331
+      },
+      {
+        "calls": 19872,
+        "inclusive_ns": 1145777311,
+        "outside_children_ns": 71485909
+      },
+      {
+        "calls": 39744,
+        "inclusive_ns": 148885279,
+        "outside_children_ns": 96937716
+      },
+      {
+        "calls": 39744,
+        "inclusive_ns": 150857679,
+        "outside_children_ns": 150857679
+      },
+      {
+        "calls": 76544,
+        "inclusive_ns": 1281760766,
+        "outside_children_ns": 300710907
+      },
+      {
+        "calls": 153088,
+        "inclusive_ns": 554149014,
+        "outside_children_ns": 503976786
+      },
+      {
+        "calls": 306176,
+        "inclusive_ns": 426900845,
+        "outside_children_ns": 426900845
+      },
+      {
+        "calls": 9936,
+        "inclusive_ns": 339760195,
+        "outside_children_ns": 2509901
+      },
+      {
+        "calls": 8464,
+        "inclusive_ns": 286484244,
+        "outside_children_ns": 9220834
+      },
+      {
+        "calls": 232576,
+        "inclusive_ns": 209421173,
+        "outside_children_ns": 209421173
+      }
+    ],
+    "live": [
+      {
+        "calls": 4232,
+        "inclusive_ns": 2440182680,
+        "outside_children_ns": 1704286
+      },
+      {
+        "calls": 8464,
+        "inclusive_ns": 582826975,
+        "outside_children_ns": 38721616
+      },
+      {
+        "calls": 16928,
+        "inclusive_ns": 114290067,
+        "outside_children_ns": 114290067
+      },
+      {
+        "calls": 17066,
+        "inclusive_ns": 432878346,
+        "outside_children_ns": 432878346
+      },
+      {
+        "calls": 8464,
+        "inclusive_ns": 1560135907,
+        "outside_children_ns": 1560135907
+      },
+      {
+        "calls": 4232,
+        "inclusive_ns": 295515512,
+        "outside_children_ns": 295515512
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "194",
+    "sample": 1,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "enrollment-frame",
+    "returned": true,
+    "wall_ns": 165168671,
+    "process_cpu_ns": 178656925,
+    "authentication_calls": 34,
+    "kernel": [
+      {
+        "calls": 368,
+        "inclusive_ns": 71620934,
+        "outside_children_ns": 94764
+      },
+      {
+        "calls": 868,
+        "inclusive_ns": 54162701,
+        "outside_children_ns": 4721318
+      },
+      {
+        "calls": 1736,
+        "inclusive_ns": 6719786,
+        "outside_children_ns": 3939297
+      },
+      {
+        "calls": 1736,
+        "inclusive_ns": 6714407,
+        "outside_children_ns": 6714407
+      },
+      {
+        "calls": 3340,
+        "inclusive_ns": 58563268,
+        "outside_children_ns": 14329828
+      },
+      {
+        "calls": 6680,
+        "inclusive_ns": 24817486,
+        "outside_children_ns": 22543328
+      },
+      {
+        "calls": 13360,
+        "inclusive_ns": 19415954,
+        "outside_children_ns": 19415954
+      },
+      {
+        "calls": 434,
+        "inclusive_ns": 14366802,
+        "outside_children_ns": 100395
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 13203338,
+        "outside_children_ns": 382502
+      },
+      {
+        "calls": 10152,
+        "inclusive_ns": 9585812,
+        "outside_children_ns": 9585812
+      }
+    ],
+    "live": [
+      {
+        "calls": 184,
+        "inclusive_ns": 109374208,
+        "outside_children_ns": 91765
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 24555666,
+        "outside_children_ns": 1609590
+      },
+      {
+        "calls": 736,
+        "inclusive_ns": 4728880,
+        "outside_children_ns": 4728880
+      },
+      {
+        "calls": 742,
+        "inclusive_ns": 18336254,
+        "outside_children_ns": 18336254
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 71652179,
+        "outside_children_ns": 71652179
+      },
+      {
+        "calls": 184,
+        "inclusive_ns": 13074598,
+        "outside_children_ns": 13074598
+      }
+    ],
+    "boundaries": [
+      {
+        "name": "before-first-custody",
+        "process_cpu_ns": 100607704,
+        "wall_ns": 92238459
+      },
+      {
+        "name": "closing-enter",
+        "process_cpu_ns": 101102854,
+        "wall_ns": 93128294
+      },
+      {
+        "name": "closing-exit",
+        "process_cpu_ns": 178623862,
+        "wall_ns": 165136382
+      }
+    ]
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "194",
+    "sample": 1,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "fixed-manager-message",
+    "returned": true,
+    "wall_ns": 167929121,
+    "process_cpu_ns": 158333735,
+    "authentication_calls": 34,
+    "kernel": [
+      {
+        "calls": 368,
+        "inclusive_ns": 65439465,
+        "outside_children_ns": 85960
+      },
+      {
+        "calls": 870,
+        "inclusive_ns": 50204496,
+        "outside_children_ns": 3519125
+      },
+      {
+        "calls": 1740,
+        "inclusive_ns": 6834624,
+        "outside_children_ns": 3979573
+      },
+      {
+        "calls": 1740,
+        "inclusive_ns": 7211013,
+        "outside_children_ns": 7211013
+      },
+      {
+        "calls": 3350,
+        "inclusive_ns": 52725421,
+        "outside_children_ns": 11755931
+      },
+      {
+        "calls": 6700,
+        "inclusive_ns": 23235612,
+        "outside_children_ns": 21295409
+      },
+      {
+        "calls": 13400,
+        "inclusive_ns": 17733878,
+        "outside_children_ns": 17733878
+      },
+      {
+        "calls": 435,
+        "inclusive_ns": 13379252,
+        "outside_children_ns": 91788
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 11475646,
+        "outside_children_ns": 370223
+      },
+      {
+        "calls": 10180,
+        "inclusive_ns": 9177125,
+        "outside_children_ns": 9177125
+      }
+    ],
+    "live": [
+      {
+        "calls": 184,
+        "inclusive_ns": 104521979,
+        "outside_children_ns": 74044
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 25341970,
+        "outside_children_ns": 1418110
+      },
+      {
+        "calls": 736,
+        "inclusive_ns": 6220574,
+        "outside_children_ns": 6220574
+      },
+      {
+        "calls": 742,
+        "inclusive_ns": 17836615,
+        "outside_children_ns": 17836615
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 65464905,
+        "outside_children_ns": 65464905
+      },
+      {
+        "calls": 184,
+        "inclusive_ns": 13641060,
+        "outside_children_ns": 13641060
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "194",
+    "sample": 1,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "owned-root-preparation",
+    "returned": true,
+    "wall_ns": 411521398,
+    "process_cpu_ns": 446604271,
+    "authentication_calls": 102,
+    "kernel": [
+      {
+        "calls": 1104,
+        "inclusive_ns": 192364444,
+        "outside_children_ns": 259767
+      },
+      {
+        "calls": 2604,
+        "inclusive_ns": 145813492,
+        "outside_children_ns": 9090937
+      },
+      {
+        "calls": 5208,
+        "inclusive_ns": 17106320,
+        "outside_children_ns": 10708119
+      },
+      {
+        "calls": 5208,
+        "inclusive_ns": 20215773,
+        "outside_children_ns": 20215773
+      },
+      {
+        "calls": 10032,
+        "inclusive_ns": 161228866,
+        "outside_children_ns": 36655680
+      },
+      {
+        "calls": 20064,
+        "inclusive_ns": 72805954,
+        "outside_children_ns": 67002584
+      },
+      {
+        "calls": 40128,
+        "inclusive_ns": 51767232,
+        "outside_children_ns": 51767232
+      },
+      {
+        "calls": 1302,
+        "inclusive_ns": 41251694,
+        "outside_children_ns": 283015
+      },
+      {
+        "calls": 1104,
+        "inclusive_ns": 35164024,
+        "outside_children_ns": 1083127
+      },
+      {
+        "calls": 30480,
+        "inclusive_ns": 25637704,
+        "outside_children_ns": 25637704
+      }
+    ],
+    "live": [
+      {
+        "calls": 552,
+        "inclusive_ns": 302976936,
+        "outside_children_ns": 198172
+      },
+      {
+        "calls": 1104,
+        "inclusive_ns": 71666100,
+        "outside_children_ns": 4065987
+      },
+      {
+        "calls": 2208,
+        "inclusive_ns": 13303622,
+        "outside_children_ns": 13303622
+      },
+      {
+        "calls": 2226,
+        "inclusive_ns": 54655042,
+        "outside_children_ns": 54655042
+      },
+      {
+        "calls": 1104,
+        "inclusive_ns": 192433611,
+        "outside_children_ns": 192433611
+      },
+      {
+        "calls": 552,
+        "inclusive_ns": 38679053,
+        "outside_children_ns": 38679053
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "194",
+    "sample": 1,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "enrollment",
+    "returned": true,
+    "wall_ns": 280342401,
+    "process_cpu_ns": 303532644,
+    "authentication_calls": 68,
+    "kernel": [
+      {
+        "calls": 736,
+        "inclusive_ns": 133484032,
+        "outside_children_ns": 169748
+      },
+      {
+        "calls": 1736,
+        "inclusive_ns": 101296730,
+        "outside_children_ns": 6065360
+      },
+      {
+        "calls": 3472,
+        "inclusive_ns": 12249501,
+        "outside_children_ns": 7794199
+      },
+      {
+        "calls": 3472,
+        "inclusive_ns": 13497766,
+        "outside_children_ns": 13497766
+      },
+      {
+        "calls": 6688,
+        "inclusive_ns": 110796815,
+        "outside_children_ns": 25877012
+      },
+      {
+        "calls": 13376,
+        "inclusive_ns": 47924046,
+        "outside_children_ns": 43990721
+      },
+      {
+        "calls": 26752,
+        "inclusive_ns": 36995757,
+        "outside_children_ns": 36995757
+      },
+      {
+        "calls": 868,
+        "inclusive_ns": 27297490,
+        "outside_children_ns": 216589
+      },
+      {
+        "calls": 736,
+        "inclusive_ns": 23725086,
+        "outside_children_ns": 795995
+      },
+      {
+        "calls": 20320,
+        "inclusive_ns": 17221381,
+        "outside_children_ns": 17221381
+      }
+    ],
+    "live": [
+      {
+        "calls": 368,
+        "inclusive_ns": 208291478,
+        "outside_children_ns": 163338
+      },
+      {
+        "calls": 736,
+        "inclusive_ns": 49012391,
+        "outside_children_ns": 3034673
+      },
+      {
+        "calls": 1472,
+        "inclusive_ns": 9461325,
+        "outside_children_ns": 9461325
+      },
+      {
+        "calls": 1484,
+        "inclusive_ns": 36761037,
+        "outside_children_ns": 36761037
+      },
+      {
+        "calls": 736,
+        "inclusive_ns": 133532989,
+        "outside_children_ns": 133532989
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 25582760,
+        "outside_children_ns": 25582760
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "194",
+    "sample": 1,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "placement",
+    "returned": true,
+    "wall_ns": 149621048,
+    "process_cpu_ns": 162322908,
+    "authentication_calls": 34,
+    "kernel": [
+      {
+        "calls": 368,
+        "inclusive_ns": 66966991,
+        "outside_children_ns": 91257
+      },
+      {
+        "calls": 868,
+        "inclusive_ns": 50258982,
+        "outside_children_ns": 3220930
+      },
+      {
+        "calls": 1736,
+        "inclusive_ns": 7152044,
+        "outside_children_ns": 4739975
+      },
+      {
+        "calls": 1736,
+        "inclusive_ns": 6496940,
+        "outside_children_ns": 6496940
+      },
+      {
+        "calls": 3344,
+        "inclusive_ns": 55190126,
+        "outside_children_ns": 13342058
+      },
+      {
+        "calls": 6688,
+        "inclusive_ns": 23945984,
+        "outside_children_ns": 22048522
+      },
+      {
+        "calls": 13376,
+        "inclusive_ns": 17902084,
+        "outside_children_ns": 17902084
+      },
+      {
+        "calls": 434,
+        "inclusive_ns": 14668410,
+        "outside_children_ns": 95292
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 12099807,
+        "outside_children_ns": 367356
+      },
+      {
+        "calls": 10160,
+        "inclusive_ns": 8881620,
+        "outside_children_ns": 8881620
+      }
+    ],
+    "live": [
+      {
+        "calls": 184,
+        "inclusive_ns": 108310353,
+        "outside_children_ns": 75728
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 28385719,
+        "outside_children_ns": 1459170
+      },
+      {
+        "calls": 736,
+        "inclusive_ns": 5077751,
+        "outside_children_ns": 5077751
+      },
+      {
+        "calls": 742,
+        "inclusive_ns": 21967907,
+        "outside_children_ns": 21967907
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 66993819,
+        "outside_children_ns": 66993819
+      },
+      {
+        "calls": 184,
+        "inclusive_ns": 12855087,
+        "outside_children_ns": 12855087
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "194",
+    "sample": 1,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "fixed-slice",
+    "returned": true,
+    "wall_ns": 137946264,
+    "process_cpu_ns": 149902771,
+    "authentication_calls": 34,
+    "kernel": [
+      {
+        "calls": 368,
+        "inclusive_ns": 64640377,
+        "outside_children_ns": 83937
+      },
+      {
+        "calls": 868,
+        "inclusive_ns": 47336705,
+        "outside_children_ns": 2959785
+      },
+      {
+        "calls": 1736,
+        "inclusive_ns": 5984429,
+        "outside_children_ns": 3621113
+      },
+      {
+        "calls": 1736,
+        "inclusive_ns": 5988470,
+        "outside_children_ns": 5988470
+      },
+      {
+        "calls": 3344,
+        "inclusive_ns": 53979194,
+        "outside_children_ns": 13292146
+      },
+      {
+        "calls": 6688,
+        "inclusive_ns": 22572419,
+        "outside_children_ns": 20644785
+      },
+      {
+        "calls": 13376,
+        "inclusive_ns": 18114629,
+        "outside_children_ns": 18114629
+      },
+      {
+        "calls": 434,
+        "inclusive_ns": 13753534,
+        "outside_children_ns": 90458
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 12458127,
+        "outside_children_ns": 363052
+      },
+      {
+        "calls": 10160,
+        "inclusive_ns": 8545577,
+        "outside_children_ns": 8545577
+      }
+    ],
+    "live": [
+      {
+        "calls": 184,
+        "inclusive_ns": 101598424,
+        "outside_children_ns": 75822
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 23703234,
+        "outside_children_ns": 1426551
+      },
+      {
+        "calls": 736,
+        "inclusive_ns": 4699542,
+        "outside_children_ns": 4699542
+      },
+      {
+        "calls": 742,
+        "inclusive_ns": 17705382,
+        "outside_children_ns": 17705382
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 64664857,
+        "outside_children_ns": 64664857
+      },
+      {
+        "calls": 184,
+        "inclusive_ns": 13154511,
+        "outside_children_ns": 13154511
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "194",
+    "sample": 1,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "consuming",
+    "returned": true,
+    "wall_ns": 650754174,
+    "process_cpu_ns": 705303436,
+    "authentication_calls": 158,
+    "kernel": [
+      {
+        "calls": 1752,
+        "inclusive_ns": 310316187,
+        "outside_children_ns": 424807
+      },
+      {
+        "calls": 4076,
+        "inclusive_ns": 230193829,
+        "outside_children_ns": 13500913
+      },
+      {
+        "calls": 8152,
+        "inclusive_ns": 28405610,
+        "outside_children_ns": 18725051
+      },
+      {
+        "calls": 8152,
+        "inclusive_ns": 30940691,
+        "outside_children_ns": 30940691
+      },
+      {
+        "calls": 15748,
+        "inclusive_ns": 255399326,
+        "outside_children_ns": 61137120
+      },
+      {
+        "calls": 31496,
+        "inclusive_ns": 108209253,
+        "outside_children_ns": 99138543
+      },
+      {
+        "calls": 62992,
+        "inclusive_ns": 86052953,
+        "outside_children_ns": 86052953
+      },
+      {
+        "calls": 2038,
+        "inclusive_ns": 64841886,
+        "outside_children_ns": 466567
+      },
+      {
+        "calls": 1752,
+        "inclusive_ns": 58148451,
+        "outside_children_ns": 2202060
+      },
+      {
+        "calls": 47800,
+        "inclusive_ns": 41309479,
+        "outside_children_ns": 41309479
+      }
+    ],
+    "live": [
+      {
+        "calls": 876,
+        "inclusive_ns": 489878053,
+        "outside_children_ns": 328739
+      },
+      {
+        "calls": 1752,
+        "inclusive_ns": 116619986,
+        "outside_children_ns": 6983004
+      },
+      {
+        "calls": 3504,
+        "inclusive_ns": 24342359,
+        "outside_children_ns": 24342359
+      },
+      {
+        "calls": 3554,
+        "inclusive_ns": 86368015,
+        "outside_children_ns": 86368015
+      },
+      {
+        "calls": 1752,
+        "inclusive_ns": 310432943,
+        "outside_children_ns": 310432943
+      },
+      {
+        "calls": 876,
+        "inclusive_ns": 62496385,
+        "outside_children_ns": 62496385
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "194",
+    "sample": 2,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "prepare-consent",
+    "returned": true,
+    "wall_ns": 232897631,
+    "process_cpu_ns": 254035603,
+    "authentication_calls": 68,
+    "kernel": [
+      {
+        "calls": 712,
+        "inclusive_ns": 128183876,
+        "outside_children_ns": 165781
+      },
+      {
+        "calls": 1646,
+        "inclusive_ns": 94586778,
+        "outside_children_ns": 7118467
+      },
+      {
+        "calls": 3292,
+        "inclusive_ns": 11789508,
+        "outside_children_ns": 7757257
+      },
+      {
+        "calls": 3292,
+        "inclusive_ns": 12235720,
+        "outside_children_ns": 12235720
+      },
+      {
+        "calls": 6362,
+        "inclusive_ns": 106084626,
+        "outside_children_ns": 25858743
+      },
+      {
+        "calls": 12724,
+        "inclusive_ns": 45749863,
+        "outside_children_ns": 42074289
+      },
+      {
+        "calls": 25448,
+        "inclusive_ns": 34476020,
+        "outside_children_ns": 34476020
+      },
+      {
+        "calls": 823,
+        "inclusive_ns": 28279990,
+        "outside_children_ns": 180072
+      },
+      {
+        "calls": 712,
+        "inclusive_ns": 23386273,
+        "outside_children_ns": 710236
+      },
+      {
+        "calls": 19308,
+        "inclusive_ns": 15842237,
+        "outside_children_ns": 15842237
+      }
+    ],
+    "live": [
+      {
+        "calls": 356,
+        "inclusive_ns": 202028467,
+        "outside_children_ns": 132888
+      },
+      {
+        "calls": 712,
+        "inclusive_ns": 50105341,
+        "outside_children_ns": 2762598
+      },
+      {
+        "calls": 1424,
+        "inclusive_ns": 10332051,
+        "outside_children_ns": 10332051
+      },
+      {
+        "calls": 1435,
+        "inclusive_ns": 37296815,
+        "outside_children_ns": 37296815
+      },
+      {
+        "calls": 712,
+        "inclusive_ns": 128238176,
+        "outside_children_ns": 128238176
+      },
+      {
+        "calls": 356,
+        "inclusive_ns": 23552062,
+        "outside_children_ns": 23552062
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "194",
+    "sample": 2,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "accept-consent",
+    "returned": true,
+    "wall_ns": 125369820,
+    "process_cpu_ns": 135564885,
+    "authentication_calls": 34,
+    "kernel": [
+      {
+        "calls": 368,
+        "inclusive_ns": 66869040,
+        "outside_children_ns": 92178
+      },
+      {
+        "calls": 865,
+        "inclusive_ns": 49857500,
+        "outside_children_ns": 3037767
+      },
+      {
+        "calls": 1731,
+        "inclusive_ns": 7882688,
+        "outside_children_ns": 4819845
+      },
+      {
+        "calls": 1731,
+        "inclusive_ns": 6446781,
+        "outside_children_ns": 6446781
+      },
+      {
+        "calls": 3336,
+        "inclusive_ns": 55423654,
+        "outside_children_ns": 12767656
+      },
+      {
+        "calls": 6672,
+        "inclusive_ns": 23858549,
+        "outside_children_ns": 21633383
+      },
+      {
+        "calls": 13344,
+        "inclusive_ns": 18797449,
+        "outside_children_ns": 18797449
+      },
+      {
+        "calls": 435,
+        "inclusive_ns": 13694504,
+        "outside_children_ns": 131448
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 13266371,
+        "outside_children_ns": 404368
+      },
+      {
+        "calls": 10134,
+        "inclusive_ns": 9756501,
+        "outside_children_ns": 9756501
+      }
+    ],
+    "live": [
+      {
+        "calls": 184,
+        "inclusive_ns": 106670391,
+        "outside_children_ns": 84854
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 26808093,
+        "outside_children_ns": 2692195
+      },
+      {
+        "calls": 736,
+        "inclusive_ns": 5177995,
+        "outside_children_ns": 5177995
+      },
+      {
+        "calls": 742,
+        "inclusive_ns": 19074634,
+        "outside_children_ns": 19074634
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 66895668,
+        "outside_children_ns": 66895668
+      },
+      {
+        "calls": 184,
+        "inclusive_ns": 12881776,
+        "outside_children_ns": 12881776
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "194",
+    "sample": 2,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "outputs",
+    "returned": true,
+    "wall_ns": 2850925574,
+    "process_cpu_ns": 3093162293,
+    "authentication_calls": 782,
+    "kernel": [
+      {
+        "calls": 8464,
+        "inclusive_ns": 1552762004,
+        "outside_children_ns": 2695654
+      },
+      {
+        "calls": 19872,
+        "inclusive_ns": 1155311147,
+        "outside_children_ns": 74160229
+      },
+      {
+        "calls": 39744,
+        "inclusive_ns": 146438741,
+        "outside_children_ns": 93123920
+      },
+      {
+        "calls": 39744,
+        "inclusive_ns": 150474028,
+        "outside_children_ns": 150474028
+      },
+      {
+        "calls": 76544,
+        "inclusive_ns": 1281408895,
+        "outside_children_ns": 295982035
+      },
+      {
+        "calls": 153088,
+        "inclusive_ns": 549569052,
+        "outside_children_ns": 502516677
+      },
+      {
+        "calls": 306176,
+        "inclusive_ns": 435857808,
+        "outside_children_ns": 435857808
+      },
+      {
+        "calls": 9936,
+        "inclusive_ns": 328237465,
+        "outside_children_ns": 2200178
+      },
+      {
+        "calls": 8464,
+        "inclusive_ns": 288897810,
+        "outside_children_ns": 9789795
+      },
+      {
+        "calls": 232576,
+        "inclusive_ns": 208341752,
+        "outside_children_ns": 208341752
+      }
+    ],
+    "live": [
+      {
+        "calls": 4232,
+        "inclusive_ns": 2451509612,
+        "outside_children_ns": 1804882
+      },
+      {
+        "calls": 8464,
+        "inclusive_ns": 596938152,
+        "outside_children_ns": 39777573
+      },
+      {
+        "calls": 16928,
+        "inclusive_ns": 115880773,
+        "outside_children_ns": 115880773
+      },
+      {
+        "calls": 17066,
+        "inclusive_ns": 445751720,
+        "outside_children_ns": 445751720
+      },
+      {
+        "calls": 8464,
+        "inclusive_ns": 1553366116,
+        "outside_children_ns": 1553366116
+      },
+      {
+        "calls": 4232,
+        "inclusive_ns": 299400462,
+        "outside_children_ns": 299400462
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "194",
+    "sample": 2,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "enrollment-frame",
+    "returned": true,
+    "wall_ns": 161921006,
+    "process_cpu_ns": 175905518,
+    "authentication_calls": 34,
+    "kernel": [
+      {
+        "calls": 368,
+        "inclusive_ns": 69451265,
+        "outside_children_ns": 92899
+      },
+      {
+        "calls": 868,
+        "inclusive_ns": 52905319,
+        "outside_children_ns": 3103349
+      },
+      {
+        "calls": 1736,
+        "inclusive_ns": 7387762,
+        "outside_children_ns": 5090440
+      },
+      {
+        "calls": 1736,
+        "inclusive_ns": 6542728,
+        "outside_children_ns": 6542728
+      },
+      {
+        "calls": 3340,
+        "inclusive_ns": 57349454,
+        "outside_children_ns": 13553894
+      },
+      {
+        "calls": 6680,
+        "inclusive_ns": 25002104,
+        "outside_children_ns": 22908406
+      },
+      {
+        "calls": 13360,
+        "inclusive_ns": 18793456,
+        "outside_children_ns": 18793456
+      },
+      {
+        "calls": 434,
+        "inclusive_ns": 14484703,
+        "outside_children_ns": 98849
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 12089452,
+        "outside_children_ns": 378390
+      },
+      {
+        "calls": 10152,
+        "inclusive_ns": 9009962,
+        "outside_children_ns": 9009962
+      }
+    ],
+    "live": [
+      {
+        "calls": 184,
+        "inclusive_ns": 106751375,
+        "outside_children_ns": 84960
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 24464711,
+        "outside_children_ns": 1653517
+      },
+      {
+        "calls": 736,
+        "inclusive_ns": 4913736,
+        "outside_children_ns": 4913736
+      },
+      {
+        "calls": 742,
+        "inclusive_ns": 18024718,
+        "outside_children_ns": 18024718
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 69482692,
+        "outside_children_ns": 69482692
+      },
+      {
+        "calls": 184,
+        "inclusive_ns": 12719012,
+        "outside_children_ns": 12719012
+      }
+    ],
+    "boundaries": [
+      {
+        "name": "before-first-custody",
+        "process_cpu_ns": 100125715,
+        "wall_ns": 91790061
+      },
+      {
+        "name": "closing-enter",
+        "process_cpu_ns": 100494395,
+        "wall_ns": 92472916
+      },
+      {
+        "name": "closing-exit",
+        "process_cpu_ns": 175871578,
+        "wall_ns": 161888399
+      }
+    ]
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "194",
+    "sample": 2,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "fixed-manager-message",
+    "returned": true,
+    "wall_ns": 160211717,
+    "process_cpu_ns": 161196008,
+    "authentication_calls": 34,
+    "kernel": [
+      {
+        "calls": 368,
+        "inclusive_ns": 68901882,
+        "outside_children_ns": 93968
+      },
+      {
+        "calls": 870,
+        "inclusive_ns": 50878632,
+        "outside_children_ns": 2950432
+      },
+      {
+        "calls": 1740,
+        "inclusive_ns": 6983328,
+        "outside_children_ns": 3832971
+      },
+      {
+        "calls": 1740,
+        "inclusive_ns": 6532811,
+        "outside_children_ns": 6532811
+      },
+      {
+        "calls": 3350,
+        "inclusive_ns": 57822057,
+        "outside_children_ns": 13740514
+      },
+      {
+        "calls": 6700,
+        "inclusive_ns": 26309017,
+        "outside_children_ns": 23004139
+      },
+      {
+        "calls": 13400,
+        "inclusive_ns": 17772526,
+        "outside_children_ns": 17772526
+      },
+      {
+        "calls": 435,
+        "inclusive_ns": 14136696,
+        "outside_children_ns": 97120
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 14093708,
+        "outside_children_ns": 383040
+      },
+      {
+        "calls": 10180,
+        "inclusive_ns": 10870201,
+        "outside_children_ns": 10870201
+      }
+    ],
+    "live": [
+      {
+        "calls": 184,
+        "inclusive_ns": 109800670,
+        "outside_children_ns": 86181
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 26799535,
+        "outside_children_ns": 1654712
+      },
+      {
+        "calls": 736,
+        "inclusive_ns": 6123993,
+        "outside_children_ns": 6123993
+      },
+      {
+        "calls": 742,
+        "inclusive_ns": 19148306,
+        "outside_children_ns": 19148306
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 68929876,
+        "outside_children_ns": 68929876
+      },
+      {
+        "calls": 184,
+        "inclusive_ns": 13985078,
+        "outside_children_ns": 13985078
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "194",
+    "sample": 2,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "owned-root-preparation",
+    "returned": true,
+    "wall_ns": 481428837,
+    "process_cpu_ns": 522046688,
+    "authentication_calls": 102,
+    "kernel": [
+      {
+        "calls": 1104,
+        "inclusive_ns": 224631150,
+        "outside_children_ns": 344028
+      },
+      {
+        "calls": 2604,
+        "inclusive_ns": 167756468,
+        "outside_children_ns": 10288568
+      },
+      {
+        "calls": 5208,
+        "inclusive_ns": 23335029,
+        "outside_children_ns": 15571224
+      },
+      {
+        "calls": 5208,
+        "inclusive_ns": 20504220,
+        "outside_children_ns": 20504220
+      },
+      {
+        "calls": 10032,
+        "inclusive_ns": 186470456,
+        "outside_children_ns": 43781694
+      },
+      {
+        "calls": 20064,
+        "inclusive_ns": 83134762,
+        "outside_children_ns": 75958315
+      },
+      {
+        "calls": 40128,
+        "inclusive_ns": 59554000,
+        "outside_children_ns": 59554000
+      },
+      {
+        "calls": 1302,
+        "inclusive_ns": 46367088,
+        "outside_children_ns": 357111
+      },
+      {
+        "calls": 1104,
+        "inclusive_ns": 43160808,
+        "outside_children_ns": 1257472
+      },
+      {
+        "calls": 30480,
+        "inclusive_ns": 30291081,
+        "outside_children_ns": 30291081
+      }
+    ],
+    "live": [
+      {
+        "calls": 552,
+        "inclusive_ns": 353602532,
+        "outside_children_ns": 333212
+      },
+      {
+        "calls": 1104,
+        "inclusive_ns": 86215382,
+        "outside_children_ns": 5300980
+      },
+      {
+        "calls": 2208,
+        "inclusive_ns": 16550103,
+        "outside_children_ns": 16550103
+      },
+      {
+        "calls": 2226,
+        "inclusive_ns": 64806638,
+        "outside_children_ns": 64806638
+      },
+      {
+        "calls": 1104,
+        "inclusive_ns": 224723582,
+        "outside_children_ns": 224723582
+      },
+      {
+        "calls": 552,
+        "inclusive_ns": 42330356,
+        "outside_children_ns": 42330356
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "194",
+    "sample": 2,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "enrollment",
+    "returned": true,
+    "wall_ns": 291169738,
+    "process_cpu_ns": 315699506,
+    "authentication_calls": 68,
+    "kernel": [
+      {
+        "calls": 736,
+        "inclusive_ns": 135564221,
+        "outside_children_ns": 189383
+      },
+      {
+        "calls": 1736,
+        "inclusive_ns": 99932262,
+        "outside_children_ns": 6330110
+      },
+      {
+        "calls": 3472,
+        "inclusive_ns": 12379653,
+        "outside_children_ns": 7830039
+      },
+      {
+        "calls": 3472,
+        "inclusive_ns": 13360741,
+        "outside_children_ns": 13360741
+      },
+      {
+        "calls": 6688,
+        "inclusive_ns": 113073070,
+        "outside_children_ns": 26098492
+      },
+      {
+        "calls": 13376,
+        "inclusive_ns": 48181136,
+        "outside_children_ns": 44105212
+      },
+      {
+        "calls": 26752,
+        "inclusive_ns": 38793442,
+        "outside_children_ns": 38793442
+      },
+      {
+        "calls": 868,
+        "inclusive_ns": 29069173,
+        "outside_children_ns": 198969
+      },
+      {
+        "calls": 736,
+        "inclusive_ns": 25935919,
+        "outside_children_ns": 777343
+      },
+      {
+        "calls": 20320,
+        "inclusive_ns": 17596277,
+        "outside_children_ns": 17596277
+      }
+    ],
+    "live": [
+      {
+        "calls": 368,
+        "inclusive_ns": 214433138,
+        "outside_children_ns": 161178
+      },
+      {
+        "calls": 736,
+        "inclusive_ns": 52363641,
+        "outside_children_ns": 3099098
+      },
+      {
+        "calls": 1472,
+        "inclusive_ns": 9471448,
+        "outside_children_ns": 9471448
+      },
+      {
+        "calls": 1484,
+        "inclusive_ns": 40049078,
+        "outside_children_ns": 40049078
+      },
+      {
+        "calls": 736,
+        "inclusive_ns": 135617056,
+        "outside_children_ns": 135617056
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 26291263,
+        "outside_children_ns": 26291263
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "194",
+    "sample": 2,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "placement",
+    "returned": true,
+    "wall_ns": 157781511,
+    "process_cpu_ns": 171470775,
+    "authentication_calls": 34,
+    "kernel": [
+      {
+        "calls": 368,
+        "inclusive_ns": 73695728,
+        "outside_children_ns": 110267
+      },
+      {
+        "calls": 868,
+        "inclusive_ns": 53251051,
+        "outside_children_ns": 3221989
+      },
+      {
+        "calls": 1736,
+        "inclusive_ns": 6729635,
+        "outside_children_ns": 4275092
+      },
+      {
+        "calls": 1736,
+        "inclusive_ns": 6432197,
+        "outside_children_ns": 6432197
+      },
+      {
+        "calls": 3344,
+        "inclusive_ns": 61461481,
+        "outside_children_ns": 14211254
+      },
+      {
+        "calls": 6688,
+        "inclusive_ns": 25315994,
+        "outside_children_ns": 23239467
+      },
+      {
+        "calls": 13376,
+        "inclusive_ns": 21934233,
+        "outside_children_ns": 21934233
+      },
+      {
+        "calls": 434,
+        "inclusive_ns": 15968000,
+        "outside_children_ns": 110583
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 14213051,
+        "outside_children_ns": 430472
+      },
+      {
+        "calls": 10160,
+        "inclusive_ns": 9656603,
+        "outside_children_ns": 9656603
+      }
+    ],
+    "live": [
+      {
+        "calls": 184,
+        "inclusive_ns": 118069684,
+        "outside_children_ns": 98113
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 29252377,
+        "outside_children_ns": 1841127
+      },
+      {
+        "calls": 736,
+        "inclusive_ns": 5209598,
+        "outside_children_ns": 5209598
+      },
+      {
+        "calls": 742,
+        "inclusive_ns": 22336595,
+        "outside_children_ns": 22336595
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 73727153,
+        "outside_children_ns": 73727153
+      },
+      {
+        "calls": 184,
+        "inclusive_ns": 14992041,
+        "outside_children_ns": 14992041
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "194",
+    "sample": 2,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "fixed-slice",
+    "returned": true,
+    "wall_ns": 149690958,
+    "process_cpu_ns": 162282981,
+    "authentication_calls": 34,
+    "kernel": [
+      {
+        "calls": 368,
+        "inclusive_ns": 69311863,
+        "outside_children_ns": 95173
+      },
+      {
+        "calls": 868,
+        "inclusive_ns": 51406418,
+        "outside_children_ns": 3346759
+      },
+      {
+        "calls": 1736,
+        "inclusive_ns": 7647786,
+        "outside_children_ns": 5251352
+      },
+      {
+        "calls": 1736,
+        "inclusive_ns": 6250192,
+        "outside_children_ns": 6250192
+      },
+      {
+        "calls": 3344,
+        "inclusive_ns": 57182250,
+        "outside_children_ns": 13395786
+      },
+      {
+        "calls": 6688,
+        "inclusive_ns": 24581446,
+        "outside_children_ns": 22552338
+      },
+      {
+        "calls": 13376,
+        "inclusive_ns": 19205018,
+        "outside_children_ns": 19205018
+      },
+      {
+        "calls": 434,
+        "inclusive_ns": 15844936,
+        "outside_children_ns": 100561
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 12540655,
+        "outside_children_ns": 863160
+      },
+      {
+        "calls": 10160,
+        "inclusive_ns": 8895480,
+        "outside_children_ns": 8895480
+      }
+    ],
+    "live": [
+      {
+        "calls": 184,
+        "inclusive_ns": 109540227,
+        "outside_children_ns": 83854
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 27709897,
+        "outside_children_ns": 1668202
+      },
+      {
+        "calls": 736,
+        "inclusive_ns": 5056361,
+        "outside_children_ns": 5056361
+      },
+      {
+        "calls": 742,
+        "inclusive_ns": 21112888,
+        "outside_children_ns": 21112888
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 69339527,
+        "outside_children_ns": 69339527
+      },
+      {
+        "calls": 184,
+        "inclusive_ns": 12406949,
+        "outside_children_ns": 12406949
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "194",
+    "sample": 2,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "consuming",
+    "returned": true,
+    "wall_ns": 664969182,
+    "process_cpu_ns": 721957144,
+    "authentication_calls": 158,
+    "kernel": [
+      {
+        "calls": 1752,
+        "inclusive_ns": 320327985,
+        "outside_children_ns": 445316
+      },
+      {
+        "calls": 4076,
+        "inclusive_ns": 236336923,
+        "outside_children_ns": 13810975
+      },
+      {
+        "calls": 8152,
+        "inclusive_ns": 31519290,
+        "outside_children_ns": 19457925
+      },
+      {
+        "calls": 8152,
+        "inclusive_ns": 30842070,
+        "outside_children_ns": 30842070
+      },
+      {
+        "calls": 15748,
+        "inclusive_ns": 262065428,
+        "outside_children_ns": 61268298
+      },
+      {
+        "calls": 31496,
+        "inclusive_ns": 111793784,
+        "outside_children_ns": 101662291
+      },
+      {
+        "calls": 62992,
+        "inclusive_ns": 89003346,
+        "outside_children_ns": 89003346
+      },
+      {
+        "calls": 2038,
+        "inclusive_ns": 66764477,
+        "outside_children_ns": 508398
+      },
+      {
+        "calls": 1752,
+        "inclusive_ns": 61037559,
+        "outside_children_ns": 3710489
+      },
+      {
+        "calls": 47800,
+        "inclusive_ns": 44191612,
+        "outside_children_ns": 44191612
+      }
+    ],
+    "live": [
+      {
+        "calls": 876,
+        "inclusive_ns": 505714142,
+        "outside_children_ns": 387069
+      },
+      {
+        "calls": 1752,
+        "inclusive_ns": 122621354,
+        "outside_children_ns": 7843117
+      },
+      {
+        "calls": 3504,
+        "inclusive_ns": 23275722,
+        "outside_children_ns": 23275722
+      },
+      {
+        "calls": 3554,
+        "inclusive_ns": 92585833,
+        "outside_children_ns": 92585833
+      },
+      {
+        "calls": 1752,
+        "inclusive_ns": 320462512,
+        "outside_children_ns": 320462512
+      },
+      {
+        "calls": 876,
+        "inclusive_ns": 62243207,
+        "outside_children_ns": 62243207
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "188",
+    "sample": 0,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "prepare-consent",
+    "returned": true,
+    "wall_ns": 231461277,
+    "process_cpu_ns": 251948317,
+    "authentication_calls": 68,
+    "kernel": [
+      {
+        "calls": 712,
+        "inclusive_ns": 126381168,
+        "outside_children_ns": 585642
+      },
+      {
+        "calls": 1646,
+        "inclusive_ns": 91630925,
+        "outside_children_ns": 5657571
+      },
+      {
+        "calls": 3292,
+        "inclusive_ns": 11251024,
+        "outside_children_ns": 7283272
+      },
+      {
+        "calls": 3292,
+        "inclusive_ns": 11889613,
+        "outside_children_ns": 11889613
+      },
+      {
+        "calls": 6362,
+        "inclusive_ns": 103071120,
+        "outside_children_ns": 23960419
+      },
+      {
+        "calls": 12724,
+        "inclusive_ns": 42954150,
+        "outside_children_ns": 39342280
+      },
+      {
+        "calls": 25448,
+        "inclusive_ns": 36156551,
+        "outside_children_ns": 36156551
+      },
+      {
+        "calls": 823,
+        "inclusive_ns": 25478790,
+        "outside_children_ns": 180000
+      },
+      {
+        "calls": 712,
+        "inclusive_ns": 24264953,
+        "outside_children_ns": 747773
+      },
+      {
+        "calls": 19308,
+        "inclusive_ns": 16157189,
+        "outside_children_ns": 16157189
+      }
+    ],
+    "live": [
+      {
+        "calls": 356,
+        "inclusive_ns": 202082789,
+        "outside_children_ns": 142543
+      },
+      {
+        "calls": 712,
+        "inclusive_ns": 49450340,
+        "outside_children_ns": 2908319
+      },
+      {
+        "calls": 1424,
+        "inclusive_ns": 9132951,
+        "outside_children_ns": 9132951
+      },
+      {
+        "calls": 1435,
+        "inclusive_ns": 37637738,
+        "outside_children_ns": 37637738
+      },
+      {
+        "calls": 712,
+        "inclusive_ns": 126438234,
+        "outside_children_ns": 126438234
+      },
+      {
+        "calls": 356,
+        "inclusive_ns": 26051672,
+        "outside_children_ns": 26051672
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "188",
+    "sample": 0,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "accept-consent",
+    "returned": true,
+    "wall_ns": 124907798,
+    "process_cpu_ns": 134887449,
+    "authentication_calls": 34,
+    "kernel": [
+      {
+        "calls": 368,
+        "inclusive_ns": 70203134,
+        "outside_children_ns": 96583
+      },
+      {
+        "calls": 865,
+        "inclusive_ns": 53075882,
+        "outside_children_ns": 5057586
+      },
+      {
+        "calls": 1731,
+        "inclusive_ns": 6114874,
+        "outside_children_ns": 3768909
+      },
+      {
+        "calls": 1731,
+        "inclusive_ns": 6836630,
+        "outside_children_ns": 6836630
+      },
+      {
+        "calls": 3336,
+        "inclusive_ns": 55534948,
+        "outside_children_ns": 12836447
+      },
+      {
+        "calls": 6672,
+        "inclusive_ns": 24072416,
+        "outside_children_ns": 22123794
+      },
+      {
+        "calls": 13344,
+        "inclusive_ns": 18626085,
+        "outside_children_ns": 18626085
+      },
+      {
+        "calls": 435,
+        "inclusive_ns": 13992228,
+        "outside_children_ns": 96903
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 11768559,
+        "outside_children_ns": 382779
+      },
+      {
+        "calls": 10134,
+        "inclusive_ns": 9153855,
+        "outside_children_ns": 9153855
+      }
+    ],
+    "live": [
+      {
+        "calls": 184,
+        "inclusive_ns": 108243497,
+        "outside_children_ns": 75235
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 25216871,
+        "outside_children_ns": 1590527
+      },
+      {
+        "calls": 736,
+        "inclusive_ns": 4747004,
+        "outside_children_ns": 4747004
+      },
+      {
+        "calls": 742,
+        "inclusive_ns": 19000376,
+        "outside_children_ns": 19000376
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 70233130,
+        "outside_children_ns": 70233130
+      },
+      {
+        "calls": 184,
+        "inclusive_ns": 12718261,
+        "outside_children_ns": 12718261
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "188",
+    "sample": 0,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "outputs",
+    "returned": true,
+    "wall_ns": 2860618768,
+    "process_cpu_ns": 3100729841,
+    "authentication_calls": 782,
+    "kernel": [
+      {
+        "calls": 8464,
+        "inclusive_ns": 1566573802,
+        "outside_children_ns": 2852007
+      },
+      {
+        "calls": 19872,
+        "inclusive_ns": 1160955075,
+        "outside_children_ns": 71610237
+      },
+      {
+        "calls": 39744,
+        "inclusive_ns": 151645586,
+        "outside_children_ns": 95755944
+      },
+      {
+        "calls": 39744,
+        "inclusive_ns": 146292412,
+        "outside_children_ns": 146292412
+      },
+      {
+        "calls": 76544,
+        "inclusive_ns": 1289470669,
+        "outside_children_ns": 304412585
+      },
+      {
+        "calls": 153088,
+        "inclusive_ns": 547249393,
+        "outside_children_ns": 498526917
+      },
+      {
+        "calls": 306176,
+        "inclusive_ns": 437808691,
+        "outside_children_ns": 437808691
+      },
+      {
+        "calls": 9936,
+        "inclusive_ns": 335472527,
+        "outside_children_ns": 3329892
+      },
+      {
+        "calls": 8464,
+        "inclusive_ns": 287315281,
+        "outside_children_ns": 9114521
+      },
+      {
+        "calls": 232576,
+        "inclusive_ns": 216891684,
+        "outside_children_ns": 216891684
+      }
+    ],
+    "live": [
+      {
+        "calls": 4232,
+        "inclusive_ns": 2465576226,
+        "outside_children_ns": 1878243
+      },
+      {
+        "calls": 8464,
+        "inclusive_ns": 596115304,
+        "outside_children_ns": 37771347
+      },
+      {
+        "calls": 16928,
+        "inclusive_ns": 116487817,
+        "outside_children_ns": 116487817
+      },
+      {
+        "calls": 17066,
+        "inclusive_ns": 445258742,
+        "outside_children_ns": 445258742
+      },
+      {
+        "calls": 8464,
+        "inclusive_ns": 1567278325,
+        "outside_children_ns": 1567278325
+      },
+      {
+        "calls": 4232,
+        "inclusive_ns": 300304354,
+        "outside_children_ns": 300304354
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "188",
+    "sample": 0,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "enrollment-frame",
+    "returned": true,
+    "wall_ns": 155407167,
+    "process_cpu_ns": 169050370,
+    "authentication_calls": 34,
+    "kernel": [
+      {
+        "calls": 368,
+        "inclusive_ns": 64559994,
+        "outside_children_ns": 90369
+      },
+      {
+        "calls": 868,
+        "inclusive_ns": 48794875,
+        "outside_children_ns": 3735489
+      },
+      {
+        "calls": 1736,
+        "inclusive_ns": 5660990,
+        "outside_children_ns": 3579829
+      },
+      {
+        "calls": 1736,
+        "inclusive_ns": 6748257,
+        "outside_children_ns": 6748257
+      },
+      {
+        "calls": 3340,
+        "inclusive_ns": 52701952,
+        "outside_children_ns": 11974900
+      },
+      {
+        "calls": 6680,
+        "inclusive_ns": 23776259,
+        "outside_children_ns": 21857697
+      },
+      {
+        "calls": 13360,
+        "inclusive_ns": 16950793,
+        "outside_children_ns": 16950793
+      },
+      {
+        "calls": 434,
+        "inclusive_ns": 13470747,
+        "outside_children_ns": 91119
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 12043862,
+        "outside_children_ns": 358649
+      },
+      {
+        "calls": 10152,
+        "inclusive_ns": 9012751,
+        "outside_children_ns": 9012751
+      }
+    ],
+    "live": [
+      {
+        "calls": 184,
+        "inclusive_ns": 102110727,
+        "outside_children_ns": 67742
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 25513570,
+        "outside_children_ns": 1471302
+      },
+      {
+        "calls": 736,
+        "inclusive_ns": 6086975,
+        "outside_children_ns": 6086975
+      },
+      {
+        "calls": 742,
+        "inclusive_ns": 18077059,
+        "outside_children_ns": 18077059
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 64591884,
+        "outside_children_ns": 64591884
+      },
+      {
+        "calls": 184,
+        "inclusive_ns": 11937531,
+        "outside_children_ns": 11937531
+      }
+    ],
+    "boundaries": [
+      {
+        "name": "before-first-custody",
+        "process_cpu_ns": 95459338,
+        "wall_ns": 87514443
+      },
+      {
+        "name": "closing-enter",
+        "process_cpu_ns": 95827279,
+        "wall_ns": 88279732
+      },
+      {
+        "name": "closing-exit",
+        "process_cpu_ns": 169013692,
+        "wall_ns": 155372024
+      }
+    ]
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "188",
+    "sample": 0,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "fixed-manager-message",
+    "returned": true,
+    "wall_ns": 151698945,
+    "process_cpu_ns": 149833305,
+    "authentication_calls": 34,
+    "kernel": [
+      {
+        "calls": 368,
+        "inclusive_ns": 65741758,
+        "outside_children_ns": 88163
+      },
+      {
+        "calls": 870,
+        "inclusive_ns": 48538841,
+        "outside_children_ns": 2786150
+      },
+      {
+        "calls": 1740,
+        "inclusive_ns": 6522870,
+        "outside_children_ns": 4251991
+      },
+      {
+        "calls": 1740,
+        "inclusive_ns": 5988100,
+        "outside_children_ns": 5988100
+      },
+      {
+        "calls": 3350,
+        "inclusive_ns": 54693911,
+        "outside_children_ns": 12766717
+      },
+      {
+        "calls": 6700,
+        "inclusive_ns": 23460917,
+        "outside_children_ns": 21570839
+      },
+      {
+        "calls": 13400,
+        "inclusive_ns": 18466277,
+        "outside_children_ns": 18466277
+      },
+      {
+        "calls": 435,
+        "inclusive_ns": 13507245,
+        "outside_children_ns": 88200
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 12451668,
+        "outside_children_ns": 357570
+      },
+      {
+        "calls": 10180,
+        "inclusive_ns": 8293510,
+        "outside_children_ns": 8293510
+      }
+    ],
+    "live": [
+      {
+        "calls": 184,
+        "inclusive_ns": 103702858,
+        "outside_children_ns": 69191
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 24914397,
+        "outside_children_ns": 1971796
+      },
+      {
+        "calls": 736,
+        "inclusive_ns": 4660505,
+        "outside_children_ns": 4660505
+      },
+      {
+        "calls": 742,
+        "inclusive_ns": 18425285,
+        "outside_children_ns": 18425285
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 65770220,
+        "outside_children_ns": 65770220
+      },
+      {
+        "calls": 184,
+        "inclusive_ns": 12949050,
+        "outside_children_ns": 12949050
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "188",
+    "sample": 0,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "owned-root-preparation",
+    "returned": true,
+    "wall_ns": 414781312,
+    "process_cpu_ns": 450373122,
+    "authentication_calls": 102,
+    "kernel": [
+      {
+        "calls": 1104,
+        "inclusive_ns": 197679555,
+        "outside_children_ns": 269690
+      },
+      {
+        "calls": 2604,
+        "inclusive_ns": 144204704,
+        "outside_children_ns": 10497085
+      },
+      {
+        "calls": 5208,
+        "inclusive_ns": 20367841,
+        "outside_children_ns": 12556604
+      },
+      {
+        "calls": 5208,
+        "inclusive_ns": 17967576,
+        "outside_children_ns": 17967576
+      },
+      {
+        "calls": 10032,
+        "inclusive_ns": 164306876,
+        "outside_children_ns": 39151288
+      },
+      {
+        "calls": 20064,
+        "inclusive_ns": 72314274,
+        "outside_children_ns": 66444608
+      },
+      {
+        "calls": 40128,
+        "inclusive_ns": 52841314,
+        "outside_children_ns": 52841314
+      },
+      {
+        "calls": 1302,
+        "inclusive_ns": 47139478,
+        "outside_children_ns": 278384
+      },
+      {
+        "calls": 1104,
+        "inclusive_ns": 36254319,
+        "outside_children_ns": 1472638
+      },
+      {
+        "calls": 30480,
+        "inclusive_ns": 26599949,
+        "outside_children_ns": 26599949
+      }
+    ],
+    "live": [
+      {
+        "calls": 552,
+        "inclusive_ns": 304708968,
+        "outside_children_ns": 206530
+      },
+      {
+        "calls": 1104,
+        "inclusive_ns": 70792720,
+        "outside_children_ns": 4718494
+      },
+      {
+        "calls": 2208,
+        "inclusive_ns": 13582340,
+        "outside_children_ns": 13582340
+      },
+      {
+        "calls": 2226,
+        "inclusive_ns": 52859641,
+        "outside_children_ns": 52859641
+      },
+      {
+        "calls": 1104,
+        "inclusive_ns": 197761670,
+        "outside_children_ns": 197761670
+      },
+      {
+        "calls": 552,
+        "inclusive_ns": 35948048,
+        "outside_children_ns": 35948048
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "188",
+    "sample": 0,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "enrollment",
+    "returned": true,
+    "wall_ns": 280129488,
+    "process_cpu_ns": 304434040,
+    "authentication_calls": 68,
+    "kernel": [
+      {
+        "calls": 736,
+        "inclusive_ns": 128082546,
+        "outside_children_ns": 200714
+      },
+      {
+        "calls": 1736,
+        "inclusive_ns": 97021016,
+        "outside_children_ns": 5740685
+      },
+      {
+        "calls": 3472,
+        "inclusive_ns": 12973247,
+        "outside_children_ns": 8809400
+      },
+      {
+        "calls": 3472,
+        "inclusive_ns": 11834236,
+        "outside_children_ns": 11834236
+      },
+      {
+        "calls": 6688,
+        "inclusive_ns": 107555405,
+        "outside_children_ns": 26544415
+      },
+      {
+        "calls": 13376,
+        "inclusive_ns": 45276949,
+        "outside_children_ns": 41333077
+      },
+      {
+        "calls": 26752,
+        "inclusive_ns": 35734041,
+        "outside_children_ns": 35734041
+      },
+      {
+        "calls": 868,
+        "inclusive_ns": 27284310,
+        "outside_children_ns": 183724
+      },
+      {
+        "calls": 736,
+        "inclusive_ns": 23542126,
+        "outside_children_ns": 755220
+      },
+      {
+        "calls": 20320,
+        "inclusive_ns": 17053397,
+        "outside_children_ns": 17053397
+      }
+    ],
+    "live": [
+      {
+        "calls": 368,
+        "inclusive_ns": 206199795,
+        "outside_children_ns": 151287
+      },
+      {
+        "calls": 736,
+        "inclusive_ns": 52751142,
+        "outside_children_ns": 3136234
+      },
+      {
+        "calls": 1472,
+        "inclusive_ns": 11218553,
+        "outside_children_ns": 11218553
+      },
+      {
+        "calls": 1484,
+        "inclusive_ns": 38639830,
+        "outside_children_ns": 38639830
+      },
+      {
+        "calls": 736,
+        "inclusive_ns": 128139698,
+        "outside_children_ns": 128139698
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 25157668,
+        "outside_children_ns": 25157668
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "188",
+    "sample": 0,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "placement",
+    "returned": true,
+    "wall_ns": 149863573,
+    "process_cpu_ns": 162715228,
+    "authentication_calls": 34,
+    "kernel": [
+      {
+        "calls": 368,
+        "inclusive_ns": 69394650,
+        "outside_children_ns": 103931
+      },
+      {
+        "calls": 868,
+        "inclusive_ns": 54589936,
+        "outside_children_ns": 3332839
+      },
+      {
+        "calls": 1736,
+        "inclusive_ns": 7264922,
+        "outside_children_ns": 4323653
+      },
+      {
+        "calls": 1736,
+        "inclusive_ns": 6542248,
+        "outside_children_ns": 6542248
+      },
+      {
+        "calls": 3344,
+        "inclusive_ns": 58178750,
+        "outside_children_ns": 13472548
+      },
+      {
+        "calls": 6688,
+        "inclusive_ns": 26036116,
+        "outside_children_ns": 24050984
+      },
+      {
+        "calls": 13376,
+        "inclusive_ns": 18670086,
+        "outside_children_ns": 18670086
+      },
+      {
+        "calls": 434,
+        "inclusive_ns": 14189505,
+        "outside_children_ns": 101206
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 12433916,
+        "outside_children_ns": 385734
+      },
+      {
+        "calls": 10160,
+        "inclusive_ns": 10403578,
+        "outside_children_ns": 10403578
+      }
+    ],
+    "live": [
+      {
+        "calls": 184,
+        "inclusive_ns": 108009319,
+        "outside_children_ns": 89665
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 26176234,
+        "outside_children_ns": 1795634
+      },
+      {
+        "calls": 736,
+        "inclusive_ns": 4815115,
+        "outside_children_ns": 4815115
+      },
+      {
+        "calls": 742,
+        "inclusive_ns": 19697142,
+        "outside_children_ns": 19697142
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 69425349,
+        "outside_children_ns": 69425349
+      },
+      {
+        "calls": 184,
+        "inclusive_ns": 12318071,
+        "outside_children_ns": 12318071
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "188",
+    "sample": 0,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "fixed-slice",
+    "returned": true,
+    "wall_ns": 143024606,
+    "process_cpu_ns": 155155509,
+    "authentication_calls": 34,
+    "kernel": [
+      {
+        "calls": 368,
+        "inclusive_ns": 66746537,
+        "outside_children_ns": 127846
+      },
+      {
+        "calls": 868,
+        "inclusive_ns": 49361674,
+        "outside_children_ns": 3047667
+      },
+      {
+        "calls": 1736,
+        "inclusive_ns": 5971085,
+        "outside_children_ns": 3808737
+      },
+      {
+        "calls": 1736,
+        "inclusive_ns": 6473767,
+        "outside_children_ns": 6473767
+      },
+      {
+        "calls": 3344,
+        "inclusive_ns": 55876778,
+        "outside_children_ns": 14112999
+      },
+      {
+        "calls": 6688,
+        "inclusive_ns": 24009050,
+        "outside_children_ns": 21977248
+      },
+      {
+        "calls": 13376,
+        "inclusive_ns": 17754729,
+        "outside_children_ns": 17754729
+      },
+      {
+        "calls": 434,
+        "inclusive_ns": 15212853,
+        "outside_children_ns": 94851
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 11879656,
+        "outside_children_ns": 392982
+      },
+      {
+        "calls": 10160,
+        "inclusive_ns": 8858983,
+        "outside_children_ns": 8858983
+      }
+    ],
+    "live": [
+      {
+        "calls": 184,
+        "inclusive_ns": 106108756,
+        "outside_children_ns": 83096
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 26220223,
+        "outside_children_ns": 1543529
+      },
+      {
+        "calls": 736,
+        "inclusive_ns": 4761090,
+        "outside_children_ns": 4761090
+      },
+      {
+        "calls": 742,
+        "inclusive_ns": 20041355,
+        "outside_children_ns": 20041355
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 66777688,
+        "outside_children_ns": 66777688
+      },
+      {
+        "calls": 184,
+        "inclusive_ns": 13027749,
+        "outside_children_ns": 13027749
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "188",
+    "sample": 0,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "consuming",
+    "returned": true,
+    "wall_ns": 670378032,
+    "process_cpu_ns": 727527932,
+    "authentication_calls": 158,
+    "kernel": [
+      {
+        "calls": 1752,
+        "inclusive_ns": 320857758,
+        "outside_children_ns": 478190
+      },
+      {
+        "calls": 4076,
+        "inclusive_ns": 234730036,
+        "outside_children_ns": 14614835
+      },
+      {
+        "calls": 8152,
+        "inclusive_ns": 31678717,
+        "outside_children_ns": 20933054
+      },
+      {
+        "calls": 8152,
+        "inclusive_ns": 29794061,
+        "outside_children_ns": 29794061
+      },
+      {
+        "calls": 15748,
+        "inclusive_ns": 263314031,
+        "outside_children_ns": 61229366
+      },
+      {
+        "calls": 31496,
+        "inclusive_ns": 112691421,
+        "outside_children_ns": 102986428
+      },
+      {
+        "calls": 62992,
+        "inclusive_ns": 89393244,
+        "outside_children_ns": 89393244
+      },
+      {
+        "calls": 2038,
+        "inclusive_ns": 68427819,
+        "outside_children_ns": 449394
+      },
+      {
+        "calls": 1752,
+        "inclusive_ns": 60848383,
+        "outside_children_ns": 2087764
+      },
+      {
+        "calls": 47800,
+        "inclusive_ns": 42926025,
+        "outside_children_ns": 42926025
+      }
+    ],
+    "live": [
+      {
+        "calls": 876,
+        "inclusive_ns": 512667226,
+        "outside_children_ns": 399091
+      },
+      {
+        "calls": 1752,
+        "inclusive_ns": 129159251,
+        "outside_children_ns": 8848997
+      },
+      {
+        "calls": 3504,
+        "inclusive_ns": 26348639,
+        "outside_children_ns": 26348639
+      },
+      {
+        "calls": 3554,
+        "inclusive_ns": 95137696,
+        "outside_children_ns": 95137696
+      },
+      {
+        "calls": 1752,
+        "inclusive_ns": 321003884,
+        "outside_children_ns": 321003884
+      },
+      {
+        "calls": 876,
+        "inclusive_ns": 62105000,
+        "outside_children_ns": 62105000
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "188",
+    "sample": 1,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "prepare-consent",
+    "returned": true,
+    "wall_ns": 237070293,
+    "process_cpu_ns": 258162903,
+    "authentication_calls": 68,
+    "kernel": [
+      {
+        "calls": 712,
+        "inclusive_ns": 134683847,
+        "outside_children_ns": 185437
+      },
+      {
+        "calls": 1646,
+        "inclusive_ns": 96939836,
+        "outside_children_ns": 5849390
+      },
+      {
+        "calls": 3292,
+        "inclusive_ns": 12886253,
+        "outside_children_ns": 8352238
+      },
+      {
+        "calls": 3292,
+        "inclusive_ns": 12634937,
+        "outside_children_ns": 12634937
+      },
+      {
+        "calls": 6362,
+        "inclusive_ns": 108622667,
+        "outside_children_ns": 27156783
+      },
+      {
+        "calls": 12724,
+        "inclusive_ns": 45169960,
+        "outside_children_ns": 41514847
+      },
+      {
+        "calls": 25448,
+        "inclusive_ns": 36295924,
+        "outside_children_ns": 36295924
+      },
+      {
+        "calls": 823,
+        "inclusive_ns": 27593266,
+        "outside_children_ns": 188313
+      },
+      {
+        "calls": 712,
+        "inclusive_ns": 25426613,
+        "outside_children_ns": 715181
+      },
+      {
+        "calls": 19308,
+        "inclusive_ns": 17252102,
+        "outside_children_ns": 17252102
+      }
+    ],
+    "live": [
+      {
+        "calls": 356,
+        "inclusive_ns": 207946824,
+        "outside_children_ns": 144379
+      },
+      {
+        "calls": 712,
+        "inclusive_ns": 49477423,
+        "outside_children_ns": 3462721
+      },
+      {
+        "calls": 1424,
+        "inclusive_ns": 9837921,
+        "outside_children_ns": 9837921
+      },
+      {
+        "calls": 1435,
+        "inclusive_ns": 36410923,
+        "outside_children_ns": 36410923
+      },
+      {
+        "calls": 712,
+        "inclusive_ns": 134741143,
+        "outside_children_ns": 134741143
+      },
+      {
+        "calls": 356,
+        "inclusive_ns": 23583879,
+        "outside_children_ns": 23583879
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "188",
+    "sample": 1,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "accept-consent",
+    "returned": true,
+    "wall_ns": 127249718,
+    "process_cpu_ns": 137704433,
+    "authentication_calls": 34,
+    "kernel": [
+      {
+        "calls": 368,
+        "inclusive_ns": 68395047,
+        "outside_children_ns": 171475
+      },
+      {
+        "calls": 865,
+        "inclusive_ns": 50405644,
+        "outside_children_ns": 3708503
+      },
+      {
+        "calls": 1731,
+        "inclusive_ns": 6478416,
+        "outside_children_ns": 4302042
+      },
+      {
+        "calls": 1731,
+        "inclusive_ns": 6448669,
+        "outside_children_ns": 6448669
+      },
+      {
+        "calls": 3336,
+        "inclusive_ns": 56261299,
+        "outside_children_ns": 12022815
+      },
+      {
+        "calls": 6672,
+        "inclusive_ns": 25493345,
+        "outside_children_ns": 23392926
+      },
+      {
+        "calls": 13344,
+        "inclusive_ns": 18745139,
+        "outside_children_ns": 18745139
+      },
+      {
+        "calls": 435,
+        "inclusive_ns": 13413273,
+        "outside_children_ns": 98640
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 14043129,
+        "outside_children_ns": 379079
+      },
+      {
+        "calls": 10134,
+        "inclusive_ns": 8801206,
+        "outside_children_ns": 8801206
+      }
+    ],
+    "live": [
+      {
+        "calls": 184,
+        "inclusive_ns": 109739425,
+        "outside_children_ns": 81936
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 28478574,
+        "outside_children_ns": 1596329
+      },
+      {
+        "calls": 736,
+        "inclusive_ns": 5983902,
+        "outside_children_ns": 5983902
+      },
+      {
+        "calls": 742,
+        "inclusive_ns": 21028434,
+        "outside_children_ns": 21028434
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 68425031,
+        "outside_children_ns": 68425031
+      },
+      {
+        "calls": 184,
+        "inclusive_ns": 12753884,
+        "outside_children_ns": 12753884
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "188",
+    "sample": 1,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "outputs",
+    "returned": true,
+    "wall_ns": 3057662641,
+    "process_cpu_ns": 3319931305,
+    "authentication_calls": 782,
+    "kernel": [
+      {
+        "calls": 8464,
+        "inclusive_ns": 1652896998,
+        "outside_children_ns": 2727450
+      },
+      {
+        "calls": 19872,
+        "inclusive_ns": 1230232704,
+        "outside_children_ns": 76568938
+      },
+      {
+        "calls": 39744,
+        "inclusive_ns": 163316295,
+        "outside_children_ns": 104199151
+      },
+      {
+        "calls": 39744,
+        "inclusive_ns": 153433043,
+        "outside_children_ns": 153433043
+      },
+      {
+        "calls": 76544,
+        "inclusive_ns": 1356543913,
+        "outside_children_ns": 318996195
+      },
+      {
+        "calls": 153088,
+        "inclusive_ns": 588956326,
+        "outside_children_ns": 536547934
+      },
+      {
+        "calls": 306176,
+        "inclusive_ns": 448591392,
+        "outside_children_ns": 448591392
+      },
+      {
+        "calls": 9936,
+        "inclusive_ns": 347519844,
+        "outside_children_ns": 2577735
+      },
+      {
+        "calls": 8464,
+        "inclusive_ns": 303591288,
+        "outside_children_ns": 11701212
+      },
+      {
+        "calls": 232576,
+        "inclusive_ns": 228728236,
+        "outside_children_ns": 228728236
+      }
+    ],
+    "live": [
+      {
+        "calls": 4232,
+        "inclusive_ns": 2642778651,
+        "outside_children_ns": 3099348
+      },
+      {
+        "calls": 8464,
+        "inclusive_ns": 663009569,
+        "outside_children_ns": 43769290
+      },
+      {
+        "calls": 16928,
+        "inclusive_ns": 137177475,
+        "outside_children_ns": 137177475
+      },
+      {
+        "calls": 17066,
+        "inclusive_ns": 485508049,
+        "outside_children_ns": 485508049
+      },
+      {
+        "calls": 8464,
+        "inclusive_ns": 1653682409,
+        "outside_children_ns": 1653682409
+      },
+      {
+        "calls": 4232,
+        "inclusive_ns": 322987325,
+        "outside_children_ns": 322987325
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "188",
+    "sample": 1,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "enrollment-frame",
+    "returned": true,
+    "wall_ns": 163069050,
+    "process_cpu_ns": 176490587,
+    "authentication_calls": 34,
+    "kernel": [
+      {
+        "calls": 368,
+        "inclusive_ns": 68980979,
+        "outside_children_ns": 99414
+      },
+      {
+        "calls": 868,
+        "inclusive_ns": 50949043,
+        "outside_children_ns": 3022484
+      },
+      {
+        "calls": 1736,
+        "inclusive_ns": 6552230,
+        "outside_children_ns": 4244992
+      },
+      {
+        "calls": 1736,
+        "inclusive_ns": 6206852,
+        "outside_children_ns": 6206852
+      },
+      {
+        "calls": 3340,
+        "inclusive_ns": 57379196,
+        "outside_children_ns": 13443232
+      },
+      {
+        "calls": 6680,
+        "inclusive_ns": 24763830,
+        "outside_children_ns": 22796636
+      },
+      {
+        "calls": 13360,
+        "inclusive_ns": 19172134,
+        "outside_children_ns": 19172134
+      },
+      {
+        "calls": 434,
+        "inclusive_ns": 14048404,
+        "outside_children_ns": 100733
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 13595590,
+        "outside_children_ns": 402167
+      },
+      {
+        "calls": 10152,
+        "inclusive_ns": 9203807,
+        "outside_children_ns": 9203807
+      }
+    ],
+    "live": [
+      {
+        "calls": 184,
+        "inclusive_ns": 107606337,
+        "outside_children_ns": 83798
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 25485050,
+        "outside_children_ns": 2289887
+      },
+      {
+        "calls": 736,
+        "inclusive_ns": 4953810,
+        "outside_children_ns": 4953810
+      },
+      {
+        "calls": 742,
+        "inclusive_ns": 18366343,
+        "outside_children_ns": 18366343
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 69017773,
+        "outside_children_ns": 69017773
+      },
+      {
+        "calls": 184,
+        "inclusive_ns": 13019716,
+        "outside_children_ns": 13019716
+      }
+    ],
+    "boundaries": [
+      {
+        "name": "before-first-custody",
+        "process_cpu_ns": 96356743,
+        "wall_ns": 88792028
+      },
+      {
+        "name": "closing-enter",
+        "process_cpu_ns": 96760017,
+        "wall_ns": 89385378
+      },
+      {
+        "name": "closing-exit",
+        "process_cpu_ns": 176405496,
+        "wall_ns": 162988771
+      }
+    ]
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "188",
+    "sample": 1,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "fixed-manager-message",
+    "returned": true,
+    "wall_ns": 167889647,
+    "process_cpu_ns": 160491367,
+    "authentication_calls": 34,
+    "kernel": [
+      {
+        "calls": 368,
+        "inclusive_ns": 67519134,
+        "outside_children_ns": 107186
+      },
+      {
+        "calls": 870,
+        "inclusive_ns": 50970806,
+        "outside_children_ns": 3581747
+      },
+      {
+        "calls": 1740,
+        "inclusive_ns": 6456612,
+        "outside_children_ns": 4058478
+      },
+      {
+        "calls": 1740,
+        "inclusive_ns": 6982622,
+        "outside_children_ns": 6982622
+      },
+      {
+        "calls": 3350,
+        "inclusive_ns": 55532629,
+        "outside_children_ns": 13132337
+      },
+      {
+        "calls": 6700,
+        "inclusive_ns": 23711152,
+        "outside_children_ns": 21677997
+      },
+      {
+        "calls": 13400,
+        "inclusive_ns": 18689140,
+        "outside_children_ns": 18689140
+      },
+      {
+        "calls": 435,
+        "inclusive_ns": 14250489,
+        "outside_children_ns": 107293
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 12412290,
+        "outside_children_ns": 511953
+      },
+      {
+        "calls": 10180,
+        "inclusive_ns": 8962959,
+        "outside_children_ns": 8962959
+      }
+    ],
+    "live": [
+      {
+        "calls": 184,
+        "inclusive_ns": 108324929,
+        "outside_children_ns": 107661
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 27175158,
+        "outside_children_ns": 1675565
+      },
+      {
+        "calls": 736,
+        "inclusive_ns": 6263331,
+        "outside_children_ns": 6263331
+      },
+      {
+        "calls": 742,
+        "inclusive_ns": 19397198,
+        "outside_children_ns": 19397198
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 67552843,
+        "outside_children_ns": 67552843
+      },
+      {
+        "calls": 184,
+        "inclusive_ns": 13489267,
+        "outside_children_ns": 13489267
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "188",
+    "sample": 1,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "owned-root-preparation",
+    "returned": true,
+    "wall_ns": 437521786,
+    "process_cpu_ns": 475461494,
+    "authentication_calls": 102,
+    "kernel": [
+      {
+        "calls": 1104,
+        "inclusive_ns": 202250444,
+        "outside_children_ns": 315213
+      },
+      {
+        "calls": 2604,
+        "inclusive_ns": 151120635,
+        "outside_children_ns": 9083475
+      },
+      {
+        "calls": 5208,
+        "inclusive_ns": 19700937,
+        "outside_children_ns": 12619181
+      },
+      {
+        "calls": 5208,
+        "inclusive_ns": 18639445,
+        "outside_children_ns": 18639445
+      },
+      {
+        "calls": 10032,
+        "inclusive_ns": 169692492,
+        "outside_children_ns": 39220576
+      },
+      {
+        "calls": 20064,
+        "inclusive_ns": 72956167,
+        "outside_children_ns": 66193355
+      },
+      {
+        "calls": 40128,
+        "inclusive_ns": 57515749,
+        "outside_children_ns": 57515749
+      },
+      {
+        "calls": 1302,
+        "inclusive_ns": 45441029,
+        "outside_children_ns": 321091
+      },
+      {
+        "calls": 1104,
+        "inclusive_ns": 36587172,
+        "outside_children_ns": 1152563
+      },
+      {
+        "calls": 30480,
+        "inclusive_ns": 28618952,
+        "outside_children_ns": 28618952
+      }
+    ],
+    "live": [
+      {
+        "calls": 552,
+        "inclusive_ns": 322501307,
+        "outside_children_ns": 265903
+      },
+      {
+        "calls": 1104,
+        "inclusive_ns": 81363579,
+        "outside_children_ns": 5963738
+      },
+      {
+        "calls": 2208,
+        "inclusive_ns": 14940761,
+        "outside_children_ns": 14940761
+      },
+      {
+        "calls": 2226,
+        "inclusive_ns": 60828840,
+        "outside_children_ns": 60828840
+      },
+      {
+        "calls": 1104,
+        "inclusive_ns": 202346223,
+        "outside_children_ns": 202346223
+      },
+      {
+        "calls": 552,
+        "inclusive_ns": 38525602,
+        "outside_children_ns": 38525602
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "188",
+    "sample": 1,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "enrollment",
+    "returned": true,
+    "wall_ns": 289651030,
+    "process_cpu_ns": 312811552,
+    "authentication_calls": 68,
+    "kernel": [
+      {
+        "calls": 736,
+        "inclusive_ns": 138143858,
+        "outside_children_ns": 193067
+      },
+      {
+        "calls": 1736,
+        "inclusive_ns": 103258215,
+        "outside_children_ns": 6051241
+      },
+      {
+        "calls": 3472,
+        "inclusive_ns": 13271635,
+        "outside_children_ns": 8517201
+      },
+      {
+        "calls": 3472,
+        "inclusive_ns": 13805185,
+        "outside_children_ns": 13805185
+      },
+      {
+        "calls": 6688,
+        "inclusive_ns": 116150942,
+        "outside_children_ns": 29065195
+      },
+      {
+        "calls": 13376,
+        "inclusive_ns": 50296515,
+        "outside_children_ns": 45856536
+      },
+      {
+        "calls": 26752,
+        "inclusive_ns": 36789232,
+        "outside_children_ns": 36789232
+      },
+      {
+        "calls": 868,
+        "inclusive_ns": 29687101,
+        "outside_children_ns": 200204
+      },
+      {
+        "calls": 736,
+        "inclusive_ns": 26012652,
+        "outside_children_ns": 832025
+      },
+      {
+        "calls": 20320,
+        "inclusive_ns": 18051097,
+        "outside_children_ns": 18051097
+      }
+    ],
+    "live": [
+      {
+        "calls": 368,
+        "inclusive_ns": 212476939,
+        "outside_children_ns": 163575
+      },
+      {
+        "calls": 736,
+        "inclusive_ns": 49783231,
+        "outside_children_ns": 3180365
+      },
+      {
+        "calls": 1472,
+        "inclusive_ns": 10974130,
+        "outside_children_ns": 10974130
+      },
+      {
+        "calls": 1484,
+        "inclusive_ns": 35880087,
+        "outside_children_ns": 35880087
+      },
+      {
+        "calls": 736,
+        "inclusive_ns": 138215502,
+        "outside_children_ns": 138215502
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 24314631,
+        "outside_children_ns": 24314631
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "188",
+    "sample": 1,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "placement",
+    "returned": true,
+    "wall_ns": 141197235,
+    "process_cpu_ns": 153445293,
+    "authentication_calls": 34,
+    "kernel": [
+      {
+        "calls": 368,
+        "inclusive_ns": 64964398,
+        "outside_children_ns": 95879
+      },
+      {
+        "calls": 868,
+        "inclusive_ns": 50131891,
+        "outside_children_ns": 3340509
+      },
+      {
+        "calls": 1736,
+        "inclusive_ns": 6996193,
+        "outside_children_ns": 4860312
+      },
+      {
+        "calls": 1736,
+        "inclusive_ns": 5741934,
+        "outside_children_ns": 5741934
+      },
+      {
+        "calls": 3344,
+        "inclusive_ns": 54310626,
+        "outside_children_ns": 12743266
+      },
+      {
+        "calls": 6688,
+        "inclusive_ns": 23496379,
+        "outside_children_ns": 21604539
+      },
+      {
+        "calls": 13376,
+        "inclusive_ns": 18070981,
+        "outside_children_ns": 18070981
+      },
+      {
+        "calls": 434,
+        "inclusive_ns": 13641681,
+        "outside_children_ns": 98527
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 11298943,
+        "outside_children_ns": 376339
+      },
+      {
+        "calls": 10160,
+        "inclusive_ns": 8304055,
+        "outside_children_ns": 8304055
+      }
+    ],
+    "live": [
+      {
+        "calls": 184,
+        "inclusive_ns": 101846920,
+        "outside_children_ns": 72975
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 25105481,
+        "outside_children_ns": 1493962
+      },
+      {
+        "calls": 736,
+        "inclusive_ns": 5189198,
+        "outside_children_ns": 5189198
+      },
+      {
+        "calls": 742,
+        "inclusive_ns": 18548082,
+        "outside_children_ns": 18548082
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 64992282,
+        "outside_children_ns": 64992282
+      },
+      {
+        "calls": 184,
+        "inclusive_ns": 11676182,
+        "outside_children_ns": 11676182
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "188",
+    "sample": 1,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "fixed-slice",
+    "returned": true,
+    "wall_ns": 142578586,
+    "process_cpu_ns": 155065876,
+    "authentication_calls": 34,
+    "kernel": [
+      {
+        "calls": 368,
+        "inclusive_ns": 66625656,
+        "outside_children_ns": 100698
+      },
+      {
+        "calls": 868,
+        "inclusive_ns": 49571753,
+        "outside_children_ns": 3090750
+      },
+      {
+        "calls": 1736,
+        "inclusive_ns": 6983060,
+        "outside_children_ns": 4101088
+      },
+      {
+        "calls": 1736,
+        "inclusive_ns": 5860519,
+        "outside_children_ns": 5860519
+      },
+      {
+        "calls": 3344,
+        "inclusive_ns": 54935929,
+        "outside_children_ns": 12494547
+      },
+      {
+        "calls": 6688,
+        "inclusive_ns": 23732006,
+        "outside_children_ns": 21757111
+      },
+      {
+        "calls": 13376,
+        "inclusive_ns": 18709376,
+        "outside_children_ns": 18709376
+      },
+      {
+        "calls": 434,
+        "inclusive_ns": 13766742,
+        "outside_children_ns": 117183
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 12455433,
+        "outside_children_ns": 371945
+      },
+      {
+        "calls": 10160,
+        "inclusive_ns": 9359272,
+        "outside_children_ns": 9359272
+      }
+    ],
+    "live": [
+      {
+        "calls": 184,
+        "inclusive_ns": 107036869,
+        "outside_children_ns": 87433
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 26182138,
+        "outside_children_ns": 1633461
+      },
+      {
+        "calls": 736,
+        "inclusive_ns": 5171421,
+        "outside_children_ns": 5171421
+      },
+      {
+        "calls": 742,
+        "inclusive_ns": 19504718,
+        "outside_children_ns": 19504718
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 66656669,
+        "outside_children_ns": 66656669
+      },
+      {
+        "calls": 184,
+        "inclusive_ns": 14110629,
+        "outside_children_ns": 14110629
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "188",
+    "sample": 1,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "consuming",
+    "returned": true,
+    "wall_ns": 730184763,
+    "process_cpu_ns": 792550845,
+    "authentication_calls": 158,
+    "kernel": [
+      {
+        "calls": 1752,
+        "inclusive_ns": 360418493,
+        "outside_children_ns": 636660
+      },
+      {
+        "calls": 4076,
+        "inclusive_ns": 267024614,
+        "outside_children_ns": 26088038
+      },
+      {
+        "calls": 8152,
+        "inclusive_ns": 34510482,
+        "outside_children_ns": 21970203
+      },
+      {
+        "calls": 8152,
+        "inclusive_ns": 34560569,
+        "outside_children_ns": 34560569
+      },
+      {
+        "calls": 15748,
+        "inclusive_ns": 285598354,
+        "outside_children_ns": 65667017
+      },
+      {
+        "calls": 31496,
+        "inclusive_ns": 124857327,
+        "outside_children_ns": 114105880
+      },
+      {
+        "calls": 62992,
+        "inclusive_ns": 95074010,
+        "outside_children_ns": 95074010
+      },
+      {
+        "calls": 2038,
+        "inclusive_ns": 75356626,
+        "outside_children_ns": 531203
+      },
+      {
+        "calls": 1752,
+        "inclusive_ns": 63503980,
+        "outside_children_ns": 2000905
+      },
+      {
+        "calls": 47800,
+        "inclusive_ns": 46197431,
+        "outside_children_ns": 46197431
+      }
+    ],
+    "live": [
+      {
+        "calls": 876,
+        "inclusive_ns": 561613704,
+        "outside_children_ns": 1609707
+      },
+      {
+        "calls": 1752,
+        "inclusive_ns": 138268393,
+        "outside_children_ns": 9113069
+      },
+      {
+        "calls": 3504,
+        "inclusive_ns": 29131966,
+        "outside_children_ns": 29131966
+      },
+      {
+        "calls": 3554,
+        "inclusive_ns": 101162140,
+        "outside_children_ns": 101162140
+      },
+      {
+        "calls": 1752,
+        "inclusive_ns": 360588228,
+        "outside_children_ns": 360588228
+      },
+      {
+        "calls": 876,
+        "inclusive_ns": 61147376,
+        "outside_children_ns": 61147376
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "188",
+    "sample": 2,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "prepare-consent",
+    "returned": true,
+    "wall_ns": 240655994,
+    "process_cpu_ns": 262562328,
+    "authentication_calls": 68,
+    "kernel": [
+      {
+        "calls": 712,
+        "inclusive_ns": 132455690,
+        "outside_children_ns": 183722
+      },
+      {
+        "calls": 1646,
+        "inclusive_ns": 97309702,
+        "outside_children_ns": 5649712
+      },
+      {
+        "calls": 3292,
+        "inclusive_ns": 13203289,
+        "outside_children_ns": 8802213
+      },
+      {
+        "calls": 3292,
+        "inclusive_ns": 12339642,
+        "outside_children_ns": 12339642
+      },
+      {
+        "calls": 6362,
+        "inclusive_ns": 108342535,
+        "outside_children_ns": 24902102
+      },
+      {
+        "calls": 12724,
+        "inclusive_ns": 47921795,
+        "outside_children_ns": 43076039
+      },
+      {
+        "calls": 25448,
+        "inclusive_ns": 35518638,
+        "outside_children_ns": 35518638
+      },
+      {
+        "calls": 823,
+        "inclusive_ns": 28800680,
+        "outside_children_ns": 183518
+      },
+      {
+        "calls": 712,
+        "inclusive_ns": 24214542,
+        "outside_children_ns": 745667
+      },
+      {
+        "calls": 19308,
+        "inclusive_ns": 19107393,
+        "outside_children_ns": 19107393
+      }
+    ],
+    "live": [
+      {
+        "calls": 356,
+        "inclusive_ns": 208129322,
+        "outside_children_ns": 319033
+      },
+      {
+        "calls": 712,
+        "inclusive_ns": 48509413,
+        "outside_children_ns": 2958261
+      },
+      {
+        "calls": 1424,
+        "inclusive_ns": 9287407,
+        "outside_children_ns": 9287407
+      },
+      {
+        "calls": 1435,
+        "inclusive_ns": 36495119,
+        "outside_children_ns": 36495119
+      },
+      {
+        "calls": 712,
+        "inclusive_ns": 132514318,
+        "outside_children_ns": 132514318
+      },
+      {
+        "calls": 356,
+        "inclusive_ns": 26786558,
+        "outside_children_ns": 26786558
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "188",
+    "sample": 2,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "accept-consent",
+    "returned": true,
+    "wall_ns": 141989422,
+    "process_cpu_ns": 154531011,
+    "authentication_calls": 34,
+    "kernel": [
+      {
+        "calls": 368,
+        "inclusive_ns": 70167385,
+        "outside_children_ns": 109627
+      },
+      {
+        "calls": 865,
+        "inclusive_ns": 52543878,
+        "outside_children_ns": 2980109
+      },
+      {
+        "calls": 1731,
+        "inclusive_ns": 7368830,
+        "outside_children_ns": 3995909
+      },
+      {
+        "calls": 1731,
+        "inclusive_ns": 5945361,
+        "outside_children_ns": 5945361
+      },
+      {
+        "calls": 3334,
+        "inclusive_ns": 59386745,
+        "outside_children_ns": 12301138
+      },
+      {
+        "calls": 6668,
+        "inclusive_ns": 27537727,
+        "outside_children_ns": 24851474
+      },
+      {
+        "calls": 13336,
+        "inclusive_ns": 19547880,
+        "outside_children_ns": 19547880
+      },
+      {
+        "calls": 434,
+        "inclusive_ns": 15264792,
+        "outside_children_ns": 102632
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 13177414,
+        "outside_children_ns": 638272
+      },
+      {
+        "calls": 10130,
+        "inclusive_ns": 10650638,
+        "outside_children_ns": 10650638
+      }
+    ],
+    "live": [
+      {
+        "calls": 184,
+        "inclusive_ns": 124510820,
+        "outside_children_ns": 110837
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 28844211,
+        "outside_children_ns": 1699957
+      },
+      {
+        "calls": 736,
+        "inclusive_ns": 6213148,
+        "outside_children_ns": 6213148
+      },
+      {
+        "calls": 742,
+        "inclusive_ns": 21059079,
+        "outside_children_ns": 21059079
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 70202221,
+        "outside_children_ns": 70202221
+      },
+      {
+        "calls": 184,
+        "inclusive_ns": 25353551,
+        "outside_children_ns": 25353551
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "188",
+    "sample": 2,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "outputs",
+    "returned": true,
+    "wall_ns": 2991241405,
+    "process_cpu_ns": 3246396311,
+    "authentication_calls": 782,
+    "kernel": [
+      {
+        "calls": 8464,
+        "inclusive_ns": 1616354255,
+        "outside_children_ns": 2462497
+      },
+      {
+        "calls": 19872,
+        "inclusive_ns": 1191428429,
+        "outside_children_ns": 74268856
+      },
+      {
+        "calls": 39744,
+        "inclusive_ns": 160698881,
+        "outside_children_ns": 102883733
+      },
+      {
+        "calls": 39744,
+        "inclusive_ns": 152361665,
+        "outside_children_ns": 152361665
+      },
+      {
+        "calls": 76544,
+        "inclusive_ns": 1322649606,
+        "outside_children_ns": 313970568
+      },
+      {
+        "calls": 153088,
+        "inclusive_ns": 568056785,
+        "outside_children_ns": 517332775
+      },
+      {
+        "calls": 306176,
+        "inclusive_ns": 440622253,
+        "outside_children_ns": 440622253
+      },
+      {
+        "calls": 9936,
+        "inclusive_ns": 344825554,
+        "outside_children_ns": 2404306
+      },
+      {
+        "calls": 8464,
+        "inclusive_ns": 302605002,
+        "outside_children_ns": 9544344
+      },
+      {
+        "calls": 232576,
+        "inclusive_ns": 225470485,
+        "outside_children_ns": 225470485
+      }
+    ],
+    "live": [
+      {
+        "calls": 4232,
+        "inclusive_ns": 2578458860,
+        "outside_children_ns": 2191781
+      },
+      {
+        "calls": 8464,
+        "inclusive_ns": 634625398,
+        "outside_children_ns": 39651612
+      },
+      {
+        "calls": 16928,
+        "inclusive_ns": 118927257,
+        "outside_children_ns": 118927257
+      },
+      {
+        "calls": 17066,
+        "inclusive_ns": 479654245,
+        "outside_children_ns": 479654245
+      },
+      {
+        "calls": 8464,
+        "inclusive_ns": 1617177019,
+        "outside_children_ns": 1617177019
+      },
+      {
+        "calls": 4232,
+        "inclusive_ns": 324464662,
+        "outside_children_ns": 324464662
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "188",
+    "sample": 2,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "enrollment-frame",
+    "returned": true,
+    "wall_ns": 162240836,
+    "process_cpu_ns": 176216349,
+    "authentication_calls": 34,
+    "kernel": [
+      {
+        "calls": 368,
+        "inclusive_ns": 65643504,
+        "outside_children_ns": 91425
+      },
+      {
+        "calls": 868,
+        "inclusive_ns": 50100088,
+        "outside_children_ns": 2985667
+      },
+      {
+        "calls": 1736,
+        "inclusive_ns": 6043281,
+        "outside_children_ns": 3828503
+      },
+      {
+        "calls": 1736,
+        "inclusive_ns": 7271117,
+        "outside_children_ns": 7271117
+      },
+      {
+        "calls": 3340,
+        "inclusive_ns": 54004486,
+        "outside_children_ns": 12856683
+      },
+      {
+        "calls": 6680,
+        "inclusive_ns": 23192254,
+        "outside_children_ns": 21299309
+      },
+      {
+        "calls": 13360,
+        "inclusive_ns": 17955549,
+        "outside_children_ns": 17955549
+      },
+      {
+        "calls": 434,
+        "inclusive_ns": 14157705,
+        "outside_children_ns": 108047
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 12202830,
+        "outside_children_ns": 406989
+      },
+      {
+        "calls": 10152,
+        "inclusive_ns": 9748759,
+        "outside_children_ns": 9748759
+      }
+    ],
+    "live": [
+      {
+        "calls": 184,
+        "inclusive_ns": 103664678,
+        "outside_children_ns": 80021
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 24005808,
+        "outside_children_ns": 1782855
+      },
+      {
+        "calls": 736,
+        "inclusive_ns": 4786625,
+        "outside_children_ns": 4786625
+      },
+      {
+        "calls": 742,
+        "inclusive_ns": 17558478,
+        "outside_children_ns": 17558478
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 65676747,
+        "outside_children_ns": 65676747
+      },
+      {
+        "calls": 184,
+        "inclusive_ns": 13902102,
+        "outside_children_ns": 13902102
+      }
+    ],
+    "boundaries": [
+      {
+        "name": "before-first-custody",
+        "process_cpu_ns": 99844830,
+        "wall_ns": 91511954
+      },
+      {
+        "name": "closing-enter",
+        "process_cpu_ns": 100202848,
+        "wall_ns": 92186890
+      },
+      {
+        "name": "closing-exit",
+        "process_cpu_ns": 176160968,
+        "wall_ns": 162187798
+      }
+    ]
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "188",
+    "sample": 2,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "fixed-manager-message",
+    "returned": true,
+    "wall_ns": 160787346,
+    "process_cpu_ns": 158745208,
+    "authentication_calls": 34,
+    "kernel": [
+      {
+        "calls": 368,
+        "inclusive_ns": 68143457,
+        "outside_children_ns": 101448
+      },
+      {
+        "calls": 870,
+        "inclusive_ns": 53357340,
+        "outside_children_ns": 3061183
+      },
+      {
+        "calls": 1740,
+        "inclusive_ns": 7985910,
+        "outside_children_ns": 5347963
+      },
+      {
+        "calls": 1740,
+        "inclusive_ns": 6342691,
+        "outside_children_ns": 6342691
+      },
+      {
+        "calls": 3350,
+        "inclusive_ns": 55257933,
+        "outside_children_ns": 13639451
+      },
+      {
+        "calls": 6700,
+        "inclusive_ns": 23370306,
+        "outside_children_ns": 20900149
+      },
+      {
+        "calls": 13400,
+        "inclusive_ns": 18248176,
+        "outside_children_ns": 18248176
+      },
+      {
+        "calls": 435,
+        "inclusive_ns": 14037165,
+        "outside_children_ns": 101383
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 12023003,
+        "outside_children_ns": 484107
+      },
+      {
+        "calls": 10180,
+        "inclusive_ns": 11362641,
+        "outside_children_ns": 11362641
+      }
+    ],
+    "live": [
+      {
+        "calls": 184,
+        "inclusive_ns": 106894242,
+        "outside_children_ns": 93885
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 25905685,
+        "outside_children_ns": 1638346
+      },
+      {
+        "calls": 736,
+        "inclusive_ns": 5362341,
+        "outside_children_ns": 5362341
+      },
+      {
+        "calls": 742,
+        "inclusive_ns": 19032737,
+        "outside_children_ns": 19032737
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 68176183,
+        "outside_children_ns": 68176183
+      },
+      {
+        "calls": 184,
+        "inclusive_ns": 12718489,
+        "outside_children_ns": 12718489
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "188",
+    "sample": 2,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "owned-root-preparation",
+    "returned": true,
+    "wall_ns": 430664983,
+    "process_cpu_ns": 466636672,
+    "authentication_calls": 102,
+    "kernel": [
+      {
+        "calls": 1104,
+        "inclusive_ns": 199461856,
+        "outside_children_ns": 290538
+      },
+      {
+        "calls": 2604,
+        "inclusive_ns": 147852702,
+        "outside_children_ns": 9484096
+      },
+      {
+        "calls": 5208,
+        "inclusive_ns": 18604719,
+        "outside_children_ns": 11825936
+      },
+      {
+        "calls": 5208,
+        "inclusive_ns": 18497103,
+        "outside_children_ns": 18497103
+      },
+      {
+        "calls": 10032,
+        "inclusive_ns": 165812322,
+        "outside_children_ns": 37547388
+      },
+      {
+        "calls": 20064,
+        "inclusive_ns": 73535497,
+        "outside_children_ns": 65300366
+      },
+      {
+        "calls": 40128,
+        "inclusive_ns": 54729437,
+        "outside_children_ns": 54729437
+      },
+      {
+        "calls": 1302,
+        "inclusive_ns": 41767921,
+        "outside_children_ns": 294032
+      },
+      {
+        "calls": 1104,
+        "inclusive_ns": 38716722,
+        "outside_children_ns": 1154401
+      },
+      {
+        "calls": 30480,
+        "inclusive_ns": 29722933,
+        "outside_children_ns": 29722933
+      }
+    ],
+    "live": [
+      {
+        "calls": 552,
+        "inclusive_ns": 316507219,
+        "outside_children_ns": 251440
+      },
+      {
+        "calls": 1104,
+        "inclusive_ns": 77555977,
+        "outside_children_ns": 5197936
+      },
+      {
+        "calls": 2208,
+        "inclusive_ns": 14708042,
+        "outside_children_ns": 14708042
+      },
+      {
+        "calls": 2226,
+        "inclusive_ns": 58034095,
+        "outside_children_ns": 58034095
+      },
+      {
+        "calls": 1104,
+        "inclusive_ns": 199556070,
+        "outside_children_ns": 199556070
+      },
+      {
+        "calls": 552,
+        "inclusive_ns": 39143732,
+        "outside_children_ns": 39143732
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "188",
+    "sample": 2,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "enrollment",
+    "returned": true,
+    "wall_ns": 291942373,
+    "process_cpu_ns": 317505224,
+    "authentication_calls": 68,
+    "kernel": [
+      {
+        "calls": 736,
+        "inclusive_ns": 137341222,
+        "outside_children_ns": 226360
+      },
+      {
+        "calls": 1736,
+        "inclusive_ns": 101452361,
+        "outside_children_ns": 6023212
+      },
+      {
+        "calls": 3472,
+        "inclusive_ns": 13912285,
+        "outside_children_ns": 8710413
+      },
+      {
+        "calls": 3472,
+        "inclusive_ns": 13137962,
+        "outside_children_ns": 13137962
+      },
+      {
+        "calls": 6688,
+        "inclusive_ns": 112784831,
+        "outside_children_ns": 25971868
+      },
+      {
+        "calls": 13376,
+        "inclusive_ns": 48340984,
+        "outside_children_ns": 44356834
+      },
+      {
+        "calls": 26752,
+        "inclusive_ns": 38471979,
+        "outside_children_ns": 38471979
+      },
+      {
+        "calls": 868,
+        "inclusive_ns": 29604387,
+        "outside_children_ns": 272754
+      },
+      {
+        "calls": 736,
+        "inclusive_ns": 25866683,
+        "outside_children_ns": 777695
+      },
+      {
+        "calls": 20320,
+        "inclusive_ns": 19343021,
+        "outside_children_ns": 19343021
+      }
+    ],
+    "live": [
+      {
+        "calls": 368,
+        "inclusive_ns": 217407755,
+        "outside_children_ns": 183132
+      },
+      {
+        "calls": 736,
+        "inclusive_ns": 53074011,
+        "outside_children_ns": 4237498
+      },
+      {
+        "calls": 1472,
+        "inclusive_ns": 9631503,
+        "outside_children_ns": 9631503
+      },
+      {
+        "calls": 1484,
+        "inclusive_ns": 39509450,
+        "outside_children_ns": 39509450
+      },
+      {
+        "calls": 736,
+        "inclusive_ns": 137409430,
+        "outside_children_ns": 137409430
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 26741182,
+        "outside_children_ns": 26741182
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "188",
+    "sample": 2,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "placement",
+    "returned": true,
+    "wall_ns": 142151932,
+    "process_cpu_ns": 154637555,
+    "authentication_calls": 34,
+    "kernel": [
+      {
+        "calls": 368,
+        "inclusive_ns": 66382813,
+        "outside_children_ns": 98813
+      },
+      {
+        "calls": 868,
+        "inclusive_ns": 48885425,
+        "outside_children_ns": 3419270
+      },
+      {
+        "calls": 1736,
+        "inclusive_ns": 6543658,
+        "outside_children_ns": 4303651
+      },
+      {
+        "calls": 1736,
+        "inclusive_ns": 5793772,
+        "outside_children_ns": 5793772
+      },
+      {
+        "calls": 3344,
+        "inclusive_ns": 54851573,
+        "outside_children_ns": 12591819
+      },
+      {
+        "calls": 6688,
+        "inclusive_ns": 24371006,
+        "outside_children_ns": 22431431
+      },
+      {
+        "calls": 13376,
+        "inclusive_ns": 17888748,
+        "outside_children_ns": 17888748
+      },
+      {
+        "calls": 434,
+        "inclusive_ns": 13459387,
+        "outside_children_ns": 110863
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 13621216,
+        "outside_children_ns": 373904
+      },
+      {
+        "calls": 10160,
+        "inclusive_ns": 9119692,
+        "outside_children_ns": 9119692
+      }
+    ],
+    "live": [
+      {
+        "calls": 184,
+        "inclusive_ns": 105077565,
+        "outside_children_ns": 90179
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 25822001,
+        "outside_children_ns": 1716495
+      },
+      {
+        "calls": 736,
+        "inclusive_ns": 4635996,
+        "outside_children_ns": 4635996
+      },
+      {
+        "calls": 742,
+        "inclusive_ns": 19593023,
+        "outside_children_ns": 19593023
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 66413825,
+        "outside_children_ns": 66413825
+      },
+      {
+        "calls": 184,
+        "inclusive_ns": 12751560,
+        "outside_children_ns": 12751560
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "188",
+    "sample": 2,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "fixed-slice",
+    "returned": true,
+    "wall_ns": 149715973,
+    "process_cpu_ns": 162927817,
+    "authentication_calls": 34,
+    "kernel": [
+      {
+        "calls": 368,
+        "inclusive_ns": 69411950,
+        "outside_children_ns": 101990
+      },
+      {
+        "calls": 868,
+        "inclusive_ns": 53489845,
+        "outside_children_ns": 3603317
+      },
+      {
+        "calls": 1736,
+        "inclusive_ns": 7450509,
+        "outside_children_ns": 5125533
+      },
+      {
+        "calls": 1736,
+        "inclusive_ns": 6429012,
+        "outside_children_ns": 6429012
+      },
+      {
+        "calls": 3344,
+        "inclusive_ns": 56270456,
+        "outside_children_ns": 12795824
+      },
+      {
+        "calls": 6688,
+        "inclusive_ns": 25124140,
+        "outside_children_ns": 22984421
+      },
+      {
+        "calls": 13376,
+        "inclusive_ns": 18350492,
+        "outside_children_ns": 18350492
+      },
+      {
+        "calls": 434,
+        "inclusive_ns": 14268055,
+        "outside_children_ns": 102143
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 12067843,
+        "outside_children_ns": 381851
+      },
+      {
+        "calls": 10160,
+        "inclusive_ns": 10127049,
+        "outside_children_ns": 10127049
+      }
+    ],
+    "live": [
+      {
+        "calls": 184,
+        "inclusive_ns": 109246522,
+        "outside_children_ns": 108941
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 26109732,
+        "outside_children_ns": 1914470
+      },
+      {
+        "calls": 736,
+        "inclusive_ns": 4936865,
+        "outside_children_ns": 4936865
+      },
+      {
+        "calls": 742,
+        "inclusive_ns": 19388653,
+        "outside_children_ns": 19388653
+      },
+      {
+        "calls": 368,
+        "inclusive_ns": 69444686,
+        "outside_children_ns": 69444686
+      },
+      {
+        "calls": 184,
+        "inclusive_ns": 13583163,
+        "outside_children_ns": 13583163
+      }
+    ],
+    "boundaries": []
+  },
+  {
+    "cohort": "Baseline",
+    "lane": "188",
+    "sample": 2,
+    "source": "b28a29ebe465f27762828689ce759a6716fda5b4",
+    "exit": 0,
+    "phase": "consuming",
+    "returned": true,
+    "wall_ns": 728701418,
+    "process_cpu_ns": 792014645,
+    "authentication_calls": 158,
+    "kernel": [
+      {
+        "calls": 1752,
+        "inclusive_ns": 353887586,
+        "outside_children_ns": 596018
+      },
+      {
+        "calls": 4076,
+        "inclusive_ns": 260718095,
+        "outside_children_ns": 16045080
+      },
+      {
+        "calls": 8152,
+        "inclusive_ns": 36569289,
+        "outside_children_ns": 23264305
+      },
+      {
+        "calls": 8152,
+        "inclusive_ns": 32092076,
+        "outside_children_ns": 32092076
+      },
+      {
+        "calls": 15748,
+        "inclusive_ns": 288013794,
+        "outside_children_ns": 69511447
+      },
+      {
+        "calls": 31496,
+        "inclusive_ns": 122631978,
+        "outside_children_ns": 111744873
+      },
+      {
+        "calls": 62992,
+        "inclusive_ns": 95870369,
+        "outside_children_ns": 95870369
+      },
+      {
+        "calls": 2038,
+        "inclusive_ns": 73243573,
+        "outside_children_ns": 625886
+      },
+      {
+        "calls": 1752,
+        "inclusive_ns": 66509844,
+        "outside_children_ns": 2113541
+      },
+      {
+        "calls": 47800,
+        "inclusive_ns": 49509478,
+        "outside_children_ns": 49509478
+      }
+    ],
+    "live": [
+      {
+        "calls": 876,
+        "inclusive_ns": 557736989,
+        "outside_children_ns": 987754
+      },
+      {
+        "calls": 1752,
+        "inclusive_ns": 135302306,
+        "outside_children_ns": 9421292
+      },
+      {
+        "calls": 3504,
+        "inclusive_ns": 26320065,
+        "outside_children_ns": 26320065
+      },
+      {
+        "calls": 3554,
+        "inclusive_ns": 100727393,
+        "outside_children_ns": 100727393
+      },
+      {
+        "calls": 1752,
+        "inclusive_ns": 354101900,
+        "outside_children_ns": 354101900
+      },
+      {
+        "calls": 876,
+        "inclusive_ns": 67345029,
+        "outside_children_ns": 67345029
+      }
+    ],
+    "boundaries": []
+  }
+]

@@ -1,0 +1,15 @@
+
+running 1 test
+
+thread 'diagnostic_kernel_admission::tests::document_scratch::document_scratch_runtime_binding_requires_one_call_owned_buffer' panicked at tools/long-run-supervisor-074/src/../tests/support/document_scratch.rs:140:5:
+test-first unimplemented runtime
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test diagnostic_kernel_admission::tests::document_scratch::document_scratch_runtime_binding_requires_one_call_owned_buffer ... FAILED
+
+failures:
+
+failures:
+    diagnostic_kernel_admission::tests::document_scratch::document_scratch_runtime_binding_requires_one_call_owned_buffer
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1390 filtered out; finished in 0.00s
+

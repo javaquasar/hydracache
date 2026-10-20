@@ -1,0 +1,10 @@
+
+running 1 test
+
+thread 'diagnostic_ipc::validation_trace::custody_boundaries::custody_boundary_capture_is_inactive_nested_thread_local_and_unwind_safe' (441) panicked at tools/long-run-supervisor-074/src/../tests/support/custody_boundaries.rs:62:17:
+Box<dyn Any>
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test diagnostic_ipc::validation_trace::custody_boundaries::custody_boundary_capture_is_inactive_nested_thread_local_and_unwind_safe ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1378 filtered out; finished in 0.00s
+
