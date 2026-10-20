@@ -49,6 +49,9 @@ function Facts{
                 Require ($taskCaseRows.Count -eq 3) 'Binding case incomplete'
                 for($taskSample=0;$taskSample -lt 3;$taskSample++){
                     $taskOne=$taskCaseRows[$taskSample]
+                    $taskDepth=@{'empty'=0;'healthy-1'=1;'healthy-7'=7;'healthy-128'=128;'invalid-7'=7}[$taskBindingCase]
+                    Require ($taskOne.generations -eq $taskDepth) 'Inventory depth differs'
+                    Require ((Same $taskOne.reference $taskCaseRows[0].reference) -and (Same $taskOne.proposed $taskCaseRows[0].proposed)) 'Inventory samples do not repeat'
                     Require ($taskOne.sample -eq $taskSample -and $taskOne.iterations -eq 1024 -and $taskOne.warmups -eq 32 -and $taskOne.rust_requests_only -and -not $taskOne.timing_claim -and -not $taskOne.server -and -not $taskOne.product) 'Binding sample differs'
                     Require (($taskOne.order -join ',') -ceq @('0,1','1,0','0,1')[$taskSample]) 'Arm rotation differs'
                 }
