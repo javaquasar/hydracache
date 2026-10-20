@@ -15278,3 +15278,54 @@ All 359 source/contract assertions, affected-package checks, strict lint and
 repository checks pass. The 300/60/10 bounds, qualification and product code
 stay unchanged; no server, installation, supervisor or product operation occurs.
 The original native refusal and execution/lifecycle/trust gates remain closed.
+
+### Attributing the reservation live chain without changing checks
+
+The [validation step control](../testing/performance/0.74/local-runs/validation-round-cost-20261020/README.md)
+adds observation-only scopes to the eight existing frame operations. Each scope
+takes deltas from the existing kernel/live/auth counters without resetting them
+or retaining an admission result. Exact reconstruction recovers all 477 prior
+files and all 446 runtime paths. The production checks, callbacks, effect/error
+order and 300/60/10 bounds stay unchanged.
+
+The new scope is all 46 shared output rounds, not only Starting's 19 rounds.
+Three complete GNU observations put ReservedLive, the call to
+`reservation.live()`, at 2691.086–2833.414 ms and 85.62–85.82% of the sum of all
+eight steps. Prepared takes 124.424–132.239 ms, Consent 91.927–103.214 ms,
+Progress 84.291–87.827 ms, Causal 62.703–75.520 ms and FinalClocks
+65.732–71.124 ms. The two storage steps each take less than four milliseconds.
+Those totals are for 46 calls per step and are not per-call latency estimates.
+
+Every parent count in all ten GNU preparation phases matches the frozen prior
+profiles. The eight output rows account for every kernel observation exactly
+once, and their direct edges/roots conserve node counts and instrumented child
+time. ReservedLive accounts for 736 of the 782 authentication calls. Within its
+kernel view, Boot contributes 484.11–516.05 ms outside instrumented children at
+129904 calls, and Namespace 416.49–434.55 ms at 259808 calls. An independent live
+view assigns 420.48–455.39 ms outside ActiveAuthority's instrumented children.
+These two observer families overlap; adding their values would manufacture a
+CPU total. Wall outside instrumented children is itself not exclusive CPU.
+
+This locates the next work in the reservation live chain, including the cost of
+fresh boot/namespace observations and authority validation. It does not justify
+reducing their frequency. A later optimization needs its own measured mechanism
+inside those calls, preserving every predicate and original error order; no
+runtime candidate or performance-gain claim is adopted by this attribution.
+
+Read-only WSL diagnosis also narrows the environment problem. Ubuntu is stopped
+before entry, persistent journal records retain earlier boots, and the old
+refusal boot contains two timesyncd initial synchronizations. One persistent
+observer collects 180 samples with no negative adjacent delta on its six clock
+streams, yet Linux realtime/boottime advances about 89.555 s while Windows QPC
+and Linux RAW advance about 93.27 s. A bounded absence of reversal is therefore
+not stable clock correspondence. Neither service nor clock settings are changed,
+and the actors behind earlier discontinuities remain unproved.
+
+The first MSRV profile then refuses the original clock-order check: realtime
+moves backwards 4.305 s on the same boot with advancing boottime. The independent
+GNU unprofiled matrix passes all five cases; MSRV's independent matrix refuses
+healthy with a 1.825 s reversal. No failed invocation is retried or promoted.
+The six-profile cohort remains incomplete, so costs are limited to the three
+complete GNU observations. Source/lint/integrity passes cannot repair this live
+gate. No server, installation, supervisor control or product workload occurs;
+native execution and the independent lifecycle/trust requirements stay closed.

@@ -881,3 +881,20 @@ gate. Next local work must establish time/environment stability through separate
 read-only diagnosis before another recorded cohort, then attribute avoidable
 work inside full fresh rounds. No new server, service, installation, supervisor
 or product operation occurs; all independent execution and trust gates remain.
+
+## Validation step attribution under unchanged live guards
+
+The [read-only diagnosis and step control](local-runs/validation-round-cost-20261020/README.md)
+keeps time/service settings unchanged. One 180-sample observer has no adjacent
+clock reversal but shows Linux adjusted clocks advancing about 89.555 s while
+Windows QPC and Linux RAW advance about 93.27 s. Earlier boots and repeated
+timesyncd initialization remain in the journal; actors behind old changes are
+not proved. Clock correspondence and past stability cannot be declared green.
+
+Exact source reconstruction and all 361 source/contract assertions pass. Three
+complete GNU profiles locate 85.62–85.82% of the eight-step output round sum in
+ReservedLive. Boot/Namespace observations and authority validation are the next
+local attribution targets, not permission to skip a live check. MSRV's first
+profile and independent matrix refuse clock-order; GNU's independent five-case
+matrix passes. Failed invocations are not retried. No runtime optimization,
+deadline change, server run or execution admission follows from this result.

@@ -4924,3 +4924,30 @@ plus inventory, SHA256
 `69c7057e4994abea20e148a9179fe8229b6f6725ec7d1002e6d80484931a2d3c`.
 Five prior packets and 25 summary mutation controls verify integrity, not live
 acceptance. Changes remain local until the live gate is green.
+
+## Read only time diagnosis and validation step attribution
+
+The [new local control](local-runs/validation-round-cost-20261020/README.md)
+retains Windows/WSL boot/configuration/journal and 180 paired clock observations,
+without clock/service changes. No adjacent reversal occurs in that observer,
+but Linux realtime/boottime advances about 89.555 s versus about 93.27 s for
+Windows QPC/Linux RAW. Old boot journals retain two timesyncd initializations;
+neither observation proves who caused an old discontinuity or fixes admission.
+
+Three complete GNU profiles attribute all 46 shared output rounds to eight
+unchanged frame steps. ReservedLive occupies 2691.086–2833.414 ms and
+85.62–85.82% of their sum; boot/namespace observations are major kernel wall
+owners inside it. All parent counts and per-step graph invariants reconcile.
+No runtime candidate is adopted, required observation omitted, or deadline changed.
+Both compiler lanes pass focused/source/check/lint gates; all 361 historical and
+current assertions pass. The first MSRV profile and its independent functional
+matrix refuse kernel clock ordering; GNU's independent five-case matrix passes.
+No retry or partial-profile promotion occurs. The cross-compiler cohort and
+both-matrix gate remain closed; no new server run is made. See the
+[plan outcome](validation-round-cost-plan-20261020.md#local-outcome).
+
+Evidence commit `9868d51f32f94a83c4165465acf1351b6f616179` seals 129 members
+plus inventory, SHA256
+`b089573e0dc544df769c07b64be41562f107cdc1add64b1cd0c9512df2d882d6`.
+Six earlier packets and 21 summary mutation controls verify integrity only;
+cohort completeness and both-matrix acceptance remain false. No push is made.

@@ -43,3 +43,59 @@ unchanged original bundle/qualification and six preceding sealed packets.
 No server run, installation, supervisor/clock/service operation, full release
 qualification or product workload is permitted. Keep evidence integrity separate
 from completeness, time continuity and execution/trust admission.
+
+## Local outcome
+
+Read-only diagnosis finds Ubuntu stopped before entry and persistent records for
+the earlier boots. The old refusal boot contains two initial timesyncd
+synchronizations; Windows' selected time-change query returns no events. Neither
+fact establishes the actor behind the old reversals. The first observer fails
+boot-argument validation before sampling; its failure remains retained. A second
+implementation obtains boot through a read-only cat subprocess and collects
+180 samples in one process/boot. There are no negative adjacent deltas, but
+Linux realtime/boottime advances 89.554825/89.554827 s versus Linux RAW
+93.269314 s and Windows QPC 93.264936 s. Time correspondence is not proved.
+No clock, service configuration/control or WSL idle policy is changed.
+
+Instrumentation `362f25660992dfaf0ef83873a78996c8a6decbb0`, measured source
+`f1e6ea87e0e67b3e1dcdde0bc563a79cc9e8644a`, adds only test scopes/getters.
+All 477 preceding bodies reconstruct exactly and all 446 runtime paths remain.
+Three observer controls preserve inactive/nested/thread-local behavior, original
+errors/panic identity, parent counters and escaping-scope rejection. Both lanes
+pass focused tests, cargo check and strict lint. All 361 source/contract assertions
+and repository checks pass. Initial canary and recipe-parser failures remain
+disclosed rather than erased; no old assertion or runtime predicate is changed.
+
+Three complete GNU profiles retain all parent counts across ten phases. All eight
+steps complete 46 times in outputs; kernel nodes/edges/roots conserve counts and
+time, and every output kernel observation is attributed exactly once. ReservedLive
+owns 85.62–85.82% of the eight-step sum (2691.086–2833.414 ms) and 736 of 782 auth
+calls. Its kernel Boot/Namespace wall outside children occupies
+484.11–516.05/416.49–434.55 ms at 129904/259808 calls. The separate live view of
+ActiveAuthority occupies 420.48–455.39 ms outside its children and overlaps the
+kernel view. These are local instrumented wall observations, not exclusive CPU,
+cache API latency, throughput or an accepted optimization gain.
+
+The first MSRV profile returns 101 at unchanged kernel clock-order, realtime
+backwards 4304620710 ns with advancing boottime and unchanged boot; causal expiry
+does not refuse. Its remaining profiles are not run. The independent GNU matrix
+passes all five cases; the MSRV matrix refuses healthy with realtime backwards
+1825312028 ns. No retry, later failed-lane case or partial-profile promotion.
+Profile origins and postflight share boot 48b26652-49a9-406f-b987-35c7a1a725cc,
+distinct from the earlier standalone observer. Configuration bytes remain equal;
+postflight finds no matching owned root-fixture directory/cgroup. This is not a
+single cross-boot campaign and does not explain away the live failures.
+
+No runtime candidate is adopted. Complete cross-compiler attribution, both-matrix
+acceptance and native execution admission stay closed. Further local work should
+isolate per-call representation/syscall/authority costs within ReservedLive,
+especially fresh boot/namespace checks, without reusing observations or weakening
+their error order. Stable time/environment admission remains independent; any
+clock/service change or new native/server control needs separate authorization.
+
+Evidence commit `9868d51f32f94a83c4165465acf1351b6f616179` seals 129 members
+plus inventory, SHA256
+`b089573e0dc544df769c07b64be41562f107cdc1add64b1cd0c9512df2d882d6`.
+Strict verification rehashes six preceding packets and rejects 21 summary
+mutations, while explicitly retaining false cohort/both-matrix/native admission
+flags. Changes remain local; no push is made through the red live gate.
