@@ -1,0 +1,55 @@
+[
+  {
+    "name": "check-refused.ps1",
+    "errors": [
+      "MissingEndParenthesisInExpression",
+      "InvalidFunctionParameter",
+      "TerminatorExpectedAtEndOfString",
+      "MissingEndParenthesisInFunctionParameterList"
+    ]
+  },
+  {
+    "name": "check.ps1",
+    "errors": []
+  },
+  {
+    "name": "context-after.ps1",
+    "errors": []
+  },
+  {
+    "name": "diagnose.ps1",
+    "errors": []
+  },
+  {
+    "name": "facts.ps1",
+    "errors": []
+  },
+  {
+    "name": "postflight.ps1",
+    "errors": []
+  },
+  {
+    "name": "probe-v2.ps1",
+    "errors": []
+  },
+  {
+    "name": "review-checks.ps1",
+    "errors": []
+  },
+  {
+    "name": "run.ps1",
+    "errors": []
+  },
+  {
+    "name": "seal.ps1",
+    "errors": []
+  },
+  {
+    "name": "snapshot.ps1",
+    "errors": []
+  },
+  {
+    "name": "verify.ps1",
+    "errors": []
+  }
+]

@@ -1,0 +1,72 @@
+{
+  "samples": 180,
+  "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+  "pid": 283,
+  "initial_distro_stopped": true,
+  "elapsed": {
+    "linux_realtime_ns": 89554824838,
+    "linux_boottime_ns": 89554827474,
+    "linux_raw_ns": 93269313663,
+    "windows_utc_ns": 93268301500,
+    "windows_qpc_ns": 93264936300.0
+  },
+  "delta_ranges": [
+    {
+      "clock": "realtime_ns",
+      "delta": {
+        "min": 500130469.0,
+        "max": 500742459.0
+      }
+    },
+    {
+      "clock": "boottime_ns",
+      "delta": {
+        "min": 500130601.0,
+        "max": 500744218.0
+      }
+    },
+    {
+      "clock": "monotonic_ns",
+      "delta": {
+        "min": 500130573.0,
+        "max": 500744328.0
+      }
+    },
+    {
+      "clock": "raw_ns",
+      "delta": {
+        "min": 499737177.0,
+        "max": 545891183.0
+      }
+    },
+    {
+      "clock": "windows_utc_ns",
+      "delta": {
+        "min": 498660300.0,
+        "max": 546351000.0
+      }
+    },
+    {
+      "clock": "windows_qpc_ns",
+      "delta": {
+        "min": 495293900.0,
+        "max": 546375700.0
+      }
+    }
+  ],
+  "negative_deltas": {
+    "realtime_ns": 0,
+    "boottime_ns": 0,
+    "monotonic_ns": 0,
+    "raw_ns": 0,
+    "windows_utc_ns": 0,
+    "windows_qpc_ns": 0
+  },
+  "raw_minus_boottime_elapsed_ns": 3714486189,
+  "historical_sync_initializations": 2,
+  "time_change_actor_proved": false,
+  "past_time_stability_proved": false,
+  "changes_time": false,
+  "changes_service": false,
+  "server": false
+}

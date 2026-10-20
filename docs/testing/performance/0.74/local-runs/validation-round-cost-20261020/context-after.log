@@ -1,0 +1,8 @@
+boot 48b26652-49a9-406f-b987-35c7a1a725cc
+wsl.conf
+[boot]
+systemd=true
+clocksource
+tsc
+uptime
+80.82 565.41

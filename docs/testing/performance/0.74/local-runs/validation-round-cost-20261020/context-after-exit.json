@@ -1,0 +1,10 @@
+{
+  "source": "f1e6ea87e0e67b3e1dcdde0bc563a79cc9e8644a",
+  "exit": 0,
+  "recipe_sha256": "7d06d581752146a7153c5c9866d239be39fe982618f4b027ecb31f8ed4e57274",
+  "windows_wsl_config_exists": false,
+  "windows_wsl_config_sha256": null,
+  "read_only": true,
+  "server": false,
+  "product": false
+}

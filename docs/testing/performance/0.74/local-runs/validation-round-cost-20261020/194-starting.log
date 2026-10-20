@@ -1,0 +1,22 @@
+
+running 12 tests
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::starting_storage::tests::collector_starting_storage_exact_phase_order_and_old_inventory ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::starting_storage::tests::collector_starting_storage_exclusive_create_and_fd_mutations_refuse ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::starting_storage::tests::collector_starting_storage_refuses_reentry_skips_early_ack_and_unexpected_third_file ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::starting_record::tests::collector_starting_record_all_prefixes_and_noncanonical_forms_refuse ... collector_starting_record strict_prefixes=3038 noncanonical_and_bounds=true
+ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::starting_record::tests::collector_starting_record_consistent_rehash_cannot_substitute_prior_bindings ... collector_starting_record rehashed_binding_mutations=9 mixed_history_refused=true
+ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::starting_record::tests::collector_starting_record_future_grammar_and_rehashed_state_refuse ... collector_starting_record rehashed_grammar_state_mutations=7 exact_state_copy=true
+ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::starting_record::tests::collector_starting_record_roundtrip_is_not_signature_or_runtime_authority ... collector_starting_record signature_shape_only=true inspected_bytes_cannot_start=true
+ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::starting_record::tests::collector_starting_record_seeded_all_leaf_mutations_refuse ... collector_starting_record mutation_seed=0x074057a1 leaves=58
+ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::collector_starting_publication_boundaries_and_live_refusal ... ignored, manual nonroot original Starting writes, interruption and live drift; no execution
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::crash_tests::collector_starting_process_child ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::crash_tests::collector_starting_process_crash_all_stages_and_lost_ack ... ignored, manual nonroot Linux original collector Starting SIGKILL proof
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::crash_tests::collector_starting_process_protocol_accepts_only_bounded_expected_records ... ok
+
+test result: ok. 10 passed; 0 failed; 2 ignored; 0 measured; 1377 filtered out; finished in 0.17s
+

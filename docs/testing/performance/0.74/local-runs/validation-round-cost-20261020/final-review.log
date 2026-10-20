@@ -1,0 +1,5013 @@
+{
+  "schema": "validation-round-cost-v1",
+  "baseline": "8ecb405b4068236970bcf72563a72ee3e7ca9c2e",
+  "sources": {
+    "baseline": "8ecb405b4068236970bcf72563a72ee3e7ca9c2e",
+    "diagnosis": "ffe9593004b59a3a86d8b19ccda877d905e2fcee",
+    "instrumentation": "362f25660992dfaf0ef83873a78996c8a6decbb0",
+    "measured": "f1e6ea87e0e67b3e1dcdde0bc563a79cc9e8644a"
+  },
+  "diagnosis": {
+    "samples": 180,
+    "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+    "pid": 283,
+    "initial_distro_stopped": true,
+    "elapsed": {
+      "linux_realtime_ns": 89554824838,
+      "linux_boottime_ns": 89554827474,
+      "linux_raw_ns": 93269313663,
+      "windows_utc_ns": 93268301500,
+      "windows_qpc_ns": 93264936300.0
+    },
+    "delta_ranges": [
+      {
+        "clock": "realtime_ns",
+        "delta": {
+          "min": 500130469.0,
+          "max": 500742459.0
+        }
+      },
+      {
+        "clock": "boottime_ns",
+        "delta": {
+          "min": 500130601.0,
+          "max": 500744218.0
+        }
+      },
+      {
+        "clock": "monotonic_ns",
+        "delta": {
+          "min": 500130573.0,
+          "max": 500744328.0
+        }
+      },
+      {
+        "clock": "raw_ns",
+        "delta": {
+          "min": 499737177.0,
+          "max": 545891183.0
+        }
+      },
+      {
+        "clock": "windows_utc_ns",
+        "delta": {
+          "min": 498660300.0,
+          "max": 546351000.0
+        }
+      },
+      {
+        "clock": "windows_qpc_ns",
+        "delta": {
+          "min": 495293900.0,
+          "max": 546375700.0
+        }
+      }
+    ],
+    "negative_deltas": {
+      "realtime_ns": 0,
+      "boottime_ns": 0,
+      "monotonic_ns": 0,
+      "raw_ns": 0,
+      "windows_utc_ns": 0,
+      "windows_qpc_ns": 0
+    },
+    "raw_minus_boottime_elapsed_ns": 3714486189,
+    "historical_sync_initializations": 2,
+    "time_change_actor_proved": false,
+    "past_time_stability_proved": false,
+    "clock_correspondence_proved": false,
+    "changes_time": false,
+    "changes_service": false,
+    "server": false
+  },
+  "profile_boots": [
+    "48b26652-49a9-406f-b987-35c7a1a725cc"
+  ],
+  "postflight_boot": "48b26652-49a9-406f-b987-35c7a1a725cc",
+  "configuration_unchanged": true,
+  "profiles": [
+    {
+      "lane": "194",
+      "sample": 0,
+      "phase_count": 10,
+      "outputs_rounds": 46,
+      "original": {
+        "age": {
+          "sites": [
+            {
+              "calls": 184,
+              "first": {
+                "age_ns": 4206972087,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs",
+                "issued_ns": 5454455353,
+                "line": 121,
+                "now_ns": 9661427440,
+                "reason": "within-window"
+              },
+              "first_refusal": null,
+              "last": {
+                "age_ns": 6322232083,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs",
+                "issued_ns": 5454455353,
+                "line": 121,
+                "now_ns": 11776687436,
+                "reason": "within-window"
+              }
+            },
+            {
+              "calls": 81,
+              "first": {
+                "age_ns": 115728537,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+                "issued_ns": 5454455353,
+                "line": 109,
+                "now_ns": 5570183890,
+                "reason": "within-window"
+              },
+              "first_refusal": null,
+              "last": {
+                "age_ns": 6303186376,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+                "issued_ns": 5454455353,
+                "line": 109,
+                "now_ns": 11757641729,
+                "reason": "within-window"
+              }
+            },
+            {
+              "calls": 78,
+              "first": {
+                "age_ns": 428893089,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_preconsent_frame.rs",
+                "issued_ns": 5454455353,
+                "line": 188,
+                "now_ns": 5883348442,
+                "reason": "within-window"
+              },
+              "first_refusal": null,
+              "last": {
+                "age_ns": 6309444268,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs",
+                "issued_ns": 5454455353,
+                "line": 139,
+                "now_ns": 11763899621,
+                "reason": "within-window"
+              }
+            }
+          ]
+        },
+        "case": "healthy",
+        "causal": {
+          "first": {
+            "age_ns": 115728537,
+            "diagnostic_reason": "within-window",
+            "issued_boot": "48b26652-49a9-406f-b987-35c7a1a725cc",
+            "issued_ns": 5454455353,
+            "now_boot": "48b26652-49a9-406f-b987-35c7a1a725cc",
+            "now_ns": 5570183890,
+            "site": "window"
+          },
+          "first_refusal": null,
+          "last": {
+            "age_ns": 6309444268,
+            "diagnostic_reason": "within-window",
+            "issued_boot": "48b26652-49a9-406f-b987-35c7a1a725cc",
+            "issued_ns": 5454455353,
+            "now_boot": "48b26652-49a9-406f-b987-35c7a1a725cc",
+            "now_ns": 11763899621,
+            "site": "final_clocks"
+          },
+          "observations": 155
+        },
+        "deadline_changed": false,
+        "guard_clock_added": false,
+        "kernel": null,
+        "product": false,
+        "returned": true,
+        "server": false
+      }
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "phase_count": 10,
+      "outputs_rounds": 46,
+      "original": {
+        "age": {
+          "sites": [
+            {
+              "calls": 184,
+              "first": {
+                "age_ns": 4026291838,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs",
+                "issued_ns": 13961194847,
+                "line": 121,
+                "now_ns": 17987486685,
+                "reason": "within-window"
+              },
+              "first_refusal": null,
+              "last": {
+                "age_ns": 6114164360,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs",
+                "issued_ns": 13961194847,
+                "line": 121,
+                "now_ns": 20075359207,
+                "reason": "within-window"
+              }
+            },
+            {
+              "calls": 81,
+              "first": {
+                "age_ns": 116730295,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+                "issued_ns": 13961194847,
+                "line": 109,
+                "now_ns": 14077925142,
+                "reason": "within-window"
+              },
+              "first_refusal": null,
+              "last": {
+                "age_ns": 6092314478,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+                "issued_ns": 13961194847,
+                "line": 109,
+                "now_ns": 20053509325,
+                "reason": "within-window"
+              }
+            },
+            {
+              "calls": 78,
+              "first": {
+                "age_ns": 421612214,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_preconsent_frame.rs",
+                "issued_ns": 13961194847,
+                "line": 188,
+                "now_ns": 14382807061,
+                "reason": "within-window"
+              },
+              "first_refusal": null,
+              "last": {
+                "age_ns": 6100299763,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs",
+                "issued_ns": 13961194847,
+                "line": 139,
+                "now_ns": 20061494610,
+                "reason": "within-window"
+              }
+            }
+          ]
+        },
+        "case": "healthy",
+        "causal": {
+          "first": {
+            "age_ns": 116730295,
+            "diagnostic_reason": "within-window",
+            "issued_boot": "48b26652-49a9-406f-b987-35c7a1a725cc",
+            "issued_ns": 13961194847,
+            "now_boot": "48b26652-49a9-406f-b987-35c7a1a725cc",
+            "now_ns": 14077925142,
+            "site": "window"
+          },
+          "first_refusal": null,
+          "last": {
+            "age_ns": 6100299763,
+            "diagnostic_reason": "within-window",
+            "issued_boot": "48b26652-49a9-406f-b987-35c7a1a725cc",
+            "issued_ns": 13961194847,
+            "now_boot": "48b26652-49a9-406f-b987-35c7a1a725cc",
+            "now_ns": 20061494610,
+            "site": "final_clocks"
+          },
+          "observations": 155
+        },
+        "deadline_changed": false,
+        "guard_clock_added": false,
+        "kernel": null,
+        "product": false,
+        "returned": true,
+        "server": false
+      }
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "phase_count": 10,
+      "outputs_rounds": 46,
+      "original": {
+        "age": {
+          "sites": [
+            {
+              "calls": 184,
+              "first": {
+                "age_ns": 4043096407,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs",
+                "issued_ns": 22314720653,
+                "line": 121,
+                "now_ns": 26357817060,
+                "reason": "within-window"
+              },
+              "first_refusal": null,
+              "last": {
+                "age_ns": 6148564683,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs",
+                "issued_ns": 22314720653,
+                "line": 121,
+                "now_ns": 28463285336,
+                "reason": "within-window"
+              }
+            },
+            {
+              "calls": 81,
+              "first": {
+                "age_ns": 115029527,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+                "issued_ns": 22314720653,
+                "line": 109,
+                "now_ns": 22429750180,
+                "reason": "within-window"
+              },
+              "first_refusal": null,
+              "last": {
+                "age_ns": 6129136347,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+                "issued_ns": 22314720653,
+                "line": 109,
+                "now_ns": 28443857000,
+                "reason": "within-window"
+              }
+            },
+            {
+              "calls": 78,
+              "first": {
+                "age_ns": 425951306,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_preconsent_frame.rs",
+                "issued_ns": 22314720653,
+                "line": 188,
+                "now_ns": 22740671959,
+                "reason": "within-window"
+              },
+              "first_refusal": null,
+              "last": {
+                "age_ns": 6135333834,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs",
+                "issued_ns": 22314720653,
+                "line": 139,
+                "now_ns": 28450054487,
+                "reason": "within-window"
+              }
+            }
+          ]
+        },
+        "case": "healthy",
+        "causal": {
+          "first": {
+            "age_ns": 115029527,
+            "diagnostic_reason": "within-window",
+            "issued_boot": "48b26652-49a9-406f-b987-35c7a1a725cc",
+            "issued_ns": 22314720653,
+            "now_boot": "48b26652-49a9-406f-b987-35c7a1a725cc",
+            "now_ns": 22429750180,
+            "site": "window"
+          },
+          "first_refusal": null,
+          "last": {
+            "age_ns": 6135333834,
+            "diagnostic_reason": "within-window",
+            "issued_boot": "48b26652-49a9-406f-b987-35c7a1a725cc",
+            "issued_ns": 22314720653,
+            "now_boot": "48b26652-49a9-406f-b987-35c7a1a725cc",
+            "now_ns": 28450054487,
+            "site": "final_clocks"
+          },
+          "observations": 155
+        },
+        "deadline_changed": false,
+        "guard_clock_added": false,
+        "kernel": null,
+        "product": false,
+        "returned": true,
+        "server": false
+      }
+    }
+  ],
+  "refusals": [
+    {
+      "lane": "188",
+      "sample": 0,
+      "exit": 101,
+      "original": {
+        "age": {
+          "sites": [
+            {
+              "calls": 0,
+              "first": null,
+              "first_refusal": null,
+              "last": null
+            },
+            {
+              "calls": 15,
+              "first": {
+                "age_ns": 119324351,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+                "issued_ns": 31070031022,
+                "line": 109,
+                "now_ns": 31189355373,
+                "reason": "within-window"
+              },
+              "first_refusal": null,
+              "last": {
+                "age_ns": 1166424798,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+                "issued_ns": 31070031022,
+                "line": 109,
+                "now_ns": 32236455820,
+                "reason": "within-window"
+              }
+            },
+            {
+              "calls": 12,
+              "first": {
+                "age_ns": 420719924,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_preconsent_frame.rs",
+                "issued_ns": 31070031022,
+                "line": 188,
+                "now_ns": 31490750946,
+                "reason": "within-window"
+              },
+              "first_refusal": null,
+              "last": {
+                "age_ns": 1173375312,
+                "file": "tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs",
+                "issued_ns": 31070031022,
+                "line": 139,
+                "now_ns": 32243406334,
+                "reason": "within-window"
+              }
+            }
+          ]
+        },
+        "case": "healthy",
+        "causal": {
+          "first": {
+            "age_ns": 119324351,
+            "diagnostic_reason": "within-window",
+            "issued_boot": "48b26652-49a9-406f-b987-35c7a1a725cc",
+            "issued_ns": 31070031022,
+            "now_boot": "48b26652-49a9-406f-b987-35c7a1a725cc",
+            "now_ns": 31189355373,
+            "site": "window"
+          },
+          "first_refusal": null,
+          "last": {
+            "age_ns": 1173375312,
+            "diagnostic_reason": "within-window",
+            "issued_boot": "48b26652-49a9-406f-b987-35c7a1a725cc",
+            "issued_ns": 31070031022,
+            "now_boot": "48b26652-49a9-406f-b987-35c7a1a725cc",
+            "now_ns": 32243406334,
+            "site": "final_clocks"
+          },
+          "observations": 23
+        },
+        "deadline_changed": false,
+        "guard_clock_added": false,
+        "kernel": {
+          "clock": [
+            29442592256,
+            32273376512,
+            1792526382019044849,
+            1792526377714424139,
+            1,
+            60000000000
+          ],
+          "file": "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs",
+          "line": 259,
+          "phase": "unassigned",
+          "site": "clock-order"
+        },
+        "product": false,
+        "returned": false,
+        "server": false
+      },
+      "completed_phases": [
+        "prepare-consent",
+        "accept-consent"
+      ],
+      "cost_cohort": false
+    }
+  ],
+  "steps": [
+    {
+      "lane": "194",
+      "sample": 0,
+      "step": "StorageBefore",
+      "calls": 46,
+      "wall_ns": 2588708,
+      "kernel_outside_children_ns": 0,
+      "outside_instrumented_kernel_ns": 2588708,
+      "kernel": [
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        }
+      ],
+      "edges": [],
+      "live": [
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        }
+      ],
+      "authentication_calls": 0,
+      "signature_calls": 0,
+      "signature_ns": 0
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "step": "ReservedLive",
+      "calls": 46,
+      "wall_ns": 2833413879,
+      "kernel_outside_children_ns": 1748053392,
+      "outside_instrumented_kernel_ns": 1085360487,
+      "kernel": [
+        {
+          "calls": 7360,
+          "inclusive_ns": 1570726965,
+          "outside_children_ns": 3390348
+        },
+        {
+          "calls": 16744,
+          "inclusive_ns": 1116658381,
+          "outside_children_ns": 89174136
+        },
+        {
+          "calls": 33488,
+          "inclusive_ns": 122533078,
+          "outside_children_ns": 98862239
+        },
+        {
+          "calls": 33488,
+          "inclusive_ns": 144553664,
+          "outside_children_ns": 144553664
+        },
+        {
+          "calls": 64952,
+          "inclusive_ns": 1295794305,
+          "outside_children_ns": 299158859
+        },
+        {
+          "calls": 129904,
+          "inclusive_ns": 562081179,
+          "outside_children_ns": 516050775
+        },
+        {
+          "calls": 259808,
+          "inclusive_ns": 434554267,
+          "outside_children_ns": 434554267
+        },
+        {
+          "calls": 8372,
+          "inclusive_ns": 328603554,
+          "outside_children_ns": 2449437
+        },
+        {
+          "calls": 7360,
+          "inclusive_ns": 299401109,
+          "outside_children_ns": 9380223
+        },
+        {
+          "calls": 196880,
+          "inclusive_ns": 150479444,
+          "outside_children_ns": 150479444
+        }
+      ],
+      "edges": [
+        {
+          "calls": 14720,
+          "child": 1,
+          "inclusive_ns": 978189031,
+          "parent": 0
+        },
+        {
+          "calls": 7360,
+          "child": 7,
+          "inclusive_ns": 289746477,
+          "parent": 0
+        },
+        {
+          "calls": 7360,
+          "child": 8,
+          "inclusive_ns": 299401109,
+          "parent": 0
+        },
+        {
+          "calls": 33488,
+          "child": 2,
+          "inclusive_ns": 122533078,
+          "parent": 1
+        },
+        {
+          "calls": 33488,
+          "child": 3,
+          "inclusive_ns": 144553664,
+          "parent": 1
+        },
+        {
+          "calls": 33488,
+          "child": 4,
+          "inclusive_ns": 679619302,
+          "parent": 1
+        },
+        {
+          "calls": 33488,
+          "child": 9,
+          "inclusive_ns": 80778201,
+          "parent": 1
+        },
+        {
+          "calls": 33488,
+          "child": 9,
+          "inclusive_ns": 23670839,
+          "parent": 2
+        },
+        {
+          "calls": 129904,
+          "child": 5,
+          "inclusive_ns": 562081179,
+          "parent": 4
+        },
+        {
+          "calls": 259808,
+          "child": 6,
+          "inclusive_ns": 434554267,
+          "parent": 4
+        },
+        {
+          "calls": 129904,
+          "child": 9,
+          "inclusive_ns": 46030404,
+          "parent": 5
+        },
+        {
+          "calls": 16744,
+          "child": 4,
+          "inclusive_ns": 326154117,
+          "parent": 7
+        },
+        {
+          "calls": 14720,
+          "child": 4,
+          "inclusive_ns": 290020886,
+          "parent": 8
+        }
+      ],
+      "live": [
+        {
+          "calls": 3680,
+          "inclusive_ns": 2487708658,
+          "outside_children_ns": 2998082
+        },
+        {
+          "calls": 7360,
+          "inclusive_ns": 609699772,
+          "outside_children_ns": 39169767
+        },
+        {
+          "calls": 14720,
+          "inclusive_ns": 117790945,
+          "outside_children_ns": 117790945
+        },
+        {
+          "calls": 14812,
+          "inclusive_ns": 455391139,
+          "outside_children_ns": 455391139
+        },
+        {
+          "calls": 7360,
+          "inclusive_ns": 1571506751,
+          "outside_children_ns": 1571506751
+        },
+        {
+          "calls": 3680,
+          "inclusive_ns": 303504053,
+          "outside_children_ns": 303504053
+        }
+      ],
+      "authentication_calls": 736,
+      "signature_calls": 736,
+      "signature_ns": 35045621
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "step": "Progress",
+      "calls": 46,
+      "wall_ns": 84291496,
+      "kernel_outside_children_ns": 59778473,
+      "outside_instrumented_kernel_ns": 24513023,
+      "kernel": [
+        {
+          "calls": 184,
+          "inclusive_ns": 37584878,
+          "outside_children_ns": 56742
+        },
+        {
+          "calls": 644,
+          "inclusive_ns": 39886255,
+          "outside_children_ns": 2962850
+        },
+        {
+          "calls": 1288,
+          "inclusive_ns": 4065512,
+          "outside_children_ns": 3252598
+        },
+        {
+          "calls": 1288,
+          "inclusive_ns": 5156099,
+          "outside_children_ns": 5156099
+        },
+        {
+          "calls": 2300,
+          "inclusive_ns": 44053903,
+          "outside_children_ns": 10422285
+        },
+        {
+          "calls": 4600,
+          "inclusive_ns": 18702308,
+          "outside_children_ns": 17112042
+        },
+        {
+          "calls": 9200,
+          "inclusive_ns": 14929310,
+          "outside_children_ns": 14929310
+        },
+        {
+          "calls": 322,
+          "inclusive_ns": 12341846,
+          "outside_children_ns": 115918
+        },
+        {
+          "calls": 184,
+          "inclusive_ns": 7493630,
+          "outside_children_ns": 241213
+        },
+        {
+          "calls": 7176,
+          "inclusive_ns": 5529416,
+          "outside_children_ns": 5529416
+        }
+      ],
+      "edges": [
+        {
+          "calls": 368,
+          "child": 1,
+          "inclusive_ns": 22714659,
+          "parent": 0
+        },
+        {
+          "calls": 184,
+          "child": 7,
+          "inclusive_ns": 7319847,
+          "parent": 0
+        },
+        {
+          "calls": 184,
+          "child": 8,
+          "inclusive_ns": 7493630,
+          "parent": 0
+        },
+        {
+          "calls": 1288,
+          "child": 2,
+          "inclusive_ns": 4065512,
+          "parent": 1
+        },
+        {
+          "calls": 1288,
+          "child": 3,
+          "inclusive_ns": 5156099,
+          "parent": 1
+        },
+        {
+          "calls": 1288,
+          "child": 4,
+          "inclusive_ns": 24575558,
+          "parent": 1
+        },
+        {
+          "calls": 1288,
+          "child": 9,
+          "inclusive_ns": 3126236,
+          "parent": 1
+        },
+        {
+          "calls": 1288,
+          "child": 9,
+          "inclusive_ns": 812914,
+          "parent": 2
+        },
+        {
+          "calls": 4600,
+          "child": 5,
+          "inclusive_ns": 18702308,
+          "parent": 4
+        },
+        {
+          "calls": 9200,
+          "child": 6,
+          "inclusive_ns": 14929310,
+          "parent": 4
+        },
+        {
+          "calls": 4600,
+          "child": 9,
+          "inclusive_ns": 1590266,
+          "parent": 5
+        },
+        {
+          "calls": 644,
+          "child": 4,
+          "inclusive_ns": 12225928,
+          "parent": 7
+        },
+        {
+          "calls": 368,
+          "child": 4,
+          "inclusive_ns": 7252417,
+          "parent": 8
+        }
+      ],
+      "live": [
+        {
+          "calls": 92,
+          "inclusive_ns": 59397302,
+          "outside_children_ns": 46794
+        },
+        {
+          "calls": 184,
+          "inclusive_ns": 14851977,
+          "outside_children_ns": 1016779
+        },
+        {
+          "calls": 368,
+          "inclusive_ns": 2750862,
+          "outside_children_ns": 2750862
+        },
+        {
+          "calls": 368,
+          "inclusive_ns": 11084336,
+          "outside_children_ns": 11084336
+        },
+        {
+          "calls": 184,
+          "inclusive_ns": 37600706,
+          "outside_children_ns": 37600706
+        },
+        {
+          "calls": 92,
+          "inclusive_ns": 6897825,
+          "outside_children_ns": 6897825
+        }
+      ],
+      "authentication_calls": 46,
+      "signature_calls": 46,
+      "signature_ns": 1985874
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "step": "Causal",
+      "calls": 46,
+      "wall_ns": 75519986,
+      "kernel_outside_children_ns": 50288791,
+      "outside_instrumented_kernel_ns": 25231195,
+      "kernel": [
+        {
+          "calls": 184,
+          "inclusive_ns": 41417493,
+          "outside_children_ns": 60643
+        },
+        {
+          "calls": 460,
+          "inclusive_ns": 31890383,
+          "outside_children_ns": 2185313
+        },
+        {
+          "calls": 920,
+          "inclusive_ns": 3000904,
+          "outside_children_ns": 2411598
+        },
+        {
+          "calls": 920,
+          "inclusive_ns": 3825229,
+          "outside_children_ns": 3825229
+        },
+        {
+          "calls": 1748,
+          "inclusive_ns": 38444329,
+          "outside_children_ns": 9756472
+        },
+        {
+          "calls": 3496,
+          "inclusive_ns": 16573627,
+          "outside_children_ns": 14269546
+        },
+        {
+          "calls": 6992,
+          "inclusive_ns": 12114230,
+          "outside_children_ns": 12114230
+        },
+        {
+          "calls": 230,
+          "inclusive_ns": 9522260,
+          "outside_children_ns": 62508
+        },
+        {
+          "calls": 184,
+          "inclusive_ns": 8815505,
+          "outside_children_ns": 634599
+        },
+        {
+          "calls": 5336,
+          "inclusive_ns": 4968653,
+          "outside_children_ns": 4968653
+        }
+      ],
+      "edges": [
+        {
+          "calls": 368,
+          "child": 1,
+          "inclusive_ns": 24750508,
+          "parent": 0
+        },
+        {
+          "calls": 184,
+          "child": 7,
+          "inclusive_ns": 7790837,
+          "parent": 0
+        },
+        {
+          "calls": 184,
+          "child": 8,
+          "inclusive_ns": 8815505,
+          "parent": 0
+        },
+        {
+          "calls": 920,
+          "child": 2,
+          "inclusive_ns": 3000904,
+          "parent": 1
+        },
+        {
+          "calls": 920,
+          "child": 3,
+          "inclusive_ns": 3825229,
+          "parent": 1
+        },
+        {
+          "calls": 920,
+          "child": 4,
+          "inclusive_ns": 20803671,
+          "parent": 1
+        },
+        {
+          "calls": 920,
+          "child": 9,
+          "inclusive_ns": 2075266,
+          "parent": 1
+        },
+        {
+          "calls": 920,
+          "child": 9,
+          "inclusive_ns": 589306,
+          "parent": 2
+        },
+        {
+          "calls": 3496,
+          "child": 5,
+          "inclusive_ns": 16573627,
+          "parent": 4
+        },
+        {
+          "calls": 6992,
+          "child": 6,
+          "inclusive_ns": 12114230,
+          "parent": 4
+        },
+        {
+          "calls": 3496,
+          "child": 9,
+          "inclusive_ns": 2304081,
+          "parent": 5
+        },
+        {
+          "calls": 460,
+          "child": 4,
+          "inclusive_ns": 9459752,
+          "parent": 7
+        },
+        {
+          "calls": 368,
+          "child": 4,
+          "inclusive_ns": 8180906,
+          "parent": 8
+        }
+      ],
+      "live": [
+        {
+          "calls": 92,
+          "inclusive_ns": 65223711,
+          "outside_children_ns": 50350
+        },
+        {
+          "calls": 184,
+          "inclusive_ns": 16086594,
+          "outside_children_ns": 969840
+        },
+        {
+          "calls": 368,
+          "inclusive_ns": 3519192,
+          "outside_children_ns": 3519192
+        },
+        {
+          "calls": 368,
+          "inclusive_ns": 11597562,
+          "outside_children_ns": 11597562
+        },
+        {
+          "calls": 184,
+          "inclusive_ns": 41437727,
+          "outside_children_ns": 41437727
+        },
+        {
+          "calls": 92,
+          "inclusive_ns": 7649040,
+          "outside_children_ns": 7649040
+        }
+      ],
+      "authentication_calls": 0,
+      "signature_calls": 0,
+      "signature_ns": 0
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "step": "Prepared",
+      "calls": 46,
+      "wall_ns": 130219192,
+      "kernel_outside_children_ns": 84084340,
+      "outside_instrumented_kernel_ns": 46134852,
+      "kernel": [
+        {
+          "calls": 368,
+          "inclusive_ns": 75009094,
+          "outside_children_ns": 109098
+        },
+        {
+          "calls": 828,
+          "inclusive_ns": 53949760,
+          "outside_children_ns": 4968660
+        },
+        {
+          "calls": 1656,
+          "inclusive_ns": 5793125,
+          "outside_children_ns": 4678539
+        },
+        {
+          "calls": 1656,
+          "inclusive_ns": 7043778,
+          "outside_children_ns": 7043778
+        },
+        {
+          "calls": 3220,
+          "inclusive_ns": 62091815,
+          "outside_children_ns": 15290341
+        },
+        {
+          "calls": 6440,
+          "inclusive_ns": 27259439,
+          "outside_children_ns": 24821217
+        },
+        {
+          "calls": 12880,
+          "inclusive_ns": 19542035,
+          "outside_children_ns": 19542035
+        },
+        {
+          "calls": 414,
+          "inclusive_ns": 16532545,
+          "outside_children_ns": 107764
+        },
+        {
+          "calls": 368,
+          "inclusive_ns": 13492937,
+          "outside_children_ns": 467663
+        },
+        {
+          "calls": 9752,
+          "inclusive_ns": 7055245,
+          "outside_children_ns": 7055245
+        }
+      ],
+      "edges": [
+        {
+          "calls": 736,
+          "child": 1,
+          "inclusive_ns": 47802596,
+          "parent": 0
+        },
+        {
+          "calls": 368,
+          "child": 7,
+          "inclusive_ns": 13604463,
+          "parent": 0
+        },
+        {
+          "calls": 368,
+          "child": 8,
+          "inclusive_ns": 13492937,
+          "parent": 0
+        },
+        {
+          "calls": 1656,
+          "child": 2,
+          "inclusive_ns": 5793125,
+          "parent": 1
+        },
+        {
+          "calls": 1656,
+          "child": 3,
+          "inclusive_ns": 7043778,
+          "parent": 1
+        },
+        {
+          "calls": 1656,
+          "child": 4,
+          "inclusive_ns": 32641760,
+          "parent": 1
+        },
+        {
+          "calls": 1656,
+          "child": 9,
+          "inclusive_ns": 3502437,
+          "parent": 1
+        },
+        {
+          "calls": 1656,
+          "child": 9,
+          "inclusive_ns": 1114586,
+          "parent": 2
+        },
+        {
+          "calls": 6440,
+          "child": 5,
+          "inclusive_ns": 27259439,
+          "parent": 4
+        },
+        {
+          "calls": 12880,
+          "child": 6,
+          "inclusive_ns": 19542035,
+          "parent": 4
+        },
+        {
+          "calls": 6440,
+          "child": 9,
+          "inclusive_ns": 2438222,
+          "parent": 5
+        },
+        {
+          "calls": 828,
+          "child": 4,
+          "inclusive_ns": 16424781,
+          "parent": 7
+        },
+        {
+          "calls": 736,
+          "child": 4,
+          "inclusive_ns": 13025274,
+          "parent": 8
+        }
+      ],
+      "live": [
+        {
+          "calls": 184,
+          "inclusive_ns": 119847879,
+          "outside_children_ns": 101974
+        },
+        {
+          "calls": 368,
+          "inclusive_ns": 28008302,
+          "outside_children_ns": 1755520
+        },
+        {
+          "calls": 736,
+          "inclusive_ns": 5162581,
+          "outside_children_ns": 5162581
+        },
+        {
+          "calls": 782,
+          "inclusive_ns": 22201298,
+          "outside_children_ns": 22201298
+        },
+        {
+          "calls": 368,
+          "inclusive_ns": 75047868,
+          "outside_children_ns": 75047868
+        },
+        {
+          "calls": 184,
+          "inclusive_ns": 16689735,
+          "outside_children_ns": 16689735
+        }
+      ],
+      "authentication_calls": 0,
+      "signature_calls": 0,
+      "signature_ns": 0
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "step": "Consent",
+      "calls": 46,
+      "wall_ns": 103213595,
+      "kernel_outside_children_ns": 71806468,
+      "outside_instrumented_kernel_ns": 31407127,
+      "kernel": [
+        {
+          "calls": 184,
+          "inclusive_ns": 40371680,
+          "outside_children_ns": 56745
+        },
+        {
+          "calls": 736,
+          "inclusive_ns": 49291056,
+          "outside_children_ns": 3673130
+        },
+        {
+          "calls": 1472,
+          "inclusive_ns": 4819239,
+          "outside_children_ns": 3884887
+        },
+        {
+          "calls": 1472,
+          "inclusive_ns": 6616157,
+          "outside_children_ns": 6616157
+        },
+        {
+          "calls": 2576,
+          "inclusive_ns": 53156024,
+          "outside_children_ns": 12007063
+        },
+        {
+          "calls": 5152,
+          "inclusive_ns": 25230736,
+          "outside_children_ns": 23373527
+        },
+        {
+          "calls": 10304,
+          "inclusive_ns": 15918225,
+          "outside_children_ns": 15918225
+        },
+        {
+          "calls": 368,
+          "inclusive_ns": 14533493,
+          "outside_children_ns": 95000
+        },
+        {
+          "calls": 184,
+          "inclusive_ns": 7925174,
+          "outside_children_ns": 225992
+        },
+        {
+          "calls": 8096,
+          "inclusive_ns": 5955742,
+          "outside_children_ns": 5955742
+        }
+      ],
+      "edges": [
+        {
+          "calls": 368,
+          "child": 1,
+          "inclusive_ns": 25140653,
+          "parent": 0
+        },
+        {
+          "calls": 184,
+          "child": 7,
+          "inclusive_ns": 7249108,
+          "parent": 0
+        },
+        {
+          "calls": 184,
+          "child": 8,
+          "inclusive_ns": 7925174,
+          "parent": 0
+        },
+        {
+          "calls": 1472,
+          "child": 2,
+          "inclusive_ns": 4819239,
+          "parent": 1
+        },
+        {
+          "calls": 1472,
+          "child": 3,
+          "inclusive_ns": 6616157,
+          "parent": 1
+        },
+        {
+          "calls": 1472,
+          "child": 4,
+          "inclusive_ns": 31018349,
+          "parent": 1
+        },
+        {
+          "calls": 1472,
+          "child": 9,
+          "inclusive_ns": 3164181,
+          "parent": 1
+        },
+        {
+          "calls": 1472,
+          "child": 9,
+          "inclusive_ns": 934352,
+          "parent": 2
+        },
+        {
+          "calls": 5152,
+          "child": 5,
+          "inclusive_ns": 25230736,
+          "parent": 4
+        },
+        {
+          "calls": 10304,
+          "child": 6,
+          "inclusive_ns": 15918225,
+          "parent": 4
+        },
+        {
+          "calls": 5152,
+          "child": 9,
+          "inclusive_ns": 1857209,
+          "parent": 5
+        },
+        {
+          "calls": 736,
+          "child": 4,
+          "inclusive_ns": 14438493,
+          "parent": 7
+        },
+        {
+          "calls": 368,
+          "child": 4,
+          "inclusive_ns": 7699182,
+          "parent": 8
+        }
+      ],
+      "live": [
+        {
+          "calls": 92,
+          "inclusive_ns": 67009233,
+          "outside_children_ns": 68169
+        },
+        {
+          "calls": 184,
+          "inclusive_ns": 19770096,
+          "outside_children_ns": 945861
+        },
+        {
+          "calls": 368,
+          "inclusive_ns": 3728142,
+          "outside_children_ns": 3728142
+        },
+        {
+          "calls": 368,
+          "inclusive_ns": 15096093,
+          "outside_children_ns": 15096093
+        },
+        {
+          "calls": 184,
+          "inclusive_ns": 40391197,
+          "outside_children_ns": 40391197
+        },
+        {
+          "calls": 92,
+          "inclusive_ns": 6779771,
+          "outside_children_ns": 6779771
+        }
+      ],
+      "authentication_calls": 0,
+      "signature_calls": 0,
+      "signature_ns": 0
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "step": "StorageAfter",
+      "calls": 46,
+      "wall_ns": 3497285,
+      "kernel_outside_children_ns": 0,
+      "outside_instrumented_kernel_ns": 3497285,
+      "kernel": [
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        }
+      ],
+      "edges": [],
+      "live": [
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        }
+      ],
+      "authentication_calls": 0,
+      "signature_calls": 0,
+      "signature_ns": 0
+    },
+    {
+      "lane": "194",
+      "sample": 0,
+      "step": "FinalClocks",
+      "calls": 46,
+      "wall_ns": 70744173,
+      "kernel_outside_children_ns": 47309152,
+      "outside_instrumented_kernel_ns": 23435021,
+      "kernel": [
+        {
+          "calls": 184,
+          "inclusive_ns": 37983129,
+          "outside_children_ns": 58081
+        },
+        {
+          "calls": 460,
+          "inclusive_ns": 30730801,
+          "outside_children_ns": 2161349
+        },
+        {
+          "calls": 920,
+          "inclusive_ns": 3053610,
+          "outside_children_ns": 2441432
+        },
+        {
+          "calls": 920,
+          "inclusive_ns": 3784264,
+          "outside_children_ns": 3784264
+        },
+        {
+          "calls": 1748,
+          "inclusive_ns": 34746001,
+          "outside_children_ns": 7700475
+        },
+        {
+          "calls": 3496,
+          "inclusive_ns": 15639029,
+          "outside_children_ns": 14119836
+        },
+        {
+          "calls": 6992,
+          "inclusive_ns": 11406497,
+          "outside_children_ns": 11406497
+        },
+        {
+          "calls": 230,
+          "inclusive_ns": 8323956,
+          "outside_children_ns": 60294
+        },
+        {
+          "calls": 184,
+          "inclusive_ns": 8196314,
+          "outside_children_ns": 222618
+        },
+        {
+          "calls": 5336,
+          "inclusive_ns": 5354306,
+          "outside_children_ns": 5354306
+        }
+      ],
+      "edges": [
+        {
+          "calls": 368,
+          "child": 1,
+          "inclusive_ns": 23143555,
+          "parent": 0
+        },
+        {
+          "calls": 184,
+          "child": 7,
+          "inclusive_ns": 6585179,
+          "parent": 0
+        },
+        {
+          "calls": 184,
+          "child": 8,
+          "inclusive_ns": 8196314,
+          "parent": 0
+        },
+        {
+          "calls": 920,
+          "child": 2,
+          "inclusive_ns": 3053610,
+          "parent": 1
+        },
+        {
+          "calls": 920,
+          "child": 3,
+          "inclusive_ns": 3784264,
+          "parent": 1
+        },
+        {
+          "calls": 920,
+          "child": 4,
+          "inclusive_ns": 18508643,
+          "parent": 1
+        },
+        {
+          "calls": 920,
+          "child": 9,
+          "inclusive_ns": 3222935,
+          "parent": 1
+        },
+        {
+          "calls": 920,
+          "child": 9,
+          "inclusive_ns": 612178,
+          "parent": 2
+        },
+        {
+          "calls": 3496,
+          "child": 5,
+          "inclusive_ns": 15639029,
+          "parent": 4
+        },
+        {
+          "calls": 6992,
+          "child": 6,
+          "inclusive_ns": 11406497,
+          "parent": 4
+        },
+        {
+          "calls": 3496,
+          "child": 9,
+          "inclusive_ns": 1519193,
+          "parent": 5
+        },
+        {
+          "calls": 460,
+          "child": 4,
+          "inclusive_ns": 8263662,
+          "parent": 7
+        },
+        {
+          "calls": 368,
+          "child": 4,
+          "inclusive_ns": 7973696,
+          "parent": 8
+        }
+      ],
+      "live": [
+        {
+          "calls": 92,
+          "inclusive_ns": 61288929,
+          "outside_children_ns": 54155
+        },
+        {
+          "calls": 184,
+          "inclusive_ns": 16002119,
+          "outside_children_ns": 1400455
+        },
+        {
+          "calls": 368,
+          "inclusive_ns": 2957963,
+          "outside_children_ns": 2957963
+        },
+        {
+          "calls": 368,
+          "inclusive_ns": 11643701,
+          "outside_children_ns": 11643701
+        },
+        {
+          "calls": 184,
+          "inclusive_ns": 38001806,
+          "outside_children_ns": 38001806
+        },
+        {
+          "calls": 92,
+          "inclusive_ns": 7230849,
+          "outside_children_ns": 7230849
+        }
+      ],
+      "authentication_calls": 0,
+      "signature_calls": 0,
+      "signature_ns": 0
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "step": "StorageBefore",
+      "calls": 46,
+      "wall_ns": 2546960,
+      "kernel_outside_children_ns": 0,
+      "outside_instrumented_kernel_ns": 2546960,
+      "kernel": [
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        }
+      ],
+      "edges": [],
+      "live": [
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        }
+      ],
+      "authentication_calls": 0,
+      "signature_calls": 0,
+      "signature_ns": 0
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "step": "ReservedLive",
+      "calls": 46,
+      "wall_ns": 2691085949,
+      "kernel_outside_children_ns": 1665419996,
+      "outside_instrumented_kernel_ns": 1025665953,
+      "kernel": [
+        {
+          "calls": 7360,
+          "inclusive_ns": 1496404429,
+          "outside_children_ns": 2229730
+        },
+        {
+          "calls": 16744,
+          "inclusive_ns": 1053000874,
+          "outside_children_ns": 85022593
+        },
+        {
+          "calls": 33488,
+          "inclusive_ns": 108869256,
+          "outside_children_ns": 88340422
+        },
+        {
+          "calls": 33488,
+          "inclusive_ns": 137047434,
+          "outside_children_ns": 137047434
+        },
+        {
+          "calls": 64952,
+          "inclusive_ns": 1246472084,
+          "outside_children_ns": 285993060
+        },
+        {
+          "calls": 129904,
+          "inclusive_ns": 543883950,
+          "outside_children_ns": 496048901
+        },
+        {
+          "calls": 259808,
+          "inclusive_ns": 416595074,
+          "outside_children_ns": 416595074
+        },
+        {
+          "calls": 8372,
+          "inclusive_ns": 323854719,
+          "outside_children_ns": 2159025
+        },
+        {
+          "calls": 7360,
+          "inclusive_ns": 286334673,
+          "outside_children_ns": 9113320
+        },
+        {
+          "calls": 196880,
+          "inclusive_ns": 142870437,
+          "outside_children_ns": 142870437
+        }
+      ],
+      "edges": [
+        {
+          "calls": 14720,
+          "child": 1,
+          "inclusive_ns": 924133766,
+          "parent": 0
+        },
+        {
+          "calls": 7360,
+          "child": 7,
+          "inclusive_ns": 283706260,
+          "parent": 0
+        },
+        {
+          "calls": 7360,
+          "child": 8,
+          "inclusive_ns": 286334673,
+          "parent": 0
+        },
+        {
+          "calls": 33488,
+          "child": 2,
+          "inclusive_ns": 108869256,
+          "parent": 1
+        },
+        {
+          "calls": 33488,
+          "child": 3,
+          "inclusive_ns": 137047434,
+          "parent": 1
+        },
+        {
+          "calls": 33488,
+          "child": 4,
+          "inclusive_ns": 647555037,
+          "parent": 1
+        },
+        {
+          "calls": 33488,
+          "child": 9,
+          "inclusive_ns": 74506554,
+          "parent": 1
+        },
+        {
+          "calls": 33488,
+          "child": 9,
+          "inclusive_ns": 20528834,
+          "parent": 2
+        },
+        {
+          "calls": 129904,
+          "child": 5,
+          "inclusive_ns": 543883950,
+          "parent": 4
+        },
+        {
+          "calls": 259808,
+          "child": 6,
+          "inclusive_ns": 416595074,
+          "parent": 4
+        },
+        {
+          "calls": 129904,
+          "child": 9,
+          "inclusive_ns": 47835049,
+          "parent": 5
+        },
+        {
+          "calls": 16744,
+          "child": 4,
+          "inclusive_ns": 321695694,
+          "parent": 7
+        },
+        {
+          "calls": 14720,
+          "child": 4,
+          "inclusive_ns": 277221353,
+          "parent": 8
+        }
+      ],
+      "live": [
+        {
+          "calls": 3680,
+          "inclusive_ns": 2360784676,
+          "outside_children_ns": 1805641
+        },
+        {
+          "calls": 7360,
+          "inclusive_ns": 566860155,
+          "outside_children_ns": 36262278
+        },
+        {
+          "calls": 14720,
+          "inclusive_ns": 112290857,
+          "outside_children_ns": 112290857
+        },
+        {
+          "calls": 14812,
+          "inclusive_ns": 420479505,
+          "outside_children_ns": 420479505
+        },
+        {
+          "calls": 7360,
+          "inclusive_ns": 1497143149,
+          "outside_children_ns": 1497143149
+        },
+        {
+          "calls": 3680,
+          "inclusive_ns": 294975731,
+          "outside_children_ns": 294975731
+        }
+      ],
+      "authentication_calls": 736,
+      "signature_calls": 736,
+      "signature_ns": 33145963
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "step": "Progress",
+      "calls": 46,
+      "wall_ns": 85536194,
+      "kernel_outside_children_ns": 62035158,
+      "outside_instrumented_kernel_ns": 23501036,
+      "kernel": [
+        {
+          "calls": 184,
+          "inclusive_ns": 37298414,
+          "outside_children_ns": 52971
+        },
+        {
+          "calls": 644,
+          "inclusive_ns": 41696430,
+          "outside_children_ns": 2871870
+        },
+        {
+          "calls": 1288,
+          "inclusive_ns": 3957026,
+          "outside_children_ns": 3200109
+        },
+        {
+          "calls": 1288,
+          "inclusive_ns": 5608753,
+          "outside_children_ns": 5608753
+        },
+        {
+          "calls": 2300,
+          "inclusive_ns": 45387273,
+          "outside_children_ns": 9640894
+        },
+        {
+          "calls": 4600,
+          "inclusive_ns": 20765614,
+          "outside_children_ns": 19289000
+        },
+        {
+          "calls": 9200,
+          "inclusive_ns": 14980765,
+          "outside_children_ns": 14980765
+        },
+        {
+          "calls": 322,
+          "inclusive_ns": 13171049,
+          "outside_children_ns": 76218
+        },
+        {
+          "calls": 184,
+          "inclusive_ns": 7114708,
+          "outside_children_ns": 203019
+        },
+        {
+          "calls": 7176,
+          "inclusive_ns": 6111559,
+          "outside_children_ns": 6111559
+        }
+      ],
+      "edges": [
+        {
+          "calls": 368,
+          "child": 1,
+          "inclusive_ns": 22865447,
+          "parent": 0
+        },
+        {
+          "calls": 184,
+          "child": 7,
+          "inclusive_ns": 7265288,
+          "parent": 0
+        },
+        {
+          "calls": 184,
+          "child": 8,
+          "inclusive_ns": 7114708,
+          "parent": 0
+        },
+        {
+          "calls": 1288,
+          "child": 2,
+          "inclusive_ns": 3957026,
+          "parent": 1
+        },
+        {
+          "calls": 1288,
+          "child": 3,
+          "inclusive_ns": 5608753,
+          "parent": 1
+        },
+        {
+          "calls": 1288,
+          "child": 4,
+          "inclusive_ns": 25380753,
+          "parent": 1
+        },
+        {
+          "calls": 1288,
+          "child": 9,
+          "inclusive_ns": 3878028,
+          "parent": 1
+        },
+        {
+          "calls": 1288,
+          "child": 9,
+          "inclusive_ns": 756917,
+          "parent": 2
+        },
+        {
+          "calls": 4600,
+          "child": 5,
+          "inclusive_ns": 20765614,
+          "parent": 4
+        },
+        {
+          "calls": 9200,
+          "child": 6,
+          "inclusive_ns": 14980765,
+          "parent": 4
+        },
+        {
+          "calls": 4600,
+          "child": 9,
+          "inclusive_ns": 1476614,
+          "parent": 5
+        },
+        {
+          "calls": 644,
+          "child": 4,
+          "inclusive_ns": 13094831,
+          "parent": 7
+        },
+        {
+          "calls": 368,
+          "child": 4,
+          "inclusive_ns": 6911689,
+          "parent": 8
+        }
+      ],
+      "live": [
+        {
+          "calls": 92,
+          "inclusive_ns": 58273616,
+          "outside_children_ns": 45061
+        },
+        {
+          "calls": 184,
+          "inclusive_ns": 14111795,
+          "outside_children_ns": 904248
+        },
+        {
+          "calls": 368,
+          "inclusive_ns": 2796546,
+          "outside_children_ns": 2796546
+        },
+        {
+          "calls": 368,
+          "inclusive_ns": 10411001,
+          "outside_children_ns": 10411001
+        },
+        {
+          "calls": 184,
+          "inclusive_ns": 37313393,
+          "outside_children_ns": 37313393
+        },
+        {
+          "calls": 92,
+          "inclusive_ns": 6803367,
+          "outside_children_ns": 6803367
+        }
+      ],
+      "authentication_calls": 46,
+      "signature_calls": 46,
+      "signature_ns": 1893993
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "step": "Causal",
+      "calls": 46,
+      "wall_ns": 62703002,
+      "kernel_outside_children_ns": 40321721,
+      "outside_instrumented_kernel_ns": 22381281,
+      "kernel": [
+        {
+          "calls": 184,
+          "inclusive_ns": 33999302,
+          "outside_children_ns": 48357
+        },
+        {
+          "calls": 460,
+          "inclusive_ns": 26109364,
+          "outside_children_ns": 1988919
+        },
+        {
+          "calls": 920,
+          "inclusive_ns": 2593220,
+          "outside_children_ns": 2072969
+        },
+        {
+          "calls": 920,
+          "inclusive_ns": 3423203,
+          "outside_children_ns": 3423203
+        },
+        {
+          "calls": 1748,
+          "inclusive_ns": 30223973,
+          "outside_children_ns": 7256038
+        },
+        {
+          "calls": 3496,
+          "inclusive_ns": 12782980,
+          "outside_children_ns": 11700882
+        },
+        {
+          "calls": 6992,
+          "inclusive_ns": 10184955,
+          "outside_children_ns": 10184955
+        },
+        {
+          "calls": 230,
+          "inclusive_ns": 7811336,
+          "outside_children_ns": 51237
+        },
+        {
+          "calls": 184,
+          "inclusive_ns": 6352664,
+          "outside_children_ns": 197856
+        },
+        {
+          "calls": 5336,
+          "inclusive_ns": 3397305,
+          "outside_children_ns": 3397305
+        }
+      ],
+      "edges": [
+        {
+          "calls": 368,
+          "child": 1,
+          "inclusive_ns": 21260188,
+          "parent": 0
+        },
+        {
+          "calls": 184,
+          "child": 7,
+          "inclusive_ns": 6338093,
+          "parent": 0
+        },
+        {
+          "calls": 184,
+          "child": 8,
+          "inclusive_ns": 6352664,
+          "parent": 0
+        },
+        {
+          "calls": 920,
+          "child": 2,
+          "inclusive_ns": 2593220,
+          "parent": 1
+        },
+        {
+          "calls": 920,
+          "child": 3,
+          "inclusive_ns": 3423203,
+          "parent": 1
+        },
+        {
+          "calls": 920,
+          "child": 4,
+          "inclusive_ns": 16309066,
+          "parent": 1
+        },
+        {
+          "calls": 920,
+          "child": 9,
+          "inclusive_ns": 1794956,
+          "parent": 1
+        },
+        {
+          "calls": 920,
+          "child": 9,
+          "inclusive_ns": 520251,
+          "parent": 2
+        },
+        {
+          "calls": 3496,
+          "child": 5,
+          "inclusive_ns": 12782980,
+          "parent": 4
+        },
+        {
+          "calls": 6992,
+          "child": 6,
+          "inclusive_ns": 10184955,
+          "parent": 4
+        },
+        {
+          "calls": 3496,
+          "child": 9,
+          "inclusive_ns": 1082098,
+          "parent": 5
+        },
+        {
+          "calls": 460,
+          "child": 4,
+          "inclusive_ns": 7760099,
+          "parent": 7
+        },
+        {
+          "calls": 368,
+          "child": 4,
+          "inclusive_ns": 6154808,
+          "parent": 8
+        }
+      ],
+      "live": [
+        {
+          "calls": 92,
+          "inclusive_ns": 55093343,
+          "outside_children_ns": 38623
+        },
+        {
+          "calls": 184,
+          "inclusive_ns": 13727426,
+          "outside_children_ns": 810190
+        },
+        {
+          "calls": 368,
+          "inclusive_ns": 2549591,
+          "outside_children_ns": 2549591
+        },
+        {
+          "calls": 368,
+          "inclusive_ns": 10367645,
+          "outside_children_ns": 10367645
+        },
+        {
+          "calls": 184,
+          "inclusive_ns": 34016955,
+          "outside_children_ns": 34016955
+        },
+        {
+          "calls": 92,
+          "inclusive_ns": 7310339,
+          "outside_children_ns": 7310339
+        }
+      ],
+      "authentication_calls": 0,
+      "signature_calls": 0,
+      "signature_ns": 0
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "step": "Prepared",
+      "calls": 46,
+      "wall_ns": 132238599,
+      "kernel_outside_children_ns": 83692588,
+      "outside_instrumented_kernel_ns": 48546011,
+      "kernel": [
+        {
+          "calls": 368,
+          "inclusive_ns": 76849051,
+          "outside_children_ns": 109220
+        },
+        {
+          "calls": 828,
+          "inclusive_ns": 53126424,
+          "outside_children_ns": 4340820
+        },
+        {
+          "calls": 1656,
+          "inclusive_ns": 5378690,
+          "outside_children_ns": 4295575
+        },
+        {
+          "calls": 1656,
+          "inclusive_ns": 7489452,
+          "outside_children_ns": 7489452
+        },
+        {
+          "calls": 3220,
+          "inclusive_ns": 61694222,
+          "outside_children_ns": 14131358
+        },
+        {
+          "calls": 6440,
+          "inclusive_ns": 26357653,
+          "outside_children_ns": 24167023
+        },
+        {
+          "calls": 12880,
+          "inclusive_ns": 21205211,
+          "outside_children_ns": 21205211
+        },
+        {
+          "calls": 414,
+          "inclusive_ns": 15791791,
+          "outside_children_ns": 106703
+        },
+        {
+          "calls": 368,
+          "inclusive_ns": 14665153,
+          "outside_children_ns": 1014436
+        },
+        {
+          "calls": 9752,
+          "inclusive_ns": 6832790,
+          "outside_children_ns": 6832790
+        }
+      ],
+      "edges": [
+        {
+          "calls": 736,
+          "child": 1,
+          "inclusive_ns": 47779021,
+          "parent": 0
+        },
+        {
+          "calls": 368,
+          "child": 7,
+          "inclusive_ns": 14295657,
+          "parent": 0
+        },
+        {
+          "calls": 368,
+          "child": 8,
+          "inclusive_ns": 14665153,
+          "parent": 0
+        },
+        {
+          "calls": 1656,
+          "child": 2,
+          "inclusive_ns": 5378690,
+          "parent": 1
+        },
+        {
+          "calls": 1656,
+          "child": 3,
+          "inclusive_ns": 7489452,
+          "parent": 1
+        },
+        {
+          "calls": 1656,
+          "child": 4,
+          "inclusive_ns": 32358417,
+          "parent": 1
+        },
+        {
+          "calls": 1656,
+          "child": 9,
+          "inclusive_ns": 3559045,
+          "parent": 1
+        },
+        {
+          "calls": 1656,
+          "child": 9,
+          "inclusive_ns": 1083115,
+          "parent": 2
+        },
+        {
+          "calls": 6440,
+          "child": 5,
+          "inclusive_ns": 26357653,
+          "parent": 4
+        },
+        {
+          "calls": 12880,
+          "child": 6,
+          "inclusive_ns": 21205211,
+          "parent": 4
+        },
+        {
+          "calls": 6440,
+          "child": 9,
+          "inclusive_ns": 2190630,
+          "parent": 5
+        },
+        {
+          "calls": 828,
+          "child": 4,
+          "inclusive_ns": 15685088,
+          "parent": 7
+        },
+        {
+          "calls": 736,
+          "child": 4,
+          "inclusive_ns": 13650717,
+          "parent": 8
+        }
+      ],
+      "live": [
+        {
+          "calls": 184,
+          "inclusive_ns": 124073118,
+          "outside_children_ns": 100217
+        },
+        {
+          "calls": 368,
+          "inclusive_ns": 31784967,
+          "outside_children_ns": 2118972
+        },
+        {
+          "calls": 736,
+          "inclusive_ns": 5625033,
+          "outside_children_ns": 5625033
+        },
+        {
+          "calls": 782,
+          "inclusive_ns": 25152470,
+          "outside_children_ns": 25152470
+        },
+        {
+          "calls": 368,
+          "inclusive_ns": 76888308,
+          "outside_children_ns": 76888308
+        },
+        {
+          "calls": 184,
+          "inclusive_ns": 15299626,
+          "outside_children_ns": 15299626
+        }
+      ],
+      "authentication_calls": 0,
+      "signature_calls": 0,
+      "signature_ns": 0
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "step": "Consent",
+      "calls": 46,
+      "wall_ns": 91927312,
+      "kernel_outside_children_ns": 65810110,
+      "outside_instrumented_kernel_ns": 26117202,
+      "kernel": [
+        {
+          "calls": 184,
+          "inclusive_ns": 36220228,
+          "outside_children_ns": 51470
+        },
+        {
+          "calls": 736,
+          "inclusive_ns": 44172762,
+          "outside_children_ns": 3188234
+        },
+        {
+          "calls": 1472,
+          "inclusive_ns": 4447589,
+          "outside_children_ns": 3594366
+        },
+        {
+          "calls": 1472,
+          "inclusive_ns": 6544029,
+          "outside_children_ns": 6544029
+        },
+        {
+          "calls": 2576,
+          "inclusive_ns": 48400649,
+          "outside_children_ns": 11228094
+        },
+        {
+          "calls": 5152,
+          "inclusive_ns": 20476321,
+          "outside_children_ns": 18681312
+        },
+        {
+          "calls": 10304,
+          "inclusive_ns": 16696234,
+          "outside_children_ns": 16696234
+        },
+        {
+          "calls": 368,
+          "inclusive_ns": 14568521,
+          "outside_children_ns": 84355
+        },
+        {
+          "calls": 184,
+          "inclusive_ns": 7017357,
+          "outside_children_ns": 210777
+        },
+        {
+          "calls": 8096,
+          "inclusive_ns": 5531239,
+          "outside_children_ns": 5531239
+        }
+      ],
+      "edges": [
+        {
+          "calls": 368,
+          "child": 1,
+          "inclusive_ns": 22824296,
+          "parent": 0
+        },
+        {
+          "calls": 184,
+          "child": 7,
+          "inclusive_ns": 6327105,
+          "parent": 0
+        },
+        {
+          "calls": 184,
+          "child": 8,
+          "inclusive_ns": 7017357,
+          "parent": 0
+        },
+        {
+          "calls": 1472,
+          "child": 2,
+          "inclusive_ns": 4447589,
+          "parent": 1
+        },
+        {
+          "calls": 1472,
+          "child": 3,
+          "inclusive_ns": 6544029,
+          "parent": 1
+        },
+        {
+          "calls": 1472,
+          "child": 4,
+          "inclusive_ns": 27109903,
+          "parent": 1
+        },
+        {
+          "calls": 1472,
+          "child": 9,
+          "inclusive_ns": 2883007,
+          "parent": 1
+        },
+        {
+          "calls": 1472,
+          "child": 9,
+          "inclusive_ns": 853223,
+          "parent": 2
+        },
+        {
+          "calls": 5152,
+          "child": 5,
+          "inclusive_ns": 20476321,
+          "parent": 4
+        },
+        {
+          "calls": 10304,
+          "child": 6,
+          "inclusive_ns": 16696234,
+          "parent": 4
+        },
+        {
+          "calls": 5152,
+          "child": 9,
+          "inclusive_ns": 1795009,
+          "parent": 5
+        },
+        {
+          "calls": 736,
+          "child": 4,
+          "inclusive_ns": 14484166,
+          "parent": 7
+        },
+        {
+          "calls": 368,
+          "child": 4,
+          "inclusive_ns": 6806580,
+          "parent": 8
+        }
+      ],
+      "live": [
+        {
+          "calls": 92,
+          "inclusive_ns": 57738099,
+          "outside_children_ns": 45232
+        },
+        {
+          "calls": 184,
+          "inclusive_ns": 14640789,
+          "outside_children_ns": 1894479
+        },
+        {
+          "calls": 368,
+          "inclusive_ns": 2557860,
+          "outside_children_ns": 2557860
+        },
+        {
+          "calls": 368,
+          "inclusive_ns": 10188450,
+          "outside_children_ns": 10188450
+        },
+        {
+          "calls": 184,
+          "inclusive_ns": 36236295,
+          "outside_children_ns": 36236295
+        },
+        {
+          "calls": 92,
+          "inclusive_ns": 6815783,
+          "outside_children_ns": 6815783
+        }
+      ],
+      "authentication_calls": 0,
+      "signature_calls": 0,
+      "signature_ns": 0
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "step": "StorageAfter",
+      "calls": 46,
+      "wall_ns": 3959745,
+      "kernel_outside_children_ns": 0,
+      "outside_instrumented_kernel_ns": 3959745,
+      "kernel": [
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        }
+      ],
+      "edges": [],
+      "live": [
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        }
+      ],
+      "authentication_calls": 0,
+      "signature_calls": 0,
+      "signature_ns": 0
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "step": "FinalClocks",
+      "calls": 46,
+      "wall_ns": 65731942,
+      "kernel_outside_children_ns": 44850626,
+      "outside_instrumented_kernel_ns": 20881316,
+      "kernel": [
+        {
+          "calls": 184,
+          "inclusive_ns": 37751569,
+          "outside_children_ns": 51815
+        },
+        {
+          "calls": 460,
+          "inclusive_ns": 29759516,
+          "outside_children_ns": 2689332
+        },
+        {
+          "calls": 920,
+          "inclusive_ns": 3165169,
+          "outside_children_ns": 2335893
+        },
+        {
+          "calls": 920,
+          "inclusive_ns": 4335384,
+          "outside_children_ns": 4335384
+        },
+        {
+          "calls": 1748,
+          "inclusive_ns": 32022272,
+          "outside_children_ns": 8344285
+        },
+        {
+          "calls": 3496,
+          "inclusive_ns": 13607302,
+          "outside_children_ns": 12130388
+        },
+        {
+          "calls": 6992,
+          "inclusive_ns": 10070685,
+          "outside_children_ns": 10070685
+        },
+        {
+          "calls": 230,
+          "inclusive_ns": 7827507,
+          "outside_children_ns": 52683
+        },
+        {
+          "calls": 184,
+          "inclusive_ns": 7211788,
+          "outside_children_ns": 206279
+        },
+        {
+          "calls": 5336,
+          "inclusive_ns": 4633882,
+          "outside_children_ns": 4633882
+        }
+      ],
+      "edges": [
+        {
+          "calls": 368,
+          "child": 1,
+          "inclusive_ns": 24184327,
+          "parent": 0
+        },
+        {
+          "calls": 184,
+          "child": 7,
+          "inclusive_ns": 6303639,
+          "parent": 0
+        },
+        {
+          "calls": 184,
+          "child": 8,
+          "inclusive_ns": 7211788,
+          "parent": 0
+        },
+        {
+          "calls": 920,
+          "child": 2,
+          "inclusive_ns": 3165169,
+          "parent": 1
+        },
+        {
+          "calls": 920,
+          "child": 3,
+          "inclusive_ns": 4335384,
+          "parent": 1
+        },
+        {
+          "calls": 920,
+          "child": 4,
+          "inclusive_ns": 17241939,
+          "parent": 1
+        },
+        {
+          "calls": 920,
+          "child": 9,
+          "inclusive_ns": 2327692,
+          "parent": 1
+        },
+        {
+          "calls": 920,
+          "child": 9,
+          "inclusive_ns": 829276,
+          "parent": 2
+        },
+        {
+          "calls": 3496,
+          "child": 5,
+          "inclusive_ns": 13607302,
+          "parent": 4
+        },
+        {
+          "calls": 6992,
+          "child": 6,
+          "inclusive_ns": 10070685,
+          "parent": 4
+        },
+        {
+          "calls": 3496,
+          "child": 9,
+          "inclusive_ns": 1476914,
+          "parent": 5
+        },
+        {
+          "calls": 460,
+          "child": 4,
+          "inclusive_ns": 7774824,
+          "parent": 7
+        },
+        {
+          "calls": 368,
+          "child": 4,
+          "inclusive_ns": 7005509,
+          "parent": 8
+        }
+      ],
+      "live": [
+        {
+          "calls": 92,
+          "inclusive_ns": 58501356,
+          "outside_children_ns": 47828
+        },
+        {
+          "calls": 184,
+          "inclusive_ns": 13587339,
+          "outside_children_ns": 917179
+        },
+        {
+          "calls": 368,
+          "inclusive_ns": 2495332,
+          "outside_children_ns": 2495332
+        },
+        {
+          "calls": 368,
+          "inclusive_ns": 10174828,
+          "outside_children_ns": 10174828
+        },
+        {
+          "calls": 184,
+          "inclusive_ns": 37768446,
+          "outside_children_ns": 37768446
+        },
+        {
+          "calls": 92,
+          "inclusive_ns": 7097743,
+          "outside_children_ns": 7097743
+        }
+      ],
+      "authentication_calls": 0,
+      "signature_calls": 0,
+      "signature_ns": 0
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "step": "StorageBefore",
+      "calls": 46,
+      "wall_ns": 2507330,
+      "kernel_outside_children_ns": 0,
+      "outside_instrumented_kernel_ns": 2507330,
+      "kernel": [
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        }
+      ],
+      "edges": [],
+      "live": [
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        }
+      ],
+      "authentication_calls": 0,
+      "signature_calls": 0,
+      "signature_ns": 0
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "step": "ReservedLive",
+      "calls": 46,
+      "wall_ns": 2694602417,
+      "kernel_outside_children_ns": 1659700577,
+      "outside_instrumented_kernel_ns": 1034901840,
+      "kernel": [
+        {
+          "calls": 7360,
+          "inclusive_ns": 1493901257,
+          "outside_children_ns": 2090610
+        },
+        {
+          "calls": 16744,
+          "inclusive_ns": 1052945543,
+          "outside_children_ns": 81865457
+        },
+        {
+          "calls": 33488,
+          "inclusive_ns": 110211228,
+          "outside_children_ns": 89277358
+        },
+        {
+          "calls": 33488,
+          "inclusive_ns": 143334082,
+          "outside_children_ns": 143334082
+        },
+        {
+          "calls": 64952,
+          "inclusive_ns": 1236981079,
+          "outside_children_ns": 286833246
+        },
+        {
+          "calls": 129904,
+          "inclusive_ns": 533654223,
+          "outside_children_ns": 484111519
+        },
+        {
+          "calls": 259808,
+          "inclusive_ns": 416493610,
+          "outside_children_ns": 416493610
+        },
+        {
+          "calls": 8372,
+          "inclusive_ns": 322202574,
+          "outside_children_ns": 3283386
+        },
+        {
+          "calls": 7360,
+          "inclusive_ns": 282461850,
+          "outside_children_ns": 8545355
+        },
+        {
+          "calls": 196880,
+          "inclusive_ns": 143865954,
+          "outside_children_ns": 143865954
+        }
+      ],
+      "edges": [
+        {
+          "calls": 14720,
+          "child": 1,
+          "inclusive_ns": 924197466,
+          "parent": 0
+        },
+        {
+          "calls": 7360,
+          "child": 7,
+          "inclusive_ns": 285151331,
+          "parent": 0
+        },
+        {
+          "calls": 7360,
+          "child": 8,
+          "inclusive_ns": 282461850,
+          "parent": 0
+        },
+        {
+          "calls": 33488,
+          "child": 2,
+          "inclusive_ns": 110211228,
+          "parent": 1
+        },
+        {
+          "calls": 33488,
+          "child": 3,
+          "inclusive_ns": 143334082,
+          "parent": 1
+        },
+        {
+          "calls": 33488,
+          "child": 4,
+          "inclusive_ns": 644145396,
+          "parent": 1
+        },
+        {
+          "calls": 33488,
+          "child": 9,
+          "inclusive_ns": 73389380,
+          "parent": 1
+        },
+        {
+          "calls": 33488,
+          "child": 9,
+          "inclusive_ns": 20933870,
+          "parent": 2
+        },
+        {
+          "calls": 129904,
+          "child": 5,
+          "inclusive_ns": 533654223,
+          "parent": 4
+        },
+        {
+          "calls": 259808,
+          "child": 6,
+          "inclusive_ns": 416493610,
+          "parent": 4
+        },
+        {
+          "calls": 129904,
+          "child": 9,
+          "inclusive_ns": 49542704,
+          "parent": 5
+        },
+        {
+          "calls": 16744,
+          "child": 4,
+          "inclusive_ns": 318919188,
+          "parent": 7
+        },
+        {
+          "calls": 14720,
+          "child": 4,
+          "inclusive_ns": 273916495,
+          "parent": 8
+        }
+      ],
+      "live": [
+        {
+          "calls": 3680,
+          "inclusive_ns": 2367272534,
+          "outside_children_ns": 1847319
+        },
+        {
+          "calls": 7360,
+          "inclusive_ns": 576121019,
+          "outside_children_ns": 37180662
+        },
+        {
+          "calls": 14720,
+          "inclusive_ns": 112708665,
+          "outside_children_ns": 112708665
+        },
+        {
+          "calls": 14812,
+          "inclusive_ns": 428466984,
+          "outside_children_ns": 428466984
+        },
+        {
+          "calls": 7360,
+          "inclusive_ns": 1494828703,
+          "outside_children_ns": 1494828703
+        },
+        {
+          "calls": 3680,
+          "inclusive_ns": 294475493,
+          "outside_children_ns": 294475493
+        }
+      ],
+      "authentication_calls": 736,
+      "signature_calls": 736,
+      "signature_ns": 36106408
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "step": "Progress",
+      "calls": 46,
+      "wall_ns": 87826652,
+      "kernel_outside_children_ns": 60518773,
+      "outside_instrumented_kernel_ns": 27307879,
+      "kernel": [
+        {
+          "calls": 184,
+          "inclusive_ns": 37922239,
+          "outside_children_ns": 51704
+        },
+        {
+          "calls": 644,
+          "inclusive_ns": 41346508,
+          "outside_children_ns": 3090501
+        },
+        {
+          "calls": 1288,
+          "inclusive_ns": 6552743,
+          "outside_children_ns": 5314675
+        },
+        {
+          "calls": 1288,
+          "inclusive_ns": 5660303,
+          "outside_children_ns": 5660303
+        },
+        {
+          "calls": 2300,
+          "inclusive_ns": 42283081,
+          "outside_children_ns": 9269071
+        },
+        {
+          "calls": 4600,
+          "inclusive_ns": 17818627,
+          "outside_children_ns": 16092638
+        },
+        {
+          "calls": 9200,
+          "inclusive_ns": 15195383,
+          "outside_children_ns": 15195383
+        },
+        {
+          "calls": 322,
+          "inclusive_ns": 12583060,
+          "outside_children_ns": 73015
+        },
+        {
+          "calls": 184,
+          "inclusive_ns": 6537501,
+          "outside_children_ns": 211582
+        },
+        {
+          "calls": 7176,
+          "inclusive_ns": 5559901,
+          "outside_children_ns": 5559901
+        }
+      ],
+      "edges": [
+        {
+          "calls": 368,
+          "child": 1,
+          "inclusive_ns": 24251604,
+          "parent": 0
+        },
+        {
+          "calls": 184,
+          "child": 7,
+          "inclusive_ns": 7081430,
+          "parent": 0
+        },
+        {
+          "calls": 184,
+          "child": 8,
+          "inclusive_ns": 6537501,
+          "parent": 0
+        },
+        {
+          "calls": 1288,
+          "child": 2,
+          "inclusive_ns": 6552743,
+          "parent": 1
+        },
+        {
+          "calls": 1288,
+          "child": 3,
+          "inclusive_ns": 5660303,
+          "parent": 1
+        },
+        {
+          "calls": 1288,
+          "child": 4,
+          "inclusive_ns": 23447117,
+          "parent": 1
+        },
+        {
+          "calls": 1288,
+          "child": 9,
+          "inclusive_ns": 2595844,
+          "parent": 1
+        },
+        {
+          "calls": 1288,
+          "child": 9,
+          "inclusive_ns": 1238068,
+          "parent": 2
+        },
+        {
+          "calls": 4600,
+          "child": 5,
+          "inclusive_ns": 17818627,
+          "parent": 4
+        },
+        {
+          "calls": 9200,
+          "child": 6,
+          "inclusive_ns": 15195383,
+          "parent": 4
+        },
+        {
+          "calls": 4600,
+          "child": 9,
+          "inclusive_ns": 1725989,
+          "parent": 5
+        },
+        {
+          "calls": 644,
+          "child": 4,
+          "inclusive_ns": 12510045,
+          "parent": 7
+        },
+        {
+          "calls": 368,
+          "child": 4,
+          "inclusive_ns": 6325919,
+          "parent": 8
+        }
+      ],
+      "live": [
+        {
+          "calls": 92,
+          "inclusive_ns": 61545253,
+          "outside_children_ns": 51224
+        },
+        {
+          "calls": 184,
+          "inclusive_ns": 14785304,
+          "outside_children_ns": 901943
+        },
+        {
+          "calls": 368,
+          "inclusive_ns": 2790632,
+          "outside_children_ns": 2790632
+        },
+        {
+          "calls": 368,
+          "inclusive_ns": 11092729,
+          "outside_children_ns": 11092729
+        },
+        {
+          "calls": 184,
+          "inclusive_ns": 37941466,
+          "outside_children_ns": 37941466
+        },
+        {
+          "calls": 92,
+          "inclusive_ns": 8767259,
+          "outside_children_ns": 8767259
+        }
+      ],
+      "authentication_calls": 46,
+      "signature_calls": 46,
+      "signature_ns": 3003731
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "step": "Causal",
+      "calls": 46,
+      "wall_ns": 68389173,
+      "kernel_outside_children_ns": 45167890,
+      "outside_instrumented_kernel_ns": 23221283,
+      "kernel": [
+        {
+          "calls": 184,
+          "inclusive_ns": 36531026,
+          "outside_children_ns": 444005
+        },
+        {
+          "calls": 460,
+          "inclusive_ns": 29373293,
+          "outside_children_ns": 2166438
+        },
+        {
+          "calls": 920,
+          "inclusive_ns": 2770462,
+          "outside_children_ns": 2230774
+        },
+        {
+          "calls": 920,
+          "inclusive_ns": 4820305,
+          "outside_children_ns": 4820305
+        },
+        {
+          "calls": 1748,
+          "inclusive_ns": 32833434,
+          "outside_children_ns": 7067404
+        },
+        {
+          "calls": 3496,
+          "inclusive_ns": 14508371,
+          "outside_children_ns": 13290376
+        },
+        {
+          "calls": 6992,
+          "inclusive_ns": 11257659,
+          "outside_children_ns": 11257659
+        },
+        {
+          "calls": 230,
+          "inclusive_ns": 8786504,
+          "outside_children_ns": 54720
+        },
+        {
+          "calls": 184,
+          "inclusive_ns": 6564088,
+          "outside_children_ns": 201910
+        },
+        {
+          "calls": 5336,
+          "inclusive_ns": 3634299,
+          "outside_children_ns": 3634299
+        }
+      ],
+      "edges": [
+        {
+          "calls": 368,
+          "child": 1,
+          "inclusive_ns": 23054267,
+          "parent": 0
+        },
+        {
+          "calls": 184,
+          "child": 7,
+          "inclusive_ns": 6468666,
+          "parent": 0
+        },
+        {
+          "calls": 184,
+          "child": 8,
+          "inclusive_ns": 6564088,
+          "parent": 0
+        },
+        {
+          "calls": 920,
+          "child": 2,
+          "inclusive_ns": 2770462,
+          "parent": 1
+        },
+        {
+          "calls": 920,
+          "child": 3,
+          "inclusive_ns": 4820305,
+          "parent": 1
+        },
+        {
+          "calls": 920,
+          "child": 4,
+          "inclusive_ns": 17739472,
+          "parent": 1
+        },
+        {
+          "calls": 920,
+          "child": 9,
+          "inclusive_ns": 1876616,
+          "parent": 1
+        },
+        {
+          "calls": 920,
+          "child": 9,
+          "inclusive_ns": 539688,
+          "parent": 2
+        },
+        {
+          "calls": 3496,
+          "child": 5,
+          "inclusive_ns": 14508371,
+          "parent": 4
+        },
+        {
+          "calls": 6992,
+          "child": 6,
+          "inclusive_ns": 11257659,
+          "parent": 4
+        },
+        {
+          "calls": 3496,
+          "child": 9,
+          "inclusive_ns": 1217995,
+          "parent": 5
+        },
+        {
+          "calls": 460,
+          "child": 4,
+          "inclusive_ns": 8731784,
+          "parent": 7
+        },
+        {
+          "calls": 368,
+          "child": 4,
+          "inclusive_ns": 6362178,
+          "parent": 8
+        }
+      ],
+      "live": [
+        {
+          "calls": 92,
+          "inclusive_ns": 58417088,
+          "outside_children_ns": 44867
+        },
+        {
+          "calls": 184,
+          "inclusive_ns": 13934967,
+          "outside_children_ns": 837334
+        },
+        {
+          "calls": 368,
+          "inclusive_ns": 2476063,
+          "outside_children_ns": 2476063
+        },
+        {
+          "calls": 368,
+          "inclusive_ns": 10621570,
+          "outside_children_ns": 10621570
+        },
+        {
+          "calls": 184,
+          "inclusive_ns": 36549308,
+          "outside_children_ns": 36549308
+        },
+        {
+          "calls": 92,
+          "inclusive_ns": 7887946,
+          "outside_children_ns": 7887946
+        }
+      ],
+      "authentication_calls": 0,
+      "signature_calls": 0,
+      "signature_ns": 0
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "step": "Prepared",
+      "calls": 46,
+      "wall_ns": 124423769,
+      "kernel_outside_children_ns": 80648674,
+      "outside_instrumented_kernel_ns": 43775095,
+      "kernel": [
+        {
+          "calls": 368,
+          "inclusive_ns": 72833946,
+          "outside_children_ns": 92757
+        },
+        {
+          "calls": 828,
+          "inclusive_ns": 50985004,
+          "outside_children_ns": 3990410
+        },
+        {
+          "calls": 1656,
+          "inclusive_ns": 5323817,
+          "outside_children_ns": 3999876
+        },
+        {
+          "calls": 1656,
+          "inclusive_ns": 6289351,
+          "outside_children_ns": 6289351
+        },
+        {
+          "calls": 3220,
+          "inclusive_ns": 59723138,
+          "outside_children_ns": 14383213
+        },
+        {
+          "calls": 6440,
+          "inclusive_ns": 26619064,
+          "outside_children_ns": 24566704
+        },
+        {
+          "calls": 12880,
+          "inclusive_ns": 18720861,
+          "outside_children_ns": 18720861
+        },
+        {
+          "calls": 414,
+          "inclusive_ns": 15964953,
+          "outside_children_ns": 92957
+        },
+        {
+          "calls": 368,
+          "inclusive_ns": 13605960,
+          "outside_children_ns": 408334
+        },
+        {
+          "calls": 9752,
+          "inclusive_ns": 8104211,
+          "outside_children_ns": 8104211
+        }
+      ],
+      "edges": [
+        {
+          "calls": 736,
+          "child": 1,
+          "inclusive_ns": 44947934,
+          "parent": 0
+        },
+        {
+          "calls": 368,
+          "child": 7,
+          "inclusive_ns": 14187295,
+          "parent": 0
+        },
+        {
+          "calls": 368,
+          "child": 8,
+          "inclusive_ns": 13605960,
+          "parent": 0
+        },
+        {
+          "calls": 1656,
+          "child": 2,
+          "inclusive_ns": 5323817,
+          "parent": 1
+        },
+        {
+          "calls": 1656,
+          "child": 3,
+          "inclusive_ns": 6289351,
+          "parent": 1
+        },
+        {
+          "calls": 1656,
+          "child": 4,
+          "inclusive_ns": 30653516,
+          "parent": 1
+        },
+        {
+          "calls": 1656,
+          "child": 9,
+          "inclusive_ns": 4727910,
+          "parent": 1
+        },
+        {
+          "calls": 1656,
+          "child": 9,
+          "inclusive_ns": 1323941,
+          "parent": 2
+        },
+        {
+          "calls": 6440,
+          "child": 5,
+          "inclusive_ns": 26619064,
+          "parent": 4
+        },
+        {
+          "calls": 12880,
+          "child": 6,
+          "inclusive_ns": 18720861,
+          "parent": 4
+        },
+        {
+          "calls": 6440,
+          "child": 9,
+          "inclusive_ns": 2052360,
+          "parent": 5
+        },
+        {
+          "calls": 828,
+          "child": 4,
+          "inclusive_ns": 15871996,
+          "parent": 7
+        },
+        {
+          "calls": 736,
+          "child": 4,
+          "inclusive_ns": 13197626,
+          "parent": 8
+        }
+      ],
+      "live": [
+        {
+          "calls": 184,
+          "inclusive_ns": 115286538,
+          "outside_children_ns": 86242
+        },
+        {
+          "calls": 368,
+          "inclusive_ns": 28368909,
+          "outside_children_ns": 2107608
+        },
+        {
+          "calls": 736,
+          "inclusive_ns": 5842537,
+          "outside_children_ns": 5842537
+        },
+        {
+          "calls": 782,
+          "inclusive_ns": 21560058,
+          "outside_children_ns": 21560058
+        },
+        {
+          "calls": 368,
+          "inclusive_ns": 72866665,
+          "outside_children_ns": 72866665
+        },
+        {
+          "calls": 184,
+          "inclusive_ns": 13964722,
+          "outside_children_ns": 13964722
+        }
+      ],
+      "authentication_calls": 0,
+      "signature_calls": 0,
+      "signature_ns": 0
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "step": "Consent",
+      "calls": 46,
+      "wall_ns": 94481325,
+      "kernel_outside_children_ns": 65735568,
+      "outside_instrumented_kernel_ns": 28745757,
+      "kernel": [
+        {
+          "calls": 184,
+          "inclusive_ns": 35282027,
+          "outside_children_ns": 51059
+        },
+        {
+          "calls": 736,
+          "inclusive_ns": 44514659,
+          "outside_children_ns": 4182831
+        },
+        {
+          "calls": 1472,
+          "inclusive_ns": 4553902,
+          "outside_children_ns": 3635285
+        },
+        {
+          "calls": 1472,
+          "inclusive_ns": 5712214,
+          "outside_children_ns": 5712214
+        },
+        {
+          "calls": 2576,
+          "inclusive_ns": 47362234,
+          "outside_children_ns": 12788336
+        },
+        {
+          "calls": 5152,
+          "inclusive_ns": 19045400,
+          "outside_children_ns": 17358817
+        },
+        {
+          "calls": 10304,
+          "inclusive_ns": 15528498,
+          "outside_children_ns": 15528498
+        },
+        {
+          "calls": 368,
+          "inclusive_ns": 14071461,
+          "outside_children_ns": 85372
+        },
+        {
+          "calls": 184,
+          "inclusive_ns": 7098389,
+          "outside_children_ns": 247261
+        },
+        {
+          "calls": 8096,
+          "inclusive_ns": 6145895,
+          "outside_children_ns": 6145895
+        }
+      ],
+      "edges": [
+        {
+          "calls": 368,
+          "child": 1,
+          "inclusive_ns": 21575947,
+          "parent": 0
+        },
+        {
+          "calls": 184,
+          "child": 7,
+          "inclusive_ns": 6556632,
+          "parent": 0
+        },
+        {
+          "calls": 184,
+          "child": 8,
+          "inclusive_ns": 7098389,
+          "parent": 0
+        },
+        {
+          "calls": 1472,
+          "child": 2,
+          "inclusive_ns": 4553902,
+          "parent": 1
+        },
+        {
+          "calls": 1472,
+          "child": 3,
+          "inclusive_ns": 5712214,
+          "parent": 1
+        },
+        {
+          "calls": 1472,
+          "child": 4,
+          "inclusive_ns": 26525017,
+          "parent": 1
+        },
+        {
+          "calls": 1472,
+          "child": 9,
+          "inclusive_ns": 3540695,
+          "parent": 1
+        },
+        {
+          "calls": 1472,
+          "child": 9,
+          "inclusive_ns": 918617,
+          "parent": 2
+        },
+        {
+          "calls": 5152,
+          "child": 5,
+          "inclusive_ns": 19045400,
+          "parent": 4
+        },
+        {
+          "calls": 10304,
+          "child": 6,
+          "inclusive_ns": 15528498,
+          "parent": 4
+        },
+        {
+          "calls": 5152,
+          "child": 9,
+          "inclusive_ns": 1686583,
+          "parent": 5
+        },
+        {
+          "calls": 736,
+          "child": 4,
+          "inclusive_ns": 13986089,
+          "parent": 7
+        },
+        {
+          "calls": 368,
+          "child": 4,
+          "inclusive_ns": 6851128,
+          "parent": 8
+        }
+      ],
+      "live": [
+        {
+          "calls": 92,
+          "inclusive_ns": 59640410,
+          "outside_children_ns": 1000773
+        },
+        {
+          "calls": 184,
+          "inclusive_ns": 15170249,
+          "outside_children_ns": 986727
+        },
+        {
+          "calls": 368,
+          "inclusive_ns": 3071974,
+          "outside_children_ns": 3071974
+        },
+        {
+          "calls": 368,
+          "inclusive_ns": 11111548,
+          "outside_children_ns": 11111548
+        },
+        {
+          "calls": 184,
+          "inclusive_ns": 35300227,
+          "outside_children_ns": 35300227
+        },
+        {
+          "calls": 92,
+          "inclusive_ns": 8169161,
+          "outside_children_ns": 8169161
+        }
+      ],
+      "authentication_calls": 0,
+      "signature_calls": 0,
+      "signature_ns": 0
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "step": "StorageAfter",
+      "calls": 46,
+      "wall_ns": 3972997,
+      "kernel_outside_children_ns": 0,
+      "outside_instrumented_kernel_ns": 3972997,
+      "kernel": [
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        }
+      ],
+      "edges": [],
+      "live": [
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        },
+        {
+          "calls": 0,
+          "inclusive_ns": 0,
+          "outside_children_ns": 0
+        }
+      ],
+      "authentication_calls": 0,
+      "signature_calls": 0,
+      "signature_ns": 0
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "step": "FinalClocks",
+      "calls": 46,
+      "wall_ns": 71123985,
+      "kernel_outside_children_ns": 47948863,
+      "outside_instrumented_kernel_ns": 23175122,
+      "kernel": [
+        {
+          "calls": 184,
+          "inclusive_ns": 40843988,
+          "outside_children_ns": 58921
+        },
+        {
+          "calls": 460,
+          "inclusive_ns": 30246126,
+          "outside_children_ns": 2312154
+        },
+        {
+          "calls": 920,
+          "inclusive_ns": 3004334,
+          "outside_children_ns": 2405802
+        },
+        {
+          "calls": 920,
+          "inclusive_ns": 3565016,
+          "outside_children_ns": 3565016
+        },
+        {
+          "calls": 1748,
+          "inclusive_ns": 36711498,
+          "outside_children_ns": 9089796
+        },
+        {
+          "calls": 3496,
+          "inclusive_ns": 16420759,
+          "outside_children_ns": 15235873
+        },
+        {
+          "calls": 6992,
+          "inclusive_ns": 11200943,
+          "outside_children_ns": 11200943
+        },
+        {
+          "calls": 230,
+          "inclusive_ns": 9086001,
+          "outside_children_ns": 60183
+        },
+        {
+          "calls": 184,
+          "inclusive_ns": 8557815,
+          "outside_children_ns": 234242
+        },
+        {
+          "calls": 5336,
+          "inclusive_ns": 3785933,
+          "outside_children_ns": 3785933
+        }
+      ],
+      "edges": [
+        {
+          "calls": 368,
+          "child": 1,
+          "inclusive_ns": 24735011,
+          "parent": 0
+        },
+        {
+          "calls": 184,
+          "child": 7,
+          "inclusive_ns": 7492241,
+          "parent": 0
+        },
+        {
+          "calls": 184,
+          "child": 8,
+          "inclusive_ns": 8557815,
+          "parent": 0
+        },
+        {
+          "calls": 920,
+          "child": 2,
+          "inclusive_ns": 3004334,
+          "parent": 1
+        },
+        {
+          "calls": 920,
+          "child": 3,
+          "inclusive_ns": 3565016,
+          "parent": 1
+        },
+        {
+          "calls": 920,
+          "child": 4,
+          "inclusive_ns": 19362107,
+          "parent": 1
+        },
+        {
+          "calls": 920,
+          "child": 9,
+          "inclusive_ns": 2002515,
+          "parent": 1
+        },
+        {
+          "calls": 920,
+          "child": 9,
+          "inclusive_ns": 598532,
+          "parent": 2
+        },
+        {
+          "calls": 3496,
+          "child": 5,
+          "inclusive_ns": 16420759,
+          "parent": 4
+        },
+        {
+          "calls": 6992,
+          "child": 6,
+          "inclusive_ns": 11200943,
+          "parent": 4
+        },
+        {
+          "calls": 3496,
+          "child": 9,
+          "inclusive_ns": 1184886,
+          "parent": 5
+        },
+        {
+          "calls": 460,
+          "child": 4,
+          "inclusive_ns": 9025818,
+          "parent": 7
+        },
+        {
+          "calls": 368,
+          "child": 4,
+          "inclusive_ns": 8323573,
+          "parent": 8
+        }
+      ],
+      "live": [
+        {
+          "calls": 92,
+          "inclusive_ns": 63642725,
+          "outside_children_ns": 56160
+        },
+        {
+          "calls": 184,
+          "inclusive_ns": 14711569,
+          "outside_children_ns": 1016464
+        },
+        {
+          "calls": 368,
+          "inclusive_ns": 2870818,
+          "outside_children_ns": 2870818
+        },
+        {
+          "calls": 368,
+          "inclusive_ns": 10824287,
+          "outside_children_ns": 10824287
+        },
+        {
+          "calls": 184,
+          "inclusive_ns": 40864446,
+          "outside_children_ns": 40864446
+        },
+        {
+          "calls": 92,
+          "inclusive_ns": 8010550,
+          "outside_children_ns": 8010550
+        }
+      ],
+      "authentication_calls": 0,
+      "signature_calls": 0,
+      "signature_ns": 0
+    }
+  ],
+  "ranges": [
+    {
+      "lane": "194",
+      "step": "Causal",
+      "samples": 3,
+      "wall_ns": {
+        "min": 62703002.0,
+        "max": 75519986.0
+      },
+      "kernel_outside_children_ns": {
+        "min": 40321721.0,
+        "max": 50288791.0
+      },
+      "outside_instrumented_kernel_ns": {
+        "min": 22381281.0,
+        "max": 25231195.0
+      }
+    },
+    {
+      "lane": "194",
+      "step": "Consent",
+      "samples": 3,
+      "wall_ns": {
+        "min": 91927312.0,
+        "max": 103213595.0
+      },
+      "kernel_outside_children_ns": {
+        "min": 65735568.0,
+        "max": 71806468.0
+      },
+      "outside_instrumented_kernel_ns": {
+        "min": 26117202.0,
+        "max": 31407127.0
+      }
+    },
+    {
+      "lane": "194",
+      "step": "FinalClocks",
+      "samples": 3,
+      "wall_ns": {
+        "min": 65731942.0,
+        "max": 71123985.0
+      },
+      "kernel_outside_children_ns": {
+        "min": 44850626.0,
+        "max": 47948863.0
+      },
+      "outside_instrumented_kernel_ns": {
+        "min": 20881316.0,
+        "max": 23435021.0
+      }
+    },
+    {
+      "lane": "194",
+      "step": "Prepared",
+      "samples": 3,
+      "wall_ns": {
+        "min": 124423769.0,
+        "max": 132238599.0
+      },
+      "kernel_outside_children_ns": {
+        "min": 80648674.0,
+        "max": 84084340.0
+      },
+      "outside_instrumented_kernel_ns": {
+        "min": 43775095.0,
+        "max": 48546011.0
+      }
+    },
+    {
+      "lane": "194",
+      "step": "Progress",
+      "samples": 3,
+      "wall_ns": {
+        "min": 84291496.0,
+        "max": 87826652.0
+      },
+      "kernel_outside_children_ns": {
+        "min": 59778473.0,
+        "max": 62035158.0
+      },
+      "outside_instrumented_kernel_ns": {
+        "min": 23501036.0,
+        "max": 27307879.0
+      }
+    },
+    {
+      "lane": "194",
+      "step": "ReservedLive",
+      "samples": 3,
+      "wall_ns": {
+        "min": 2691085949.0,
+        "max": 2833413879.0
+      },
+      "kernel_outside_children_ns": {
+        "min": 1659700577.0,
+        "max": 1748053392.0
+      },
+      "outside_instrumented_kernel_ns": {
+        "min": 1025665953.0,
+        "max": 1085360487.0
+      }
+    },
+    {
+      "lane": "194",
+      "step": "StorageAfter",
+      "samples": 3,
+      "wall_ns": {
+        "min": 3497285.0,
+        "max": 3972997.0
+      },
+      "kernel_outside_children_ns": {
+        "min": 0.0,
+        "max": 0.0
+      },
+      "outside_instrumented_kernel_ns": {
+        "min": 3497285.0,
+        "max": 3972997.0
+      }
+    },
+    {
+      "lane": "194",
+      "step": "StorageBefore",
+      "samples": 3,
+      "wall_ns": {
+        "min": 2507330.0,
+        "max": 2588708.0
+      },
+      "kernel_outside_children_ns": {
+        "min": 0.0,
+        "max": 0.0
+      },
+      "outside_instrumented_kernel_ns": {
+        "min": 2507330.0,
+        "max": 2588708.0
+      }
+    }
+  ],
+  "shares": [
+    {
+      "lane": "194",
+      "sample": 0,
+      "all_steps_wall_ns": 3303488314,
+      "reserved_live_wall_ns": 2833413879,
+      "reserved_live_share_percent": 85.770362
+    },
+    {
+      "lane": "194",
+      "sample": 1,
+      "all_steps_wall_ns": 3135729703,
+      "reserved_live_wall_ns": 2691085949,
+      "reserved_live_share_percent": 85.820087
+    },
+    {
+      "lane": "194",
+      "sample": 2,
+      "all_steps_wall_ns": 3147327648,
+      "reserved_live_wall_ns": 2694602417,
+      "reserved_live_share_percent": 85.615567
+    }
+  ],
+  "matrices": [
+    {
+      "lane": "194",
+      "exit": 0,
+      "passed": true,
+      "cases": [
+        "healthy",
+        "revalidate",
+        "role-before",
+        "role-after",
+        "trust-after"
+      ],
+      "original": [
+        {
+          "age": {
+            "sites": [
+              {
+                "calls": 184,
+                "first": {
+                  "age_ns": 3984667405,
+                  "file": "tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs",
+                  "issued_ns": 34676919281,
+                  "line": 121,
+                  "now_ns": 38661586686,
+                  "reason": "within-window"
+                },
+                "first_refusal": null,
+                "last": {
+                  "age_ns": 6041046818,
+                  "file": "tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs",
+                  "issued_ns": 34676919281,
+                  "line": 121,
+                  "now_ns": 40717966099,
+                  "reason": "within-window"
+                }
+              },
+              {
+                "calls": 81,
+                "first": {
+                  "age_ns": 116646258,
+                  "file": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+                  "issued_ns": 34676919281,
+                  "line": 109,
+                  "now_ns": 34793565539,
+                  "reason": "within-window"
+                },
+                "first_refusal": null,
+                "last": {
+                  "age_ns": 6021505406,
+                  "file": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+                  "issued_ns": 34676919281,
+                  "line": 109,
+                  "now_ns": 40698424687,
+                  "reason": "within-window"
+                }
+              },
+              {
+                "calls": 78,
+                "first": {
+                  "age_ns": 422535428,
+                  "file": "tools/long-run-supervisor-074/src/diagnostic_preconsent_frame.rs",
+                  "issued_ns": 34676919281,
+                  "line": 188,
+                  "now_ns": 35099454709,
+                  "reason": "within-window"
+                },
+                "first_refusal": null,
+                "last": {
+                  "age_ns": 6026616542,
+                  "file": "tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs",
+                  "issued_ns": 34676919281,
+                  "line": 139,
+                  "now_ns": 40703535823,
+                  "reason": "within-window"
+                }
+              }
+            ]
+          },
+          "case": "healthy",
+          "causal": {
+            "first": {
+              "age_ns": 116646258,
+              "diagnostic_reason": "within-window",
+              "issued_boot": "48b26652-49a9-406f-b987-35c7a1a725cc",
+              "issued_ns": 34676919281,
+              "now_boot": "48b26652-49a9-406f-b987-35c7a1a725cc",
+              "now_ns": 34793565539,
+              "site": "window"
+            },
+            "first_refusal": null,
+            "last": {
+              "age_ns": 6026616542,
+              "diagnostic_reason": "within-window",
+              "issued_boot": "48b26652-49a9-406f-b987-35c7a1a725cc",
+              "issued_ns": 34676919281,
+              "now_boot": "48b26652-49a9-406f-b987-35c7a1a725cc",
+              "now_ns": 40703535823,
+              "site": "final_clocks"
+            },
+            "observations": 155
+          },
+          "deadline_changed": false,
+          "guard_clock_added": false,
+          "kernel": null,
+          "product": false,
+          "returned": true,
+          "server": false
+        },
+        {
+          "age": {
+            "sites": [
+              {
+                "calls": 244,
+                "first": {
+                  "age_ns": 4083924783,
+                  "file": "tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs",
+                  "issued_ns": 42713163000,
+                  "line": 121,
+                  "now_ns": 46797087783,
+                  "reason": "within-window"
+                },
+                "first_refusal": null,
+                "last": {
+                  "age_ns": 6936370974,
+                  "file": "tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs",
+                  "issued_ns": 42713163000,
+                  "line": 121,
+                  "now_ns": 49649533974,
+                  "reason": "within-window"
+                }
+              },
+              {
+                "calls": 89,
+                "first": {
+                  "age_ns": 118031850,
+                  "file": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+                  "issued_ns": 42713163000,
+                  "line": 109,
+                  "now_ns": 42831194850,
+                  "reason": "within-window"
+                },
+                "first_refusal": null,
+                "last": {
+                  "age_ns": 6917031273,
+                  "file": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+                  "issued_ns": 42713163000,
+                  "line": 109,
+                  "now_ns": 49630194273,
+                  "reason": "within-window"
+                }
+              },
+              {
+                "calls": 86,
+                "first": {
+                  "age_ns": 431992591,
+                  "file": "tools/long-run-supervisor-074/src/diagnostic_preconsent_frame.rs",
+                  "issued_ns": 42713163000,
+                  "line": 188,
+                  "now_ns": 43145155591,
+                  "reason": "within-window"
+                },
+                "first_refusal": null,
+                "last": {
+                  "age_ns": 6923213181,
+                  "file": "tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs",
+                  "issued_ns": 42713163000,
+                  "line": 139,
+                  "now_ns": 49636376181,
+                  "reason": "within-window"
+                }
+              }
+            ]
+          },
+          "case": "revalidate",
+          "causal": {
+            "first": {
+              "age_ns": 118031850,
+              "diagnostic_reason": "within-window",
+              "issued_boot": "48b26652-49a9-406f-b987-35c7a1a725cc",
+              "issued_ns": 42713163000,
+              "now_boot": "48b26652-49a9-406f-b987-35c7a1a725cc",
+              "now_ns": 42831194850,
+              "site": "window"
+            },
+            "first_refusal": null,
+            "last": {
+              "age_ns": 6923213181,
+              "diagnostic_reason": "within-window",
+              "issued_boot": "48b26652-49a9-406f-b987-35c7a1a725cc",
+              "issued_ns": 42713163000,
+              "now_boot": "48b26652-49a9-406f-b987-35c7a1a725cc",
+              "now_ns": 49636376181,
+              "site": "final_clocks"
+            },
+            "observations": 171
+          },
+          "deadline_changed": false,
+          "guard_clock_added": false,
+          "kernel": null,
+          "product": false,
+          "returned": true,
+          "server": false
+        },
+        {
+          "age": {
+            "sites": [
+              {
+                "calls": 139,
+                "first": {
+                  "age_ns": 4021595354,
+                  "file": "tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs",
+                  "issued_ns": 51654134536,
+                  "line": 121,
+                  "now_ns": 55675729890,
+                  "reason": "within-window"
+                },
+                "first_refusal": null,
+                "last": {
+                  "age_ns": 5789393367,
+                  "file": "tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs",
+                  "issued_ns": 51654134536,
+                  "line": 121,
+                  "now_ns": 57443527903,
+                  "reason": "within-window"
+                }
+              },
+              {
+                "calls": 75,
+                "first": {
+                  "age_ns": 116631453,
+                  "file": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+                  "issued_ns": 51654134536,
+                  "line": 109,
+                  "now_ns": 51770765989,
+                  "reason": "within-window"
+                },
+                "first_refusal": null,
+                "last": {
+                  "age_ns": 5772018726,
+                  "file": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+                  "issued_ns": 51654134536,
+                  "line": 109,
+                  "now_ns": 57426153262,
+                  "reason": "within-window"
+                }
+              },
+              {
+                "calls": 72,
+                "first": {
+                  "age_ns": 424711387,
+                  "file": "tools/long-run-supervisor-074/src/diagnostic_preconsent_frame.rs",
+                  "issued_ns": 51654134536,
+                  "line": 188,
+                  "now_ns": 52078845923,
+                  "reason": "within-window"
+                },
+                "first_refusal": null,
+                "last": {
+                  "age_ns": 5777594290,
+                  "file": "tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs",
+                  "issued_ns": 51654134536,
+                  "line": 139,
+                  "now_ns": 57431728826,
+                  "reason": "within-window"
+                }
+              }
+            ]
+          },
+          "case": "role-before",
+          "causal": {
+            "first": {
+              "age_ns": 116631453,
+              "diagnostic_reason": "within-window",
+              "issued_boot": "48b26652-49a9-406f-b987-35c7a1a725cc",
+              "issued_ns": 51654134536,
+              "now_boot": "48b26652-49a9-406f-b987-35c7a1a725cc",
+              "now_ns": 51770765989,
+              "site": "window"
+            },
+            "first_refusal": null,
+            "last": {
+              "age_ns": 5777594290,
+              "diagnostic_reason": "within-window",
+              "issued_boot": "48b26652-49a9-406f-b987-35c7a1a725cc",
+              "issued_ns": 51654134536,
+              "now_boot": "48b26652-49a9-406f-b987-35c7a1a725cc",
+              "now_ns": 57431728826,
+              "site": "final_clocks"
+            },
+            "observations": 143
+          },
+          "deadline_changed": false,
+          "guard_clock_added": false,
+          "kernel": null,
+          "product": false,
+          "returned": true,
+          "server": false
+        },
+        {
+          "age": {
+            "sites": [
+              {
+                "calls": 199,
+                "first": {
+                  "age_ns": 4026918880,
+                  "file": "tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs",
+                  "issued_ns": 59666465582,
+                  "line": 121,
+                  "now_ns": 63693384462,
+                  "reason": "within-window"
+                },
+                "first_refusal": null,
+                "last": {
+                  "age_ns": 6253675650,
+                  "file": "tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs",
+                  "issued_ns": 59666465582,
+                  "line": 121,
+                  "now_ns": 65920141232,
+                  "reason": "within-window"
+                }
+              },
+              {
+                "calls": 83,
+                "first": {
+                  "age_ns": 119247857,
+                  "file": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+                  "issued_ns": 59666465582,
+                  "line": 109,
+                  "now_ns": 59785713439,
+                  "reason": "within-window"
+                },
+                "first_refusal": null,
+                "last": {
+                  "age_ns": 6235109481,
+                  "file": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+                  "issued_ns": 59666465582,
+                  "line": 109,
+                  "now_ns": 65901575063,
+                  "reason": "within-window"
+                }
+              },
+              {
+                "calls": 80,
+                "first": {
+                  "age_ns": 446880079,
+                  "file": "tools/long-run-supervisor-074/src/diagnostic_preconsent_frame.rs",
+                  "issued_ns": 59666465582,
+                  "line": 188,
+                  "now_ns": 60113345661,
+                  "reason": "within-window"
+                },
+                "first_refusal": null,
+                "last": {
+                  "age_ns": 6241763316,
+                  "file": "tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs",
+                  "issued_ns": 59666465582,
+                  "line": 139,
+                  "now_ns": 65908228898,
+                  "reason": "within-window"
+                }
+              }
+            ]
+          },
+          "case": "role-after",
+          "causal": {
+            "first": {
+              "age_ns": 119247857,
+              "diagnostic_reason": "within-window",
+              "issued_boot": "48b26652-49a9-406f-b987-35c7a1a725cc",
+              "issued_ns": 59666465582,
+              "now_boot": "48b26652-49a9-406f-b987-35c7a1a725cc",
+              "now_ns": 59785713439,
+              "site": "window"
+            },
+            "first_refusal": null,
+            "last": {
+              "age_ns": 6241763316,
+              "diagnostic_reason": "within-window",
+              "issued_boot": "48b26652-49a9-406f-b987-35c7a1a725cc",
+              "issued_ns": 59666465582,
+              "now_boot": "48b26652-49a9-406f-b987-35c7a1a725cc",
+              "now_ns": 65908228898,
+              "site": "final_clocks"
+            },
+            "observations": 159
+          },
+          "deadline_changed": false,
+          "guard_clock_added": false,
+          "kernel": null,
+          "product": false,
+          "returned": true,
+          "server": false
+        },
+        {
+          "age": {
+            "sites": [
+              {
+                "calls": 199,
+                "first": {
+                  "age_ns": 3995897508,
+                  "file": "tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs",
+                  "issued_ns": 67978255668,
+                  "line": 121,
+                  "now_ns": 71974153176,
+                  "reason": "within-window"
+                },
+                "first_refusal": null,
+                "last": {
+                  "age_ns": 6228891979,
+                  "file": "tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs",
+                  "issued_ns": 67978255668,
+                  "line": 121,
+                  "now_ns": 74207147647,
+                  "reason": "within-window"
+                }
+              },
+              {
+                "calls": 83,
+                "first": {
+                  "age_ns": 123057369,
+                  "file": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+                  "issued_ns": 67978255668,
+                  "line": 109,
+                  "now_ns": 68101313037,
+                  "reason": "within-window"
+                },
+                "first_refusal": null,
+                "last": {
+                  "age_ns": 6211341941,
+                  "file": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+                  "issued_ns": 67978255668,
+                  "line": 109,
+                  "now_ns": 74189597609,
+                  "reason": "within-window"
+                }
+              },
+              {
+                "calls": 80,
+                "first": {
+                  "age_ns": 419156624,
+                  "file": "tools/long-run-supervisor-074/src/diagnostic_preconsent_frame.rs",
+                  "issued_ns": 67978255668,
+                  "line": 188,
+                  "now_ns": 68397412292,
+                  "reason": "within-window"
+                },
+                "first_refusal": null,
+                "last": {
+                  "age_ns": 6216614962,
+                  "file": "tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs",
+                  "issued_ns": 67978255668,
+                  "line": 139,
+                  "now_ns": 74194870630,
+                  "reason": "within-window"
+                }
+              }
+            ]
+          },
+          "case": "trust-after",
+          "causal": {
+            "first": {
+              "age_ns": 123057369,
+              "diagnostic_reason": "within-window",
+              "issued_boot": "48b26652-49a9-406f-b987-35c7a1a725cc",
+              "issued_ns": 67978255668,
+              "now_boot": "48b26652-49a9-406f-b987-35c7a1a725cc",
+              "now_ns": 68101313037,
+              "site": "window"
+            },
+            "first_refusal": null,
+            "last": {
+              "age_ns": 6216614962,
+              "diagnostic_reason": "within-window",
+              "issued_boot": "48b26652-49a9-406f-b987-35c7a1a725cc",
+              "issued_ns": 67978255668,
+              "now_boot": "48b26652-49a9-406f-b987-35c7a1a725cc",
+              "now_ns": 74194870630,
+              "site": "final_clocks"
+            },
+            "observations": 159
+          },
+          "deadline_changed": false,
+          "guard_clock_added": false,
+          "kernel": null,
+          "product": false,
+          "returned": true,
+          "server": false
+        }
+      ]
+    },
+    {
+      "lane": "188",
+      "exit": 101,
+      "passed": false,
+      "cases": [],
+      "original": [
+        {
+          "age": {
+            "sites": [
+              {
+                "calls": 0,
+                "first": null,
+                "first_refusal": null,
+                "last": null
+              },
+              {
+                "calls": 52,
+                "first": {
+                  "age_ns": 116555817,
+                  "file": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+                  "issued_ns": 76699105907,
+                  "line": 109,
+                  "now_ns": 76815661724,
+                  "reason": "within-window"
+                },
+                "first_refusal": null,
+                "last": {
+                  "age_ns": 3631003134,
+                  "file": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+                  "issued_ns": 76699105907,
+                  "line": 109,
+                  "now_ns": 80330109041,
+                  "reason": "within-window"
+                }
+              },
+              {
+                "calls": 49,
+                "first": {
+                  "age_ns": 411762213,
+                  "file": "tools/long-run-supervisor-074/src/diagnostic_preconsent_frame.rs",
+                  "issued_ns": 76699105907,
+                  "line": 188,
+                  "now_ns": 77110868120,
+                  "reason": "within-window"
+                },
+                "first_refusal": null,
+                "last": {
+                  "age_ns": 3636334412,
+                  "file": "tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs",
+                  "issued_ns": 76699105907,
+                  "line": 139,
+                  "now_ns": 80335440319,
+                  "reason": "within-window"
+                }
+              }
+            ]
+          },
+          "case": "healthy",
+          "causal": {
+            "first": {
+              "age_ns": 116555817,
+              "diagnostic_reason": "within-window",
+              "issued_boot": "48b26652-49a9-406f-b987-35c7a1a725cc",
+              "issued_ns": 76699105907,
+              "now_boot": "48b26652-49a9-406f-b987-35c7a1a725cc",
+              "now_ns": 76815661724,
+              "site": "window"
+            },
+            "first_refusal": null,
+            "last": {
+              "age_ns": 3636334412,
+              "diagnostic_reason": "within-window",
+              "issued_boot": "48b26652-49a9-406f-b987-35c7a1a725cc",
+              "issued_ns": 76699105907,
+              "now_boot": "48b26652-49a9-406f-b987-35c7a1a725cc",
+              "now_ns": 80335440319,
+              "site": "final_clocks"
+            },
+            "observations": 97
+          },
+          "deadline_changed": false,
+          "guard_clock_added": false,
+          "kernel": {
+            "clock": [
+              75079699843,
+              80352956945,
+              1792526427659914767,
+              1792526425834602739,
+              1,
+              60000000000
+            ],
+            "file": "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs",
+            "line": 259,
+            "phase": "unassigned",
+            "site": "clock-order"
+          },
+          "product": false,
+          "returned": false,
+          "server": false
+        }
+      ]
+    }
+  ],
+  "complete_profile_cohort": false,
+  "both_local_matrices_passed": false,
+  "runtime_candidate_adopted": false,
+  "deadline_changed": false,
+  "live_checks_changed": false,
+  "native_gate_open": false,
+  "server": false,
+  "product": false
+}

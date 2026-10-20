@@ -2,7 +2,7 @@
   "base": "ffe9593004b59a3a86d8b19ccda877d905e2fcee",
   "dirty_source": true,
   "recorded_from_tool_transcript": true,
-  "exit": 1,
+  "tool_process_exit": 1,
   "selection": "validation_round_cost_074",
   "passed": 1,
   "failed": 1,

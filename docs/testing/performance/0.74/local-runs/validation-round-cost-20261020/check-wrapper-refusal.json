@@ -1,0 +1,12 @@
+{
+  "source": "f1e6ea87e0e67b3e1dcdde0bc563a79cc9e8644a",
+  "recorded_from_tool_transcript": true,
+  "lanes": ["194", "188"],
+  "tool_process_exit": 1,
+  "native_check_started": false,
+  "cause": "The recipe copy used JavaScript replacement-string dollar syntax and truncated ValidatePattern. PowerShell refused parsing before cargo check.",
+  "retained_source": "check-refused.ps1",
+  "correction": "A first repair of the header was still rejected by ParseFile because the replacement had also duplicated the suffix. Restore the required 40-hex Source parameter and single original body; keep all source and native check requirements. Native cargo check starts only after the full recipe parses.",
+  "server": false,
+  "product": false
+}

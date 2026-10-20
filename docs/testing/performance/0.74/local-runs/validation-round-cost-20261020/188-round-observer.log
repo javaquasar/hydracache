@@ -1,0 +1,17 @@
+
+running 3 tests
+
+thread 'diagnostic_ipc::validation_trace::round_cost::round_cost_deltas_preserve_parent_counts_errors_and_panic_identity' panicked at tools/long-run-supervisor-074/src/../tests/support/round_cost.rs:162:21:
+Box<dyn Any>
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test diagnostic_ipc::validation_trace::round_cost::round_cost_deltas_preserve_parent_counts_errors_and_panic_identity ... ok
+
+thread 'diagnostic_ipc::validation_trace::round_cost::round_cost_escaping_span_cannot_complete_capture' panicked at tools/long-run-supervisor-074/src/../tests/support/round_cost.rs:37:9:
+assertion `left == right` failed: unfinished round observation
+  left: 1
+ right: 0
+test diagnostic_ipc::validation_trace::round_cost::round_cost_escaping_span_cannot_complete_capture ... ok
+test diagnostic_ipc::validation_trace::round_cost::round_cost_inactive_and_nested_captures_do_not_leak ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 1386 filtered out; finished in 0.00s
+
