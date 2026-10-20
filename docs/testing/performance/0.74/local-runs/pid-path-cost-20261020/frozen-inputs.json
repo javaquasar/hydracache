@@ -1,0 +1,29 @@
+{
+  "reference_source": "b63a0e81ad808d6f65e8c8d818ee4c090c3718ff",
+  "diff_exit": 0,
+  "members": [
+    {
+      "path": "Cargo.lock",
+      "git_object": "2f9c2914630a92d486d7109876cff680443bb629"
+    },
+    {
+      "path": "docs/COMPAT.md",
+      "git_object": "f0b7458ddc7c30f8ad536bac44d917eed4e5e4a9"
+    },
+    {
+      "path": "docs/testing/gated-test-registry.toml",
+      "git_object": "e4363d6348896575a0b93b45b38ad2ebaf8f9e19"
+    },
+    {
+      "path": "docs/testing/performance/0.74/qualification-manifest.toml",
+      "git_object": "1ba704159a59c16455fd0c9f4f15f9fda66ca9b1"
+    },
+    {
+      "path": "crates/hydracache",
+      "git_object": "9cffa18055b4e75ab11b7331ee6fe1665118972f"
+    }
+  ],
+  "qualification_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "server": false,
+  "product": false
+}

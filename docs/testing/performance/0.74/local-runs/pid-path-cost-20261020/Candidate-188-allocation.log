@@ -1,0 +1,12 @@
+
+running 1 test
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::pid_path::pid_path_allocation_attribution ... HC074-PID-ALLOC {"candidate":{"allocations":0,"reallocations":0,"requested_bytes":0},"candidate_first":false,"digits":3,"iterations":1024,"pid":408,"product":false,"reference":{"allocations":2048,"reallocations":0,"requested_bytes":12288},"rust_requests_only":true,"sample":0,"server":false}
+HC074-PID-ALLOC {"candidate":{"allocations":0,"reallocations":0,"requested_bytes":0},"candidate_first":true,"digits":3,"iterations":1024,"pid":408,"product":false,"reference":{"allocations":2048,"reallocations":0,"requested_bytes":12288},"rust_requests_only":true,"sample":1,"server":false}
+HC074-PID-ALLOC {"candidate":{"allocations":0,"reallocations":0,"requested_bytes":0},"candidate_first":false,"digits":3,"iterations":1024,"pid":408,"product":false,"reference":{"allocations":2048,"reallocations":0,"requested_bytes":12288},"rust_requests_only":true,"sample":2,"server":false}
+HC074-PID-TIME {"allocation_counter_active":false,"candidate_first":false,"candidate_wall_ns":3331366,"iterations":4096,"product":false,"reference_wall_ns":3680115,"sample":0,"server":false}
+HC074-PID-TIME {"allocation_counter_active":false,"candidate_first":true,"candidate_wall_ns":3212311,"iterations":4096,"product":false,"reference_wall_ns":3242097,"sample":1,"server":false}
+HC074-PID-TIME {"allocation_counter_active":false,"candidate_first":false,"candidate_wall_ns":3217316,"iterations":4096,"product":false,"reference_wall_ns":3827704,"sample":2,"server":false}
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1384 filtered out; finished in 0.03s
+

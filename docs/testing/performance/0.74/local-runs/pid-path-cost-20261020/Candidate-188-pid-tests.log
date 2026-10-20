@@ -1,0 +1,9 @@
+
+running 3 tests
+test diagnostic_kernel_admission::origin::pid_path::pid_path_open_differential_preserves_identity_flags_and_refusals ... ok
+test diagnostic_kernel_admission::origin::pid_path::pid_path_runtime_sites_use_fresh_numeric_key_without_string_allocation ... ok
+test diagnostic_kernel_admission::origin::pid_path::pid_path_signed_edges_and_seeded_values_match_complete_decimal ... HC074-PID-FORMAT seed=0x07401d32 mutations=16384 complete_signed_i32=true
+ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 1375 filtered out; finished in 0.00s
+

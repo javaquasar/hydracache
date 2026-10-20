@@ -1,0 +1,10 @@
+{
+  "files": [
+    "checks.ps1",
+    "facts.ps1",
+    "run.ps1",
+    "seal.ps1",
+    "verify.ps1"
+  ],
+  "syntax_passed": true
+}
