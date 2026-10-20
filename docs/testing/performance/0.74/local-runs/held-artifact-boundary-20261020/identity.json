@@ -1,0 +1,12 @@
+{
+  "source": "148bb3fe25cb94d329e6a35468ecd6838a88fed7",
+  "recipe": "1a56955507fb69ac69567470619b1df36a18a4b034205dbc66441d22870632be",
+  "runtime_changed": false,
+  "held_artifact_admission": false,
+  "topology_approved": false,
+  "original_send": false,
+  "server": false,
+  "supervisor": false,
+  "product": false,
+  "new_live_or_fault_matrix": false
+}

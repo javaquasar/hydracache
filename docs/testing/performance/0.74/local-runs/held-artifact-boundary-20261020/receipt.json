@@ -1,0 +1,19 @@
+{
+  "source": "148bb3fe25cb94d329e6a35468ecd6838a88fed7",
+  "recipe": "1a56955507fb69ac69567470619b1df36a18a4b034205dbc66441d22870632be",
+  "windows_artifact_tests": 17,
+  "artifact_tests_per_linux_compiler": 31,
+  "protocol_tests_per_retained_linux_image": 11,
+  "runtime_sources": 437,
+  "runtime_changed": false,
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "existing_regressions_passed": true,
+  "held_artifact_admission": false,
+  "topology_approved": false,
+  "original_send": false,
+  "server": false,
+  "supervisor": false,
+  "product": false,
+  "new_live_or_fault_matrix": false,
+  "clock_changed": false
+}

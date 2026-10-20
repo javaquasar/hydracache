@@ -1,0 +1,9 @@
+{
+  "source": "148bb3fe25cb94d329e6a35468ecd6838a88fed7",
+  "compiler": "1.94.0",
+  "artifact_image": "cf8d3bbbe571addd8df4e760fa10043c117a5f2ab2764a2645cddcf2a5659cfe  /home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_artifacts-49081b6809c48549",
+  "expected_artifact_tests": 31,
+  "protocol_image": "979d04f55b8e0310e07e8db75f5f54bcc23b44f90bce898ef53c7a517bfd5232  /home/artur/.cache/hydracache-074-194-check/release/deps/hydracache_long_run_supervisor_074-b26b156d3dcd0098",
+  "protocol_source_reference": "2f27453f48e038457b3591e98c43ce1f40a91e31",
+  "expected_protocol_tests": 11
+}

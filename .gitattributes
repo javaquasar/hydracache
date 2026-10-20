@@ -373,3 +373,6 @@ docs/testing/performance/0.74/local-runs/frozen-lock-fixture-20261020/**/*.log w
 # Retain isolated cgroup namespace fixture refusals and compiler receipts.
 docs/testing/performance/0.74/local-runs/fixed-slice-namespace-20261020/** -text whitespace=cr-at-eol
 docs/testing/performance/0.74/local-runs/fixed-slice-namespace-20261020/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/held-artifact-boundary-20261020/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/held-artifact-boundary-20261020/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol

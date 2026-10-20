@@ -1,0 +1,17 @@
+{
+  "source": "148bb3fe25cb94d329e6a35468ecd6838a88fed7",
+  "runtime_tree": "1445b02b1f4078a5a8f0347ed2ea5f72aaba927f",
+  "runtime_sources": 437,
+  "cargo_binary_targets": [
+    "diagnostic_builder",
+    "diagnostic_controller",
+    "diagnostic_signer_isolation_probe",
+    "diagnostic_signer_owned_probe",
+    "diagnostic_signer_root_probe",
+    "hydracache-long-run-supervisor-074"
+  ],
+  "protected_input_diff_empty": true,
+  "new_runtime_executable_created": false,
+  "held_artifact_admission": false,
+  "topology_approved": false
+}
