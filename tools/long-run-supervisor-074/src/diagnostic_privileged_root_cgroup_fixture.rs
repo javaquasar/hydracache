@@ -1,4 +1,6 @@
 //! Exact local dummy children and fixture-only cleanup, never completion.
+#[path = "../tests/support/consuming_held_live.rs"]
+mod held_live;
 use super::*;
 use std::ffi::CString;
 use std::fs::{File, OpenOptions};

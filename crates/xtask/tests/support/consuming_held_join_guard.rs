@@ -1,4 +1,6 @@
 //! Exactly three additive hooks; no exclusion for any old guard body or format.
+#[path = "consuming_held_live_guard.rs"]
+pub(crate) mod live;
 pub(crate) const HOOKS: [(&str, &str); 3] = [
     (
         "tools/long-run-supervisor-074/src/diagnostic_fixed_placement.rs",
@@ -20,8 +22,9 @@ pub(crate) const SOURCES: [&str; 3] = [
     "tools/long-run-supervisor-074/src/diagnostic_held_role_provenance.rs",
 ];
 pub(crate) fn normalize(path: &str, raw: &str) -> String {
+    let raw = live::normalize(path, raw);
     let Some((_, exact)) = HOOKS.iter().find(|(file, _)| *file == path) else {
-        return raw.into();
+        return raw;
     };
     assert_eq!(
         raw.matches(exact).count(),

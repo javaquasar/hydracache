@@ -1,5 +1,8 @@
 //! Consumed original fixed placement plus exact retained role provenance.
 //! No original message, descriptor, role, source or retry owner can be extracted.
+#[cfg(test)]
+#[path = "../tests/support/consuming_held_live_api.rs"]
+mod live_api;
 use super::*;
 use crate::diagnostic_artifacts::{ArtifactError, MAX_RECEIPT_BYTES};
 use crate::diagnostic_builder::{

@@ -2,6 +2,54 @@
 use sha2::{Digest, Sha256};
 use std::path::PathBuf;
 
+#[path = "support/consuming_held_live_guard.rs"]
+mod held_live;
+
+#[test]
+fn actual_consuming_fixture_preserves_all_446_preceding_sources_and_formats() {
+    let previous = git(&[
+        "ls-tree",
+        "-r",
+        "--name-only",
+        "6c6e47ee",
+        "--",
+        "tools/long-run-supervisor-074/src",
+    ]);
+    assert_eq!(previous.lines().count(), 446);
+    assert_eq!(
+        previous,
+        git(&["ls-files", "--", "tools/long-run-supervisor-074/src"])
+    );
+    for path in previous.lines().chain([
+        "Cargo.lock",
+        "docs/COMPAT.md",
+        "docs/testing/gated-test-registry.toml",
+        "docs/testing/performance/0.74/qualification-manifest.toml",
+    ]) {
+        assert_eq!(
+            held_live::normalize(path, &read(path)),
+            git(&["show", &format!("6c6e47ee:{path}")]),
+            "old bytes: {path}"
+        );
+    }
+}
+#[test]
+fn actual_consuming_adapter_refuses_missing_duplicate_hook_and_unrelated_drift() {
+    for (path, exact) in held_live::HOOKS
+        .into_iter()
+        .chain([("docs/testing/gated-test-registry.toml", held_live::BLOCK)])
+    {
+        let raw = read(path);
+        for bad in [raw.replacen(exact, "", 1), format!("{raw}{exact}")] {
+            assert!(std::panic::catch_unwind(|| held_live::normalize(path, &bad)).is_err());
+        }
+        assert_ne!(
+            held_live::normalize(path, &format!("{raw}\n// unrelated drift\n")),
+            git(&["show", &format!("6c6e47ee:{path}")])
+        );
+    }
+}
+
 #[path = "support/fixed_slice_namespace_guard.rs"]
 mod namespace;
 

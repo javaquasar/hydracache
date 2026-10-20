@@ -1,4 +1,7 @@
 //! Private fresh checks for the consuming holder, never detached live authority.
+#[cfg(test)]
+#[path = "../tests/support/consuming_held_live_documents.rs"]
+pub(crate) mod live_fixture;
 use super::*;
 use held::role_files::PinnedRoles;
 
