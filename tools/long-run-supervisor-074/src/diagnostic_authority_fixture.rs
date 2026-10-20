@@ -76,7 +76,22 @@ impl Leaf {
         gid: u32,
         budget: usize,
     ) -> Result<Self, AuthorityError> {
-        let mut file = open_at(dir, &name, false)?;
+        let (file, stamp, raw) = Self::read(dir, &name, uid, gid, budget)?;
+        Ok(Self {
+            file,
+            stamp,
+            raw,
+            name,
+        })
+    }
+    fn read(
+        dir: &File,
+        name: &str,
+        uid: u32,
+        gid: u32,
+        budget: usize,
+    ) -> Result<(File, Stamp, Vec<u8>), AuthorityError> {
+        let mut file = open_at(dir, name, false)?;
         let before = file.metadata()?;
         regular(&before, uid, gid, 0o400)?;
         if before.dev() != dir.metadata()?.dev() || before.len() > budget as u64 {
@@ -88,12 +103,7 @@ impl Leaf {
         if Stamp::of(&file.metadata()?) != stamp || raw.len() as u64 != stamp.len {
             return Err(AuthorityError::Invalid);
         }
-        Ok(Self {
-            file,
-            stamp,
-            raw,
-            name,
-        })
+        Ok((file, stamp, raw))
     }
     fn revalidate(
         &self,
@@ -105,8 +115,9 @@ impl Leaf {
         if Stamp::of(&self.file.metadata()?) != self.stamp {
             return Err(AuthorityError::Invalid);
         }
-        let named = Self::open(dir, self.name.clone(), uid, gid, budget)?;
-        if named.stamp != self.stamp || named.raw != self.raw {
+        // Keep the fresh File (tuple field zero) alive through both comparisons.
+        let named = Self::read(dir, &self.name, uid, gid, budget)?;
+        if named.1 != self.stamp || named.2 != self.raw {
             return Err(AuthorityError::Invalid);
         }
         Ok(())
