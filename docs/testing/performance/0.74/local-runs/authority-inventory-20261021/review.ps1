@@ -111,12 +111,12 @@ function Facts{
         }
         $taskDeltas+=[ordered]@{lane=$taskBefore.lane;isolated_per_operation=$taskLeaf}
     }
-    foreach($taskCheckName in @('Before-check-194-repair','Before-check-188-repair','Before-check-xtask','After-check-194-format','After-check-188-format','After-check-xtask-format','After-check-contracts-format','After-check-repository-format')){
+    foreach($taskCheckName in @('Before-check-194-repair','Before-check-188-repair','Before-check-xtask','After-check-194-format','After-check-188-format','After-check-xtask-format','After-check-contracts-format','After-check-repository-layout')){
         $taskCheck=Json "$taskCheckName-exit.json"
-        $taskKind=$taskCheckName.Replace('-format','')
+        $taskKind=$taskCheckName.Replace('-format','').Replace('-layout','')
         $taskCount=if($taskKind.EndsWith('xtask')){3}elseif($taskKind.EndsWith('contracts')){1}elseif($taskKind.EndsWith('repository')){4}else{11}
         Require (-not $taskCheck.failure -and $taskCheck.steps.Count -eq $taskCount -and @($taskCheck.steps.name|Select-Object -Unique).Count -eq $taskCount -and @($taskCheck.steps|Where-Object exit -ne 0).Count -eq 0) 'Checks failed or incomplete'
-        Require ($taskCheck.recipe_sha256 -ceq (Hash (Join-Path $PSScriptRoot $(if($taskCheckName.EndsWith('-repair')){'repair-check.ps1'}elseif($taskCheckName.EndsWith('-format')){'after-format-check.ps1'}else{'check.ps1'})))) 'Check recipe differs'
+        Require ($taskCheck.recipe_sha256 -ceq (Hash (Join-Path $PSScriptRoot $(if($taskCheckName.EndsWith('-repair')){'repair-check.ps1'}elseif($taskCheckName.EndsWith('-format')){'after-format-check.ps1'}elseif($taskCheckName.EndsWith('-layout')){'layout-repository-check.ps1'}else{'check.ps1'})))) 'Check recipe differs'
         foreach($taskStep in $taskCheck.steps){Require ((Hash (Join-Path $PSScriptRoot $taskStep.log)) -ceq $taskStep.sha256) 'Check log changed'}
     }
     foreach($taskLane in @('194','188')){

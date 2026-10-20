@@ -67,3 +67,9 @@ inventory source equality. Repeat all compiler, xtask, historical and repository
 checks into distinct format logs, then use their final images in an After-only
 capture recipe. Before captures stay unchanged; no After measurement has run.
 No assertion, predicate, workload, duration or threshold changes.
+
+The repaired repository check's generic prefix collides with the retained
+original format-step log. The no-overwrite guard correctly refuses before any
+command or measurement. Use a separately frozen repository-only `layout`
+prefix/recipe; keep the guard and old log. Other repaired receipts retain their
+original recipe identities. No source, test or measured invocation changes.
