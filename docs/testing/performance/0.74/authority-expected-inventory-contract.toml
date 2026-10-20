@@ -1,5 +1,5 @@
 schema = "authority-expected-inventory-local-control-074-v1"
-candidate_enabled = false
+candidate_enabled = true
 server_admitted = false
 latency_gain_claimed = false
 fresh_checks_changed = false

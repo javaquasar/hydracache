@@ -255,10 +255,12 @@ impl Directory {
             return Err(AuthorityError::Invalid);
         }
         let generations = seen.len() / 2;
-        let expected: BTreeSet<_> = (1..=generations)
-            .flat_map(|revision| [name(revision, "json"), name(revision, "commit")])
-            .collect();
-        if seen != expected {
+        if !seen
+            .iter()
+            .map(String::as_str)
+            .eq((1..=generations)
+                .flat_map(|revision| [name(revision, "commit"), name(revision, "json")]))
+        {
             return Err(AuthorityError::Invalid);
         }
         Ok(generations)
