@@ -30,6 +30,12 @@ fn bounded_projection_recovers_all_473_preceding_bodies_and_frozen_parsers() {
     ]);
     assert_eq!(paths.lines().count(), 473);
     for path in paths.lines() {
+        let once = crate::hc074_remaining_preparation_view!(path, &read(path));
+        assert_eq!(
+            crate::hc074_remaining_preparation_view!(path, &once),
+            once,
+            "composable predecessor view: {path}"
+        );
         assert_eq!(
             crate::hc074_remaining_preparation_view!(path, &read(path)),
             git(&[
@@ -42,6 +48,28 @@ fn bounded_projection_recovers_all_473_preceding_bodies_and_frozen_parsers() {
     let path = "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs";
     let raw = read(path);
     let candidate = read("tools/long-run-supervisor-074/tests/support/projection_candidate.rs");
+    for file in ["projection_candidate.rs", "projection_reference.rs"] {
+        let path = format!("tools/long-run-supervisor-074/tests/support/{file}");
+        assert_eq!(
+            read(&path),
+            git(&[
+                "show",
+                &format!("d62c8e7ae8ee551fde04081f999352c4cb551d2d:{path}")
+            ]),
+            "unchanged measured prototype/reference"
+        );
+    }
+    for (file,hook) in [
+        ("diagnostic_kernel_admission_tests.rs", "#[path = \"../tests/support/projection_cost.rs\"]\npub(super) mod projection_cost;\n\n"),
+        ("diagnostic_fixed_leaf_alloc_tests.rs", "\n#[path = \"../tests/support/projection_alloc.rs\"]\nmod projection_fields;\n"),
+    ] {
+        let raw=read(&format!("tools/long-run-supervisor-074/src/{file}"));
+        let current=|source:&str|assert_eq!(source.matches(hook).count(),1,"mandatory current test hook");
+        current(&raw);
+        for changed in [raw.replacen(hook,"",1),format!("{raw}{hook}")] {
+            assert!(std::panic::catch_unwind(||current(&changed)).is_err());
+        }
+    }
     let exact = format!("fn projection(bytes: &[u8], credentials: &libc::ucred) -> Result<Projection, KernelError> {{{}", candidate.split_once(") -> Result<Projection, KernelError> {").unwrap().1.trim_end());
     assert_eq!(raw.matches(&exact).count(), 1);
     for changed in [
@@ -110,6 +138,11 @@ fn remaining_preparation_marks_restore_exact_preceding_bodies_and_reject_drift()
         let raw = std::fs::read_to_string(root().join(&path))
             .unwrap()
             .replace('\r', "");
+        assert_eq!(
+            raw.matches(marker).count(),
+            1,
+            "mandatory current observation mark"
+        );
         let output = std::process::Command::new("git")
             .args([
                 "show",

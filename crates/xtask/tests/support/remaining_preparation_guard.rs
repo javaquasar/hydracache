@@ -8,7 +8,7 @@ macro_rules! hc074_remaining_preparation_view {
             ("tools/long-run-supervisor-074/src/diagnostic_kernel_admission_tests.rs", "#[path = \"../tests/support/projection_cost.rs\"]\npub(super) mod projection_cost;\n\n"),
             ("tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs", "\n#[path = \"../tests/support/projection_alloc.rs\"]\nmod projection_fields;\n"),
         ] {
-            if path == file {
+            if path == file && raw.contains(hook) {
                 assert_eq!(raw.matches(hook).count(), 1, "exact projection test hook");
                 raw = raw.replacen(hook, "", 1);
             }
@@ -25,13 +25,14 @@ macro_rules! hc074_remaining_preparation_view {
             let before = format!("fn projection(bytes: &[u8], credentials: &libc::ucred) -> Result<Projection, KernelError> {{{}", old_body.trim_end());
             raw = raw.replacen(&after, &before, 1);
         }
+        let has_marks = raw.contains("::mark(\"outputs-") || raw.contains("::mark(\"owned-");
         for (file, indent, names) in [
             ("tools/long-run-supervisor-074/src/diagnostic_original_output_join.rs", 12, &["outputs-enter", "outputs-starting", "outputs-pipes", "outputs-sinks"][..]),
             ("tools/long-run-supervisor-074/src/diagnostic_owned_root_manager.rs", 8, &["owned-enter"][..]),
             ("tools/long-run-supervisor-074/src/diagnostic_owned_root_manager.rs", 16, &["owned-context"][..]),
             ("tools/long-run-supervisor-074/src/diagnostic_original_root_guardians.rs", 4, &["owned-opening", "owned-controls", "owned-closing"][..]),
         ] {
-            if path == file {
+            if path == file && has_marks {
                 for name in names {
                     let exact = format!("{space}#[cfg(test)]\n{space}crate::diagnostic_ipc::validation_trace::custody_boundaries::mark(\"{name}\");\n", space=" ".repeat(indent));
                     assert_eq!(raw.matches(&exact).count(), 1, "exact remaining preparation mark: {name}");
@@ -39,7 +40,9 @@ macro_rules! hc074_remaining_preparation_view {
                 }
             }
         }
-        if path == "tools/long-run-supervisor-074/src/diagnostic_original_output_join.rs" {
+        if path == "tools/long-run-supervisor-074/src/diagnostic_original_output_join.rs"
+            && raw.contains("let result = held.prepare(|at| checkpoint(OutputJoinStage::Sinks(at)));")
+        {
             let exact = "            let result = held.prepare(|at| checkpoint(OutputJoinStage::Sinks(at)));\n            result";
             assert_eq!(raw.matches(exact).count(), 1, "exact output result observation");
             raw = raw.replacen(exact, "            held.prepare(|at| checkpoint(OutputJoinStage::Sinks(at)))", 1);
