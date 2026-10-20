@@ -1,0 +1,16 @@
+{
+  "stage": "After",
+  "source": "7595dba2837627ac51fc66bb05a89f6b2a59521f",
+  "recipe_sha256": "d739fac56b92e8f83fa06db0ec689d31e6cd29fdd135d8539e5f0d0ab0ca6af1",
+  "steps": [
+    {
+      "name": "format",
+      "log": "After-check-repository-format.log",
+      "sha256": "bd48a60c1f4314a1bc4ac72c41b7c57d3f783bbe367c941e735b25bcb150ec3a",
+      "exit": 1
+    }
+  ],
+  "failure": "Failed format (1)",
+  "server": false,
+  "product": false
+}

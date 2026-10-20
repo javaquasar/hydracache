@@ -1,0 +1,14 @@
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs:255:
+             return Err(AuthorityError::Invalid);
+         }
+         let generations = seen.len() / 2;
+[31m-        if !seen
+(B[m[31m-            .iter()
+(B[m[31m-            .map(String::as_str)
+(B[m[31m-            .eq((1..=generations)
+(B[m[31m-                .flat_map(|revision| [name(revision, "commit"), name(revision, "json")]))
+(B[m[32m+        if !seen.iter().map(String::as_str).eq((1..=generations)
+(B[m[32m+            .flat_map(|revision| [name(revision, "commit"), name(revision, "json")]))
+(B[m         {
+             return Err(AuthorityError::Invalid);
+         }

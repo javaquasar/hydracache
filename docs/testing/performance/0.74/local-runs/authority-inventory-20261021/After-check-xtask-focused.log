@@ -1,0 +1,42 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.03s
+     Running tests\authority_context_074.rs (target\debug\deps\authority_context_074-6287c06552dbfff4.exe)
+
+running 2 tests
+test authority_context_candidate_matches_contract_and_frozen_prefix_order ... ok
+test authority_context_restores_preceding_sources_without_changing_key_encoder ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.27s
+
+     Running tests\authority_inventory_074.rs (target\debug\deps\authority_inventory_074-8e86af1042e9bbf2.exe)
+
+running 2 tests
+test authority_inventory_contract_preserves_observed_prefix_formatter_and_deadlines ... ok
+test authority_inventory_exact_view_restores_baseline_and_rejects_unknown_or_duplicate_hooks ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.43s
+
+     Running tests\authority_key_hex_074.rs (target\debug\deps\authority_key_hex_074-dc842414f1324699.exe)
+
+running 2 tests
+test authority_hex_current_candidate_is_exact_and_reference_is_frozen ... ok
+test authority_hex_restores_preceding_bodies_and_rejects_unknown_encoder ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.21s
+
+     Running tests\authority_leaf_name_074.rs (target\debug\deps\authority_leaf_name_074-8a8c1b96f6eab807.exe)
+
+running 2 tests
+test authority_leaf_name_contract_keeps_full_read_reference_and_original_drop_scope ... ok
+test authority_leaf_name_restores_previous_sources_and_refuses_unknown_implementations ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.19s
+
+     Running tests\validation_leaf_requests_074.rs (target\debug\deps\validation_leaf_requests_074-e4cd1d103e61b4e6.exe)
+
+running 2 tests
+test validation_leaf_requests_keep_measurement_scopes_and_limits_explicit ... ok
+test validation_leaf_requests_only_add_exact_test_hook_and_registered_manual_gate ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s
+

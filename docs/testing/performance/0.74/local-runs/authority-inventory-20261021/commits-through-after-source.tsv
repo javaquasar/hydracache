@@ -1,0 +1,12 @@
+d65df0a17adc16d10bf7f379c7c9c2da6405fdb9	docs: preregister expected inventory attribution
+c4cd6a15d4caccad104af642996c1b1a5b5411c1	docs: freeze local inventory capture recipes
+53a858cc265226b6e773cdd8db0902a4af501b9d	docs: freeze inventory conservation reviewer and canary receipt
+679844a26d1732de96639babf4feb575bce28b0f	docs: preserve inventory packet bytes across platforms
+0e76c85b3d940a4d47ec20f06981455840bcad29	docs: require repeatable inventory samples and exact depths
+9034a3f989e967b9daeb4a0a7fa0e41d85208797	docs: retain MSRV lint refusal before inventory capture
+243288427e5fcc123e70319d233f939ab7291537	test: add bounded expected inventory controls and request probe
+e4d3ddcd2d795249138aa5990b3877c0ac4b99fe	test: retain paired inventory baseline before runtime change
+7595dba2837627ac51fc66bb05a89f6b2a59521f	perf: stream expected authority inventory without a second tree
+5606d3946d9a57c84fe1016d440dba00ff9eb34a	docs: retain pre-capture format refusal and freeze final repair gate
+c86330ae85a2ff9fc91f2d177ac2ae3f0e9fc48b	style: apply repository layout to inventory comparison and exact template
+5f56a9c3a1803ee7d403a411f091e98848a9e276	docs: avoid retained format-log prefix collision
