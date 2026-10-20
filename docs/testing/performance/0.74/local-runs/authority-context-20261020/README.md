@@ -39,7 +39,45 @@ recomputes results and conservation, checks all accepted receipts plus the
 initial refusal, rehashes nine earlier packets and exercises summary mutations.
 Once sealed, never edit or reseal this packet.
 
+`final-check.ps1` separately requires identical committed blobs and normalized
+SHA256 for the reference, binding workload, unchanged complete inspect control
+and qualification manifest across Before/After on each compiler. It records
+final documentation, registry and local performance-contract checks after the
+results are documented. It does not replace any check or measurement recipe.
+
 No server run, installation, supervisor, clock/service operation, product
 workload, native matrix retry or full qualification occurs. Separate processes
 or boots do not establish clock continuity. Existing native time-order refusals
 and lifecycle/trust/writer retirement/reconnect gates remain independently closed.
+
+## Recorded result
+
+Before source is `acdcdc30bbd37641ac06440d0aa2b9ec75908711`; runtime After is
+`b8e02d6aee043e6d39d1719d8dcc9f44706aff03`. All three samples on both compiler
+lanes agree. Counts below are successful Rust requests per operation, with
+requested bytes including realloc sizes, not retained memory.
+
+| Operation | Allocations Before to After | Reallocations Before to After | Requested bytes Before to After |
+| --- | ---: | ---: | ---: |
+| Healthy or context-mismatch complete binding | 3 to 1 | 0 to 0 | 132 to 64 |
+| Issuer/epoch mismatch, also wrong host | 1 to 1 | 0 to 0 | 64 to 64 |
+| Complete fixture inspect, one generation | 37 to 35 | 8 to 8 | 2710 to 2642 |
+| Complete fixture inspect, seven generations | 153 to 151 | 56 to 56 | 12988 to 12920 |
+
+Every complete inspect sample conserves the isolated healthy binding reduction:
+two allocations, zero reallocations and 68 requested bytes. Reads remain four
+and 28 at the respective depths. All six non-authority leaf cases and every
+fresh kernel count remain equal; measured batches perform no write requests.
+This accepts only the bounded request substitution. Full ActiveAuthority,
+CPU, latency, retained memory and cache API improvement remain unmeasured.
+
+Before boot is `d565c7a2-36c0-4d67-a4c9-fa8dd2440d38`; After boot is
+`b4b655c5-f2f0-446e-9fc2-378681ae0f80`. They are independent cohorts, not a
+continuous process/campaign or clock-stability proof. No live matrix is retried.
+
+Both stages pass authority 189/189 per compiler with 11 ignored manual tests,
+focused kernel/trust/allocator controls, check and strict clippy. All 367
+historical/current source contracts and format/docs/registry/local performance
+checks pass. Frozen reference/workload and qualification inputs remain equal.
+`summary.json` recomputes stage-to-arm identity and conservation from raw logs;
+integrity/summary mutation passes do not grant native or server admission.
