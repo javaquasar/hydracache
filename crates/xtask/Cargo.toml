@@ -11,6 +11,7 @@ description = "HydraCache repository automation tasks."
 flate2 = "1.1.2"
 hydracache = { workspace = true, features = ["durable-value-store"] }
 hydracache-client-plane-spike.workspace = true
+hydracache-cluster-testkit.workspace = true
 hydracache-loadgen.workspace = true
 jsonschema.workspace = true
 proc-macro2.workspace = true

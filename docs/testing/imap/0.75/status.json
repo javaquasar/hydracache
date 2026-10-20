@@ -1,0 +1,82 @@
+{
+  "release": "0.75",
+  "contract_version": 1,
+  "status": "provisional",
+  "w0_disposition": "open",
+  "production_capability": "disabled_fail_closed",
+  "safe_foundation": {
+    "phase": "scaffolded_not_admitted",
+    "implemented": [
+      "provisional_w0_contracts",
+      "reference_mutation_model",
+      "linearizability_oracle",
+      "deterministic_fault_scenarios",
+      "java_semantic_harness",
+      "executable_authority_model_receipts",
+      "evidence_schema_validation",
+      "value_plane_threat_model",
+      "fairness_namespace_reference_models",
+      "extended_java_semantic_harness",
+      "provisional_backend_interfaces",
+      "hazelcast_source_provenance",
+      "distributed_value_plane_simulator",
+      "executable_security_guards",
+      "complete_foundation_receipt_generation",
+      "cross_language_reference_key_codec",
+      "local_distributed_correctness_gate",
+      "seeded_stateful_chaos_campaign",
+      "bounded_replica_ack_tracker",
+      "resumable_partition_transfer_model",
+      "cluster_listener_watermark_model",
+      "partition_grouped_bulk_retry_model",
+      "complete_namespace_lifecycle_model",
+      "composite_authority_explorer_and_shrinker",
+      "cross_surface_reference_projection",
+      "component_proof_receipts",
+      "stateful_java_semantic_foundation",
+      "contract_test_traceability",
+      "abstract_durable_recovery_model",
+      "dedup_lifecycle_model",
+      "multi_subscriber_listener_model",
+      "bulk_deadline_cancellation_model",
+      "transfer_crash_matrix",
+      "expanded_composite_interleavings",
+      "seeded_java_property_harness",
+      "new_code_coverage_ratchet",
+      "extended_component_receipts",
+      "exact_resource_cleanup_ledger",
+      "test_only_loopback_fault_transport",
+      "bounded_collection_and_lifecycle_api"
+    ],
+    "deferred": [
+      "production_backend_and_partition_ownership",
+      "final_wire_and_durable_identities",
+      "hc1_hc2_generation_change",
+      "production_surface_routing",
+      "performance_baseline_and_hazelcast_comparison",
+      "release_candidate"
+    ]
+  },
+  "blocked_by_074": [
+    {
+      "id": "published-074-dependency-policy",
+      "required_artifact": "published 0.74 source with cargo deny check licenses green, including an accepted license expression for hydracache-long-run-supervisor-074",
+      "reason": "the current published 0.74 branch fails the full verify dependency-policy gate before any 0.75-specific workspace tests run"
+    },
+    {
+      "id": "published-074-commit",
+      "required_artifact": "published 0.74.0 tag and exact source SHA",
+      "reason": "W0 cannot freeze old/new compatibility or final file ownership against an unpublished predecessor"
+    },
+    {
+      "id": "accepted-native-batch-baseline",
+      "required_artifact": "accepted 0.74 native and batch performance contract plus receipts",
+      "reason": "0.75 cannot select or change the predecessor's Bytes and batch path before its baseline is frozen"
+    },
+    {
+      "id": "final-wire-durable-identities",
+      "required_artifact": "reviewed post-0.74 compatibility ADR and docs/COMPAT.md allocation",
+      "reason": "this foundation deliberately assigns no final protocol or durable numeric identity"
+    }
+  ]
+}
