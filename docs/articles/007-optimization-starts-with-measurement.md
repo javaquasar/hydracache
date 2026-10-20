@@ -15381,3 +15381,52 @@ harness-prefixed origin line, then reprocesses the original successful logs
 after an exact-prefix repair; no measurement is repeated. The existing live
 clock-order failures remain independent closed gates. There is no server,
 installation, supervisor control, clock/service change or product workload.
+
+## One issuer key encoder with a conserved allocation reduction
+
+The [authority issuer-key experiment](../testing/performance/0.74/local-runs/authority-key-hex-20261020/README.md)
+isolates a specific source of requests inside journal inspection. The original
+`key_hex` creates a formatted string for each byte and collects them into an
+owned lowercase key. The existing `crate::hex` reserves the final capacity and
+fills one string. Both return the same owned 64-byte public key representation;
+neither changes which issuer is trusted or how often its pin is checked.
+
+The baseline remains unchanged while tests compare 256 seeded public keys,
+all hexadecimal nibbles, canonical record bytes/digests and independent binding
+refusals. One healthy binding and 12 altered issuer/policy/epoch/host/namespace
+cases retain their decisions. The before allocation control captures frozen
+reference, proposed encoder and actual runtime function in one image, rotating
+arm order. Only after the before logs are retained does one runtime function
+change to `crate::hex`; no inventory, path ownership or context clone is changed
+in that candidate.
+
+Three samples of 1024 operations on both GNU 1.94 and MSRV 1.88 agree:
+
+| Operation | Allocations Before to After | Reallocations Before to After | Requested bytes Before to After |
+| --- | ---: | ---: | ---: |
+| Issuer key formatting | 32 to 1 | 3 to 0 | 368 to 64 |
+| Complete fixture inspect with 1 generation | 68 to 37 | 11 to 8 | 3014 to 2710 |
+| Complete fixture inspect with 7 generations | 184 to 153 | 59 to 56 | 13292 to 12988 |
+
+The complete operation loses exactly the isolated encoder's 31 allocations,
+3 reallocations and 304 requested bytes at both depths. That conservation is
+the useful attribution result: the measured benefit survives outside the leaf,
+without silently dropping required work. Journal read requests stay at 4 and
+28 respectively; Boot, all four Namespace openers, complete Origin and kernel
+observation counts remain equal. Requested bytes include realloc sizes, not
+retained memory. The scalar substitution is locally accepted.
+
+The authority suite passes 187 tests on each compiler before and after, with
+ten manual/privileged tests left ignored. Targeted kernel/trust tests, check
+and strict clippy pass, as do all 365 historical/current source contracts and
+repository checks. Exact reconstruction confines runtime drift to this encoder
+and preserves every old assertion. No fresh observation is cached and no
+deadline is extended.
+
+Before and After run on different WSL boot IDs. The comparison therefore says
+nothing about continuous process identity, clock stability or native admission.
+It measures allocation requests, not CPU or elapsed time; fixed production
+ancestry and the full ActiveAuthority wrapper remain outside the fixture.
+No cache API or full-frame speedup is claimed, and no server, installation,
+supervisor or clock/service operation occurs. Further temporary context,
+name and inventory ownership must be tested as separate hypotheses.

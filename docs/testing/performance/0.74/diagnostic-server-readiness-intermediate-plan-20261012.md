@@ -917,3 +917,21 @@ formatting and temporary ownership inside authority inspection, with separate
 attribution before any substitution. All original live checks and 300/60/10
 deadlines remain. This does not rerun or repair the preceding live refusals,
 open authenticated execution or authorize a new server rehearsal.
+
+## Authority issuer key formatting candidate
+
+The [isolated candidate](local-runs/authority-key-hex-20261020/README.md)
+replaces only per-byte issuer-key formatting with existing exact-capacity hex
+encoding. All live checks, their frequency, canonical bytes and original
+300/60/10 deadlines remain. Before/after controls conserve exactly 31 fewer
+allocations, 3 fewer reallocations and 304 fewer requested bytes per complete
+fixture authority inspect at both one and seven journal generations. Fresh
+read/write/kernel counts remain equal. Both compiler lanes pass authority,
+kernel/trust and check/lint suites; all 365 source/contract assertions pass.
+
+This is a locally accepted allocation substitution, not proof that native
+preparation fits its admission window. Before and After report different boot
+IDs; no native live matrix is retried or time refusal removed. Fixed production
+ancestry, full ActiveAuthority latency, real original execution and all lifecycle,
+writer retirement, trust and reconnect gates remain separate. The next local
+hypotheses are temporary context/name/inventory ownership, one at a time.

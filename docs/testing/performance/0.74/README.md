@@ -4976,3 +4976,27 @@ plus inventory, SHA256
 `9861517676b8ed06b49ebe9d3ebd3c9d8d4835c74fd81c4ff6703edccd9f9ad3`.
 Seven preceding packets and nine summary scope mutations verify; full syscall
 coverage, full ActiveAuthority measurement and native admission remain false.
+
+## Authority issuer key allocation reduction
+
+The [paired control](local-runs/authority-key-hex-20261020/README.md) tests one
+runtime function substitution, `33ddeff9`: authority issuer keys use existing
+`crate::hex` instead of per-byte formatting. A 256-key seeded differential,
+canonical bytes/digests, healthy binding and 12 pin/context refusals preserve
+semantics. Both compiler lanes pass before/after authority suites, check and
+strict lint; all 365 historical/current contracts and repository checks pass.
+
+Three samples on GNU 1.94 and MSRV 1.88 reduce formatting requests from
+32 allocations/3 reallocations/368 bytes to 1/0/64. Complete fixture inspect
+changes from 68/11/3014 to 37/8/2710 at one generation and 184/59/13292 to
+153/56/12988 at seven. The 31/3/304 reduction conserves exactly across both
+depths; reads remain 4/28 and all other leaf/kernel observations remain equal.
+This is a locally accepted request reduction, not a full ActiveAuthority or
+cache API latency result. Before and After have different boot IDs; live time
+continuity and native/server admission remain closed. No push or server run.
+
+Evidence `65b7f290b1e649e9005bb1776e5d357e069ebfb9` seals 96 members plus
+inventory, SHA256
+`6d7cadf2d084320d4d68c5fe73a44e6fe964003bb8e6e53d6b8c1af0905413f0`.
+Eight earlier packets and ten summary mutations verify integrity/conservation
+without opening native/server/product gates.
