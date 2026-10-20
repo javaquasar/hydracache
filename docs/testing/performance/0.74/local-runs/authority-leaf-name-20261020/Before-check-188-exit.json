@@ -1,0 +1,106 @@
+{
+  "stage": "Before",
+  "source": "ae94a699ee439441c9ac1e1c840d10ec4ac98af0",
+  "recipe_sha256": "62c7bcfb192e797fca6d73e61a4ad6465205d0fc912ed274500c7b56148d309b",
+  "steps": [
+    {
+      "name": "authority_leaf_name_",
+      "sha256": "3c2f3b485ee23993c5880b0278f105638db6d959d4532666f4faa255b6877931",
+      "log": "Before-check-188-authority_leaf_name_.log",
+      "exit": 0
+    },
+    {
+      "name": "authority_context_",
+      "sha256": "19623309a96feae7176a3d7eb9363dc9e4cabc085b10300241f2c72dc7a063e8",
+      "log": "Before-check-188-authority_context_.log",
+      "exit": 0
+    },
+    {
+      "name": "authority_hex_",
+      "sha256": "b7eb55954c0aa9eb955d0092b965aff1ef134e45dc72eacf9b8b17da80618498",
+      "log": "Before-check-188-authority_hex_.log",
+      "exit": 0
+    },
+    {
+      "name": "authority_",
+      "sha256": "6ad8b6e64a160032562c088d14312a7fa5d4a005605848319e364b6540c111c4",
+      "log": "Before-check-188-authority_.log",
+      "exit": 0
+    },
+    {
+      "name": "validation_leaf_requests_",
+      "sha256": "3d70a74e848b908fb6412362785909dbfe75317d1eaa35e0a690c4f4243a6b98",
+      "log": "Before-check-188-validation_leaf_requests_.log",
+      "exit": 0
+    },
+    {
+      "name": "fixed_leaf_alloc_counter",
+      "sha256": "c26750171b0094cd1a7ccc825f5b7d6d55a23f4c8cd20fc644b27557a034789e",
+      "log": "Before-check-188-fixed_leaf_alloc_counter.log",
+      "exit": 0
+    },
+    {
+      "name": "fixed_leaf_path_differential",
+      "sha256": "1d0c7b41ec18f2e07d2fcdfdd0b28aaf597fd9a3e430f1722e8d2a1dfcc7c905",
+      "log": "Before-check-188-fixed_leaf_path_differential.log",
+      "exit": 0
+    },
+    {
+      "name": "fixed_leaf_path_preserves",
+      "sha256": "5b727c57abe143a2aa97c77e60a6e538f654dd923e383d7ef538380f00a1b587",
+      "log": "Before-check-188-fixed_leaf_path_preserves.log",
+      "exit": 0
+    },
+    {
+      "name": "kernel_time_",
+      "sha256": "199888748f42c3c5eef3e1432bce9130766070b1c633f7bd03c03168c2a68d33",
+      "log": "Before-check-188-kernel_time_.log",
+      "exit": 0
+    },
+    {
+      "name": "kernel_worker_context_",
+      "sha256": "b1ff85612b82fb9052c63b31a73df6d06acc9de607860c780b0089b001995b84",
+      "log": "Before-check-188-kernel_worker_context_.log",
+      "exit": 0
+    },
+    {
+      "name": "authority_fixed_",
+      "sha256": "5690a87484a54d04284df6e0fae5f27773ba9757770c9cd271d7f119d1682417",
+      "log": "Before-check-188-authority_fixed_.log",
+      "exit": 0
+    },
+    {
+      "name": "authority_fixture_",
+      "sha256": "b861555c91a5a62ab8e3b250eac23b1802260ef5e52849da5f7704e2130efea8",
+      "log": "Before-check-188-authority_fixture_.log",
+      "exit": 0
+    },
+    {
+      "name": "worker_trust_input_",
+      "sha256": "fbde89fb4fd33da98f12c4a65a359dc5f9afbcbfad3a411785926d226f3b2971",
+      "log": "Before-check-188-worker_trust_input_.log",
+      "exit": 0
+    },
+    {
+      "name": "check",
+      "sha256": "6059db47f912f1431bdf17b5c70afe56cb90aaff204e99202067b88d4ab1dcfa",
+      "log": "Before-check-188-check.log",
+      "exit": 0
+    },
+    {
+      "name": "lint",
+      "sha256": "d0e9f0bdb682c0b6b46f678306c9ee95c2c15cda0c4620bfa0142fdb5436e06f",
+      "log": "Before-check-188-lint.log",
+      "exit": 0
+    },
+    {
+      "name": "build",
+      "sha256": "180140f718649a9c2d77e7423b3f3fb329a7d0084d7a26e6dce95b54b83757fe",
+      "log": "Before-check-188-build.log",
+      "exit": 0
+    }
+  ],
+  "failure": null,
+  "server": false,
+  "product": false
+}
