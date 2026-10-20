@@ -2,8 +2,7 @@
 use sha2::{Digest, Sha256};
 use std::path::PathBuf;
 
-#[path = "support/consuming_held_live_guard.rs"]
-mod held_live;
+use namespace::held_build::launcher::roles::binding::trust::consuming::live as held_live;
 
 #[test]
 fn actual_consuming_fixture_preserves_all_446_preceding_sources_and_formats() {

@@ -42,3 +42,16 @@ failed cohorts. Require source guards, old/new tests, strict lint, formatting,
 registry/docs and local performance contract. A refused local composition is
 not acceptance. Full joined SIGKILL/lost-ACK, original delivery, all-writer
 lifecycle, reconnect and production trust remain subsequent independent gates.
+
+## Separate serial environment control
+
+Retain the initial fixture-policy refusal at fcac7edd on both compilers and the
+corrected-input GNU refusal at 5172d69b. The latter reaches Challenge(Time) before
+the consuming method while the full 321-test source-contract suite runs on the
+same machine; this overlap does not establish the cause of the refusal. Do not
+erase it or extend any bound. After all own contract/lint jobs finish, run the
+exact hash-bound corrected GNU image once, serially, with the same five cases
+and a separate instrumented healthy case. Record this as another environment
+control, not a replacement successful receipt for the failed cohort. Then run
+MSRV independently without overlapping own build/test load. Any further refusal
+requires attribution of original issued/now/boot, not retries into acceptance.
