@@ -1,14 +1,15 @@
 param([Parameter(Mandatory)][ValidatePattern('^[0-9a-f]{40}$')][string]$Source)
 $ErrorActionPreference='Stop'
+$taskReceiptRoot=Join-Path $PSScriptRoot 'confirmed'
 $taskRecipe=(Get-FileHash (Join-Path $PSScriptRoot 'checks.ps1') -Algorithm SHA256).Hash.ToLowerInvariant()
 $taskFlags=@('privileged_full_join','late_original_join','production_enrollment','production_role_receipt_issued','original_send','server','supervisor','product','full_joined_sigkill','clock_changed')
-function ReadJson([string]$Name){Get-Content -Raw -LiteralPath (Join-Path $PSScriptRoot $Name)|ConvertFrom-Json}
+function ReadJson([string]$Name){$taskFolder=if($Name -in @('inventory.json','summary.json')){$PSScriptRoot}else{$taskReceiptRoot};Get-Content -Raw -LiteralPath (Join-Path $taskFolder $Name)|ConvertFrom-Json}
 function Scope($Value,[string]$Mode){
     foreach($taskFlag in $taskFlags){if($Value.$taskFlag -isnot [bool] -or $Value.$taskFlag -cne $false){throw "Scope upgrade: $taskFlag"}}
     foreach($taskFlag in @('typed_consuming_join','kernel_role_bridge')){if($Value.$taskFlag -isnot [bool] -or $Value.$taskFlag -cne ($Mode -in @('194','188'))){throw 'Consuming scope'}}
 }
 function Receipt($Value,[string]$Mode){
-    $taskNew=if($Mode -in @('194','188')){16}else{0}
+    $taskNew=if($Mode -in @('194','188')){17}else{0}
     $taskOld=if($Mode -ceq 'repository'){18}elseif($Mode -ceq 'windows'){28}else{38}
     $taskDocs=if($Mode -ceq 'repository'){0}elseif($Mode -ceq 'windows'){4}else{11}
     $taskRounds=if($Mode -ceq 'repository'){1}else{2}
@@ -16,7 +17,7 @@ function Receipt($Value,[string]$Mode){
     Scope $Value $Mode
 }
 function TestLog([string]$Name,[int]$Count){
-    $taskRaw=Get-Content -Raw (Join-Path $PSScriptRoot $Name)
+    $taskRaw=Get-Content -Raw (Join-Path $taskReceiptRoot $Name)
     if(-not $taskRaw.Contains("test result: ok. $Count passed; 0 failed; 0 ignored;") -or $taskRaw -match 'compiler unexpectedly panicked|internal compiler error|thread .rustc. .*panicked'){throw "Test selection or compiler panic: $Name"}
 }
 function FormatReceipt($Value){
@@ -48,10 +49,10 @@ foreach($taskMode in @('windows','194','188','repository')){
         if($taskImage.source -cne $Source -or $taskImage.mode -cne $taskMode -or $taskImage.recipe -cne $taskRecipe -or $taskImage.selection -cne $taskSelection -or $taskImage.sha256 -cnotmatch '^[0-9a-f]{64}$'){throw 'Image binding'}
         if($taskMode -ceq 'windows'){if($taskImage.path -notmatch '^[A-Za-z]:\\.+\.exe$'){throw 'Windows image path'}}
         elseif(-not $taskImage.path.StartsWith("/home/artur/.cache/hydracache-074-$taskMode-check/debug/",[StringComparison]::Ordinal)){throw 'Linux image path'}
-        $taskCount=if($taskSelection -ceq 'new'){16}elseif($taskMode -ceq 'windows'){28}else{38}
+        $taskCount=if($taskSelection -ceq 'new'){17}elseif($taskMode -ceq 'windows'){28}else{38}
         foreach($taskRound in 1..2){
             TestLog "$taskMode-$taskSelection-tests-$taskRound.log" $taskCount
-            if($taskSelection -ceq 'new' -and -not (Get-Content -Raw (Join-Path $PSScriptRoot "$taskMode-$taskSelection-tests-$taskRound.log")).Contains('consuming_held_join seed=0x0074c05e substitutions=128')){throw 'Missing seeded controls'}
+            if($taskSelection -ceq 'new' -and -not (Get-Content -Raw (Join-Path $taskReceiptRoot "$taskMode-$taskSelection-tests-$taskRound.log")).Contains('consuming_held_join seed=0x0074c05e substitutions=128')){throw 'Missing seeded controls'}
         }
     }
     if($taskMode -cne 'windows'){foreach($taskRound in 1..2){TestLog "$taskMode-trust-$taskRound.log" 26;TestLog "$taskMode-fixed-$taskRound.log" 5}}
@@ -64,6 +65,10 @@ FormatReceipt (ReadJson 'repository-fmt-empty-output.json')
 $taskSummary=ReadJson 'summary.json'
 if($taskSummary.source -cne $Source -or $taskSummary.recipe -cne $taskRecipe -or $taskSummary.old_sources_reconstructed -ne 443 -or $taskSummary.named_runtime_additions -ne 3 -or $taskSummary.full_321_rerun -isnot [bool] -or $taskSummary.full_321_rerun -cne $false -or $taskSummary.qualification_manifest_sha256 -cne '11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc'){throw 'Summary binding'}
 Scope $taskSummary '194'
+if($taskSummary.first_frozen_cohort_accepted -isnot [bool] -or $taskSummary.first_frozen_cohort_accepted -cne $false -or $taskSummary.preceding_refusal_attributed -isnot [bool] -or $taskSummary.preceding_refusal_attributed -cne $false){throw 'Do not erase the unclassified preceding refusal'}
+if((Get-FileHash (Join-Path $PSScriptRoot 'first-checks.ps1') -Algorithm SHA256).Hash.ToLowerInvariant() -cne 'a782f74fcb92448b1f57b6d216e5a92fcb06f1d8528b04e89e64496d252462c6'){throw 'First recipe changed'}
+if(-not (Get-Content -Raw (Join-Path $PSScriptRoot '194-trust-2.log')).Contains('test result: FAILED. 25 passed; 1 failed;')){throw 'First frozen refusal missing'}
+foreach($taskMode in @('194','188')){foreach($taskRound in 1..2){$taskRaw=Get-Content -Raw (Join-Path $taskReceiptRoot "$taskMode-new-tests-$taskRound.log");foreach($taskSample in 0..7){if(-not $taskRaw.Contains("HC074-CONSUMING-MISMATCH-TRACE sample=$taskSample assertions_ok=true first=None")){throw 'Unchanged assertion diagnostic selection'}}}}
 if(-not (Get-Content -Raw (Join-Path $PSScriptRoot 'missing-module-red.log')).Contains('diagnostic_held_role_provenance.rs')){throw 'Missing preimplementation refusal'}
 # In-memory metadata controls never modify the sealed packet.
 $taskNegative=0;$taskBase=ReadJson 'windows-receipt.json'

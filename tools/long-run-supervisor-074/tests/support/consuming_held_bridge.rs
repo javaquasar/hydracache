@@ -247,3 +247,24 @@ fn consuming_held_private_retirement_closes_source_without_exporting_the_origina
         assert!(source.is_refused() && original.is_refused());
     });
 }
+
+#[test]
+fn consuming_held_existing_mismatch_assertion_preserves_first_kernel_refusal() {
+    // Invoke the unchanged old assertion, with the existing test-only recorder.
+    // Do not convert a different refusal into an acceptable mismatch or retry it.
+    for sample in 0..8 {
+        let (result, event) = crate::diagnostic_kernel_admission::refusal_trace::capture(|| {
+            std::panic::catch_unwind(
+                super::validly_signed_v4_for_other_request_controller_identity_or_policy_poisons_join,
+            )
+        });
+        eprintln!(
+            "HC074-CONSUMING-MISMATCH-TRACE sample={sample} assertions_ok={} first={event:?}",
+            result.is_ok()
+        );
+        if let Err(panic) = result {
+            std::panic::resume_unwind(panic);
+        }
+        assert!(event.is_none(), "unexpected kernel refusal: {event:?}");
+    }
+}
