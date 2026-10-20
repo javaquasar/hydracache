@@ -1,11 +1,13 @@
-param([Parameter(Mandatory)][ValidateSet('instrumented','candidate')][string]$Cohort)
+param([Parameter(Mandatory)][ValidateSet('instrumented','candidate')][string]$Cohort,
+      [ValidateSet('','reviewed')][string]$RunDirectory='')
 $ErrorActionPreference='Stop'
+$taskDirectory=if($RunDirectory){Join-Path $PSScriptRoot $RunDirectory}else{$PSScriptRoot}
 $taskPrefix='HC074-HELD-PHASE '
 $taskResult=@()
 foreach($taskLane in '194','188'){
     foreach($taskSample in 0..2){
-        $taskExit=Get-Content -Raw "$PSScriptRoot/$Cohort-$taskLane-profile-$taskSample-exit.json"|ConvertFrom-Json
-        $taskRaw=Get-Content "$PSScriptRoot/$Cohort-$taskLane-profile-$taskSample.log"
+        $taskExit=Get-Content -Raw "$taskDirectory/$Cohort-$taskLane-profile-$taskSample-exit.json"|ConvertFrom-Json
+        $taskRaw=Get-Content "$taskDirectory/$Cohort-$taskLane-profile-$taskSample.log"
         foreach($taskLine in $taskRaw){
             $taskIndex=$taskLine.IndexOf($taskPrefix,[StringComparison]::Ordinal)
             if($taskIndex -lt 0){continue}

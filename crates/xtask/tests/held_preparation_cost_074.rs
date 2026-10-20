@@ -61,7 +61,7 @@ fn held_preparation_and_prefix_reconstruct_all_old_runtime_and_fixture_assertion
         "tools/long-run-supervisor-074/src",
         "tools/long-run-supervisor-074/tests/support",
     ]);
-    assert_eq!(paths.lines().count(), 450);
+    assert_eq!(paths.lines().count(), 462);
     for path in paths.lines().chain([
         "Cargo.lock",
         "docs/COMPAT.md",
