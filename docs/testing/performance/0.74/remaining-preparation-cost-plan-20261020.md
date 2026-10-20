@@ -37,3 +37,57 @@ latency, API or retained-memory claim follows from allocation requests alone.
 Native composition and joined crash/delivery/cessation/lifecycle/reconnect/trust
 gates stay independent and closed. Source adapters must restore only exact known
 substitutions and retain all old assertions.
+
+## Local measurements and implementation
+
+Observer/prototype source `d62c8e7ae8ee551fde04081f999352c4cb551d2d` retains
+six complete baseline profiles and six alternating allocation pairs. The
+complete old parser and Sender body stay references; 804 seeded differential
+cases compare values and original refusal sites. Root-controls creation is not
+the large owned-root owner: binding/preparation/first observation takes
+0.325–0.423 ms, while context/opening/closing take 139–182, 143–179 and 139–169 ms.
+Outputs' Starting and sinks are the larger spans; Starting includes fsync plus
+live rounds and does not isolate either one.
+
+Runtime `723d5cc5566a310f1e481f4789ad1326fa0e07e8` adopts only bounded scalar
+parsing; measured source is `c661be1f0267a3fb77c3bfa57b02e99b4144f4c6`. All
+six post-adoption pairs repeat 13 to 5 allocations and 65989 to 65861 requested
+bytes per healthy complete Sender call, with four reallocations unchanged.
+Baseline/final outputs span 3.041–4.558/2.755–3.948 s, owned-root
+421.973–504.392/426.372–464.741 ms. Ranges overlap and these parent cohorts are
+not counterbalanced latency qualification; no numerical latency gain is accepted.
+
+Both compiler lanes pass 61 kernel, 20 bridge, 26 trust, three observer and one
+boundary checks, strict tool lint, and their complete original-order unprofiled
+five-case local holder matrices. All 36 fixed fresh-observation rows remain.
+Every parent kernel/live/authentication count agrees across all 12 profiles.
+Differential checks overlap these selections and are not extra coverage totals.
+
+The initial formatter-specific source refusal and the first aggregate's
+non-idempotent predecessor-view refusal stay retained. Review source
+`1b7e93bebe2f496be2664385dc37ca3a531f0618` checks composability for all 473
+prior files and independently requires current hooks; old assertions stay
+unchanged. This guard-only correction does not change the measured runtime.
+
+## Evidence closure and remaining work
+
+All 357 reviewed source/contract assertions, formatting, strict xtask lint,
+doc-check, the unchanged 186-entry registry and local non-promotable performance
+contracts pass. Evidence commit `08686208b735f4c52500aac1c27e81d2714d92f3` seals
+156 members plus inventory, SHA256
+`2839ea78850f17f8070807b8853c0726133200311ccfd37f4f811b95ff796fbc`.
+Strict verification rehashes four preceding packets and rejects 17 summary
+mutations. Source failures remain retained and are not composed into the final
+passing cohort. No product, lock, compatibility, registry, qualification or
+original bundle changes occur, and no server, clock/service or supervisor
+operation occurs. Local postflight finds no matching root-fixture temporary
+directory/cgroup.
+
+The confirmed scalar allocation cost is removed. Numerical latency/CPU/API and
+retained-memory gains remain unaccepted. Next local attribution should separate
+Starting's durable effects from the surrounding full validation rounds before
+another candidate is selected; their inclusive elapsed span alone cannot assign
+cost to fsync. Required live observations and original deadlines are not an
+optimization budget. Native composition, joined SIGKILL/lost-ACK, original
+delivery, all-writer cessation, later cells, reconnect and real enrollment stay
+independent closed gates.

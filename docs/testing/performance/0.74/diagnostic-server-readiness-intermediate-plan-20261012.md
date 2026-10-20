@@ -846,3 +846,20 @@ source-list, adapter and intermediate GNU Auth(Time) failures remain unchanged.
 This strengthens local evidence only. Native composition is still negative and
 no new server run is made. Joined SIGKILL/lost-ACK, authenticated original delivery,
 all-writer cessation, later cells, reconnect and real enrollment stay closed.
+
+## Remaining outputs and owned root attribution
+
+The [next local control](local-runs/remaining-preparation-cost-20261020/README.md)
+separates Starting/pipes/sinks and the owned-root context/opening/controls/closing
+steps. The expensive owned-root spans are complete original-owner rounds, while
+binding and root controls together occupy less than one millisecond locally.
+Their observation frequency is unchanged; this is not a request to remove or
+cache them. Outputs' Starting span still includes both fsync and live rounds.
+
+A bounded scalar projection removes eight temporary allocations/128 requested
+bytes per healthy complete Sender validation in all six pre-adoption pairs.
+The complete old parser, Sender body, fresh counts and original refusal sites
+remain controls. No cache API, deadline or production authority changes. Native
+time refusal, joined SIGKILL/lost-ACK, original delivery, all-writer cessation,
+later cells, reconnect and production enrollment remain independent closed
+gates; no new server run is made.

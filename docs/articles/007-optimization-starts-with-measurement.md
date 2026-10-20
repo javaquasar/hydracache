@@ -15172,3 +15172,55 @@ remain in evidence rather than being replaced by this source cohort's passes.
 No new server, clock/time-service, installation, supervisor or product operation
 occurs. Native composition and joined crash/delivery/lifecycle/reconnect/trust
 gates remain separate; local buffer savings do not renew their original permits.
+
+### Finding scalar allocation cost inside remaining preparation
+
+The [remaining preparation control](../testing/performance/0.74/local-runs/remaining-preparation-cost-20261020/README.md)
+splits outputs into Starting, pipes and sinks without moving any existing
+effect, fsync or validation. In six local baseline observations Starting takes
+1.289–2.644 s, pipes 0.402–0.510 s and sinks 1.338–1.585 s. The spread remains
+in the raw cohort. Starting includes durable publication and surrounding live
+rounds; its elapsed span does not isolate filesystem latency from validation.
+
+Owned-root has a different shape. Initial context costs 139–182 ms, opening
+owner validation 143–179 ms and closing owner validation 139–169 ms. Binding,
+root-control preparation and the first controls observation together cost only
+0.325–0.423 ms in this fixture. Optimizing guardian creation would therefore
+miss the measured owner. Outputs still perform 76544 origin, 153088 boot and
+306176 namespace observations; owned-root performs 10032, 20064 and 40128.
+Those are required fresh checks, not permission to cache a successful result.
+Nested spans overlap and are not additive exclusive CPU.
+
+One smaller avoidable cost sits in each fresh status projection. Pid, Tgid,
+Uid and Gid need bounded scalar values, but the preceding parser materializes
+four temporary vectors. A fixed local 33-word array preserves the same full
+line searches, duplicate detection, 33-token evaluation, u32 parsing and error
+order. Groups keeps its original owned vector and parser. The optimization
+changes temporary representation, not which evidence the validator observes.
+
+The complete preceding parser and complete Sender validation remain reference
+controls. Eight hundred and four seeded cases compare results and original
+refusal sites; separate controls retain fresh observations and refused sender
+identities. Before adoption, six alternating allocation pairs across GNU/MSRV
+remove eight requests and 128 requested bytes per healthy complete Sender
+validation: 13 to 5 allocations, 65989 to 65861 requested bytes and four
+reallocations unchanged. The measured parser is then transferred intact; exact
+source reconstruction retains every preceding validator and historical assertion.
+
+Six post-adoption pairs repeat the same allocation difference. Both complete
+unprofiled local five-case matrices pass, and all 36 fresh-observation rows remain.
+The outputs ranges overlap, 3.041–4.558 s before and 2.755–3.948 s after; owned-root
+ranges overlap as well, 421.973–504.392 ms and 426.372–464.741 ms. These serial
+parent observations are attribution, not counterbalanced latency qualification.
+The representation adapter also has to compose: a second predecessor-view pass
+must be an identity operation, while separate current-source canaries still
+require hooks and reject missing/duplicate substitutions. The first aggregate
+failure of that rule stays in evidence; fixing it does not alter the measured
+runtime or remove an old assertion.
+
+This is an allocation-request result, not a demonstrated preparation latency,
+RSS, retained-memory or cache API improvement. The local observation clock is
+not the native causal origin. No server, clock/service, installation, supervisor
+or product operation accompanies this work, and no old native time refusal is
+reclassified. Native composition and the joined crash/delivery/cessation/
+lifecycle/reconnect/trust proofs remain independent requirements.

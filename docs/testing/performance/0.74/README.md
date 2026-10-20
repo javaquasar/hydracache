@@ -4864,3 +4864,37 @@ zero receipts remain disclosed rather than promoted. Evidence commit is
 `f1fbf59ab0da4fae15c51e478f058a3ee6b7bae9`; the
 [local plan outcome](custody-preparation-cost-plan-20261020.md#local-outcome)
 records the measured runtime, review source and remaining gates.
+
+## Remaining outputs and owned root preparation
+
+The [local remaining-cost control](local-runs/remaining-preparation-cost-20261020/README.md)
+splits outputs into Starting/pipes/sinks and owned-root into context/opening/
+controls/closing. Six baseline observations locate the major owned-root cost in
+three complete context/owner rounds (139–182, 143–179 and 139–169 ms), not in
+binding/root controls plus their first observation (0.325–0.423 ms). Starting
+and sinks dominate outputs; their inclusive spans do not isolate fsync cost.
+
+One isolated scalar-parser candidate removes temporary Pid/Tgid/Uid/Gid vectors.
+Six pre-adoption complete-Sender pairs confirm 13 to 5 allocations and 65989 to
+65861 requested bytes per healthy call, with four reallocations unchanged.
+Groups, every live read/predicate and original deadline remain. This is not a
+numerical latency/API or retained-memory claim. The
+[local plan](remaining-preparation-cost-plan-20261020.md) records the fixed recipe,
+required post-adoption checks and independent gates. No server access occurs.
+
+All six post-adoption allocation pairs repeat that delta (12 pairs total).
+Both full unprofiled local five-case matrices and all 36 fresh-observation rows
+pass. Outputs/owned-root timing ranges overlap; the parent attribution is not
+counterbalanced latency qualification. Both compiler lanes pass 61 kernel checks,
+targeted bridge/trust/observer checks and strict tool lint. The initial source
+view-composition failure is retained separately from the corrected review;
+the measured runtime stays unchanged by that test-only fix.
+
+All 357 reviewed source/contract assertions and local repository checks pass.
+The evidence seals 156 members plus inventory, SHA256
+`2839ea78850f17f8070807b8853c0726133200311ccfd37f4f811b95ff796fbc`;
+four prior packets rehash and all 17 summary mutations refuse. Evidence commit is
+`08686208b735f4c52500aac1c27e81d2714d92f3`. Qualification stays unchanged and
+native/server execution admission remains closed. The next local owner question
+is Starting's durable effects versus its surrounding validation, not removal of
+a required observation or extension of its original time allowance.
