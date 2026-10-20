@@ -14761,3 +14761,60 @@ and attribute all four complete frames and full-file hashing before accepting
 any optimization. Joined SIGKILL/lost-ACK and all-writer lifecycle checks remain
 later gates. Passing this environment comparison is useful progress, not
 permission to skip them or open a production campaign.
+
+## The actual holder and independent fence keepers
+
+The next local fixture constructs the actual consuming holder rather than
+substituting a modeled frame. It retains the original worker/controller and
+authority, Reserved and durable Starting path, consent, output custody, fixed
+manager channel and root guardians. A uniquely owned cgroup2 subtree appears
+at the required fixed path only inside a private mount namespace. Actual sealed
+role descriptors and a purpose-bound synthetic receipt join the same signed
+placement under the unchanged complete frames. No original start message or
+product worker is sent or executed.
+
+This composition first caught a fixture error: its historical builder document
+named a different controller from the synthetic original. The original policy
+check refused it. The correction binds only the new synthetic held document to
+that original controller while retaining the builder key; a new regression
+check rejects the mismatched input. Neither production trust selection nor the
+old build guard is changed to accommodate the fixture.
+
+MSRV then passes healthy, explicit revalidation, role metadata changed before
+join, role metadata changed after join and trust changed after join. Failure
+retains custody and the fence; restoring trust bytes cannot repair a poisoned
+holder. Dropping original custody terminates the observed collector/custodian
+processes and yields pipe EOF while the independent fence stays held. These
+are useful end-to-end ownership observations, not completed SIGKILL/lost-ACK,
+later-cell or production-admission gates.
+
+GNU's evidence remains different. A corrected-input cohort overlapped the full
+contract suite and refused original time checks during preparation. That
+overlap is not proof of causation. A separately registered serial control passes
+healthy, revalidate and role-before, then sees an unclassified Kernel(Invalid)
+before the next mutation. The final trace records a same-boot clock-order
+refusal: original boottime moves forward while the two retained realtime
+samples are out of order. A separate healthy attribution passes, but cannot
+replace the failed matrix. Identifying that sample's predicate does not identify
+the sole WSL clock actor or explain every previous untraced error.
+
+Cost observation is separated from functional execution. Individual phase
+measurements record placement, fixed-slice and consuming wall time and CPU of
+the current process, excluding child CPU. The fixture uses two 128-byte ELF
+images, so these measurements cannot establish production-image hashing cost,
+product throughput or allocation improvement. Original admission clocks and
+deadlines remain authoritative; an observer never rescues a refusal.
+
+The report vocabulary also matters for recovery design. The first marker said
+guardians_terminal, although the assertions polled collector/custodian pidfds.
+It is corrected to custodians_terminal without changing those assertions or
+rewriting raw logs. Independent root guardians may remain alive to retain the
+fence after writers have stopped; their process exit must not be inferred from
+custodian exit or from later test cleanup. That distinction prevents monitoring
+from announcing completion or releasing resources on the wrong observation.
+
+All preceding source bodies and original checks are retained, and the combined
+local gate stays red despite the successful MSRV matrix. Stable native Linux
+privileged control is the next environment boundary; joined real SIGKILL,
+lost acknowledgement, delivery, all-writer lifecycle and reconnect verification
+must still follow before launch permission can be considered.

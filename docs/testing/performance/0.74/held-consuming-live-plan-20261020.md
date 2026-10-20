@@ -27,7 +27,9 @@ a synthetic purpose-bound build receipt. Bind that receipt to the actual signed
 placement, fixed trust input and complete original frame, then call the real
 consuming method. Check healthy/revalidate, retained failure on role metadata
 and trust-source drift, sticky refusal, original timer/origin preservation,
-fence ownership, terminal guardians and pipe EOF after dropping custody. A
+fence ownership, terminal original collector/custodian pidfds and pipe EOF after
+dropping custody. Root guardians may remain independent fence keepers; their
+process exit is not inferred from custodian termination or fixture cleanup. A
 fixture receipt is not a production build receipt or an executed role image.
 
 Attribute original placement, fixed-slice join and consuming join/revalidation
@@ -55,3 +57,22 @@ and a separate instrumented healthy case. Record this as another environment
 control, not a replacement successful receipt for the failed cohort. Then run
 MSRV independently without overlapping own build/test load. Any further refusal
 requires attribution of original issued/now/boot, not retries into acceptance.
+
+## Local result and remaining admission
+
+At 1eac3bb3, MSRV passes all five actual holder cases and separate healthy
+attribution. GNU's final full matrix refuses a captured same-boot clock-order
+observation, while its separate healthy attribution passes. Earlier serial
+controls also demonstrate healthy, revalidate and role-before, but do not close
+the whole matrix. All failed cohorts remain in the
+[packet](local-runs/held-consuming-live-20261020/README.md); the combined gate
+stays false. The traced sample establishes its ordering refusal, not the sole
+WSL clock actor or a diagnosis of older untraced errors.
+
+Twenty targeted/bridge tests and 26 preceding trust tests per compiler, strict
+lint, 321 contract tests, Windows 28 integration tests and 20 old-source guards
+pass. The reporting-only correction at 7b9226df/4a01412e labels terminal
+custodians accurately without claiming root guardian exit. Phase CPU/wall
+observations use synthetic 128-byte roles and do not qualify real-image cost.
+Next obtain separately authorized stable native Linux privileged control before
+joined SIGKILL/lost-ACK; do not extend bounds or infer production permission.

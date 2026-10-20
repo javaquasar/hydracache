@@ -4648,3 +4648,28 @@ The comparison packet seals 53 hashed members plus inventory, SHA256
 `c5cf5d51dfe44ae33d59358daaca4afa43106d8bad7803f60abb663124dd0d12`.
 Its verifier rejects 42 metadata mutations and reports comparison_passed=true
 while privileged_full_join, clock_cause_established and product remain false.
+
+## Actual consuming holder under the original frame
+
+The [local privileged fixture](held-consuming-live-plan-20261020.md) now constructs
+the real FixedPlacement/held-role/trust holder, original manager/root/guardians
+and original durable/consent/output chain in a private mount namespace. MSRV
+passes all five healthy/revalidation/role/trust cases and healthy attribution.
+GNU passes individual real-holder controls but its final matrix refuses a
+captured original clock-order sample. The combined gate stays false; earlier
+untraced refusals are not retrospectively classified.
+
+The [evidence](local-runs/held-consuming-live-20261020/README.md) retains baseline,
+fixture correction, serial control and traced cohorts. All 446 old source bodies,
+live checks and 300/60/10 bounds remain unchanged after exact test hooks. Twenty
+targeted/bridge tests and 26 old trust tests per compiler, 321 contract tests,
+Windows 28 integration tests, strict lint and 20 source guards pass. Custodian
+termination is not root guardian exit; fence keepers may remain alive. Synthetic
+role CPU/wall attribution does not qualify real-image or product performance.
+Stable native Linux privileged control, joined SIGKILL/lost-ACK and later
+delivery/all-writer/lifecycle/reconnect/production gates remain open.
+
+This packet seals 108 hashed members plus inventory, SHA256
+`46956c62bddd8def65e8132d905d6235d41f51572f9571573ecf92bbe5aca710`.
+Its verifier rejects 32 metadata mutations, records actual_holder_observed=true
+and keeps final_matrix_passed, full_joined_sigkill and real_role_image_cost false.

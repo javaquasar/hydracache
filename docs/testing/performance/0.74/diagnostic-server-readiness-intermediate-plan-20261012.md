@@ -705,3 +705,13 @@ therefore established. The prior WSL gate remains red, and its clock actor is
 not diagnosed by this environment difference. The actual privileged consuming
 holder and its full-hash/four-frame cost remain the next P3 gate; neither this
 comparison nor the model passes replace joined SIGKILL/lost-ACK or launch consent.
+
+The [actual holder fixture](held-consuming-live-plan-20261020.md) now composes
+the complete local original chain and consumes actual FixedPlacement, sealed
+role objects and held trust. MSRV passes all five cases; GNU's final matrix
+records an original clock-order refusal. The combined local gate remains red.
+Separate synthetic-role CPU/wall observations do not close real-image hashing
+cost, and terminal collector/custodian processes do not prove root guardian
+exit. Root guardians may still retain the fence. Preserve all failed cohorts
+and unchanged original bounds. The next privileged native Linux environment
+control needs separate authority; no server install or product permission follows.
