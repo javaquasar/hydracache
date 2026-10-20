@@ -95,10 +95,16 @@ fn document_scratch_adoption_is_the_frozen_helper_and_reconstructs_all_473_old_b
         assert!(out.status.success());
         String::from_utf8(out.stdout).unwrap().replace('\r', "")
     };
-    assert_eq!(
-        read("tools/long-run-supervisor-074/src/diagnostic_document_scratch.rs"),
-        old("tools/long-run-supervisor-074/tests/support/document_scratch_impl.rs")
-    );
+    let origin = read(guard::ORIGIN);
+    assert_eq!(origin.matches(guard::BLOCK).count(), 1);
+    let inline = guard::BLOCK
+        .strip_prefix("// BEGIN INVOCATION DOCUMENT SCRATCH\n")
+        .unwrap()
+        .strip_suffix("// END INVOCATION DOCUMENT SCRATCH\n\n")
+        .unwrap()
+        .replace("mod document_scratch_tests {", "mod tests {");
+    let frozen = old("tools/long-run-supervisor-074/tests/support/document_scratch_impl.rs");
+    assert_eq!(format!("//! One invocation's temporary bytes; never a retained observation or FD.\nuse super::*;\n{inline}"),frozen);
     let out = std::process::Command::new("git")
         .args([
             "ls-tree",
