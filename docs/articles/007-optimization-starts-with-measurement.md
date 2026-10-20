@@ -14855,3 +14855,89 @@ host mount table and no remaining owned fixture cgroups or roots. Passing those
 safety and evidence checks does not close the execution gate. Joined SIGKILL,
 lost acknowledgement, all-writer lifecycle and reconnect remain behind a healthy
 complete composition rather than being attempted on this refused owner.
+
+## Separating preparation cost from allocation requests
+
+The next local experiment measures the actual holder after the original challenge,
+with separate phases for consent preparation/acceptance, outputs, enrollment
+frame, fixed manager message, root guardians, enrollment and placement. Each
+original call remains in place. An inactive observer reads no profiling clock;
+an active observer records wall time, current-process CPU and the existing
+authentication/live/kernel spans. Descendant CPU and cold setup are outside
+these per-phase CPU totals. Overlapping spans are not additive exclusive CPU,
+and their unexplained remainder cannot be assigned to I/O.
+
+This observer must preserve refusal as carefully as a fault harness. Tests verify
+one original call, the same value/error and panic identity, balanced nested
+counters and restoration of an outer capture. A missing or out-of-order CPU
+observation produces no CPU value; it cannot replace the original panic or
+rescue an admission refusal. The profiling clock is never a guard clock.
+
+The retained-image local baseline refuses on both compilers. GNU reaches the
+consuming method but later reports causal expiry; MSRV records clock-order
+earlier in preparation. Three subsequent instrumented attempts per compiler
+return GNU 101/0/0 and MSRV 0/0/101. These are independent cost observations,
+not successful replacements for either baseline or the refused native cohort.
+
+In all six instrumented outputs phases, the decoder of freshly read proc status
+enters 39,744 times. Its inclusive instrumented wall span is 251–335 ms, while
+outputs process CPU is 5.397–6.606 seconds. This identifies a repeatedly reached
+piece of work without establishing it as the main cause of expiry. These clock
+observations describe their own domains; they are not a CPU-utilization ratio
+or an exclusive cost decomposition.
+
+The first isolated allocation hypothesis is deliberately narrow. The status
+decoder formats five strings for the constant prefixes Pid, Tgid, Uid, Gid and
+Groups on every call. Replacing those strings with borrowed literal prefixes
+does not reuse any proc value. Both status reads, parsing, numeric/cardinality
+and group-budget checks, field order, first-refusal behavior and all original
+live frames remain unchanged. A frozen complete decoder is the differential
+reference, with seeded malformed inputs and matching refusal sites.
+
+Before implementation, paired controls with identical decoders record ten Rust
+allocation requests and 120 requested bytes per decode of the same two-group
+fixture on both arms;
+the new reduction assertion correctly fails. After implementation, all three
+paired samples per compiler record five requests and 80 bytes for the candidate,
+versus the same ten/120 reference. Reallocations remain zero. Equal warm-up and
+alternating arm order are used, and timing runs separately with allocation
+counting disabled. Five vector allocations remain: this is not an allocation-free
+decoder or a measurement of libc allocation, RSS or total preparation memory.
+
+The confirmed effect is removal of five temporary allocations and 40 requested
+bytes per decode in the diagnostic tool. It is not a numerical latency or
+throughput claim for HydraCache's RESP/native API, and it does not explain away
+the much larger mandatory context-validation cost. No deadline is extended,
+origin reset, predicate skipped or cost shifted into a cache API. Full phase
+and functional observations remain separate from this leaf acceptance.
+
+Historical-source checks also need honest failure attribution. Linux Git first
+cannot follow this Windows worktree's absolute gitdir pointer. Explicit read-only
+Linux Git context fixes access without editing the worktree metadata. The old
+20 guards then pass, but a new audit correctly refuses its mistaken expected
+count: the snapshot contains 462 files, not 450. Correcting that metadata covers
+all 446 runtime and 16 support files; it changes no runtime or admission limit.
+The reviewed GNU/MSRV executables remain byte-identical across that correction.
+
+Exact reversible adapters reconstruct every preceding source body and holder
+assertion outside the named observation wrappers and literal-prefix substitution.
+This is stronger evidence of unchanged guards than a green timing sample alone.
+It still cannot substitute for a new authorized native control, authenticated
+delivery, joined SIGKILL/lost-ACK, all-writer lifecycle or reconnect. Those gates
+remain distinct from a useful but limited allocation improvement.
+
+The reviewed cost attempts return GNU 0/0/0 and MSRV 101/0/0, but neither
+unprofiled five-case matrix passes. GNU refuses healthy before completion; MSRV
+completes healthy and refuses while preparing the separate revalidate case,
+before that case's target held revalidation. Both retain a same-boot clock-order
+observation at the original kernel predicate. No cost sample is spliced into a
+missing functional case, no matrix is retried and no window is extended.
+
+Boot identities also differ between separate local invocations. Passing a warm
+cost probe therefore cannot establish one stable clock context or diagnose the
+sole WSL clock actor. The earlier native expiry remains a separate unclosed
+observation, not a result that this local allocation change has corrected.
+The honest next boundary is cost attribution of the remaining fresh kernel
+observations and a separately authorized native control, with the same live
+checks and deadlines. Original delivery, joined process-death/lost-ACK, lifecycle
+and reconnect work must not inherit a launch permit from this leaf improvement.

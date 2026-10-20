@@ -4700,3 +4700,34 @@ Its verifier rejects 47 summary metadata mutations and preserves
 native_matrix_passed=false. The 321 contract tests, 20 historical-source guards,
 strict xtask lint, targeted formatting, docs/registry and local contract pass;
 none promotes the refused execution cohort or changes qualification identity.
+
+## Local preparation attribution and borrowed status prefixes
+
+The [local cost plan](held-preparation-cost-plan-20261020.md) attributes the actual
+holder's post-challenge preparation, enrollment and placement separately. Six
+instrumented outputs phases each observe 39,744 status projections. The selected
+single runtime candidate, 1a328593, replaces five dynamically formatted field
+prefixes with borrowed literals; fresh proc reads, checks, field/error order,
+all original frames and 300/60/10 origins/bounds stay unchanged.
+
+Three paired allocation samples on each compiler confirm 10 to 5 Rust requests
+and 120 to 80 requested bytes per decode of the shared two-group fixture, with
+zero reallocations.
+Five vector allocations remain. This is a diagnostic-tool leaf result, not
+RSS, total preparation memory or a HydraCache RESP/native latency claim.
+The complete frozen decoder, seeded malformed inputs and first-refusal sites
+are checked; exact adapters reconstruct all 446 old runtime and 16 support files.
+
+The [evidence](local-runs/held-preparation-cost-20261020/README.md) retains initial
+Git-context/audit-metadata failures, both baselines and every before/after probe.
+Reviewed probes return GNU 0/0/0 and MSRV 101/0/0. Both complete unprofiled-matrix
+invocations refuse original same-boot clock-order: GNU before healthy completion,
+MSRV after healthy and during setup of revalidate. No matrix is retried or
+assembled from successful probes. The local and native execution gates remain
+false; the prior native expiry is not rechecked and qualification is unchanged.
+
+The new packet seals 166 hashed members plus inventory, SHA256
+`4800b14816d9ca01a0ad04aa4082c37fc576f0957efe46644c85c01164b2b65f`.
+Its verifier rejects 65 summary metadata mutations, accepts the allocation leaf
+and keeps both execution gates false. The preceding native/WSL packet inventories
+re-verify byte-exact; no older refusal is replaced or reclassified.

@@ -730,3 +730,22 @@ checks and original origins. Independent postflight confirms unchanged installed
 artifacts, running supervisor PID/restarts, absent campaign markers and no owned
 fixture cgroups/roots. Production delivery/trust, all-writer cessation, durable
 lifecycle and reconnect gates remain open; server admission is still closed.
+
+The [local phase attribution](held-preparation-cost-plan-20261020.md) now separates
+post-challenge preparation, enrollment and placement, preserving original calls
+and clocks. One isolated allocation candidate at 1a328593 borrows five constant
+status prefixes instead of formatting them. Six paired GNU/MSRV samples confirm
+10 to 5 Rust allocation requests and 120 to 80 requested bytes per successful
+decode of the shared two-group fixture. The full frozen decoder/refusal behavior
+is compared, and 462 preceding
+runtime/support files reconstruct exactly outside named observer wrappers and
+literal-prefix changes. This does not qualify whole-attempt latency or cache APIs.
+
+The [new packet](local-runs/held-preparation-cost-20261020/README.md) retains
+reviewed cost outcomes GNU 0/0/0 and MSRV 101/0/0, then two refused unprofiled
+matrices: GNU healthy and MSRV revalidate setup record original same-boot
+clock-order. No timer/service setting changes, retries, server access or workload
+follow. All local contract/source tests and compiler checks pass, but full local
+and native execution gates remain false. Next isolate the remaining expensive
+fresh kernel observations without caching or skipping them; obtain separately
+authorized native control before joined SIGKILL/lost-ACK or server admission.

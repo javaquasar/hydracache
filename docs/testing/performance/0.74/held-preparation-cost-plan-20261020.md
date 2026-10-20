@@ -65,3 +65,20 @@ Warm both equally and alternate arm order. Before implementation, the baseline
 must record equal requests and fail the new reduction assertion. Acceptance
 requires repeatably fewer Rust allocation requests with identical results and
 refusal sites; do not claim whole-attempt latency or a native server fix from it.
+
+## Recorded local outcome
+
+The prefix candidate is accepted for allocation requests only: all six paired
+samples of the shared two-group fixture reproduce 10 to 5 requests and 120 to
+80 requested bytes per decode. The corrected source audit covers 462 old files;
+all required compiler, regression, source/contract, lint and documentation checks
+pass. The separate unprofiled matrices both refuse original same-boot clock-order
+(GNU healthy, MSRV revalidate setup after healthy). No retry or clock/service
+change follows, and the native expiry is not rechecked.
+
+The [sealed packet](local-runs/held-preparation-cost-20261020/README.md) contains
+166 hashed members plus inventory, SHA256
+`4800b14816d9ca01a0ad04aa4082c37fc576f0957efe46644c85c01164b2b65f`.
+It retains all failed baselines/harness controls and rejects 65 in-memory summary
+mutations. Full local/native execution gates, joined SIGKILL/lost-ACK and remaining
+production lifecycle/trust/reconnect gates stay false or independently open.
