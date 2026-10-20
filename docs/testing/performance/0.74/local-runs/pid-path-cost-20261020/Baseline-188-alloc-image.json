@@ -1,0 +1,10 @@
+{
+  "source": "0d7717686a06cec7178a1965e02363fc43a63da8",
+  "lane": "188",
+  "flavor": "alloc",
+  "path": "/home/artur/.cache/hydracache-074-188-check/release/deps/hydracache_long_run_supervisor_074-1dbb29096ebc6338",
+  "sha256": "36874fc24d25d2bda4e20bd55dd2beafcd953320288f8020512d8d237a50260d",
+  "recipe_sha256": "3c62342b9fb4699d27681938955cee77d053a47280f5f20354ebd85f417b6833",
+  "server": false,
+  "product": false
+}
