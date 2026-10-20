@@ -64,6 +64,11 @@ fn sealed(raw: &[u8]) -> File {
 }
 impl Fixture {
     pub(crate) fn new(controller: VerifyingKey, worker_bytes: &[u8], worker_policy: &[u8]) -> Self {
+        // Independently bind the synthetic held input to THIS original
+        // principal, not the historical build fixture's other controller.
+        // No old build guard or production trust selector changes.
+        let worker_policy = controller_policy(worker_policy, controller);
+        let worker_policy = worker_policy.as_slice();
         let worker: crate::diagnostic_worker_policy::SignedWorkerPolicy =
             serde_json::from_slice(worker_bytes).unwrap();
         let worker_builder: crate::diagnostic_builder::BuilderPolicy =
@@ -229,4 +234,32 @@ impl Fixture {
         )
         .unwrap();
     }
+}
+
+fn controller_policy(raw: &[u8], controller: VerifyingKey) -> Vec<u8> {
+    let mut policy: crate::diagnostic_builder::BuilderPolicy = serde_json::from_slice(raw).unwrap();
+    policy.controller_key_hex = crate::hex(controller.as_bytes());
+    crate::diagnostic_builder::policy_bytes(&policy).unwrap()
+}
+#[test]
+fn consuming_held_fixture_builder_document_binds_same_controller_without_changing_builder() {
+    let historical = include_bytes!(
+        "../../../../docs/testing/performance/0.74/diagnostic-builder-public-policy.json"
+    );
+    let controller = SigningKey::from_bytes(&[76; 32]).verifying_key();
+    assert!(crate::diagnostic_builder::load_policy(
+        historical,
+        &crate::sha256_hex(historical),
+        &controller
+    )
+    .is_err());
+    let raw = controller_policy(historical, controller);
+    let previous: crate::diagnostic_builder::BuilderPolicy =
+        serde_json::from_slice(historical).unwrap();
+    let changed: crate::diagnostic_builder::BuilderPolicy = serde_json::from_slice(&raw).unwrap();
+    assert_eq!(previous.builder_key_hex, changed.builder_key_hex);
+    assert_eq!(previous.repository_id, changed.repository_id);
+    assert_eq!(previous.builder_id, changed.builder_id);
+    crate::diagnostic_builder::load_policy(&raw, &crate::sha256_hex(&raw), &controller).unwrap();
+    assert_eq!(controller_policy(&raw, controller), raw);
 }
