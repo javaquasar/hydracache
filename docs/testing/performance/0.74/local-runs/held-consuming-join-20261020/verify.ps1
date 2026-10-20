@@ -1,6 +1,6 @@
 param([Parameter(Mandatory)][ValidatePattern('^[0-9a-f]{40}$')][string]$Source)
 $ErrorActionPreference='Stop'
-$taskReceiptRoot=Join-Path $PSScriptRoot 'confirmed'
+$taskReceiptRoot=Join-Path $PSScriptRoot 'stable-clock'
 $taskRecipe=(Get-FileHash (Join-Path $PSScriptRoot 'checks.ps1') -Algorithm SHA256).Hash.ToLowerInvariant()
 $taskFlags=@('privileged_full_join','late_original_join','production_enrollment','production_role_receipt_issued','original_send','server','supervisor','product','full_joined_sigkill','clock_changed')
 function ReadJson([string]$Name){$taskFolder=if($Name -in @('inventory.json','summary.json')){$PSScriptRoot}else{$taskReceiptRoot};Get-Content -Raw -LiteralPath (Join-Path $taskFolder $Name)|ConvertFrom-Json}
@@ -67,6 +67,12 @@ if($taskSummary.source -cne $Source -or $taskSummary.recipe -cne $taskRecipe -or
 Scope $taskSummary '194'
 if($taskSummary.first_frozen_cohort_accepted -isnot [bool] -or $taskSummary.first_frozen_cohort_accepted -cne $false -or $taskSummary.preceding_refusal_attributed -isnot [bool] -or $taskSummary.preceding_refusal_attributed -cne $false){throw 'Do not erase the unclassified preceding refusal'}
 if((Get-FileHash (Join-Path $PSScriptRoot 'first-checks.ps1') -Algorithm SHA256).Hash.ToLowerInvariant() -cne 'a782f74fcb92448b1f57b6d216e5a92fcb06f1d8528b04e89e64496d252462c6'){throw 'First recipe changed'}
+if((Get-FileHash (Join-Path $PSScriptRoot 'second-checks.ps1') -Algorithm SHA256).Hash.ToLowerInvariant() -cne '56bf4f95a5c87d4ae8da8bc9c738cf4985d2a99e3aeb6372dc26ba8718dec0c7'){throw 'Second recipe changed'}
+if(-not (Get-Content -Raw (Join-Path $PSScriptRoot 'confirmed/188-new-tests-1.log')).Contains('site: "clock-order"')){throw 'Recorded real clock refusal missing'}
+$taskClock=Get-Content -Raw (Join-Path $PSScriptRoot 'clock-control-receipt.json')|ConvertFrom-Json
+if($taskClock.source -cne $Source -or $taskClock.complete -isnot [bool] -or $taskClock.complete -cne $true -or $taskClock.local_timesyncd_before -cne 'active' -or $taskClock.local_timesyncd_during -cne 'inactive' -or $taskClock.local_timesyncd_after -cne 'active' -or $taskClock.service -cne 'systemd-timesyncd.service' -or $taskClock.distribution -cne 'Ubuntu' -or $taskClock.control_recipe -cne (Get-FileHash (Join-Path $PSScriptRoot 'clock-control.ps1') -Algorithm SHA256).Hash.ToLowerInvariant() -or $taskClock.probe_recipe -cne (Get-FileHash (Join-Path $PSScriptRoot 'clock-probe.py') -Algorithm SHA256).Hash.ToLowerInvariant()){throw 'Exact local clock control binding'}
+foreach($taskFlag in @('manual_clock_changed','windows_touched','server','supervisor')){if($taskClock.$taskFlag -isnot [bool] -or $taskClock.$taskFlag -cne $false){throw 'Clock control scope'}}
+foreach($taskSide in @('before','after')){$taskProbe=Get-Content -Raw (Join-Path $PSScriptRoot "clock-probe-$taskSide.log")|ConvertFrom-Json;if($taskProbe.samples -ne 3000 -or @($taskProbe.backwards).Count -ne 0 -or $taskProbe.manual_clock_change -isnot [bool] -or $taskProbe.manual_clock_change -cne $false){throw 'Clock probe refused'}}
 if(-not (Get-Content -Raw (Join-Path $PSScriptRoot '194-trust-2.log')).Contains('test result: FAILED. 25 passed; 1 failed;')){throw 'First frozen refusal missing'}
 foreach($taskMode in @('194','188')){foreach($taskRound in 1..2){$taskRaw=Get-Content -Raw (Join-Path $taskReceiptRoot "$taskMode-new-tests-$taskRound.log");foreach($taskSample in 0..7){if(-not $taskRaw.Contains("HC074-CONSUMING-MISMATCH-TRACE sample=$taskSample assertions_ok=true first=None")){throw 'Unchanged assertion diagnostic selection'}}}}
 if(-not (Get-Content -Raw (Join-Path $PSScriptRoot 'missing-module-red.log')).Contains('diagnostic_held_role_provenance.rs')){throw 'Missing preimplementation refusal'}

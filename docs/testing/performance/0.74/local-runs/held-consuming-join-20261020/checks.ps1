@@ -2,7 +2,7 @@ param([Parameter(Mandatory)][ValidateSet('194','188','windows','repository')][st
       [Parameter(Mandatory)][ValidatePattern('^[0-9a-f]{40}$')][string]$Source)
 $ErrorActionPreference='Stop'
 $taskRoot=(Resolve-Path (Join-Path $PSScriptRoot '../../../../../..')).Path
-$taskOutput=Join-Path $PSScriptRoot 'confirmed'
+$taskOutput=Join-Path $PSScriptRoot 'stable-clock'
 if(-not (Test-Path -LiteralPath $taskOutput)){New-Item -ItemType Directory -Path $taskOutput | Out-Null}
 Push-Location $taskRoot
 try {
