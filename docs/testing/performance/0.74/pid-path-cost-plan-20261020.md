@@ -35,3 +35,25 @@ modifying them. Product code, lock/COMPAT, qualification and existing registry
 stay unchanged. This step does not rerun the full functional/native matrix or
 SIGKILL/lost-ACK and does not establish server readiness. No server, release
 installation, supervisor/clock service change or product workload is authorized.
+
+## Accepted local outcome
+
+Runtime `b9770cc2`, reviewed source
+`b5f1b8fce6b3046239087873cb85ff1bfc557f0f`, adopts the formatter byte-exactly
+from the measured prototype. Baseline PIDs 367/393 and post-candidate PIDs
+382/408 are three-digit keys. All 12 allocation pairs remove two Rust requests
+per open, with requested bytes 14 to zero on GNU and 12 to zero on MSRV and no
+reallocations. Both baseline runtime bindings refuse as intended and both
+post-candidate bindings pass. All 72 phase reports retain the original counts.
+
+All 350 source/contract tests, both compiler lanes' targeted functional checks,
+strict lint, formatting, documentation, registry and local performance contracts
+pass. No numerical time/CPU/API improvement is accepted. The full local/native
+composition and joined SIGKILL/lost-ACK/reconnect gates remain separate and are
+not rerun or opened. The [packet](local-runs/pid-path-cost-20261020/README.md)
+preserves all invocations and prior seals.
+
+The packet seals 116 hashed members plus inventory, SHA256
+`982d9598426830f6b3e44f9a701220b5778ceb3e6b568922d3b2ee405a0e6b05`.
+Its verifier refuses 41 summary mutations. Qualification remains byte-exact at
+SHA256 `11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc`.

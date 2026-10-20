@@ -15007,3 +15007,58 @@ rerun the full lifecycle, SIGKILL/lost-ACK or reconnect matrix. The next larger
 optimization needs evidence for another avoidable cost, not permission to skip
 fresh observations. All original deadlines and independent launch gates remain
 in force.
+
+## Formatting each process key without retaining it
+
+The next [local control](../testing/performance/0.74/local-runs/pid-path-cost-20261020/README.md)
+tests a different temporary object: the process-directory pathname. Each
+original credential PID becomes a decimal String, then a CString, before the
+fresh proc directory opens. This is key construction, not evidence of process
+identity. Reusing a previously validated process object would change the safety
+argument; constructing the same decimal key anew in stack storage does not.
+
+The baseline and stack prototype use the same proc root, actual PID, directory
+flags and checked openat/fstatfs/close path. Equal warmup and three alternating
+allocation pairs are measured per compiler. For the baseline three-digit PIDs,
+GNU records two requests and 14 requested bytes per open; MSRV records two and
+12. The prototype records zero in all six baseline pairs, with no reallocations.
+The byte difference between compilers is precisely why a guessed universal byte
+budget would be misleading. Every result retains its actual PID, digit count
+and standard-library lane. Allocation requests are Rust-thread observations,
+not libc allocation, RSS or total attempt memory.
+
+The candidate derives the key on every call in twelve bytes: up to ten
+magnitude digits, an optional minus and one terminal NUL. `unsigned_abs` handles
+MIN safely. Generated digits and minus are nonzero and fit before the untouched
+terminal byte; the CStr conversion remains checked. Edge cases and 16384 seeded
+i32 values compare the full decimal/sign/NUL representation with the standard
+formatter. This is not an exhaustive traversal of every i32 value.
+
+Adoption moves the complete measured formatter body into runtime without
+rewriting it. Both private callers pass their same original credential PID;
+neither pathname nor observed process state is retained as a cache. The generic
+string opener stays as the differential test reference, with no remaining
+production string caller. Identity, FD flags and missing/non-directory/symlink/
+non-proc refusals are checked independently. Existing open, filesystem,
+metadata, status, projection and pidfd checks keep their original ordering.
+
+The preservation proof is deliberately mechanical. An audit compares the new
+formatter with the frozen baseline prototype byte-for-byte. Exact reverse
+substitutions recover the preceding method, both caller expressions, reference
+annotations and named test hooks. Every other preceding validator statement
+must still match; no old body or assertion is excluded. The actual runtime
+binding first refuses before adoption and must pass after it.
+
+Separate uncounted timing and unchanged fresh-kernel phase controls remain
+observations, not an accepted speedup. Removing two pathname allocations cannot
+establish that a ten-second placement window now passes. Full functional
+composition, original delivery, joined writer-death/lost-ACK and reconnect still
+need their independent gates. This experiment performs no server, installation,
+supervisor/clock service or product workload operation.
+
+The post-candidate controls confirm two to zero requests and the same 14/12 to
+zero requested bytes for their three-digit keys. Both runtime bindings pass,
+all 72 phase rows preserve their original call counts, and all 12 allocation
+pairs are retained. The 350 source/contract tests and both compiler lanes'
+functional/lint checks pass. These results accept the uncached pathname
+allocation change while keeping the independent execution gates closed.

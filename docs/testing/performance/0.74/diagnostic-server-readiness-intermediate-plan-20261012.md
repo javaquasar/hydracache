@@ -769,3 +769,18 @@ and confirmed attribution. Full functional composition, authenticated delivery,
 joined all-writer SIGKILL/lost-ACK and reconnect still require their independent
 gates; a native control requires separate authorization. Installation,
 supervisor maintenance and product campaigns remain outside this local step.
+
+## Uncached process key allocation on 20 October
+
+The [PID pathname packet](local-runs/pid-path-cost-20261020/README.md) tests one
+independent allocation candidate. The exact measured formatter is adopted in
+`b9770cc2`: numeric credential PID is converted anew on the stack for every open,
+with no retained pathname or kernel value. Twelve paired controls on GNU/MSRV
+confirm two requests becoming zero; the measured three-digit keys require
+14/12 reference bytes respectively. Fresh calls and original deadlines stay
+fixed, and all 350 source/contract tests and compiler checks pass.
+
+This does not demonstrate a latency improvement or repair the prior native
+expiry/clock-order refusal. Full composition, authenticated delivery, joined
+all-writer SIGKILL/lost-ACK and reconnect remain independent gates. No server,
+installation, supervisor/clock service operation or product workload follows.

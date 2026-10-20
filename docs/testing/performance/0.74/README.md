@@ -4759,3 +4759,31 @@ The packet seals 96 hashed members plus inventory, SHA256
 `cdd73b900d1697d64beef507f23e8b2bfbad20598dc6e984f53e1a9b4ed075cc`;
 41 summary mutations are refused. All 347 source/contract tests and both compiler
 lanes' targeted functional/lint checks pass. Qualification remains unchanged.
+
+## Uncached PID pathname construction
+
+The [PID path control](pid-path-cost-plan-20261020.md) isolates decimal key
+construction from fresh kernel observations. Baseline three-digit PIDs require
+two Rust allocation requests per process-directory open: 14 requested bytes on
+GNU 1.94, 12 on MSRV 1.88. The measured stack prototype requires zero, with no
+reallocations in all six baseline pairs. Actual PIDs, digit counts and byte
+sizes are retained rather than assumed identical across processes/compilers.
+
+Candidate `b9770cc2` moves that exact formatter into runtime. Both callers still
+derive the pathname from their original credential PID on every call. No live
+value or pathname is cached; all checked opens, reads, object/filesystem/pidfd
+predicates and original time origins/bounds remain. Signed-edge/seeded decimal
+tests, differential opens, runtime-binding canaries and exact historical-source
+reconstruction guard the [evidence](local-runs/pid-path-cost-20261020/README.md).
+This allocation candidate does not itself open the full local/native execution,
+SIGKILL/lost-ACK or reconnect gate, nor establish a numerical latency gain.
+
+Post-candidate controls confirm the same two-to-zero requests and 14/12-to-zero
+bytes for their three-digit keys. Both runtime bindings pass; all 72 phase rows
+retain their exact fresh-call counts. All 350 source/contract tests, both
+compiler lanes' functional/lint checks and local repository gates pass.
+
+The PID packet seals 116 hashed members plus inventory, SHA256
+`982d9598426830f6b3e44f9a701220b5778ceb3e6b568922d3b2ee405a0e6b05`;
+41 summary mutations refuse. The four preceding inventories and qualification
+identity remain unchanged.
