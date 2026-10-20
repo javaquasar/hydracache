@@ -1,0 +1,76 @@
+{
+  "stage": "Before",
+  "source": "a3ed48de1cce8acc30f2e6865d4bd0c255522bfa",
+  "recipe_sha256": "d10e3d4c8808eeb6209f61ac72dbd59c3f178f0b21a143916154aab1b160fdf3",
+  "steps": [
+    {
+      "name": "authority_",
+      "sha256": "bdca5a21f121d7bf3f7a1aaf54c5d3036a96bf6dec3b99e6a81127558eb6bbda",
+      "exit": 0,
+      "log": "Before-check-188-authority_.log"
+    },
+    {
+      "name": "validation_leaf_requests_",
+      "sha256": "1aa57c2ada6a11a3359e90b06a0570167f853c26ebe1889453088f42cbe7ef87",
+      "exit": 0,
+      "log": "Before-check-188-validation_leaf_requests_.log"
+    },
+    {
+      "name": "fixed_leaf_alloc_counter",
+      "sha256": "988f6d7bda13e2f87f2828d0f29472c38af759d6deda1a46f3161c7256e3476d",
+      "exit": 0,
+      "log": "Before-check-188-fixed_leaf_alloc_counter.log"
+    },
+    {
+      "name": "fixed_leaf_path_differential",
+      "sha256": "1f495467c6c9edc286da0788aad596a548ddbf951508315da26f1aa4e2fae9ae",
+      "exit": 0,
+      "log": "Before-check-188-fixed_leaf_path_differential.log"
+    },
+    {
+      "name": "fixed_leaf_path_preserves",
+      "sha256": "429f16499e19bb91ada9f69434eb492c5f4ab9c3bc6f9b2ad6cd3234ad2fef42",
+      "exit": 0,
+      "log": "Before-check-188-fixed_leaf_path_preserves.log"
+    },
+    {
+      "name": "kernel_time_",
+      "sha256": "9c06f6720bac70321a9181b7e512b146cadbf671915b77a0cf64892a5c81eb1b",
+      "exit": 0,
+      "log": "Before-check-188-kernel_time_.log"
+    },
+    {
+      "name": "kernel_worker_context_",
+      "sha256": "e91b6757f892620a8b08ad432a29dcc04799b3be733e99e9fab9b9d165d4a842",
+      "exit": 0,
+      "log": "Before-check-188-kernel_worker_context_.log"
+    },
+    {
+      "name": "worker_trust_input_",
+      "sha256": "12eab1691b07286146ac6842fdb030be38e2f94eaee6bd7c946fd8ee7cf739e4",
+      "exit": 0,
+      "log": "Before-check-188-worker_trust_input_.log"
+    },
+    {
+      "name": "check",
+      "sha256": "eb7e80e26c1bacad3b57c6c0c9c9d775f3479bcdbe29bc5fb2068564d9b82c8c",
+      "exit": 0,
+      "log": "Before-check-188-check.log"
+    },
+    {
+      "name": "lint",
+      "sha256": "508d639ebb62cd33941a1b81a574913d23666eabe7f08c8243ef6426a65d8d75",
+      "exit": 0,
+      "log": "Before-check-188-lint.log"
+    },
+    {
+      "name": "build",
+      "sha256": "cbc416a14827b5258b2a59c92b46403212a3718fd398df0f5a872381bf928abf",
+      "exit": 0,
+      "log": "Before-check-188-build.log"
+    }
+  ],
+  "failure": null,
+  "server": false,
+  "product": false
+}
