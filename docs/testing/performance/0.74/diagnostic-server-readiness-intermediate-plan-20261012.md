@@ -863,3 +863,21 @@ remain controls. No cache API, deadline or production authority changes. Native
 time refusal, joined SIGKILL/lost-ACK, original delivery, all-writer cessation,
 later cells, reconnect and production enrollment remain independent closed
 gates; no new server run is made.
+
+## Starting effects attribution and local clock refusals
+
+The [Starting control](local-runs/starting-effects-cost-20261020/README.md)
+separates three fsync intervals from the surrounding full validation rounds.
+Three complete GNU profiles place 98.10–99.51% of Starting in nineteen full
+rounds; combined fsync occupies 4.707–22.226 ms of 1263.504–1349.378 ms total.
+No runtime candidate is adopted and every original effect/check/deadline stays.
+
+The intended MSRV profile cohort stops on its first unchanged kernel clock-order
+refusal. The independent GNU unprofiled matrix also refuses healthy; MSRV's
+independent five-case matrix passes. Same-boot realtime reversals and differing
+initial/final WSL boot IDs are retained, not repaired by a retry or longer
+allowance. Source/contract/lint passes and sealed evidence cannot open the live
+gate. Next local work must establish time/environment stability through separate
+read-only diagnosis before another recorded cohort, then attribute avoidable
+work inside full fresh rounds. No new server, service, installation, supervisor
+or product operation occurs; all independent execution and trust gates remain.

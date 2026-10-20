@@ -15224,3 +15224,57 @@ not the native causal origin. No server, clock/service, installation, supervisor
 or product operation accompanies this work, and no old native time refusal is
 reclassified. Native composition and the joined crash/delivery/cessation/
 lifecycle/reconnect/trust proofs remain independent requirements.
+
+### Separating Starting durability from fresh validation
+
+The [Starting effects control](../testing/performance/0.74/local-runs/starting-effects-cost-20261020/README.md)
+tests a different hypothesis: perhaps durable publication, rather than the
+surrounding owner checks, explains Starting's large elapsed span. Test-only
+boundaries separate encoding, begin, all nine storage stages, checkpoints and
+the final acknowledgement. Each stage distinguishes the full opening/closing
+rounds from storage inspection and the actual effect arm. Removing the exact
+markers recovers both preceding production bodies, including all three fsync
+invocations and their original ordering.
+
+Three complete GNU profiles give this local attribution:
+
+| Interval within Starting | Elapsed range across three profiles |
+| --- | --- |
+| Complete Starting | 1263.504–1349.378 ms |
+| Nineteen full surrounding validation rounds | 1256.868–1342.783 ms |
+| Three fsync effect intervals combined | 4.707–22.226 ms |
+| All nine effect arms combined | 4.824–22.349 ms |
+| Eighteen storage inspections combined | 0.978–1.242 ms |
+| Record encoding | 0.529–0.670 ms |
+
+The full rounds account for 98.10–99.51% of each profile's Starting span;
+fsync accounts for 0.35–1.72%. These are instrumented intervals, not bare syscall
+latency: fsync intervals include FD selection and observer overhead, and
+write/seal arms retain their own metadata/content checks. Initial environment
+inspection reports local ext4 inside WSL; this is not server disk qualification.
+Kernel/live/authentication/signature frequencies in all ten GNU preparation
+phases match the preceding frozen profiles. The two no-op effect arms remain
+an observation-floor control rather than a value subtracted from the results.
+
+This control does not justify removing or batching fsync. It locates the larger
+owner in mandatory fresh validation, but does not identify a new avoidable
+operation inside that owner. No runtime candidate is adopted. A subsequent
+candidate would need separate leaf attribution and a repeatable mechanism,
+while preserving fresh reads, effect-local checks and original deadlines.
+
+The intended six-profile cross-compiler cohort remains incomplete. MSRV's first
+profile refuses the unchanged kernel `clock-order` predicate: realtime moves
+backwards 3.004 s while boottime advances on the same boot. The independent
+unprofiled GNU matrix also refuses healthy, with a 1.719 s realtime reversal;
+the independent MSRV matrix passes all five cases once. Neither failed invocation
+is retried, and no clock or service is adjusted. Initial and final WSL boot IDs
+also differ, so environment continuity remains unproved; that is distinct from
+the same-boot reversal inside each failed call. The actors behind these changes
+are not attributed. Those refusals stay visible, not replaced by source/lint or
+packet-integrity passes. The numerical attribution is limited to the three
+complete GNU observations, with no cross-compiler or performance-gain claim.
+
+All 359 source/contract assertions, affected-package checks, strict lint and
+repository checks pass. The 300/60/10 bounds, qualification and product code
+stay unchanged; no server, installation, supervisor or product operation occurs.
+The original native refusal and execution/lifecycle/trust gates remain closed.

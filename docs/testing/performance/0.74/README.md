@@ -4898,3 +4898,29 @@ four prior packets rehash and all 17 summary mutations refuse. Evidence commit i
 native/server execution admission remains closed. The next local owner question
 is Starting's durable effects versus its surrounding validation, not removal of
 a required observation or extension of its original time allowance.
+
+## Starting effects and surrounding validation
+
+The [local Starting attribution](local-runs/starting-effects-cost-20261020/README.md)
+separates effects/fsync, storage checks, checkpoints and full owner rounds.
+In three complete GNU profiles Starting takes 1263.504–1349.378 ms; three fsync
+intervals combined take 4.707–22.226 ms, while nineteen surrounding rounds take
+1256.868–1342.783 ms (98.10–99.51% of each Starting span). This locates a local
+owner, not a performance improvement or justification to remove fresh checks.
+No runtime candidate is adopted and all durable effects/deadlines remain.
+
+The planned six-profile cohort is incomplete: the first MSRV profile refuses
+kernel clock ordering and is not retried. The independent GNU unprofiled matrix
+also refuses healthy on a realtime reversal; the independent MSRV matrix passes
+all five cases. Initial/final WSL boot IDs differ as well. The packet keeps those
+failures, labels continuity and both-matrix acceptance false, and limits cost
+observations to GNU. All 359 source/contract assertions, affected checks and lint
+pass, but they do not replace live gates. See the
+[plan outcome](starting-effects-cost-plan-20261020.md#local-outcome) for the next
+local work and preserved restrictions. No new server run occurs.
+
+Evidence commit is `d339f98bbcf536c2948c4872638f56f02bbf72af`, with 93 members
+plus inventory, SHA256
+`69c7057e4994abea20e148a9179fe8229b6f6725ec7d1002e6d80484931a2d3c`.
+Five prior packets and 25 summary mutation controls verify integrity, not live
+acceptance. Changes remain local until the live gate is green.
