@@ -1,0 +1,7 @@
+{
+  "phase": "postflight",
+  "script_sha256": "84a1c23f281ec401c5c26246ba8a07be4ca56b4d50601e023e67c27a9609587f",
+  "recipe_sha256": "40e48f2d2f8ac869d144e378664654d5cc067b41014e07873807fbdec2c0f8cd",
+  "server": true,
+  "product": false
+}

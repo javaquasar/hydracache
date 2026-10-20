@@ -1,0 +1,13 @@
+{
+  "powershell_scripts": 6,
+  "powershell_syntax_passed": true,
+  "shell_scripts": [
+    "run",
+    "stage",
+    "collect",
+    "preflight"
+  ],
+  "shell_syntax_passed": true,
+  "server": false,
+  "product": false
+}

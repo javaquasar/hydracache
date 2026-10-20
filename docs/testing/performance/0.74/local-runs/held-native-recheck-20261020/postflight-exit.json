@@ -1,0 +1,6 @@
+{
+  "phase": "postflight",
+  "exit": 0,
+  "server": true,
+  "product": false
+}

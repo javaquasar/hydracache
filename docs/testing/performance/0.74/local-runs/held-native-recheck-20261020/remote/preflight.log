@@ -1,0 +1,30 @@
+Tue Oct 20 13:06:00 UTC 2026
+ABSENT /var/lib/hydracache-performance/campaigns/active-campaign
+ABSENT /var/lib/hydracache-performance/campaigns/active-diagnostic.json
+ABSENT /var/lib/hydracache-performance/campaigns/.active-diagnostic.pending
+ABSENT /var/lib/hydracache-performance/campaigns/diagnostic-requests.json
+ABSENT /var/lib/hydracache-performance/campaigns/.diagnostic-requests.pending
+ABSENT /var/lib/hydracache-performance/campaign-lifecycle-smoke-v1.json
+ABSENT /var/lib/hydracache-performance/controller-loss-smoke-v1.json
+ABSENT /var/lib/hydracache-performance/diagnostic-intents-074
+ABSENT /var/lib/hydracache-performance/worker-authority-074
+MainPID=8839
+NRestarts=0
+ExecMainStartTimestamp=Tue 2026-10-06 15:03:40 CEST
+ActiveState=active
+SubState=running
+HC074-HELD-ROOT preflight=ok installed_unchanged=true
+join-194: OK
+join-188: OK
+bundle/build-log.jsonl: OK
+bundle/build-receipt-v1.json: OK
+bundle/Cargo.lock.observer: OK
+bundle/Cargo.lock.root: OK
+bundle/direct.json: OK
+bundle/embedded.json: OK
+bundle/resp2.json: OK
+bundle/resp3.json: OK
+bundle/timing-controls-074: OK
+uid=0(root) gid=0(root) groups=0(root)
+Linux Ubuntu-noble-latest-amd64-base.zst 6.8.0-138-generic #138-Ubuntu SMP PREEMPT_DYNAMIC Fri Jul 31 22:41:49 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux
+glibc 2.39

@@ -1,0 +1,7 @@
+{
+  "phase": "stage",
+  "script_sha256": "01be1d38c7ee05f58017dac129f6284f3af1ff32b2e4ca9e6a2fdcaa89f9186a",
+  "recipe_sha256": "40e48f2d2f8ac869d144e378664654d5cc067b41014e07873807fbdec2c0f8cd",
+  "server": true,
+  "product": false
+}
