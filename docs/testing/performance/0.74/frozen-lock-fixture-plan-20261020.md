@@ -52,3 +52,11 @@ only that include path with the same frozen fixture. Extend the exact adapter
 to reconstruct this second file and retain every old assertion. Then repeat
 both artifact and receipt targets and the complete ordinary Windows package.
 Any further failure remains independent and must not be counted as success.
+
+The first two Linux selected-source runners complete all 31 artifact and nine
+receipt tests successfully, then refuse their own incorrect eight-case receipt
+selection oracle. The ninth case is the existing Linux-only synthetic spool
+and offline verification control; Windows has eight. Retain the runner refusal,
+enumerate the actual selected images, and require all nine Linux cases in one
+corrected repeat. This corrects case selection, not a numerical/runtime
+threshold, test assertion, workload, seed, deadline or product candidate.

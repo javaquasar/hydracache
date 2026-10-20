@@ -4377,3 +4377,22 @@ The packet contains 63 hashed files plus its inventory, SHA256
 Its verifier refuses 22 metadata mutations. Actual fixed-root positive admission
 and a new original-frame live cohort are not claimed. No clock service change,
 cgroup creation, server/supervisor operation or product workload occurred.
+
+The [immutable lock fixture repair](frozen-lock-fixture-design.md) fixes both
+synthetic consumers of the moving workspace root lock without changing the
+production pin or any runtime source. Selected source 84fee2cc passes the full
+ordinary Windows monitor package: 296 ordinary tests and twenty docs, zero
+failures/ignored. GNU 1.94 and MSRV 1.88 each pass all 31 artifact and nine receipt
+cases. Four source-scope guards preserve all 437 runtime files and every old
+test assertion outside the explicitly replaced input helper/include path.
+Strict lint, format, registry/docs and local performance contract pass.
+
+The [new packet](local-runs/frozen-lock-fixture-20261020/README.md) retains both
+original refusals and the new harness errors separately. Its corrected Linux
+selection includes the existing ninth spool/offline case rather than lowering
+any assertion or runtime threshold. It contains 73 hashed files plus inventory,
+SHA256 `c6dc56c0fc14c72d8a0e6fe555b07da1d848ade24c60f3783ed3baf5836aafef`;
+the verifier refuses 25 metadata mutations. The prior 321-check suite is not
+rerun for this test-input-only patch. Prior sealed evidence and qualification
+identity remain unchanged. Actual fixed-root/artifact admission, held projection,
+original delivery and server/product execution remain closed.

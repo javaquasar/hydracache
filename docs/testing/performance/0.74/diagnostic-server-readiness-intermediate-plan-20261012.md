@@ -527,3 +527,20 @@ lock bytes in a separate change before treating the broader integration gate
 as green; preserve the production hash. See the
 [selected-source packet](local-runs/fixed-slice-20261020/README.md) for the scoped
 successes and retained failures, rather than promoting either to server readiness.
+
+## P3 Ordinary synthetic artifact and receipt gates restored
+
+The [test-only immutable lock repair](frozen-lock-fixture-design.md) replaces two
+moving-workspace inputs with the exact already-pinned worker lock. Existing
+production pins, runtime sources, signature/content checks, old test assertions
+and original bounds remain. On 84fee2cc the complete ordinary Windows monitor
+package passes 296 tests and twenty docs; both GNU compilers pass all 31 artifact
+and nine receipt cases with strict lint. The broader ordinary Windows fixture
+defect is closed on that selected source, not retroactively at c59b677f.
+
+Next still requires an actual positive fixed-root join with manager ownership
+and exclusive population, authenticated held launcher/watchdog/collector objects
+and a complete held-unit projection. Keep original delivery, all-writer cessation,
+durable completion/later cells, reconnect, production enrollment and server
+rehearsal behind their distinct gates. No live matrix, server installation,
+supervisor operation or product run is authorized by synthetic fixture success.

@@ -74,3 +74,9 @@ bytes reproduce that mismatch; the original pinned worker source still provides
 the correct lock hash. Scoped portable library/doc tests and lint pass, but the
 broader integration suite remains red. Fix the synthetic fixture separately with
 the exact frozen bytes, never by changing the production pin or lowering a gate.
+
+That separate [fixture repair](frozen-lock-fixture-design.md) subsequently fixes
+both synthetic consumers and restores the complete ordinary Windows monitor
+package on 84fee2cc. The sealed c59b677f refusal remains historical evidence;
+neither the later ordinary green result nor this read-only observer closes
+actual fixed-root, manager ownership, artifact or held-unit admission.

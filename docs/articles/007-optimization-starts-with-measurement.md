@@ -14274,3 +14274,40 @@ reconstruction both differ from that pin, while the lock from the pinned worker
 source still matches exactly. Preserve this red instead of calling the entire
 suite green because scoped library/doc controls pass. The separate repair is
 to feed the synthetic test the exact frozen bytes, not weaken the hash check.
+
+## Make synthetic build inputs follow the frozen worker source
+
+The [separate fixture repair](../testing/performance/0.74/frozen-lock-fixture-design.md)
+uses the exact 175300-byte root lock from the worker's already-pinned source.
+Removing two dependency edges from the moving workspace was not a reconstruction
+of that immutable file. Updating the expected hash to fit the workspace would
+have hidden the defect by weakening the production boundary. Including the
+original Git blob, preserving its LF bytes and retaining the same hash check
+instead repairs only the synthetic input. Tests need no runtime Git or network.
+
+The first corrected artifact target passes, allowing the broader invocation to
+reach a second stale consumer in the receipt fixture. It directly hashed the
+workspace lock and was correctly refused by the same production verifier.
+Changing only its include path to the identical frozen fixture preserves every
+old receipt assertion. New controls still reject 32 seeded corruptions, the
+workspace-lock substitution and even a re-signed statement with its digest.
+Valid test data must satisfy the existing boundary; it must not redefine it.
+
+The completed ordinary Windows monitor package now passes 296 tests and twenty
+docs with zero failures or ignored cases. GNU 1.94 and MSRV 1.88 each pass all
+31 artifact and nine receipt cases. The first Linux runners report refusal even
+though those tests passed: they incorrectly expected only the eight portable
+receipt cases. The ninth is an existing Linux-only spool/offline check. Retain
+that runner error and require an enumerated complete nine-case repeat, rather
+than treating an invocation failure as a product failure or dropping the extra
+case to make a summary green.
+
+Four source-scope guards show that both old test files reconstruct after reversing
+only the explicit input changes; all 437 runtime files and production pins remain
+unchanged. This is not a new run of the previous 321-check suite or the whole
+Linux library suite. The [new evidence](../testing/performance/0.74/local-runs/frozen-lock-fixture-20261020/README.md)
+keeps the original reds, intermediate lint/runner errors and final source/image
+receipts separately. It establishes reproducible ordinary test coverage, not
+faster product code or real installed executable trust. Actual slice ownership,
+held artifacts, original delivery, writer cessation and reconnect still require
+their own live evidence before server admission.
