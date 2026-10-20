@@ -95,7 +95,11 @@ fn boot_apply<T>(
     decode(raw)
 }
 
-fn fixed_child(parent: &File, name: &std::ffi::CStr, directory: bool) -> Result<File, KernelError> {
+pub(super) fn fixed_child(
+    parent: &File,
+    name: &std::ffi::CStr,
+    directory: bool,
+) -> Result<File, KernelError> {
     let flags = libc::O_RDONLY
         | libc::O_NOFOLLOW
         | libc::O_CLOEXEC

@@ -360,7 +360,7 @@ impl Sender {
         alive(&pidfd, credentials.pid)?;
         let directory = origin.child(&credentials.pid.to_string(), true)?;
         let m = directory.metadata()?;
-        let status = origin::child(&directory, "status", false)?;
+        let status = origin::fixed_child(&directory, c"status", false)?;
         let sm = status.metadata()?;
         let projection = projection(&bounded(&status)?, &credentials)?;
         let sender = Self {
@@ -389,7 +389,7 @@ impl Sender {
                 return Err(kernel_invalid!("sender-directory"));
             }
         }
-        let named = origin::child(&self.directory, "status", false)?;
+        let named = origin::fixed_child(&self.directory, c"status", false)?;
         for file in [&named, &self.status] {
             let m = file.metadata()?;
             if (m.dev(), m.ino()) != self.status_id
