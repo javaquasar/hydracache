@@ -8,10 +8,6 @@ use std::os::unix::fs::{FileExt, MetadataExt, OpenOptionsExt};
 use std::sync::Arc;
 use thiserror::Error;
 
-#[path = "diagnostic_document_scratch.rs"]
-mod document_scratch;
-use document_scratch::{alive_read, DocumentBuffer};
-
 // BEGIN TEST ONLY KERNEL REFUSAL TRACE
 #[cfg(test)]
 #[path = "diagnostic_kernel_refusal_trace.rs"]
@@ -49,6 +45,10 @@ mod origin;
 pub use origin::KernelTimePoint;
 pub(crate) use origin::OriginalReceiverBinding;
 use origin::{Origin, TimePoint};
+
+#[path = "diagnostic_document_scratch.rs"]
+mod document_scratch;
+use document_scratch::{alive_read, DocumentBuffer};
 
 const DOC_BYTES: usize = 65_536;
 const HOLD_NS: u64 = 60_000_000_000;
