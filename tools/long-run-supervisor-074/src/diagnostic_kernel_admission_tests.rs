@@ -3,6 +3,9 @@ use super::*;
 #[path = "../tests/support/projection_prefix.rs"]
 pub(super) mod projection_prefix;
 
+#[path = "../tests/support/document_scratch.rs"]
+pub(super) mod document_scratch;
+
 #[test]
 fn kernel_refusal_capture_healthy_has_no_event() {
     let (value, event) = super::refusal_trace::capture(|| 7);

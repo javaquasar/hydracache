@@ -15,6 +15,9 @@ mod fresh_status;
 #[path = "../tests/support/pid_path_alloc.rs"]
 mod pid_path;
 
+#[path = "../tests/support/document_scratch_alloc.rs"]
+mod document_scratch;
+
 #[derive(Clone, Copy, Default, Debug, PartialEq, Eq, serde::Serialize)]
 struct Counts {
     allocations: u64,
