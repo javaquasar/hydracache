@@ -198,7 +198,7 @@ fn legacy_source_views_preserve_every_old_assertion_and_only_restore_known_scrat
         if view == "scratch_view" {
             let hook = "\n#[path = \"document_scratch_guard.rs\"]\nmod scratch_view;\n";
             assert_eq!(current.matches(hook).count(), 1);
-            current = current.replacen(hook, "", 1);
+            current = current.replacen(hook, "\n", 1);
         }
         assert_eq!(current.matches(&expected).count(), 1);
         assert_eq!(
