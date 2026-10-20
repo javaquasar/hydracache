@@ -9,6 +9,9 @@ mod boot_comparison;
 #[path = "../tests/support/projection_prefix_alloc.rs"]
 mod projection_prefix;
 
+#[path = "../tests/support/fresh_status_alloc.rs"]
+mod fresh_status;
+
 #[derive(Clone, Copy, Default, Debug, PartialEq, Eq, serde::Serialize)]
 struct Counts {
     allocations: u64,

@@ -408,3 +408,6 @@ docs/testing/performance/0.74/local-runs/held-consuming-privileged-server-202610
 
 docs/testing/performance/0.74/local-runs/held-preparation-cost-20261020/** -text whitespace=cr-at-eol
 docs/testing/performance/0.74/local-runs/held-preparation-cost-20261020/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/fresh-kernel-cost-20261020/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/fresh-kernel-cost-20261020/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol

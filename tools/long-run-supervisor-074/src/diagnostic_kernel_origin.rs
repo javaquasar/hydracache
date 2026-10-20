@@ -282,6 +282,10 @@ impl Origin {
 mod boot_buffer_tests;
 
 #[cfg(test)]
+#[path = "../tests/support/fresh_kernel_cost.rs"]
+mod fresh_kernel_cost;
+
+#[cfg(test)]
 #[path = "diagnostic_fixed_leaf_path_tests.rs"]
 mod fixed_leaf_path_tests;
 
