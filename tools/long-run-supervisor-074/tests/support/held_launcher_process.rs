@@ -219,6 +219,15 @@ impl Attempt {
         let guards = [Sleeper::new(), Sleeper::new()];
         let [socket, peer] = pair();
         let [stdin, input] = pipe();
+        let stdin = if case == "opath-stdin" {
+            OpenOptions::new()
+                .read(true)
+                .custom_flags(libc::O_PATH | libc::O_CLOEXEC)
+                .open(format!("/proc/self/fd/{}", stdin.as_raw_fd()))
+                .unwrap()
+        } else {
+            stdin
+        };
         let [output, stdout] = pipe();
         let [error, stderr] = pipe();
         let worker = if case == "root-file-wrong-hash" {
@@ -437,11 +446,23 @@ impl Attempt {
         let args = std::fs::read(format!("/proc/{}/cmdline", self.child.id())).unwrap();
         let args: Vec<_> = args.split(|b| *b == 0).collect();
         assert_eq!(args.len(), 6);
+        assert_eq!(
+            args[0],
+            hydracache_long_run_supervisor_074::diagnostic_lease::BINARY_PATH.as_bytes()
+        );
         assert_eq!(args[1], b"--run");
         assert_eq!(args[2], b"/proc/self/fd/5");
+        let digest = format!("{:x}", Sha256::digest(elf()));
+        assert_eq!(args[3], digest.as_bytes());
+        assert_eq!(
+            args[4],
+            hydracache_long_run_supervisor_074::diagnostic_lease::SOURCE_COMMIT.as_bytes()
+        );
+        assert!(args[5].is_empty());
         assert!(std::fs::read(format!("/proc/{}/environ", self.child.id()))
             .unwrap()
             .is_empty());
+        println!("held_exec_observed pid={} start_ticks={} helper_image={}:{} worker_image={}:{} retained_fds=0,1,2,5 argv_verified=true environment_empty=true",self.child.id(),self.ticks,self.exe[0],self.exe[1],m.dev(),m.ino());
     }
     fn reap(&mut self) -> std::process::ExitStatus {
         if let Some(s) = self.status {
@@ -677,6 +698,7 @@ fn owner_loss() {
                 let cred = libc::CMSG_DATA(c).cast::<libc::ucred>().read_unaligned();
                 assert_eq!(cred.pid, owner.child.id() as i32);
                 assert_eq!(cred.uid, libc::geteuid());
+                assert_eq!(cred.gid, libc::getegid());
                 credentials += 1;
             }
             c = libc::CMSG_NXTHDR(&msg, c);
@@ -735,6 +757,7 @@ pub(super) fn matrix() {
         "bad-config-hash",
         "unsealed-worker",
         "root-file-wrong-hash",
+        "opath-stdin",
     ];
     for case in cases {
         if case == "owner-loss" {
@@ -752,6 +775,7 @@ pub(super) fn matrix() {
             "bad-config-hash",
             "unsealed-worker",
             "root-file-wrong-hash",
+            "opath-stdin",
         ]
         .contains(&case)
         {

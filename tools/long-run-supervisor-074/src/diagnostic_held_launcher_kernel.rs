@@ -243,7 +243,7 @@ fn stream_ids(b: &Bootstrap) -> io::Result<()> {
             unsafe { libc::fstat(fd, &mut m) } == 0
                 && m.st_mode & libc::S_IFMT == libc::S_IFIFO
                 && flags >= 0
-                && flags & libc::O_ACCMODE
+                && flags & (libc::O_ACCMODE | libc::O_PATH)
                     == if fd == 0 {
                         libc::O_RDONLY
                     } else {
