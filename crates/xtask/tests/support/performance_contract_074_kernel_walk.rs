@@ -1,6 +1,9 @@
 //! Exact test-only additions, never removal or relocation of an old guard.
+
 #[path = "performance_contract_074_boot_buffer.rs"]
 mod boot_buffer;
+#[path = "document_scratch_guard.rs"]
+mod scratch_view;
 const BASE: &str = "be06c237c3c8c3b6cf4e5eb608c90d0f9feaa47c";
 const INSERTIONS: &[(&str, &str)] = &[
     ("tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs", "        #[cfg(test)]\n        let _kernel_walk = crate::diagnostic_ipc::validation_trace::kernel_walk::span(\n            crate::diagnostic_ipc::validation_trace::kernel_walk::Kind::PacketContext,\n        );\n"),
@@ -71,9 +74,10 @@ fn root() -> std::path::PathBuf {
     std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..")
 }
 fn read(path: &str) -> String {
-    std::fs::read_to_string(root().join(path))
+    let raw = std::fs::read_to_string(root().join(path))
         .unwrap()
-        .replace('\r', "")
+        .replace('\r', "");
+    scratch_view::normalize(path, &raw)
 }
 fn old(path: &str) -> String {
     let out = std::process::Command::new("git")

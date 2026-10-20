@@ -150,6 +150,14 @@ fn document_scratch_adoption_is_the_frozen_helper_and_reconstructs_all_473_old_b
 fn legacy_source_views_preserve_every_old_assertion_and_only_restore_known_scratch_shapes() {
     for (path, view) in [
         (
+            "crates/xtask/tests/support/performance_contract_074_kernel_walk.rs",
+            "scratch_view",
+        ),
+        (
+            "crates/xtask/tests/support/performance_contract_074_boot_comparison.rs",
+            "scratch_view",
+        ),
+        (
             "crates/xtask/tests/fresh_kernel_cost_074.rs",
             "guard::pid_path::custody_cost::document_scratch",
         ),
@@ -186,7 +194,12 @@ fn legacy_source_views_preserve_every_old_assertion_and_only_restore_known_scrat
                 &format!(".replace('\\r', \"\");\n    {view}::normalize(path, &raw)\n}}"),
                 1,
             );
-        let current = read(path);
+        let mut current = read(path);
+        if view == "scratch_view" {
+            let hook = "\n#[path = \"document_scratch_guard.rs\"]\nmod scratch_view;\n";
+            assert_eq!(current.matches(hook).count(), 1);
+            current = current.replacen(hook, "", 1);
+        }
         assert_eq!(current.matches(&expected).count(), 1);
         assert_eq!(
             current.replacen(&expected, original, 1),
