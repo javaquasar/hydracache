@@ -1,4 +1,6 @@
 //! Exact uncached PID formatter and call substitutions, no validator exclusions.
+#[path = "custody_cost_guard.rs"]
+pub(crate) mod custody_cost;
 pub(crate) const ORIGIN: &str = "tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs";
 pub(crate) const ADMISSION: &str =
     "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs";
@@ -52,7 +54,7 @@ pub(crate) const CHANGES: [(&str, &str, &str); 5] = [
     (ADMISSION,"let directory = origin.child(self.credentials.pid, true)?;","let directory = origin.child(&self.credentials.pid.to_string(), true)?;"),
 ];
 pub(crate) fn normalize(path: &str, raw: &str) -> String {
-    let mut raw = raw.to_owned();
+    let mut raw = custody_cost::normalize(path, raw);
     for (file, exact, old) in HOOKS
         .into_iter()
         .map(|(f, s)| (f, s, ""))

@@ -13,6 +13,10 @@ pub(crate) mod live_walk;
 #[path = "diagnostic_kernel_walk_trace.rs"]
 pub(crate) mod kernel_walk;
 
+#[cfg(target_os = "linux")]
+#[path = "../tests/support/custody_boundaries.rs"]
+pub(crate) mod custody_boundaries;
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) enum Stage {
     Unassigned,

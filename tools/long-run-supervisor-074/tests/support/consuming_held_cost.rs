@@ -18,9 +18,11 @@ fn observe_with_cpu<T>(
 ) -> (std::thread::Result<T>, serde_json::Value) {
     let wall = Instant::now();
     let before = cpu();
-    let (((result, auth), live), kernel) = trace::kernel_walk::capture(|| {
-        trace::live_walk::capture(|| {
-            trace::capture(|| std::panic::catch_unwind(std::panic::AssertUnwindSafe(call)))
+    let ((((result, auth), live), kernel), boundaries) = trace::custody_boundaries::capture(|| {
+        trace::kernel_walk::capture(|| {
+            trace::live_walk::capture(|| {
+                trace::capture(|| std::panic::catch_unwind(std::panic::AssertUnwindSafe(call)))
+            })
         })
     });
     let process_cpu_ns = before.zip(cpu()).and_then(|(a, b)| b.checked_sub(a));
@@ -33,7 +35,7 @@ fn observe_with_cpu<T>(
         "authentication_ns":auth.stages.iter().map(|s|s.authentication_ns).sum::<u128>(),
         "signature_calls":auth.stages.iter().map(|s|s.signature_calls).sum::<u64>(),
         "signature_ns":auth.stages.iter().map(|s|s.signature_ns).sum::<u128>(),
-        "kernel":kernel,"live":live,"overlapping_spans":true,"instrumented":true,
+        "kernel":kernel,"live":live,"boundaries":boundaries,"overlapping_spans":true,"instrumented":true,
         "includes_child_cpu":false,"guard_clock_added":false,"deadline_changed":false,
         "healthy_gate":false,"server":false,"product":false
     });

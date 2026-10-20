@@ -181,6 +181,10 @@ impl<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>
                     .retain_original_collector_custody()
                     .map_err(OriginalCustodyError::from)?,
             );
+            #[cfg(test)]
+            crate::diagnostic_ipc::validation_trace::custody_boundaries::mark(
+                "before-first-custody",
+            );
             original.inspect_custody()?;
             #[cfg(test)]
             checkpoint("retained", &mut held);
@@ -192,6 +196,8 @@ impl<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>
             )?;
             #[cfg(test)]
             checkpoint("enrolled", &mut held);
+            #[cfg(test)]
+            crate::diagnostic_ipc::validation_trace::custody_boundaries::mark("closing-enter");
             let original = &mut held.original;
             if original
                 .original
@@ -213,6 +219,8 @@ impl<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>
             original.inspect_custody()?;
             original.inspect_deadline()?;
             held.observe()?;
+            #[cfg(test)]
+            crate::diagnostic_ipc::validation_trace::custody_boundaries::mark("closing-exit");
             // No ordinary callback, send or start follows this closing observation.
             held.original.original.transport.material.ready = true;
             held.original.ready = true;
