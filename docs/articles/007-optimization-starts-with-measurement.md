@@ -15120,3 +15120,55 @@ service operation, original manager start, product workload or qualification.
 The negative native gate and the earlier WSL clock-order refusal stay distinct,
 with authenticated delivery, all-writer cessation, durable later cells, joined
 SIGKILL/lost-ACK and reconnect still requiring their independent proof.
+
+### Separating custody preparation from closing validation
+
+The [local custody control](../testing/performance/0.74/local-runs/custody-preparation-cost-20261020/README.md)
+tests where preparation consumes time before the first custody inspection and
+what the closing round costs by itself. Test-only marks surround the existing
+operations without moving them or supplying time to admission. Six baseline
+observations put outputs preparation at 2.828–3.058 seconds and enrollment
+closing at 67.092–73.603 ms. Their elapsed origins are the local observers, not
+the native causal origin. Adding nested kernel spans or converting these host
+figures into the earlier native nine-second age would be unjustified.
+
+The confirmed avoidable object is a large temporary read buffer. Each complete
+Sender revalidation creates four 65537-byte buffers for two pidfd and two status
+documents. One owned buffer can serve these four reads sequentially without
+retaining a kernel observation: each unchanged read overwrites the current
+prefix and only its new returned count reaches parsing. Empty, over-budget,
+short and failed reads must preserve their original outcomes, never expose a
+previous tail. The buffer belongs only to that synchronous call and cannot be
+exported as an authority, shared scratch cache or recovered owner.
+
+The prototype retains the entire preceding sender and pidfd checks. Poisoned
+tail/seeded/error tests, actual-file differentials and original refusal controls
+precede adoption. Three alternating allocation pairs per compiler remove three
+requests and 196611 requested bytes per healthy validation; four reallocations
+remain four. In these fixtures total requests change 16 to 13 and requested
+bytes 262600 to 65989. Six post-adoption pairs reproduce the same difference.
+These are Rust-thread requests, not physical bytes copied or zeroed, total
+memory retained, RSS or cache API operations.
+
+Adoption preserves the exact measured helper inside an existing source file.
+The first separate-file layout fails historical path-list guards; placing it
+inline retains all 446 runtime paths without removing their assertions. Exact
+reconstruction recovers all preceding 469/473 source bodies, and an independent
+comparison binds the helper to the frozen prototype. Legacy string canaries use
+the exact predecessor source view while retaining every old assertion; new
+canaries exercise the actual scratch calls. The representation adapter cannot
+hide a removed poll, changed namespace, parser or original deadline.
+
+All twelve attribution invocations and both final complete local holder
+matrices pass. Outputs still perform 76544 origin observations per sample.
+Post-adoption output wall times range 2.742–3.099 seconds, overlapping baseline;
+uncounted leaf timings also change direction. The defensible improvement is
+fewer temporary allocation requests, not a numerical preparation speedup.
+Eager allocation is bounded per call; failure-path performance and total memory
+behavior are not established by the healthy control.
+
+The intermediate GNU Auth(Time) refusal and every earlier WSL/native refusal
+remain in evidence rather than being replaced by this source cohort's passes.
+No new server, clock/time-service, installation, supervisor or product operation
+occurs. Native composition and joined crash/delivery/lifecycle/reconnect/trust
+gates remain separate; local buffer savings do not renew their original permits.

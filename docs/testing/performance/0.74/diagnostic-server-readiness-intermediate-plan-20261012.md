@@ -824,3 +824,25 @@ separate authorization. Next local attribution must cover preparation before
 first custody and through owned-root closing validation. Native composition,
 joined SIGKILL/lost-ACK and all independent execution/lifecycle/trust gates stay
 closed, regardless of accepted allocation reductions or evidence integrity.
+
+## Local preparation attribution after native refusal
+
+The [custody preparation control](local-runs/custody-preparation-cost-20261020/README.md)
+adds only test observations before first custody and around the unchanged closing
+round. Baseline outputs occupy 2.828–3.058 s locally; closing occupies
+67.092–73.603 ms. This separates phases but neither explains the native age
+through a host conversion nor establishes the actor behind old time refusals.
+
+The measured buffer-only mechanism saves three allocations/196611 requested
+bytes per healthy Sender revalidation, repeated in 12 pairs. Every original
+fresh kernel observation, full read capacity, error order and 300/60/10 bound
+stays. The same temporary storage is overwritten and only newly returned bytes
+are parsed; no observation or pathname is cached. Final timing ranges overlap,
+so numerical latency/CPU/API and retained-memory gains remain unclaimed.
+
+Both final GNU/MSRV complete local holder matrices pass once without attribution;
+actual fixed fresh counts and targeted kernel/join/trust checks pass. Historical
+source-list, adapter and intermediate GNU Auth(Time) failures remain unchanged.
+This strengthens local evidence only. Native composition is still negative and
+no new server run is made. Joined SIGKILL/lost-ACK, authenticated original delivery,
+all-writer cessation, later cells, reconnect and real enrollment stay closed.

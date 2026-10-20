@@ -4834,3 +4834,33 @@ The native recheck seals 57 members plus inventory, SHA256
 All 17 raw export hashes and three earlier seals verify; 52 summary mutations
 refuse. Local formatting, docs, registry and non-promotable contract checks pass.
 Qualification remains unchanged; evidence integrity does not open the native gate.
+
+## Local preparation attribution and invocation owned document storage
+
+The [new local control](local-runs/custody-preparation-cost-20261020/README.md)
+separates preparation before the first custody inspection from enrollment's
+closing validation. Six baseline observations put outputs at 2.828–3.058 s and
+closing at 67.092–73.603 ms. These are instrumented WSL spans, not the native
+causal age or a CPU/throughput claim; nested observations overlap.
+
+One isolated candidate reuses a bounded document buffer only within a single
+Sender revalidation, keeping every fresh read, capacity/count check, object,
+poll, filesystem and identity predicate and original deadline. Twelve paired
+controls confirm three fewer Rust allocations and 196611 fewer requested bytes
+per complete healthy call; no reallocation change. Final output timing overlaps
+baseline and leaf timing is mixed, so no latency improvement is accepted.
+
+Both final GNU/MSRV full unprofiled local five-case matrices and fixed fresh
+counts pass. Earlier adapter/source-list/Auth(Time) refusals remain retained;
+all old runtime paths and assertions are preserved through exact reconstruction.
+Core product and qualification remain unchanged. No new server or clock/service
+operation occurs; native and joined execution/lifecycle/trust gates stay closed.
+
+The packet seals 237 members plus inventory, SHA256
+`3194244cb4e45c6f4f611b946afaa6a6a8b3aaf83179457c260d0a9e25f93864`.
+All 355 final source/contract assertions pass; strict verification rehashes three
+older inventories and refuses 28 summary mutations. Raw failures and incorrect
+zero receipts remain disclosed rather than promoted. Evidence commit is
+`f1fbf59ab0da4fae15c51e478f058a3ee6b7bae9`; the
+[local plan outcome](custody-preparation-cost-plan-20261020.md#local-outcome)
+records the measured runtime, review source and remaining gates.

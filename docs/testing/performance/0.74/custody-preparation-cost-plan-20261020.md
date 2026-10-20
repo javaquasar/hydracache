@@ -43,3 +43,38 @@ bindings and prior inventory hashes. Core product, lock, compatibility, registry
 and qualification remain unchanged. Any candidate result is local only; native
 composition, joined SIGKILL/lost-ACK, authenticated delivery, all-writer cessation,
 later cells, reconnect and production enrollment stay independent and closed.
+
+After adoption, also run the unchanged fixed-count fresh observation control and
+one full unprofiled local holder matrix per compiler. Keep original case order,
+unset attribution/case overrides and retain the first failure without retry.
+Do not combine separate cases into a passing cohort or promote an instrumented
+healthy observation. These local checks do not reopen the native gate.
+
+## Local outcome
+
+Runtime `1f3715498cb3b9b1328061a3647f90c1c3bd2e19` adopts only the frozen
+invocation-owned buffer. Review source `f140dafff43e390aaab0478147cc001360aad7a4`
+passes all 355 source/contract assertions with intact predecessor assertions.
+Both GNU 1.94 and MSRV 1.88 pass their complete unprofiled five-case local holder
+matrices, 58 kernel checks, 20 bridge checks, 26 trust checks, observer/boundary
+checks and strict tool lint. Actual fresh observations retain all 36 fixed-count
+rows. Targeted formatting, strict xtask lint, docs, registry and local contracts
+pass. These selections overlap and are not added into a coverage total.
+
+Twelve alternating allocation pairs confirm 16 to 13 allocations and 262600 to
+65989 requested bytes per healthy Sender call, with four reallocations unchanged.
+Outputs preparation is the larger local preceding span (baseline 2.828–3.058 s)
+than closing alone (67.092–73.603 ms). Final outputs span 2.742–3.099 s, so no
+numerical latency, CPU or product API gain is accepted. All deadlines and live
+observations stay; earlier native and intermediate time failures remain open.
+
+Evidence commit `f1fbf59ab0da4fae15c51e478f058a3ee6b7bae9` seals 237 members plus
+inventory, SHA256
+`3194244cb4e45c6f4f611b946afaa6a6a8b3aaf83179457c260d0a9e25f93864`.
+The verifier rehashes three preceding packets and rejects 28 summary mutations.
+Two initial wrapper receipts incorrectly report zero despite raw test/linker
+failures; neither is rewritten or accepted as a pass. Their discrepancies and an
+explicitly interrupted duplicate source check are retained. No server access or
+clock/service/product operation occurred. Next work remains independent native
+composition and joined crash/delivery/cessation/lifecycle/reconnect/trust proof;
+this local result grants no server or release admission.
