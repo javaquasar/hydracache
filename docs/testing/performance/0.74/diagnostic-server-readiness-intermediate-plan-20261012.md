@@ -653,3 +653,20 @@ those independently before consuming FixedPlacement and role files in an origina
 join; do not select trust from the incoming binding or reuse the old worker key.
 Protected role build production, hashing attribution and joined live/SIGKILL/
 lost-ACK, all-writer retirement, durable lifecycle and reconnect gates remain.
+
+## P3 Independent held source and early controller guard
+
+The [fixed source](held-runtime-trust-plan-20261020.md) now retains protected root
+configuration and independently selects held key/pin, with reviewed old selectors
+unchanged. No actual production selection/enrollment is performed. Its borrowed
+OriginalHeldTrust reobserves the same original controller/kernel/active authority
+before and after policy inspection, retaining request, policy/epoch/revision and
+trust snapshot. Valid signed v4 data for another original request must refuse and
+poison both owners. This adds no start/send capability or new time origin.
+
+Next carry this retained selection into the late consuming join with the same
+FixedPlacement, original signed claims, role objects and complete unchanged
+frame. This early borrow alone cannot replace that later join. Keep production
+build/enrollment, real-image hashing attribution, authenticated delivery,
+Armed/custody/all-writer cessation and later lifecycle/reconnect independently
+gated. No server installation, supervisor operation or workload is authorized.

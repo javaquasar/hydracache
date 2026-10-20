@@ -14559,3 +14559,66 @@ seeded corruptions run per round, while 34 receipt/format metadata mutations
 refuse. An explicit zero-exit record handles silent formatting without changing
 the preceding packet. These results close the static cross-document contract;
 they do not measure hashing cost or authorize a live original attempt.
+
+## Select held trust independently, then borrow the original authority
+
+The next boundary is verifier selection. Correct v4 signatures prove only what
+the selected keys signed; accepting a held-policy pin supplied with that same
+packet would let the packet choose its own trust. The
+[fixed-input implementation](../testing/performance/0.74/held-runtime-trust-plan-20261020.md)
+instead reads a separate protected root configuration. There is no public path,
+UID, key or pin override, no compiled held-key default and no configuration
+writer. The reviewed controller, old builder and worker issuer stay fixed; the
+root-selected held builder must be distinct from all three. Actual production
+selection and enrollment are not performed by this package.
+
+The source retains descriptors for the root, ancestors and bounded canonical
+file, not just parsed strings. Every revalidation compares held and named kernel
+objects, ownership/modes, stamps and bytes. Replacing a leaf with identical bytes
+is still replacement. Restoring the original file or permissions after refusal
+cannot revive the owner. The implementation reuses the unchanged trusted-input
+walk/read checks; it does not invent looser filesystem rules. A development test
+incorrectly treated existing permitted group-read mode 0640 as unsafe. Correcting
+that test to group-write mode 0660 preserves the actual contract rather than
+tightening a fixture until it accidentally tests a different policy.
+
+OriginalHeldTrust then borrows the same SignedControllerInput and held source.
+Policy inspection observes the actual controller key and active worker authority
+digest, epoch, revision and trust snapshot, plus the original request digest.
+Both sides are freshly revalidated around verification. No cached checked policy
+replaces these observations, and any error poisons both the new source and the
+original controller/kernel/authority chain. The held key and held-policy digest
+come from the retained root source, never from incoming v4 contents.
+
+The adversarial control is not merely a corrupted signature. Synthetic fixtures
+produce correctly signed v4 documents for another reservation request,
+controller run, identity or worker policy. Static inspection accepts those
+documents as well-formed signed data, while the early original-request join
+refuses each one. Healthy controls use a real local kernel packet and retained
+active authority, but synthetic keys and owned temporary configuration roots.
+They do not enroll the machine or execute the represented build artifacts.
+
+This closes an early read-only selection/request boundary, not the later
+consuming join with FixedPlacement, retained role files and the complete original
+frame. The returned Inspection remains static data, not a policy/FD original or
+start capability. Protected production build, role-image hashing attribution,
+authenticated delivery, both guardians Armed, active collector custody and
+all-writer cessation are still distinct gates. No clock origin, live check,
+46-bracket contract or 300/60/10 bound is changed. No numerical CPU, allocation,
+throughput or server-readiness claim follows from these correctness tests.
+
+At frozen source d2cfdf23 GNU 1.94/MSRV 1.88 each pass two rounds of the 26 new
+controls and 38 preceding integration controls, plus five new and six preceding
+capability examples without compiler panic. Windows retains two 28-test rounds
+and four examples. Sixteen exact source/adapter guards preserve all 442 preceding
+runtime files after the one exact module hook; three predecessor checks, strict
+lint, formatting, registry/docs and the local contract also pass. The
+[separate packet](../testing/performance/0.74/local-runs/held-runtime-trust-20261020/README.md)
+retains draft failures separately and binds source, recipe and actual test images.
+This is an early authority-selection correctness result, not an end-to-end
+original launch, real role build or measured performance improvement.
+
+The separate sealed packet contains 59 hashed members plus inventory. Forty
+in-memory receipt/format metadata mutations refuse, while earlier sealed packets
+and the qualification digest remain unchanged. This verifies the scope and
+selection of the evidence, not a production trust enrollment or broader launch.

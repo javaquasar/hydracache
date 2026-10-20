@@ -42,3 +42,17 @@ nonroot modeled roots and local kernel fixtures are not production enrollment.
 Run GNU 1.94/MSRV 1.88, Windows regressions, capability docs, source/adapter guards,
 strict lint/fmt, registry/docs and local non-promotable contract. Preserve all
 sealed packets and qualification digest. No server/supervisor/product workload.
+
+## Local implementation result
+
+Implementation ea7ae28f; frozen selected source d2cfdf23. Both GNU 1.94/MSRV 1.88
+pass two rounds of 26 new controls and 38 preceding controls, five new/six old
+capability docs. Windows retains two 28-test rounds/four docs. Sixteen exact
+source/adapter guards, three predecessor controls, strict lint/fmt, registry/docs
+and local contract pass. The [separate evidence](local-runs/held-runtime-trust-20261020/README.md)
+preserves draft refusals rather than converting them into successful acceptance.
+
+The next package remains the consuming late original placement/role-object/frame
+join. No actual production key/pin selection, enrollment, role-image cost result,
+authenticated delivery, all-writer retirement, later lifecycle/reconnect or
+server/SIGKILL qualification follows from this early read-only guard.

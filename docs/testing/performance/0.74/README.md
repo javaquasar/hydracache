@@ -4559,3 +4559,34 @@ qualification digest. This is not a new live/SIGKILL or release qualification.
 
 The sealed packet has 49 hashed members plus inventory, SHA256
 `5950fc0c8f8be989af528638661a72669e185c67ec91c74ef5c972426146ede4`.
+
+## Independent held trust with early original-controller observation
+
+The [fixed held trust input](held-runtime-trust-plan-20261020.md) reads a separate
+protected root configuration through retained no-follow directory/file FDs.
+The sole public opener has no selector/path override; no production key/pin,
+configuration writer or enrollment is introduced. The held key must differ from
+all three existing reviewed controller/builder/issuer keys. Configuration drift
+or replacement refuses permanently, even if the original bytes are restored.
+
+OriginalHeldTrust borrows the same signed controller/kernel/active-authority
+owner. Fresh observations check its actual controller, request digest and worker
+policy/epoch/revision/trust snapshot around verification. Optional v4 inspection
+matches the original reservation, controller, identity, source, preset and worker
+authority; any failure poisons both chains. The early read-only join is not the
+late consuming FixedPlacement/role-FD/full-frame join or server admission.
+Protected role build/enrollment, hashing attribution, authenticated delivery,
+Armed/custody/all-writer cessation, durable later cells and reconnect remain open.
+
+Selected source d2cfdf23 passes two rounds of 26 new and 38 preceding controls,
+five new/six preceding capability docs on each GNU/MSRV compiler. Windows retains
+two 28-test rounds/four docs. Sixteen source guards, three predecessor checks,
+strict lint, formatting, registry (186 registered), docs and local contract pass.
+The [separate evidence](local-runs/held-runtime-trust-20261020/README.md) preserves
+draft refusals, previous sealed packets and the fixed qualification digest. No
+real-image cost measurement, new joined SIGKILL or server qualification is claimed.
+
+The sealed packet has 59 hashed members plus inventory, SHA256
+`062948c1d6be9aadeb4ba98e03bb04bba007f2bcdf70c727f280cee62b6cf8cf`.
+Its verifier refuses 40 in-memory receipt/format metadata mutations without
+editing the packet or changing earlier evidence.
