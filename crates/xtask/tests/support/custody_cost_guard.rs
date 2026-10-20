@@ -1,4 +1,6 @@
 //! Exact test-only observation hooks, never a validator-body exclusion.
+#[path = "document_scratch_guard.rs"]
+pub(crate) mod document_scratch;
 pub(crate) const HOOKS: [(&str, &str); 6] = [
     ("tools/long-run-supervisor-074/src/diagnostic_validation_trace.rs", "\n#[cfg(target_os = \"linux\")]\n#[path = \"../tests/support/custody_boundaries.rs\"]\npub(crate) mod custody_boundaries;\n"),
     ("tools/long-run-supervisor-074/src/diagnostic_original_enrollment_frame_build.rs", "            #[cfg(test)]\n            crate::diagnostic_ipc::validation_trace::custody_boundaries::mark(\n                \"before-first-custody\",\n            );\n"),
@@ -12,7 +14,7 @@ pub(crate) const OBSERVER: &str =
 pub(crate) const NEW: &str = "    let ((((result, auth), live), kernel), boundaries) = trace::custody_boundaries::capture(|| {\n        trace::kernel_walk::capture(|| {\n            trace::live_walk::capture(|| {\n                trace::capture(|| std::panic::catch_unwind(std::panic::AssertUnwindSafe(call)))\n            })\n        })\n    });\n";
 const OLD: &str = "    let (((result, auth), live), kernel) = trace::kernel_walk::capture(|| {\n        trace::live_walk::capture(|| {\n            trace::capture(|| std::panic::catch_unwind(std::panic::AssertUnwindSafe(call)))\n        })\n    });\n";
 pub(crate) fn normalize(path: &str, raw: &str) -> String {
-    let mut raw = raw.to_owned();
+    let mut raw = document_scratch::normalize(path, raw);
     for (file, exact, old) in HOOKS.into_iter().map(|(f, s)| (f, s, "")).chain([
         (OBSERVER, NEW, OLD),
         (
