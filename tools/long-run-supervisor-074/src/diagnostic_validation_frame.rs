@@ -160,6 +160,9 @@ impl OriginalFramedConsent<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
     ) -> Result<(), OriginalStartConsentError> {
         for step in STEPS {
             before(step);
+            #[cfg(test)]
+            let step_scope =
+                crate::diagnostic_ipc::validation_trace::round_cost::span(step as usize);
             match step {
                 ValidationFrameStep::StorageBefore | ValidationFrameStep::StorageAfter => self
                     .original
@@ -191,6 +194,8 @@ impl OriginalFramedConsent<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
                 ValidationFrameStep::Consent => self.original.authenticate()?,
                 ValidationFrameStep::FinalClocks => self.final_clocks()?,
             }
+            #[cfg(test)]
+            step_scope.complete();
         }
         Ok(())
     }

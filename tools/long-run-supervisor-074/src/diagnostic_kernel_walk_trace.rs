@@ -61,6 +61,9 @@ pub(crate) fn capture<T>(run: impl FnOnce() -> T) -> (T, Report) {
     assert!(frame.stack.is_empty(), "unfinished kernel numeric span");
     (value, frame.report.clone())
 }
+pub(crate) fn numeric_snapshot() -> Option<Report> {
+    FRAME.with_borrow(|frame| frame.as_ref().map(|frame| frame.borrow().report.clone()))
+}
 pub(crate) struct Span(Option<(Shared, Kind, usize, Instant)>);
 pub(crate) fn span(kind: Kind) -> Span {
     Span(FRAME.with_borrow(|current| {

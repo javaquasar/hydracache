@@ -42,6 +42,9 @@ pub(crate) fn capture<T>(run: impl FnOnce() -> T) -> (T, [Stats; 6]) {
     assert!(frame.stack.is_empty(), "unfinished numeric live-walk span");
     (value, frame.stats)
 }
+pub(crate) fn numeric_snapshot() -> Option<[Stats; 6]> {
+    FRAME.with_borrow(|frame| frame.as_ref().map(|frame| frame.borrow().stats))
+}
 pub(crate) struct Span(Option<(Shared, Kind, usize, Instant)>);
 pub(crate) fn span(kind: Kind) -> Span {
     Span(FRAME.with_borrow(|current| {

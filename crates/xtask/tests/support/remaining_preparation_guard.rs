@@ -1,9 +1,45 @@
 //! Exact local observations and bounded-parser substitutions only.
 #[macro_export]
-macro_rules! hc074_starting_effects_view {
+macro_rules! hc074_round_cost_view {
     ($path:expr, $source:expr) => {{
         let path: &str = $path;
         let mut raw: String = $source.to_owned();
+        for (file, hooks) in [
+            ("tools/long-run-supervisor-074/src/diagnostic_validation_trace.rs", &[
+                "#[cfg(target_os = \"linux\")]\n#[path = \"../tests/support/round_cost.rs\"]\npub(crate) mod round_cost;\n\n",
+                "#[cfg(target_os = \"linux\")]\npub(crate) fn numeric_snapshot() -> Option<Report> {\n    FRAME.with_borrow(|frame| frame.as_ref().map(|frame| frame.borrow().report.clone()))\n}\n\n",
+            ][..]),
+            ("tools/long-run-supervisor-074/src/diagnostic_kernel_walk_trace.rs", &[
+                "pub(crate) fn numeric_snapshot() -> Option<Report> {\n    FRAME.with_borrow(|frame| frame.as_ref().map(|frame| frame.borrow().report.clone()))\n}\n",
+            ][..]),
+            ("tools/long-run-supervisor-074/src/diagnostic_live_walk_trace.rs", &[
+                "pub(crate) fn numeric_snapshot() -> Option<[Stats; 6]> {\n    FRAME.with_borrow(|frame| frame.as_ref().map(|frame| frame.borrow().stats))\n}\n",
+            ][..]),
+            ("tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs", &[
+                "            #[cfg(test)]\n            let step_scope =\n                crate::diagnostic_ipc::validation_trace::round_cost::span(step as usize);\n",
+                "            #[cfg(test)]\n            step_scope.complete();\n",
+            ][..]),
+            ("tools/long-run-supervisor-074/tests/support/consuming_held_cost.rs", &[
+                "    let round_scope = trace::round_cost::Capture::new();\n",
+                "    let round_steps = round_scope.finish();\n",
+                "        \"round_steps\":round_steps,\n",
+            ][..]),
+        ] {
+            if path == file && (raw.contains("round_cost::") || raw.contains("fn numeric_snapshot()")) {
+                for hook in hooks {
+                    assert_eq!(raw.matches(hook).count(), 1, "exact round observer hook");
+                    raw = raw.replacen(hook, "", 1);
+                }
+            }
+        }
+        raw
+    }};
+}
+#[macro_export]
+macro_rules! hc074_starting_effects_view {
+    ($path:expr, $source:expr) => {{
+        let path: &str = $path;
+        let mut raw: String = $crate::hc074_round_cost_view!(path, $source);
         let active = raw.contains("::mark(\"st-");
         for (file, indent, names) in [
             ("tools/long-run-supervisor-074/src/diagnostic_original_output_join.rs", 8, &["st-enter", "st-encoded", "st-begun", "st-final", "st-finaled", "st-acked"][..]),

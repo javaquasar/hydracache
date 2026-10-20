@@ -16,6 +16,7 @@ fn observe_with_cpu<T>(
     call: impl FnOnce() -> T,
     mut cpu: impl FnMut() -> Option<u128>,
 ) -> (std::thread::Result<T>, serde_json::Value) {
+    let round_scope = trace::round_cost::Capture::new();
     let wall = Instant::now();
     let before = cpu();
     let ((((result, auth), live), kernel), boundaries) = trace::custody_boundaries::capture(|| {
@@ -27,9 +28,11 @@ fn observe_with_cpu<T>(
     });
     let process_cpu_ns = before.zip(cpu()).and_then(|(a, b)| b.checked_sub(a));
     let wall_ns = wall.elapsed().as_nanos();
+    let round_steps = round_scope.finish();
     let kernel: Vec<_> = kernel.nodes.iter().map(|s| serde_json::json!({"calls":s.calls,"inclusive_ns":s.inclusive_ns,"outside_children_ns":s.outside_children_ns})).collect();
     let live: Vec<_> = live.iter().map(|s| serde_json::json!({"calls":s.calls,"inclusive_ns":s.inclusive_ns,"outside_children_ns":s.outside_children_ns})).collect();
     let report = serde_json::json!({
+        "round_steps":round_steps,
         "wall_ns":wall_ns,"process_cpu_ns":process_cpu_ns,"returned":result.is_ok(),
         "authentication_calls":auth.stages.iter().map(|s|s.authentication_calls).sum::<u64>(),
         "authentication_ns":auth.stages.iter().map(|s|s.authentication_ns).sum::<u128>(),

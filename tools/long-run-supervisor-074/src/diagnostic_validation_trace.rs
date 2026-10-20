@@ -17,6 +17,15 @@ pub(crate) mod kernel_walk;
 #[path = "../tests/support/custody_boundaries.rs"]
 pub(crate) mod custody_boundaries;
 
+#[cfg(target_os = "linux")]
+#[path = "../tests/support/round_cost.rs"]
+pub(crate) mod round_cost;
+
+#[cfg(target_os = "linux")]
+pub(crate) fn numeric_snapshot() -> Option<Report> {
+    FRAME.with_borrow(|frame| frame.as_ref().map(|frame| frame.borrow().report.clone()))
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) enum Stage {
     Unassigned,
