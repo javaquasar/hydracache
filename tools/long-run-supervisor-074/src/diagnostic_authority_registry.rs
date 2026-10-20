@@ -111,7 +111,10 @@ impl Record {
         if self.issuer_key_hex != key_hex(trust)
             || self.policy_sha256 != trust.policy_sha256
             || self.policy_epoch != trust.epoch
-            || self.context() != *host
+            || self.machine_id != host.machine_id
+            || self.boot_id != host.boot_id
+            || self.user_namespace != host.user_namespace
+            || self.mount_namespace != host.mount_namespace
         {
             return Err(AuthorityError::Binding);
         }
