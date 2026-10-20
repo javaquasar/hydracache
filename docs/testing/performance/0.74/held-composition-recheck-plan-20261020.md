@@ -33,3 +33,24 @@ do not count it as a fresh run. A complete local pass is only this composition
 gate; native execution, joined SIGKILL/lost-ACK, original delivery, all-writer
 cessation, durable later cells, reconnect and production enrollment remain
 separate. Do not execute joined crash cases before their prerequisites pass.
+
+## Retained outcome
+
+MSRV completes all five cases. GNU completes healthy, revalidate and role-before,
+then refuses an original clock-order observation before role-after's mutation;
+trust-after is not attempted. Both lanes share one WSL boot and unchanged active
+timesyncd. The combined local gate remains false, with no native recheck or
+joined SIGKILL/lost-ACK execution. No causal/custody expiry is captured for the
+GNU failure; its clock actor remains unclassified. The exact tuple is retained
+in the [packet](local-runs/held-composition-recheck-20261020/README.md).
+
+The first path-conversion refusal occurs before dispatch and is retained with
+its immutable recipe. The recovery can continue only an undispatched packet;
+neither matrix is replayed. Postflight finds no owned fixture residue, and the
+original nine-file bundle is unchanged. Formatting, docs, registry and local
+performance contracts pass. Strict inventory verification covers 25 members
+plus inventory, SHA256
+`0bfa7cef4d3ebd69c9e751fe6e4304a8bade3133122dcc48249c9d1396bfe1c0`;
+17 summary-field mutations refuse. Both preceding inventories are rehashed.
+Qualification stays at
+`11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc`.

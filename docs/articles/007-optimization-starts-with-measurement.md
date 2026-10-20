@@ -15062,3 +15062,29 @@ all 72 phase rows preserve their original call counts, and all 12 allocation
 pairs are retained. The 350 source/contract tests and both compiler lanes'
 functional/lint checks pass. These results accept the uncached pathname
 allocation change while keeping the independent execution gates closed.
+
+### Rechecking composition after the allocation changes
+
+The [complete local recheck](../testing/performance/0.74/local-runs/held-composition-recheck-20261020/README.md)
+returns to the actual holder rather than extrapolating from allocation counters.
+It uses the same hash-bound GNU and MSRV images and proves the current selected
+source is identical. Each compiler runs one uninterrupted five-case matrix,
+serially in one WSL session, without the cost observer or selected-case retries.
+The original deadlines and all fresh checks remain unchanged.
+
+MSRV passes healthy, revalidate, role-before, role-after and trust-after. GNU
+passes the first three, then fails an original clock-order check before the
+role-after mutation. Under the same boot its retained boottime advances from
+79347583067 to 80244577195 ns, while realtime is lower: 1792500654855763271 to
+1792500648826346512 ns. This record identifies a rejecting predicate, not the
+actor responsible for the clock movement. No causal/custody expiry is recorded
+for that failure, and the unattempted final case cannot be supplied from a
+different run. Holding one WSL session did not remove this observed refusal.
+
+This distinction changes the next action. Another small allocation experiment
+cannot establish a stable clock context or close the earlier native placement
+expiry. The next environment control needs a separately authorized isolated
+native run of these exact images, with failures retained and the same limits.
+Joined SIGKILL/lost-ACK, authenticated delivery, all-writer cessation, durable
+later cells and reconnect still need their own proof. No server, installation,
+supervisor or time-service operation is part of this local recheck.

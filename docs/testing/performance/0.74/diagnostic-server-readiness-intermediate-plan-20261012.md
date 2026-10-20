@@ -784,3 +784,22 @@ This does not demonstrate a latency improvement or repair the prior native
 expiry/clock-order refusal. Full composition, authenticated delivery, joined
 all-writer SIGKILL/lost-ACK and reconnect remain independent gates. No server,
 installation, supervisor/clock service operation or product workload follows.
+
+## Complete local composition recheck after the allocation changes
+
+The [new single-cohort recheck](local-runs/held-composition-recheck-20261020/README.md)
+reruns the actual privileged holder matrix with unchanged normal GNU/MSRV images
+and source after all three allocation improvements. MSRV completes all five
+cases. GNU completes healthy, revalidate and role-before, then refuses original
+clock-order before role-after's mutation. Its original same-boot tuple has
+boottime 79347583067 then 80244577195 ns and realtime 1792500654855763271 then
+1792500648826346512 ns. No causal/custody expiry is recorded there; the actor is
+not established. Trust-after is not executed on GNU. No retries or spliced pass.
+
+Both lanes share one unchanged WSL boot and unchanged active timesyncd; no owned
+fixture remains and the original bundle is unchanged. The combined local gate
+is still false. The preceding native expiry is not rerun; a new isolated native
+control requires separate authorization. Original delivery, all-writer cessation,
+durable completion/later cells, reconnect and real enrollment remain independent
+prerequisites. Do not start joined SIGKILL/lost-ACK or server execution by treating
+the MSRV pass or allocation reductions as a replacement for these gates.

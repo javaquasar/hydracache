@@ -4787,3 +4787,26 @@ The PID packet seals 116 hashed members plus inventory, SHA256
 `982d9598426830f6b3e44f9a701220b5778ceb3e6b568922d3b2ee405a0e6b05`;
 41 summary mutations refuse. The four preceding inventories and qualification
 identity remain unchanged.
+
+## Complete local composition after the allocation changes
+
+The [serial recheck](local-runs/held-composition-recheck-20261020/README.md) uses
+the exact preceding normal images, with identical runtime/test source. MSRV
+passes all five actual holder cases. GNU passes healthy, revalidate and
+role-before, then refuses original clock-order before role-after's mutation;
+trust-after is not attempted. Each lane runs once in the same WSL session,
+without profiling, deadline changes, retries or case splicing. Postflight finds
+no owned fixture residue and the original bundle is unchanged.
+
+The combined local gate stays false; holding one WSL boot does not remove the
+observed backward realtime record. This recheck neither diagnoses its actor nor
+reruns the preceding native placement expiry. A separately authorized isolated
+native control is the next environment gate before joined SIGKILL/lost-ACK.
+Authenticated delivery, all-writer cessation, durable later cells, reconnect and
+production enrollment remain independent. No server or product operation occurs.
+
+The recheck packet seals 25 members plus inventory, SHA256
+`0bfa7cef4d3ebd69c9e751fe6e4304a8bade3133122dcc48249c9d1396bfe1c0`.
+Its verifier rejects 17 summary-field mutations and rehashes the PID/preparation
+packets. Formatting, docs, registry and local performance-contract checks pass;
+qualification remains byte-exact.
