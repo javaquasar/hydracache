@@ -1,4 +1,6 @@
 //! Remove only the exact new protocol and manual gate, not any old bytes.
+#[path = "held_role_files_guard.rs"]
+pub(crate) mod roles;
 pub(crate) const COMPAT: &str = "docs/COMPAT.md";
 pub(crate) const BLOCK: &str = r##"
 <!-- BEGIN LOCAL HELD LAUNCHER V1 -->
@@ -107,10 +109,11 @@ platform = "linux"
 # END LOCAL HELD LAUNCHER GATES
 "##;
 pub(crate) fn normalize(path: &str, raw: &str) -> String {
+    let raw = roles::normalize(path, raw);
     let exact = match path {
         COMPAT => BLOCK,
         REGISTRY => GATE,
-        _ => return raw.into(),
+        _ => return raw,
     };
     assert_eq!(
         raw.matches(exact).count(),

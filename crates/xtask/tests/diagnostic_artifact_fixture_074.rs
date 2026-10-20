@@ -12,6 +12,7 @@ const LAUNCHER_SOURCES: [&str; 2] = [
     "tools/long-run-supervisor-074/src/diagnostic_held_launcher_kernel.rs",
 ];
 fn previous_runtime_list(current: &str) -> String {
+    let current = namespace::held_build::launcher::roles::previous_list(current);
     for path in LAUNCHER_SOURCES {
         assert_eq!(
             current.lines().filter(|p| *p == path).count(),
@@ -321,7 +322,12 @@ fn launcher_adapter_refuses_missing_duplicate_and_unrelated_drift() {
             git(&["show", &format!("2a86c1fd:{path}")])
         );
     }
-    let good = format!("old.rs\n{}\n{}\n", LAUNCHER_SOURCES[0], LAUNCHER_SOURCES[1]);
+    let good = format!(
+        "old.rs\n{}\n{}\n{}\n",
+        LAUNCHER_SOURCES[0],
+        LAUNCHER_SOURCES[1],
+        namespace::held_build::launcher::roles::SOURCE
+    );
     assert_eq!(previous_runtime_list(&good), "old.rs\n");
     for file in LAUNCHER_SOURCES {
         for bad in [
@@ -331,4 +337,63 @@ fn launcher_adapter_refuses_missing_duplicate_and_unrelated_drift() {
             assert!(std::panic::catch_unwind(|| previous_runtime_list(&bad)).is_err());
         }
     }
+}
+
+#[test]
+fn role_files_preserve_all_440_previous_runtime_sources_and_inputs() {
+    use namespace::held_build::launcher::roles;
+    const BASELINE: &str = "773e6bf0";
+    let old = git(&[
+        "ls-tree",
+        "-r",
+        "--name-only",
+        BASELINE,
+        "--",
+        "tools/long-run-supervisor-074/src",
+    ]);
+    assert_eq!(old.lines().count(), 440);
+    assert_eq!(
+        roles::previous_list(&git(&[
+            "ls-files",
+            "--",
+            "tools/long-run-supervisor-074/src"
+        ])),
+        old
+    );
+    for path in old.lines().chain([
+        "Cargo.lock",
+        "docs/COMPAT.md",
+        "docs/testing/gated-test-registry.toml",
+        "docs/testing/performance/0.74/qualification-manifest.toml",
+    ]) {
+        assert_eq!(
+            roles::normalize(path, &read(path)),
+            git(&["show", &format!("{BASELINE}:{path}")]),
+            "preceding bytes: {path}"
+        );
+    }
+}
+#[test]
+fn role_files_adapter_refuses_missing_duplicate_and_unrelated_drift() {
+    use namespace::held_build::launcher::roles;
+    let raw = read(roles::FILE);
+    for bad in [
+        raw.replacen(roles::HOOK, "", 1),
+        format!("{raw}{}", roles::HOOK),
+    ] {
+        assert!(std::panic::catch_unwind(|| roles::normalize(roles::FILE, &bad)).is_err());
+    }
+    assert_ne!(
+        roles::normalize(roles::FILE, &format!("{raw}\n// drift\n")),
+        git(&["show", &format!("773e6bf0:{}", roles::FILE)])
+    );
+    let good = format!("old.rs\n{}\n", roles::SOURCE);
+    assert_eq!(roles::previous_list(&good), "old.rs\n");
+    for bad in ["old.rs\n".into(), format!("{good}{}\n", roles::SOURCE)] {
+        assert!(std::panic::catch_unwind(|| roles::previous_list(&bad)).is_err());
+    }
+    assert_ne!(
+        roles::previous_list(&format!("{good}extra.rs\n")),
+        "old.rs\n"
+    );
 }

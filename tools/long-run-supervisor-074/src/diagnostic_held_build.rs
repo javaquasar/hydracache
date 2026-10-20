@@ -10,6 +10,10 @@ use crate::{canonical_json, is_hash, sha256_hex};
 use ed25519_dalek::{Signature, Signer, SigningKey, VerifyingKey};
 use serde::{Deserialize, Serialize};
 
+#[cfg(target_os = "linux")]
+#[path = "diagnostic_held_role_files.rs"]
+pub mod role_files;
+
 pub const POLICY_SCHEMA: &str = "diagnostic-held-build-policy-074-v1";
 pub const BODY_SCHEMA: &str = "diagnostic-held-build-074-v1";
 pub const RECEIPT_SCHEMA: &str = "diagnostic-signed-held-build-074-v1";
