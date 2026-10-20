@@ -1,0 +1,6 @@
+{
+  "phase": "preflight",
+  "exit": 0,
+  "server": true,
+  "product": false
+}
