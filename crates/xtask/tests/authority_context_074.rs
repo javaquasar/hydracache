@@ -1,0 +1,92 @@
+#[path = "support/document_scratch_guard.rs"]
+mod guard;
+fn read(path: &str) -> String {
+    std::fs::read_to_string(
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../..")
+            .join(path),
+    )
+    .unwrap()
+    .replace('\r', "")
+}
+#[test]
+fn authority_context_restores_preceding_sources_without_changing_key_encoder() {
+    for path in [
+        "tools/long-run-supervisor-074/src/diagnostic_authority_registry.rs",
+        "tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs",
+        "docs/testing/gated-test-registry.toml",
+    ] {
+        let raw = read(path);
+        let marker = if path.ends_with("registry.rs") {
+            "pub(crate) mod context_controls;"
+        } else if path.ends_with(".rs") {
+            "mod authority_context_alloc;"
+        } else {
+            "test = \"authority_context_allocation_attribution\""
+        };
+        assert_eq!(raw.matches(marker).count(), 1);
+        let output = std::process::Command::new("git")
+            .args([
+                "show",
+                &format!("a0209ce87c72d6553ad152d49f88abb61a10696e:{path}"),
+            ])
+            .output()
+            .unwrap();
+        assert!(output.status.success());
+        let before = String::from_utf8(output.stdout).unwrap().replace('\r', "");
+        let restored = crate::hc074_authority_context_view!(path, &raw);
+        assert_eq!(restored, before);
+        assert_eq!(
+            crate::hc074_authority_context_view!(path, &restored),
+            restored
+        );
+        for changed in [raw.replacen(marker, "changed", 1), format!("{raw}{raw}")] {
+            assert!(
+                std::panic::catch_unwind(|| crate::hc074_authority_context_view!(path, &changed))
+                    .is_err()
+            );
+        }
+    }
+    assert_eq!(guard::normalize("unrelated", "unchanged"), "unchanged");
+}
+#[test]
+fn authority_context_candidate_matches_contract_and_frozen_prefix_order() {
+    let contract: toml::Value = toml::from_str(&read(
+        "docs/testing/performance/0.74/authority-context-contract.toml",
+    ))
+    .unwrap();
+    for flag in [
+        "server_admitted",
+        "latency_gain_claimed",
+        "fresh_checks_changed",
+        "deadlines_changed",
+    ] {
+        assert_eq!(contract[flag].as_bool(), Some(false));
+    }
+    let raw = read("tools/long-run-supervisor-074/src/diagnostic_authority_registry.rs");
+    let old = "            || self.context() != *host\n";
+    let new = "            || self.machine_id != host.machine_id\n            || self.boot_id != host.boot_id\n            || self.user_namespace != host.user_namespace\n            || self.mount_namespace != host.mount_namespace\n";
+    let selected = if contract["candidate_enabled"].as_bool().unwrap() {
+        new
+    } else {
+        old
+    };
+    assert_eq!(raw.matches(selected).count(), 1);
+    let prefix = "        if self.issuer_key_hex != key_hex(trust)\n            || self.policy_sha256 != trust.policy_sha256\n            || self.policy_epoch != trust.epoch\n";
+    assert!(raw.contains(&format!("{prefix}{selected}")));
+    assert!(raw.contains("fn key_hex(trust: &WorkerPolicyTrust) -> String {\n    crate::hex(trust.key.as_bytes())\n}"));
+    let reference =
+        read("tools/long-run-supervisor-074/tests/support/authority_context_controls.rs");
+    let ref_prefix = prefix
+        .lines()
+        .map(|line| line[4..].replace("self.", "record."))
+        .collect::<Vec<_>>()
+        .join("\n")
+        + "\n";
+    assert!(reference.contains(&format!(
+        "{ref_prefix}{}",
+        old[4..].replace("self.", "record.")
+    )));
+    assert!(reference.contains("let mut seed = 0x074c_07e5_u64;"));
+    assert!(reference.contains("for case in 0..17"));
+}

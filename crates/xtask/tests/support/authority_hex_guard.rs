@@ -1,9 +1,11 @@
 //! Exact test hooks and one encoder substitution only; no body waivers.
+#[path = "authority_context_guard.rs"]
+mod authority_context;
 #[macro_export]
 macro_rules! hc074_authority_hex_view {
     ($path:expr, $source:expr) => {{
         let path: &str = $path;
-        let mut raw: String = $source.to_owned();
+        let mut raw: String = $crate::hc074_authority_context_view!(path, $source);
         let gate = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/tests/support/authority_hex_gate.txt")).replace('\r', "");
         for (file, exact, marker) in [
             ("tools/long-run-supervisor-074/src/diagnostic_authority_registry.rs", "\n#[cfg(all(test, target_os = \"linux\"))]\n#[path = \"../tests/support/authority_hex_controls.rs\"]\npub(crate) mod hex_controls;\n", "authority_hex_controls"),

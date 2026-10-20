@@ -213,6 +213,10 @@ fn key_hex(trust: &WorkerPolicyTrust) -> String {
 #[path = "../tests/support/authority_hex_controls.rs"]
 pub(crate) mod hex_controls;
 
+#[cfg(all(test, target_os = "linux"))]
+#[path = "../tests/support/authority_context_controls.rs"]
+pub(crate) mod context_controls;
+
 fn history(records: &[Vec<u8>]) -> Result<Vec<Record>, AuthorityError> {
     if records.is_empty() || records.len() > MAX_GENERATIONS {
         return Err(AuthorityError::Budget);
