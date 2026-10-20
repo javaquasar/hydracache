@@ -1,0 +1,18 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.50s
+     Running tests\authority_inventory_074.rs (target\debug\deps\authority_inventory_074-8e86af1042e9bbf2.exe)
+
+running 2 tests
+test authority_inventory_contract_preserves_observed_prefix_formatter_and_deadlines ... ok
+test authority_inventory_exact_view_restores_baseline_and_rejects_unknown_or_duplicate_hooks ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.45s
+
+     Running tests\authority_leaf_name_074.rs (target\debug\deps\authority_leaf_name_074-8a8c1b96f6eab807.exe)
+
+running 2 tests
+test authority_leaf_name_contract_keeps_full_read_reference_and_original_drop_scope ... ok
+test authority_leaf_name_restores_previous_sources_and_refuses_unknown_implementations ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.22s
+

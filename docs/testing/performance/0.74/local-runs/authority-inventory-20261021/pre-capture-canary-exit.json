@@ -1,0 +1,28 @@
+{
+  "source": "c4cd6a15d4caccad104af642996c1b1a5b5411c1",
+  "recipe_sha256": "f12fb0696f6ce06da98d295c0d6168a4392317c091259509f0f7ee65d0939bff",
+  "steps": [
+    {
+      "log": "pre-capture-canary-focused.log",
+      "name": "focused",
+      "sha256": "a3877d5a0997944ab546b01c21480deae286002293e3d13b28ea6f98d91c5de0",
+      "exit": 0
+    },
+    {
+      "log": "pre-capture-canary-check.log",
+      "name": "check",
+      "sha256": "abc335e013d58d03e30c38857468ca6e527fc9d8ddc4f7fb1c2e657e23e5ccab",
+      "exit": 0
+    },
+    {
+      "log": "pre-capture-canary-lint.log",
+      "name": "lint",
+      "sha256": "6a346c7d0e93af7957a7f11bf5cab71e2447701e8e69ea85a9481c889775231e",
+      "exit": 0
+    }
+  ],
+  "failure": null,
+  "measurement_attempted": false,
+  "server": false,
+  "product": false
+}

@@ -1,0 +1,17 @@
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error: variables can be used directly in the `format!` string
+  --> tools/long-run-supervisor-074/src/../tests/support/authority_inventory_controls.rs:71:28
+   |
+71 |             mutated.insert(format!("{:016X}.{}", seed, suffix));
+   |                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+   = note: `-D clippy::uninlined-format-args` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::uninlined_format_args)]`
+help: change this to
+   |
+71 -             mutated.insert(format!("{:016X}.{}", seed, suffix));
+71 +             mutated.insert(format!("{seed:016X}.{suffix}"));
+   |
+
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 1 previous error

@@ -1,0 +1,76 @@
+{
+  "stage": "Before",
+  "source": "0e76c85b3d940a4d47ec20f06981455840bcad29",
+  "recipe_sha256": "1d57ece77a1f05d140ca31e734fc72ce2e90cecec4481ad414d708ce80d3762c",
+  "steps": [
+    {
+      "log": "Before-check-194-repair-authority_.log",
+      "name": "authority_",
+      "sha256": "b2f6a115674e39eefa559dd09eda1d48ca596bbdb6885ef344d3c23d5553efb9",
+      "exit": 0
+    },
+    {
+      "log": "Before-check-194-repair-validation_leaf_requests_.log",
+      "name": "validation_leaf_requests_",
+      "sha256": "e554686e8e1b96647b082e0fd7f9102787108923e3915affbf66aa8955d37de9",
+      "exit": 0
+    },
+    {
+      "log": "Before-check-194-repair-fixed_leaf_alloc_counter.log",
+      "name": "fixed_leaf_alloc_counter",
+      "sha256": "0aafd36065f7700428277df7ca88808ccdb6d9dec1a320d2be6bb7ffe9a02a35",
+      "exit": 0
+    },
+    {
+      "log": "Before-check-194-repair-fixed_leaf_path_differential.log",
+      "name": "fixed_leaf_path_differential",
+      "sha256": "e83de080e7bcc2bcc481bf63d6d5530f5e481f1c822ae3dc9896314751f64deb",
+      "exit": 0
+    },
+    {
+      "log": "Before-check-194-repair-fixed_leaf_path_preserves.log",
+      "name": "fixed_leaf_path_preserves",
+      "sha256": "76a6629a1dd4b32a647113b0f32f36ef1c5f50ebc7691e8b6ffc9a351a81c3d9",
+      "exit": 0
+    },
+    {
+      "log": "Before-check-194-repair-kernel_time_.log",
+      "name": "kernel_time_",
+      "sha256": "571cb38d0d9be10ee7aaafec806f3a2c23a82f6c06f0809166ec344789ad37f6",
+      "exit": 0
+    },
+    {
+      "log": "Before-check-194-repair-kernel_worker_context_.log",
+      "name": "kernel_worker_context_",
+      "sha256": "da5f63cf5a75f7ede5ef025985dc4fd8110565e4b5acdaba11534874e81cc93a",
+      "exit": 0
+    },
+    {
+      "log": "Before-check-194-repair-worker_trust_input_.log",
+      "name": "worker_trust_input_",
+      "sha256": "32f4bed334db41ac2cbb731350c593b5f0514d365134388dade28d924fde11c1",
+      "exit": 0
+    },
+    {
+      "log": "Before-check-194-repair-check.log",
+      "name": "check",
+      "sha256": "625f0a360bf155d7e350cb1df2d7dc0c48e04d0b83eac5614b2e4b2b58384330",
+      "exit": 0
+    },
+    {
+      "log": "Before-check-194-repair-lint.log",
+      "name": "lint",
+      "sha256": "f87c3651ebf8dbd917ba4d104b62c95029712a7d36c55c8c6b7b54c36a780aac",
+      "exit": 0
+    },
+    {
+      "log": "Before-check-194-repair-build.log",
+      "name": "build",
+      "sha256": "fcd5d12487cb6b984ef1c0142981aa7a3991498da461506d823be04975d4c733",
+      "exit": 0
+    }
+  ],
+  "failure": null,
+  "server": false,
+  "product": false
+}
