@@ -607,3 +607,7 @@ pub(crate) mod inventory_controls;
 #[cfg(test)]
 #[path = "../tests/support/authority_name_capacity_controls.rs"]
 pub(crate) mod name_capacity_controls;
+
+#[cfg(test)]
+#[path = "../tests/support/authority_expected_name_controls.rs"]
+pub(crate) mod expected_name_controls;

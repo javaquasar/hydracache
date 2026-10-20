@@ -1,9 +1,11 @@
 //! Exact name capacity view and old input-helper restoration only.
+#[path = "authority_expected_name_guard.rs"]
+mod authority_expected_name;
 #[macro_export]
 macro_rules! hc074_authority_name_capacity_view {
     ($path:expr, $source:expr) => {{
         let path: &str = $path;
-        let mut raw: String = $source.to_owned();
+        let mut raw: String = $crate::hc074_authority_expected_name_view!(path, $source);
         let gate = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/tests/support/authority_name_capacity_gate.txt")).replace('\r', "");
         for (file, exact, marker) in [
             ("tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs", "\n#[cfg(test)]\n#[path = \"../tests/support/authority_name_capacity_controls.rs\"]\npub(crate) mod name_capacity_controls;\n", "authority_name_capacity_controls"),

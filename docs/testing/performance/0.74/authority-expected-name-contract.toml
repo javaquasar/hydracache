@@ -1,0 +1,6 @@
+schema = "authority-expected-name-local-control-074-v1"
+candidate_enabled = false
+server_admitted = false
+latency_gain_claimed = false
+fresh_checks_changed = false
+deadlines_changed = false
