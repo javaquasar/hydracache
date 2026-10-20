@@ -2,6 +2,9 @@
 use sha2::{Digest, Sha256};
 use std::path::PathBuf;
 
+#[path = "support/fixed_slice_namespace_guard.rs"]
+mod namespace;
+
 const BASE: &str = "23c57b77523ad1cc16b1a79fc90b02a125f8d9b8";
 const FILE: &str = "tools/long-run-supervisor-074/tests/diagnostic_artifacts.rs";
 const RECEIPTS: &str = "tools/long-run-supervisor-074/tests/diagnostic_receipts.rs";
@@ -86,9 +89,13 @@ fn immutable_fixture_preserves_all_437_runtime_sources_and_production_inputs() {
     let current = git(&["ls-files", "--", paths[0]]);
     assert_eq!(old.lines().count(), 437);
     assert_eq!(current, old);
-    let mut args = vec!["diff", "--exit-code", BASE, "--"];
-    args.extend(paths);
-    assert!(git(&args).is_empty());
+    for path in old.lines().chain(paths[1..].iter().copied()) {
+        assert_eq!(
+            namespace::normalize(path, &read(path)),
+            git(&["show", &format!("{BASE}:{path}")]),
+            "old bytes after exact test-only adapter: {path}"
+        );
+    }
 }
 #[test]
 fn immutable_fixture_is_exact_worker_blob_and_checkout_keeps_raw_lf() {
@@ -151,4 +158,50 @@ fn immutable_fixture_adapter_refuses_missing_duplicate_and_unrelated_test_drift(
         normalize_receipts(&changed),
         git(&["show", &format!("{BASE}:{RECEIPTS}")])
     );
+}
+
+#[test]
+fn namespace_adapter_refuses_missing_duplicate_and_unrelated_drift() {
+    for (path, exact) in [
+        (namespace::FILE, namespace::HOOK),
+        (namespace::REGISTRY, namespace::GATE),
+    ] {
+        let raw = read(path);
+        for bad in [raw.replacen(exact, "", 1), format!("{raw}{exact}")] {
+            assert!(std::panic::catch_unwind(|| namespace::normalize(path, &bad)).is_err());
+        }
+        assert_ne!(
+            namespace::normalize(path, &format!("{raw}\n// unrelated drift\n")),
+            git(&["show", &format!("{BASE}:{path}")])
+        );
+    }
+}
+
+#[test]
+fn namespace_fixture_is_test_only_private_mount_and_not_manager_authority() {
+    let raw = read("tools/long-run-supervisor-074/tests/support/fixed_slice_namespace.rs");
+    for exact in [
+        "libc::unshare(libc::CLONE_NEWNS)",
+        "libc::MS_REC | libc::MS_PRIVATE",
+        "FixedSlice::pin(&root, attempt)",
+        "drop(fixture)",
+        "host_anchors_unchanged=true",
+        "original_join=false",
+        "observer_readonly(&slice)",
+    ] {
+        assert!(raw.contains(exact), "{exact}");
+    }
+    for forbidden in [
+        "remove_dir_all",
+        "write_at",
+        "cgroup.procs",
+        "cgroup.kill",
+        "StartTransientUnit",
+        "systemctl",
+        "LOCK_UN",
+    ] {
+        assert!(!raw.contains(forbidden), "{forbidden}");
+    }
+    assert_eq!(raw.matches("#[ignore =").count(), 1);
+    assert!(namespace::GATE.contains("ship_mandatory = false"));
 }

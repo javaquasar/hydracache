@@ -144,3 +144,6 @@ fn privileged_fixed_slice_readonly_anchors() {
     }
     println!("HC074-FIXED-SLICE-ANCHORS device={} inode={} readonly=true fixed_root_admitted=false original_send=false server=false product=false",original.device,original.inode);
 }
+
+#[path = "../tests/support/fixed_slice_namespace.rs"]
+mod namespace;

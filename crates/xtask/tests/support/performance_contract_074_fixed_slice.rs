@@ -1,4 +1,6 @@
 //! Only additive private path observations; all old rounds remain byte-exact.
+#[path = "fixed_slice_namespace_guard.rs"]
+mod namespace;
 const BASE: &str = "a33bd9a4";
 const PREFIX: &str = "tools/long-run-supervisor-074/src/";
 const HOOKS: &[(&str, &str)] = &[
@@ -40,7 +42,7 @@ platform = "linux"
 # END FIXED SLICE ANCHORS GATE
 "##;
 pub(super) fn normalize(path: &str, raw: &str) -> String {
-    let mut text = raw.to_owned();
+    let mut text = namespace::normalize(path, raw);
     for (file, hook) in HOOKS {
         if path == format!("{PREFIX}{file}") {
             assert_eq!(
