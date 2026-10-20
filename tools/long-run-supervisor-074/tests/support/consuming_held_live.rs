@@ -4,12 +4,14 @@ use crate::diagnostic_two_phase_launch::held_placement as wire;
 use crate::diagnostic_worker_policy::trusted_input;
 use ed25519_dalek::Signer;
 use sha2::{Digest, Sha256};
-use std::time::Instant;
 use trusted_input::controller_input::held_runtime::late_join::live_fixture::Fixture;
 use crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::time_observation as time;
 
 #[path = "consuming_held_live_namespace.rs"]
 mod namespace;
+
+#[path = "consuming_held_cost.rs"]
+mod cost;
 
 fn busy(campaigns: &Path) {
     assert!(matches!(
@@ -35,25 +37,7 @@ fn measured<T>(phase: &str, call: impl FnOnce() -> T) -> T {
     profiled(phase, call)
 }
 fn profiled<T>(phase: &str, call: impl FnOnce() -> T) -> T {
-    fn cpu() -> i128 {
-        let mut value: libc::timespec = unsafe { std::mem::zeroed() };
-        assert_eq!(
-            unsafe { libc::clock_gettime(libc::CLOCK_PROCESS_CPUTIME_ID, &mut value) },
-            0
-        );
-        value.tv_sec as i128 * 1_000_000_000 + value.tv_nsec as i128
-    }
-    let wall = Instant::now();
-    let before = cpu();
-    // Preserve the same panic payload; record a failed phase rather than retry.
-    let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(call));
-    let cpu_ns = cpu() - before;
-    let wall_ns = wall.elapsed().as_nanos();
-    println!("HC074-HELD-LIVE-COST phase={phase} wall_ns={wall_ns} process_cpu_ns={cpu_ns} returned={} includes_child_cpu=false guard_clock=false",result.is_ok());
-    match result {
-        Ok(value) => value,
-        Err(payload) => std::panic::resume_unwind(payload),
-    }
+    cost::profiled(phase, call)
 }
 
 #[test]
@@ -235,19 +219,29 @@ fn run_original(case: &str) {
             let causal = challenge
                 .accept_response(relay.receive(&model.sign(response, &model.key)))
                 .unwrap();
-            let prepared = causal.prepare_framed_consent("1".repeat(64)).unwrap();
+            let prepared = measured("prepare-consent", || {
+                causal.prepare_framed_consent("1".repeat(64)).unwrap()
+            });
             let bytes = consent(prepared.consent_to_sign().clone(), &model.key);
-            let accepted = prepared.accept_consent(relay.receive(&bytes)).unwrap();
-            let outputs = accepted.prepare_original_outputs().unwrap();
-            let frame = outputs
-                .prepare_privileged_enrollment_for_test(&bundle.path().join("bundle"))
-                .unwrap();
+            let accepted = measured("accept-consent", || {
+                prepared.accept_consent(relay.receive(&bytes)).unwrap()
+            });
+            let outputs = measured("outputs", || accepted.prepare_original_outputs().unwrap());
+            let frame = measured("enrollment-frame", || {
+                outputs
+                    .prepare_privileged_enrollment_for_test(&bundle.path().join("bundle"))
+                    .unwrap()
+            });
             assert_eq!(
                 frame.offsets_for_test(),
                 [300000000000, 60000000000, 10000000000]
             );
-            let message = frame.prepare_fixed_manager_message().unwrap();
-            let mut owned = message.prepare_owned_root_guardians(&mut root).unwrap();
+            let message = measured("fixed-manager-message", || {
+                frame.prepare_fixed_manager_message().unwrap()
+            });
+            let mut owned = measured("owned-root-preparation", || {
+                message.prepare_owned_root_guardians(&mut root).unwrap()
+            });
             cgroup.guardians = Some(owned.fixture_guardians());
             let origins = owned.fixture_origins();
             let (mut body, binding) = owned.placement_for_fixture(identity);
@@ -268,7 +262,7 @@ fn run_original(case: &str) {
             let custodians = owned.fixture_custodians();
             drop(writer);
             drop(other);
-            owned.enroll_once().unwrap();
+            measured("enrollment", || owned.enroll_once().unwrap());
             let placement = measured("placement", || {
                 owned.bind_signed_placement(placement).unwrap()
             });
