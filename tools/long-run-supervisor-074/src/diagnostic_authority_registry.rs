@@ -206,12 +206,7 @@ impl Record {
     }
 }
 fn key_hex(trust: &WorkerPolicyTrust) -> String {
-    trust
-        .key
-        .as_bytes()
-        .iter()
-        .map(|b| format!("{b:02x}"))
-        .collect()
+    crate::hex(trust.key.as_bytes())
 }
 
 #[cfg(all(test, target_os = "linux"))]
