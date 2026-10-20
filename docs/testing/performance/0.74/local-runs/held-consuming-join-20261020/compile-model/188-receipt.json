@@ -1,0 +1,17 @@
+{
+  "source": "f07dcca31e2e69796644d70fef695404b22d1519",
+  "mode": "188",
+  "recipe": "811f1f22557799059b7d84317ebd213276c03256df9f5b7cede1dd2f04a62811",
+  "passed": true,
+  "models": 10,
+  "old_fixed_models": 5,
+  "rounds": 2,
+  "capability_docs": 11,
+  "strict_lint": true,
+  "model_only": true,
+  "real_join_gate_passed": false,
+  "unrestricted_cpu_gate_passed": false,
+  "server": false,
+  "supervisor": false,
+  "product": false
+}

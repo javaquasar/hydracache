@@ -1,33 +1,40 @@
 param([Parameter(Mandatory)][ValidatePattern('^[0-9a-f]{40}$')][string]$Source)
 $ErrorActionPreference='Stop'
-$taskReceiptRoot=Join-Path $PSScriptRoot 'affinity-smoke'
 $taskRecipe=(Get-FileHash (Join-Path $PSScriptRoot 'checks.ps1') -Algorithm SHA256).Hash.ToLowerInvariant()
+$taskModelRecipe=(Get-FileHash (Join-Path $PSScriptRoot 'compile-model-checks.ps1') -Algorithm SHA256).Hash.ToLowerInvariant()
 $taskFlags=@('unrestricted_cpu_gate_passed','privileged_full_join','late_original_join','production_enrollment','production_role_receipt_issued','original_send','server','supervisor','product','full_joined_sigkill','clock_changed')
-function ReadJson([string]$Name){$taskFolder=if($Name -in @('inventory.json','summary.json')){$PSScriptRoot}else{$taskReceiptRoot};Get-Content -Raw -LiteralPath (Join-Path $taskFolder $Name)|ConvertFrom-Json}
+function ReadJson([string]$Name){Get-Content -Raw -LiteralPath (Join-Path $PSScriptRoot $Name)|ConvertFrom-Json}
+function FalseFlags($Value,[string[]]$Names){foreach($taskFlag in $Names){if($Value.$taskFlag -isnot [bool] -or $Value.$taskFlag -cne $false){throw "Scope upgrade: $taskFlag"}}}
 function Scope($Value,[string]$Mode){
     $taskExpected=if($Mode -in @('194','188')){'0'}else{''}
-    if($Value.local_cpu_affinity -isnot [System.Array] -or ($Value.local_cpu_affinity -join ',') -cne $taskExpected){throw 'Fixed-affinity-only scope'}
-    foreach($taskFlag in $taskFlags){if($Value.$taskFlag -isnot [bool] -or $Value.$taskFlag -cne $false){throw "Scope upgrade: $taskFlag"}}
+    if($Value.local_cpu_affinity -isnot [System.Array] -or ($Value.local_cpu_affinity -join ',') -cne $taskExpected){throw 'Affinity scope'}
+    FalseFlags $Value $taskFlags
     foreach($taskFlag in @('typed_consuming_join','kernel_role_bridge')){if($Value.$taskFlag -isnot [bool] -or $Value.$taskFlag -cne ($Mode -in @('194','188'))){throw 'Consuming scope'}}
 }
 function Receipt($Value,[string]$Mode){
-    $taskNew=if($Mode -in @('194','188')){17}else{0}
-    $taskOld=if($Mode -ceq 'repository'){18}elseif($Mode -ceq 'windows'){28}else{38}
-    $taskDocs=if($Mode -ceq 'repository'){0}elseif($Mode -ceq 'windows'){4}else{11}
-    $taskRounds=if($Mode -ceq 'repository'){1}else{2}
-    if($Value.source -cne $Source -or $Value.mode -cne $Mode -or $Value.recipe -cne $taskRecipe -or $Value.passed -isnot [bool] -or $Value.passed -cne $true -or $Value.new_tests -ne $taskNew -or $Value.old_tests -ne $taskOld -or $Value.docs -ne $taskDocs -or $Value.rounds -ne $taskRounds){throw 'Receipt binding'}
+    if($Mode -notin @('windows','repository')){throw 'No accepted complete Linux execution cohort'}
+    $taskOld=if($Mode -ceq 'repository'){18}else{28};$taskDocs=if($Mode -ceq 'repository'){0}else{4};$taskRounds=if($Mode -ceq 'repository'){1}else{2}
+    if($Value.source -cne $Source -or $Value.mode -cne $Mode -or $Value.recipe -cne $taskRecipe -or $Value.passed -isnot [bool] -or $Value.passed -cne $true -or $Value.new_tests -ne 0 -or $Value.old_tests -ne $taskOld -or $Value.docs -ne $taskDocs -or $Value.rounds -ne $taskRounds){throw 'Receipt binding'}
     Scope $Value $Mode
 }
+function ModelReceipt($Value,[string]$Mode){
+    if($Value.source -cne $Source -or $Value.mode -cne $Mode -or $Value.recipe -cne $taskModelRecipe -or $Value.models -ne 10 -or $Value.old_fixed_models -ne 5 -or $Value.rounds -ne 2 -or $Value.capability_docs -ne 11){throw 'Model receipt binding'}
+    foreach($taskFlag in @('passed','model_only','strict_lint')){if($Value.$taskFlag -isnot [bool] -or $Value.$taskFlag -cne $true){throw 'Model check incomplete'}}
+    FalseFlags $Value @('real_join_gate_passed','unrestricted_cpu_gate_passed','server','supervisor','product')
+}
 function TestLog([string]$Name,[int]$Count){
-    $taskRaw=Get-Content -Raw (Join-Path $taskReceiptRoot $Name)
+    $taskRaw=Get-Content -Raw (Join-Path $PSScriptRoot $Name)
     if(-not $taskRaw.Contains("test result: ok. $Count passed; 0 failed; 0 ignored;") -or $taskRaw -match 'compiler unexpectedly panicked|internal compiler error|thread .rustc. .*panicked'){throw "Test selection or compiler panic: $Name"}
+}
+function FailedLog([string]$Name,[int]$Passed){
+    if(-not (Get-Content -Raw (Join-Path $PSScriptRoot $Name)).Contains("test result: FAILED. $Passed passed; 1 failed;")){throw "Retained failed gate missing: $Name"}
 }
 function FormatReceipt($Value){
     if($Value.source -cne $Source -or $Value.mode -cne 'repository' -or $Value.check -cne 'fmt' -or ($Value.native_exit -isnot [long] -and $Value.native_exit -isnot [int]) -or $Value.native_exit -ne 0 -or $Value.empty_output -isnot [bool] -or $Value.empty_output -cne $true){throw 'Silent format receipt'}
 }
 $taskInventory=ReadJson 'inventory.json'
 if($taskInventory.schema -cne 'sha256-local-file-inventory-v1'){throw 'Inventory schema'}
-if(@(Get-ChildItem -LiteralPath $PSScriptRoot -Force -Recurse | Where-Object {$_.Attributes -band [IO.FileAttributes]::ReparsePoint}).Count){throw 'Reparse member'}
+if(@(Get-ChildItem -LiteralPath $PSScriptRoot -Force -Recurse|Where-Object {$_.Attributes -band [IO.FileAttributes]::ReparsePoint}).Count){throw 'Reparse member'}
 $taskMembers=[Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
 foreach($taskEntry in $taskInventory.files){
     if(-not $taskEntry.path -or $taskEntry.path -match '[:\\\x00-\x1f]' -or $taskEntry.path.StartsWith('/') -or $taskEntry.path.Split('/') -contains '..' -or $taskEntry.path.Split('/') -contains '.' -or $taskEntry.path -ceq 'inventory.json' -or -not $taskMembers.Add($taskEntry.path)){throw 'Invalid member'}
@@ -38,75 +45,69 @@ $taskInventoryPath=Join-Path $PSScriptRoot 'inventory.json'
 [string[]]$taskExpected=@($taskInventory.files.path)
 [string[]]$taskActual=@(Get-ChildItem -LiteralPath $PSScriptRoot -Force -File -Recurse|Where-Object FullName -CNE $taskInventoryPath|ForEach-Object {$_.FullName.Substring($PSScriptRoot.Length+1).Replace('\','/')})
 [Array]::Sort($taskActual,[StringComparer]::Ordinal)
-if(($taskActual -join "`n") -cne ($taskExpected -join "`n")){throw 'Unlisted, missing or unsorted member'}
-foreach($taskMode in @('windows','194','188','repository')){
-    Receipt (ReadJson "$taskMode-receipt.json") $taskMode
-    $taskIdentity=ReadJson "$taskMode-identity.json"
+if(($taskActual -join "\n") -cne ($taskExpected -join "\n")){throw 'Unlisted, missing or unsorted member'}
+foreach($taskMode in @('windows','repository')){
+    Receipt (ReadJson "affinity-smoke/$taskMode-receipt.json") $taskMode
+    $taskIdentity=ReadJson "affinity-smoke/$taskMode-identity.json"
     if($taskIdentity.source -cne $Source -or $taskIdentity.mode -cne $taskMode -or $taskIdentity.recipe -cne $taskRecipe){throw 'Identity binding'}
     Scope $taskIdentity $taskMode
-    if($taskMode -ceq 'repository'){continue}
-    $taskSelections=if($taskMode -ceq 'windows'){@('old')}else{@('old','new')}
-    foreach($taskSelection in $taskSelections){
-        $taskImage=ReadJson "$taskMode-$taskSelection-image.json"
-        if($taskImage.source -cne $Source -or $taskImage.mode -cne $taskMode -or $taskImage.recipe -cne $taskRecipe -or $taskImage.selection -cne $taskSelection -or $taskImage.sha256 -cnotmatch '^[0-9a-f]{64}$'){throw 'Image binding'}
-        if($taskMode -ceq 'windows'){if($taskImage.path -notmatch '^[A-Za-z]:\\.+\.exe$'){throw 'Windows image path'}}
-        elseif(-not $taskImage.path.StartsWith("/home/artur/.cache/hydracache-074-$taskMode-check/debug/",[StringComparison]::Ordinal)){throw 'Linux image path'}
-        $taskCount=if($taskSelection -ceq 'new'){17}elseif($taskMode -ceq 'windows'){28}else{38}
-        foreach($taskRound in 1..2){
-            TestLog "$taskMode-$taskSelection-tests-$taskRound.log" $taskCount
-            if($taskSelection -ceq 'new' -and -not (Get-Content -Raw (Join-Path $taskReceiptRoot "$taskMode-$taskSelection-tests-$taskRound.log")).Contains('consuming_held_join seed=0x0074c05e substitutions=128')){throw 'Missing seeded controls'}
-        }
-    }
-    if($taskMode -cne 'windows'){foreach($taskRound in 1..2){TestLog "$taskMode-trust-$taskRound.log" 26;TestLog "$taskMode-fixed-$taskRound.log" 5}}
-    TestLog "$taskMode-old-capability-docs.log" $(if($taskMode -ceq 'windows'){4}else{6})
-    if($taskMode -cne 'windows'){TestLog "$taskMode-new-capability-docs.log" 5}
 }
-TestLog 'repository-source-guards.log' 18
-TestLog 'repository-old-bridge.log' 3
-FormatReceipt (ReadJson 'repository-fmt-empty-output.json')
+foreach($taskRound in 1..2){TestLog "affinity-smoke/windows-old-tests-$taskRound.log" 28}
+TestLog 'affinity-smoke/windows-old-capability-docs.log' 4
+TestLog 'affinity-smoke/repository-source-guards.log' 18
+TestLog 'affinity-smoke/repository-old-bridge.log' 3
+FormatReceipt (ReadJson 'affinity-smoke/repository-fmt-empty-output.json')
+foreach($taskMode in @('194','188')){
+    if(Test-Path (Join-Path $PSScriptRoot "affinity-smoke/$taskMode-receipt.json")){throw 'Do not promote the failed Linux cohort'}
+    $taskIdentity=ReadJson "affinity-smoke/$taskMode-identity.json"
+    if($taskIdentity.source -cne $Source -or $taskIdentity.mode -cne $taskMode -or $taskIdentity.recipe -cne $taskRecipe){throw 'Linux observation binding'}
+    Scope $taskIdentity $taskMode
+    foreach($taskSelection in @('old','new')){
+        $taskImage=ReadJson "affinity-smoke/$taskMode-$taskSelection-image.json"
+        if($taskImage.source -cne $Source -or $taskImage.mode -cne $taskMode -or $taskImage.recipe -cne $taskRecipe -or $taskImage.selection -cne $taskSelection -or $taskImage.sha256 -cnotmatch '^[0-9a-f]{64}$'){throw 'Observed image binding'}
+    }
+    foreach($taskRound in 1..2){TestLog "affinity-smoke/$taskMode-old-tests-$taskRound.log" 38}
+    TestLog "affinity-smoke/$taskMode-new-tests-1.log" 17
+    ModelReceipt (ReadJson "compile-model/$taskMode-receipt.json") $taskMode
+    $taskModel=ReadJson "compile-model/$taskMode-image.json"
+    if($taskModel.source -cne $Source -or $taskModel.mode -cne $taskMode -or $taskModel.recipe -cne $taskModelRecipe -or $taskModel.image_sha256 -cnotmatch '^[0-9a-f]{64}$' -or $taskModel.model_only -isnot [bool] -or $taskModel.model_only -cne $true){throw 'Model image binding'}
+    foreach($taskRound in 1..2){TestLog "compile-model/$taskMode-models-$taskRound.log" 10;TestLog "compile-model/$taskMode-fixed-$taskRound.log" 5}
+    TestLog "compile-model/$taskMode-held-docs.log" 6;TestLog "compile-model/$taskMode-trust-docs.log" 5
+}
+FailedLog '194-trust-2.log' 25
+FailedLog 'confirmed/188-new-tests-1.log' 16
+FailedLog 'stable-clock/194-new-tests-1.log' 16
+FailedLog 'held-session/194-new-tests-1.log' 16
+FailedLog 'affinity-smoke/194-new-tests-2.log' 16
+FailedLog 'affinity-smoke/188-trust-1.log' 25
+foreach($taskPath in @('confirmed/188-new-tests-1.log','stable-clock/194-new-tests-1.log','held-session/194-new-tests-1.log')){
+    if(-not (Get-Content -Raw (Join-Path $PSScriptRoot $taskPath)).Contains('site: "clock-order"')){throw 'Recorded clock-order refusal missing'}
+}
+$taskClock=ReadJson 'clock-control-receipt.json'
+if($taskClock.source -cne 'eeca0d5e6faa1cbdbf9c3bb92f5a036db4eca2ba' -or $taskClock.complete -isnot [bool] -or $taskClock.complete -cne $false -or $taskClock.local_timesyncd_before -cne 'active' -or $taskClock.local_timesyncd_during -cne 'inactive' -or $taskClock.local_timesyncd_after -cne 'active' -or $taskClock.service -cne 'systemd-timesyncd.service' -or $taskClock.distribution -cne 'Ubuntu'){throw 'Retained clock control/restoration'}
+FalseFlags $taskClock @('manual_clock_changed','windows_touched','server','supervisor')
+$taskSession=ReadJson 'held-clock-session-receipt.json'
+if($taskSession.source -cne '542face4dccfab11fff073a7b1f896dbebcb254e' -or $taskSession.complete -isnot [bool] -or $taskSession.complete -cne $false -or $taskSession.observer_exit -ne 0 -or $taskSession.test_phase_backwards -ne 0){throw 'Do not promote the coarse observer'}
+FalseFlags $taskSession @('service_changed','manual_clock_changed','windows_clock_changed','server','supervisor')
 $taskSummary=ReadJson 'summary.json'
-if($taskSummary.source -cne $Source -or $taskSummary.recipe -cne $taskRecipe -or $taskSummary.old_sources_reconstructed -ne 443 -or $taskSummary.named_runtime_additions -ne 3 -or $taskSummary.full_321_rerun -isnot [bool] -or $taskSummary.full_321_rerun -cne $false -or $taskSummary.qualification_manifest_sha256 -cne '11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc'){throw 'Summary binding'}
-Scope $taskSummary '194'
-if($taskSummary.first_frozen_cohort_accepted -isnot [bool] -or $taskSummary.first_frozen_cohort_accepted -cne $false -or $taskSummary.preceding_refusal_attributed -isnot [bool] -or $taskSummary.preceding_refusal_attributed -cne $false){throw 'Do not erase the unclassified preceding refusal'}
-if((Get-FileHash (Join-Path $PSScriptRoot 'first-checks.ps1') -Algorithm SHA256).Hash.ToLowerInvariant() -cne 'a782f74fcb92448b1f57b6d216e5a92fcb06f1d8528b04e89e64496d252462c6'){throw 'First recipe changed'}
-if((Get-FileHash (Join-Path $PSScriptRoot 'second-checks.ps1') -Algorithm SHA256).Hash.ToLowerInvariant() -cne '56bf4f95a5c87d4ae8da8bc9c738cf4985d2a99e3aeb6372dc26ba8718dec0c7'){throw 'Second recipe changed'}
-if(-not (Get-Content -Raw (Join-Path $PSScriptRoot 'confirmed/188-new-tests-1.log')).Contains('site: "clock-order"')){throw 'Recorded real clock refusal missing'}
-$taskClock=Get-Content -Raw (Join-Path $PSScriptRoot 'clock-control-receipt.json')|ConvertFrom-Json
-if($taskClock.source -cne 'eeca0d5e6faa1cbdbf9c3bb92f5a036db4eca2ba' -or $taskClock.complete -isnot [bool] -or $taskClock.complete -cne $false -or $taskClock.local_timesyncd_before -cne 'active' -or $taskClock.local_timesyncd_during -cne 'inactive' -or $taskClock.local_timesyncd_after -cne 'active' -or $taskClock.service -cne 'systemd-timesyncd.service' -or $taskClock.distribution -cne 'Ubuntu' -or $taskClock.control_recipe -cne (Get-FileHash (Join-Path $PSScriptRoot 'clock-control.ps1') -Algorithm SHA256).Hash.ToLowerInvariant() -or $taskClock.probe_recipe -cne (Get-FileHash (Join-Path $PSScriptRoot 'clock-probe.py') -Algorithm SHA256).Hash.ToLowerInvariant()){throw 'Retained failed local clock control binding'}
-foreach($taskFlag in @('manual_clock_changed','windows_touched','server','supervisor')){if($taskClock.$taskFlag -isnot [bool] -or $taskClock.$taskFlag -cne $false){throw 'Clock control scope'}}
-$taskProbe=Get-Content -Raw (Join-Path $PSScriptRoot 'clock-probe-before.log')|ConvertFrom-Json
-if($taskProbe.samples -ne 3000 -or @($taskProbe.backwards).Count -ne 0 -or $taskProbe.manual_clock_change -isnot [bool] -or $taskProbe.manual_clock_change -cne $false){throw 'Retained opening clock probe'}
-if(-not (Get-Content -Raw (Join-Path $PSScriptRoot 'stable-clock/194-new-tests-1.log')).Contains('site: "clock-order"')){throw 'Refusal despite local service stop missing'}
-$taskSession=Get-Content -Raw (Join-Path $PSScriptRoot 'held-clock-session-receipt.json')|ConvertFrom-Json
-if($taskSession.source -cne '542face4dccfab11fff073a7b1f896dbebcb254e' -or $taskSession.complete -isnot [bool] -or $taskSession.complete -cne $false -or $taskSession.observer_exit -ne 0 -or $taskSession.test_phase_backwards -ne 0 -or $taskSession.single_wsl_process -isnot [bool] -or $taskSession.single_wsl_process -cne $true -or $taskSession.recipe -cne (Get-FileHash (Join-Path $PSScriptRoot 'clock-session.ps1') -Algorithm SHA256).Hash.ToLowerInvariant() -or $taskSession.observer_recipe -cne (Get-FileHash (Join-Path $PSScriptRoot 'clock-session.py') -Algorithm SHA256).Hash.ToLowerInvariant()){throw 'Retained failed held session binding'}
-foreach($taskFlag in @('service_changed','manual_clock_changed','windows_clock_changed','server','supervisor')){if($taskSession.$taskFlag -isnot [bool] -or $taskSession.$taskFlag -cne $false){throw 'Held session scope'}}
-$taskEvents=@(Get-Content (Join-Path $PSScriptRoot 'held-clock-session.log')|ForEach-Object{$_|ConvertFrom-Json})
-foreach($taskEvent in @('start','ready','begin','finish')){if(@($taskEvents|Where-Object event -CEQ $taskEvent).Count -ne 1){throw 'Held session event selection'}}
-if(@($taskEvents|Where-Object {($_.event -ceq 'backwards' -and $_.phase -ceq 'tests') -or $_.event -in @('timeout','invalid-command')}).Count){throw 'Held session clock refusal'}
-if(-not (Get-Content -Raw (Join-Path $PSScriptRoot '194-trust-2.log')).Contains('test result: FAILED. 25 passed; 1 failed;')){throw 'First frozen refusal missing'}
-foreach($taskMode in @('194','188')){foreach($taskRound in 1..2){$taskRaw=Get-Content -Raw (Join-Path $taskReceiptRoot "$taskMode-new-tests-$taskRound.log");foreach($taskSample in 0..7){if(-not $taskRaw.Contains("HC074-CONSUMING-MISMATCH-TRACE sample=$taskSample assertions_ok=true first=None")){throw 'Unchanged assertion diagnostic selection'}}}}
-if(-not (Get-Content -Raw (Join-Path $PSScriptRoot 'missing-module-red.log')).Contains('diagnostic_held_role_provenance.rs')){throw 'Missing preimplementation refusal'}
-# In-memory metadata controls never modify the sealed packet.
-$taskNegative=0;$taskBase=ReadJson 'windows-receipt.json'
-foreach($taskField in (@('source','mode','recipe','passed','new_tests','old_tests','docs','rounds','typed_consuming_join','kernel_role_bridge','local_cpu_affinity')+$taskFlags)){
-    foreach($taskKind in @('change','missing')){
-        $taskBad=$taskBase|ConvertTo-Json|ConvertFrom-Json
+if($taskSummary.source -cne $Source -or $taskSummary.recipe -cne $taskRecipe -or $taskSummary.model_recipe -cne $taskModelRecipe -or $taskSummary.old_sources_reconstructed -ne 443 -or $taskSummary.named_runtime_additions -ne 3 -or $taskSummary.qualification_manifest_sha256 -cne '11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc'){throw 'Summary binding'}
+if($taskSummary.evidence_only -isnot [bool] -or $taskSummary.evidence_only -cne $true){throw 'Evidence-only status'}
+FalseFlags $taskSummary @('local_join_gate_passed','unrestricted_cpu_gate_passed','privileged_full_join','full_321_rerun','first_frozen_cohort_accepted','first_refusal_attributed','clock_cause_established','server','supervisor','product','full_joined_sigkill')
+# Metadata controls validate evidence integrity, NOT a successful execution gate.
+$taskNegative=0
+function Mutations($Base,[string[]]$Fields,[scriptblock]$Validate){
+    foreach($taskField in $Fields){foreach($taskKind in @('change','missing')){
+        $taskBad=$Base|ConvertTo-Json|ConvertFrom-Json
         if($taskKind -ceq 'missing'){$taskBad.PSObject.Properties.Remove($taskField)}
-        elseif($taskField -ceq 'passed'){$taskBad.$taskField=$false}
-        elseif($taskField -in @('new_tests','old_tests','docs','rounds')){$taskBad.$taskField=99}
-        elseif($taskBad.$taskField -is [bool]){$taskBad.$taskField=$true}
+        elseif($taskBad.$taskField -is [bool]){$taskBad.$taskField=-not $taskBad.$taskField}
+        elseif($taskBad.$taskField -is [long] -or $taskBad.$taskField -is [int]){$taskBad.$taskField=99}
         else{$taskBad.$taskField='wrong'}
-        $taskRefused=$false;try{Receipt $taskBad 'windows'}catch{$taskRefused=$true}
-        if(-not $taskRefused){throw "Accepted metadata mutation: $taskField/$taskKind"};$taskNegative++
-    }
+        $taskRefused=$false;try{& $Validate $taskBad}catch{$taskRefused=$true}
+        if(-not $taskRefused){throw "Accepted metadata mutation: $taskField/$taskKind"}
+        $script:taskNegative++
+    }}
 }
-$taskBase=ReadJson 'repository-fmt-empty-output.json'
-foreach($taskField in @('native_exit','empty_output')){
-    foreach($taskKind in @('change','missing')){
-        $taskBad=$taskBase|ConvertTo-Json|ConvertFrom-Json
-        if($taskKind -ceq 'missing'){$taskBad.PSObject.Properties.Remove($taskField)}elseif($taskField -ceq 'native_exit'){$taskBad.$taskField=1}else{$taskBad.$taskField=$false}
-        $taskRefused=$false;try{FormatReceipt $taskBad}catch{$taskRefused=$true}
-        if(-not $taskRefused){throw "Accepted silent format mutation: $taskField/$taskKind"};$taskNegative++
-    }
-}
-[ordered]@{verified=$true;files=$taskMembers.Count;receipt_metadata_mutations_refused=$taskNegative;inventory_sha256=(Get-FileHash $taskInventoryPath -Algorithm SHA256).Hash.ToLowerInvariant();fixed_affinity_smoke=$true;unrestricted_cpu_gate_passed=$false;typed_consuming_join=$true;kernel_role_bridge=$true;privileged_full_join=$false;late_original_join=$false;server=$false;product=$false}|ConvertTo-Json
+Mutations (ReadJson 'affinity-smoke/windows-receipt.json') (@('source','mode','recipe','passed','new_tests','old_tests','docs','rounds','typed_consuming_join','kernel_role_bridge','local_cpu_affinity')+$taskFlags) {param($v) Receipt $v 'windows'}
+Mutations (ReadJson 'affinity-smoke/repository-fmt-empty-output.json') @('native_exit','empty_output') {param($v) FormatReceipt $v}
+Mutations (ReadJson 'compile-model/194-receipt.json') @('source','mode','recipe','passed','models','rounds','capability_docs','model_only','real_join_gate_passed','unrestricted_cpu_gate_passed','strict_lint','server') {param($v) ModelReceipt $v '194'}
+[ordered]@{evidence_verified=$true;files=$taskMembers.Count;metadata_mutations_refused=$taskNegative;inventory_sha256=(Get-FileHash $taskInventoryPath -Algorithm SHA256).Hash.ToLowerInvariant();local_join_gate_passed=$false;unrestricted_cpu_gate_passed=$false;privileged_full_join=$false;clock_cause_established=$false;server=$false;product=$false}|ConvertTo-Json

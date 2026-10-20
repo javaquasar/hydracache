@@ -1,0 +1,19 @@
+{
+  "source": "f07dcca31e2e69796644d70fef695404b22d1519",
+  "mode": "repository",
+  "recipe": "3df2016f267de722c992b2b3e6be9c1a5a246f44e2f44938f93a64fcc37c15c6",
+  "local_cpu_affinity": [],
+  "unrestricted_cpu_gate_passed": false,
+  "typed_consuming_join": false,
+  "kernel_role_bridge": false,
+  "privileged_full_join": false,
+  "late_original_join": false,
+  "production_enrollment": false,
+  "production_role_receipt_issued": false,
+  "original_send": false,
+  "server": false,
+  "supervisor": false,
+  "product": false,
+  "full_joined_sigkill": false,
+  "clock_changed": false
+}

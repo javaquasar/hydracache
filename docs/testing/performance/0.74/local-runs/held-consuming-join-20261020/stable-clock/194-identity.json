@@ -1,0 +1,17 @@
+{
+  "source": "eeca0d5e6faa1cbdbf9c3bb92f5a036db4eca2ba",
+  "mode": "194",
+  "recipe": "6c69d681779f0312ea27ed9a7b04e77b757db268d93abce49edc4948e0656b1b",
+  "typed_consuming_join": true,
+  "kernel_role_bridge": true,
+  "privileged_full_join": false,
+  "late_original_join": false,
+  "production_enrollment": false,
+  "production_role_receipt_issued": false,
+  "original_send": false,
+  "server": false,
+  "supervisor": false,
+  "product": false,
+  "full_joined_sigkill": false,
+  "clock_changed": false
+}

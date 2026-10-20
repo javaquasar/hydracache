@@ -1,0 +1,16 @@
+{
+  "source": "21369d0727dbe2cf9bc92de0c876236bb60cc9c5",
+  "log": "confirmed/188-new-tests-1.log",
+  "site": "clock-order",
+  "before_boottime_ns": 80156580664,
+  "after_boottime_ns": 80298384117,
+  "before_realtime_ns": 1792480673413969387,
+  "after_realtime_ns": 1792480666771715299,
+  "boottime_delta_ns": 141803453,
+  "realtime_delta_ns": -6642254088,
+  "same_boot": true,
+  "unchanged_hold_ns": 60000000000,
+  "first_cohort_error_attributed": false,
+  "timesyncd_causation_proven": false,
+  "manual_clock_change": false
+}

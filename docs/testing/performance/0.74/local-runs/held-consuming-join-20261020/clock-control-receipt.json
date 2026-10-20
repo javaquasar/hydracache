@@ -1,0 +1,19 @@
+{
+  "source": "eeca0d5e6faa1cbdbf9c3bb92f5a036db4eca2ba",
+  "complete": false,
+  "local_timesyncd_before": "active",
+  "local_timesyncd_during": "inactive",
+  "local_timesyncd_after": "active",
+  "service": "systemd-timesyncd.service",
+  "distribution": "Ubuntu",
+  "controlled_modes": [
+    "194",
+    "188"
+  ],
+  "control_recipe": "1a4666925df477c97900344bafc4c8ac173ace5c584f65e45fc605a2607d9d51",
+  "probe_recipe": "604d2dbd8d963e8d61fec5ed3d8e1dcc2b3a36f8c2297031c4049dbb03ca7744",
+  "manual_clock_changed": false,
+  "windows_touched": false,
+  "server": false,
+  "supervisor": false
+}

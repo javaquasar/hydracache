@@ -1,0 +1,15 @@
+[    2.579405] LT-TCH-12 systemd[1]: Stopping systemd-timesyncd.service - Network Time Synchronization...
+[    2.613120] LT-TCH-12 systemd[1]: systemd-timesyncd.service: Deactivated successfully.
+[    2.613205] LT-TCH-12 systemd[1]: Stopped systemd-timesyncd.service - Network Time Synchronization.
+[   24.876692] LT-TCH-12 systemd[1]: Starting systemd-timesyncd.service - Network Time Synchronization...
+[   24.894565] LT-TCH-12 systemd[1]: Started systemd-timesyncd.service - Network Time Synchronization.
+[   25.074648] LT-TCH-12 systemd-timesyncd[587]: Contacted time server 91.189.91.157:123 (ntp.ubuntu.com).
+[   25.074842] LT-TCH-12 systemd-timesyncd[587]: Initial clock synchronization to Tue 2026-10-20 09:22:26.095553 CEST.
+[   89.288961] LT-TCH-12 systemd[1]: Starting systemd-timesyncd.service - Network Time Synchronization...
+[   89.311877] LT-TCH-12 systemd[1]: Started systemd-timesyncd.service - Network Time Synchronization.
+[   89.484306] LT-TCH-12 systemd-timesyncd[152]: Contacted time server 91.189.91.157:123 (ntp.ubuntu.com).
+[   89.484470] LT-TCH-12 systemd-timesyncd[152]: Initial clock synchronization to Tue 2026-10-20 09:23:30.505478 CEST.
+[  143.457625] LT-TCH-12 systemd[1]: Starting systemd-timesyncd.service - Network Time Synchronization...
+[  143.480549] LT-TCH-12 systemd[1]: Started systemd-timesyncd.service - Network Time Synchronization.
+[  143.663334] LT-TCH-12 systemd-timesyncd[152]: Contacted time server 91.189.91.157:123 (ntp.ubuntu.com).
+[  143.663521] LT-TCH-12 systemd-timesyncd[152]: Initial clock synchronization to Tue 2026-10-20 09:24:25.327681 CEST.

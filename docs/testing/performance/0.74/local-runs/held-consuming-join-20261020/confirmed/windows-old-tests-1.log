@@ -1,0 +1,35 @@
+
+running 28 tests
+test all_observation_fields_checked_before_signing_and_after_signature ... ok
+test canonical_bounded_documents_signature_encoding_and_domains_are_strict ... ok
+test cargo_dependencies_are_allowed_but_valid_oversized_and_duplicate_records_refuse ... ok
+test cargo_exact_targets_package_sources_output_profiles_and_features_required ... ok
+test cargo_missing_duplicate_foreign_failure_and_trailing_events_refuse ... ok
+test cargo_raw_bounds_duplicates_and_nonterminated_records_refuse ... ok
+test changed_contents_and_each_expected_role_refuse_without_execution_authority ... ok
+test every_receipt_binding_refuses_unsigned_mutation_and_resigned_invalid_semantics ... ok
+test independent_pins_controller_epoch_and_three_distinct_nonweak_keys_required ... ok
+test independent_policy_source_and_epoch_binding_prevents_receipt_reuse ... ok
+test legacy_policy_must_independently_authenticate_the_same_controller ... ok
+test repinned_invalid_policy_fields_and_unsigned_unknown_fields_refuse ... ok
+test role_binding::all_document_receipt_and_signing_budgets_refuse ... ok
+test role_binding::another_valid_attempt_cannot_match_the_original_placement_bytes ... ok
+test role_binding::canonical_unknown_duplicate_nested_and_signature_encoding_are_strict ... ok
+test role_binding::checked_output_rejects_changed_contents_and_nonexact_placement_bytes ... ok
+test role_binding::every_unsigned_outer_and_nested_binding_mutation_refuses ... ok
+test role_binding::new_domain_and_envelope_do_not_upgrade_any_old_signature ... ok
+test role_binding::resigned_each_role_mismatch_refuses_even_with_valid_old_placement ... ok
+test role_binding::resigned_epoch_repository_and_digest_substitution_refuses ... ok
+held_role_binding seed=0x0074b14d corruptions=64
+test role_binding::seeded_unsigned_bit_corruption_never_reuses_inspection ... ok
+test role_binding::signed_binding_checks_same_policy_receipt_epoch_roles_and_exact_placement_bytes ... ok
+test role_binding::valid_but_different_receipt_or_independently_checked_policy_refuses ... ok
+test role_binding::wrong_controller_or_builder_key_at_either_signature_refuses ... ok
+held-build content corruption seed=0x74b017 iterations=128
+test seeded_content_corruption_cannot_reuse_checked_receipt ... ok
+test separate_policy_signer_receipt_contents_and_three_roles_roundtrip ... ok
+test signer_requires_distinct_valid_elf_and_exact_nonempty_root_lock ... ok
+test valid_but_noncanonical_or_duplicate_documents_and_worker_signed_body_refuse ... ok
+
+test result: ok. 28 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.56s
+

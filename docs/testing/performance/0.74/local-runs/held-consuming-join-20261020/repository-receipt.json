@@ -1,0 +1,22 @@
+{
+  "source": "26d88288f2ee0a103f28c173332c81378419de2e",
+  "mode": "repository",
+  "recipe": "a782f74fcb92448b1f57b6d216e5a92fcb06f1d8528b04e89e64496d252462c6",
+  "passed": true,
+  "new_tests": 0,
+  "old_tests": 18,
+  "docs": 0,
+  "rounds": 1,
+  "typed_consuming_join": false,
+  "kernel_role_bridge": false,
+  "privileged_full_join": false,
+  "late_original_join": false,
+  "production_enrollment": false,
+  "production_role_receipt_issued": false,
+  "original_send": false,
+  "server": false,
+  "supervisor": false,
+  "product": false,
+  "full_joined_sigkill": false,
+  "clock_changed": false
+}

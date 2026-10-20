@@ -1,0 +1,9 @@
+{
+  "source": "f07dcca31e2e69796644d70fef695404b22d1519",
+  "mode": "188",
+  "recipe": "811f1f22557799059b7d84317ebd213276c03256df9f5b7cede1dd2f04a62811",
+  "image": "/home/artur/.cache/hydracache-074-188-check/debug/deps/hydracache_long_run_supervisor_074-b50f0212ea2b5221",
+  "image_sha256": "13d4a4b274a172d6e3cc68dbaa352c6a6649ebcea65551cd1925725e4867c135",
+  "model_only": true,
+  "real_join_gate_passed": false
+}

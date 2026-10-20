@@ -1,0 +1,5 @@
+uid=0(root) gid=0(root) groups=0(root)
+/sys/fs/cgroup cgroup2 rw,nosuid,nodev,noexec,relatime,nsdelegate
+system_slice_present
+cgroup_writable
+active

@@ -1,0 +1,14 @@
+{
+  "source": "542face4dccfab11fff073a7b1f896dbebcb254e",
+  "complete": false,
+  "observer_exit": 0,
+  "test_phase_backwards": 0,
+  "single_wsl_process": true,
+  "service_changed": false,
+  "manual_clock_changed": false,
+  "windows_clock_changed": false,
+  "server": false,
+  "supervisor": false,
+  "recipe": "efd348cdbfe6c8d264a609ad6f1fea22a51e085b3dba60324ec5e82ee7f49653",
+  "observer_recipe": "3d8af229e6f108a900ac1e4f2e1e2af6215c81321fdc355ee12d9a4a4bdc6c3d"
+}

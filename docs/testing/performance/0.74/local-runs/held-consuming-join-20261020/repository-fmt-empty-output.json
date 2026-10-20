@@ -1,0 +1,7 @@
+{
+  "source": "26d88288f2ee0a103f28c173332c81378419de2e",
+  "mode": "repository",
+  "check": "fmt",
+  "native_exit": 0,
+  "empty_output": true
+}

@@ -1,0 +1,80 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.00s
+   Doc-tests hydracache_long_run_supervisor_074
+
+running 6 tests
+error[E0616]: field `build` of struct `Inspection` is private
+ --> tools/long-run-supervisor-074/src/diagnostic_held_role_binding.rs:129:19
+  |
+7 |     let _ = value.build;
+  |                   ^^^^^ private field
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0616`.
+test tools/long-run-supervisor-074/src/diagnostic_held_role_binding.rs - diagnostic_builder::held_build::role_binding::Inspection (line 125) - compile fail ... ok
+error[E0277]: the trait bound `PinnedRoles: IntoRawFd` is not satisfied
+ --> tools/long-run-supervisor-074/src/diagnostic_held_role_files.rs:98:36
+  |
+8 |     let _ = IntoRawFd::into_raw_fd(roles);
+  |             ---------------------- ^^^^^ the trait `IntoRawFd` is not implemented for `PinnedRoles`
+  |             |
+  |             required by a bound introduced by this call
+  |
+  = help: the following other types implement trait `IntoRawFd`:
+            ChildStderr
+            ChildStdin
+            ChildStdout
+            OwnedFd
+            PidFd
+            PipeReader
+            PipeWriter
+            TcpListener
+          and 22 others
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0277`.
+test tools/long-run-supervisor-074/src/diagnostic_held_role_files.rs - diagnostic_builder::held_build::role_files::PinnedRoles (line 93) - compile fail ... ok
+error[E0599]: no method named `unlock` found for struct `hydracache_long_run_supervisor_074::diagnostic_builder::held_build::VerifiedBuild` in the current scope
+ --> tools/long-run-supervisor-074/src/diagnostic_held_build.rs:286:48
+  |
+6 | fn cannot_unlock(build: VerifiedBuild) { build.unlock(); }
+  |                                                ^^^^^^ method not found in `VerifiedBuild`
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0599`.
+test tools/long-run-supervisor-074/src/diagnostic_held_build.rs - diagnostic_builder::held_build::VerifiedBuild (line 283) - compile fail ... ok
+error[E0599]: no method named `start` found for struct `PinnedRoles` in the current scope
+ --> tools/long-run-supervisor-074/src/diagnostic_held_role_files.rs:91:11
+  |
+7 |     roles.start();
+  |           ^^^^^ method not found in `PinnedRoles`
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0599`.
+test tools/long-run-supervisor-074/src/diagnostic_held_role_files.rs - diagnostic_builder::held_build::role_files::PinnedRoles (line 87) - compile fail ... ok
+error[E0599]: no method named `start` found for struct `Inspection` in the current scope
+ --> tools/long-run-supervisor-074/src/diagnostic_held_role_binding.rs:123:11
+  |
+7 |     value.start();
+  |           ^^^^^ method not found in `Inspection`
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0599`.
+error[E0599]: no method named `start` found for struct `CheckedPolicy` in the current scope
+ --> tools/long-run-supervisor-074/src/diagnostic_held_build.rs:76:49
+  |
+6 | fn cannot_start(policy: CheckedPolicy) { policy.start(); }
+  |                                                 ^^^^^ method not found in `CheckedPolicy`
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0599`.
+test tools/long-run-supervisor-074/src/diagnostic_held_role_binding.rs - diagnostic_builder::held_build::role_binding::Inspection (line 119) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_held_build.rs - diagnostic_builder::held_build::CheckedPolicy (line 73) - compile fail ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 252 filtered out; finished in 0.36s
+

@@ -1,0 +1,42 @@
+[
+  {
+    "packet": "frozen-lock-fixture-20261020",
+    "inventory_sha256": "c6dc56c0fc14c72d8a0e6fe555b07da1d848ade24c60f3783ed3baf5836aafef",
+    "unchanged_from": "6e709b5da057e3e94bb12646e4d47071f8fb7750"
+  },
+  {
+    "packet": "fixed-slice-namespace-20261020",
+    "inventory_sha256": "00e1dc901bf374c3f49dee27bb466ef709796b39010878e992fe27a97d08e411",
+    "unchanged_from": "6e709b5da057e3e94bb12646e4d47071f8fb7750"
+  },
+  {
+    "packet": "held-artifact-boundary-20261020",
+    "inventory_sha256": "08cf6c8310a31edcd641ad7603207d00d23135d7fb0665e14b279bd52b8c31fa",
+    "unchanged_from": "6e709b5da057e3e94bb12646e4d47071f8fb7750"
+  },
+  {
+    "packet": "held-build-authority-20261020",
+    "inventory_sha256": "1066e4520b534356ab2b3cccec03281a86104b8bbbc12729248a026ab372bc35",
+    "unchanged_from": "6e709b5da057e3e94bb12646e4d47071f8fb7750"
+  },
+  {
+    "packet": "held-launcher-20261020",
+    "inventory_sha256": "dd514156a15397f9d3ecf6cb42632eded704031768709aab9bbcbb33c2abdf16",
+    "unchanged_from": "6e709b5da057e3e94bb12646e4d47071f8fb7750"
+  },
+  {
+    "packet": "held-role-files-20261020",
+    "inventory_sha256": "c9fdc73c1f89b2037af2eacb87af8b6576a1e0af29629a1ef584dd0974316faf",
+    "unchanged_from": "6e709b5da057e3e94bb12646e4d47071f8fb7750"
+  },
+  {
+    "packet": "held-role-binding-20261020",
+    "inventory_sha256": "5950fc0c8f8be989af528638661a72669e185c67ec91c74ef5c972426146ede4",
+    "unchanged_from": "6e709b5da057e3e94bb12646e4d47071f8fb7750"
+  },
+  {
+    "packet": "held-runtime-trust-20261020",
+    "inventory_sha256": "062948c1d6be9aadeb4ba98e03bb04bba007f2bcdf70c727f280cee62b6cf8cf",
+    "unchanged_from": "6e709b5da057e3e94bb12646e4d47071f8fb7750"
+  }
+]

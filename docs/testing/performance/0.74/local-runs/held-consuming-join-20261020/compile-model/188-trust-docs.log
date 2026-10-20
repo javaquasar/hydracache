@@ -1,0 +1,95 @@
+    Blocking waiting for file lock on package cache
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.64s
+   Doc-tests hydracache_long_run_supervisor_074
+
+running 5 tests
+test tools/long-run-supervisor-074/src/diagnostic_held_runtime_trust.rs - diagnostic_worker_policy::trusted_input::controller_input::held_runtime::OriginalHeldTrust (line 270) - compile fail ... ok
+error[E0616]: field `original` of struct `OriginalHeldTrust` is private
+ --> tools/long-run-supervisor-074/src/diagnostic_held_runtime_trust.rs:274:19
+  |
+7 |     let _ = value.original;
+  |                   ^^^^^^^^ private field
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0616`.
+error[E0599]: no method named `start` found for struct `OriginalHeldTrust` in the current scope
+ --> tools/long-run-supervisor-074/src/diagnostic_held_runtime_trust.rs:268:11
+  |
+7 |     value.start();
+  |           ^^^^^ method not found in `OriginalHeldTrust<'_, '_, '_, '_, '_, '_, '_>`
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0599`.
+test tools/long-run-supervisor-074/src/diagnostic_held_runtime_trust.rs - diagnostic_worker_policy::trusted_input::controller_input::held_runtime::OriginalHeldTrust (line 264) - compile fail ... ok
+error[E0277]: the trait bound `HeldTrustInput: serde::de::DeserializeOwned` is not satisfied
+ --> tools/long-run-supervisor-074/src/diagnostic_held_runtime_trust.rs:177:19
+  |
+7 | requires_decode::<HeldTrustInput>();
+  |                   ^^^^^^^^^^^^^^ the trait `for<'de> Deserialize<'de>` is not implemented for `HeldTrustInput`
+  |
+  = help: the following other types implement trait `Deserialize<'de>`:
+            `&'a [u8]` implements `Deserialize<'de>`
+            `&'a std::path::Path` implements `Deserialize<'de>`
+            `&'a str` implements `Deserialize<'de>`
+            `()` implements `Deserialize<'de>`
+            `(T,)` implements `Deserialize<'de>`
+            `(T0, T1)` implements `Deserialize<'de>`
+            `(T0, T1, T2)` implements `Deserialize<'de>`
+            `(T0, T1, T2, T3)` implements `Deserialize<'de>`
+          and 295 others
+  = note: required for `HeldTrustInput` to implement `DeserializeOwned`
+note: required by a bound in `requires_decode`
+ --> tools/long-run-supervisor-074/src/diagnostic_held_runtime_trust.rs:176:23
+  |
+6 | fn requires_decode<T: serde::de::DeserializeOwned>() {}
+  |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `requires_decode`
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0277`.
+test tools/long-run-supervisor-074/src/diagnostic_held_runtime_trust.rs - diagnostic_worker_policy::trusted_input::controller_input::held_runtime::HeldTrustInput (line 173) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_held_runtime_trust.rs - diagnostic_worker_policy::trusted_input::controller_input::held_runtime::HeldTrustInput (line 167) - compile fail ... ok
+error[E0277]: `Rc<()>` cannot be sent between threads safely
+   --> tools/long-run-supervisor-074/src/diagnostic_held_runtime_trust.rs:171:24
+    |
+7   |     std::thread::spawn(move || drop(value));
+    |     ------------------ -------^^^^^^^^^^^^
+    |     |                  |
+    |     |                  `Rc<()>` cannot be sent between threads safely
+    |     |                  within this `{closure@tools/long-run-supervisor-074/src/diagnostic_held_runtime_trust.rs:7:24: 7:31}`
+    |     required by a bound introduced by this call
+    |
+    = help: within `{closure@tools/long-run-supervisor-074/src/diagnostic_held_runtime_trust.rs:7:24: 7:31}`, the trait `Send` is not implemented for `Rc<()>`
+note: required because it appears within the type `PhantomData<Rc<()>>`
+   --> /rustc/6b00bc3880198600130e1cf62b8f8a93494488cc/library/core/src/marker.rs:778:12
+note: required because it appears within the type `HeldTrustInput`
+   --> /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_held_runtime_trust.rs:178:12
+    |
+178 | pub struct HeldTrustInput {
+    |            ^^^^^^^^^^^^^^
+note: required because it's used within this closure
+   --> tools/long-run-supervisor-074/src/diagnostic_held_runtime_trust.rs:171:24
+    |
+7   |     std::thread::spawn(move || drop(value));
+    |                        ^^^^^^^
+note: required by a bound in `spawn`
+   --> /rustc/6b00bc3880198600130e1cf62b8f8a93494488cc/library/std/src/thread/mod.rs:723:1
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0277`.
+error[E0599]: no method named `clone` found for struct `HeldTrustInput` in the current scope
+ --> tools/long-run-supervisor-074/src/diagnostic_held_runtime_trust.rs:165:11
+  |
+7 |     value.clone();
+  |           ^^^^^ method not found in `HeldTrustInput`
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0599`.
+test tools/long-run-supervisor-074/src/diagnostic_held_runtime_trust.rs - diagnostic_worker_policy::trusted_input::controller_input::held_runtime::HeldTrustInput (line 161) - compile fail ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 253 filtered out; finished in 0.10s
+

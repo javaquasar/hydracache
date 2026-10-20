@@ -1,0 +1,8 @@
+{"event": "start", "clocks": [2629068424, 1792481367418208617], "warmup_seconds": 60, "maximum_seconds": 600}
+{"event": "progress", "phase": "warmup", "clocks": [2629095534, 1792481367418235468]}
+{"event": "progress", "phase": "warmup", "clocks": [22694857094, 1792481387483999152]}
+{"event": "progress", "phase": "warmup", "clocks": [42767155763, 1792481407561611037]}
+{"event": "ready", "clocks": [62723648815, 1792481427518104148], "warmup_backwards": 0}
+{"event": "begin", "clocks": [62824134044, 1792481427618589554]}
+{"event": "progress", "phase": "tests", "clocks": [62824134044, 1792481427618589554]}
+{"event": "finish", "phase": "tests", "clocks": [81055123339, 1792481445849359773], "backwards": []}
