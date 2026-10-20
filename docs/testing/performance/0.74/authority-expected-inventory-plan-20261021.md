@@ -17,7 +17,9 @@ unknown implementations. Test hooks stay after runtime declarations.
 
 Measure only suffix comparison using prepared observed sets (setup outside
 capture): empty, healthy 1/7/128, and same-cardinality invalid names. Use 32
-warmups, three rotated 1024-operation samples, GNU 1.94 and MSRV 1.88. Retain
+warmups, three alternated two-arm 1024-operation samples, GNU 1.94 and MSRV 1.88.
+The isolated arms are frozen reference/proposal; actual runtime is tested by
+complete filesystem inventory and unchanged full-inspect measurements. Retain
 Before source, images, recipes, exits and observations before mutation. Repeat
 once after one isolated runtime change. A failed measurement is retained, not
 retried into a healthy cohort. Early live failures must still skip this suffix.
