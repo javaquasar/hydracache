@@ -5058,3 +5058,35 @@ plus inventory, SHA256
 `384430c3e8a18f08e521ffb3d7ca4aba8428001f8011347265577a7a5c139a12`.
 Ten prior packets and ten summary scope mutations verify integrity and bounded
 request conservation, not time stability, numerical release or server admission.
+
+## Authority expected inventory container reduction
+
+The [paired local control](local-runs/authority-inventory-20261021/README.md)
+accepts runtime `7595dba2`, with whitespace-only source/template repair
+`c86330ae`. Final measured source is `5f56a9c3`; Before is `24328842`.
+The observed set and fresh directory scan stay; a generated sorted sequence
+replaces only materialization of the expected set. Equality checks cardinality,
+and the unchanged formatter emits commit/json in lexical order.
+
+Both compilers and all three samples conserve twice the isolated equality
+saving. Complete fixture inspect changes 33/8/2598 to 29/8/1942 at one
+generation and 137/56/12612 to 129/56/10068 at seven, in allocations /
+reallocations / requested bytes. Reads remain 4/28; all other leaf/kernel
+observations remain equal. The isolated 128-generation control is not a
+complete-inspect measurement. No timing, retained-memory, full ActiveAuthority
+or cache API gain is claimed; remaining formatter reallocations are unchanged.
+
+Final authority suites pass 193 tests per compiler with 13 manual/privileged
+tests ignored, focused checks, strict lint, all 371 source contracts and
+repository checks. Canary/lint/format refusals and the pre-execution log-prefix
+guard refusal are retained; none replaces a measured cohort. Before/After boots
+differ. All live checks and original windows stay; old native/server gates
+remain closed. No push, server, supervisor, clock/service or product operation.
+
+Evidence commit `28996a4fa46f7e1bc603892f520e017b756544c0` seals 154 members
+plus inventory SHA256
+`101b29bf56b767da04c86bcdd7d14fa9e488de3c319f11e56d718b614effdbef`.
+The original summary is retained after a JSON key-order verifier refusal;
+structural equality rejects eight data/type/field/array mutations in addition
+to ten scope mutations. Eleven prior packets rehash unchanged. This validates
+integrity and request conservation, not live/native/server admission.

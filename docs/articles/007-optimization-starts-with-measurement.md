@@ -15563,3 +15563,70 @@ remain, as do all independent execution, writer retirement, lifecycle, reconnect
 and enrollment gates. No server, installation, supervisor or clock/service
 operation occurs. The next local question is expected-inventory construction,
 not removal or reuse of a directory observation.
+
+## Comparing expected inventory without materializing another tree
+
+The [expected inventory control](../testing/performance/0.74/authority-expected-inventory-plan-20261021.md)
+isolates a representation cost after the fresh directory scan. The reader
+already owns a sorted observed `BTreeSet`. It then builds another set of every
+expected record/commit name just to compare them. The single candidate keeps
+the observed set and compares it with a generated sequence, ordered by revision
+and then commit/json. `Iterator::eq` checks length as well as names; a bare zip
+would not suffice. The exact name formatter, UTF-8 conversion, duplicate and
+budget guard, parity, refusal order, scans and later live checks remain.
+
+Before changing runtime, freeze reference/proposal equality controls and actual
+filesystem differential tests. Every bounded depth from zero through 128 is
+tested with seeded mutations, reversed insertion, malformed names and length
+mismatches. Filesystem cases also cover gaps/odd count, invalid UTF-8, budget
+and non-directory I/O refusals. Exact source adapters reject unknown guards or
+implementations rather than relaxing historical assertions.
+
+Three 1024-operation samples on GNU 1.94 and MSRV 1.88 agree:
+
+| Operation | Allocations | Reallocations | Requested bytes |
+| --- | ---: | ---: | ---: |
+| Isolated equality at 1 generation, reference to stream | 4 to 2 | 4 to 4 | 440 to 112 |
+| Isolated equality at 7 generations, reference to stream | 18 to 14 | 28 to 28 | 2056 to 784 |
+| Complete fixture inspect at 1 generation, Before to After | 33 to 29 | 8 to 8 | 2598 to 1942 |
+| Complete fixture inspect at 7 generations, Before to After | 137 to 129 | 56 to 56 | 12612 to 10068 |
+
+Inventory runs twice per inspect. Its isolated saving therefore predicts four
+fewer allocations/656 fewer requested bytes at one generation and eight/2544 at
+seven. Actual complete inspection conserves those reductions exactly. Reads
+remain four and 28, while six non-authority cases and tracked kernel counts
+remain equal. This accepts removal of the expected container, not a skipped
+observation. At the 128-generation bound, isolated equality saves 27 allocations
+and 19576 requested bytes, but complete inspection at that depth is not measured.
+For an invalid seven-generation set the lazy comparator also avoids generating
+unused pure names after the first mismatch; the entire live scan still precedes
+the comparison. Empty equality remains allocation-free.
+
+Healthy reallocations do not fall: existing `name()` formatting still grows its
+strings. That is an attribution boundary, not a reason to combine a second
+hypothesis into this candidate. Formatting may be examined in a separate paired
+control. Requested bytes include reallocations and do not measure copies,
+retained memory, CPU, latency, cache API capacity or full ActiveAuthority cost.
+
+The [paired packet](../testing/performance/0.74/local-runs/authority-inventory-20261021/README.md)
+retains exact sources, images, recipes and native exits. Both final compiler
+lanes pass 193 authority tests, focused checks and strict lint; all 371 source
+contracts and repository checks pass. A new canary authoring error, an MSRV test
+formatting lint and the first repository layout refusal are retained. Repair
+only those new test/layout issues before the first After capture; no measured
+cohort or old assertion is replaced. The evidence overwrite guard also refuses
+a colliding log prefix before execution, so a separate repository-only recipe
+uses a new prefix. The runtime/template repair is proved whitespace-only.
+
+The first sealing verifier also refuses a Hashtable's process-dependent JSON
+key order. Preserve that summary and verifier; a separate structural comparator
+accepts object-key permutation while rejecting changed values, types, fields
+and array order. No capture or summary is rewritten. Eleven prior packets,
+ten scope mutations and eight structural negative controls verify independently
+of the request-count result.
+
+Before/After boots differ. All original 300/60/10 windows and live checks remain;
+old clock-order and execution, retirement, lifecycle, reconnect and enrollment
+gates remain closed. No server, installation, supervisor, clock/service, product
+workload or new live-matrix run occurs. Rebuilt tool identity does not inherit
+the preceding campaign admission.

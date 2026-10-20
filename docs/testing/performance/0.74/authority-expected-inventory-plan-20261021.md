@@ -73,3 +73,41 @@ original format-step log. The no-overwrite guard correctly refuses before any
 command or measurement. Use a separately frozen repository-only `layout`
 prefix/recipe; keep the guard and old log. Other repaired receipts retain their
 original recipe identities. No source, test or measured invocation changes.
+
+## Local outcome
+
+Before source `243288427e5fcc123e70319d233f939ab7291537` and After source
+`5f56a9c3a1803ee7d403a411f091e98848a9e276` each have one capture per compiler,
+with three samples per case and unchanged reference/workload/qualification
+inputs. Runtime is `7595dba2`; formatting only is `c86330ae`. The
+[paired packet](local-runs/authority-inventory-20261021/README.md) conserves
+exactly twice isolated expected equality: 4 allocations/656 requested bytes
+saved per complete inspect at one generation, and 8/2544 at seven. Full counts
+are 33/8/2598 to 29/8/1942 and 137/56/12612 to 129/56/10068 respectively.
+Read counts stay 4/28, reallocations and all other leaf/kernel counts stay equal.
+
+Both final lanes pass 193 authority tests, ancillary controls, all-target check
+and strict all-feature lint. All 371 historical/current assertions and repository
+checks pass. The original refusals remain; no measured invocation is repeated.
+The bounded request candidate is locally accepted, without timing, retained
+memory, full ActiveAuthority or cache API claims. Before/After boots differ;
+old native clock-order and independent execution/trust/lifecycle gates stay
+closed. All live checks, original windows and operating restrictions remain.
+The unchanged name formatter is a separate next attribution question.
+
+## Post-capture verifier repair
+
+The first seal refuses JSON-string comparison of the delta Hashtable's
+process-dependent object-key ordering before writing inventory. Keep the raw
+summary and original verifier. A separate structural verifier checks JSON
+equality without treating object order as data; arrays, types, values and fields
+remain checked, with eight explicit negative controls. It cannot WriteSummary.
+All existing checks and ten scope mutations remain. No source, threshold,
+observation or measured cohort changes; there is no measurement retry.
+
+Evidence `28996a4fa46f7e1bc603892f520e017b756544c0` seals 154 members plus
+inventory SHA256
+`101b29bf56b767da04c86bcdd7d14fa9e488de3c319f11e56d718b614effdbef`.
+All eleven prior packets and ten scope mutations verify; eight structural
+negative controls pass without rewriting the raw summary. The packet is now
+immutable. Further hypotheses require their own baseline and evidence.

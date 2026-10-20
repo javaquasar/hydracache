@@ -979,3 +979,24 @@ be cached or skipped. Original delivery, all-writer cessation, later lifecycle
 cells, SIGKILL/lost-ACK, reconnect and real enrollment remain separately closed.
 No server/live-matrix run, clock/service change, supervisor control or product
 workload occurs, and tool identity changes cannot inherit campaign admission.
+
+## Expected inventory local outcome
+
+The [expected inventory control](local-runs/authority-inventory-20261021/README.md)
+accepts only streaming the expected names against the freshly observed set.
+Runtime `7595dba2` and whitespace-only repair `c86330ae` preserve all scans,
+UTF-8/cardinality/budget checks, error order and original 300/60/10 windows.
+Both compilers conserve 4 fewer allocations/656 requested bytes per complete
+one-generation fixture inspect and 8/2544 at seven. Reallocations, reads and
+tracked kernel counts stay equal. The full ActiveAuthority wrapper, CPU,
+latency, retained memory and cache API are outside this measurement.
+
+Final 193-test authority suites, focused checks/strict lint, all 371 source
+contracts and repository checks pass. Original canary, lint and format refusals
+stay retained; all repairs precede the first After capture. Separate boots and
+the old clock-order refusals leave native admission closed. No new live matrix,
+server, installation, supervisor, clock/service or product operation occurs.
+Original delivery, all-writer cessation, later cells, SIGKILL/lost-ACK,
+reconnect and real enrollment remain independent gates. Remaining name
+formatting costs require a separate attribution candidate, not a deadline or
+observation-frequency change.
