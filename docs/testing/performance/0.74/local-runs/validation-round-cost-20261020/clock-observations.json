@@ -1,0 +1,13 @@
+{
+  "source": "ffe9593004b59a3a86d8b19ccda877d905e2fcee",
+  "exit": 1,
+  "stderr": "Traceback (most recent call last):\n  File \"/mnt/c/Workspace/prj/jq/cashe/hydracache-074/docs/testing/performance/0.74/local-runs/validation-round-cost-20261020/clock_probe.py\", line 8, in <module>\n    assert len(boot) == 36 and all(c in \"0123456789abcdef-\" for c in boot)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+  "qpc_frequency": 10000000,
+  "recipe_sha256": "5d43ec51b42e908d956d5b0c6eac7b64644f986e5d0bb3e1013ea1e38a828985",
+  "probe_sha256": "d63bc1a1906120be8c427d650d060772afe5cd1df7563dd57ff00299456146cb",
+  "read_only": true,
+  "changes_time": false,
+  "changes_service": false,
+  "samples": [],
+  "server": false
+}

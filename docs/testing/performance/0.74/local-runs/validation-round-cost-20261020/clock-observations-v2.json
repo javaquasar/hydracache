@@ -1,0 +1,2354 @@
+{
+  "source": "ffe9593004b59a3a86d8b19ccda877d905e2fcee",
+  "exit": 0,
+  "stderr": "",
+  "qpc_frequency": 10000000,
+  "recipe_sha256": "a2d8735aec9950928087282522b997416deb5b82def440fc273b85edba6db058",
+  "probe_sha256": "4ec49751e7522bd4c054824ab190530473912b0bd8f096c8e9c9060f5455a1a2",
+  "read_only": true,
+  "changes_time": false,
+  "changes_service": false,
+  "samples": [
+    {
+      "windows_utc_ticks": 639281220449151034,
+      "windows_qpc": 3767217683339,
+      "linux": {
+        "sample": 0,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525252003342203,
+        "boottime_ns": 55750875396,
+        "monotonic_ns": 55750875747,
+        "raw_ns": 55624152046
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220454137637,
+      "windows_qpc": 3767222636278,
+      "linux": {
+        "sample": 1,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525252503514300,
+        "boottime_ns": 56251048596,
+        "monotonic_ns": 56251048942,
+        "raw_ns": 56123889223
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220459139130,
+      "windows_qpc": 3767227637875,
+      "linux": {
+        "sample": 2,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525253003968805,
+        "boottime_ns": 56751503121,
+        "monotonic_ns": 56751503418,
+        "raw_ns": 56624257094
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220464143977,
+      "windows_qpc": 3767232642604,
+      "linux": {
+        "sample": 3,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525253504304603,
+        "boottime_ns": 57251839275,
+        "monotonic_ns": 57251839482,
+        "raw_ns": 57124593542
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220469147411,
+      "windows_qpc": 3767237646029,
+      "linux": {
+        "sample": 4,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525254004721271,
+        "boottime_ns": 57752255223,
+        "monotonic_ns": 57752255473,
+        "raw_ns": 57625009675
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220474151395,
+      "windows_qpc": 3767242650030,
+      "linux": {
+        "sample": 5,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525254505001037,
+        "boottime_ns": 58252535395,
+        "monotonic_ns": 58252535614,
+        "raw_ns": 58125290083
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220479153036,
+      "windows_qpc": 3767247652080,
+      "linux": {
+        "sample": 6,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525255005286317,
+        "boottime_ns": 58752820496,
+        "monotonic_ns": 58752820754,
+        "raw_ns": 58625575318
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220484154774,
+      "windows_qpc": 3767252653346,
+      "linux": {
+        "sample": 7,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525255505458445,
+        "boottime_ns": 59252992340,
+        "monotonic_ns": 59252992538,
+        "raw_ns": 59125747415
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220489160198,
+      "windows_qpc": 3767257658851,
+      "linux": {
+        "sample": 8,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525256005878358,
+        "boottime_ns": 59753412671,
+        "monotonic_ns": 59753412941,
+        "raw_ns": 59626167980
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220494163681,
+      "windows_qpc": 3767262662335,
+      "linux": {
+        "sample": 9,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525256506316949,
+        "boottime_ns": 60253850984,
+        "monotonic_ns": 60253851203,
+        "raw_ns": 60126606494
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220499164907,
+      "windows_qpc": 3767267663399,
+      "linux": {
+        "sample": 10,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525257006601173,
+        "boottime_ns": 60754135634,
+        "monotonic_ns": 60754135996,
+        "raw_ns": 60626891647
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220504171190,
+      "windows_qpc": 3767272669687,
+      "linux": {
+        "sample": 11,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525257506895609,
+        "boottime_ns": 61254430055,
+        "monotonic_ns": 61254430296,
+        "raw_ns": 61127186118
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220509172367,
+      "windows_qpc": 3767277670830,
+      "linux": {
+        "sample": 12,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525258007215054,
+        "boottime_ns": 61754750019,
+        "monotonic_ns": 61754750467,
+        "raw_ns": 61627506561
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220514176449,
+      "windows_qpc": 3767282674999,
+      "linux": {
+        "sample": 13,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525258507549911,
+        "boottime_ns": 62255083910,
+        "monotonic_ns": 62255084091,
+        "raw_ns": 62127840319
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220519180321,
+      "windows_qpc": 3767287679091,
+      "linux": {
+        "sample": 14,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525259007796257,
+        "boottime_ns": 62755330346,
+        "monotonic_ns": 62755330704,
+        "raw_ns": 62628087098
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220524182769,
+      "windows_qpc": 3767292681240,
+      "linux": {
+        "sample": 15,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525259508164101,
+        "boottime_ns": 63255698480,
+        "monotonic_ns": 63255698708,
+        "raw_ns": 63128455458
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220529185752,
+      "windows_qpc": 3767297684207,
+      "linux": {
+        "sample": 16,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525260008427849,
+        "boottime_ns": 63755961831,
+        "monotonic_ns": 63755962035,
+        "raw_ns": 63628718862
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220534184768,
+      "windows_qpc": 3767302683282,
+      "linux": {
+        "sample": 17,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525260508624517,
+        "boottime_ns": 64256158021,
+        "monotonic_ns": 64256158375,
+        "raw_ns": 64128915558
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220539190395,
+      "windows_qpc": 3767307688874,
+      "linux": {
+        "sample": 18,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525261008906936,
+        "boottime_ns": 64756442813,
+        "monotonic_ns": 64756443166,
+        "raw_ns": 64629200612
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220544192832,
+      "windows_qpc": 3767312691282,
+      "linux": {
+        "sample": 19,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525261509226235,
+        "boottime_ns": 65256760765,
+        "monotonic_ns": 65256760997,
+        "raw_ns": 65129518638
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220549194011,
+      "windows_qpc": 3767317692446,
+      "linux": {
+        "sample": 20,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525262009535328,
+        "boottime_ns": 65757069364,
+        "monotonic_ns": 65757069574,
+        "raw_ns": 65629827325
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220554205116,
+      "windows_qpc": 3767322703744,
+      "linux": {
+        "sample": 21,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525262509856837,
+        "boottime_ns": 66257392852,
+        "monotonic_ns": 66257393234,
+        "raw_ns": 66130151524
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220559207822,
+      "windows_qpc": 3767327706496,
+      "linux": {
+        "sample": 22,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525263010341903,
+        "boottime_ns": 66757878182,
+        "monotonic_ns": 66757878736,
+        "raw_ns": 66630637098
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220564211487,
+      "windows_qpc": 3767332710142,
+      "linux": {
+        "sample": 23,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525263510869544,
+        "boottime_ns": 67258405310,
+        "monotonic_ns": 67258405682,
+        "raw_ns": 67131164780
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220569216802,
+      "windows_qpc": 3767337715478,
+      "linux": {
+        "sample": 24,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525264011411121,
+        "boottime_ns": 67758947485,
+        "monotonic_ns": 67758948254,
+        "raw_ns": 67631707141
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220574222956,
+      "windows_qpc": 3767342721593,
+      "linux": {
+        "sample": 25,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525264512035139,
+        "boottime_ns": 68259574925,
+        "monotonic_ns": 68259575647,
+        "raw_ns": 68132334914
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220579226153,
+      "windows_qpc": 3767347724794,
+      "linux": {
+        "sample": 26,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525265012561707,
+        "boottime_ns": 68760097441,
+        "monotonic_ns": 68760097787,
+        "raw_ns": 68632856905
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220584234772,
+      "windows_qpc": 3767352733418,
+      "linux": {
+        "sample": 27,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525265513180906,
+        "boottime_ns": 69260716674,
+        "monotonic_ns": 69260717016,
+        "raw_ns": 69133476661
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220589240311,
+      "windows_qpc": 3767357738996,
+      "linux": {
+        "sample": 28,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525266013721215,
+        "boottime_ns": 69761257433,
+        "monotonic_ns": 69761257889,
+        "raw_ns": 69634017550
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220594237499,
+      "windows_qpc": 3767362735945,
+      "linux": {
+        "sample": 29,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525266513967283,
+        "boottime_ns": 70261501427,
+        "monotonic_ns": 70261501642,
+        "raw_ns": 70134261537
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220599251746,
+      "windows_qpc": 3767367750388,
+      "linux": {
+        "sample": 30,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525267014516657,
+        "boottime_ns": 70762053171,
+        "monotonic_ns": 70762053738,
+        "raw_ns": 70634813921
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220604252374,
+      "windows_qpc": 3767372751018,
+      "linux": {
+        "sample": 31,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525267515127098,
+        "boottime_ns": 71262663664,
+        "monotonic_ns": 71262664259,
+        "raw_ns": 71135425002
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220609257478,
+      "windows_qpc": 3767377756081,
+      "linux": {
+        "sample": 32,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525268015630038,
+        "boottime_ns": 71763165756,
+        "monotonic_ns": 71763166108,
+        "raw_ns": 71635926742
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220614261568,
+      "windows_qpc": 3767382760216,
+      "linux": {
+        "sample": 33,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525268516082209,
+        "boottime_ns": 72263617683,
+        "monotonic_ns": 72263618022,
+        "raw_ns": 72136379035
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220619262811,
+      "windows_qpc": 3767387761251,
+      "linux": {
+        "sample": 34,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525269016368102,
+        "boottime_ns": 72763902117,
+        "monotonic_ns": 72763902328,
+        "raw_ns": 72636663283
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220624267220,
+      "windows_qpc": 3767392765666,
+      "linux": {
+        "sample": 35,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525269516723751,
+        "boottime_ns": 73264259531,
+        "monotonic_ns": 73264259871,
+        "raw_ns": 73137021354
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220629272765,
+      "windows_qpc": 3767397771212,
+      "linux": {
+        "sample": 36,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525270017102682,
+        "boottime_ns": 73764636724,
+        "monotonic_ns": 73764636943,
+        "raw_ns": 73637398337
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220634272168,
+      "windows_qpc": 3767402770633,
+      "linux": {
+        "sample": 37,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525270517343382,
+        "boottime_ns": 74264877554,
+        "monotonic_ns": 74264877775,
+        "raw_ns": 74137639508
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220639276521,
+      "windows_qpc": 3767407774968,
+      "linux": {
+        "sample": 38,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525271017643077,
+        "boottime_ns": 74765177119,
+        "monotonic_ns": 74765177370,
+        "raw_ns": 74637939214
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220644280017,
+      "windows_qpc": 3767412778490,
+      "linux": {
+        "sample": 39,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525271517969517,
+        "boottime_ns": 75265504884,
+        "monotonic_ns": 75265505325,
+        "raw_ns": 75138267736
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220649283505,
+      "windows_qpc": 3767417781978,
+      "linux": {
+        "sample": 40,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525272018252847,
+        "boottime_ns": 75765787047,
+        "monotonic_ns": 75765787361,
+        "raw_ns": 75638549742
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220654284857,
+      "windows_qpc": 3767422783297,
+      "linux": {
+        "sample": 41,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525272518478570,
+        "boottime_ns": 76266012565,
+        "monotonic_ns": 76266012785,
+        "raw_ns": 76138775425
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220659290541,
+      "windows_qpc": 3767427788993,
+      "linux": {
+        "sample": 42,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525273018862612,
+        "boottime_ns": 76766396677,
+        "monotonic_ns": 76766396900,
+        "raw_ns": 76639159653
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220664291505,
+      "windows_qpc": 3767432789974,
+      "linux": {
+        "sample": 43,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525273519183565,
+        "boottime_ns": 77266717949,
+        "monotonic_ns": 77266718158,
+        "raw_ns": 77139481246
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220669292332,
+      "windows_qpc": 3767437790776,
+      "linux": {
+        "sample": 44,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525274019426633,
+        "boottime_ns": 77766960743,
+        "monotonic_ns": 77766960959,
+        "raw_ns": 77639724199
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220674297095,
+      "windows_qpc": 3767442795546,
+      "linux": {
+        "sample": 45,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525274519616616,
+        "boottime_ns": 78267150649,
+        "monotonic_ns": 78267150874,
+        "raw_ns": 78139914416
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220679300322,
+      "windows_qpc": 3767447798763,
+      "linux": {
+        "sample": 46,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525275019938512,
+        "boottime_ns": 78767472604,
+        "monotonic_ns": 78767472831,
+        "raw_ns": 78640236480
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220684302218,
+      "windows_qpc": 3767452800667,
+      "linux": {
+        "sample": 47,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525275520253251,
+        "boottime_ns": 79267787422,
+        "monotonic_ns": 79267787642,
+        "raw_ns": 79140551697
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220689305768,
+      "windows_qpc": 3767457804372,
+      "linux": {
+        "sample": 48,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525276020680808,
+        "boottime_ns": 79768214877,
+        "monotonic_ns": 79768215089,
+        "raw_ns": 79640979210
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220694311568,
+      "windows_qpc": 3767462810020,
+      "linux": {
+        "sample": 49,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525276521070438,
+        "boottime_ns": 80268604910,
+        "monotonic_ns": 80268605200,
+        "raw_ns": 80141369681
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220699313900,
+      "windows_qpc": 3767467812360,
+      "linux": {
+        "sample": 50,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525277021386403,
+        "boottime_ns": 80768920732,
+        "monotonic_ns": 80768920964,
+        "raw_ns": 80641685525
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220704317373,
+      "windows_qpc": 3767472815817,
+      "linux": {
+        "sample": 51,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525277521722219,
+        "boottime_ns": 81269256270,
+        "monotonic_ns": 81269256483,
+        "raw_ns": 81142021385
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220709321367,
+      "windows_qpc": 3767477819818,
+      "linux": {
+        "sample": 52,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525278022020311,
+        "boottime_ns": 81769554457,
+        "monotonic_ns": 81769554683,
+        "raw_ns": 81642319732
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220714324104,
+      "windows_qpc": 3767482822572,
+      "linux": {
+        "sample": 53,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525278522345049,
+        "boottime_ns": 82269879195,
+        "monotonic_ns": 82269879387,
+        "raw_ns": 82142644749
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220719329147,
+      "windows_qpc": 3767487827589,
+      "linux": {
+        "sample": 54,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525279022793353,
+        "boottime_ns": 82770327768,
+        "monotonic_ns": 82770327975,
+        "raw_ns": 82643093481
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220724332092,
+      "windows_qpc": 3767492830548,
+      "linux": {
+        "sample": 55,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525279523108618,
+        "boottime_ns": 83270642635,
+        "monotonic_ns": 83270642838,
+        "raw_ns": 83143408653
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220729336208,
+      "windows_qpc": 3767497834687,
+      "linux": {
+        "sample": 56,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525280023457932,
+        "boottime_ns": 83770992279,
+        "monotonic_ns": 83770992577,
+        "raw_ns": 83643758569
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220734338967,
+      "windows_qpc": 3767502837417,
+      "linux": {
+        "sample": 57,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525280523822671,
+        "boottime_ns": 84271356695,
+        "monotonic_ns": 84271356914,
+        "raw_ns": 84144123216
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220739345512,
+      "windows_qpc": 3767507844183,
+      "linux": {
+        "sample": 58,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525281024221011,
+        "boottime_ns": 84771756857,
+        "monotonic_ns": 84771757281,
+        "raw_ns": 84644523722
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220744350777,
+      "windows_qpc": 3767512849435,
+      "linux": {
+        "sample": 59,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525281524840862,
+        "boottime_ns": 85272376696,
+        "monotonic_ns": 85272377039,
+        "raw_ns": 85145143967
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220749354967,
+      "windows_qpc": 3767517853666,
+      "linux": {
+        "sample": 60,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525282025305720,
+        "boottime_ns": 85772842150,
+        "monotonic_ns": 85772842632,
+        "raw_ns": 85645609794
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220754358782,
+      "windows_qpc": 3767522857385,
+      "linux": {
+        "sample": 61,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525282525623320,
+        "boottime_ns": 86273159069,
+        "monotonic_ns": 86273159405,
+        "raw_ns": 86145926758
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220759358427,
+      "windows_qpc": 3767527856864,
+      "linux": {
+        "sample": 62,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525283025977773,
+        "boottime_ns": 86773511823,
+        "monotonic_ns": 86773512047,
+        "raw_ns": 86646279414
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220764364650,
+      "windows_qpc": 3767532863177,
+      "linux": {
+        "sample": 63,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525283526260045,
+        "boottime_ns": 87273794805,
+        "monotonic_ns": 87273795045,
+        "raw_ns": 87146562745
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220769367189,
+      "windows_qpc": 3767537865633,
+      "linux": {
+        "sample": 64,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525284026542122,
+        "boottime_ns": 87774076413,
+        "monotonic_ns": 87774076637,
+        "raw_ns": 87646844417
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220774370824,
+      "windows_qpc": 3767542869554,
+      "linux": {
+        "sample": 65,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525284526986949,
+        "boottime_ns": 88274523191,
+        "monotonic_ns": 88274523550,
+        "raw_ns": 88147323415
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220779377504,
+      "windows_qpc": 3767547876190,
+      "linux": {
+        "sample": 66,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525285027318500,
+        "boottime_ns": 88774854116,
+        "monotonic_ns": 88774854474,
+        "raw_ns": 88647686022
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220784379450,
+      "windows_qpc": 3767552878123,
+      "linux": {
+        "sample": 67,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525285527704140,
+        "boottime_ns": 89275240257,
+        "monotonic_ns": 89275240591,
+        "raw_ns": 89148102289
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220789385111,
+      "windows_qpc": 3767557883894,
+      "linux": {
+        "sample": 68,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525286028099908,
+        "boottime_ns": 89775635720,
+        "monotonic_ns": 89775636080,
+        "raw_ns": 89648527652
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220794387517,
+      "windows_qpc": 3767562886168,
+      "linux": {
+        "sample": 69,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525286528502286,
+        "boottime_ns": 90276037830,
+        "monotonic_ns": 90276038198,
+        "raw_ns": 90148957930
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220799392086,
+      "windows_qpc": 3767567890611,
+      "linux": {
+        "sample": 70,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525287028958567,
+        "boottime_ns": 90776493178,
+        "monotonic_ns": 90776493516,
+        "raw_ns": 90649441218
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220804406620,
+      "windows_qpc": 3767572905354,
+      "linux": {
+        "sample": 71,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525287529701026,
+        "boottime_ns": 91277237396,
+        "monotonic_ns": 91277237844,
+        "raw_ns": 91150212051
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220809412537,
+      "windows_qpc": 3767577911635,
+      "linux": {
+        "sample": 72,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525288030120697,
+        "boottime_ns": 91777786700,
+        "monotonic_ns": 91777787362,
+        "raw_ns": 91650787902
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220814411213,
+      "windows_qpc": 3767582910464,
+      "linux": {
+        "sample": 73,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525288530637364,
+        "boottime_ns": 92278173077,
+        "monotonic_ns": 92278173478,
+        "raw_ns": 92151198979
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220819410373,
+      "windows_qpc": 3767587908930,
+      "linux": {
+        "sample": 74,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525289030909520,
+        "boottime_ns": 92778443530,
+        "monotonic_ns": 92778443760,
+        "raw_ns": 92651493535
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220824414732,
+      "windows_qpc": 3767592913190,
+      "linux": {
+        "sample": 75,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525289531232654,
+        "boottime_ns": 93278766885,
+        "monotonic_ns": 93278767104,
+        "raw_ns": 93151840169
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220829415652,
+      "windows_qpc": 3767597914116,
+      "linux": {
+        "sample": 76,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525290031430464,
+        "boottime_ns": 93778964705,
+        "monotonic_ns": 93778964924,
+        "raw_ns": 93652061001
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220834424124,
+      "windows_qpc": 3767602922867,
+      "linux": {
+        "sample": 77,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525290531829514,
+        "boottime_ns": 94279365072,
+        "monotonic_ns": 94279365400,
+        "raw_ns": 94152483470
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220839428170,
+      "windows_qpc": 3767607926604,
+      "linux": {
+        "sample": 78,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525291032233914,
+        "boottime_ns": 94779769342,
+        "monotonic_ns": 94779769664,
+        "raw_ns": 94652909233
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220844429964,
+      "windows_qpc": 3767612928423,
+      "linux": {
+        "sample": 79,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525291532651559,
+        "boottime_ns": 95280185832,
+        "monotonic_ns": 95280186052,
+        "raw_ns": 95153346226
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220849432752,
+      "windows_qpc": 3767617931242,
+      "linux": {
+        "sample": 80,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525292032859825,
+        "boottime_ns": 95780393919,
+        "monotonic_ns": 95780394123,
+        "raw_ns": 95653574472
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220854436487,
+      "windows_qpc": 3767622934940,
+      "linux": {
+        "sample": 81,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525292533136985,
+        "boottime_ns": 96280671317,
+        "monotonic_ns": 96280671578,
+        "raw_ns": 96153871190
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220859439078,
+      "windows_qpc": 3767627937553,
+      "linux": {
+        "sample": 82,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525293033446554,
+        "boottime_ns": 96780980778,
+        "monotonic_ns": 96780981031,
+        "raw_ns": 96654199664
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220864441689,
+      "windows_qpc": 3767632940157,
+      "linux": {
+        "sample": 83,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525293533835853,
+        "boottime_ns": 97281369981,
+        "monotonic_ns": 97281370198,
+        "raw_ns": 97154606905
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220869448356,
+      "windows_qpc": 3767637946804,
+      "linux": {
+        "sample": 84,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525294034153811,
+        "boottime_ns": 97781688061,
+        "monotonic_ns": 97781688353,
+        "raw_ns": 97654942913
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220874447886,
+      "windows_qpc": 3767642946355,
+      "linux": {
+        "sample": 85,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525294534387550,
+        "boottime_ns": 98281921942,
+        "monotonic_ns": 98281922165,
+        "raw_ns": 98155193745
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220879454284,
+      "windows_qpc": 3767647952808,
+      "linux": {
+        "sample": 86,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525295034741819,
+        "boottime_ns": 98782275925,
+        "monotonic_ns": 98782276141,
+        "raw_ns": 98655564452
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220884455083,
+      "windows_qpc": 3767652953548,
+      "linux": {
+        "sample": 87,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525295534935144,
+        "boottime_ns": 99282469623,
+        "monotonic_ns": 99282469842,
+        "raw_ns": 99155774058
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220889456611,
+      "windows_qpc": 3767657955075,
+      "linux": {
+        "sample": 88,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525296035186447,
+        "boottime_ns": 99782720845,
+        "monotonic_ns": 99782721136,
+        "raw_ns": 99656041028
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220894461284,
+      "windows_qpc": 3767662959738,
+      "linux": {
+        "sample": 89,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525296535468297,
+        "boottime_ns": 100283002504,
+        "monotonic_ns": 100283002715,
+        "raw_ns": 100156337508
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220899464446,
+      "windows_qpc": 3767667962903,
+      "linux": {
+        "sample": 90,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525297035787303,
+        "boottime_ns": 100783321353,
+        "monotonic_ns": 100783321570,
+        "raw_ns": 100656671096
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220904468050,
+      "windows_qpc": 3767672966506,
+      "linux": {
+        "sample": 91,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525297536093441,
+        "boottime_ns": 101283627415,
+        "monotonic_ns": 101283627615,
+        "raw_ns": 101156991152
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220909473316,
+      "windows_qpc": 3767677971798,
+      "linux": {
+        "sample": 92,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525298036561726,
+        "boottime_ns": 101784095901,
+        "monotonic_ns": 101784096118,
+        "raw_ns": 101657473501
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220914475831,
+      "windows_qpc": 3767682974289,
+      "linux": {
+        "sample": 93,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525298536876436,
+        "boottime_ns": 102284410586,
+        "monotonic_ns": 102284410786,
+        "raw_ns": 102157801289
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220919482531,
+      "windows_qpc": 3767687981127,
+      "linux": {
+        "sample": 94,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525299037293822,
+        "boottime_ns": 102784828653,
+        "monotonic_ns": 102784829036,
+        "raw_ns": 102658232629
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220924485512,
+      "windows_qpc": 3767692983963,
+      "linux": {
+        "sample": 95,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525299537690312,
+        "boottime_ns": 103285224347,
+        "monotonic_ns": 103285224568,
+        "raw_ns": 103158640454
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220929487604,
+      "windows_qpc": 3767697986143,
+      "linux": {
+        "sample": 96,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525300038056924,
+        "boottime_ns": 103785591465,
+        "monotonic_ns": 103785591797,
+        "raw_ns": 103659019934
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220934489734,
+      "windows_qpc": 3767702988186,
+      "linux": {
+        "sample": 97,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525300538442006,
+        "boottime_ns": 104285976045,
+        "monotonic_ns": 104285976247,
+        "raw_ns": 104159415896
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220939806191,
+      "windows_qpc": 3767708304629,
+      "linux": {
+        "sample": 98,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525301038611644,
+        "boottime_ns": 104786145722,
+        "monotonic_ns": 104786145945,
+        "raw_ns": 104690809254
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220945261680,
+      "windows_qpc": 3767713760517,
+      "linux": {
+        "sample": 99,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525301538768457,
+        "boottime_ns": 105286302246,
+        "monotonic_ns": 105286302393,
+        "raw_ns": 105236438294
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220950720985,
+      "windows_qpc": 3767719219648,
+      "linux": {
+        "sample": 100,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525302038982358,
+        "boottime_ns": 105786517764,
+        "monotonic_ns": 105786518154,
+        "raw_ns": 105782132075
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220956177204,
+      "windows_qpc": 3767724675651,
+      "linux": {
+        "sample": 101,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525302539185178,
+        "boottime_ns": 106286719049,
+        "monotonic_ns": 106286719245,
+        "raw_ns": 106327809106
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220961632998,
+      "windows_qpc": 3767730131450,
+      "linux": {
+        "sample": 102,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525303039371505,
+        "boottime_ns": 106786905678,
+        "monotonic_ns": 106786905890,
+        "raw_ns": 106873470210
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220967090420,
+      "windows_qpc": 3767735588914,
+      "linux": {
+        "sample": 103,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525303539623498,
+        "boottime_ns": 107287159109,
+        "monotonic_ns": 107287159440,
+        "raw_ns": 107419203848
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220972546599,
+      "windows_qpc": 3767741045070,
+      "linux": {
+        "sample": 104,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525304039774842,
+        "boottime_ns": 107787309100,
+        "monotonic_ns": 107787309338,
+        "raw_ns": 107964823914
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220978004524,
+      "windows_qpc": 3767746503185,
+      "linux": {
+        "sample": 105,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525304540046701,
+        "boottime_ns": 108287582443,
+        "monotonic_ns": 108287582910,
+        "raw_ns": 108510578973
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220983461270,
+      "windows_qpc": 3767751959717,
+      "linux": {
+        "sample": 106,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525305040407738,
+        "boottime_ns": 108787941769,
+        "monotonic_ns": 108787942012,
+        "raw_ns": 109056426466
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220988919335,
+      "windows_qpc": 3767757417983,
+      "linux": {
+        "sample": 107,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525305540651386,
+        "boottime_ns": 109288187458,
+        "monotonic_ns": 109288187856,
+        "raw_ns": 109602150383
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220994377012,
+      "windows_qpc": 3767762875625,
+      "linux": {
+        "sample": 108,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525306040872645,
+        "boottime_ns": 109788406939,
+        "monotonic_ns": 109788407209,
+        "raw_ns": 110147844822
+      }
+    },
+    {
+      "windows_utc_ticks": 639281220999834667,
+      "windows_qpc": 3767768333202,
+      "linux": {
+        "sample": 109,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525306541073602,
+        "boottime_ns": 110288608126,
+        "monotonic_ns": 110288608384,
+        "raw_ns": 110693519320
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221005289941,
+      "windows_qpc": 3767773788397,
+      "linux": {
+        "sample": 110,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525307041295556,
+        "boottime_ns": 110788829536,
+        "monotonic_ns": 110788829741,
+        "raw_ns": 111239215518
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221010745620,
+      "windows_qpc": 3767779244286,
+      "linux": {
+        "sample": 111,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525307541497106,
+        "boottime_ns": 111289033173,
+        "monotonic_ns": 111289033594,
+        "raw_ns": 111784892853
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221016206251,
+      "windows_qpc": 3767784704732,
+      "linux": {
+        "sample": 112,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525308041794634,
+        "boottime_ns": 111789328754,
+        "monotonic_ns": 111789329029,
+        "raw_ns": 112330668870
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221021659770,
+      "windows_qpc": 3767790158212,
+      "linux": {
+        "sample": 113,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525308541974728,
+        "boottime_ns": 112289508838,
+        "monotonic_ns": 112289509072,
+        "raw_ns": 112876319163
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221027117267,
+      "windows_qpc": 3767795615724,
+      "linux": {
+        "sample": 114,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525309042141108,
+        "boottime_ns": 112789675075,
+        "monotonic_ns": 112789675270,
+        "raw_ns": 113421952072
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221032574765,
+      "windows_qpc": 3767801073480,
+      "linux": {
+        "sample": 115,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525309542437855,
+        "boottime_ns": 113289973797,
+        "monotonic_ns": 113289974266,
+        "raw_ns": 113967728544
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221038036759,
+      "windows_qpc": 3767806535501,
+      "linux": {
+        "sample": 116,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525310042831875,
+        "boottime_ns": 113790367943,
+        "monotonic_ns": 113790368404,
+        "raw_ns": 114513608221
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221043490445,
+      "windows_qpc": 3767811988902,
+      "linux": {
+        "sample": 117,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525310543076841,
+        "boottime_ns": 114290610918,
+        "monotonic_ns": 114290611104,
+        "raw_ns": 115059322554
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221048947047,
+      "windows_qpc": 3767817445519,
+      "linux": {
+        "sample": 118,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525311043214240,
+        "boottime_ns": 114790748156,
+        "monotonic_ns": 114790748400,
+        "raw_ns": 115604921751
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221054405447,
+      "windows_qpc": 3767822903918,
+      "linux": {
+        "sample": 119,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525311543444484,
+        "boottime_ns": 115290979094,
+        "monotonic_ns": 115290979440,
+        "raw_ns": 116150623188
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221059862731,
+      "windows_qpc": 3767828361180,
+      "linux": {
+        "sample": 120,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525312043818380,
+        "boottime_ns": 115791353012,
+        "monotonic_ns": 115791353394,
+        "raw_ns": 116696480079
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221065319360,
+      "windows_qpc": 3767833817845,
+      "linux": {
+        "sample": 121,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525312543999593,
+        "boottime_ns": 116291533765,
+        "monotonic_ns": 116291533970,
+        "raw_ns": 117242125832
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221070776205,
+      "windows_qpc": 3767839274660,
+      "linux": {
+        "sample": 122,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525313044272497,
+        "boottime_ns": 116791806364,
+        "monotonic_ns": 116791806564,
+        "raw_ns": 117787871783
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221076235191,
+      "windows_qpc": 3767844734228,
+      "linux": {
+        "sample": 123,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525313544569666,
+        "boottime_ns": 117292105641,
+        "monotonic_ns": 117292106129,
+        "raw_ns": 118333647320
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221081694333,
+      "windows_qpc": 3767850192991,
+      "linux": {
+        "sample": 124,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525314044919414,
+        "boottime_ns": 117792455587,
+        "monotonic_ns": 117792455960,
+        "raw_ns": 118879476957
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221087151731,
+      "windows_qpc": 3767855650385,
+      "linux": {
+        "sample": 125,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525314545214786,
+        "boottime_ns": 118292749167,
+        "monotonic_ns": 118292749440,
+        "raw_ns": 119425245144
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221092607715,
+      "windows_qpc": 3767861106182,
+      "linux": {
+        "sample": 126,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525315045386264,
+        "boottime_ns": 118792920177,
+        "monotonic_ns": 118792920408,
+        "raw_ns": 119970879394
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221098071225,
+      "windows_qpc": 3767866569939,
+      "linux": {
+        "sample": 127,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525315545722323,
+        "boottime_ns": 119293259061,
+        "monotonic_ns": 119293259639,
+        "raw_ns": 120516697569
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221103524534,
+      "windows_qpc": 3767872023197,
+      "linux": {
+        "sample": 128,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525316046101734,
+        "boottime_ns": 119793637630,
+        "monotonic_ns": 119793637997,
+        "raw_ns": 121062557941
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221108980329,
+      "windows_qpc": 3767877478816,
+      "linux": {
+        "sample": 129,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525316546333502,
+        "boottime_ns": 120293867756,
+        "monotonic_ns": 120293867959,
+        "raw_ns": 121608255731
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221114435443,
+      "windows_qpc": 3767882933930,
+      "linux": {
+        "sample": 130,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525317046481141,
+        "boottime_ns": 120794015111,
+        "monotonic_ns": 120794015312,
+        "raw_ns": 122153863008
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221119892868,
+      "windows_qpc": 3767888391546,
+      "linux": {
+        "sample": 131,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525317546731521,
+        "boottime_ns": 121294267043,
+        "monotonic_ns": 121294267374,
+        "raw_ns": 122699584223
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221125352530,
+      "windows_qpc": 3767893850987,
+      "linux": {
+        "sample": 132,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525318046997815,
+        "boottime_ns": 121794532088,
+        "monotonic_ns": 121794532306,
+        "raw_ns": 123245319115
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221130806792,
+      "windows_qpc": 3767899305231,
+      "linux": {
+        "sample": 133,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525318547223029,
+        "boottime_ns": 122294757341,
+        "monotonic_ns": 122294757550,
+        "raw_ns": 123791010757
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221136263242,
+      "windows_qpc": 3767904761685,
+      "linux": {
+        "sample": 134,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525319047436096,
+        "boottime_ns": 122794970219,
+        "monotonic_ns": 122794970523,
+        "raw_ns": 124336688760
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221141724267,
+      "windows_qpc": 3767910222957,
+      "linux": {
+        "sample": 135,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525319547712415,
+        "boottime_ns": 123295248220,
+        "monotonic_ns": 123295248695,
+        "raw_ns": 124882437925
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221147181050,
+      "windows_qpc": 3767915679580,
+      "linux": {
+        "sample": 136,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525320048037412,
+        "boottime_ns": 123795571939,
+        "monotonic_ns": 123795572308,
+        "raw_ns": 125428236323
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221152636760,
+      "windows_qpc": 3767921135259,
+      "linux": {
+        "sample": 137,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525320548191832,
+        "boottime_ns": 124295726411,
+        "monotonic_ns": 124295726682,
+        "raw_ns": 125973850072
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221158092075,
+      "windows_qpc": 3767926590528,
+      "linux": {
+        "sample": 138,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525321048360167,
+        "boottime_ns": 124795894044,
+        "monotonic_ns": 124795894243,
+        "raw_ns": 126519477944
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221163550506,
+      "windows_qpc": 3767932048974,
+      "linux": {
+        "sample": 139,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525321548586300,
+        "boottime_ns": 125296122356,
+        "monotonic_ns": 125296122680,
+        "raw_ns": 127065172478
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221169011186,
+      "windows_qpc": 3767937509824,
+      "linux": {
+        "sample": 140,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525322048995874,
+        "boottime_ns": 125796531541,
+        "monotonic_ns": 125796531906,
+        "raw_ns": 127611063661
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221174463883,
+      "windows_qpc": 3767942962344,
+      "linux": {
+        "sample": 141,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525322549234714,
+        "boottime_ns": 126296768697,
+        "monotonic_ns": 126296768917,
+        "raw_ns": 128156767152
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221179921989,
+      "windows_qpc": 3767948420504,
+      "linux": {
+        "sample": 142,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525323049432558,
+        "boottime_ns": 126796968282,
+        "monotonic_ns": 126796968689,
+        "raw_ns": 128702429792
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221185377223,
+      "windows_qpc": 3767953875699,
+      "linux": {
+        "sample": 143,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525323549645815,
+        "boottime_ns": 127297179671,
+        "monotonic_ns": 127297179856,
+        "raw_ns": 129248104802
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221190836752,
+      "windows_qpc": 3767959335198,
+      "linux": {
+        "sample": 144,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525324049836540,
+        "boottime_ns": 127797370590,
+        "monotonic_ns": 127797370790,
+        "raw_ns": 129793757636
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221196293013,
+      "windows_qpc": 3767964791488,
+      "linux": {
+        "sample": 145,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525324550024670,
+        "boottime_ns": 128297558952,
+        "monotonic_ns": 128297559163,
+        "raw_ns": 130339407764
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221201748927,
+      "windows_qpc": 3767970247584,
+      "linux": {
+        "sample": 146,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525325050183869,
+        "boottime_ns": 128797719340,
+        "monotonic_ns": 128797719690,
+        "raw_ns": 130885027987
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221207208419,
+      "windows_qpc": 3767975707067,
+      "linux": {
+        "sample": 147,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525325550452756,
+        "boottime_ns": 129297988362,
+        "monotonic_ns": 129297988770,
+        "raw_ns": 131430767185
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221212663335,
+      "windows_qpc": 3767981161816,
+      "linux": {
+        "sample": 148,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525326050669143,
+        "boottime_ns": 129798203255,
+        "monotonic_ns": 129798203519,
+        "raw_ns": 131976446494
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221218119879,
+      "windows_qpc": 3767986618330,
+      "linux": {
+        "sample": 149,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525326550999405,
+        "boottime_ns": 130298533629,
+        "monotonic_ns": 130298533844,
+        "raw_ns": 132522252245
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221223577794,
+      "windows_qpc": 3767992076247,
+      "linux": {
+        "sample": 150,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525327051257857,
+        "boottime_ns": 130798792252,
+        "monotonic_ns": 130798792496,
+        "raw_ns": 133067979529
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221229035976,
+      "windows_qpc": 3767997534622,
+      "linux": {
+        "sample": 151,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525327551446525,
+        "boottime_ns": 131298981539,
+        "monotonic_ns": 131298981826,
+        "raw_ns": 133613631326
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221234490251,
+      "windows_qpc": 3768002988767,
+      "linux": {
+        "sample": 152,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525328051627598,
+        "boottime_ns": 131799162505,
+        "monotonic_ns": 131799162859,
+        "raw_ns": 134159273945
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221239946445,
+      "windows_qpc": 3768008444962,
+      "linux": {
+        "sample": 153,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525328551837672,
+        "boottime_ns": 132299371985,
+        "monotonic_ns": 132299372248,
+        "raw_ns": 134704947308
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221245403334,
+      "windows_qpc": 3768013901800,
+      "linux": {
+        "sample": 154,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525329052162200,
+        "boottime_ns": 132799697019,
+        "monotonic_ns": 132799697444,
+        "raw_ns": 135250746955
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221250864348,
+      "windows_qpc": 3768019362789,
+      "linux": {
+        "sample": 155,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525329552423629,
+        "boottime_ns": 133299958315,
+        "monotonic_ns": 133299958667,
+        "raw_ns": 135796476904
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221256316805,
+      "windows_qpc": 3768024815292,
+      "linux": {
+        "sample": 156,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525330052641109,
+        "boottime_ns": 133800175415,
+        "monotonic_ns": 133800175678,
+        "raw_ns": 136342158233
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221261776647,
+      "windows_qpc": 3768030275095,
+      "linux": {
+        "sample": 157,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525330552800500,
+        "boottime_ns": 134300334480,
+        "monotonic_ns": 134300334711,
+        "raw_ns": 136887776448
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221267234881,
+      "windows_qpc": 3768035733572,
+      "linux": {
+        "sample": 158,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525331053031543,
+        "boottime_ns": 134800568062,
+        "monotonic_ns": 134800568654,
+        "raw_ns": 137433476377
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221272691902,
+      "windows_qpc": 3768041190587,
+      "linux": {
+        "sample": 159,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525331553317888,
+        "boottime_ns": 135300853927,
+        "monotonic_ns": 135300854253,
+        "raw_ns": 137979232662
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221278149503,
+      "windows_qpc": 3768046648152,
+      "linux": {
+        "sample": 160,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525332053587934,
+        "boottime_ns": 135801121916,
+        "monotonic_ns": 135801122157,
+        "raw_ns": 138524969253
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221283603830,
+      "windows_qpc": 3768052102288,
+      "linux": {
+        "sample": 161,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525332553718403,
+        "boottime_ns": 136301252517,
+        "monotonic_ns": 136301252730,
+        "raw_ns": 139070556121
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221289063870,
+      "windows_qpc": 3768057562628,
+      "linux": {
+        "sample": 162,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525333053964322,
+        "boottime_ns": 136801500395,
+        "monotonic_ns": 136801500883,
+        "raw_ns": 139616273399
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221294517563,
+      "windows_qpc": 3768063016091,
+      "linux": {
+        "sample": 163,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525333554209853,
+        "boottime_ns": 137301744316,
+        "monotonic_ns": 137301744548,
+        "raw_ns": 140161986746
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221299975332,
+      "windows_qpc": 3768068473873,
+      "linux": {
+        "sample": 164,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525334054561669,
+        "boottime_ns": 137802096323,
+        "monotonic_ns": 137802096656,
+        "raw_ns": 140707818217
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221305431679,
+      "windows_qpc": 3768073930141,
+      "linux": {
+        "sample": 165,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525334554754174,
+        "boottime_ns": 138302288105,
+        "monotonic_ns": 138302288336,
+        "raw_ns": 141253474722
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221310888978,
+      "windows_qpc": 3768079387435,
+      "linux": {
+        "sample": 166,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525335054969311,
+        "boottime_ns": 138802503417,
+        "monotonic_ns": 138802503639,
+        "raw_ns": 141799156912
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221316344094,
+      "windows_qpc": 3768084842560,
+      "linux": {
+        "sample": 167,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525335555161820,
+        "boottime_ns": 139302695724,
+        "monotonic_ns": 139302695915,
+        "raw_ns": 142344814042
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221321800423,
+      "windows_qpc": 3768090298884,
+      "linux": {
+        "sample": 168,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525336055315487,
+        "boottime_ns": 139802849486,
+        "monotonic_ns": 139802849690,
+        "raw_ns": 142890429005
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221327258236,
+      "windows_qpc": 3768095756745,
+      "linux": {
+        "sample": 169,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525336555573508,
+        "boottime_ns": 140303109642,
+        "monotonic_ns": 140303110170,
+        "raw_ns": 143436160602
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221332719605,
+      "windows_qpc": 3768101218174,
+      "linux": {
+        "sample": 170,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525337055868305,
+        "boottime_ns": 140803403324,
+        "monotonic_ns": 140803403917,
+        "raw_ns": 143981928464
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221338174218,
+      "windows_qpc": 3768106672830,
+      "linux": {
+        "sample": 171,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525337556086381,
+        "boottime_ns": 141303621754,
+        "monotonic_ns": 141303622079,
+        "raw_ns": 144527613442
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221343628691,
+      "windows_qpc": 3768112127144,
+      "linux": {
+        "sample": 172,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525338056335213,
+        "boottime_ns": 141803869512,
+        "monotonic_ns": 141803869741,
+        "raw_ns": 145073330473
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221349087544,
+      "windows_qpc": 3768117586049,
+      "linux": {
+        "sample": 173,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525338556596616,
+        "boottime_ns": 142304131587,
+        "monotonic_ns": 142304131905,
+        "raw_ns": 145619063801
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221354549910,
+      "windows_qpc": 3768123048659,
+      "linux": {
+        "sample": 174,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525339056816061,
+        "boottime_ns": 142804351865,
+        "monotonic_ns": 142804352323,
+        "raw_ns": 146164751180
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221360003404,
+      "windows_qpc": 3768128501969,
+      "linux": {
+        "sample": 175,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525339557068143,
+        "boottime_ns": 143304603035,
+        "monotonic_ns": 143304603367,
+        "raw_ns": 146710472106
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221365459766,
+      "windows_qpc": 3768133958275,
+      "linux": {
+        "sample": 176,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525340057307919,
+        "boottime_ns": 143804842135,
+        "monotonic_ns": 143804842408,
+        "raw_ns": 147256179655
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221370918941,
+      "windows_qpc": 3768139417543,
+      "linux": {
+        "sample": 177,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525340557604330,
+        "boottime_ns": 144305138421,
+        "monotonic_ns": 144305138612,
+        "raw_ns": 147801949892
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221376377035,
+      "windows_qpc": 3768144875742,
+      "linux": {
+        "sample": 178,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525341057844243,
+        "boottime_ns": 144805380099,
+        "monotonic_ns": 144805380492,
+        "raw_ns": 148347662948
+      }
+    },
+    {
+      "windows_utc_ticks": 639281221381834049,
+      "windows_qpc": 3768150332702,
+      "linux": {
+        "sample": 179,
+        "boot": "fe25c49b-6db2-43ea-b89b-b8c6db70b6e3",
+        "pid": 283,
+        "realtime_ns": 1792525341558167041,
+        "boottime_ns": 145305702870,
+        "monotonic_ns": 145305703259,
+        "raw_ns": 148893465709
+      }
+    }
+  ],
+  "server": false
+}

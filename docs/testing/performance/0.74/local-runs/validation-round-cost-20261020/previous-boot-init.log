@@ -1,0 +1,45 @@
+[   73.547951] LT-TCH-12 systemd[1]: ubuntu-advantage.service - Ubuntu Pro Background Auto Attach was skipped because no trigger condition checks were met.
+[   73.550536] LT-TCH-12 systemd[1]: Starting wsl-pro.service - Bridge to Ubuntu Pro agent on Windows...
+[   73.551476] LT-TCH-12 systemd[1]: Started dbus.service - D-Bus System Message Bus.
+[   73.554475] LT-TCH-12 systemd[1]: e2scrub_reap.service: Deactivated successfully.
+[   73.554921] LT-TCH-12 systemd[1]: Finished e2scrub_reap.service - Remove Stale Online ext4 Metadata Check Snapshots.
+[   73.556953] LT-TCH-12 systemd[1]: Finished systemd-user-sessions.service - Permit User Sessions.
+[   73.568119] LT-TCH-12 systemd[1]: Started console-getty.service - Console Getty.
+[   73.568425] LT-TCH-12 systemd[1]: Starting setvtrgb.service - Set console scheme...
+[   73.578074] LT-TCH-12 systemd[1]: Started systemd-logind.service - User Login Management.
+[   73.578119] LT-TCH-12 systemd[1]: Finished setvtrgb.service - Set console scheme.
+[   73.579029] LT-TCH-12 systemd[1]: Created slice system-getty.slice - Slice /system/getty.
+[   73.580596] LT-TCH-12 systemd[1]: Started getty@tty1.service - Getty on tty1.
+[   73.581130] LT-TCH-12 systemd[1]: Reached target getty.target - Login Prompts.
+[   73.582347] LT-TCH-12 systemd[1]: Started unattended-upgrades.service - Unattended Upgrades Shutdown.
+[   73.593713] LT-TCH-12 systemd[1]: Started rsyslog.service - System Logging Service.
+[   73.679763] LT-TCH-12 systemd[1]: Started wsl-pro.service - Bridge to Ubuntu Pro agent on Windows.
+[   73.705831] LT-TCH-12 systemd[1]: tmp-syscheck\x2dmountpoint\x2d2709347122.mount: Deactivated successfully.
+[   73.731186] LT-TCH-12 systemd[1]: Started snapd.service - Snap Daemon.
+[   73.764631] LT-TCH-12 systemd[1]: Starting systemd-timedated.service - Time & Date Service...
+[   73.783767] LT-TCH-12 systemd[1]: Started systemd-timedated.service - Time & Date Service.
+[   73.791437] LT-TCH-12 systemd[1]: Finished snapd.seeded.service - Wait until snapd is fully seeded.
+[   73.792396] LT-TCH-12 systemd[1]: snapd.autoimport.service - Auto import assertions from block devices was skipped because no trigger condition checks were met.
+[   74.089997] LT-TCH-12 systemd[1]: landscape-client.service: Skipped due to 'exec-condition'.
+[   74.090090] LT-TCH-12 systemd[1]: Condition check resulted in landscape-client.service - Landscape client daemons being skipped.
+[   74.090639] LT-TCH-12 systemd[1]: Reached target multi-user.target - Multi-User System.
+[   74.091244] LT-TCH-12 systemd[1]: Reached target graphical.target - Graphical Interface.
+[   74.116654] LT-TCH-12 systemd[1]: Starting systemd-update-utmp-runlevel.service - Record Runlevel Change in UTMP...
+[   74.121105] LT-TCH-12 systemd[1]: systemd-update-utmp-runlevel.service: Deactivated successfully.
+[   74.121244] LT-TCH-12 systemd[1]: Finished systemd-update-utmp-runlevel.service - Record Runlevel Change in UTMP.
+[   74.122224] LT-TCH-12 systemd[1]: Startup finished in 1.150s.
+[   74.290850] LT-TCH-12 systemd[1]: dmesg.service: Deactivated successfully.
+[   74.598622] LT-TCH-12 systemd[1]: Created slice user-1000.slice - User Slice of UID 1000.
+[   74.616586] LT-TCH-12 systemd[1]: Starting user-runtime-dir@1000.service - User Runtime Directory /run/user/1000...
+[   74.636317] LT-TCH-12 systemd[1]: Finished user-runtime-dir@1000.service - User Runtime Directory /run/user/1000.
+[   74.672519] LT-TCH-12 systemd[1]: Starting user@1000.service - User Manager for UID 1000...
+[   74.685208] LT-TCH-12 systemd[1]: Created slice user-0.slice - User Slice of UID 0.
+[   74.685838] LT-TCH-12 systemd[1]: Starting user-runtime-dir@0.service - User Runtime Directory /run/user/0...
+[   74.691812] LT-TCH-12 systemd[1]: Finished user-runtime-dir@0.service - User Runtime Directory /run/user/0.
+[   74.721026] LT-TCH-12 systemd[1]: Starting user@0.service - User Manager for UID 0...
+[   74.751490] LT-TCH-12 systemd[1]: Started user@1000.service - User Manager for UID 1000.
+[   74.752382] LT-TCH-12 systemd[1]: Started session-5.scope - Session 5 of User artur.
+[   74.785738] LT-TCH-12 systemd[1]: Started user@0.service - User Manager for UID 0.
+[   74.785944] LT-TCH-12 systemd[1]: Started session-6.scope - Session 6 of User root.
+[   81.743757] LT-TCH-12 systemd[1]: snapd.service: Deactivated successfully.
+[  103.814817] LT-TCH-12 systemd[1]: systemd-timedated.service: Deactivated successfully.

@@ -1,0 +1,66 @@
+boot fe25c49b-6db2-43ea-b89b-b8c6db70b6e3
+Linux LT-TCH-12 6.6.87.2-microsoft-standard-WSL2 #1 SMP PREEMPT_DYNAMIC Thu Jun  5 18:30:46 UTC 2025 x86_64 x86_64 x86_64 GNU/Linux
+wsl.conf
+[boot]
+systemd=true
+clocksource
+tsc
+tsc hyperv_clocksource_tsc_page hyperv_clocksource_msr acpi_pm 
+journal-boots
+IDX BOOT ID                          FIRST ENTRY                  LAST ENTRY
+-25 ce441072af994856b5a550c2b501fadd Tue 2026-10-20 12:58:59 CEST Tue 2026-10-20 12:58:59 CEST
+-24 1e4cac78139e49118bf55f05a29e3a4f Tue 2026-10-20 13:07:17 CEST Tue 2026-10-20 13:08:43 CEST
+-23 543e8635a4df4394a59b9321aa3a5e50 Tue 2026-10-20 13:12:12 CEST Tue 2026-10-20 13:12:36 CEST
+-22 f2aacb23de98450a9b61a6bdb7676b73 Tue 2026-10-20 13:38:42 CEST Tue 2026-10-20 13:45:48 CEST
+-21 08eeaebe8e5b49ef84852e95f65d06a5 Tue 2026-10-20 13:47:15 CEST Tue 2026-10-20 13:56:20 CEST
+-20 9d8c6c9cc23b4ba1a9d68250d16cc3a8 Tue 2026-10-20 14:10:31 CEST Tue 2026-10-20 14:10:54 CEST
+-19 497ffe2eb99f45d38c916b268c475c43 Tue 2026-10-20 14:18:56 CEST Tue 2026-10-20 14:24:14 CEST
+-18 2c1c7ab724c54e2dae5d91d562bb2d78 Tue 2026-10-20 14:26:54 CEST Tue 2026-10-20 14:36:39 CEST
+-17 445faceac33f4851b8cac6ae223baa9c Tue 2026-10-20 14:38:58 CEST Tue 2026-10-20 14:39:20 CEST
+-16 2939fa4cacfb42d5b32fd10695eb3142 Tue 2026-10-20 14:47:27 CEST Tue 2026-10-20 14:47:50 CEST
+-15 ef2adb6834914673b8aa7f41305afd67 Tue 2026-10-20 14:49:30 CEST Tue 2026-10-20 14:51:43 CEST
+-14 259bb1d84ec648c99627dfc835a09795 Tue 2026-10-20 15:04:16 CEST Tue 2026-10-20 15:06:13 CEST
+-13 64b93987d3e24c4ca65ca1ec80810360 Tue 2026-10-20 15:11:25 CEST Tue 2026-10-20 15:11:48 CEST
+-12 783b3a8d74ac4f4491dd092f5fab7324 Tue 2026-10-20 15:21:21 CEST Tue 2026-10-20 15:25:19 CEST
+-11 e7509e3e842f4708bc841ce2f88ccac9 Tue 2026-10-20 15:29:15 CEST Tue 2026-10-20 15:32:05 CEST
+-10 84f18367bddb4754882b300040763184 Tue 2026-10-20 15:36:52 CEST Tue 2026-10-20 15:41:27 CEST
+ -9 c33d9cabdc0446c1b6a490b4249bf688 Tue 2026-10-20 15:44:57 CEST Tue 2026-10-20 15:55:31 CEST
+ -8 7f8bc9cb65d54aa995380433f309c6f3 Tue 2026-10-20 15:56:57 CEST Tue 2026-10-20 15:57:20 CEST
+ -7 d7a4b60218924688b86ce1d674181a65 Tue 2026-10-20 16:14:59 CEST Tue 2026-10-20 16:20:51 CEST
+ -6 aaf8a3267e5344f8b3f7343438971621 Tue 2026-10-20 16:41:26 CEST Tue 2026-10-20 16:50:50 CEST
+ -5 1d957e77a6214076b7ed6972a4bd4d93 Tue 2026-10-20 16:55:10 CEST Tue 2026-10-20 17:04:45 CEST
+ -4 49b443ca3a804e98a9e4a1ddfe494e19 Tue 2026-10-20 17:29:09 CEST Tue 2026-10-20 17:29:32 CEST
+ -3 9360d8a950f94818950921aca8f02f71 Tue 2026-10-20 20:29:53 CEST Tue 2026-10-20 20:34:32 CEST
+ -2 cf619cb066794f52a5b8f6a9802d9ec4 Tue 2026-10-20 20:40:28 CEST Tue 2026-10-20 20:42:49 CEST
+ -1 f4767a0bdbd24e31b1ff77bb1663c8b4 Tue 2026-10-20 20:46:55 CEST Tue 2026-10-20 20:47:49 CEST
+  0 fe25c49b6db243eab89bb8c6db70b6e3 Tue 2026-10-20 21:39:50 CEST Tue 2026-10-20 21:39:59 CEST
+timesync-properties
+ExecMainStartTimestampMonotonic=1891937
+ActiveState=active
+SubState=running
+ActiveEnterTimestampMonotonic=1922280
+timesync-log
+[    1.892038] LT-TCH-12 systemd[1]: Starting systemd-timesyncd.service - Network Time Synchronization...
+[    1.922378] LT-TCH-12 systemd[1]: Started systemd-timesyncd.service - Network Time Synchronization.
+[    2.040511] LT-TCH-12 systemd-timesyncd[155]: Contacted time server 185.125.190.56:123 (ntp.ubuntu.com).
+[    2.040657] LT-TCH-12 systemd-timesyncd[155]: Initial clock synchronization to Tue 2026-10-20 21:39:58.302995 CEST.
+kernel-time-log
+[    0.113658] LT-TCH-12 kernel: clocksource: tsc-early: mask: 0xffffffffffffffff max_cycles: 0x2f9a25be244, max_idle_ns: 440795277658 ns
+[    0.113663] LT-TCH-12 kernel: Calibrating delay loop (skipped), value calculated using timer frequency.. 6604.79 BogoMIPS (lpj=13209592)
+[    0.154442] LT-TCH-12 kernel: clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 7645041785100000 ns
+[    0.170692] LT-TCH-12 kernel: PTP clock support registered
+[    0.182118] LT-TCH-12 kernel: clocksource: Switched to clocksource tsc-early
+[    0.192571] LT-TCH-12 kernel: clocksource: acpi_pm: mask: 0xffffff max_cycles: 0xffffff, max_idle_ns: 2085701024 ns
+[    0.196287] LT-TCH-12 kernel: clocksource: tsc: mask: 0xffffffffffffffff max_cycles: 0x2f9a25be244, max_idle_ns: 440795277658 ns
+[    0.196856] LT-TCH-12 kernel: clocksource: Switched to clocksource tsc
+[    0.199250] LT-TCH-12 kernel: workingset: timestamp_bits=36 max_order=22 bucket_order=0
+[    0.199846] LT-TCH-12 kernel: SGI XFS with ACLs, security attributes, realtime, verbose warnings, quota, no debug enabled
+[    0.270586] LT-TCH-12 kernel: rtc_cmos 00:00: setting system clock to 2026-10-20T19:39:48 UTC (1792525188)
+[    0.273210] LT-TCH-12 kernel: hv_utils: TimeSync IC version 4.0
+[    0.292893] LT-TCH-12 kernel: sched_clock: Marking stable (288329781, 2354862)->(306598498, -15913855)
+[    0.338107] LT-TCH-12 kernel: clk: Disabling unused clocks
+[    1.658812] LT-TCH-12 systemd-journald[52]: Received client request to flush runtime journal.
+[    1.902477] LT-TCH-12 kernel: kvm_intel: Using Hyper-V Enlightened VMCS
+journal-storage
+drwxr-sr-x+ 2 root systemd-journal   40 Oct 20 21:39 /run/log/journal
+drwxr-sr-x+ 3 root systemd-journal 4096 Sep 30  2025 /var/log/journal

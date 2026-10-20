@@ -1,0 +1,14 @@
+{
+  "base": "ffe9593004b59a3a86d8b19ccda877d905e2fcee",
+  "dirty_source": true,
+  "recorded_from_tool_transcript": true,
+  "exit": 1,
+  "selection": "validation_round_cost_074",
+  "passed": 1,
+  "failed": 1,
+  "failure": "Mutation removed the single-hook detector as well as the hook; adapter then correctly treated the input as an idempotent predecessor view, but the new canary incorrectly expected panic.",
+  "correction": "Mutate the getter body while retaining its detector; separately require the current getter. No old assertion or runtime predicate changed.",
+  "all_477_body_reconstruction_passed": true,
+  "server": false,
+  "product": false
+}

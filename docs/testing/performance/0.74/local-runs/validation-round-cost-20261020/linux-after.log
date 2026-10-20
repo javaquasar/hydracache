@@ -1,0 +1,8 @@
+boot fe25c49b-6db2-43ea-b89b-b8c6db70b6e3
+timesync-log
+[    1.892038] LT-TCH-12 systemd[1]: Starting systemd-timesyncd.service - Network Time Synchronization...
+[    1.922378] LT-TCH-12 systemd[1]: Started systemd-timesyncd.service - Network Time Synchronization.
+[    2.040511] LT-TCH-12 systemd-timesyncd[155]: Contacted time server 185.125.190.56:123 (ntp.ubuntu.com).
+[    2.040657] LT-TCH-12 systemd-timesyncd[155]: Initial clock synchronization to Tue 2026-10-20 21:39:58.302995 CEST.
+uptime
+4.33 27.21
