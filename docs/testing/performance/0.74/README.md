@@ -4396,3 +4396,30 @@ the verifier refuses 25 metadata mutations. The prior 321-check suite is not
 rerun for this test-input-only patch. Prior sealed evidence and qualification
 identity remain unchanged. Actual fixed-root/artifact admission, held projection,
 original delivery and server/product execution remain closed.
+
+The [private namespace fixture](fixed-slice-namespace-design.md) exercises the
+unchanged FixedSlice observer on actual temporary cgroup2 objects. Its separately
+execed child unshares only its own mount namespace before binding the synthetic
+tree at the observer's fixed path. The host system.slice is not replaced and no
+systemd unit is created. Nine cases cover healthy identity and independent
+attempt/path/inode/mode/mount/refusal substitutions, with exact empty-directory
+cleanup and host anchor checks. The retained thread-namespace and forbidden
+cgroup-rename refusals explain the two fixture corrections; neither is an
+identity-substitution success. This kernel fixture supplies no manager ownership,
+exclusive population or original validation-frame admission. Trusted role
+artifacts and the held-unit projection remain ahead of original delivery.
+
+On selected source 2f27453f, GNU 1.94 and MSRV 1.88 each pass all nine private
+kernel cases, nine ordinary controls and 247 docs with strict lint. The final
+six source guards and Windows sixty-unit/twenty-doc selection pass, as do format,
+registry/docs and the local non-promotable contract. The separate contract image
+passes 321 controls across the documented fixture-only HEAD advance, not as a
+stable-HEAD qualification gate. See the
+[raw packet](local-runs/fixed-slice-namespace-20261020/README.md) for the refused
+preliminary cohorts and final image/recipe bindings. Original delivery remains
+closed; temporary roots are removed and no server/supervisor operation occurs.
+
+The sealed packet has 95 hashed files plus inventory, SHA256
+`00e1dc901bf374c3f49dee27bb466ef709796b39010878e992fe27a97d08e411`.
+Its verifier rejects 27 in-memory metadata mutations. Earlier sealed evidence
+and the qualification manifest digest remain unchanged.

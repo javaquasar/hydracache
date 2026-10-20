@@ -544,3 +544,21 @@ and a complete held-unit projection. Keep original delivery, all-writer cessatio
 durable completion/later cells, reconnect, production enrollment and server
 rehearsal behind their distinct gates. No live matrix, server installation,
 supervisor operation or product run is authorized by synthetic fixture success.
+
+## P3 Private kernel fixture before manager owned admission
+
+The [isolated namespace fixture](fixed-slice-namespace-design.md) tests actual
+cgroup2 directory identity through the unchanged fixed-path observer, not fake
+Stamp data. Every mutation requires a preceding successful pin and revalidation.
+The separately owned child makes its mount propagation private; the parent
+retains its original host anchors and removes only exact empty temporary paths.
+The thread-self namespace correction and kernel-supported remove/recreate
+mutation preserve every case and expected refusal instead of accepting an
+earlier fixture error as a security check.
+
+An accepted private kernel pin does not join a manager-owned slice to the original
+attempt. That full join, controlled population, authenticated held role objects,
+complete held projection and original delivery remain necessary before writer
+cessation, durable completion/later cells, reconnect or server rehearsal. The
+old worker builder receipt cannot authenticate three newly declared artifact
+roles. Keep its fixed recipe and old direct-worker message unchanged and unsent.

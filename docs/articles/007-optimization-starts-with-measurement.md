@@ -14311,3 +14311,46 @@ receipts separately. It establishes reproducible ordinary test coverage, not
 faster product code or real installed executable trust. Actual slice ownership,
 held artifacts, original delivery, writer cessation and reconnect still require
 their own live evidence before server admission.
+
+## Check retained paths against real cgroup objects
+
+A model can show that two inode values differ without proving that the actual
+open-descriptor and named-path observations behave as expected. The
+[private namespace fixture](../testing/performance/0.74/fixed-slice-namespace-design.md)
+therefore uses real empty cgroup2 directories with the unchanged FixedSlice
+observer. A fresh test child creates its own mount namespace and makes its mount
+propagation private before presenting the temporary tree at the fixed path.
+The parent keeps its original namespace, mount anchors and host system.slice.
+This allows kernel identity substitutions without creating a systemd unit or
+changing a production mount.
+
+The first refusal exposes an important measurement detail. Rust runs the test on
+a thread other than its thread-group leader. Unshare changes the calling
+thread's namespace, while /proc/self/ns/mnt still describes the leader. The
+fixture must read /proc/thread-self/ns/mnt to measure the thread that will mount.
+The inequality check stays before that mount; it is corrected, not removed.
+
+Healthy pin/revalidation then succeeds on both compilers, but a later mutation
+tries to rename a cgroup2 directory and receives EPERM. Counting that error as
+an inode-substitution refusal would falsely credit a predicate that was never
+evaluated. The replacement test instead removes only the exact empty fixture
+cgroup and recreates its name while retaining the original descriptors. Parent
+replacement also requires a different parent inode. All nine cases remain;
+the unsupported mutation and earlier thread error remain separate raw results.
+
+A successful private kernel pin still cannot certify manager ownership or
+exclusive population. The synthetic system.slice is deliberately not owned by
+the original systemd manager, and this test supplies no original controller
+frame or executable admission. In particular, the existing worker build receipt
+does not authenticate the newly declared launcher, watchdog and collector roles.
+Those actual objects and the complete held-unit projection must join the original
+trust and live frame before delivery. This is evidence about control-path
+correctness, not an allocation or throughput improvement in HydraCache.
+
+The completed local gate on 2f27453f passes the same nine kernel cases on GNU 1.94
+and MSRV 1.88, with nine ordinary controls and 247 docs per compiler. Six exact
+source guards and the Windows sixty-unit/twenty-doc selection pass separately.
+The old 321-contract image also passes across the documented fixture-only HEAD
+advance; it is not relabeled as stable-source qualification. The
+[evidence packet](../testing/performance/0.74/local-runs/fixed-slice-namespace-20261020/README.md)
+keeps these scopes, failed mutation recipes and final image identities distinct.
