@@ -637,3 +637,19 @@ Neither static ExpectedTrust input nor content custody establishes live authorit
 Then bind bootstrap/helper/worker process identity before original delivery;
 watchdog Armed, active collector, all-writer termination, later durable cells and
 reconnect remain required before a separately authorized server rehearsal.
+
+## P3 Bind the role provenance documents without upgrading authority
+
+The [new v4 contract](held-role-binding-plan-20261020.md) binds complete signed
+v3 placement bytes to the held policy/receipt digests and matching epoch. Both
+controller signatures use the independently checked policy's controller; the
+receipt uses the separate held builder. Re-signed mismatching role/epoch/digest
+data must refuse. The static inspector cannot start, send or extract an original.
+
+Original policy/epoch observations still come from the same retained active
+registry/kernel owner and unchanged complete frame, not this signed-data check.
+The reviewed trust module currently selects no held builder/policy pin. Admit
+those independently before consuming FixedPlacement and role files in an original
+join; do not select trust from the incoming binding or reuse the old worker key.
+Protected role build production, hashing attribution and joined live/SIGKILL/
+lost-ACK, all-writer retirement, durable lifecycle and reconnect gates remain.

@@ -4529,3 +4529,33 @@ rehash cost remains unmeasured, and earlier sealed packets/qualification stay fi
 
 The sealed packet has 86 hashed members plus inventory, SHA256
 `c9fdc73c1f89b2037af2eacb87af8b6576a1e0af29629a1ef584dd0974316faf`.
+
+## Signed role provenance binding before live admission
+
+The [v4 binding](held-role-binding-plan-20261020.md) adds the planned controller
+signature over the complete signed v3 placement, exact held-policy/receipt
+digests and epoch. Both controller signatures must use the same independently
+checked policy controller; the held receipt keeps its distinct builder signature.
+Policy/receipt/consent epochs, repository and all role hashes must agree. The
+reader preserves the exact old placement bytes and returns opaque static data,
+not an original owner, replay slot or launch capability. Old formats remain.
+
+The audit distinguishes that static equality from the original active authority
+registry and complete clock/frame checks. Existing reviewed pins do not enroll
+a held-runtime builder or policy. Their independent admission must precede the
+consumed FixedPlacement/role-files join. Real role receipt production, real-image
+cost attribution, active collector, all-writer cessation, durable lifecycle and
+reconnect are still required. No production pin/key, server or supervisor action
+is selected by this change.
+
+Selected source c24f460a passes two complete 28-test rounds/four capability docs
+on Windows and two 38-test rounds/six docs on each GNU/MSRV compiler. The twelve
+new portable controls include 64 seeded corruptions per round and re-signed
+semantic refusals. Fourteen source guards, three predecessor bridge controls,
+strict lint, fmt, registry (186 registered), docs and local contract pass.
+The [separate packet](local-runs/held-role-binding-20261020/README.md) rejects
+34 metadata mutations and preserves the preceding sealed evidence and frozen
+qualification digest. This is not a new live/SIGKILL or release qualification.
+
+The sealed packet has 49 hashed members plus inventory, SHA256
+`5950fc0c8f8be989af528638661a72669e185c67ec91c74ef5c972426146ede4`.

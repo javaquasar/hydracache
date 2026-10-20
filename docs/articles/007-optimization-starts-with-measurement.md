@@ -14523,3 +14523,39 @@ an explicit exit-code/source-frozen recheck closes it with a second hashed recip
 not an edited earlier log. Thirty-four receipt metadata mutations refuse.
 Attribution on real role images is still required before placing this hashing
 work inside the original deadline frame.
+
+## Bind provenance to the signed attempt without inventing live authority
+
+Retaining immutable role files closes a content race, but the old placement
+signature names only expected image hashes. The approved contract also requires
+the controller to bind a particular held-build policy and signed receipt to that
+attempt. The [v4 implementation](../testing/performance/0.74/held-role-binding-plan-20261020.md)
+therefore signs the complete signed v3 envelope, policy/receipt digests and epoch
+in a new domain. It does not relabel an old signature or change old signed bytes.
+
+The static verifier selects its controller only from an independently checked
+held policy. Both controller signatures must verify under that same key; the
+build receipt keeps its separate builder signature. Receipt/policy digests,
+consent/policy/receipt epochs, repository and all expected image roles must agree.
+Tests re-sign incorrect contents as well as corrupting unsigned bytes: a valid
+signature does not make a mismatched epoch, policy, receipt or role acceptable.
+Another valid attempt remains valid data but cannot match the retained original
+placement bytes. This is a binding check, not a new replay permission.
+
+The audit keeps two authority sources distinct. Original validation obtains the
+active policy epoch from the retained registry/kernel input and checks original
+clock bounds. The portable inspector sees signed claims and reviewed input
+assertions only. The current reviewed module has no held-runtime builder/policy
+pin, so this change cannot enroll one or manufacture a successful live join.
+That admission, the consumed original frame/object join and real-image hashing
+attribution remain required before delivery. No server, supervisor, product
+execution or numerical performance claim follows from the new format.
+
+At selected source c24f460a, Windows passes two rounds of 28 tests and four
+capability examples; GNU 1.94/MSRV 1.88 each pass two rounds of 38 tests and six
+examples without compiler panic. Fourteen source guards, three predecessor
+checks, strict lint, fmt, registry/docs and the local contract pass. Sixty-four
+seeded corruptions run per round, while 34 receipt/format metadata mutations
+refuse. An explicit zero-exit record handles silent formatting without changing
+the preceding packet. These results close the static cross-document contract;
+they do not measure hashing cost or authorize a live original attempt.
