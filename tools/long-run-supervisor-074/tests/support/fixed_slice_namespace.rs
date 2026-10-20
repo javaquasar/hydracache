@@ -161,19 +161,22 @@ fn child_case(path: &Path, case: usize) {
             slice.revalidate(&root, attempt).unwrap();
         }
         2 => {
-            std::fs::rename(&named, named.with_extension("slice.old")).unwrap();
+            // cgroup2 forbids rename. Remove only this empty fixture cgroup;
+            // the original descriptors stay retained across name recreation.
+            std::fs::remove_dir(&named).unwrap();
             std::fs::create_dir(&named).unwrap();
             assert_ne!(stamp(&File::open(&named).unwrap()).unwrap(), root.identity);
             assert!(slice.revalidate(&root, attempt).is_err());
         }
         3 => {
-            std::fs::rename(
-                format!("{MOUNT}/system.slice"),
-                format!("{MOUNT}/system.old"),
-            )
-            .unwrap();
+            std::fs::remove_dir(&named).unwrap();
+            std::fs::remove_dir(format!("{MOUNT}/system.slice")).unwrap();
             std::fs::create_dir(format!("{MOUNT}/system.slice")).unwrap();
             std::fs::create_dir(&named).unwrap();
+            assert_ne!(
+                stamp(&File::open(format!("{MOUNT}/system.slice")).unwrap()).unwrap(),
+                root.parent_identity
+            );
             assert!(slice.revalidate(&root, attempt).is_err());
         }
         4 => {

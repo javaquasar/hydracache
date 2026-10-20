@@ -18,8 +18,8 @@ CLOEXEC observer descriptors and reject a different attempt. Independent fresh
 cases replace the named attempt root, replace system.slice, change root mode,
 change parent mode, change the mount anchor, mark the original root refused and
 substitute an identically named root under a different parent. Each case starts
-with a successful pin/revalidation and checks the intended refusal. Restore
-temporary names/modes before the parent removes only its exact empty directories.
+with a successful pin/revalidation and checks the intended refusal. The parent
+removes only its exact empty fixture directories, including replacement names.
 Child failure or a bounded harness timeout must still leave parent cleanup active.
 
 This is a kernel observer fixture, not a successful original-owner join. The
@@ -49,3 +49,18 @@ anchor, refusal and cleanup assertions. Retain the first failed cohort rather
 than counting it as a positive pin. Interrupt the separately owned source audit
 before the repair and rerun it against the selected corrected source; no partial
 audit is a completed gate. This correction changes no original live predicate.
+
+## Kernel supported replacement mutation
+
+Both corrected-thread cohorts accept the real healthy pin and different-attempt
+control, then refuse when the fixture tries to rename a cgroup2 directory.
+The kernel returns EPERM; this is not an evaluated identity-substitution refusal.
+Use removal of only the exact empty fixture child and recreation under its same
+name, retaining the original open descriptors. For parent replacement remove its
+empty child first, then recreate the parent and child and require a different
+parent inode before testing refusal. Preserve all nine cases and assertions.
+The old 321 source-contract inputs are unchanged by this external test-file
+correction; retain their running audit on 75f3aeab separately, then rerun the
+six exact fixture/source guards on the final selected source. Do not relabel the
+75f3aeab partial kernel cohorts as completed or silently claim its full audit as
+a fresh audit of a later test image.
