@@ -1,0 +1,94 @@
+{
+  "stage": "Before",
+  "source": "9c2773e05bf78e337ab08d3a6e1fa34d5f40e422",
+  "recipe_sha256": "6b732e286f7db1a94ae6a64075919aabe795b4262e976793bbcb893ba1f4564e",
+  "steps": [
+    {
+      "log": "Before-check-194-authority_hex_.log",
+      "name": "authority_hex_",
+      "exit": 0,
+      "sha256": "8bd34df38b4c9306c489830ba5e156afb7b4b4236d990b7d3e38c5fd387c846e"
+    },
+    {
+      "log": "Before-check-194-authority_.log",
+      "name": "authority_",
+      "exit": 0,
+      "sha256": "9fb3b43168e594b67501a46cd84076f73ab5a2963fbc9e26434c825624cc44e0"
+    },
+    {
+      "log": "Before-check-194-validation_leaf_requests_.log",
+      "name": "validation_leaf_requests_",
+      "exit": 0,
+      "sha256": "c3528649607bc37d90d3223a18ba846843495a23d189e6b1ec49c89cbef7524b"
+    },
+    {
+      "log": "Before-check-194-fixed_leaf_alloc_counter.log",
+      "name": "fixed_leaf_alloc_counter",
+      "exit": 0,
+      "sha256": "2c1181b9b4d8b87a4e79a2eaf5dde260d3795ea4e7c3ae895cda15c19eee89b1"
+    },
+    {
+      "log": "Before-check-194-fixed_leaf_path_differential.log",
+      "name": "fixed_leaf_path_differential",
+      "exit": 0,
+      "sha256": "ea9ac2e068e239e0866801a3c71c4b3f0b37aaafa95316dc38d3c1bae063a32c"
+    },
+    {
+      "log": "Before-check-194-fixed_leaf_path_preserves.log",
+      "name": "fixed_leaf_path_preserves",
+      "exit": 0,
+      "sha256": "bd0585aa2bd32628dde78c5f54993cde47d4bcb1794db0e717646e2b649bed47"
+    },
+    {
+      "log": "Before-check-194-kernel_time_.log",
+      "name": "kernel_time_",
+      "exit": 0,
+      "sha256": "8780b13d0c9c8dc40c6bbbf93e2e8113ae37e222f6bca4478837253cf1f3a256"
+    },
+    {
+      "log": "Before-check-194-kernel_worker_context_.log",
+      "name": "kernel_worker_context_",
+      "exit": 0,
+      "sha256": "23738fe02f275f752471b8f24833e0ed02a2d075f4e87b44ea8cd546c7598548"
+    },
+    {
+      "log": "Before-check-194-authority_fixed_.log",
+      "name": "authority_fixed_",
+      "exit": 0,
+      "sha256": "84519f069fdf7708172183180fd2585c29a6420b5618301bab80c8cd8f0e180b"
+    },
+    {
+      "log": "Before-check-194-authority_fixture_.log",
+      "name": "authority_fixture_",
+      "exit": 0,
+      "sha256": "f95226b49cc3a20aa68aaeb8cf0f346ad5eeda141902d639a44523df03e88584"
+    },
+    {
+      "log": "Before-check-194-worker_trust_input_.log",
+      "name": "worker_trust_input_",
+      "exit": 0,
+      "sha256": "3ffeecec4ee0818a73277f499e48d2d8ae25a336aea148769a89c495423006bc"
+    },
+    {
+      "log": "Before-check-194-check.log",
+      "name": "check",
+      "exit": 0,
+      "sha256": "837740fb33b8df40d7c2bab5be9478dde8d56175afdc6faeac2e5fe68947d8e6"
+    },
+    {
+      "log": "Before-check-194-lint.log",
+      "name": "lint",
+      "exit": 0,
+      "sha256": "a5de7c25a56bb785b29be05b5dae1ff3774ceecfc785eca63f926439feca5b18"
+    },
+    {
+      "log": "Before-check-194-build.log",
+      "name": "build",
+      "exit": 0,
+      "sha256": "49e769d97dda77c682d8fe1b57ae1a35e023b12a7ba00dcd0b0742cbf88f47d1"
+    }
+  ],
+  "failure": null,
+  "server": false,
+  "product": false
+}
