@@ -1,9 +1,31 @@
 //! Exact local observations and bounded-parser substitutions only.
 #[macro_export]
-macro_rules! hc074_remaining_preparation_view {
+macro_rules! hc074_starting_effects_view {
     ($path:expr, $source:expr) => {{
         let path: &str = $path;
         let mut raw: String = $source.to_owned();
+        let active = raw.contains("::mark(\"st-");
+        for (file, indent, names) in [
+            ("tools/long-run-supervisor-074/src/diagnostic_original_output_join.rs", 8, &["st-enter", "st-encoded", "st-begun", "st-final", "st-finaled", "st-acked"][..]),
+            ("tools/long-run-supervisor-074/src/diagnostic_original_output_join.rs", 12, &["st-open", "st-opened", "st-stepped", "st-checked", "st-closed"][..]),
+            ("tools/long-run-supervisor-074/src/diagnostic_collector_starting_storage.rs", 8, &["st-store", "st-inspected", "st-effect", "st-effected"][..]),
+        ] {
+            if path == file && active {
+                for name in names {
+                    let exact = format!("{space}#[cfg(test)]\n{space}crate::diagnostic_ipc::validation_trace::custody_boundaries::mark(\"{name}\");\n", space=" ".repeat(indent));
+                    assert_eq!(raw.matches(&exact).count(), 1, "exact Starting cost mark: {name}");
+                    raw = raw.replacen(&exact, "", 1);
+                }
+            }
+        }
+        raw
+    }};
+}
+#[macro_export]
+macro_rules! hc074_remaining_preparation_view {
+    ($path:expr, $source:expr) => {{
+        let path: &str = $path;
+        let mut raw: String = $crate::hc074_starting_effects_view!(path, $source);
         for (file, hook) in [
             ("tools/long-run-supervisor-074/src/diagnostic_kernel_admission_tests.rs", "#[path = \"../tests/support/projection_cost.rs\"]\npub(super) mod projection_cost;\n\n"),
             ("tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs", "\n#[path = \"../tests/support/projection_alloc.rs\"]\nmod projection_fields;\n"),

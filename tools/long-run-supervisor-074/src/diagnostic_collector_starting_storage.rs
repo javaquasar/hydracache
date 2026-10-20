@@ -106,7 +106,11 @@ impl CollectorReservationStorage<'_> {
         at: CollectorStartingStage,
         raw: &[u8],
     ) -> Result<(), StorageAttemptError> {
+        #[cfg(test)]
+        crate::diagnostic_ipc::validation_trace::custody_boundaries::mark("st-store");
         self.inspect_starting()?;
+        #[cfg(test)]
+        crate::diagnostic_ipc::validation_trace::custody_boundaries::mark("st-inspected");
         let phase = self.starting.as_ref().ok_or(StorageAttemptError::Refused)?;
         if phase.acknowledged
             || STAGES.get(phase.next) != Some(&at)
@@ -115,6 +119,8 @@ impl CollectorReservationStorage<'_> {
         {
             return Err(StorageAttemptError::Refused);
         }
+        #[cfg(test)]
+        crate::diagnostic_ipc::validation_trace::custody_boundaries::mark("st-effect");
         match at {
             CollectorStartingStage::BeforeCreate | CollectorStartingStage::Acknowledging => {}
             CollectorStartingStage::Created => {
@@ -170,6 +176,8 @@ impl CollectorReservationStorage<'_> {
                 .file
                 .sync_all()?,
         }
+        #[cfg(test)]
+        crate::diagnostic_ipc::validation_trace::custody_boundaries::mark("st-effected");
         self.starting.as_mut().unwrap().next += 1;
         self.inspect_starting()
     }

@@ -20,6 +20,8 @@ impl OriginalCollectorStarting<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
         &mut self,
         checkpoint: &mut impl FnMut(OutputJoinStage) -> Result<(), OriginalSinkError>,
     ) -> Result<(), OriginalSinkError> {
+        #[cfg(test)]
+        crate::diagnostic_ipc::validation_trace::custody_boundaries::mark("st-enter");
         let r = &self
             .original
             .original
@@ -34,6 +36,8 @@ impl OriginalCollectorStarting<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
         )
         .map_err(CollectorStartingError::from)
         .map_err(OriginalPipeError::from)?;
+        #[cfg(test)]
+        crate::diagnostic_ipc::validation_trace::custody_boundaries::mark("st-encoded");
         self.original
             .original
             .prepared
@@ -42,12 +46,18 @@ impl OriginalCollectorStarting<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
             .reservation
             .storage
             .begin_starting()?;
+        #[cfg(test)]
+        crate::diagnostic_ipc::validation_trace::custody_boundaries::mark("st-begun");
         for at in starting_storage::STAGES {
             // No successful round is reused across an effect or checkpoint.
+            #[cfg(test)]
+            crate::diagnostic_ipc::validation_trace::custody_boundaries::mark("st-open");
             self.original
                 .round(|_| {})
                 .map_err(CollectorStartingError::from)
                 .map_err(OriginalPipeError::from)?;
+            #[cfg(test)]
+            crate::diagnostic_ipc::validation_trace::custody_boundaries::mark("st-opened");
             self.original
                 .original
                 .prepared
@@ -56,16 +66,26 @@ impl OriginalCollectorStarting<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
                 .reservation
                 .storage
                 .starting_step(at, &raw)?;
+            #[cfg(test)]
+            crate::diagnostic_ipc::validation_trace::custody_boundaries::mark("st-stepped");
             checkpoint(OutputJoinStage::Starting(at))?;
+            #[cfg(test)]
+            crate::diagnostic_ipc::validation_trace::custody_boundaries::mark("st-checked");
             self.original
                 .round(|_| {})
                 .map_err(CollectorStartingError::from)
                 .map_err(OriginalPipeError::from)?;
+            #[cfg(test)]
+            crate::diagnostic_ipc::validation_trace::custody_boundaries::mark("st-closed");
         }
+        #[cfg(test)]
+        crate::diagnostic_ipc::validation_trace::custody_boundaries::mark("st-final");
         self.original
             .round(|_| {})
             .map_err(CollectorStartingError::from)
             .map_err(OriginalPipeError::from)?;
+        #[cfg(test)]
+        crate::diagnostic_ipc::validation_trace::custody_boundaries::mark("st-finaled");
         self.original
             .original
             .prepared
@@ -74,6 +94,8 @@ impl OriginalCollectorStarting<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
             .reservation
             .storage
             .acknowledge_starting()?;
+        #[cfg(test)]
+        crate::diagnostic_ipc::validation_trace::custody_boundaries::mark("st-acked");
         self.acknowledged = true;
         Ok(())
     }
