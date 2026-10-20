@@ -46,3 +46,19 @@ clock/service operation, supervisor control, installation, product workload,
 qualification or push through the old red live gate. Separate processes/boots
 do not prove continuity. Original delivery, all-writer cessation, later cells,
 SIGKILL/lost-ACK, reconnect and real enrollment remain independent closed gates.
+
+## Test hook placement amendment before After capture
+
+The first final historical gate refuses because the new test module hook
+precedes runtime, while one unchanged old assertion reads only the source
+prefix before its first `cfg(test)`. The journal lock and other predicates are
+present. Move only that identical hook after existing test declarations and
+retain the complete failed gate/source identity. Runtime, old assertions,
+reference, workload, profile recipe and all thresholds remain unchanged.
+Repeat all After compiler/xtask/historical/repository checks into distinct
+repair logs and freeze the repaired test image before the first After capture.
+No measured After invocation has occurred; Before observations are not retried.
+Keep original recipes unchanged. The separately frozen After-only profile
+selects repaired build/check receipts with identical probe selectors, inputs,
+iterations and capture behavior; the repair reviewer validates both recipe
+identities and retains the failed historical gate.

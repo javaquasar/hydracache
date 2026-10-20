@@ -1,0 +1,12 @@
+{
+  "failed_source": "843f6fe9149c20bed1b26e9fd959be58d07c54ff",
+  "receipt": "After-check-contracts-exit.json",
+  "native_exit": 101,
+  "failed_test": "diagnostic_authority_journal_bounds_and_closed_production_authority_are_frozen",
+  "cause": "The new test module hook was placed before runtime. The old unchanged assertion reads the source prefix before its first cfg(test), so it sees no journal runtime. FileExt::try_lock_exclusive and every other original runtime predicate are still present.",
+  "repair": "Move only the identical test hook after existing test declarations. Keep every old assertion, runtime body and frozen measurement/reference/recipe unchanged. Rebuild and rerun all After checks into separate repair logs before the first After capture.",
+  "after_measurement_attempted": false,
+  "measured_cohort_retried": false,
+  "server": false,
+  "product": false
+}
