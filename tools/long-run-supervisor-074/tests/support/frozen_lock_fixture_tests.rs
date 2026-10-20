@@ -16,7 +16,7 @@ fn frozen_fixture_exact_bytes_and_seeded_corruption_remain_bound() {
     let fixture = Synthetic::new();
     let verified = fixture.verified();
     verified.verify_contents(&fixture.contents()).unwrap();
-    let mut seed = 0x074f_10c_u64;
+    let mut seed = 0x0074_f10c_u64;
     for _ in 0..32 {
         seed ^= seed << 13;
         seed ^= seed >> 7;
