@@ -5090,3 +5090,32 @@ The original summary is retained after a JSON key-order verifier refusal;
 structural equality rejects eight data/type/field/array mutations in addition
 to ten scope mutations. Eleven prior packets rehash unchanged. This validates
 integrity and request conservation, not live/native/server admission.
+
+## Authority name capacity reduction
+
+The [paired capacity control](local-runs/authority-name-capacity-20261021/README.md)
+accepts only runtime `433a7cb1`, reserving String capacity before writing the
+same journal name format. Before source is `5364b821`; After is the runtime
+commit. All three samples on both compilers conserve the measured name-pair
+reduction through the two complete inventory comparisons per inspect.
+
+At one generation complete fixture inspect changes 29/8/1942 to 29/0/1806;
+at seven it changes 129/56/10068 to 129/0/9116, in allocations / reallocations /
+requested bytes. Initial allocations do not decrease. Reads stay 4/28; six
+other leaf cases and all tracked kernel observations stay equal. This is not
+a CPU, latency, retained-memory, cache API or full ActiveAuthority claim.
+
+Before/After lanes pass 194 authority tests each, focused checks, strict lint,
+all 373 source assertions and repository checks. The first new negative
+canary's selector error is retained and corrected before any measurement;
+no old assertion or measured invocation is replaced. Different boots and old
+clock-order refusals leave native/server admission closed. Every live check,
+original window and qualification input stays. No push, new server/live matrix,
+supervisor, clock/service or product operation occurs.
+
+Evidence commit `8d1be42bf5ccded5f53ae1b687a8993d4c63667a` seals 92 members
+plus inventory SHA256
+`2d94764f08a89ed50e4e1d8ce47906382fb6be6c796bd585e7d0fbdc5f628362`.
+Twelve prior packets rehash unchanged; ten scope mutations and eight structural
+JSON negative controls pass. Initial allocations remain unchanged: the accepted
+result concerns capacity-growth requests, not a new native/server admission.

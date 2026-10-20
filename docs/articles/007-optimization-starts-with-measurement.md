@@ -15630,3 +15630,59 @@ old clock-order and execution, retirement, lifecycle, reconnect and enrollment
 gates remain closed. No server, installation, supervisor, clock/service, product
 workload or new live-matrix run occurs. Rebuilt tool identity does not inherit
 the preceding campaign admission.
+
+## Reserving capacity for journal names
+
+The [name capacity control](../testing/performance/0.74/authority-name-capacity-plan-20261021.md)
+follows the expected-container experiment without combining their hypotheses.
+The expected sequence still creates a String for every name. Its standard
+formatter grows that String while writing a 16-digit hexadecimal revision,
+a dot and a suffix. The next isolated candidate reserves 17 plus suffix byte
+length, then uses the same formatter. This is capacity selection, not a new
+hex encoder, parser, cache or validation schedule.
+
+Frozen reference/proposal/actual controls first verify exact bytes across
+bounded and seeded revisions, hexadecimal boundaries and usize::MAX. Empty,
+long, Unicode and NUL suffixes remain identical too; those pure string cases
+do not grant a new filesystem name or authority. Existing journal tests keep
+canonical records, signatures, read-back, original objects and refusal behavior.
+Historical assertions remain byte-identical behind an exact input adapter;
+new guards reject unknown helper bodies and leave unrelated changes visible.
+
+All three 1024-operation samples on GNU 1.94 and MSRV 1.88 agree:
+
+| Operation | Allocations Before to After | Reallocations Before to After | Requested bytes Before to After |
+| --- | ---: | ---: | ---: |
+| json name at revisions 1, 7, 128 | 1 to 1 | 2 to 0 | 56 to 21 |
+| commit name at revisions 1, 7, 128 | 1 to 1 | 2 to 0 | 56 to 23 |
+| Complete fixture inspect at 1 generation | 29 to 29 | 8 to 0 | 1942 to 1806 |
+| Complete fixture inspect at 7 generations | 129 to 129 | 56 to 0 | 10068 to 9116 |
+
+The two inventories per inspect generate a json/commit pair per revision. Their
+isolated reduction therefore predicts 8 fewer reallocations and 136 fewer
+requested bytes at depth one, and 56/952 at seven. Complete inspection conserves
+those reductions exactly. Reads remain four and 28, all six non-authority cases
+and tracked kernel counts remain equal, and the number of initial allocations
+does not fall. A separately measured 256-byte suffix changes 1/3/329 requests
+to 1/0/273, but is not credited to the actual json/commit workload.
+
+This locally accepts removal of capacity growth, not removal of expected-name
+ownership. Requested bytes include reallocations; they do not establish copied
+bytes, retained memory, CPU, latency, cache API capacity or full ActiveAuthority
+cost. The temporary String allocation remains a separate possible attribution
+target. These local request results cannot show that the unchanged admission
+window is now satisfied.
+
+The [paired packet](../testing/performance/0.74/local-runs/authority-name-capacity-20261021/README.md)
+retains exact sources, images, recipes and native exits. Both compiler lanes
+pass 194 authority tests, focused checks and strict lint. All 373 old/new
+source assertions and repository checks pass. A first new negative canary
+targets a revision argument outside the intended helper; only its selector is
+corrected before measurement, retaining the refusal and every old assertion.
+One capture per stage/compiler is retained without measured retries.
+
+Before/After boots differ. All live checks and original 300/60/10 bounds remain,
+as do old clock-order and independent original-delivery, writer-cessation,
+lifecycle, SIGKILL/lost-ACK, reconnect and trust gates. No new live matrix,
+server, installation, supervisor, clock/service, product or qualification run
+occurs. Tool identity changes do not transfer preceding campaign admission.

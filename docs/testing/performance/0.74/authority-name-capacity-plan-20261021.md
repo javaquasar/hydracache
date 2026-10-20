@@ -51,3 +51,34 @@ clock/service change, new live matrix, product workload, qualification or push
 through the existing red native gate. Original delivery, writer cessation,
 lifecycle, SIGKILL/lost-ACK, reconnect and trust/enrollment gates stay closed.
 Different process/boot observations cannot establish continuity or repair time.
+
+## Local outcome
+
+Before source `5364b8215c3892f40987d3284dff6be853208e4d` and After/runtime
+`433a7cb1806d7296c8dff72bf83620eb48a91d42` each have one capture per compiler,
+with three samples and unchanged workload/reference/qualification inputs. The
+[paired packet](local-runs/authority-name-capacity-20261021/README.md) confirms
+two fewer reallocations per json/commit name, with unchanged initial allocation
+count and exact bytes. Full fixture inspect conserves 8 reallocations/136
+requested bytes saved at one generation, 56/952 at seven. Full counts change
+29/8/1942 to 29/0/1806 and 129/56/10068 to 129/0/9116 respectively. Reads stay
+4/28; six other cases and tracked kernel counts stay equal.
+
+Both lanes pass 194 authority tests, ancillary controls, all-target check and
+strict all-feature lint. All 373 historical/current assertions and repository
+checks pass. A new negative canary initially targets Entry::open's revision,
+not name(); only its selector changes before measurement. The refusal remains
+documented, every old assertion is preserved, and no capture is retried.
+
+The capacity candidate is locally accepted for Rust request reduction only.
+Initial name allocation remains; CPU/latency, retained memory, full
+ActiveAuthority and cache API gains are not claimed. Before/After boots differ;
+all old live-clock and independent execution/trust/lifecycle gates remain
+closed. No server, new live matrix, clock/service or product operation occurs.
+
+Evidence `8d1be42bf5ccded5f53ae1b687a8993d4c63667a` seals 92 members plus
+inventory SHA256
+`2d94764f08a89ed50e4e1d8ce47906382fb6be6c796bd585e7d0fbdc5f628362`.
+All twelve preceding packets remain intact; ten scope mutations and eight
+structural JSON negative controls pass. This packet is immutable; a further
+expected-name ownership hypothesis needs its own baseline and capture.

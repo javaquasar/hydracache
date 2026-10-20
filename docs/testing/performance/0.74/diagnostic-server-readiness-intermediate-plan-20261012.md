@@ -1000,3 +1000,24 @@ Original delivery, all-writer cessation, later cells, SIGKILL/lost-ACK,
 reconnect and real enrollment remain independent gates. Remaining name
 formatting costs require a separate attribution candidate, not a deadline or
 observation-frequency change.
+
+## Name capacity local outcome
+
+The [name capacity control](local-runs/authority-name-capacity-20261021/README.md)
+accepts only initial String reservation inside the existing formatter, runtime
+`433a7cb1`. Names, canonical records, error order, all live checks and original
+300/60/10 windows remain. Both compilers conserve 8 fewer reallocations and
+136 fewer requested bytes per complete one-generation fixture inspect, and
+56/952 at seven. Initial allocations, reads and tracked kernel counts stay
+equal. Full ActiveAuthority timing, stable clocks, retained memory and cache
+API throughput are not measured here.
+
+All final 194-test authority suites, focused checks/strict lint, 373 source
+assertions and repository checks pass. The new canary selector refusal is
+retained; only the new test is repaired before captures. Separate boots and old
+native clock-order refusals remain. No new server/live-matrix run, installation,
+supervisor, clock/service or product operation occurs. Original delivery,
+all-writer cessation, later cells, SIGKILL/lost-ACK, reconnect and real
+enrollment remain independent closed gates. Expected-name String ownership is
+a possible next local attribution question, not permission to skip observation
+or extend an eligibility window.
