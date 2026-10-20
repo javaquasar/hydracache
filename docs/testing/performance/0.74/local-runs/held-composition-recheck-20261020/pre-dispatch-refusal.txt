@@ -1,0 +1,8 @@
+The first run.ps1 invocation wrote bindings.json, then exited 1 before dispatch.
+PowerShell-captured tool output (not byte-exact child process streams):
+wslpath: C:Workspaceprjjqcashehydracache-074docstestingperformance0.74local-runsheld-composition-recheck-20261020
+InvalidOperation at run.ps1:34: You cannot call a method on a null-valued expression.
+No session.log, preflight.log, matrix log or exit record existed. The immutable
+run.ps1 and bindings retain this refusal. dispatch.ps1 continues only the
+undispatched state using a repository-relative Linux path; it cannot replay a
+matrix. No product or test invocation occurred before this recovery.

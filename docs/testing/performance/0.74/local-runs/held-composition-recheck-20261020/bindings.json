@@ -1,0 +1,78 @@
+{
+  "source": "3ffa6e91b0ab0b03b82206a2dc3760c752679092",
+  "image_source": "b5f1b8fce6b3046239087873cb85ff1bfc557f0f",
+  "images": [
+    {
+      "source": "b5f1b8fce6b3046239087873cb85ff1bfc557f0f",
+      "lane": "194",
+      "flavor": "plain",
+      "path": "/home/artur/.cache/hydracache-074-194-check/release/deps/hydracache_long_run_supervisor_074-b26b156d3dcd0098",
+      "sha256": "5d4f595571d23bfec04596b343034e5ffd302c3da296d9b77cd24b6bd16ae92d",
+      "recipe_sha256": "3c62342b9fb4699d27681938955cee77d053a47280f5f20354ebd85f417b6833",
+      "server": false,
+      "product": false
+    },
+    {
+      "source": "b5f1b8fce6b3046239087873cb85ff1bfc557f0f",
+      "lane": "188",
+      "flavor": "plain",
+      "path": "/home/artur/.cache/hydracache-074-188-check/release/deps/hydracache_long_run_supervisor_074-d2aba7f58d773234",
+      "sha256": "08744d204a3e9cf00d01f2a7631819b853a6912c2d06922dd94b6389fabeecfd",
+      "recipe_sha256": "3c62342b9fb4699d27681938955cee77d053a47280f5f20354ebd85f417b6833",
+      "server": false,
+      "product": false
+    }
+  ],
+  "bundle_before": [
+    {
+      "path": "build-log.jsonl",
+      "bytes": 349647,
+      "sha256": "8a2a495348bd317f7a2092a622838fc489bdcf077f4a8269210b2b78381b3c58"
+    },
+    {
+      "path": "build-receipt-v1.json",
+      "bytes": 1735,
+      "sha256": "e32bb7cd9b6cbf1d91d52abc79cb1e0225b3a7f6602e82e5b9a303c3645a77d7"
+    },
+    {
+      "path": "Cargo.lock.observer",
+      "bytes": 88159,
+      "sha256": "e3be470f5a1bff4e917e841fc5bfbd257ff12559206bbc1481c3c4bca528eb1d"
+    },
+    {
+      "path": "Cargo.lock.root",
+      "bytes": 175300,
+      "sha256": "be46eaf8e97e507bda5e3f2b671d0d622e6a639ce1d4613769a4693723d62b19"
+    },
+    {
+      "path": "direct.json",
+      "bytes": 694,
+      "sha256": "5485b10f50906833006ad3f3a40b4909760ef01e3f2c86395e4366bf83cc6ef9"
+    },
+    {
+      "path": "embedded.json",
+      "bytes": 696,
+      "sha256": "5c219730c8a782ed47dfa0b291a29f44f753c3688f8548c136174a89cee55149"
+    },
+    {
+      "path": "resp2.json",
+      "bytes": 694,
+      "sha256": "f0aba16dfe0354801d0b3c83ee9fc2d1b4751be5f50280634690ed4bcf3030ae"
+    },
+    {
+      "path": "resp3.json",
+      "bytes": 694,
+      "sha256": "b680683c291d0a4dadbac1901f051ba0fedcac0ac9127d197e0261fe6fdabdd7"
+    },
+    {
+      "path": "timing-controls-074",
+      "bytes": 26500176,
+      "sha256": "bda1c094f3de7c6d42ec45c757838c7a41a8ff1d63a025c661af84455169a101"
+    }
+  ],
+  "prior_inventory_sha256": "982d9598426830f6b3e44f9a701220b5778ceb3e6b568922d3b2ee405a0e6b05",
+  "run_sha256": "f5c3cf11419b806c906eb7ef92db30551be0b1569ac514618728e955ac184a56",
+  "matrix_sha256": "351854bd45fe16841e2cd7684537739741c66cd539c51668c088db7a456b0f0c",
+  "server": false,
+  "product": false
+}

@@ -1,0 +1,120 @@
+{
+  "schema": "local-consuming-composition-recheck-v1",
+  "source": "3ffa6e91b0ab0b03b82206a2dc3760c752679092",
+  "image_source": "b5f1b8fce6b3046239087873cb85ff1bfc557f0f",
+  "boot": "ef2adb68-3491-4673-b8aa-7f41305afd67",
+  "same_session_boot": true,
+  "lanes": [
+    {
+      "lane": "194",
+      "exit": 101,
+      "completed_cases": [
+        "healthy",
+        "revalidate",
+        "role-before"
+      ],
+      "original_cases": [
+        {
+          "case": "healthy",
+          "returned": true,
+          "kernel": null,
+          "causal_refusal": null,
+          "age_refusals": []
+        },
+        {
+          "case": "revalidate",
+          "returned": true,
+          "kernel": null,
+          "causal_refusal": null,
+          "age_refusals": []
+        },
+        {
+          "case": "role-before",
+          "returned": true,
+          "kernel": null,
+          "causal_refusal": null,
+          "age_refusals": []
+        },
+        {
+          "case": "role-after",
+          "returned": false,
+          "kernel": {
+            "clock": [
+              79347583067,
+              80244577195,
+              1792500654855763271,
+              1792500648826346512,
+              1,
+              60000000000
+            ],
+            "file": "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs",
+            "line": 259,
+            "phase": "unassigned",
+            "site": "clock-order"
+          },
+          "causal_refusal": null,
+          "age_refusals": []
+        }
+      ]
+    },
+    {
+      "lane": "188",
+      "exit": 0,
+      "completed_cases": [
+        "healthy",
+        "revalidate",
+        "role-before",
+        "role-after",
+        "trust-after"
+      ],
+      "original_cases": [
+        {
+          "case": "healthy",
+          "returned": true,
+          "kernel": null,
+          "causal_refusal": null,
+          "age_refusals": []
+        },
+        {
+          "case": "revalidate",
+          "returned": true,
+          "kernel": null,
+          "causal_refusal": null,
+          "age_refusals": []
+        },
+        {
+          "case": "role-before",
+          "returned": true,
+          "kernel": null,
+          "causal_refusal": null,
+          "age_refusals": []
+        },
+        {
+          "case": "role-after",
+          "returned": true,
+          "kernel": null,
+          "causal_refusal": null,
+          "age_refusals": []
+        },
+        {
+          "case": "trust-after",
+          "returned": true,
+          "kernel": null,
+          "causal_refusal": null,
+          "age_refusals": []
+        }
+      ]
+    }
+  ],
+  "local_composition_gate": false,
+  "full_functional_matrix_retested": true,
+  "native_execution_gate_passed": false,
+  "joined_sigkill_lost_ack_retested": false,
+  "original_delivery_retested": false,
+  "all_writer_cessation_proved": false,
+  "later_cells_retested": false,
+  "reconnect_retested": false,
+  "production_enrollment": false,
+  "server": false,
+  "product": false
+}

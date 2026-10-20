@@ -1,0 +1,8 @@
+uid=0(root) gid=0(root) groups=0(root)
+6.6.87.2-microsoft-standard-WSL2
+boot=ef2adb68-3491-4673-b8aa-7f41305afd67
+clocksource=tsc
+uptime=55.68 431.29
+timesyncd=active
+555 0 0 /sys/fs/cgroup
+700 0 0 /run/systemd/private
