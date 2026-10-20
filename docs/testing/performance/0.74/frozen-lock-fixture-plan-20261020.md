@@ -40,3 +40,15 @@ deadline, systemd/cgroup creation, server access, installation, supervisor
 operation, original send, product workload or qualification in this package.
 Actual fixed-root admission, held executable/artifacts, original delivery,
 all-writer cessation, lifecycle and reconnect remain subsequent gates.
+
+## Second synthetic consumer found by the broader invocation
+
+At 9f787ff8 the broader Windows invocation passes the artifact target and then
+refuses all eight diagnostic_receipts tests at their shared fixture's
+verify_receipt. That unchanged file still hashes the moving workspace lock.
+It is the same immutable-input hypothesis, not permission to change runtime
+validation. Record its targeted red and baseline byte equality before replacing
+only that include path with the same frozen fixture. Extend the exact adapter
+to reconstruct this second file and retain every old assertion. Then repeat
+both artifact and receipt targets and the complete ordinary Windows package.
+Any further failure remains independent and must not be counted as success.
