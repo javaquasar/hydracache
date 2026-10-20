@@ -6,6 +6,9 @@ use std::cell::Cell;
 #[path = "diagnostic_boot_comparison_alloc_tests.rs"]
 mod boot_comparison;
 
+#[path = "../tests/support/projection_prefix_alloc.rs"]
+mod projection_prefix;
+
 #[derive(Clone, Copy, Default, Debug, PartialEq, Eq, serde::Serialize)]
 struct Counts {
     allocations: u64,

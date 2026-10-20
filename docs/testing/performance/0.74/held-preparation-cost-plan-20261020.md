@@ -44,3 +44,24 @@ Run targeted tests, old kernel/bridge regressions, strict lint, targeted format,
 exact historical-source guards, docs/registry and local performance contract.
 Keep Cargo.lock, COMPAT and qualification manifest byte-exact. Full joined
 SIGKILL/lost-ACK, delivery, all-writer lifecycle and reconnect remain later gates.
+
+## Selected field prefix candidate
+
+At instrumented source 754269aa, six outputs phases each observe 39,744
+Projection calls. Their instrumented inclusive wall spans are 251–335 ms;
+outputs process CPU is 5.397–6.606 seconds. These overlapping observations do
+not assign the remaining work to I/O or prove one cause for expiry. Instrumented
+healthy attempts return exits GNU 101/0/0 and MSRV 0/0/101; keep both refusals.
+
+Select one pure allocation hypothesis: replace formatting the five fixed status
+field prefixes Pid/Tgid/Uid/Gid/Groups with borrowed literal prefixes. Do not
+change scanning, parsing, cardinality/budget/order/error predicates, fresh reads,
+live observation counts or any timer. A frozen full old projection function is
+the differential reference. Cover seeded byte mutations and refusal sites.
+
+The allocation probe uses 4096 decodes per arm, three samples per compiler;
+timing is separate with allocation counting disabled and 32768 decodes per arm.
+Warm both equally and alternate arm order. Before implementation, the baseline
+must record equal requests and fail the new reduction assertion. Acceptance
+requires repeatably fewer Rust allocation requests with identical results and
+refusal sites; do not claim whole-attempt latency or a native server fix from it.

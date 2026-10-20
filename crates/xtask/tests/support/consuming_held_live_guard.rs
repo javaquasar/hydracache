@@ -1,4 +1,6 @@
 //! Exact test-only hooks and a manual local gate, never an old-body exclusion.
+#[path = "projection_prefix_guard.rs"]
+pub(crate) mod prefix;
 pub(crate) const HOOKS: [(&str, &str); 3] = [
     ("tools/long-run-supervisor-074/src/diagnostic_privileged_root_cgroup_fixture.rs", "#[path = \"../tests/support/consuming_held_live.rs\"]\nmod held_live;\n"),
     ("tools/long-run-supervisor-074/src/diagnostic_held_late_trust.rs", "#[cfg(test)]\n#[path = \"../tests/support/consuming_held_live_documents.rs\"]\npub(crate) mod live_fixture;\n"),
@@ -37,6 +39,8 @@ platform = "linux"
 # END ACTUAL CONSUMING HELD GATE
 "#;
 pub(crate) fn normalize(path: &str, raw: &str) -> String {
+    let current = prefix::normalize(path, raw);
+    let raw = current.as_str();
     let exact = if path == "docs/testing/gated-test-registry.toml" {
         BLOCK
     } else if let Some((_, hook)) = HOOKS.iter().find(|(file, _)| *file == path) {
