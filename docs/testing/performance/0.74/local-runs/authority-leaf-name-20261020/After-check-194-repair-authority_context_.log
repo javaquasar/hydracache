@@ -1,0 +1,10 @@
+    Finished `release` profile [optimized] target(s) in 3.21s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/release/deps/hydracache_long_run_supervisor_074-c3c253bf49d23fef)
+
+running 3 tests
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_context_alloc::authority_context_allocation_attribution ... ignored, manual nonroot context ownership and prefix request attribution; no timing or admission
+test diagnostic_worker_policy::authority_registry::context_controls::authority_context_bounded_fixtures_keep_prefix_and_context_failures_distinct ... ok
+test diagnostic_worker_policy::authority_registry::context_controls::authority_context_seeded_fields_pins_and_refusal_classes_match_owned_reference ... ok
+
+test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 1408 filtered out; finished in 0.04s
+

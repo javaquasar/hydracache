@@ -1,0 +1,10 @@
+    Finished `release` profile [optimized] target(s) in 5.08s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-188-check/release/deps/hydracache_long_run_supervisor_074-1dbb29096ebc6338)
+
+running 3 tests
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_hex_alloc::authority_hex_allocation_attribution ... ignored, manual local nonroot authority key formatting requests; not admission or timing
+test diagnostic_worker_policy::authority_registry::hex_controls::authority_hex_preserves_independent_pin_and_context_binding_refusals ... ok
+test diagnostic_worker_policy::authority_registry::hex_controls::authority_hex_seeded_keys_preserve_lowercase_bytes_canonical_records_and_digests ... ok
+
+test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 1408 filtered out; finished in 0.01s
+

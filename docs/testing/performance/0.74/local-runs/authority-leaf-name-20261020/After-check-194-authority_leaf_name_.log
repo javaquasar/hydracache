@@ -1,0 +1,11 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `release` profile [optimized] target(s) in 3m 06s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/release/deps/hydracache_long_run_supervisor_074-c3c253bf49d23fef)
+
+running 3 tests
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_leaf_name_alloc::authority_leaf_name_allocation_attribution ... ignored, manual nonroot three-arm leaf name requests and refusal controls; not timing or admission
+test diagnostic_worker_policy::authority_registry::fixture::leaf_name_controls::authority_leaf_name_fault_classes_and_original_metadata_short_circuit_match ... ok
+test diagnostic_worker_policy::authority_registry::fixture::leaf_name_controls::authority_leaf_name_seeded_names_payloads_and_open_results_match_frozen_reference ... ok
+
+test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 1408 filtered out; finished in 0.04s
+

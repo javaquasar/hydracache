@@ -1,0 +1,16 @@
+{
+  "stage": "After",
+  "source": "843f6fe9149c20bed1b26e9fd959be58d07c54ff",
+  "recipe_sha256": "84caf3f09597119ec4da67078f537adb3af49a7b1d5f2a5359211af6676989e3",
+  "steps": [
+    {
+      "log": "After-check-contracts-repair-historical.log",
+      "exit": 0,
+      "sha256": "0a1b7a01fc67fae6f757bf79eedeafe7eb2b8c3d6d8fff87f3ed6d9f7641f2b1",
+      "name": "historical"
+    }
+  ],
+  "failure": null,
+  "server": false,
+  "product": false
+}

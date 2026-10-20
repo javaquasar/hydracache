@@ -1,0 +1,106 @@
+{
+  "stage": "After",
+  "source": "843f6fe9149c20bed1b26e9fd959be58d07c54ff",
+  "recipe_sha256": "84caf3f09597119ec4da67078f537adb3af49a7b1d5f2a5359211af6676989e3",
+  "steps": [
+    {
+      "name": "authority_leaf_name_",
+      "exit": 0,
+      "log": "After-check-194-repair-authority_leaf_name_.log",
+      "sha256": "60dccafb83adffdb7dcae02b7be29150bf5a0fe735468d81a1be70cbbba8bfda"
+    },
+    {
+      "name": "authority_context_",
+      "exit": 0,
+      "log": "After-check-194-repair-authority_context_.log",
+      "sha256": "d113b9216ab9355d9064dd8a67c7f6daa14e21b6fbc39c733b35e1ff3920f1e6"
+    },
+    {
+      "name": "authority_hex_",
+      "exit": 0,
+      "log": "After-check-194-repair-authority_hex_.log",
+      "sha256": "612317294d3c2c3d8b07bbc0a1eff8926ee0d3a501879d7f0d1efd00c66f0d24"
+    },
+    {
+      "name": "authority_",
+      "exit": 0,
+      "log": "After-check-194-repair-authority_.log",
+      "sha256": "b23206ef80daa16e659b91dd75ef2fe9e640cc4aa082733dcb03ec54a7fa0b22"
+    },
+    {
+      "name": "validation_leaf_requests_",
+      "exit": 0,
+      "log": "After-check-194-repair-validation_leaf_requests_.log",
+      "sha256": "690a31e5bbb124d2e34d0f95ddedb5b0335086b38a024388381c34c9a9db2cdb"
+    },
+    {
+      "name": "fixed_leaf_alloc_counter",
+      "exit": 0,
+      "log": "After-check-194-repair-fixed_leaf_alloc_counter.log",
+      "sha256": "787149d8d348587a96eedd2c3637f92bf57554015bbc8ce22f021bbef085642b"
+    },
+    {
+      "name": "fixed_leaf_path_differential",
+      "exit": 0,
+      "log": "After-check-194-repair-fixed_leaf_path_differential.log",
+      "sha256": "87a2ce18abb256f062c6b453e9994b630eeb9f81ff935350671aca005ec6c12b"
+    },
+    {
+      "name": "fixed_leaf_path_preserves",
+      "exit": 0,
+      "log": "After-check-194-repair-fixed_leaf_path_preserves.log",
+      "sha256": "07728a74e9dc2d0e45af4cc95b237b0d2da1229857eb2201b07557eb841cf91a"
+    },
+    {
+      "name": "kernel_time_",
+      "exit": 0,
+      "log": "After-check-194-repair-kernel_time_.log",
+      "sha256": "3c297f87f7437d100a1c963ab498b2361d833e8b3172abd781da6297640166ba"
+    },
+    {
+      "name": "kernel_worker_context_",
+      "exit": 0,
+      "log": "After-check-194-repair-kernel_worker_context_.log",
+      "sha256": "eb58e6c27ec55a0d1f89d268a5f01b9a8ed45ed9b872660639b9f2957d53aff5"
+    },
+    {
+      "name": "authority_fixed_",
+      "exit": 0,
+      "log": "After-check-194-repair-authority_fixed_.log",
+      "sha256": "44157b7dc6858b34d0c16e4827d4f5d94af8c1aab4136ca34edebd93c870d6a9"
+    },
+    {
+      "name": "authority_fixture_",
+      "exit": 0,
+      "log": "After-check-194-repair-authority_fixture_.log",
+      "sha256": "11a8a7ebc8541c2365f85a75d695308de2d5c7ec97d66d964710d14edeae234e"
+    },
+    {
+      "name": "worker_trust_input_",
+      "exit": 0,
+      "log": "After-check-194-repair-worker_trust_input_.log",
+      "sha256": "18e861e3f2d4eca6e2b371a5621511efcb14514d04d2729432d579bf278d54fd"
+    },
+    {
+      "name": "check",
+      "exit": 0,
+      "log": "After-check-194-repair-check.log",
+      "sha256": "7d47c4ad385d5bc505ba28810bc1953ddb5934a23bef43841e134dcd4f6bd1c7"
+    },
+    {
+      "name": "lint",
+      "exit": 0,
+      "log": "After-check-194-repair-lint.log",
+      "sha256": "21004f468ecaf910ef19866aba9c0179e7c026c4a512342183f8a6396ac80012"
+    },
+    {
+      "name": "build",
+      "exit": 0,
+      "log": "After-check-194-repair-build.log",
+      "sha256": "a206ceadb7ea8343ac2daf4391ec680add613821cc21481d35bcc5960e902c3e"
+    }
+  ],
+  "failure": null,
+  "server": false,
+  "product": false
+}

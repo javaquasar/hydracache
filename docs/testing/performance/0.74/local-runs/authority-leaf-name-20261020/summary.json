@@ -1,0 +1,3605 @@
+{
+  "schema": "authority-leaf-name-local-control-074-v1",
+  "complete_request_cohort": true,
+  "allocation_reduction_conserved": true,
+  "candidate_locally_accepted": true,
+  "latency_gain_claimed": false,
+  "all_syscalls_observed": false,
+  "full_active_authority_measured": false,
+  "existing_live_refusals_retained": true,
+  "native_gate_open": false,
+  "server": false,
+  "product": false,
+  "stages": [
+    {
+      "stage": "Before",
+      "lanes": [
+        {
+          "lane": "194",
+          "source": "895740e49d20a6236d4a1536db9eebd8d3b1128c",
+          "image_sha256": "cf5bab4ad346496dd22c7b6ceda69f562bdc2fdf37012944b542f03753d03a6a",
+          "origin": {
+            "boot_id": "289e8822-83d7-4d83-b4f5-bee1059f031f",
+            "iterations": 1024,
+            "pid": 356,
+            "product": false,
+            "samples": 3,
+            "server": false,
+            "uid": 1000,
+            "warmups": 32
+          },
+          "binding": [
+            {
+              "actual": {
+                "allocations": 3072,
+                "reallocations": 0,
+                "requested_bytes": 568320
+              },
+              "case": "record",
+              "iterations": 1024,
+              "order": [
+                0,
+                1,
+                2
+              ],
+              "product": false,
+              "proposed": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 546816
+              },
+              "reference": {
+                "allocations": 3072,
+                "reallocations": 0,
+                "requested_bytes": 568320
+              },
+              "rust_requests_only": true,
+              "sample": 0,
+              "server": false,
+              "timing_claim": false,
+              "warmups": 32
+            },
+            {
+              "actual": {
+                "allocations": 3072,
+                "reallocations": 0,
+                "requested_bytes": 114688
+              },
+              "case": "commit",
+              "iterations": 1024,
+              "order": [
+                0,
+                1,
+                2
+              ],
+              "product": false,
+              "proposed": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 91136
+              },
+              "reference": {
+                "allocations": 3072,
+                "reallocations": 0,
+                "requested_bytes": 114688
+              },
+              "rust_requests_only": true,
+              "sample": 0,
+              "server": false,
+              "timing_claim": false,
+              "warmups": 32
+            },
+            {
+              "actual": {
+                "allocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0
+              },
+              "case": "metadata-refusal",
+              "iterations": 1024,
+              "order": [
+                0,
+                1,
+                2
+              ],
+              "product": false,
+              "proposed": {
+                "allocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0
+              },
+              "reference": {
+                "allocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0
+              },
+              "rust_requests_only": true,
+              "sample": 0,
+              "server": false,
+              "timing_claim": false,
+              "warmups": 32
+            },
+            {
+              "actual": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 44032
+              },
+              "case": "missing-name",
+              "iterations": 1024,
+              "order": [
+                0,
+                1,
+                2
+              ],
+              "product": false,
+              "proposed": {
+                "allocations": 1024,
+                "reallocations": 0,
+                "requested_bytes": 22528
+              },
+              "reference": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 44032
+              },
+              "rust_requests_only": true,
+              "sample": 0,
+              "server": false,
+              "timing_claim": false,
+              "warmups": 32
+            },
+            {
+              "actual": {
+                "allocations": 3072,
+                "reallocations": 0,
+                "requested_bytes": 568320
+              },
+              "case": "record",
+              "iterations": 1024,
+              "order": [
+                1,
+                2,
+                0
+              ],
+              "product": false,
+              "proposed": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 546816
+              },
+              "reference": {
+                "allocations": 3072,
+                "reallocations": 0,
+                "requested_bytes": 568320
+              },
+              "rust_requests_only": true,
+              "sample": 1,
+              "server": false,
+              "timing_claim": false,
+              "warmups": 32
+            },
+            {
+              "actual": {
+                "allocations": 3072,
+                "reallocations": 0,
+                "requested_bytes": 114688
+              },
+              "case": "commit",
+              "iterations": 1024,
+              "order": [
+                1,
+                2,
+                0
+              ],
+              "product": false,
+              "proposed": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 91136
+              },
+              "reference": {
+                "allocations": 3072,
+                "reallocations": 0,
+                "requested_bytes": 114688
+              },
+              "rust_requests_only": true,
+              "sample": 1,
+              "server": false,
+              "timing_claim": false,
+              "warmups": 32
+            },
+            {
+              "actual": {
+                "allocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0
+              },
+              "case": "metadata-refusal",
+              "iterations": 1024,
+              "order": [
+                1,
+                2,
+                0
+              ],
+              "product": false,
+              "proposed": {
+                "allocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0
+              },
+              "reference": {
+                "allocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0
+              },
+              "rust_requests_only": true,
+              "sample": 1,
+              "server": false,
+              "timing_claim": false,
+              "warmups": 32
+            },
+            {
+              "actual": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 44032
+              },
+              "case": "missing-name",
+              "iterations": 1024,
+              "order": [
+                1,
+                2,
+                0
+              ],
+              "product": false,
+              "proposed": {
+                "allocations": 1024,
+                "reallocations": 0,
+                "requested_bytes": 22528
+              },
+              "reference": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 44032
+              },
+              "rust_requests_only": true,
+              "sample": 1,
+              "server": false,
+              "timing_claim": false,
+              "warmups": 32
+            },
+            {
+              "actual": {
+                "allocations": 3072,
+                "reallocations": 0,
+                "requested_bytes": 568320
+              },
+              "case": "record",
+              "iterations": 1024,
+              "order": [
+                2,
+                0,
+                1
+              ],
+              "product": false,
+              "proposed": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 546816
+              },
+              "reference": {
+                "allocations": 3072,
+                "reallocations": 0,
+                "requested_bytes": 568320
+              },
+              "rust_requests_only": true,
+              "sample": 2,
+              "server": false,
+              "timing_claim": false,
+              "warmups": 32
+            },
+            {
+              "actual": {
+                "allocations": 3072,
+                "reallocations": 0,
+                "requested_bytes": 114688
+              },
+              "case": "commit",
+              "iterations": 1024,
+              "order": [
+                2,
+                0,
+                1
+              ],
+              "product": false,
+              "proposed": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 91136
+              },
+              "reference": {
+                "allocations": 3072,
+                "reallocations": 0,
+                "requested_bytes": 114688
+              },
+              "rust_requests_only": true,
+              "sample": 2,
+              "server": false,
+              "timing_claim": false,
+              "warmups": 32
+            },
+            {
+              "actual": {
+                "allocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0
+              },
+              "case": "metadata-refusal",
+              "iterations": 1024,
+              "order": [
+                2,
+                0,
+                1
+              ],
+              "product": false,
+              "proposed": {
+                "allocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0
+              },
+              "reference": {
+                "allocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0
+              },
+              "rust_requests_only": true,
+              "sample": 2,
+              "server": false,
+              "timing_claim": false,
+              "warmups": 32
+            },
+            {
+              "actual": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 44032
+              },
+              "case": "missing-name",
+              "iterations": 1024,
+              "order": [
+                2,
+                0,
+                1
+              ],
+              "product": false,
+              "proposed": {
+                "allocations": 1024,
+                "reallocations": 0,
+                "requested_bytes": 22528
+              },
+              "reference": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 44032
+              },
+              "rust_requests_only": true,
+              "sample": 2,
+              "server": false,
+              "timing_claim": false,
+              "warmups": 32
+            }
+          ],
+          "inspect": [
+            {
+              "case": "boot",
+              "counts": [
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                },
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                },
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                }
+              ],
+              "read_requests": [
+                1024,
+                1024,
+                1024
+              ],
+              "kernel_counts": [
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0,
+                  64
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0,
+                  64
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0,
+                  64
+                ]
+              ]
+            },
+            {
+              "case": "namespace-user",
+              "counts": [
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                },
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                },
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                }
+              ],
+              "read_requests": [
+                0,
+                0,
+                0
+              ],
+              "kernel_counts": [
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0
+                ]
+              ]
+            },
+            {
+              "case": "namespace-mnt",
+              "counts": [
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                },
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                },
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                }
+              ],
+              "read_requests": [
+                0,
+                0,
+                0
+              ],
+              "kernel_counts": [
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0
+                ]
+              ]
+            },
+            {
+              "case": "namespace-pid",
+              "counts": [
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                },
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                },
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                }
+              ],
+              "read_requests": [
+                0,
+                0,
+                0
+              ],
+              "kernel_counts": [
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0
+                ]
+              ]
+            },
+            {
+              "case": "namespace-time",
+              "counts": [
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                },
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                },
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                }
+              ],
+              "read_requests": [
+                0,
+                0,
+                0
+              ],
+              "kernel_counts": [
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0
+                ]
+              ]
+            },
+            {
+              "case": "origin",
+              "counts": [
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                },
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                },
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                }
+              ],
+              "read_requests": [
+                2048,
+                2048,
+                2048
+              ],
+              "kernel_counts": [
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  128,
+                  256,
+                  0,
+                  0,
+                  128
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  128,
+                  256,
+                  0,
+                  0,
+                  128
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  128,
+                  256,
+                  0,
+                  0,
+                  128
+                ]
+              ]
+            },
+            {
+              "case": "authority-1",
+              "counts": [
+                {
+                  "allocations": 35840,
+                  "reallocations": 8192,
+                  "requested_bytes": 2705408
+                },
+                {
+                  "allocations": 35840,
+                  "reallocations": 8192,
+                  "requested_bytes": 2705408
+                },
+                {
+                  "allocations": 35840,
+                  "reallocations": 8192,
+                  "requested_bytes": 2705408
+                }
+              ],
+              "read_requests": [
+                4096,
+                4096,
+                4096
+              ],
+              "kernel_counts": [
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ]
+              ]
+            },
+            {
+              "case": "authority-7",
+              "counts": [
+                {
+                  "allocations": 154624,
+                  "reallocations": 57344,
+                  "requested_bytes": 13230080
+                },
+                {
+                  "allocations": 154624,
+                  "reallocations": 57344,
+                  "requested_bytes": 13230080
+                },
+                {
+                  "allocations": 154624,
+                  "reallocations": 57344,
+                  "requested_bytes": 13230080
+                }
+              ],
+              "read_requests": [
+                28672,
+                28672,
+                28672
+              ],
+              "kernel_counts": [
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "lane": "188",
+          "source": "895740e49d20a6236d4a1536db9eebd8d3b1128c",
+          "image_sha256": "3ddae06b2186f61d5c3a87e005a057b12a458ddef47f2e3814a98303d6adf82e",
+          "origin": {
+            "boot_id": "289e8822-83d7-4d83-b4f5-bee1059f031f",
+            "iterations": 1024,
+            "pid": 372,
+            "product": false,
+            "samples": 3,
+            "server": false,
+            "uid": 1000,
+            "warmups": 32
+          },
+          "binding": [
+            {
+              "actual": {
+                "allocations": 3072,
+                "reallocations": 0,
+                "requested_bytes": 568320
+              },
+              "case": "record",
+              "iterations": 1024,
+              "order": [
+                0,
+                1,
+                2
+              ],
+              "product": false,
+              "proposed": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 546816
+              },
+              "reference": {
+                "allocations": 3072,
+                "reallocations": 0,
+                "requested_bytes": 568320
+              },
+              "rust_requests_only": true,
+              "sample": 0,
+              "server": false,
+              "timing_claim": false,
+              "warmups": 32
+            },
+            {
+              "actual": {
+                "allocations": 3072,
+                "reallocations": 0,
+                "requested_bytes": 114688
+              },
+              "case": "commit",
+              "iterations": 1024,
+              "order": [
+                0,
+                1,
+                2
+              ],
+              "product": false,
+              "proposed": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 91136
+              },
+              "reference": {
+                "allocations": 3072,
+                "reallocations": 0,
+                "requested_bytes": 114688
+              },
+              "rust_requests_only": true,
+              "sample": 0,
+              "server": false,
+              "timing_claim": false,
+              "warmups": 32
+            },
+            {
+              "actual": {
+                "allocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0
+              },
+              "case": "metadata-refusal",
+              "iterations": 1024,
+              "order": [
+                0,
+                1,
+                2
+              ],
+              "product": false,
+              "proposed": {
+                "allocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0
+              },
+              "reference": {
+                "allocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0
+              },
+              "rust_requests_only": true,
+              "sample": 0,
+              "server": false,
+              "timing_claim": false,
+              "warmups": 32
+            },
+            {
+              "actual": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 44032
+              },
+              "case": "missing-name",
+              "iterations": 1024,
+              "order": [
+                0,
+                1,
+                2
+              ],
+              "product": false,
+              "proposed": {
+                "allocations": 1024,
+                "reallocations": 0,
+                "requested_bytes": 22528
+              },
+              "reference": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 44032
+              },
+              "rust_requests_only": true,
+              "sample": 0,
+              "server": false,
+              "timing_claim": false,
+              "warmups": 32
+            },
+            {
+              "actual": {
+                "allocations": 3072,
+                "reallocations": 0,
+                "requested_bytes": 568320
+              },
+              "case": "record",
+              "iterations": 1024,
+              "order": [
+                1,
+                2,
+                0
+              ],
+              "product": false,
+              "proposed": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 546816
+              },
+              "reference": {
+                "allocations": 3072,
+                "reallocations": 0,
+                "requested_bytes": 568320
+              },
+              "rust_requests_only": true,
+              "sample": 1,
+              "server": false,
+              "timing_claim": false,
+              "warmups": 32
+            },
+            {
+              "actual": {
+                "allocations": 3072,
+                "reallocations": 0,
+                "requested_bytes": 114688
+              },
+              "case": "commit",
+              "iterations": 1024,
+              "order": [
+                1,
+                2,
+                0
+              ],
+              "product": false,
+              "proposed": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 91136
+              },
+              "reference": {
+                "allocations": 3072,
+                "reallocations": 0,
+                "requested_bytes": 114688
+              },
+              "rust_requests_only": true,
+              "sample": 1,
+              "server": false,
+              "timing_claim": false,
+              "warmups": 32
+            },
+            {
+              "actual": {
+                "allocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0
+              },
+              "case": "metadata-refusal",
+              "iterations": 1024,
+              "order": [
+                1,
+                2,
+                0
+              ],
+              "product": false,
+              "proposed": {
+                "allocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0
+              },
+              "reference": {
+                "allocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0
+              },
+              "rust_requests_only": true,
+              "sample": 1,
+              "server": false,
+              "timing_claim": false,
+              "warmups": 32
+            },
+            {
+              "actual": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 44032
+              },
+              "case": "missing-name",
+              "iterations": 1024,
+              "order": [
+                1,
+                2,
+                0
+              ],
+              "product": false,
+              "proposed": {
+                "allocations": 1024,
+                "reallocations": 0,
+                "requested_bytes": 22528
+              },
+              "reference": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 44032
+              },
+              "rust_requests_only": true,
+              "sample": 1,
+              "server": false,
+              "timing_claim": false,
+              "warmups": 32
+            },
+            {
+              "actual": {
+                "allocations": 3072,
+                "reallocations": 0,
+                "requested_bytes": 568320
+              },
+              "case": "record",
+              "iterations": 1024,
+              "order": [
+                2,
+                0,
+                1
+              ],
+              "product": false,
+              "proposed": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 546816
+              },
+              "reference": {
+                "allocations": 3072,
+                "reallocations": 0,
+                "requested_bytes": 568320
+              },
+              "rust_requests_only": true,
+              "sample": 2,
+              "server": false,
+              "timing_claim": false,
+              "warmups": 32
+            },
+            {
+              "actual": {
+                "allocations": 3072,
+                "reallocations": 0,
+                "requested_bytes": 114688
+              },
+              "case": "commit",
+              "iterations": 1024,
+              "order": [
+                2,
+                0,
+                1
+              ],
+              "product": false,
+              "proposed": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 91136
+              },
+              "reference": {
+                "allocations": 3072,
+                "reallocations": 0,
+                "requested_bytes": 114688
+              },
+              "rust_requests_only": true,
+              "sample": 2,
+              "server": false,
+              "timing_claim": false,
+              "warmups": 32
+            },
+            {
+              "actual": {
+                "allocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0
+              },
+              "case": "metadata-refusal",
+              "iterations": 1024,
+              "order": [
+                2,
+                0,
+                1
+              ],
+              "product": false,
+              "proposed": {
+                "allocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0
+              },
+              "reference": {
+                "allocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0
+              },
+              "rust_requests_only": true,
+              "sample": 2,
+              "server": false,
+              "timing_claim": false,
+              "warmups": 32
+            },
+            {
+              "actual": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 44032
+              },
+              "case": "missing-name",
+              "iterations": 1024,
+              "order": [
+                2,
+                0,
+                1
+              ],
+              "product": false,
+              "proposed": {
+                "allocations": 1024,
+                "reallocations": 0,
+                "requested_bytes": 22528
+              },
+              "reference": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 44032
+              },
+              "rust_requests_only": true,
+              "sample": 2,
+              "server": false,
+              "timing_claim": false,
+              "warmups": 32
+            }
+          ],
+          "inspect": [
+            {
+              "case": "boot",
+              "counts": [
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                },
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                },
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                }
+              ],
+              "read_requests": [
+                1024,
+                1024,
+                1024
+              ],
+              "kernel_counts": [
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0,
+                  64
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0,
+                  64
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0,
+                  64
+                ]
+              ]
+            },
+            {
+              "case": "namespace-user",
+              "counts": [
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                },
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                },
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                }
+              ],
+              "read_requests": [
+                0,
+                0,
+                0
+              ],
+              "kernel_counts": [
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0
+                ]
+              ]
+            },
+            {
+              "case": "namespace-mnt",
+              "counts": [
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                },
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                },
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                }
+              ],
+              "read_requests": [
+                0,
+                0,
+                0
+              ],
+              "kernel_counts": [
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0
+                ]
+              ]
+            },
+            {
+              "case": "namespace-pid",
+              "counts": [
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                },
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                },
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                }
+              ],
+              "read_requests": [
+                0,
+                0,
+                0
+              ],
+              "kernel_counts": [
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0
+                ]
+              ]
+            },
+            {
+              "case": "namespace-time",
+              "counts": [
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                },
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                },
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                }
+              ],
+              "read_requests": [
+                0,
+                0,
+                0
+              ],
+              "kernel_counts": [
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0
+                ]
+              ]
+            },
+            {
+              "case": "origin",
+              "counts": [
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                },
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                },
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                }
+              ],
+              "read_requests": [
+                2048,
+                2048,
+                2048
+              ],
+              "kernel_counts": [
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  128,
+                  256,
+                  0,
+                  0,
+                  128
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  128,
+                  256,
+                  0,
+                  0,
+                  128
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  128,
+                  256,
+                  0,
+                  0,
+                  128
+                ]
+              ]
+            },
+            {
+              "case": "authority-1",
+              "counts": [
+                {
+                  "allocations": 35840,
+                  "reallocations": 8192,
+                  "requested_bytes": 2705408
+                },
+                {
+                  "allocations": 35840,
+                  "reallocations": 8192,
+                  "requested_bytes": 2705408
+                },
+                {
+                  "allocations": 35840,
+                  "reallocations": 8192,
+                  "requested_bytes": 2705408
+                }
+              ],
+              "read_requests": [
+                4096,
+                4096,
+                4096
+              ],
+              "kernel_counts": [
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ]
+              ]
+            },
+            {
+              "case": "authority-7",
+              "counts": [
+                {
+                  "allocations": 154624,
+                  "reallocations": 57344,
+                  "requested_bytes": 13230080
+                },
+                {
+                  "allocations": 154624,
+                  "reallocations": 57344,
+                  "requested_bytes": 13230080
+                },
+                {
+                  "allocations": 154624,
+                  "reallocations": 57344,
+                  "requested_bytes": 13230080
+                }
+              ],
+              "read_requests": [
+                28672,
+                28672,
+                28672
+              ],
+              "kernel_counts": [
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ]
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "stage": "After",
+      "lanes": [
+        {
+          "lane": "194",
+          "source": "a3fe909860fafdf550768c95c1178a1fc070944d",
+          "image_sha256": "2957864169bd32e719e6eafb919c293d9e8011dde9ded5549494d6741980096a",
+          "origin": {
+            "boot_id": "6f27f934-7b02-4d0f-9992-5c1f24d360a0",
+            "iterations": 1024,
+            "pid": 469,
+            "product": false,
+            "samples": 3,
+            "server": false,
+            "uid": 1000,
+            "warmups": 32
+          },
+          "binding": [
+            {
+              "actual": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 546816
+              },
+              "case": "record",
+              "iterations": 1024,
+              "order": [
+                0,
+                1,
+                2
+              ],
+              "product": false,
+              "proposed": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 546816
+              },
+              "reference": {
+                "allocations": 3072,
+                "reallocations": 0,
+                "requested_bytes": 568320
+              },
+              "rust_requests_only": true,
+              "sample": 0,
+              "server": false,
+              "timing_claim": false,
+              "warmups": 32
+            },
+            {
+              "actual": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 91136
+              },
+              "case": "commit",
+              "iterations": 1024,
+              "order": [
+                0,
+                1,
+                2
+              ],
+              "product": false,
+              "proposed": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 91136
+              },
+              "reference": {
+                "allocations": 3072,
+                "reallocations": 0,
+                "requested_bytes": 114688
+              },
+              "rust_requests_only": true,
+              "sample": 0,
+              "server": false,
+              "timing_claim": false,
+              "warmups": 32
+            },
+            {
+              "actual": {
+                "allocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0
+              },
+              "case": "metadata-refusal",
+              "iterations": 1024,
+              "order": [
+                0,
+                1,
+                2
+              ],
+              "product": false,
+              "proposed": {
+                "allocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0
+              },
+              "reference": {
+                "allocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0
+              },
+              "rust_requests_only": true,
+              "sample": 0,
+              "server": false,
+              "timing_claim": false,
+              "warmups": 32
+            },
+            {
+              "actual": {
+                "allocations": 1024,
+                "reallocations": 0,
+                "requested_bytes": 22528
+              },
+              "case": "missing-name",
+              "iterations": 1024,
+              "order": [
+                0,
+                1,
+                2
+              ],
+              "product": false,
+              "proposed": {
+                "allocations": 1024,
+                "reallocations": 0,
+                "requested_bytes": 22528
+              },
+              "reference": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 44032
+              },
+              "rust_requests_only": true,
+              "sample": 0,
+              "server": false,
+              "timing_claim": false,
+              "warmups": 32
+            },
+            {
+              "actual": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 546816
+              },
+              "case": "record",
+              "iterations": 1024,
+              "order": [
+                1,
+                2,
+                0
+              ],
+              "product": false,
+              "proposed": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 546816
+              },
+              "reference": {
+                "allocations": 3072,
+                "reallocations": 0,
+                "requested_bytes": 568320
+              },
+              "rust_requests_only": true,
+              "sample": 1,
+              "server": false,
+              "timing_claim": false,
+              "warmups": 32
+            },
+            {
+              "actual": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 91136
+              },
+              "case": "commit",
+              "iterations": 1024,
+              "order": [
+                1,
+                2,
+                0
+              ],
+              "product": false,
+              "proposed": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 91136
+              },
+              "reference": {
+                "allocations": 3072,
+                "reallocations": 0,
+                "requested_bytes": 114688
+              },
+              "rust_requests_only": true,
+              "sample": 1,
+              "server": false,
+              "timing_claim": false,
+              "warmups": 32
+            },
+            {
+              "actual": {
+                "allocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0
+              },
+              "case": "metadata-refusal",
+              "iterations": 1024,
+              "order": [
+                1,
+                2,
+                0
+              ],
+              "product": false,
+              "proposed": {
+                "allocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0
+              },
+              "reference": {
+                "allocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0
+              },
+              "rust_requests_only": true,
+              "sample": 1,
+              "server": false,
+              "timing_claim": false,
+              "warmups": 32
+            },
+            {
+              "actual": {
+                "allocations": 1024,
+                "reallocations": 0,
+                "requested_bytes": 22528
+              },
+              "case": "missing-name",
+              "iterations": 1024,
+              "order": [
+                1,
+                2,
+                0
+              ],
+              "product": false,
+              "proposed": {
+                "allocations": 1024,
+                "reallocations": 0,
+                "requested_bytes": 22528
+              },
+              "reference": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 44032
+              },
+              "rust_requests_only": true,
+              "sample": 1,
+              "server": false,
+              "timing_claim": false,
+              "warmups": 32
+            },
+            {
+              "actual": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 546816
+              },
+              "case": "record",
+              "iterations": 1024,
+              "order": [
+                2,
+                0,
+                1
+              ],
+              "product": false,
+              "proposed": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 546816
+              },
+              "reference": {
+                "allocations": 3072,
+                "reallocations": 0,
+                "requested_bytes": 568320
+              },
+              "rust_requests_only": true,
+              "sample": 2,
+              "server": false,
+              "timing_claim": false,
+              "warmups": 32
+            },
+            {
+              "actual": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 91136
+              },
+              "case": "commit",
+              "iterations": 1024,
+              "order": [
+                2,
+                0,
+                1
+              ],
+              "product": false,
+              "proposed": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 91136
+              },
+              "reference": {
+                "allocations": 3072,
+                "reallocations": 0,
+                "requested_bytes": 114688
+              },
+              "rust_requests_only": true,
+              "sample": 2,
+              "server": false,
+              "timing_claim": false,
+              "warmups": 32
+            },
+            {
+              "actual": {
+                "allocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0
+              },
+              "case": "metadata-refusal",
+              "iterations": 1024,
+              "order": [
+                2,
+                0,
+                1
+              ],
+              "product": false,
+              "proposed": {
+                "allocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0
+              },
+              "reference": {
+                "allocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0
+              },
+              "rust_requests_only": true,
+              "sample": 2,
+              "server": false,
+              "timing_claim": false,
+              "warmups": 32
+            },
+            {
+              "actual": {
+                "allocations": 1024,
+                "reallocations": 0,
+                "requested_bytes": 22528
+              },
+              "case": "missing-name",
+              "iterations": 1024,
+              "order": [
+                2,
+                0,
+                1
+              ],
+              "product": false,
+              "proposed": {
+                "allocations": 1024,
+                "reallocations": 0,
+                "requested_bytes": 22528
+              },
+              "reference": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 44032
+              },
+              "rust_requests_only": true,
+              "sample": 2,
+              "server": false,
+              "timing_claim": false,
+              "warmups": 32
+            }
+          ],
+          "inspect": [
+            {
+              "case": "boot",
+              "counts": [
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                },
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                },
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                }
+              ],
+              "read_requests": [
+                1024,
+                1024,
+                1024
+              ],
+              "kernel_counts": [
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0,
+                  64
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0,
+                  64
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0,
+                  64
+                ]
+              ]
+            },
+            {
+              "case": "namespace-user",
+              "counts": [
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                },
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                },
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                }
+              ],
+              "read_requests": [
+                0,
+                0,
+                0
+              ],
+              "kernel_counts": [
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0
+                ]
+              ]
+            },
+            {
+              "case": "namespace-mnt",
+              "counts": [
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                },
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                },
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                }
+              ],
+              "read_requests": [
+                0,
+                0,
+                0
+              ],
+              "kernel_counts": [
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0
+                ]
+              ]
+            },
+            {
+              "case": "namespace-pid",
+              "counts": [
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                },
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                },
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                }
+              ],
+              "read_requests": [
+                0,
+                0,
+                0
+              ],
+              "kernel_counts": [
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0
+                ]
+              ]
+            },
+            {
+              "case": "namespace-time",
+              "counts": [
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                },
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                },
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                }
+              ],
+              "read_requests": [
+                0,
+                0,
+                0
+              ],
+              "kernel_counts": [
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0
+                ]
+              ]
+            },
+            {
+              "case": "origin",
+              "counts": [
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                },
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                },
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                }
+              ],
+              "read_requests": [
+                2048,
+                2048,
+                2048
+              ],
+              "kernel_counts": [
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  128,
+                  256,
+                  0,
+                  0,
+                  128
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  128,
+                  256,
+                  0,
+                  0,
+                  128
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  128,
+                  256,
+                  0,
+                  0,
+                  128
+                ]
+              ]
+            },
+            {
+              "case": "authority-1",
+              "counts": [
+                {
+                  "allocations": 33792,
+                  "reallocations": 8192,
+                  "requested_bytes": 2660352
+                },
+                {
+                  "allocations": 33792,
+                  "reallocations": 8192,
+                  "requested_bytes": 2660352
+                },
+                {
+                  "allocations": 33792,
+                  "reallocations": 8192,
+                  "requested_bytes": 2660352
+                }
+              ],
+              "read_requests": [
+                4096,
+                4096,
+                4096
+              ],
+              "kernel_counts": [
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ]
+              ]
+            },
+            {
+              "case": "authority-7",
+              "counts": [
+                {
+                  "allocations": 140288,
+                  "reallocations": 57344,
+                  "requested_bytes": 12914688
+                },
+                {
+                  "allocations": 140288,
+                  "reallocations": 57344,
+                  "requested_bytes": 12914688
+                },
+                {
+                  "allocations": 140288,
+                  "reallocations": 57344,
+                  "requested_bytes": 12914688
+                }
+              ],
+              "read_requests": [
+                28672,
+                28672,
+                28672
+              ],
+              "kernel_counts": [
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "lane": "188",
+          "source": "a3fe909860fafdf550768c95c1178a1fc070944d",
+          "image_sha256": "db52c65bf299b428a07780576c29c6a431b4201a9d691d474a15d9ca8f5b3e2c",
+          "origin": {
+            "boot_id": "6f27f934-7b02-4d0f-9992-5c1f24d360a0",
+            "iterations": 1024,
+            "pid": 485,
+            "product": false,
+            "samples": 3,
+            "server": false,
+            "uid": 1000,
+            "warmups": 32
+          },
+          "binding": [
+            {
+              "actual": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 546816
+              },
+              "case": "record",
+              "iterations": 1024,
+              "order": [
+                0,
+                1,
+                2
+              ],
+              "product": false,
+              "proposed": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 546816
+              },
+              "reference": {
+                "allocations": 3072,
+                "reallocations": 0,
+                "requested_bytes": 568320
+              },
+              "rust_requests_only": true,
+              "sample": 0,
+              "server": false,
+              "timing_claim": false,
+              "warmups": 32
+            },
+            {
+              "actual": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 91136
+              },
+              "case": "commit",
+              "iterations": 1024,
+              "order": [
+                0,
+                1,
+                2
+              ],
+              "product": false,
+              "proposed": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 91136
+              },
+              "reference": {
+                "allocations": 3072,
+                "reallocations": 0,
+                "requested_bytes": 114688
+              },
+              "rust_requests_only": true,
+              "sample": 0,
+              "server": false,
+              "timing_claim": false,
+              "warmups": 32
+            },
+            {
+              "actual": {
+                "allocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0
+              },
+              "case": "metadata-refusal",
+              "iterations": 1024,
+              "order": [
+                0,
+                1,
+                2
+              ],
+              "product": false,
+              "proposed": {
+                "allocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0
+              },
+              "reference": {
+                "allocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0
+              },
+              "rust_requests_only": true,
+              "sample": 0,
+              "server": false,
+              "timing_claim": false,
+              "warmups": 32
+            },
+            {
+              "actual": {
+                "allocations": 1024,
+                "reallocations": 0,
+                "requested_bytes": 22528
+              },
+              "case": "missing-name",
+              "iterations": 1024,
+              "order": [
+                0,
+                1,
+                2
+              ],
+              "product": false,
+              "proposed": {
+                "allocations": 1024,
+                "reallocations": 0,
+                "requested_bytes": 22528
+              },
+              "reference": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 44032
+              },
+              "rust_requests_only": true,
+              "sample": 0,
+              "server": false,
+              "timing_claim": false,
+              "warmups": 32
+            },
+            {
+              "actual": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 546816
+              },
+              "case": "record",
+              "iterations": 1024,
+              "order": [
+                1,
+                2,
+                0
+              ],
+              "product": false,
+              "proposed": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 546816
+              },
+              "reference": {
+                "allocations": 3072,
+                "reallocations": 0,
+                "requested_bytes": 568320
+              },
+              "rust_requests_only": true,
+              "sample": 1,
+              "server": false,
+              "timing_claim": false,
+              "warmups": 32
+            },
+            {
+              "actual": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 91136
+              },
+              "case": "commit",
+              "iterations": 1024,
+              "order": [
+                1,
+                2,
+                0
+              ],
+              "product": false,
+              "proposed": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 91136
+              },
+              "reference": {
+                "allocations": 3072,
+                "reallocations": 0,
+                "requested_bytes": 114688
+              },
+              "rust_requests_only": true,
+              "sample": 1,
+              "server": false,
+              "timing_claim": false,
+              "warmups": 32
+            },
+            {
+              "actual": {
+                "allocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0
+              },
+              "case": "metadata-refusal",
+              "iterations": 1024,
+              "order": [
+                1,
+                2,
+                0
+              ],
+              "product": false,
+              "proposed": {
+                "allocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0
+              },
+              "reference": {
+                "allocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0
+              },
+              "rust_requests_only": true,
+              "sample": 1,
+              "server": false,
+              "timing_claim": false,
+              "warmups": 32
+            },
+            {
+              "actual": {
+                "allocations": 1024,
+                "reallocations": 0,
+                "requested_bytes": 22528
+              },
+              "case": "missing-name",
+              "iterations": 1024,
+              "order": [
+                1,
+                2,
+                0
+              ],
+              "product": false,
+              "proposed": {
+                "allocations": 1024,
+                "reallocations": 0,
+                "requested_bytes": 22528
+              },
+              "reference": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 44032
+              },
+              "rust_requests_only": true,
+              "sample": 1,
+              "server": false,
+              "timing_claim": false,
+              "warmups": 32
+            },
+            {
+              "actual": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 546816
+              },
+              "case": "record",
+              "iterations": 1024,
+              "order": [
+                2,
+                0,
+                1
+              ],
+              "product": false,
+              "proposed": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 546816
+              },
+              "reference": {
+                "allocations": 3072,
+                "reallocations": 0,
+                "requested_bytes": 568320
+              },
+              "rust_requests_only": true,
+              "sample": 2,
+              "server": false,
+              "timing_claim": false,
+              "warmups": 32
+            },
+            {
+              "actual": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 91136
+              },
+              "case": "commit",
+              "iterations": 1024,
+              "order": [
+                2,
+                0,
+                1
+              ],
+              "product": false,
+              "proposed": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 91136
+              },
+              "reference": {
+                "allocations": 3072,
+                "reallocations": 0,
+                "requested_bytes": 114688
+              },
+              "rust_requests_only": true,
+              "sample": 2,
+              "server": false,
+              "timing_claim": false,
+              "warmups": 32
+            },
+            {
+              "actual": {
+                "allocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0
+              },
+              "case": "metadata-refusal",
+              "iterations": 1024,
+              "order": [
+                2,
+                0,
+                1
+              ],
+              "product": false,
+              "proposed": {
+                "allocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0
+              },
+              "reference": {
+                "allocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0
+              },
+              "rust_requests_only": true,
+              "sample": 2,
+              "server": false,
+              "timing_claim": false,
+              "warmups": 32
+            },
+            {
+              "actual": {
+                "allocations": 1024,
+                "reallocations": 0,
+                "requested_bytes": 22528
+              },
+              "case": "missing-name",
+              "iterations": 1024,
+              "order": [
+                2,
+                0,
+                1
+              ],
+              "product": false,
+              "proposed": {
+                "allocations": 1024,
+                "reallocations": 0,
+                "requested_bytes": 22528
+              },
+              "reference": {
+                "allocations": 2048,
+                "reallocations": 0,
+                "requested_bytes": 44032
+              },
+              "rust_requests_only": true,
+              "sample": 2,
+              "server": false,
+              "timing_claim": false,
+              "warmups": 32
+            }
+          ],
+          "inspect": [
+            {
+              "case": "boot",
+              "counts": [
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                },
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                },
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                }
+              ],
+              "read_requests": [
+                1024,
+                1024,
+                1024
+              ],
+              "kernel_counts": [
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0,
+                  64
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0,
+                  64
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0,
+                  64
+                ]
+              ]
+            },
+            {
+              "case": "namespace-user",
+              "counts": [
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                },
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                },
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                }
+              ],
+              "read_requests": [
+                0,
+                0,
+                0
+              ],
+              "kernel_counts": [
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0
+                ]
+              ]
+            },
+            {
+              "case": "namespace-mnt",
+              "counts": [
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                },
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                },
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                }
+              ],
+              "read_requests": [
+                0,
+                0,
+                0
+              ],
+              "kernel_counts": [
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0
+                ]
+              ]
+            },
+            {
+              "case": "namespace-pid",
+              "counts": [
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                },
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                },
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                }
+              ],
+              "read_requests": [
+                0,
+                0,
+                0
+              ],
+              "kernel_counts": [
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0
+                ]
+              ]
+            },
+            {
+              "case": "namespace-time",
+              "counts": [
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                },
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                },
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                }
+              ],
+              "read_requests": [
+                0,
+                0,
+                0
+              ],
+              "kernel_counts": [
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  0,
+                  0,
+                  0
+                ]
+              ]
+            },
+            {
+              "case": "origin",
+              "counts": [
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                },
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                },
+                {
+                  "allocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0
+                }
+              ],
+              "read_requests": [
+                2048,
+                2048,
+                2048
+              ],
+              "kernel_counts": [
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  128,
+                  256,
+                  0,
+                  0,
+                  128
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  128,
+                  256,
+                  0,
+                  0,
+                  128
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  64,
+                  128,
+                  256,
+                  0,
+                  0,
+                  128
+                ]
+              ]
+            },
+            {
+              "case": "authority-1",
+              "counts": [
+                {
+                  "allocations": 33792,
+                  "reallocations": 8192,
+                  "requested_bytes": 2660352
+                },
+                {
+                  "allocations": 33792,
+                  "reallocations": 8192,
+                  "requested_bytes": 2660352
+                },
+                {
+                  "allocations": 33792,
+                  "reallocations": 8192,
+                  "requested_bytes": 2660352
+                }
+              ],
+              "read_requests": [
+                4096,
+                4096,
+                4096
+              ],
+              "kernel_counts": [
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ]
+              ]
+            },
+            {
+              "case": "authority-7",
+              "counts": [
+                {
+                  "allocations": 140288,
+                  "reallocations": 57344,
+                  "requested_bytes": 12914688
+                },
+                {
+                  "allocations": 140288,
+                  "reallocations": 57344,
+                  "requested_bytes": 12914688
+                },
+                {
+                  "allocations": 140288,
+                  "reallocations": 57344,
+                  "requested_bytes": 12914688
+                }
+              ],
+              "read_requests": [
+                28672,
+                28672,
+                28672
+              ],
+              "kernel_counts": [
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ]
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "lane": "194",
+      "record_per_operation": {
+        "allocations": 1,
+        "reallocations": 0,
+        "requested_bytes": 21
+      },
+      "commit_per_operation": {
+        "allocations": 1,
+        "reallocations": 0,
+        "requested_bytes": 23
+      },
+      "metadata_refusal": {
+        "allocations": 0,
+        "reallocations": 0,
+        "requested_bytes": 0
+      },
+      "missing_name": {
+        "allocations": 1,
+        "reallocations": 0,
+        "requested_bytes": 21
+      }
+    },
+    {
+      "lane": "188",
+      "record_per_operation": {
+        "allocations": 1,
+        "reallocations": 0,
+        "requested_bytes": 21
+      },
+      "commit_per_operation": {
+        "allocations": 1,
+        "reallocations": 0,
+        "requested_bytes": 23
+      },
+      "metadata_refusal": {
+        "allocations": 0,
+        "reallocations": 0,
+        "requested_bytes": 0
+      },
+      "missing_name": {
+        "allocations": 1,
+        "reallocations": 0,
+        "requested_bytes": 21
+      }
+    }
+  ]
+}
