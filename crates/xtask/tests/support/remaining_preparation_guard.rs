@@ -1,9 +1,11 @@
 //! Exact local observations and bounded-parser substitutions only.
+#[path = "authority_hex_guard.rs"]
+mod authority_hex;
 #[macro_export]
 macro_rules! hc074_leaf_requests_view {
     ($path:expr, $source:expr) => {{
         let path: &str = $path;
-        let mut raw: String = $source.to_owned();
+        let mut raw: String = $crate::hc074_authority_hex_view!(path, $source);
         let hook = "\n#[path = \"../tests/support/validation_leaf_requests.rs\"]\nmod validation_leaf_requests;\n";
         let gate = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/tests/support/validation_leaf_requests_gate.txt")).replace('\r', "");
         for (file, exact, marker) in [

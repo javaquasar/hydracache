@@ -1,6 +1,9 @@
 //! Opt-in test binary only. Rust requests, not libc malloc, CPU, RSS or authority.
 use super::*;
 
+#[path = "../tests/support/authority_hex_alloc.rs"]
+mod authority_hex_alloc;
+
 #[path = "../tests/support/validation_leaf_requests.rs"]
 mod validation_leaf_requests;
 
