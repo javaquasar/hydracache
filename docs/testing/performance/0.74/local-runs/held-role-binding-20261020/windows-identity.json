@@ -1,0 +1,13 @@
+{
+  "source": "c24f460abcadef8a1d916aa1c5ea53a7b14c26fb",
+  "mode": "windows",
+  "recipe": "a4f2e326d754c2dd07002ef28700fefafa74982d8a7e1df968368aba32213107",
+  "original_join": false,
+  "role_receipt_issued": false,
+  "original_send": false,
+  "server": false,
+  "supervisor": false,
+  "product": false,
+  "full_joined_sigkill": false,
+  "clock_changed": false
+}

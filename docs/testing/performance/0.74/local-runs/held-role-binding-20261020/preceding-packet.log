@@ -1,0 +1,10 @@
+{
+  "verified": true,
+  "files": 86,
+  "receipt_metadata_mutations_refused": 34,
+  "inventory_sha256": "c9fdc73c1f89b2037af2eacb87af8b6576a1e0af29629a1ef584dd0974316faf",
+  "new_linux_tests": 10,
+  "original_join": false,
+  "server": false,
+  "product": false
+}

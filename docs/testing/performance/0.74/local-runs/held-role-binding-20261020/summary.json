@@ -1,0 +1,23 @@
+{
+  "source": "c24f460abcadef8a1d916aa1c5ea53a7b14c26fb",
+  "implementation": "b479d5a0",
+  "recipe": "a4f2e326d754c2dd07002ef28700fefafa74982d8a7e1df968368aba32213107",
+  "old_sources_reconstructed": 441,
+  "named_runtime_additions": 1,
+  "new_portable_tests": 12,
+  "seed": "0x0074b14d",
+  "corruptions_per_round": 64,
+  "rounds_per_compiler": 2,
+  "full_321_rerun": false,
+  "launcher_process_matrix_rerun": false,
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "static_binding_only": true,
+  "original_join": false,
+  "role_receipt_issued": false,
+  "original_send": false,
+  "server": false,
+  "supervisor": false,
+  "product": false,
+  "full_joined_sigkill": false,
+  "clock_changed": false
+}
