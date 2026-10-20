@@ -1,0 +1,51 @@
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::cgroup::held_live::privileged_consuming_held_live_matrix ... 
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::cgroup::held_live::privileged_consuming_held_live_matrix ... HC074-HELD-LIVE case=healthy seed=0x074c051e actual_fixed=true actual_consuming=true original_bounds=true eof=true fence_retained=true guardians_terminal=true synthetic_images=true original_send=false completion=false server=false product=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1365 filtered out; finished in 8.26s
+
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::cgroup::held_live::privileged_consuming_held_live_matrix ... HC074-HELD-LIVE case=revalidate seed=0x074c051e actual_fixed=true actual_consuming=true original_bounds=true eof=true fence_retained=true guardians_terminal=true synthetic_images=true original_send=false completion=false server=false product=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1365 filtered out; finished in 8.26s
+
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::cgroup::held_live::privileged_consuming_held_live_matrix ... HC074-HELD-LIVE case=role-before seed=0x074c051e actual_fixed=true actual_consuming=true original_bounds=true eof=true fence_retained=true guardians_terminal=true synthetic_images=true original_send=false completion=false server=false product=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1365 filtered out; finished in 7.11s
+
+
+running 1 test
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::cgroup::held_live::privileged_consuming_held_live_matrix' (461) panicked at tools/long-run-supervisor-074/src/../tests/support/consuming_held_live.rs:196:65:
+called `Result::unwrap()` on an `Err` value: Frame(Original(Original(Original(Transport(Material(Outputs(Original(Original(Original(Causal(Reservation(Attempt(Controller(Original(Input(Kernel(Invalid)))))))))))))))))
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::cgroup::held_live::privileged_consuming_held_live_matrix ... FAILED
+
+failures:
+
+failures:
+    diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::cgroup::held_live::privileged_consuming_held_live_matrix
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1365 filtered out; finished in 5.75s
+
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::cgroup::held_live::privileged_consuming_held_live_matrix' (323) panicked at tools/long-run-supervisor-074/src/../tests/support/consuming_held_live.rs:123:9:
+actual held case refused: role-after: exit status: 101
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::cgroup::held_live::privileged_consuming_held_live_matrix
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1365 filtered out; finished in 29.39s
+

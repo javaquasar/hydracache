@@ -1,0 +1,32 @@
+
+running 26 tests
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::actual_original_packet_namespace_and_policy_faults_poison_both_borrows ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::canonical_newline_and_bounded_document_are_required ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::held_key_is_nonweak_and_distinct_from_all_three_old_keys ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::held_trust_source_retains_independent_selection_and_revalidates ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::independent_thread_local_sources_do_not_share_refusal ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::leaf_symlink_directory_and_fifo_refuse_without_blocking ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::malformed_v4_poisons_original_instead_of_returning_a_static_receipt ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::named_root_and_ancestor_symlinks_refuse ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::original_guard_poison_propagates_from_configuration_to_original_chain ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::original_guard_reobserves_real_kernel_controller_and_active_authority ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::original_guard_requires_actual_authority_policy_and_epoch ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::original_guard_requires_independently_pinned_held_and_old_builder_documents ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::production_opener_requires_root_before_accessing_fixed_configuration ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::retained_actual_revision_snapshot_and_request_drift_cannot_be_repaired ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::retained_projection_drift_refuses_instead_of_repairing_itself ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::same_bytes_ancestor_and_root_replacements_refuse ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::same_bytes_leaf_replacement_is_sticky_even_after_original_restore ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::same_inode_mutation_and_metadata_change_refuse_stickily ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::schema_repository_pins_epoch_and_controller_are_not_caller_selected ... ok
+held_runtime_trust seed=0x00747a57 corruptions=256
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::seeded_byte_mutations_cannot_select_different_trust ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::strict_fields_missing_null_duplicate_and_unknown_refuse ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::unsafe_leaf_modes_and_hardlinks_refuse ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::valid_pin_with_different_root_selected_held_key_refuses ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::valid_v4_documents_match_the_same_original_request_without_admitting_start ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::validly_signed_v4_for_other_request_controller_identity_or_policy_poisons_join ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::wrong_owner_relative_root_empty_and_oversize_sources_refuse ... ok
+
+test result: ok. 26 passed; 0 failed; 0 ignored; 0 measured; 1341 filtered out; finished in 0.70s
+

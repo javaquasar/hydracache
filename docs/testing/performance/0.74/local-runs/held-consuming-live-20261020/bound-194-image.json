@@ -1,0 +1,11 @@
+{
+  "source": "5172d69b916dcf8aa97c04a602ebc419e229b3c6",
+  "mode": "194",
+  "path": "/home/artur/.cache/hydracache-074-194-check/release/deps/hydracache_long_run_supervisor_074-b26b156d3dcd0098",
+  "sha256": "674763ec6829e326597457d2f3963f4f1c8dbdfdec4879bc8a336cfc46386c79",
+  "recipe_sha256": "44ce219048da57f393856cc1b3a9f903ed430c1d0c053892ba538b0da261597d",
+  "release": true,
+  "synthetic_role_images": true,
+  "server": false,
+  "product": false
+}

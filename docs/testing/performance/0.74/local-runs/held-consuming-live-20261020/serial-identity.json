@@ -1,0 +1,12 @@
+{
+  "image_source": "5172d69b916dcf8aa97c04a602ebc419e229b3c6",
+  "control_commit": "9620ba3e7aee1d81190aeb3ae983bfd5a48a2157",
+  "image_sha256": "674763ec6829e326597457d2f3963f4f1c8dbdfdec4879bc8a336cfc46386c79",
+  "recipe_sha256": "23a29086796edc9927d02b110d1eb2a8417b08c571e264e68ae38be85d4f037b",
+  "serial_control": true,
+  "preceding_cohort_accepted": false,
+  "server": false,
+  "product": false,
+  "clock_changed": false,
+  "deadline_changed": false
+}

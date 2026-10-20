@@ -1,0 +1,13 @@
+diff --git a/tools/long-run-supervisor-074/tests/support/consuming_held_live.rs b/tools/long-run-supervisor-074/tests/support/consuming_held_live.rs
+index 552e1f9d..d0f8c798 100644
+--- a/tools/long-run-supervisor-074/tests/support/consuming_held_live.rs
++++ b/tools/long-run-supervisor-074/tests/support/consuming_held_live.rs
+@@ -347,7 +347,7 @@ fn run_original(case: &str) {
+             }
+             assert!(drain(&mut out) && drain(&mut err));
+             busy(campaigns);
+-            println!("HC074-HELD-LIVE case={case} seed=0x074c051e actual_fixed=true actual_consuming=true original_bounds=true eof=true fence_retained=true guardians_terminal=true synthetic_images=true original_send=false completion=false server=false product=false");
++            println!("HC074-HELD-LIVE case={case} seed=0x074c051e actual_fixed=true actual_consuming=true original_bounds=true eof=true fence_retained=true custodians_terminal=true synthetic_images=true original_send=false completion=false server=false product=false");
+         },
+     );
+ }

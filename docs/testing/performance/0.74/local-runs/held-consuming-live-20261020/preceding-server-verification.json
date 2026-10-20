@@ -1,0 +1,10 @@
+{
+  "evidence_verified": true,
+  "files": 53,
+  "selections": 16,
+  "metadata_mutations_refused": 42,
+  "comparison_passed": true,
+  "privileged_full_join": false,
+  "clock_cause_established": false,
+  "product": false
+}

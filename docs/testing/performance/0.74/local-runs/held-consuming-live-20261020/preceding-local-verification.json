@@ -1,0 +1,12 @@
+{
+  "evidence_verified": true,
+  "files": 201,
+  "metadata_mutations_refused": 72,
+  "inventory_sha256": "617f703d5b931e3156d4d2a4a5a60db1cfb9a338e5281a3d090e51f677299f1a",
+  "local_join_gate_passed": false,
+  "unrestricted_cpu_gate_passed": false,
+  "privileged_full_join": false,
+  "clock_cause_established": false,
+  "server": false,
+  "product": false
+}

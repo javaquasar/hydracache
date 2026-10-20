@@ -1,0 +1,18 @@
+{
+  "source": "1eac3bb37814d5aaf44f84370606218719c01c2f",
+  "reporting_source": "4a01412e6f81fe8b853f511ecf63cde95a732b75",
+  "frozen_old_sources": 446,
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "actual_holder_observed": true,
+  "final_matrix_passed": false,
+  "server": false,
+  "product": false,
+  "original_send": false,
+  "full_joined_sigkill": false,
+  "real_role_image_cost": false,
+  "clock_actor_established": false,
+  "production_enrollment": false,
+  "qualification_changed": false,
+  "preceding_cohorts_accepted": false,
+  "root_guardians_terminal_claim": false
+}

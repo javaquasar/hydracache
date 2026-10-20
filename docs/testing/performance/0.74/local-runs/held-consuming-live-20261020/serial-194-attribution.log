@@ -1,0 +1,10 @@
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::cgroup::held_live::privileged_consuming_held_live_matrix ... HC074-HELD-LIVE-COST phase=placement wall_ns=146024691 process_cpu_ns=145087390 returned=true includes_child_cpu=false guard_clock=false
+HC074-HELD-LIVE-COST phase=fixed-slice wall_ns=146545306 process_cpu_ns=146000178 returned=true includes_child_cpu=false guard_clock=false
+HC074-HELD-LIVE-COST phase=consuming wall_ns=677286059 process_cpu_ns=672540717 returned=true includes_child_cpu=false guard_clock=false
+HC074-HELD-LIVE case=healthy seed=0x074c051e actual_fixed=true actual_consuming=true original_bounds=true eof=true fence_retained=true guardians_terminal=true synthetic_images=true original_send=false completion=false server=false product=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1365 filtered out; finished in 7.99s
+

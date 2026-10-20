@@ -1,0 +1,18 @@
+{
+  "source": "fcac7eddade33b7173c9d8602033d64afc39309b",
+  "mode": "188",
+  "results": {
+    "models": 0,
+    "trust": 0,
+    "live": 101,
+    "attribution": 101,
+    "lint": 0
+  },
+  "live_matrix_passed": false,
+  "attribution_completed": false,
+  "server": false,
+  "product": false,
+  "original_send": false,
+  "full_joined_sigkill": false,
+  "real_role_image_cost": false
+}

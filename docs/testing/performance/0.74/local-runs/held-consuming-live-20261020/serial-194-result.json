@@ -1,0 +1,16 @@
+{
+  "image_source": "5172d69b916dcf8aa97c04a602ebc419e229b3c6",
+  "control_commit": "9620ba3e7aee1d81190aeb3ae983bfd5a48a2157",
+  "results": {
+    "live": 101,
+    "attribution": 0
+  },
+  "serial_control": true,
+  "live_matrix_passed": false,
+  "preceding_cohort_accepted": false,
+  "server": false,
+  "product": false,
+  "original_send": false,
+  "full_joined_sigkill": false,
+  "real_role_image_cost": false
+}
