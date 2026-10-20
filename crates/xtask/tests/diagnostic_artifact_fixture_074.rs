@@ -4,6 +4,9 @@ use std::path::PathBuf;
 
 const BASE: &str = "23c57b77523ad1cc16b1a79fc90b02a125f8d9b8";
 const FILE: &str = "tools/long-run-supervisor-074/tests/diagnostic_artifacts.rs";
+const RECEIPTS: &str = "tools/long-run-supervisor-074/tests/diagnostic_receipts.rs";
+const OLD_RECEIPT_LOCK: &str = "include_bytes!(\"../../../Cargo.lock\")";
+const NEW_RECEIPT_LOCK: &str = "include_bytes!(\"fixtures/diagnostic-pilot-root-Cargo.lock\")";
 const FIXTURE: &str =
     "tools/long-run-supervisor-074/tests/fixtures/diagnostic-pilot-root-Cargo.lock";
 const HOOK: &str =
@@ -61,6 +64,14 @@ fn normalize(raw: &str) -> String {
     assert_eq!(raw.matches(HOOK).count(), 1, "exact regression hook");
     raw.replacen(NEW, OLD, 1).replacen(HOOK, "", 1)
 }
+fn normalize_receipts(raw: &str) -> String {
+    assert_eq!(
+        raw.matches(NEW_RECEIPT_LOCK).count(),
+        1,
+        "exact receipt lock input"
+    );
+    raw.replacen(NEW_RECEIPT_LOCK, OLD_RECEIPT_LOCK, 1)
+}
 #[test]
 fn immutable_fixture_preserves_all_437_runtime_sources_and_production_inputs() {
     let paths = [
@@ -106,6 +117,11 @@ fn immutable_fixture_changes_only_old_input_helper_not_any_old_assertion() {
         normalize(&read(FILE)),
         git(&["show", &format!("{BASE}:{FILE}")])
     );
+    let receipts = read(RECEIPTS);
+    assert_eq!(
+        normalize_receipts(&receipts),
+        git(&["show", &format!("{BASE}:{RECEIPTS}")])
+    );
 }
 #[test]
 fn immutable_fixture_adapter_refuses_missing_duplicate_and_unrelated_test_drift() {
@@ -122,4 +138,17 @@ fn immutable_fixture_adapter_refuses_missing_duplicate_and_unrelated_test_drift(
     );
     assert_ne!(raw, bad);
     assert_ne!(normalize(&bad), git(&["show", &format!("{BASE}:{FILE}")]));
+    let receipts = read(RECEIPTS);
+    for bad in [
+        receipts.replacen(NEW_RECEIPT_LOCK, "", 1),
+        format!("{receipts}{NEW_RECEIPT_LOCK}"),
+    ] {
+        assert!(std::panic::catch_unwind(|| normalize_receipts(&bad)).is_err());
+    }
+    let changed = receipts.replacen("assert_eq!(", "assert_ne!(", 1);
+    assert_ne!(changed, receipts);
+    assert_ne!(
+        normalize_receipts(&changed),
+        git(&["show", &format!("{BASE}:{RECEIPTS}")])
+    );
 }

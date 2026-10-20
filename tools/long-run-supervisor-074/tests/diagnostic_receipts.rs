@@ -51,7 +51,7 @@ fn fixture(index: usize) -> (VerifiedBuild, CellIntent, TerminalSummary, Value) 
         counting_allocator: false,
         build_command: BUILD_COMMAND.iter().map(|s| s.to_string()).collect(),
         binary: ArtifactDigest::of(b"SYNTHETIC-NOT-AN-EXECUTABLE"),
-        root_lock: ArtifactDigest::of(include_bytes!("../../../Cargo.lock")),
+        root_lock: ArtifactDigest::of(include_bytes!("fixtures/diagnostic-pilot-root-Cargo.lock")),
         observer_lock: ArtifactDigest::of(include_bytes!(
             "../../get-owner-scheduled-controls-074/Cargo.lock"
         )),
