@@ -1,0 +1,30 @@
+uid=1000(hydracache-admin) gid=1000(hydracache-admin) groups=1000(hydracache-admin),27(sudo)
+Linux Ubuntu-noble-latest-amd64-base.zst 6.8.0-138-generic #138-Ubuntu SMP PREEMPT_DYNAMIC Fri Jul 31 22:41:49 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux
+e81671d6-bf23-4ebf-b8fe-5dad1f45866f
+glibc 2.39
+2026-10-20T08:36:31Z
+MainPID=8839
+NRestarts=0
+ExecMainStartTimestamp=Tue 2026-10-06 15:03:40 CEST
+ActiveState=active
+SubState=running
+f797629f65385ebfd4d94577a43a2d1d020f71c1e841028dad7d02a51b47ad62  /opt/hydracache-perf/bin/hydracache-long-run-supervisor-074
+b314953d4deedaeaade3e24468da4844b7f13d348a5d77b8e8f41c672ff44525  /var/lib/hydracache-performance/provisioning-receipt-074.json
+ABSENT /var/lib/hydracache-performance/campaigns/active-campaign
+ABSENT /var/lib/hydracache-performance/campaigns/active-diagnostic.json
+ABSENT /var/lib/hydracache-performance/campaigns/.active-diagnostic.pending
+ABSENT /var/lib/hydracache-performance/campaigns/diagnostic-requests.json
+ABSENT /var/lib/hydracache-performance/campaigns/.diagnostic-requests.pending
+ABSENT /var/lib/hydracache-performance/campaign-lifecycle-smoke-v1.json
+ABSENT /var/lib/hydracache-performance/controller-loss-smoke-v1.json
+ABSENT /var/lib/hydracache-performance/diagnostic-intents-074
+ABSENT /var/lib/hydracache-performance/worker-authority-074
+POSTFLIGHT-MARKERS-ABSENT=9
+ff41048700a4577dcd1efdaf1a2332a9431523086fd84855cb194b3dd98648fd  join-194
+13d4a4b274a172d6e3cc68dbaa352c6a6649ebcea65551cd1925725e4867c135  join-188
+fb9ae321690d0fb4f7eb29aace444e4f4cf06729b5dbb3a77a134ea1cf2bca14  old-194
+64254b3936c76be2dc1fe208ae5c0020d5db713568afd19881c84c129de8d441  old-188
+700:1000:1000 .
+500:1000:1000 run.sh
+664:1000:1000 wrapper.log
+664:1000:1000 wrapper.exit

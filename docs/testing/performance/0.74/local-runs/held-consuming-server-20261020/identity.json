@@ -1,0 +1,15 @@
+{
+  "remote_root": "/tmp/hc074-consuming-server-20261020.j59XaL",
+  "host_alias": "hydracache-ax42",
+  "user": "hydracache-admin",
+  "uid": 1000,
+  "gid": 1000,
+  "source": "f07dcca31e2e69796644d70fef695404b22d1519",
+  "runner_commit": "f13ec7b8620f4cff2be9e72f248665fa05fce26a",
+  "privileged_full_join": false,
+  "product": false,
+  "installation": false,
+  "supervisor_operation": false,
+  "clock_changed": false,
+  "cpu_affinity": false
+}

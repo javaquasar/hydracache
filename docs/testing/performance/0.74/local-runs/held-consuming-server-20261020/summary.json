@@ -1,0 +1,28 @@
+{
+  "source": "f07dcca31e2e69796644d70fef695404b22d1519",
+  "runner_sha256": "38db5856f7301bd40f78b9ed622f7bcf9634440e88af983d66e8654927ed3424",
+  "previous_inventory_sha256": "617f703d5b931e3156d4d2a4a5a60db1cfb9a338e5281a3d090e51f677299f1a",
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "selections": 16,
+  "rounds": 2,
+  "counts": [
+    17,
+    26,
+    5,
+    38
+  ],
+  "comparison_passed": true,
+  "supervisor_unchanged": true,
+  "privileged_full_join": false,
+  "product": false,
+  "installation": false,
+  "supervisor_operation": false,
+  "clock_changed": false,
+  "cpu_affinity": false,
+  "full_joined_sigkill": false,
+  "original_send": false,
+  "clock_cause_established": false,
+  "production_enrollment": false,
+  "production_role_receipt_issued": false,
+  "late_original_join": false
+}

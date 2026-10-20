@@ -1,0 +1,577 @@
+HC074-CONSUMING-SERVER preflight=ok supervisor_pid=8839 restarts=0
+join-194: OK
+join-188: OK
+old-194: OK
+old-188: OK
+uid=1000(hydracache-admin) gid=1000(hydracache-admin) groups=1000(hydracache-admin),27(sudo)
+Linux Ubuntu-noble-latest-amd64-base.zst 6.8.0-138-generic #138-Ubuntu SMP PREEMPT_DYNAMIC Fri Jul 31 22:41:49 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux
+e81671d6-bf23-4ebf-b8fe-5dad1f45866f
+glibc 2.39
+MainPID=8839
+NRestarts=0
+ExecMainStartTimestamp=Tue 2026-10-06 15:03:40 CEST
+	linux-vdso.so.1 (0x00007fff3b3e5000)
+	libgcc_s.so.1 => /lib/x86_64-linux-gnu/libgcc_s.so.1 (0x00007c4b73249000)
+	libm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x00007c4b70f17000)
+	libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007c4b70c00000)
+	/lib64/ld-linux-x86-64.so.2 (0x00007c4b7327f000)
+	linux-vdso.so.1 (0x00007ffea2b63000)
+	libgcc_s.so.1 => /lib/x86_64-linux-gnu/libgcc_s.so.1 (0x000070dd520b5000)
+	libm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x000070dd4fd17000)
+	libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x000070dd4fa00000)
+	/lib64/ld-linux-x86-64.so.2 (0x000070dd520eb000)
+	linux-vdso.so.1 (0x00007ffe9d88a000)
+	libgcc_s.so.1 => /lib/x86_64-linux-gnu/libgcc_s.so.1 (0x0000784a4f387000)
+	libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x0000784a4ea00000)
+	/lib64/ld-linux-x86-64.so.2 (0x0000784a4f3bd000)
+	linux-vdso.so.1 (0x00007ffe373c1000)
+	libgcc_s.so.1 => /lib/x86_64-linux-gnu/libgcc_s.so.1 (0x000078da7db81000)
+	libm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x000078da7d717000)
+	libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x000078da7d400000)
+	/lib64/ld-linux-x86-64.so.2 (0x000078da7dbb7000)
+HC074-CONSUMING-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-CONSUMING-SERVER selection=194-new-1 expected=17 begin=true
+
+running 17 tests
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::consuming_held_tests::consuming_join_accepts_only_one_constant_depth_pair_of_full_frames ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::consuming_held_tests::consuming_join_budget_checks_precede_any_document_copy ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::consuming_held_tests::consuming_join_closing_or_later_authority_drift_cannot_replace_retained_original ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::consuming_held_tests::consuming_join_copies_accepted_documents_and_never_accepts_replacements ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::consuming_held_tests::consuming_join_each_of_eight_opening_closing_cuts_is_sticky ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::consuming_held_tests::consuming_join_every_modeled_original_leaf_refusal_propagates_at_all_four_frames ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::consuming_held_tests::consuming_join_failed_holder_retains_owned_fields_until_failure_is_dropped ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::consuming_held_tests::consuming_join_production_signature_moves_all_three_owners_and_failure_has_no_retry ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::consuming_held_tests::consuming_join_seeded_cross_round_substitutions_refuse_without_new_frame_origins ... consuming_held_join seed=0x0074c05e substitutions=128
+ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::consuming_held_tests::consuming_join_two_full_rounds_never_change_origins_or_bounds ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::consuming_held_bridge::consuming_held_actual_kernel_selection_receipt_and_retained_memfds_are_rechecked ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::consuming_held_bridge::consuming_held_actual_source_replacement_poison_cannot_be_repaired ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::consuming_held_bridge::consuming_held_exact_original_v3_bytes_are_required_even_for_valid_v4 ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::consuming_held_bridge::consuming_held_existing_mismatch_assertion_preserves_first_kernel_refusal ... HC074-CONSUMING-MISMATCH-TRACE sample=0 assertions_ok=true first=None
+HC074-CONSUMING-MISMATCH-TRACE sample=1 assertions_ok=true first=None
+HC074-CONSUMING-MISMATCH-TRACE sample=2 assertions_ok=true first=None
+HC074-CONSUMING-MISMATCH-TRACE sample=3 assertions_ok=true first=None
+HC074-CONSUMING-MISMATCH-TRACE sample=4 assertions_ok=true first=None
+HC074-CONSUMING-MISMATCH-TRACE sample=5 assertions_ok=true first=None
+HC074-CONSUMING-MISMATCH-TRACE sample=6 assertions_ok=true first=None
+HC074-CONSUMING-MISMATCH-TRACE sample=7 assertions_ok=true first=None
+ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::consuming_held_bridge::consuming_held_metadata_drift_on_real_retained_memfd_refuses_stickily ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::consuming_held_bridge::consuming_held_private_retirement_closes_source_without_exporting_the_original ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::consuming_held_bridge::consuming_held_same_images_with_another_valid_receipt_statement_refuse ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 1346 filtered out; finished in 10.88s
+
+HC074-CONSUMING-SERVER selection=194-new-1 expected=17 exit=0
+HC074-CONSUMING-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-CONSUMING-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-CONSUMING-SERVER selection=194-trust-1 expected=26 begin=true
+
+running 26 tests
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::actual_original_packet_namespace_and_policy_faults_poison_both_borrows ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::canonical_newline_and_bounded_document_are_required ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::held_key_is_nonweak_and_distinct_from_all_three_old_keys ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::held_trust_source_retains_independent_selection_and_revalidates ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::independent_thread_local_sources_do_not_share_refusal ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::leaf_symlink_directory_and_fifo_refuse_without_blocking ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::malformed_v4_poisons_original_instead_of_returning_a_static_receipt ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::named_root_and_ancestor_symlinks_refuse ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::original_guard_poison_propagates_from_configuration_to_original_chain ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::original_guard_reobserves_real_kernel_controller_and_active_authority ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::original_guard_requires_actual_authority_policy_and_epoch ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::original_guard_requires_independently_pinned_held_and_old_builder_documents ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::production_opener_requires_root_before_accessing_fixed_configuration ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::retained_actual_revision_snapshot_and_request_drift_cannot_be_repaired ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::retained_projection_drift_refuses_instead_of_repairing_itself ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::same_bytes_ancestor_and_root_replacements_refuse ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::same_bytes_leaf_replacement_is_sticky_even_after_original_restore ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::same_inode_mutation_and_metadata_change_refuse_stickily ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::schema_repository_pins_epoch_and_controller_are_not_caller_selected ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::seeded_byte_mutations_cannot_select_different_trust ... held_runtime_trust seed=0x00747a57 corruptions=256
+ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::strict_fields_missing_null_duplicate_and_unknown_refuse ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::unsafe_leaf_modes_and_hardlinks_refuse ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::valid_pin_with_different_root_selected_held_key_refuses ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::valid_v4_documents_match_the_same_original_request_without_admitting_start ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::validly_signed_v4_for_other_request_controller_identity_or_policy_poisons_join ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::wrong_owner_relative_root_empty_and_oversize_sources_refuse ... ok
+
+test result: ok. 26 passed; 0 failed; 0 ignored; 0 measured; 1337 filtered out; finished in 3.44s
+
+HC074-CONSUMING-SERVER selection=194-trust-1 expected=26 exit=0
+HC074-CONSUMING-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-CONSUMING-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-CONSUMING-SERVER selection=194-fixed-1 expected=5 begin=true
+
+running 5 tests
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::tests::fixed_placement_constructor_consumes_whole_original_and_only_revalidates ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::tests::fixed_placement_every_opening_closing_failure_is_sticky_and_no_retry_owner ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::tests::fixed_placement_frame_refusal_or_closing_original_context_drift_poison_both ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::tests::fixed_placement_retained_attempt_envelope_and_root_cannot_be_substituted ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::tests::fixed_placement_surrounds_exact_unchanged_join_with_path_checks ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 1358 filtered out; finished in 0.00s
+
+HC074-CONSUMING-SERVER selection=194-fixed-1 expected=5 exit=0
+HC074-CONSUMING-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-CONSUMING-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-CONSUMING-SERVER selection=194-old-1 expected=38 begin=true
+
+running 38 tests
+test all_observation_fields_checked_before_signing_and_after_signature ... ok
+test canonical_bounded_documents_signature_encoding_and_domains_are_strict ... ok
+test cargo_dependencies_are_allowed_but_valid_oversized_and_duplicate_records_refuse ... ok
+test cargo_exact_targets_package_sources_output_profiles_and_features_required ... ok
+test cargo_missing_duplicate_foreign_failure_and_trailing_events_refuse ... ok
+test cargo_raw_bounds_duplicates_and_nonterminated_records_refuse ... ok
+test changed_contents_and_each_expected_role_refuse_without_execution_authority ... ok
+test every_receipt_binding_refuses_unsigned_mutation_and_resigned_invalid_semantics ... ok
+test independent_pins_controller_epoch_and_three_distinct_nonweak_keys_required ... ok
+test independent_policy_source_and_epoch_binding_prevents_receipt_reuse ... ok
+test legacy_policy_must_independently_authenticate_the_same_controller ... ok
+test repinned_invalid_policy_fields_and_unsigned_unknown_fields_refuse ... ok
+test role_binding::all_document_receipt_and_signing_budgets_refuse ... ok
+test role_binding::another_valid_attempt_cannot_match_the_original_placement_bytes ... ok
+test role_binding::canonical_unknown_duplicate_nested_and_signature_encoding_are_strict ... ok
+test role_binding::checked_output_rejects_changed_contents_and_nonexact_placement_bytes ... ok
+test role_binding::every_unsigned_outer_and_nested_binding_mutation_refuses ... ok
+test role_binding::new_domain_and_envelope_do_not_upgrade_any_old_signature ... ok
+test role_binding::resigned_each_role_mismatch_refuses_even_with_valid_old_placement ... ok
+test role_binding::resigned_epoch_repository_and_digest_substitution_refuses ... ok
+test role_binding::seeded_unsigned_bit_corruption_never_reuses_inspection ... held_role_binding seed=0x0074b14d corruptions=64
+ok
+test role_binding::signed_binding_checks_same_policy_receipt_epoch_roles_and_exact_placement_bytes ... ok
+test role_binding::valid_but_different_receipt_or_independently_checked_policy_refuses ... ok
+test role_binding::wrong_controller_or_builder_key_at_either_signature_refuses ... ok
+test role_files::linux::concurrent_shared_offset_changes_do_not_substitute_role_content ... ok
+test role_files::linux::each_missing_or_extra_seal_refuses ... ok
+test role_files::linux::lock_and_log_must_match_consumed_receipt ... ok
+test role_files::linux::metadata_change_is_refused_even_when_sealed_content_matches ... ok
+test role_files::linux::ordinary_file_directory_and_pipe_refuse_without_blocking ... ok
+test role_files::linux::role_expectation_refusal_is_sticky_for_each_role ... ok
+test role_files::linux::sealed_roles_retain_receipt_and_offsets_without_execution ... ok
+test role_files::linux::seeded_sealed_corruption_never_reuses_receipt ... held_role_files seed=0x0074f11e corruptions=32
+ok
+test role_files::linux::swapped_aliased_and_changed_role_objects_refuse ... ok
+test role_files::linux::writable_path_only_and_non_cloexec_descriptors_refuse ... ok
+test seeded_content_corruption_cannot_reuse_checked_receipt ... held-build content corruption seed=0x74b017 iterations=128
+ok
+test separate_policy_signer_receipt_contents_and_three_roles_roundtrip ... ok
+test signer_requires_distinct_valid_elf_and_exact_nonempty_root_lock ... ok
+test valid_but_noncanonical_or_duplicate_documents_and_worker_signed_body_refuse ... ok
+
+test result: ok. 38 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.81s
+
+HC074-CONSUMING-SERVER selection=194-old-1 expected=38 exit=0
+HC074-CONSUMING-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-CONSUMING-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-CONSUMING-SERVER selection=194-new-2 expected=17 begin=true
+
+running 17 tests
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::consuming_held_tests::consuming_join_accepts_only_one_constant_depth_pair_of_full_frames ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::consuming_held_tests::consuming_join_budget_checks_precede_any_document_copy ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::consuming_held_tests::consuming_join_closing_or_later_authority_drift_cannot_replace_retained_original ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::consuming_held_tests::consuming_join_copies_accepted_documents_and_never_accepts_replacements ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::consuming_held_tests::consuming_join_each_of_eight_opening_closing_cuts_is_sticky ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::consuming_held_tests::consuming_join_every_modeled_original_leaf_refusal_propagates_at_all_four_frames ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::consuming_held_tests::consuming_join_failed_holder_retains_owned_fields_until_failure_is_dropped ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::consuming_held_tests::consuming_join_production_signature_moves_all_three_owners_and_failure_has_no_retry ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::consuming_held_tests::consuming_join_seeded_cross_round_substitutions_refuse_without_new_frame_origins ... consuming_held_join seed=0x0074c05e substitutions=128
+ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::consuming_held_tests::consuming_join_two_full_rounds_never_change_origins_or_bounds ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::consuming_held_bridge::consuming_held_actual_kernel_selection_receipt_and_retained_memfds_are_rechecked ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::consuming_held_bridge::consuming_held_actual_source_replacement_poison_cannot_be_repaired ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::consuming_held_bridge::consuming_held_exact_original_v3_bytes_are_required_even_for_valid_v4 ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::consuming_held_bridge::consuming_held_existing_mismatch_assertion_preserves_first_kernel_refusal ... HC074-CONSUMING-MISMATCH-TRACE sample=0 assertions_ok=true first=None
+HC074-CONSUMING-MISMATCH-TRACE sample=1 assertions_ok=true first=None
+HC074-CONSUMING-MISMATCH-TRACE sample=2 assertions_ok=true first=None
+HC074-CONSUMING-MISMATCH-TRACE sample=3 assertions_ok=true first=None
+HC074-CONSUMING-MISMATCH-TRACE sample=4 assertions_ok=true first=None
+HC074-CONSUMING-MISMATCH-TRACE sample=5 assertions_ok=true first=None
+HC074-CONSUMING-MISMATCH-TRACE sample=6 assertions_ok=true first=None
+HC074-CONSUMING-MISMATCH-TRACE sample=7 assertions_ok=true first=None
+ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::consuming_held_bridge::consuming_held_metadata_drift_on_real_retained_memfd_refuses_stickily ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::consuming_held_bridge::consuming_held_private_retirement_closes_source_without_exporting_the_original ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::consuming_held_bridge::consuming_held_same_images_with_another_valid_receipt_statement_refuse ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 1346 filtered out; finished in 10.92s
+
+HC074-CONSUMING-SERVER selection=194-new-2 expected=17 exit=0
+HC074-CONSUMING-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-CONSUMING-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-CONSUMING-SERVER selection=194-trust-2 expected=26 begin=true
+
+running 26 tests
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::actual_original_packet_namespace_and_policy_faults_poison_both_borrows ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::canonical_newline_and_bounded_document_are_required ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::held_key_is_nonweak_and_distinct_from_all_three_old_keys ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::held_trust_source_retains_independent_selection_and_revalidates ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::independent_thread_local_sources_do_not_share_refusal ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::leaf_symlink_directory_and_fifo_refuse_without_blocking ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::malformed_v4_poisons_original_instead_of_returning_a_static_receipt ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::named_root_and_ancestor_symlinks_refuse ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::original_guard_poison_propagates_from_configuration_to_original_chain ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::original_guard_reobserves_real_kernel_controller_and_active_authority ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::original_guard_requires_actual_authority_policy_and_epoch ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::original_guard_requires_independently_pinned_held_and_old_builder_documents ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::production_opener_requires_root_before_accessing_fixed_configuration ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::retained_actual_revision_snapshot_and_request_drift_cannot_be_repaired ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::retained_projection_drift_refuses_instead_of_repairing_itself ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::same_bytes_ancestor_and_root_replacements_refuse ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::same_bytes_leaf_replacement_is_sticky_even_after_original_restore ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::same_inode_mutation_and_metadata_change_refuse_stickily ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::schema_repository_pins_epoch_and_controller_are_not_caller_selected ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::seeded_byte_mutations_cannot_select_different_trust ... held_runtime_trust seed=0x00747a57 corruptions=256
+ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::strict_fields_missing_null_duplicate_and_unknown_refuse ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::unsafe_leaf_modes_and_hardlinks_refuse ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::valid_pin_with_different_root_selected_held_key_refuses ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::valid_v4_documents_match_the_same_original_request_without_admitting_start ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::validly_signed_v4_for_other_request_controller_identity_or_policy_poisons_join ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::wrong_owner_relative_root_empty_and_oversize_sources_refuse ... ok
+
+test result: ok. 26 passed; 0 failed; 0 ignored; 0 measured; 1337 filtered out; finished in 3.43s
+
+HC074-CONSUMING-SERVER selection=194-trust-2 expected=26 exit=0
+HC074-CONSUMING-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-CONSUMING-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-CONSUMING-SERVER selection=194-fixed-2 expected=5 begin=true
+
+running 5 tests
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::tests::fixed_placement_constructor_consumes_whole_original_and_only_revalidates ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::tests::fixed_placement_every_opening_closing_failure_is_sticky_and_no_retry_owner ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::tests::fixed_placement_frame_refusal_or_closing_original_context_drift_poison_both ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::tests::fixed_placement_retained_attempt_envelope_and_root_cannot_be_substituted ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::tests::fixed_placement_surrounds_exact_unchanged_join_with_path_checks ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 1358 filtered out; finished in 0.00s
+
+HC074-CONSUMING-SERVER selection=194-fixed-2 expected=5 exit=0
+HC074-CONSUMING-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-CONSUMING-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-CONSUMING-SERVER selection=194-old-2 expected=38 begin=true
+
+running 38 tests
+test all_observation_fields_checked_before_signing_and_after_signature ... ok
+test canonical_bounded_documents_signature_encoding_and_domains_are_strict ... ok
+test cargo_dependencies_are_allowed_but_valid_oversized_and_duplicate_records_refuse ... ok
+test cargo_exact_targets_package_sources_output_profiles_and_features_required ... ok
+test cargo_missing_duplicate_foreign_failure_and_trailing_events_refuse ... ok
+test cargo_raw_bounds_duplicates_and_nonterminated_records_refuse ... ok
+test changed_contents_and_each_expected_role_refuse_without_execution_authority ... ok
+test every_receipt_binding_refuses_unsigned_mutation_and_resigned_invalid_semantics ... ok
+test independent_pins_controller_epoch_and_three_distinct_nonweak_keys_required ... ok
+test independent_policy_source_and_epoch_binding_prevents_receipt_reuse ... ok
+test legacy_policy_must_independently_authenticate_the_same_controller ... ok
+test repinned_invalid_policy_fields_and_unsigned_unknown_fields_refuse ... ok
+test role_binding::all_document_receipt_and_signing_budgets_refuse ... ok
+test role_binding::another_valid_attempt_cannot_match_the_original_placement_bytes ... ok
+test role_binding::canonical_unknown_duplicate_nested_and_signature_encoding_are_strict ... ok
+test role_binding::checked_output_rejects_changed_contents_and_nonexact_placement_bytes ... ok
+test role_binding::every_unsigned_outer_and_nested_binding_mutation_refuses ... ok
+test role_binding::new_domain_and_envelope_do_not_upgrade_any_old_signature ... ok
+test role_binding::resigned_each_role_mismatch_refuses_even_with_valid_old_placement ... ok
+test role_binding::resigned_epoch_repository_and_digest_substitution_refuses ... ok
+test role_binding::seeded_unsigned_bit_corruption_never_reuses_inspection ... held_role_binding seed=0x0074b14d corruptions=64
+ok
+test role_binding::signed_binding_checks_same_policy_receipt_epoch_roles_and_exact_placement_bytes ... ok
+test role_binding::valid_but_different_receipt_or_independently_checked_policy_refuses ... ok
+test role_binding::wrong_controller_or_builder_key_at_either_signature_refuses ... ok
+test role_files::linux::concurrent_shared_offset_changes_do_not_substitute_role_content ... ok
+test role_files::linux::each_missing_or_extra_seal_refuses ... ok
+test role_files::linux::lock_and_log_must_match_consumed_receipt ... ok
+test role_files::linux::metadata_change_is_refused_even_when_sealed_content_matches ... ok
+test role_files::linux::ordinary_file_directory_and_pipe_refuse_without_blocking ... ok
+test role_files::linux::role_expectation_refusal_is_sticky_for_each_role ... ok
+test role_files::linux::sealed_roles_retain_receipt_and_offsets_without_execution ... ok
+test role_files::linux::seeded_sealed_corruption_never_reuses_receipt ... held_role_files seed=0x0074f11e corruptions=32
+ok
+test role_files::linux::swapped_aliased_and_changed_role_objects_refuse ... ok
+test role_files::linux::writable_path_only_and_non_cloexec_descriptors_refuse ... ok
+test seeded_content_corruption_cannot_reuse_checked_receipt ... held-build content corruption seed=0x74b017 iterations=128
+ok
+test separate_policy_signer_receipt_contents_and_three_roles_roundtrip ... ok
+test signer_requires_distinct_valid_elf_and_exact_nonempty_root_lock ... ok
+test valid_but_noncanonical_or_duplicate_documents_and_worker_signed_body_refuse ... ok
+
+test result: ok. 38 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.81s
+
+HC074-CONSUMING-SERVER selection=194-old-2 expected=38 exit=0
+HC074-CONSUMING-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-CONSUMING-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-CONSUMING-SERVER selection=188-new-1 expected=17 begin=true
+
+running 17 tests
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::consuming_held_tests::consuming_join_accepts_only_one_constant_depth_pair_of_full_frames ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::consuming_held_tests::consuming_join_budget_checks_precede_any_document_copy ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::consuming_held_tests::consuming_join_closing_or_later_authority_drift_cannot_replace_retained_original ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::consuming_held_tests::consuming_join_copies_accepted_documents_and_never_accepts_replacements ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::consuming_held_tests::consuming_join_each_of_eight_opening_closing_cuts_is_sticky ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::consuming_held_tests::consuming_join_every_modeled_original_leaf_refusal_propagates_at_all_four_frames ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::consuming_held_tests::consuming_join_failed_holder_retains_owned_fields_until_failure_is_dropped ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::consuming_held_tests::consuming_join_production_signature_moves_all_three_owners_and_failure_has_no_retry ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::consuming_held_tests::consuming_join_seeded_cross_round_substitutions_refuse_without_new_frame_origins ... consuming_held_join seed=0x0074c05e substitutions=128
+ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::consuming_held_tests::consuming_join_two_full_rounds_never_change_origins_or_bounds ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::consuming_held_bridge::consuming_held_actual_kernel_selection_receipt_and_retained_memfds_are_rechecked ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::consuming_held_bridge::consuming_held_actual_source_replacement_poison_cannot_be_repaired ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::consuming_held_bridge::consuming_held_exact_original_v3_bytes_are_required_even_for_valid_v4 ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::consuming_held_bridge::consuming_held_existing_mismatch_assertion_preserves_first_kernel_refusal ... HC074-CONSUMING-MISMATCH-TRACE sample=0 assertions_ok=true first=None
+HC074-CONSUMING-MISMATCH-TRACE sample=1 assertions_ok=true first=None
+HC074-CONSUMING-MISMATCH-TRACE sample=2 assertions_ok=true first=None
+HC074-CONSUMING-MISMATCH-TRACE sample=3 assertions_ok=true first=None
+HC074-CONSUMING-MISMATCH-TRACE sample=4 assertions_ok=true first=None
+HC074-CONSUMING-MISMATCH-TRACE sample=5 assertions_ok=true first=None
+HC074-CONSUMING-MISMATCH-TRACE sample=6 assertions_ok=true first=None
+HC074-CONSUMING-MISMATCH-TRACE sample=7 assertions_ok=true first=None
+ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::consuming_held_bridge::consuming_held_metadata_drift_on_real_retained_memfd_refuses_stickily ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::consuming_held_bridge::consuming_held_private_retirement_closes_source_without_exporting_the_original ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::consuming_held_bridge::consuming_held_same_images_with_another_valid_receipt_statement_refuse ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 1346 filtered out; finished in 10.86s
+
+HC074-CONSUMING-SERVER selection=188-new-1 expected=17 exit=0
+HC074-CONSUMING-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-CONSUMING-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-CONSUMING-SERVER selection=188-trust-1 expected=26 begin=true
+
+running 26 tests
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::actual_original_packet_namespace_and_policy_faults_poison_both_borrows ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::canonical_newline_and_bounded_document_are_required ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::held_key_is_nonweak_and_distinct_from_all_three_old_keys ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::held_trust_source_retains_independent_selection_and_revalidates ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::independent_thread_local_sources_do_not_share_refusal ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::leaf_symlink_directory_and_fifo_refuse_without_blocking ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::malformed_v4_poisons_original_instead_of_returning_a_static_receipt ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::named_root_and_ancestor_symlinks_refuse ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::original_guard_poison_propagates_from_configuration_to_original_chain ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::original_guard_reobserves_real_kernel_controller_and_active_authority ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::original_guard_requires_actual_authority_policy_and_epoch ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::original_guard_requires_independently_pinned_held_and_old_builder_documents ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::production_opener_requires_root_before_accessing_fixed_configuration ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::retained_actual_revision_snapshot_and_request_drift_cannot_be_repaired ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::retained_projection_drift_refuses_instead_of_repairing_itself ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::same_bytes_ancestor_and_root_replacements_refuse ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::same_bytes_leaf_replacement_is_sticky_even_after_original_restore ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::same_inode_mutation_and_metadata_change_refuse_stickily ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::schema_repository_pins_epoch_and_controller_are_not_caller_selected ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::seeded_byte_mutations_cannot_select_different_trust ... held_runtime_trust seed=0x00747a57 corruptions=256
+ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::strict_fields_missing_null_duplicate_and_unknown_refuse ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::unsafe_leaf_modes_and_hardlinks_refuse ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::valid_pin_with_different_root_selected_held_key_refuses ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::valid_v4_documents_match_the_same_original_request_without_admitting_start ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::validly_signed_v4_for_other_request_controller_identity_or_policy_poisons_join ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::wrong_owner_relative_root_empty_and_oversize_sources_refuse ... ok
+
+test result: ok. 26 passed; 0 failed; 0 ignored; 0 measured; 1337 filtered out; finished in 3.43s
+
+HC074-CONSUMING-SERVER selection=188-trust-1 expected=26 exit=0
+HC074-CONSUMING-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-CONSUMING-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-CONSUMING-SERVER selection=188-fixed-1 expected=5 begin=true
+
+running 5 tests
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::tests::fixed_placement_constructor_consumes_whole_original_and_only_revalidates ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::tests::fixed_placement_every_opening_closing_failure_is_sticky_and_no_retry_owner ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::tests::fixed_placement_frame_refusal_or_closing_original_context_drift_poison_both ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::tests::fixed_placement_retained_attempt_envelope_and_root_cannot_be_substituted ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::tests::fixed_placement_surrounds_exact_unchanged_join_with_path_checks ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 1358 filtered out; finished in 0.00s
+
+HC074-CONSUMING-SERVER selection=188-fixed-1 expected=5 exit=0
+HC074-CONSUMING-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-CONSUMING-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-CONSUMING-SERVER selection=188-old-1 expected=38 begin=true
+
+running 38 tests
+test all_observation_fields_checked_before_signing_and_after_signature ... ok
+test canonical_bounded_documents_signature_encoding_and_domains_are_strict ... ok
+test cargo_dependencies_are_allowed_but_valid_oversized_and_duplicate_records_refuse ... ok
+test cargo_exact_targets_package_sources_output_profiles_and_features_required ... ok
+test cargo_missing_duplicate_foreign_failure_and_trailing_events_refuse ... ok
+test cargo_raw_bounds_duplicates_and_nonterminated_records_refuse ... ok
+test changed_contents_and_each_expected_role_refuse_without_execution_authority ... ok
+test every_receipt_binding_refuses_unsigned_mutation_and_resigned_invalid_semantics ... ok
+test independent_pins_controller_epoch_and_three_distinct_nonweak_keys_required ... ok
+test independent_policy_source_and_epoch_binding_prevents_receipt_reuse ... ok
+test legacy_policy_must_independently_authenticate_the_same_controller ... ok
+test repinned_invalid_policy_fields_and_unsigned_unknown_fields_refuse ... ok
+test role_binding::all_document_receipt_and_signing_budgets_refuse ... ok
+test role_binding::another_valid_attempt_cannot_match_the_original_placement_bytes ... ok
+test role_binding::canonical_unknown_duplicate_nested_and_signature_encoding_are_strict ... ok
+test role_binding::checked_output_rejects_changed_contents_and_nonexact_placement_bytes ... ok
+test role_binding::every_unsigned_outer_and_nested_binding_mutation_refuses ... ok
+test role_binding::new_domain_and_envelope_do_not_upgrade_any_old_signature ... ok
+test role_binding::resigned_each_role_mismatch_refuses_even_with_valid_old_placement ... ok
+test role_binding::resigned_epoch_repository_and_digest_substitution_refuses ... ok
+test role_binding::seeded_unsigned_bit_corruption_never_reuses_inspection ... held_role_binding seed=0x0074b14d corruptions=64
+ok
+test role_binding::signed_binding_checks_same_policy_receipt_epoch_roles_and_exact_placement_bytes ... ok
+test role_binding::valid_but_different_receipt_or_independently_checked_policy_refuses ... ok
+test role_binding::wrong_controller_or_builder_key_at_either_signature_refuses ... ok
+test role_files::linux::concurrent_shared_offset_changes_do_not_substitute_role_content ... ok
+test role_files::linux::each_missing_or_extra_seal_refuses ... ok
+test role_files::linux::lock_and_log_must_match_consumed_receipt ... ok
+test role_files::linux::metadata_change_is_refused_even_when_sealed_content_matches ... ok
+test role_files::linux::ordinary_file_directory_and_pipe_refuse_without_blocking ... ok
+test role_files::linux::role_expectation_refusal_is_sticky_for_each_role ... ok
+test role_files::linux::sealed_roles_retain_receipt_and_offsets_without_execution ... ok
+test role_files::linux::seeded_sealed_corruption_never_reuses_receipt ... held_role_files seed=0x0074f11e corruptions=32
+ok
+test role_files::linux::swapped_aliased_and_changed_role_objects_refuse ... ok
+test role_files::linux::writable_path_only_and_non_cloexec_descriptors_refuse ... ok
+test seeded_content_corruption_cannot_reuse_checked_receipt ... held-build content corruption seed=0x74b017 iterations=128
+ok
+test separate_policy_signer_receipt_contents_and_three_roles_roundtrip ... ok
+test signer_requires_distinct_valid_elf_and_exact_nonempty_root_lock ... ok
+test valid_but_noncanonical_or_duplicate_documents_and_worker_signed_body_refuse ... ok
+
+test result: ok. 38 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.82s
+
+HC074-CONSUMING-SERVER selection=188-old-1 expected=38 exit=0
+HC074-CONSUMING-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-CONSUMING-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-CONSUMING-SERVER selection=188-new-2 expected=17 begin=true
+
+running 17 tests
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::consuming_held_tests::consuming_join_accepts_only_one_constant_depth_pair_of_full_frames ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::consuming_held_tests::consuming_join_budget_checks_precede_any_document_copy ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::consuming_held_tests::consuming_join_closing_or_later_authority_drift_cannot_replace_retained_original ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::consuming_held_tests::consuming_join_copies_accepted_documents_and_never_accepts_replacements ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::consuming_held_tests::consuming_join_each_of_eight_opening_closing_cuts_is_sticky ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::consuming_held_tests::consuming_join_every_modeled_original_leaf_refusal_propagates_at_all_four_frames ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::consuming_held_tests::consuming_join_failed_holder_retains_owned_fields_until_failure_is_dropped ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::consuming_held_tests::consuming_join_production_signature_moves_all_three_owners_and_failure_has_no_retry ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::consuming_held_tests::consuming_join_seeded_cross_round_substitutions_refuse_without_new_frame_origins ... consuming_held_join seed=0x0074c05e substitutions=128
+ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::consuming_held_tests::consuming_join_two_full_rounds_never_change_origins_or_bounds ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::consuming_held_bridge::consuming_held_actual_kernel_selection_receipt_and_retained_memfds_are_rechecked ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::consuming_held_bridge::consuming_held_actual_source_replacement_poison_cannot_be_repaired ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::consuming_held_bridge::consuming_held_exact_original_v3_bytes_are_required_even_for_valid_v4 ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::consuming_held_bridge::consuming_held_existing_mismatch_assertion_preserves_first_kernel_refusal ... HC074-CONSUMING-MISMATCH-TRACE sample=0 assertions_ok=true first=None
+HC074-CONSUMING-MISMATCH-TRACE sample=1 assertions_ok=true first=None
+HC074-CONSUMING-MISMATCH-TRACE sample=2 assertions_ok=true first=None
+HC074-CONSUMING-MISMATCH-TRACE sample=3 assertions_ok=true first=None
+HC074-CONSUMING-MISMATCH-TRACE sample=4 assertions_ok=true first=None
+HC074-CONSUMING-MISMATCH-TRACE sample=5 assertions_ok=true first=None
+HC074-CONSUMING-MISMATCH-TRACE sample=6 assertions_ok=true first=None
+HC074-CONSUMING-MISMATCH-TRACE sample=7 assertions_ok=true first=None
+ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::consuming_held_bridge::consuming_held_metadata_drift_on_real_retained_memfd_refuses_stickily ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::consuming_held_bridge::consuming_held_private_retirement_closes_source_without_exporting_the_original ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::consuming_held_bridge::consuming_held_same_images_with_another_valid_receipt_statement_refuse ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 1346 filtered out; finished in 10.91s
+
+HC074-CONSUMING-SERVER selection=188-new-2 expected=17 exit=0
+HC074-CONSUMING-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-CONSUMING-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-CONSUMING-SERVER selection=188-trust-2 expected=26 begin=true
+
+running 26 tests
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::actual_original_packet_namespace_and_policy_faults_poison_both_borrows ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::canonical_newline_and_bounded_document_are_required ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::held_key_is_nonweak_and_distinct_from_all_three_old_keys ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::held_trust_source_retains_independent_selection_and_revalidates ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::independent_thread_local_sources_do_not_share_refusal ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::leaf_symlink_directory_and_fifo_refuse_without_blocking ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::malformed_v4_poisons_original_instead_of_returning_a_static_receipt ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::named_root_and_ancestor_symlinks_refuse ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::original_guard_poison_propagates_from_configuration_to_original_chain ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::original_guard_reobserves_real_kernel_controller_and_active_authority ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::original_guard_requires_actual_authority_policy_and_epoch ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::original_guard_requires_independently_pinned_held_and_old_builder_documents ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::production_opener_requires_root_before_accessing_fixed_configuration ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::retained_actual_revision_snapshot_and_request_drift_cannot_be_repaired ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::retained_projection_drift_refuses_instead_of_repairing_itself ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::same_bytes_ancestor_and_root_replacements_refuse ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::same_bytes_leaf_replacement_is_sticky_even_after_original_restore ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::same_inode_mutation_and_metadata_change_refuse_stickily ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::schema_repository_pins_epoch_and_controller_are_not_caller_selected ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::seeded_byte_mutations_cannot_select_different_trust ... held_runtime_trust seed=0x00747a57 corruptions=256
+ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::strict_fields_missing_null_duplicate_and_unknown_refuse ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::unsafe_leaf_modes_and_hardlinks_refuse ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::valid_pin_with_different_root_selected_held_key_refuses ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::valid_v4_documents_match_the_same_original_request_without_admitting_start ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::validly_signed_v4_for_other_request_controller_identity_or_policy_poisons_join ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::wrong_owner_relative_root_empty_and_oversize_sources_refuse ... ok
+
+test result: ok. 26 passed; 0 failed; 0 ignored; 0 measured; 1337 filtered out; finished in 3.44s
+
+HC074-CONSUMING-SERVER selection=188-trust-2 expected=26 exit=0
+HC074-CONSUMING-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-CONSUMING-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-CONSUMING-SERVER selection=188-fixed-2 expected=5 begin=true
+
+running 5 tests
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::tests::fixed_placement_constructor_consumes_whole_original_and_only_revalidates ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::tests::fixed_placement_every_opening_closing_failure_is_sticky_and_no_retry_owner ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::tests::fixed_placement_frame_refusal_or_closing_original_context_drift_poison_both ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::tests::fixed_placement_retained_attempt_envelope_and_root_cannot_be_substituted ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::tests::fixed_placement_surrounds_exact_unchanged_join_with_path_checks ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 1358 filtered out; finished in 0.00s
+
+HC074-CONSUMING-SERVER selection=188-fixed-2 expected=5 exit=0
+HC074-CONSUMING-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-CONSUMING-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-CONSUMING-SERVER selection=188-old-2 expected=38 begin=true
+
+running 38 tests
+test all_observation_fields_checked_before_signing_and_after_signature ... ok
+test canonical_bounded_documents_signature_encoding_and_domains_are_strict ... ok
+test cargo_dependencies_are_allowed_but_valid_oversized_and_duplicate_records_refuse ... ok
+test cargo_exact_targets_package_sources_output_profiles_and_features_required ... ok
+test cargo_missing_duplicate_foreign_failure_and_trailing_events_refuse ... ok
+test cargo_raw_bounds_duplicates_and_nonterminated_records_refuse ... ok
+test changed_contents_and_each_expected_role_refuse_without_execution_authority ... ok
+test every_receipt_binding_refuses_unsigned_mutation_and_resigned_invalid_semantics ... ok
+test independent_pins_controller_epoch_and_three_distinct_nonweak_keys_required ... ok
+test independent_policy_source_and_epoch_binding_prevents_receipt_reuse ... ok
+test legacy_policy_must_independently_authenticate_the_same_controller ... ok
+test repinned_invalid_policy_fields_and_unsigned_unknown_fields_refuse ... ok
+test role_binding::all_document_receipt_and_signing_budgets_refuse ... ok
+test role_binding::another_valid_attempt_cannot_match_the_original_placement_bytes ... ok
+test role_binding::canonical_unknown_duplicate_nested_and_signature_encoding_are_strict ... ok
+test role_binding::checked_output_rejects_changed_contents_and_nonexact_placement_bytes ... ok
+test role_binding::every_unsigned_outer_and_nested_binding_mutation_refuses ... ok
+test role_binding::new_domain_and_envelope_do_not_upgrade_any_old_signature ... ok
+test role_binding::resigned_each_role_mismatch_refuses_even_with_valid_old_placement ... ok
+test role_binding::resigned_epoch_repository_and_digest_substitution_refuses ... ok
+test role_binding::seeded_unsigned_bit_corruption_never_reuses_inspection ... held_role_binding seed=0x0074b14d corruptions=64
+ok
+test role_binding::signed_binding_checks_same_policy_receipt_epoch_roles_and_exact_placement_bytes ... ok
+test role_binding::valid_but_different_receipt_or_independently_checked_policy_refuses ... ok
+test role_binding::wrong_controller_or_builder_key_at_either_signature_refuses ... ok
+test role_files::linux::concurrent_shared_offset_changes_do_not_substitute_role_content ... ok
+test role_files::linux::each_missing_or_extra_seal_refuses ... ok
+test role_files::linux::lock_and_log_must_match_consumed_receipt ... ok
+test role_files::linux::metadata_change_is_refused_even_when_sealed_content_matches ... ok
+test role_files::linux::ordinary_file_directory_and_pipe_refuse_without_blocking ... ok
+test role_files::linux::role_expectation_refusal_is_sticky_for_each_role ... ok
+test role_files::linux::sealed_roles_retain_receipt_and_offsets_without_execution ... ok
+test role_files::linux::seeded_sealed_corruption_never_reuses_receipt ... held_role_files seed=0x0074f11e corruptions=32
+ok
+test role_files::linux::swapped_aliased_and_changed_role_objects_refuse ... ok
+test role_files::linux::writable_path_only_and_non_cloexec_descriptors_refuse ... ok
+test seeded_content_corruption_cannot_reuse_checked_receipt ... held-build content corruption seed=0x74b017 iterations=128
+ok
+test separate_policy_signer_receipt_contents_and_three_roles_roundtrip ... ok
+test signer_requires_distinct_valid_elf_and_exact_nonempty_root_lock ... ok
+test valid_but_noncanonical_or_duplicate_documents_and_worker_signed_body_refuse ... ok
+
+test result: ok. 38 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.82s
+
+HC074-CONSUMING-SERVER selection=188-old-2 expected=38 exit=0
+HC074-CONSUMING-SERVER preflight=ok supervisor_pid=8839 restarts=0
+join-194: OK
+join-188: OK
+old-194: OK
+old-188: OK
+HC074-CONSUMING-SERVER preflight=ok supervisor_pid=8839 restarts=0
+HC074-CONSUMING-SERVER complete=true failed=0 supervisor_unchanged=true

@@ -1,0 +1,14 @@
+{
+  "source": "f07dcca31e2e69796644d70fef695404b22d1519",
+  "passed": true,
+  "checks": [
+    "guards",
+    "predecessor",
+    "lint",
+    "registry",
+    "docs",
+    "contract",
+    "fmt"
+  ],
+  "recipe_sha256": "68edcde0a9c7c6360db226abbb36299c92947b659a07e6a5562a7d1a0a03c506"
+}
