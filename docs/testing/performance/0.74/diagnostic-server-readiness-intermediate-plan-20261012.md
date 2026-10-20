@@ -562,3 +562,19 @@ complete held projection and original delivery remain necessary before writer
 cessation, durable completion/later cells, reconnect or server rehearsal. The
 old worker builder receipt cannot authenticate three newly declared artifact
 roles. Keep its fixed recipe and old direct-worker message unchanged and unsent.
+
+## P3 Held artifact topology and build authority decision
+
+The [boundary audit](held-artifact-boundary-audit-20261020.md) separates logical
+roles from actual executables. Current watchdog/collector keepers are private
+raw-clone continuations; the collector remains quarantined. There is no production
+held-launcher target or new original fixed-placement CLI driver. The existing
+worker builder policy pins only the frozen worker recipe, not any of these roles.
+
+Approve the minimal topology and purpose-bound builder contract before changing
+that authority: one new held launcher, existing keepers in the admitted host
+image, separate role receipt/policy and an explicit versioned original binding.
+An active collector requires its own admitted handoff; it is not the current
+quarantine renamed. Preserve the old worker contract and every original live
+predicate/deadline. No production path, key enrollment, host operation or original
+delivery is authorized by the proposal or by unchanged artifact regressions.

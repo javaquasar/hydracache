@@ -14354,3 +14354,30 @@ The old 321-contract image also passes across the documented fixture-only HEAD
 advance; it is not relabeled as stable-source qualification. The
 [evidence packet](../testing/performance/0.74/local-runs/fixed-slice-namespace-20261020/README.md)
 keeps these scopes, failed mutation recipes and final image identities distinct.
+
+## Artifact roles do not define executable topology
+
+The [next boundary audit](../testing/performance/0.74/held-artifact-boundary-audit-20261020.md)
+separates three logical launch roles from their actual producers. Current root
+guardians and the barred collector are private clone continuations, so their
+executable identity is inherited from the original host image. The collector is
+still quarantined, not an active drain/finalization service. The held launcher
+has no production binary target. Creating three new files with the role names
+would therefore be an execution-topology change, not an artifact-hash check.
+
+The proposed minimal design keeps those existing keepers in the original host
+image and adds one held launcher. A separate purpose-bound build policy/receipt
+must attest the actual host and launcher with explicit role mapping. The old
+worker receipt stays bound to its frozen source and recipe; it cannot be
+relabeled as helper provenance. Equal watchdog/collector hashes alone supply
+neither role identity nor original custody, and an active collector still needs
+an admitted handoff.
+
+The new signed contract must also distinguish before and after exec. Before
+release, the held process is the launcher and retains the admitted worker's
+executable FD. After one-shot pinned-FD exec, the same process generation must be
+observed as the actual worker before publishing Running or completion. Calling
+both observations the same executable check would hide a transition that needs
+its own original-frame and lost-ack coverage. This topology and build-authority
+proposal needs approval before implementation; it does not enroll a key, choose
+an install path, extract a library or authorize a server run.

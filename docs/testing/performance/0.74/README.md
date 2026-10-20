@@ -4423,3 +4423,12 @@ The sealed packet has 95 hashed files plus inventory, SHA256
 `00e1dc901bf374c3f49dee27bb466ef709796b39010878e992fe27a97d08e411`.
 Its verifier rejects 27 in-memory metadata mutations. Earlier sealed evidence
 and the qualification manifest digest remain unchanged.
+
+The [held artifact boundary audit](held-artifact-boundary-audit-20261020.md)
+identifies a pending executable-topology and build-authority decision. Three
+signed role hashes do not require three executable files: current guardians and
+the barred collector are raw-clone continuations of their host image, while the
+held launcher has no production target. The proposed minimal contract retains
+that topology, adds one held launcher and separate purpose-bound build authority,
+and explicitly distinguishes pre-exec launcher/worker-FD binding from post-exec
+worker identity. It is a proposal, not an enrolled policy or installed path.
