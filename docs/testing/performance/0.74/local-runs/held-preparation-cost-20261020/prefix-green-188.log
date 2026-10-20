@@ -1,0 +1,17 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `release` profile [optimized] target(s) in 2m 12s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-188-check/release/deps/hydracache_long_run_supervisor_074-1dbb29096ebc6338)
+
+running 2 tests
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::projection_prefix::projection_prefix_allocation_and_timing_attribution ... HC074-PROJECTION-PREFIX-ALLOC {"candidate":{"allocations":20480,"reallocations":0,"requested_bytes":327680},"candidate_first":false,"iterations":4096,"product":false,"reference":{"allocations":40960,"reallocations":0,"requested_bytes":491520},"rust_requests_only":true,"sample":0}
+HC074-PROJECTION-PREFIX-ALLOC {"candidate":{"allocations":20480,"reallocations":0,"requested_bytes":327680},"candidate_first":true,"iterations":4096,"product":false,"reference":{"allocations":40960,"reallocations":0,"requested_bytes":491520},"rust_requests_only":true,"sample":1}
+HC074-PROJECTION-PREFIX-ALLOC {"candidate":{"allocations":20480,"reallocations":0,"requested_bytes":327680},"candidate_first":false,"iterations":4096,"product":false,"reference":{"allocations":40960,"reallocations":0,"requested_bytes":491520},"rust_requests_only":true,"sample":2}
+HC074-PROJECTION-PREFIX-TIME {"allocation_counter_active":false,"candidate_first":false,"candidate_wall_ns":22461295,"iterations":32768,"product":false,"reference_wall_ns":25742736,"sample":0}
+HC074-PROJECTION-PREFIX-TIME {"allocation_counter_active":false,"candidate_first":true,"candidate_wall_ns":21737570,"iterations":32768,"product":false,"reference_wall_ns":30430945,"sample":1}
+HC074-PROJECTION-PREFIX-TIME {"allocation_counter_active":false,"candidate_first":false,"candidate_wall_ns":30492085,"iterations":32768,"product":false,"reference_wall_ns":27679691,"sample":2}
+ok
+test diagnostic_kernel_admission::tests::projection_prefix::projection_prefix_differential_seeded_bytes_and_first_refusal ... HC074-PROJECTION-DIFFERENTIAL seed=0x07401d5e mutations=1024 original_refusals=true product=false
+ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 1374 filtered out; finished in 0.18s
+

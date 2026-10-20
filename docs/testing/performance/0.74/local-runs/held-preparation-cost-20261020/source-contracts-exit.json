@@ -1,0 +1,8 @@
+{
+  "source": "3260a1638c54c2aeb500f3787bb2157243e51403",
+  "exit": 101,
+  "command": "cargo +1.94.0 test --locked -p xtask --test held_preparation_cost_074 --test diagnostic_artifact_fixture_074 --test performance_contract_074",
+  "platform": "local WSL Linux",
+  "server": false,
+  "product": false
+}

@@ -1,0 +1,9 @@
+{
+  "source": "601f39ff72b20014cc773d012ca69ea978aea7a7",
+  "exit": 0,
+  "platform": "Windows Git worktree context",
+  "command": "cargo test --locked -p xtask --test held_preparation_cost_074 --test performance_contract_074",
+  "runtime_code_source": "1a3285938208760e64b6683e54da808bd338c2ad",
+  "server": false,
+  "product": false
+}

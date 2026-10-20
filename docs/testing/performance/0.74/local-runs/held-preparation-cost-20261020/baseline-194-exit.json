@@ -1,0 +1,10 @@
+{
+  "source": "1eac3bb37814d5aaf44f84370606218719c01c2f",
+  "image_sha256": "f3adcf3da234dd07a0c645c886e808bac1bfbf4ba6fdb612871f23ffd0d8fed3",
+  "lane": "194",
+  "exit": 101,
+  "healthy_gate": false,
+  "server": false,
+  "product": false,
+  "deadline_changed": false
+}

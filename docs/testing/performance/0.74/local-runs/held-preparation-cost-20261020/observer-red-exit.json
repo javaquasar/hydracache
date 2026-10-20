@@ -1,0 +1,7 @@
+{
+  "reason": "test-first missing observe_with_cpu implementation",
+  "exit": 101,
+  "product": false,
+  "expected_failure": true,
+  "server": false
+}

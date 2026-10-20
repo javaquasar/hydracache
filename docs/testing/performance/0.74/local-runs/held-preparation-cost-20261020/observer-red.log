@@ -1,0 +1,40 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0425]: cannot find function `observe_with_cpu` in this scope
+ --> tools/long-run-supervisor-074/src/../tests/support/consuming_held_cost.rs:7:28
+  |
+7 | ... = observe_with_cpu(
+  |       ^^^^^^^^^^^^^^^^ not f...n this scope
+
+error[E0282]: type annotations needed
+  --> tools/long-run-supervisor-074/src/../tests/support/consuming_held_cost.rs:17:16
+   |
+17 | ...q!(result.un...
+   |       ^^^^^^ cannot infer type
+
+error[E0425]: cannot find function `observe_with_cpu` in this scope
+  --> tools/long-run-supervisor-074/src/../tests/support/consuming_held_cost.rs:32:28
+   |
+32 | ... = observe_with_cpu(
+   |       ^^^^^^^^^^^^^^^^ not ...in this scope
+
+error[E0282]: type annotations needed
+  --> tools/long-run-supervisor-074/src/../tests/support/consuming_held_cost.rs:42:10
+   |
+42 | ...  &result.un...
+   |       ^^^^^^ cannot infer type
+
+error[E0425]: cannot find function `observe_with_cpu` in this scope
+  --> tools/long-run-supervisor-074/src/../tests/support/consuming_held_cost.rs:48:21
+   |
+48 | ... = observe_with_c.....
+   |       ^^^^^^^^^^^^^^... found in this scope
+
+error[E0425]: cannot find function `observe_with_cpu` in this scope
+  --> tools/long-run-supervisor-074/src/../tests/support/consuming_held_cost.rs:58:27
+   |
+58 | ... = observe_with_cpu(||...
+   |       ^^^^^^^^^^^^^^^^ not... in this scope
+
+Some errors have detailed explanations: E0282, E0425.
+For more information about an error, try `rustc --explain E0282`.
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 6 previous errors

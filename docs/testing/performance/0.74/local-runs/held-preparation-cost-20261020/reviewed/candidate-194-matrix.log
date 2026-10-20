@@ -1,0 +1,31 @@
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::cgroup::held_live::privileged_consuming_held_live_matrix ... 
+running 1 test
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::cgroup::held_live::privileged_consuming_held_live_matrix' (418) panicked at tools/long-run-supervisor-074/src/../tests/support/consuming_held_live.rs:223:63:
+called `Result::unwrap()` on an `Err` value: Causal(Reservation(Attempt(Controller(Original(Input(Kernel(Invalid)))))))
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::cgroup::held_live::privileged_consuming_held_live_matrix ... HC074-HELD-LIVE-ORIGINAL {"age":{"sites":[{"calls":0,"first":null,"first_refusal":null,"last":null},{"calls":5,"first":{"age_ns":151199838,"file":"tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs","issued_ns":31709481579,"line":109,"now_ns":31860681417,"reason":"within-window"},"first_refusal":null,"last":{"age_ns":539895478,"file":"tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs","issued_ns":31709481579,"line":109,"now_ns":32249377057,"reason":"within-window"}},{"calls":2,"first":{"age_ns":472524888,"file":"tools/long-run-supervisor-074/src/diagnostic_preconsent_frame.rs","issued_ns":31709481579,"line":188,"now_ns":32182006467,"reason":"within-window"},"first_refusal":null,"last":{"age_ns":541288422,"file":"tools/long-run-supervisor-074/src/diagnostic_preconsent_frame.rs","issued_ns":31709481579,"line":188,"now_ns":32250770001,"reason":"within-window"}}]},"case":"healthy","causal":{"first":{"age_ns":151199838,"diagnostic_reason":"within-window","issued_boot":"1e4cac78-139e-4911-8bf5-5f05a29e3a4f","issued_ns":31709481579,"now_boot":"1e4cac78-139e-4911-8bf5-5f05a29e3a4f","now_ns":31860681417,"site":"window"},"first_refusal":null,"last":{"age_ns":539895478,"diagnostic_reason":"within-window","issued_boot":"1e4cac78-139e-4911-8bf5-5f05a29e3a4f","issued_ns":31709481579,"now_boot":"1e4cac78-139e-4911-8bf5-5f05a29e3a4f","now_ns":32249377057,"site":"window"},"observations":5},"deadline_changed":false,"guard_clock_added":false,"kernel":{"clock":[29986518874,32303430399,1792494473013796208,1792494468401107232,1,60000000000],"file":"tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs","line":259,"phase":"unassigned","site":"clock-order"},"product":false,"returned":false,"server":false}
+FAILED
+
+failures:
+
+failures:
+    diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::cgroup::held_live::privileged_consuming_held_live_matrix
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1370 filtered out; finished in 2.76s
+
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::cgroup::held_live::privileged_consuming_held_live_matrix' (416) panicked at tools/long-run-supervisor-074/src/../tests/support/consuming_held_live.rs:108:9:
+actual held case refused: healthy: exit status: 101
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::cgroup::held_live::privileged_consuming_held_live_matrix
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1370 filtered out; finished in 2.76s
+

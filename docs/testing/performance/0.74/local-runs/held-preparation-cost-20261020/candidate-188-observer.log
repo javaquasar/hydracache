@@ -1,0 +1,12 @@
+
+running 3 tests
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::cgroup::held_live::cost::preparation_cost_observer_failure_does_not_mask_original_panic_or_reuse_counts ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::cgroup::held_live::cost::preparation_cost_observer_preserves_value_once_and_balanced_counters ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::cgroup::held_live::cost::preparation_cost_observer_restores_outer_frames_and_refuses_cpu_underflow ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 1368 filtered out; finished in 0.00s
+
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::cgroup::held_live::cost::preparation_cost_observer_failure_does_not_mask_original_panic_or_reuse_counts' panicked at tools/long-run-supervisor-074/src/../tests/support/consuming_held_cost.rs:84:13:
+Box<dyn Any>
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

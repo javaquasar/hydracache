@@ -1,0 +1,27 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `release` profile [optimized] target(s) in 2m 12s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-188-check/release/deps/hydracache_long_run_supervisor_074-1dbb29096ebc6338)
+
+running 2 tests
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::projection_prefix::projection_prefix_allocation_and_timing_attribution ... HC074-PROJECTION-PREFIX-ALLOC {"candidate":{"allocations":40960,"reallocations":0,"requested_bytes":491520},"candidate_first":false,"iterations":4096,"product":false,"reference":{"allocations":40960,"reallocations":0,"requested_bytes":491520},"rust_requests_only":true,"sample":0}
+HC074-PROJECTION-PREFIX-ALLOC {"candidate":{"allocations":40960,"reallocations":0,"requested_bytes":491520},"candidate_first":true,"iterations":4096,"product":false,"reference":{"allocations":40960,"reallocations":0,"requested_bytes":491520},"rust_requests_only":true,"sample":1}
+HC074-PROJECTION-PREFIX-ALLOC {"candidate":{"allocations":40960,"reallocations":0,"requested_bytes":491520},"candidate_first":false,"iterations":4096,"product":false,"reference":{"allocations":40960,"reallocations":0,"requested_bytes":491520},"rust_requests_only":true,"sample":2}
+HC074-PROJECTION-PREFIX-TIME {"allocation_counter_active":false,"candidate_first":false,"candidate_wall_ns":19495845,"iterations":32768,"product":false,"reference_wall_ns":19171440,"sample":0}
+HC074-PROJECTION-PREFIX-TIME {"allocation_counter_active":false,"candidate_first":true,"candidate_wall_ns":19617804,"iterations":32768,"product":false,"reference_wall_ns":22244361,"sample":1}
+HC074-PROJECTION-PREFIX-TIME {"allocation_counter_active":false,"candidate_first":false,"candidate_wall_ns":36956797,"iterations":32768,"product":false,"reference_wall_ns":27381919,"sample":2}
+
+thread 'diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::projection_prefix::projection_prefix_allocation_and_timing_attribution' panicked at tools/long-run-supervisor-074/src/../tests/support/projection_prefix_alloc.rs:62:5:
+fixed prefixes must remove repeated allocation requests
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+test diagnostic_kernel_admission::tests::projection_prefix::projection_prefix_differential_seeded_bytes_and_first_refusal ... HC074-PROJECTION-DIFFERENTIAL seed=0x07401d5e mutations=1024 original_refusals=true product=false
+ok
+
+failures:
+
+failures:
+    diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::projection_prefix::projection_prefix_allocation_and_timing_attribution
+
+test result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured; 1374 filtered out; finished in 0.16s
+
+error: test failed, to rerun pass `-p hydracache-long-run-supervisor-074 --lib`

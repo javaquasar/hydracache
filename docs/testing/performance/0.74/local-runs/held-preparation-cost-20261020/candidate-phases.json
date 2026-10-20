@@ -1,0 +1,2222 @@
+[
+  {
+    "cohort": "candidate",
+    "lane": "194",
+    "sample": 0,
+    "invocation_exit": 0,
+    "phase": "prepare-consent",
+    "returned": true,
+    "wall_ns": 288679660,
+    "process_cpu_ns": 288677491,
+    "authentication_calls": 68,
+    "authentication_ns": 3937613,
+    "projection": {
+      "calls": 3292,
+      "inclusive_ns": 13267002,
+      "outside_children_ns": 13267002
+    },
+    "origin": {
+      "calls": 6362,
+      "inclusive_ns": 131809169,
+      "outside_children_ns": 29182657
+    },
+    "boot": {
+      "calls": 12724,
+      "inclusive_ns": 59126962,
+      "outside_children_ns": 53298431
+    },
+    "namespace": {
+      "calls": 25448,
+      "inclusive_ns": 43499550,
+      "outside_children_ns": 43499550
+    },
+    "document": {
+      "calls": 19308,
+      "inclusive_ns": 22514173,
+      "outside_children_ns": 22514173
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "194",
+    "sample": 0,
+    "invocation_exit": 0,
+    "phase": "accept-consent",
+    "returned": true,
+    "wall_ns": 165211014,
+    "process_cpu_ns": 165209136,
+    "authentication_calls": 34,
+    "authentication_ns": 2059631,
+    "projection": {
+      "calls": 1731,
+      "inclusive_ns": 8479065,
+      "outside_children_ns": 8479065
+    },
+    "origin": {
+      "calls": 3334,
+      "inclusive_ns": 72501044,
+      "outside_children_ns": 16407046
+    },
+    "boot": {
+      "calls": 6668,
+      "inclusive_ns": 31651744,
+      "outside_children_ns": 28506433
+    },
+    "namespace": {
+      "calls": 13336,
+      "inclusive_ns": 24442254,
+      "outside_children_ns": 24442254
+    },
+    "document": {
+      "calls": 10130,
+      "inclusive_ns": 12590962,
+      "outside_children_ns": 12590962
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "194",
+    "sample": 0,
+    "invocation_exit": 0,
+    "phase": "outputs",
+    "returned": true,
+    "wall_ns": 3619726525,
+    "process_cpu_ns": 3594132490,
+    "authentication_calls": 782,
+    "authentication_ns": 48126778,
+    "projection": {
+      "calls": 39744,
+      "inclusive_ns": 175969853,
+      "outside_children_ns": 175969853
+    },
+    "origin": {
+      "calls": 76544,
+      "inclusive_ns": 1639393553,
+      "outside_children_ns": 378463933
+    },
+    "boot": {
+      "calls": 153088,
+      "inclusive_ns": 718478053,
+      "outside_children_ns": 652983527
+    },
+    "namespace": {
+      "calls": 306176,
+      "inclusive_ns": 542451567,
+      "outside_children_ns": 542451567
+    },
+    "document": {
+      "calls": 232576,
+      "inclusive_ns": 264588695,
+      "outside_children_ns": 264588695
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "194",
+    "sample": 0,
+    "invocation_exit": 0,
+    "phase": "enrollment-frame",
+    "returned": true,
+    "wall_ns": 181585823,
+    "process_cpu_ns": 179446019,
+    "authentication_calls": 34,
+    "authentication_ns": 1735016,
+    "projection": {
+      "calls": 1736,
+      "inclusive_ns": 6669818,
+      "outside_children_ns": 6669818
+    },
+    "origin": {
+      "calls": 3340,
+      "inclusive_ns": 62737292,
+      "outside_children_ns": 13922008
+    },
+    "boot": {
+      "calls": 6680,
+      "inclusive_ns": 28672541,
+      "outside_children_ns": 26417803
+    },
+    "namespace": {
+      "calls": 13360,
+      "inclusive_ns": 20142743,
+      "outside_children_ns": 20142743
+    },
+    "document": {
+      "calls": 10152,
+      "inclusive_ns": 9805135,
+      "outside_children_ns": 9805135
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "194",
+    "sample": 0,
+    "invocation_exit": 0,
+    "phase": "fixed-manager-message",
+    "returned": true,
+    "wall_ns": 185731531,
+    "process_cpu_ns": 163783798,
+    "authentication_calls": 34,
+    "authentication_ns": 1830654,
+    "projection": {
+      "calls": 1740,
+      "inclusive_ns": 7056090,
+      "outside_children_ns": 7056090
+    },
+    "origin": {
+      "calls": 3350,
+      "inclusive_ns": 64953126,
+      "outside_children_ns": 16187245
+    },
+    "boot": {
+      "calls": 6700,
+      "inclusive_ns": 26839301,
+      "outside_children_ns": 24528282
+    },
+    "namespace": {
+      "calls": 13400,
+      "inclusive_ns": 21926580,
+      "outside_children_ns": 21926580
+    },
+    "document": {
+      "calls": 10180,
+      "inclusive_ns": 10584442,
+      "outside_children_ns": 10584442
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "194",
+    "sample": 0,
+    "invocation_exit": 0,
+    "phase": "owned-root-preparation",
+    "returned": true,
+    "wall_ns": 502909990,
+    "process_cpu_ns": 499210597,
+    "authentication_calls": 102,
+    "authentication_ns": 7885142,
+    "projection": {
+      "calls": 5208,
+      "inclusive_ns": 21659693,
+      "outside_children_ns": 21659693
+    },
+    "origin": {
+      "calls": 10032,
+      "inclusive_ns": 196224040,
+      "outside_children_ns": 45992322
+    },
+    "boot": {
+      "calls": 20064,
+      "inclusive_ns": 82596894,
+      "outside_children_ns": 75522151
+    },
+    "namespace": {
+      "calls": 40128,
+      "inclusive_ns": 67634824,
+      "outside_children_ns": 67634824
+    },
+    "document": {
+      "calls": 30480,
+      "inclusive_ns": 32079177,
+      "outside_children_ns": 32079177
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "194",
+    "sample": 0,
+    "invocation_exit": 0,
+    "phase": "enrollment",
+    "returned": true,
+    "wall_ns": 354336170,
+    "process_cpu_ns": 352797484,
+    "authentication_calls": 68,
+    "authentication_ns": 4289794,
+    "projection": {
+      "calls": 3472,
+      "inclusive_ns": 14963845,
+      "outside_children_ns": 14963845
+    },
+    "origin": {
+      "calls": 6688,
+      "inclusive_ns": 139005676,
+      "outside_children_ns": 31288795
+    },
+    "boot": {
+      "calls": 13376,
+      "inclusive_ns": 62509121,
+      "outside_children_ns": 56356148
+    },
+    "namespace": {
+      "calls": 26752,
+      "inclusive_ns": 45207760,
+      "outside_children_ns": 45207760
+    },
+    "document": {
+      "calls": 20320,
+      "inclusive_ns": 24664123,
+      "outside_children_ns": 24664123
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "194",
+    "sample": 0,
+    "invocation_exit": 0,
+    "phase": "placement",
+    "returned": true,
+    "wall_ns": 158672954,
+    "process_cpu_ns": 158087409,
+    "authentication_calls": 34,
+    "authentication_ns": 1742611,
+    "projection": {
+      "calls": 1736,
+      "inclusive_ns": 8107871,
+      "outside_children_ns": 8107871
+    },
+    "origin": {
+      "calls": 3344,
+      "inclusive_ns": 60994890,
+      "outside_children_ns": 14406771
+    },
+    "boot": {
+      "calls": 6688,
+      "inclusive_ns": 25446399,
+      "outside_children_ns": 23180545
+    },
+    "namespace": {
+      "calls": 13376,
+      "inclusive_ns": 21141720,
+      "outside_children_ns": 21141720
+    },
+    "document": {
+      "calls": 10160,
+      "inclusive_ns": 9681067,
+      "outside_children_ns": 9681067
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "194",
+    "sample": 0,
+    "invocation_exit": 0,
+    "phase": "fixed-slice",
+    "returned": true,
+    "wall_ns": 161195665,
+    "process_cpu_ns": 160766817,
+    "authentication_calls": 34,
+    "authentication_ns": 1714282,
+    "projection": {
+      "calls": 1736,
+      "inclusive_ns": 7895581,
+      "outside_children_ns": 7895581
+    },
+    "origin": {
+      "calls": 3344,
+      "inclusive_ns": 62564243,
+      "outside_children_ns": 13746399
+    },
+    "boot": {
+      "calls": 6688,
+      "inclusive_ns": 27091829,
+      "outside_children_ns": 24287132
+    },
+    "namespace": {
+      "calls": 13376,
+      "inclusive_ns": 21726015,
+      "outside_children_ns": 21726015
+    },
+    "document": {
+      "calls": 10160,
+      "inclusive_ns": 10294364,
+      "outside_children_ns": 10294364
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "194",
+    "sample": 0,
+    "invocation_exit": 0,
+    "phase": "consuming",
+    "returned": true,
+    "wall_ns": 744604483,
+    "process_cpu_ns": 741727954,
+    "authentication_calls": 158,
+    "authentication_ns": 8615422,
+    "projection": {
+      "calls": 8152,
+      "inclusive_ns": 32363722,
+      "outside_children_ns": 32363722
+    },
+    "origin": {
+      "calls": 15748,
+      "inclusive_ns": 296356467,
+      "outside_children_ns": 66419657
+    },
+    "boot": {
+      "calls": 31496,
+      "inclusive_ns": 129259128,
+      "outside_children_ns": 118534030
+    },
+    "namespace": {
+      "calls": 62992,
+      "inclusive_ns": 100677682,
+      "outside_children_ns": 100677682
+    },
+    "document": {
+      "calls": 47800,
+      "inclusive_ns": 47040351,
+      "outside_children_ns": 47040351
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "194",
+    "sample": 1,
+    "invocation_exit": 0,
+    "phase": "prepare-consent",
+    "returned": true,
+    "wall_ns": 293485531,
+    "process_cpu_ns": 293483261,
+    "authentication_calls": 68,
+    "authentication_ns": 4035395,
+    "projection": {
+      "calls": 3292,
+      "inclusive_ns": 15094382,
+      "outside_children_ns": 15094382
+    },
+    "origin": {
+      "calls": 6362,
+      "inclusive_ns": 130177901,
+      "outside_children_ns": 29766692
+    },
+    "boot": {
+      "calls": 12724,
+      "inclusive_ns": 57116565,
+      "outside_children_ns": 52119710
+    },
+    "namespace": {
+      "calls": 25448,
+      "inclusive_ns": 43294644,
+      "outside_children_ns": 43294644
+    },
+    "document": {
+      "calls": 19308,
+      "inclusive_ns": 20797740,
+      "outside_children_ns": 20797740
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "194",
+    "sample": 1,
+    "invocation_exit": 0,
+    "phase": "accept-consent",
+    "returned": true,
+    "wall_ns": 157382330,
+    "process_cpu_ns": 157381309,
+    "authentication_calls": 34,
+    "authentication_ns": 2089962,
+    "projection": {
+      "calls": 1731,
+      "inclusive_ns": 7501691,
+      "outside_children_ns": 7501691
+    },
+    "origin": {
+      "calls": 3334,
+      "inclusive_ns": 71997186,
+      "outside_children_ns": 17434641
+    },
+    "boot": {
+      "calls": 6668,
+      "inclusive_ns": 31156955,
+      "outside_children_ns": 27975510
+    },
+    "namespace": {
+      "calls": 13336,
+      "inclusive_ns": 23405590,
+      "outside_children_ns": 23405590
+    },
+    "document": {
+      "calls": 10130,
+      "inclusive_ns": 13249025,
+      "outside_children_ns": 13249025
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "194",
+    "sample": 1,
+    "invocation_exit": 0,
+    "phase": "outputs",
+    "returned": true,
+    "wall_ns": 3178984273,
+    "process_cpu_ns": 3161853508,
+    "authentication_calls": 782,
+    "authentication_ns": 42771007,
+    "projection": {
+      "calls": 39744,
+      "inclusive_ns": 161553265,
+      "outside_children_ns": 161553265
+    },
+    "origin": {
+      "calls": 76544,
+      "inclusive_ns": 1435785672,
+      "outside_children_ns": 336227990
+    },
+    "boot": {
+      "calls": 153088,
+      "inclusive_ns": 616259539,
+      "outside_children_ns": 563644524
+    },
+    "namespace": {
+      "calls": 306176,
+      "inclusive_ns": 483298143,
+      "outside_children_ns": 483298143
+    },
+    "document": {
+      "calls": 232576,
+      "inclusive_ns": 233312318,
+      "outside_children_ns": 233312318
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "194",
+    "sample": 1,
+    "invocation_exit": 0,
+    "phase": "enrollment-frame",
+    "returned": true,
+    "wall_ns": 163270886,
+    "process_cpu_ns": 160320923,
+    "authentication_calls": 34,
+    "authentication_ns": 1595504,
+    "projection": {
+      "calls": 1736,
+      "inclusive_ns": 6676623,
+      "outside_children_ns": 6676623
+    },
+    "origin": {
+      "calls": 3340,
+      "inclusive_ns": 56467381,
+      "outside_children_ns": 13155790
+    },
+    "boot": {
+      "calls": 6680,
+      "inclusive_ns": 23945635,
+      "outside_children_ns": 21914787
+    },
+    "namespace": {
+      "calls": 13360,
+      "inclusive_ns": 19365956,
+      "outside_children_ns": 19365956
+    },
+    "document": {
+      "calls": 10152,
+      "inclusive_ns": 9799950,
+      "outside_children_ns": 9799950
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "194",
+    "sample": 1,
+    "invocation_exit": 0,
+    "phase": "fixed-manager-message",
+    "returned": true,
+    "wall_ns": 161318228,
+    "process_cpu_ns": 144596699,
+    "authentication_calls": 34,
+    "authentication_ns": 1581446,
+    "projection": {
+      "calls": 1740,
+      "inclusive_ns": 6906315,
+      "outside_children_ns": 6906315
+    },
+    "origin": {
+      "calls": 3350,
+      "inclusive_ns": 56175807,
+      "outside_children_ns": 12675217
+    },
+    "boot": {
+      "calls": 6700,
+      "inclusive_ns": 24669584,
+      "outside_children_ns": 22633937
+    },
+    "namespace": {
+      "calls": 13400,
+      "inclusive_ns": 18831006,
+      "outside_children_ns": 18831006
+    },
+    "document": {
+      "calls": 10180,
+      "inclusive_ns": 8752021,
+      "outside_children_ns": 8752021
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "194",
+    "sample": 1,
+    "invocation_exit": 0,
+    "phase": "owned-root-preparation",
+    "returned": true,
+    "wall_ns": 463313367,
+    "process_cpu_ns": 460251515,
+    "authentication_calls": 102,
+    "authentication_ns": 5404981,
+    "projection": {
+      "calls": 5208,
+      "inclusive_ns": 20423762,
+      "outside_children_ns": 20423762
+    },
+    "origin": {
+      "calls": 10032,
+      "inclusive_ns": 179110075,
+      "outside_children_ns": 40079389
+    },
+    "boot": {
+      "calls": 20064,
+      "inclusive_ns": 78294655,
+      "outside_children_ns": 71476969
+    },
+    "namespace": {
+      "calls": 40128,
+      "inclusive_ns": 60736031,
+      "outside_children_ns": 60736031
+    },
+    "document": {
+      "calls": 30480,
+      "inclusive_ns": 29893502,
+      "outside_children_ns": 29893502
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "194",
+    "sample": 1,
+    "invocation_exit": 0,
+    "phase": "enrollment",
+    "returned": true,
+    "wall_ns": 309397041,
+    "process_cpu_ns": 307034054,
+    "authentication_calls": 68,
+    "authentication_ns": 3279826,
+    "projection": {
+      "calls": 3472,
+      "inclusive_ns": 13217867,
+      "outside_children_ns": 13217867
+    },
+    "origin": {
+      "calls": 6688,
+      "inclusive_ns": 123013531,
+      "outside_children_ns": 28076442
+    },
+    "boot": {
+      "calls": 13376,
+      "inclusive_ns": 54498304,
+      "outside_children_ns": 49541427
+    },
+    "namespace": {
+      "calls": 26752,
+      "inclusive_ns": 40438785,
+      "outside_children_ns": 40438785
+    },
+    "document": {
+      "calls": 20320,
+      "inclusive_ns": 19957770,
+      "outside_children_ns": 19957770
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "194",
+    "sample": 1,
+    "invocation_exit": 0,
+    "phase": "placement",
+    "returned": true,
+    "wall_ns": 149785100,
+    "process_cpu_ns": 148947642,
+    "authentication_calls": 34,
+    "authentication_ns": 1633301,
+    "projection": {
+      "calls": 1736,
+      "inclusive_ns": 6297529,
+      "outside_children_ns": 6297529
+    },
+    "origin": {
+      "calls": 3344,
+      "inclusive_ns": 59033472,
+      "outside_children_ns": 14532619
+    },
+    "boot": {
+      "calls": 6688,
+      "inclusive_ns": 24574480,
+      "outside_children_ns": 22448371
+    },
+    "namespace": {
+      "calls": 13376,
+      "inclusive_ns": 19926373,
+      "outside_children_ns": 19926373
+    },
+    "document": {
+      "calls": 10160,
+      "inclusive_ns": 9818885,
+      "outside_children_ns": 9818885
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "194",
+    "sample": 1,
+    "invocation_exit": 0,
+    "phase": "fixed-slice",
+    "returned": true,
+    "wall_ns": 161066925,
+    "process_cpu_ns": 160054962,
+    "authentication_calls": 34,
+    "authentication_ns": 1657053,
+    "projection": {
+      "calls": 1736,
+      "inclusive_ns": 7265861,
+      "outside_children_ns": 7265861
+    },
+    "origin": {
+      "calls": 3344,
+      "inclusive_ns": 63458385,
+      "outside_children_ns": 15016786
+    },
+    "boot": {
+      "calls": 6688,
+      "inclusive_ns": 27992854,
+      "outside_children_ns": 25735828
+    },
+    "namespace": {
+      "calls": 13376,
+      "inclusive_ns": 20448745,
+      "outside_children_ns": 20448745
+    },
+    "document": {
+      "calls": 10160,
+      "inclusive_ns": 9853329,
+      "outside_children_ns": 9853329
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "194",
+    "sample": 1,
+    "invocation_exit": 0,
+    "phase": "consuming",
+    "returned": true,
+    "wall_ns": 702859727,
+    "process_cpu_ns": 699918719,
+    "authentication_calls": 158,
+    "authentication_ns": 8686859,
+    "projection": {
+      "calls": 8152,
+      "inclusive_ns": 32739011,
+      "outside_children_ns": 32739011
+    },
+    "origin": {
+      "calls": 15748,
+      "inclusive_ns": 282263101,
+      "outside_children_ns": 66253928
+    },
+    "boot": {
+      "calls": 31496,
+      "inclusive_ns": 119609419,
+      "outside_children_ns": 109327073
+    },
+    "namespace": {
+      "calls": 62992,
+      "inclusive_ns": 96399754,
+      "outside_children_ns": 96399754
+    },
+    "document": {
+      "calls": 47800,
+      "inclusive_ns": 43880430,
+      "outside_children_ns": 43880430
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "194",
+    "sample": 2,
+    "invocation_exit": 0,
+    "phase": "prepare-consent",
+    "returned": true,
+    "wall_ns": 253913585,
+    "process_cpu_ns": 253911067,
+    "authentication_calls": 68,
+    "authentication_ns": 3297684,
+    "projection": {
+      "calls": 3292,
+      "inclusive_ns": 13444871,
+      "outside_children_ns": 13444871
+    },
+    "origin": {
+      "calls": 6362,
+      "inclusive_ns": 115891708,
+      "outside_children_ns": 26563924
+    },
+    "boot": {
+      "calls": 12724,
+      "inclusive_ns": 50582798,
+      "outside_children_ns": 46386325
+    },
+    "namespace": {
+      "calls": 25448,
+      "inclusive_ns": 38744986,
+      "outside_children_ns": 38744986
+    },
+    "document": {
+      "calls": 19308,
+      "inclusive_ns": 19198914,
+      "outside_children_ns": 19198914
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "194",
+    "sample": 2,
+    "invocation_exit": 0,
+    "phase": "accept-consent",
+    "returned": true,
+    "wall_ns": 138979279,
+    "process_cpu_ns": 136913921,
+    "authentication_calls": 34,
+    "authentication_ns": 1710141,
+    "projection": {
+      "calls": 1731,
+      "inclusive_ns": 7339552,
+      "outside_children_ns": 7339552
+    },
+    "origin": {
+      "calls": 3336,
+      "inclusive_ns": 63234543,
+      "outside_children_ns": 15383880
+    },
+    "boot": {
+      "calls": 6672,
+      "inclusive_ns": 27050914,
+      "outside_children_ns": 24860181
+    },
+    "namespace": {
+      "calls": 13344,
+      "inclusive_ns": 20799749,
+      "outside_children_ns": 20799749
+    },
+    "document": {
+      "calls": 10134,
+      "inclusive_ns": 10875262,
+      "outside_children_ns": 10875262
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "194",
+    "sample": 2,
+    "invocation_exit": 0,
+    "phase": "outputs",
+    "returned": true,
+    "wall_ns": 3336808367,
+    "process_cpu_ns": 3308671069,
+    "authentication_calls": 782,
+    "authentication_ns": 47503326,
+    "projection": {
+      "calls": 39744,
+      "inclusive_ns": 162695041,
+      "outside_children_ns": 162695041
+    },
+    "origin": {
+      "calls": 76544,
+      "inclusive_ns": 1508983968,
+      "outside_children_ns": 356202382
+    },
+    "boot": {
+      "calls": 153088,
+      "inclusive_ns": 652722723,
+      "outside_children_ns": 593583061
+    },
+    "namespace": {
+      "calls": 306176,
+      "inclusive_ns": 500058863,
+      "outside_children_ns": 500058863
+    },
+    "document": {
+      "calls": 232576,
+      "inclusive_ns": 253020349,
+      "outside_children_ns": 253020349
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "194",
+    "sample": 2,
+    "invocation_exit": 0,
+    "phase": "enrollment-frame",
+    "returned": true,
+    "wall_ns": 185313449,
+    "process_cpu_ns": 181026721,
+    "authentication_calls": 34,
+    "authentication_ns": 2121301,
+    "projection": {
+      "calls": 1736,
+      "inclusive_ns": 7324238,
+      "outside_children_ns": 7324238
+    },
+    "origin": {
+      "calls": 3340,
+      "inclusive_ns": 62779796,
+      "outside_children_ns": 14141958
+    },
+    "boot": {
+      "calls": 6680,
+      "inclusive_ns": 28101313,
+      "outside_children_ns": 25659114
+    },
+    "namespace": {
+      "calls": 13360,
+      "inclusive_ns": 20536525,
+      "outside_children_ns": 20536525
+    },
+    "document": {
+      "calls": 10152,
+      "inclusive_ns": 10935843,
+      "outside_children_ns": 10935843
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "194",
+    "sample": 2,
+    "invocation_exit": 0,
+    "phase": "fixed-manager-message",
+    "returned": true,
+    "wall_ns": 170312821,
+    "process_cpu_ns": 152066850,
+    "authentication_calls": 34,
+    "authentication_ns": 1710341,
+    "projection": {
+      "calls": 1740,
+      "inclusive_ns": 7363682,
+      "outside_children_ns": 7363682
+    },
+    "origin": {
+      "calls": 3350,
+      "inclusive_ns": 60290337,
+      "outside_children_ns": 13940978
+    },
+    "boot": {
+      "calls": 6700,
+      "inclusive_ns": 24891267,
+      "outside_children_ns": 22851938
+    },
+    "namespace": {
+      "calls": 13400,
+      "inclusive_ns": 21458092,
+      "outside_children_ns": 21458092
+    },
+    "document": {
+      "calls": 10180,
+      "inclusive_ns": 11063770,
+      "outside_children_ns": 11063770
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "194",
+    "sample": 2,
+    "invocation_exit": 0,
+    "phase": "owned-root-preparation",
+    "returned": true,
+    "wall_ns": 505119711,
+    "process_cpu_ns": 501851762,
+    "authentication_calls": 102,
+    "authentication_ns": 7701022,
+    "projection": {
+      "calls": 5208,
+      "inclusive_ns": 20433398,
+      "outside_children_ns": 20433398
+    },
+    "origin": {
+      "calls": 10032,
+      "inclusive_ns": 194519644,
+      "outside_children_ns": 45835095
+    },
+    "boot": {
+      "calls": 20064,
+      "inclusive_ns": 83628562,
+      "outside_children_ns": 76809025
+    },
+    "namespace": {
+      "calls": 40128,
+      "inclusive_ns": 65055987,
+      "outside_children_ns": 65055987
+    },
+    "document": {
+      "calls": 30480,
+      "inclusive_ns": 31640091,
+      "outside_children_ns": 31640091
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "194",
+    "sample": 2,
+    "invocation_exit": 0,
+    "phase": "enrollment",
+    "returned": true,
+    "wall_ns": 323299949,
+    "process_cpu_ns": 321151517,
+    "authentication_calls": 68,
+    "authentication_ns": 3503018,
+    "projection": {
+      "calls": 3472,
+      "inclusive_ns": 14245294,
+      "outside_children_ns": 14245294
+    },
+    "origin": {
+      "calls": 6688,
+      "inclusive_ns": 124446003,
+      "outside_children_ns": 28393003
+    },
+    "boot": {
+      "calls": 13376,
+      "inclusive_ns": 56086165,
+      "outside_children_ns": 51345868
+    },
+    "namespace": {
+      "calls": 26752,
+      "inclusive_ns": 39966835,
+      "outside_children_ns": 39966835
+    },
+    "document": {
+      "calls": 20320,
+      "inclusive_ns": 19872174,
+      "outside_children_ns": 19872174
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "194",
+    "sample": 2,
+    "invocation_exit": 0,
+    "phase": "placement",
+    "returned": true,
+    "wall_ns": 150282585,
+    "process_cpu_ns": 149531775,
+    "authentication_calls": 34,
+    "authentication_ns": 3190452,
+    "projection": {
+      "calls": 1736,
+      "inclusive_ns": 6320420,
+      "outside_children_ns": 6320420
+    },
+    "origin": {
+      "calls": 3344,
+      "inclusive_ns": 58070941,
+      "outside_children_ns": 12979854
+    },
+    "boot": {
+      "calls": 6688,
+      "inclusive_ns": 24694367,
+      "outside_children_ns": 22575132
+    },
+    "namespace": {
+      "calls": 13376,
+      "inclusive_ns": 20396720,
+      "outside_children_ns": 20396720
+    },
+    "document": {
+      "calls": 10160,
+      "inclusive_ns": 10371735,
+      "outside_children_ns": 10371735
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "194",
+    "sample": 2,
+    "invocation_exit": 0,
+    "phase": "fixed-slice",
+    "returned": true,
+    "wall_ns": 159281585,
+    "process_cpu_ns": 158217417,
+    "authentication_calls": 34,
+    "authentication_ns": 2150448,
+    "projection": {
+      "calls": 1736,
+      "inclusive_ns": 7158618,
+      "outside_children_ns": 7158618
+    },
+    "origin": {
+      "calls": 3344,
+      "inclusive_ns": 61632366,
+      "outside_children_ns": 15258319
+    },
+    "boot": {
+      "calls": 6688,
+      "inclusive_ns": 25274370,
+      "outside_children_ns": 23010256
+    },
+    "namespace": {
+      "calls": 13376,
+      "inclusive_ns": 21099677,
+      "outside_children_ns": 21099677
+    },
+    "document": {
+      "calls": 10160,
+      "inclusive_ns": 10021777,
+      "outside_children_ns": 10021777
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "194",
+    "sample": 2,
+    "invocation_exit": 0,
+    "phase": "consuming",
+    "returned": true,
+    "wall_ns": 690259587,
+    "process_cpu_ns": 686194752,
+    "authentication_calls": 158,
+    "authentication_ns": 8649218,
+    "projection": {
+      "calls": 8152,
+      "inclusive_ns": 31650720,
+      "outside_children_ns": 31650720
+    },
+    "origin": {
+      "calls": 15748,
+      "inclusive_ns": 273570192,
+      "outside_children_ns": 63629184
+    },
+    "boot": {
+      "calls": 31496,
+      "inclusive_ns": 119793205,
+      "outside_children_ns": 109457956
+    },
+    "namespace": {
+      "calls": 62992,
+      "inclusive_ns": 90147803,
+      "outside_children_ns": 90147803
+    },
+    "document": {
+      "calls": 47800,
+      "inclusive_ns": 46256525,
+      "outside_children_ns": 46256525
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "188",
+    "sample": 0,
+    "invocation_exit": 101,
+    "phase": "prepare-consent",
+    "returned": true,
+    "wall_ns": 308967022,
+    "process_cpu_ns": 307843731,
+    "authentication_calls": 68,
+    "authentication_ns": 4120810,
+    "projection": {
+      "calls": 3292,
+      "inclusive_ns": 14478321,
+      "outside_children_ns": 14478321
+    },
+    "origin": {
+      "calls": 6362,
+      "inclusive_ns": 133945981,
+      "outside_children_ns": 33499262
+    },
+    "boot": {
+      "calls": 12724,
+      "inclusive_ns": 56454789,
+      "outside_children_ns": 51611805
+    },
+    "namespace": {
+      "calls": 25448,
+      "inclusive_ns": 43991930,
+      "outside_children_ns": 43991930
+    },
+    "document": {
+      "calls": 19308,
+      "inclusive_ns": 24973522,
+      "outside_children_ns": 24973522
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "188",
+    "sample": 0,
+    "invocation_exit": 101,
+    "phase": "accept-consent",
+    "returned": true,
+    "wall_ns": 145284895,
+    "process_cpu_ns": 144206997,
+    "authentication_calls": 34,
+    "authentication_ns": 1894321,
+    "projection": {
+      "calls": 1731,
+      "inclusive_ns": 6637585,
+      "outside_children_ns": 6637585
+    },
+    "origin": {
+      "calls": 3336,
+      "inclusive_ns": 64464846,
+      "outside_children_ns": 15359637
+    },
+    "boot": {
+      "calls": 6672,
+      "inclusive_ns": 27487910,
+      "outside_children_ns": 25092694
+    },
+    "namespace": {
+      "calls": 13344,
+      "inclusive_ns": 21617299,
+      "outside_children_ns": 21617299
+    },
+    "document": {
+      "calls": 10134,
+      "inclusive_ns": 10223687,
+      "outside_children_ns": 10223687
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "188",
+    "sample": 0,
+    "invocation_exit": 101,
+    "phase": "outputs",
+    "returned": true,
+    "wall_ns": 5629380328,
+    "process_cpu_ns": 5603160647,
+    "authentication_calls": 782,
+    "authentication_ns": 82065114,
+    "projection": {
+      "calls": 39744,
+      "inclusive_ns": 247334524,
+      "outside_children_ns": 247334524
+    },
+    "origin": {
+      "calls": 76544,
+      "inclusive_ns": 2521031912,
+      "outside_children_ns": 596514307
+    },
+    "boot": {
+      "calls": 153088,
+      "inclusive_ns": 1052164635,
+      "outside_children_ns": 949375698
+    },
+    "namespace": {
+      "calls": 306176,
+      "inclusive_ns": 872352970,
+      "outside_children_ns": 872352970
+    },
+    "document": {
+      "calls": 232576,
+      "inclusive_ns": 438594523,
+      "outside_children_ns": 438594523
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "188",
+    "sample": 0,
+    "invocation_exit": 101,
+    "phase": "enrollment-frame",
+    "returned": true,
+    "wall_ns": 371298367,
+    "process_cpu_ns": 364420245,
+    "authentication_calls": 34,
+    "authentication_ns": 2719724,
+    "projection": {
+      "calls": 1736,
+      "inclusive_ns": 11308422,
+      "outside_children_ns": 11308422
+    },
+    "origin": {
+      "calls": 3340,
+      "inclusive_ns": 114162666,
+      "outside_children_ns": 22981618
+    },
+    "boot": {
+      "calls": 6680,
+      "inclusive_ns": 47556288,
+      "outside_children_ns": 43137182
+    },
+    "namespace": {
+      "calls": 13360,
+      "inclusive_ns": 43624760,
+      "outside_children_ns": 43624760
+    },
+    "document": {
+      "calls": 10152,
+      "inclusive_ns": 18310610,
+      "outside_children_ns": 18310610
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "188",
+    "sample": 0,
+    "invocation_exit": 101,
+    "phase": "fixed-manager-message",
+    "returned": true,
+    "wall_ns": 381563889,
+    "process_cpu_ns": 332010207,
+    "authentication_calls": 34,
+    "authentication_ns": 3836055,
+    "projection": {
+      "calls": 1740,
+      "inclusive_ns": 10795350,
+      "outside_children_ns": 10795350
+    },
+    "origin": {
+      "calls": 3350,
+      "inclusive_ns": 133637290,
+      "outside_children_ns": 35209447
+    },
+    "boot": {
+      "calls": 6700,
+      "inclusive_ns": 60569955,
+      "outside_children_ns": 46879982
+    },
+    "namespace": {
+      "calls": 13400,
+      "inclusive_ns": 37857888,
+      "outside_children_ns": 37857888
+    },
+    "document": {
+      "calls": 10180,
+      "inclusive_ns": 32863154,
+      "outside_children_ns": 32863154
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "188",
+    "sample": 0,
+    "invocation_exit": 101,
+    "phase": "owned-root-preparation",
+    "returned": true,
+    "wall_ns": 1150411257,
+    "process_cpu_ns": 1091807199,
+    "authentication_calls": 102,
+    "authentication_ns": 9764916,
+    "projection": {
+      "calls": 5208,
+      "inclusive_ns": 45153271,
+      "outside_children_ns": 45153271
+    },
+    "origin": {
+      "calls": 10032,
+      "inclusive_ns": 477009448,
+      "outside_children_ns": 106151182
+    },
+    "boot": {
+      "calls": 20064,
+      "inclusive_ns": 209839589,
+      "outside_children_ns": 196734905
+    },
+    "namespace": {
+      "calls": 40128,
+      "inclusive_ns": 161018677,
+      "outside_children_ns": 161018677
+    },
+    "document": {
+      "calls": 30480,
+      "inclusive_ns": 63901711,
+      "outside_children_ns": 63901711
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "188",
+    "sample": 0,
+    "invocation_exit": 101,
+    "phase": "enrollment",
+    "returned": true,
+    "wall_ns": 732393450,
+    "process_cpu_ns": 702671822,
+    "authentication_calls": 68,
+    "authentication_ns": 5746045,
+    "projection": {
+      "calls": 3472,
+      "inclusive_ns": 25168125,
+      "outside_children_ns": 25168125
+    },
+    "origin": {
+      "calls": 6688,
+      "inclusive_ns": 306003313,
+      "outside_children_ns": 74738546
+    },
+    "boot": {
+      "calls": 13376,
+      "inclusive_ns": 123346793,
+      "outside_children_ns": 113447427
+    },
+    "namespace": {
+      "calls": 26752,
+      "inclusive_ns": 107917974,
+      "outside_children_ns": 107917974
+    },
+    "document": {
+      "calls": 20320,
+      "inclusive_ns": 39127676,
+      "outside_children_ns": 39127676
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "188",
+    "sample": 0,
+    "invocation_exit": 101,
+    "phase": "placement",
+    "returned": true,
+    "wall_ns": 299018678,
+    "process_cpu_ns": 286235766,
+    "authentication_calls": 34,
+    "authentication_ns": 4455964,
+    "projection": {
+      "calls": 1736,
+      "inclusive_ns": 15504148,
+      "outside_children_ns": 15504148
+    },
+    "origin": {
+      "calls": 3344,
+      "inclusive_ns": 120223987,
+      "outside_children_ns": 27950607
+    },
+    "boot": {
+      "calls": 6688,
+      "inclusive_ns": 47800033,
+      "outside_children_ns": 43259548
+    },
+    "namespace": {
+      "calls": 13376,
+      "inclusive_ns": 44473347,
+      "outside_children_ns": 44473347
+    },
+    "document": {
+      "calls": 10160,
+      "inclusive_ns": 19579271,
+      "outside_children_ns": 19579271
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "188",
+    "sample": 0,
+    "invocation_exit": 101,
+    "phase": "fixed-slice",
+    "returned": true,
+    "wall_ns": 284988123,
+    "process_cpu_ns": 271487665,
+    "authentication_calls": 34,
+    "authentication_ns": 3102189,
+    "projection": {
+      "calls": 1736,
+      "inclusive_ns": 13704685,
+      "outside_children_ns": 13704685
+    },
+    "origin": {
+      "calls": 3344,
+      "inclusive_ns": 108808343,
+      "outside_children_ns": 26466801
+    },
+    "boot": {
+      "calls": 6688,
+      "inclusive_ns": 43274924,
+      "outside_children_ns": 39381370
+    },
+    "namespace": {
+      "calls": 13376,
+      "inclusive_ns": 39066618,
+      "outside_children_ns": 39066618
+    },
+    "document": {
+      "calls": 10160,
+      "inclusive_ns": 21871849,
+      "outside_children_ns": 21871849
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "188",
+    "sample": 0,
+    "invocation_exit": 101,
+    "phase": "consuming",
+    "returned": true,
+    "wall_ns": 288422707,
+    "process_cpu_ns": 274623786,
+    "authentication_calls": 34,
+    "authentication_ns": 3088552,
+    "projection": {
+      "calls": 1736,
+      "inclusive_ns": 13259704,
+      "outside_children_ns": 13259704
+    },
+    "origin": {
+      "calls": 3342,
+      "inclusive_ns": 117931323,
+      "outside_children_ns": 32334961
+    },
+    "boot": {
+      "calls": 6684,
+      "inclusive_ns": 41435559,
+      "outside_children_ns": 38022045
+    },
+    "namespace": {
+      "calls": 13368,
+      "inclusive_ns": 44160803,
+      "outside_children_ns": 44160803
+    },
+    "document": {
+      "calls": 10156,
+      "inclusive_ns": 26936376,
+      "outside_children_ns": 26936376
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "188",
+    "sample": 1,
+    "invocation_exit": 0,
+    "phase": "prepare-consent",
+    "returned": true,
+    "wall_ns": 640483520,
+    "process_cpu_ns": 600133113,
+    "authentication_calls": 68,
+    "authentication_ns": 14029524,
+    "projection": {
+      "calls": 3292,
+      "inclusive_ns": 32475797,
+      "outside_children_ns": 32475797
+    },
+    "origin": {
+      "calls": 6362,
+      "inclusive_ns": 280128404,
+      "outside_children_ns": 59060636
+    },
+    "boot": {
+      "calls": 12724,
+      "inclusive_ns": 104224249,
+      "outside_children_ns": 95203004
+    },
+    "namespace": {
+      "calls": 25448,
+      "inclusive_ns": 116843519,
+      "outside_children_ns": 116843519
+    },
+    "document": {
+      "calls": 19308,
+      "inclusive_ns": 40829556,
+      "outside_children_ns": 40829556
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "188",
+    "sample": 1,
+    "invocation_exit": 0,
+    "phase": "accept-consent",
+    "returned": true,
+    "wall_ns": 353214178,
+    "process_cpu_ns": 334019647,
+    "authentication_calls": 34,
+    "authentication_ns": 2729345,
+    "projection": {
+      "calls": 1731,
+      "inclusive_ns": 20470598,
+      "outside_children_ns": 20470598
+    },
+    "origin": {
+      "calls": 3334,
+      "inclusive_ns": 143904180,
+      "outside_children_ns": 34132813
+    },
+    "boot": {
+      "calls": 6668,
+      "inclusive_ns": 59038493,
+      "outside_children_ns": 53424156
+    },
+    "namespace": {
+      "calls": 13336,
+      "inclusive_ns": 50732874,
+      "outside_children_ns": 50732874
+    },
+    "document": {
+      "calls": 10130,
+      "inclusive_ns": 31775784,
+      "outside_children_ns": 31775784
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "188",
+    "sample": 1,
+    "invocation_exit": 0,
+    "phase": "outputs",
+    "returned": true,
+    "wall_ns": 4770868146,
+    "process_cpu_ns": 4661535169,
+    "authentication_calls": 782,
+    "authentication_ns": 72085676,
+    "projection": {
+      "calls": 39744,
+      "inclusive_ns": 240943503,
+      "outside_children_ns": 240943503
+    },
+    "origin": {
+      "calls": 76544,
+      "inclusive_ns": 2145731613,
+      "outside_children_ns": 512778297
+    },
+    "boot": {
+      "calls": 153088,
+      "inclusive_ns": 906841021,
+      "outside_children_ns": 823869940
+    },
+    "namespace": {
+      "calls": 306176,
+      "inclusive_ns": 726112295,
+      "outside_children_ns": 726112295
+    },
+    "document": {
+      "calls": 232576,
+      "inclusive_ns": 367732866,
+      "outside_children_ns": 367732866
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "188",
+    "sample": 1,
+    "invocation_exit": 0,
+    "phase": "enrollment-frame",
+    "returned": true,
+    "wall_ns": 186524540,
+    "process_cpu_ns": 182588400,
+    "authentication_calls": 34,
+    "authentication_ns": 1751348,
+    "projection": {
+      "calls": 1736,
+      "inclusive_ns": 7346171,
+      "outside_children_ns": 7346171
+    },
+    "origin": {
+      "calls": 3340,
+      "inclusive_ns": 66366270,
+      "outside_children_ns": 15405636
+    },
+    "boot": {
+      "calls": 6680,
+      "inclusive_ns": 29005945,
+      "outside_children_ns": 26691279
+    },
+    "namespace": {
+      "calls": 13360,
+      "inclusive_ns": 21954689,
+      "outside_children_ns": 21954689
+    },
+    "document": {
+      "calls": 10152,
+      "inclusive_ns": 10094867,
+      "outside_children_ns": 10094867
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "188",
+    "sample": 1,
+    "invocation_exit": 0,
+    "phase": "fixed-manager-message",
+    "returned": true,
+    "wall_ns": 171802211,
+    "process_cpu_ns": 154288780,
+    "authentication_calls": 34,
+    "authentication_ns": 1665402,
+    "projection": {
+      "calls": 1740,
+      "inclusive_ns": 7007142,
+      "outside_children_ns": 7007142
+    },
+    "origin": {
+      "calls": 3350,
+      "inclusive_ns": 60241479,
+      "outside_children_ns": 13699552
+    },
+    "boot": {
+      "calls": 6700,
+      "inclusive_ns": 26517532,
+      "outside_children_ns": 23805698
+    },
+    "namespace": {
+      "calls": 13400,
+      "inclusive_ns": 20024395,
+      "outside_children_ns": 20024395
+    },
+    "document": {
+      "calls": 10180,
+      "inclusive_ns": 9793686,
+      "outside_children_ns": 9793686
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "188",
+    "sample": 1,
+    "invocation_exit": 0,
+    "phase": "owned-root-preparation",
+    "returned": true,
+    "wall_ns": 443153579,
+    "process_cpu_ns": 439040863,
+    "authentication_calls": 102,
+    "authentication_ns": 5329372,
+    "projection": {
+      "calls": 5208,
+      "inclusive_ns": 19916014,
+      "outside_children_ns": 19916014
+    },
+    "origin": {
+      "calls": 10032,
+      "inclusive_ns": 169299732,
+      "outside_children_ns": 40021136
+    },
+    "boot": {
+      "calls": 20064,
+      "inclusive_ns": 73072134,
+      "outside_children_ns": 66943405
+    },
+    "namespace": {
+      "calls": 40128,
+      "inclusive_ns": 56206462,
+      "outside_children_ns": 56206462
+    },
+    "document": {
+      "calls": 30480,
+      "inclusive_ns": 28634060,
+      "outside_children_ns": 28634060
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "188",
+    "sample": 1,
+    "invocation_exit": 0,
+    "phase": "enrollment",
+    "returned": true,
+    "wall_ns": 296608064,
+    "process_cpu_ns": 294440022,
+    "authentication_calls": 68,
+    "authentication_ns": 3503044,
+    "projection": {
+      "calls": 3472,
+      "inclusive_ns": 13247800,
+      "outside_children_ns": 13247800
+    },
+    "origin": {
+      "calls": 6688,
+      "inclusive_ns": 118045703,
+      "outside_children_ns": 28187539
+    },
+    "boot": {
+      "calls": 13376,
+      "inclusive_ns": 52032541,
+      "outside_children_ns": 47837305
+    },
+    "namespace": {
+      "calls": 26752,
+      "inclusive_ns": 37825623,
+      "outside_children_ns": 37825623
+    },
+    "document": {
+      "calls": 20320,
+      "inclusive_ns": 17818557,
+      "outside_children_ns": 17818557
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "188",
+    "sample": 1,
+    "invocation_exit": 0,
+    "phase": "placement",
+    "returned": true,
+    "wall_ns": 150448446,
+    "process_cpu_ns": 149030130,
+    "authentication_calls": 34,
+    "authentication_ns": 1586390,
+    "projection": {
+      "calls": 1736,
+      "inclusive_ns": 6302254,
+      "outside_children_ns": 6302254
+    },
+    "origin": {
+      "calls": 3344,
+      "inclusive_ns": 59005207,
+      "outside_children_ns": 13359218
+    },
+    "boot": {
+      "calls": 6688,
+      "inclusive_ns": 25115895,
+      "outside_children_ns": 22414940
+    },
+    "namespace": {
+      "calls": 13376,
+      "inclusive_ns": 20530094,
+      "outside_children_ns": 20530094
+    },
+    "document": {
+      "calls": 10160,
+      "inclusive_ns": 10109169,
+      "outside_children_ns": 10109169
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "188",
+    "sample": 1,
+    "invocation_exit": 0,
+    "phase": "fixed-slice",
+    "returned": true,
+    "wall_ns": 147859240,
+    "process_cpu_ns": 146821600,
+    "authentication_calls": 34,
+    "authentication_ns": 1660355,
+    "projection": {
+      "calls": 1736,
+      "inclusive_ns": 6484710,
+      "outside_children_ns": 6484710
+    },
+    "origin": {
+      "calls": 3344,
+      "inclusive_ns": 59754219,
+      "outside_children_ns": 13933245
+    },
+    "boot": {
+      "calls": 6688,
+      "inclusive_ns": 25582425,
+      "outside_children_ns": 23389306
+    },
+    "namespace": {
+      "calls": 13376,
+      "inclusive_ns": 20238549,
+      "outside_children_ns": 20238549
+    },
+    "document": {
+      "calls": 10160,
+      "inclusive_ns": 8887498,
+      "outside_children_ns": 8887498
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "188",
+    "sample": 1,
+    "invocation_exit": 0,
+    "phase": "consuming",
+    "returned": true,
+    "wall_ns": 724950994,
+    "process_cpu_ns": 720489739,
+    "authentication_calls": 158,
+    "authentication_ns": 8646753,
+    "projection": {
+      "calls": 8152,
+      "inclusive_ns": 32837880,
+      "outside_children_ns": 32837880
+    },
+    "origin": {
+      "calls": 15748,
+      "inclusive_ns": 287003093,
+      "outside_children_ns": 67829291
+    },
+    "boot": {
+      "calls": 31496,
+      "inclusive_ns": 124169345,
+      "outside_children_ns": 113626339
+    },
+    "namespace": {
+      "calls": 62992,
+      "inclusive_ns": 95004457,
+      "outside_children_ns": 95004457
+    },
+    "document": {
+      "calls": 47800,
+      "inclusive_ns": 46108342,
+      "outside_children_ns": 46108342
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "188",
+    "sample": 2,
+    "invocation_exit": 0,
+    "phase": "prepare-consent",
+    "returned": true,
+    "wall_ns": 298224992,
+    "process_cpu_ns": 297843829,
+    "authentication_calls": 68,
+    "authentication_ns": 5070564,
+    "projection": {
+      "calls": 3292,
+      "inclusive_ns": 14766959,
+      "outside_children_ns": 14766959
+    },
+    "origin": {
+      "calls": 6362,
+      "inclusive_ns": 133915417,
+      "outside_children_ns": 32020855
+    },
+    "boot": {
+      "calls": 12724,
+      "inclusive_ns": 59601722,
+      "outside_children_ns": 54446722
+    },
+    "namespace": {
+      "calls": 25448,
+      "inclusive_ns": 42292840,
+      "outside_children_ns": 42292840
+    },
+    "document": {
+      "calls": 19308,
+      "inclusive_ns": 22093949,
+      "outside_children_ns": 22093949
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "188",
+    "sample": 2,
+    "invocation_exit": 0,
+    "phase": "accept-consent",
+    "returned": true,
+    "wall_ns": 165201277,
+    "process_cpu_ns": 165199788,
+    "authentication_calls": 34,
+    "authentication_ns": 2120559,
+    "projection": {
+      "calls": 1731,
+      "inclusive_ns": 8651920,
+      "outside_children_ns": 8651920
+    },
+    "origin": {
+      "calls": 3334,
+      "inclusive_ns": 73963728,
+      "outside_children_ns": 16808629
+    },
+    "boot": {
+      "calls": 6668,
+      "inclusive_ns": 31262487,
+      "outside_children_ns": 28603015
+    },
+    "namespace": {
+      "calls": 13336,
+      "inclusive_ns": 25892612,
+      "outside_children_ns": 25892612
+    },
+    "document": {
+      "calls": 10130,
+      "inclusive_ns": 11846509,
+      "outside_children_ns": 11846509
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "188",
+    "sample": 2,
+    "invocation_exit": 0,
+    "phase": "outputs",
+    "returned": true,
+    "wall_ns": 3870937720,
+    "process_cpu_ns": 3848190245,
+    "authentication_calls": 782,
+    "authentication_ns": 56073727,
+    "projection": {
+      "calls": 39744,
+      "inclusive_ns": 193336020,
+      "outside_children_ns": 193336020
+    },
+    "origin": {
+      "calls": 76544,
+      "inclusive_ns": 1731747704,
+      "outside_children_ns": 402471020
+    },
+    "boot": {
+      "calls": 153088,
+      "inclusive_ns": 744357955,
+      "outside_children_ns": 673082447
+    },
+    "namespace": {
+      "calls": 306176,
+      "inclusive_ns": 584918729,
+      "outside_children_ns": 584918729
+    },
+    "document": {
+      "calls": 232576,
+      "inclusive_ns": 292526384,
+      "outside_children_ns": 292526384
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "188",
+    "sample": 2,
+    "invocation_exit": 0,
+    "phase": "enrollment-frame",
+    "returned": true,
+    "wall_ns": 179862266,
+    "process_cpu_ns": 176016485,
+    "authentication_calls": 34,
+    "authentication_ns": 1775774,
+    "projection": {
+      "calls": 1736,
+      "inclusive_ns": 6887746,
+      "outside_children_ns": 6887746
+    },
+    "origin": {
+      "calls": 3340,
+      "inclusive_ns": 60971299,
+      "outside_children_ns": 13909727
+    },
+    "boot": {
+      "calls": 6680,
+      "inclusive_ns": 26273361,
+      "outside_children_ns": 24026812
+    },
+    "namespace": {
+      "calls": 13360,
+      "inclusive_ns": 20788211,
+      "outside_children_ns": 20788211
+    },
+    "document": {
+      "calls": 10152,
+      "inclusive_ns": 9916791,
+      "outside_children_ns": 9916791
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "188",
+    "sample": 2,
+    "invocation_exit": 0,
+    "phase": "fixed-manager-message",
+    "returned": true,
+    "wall_ns": 192335503,
+    "process_cpu_ns": 174902999,
+    "authentication_calls": 34,
+    "authentication_ns": 2037131,
+    "projection": {
+      "calls": 1740,
+      "inclusive_ns": 6976883,
+      "outside_children_ns": 6976883
+    },
+    "origin": {
+      "calls": 3350,
+      "inclusive_ns": 69245327,
+      "outside_children_ns": 16432369
+    },
+    "boot": {
+      "calls": 6700,
+      "inclusive_ns": 30930954,
+      "outside_children_ns": 28049197
+    },
+    "namespace": {
+      "calls": 13400,
+      "inclusive_ns": 21882004,
+      "outside_children_ns": 21882004
+    },
+    "document": {
+      "calls": 10180,
+      "inclusive_ns": 11440663,
+      "outside_children_ns": 11440663
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "188",
+    "sample": 2,
+    "invocation_exit": 0,
+    "phase": "owned-root-preparation",
+    "returned": true,
+    "wall_ns": 487424360,
+    "process_cpu_ns": 484881977,
+    "authentication_calls": 102,
+    "authentication_ns": 5339434,
+    "projection": {
+      "calls": 5208,
+      "inclusive_ns": 21027964,
+      "outside_children_ns": 21027964
+    },
+    "origin": {
+      "calls": 10032,
+      "inclusive_ns": 193567384,
+      "outside_children_ns": 45431907
+    },
+    "boot": {
+      "calls": 20064,
+      "inclusive_ns": 82921608,
+      "outside_children_ns": 76046133
+    },
+    "namespace": {
+      "calls": 40128,
+      "inclusive_ns": 65213869,
+      "outside_children_ns": 65213869
+    },
+    "document": {
+      "calls": 30480,
+      "inclusive_ns": 29457065,
+      "outside_children_ns": 29457065
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "188",
+    "sample": 2,
+    "invocation_exit": 0,
+    "phase": "enrollment",
+    "returned": true,
+    "wall_ns": 302710212,
+    "process_cpu_ns": 300474516,
+    "authentication_calls": 68,
+    "authentication_ns": 3128922,
+    "projection": {
+      "calls": 3472,
+      "inclusive_ns": 13513729,
+      "outside_children_ns": 13513729
+    },
+    "origin": {
+      "calls": 6688,
+      "inclusive_ns": 121526228,
+      "outside_children_ns": 29000779
+    },
+    "boot": {
+      "calls": 13376,
+      "inclusive_ns": 52784613,
+      "outside_children_ns": 46031984
+    },
+    "namespace": {
+      "calls": 26752,
+      "inclusive_ns": 39740836,
+      "outside_children_ns": 39740836
+    },
+    "document": {
+      "calls": 20320,
+      "inclusive_ns": 21573875,
+      "outside_children_ns": 21573875
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "188",
+    "sample": 2,
+    "invocation_exit": 0,
+    "phase": "placement",
+    "returned": true,
+    "wall_ns": 144075764,
+    "process_cpu_ns": 142501468,
+    "authentication_calls": 34,
+    "authentication_ns": 1544050,
+    "projection": {
+      "calls": 1736,
+      "inclusive_ns": 6752501,
+      "outside_children_ns": 6752501
+    },
+    "origin": {
+      "calls": 3344,
+      "inclusive_ns": 55522216,
+      "outside_children_ns": 12848494
+    },
+    "boot": {
+      "calls": 6688,
+      "inclusive_ns": 23954990,
+      "outside_children_ns": 21484155
+    },
+    "namespace": {
+      "calls": 13376,
+      "inclusive_ns": 18718732,
+      "outside_children_ns": 18718732
+    },
+    "document": {
+      "calls": 10160,
+      "inclusive_ns": 9045828,
+      "outside_children_ns": 9045828
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "188",
+    "sample": 2,
+    "invocation_exit": 0,
+    "phase": "fixed-slice",
+    "returned": true,
+    "wall_ns": 153191011,
+    "process_cpu_ns": 151433081,
+    "authentication_calls": 34,
+    "authentication_ns": 1797977,
+    "projection": {
+      "calls": 1736,
+      "inclusive_ns": 6862009,
+      "outside_children_ns": 6862009
+    },
+    "origin": {
+      "calls": 3344,
+      "inclusive_ns": 58074855,
+      "outside_children_ns": 13581157
+    },
+    "boot": {
+      "calls": 6688,
+      "inclusive_ns": 24351401,
+      "outside_children_ns": 22220880
+    },
+    "namespace": {
+      "calls": 13376,
+      "inclusive_ns": 20142297,
+      "outside_children_ns": 20142297
+    },
+    "document": {
+      "calls": 10160,
+      "inclusive_ns": 12035088,
+      "outside_children_ns": 12035088
+    }
+  },
+  {
+    "cohort": "candidate",
+    "lane": "188",
+    "sample": 2,
+    "invocation_exit": 0,
+    "phase": "consuming",
+    "returned": true,
+    "wall_ns": 715470272,
+    "process_cpu_ns": 709190437,
+    "authentication_calls": 158,
+    "authentication_ns": 8166604,
+    "projection": {
+      "calls": 8152,
+      "inclusive_ns": 32685007,
+      "outside_children_ns": 32685007
+    },
+    "origin": {
+      "calls": 15748,
+      "inclusive_ns": 286263450,
+      "outside_children_ns": 63321049
+    },
+    "boot": {
+      "calls": 31496,
+      "inclusive_ns": 128927965,
+      "outside_children_ns": 118953399
+    },
+    "namespace": {
+      "calls": 62992,
+      "inclusive_ns": 94014436,
+      "outside_children_ns": 94014436
+    },
+    "document": {
+      "calls": 47800,
+      "inclusive_ns": 45271758,
+      "outside_children_ns": 45271758
+    }
+  }
+]

@@ -1,0 +1,10 @@
+{
+  "source": "3260a1638c54c2aeb500f3787bb2157243e51403",
+  "exit": 101,
+  "platform": "local WSL Linux",
+  "git_dir": "/mnt/c/Workspace/prj/jq/cashe/hydracache/.git/worktrees/hydracache-074",
+  "git_work_tree": "/mnt/c/Workspace/prj/jq/cashe/hydracache-074",
+  "git_optional_locks": "0",
+  "server": false,
+  "product": false
+}

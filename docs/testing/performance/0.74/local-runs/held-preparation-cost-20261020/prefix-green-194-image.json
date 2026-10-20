@@ -1,0 +1,9 @@
+{
+  "source": "1a3285938208760e64b6683e54da808bd338c2ad",
+  "lane": "194",
+  "path": "/home/artur/.cache/hydracache-074-194-check/release/deps/hydracache_long_run_supervisor_074-c3c253bf49d23fef",
+  "sha256": "f4cf3ad01f660ef17e063bf6321428b77a96ecb744e578c068b583a258cc1119",
+  "feature": "fixed-leaf-alloc-probe",
+  "server": false,
+  "product": false
+}

@@ -1,0 +1,263 @@
+   Compiling hydracache-loadgen v0.73.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/hydracache-loadgen)
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+   Compiling xtask v0.73.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 58s
+     Running tests/diagnostic_artifact_fixture_074.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_artifact_fixture_074-97d246cb856be8e8)
+
+running 20 tests
+test held_build_source_allowlist_requires_all_old_files_and_exactly_one_named_addition ... ok
+test actual_consuming_adapter_refuses_missing_duplicate_hook_and_unrelated_drift ... FAILED
+test consuming_held_join_exact_adapter_rejects_missing_duplicate_extra_and_body_drift ... FAILED
+test held_trust_adapter_refuses_missing_duplicate_extra_and_unrelated_drift ... FAILED
+test consuming_held_join_preserves_all_443_old_sources_and_formats ... FAILED
+test immutable_fixture_adapter_refuses_missing_duplicate_and_unrelated_test_drift ... FAILED
+test actual_consuming_fixture_preserves_all_446_preceding_sources_and_formats ... FAILED
+test held_build_adapter_rejects_missing_duplicate_and_unrelated_old_drift ... FAILED
+test held_trust_preserves_all_442_preceding_sources_and_production_inputs ... FAILED
+test launcher_preserves_all_438_preceding_sources_and_exact_old_formats ... FAILED
+test immutable_fixture_preserves_all_437_runtime_sources_and_production_inputs ... FAILED
+test namespace_fixture_is_test_only_private_mount_and_not_manager_authority ... ok
+test role_binding_preserves_all_441_preceding_runtime_sources_and_inputs ... FAILED
+test immutable_fixture_changes_only_old_input_helper_not_any_old_assertion ... FAILED
+test role_binding_adapter_refuses_missing_duplicate_and_unrelated_drift ... FAILED
+test role_files_adapter_refuses_missing_duplicate_and_unrelated_drift ... FAILED
+test role_files_preserve_all_440_previous_runtime_sources_and_inputs ... FAILED
+test namespace_adapter_refuses_missing_duplicate_and_unrelated_drift ... FAILED
+test launcher_adapter_refuses_missing_duplicate_and_unrelated_drift ... FAILED
+test immutable_fixture_is_exact_worker_blob_and_checkout_keeps_raw_lf ... FAILED
+
+failures:
+
+---- actual_consuming_adapter_refuses_missing_duplicate_hook_and_unrelated_drift stdout ----
+
+thread 'actual_consuming_adapter_refuses_missing_duplicate_hook_and_unrelated_drift' (1944) panicked at crates/xtask/tests/support/consuming_held_live_guard.rs:51:5:
+assertion `left == right` failed: exact actual consuming test hook: tools/long-run-supervisor-074/src/diagnostic_privileged_root_cgroup_fixture.rs
+  left: 0
+ right: 1
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'actual_consuming_adapter_refuses_missing_duplicate_hook_and_unrelated_drift' (1944) panicked at crates/xtask/tests/support/consuming_held_live_guard.rs:51:5:
+assertion `left == right` failed: exact actual consuming test hook: tools/long-run-supervisor-074/src/diagnostic_privileged_root_cgroup_fixture.rs
+  left: 2
+ right: 1
+
+thread 'actual_consuming_adapter_refuses_missing_duplicate_hook_and_unrelated_drift' (1944) panicked at crates/xtask/tests/diagnostic_artifact_fixture_074.rs:139:5:
+fatal: not a git repository: /mnt/c/Workspace/prj/jq/cashe/hydracache-074/C:/Workspace/prj/jq/cashe/hydracache/.git/worktrees/hydracache-074
+
+
+---- consuming_held_join_exact_adapter_rejects_missing_duplicate_extra_and_body_drift stdout ----
+
+thread 'consuming_held_join_exact_adapter_rejects_missing_duplicate_extra_and_body_drift' (1946) panicked at crates/xtask/tests/support/consuming_held_join_guard.rs:29:5:
+assertion `left == right` failed: exact consuming held join hook: tools/long-run-supervisor-074/src/diagnostic_fixed_placement.rs
+  left: 0
+ right: 1
+
+thread 'consuming_held_join_exact_adapter_rejects_missing_duplicate_extra_and_body_drift' (1946) panicked at crates/xtask/tests/support/consuming_held_join_guard.rs:29:5:
+assertion `left == right` failed: exact consuming held join hook: tools/long-run-supervisor-074/src/diagnostic_fixed_placement.rs
+  left: 2
+ right: 1
+
+thread 'consuming_held_join_exact_adapter_rejects_missing_duplicate_extra_and_body_drift' (1946) panicked at crates/xtask/tests/diagnostic_artifact_fixture_074.rs:139:5:
+fatal: not a git repository: /mnt/c/Workspace/prj/jq/cashe/hydracache-074/C:/Workspace/prj/jq/cashe/hydracache/.git/worktrees/hydracache-074
+
+
+---- held_trust_adapter_refuses_missing_duplicate_extra_and_unrelated_drift stdout ----
+
+thread 'held_trust_adapter_refuses_missing_duplicate_extra_and_unrelated_drift' (1951) panicked at crates/xtask/tests/support/held_runtime_trust_guard.rs:54:5:
+assertion `left == right` failed: exact held runtime trust addition: tools/long-run-supervisor-074/src/diagnostic_controller_trust_input.rs
+  left: 0
+ right: 1
+
+thread 'held_trust_adapter_refuses_missing_duplicate_extra_and_unrelated_drift' (1951) panicked at crates/xtask/tests/support/held_runtime_trust_guard.rs:54:5:
+assertion `left == right` failed: exact held runtime trust addition: tools/long-run-supervisor-074/src/diagnostic_controller_trust_input.rs
+  left: 2
+ right: 1
+
+thread 'held_trust_adapter_refuses_missing_duplicate_extra_and_unrelated_drift' (1951) panicked at crates/xtask/tests/diagnostic_artifact_fixture_074.rs:139:5:
+fatal: not a git repository: /mnt/c/Workspace/prj/jq/cashe/hydracache-074/C:/Workspace/prj/jq/cashe/hydracache/.git/worktrees/hydracache-074
+
+
+---- consuming_held_join_preserves_all_443_old_sources_and_formats stdout ----
+
+thread 'consuming_held_join_preserves_all_443_old_sources_and_formats' (1947) panicked at crates/xtask/tests/diagnostic_artifact_fixture_074.rs:139:5:
+fatal: not a git repository: /mnt/c/Workspace/prj/jq/cashe/hydracache-074/C:/Workspace/prj/jq/cashe/hydracache/.git/worktrees/hydracache-074
+
+
+---- immutable_fixture_adapter_refuses_missing_duplicate_and_unrelated_test_drift stdout ----
+
+thread 'immutable_fixture_adapter_refuses_missing_duplicate_and_unrelated_test_drift' (1954) panicked at crates/xtask/tests/diagnostic_artifact_fixture_074.rs:147:5:
+assertion `left == right` failed: exact immutable helper
+  left: 0
+ right: 1
+
+thread 'immutable_fixture_adapter_refuses_missing_duplicate_and_unrelated_test_drift' (1954) panicked at crates/xtask/tests/diagnostic_artifact_fixture_074.rs:147:5:
+assertion `left == right` failed: exact immutable helper
+  left: 2
+ right: 1
+
+thread 'immutable_fixture_adapter_refuses_missing_duplicate_and_unrelated_test_drift' (1954) panicked at crates/xtask/tests/diagnostic_artifact_fixture_074.rs:148:5:
+assertion `left == right` failed: exact regression hook
+  left: 0
+ right: 1
+
+thread 'immutable_fixture_adapter_refuses_missing_duplicate_and_unrelated_test_drift' (1954) panicked at crates/xtask/tests/diagnostic_artifact_fixture_074.rs:148:5:
+assertion `left == right` failed: exact regression hook
+  left: 2
+ right: 1
+
+thread 'immutable_fixture_adapter_refuses_missing_duplicate_and_unrelated_test_drift' (1954) panicked at crates/xtask/tests/diagnostic_artifact_fixture_074.rs:139:5:
+fatal: not a git repository: /mnt/c/Workspace/prj/jq/cashe/hydracache-074/C:/Workspace/prj/jq/cashe/hydracache/.git/worktrees/hydracache-074
+
+
+---- actual_consuming_fixture_preserves_all_446_preceding_sources_and_formats stdout ----
+
+thread 'actual_consuming_fixture_preserves_all_446_preceding_sources_and_formats' (1945) panicked at crates/xtask/tests/diagnostic_artifact_fixture_074.rs:139:5:
+fatal: not a git repository: /mnt/c/Workspace/prj/jq/cashe/hydracache-074/C:/Workspace/prj/jq/cashe/hydracache/.git/worktrees/hydracache-074
+
+
+---- held_build_adapter_rejects_missing_duplicate_and_unrelated_old_drift stdout ----
+
+thread 'held_build_adapter_rejects_missing_duplicate_and_unrelated_old_drift' (1948) panicked at crates/xtask/tests/support/held_build_guard.rs:51:5:
+assertion `left == right` failed: exact held build addition: tools/long-run-supervisor-074/src/diagnostic_builder.rs
+  left: 0
+ right: 1
+
+thread 'held_build_adapter_rejects_missing_duplicate_and_unrelated_old_drift' (1948) panicked at crates/xtask/tests/support/held_build_guard.rs:51:5:
+assertion `left == right` failed: exact held build addition: tools/long-run-supervisor-074/src/diagnostic_builder.rs
+  left: 2
+ right: 1
+
+thread 'held_build_adapter_rejects_missing_duplicate_and_unrelated_old_drift' (1948) panicked at crates/xtask/tests/diagnostic_artifact_fixture_074.rs:139:5:
+fatal: not a git repository: /mnt/c/Workspace/prj/jq/cashe/hydracache-074/C:/Workspace/prj/jq/cashe/hydracache/.git/worktrees/hydracache-074
+
+
+---- held_trust_preserves_all_442_preceding_sources_and_production_inputs stdout ----
+
+thread 'held_trust_preserves_all_442_preceding_sources_and_production_inputs' (1952) panicked at crates/xtask/tests/diagnostic_artifact_fixture_074.rs:139:5:
+fatal: not a git repository: /mnt/c/Workspace/prj/jq/cashe/hydracache-074/C:/Workspace/prj/jq/cashe/hydracache/.git/worktrees/hydracache-074
+
+
+---- launcher_preserves_all_438_preceding_sources_and_exact_old_formats stdout ----
+
+thread 'launcher_preserves_all_438_preceding_sources_and_exact_old_formats' (1966) panicked at crates/xtask/tests/diagnostic_artifact_fixture_074.rs:139:5:
+fatal: not a git repository: /mnt/c/Workspace/prj/jq/cashe/hydracache-074/C:/Workspace/prj/jq/cashe/hydracache/.git/worktrees/hydracache-074
+
+
+---- immutable_fixture_preserves_all_437_runtime_sources_and_production_inputs stdout ----
+
+thread 'immutable_fixture_preserves_all_437_runtime_sources_and_production_inputs' (1963) panicked at crates/xtask/tests/diagnostic_artifact_fixture_074.rs:139:5:
+fatal: not a git repository: /mnt/c/Workspace/prj/jq/cashe/hydracache-074/C:/Workspace/prj/jq/cashe/hydracache/.git/worktrees/hydracache-074
+
+
+---- role_binding_preserves_all_441_preceding_runtime_sources_and_inputs stdout ----
+
+thread 'role_binding_preserves_all_441_preceding_runtime_sources_and_inputs' (1971) panicked at crates/xtask/tests/diagnostic_artifact_fixture_074.rs:139:5:
+fatal: not a git repository: /mnt/c/Workspace/prj/jq/cashe/hydracache-074/C:/Workspace/prj/jq/cashe/hydracache/.git/worktrees/hydracache-074
+
+
+---- immutable_fixture_changes_only_old_input_helper_not_any_old_assertion stdout ----
+
+thread 'immutable_fixture_changes_only_old_input_helper_not_any_old_assertion' (1961) panicked at crates/xtask/tests/diagnostic_artifact_fixture_074.rs:139:5:
+fatal: not a git repository: /mnt/c/Workspace/prj/jq/cashe/hydracache-074/C:/Workspace/prj/jq/cashe/hydracache/.git/worktrees/hydracache-074
+
+
+---- role_binding_adapter_refuses_missing_duplicate_and_unrelated_drift stdout ----
+
+thread 'role_binding_adapter_refuses_missing_duplicate_and_unrelated_drift' (1970) panicked at crates/xtask/tests/support/held_role_binding_guard.rs:47:5:
+assertion `left == right` failed: exact role binding addition: tools/long-run-supervisor-074/src/diagnostic_held_build.rs
+  left: 0
+ right: 1
+
+thread 'role_binding_adapter_refuses_missing_duplicate_and_unrelated_drift' (1970) panicked at crates/xtask/tests/support/held_role_binding_guard.rs:47:5:
+assertion `left == right` failed: exact role binding addition: tools/long-run-supervisor-074/src/diagnostic_held_build.rs
+  left: 2
+ right: 1
+
+thread 'role_binding_adapter_refuses_missing_duplicate_and_unrelated_drift' (1970) panicked at crates/xtask/tests/diagnostic_artifact_fixture_074.rs:139:5:
+fatal: not a git repository: /mnt/c/Workspace/prj/jq/cashe/hydracache-074/C:/Workspace/prj/jq/cashe/hydracache/.git/worktrees/hydracache-074
+
+
+---- role_files_adapter_refuses_missing_duplicate_and_unrelated_drift stdout ----
+
+thread 'role_files_adapter_refuses_missing_duplicate_and_unrelated_drift' (1973) panicked at crates/xtask/tests/support/held_role_files_guard.rs:15:5:
+assertion `left == right` failed: exact role-file module hook
+  left: 0
+ right: 1
+
+thread 'role_files_adapter_refuses_missing_duplicate_and_unrelated_drift' (1973) panicked at crates/xtask/tests/support/held_role_files_guard.rs:15:5:
+assertion `left == right` failed: exact role-file module hook
+  left: 2
+ right: 1
+
+thread 'role_files_adapter_refuses_missing_duplicate_and_unrelated_drift' (1973) panicked at crates/xtask/tests/diagnostic_artifact_fixture_074.rs:139:5:
+fatal: not a git repository: /mnt/c/Workspace/prj/jq/cashe/hydracache-074/C:/Workspace/prj/jq/cashe/hydracache/.git/worktrees/hydracache-074
+
+
+---- role_files_preserve_all_440_previous_runtime_sources_and_inputs stdout ----
+
+thread 'role_files_preserve_all_440_previous_runtime_sources_and_inputs' (1976) panicked at crates/xtask/tests/diagnostic_artifact_fixture_074.rs:139:5:
+fatal: not a git repository: /mnt/c/Workspace/prj/jq/cashe/hydracache-074/C:/Workspace/prj/jq/cashe/hydracache/.git/worktrees/hydracache-074
+
+
+---- namespace_adapter_refuses_missing_duplicate_and_unrelated_drift stdout ----
+
+thread 'namespace_adapter_refuses_missing_duplicate_and_unrelated_drift' (1968) panicked at crates/xtask/tests/support/fixed_slice_namespace_guard.rs:48:5:
+assertion `left == right` failed: exact namespace test hook: tools/long-run-supervisor-074/src/diagnostic_fixed_slice_tests.rs
+  left: 0
+ right: 1
+
+thread 'namespace_adapter_refuses_missing_duplicate_and_unrelated_drift' (1968) panicked at crates/xtask/tests/support/fixed_slice_namespace_guard.rs:48:5:
+assertion `left == right` failed: exact namespace test hook: tools/long-run-supervisor-074/src/diagnostic_fixed_slice_tests.rs
+  left: 2
+ right: 1
+
+thread 'namespace_adapter_refuses_missing_duplicate_and_unrelated_drift' (1968) panicked at crates/xtask/tests/diagnostic_artifact_fixture_074.rs:139:5:
+fatal: not a git repository: /mnt/c/Workspace/prj/jq/cashe/hydracache-074/C:/Workspace/prj/jq/cashe/hydracache/.git/worktrees/hydracache-074
+
+
+---- launcher_adapter_refuses_missing_duplicate_and_unrelated_drift stdout ----
+
+thread 'launcher_adapter_refuses_missing_duplicate_and_unrelated_drift' (1964) panicked at crates/xtask/tests/support/held_launcher_guard.rs:118:5:
+assertion `left == right` failed: exact held launcher addition: docs/COMPAT.md
+  left: 0
+ right: 1
+
+thread 'launcher_adapter_refuses_missing_duplicate_and_unrelated_drift' (1964) panicked at crates/xtask/tests/support/held_launcher_guard.rs:118:5:
+assertion `left == right` failed: exact held launcher addition: docs/COMPAT.md
+  left: 2
+ right: 1
+
+thread 'launcher_adapter_refuses_missing_duplicate_and_unrelated_drift' (1964) panicked at crates/xtask/tests/diagnostic_artifact_fixture_074.rs:139:5:
+fatal: not a git repository: /mnt/c/Workspace/prj/jq/cashe/hydracache-074/C:/Workspace/prj/jq/cashe/hydracache/.git/worktrees/hydracache-074
+
+
+---- immutable_fixture_is_exact_worker_blob_and_checkout_keeps_raw_lf stdout ----
+
+thread 'immutable_fixture_is_exact_worker_blob_and_checkout_keeps_raw_lf' (1962) panicked at crates/xtask/tests/diagnostic_artifact_fixture_074.rs:139:5:
+fatal: not a git repository: /mnt/c/Workspace/prj/jq/cashe/hydracache-074/C:/Workspace/prj/jq/cashe/hydracache/.git/worktrees/hydracache-074
+
+
+
+failures:
+    actual_consuming_adapter_refuses_missing_duplicate_hook_and_unrelated_drift
+    actual_consuming_fixture_preserves_all_446_preceding_sources_and_formats
+    consuming_held_join_exact_adapter_rejects_missing_duplicate_extra_and_body_drift
+    consuming_held_join_preserves_all_443_old_sources_and_formats
+    held_build_adapter_rejects_missing_duplicate_and_unrelated_old_drift
+    held_trust_adapter_refuses_missing_duplicate_extra_and_unrelated_drift
+    held_trust_preserves_all_442_preceding_sources_and_production_inputs
+    immutable_fixture_adapter_refuses_missing_duplicate_and_unrelated_test_drift
+    immutable_fixture_changes_only_old_input_helper_not_any_old_assertion
+    immutable_fixture_is_exact_worker_blob_and_checkout_keeps_raw_lf
+    immutable_fixture_preserves_all_437_runtime_sources_and_production_inputs
+    launcher_adapter_refuses_missing_duplicate_and_unrelated_drift
+    launcher_preserves_all_438_preceding_sources_and_exact_old_formats
+    namespace_adapter_refuses_missing_duplicate_and_unrelated_drift
+    role_binding_adapter_refuses_missing_duplicate_and_unrelated_drift
+    role_binding_preserves_all_441_preceding_runtime_sources_and_inputs
+    role_files_adapter_refuses_missing_duplicate_and_unrelated_drift
+    role_files_preserve_all_440_previous_runtime_sources_and_inputs
+
+test result: FAILED. 2 passed; 18 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
+error: test failed, to rerun pass `-p xtask --test diagnostic_artifact_fixture_074`

@@ -1,0 +1,89 @@
+{
+  "schema": "held-preparation-cost-local-v1",
+  "reference_source": "b41a7fb652f0687fbe5bad3222b5fa82f5e09443",
+  "instrumentation_source": "754269aa64a4bd2d5a6da93629976d313f7e7c1a",
+  "runtime_candidate_source": "1a3285938208760e64b6683e54da808bd338c2ad",
+  "reviewed_run_source": "601f39ff72b20014cc773d012ca69ea978aea7a7",
+  "allocation_samples": 6,
+  "reference_allocations_per_decode": 10,
+  "candidate_allocations_per_decode": 5,
+  "reference_requested_bytes_per_decode": 120,
+  "candidate_requested_bytes_per_decode": 80,
+  "allocation_candidate_accepted": true,
+  "before": [
+    {
+      "lane": "194",
+      "exits": [
+        101,
+        0,
+        0
+      ],
+      "phase_reports": 30
+    },
+    {
+      "lane": "188",
+      "exits": [
+        0,
+        0,
+        101
+      ],
+      "phase_reports": 28
+    }
+  ],
+  "after": [
+    {
+      "lane": "194",
+      "exits": [
+        0,
+        0,
+        0
+      ],
+      "phase_reports": 30
+    },
+    {
+      "lane": "188",
+      "exits": [
+        101,
+        0,
+        0
+      ],
+      "phase_reports": 30
+    }
+  ],
+  "matrices": [
+    {
+      "lane": "194",
+      "exit": 101,
+      "completed_cases": 0,
+      "passed": false,
+      "failed_case": "healthy",
+      "original_refusal_site": "clock-order"
+    },
+    {
+      "lane": "188",
+      "exit": 101,
+      "completed_cases": 1,
+      "passed": false,
+      "failed_case": "revalidate",
+      "original_refusal_site": "clock-order"
+    }
+  ],
+  "full_local_matrix_passed": false,
+  "reconstructed_old_files": 462,
+  "live_checks_changed": false,
+  "original_origins_changed": false,
+  "deadline_changed": false,
+  "qualification_changed": false,
+  "native_server_retested": false,
+  "native_execution_gate_passed": false,
+  "original_send": false,
+  "full_joined_sigkill": false,
+  "lost_ack_checked": false,
+  "real_role_image_cost": false,
+  "production_enrollment": false,
+  "end_to_end_latency_claim": false,
+  "numerical_product_claim": false,
+  "clock_actor_established": false,
+  "server": false,
+  "product": false
+}

@@ -1,0 +1,16 @@
+
+running 1 test
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::cgroup::held_live::privileged_consuming_held_live_matrix' panicked at tools/long-run-supervisor-074/src/../tests/support/consuming_held_live.rs:241:63:
+called `Result::unwrap()` on an `Err` value: Original(Original(Original(Causal(Reservation(Attempt(Controller(Original(Input(Kernel(Invalid))))))))))
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::cgroup::held_live::privileged_consuming_held_live_matrix ... HC074-HELD-LIVE-ORIGINAL {"age":{"sites":[{"calls":0,"first":null,"first_refusal":null,"last":null},{"calls":24,"first":{"age_ns":249980853,"file":"tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs","issued_ns":29391462206,"line":109,"now_ns":29641443059,"reason":"within-window"},"first_refusal":null,"last":{"age_ns":3285764514,"file":"tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs","issued_ns":29391462206,"line":109,"now_ns":32677226720,"reason":"within-window"}},{"calls":21,"first":{"age_ns":792014999,"file":"tools/long-run-supervisor-074/src/diagnostic_preconsent_frame.rs","issued_ns":29391462206,"line":188,"now_ns":30183477205,"reason":"within-window"},"first_refusal":null,"last":{"age_ns":3303891057,"file":"tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs","issued_ns":29391462206,"line":139,"now_ns":32695353263,"reason":"within-window"}}]},"case":"healthy","causal":{"first":{"age_ns":249980853,"diagnostic_reason":"within-window","issued_boot":"71acf7f6-ac65-4608-b95b-6d040cd1503d","issued_ns":29391462206,"now_boot":"71acf7f6-ac65-4608-b95b-6d040cd1503d","now_ns":29641443059,"site":"window"},"first_refusal":null,"last":{"age_ns":3303891057,"diagnostic_reason":"within-window","issued_boot":"71acf7f6-ac65-4608-b95b-6d040cd1503d","issued_ns":29391462206,"now_boot":"71acf7f6-ac65-4608-b95b-6d040cd1503d","now_ns":32695353263,"site":"final_clocks"},"observations":41},"deadline_changed":false,"guard_clock_added":false,"kernel":{"clock":[26069327927,32778666840,1792491662977061263,1792491662615135489,1,60000000000],"file":"tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs","line":259,"phase":"unassigned","site":"clock-order"},"product":false,"returned":false,"server":false}
+FAILED
+
+failures:
+
+failures:
+    diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::cgroup::held_live::privileged_consuming_held_live_matrix
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1366 filtered out; finished in 7.11s
+
