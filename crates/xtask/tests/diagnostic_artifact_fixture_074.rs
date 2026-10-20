@@ -12,7 +12,8 @@ const LAUNCHER_SOURCES: [&str; 2] = [
     "tools/long-run-supervisor-074/src/diagnostic_held_launcher_kernel.rs",
 ];
 fn previous_runtime_list(current: &str) -> String {
-    let current = namespace::held_build::launcher::roles::binding::previous_list(current);
+    let current = namespace::held_build::launcher::roles::binding::trust::previous_list(current);
+    let current = namespace::held_build::launcher::roles::binding::previous_list(&current);
     let current = namespace::held_build::launcher::roles::previous_list(&current);
     for path in LAUNCHER_SOURCES {
         assert_eq!(
@@ -324,11 +325,12 @@ fn launcher_adapter_refuses_missing_duplicate_and_unrelated_drift() {
         );
     }
     let good = format!(
-        "old.rs\n{}\n{}\n{}\n{}\n",
+        "old.rs\n{}\n{}\n{}\n{}\n{}\n",
         LAUNCHER_SOURCES[0],
         LAUNCHER_SOURCES[1],
         namespace::held_build::launcher::roles::SOURCE,
-        namespace::held_build::launcher::roles::binding::SOURCE
+        namespace::held_build::launcher::roles::binding::SOURCE,
+        namespace::held_build::launcher::roles::binding::trust::SOURCE
     );
     assert_eq!(previous_runtime_list(&good), "old.rs\n");
     for file in LAUNCHER_SOURCES {
@@ -355,11 +357,13 @@ fn role_files_preserve_all_440_previous_runtime_sources_and_inputs() {
     ]);
     assert_eq!(old.lines().count(), 440);
     assert_eq!(
-        roles::previous_list(&roles::binding::previous_list(&git(&[
-            "ls-files",
-            "--",
-            "tools/long-run-supervisor-074/src"
-        ]))),
+        roles::previous_list(&roles::binding::previous_list(
+            &roles::binding::trust::previous_list(&git(&[
+                "ls-files",
+                "--",
+                "tools/long-run-supervisor-074/src"
+            ]))
+        )),
         old
     );
     for path in old.lines().chain([
@@ -414,11 +418,11 @@ fn role_binding_preserves_all_441_preceding_runtime_sources_and_inputs() {
     ]);
     assert_eq!(old.lines().count(), 441);
     assert_eq!(
-        binding::previous_list(&git(&[
+        binding::previous_list(&binding::trust::previous_list(&git(&[
             "ls-files",
             "--",
             "tools/long-run-supervisor-074/src"
-        ])),
+        ]))),
         old
     );
     for path in old.lines().chain([
@@ -457,6 +461,64 @@ fn role_binding_adapter_refuses_missing_duplicate_and_unrelated_drift() {
     }
     assert_ne!(
         binding::previous_list(&format!("{good}extra.rs\n")),
+        "old.rs\n"
+    );
+}
+
+#[test]
+fn held_trust_preserves_all_442_preceding_sources_and_production_inputs() {
+    use namespace::held_build::launcher::roles::binding::trust;
+    const BASELINE: &str = "792900c87d295e2895fca2da9f8d502275624cf4";
+    let old = git(&[
+        "ls-tree",
+        "-r",
+        "--name-only",
+        BASELINE,
+        "--",
+        "tools/long-run-supervisor-074/src",
+    ]);
+    assert_eq!(old.lines().count(), 442);
+    assert_eq!(
+        trust::previous_list(&git(&[
+            "ls-files",
+            "--",
+            "tools/long-run-supervisor-074/src"
+        ])),
+        old
+    );
+    for path in old.lines().chain([
+        "Cargo.lock",
+        "docs/COMPAT.md",
+        "docs/testing/gated-test-registry.toml",
+        "docs/testing/performance/0.74/qualification-manifest.toml",
+    ]) {
+        assert_eq!(
+            trust::normalize(path, &read(path)),
+            git(&["show", &format!("{BASELINE}:{path}")]),
+            "preceding bytes: {path}"
+        );
+    }
+}
+#[test]
+fn held_trust_adapter_refuses_missing_duplicate_extra_and_unrelated_drift() {
+    use namespace::held_build::launcher::roles::binding::trust;
+    for (path, exact) in [(trust::FILE, trust::HOOK), (trust::COMPAT, trust::BLOCK)] {
+        let raw = read(path);
+        for bad in [raw.replacen(exact, "", 1), format!("{raw}{exact}")] {
+            assert!(std::panic::catch_unwind(|| trust::normalize(path, &bad)).is_err());
+        }
+        assert_ne!(
+            trust::normalize(path, &format!("{raw}\n// unrelated drift\n")),
+            git(&["show", &format!("792900c8:{path}")])
+        );
+    }
+    let good = format!("old.rs\n{}\n", trust::SOURCE);
+    assert_eq!(trust::previous_list(&good), "old.rs\n");
+    for bad in ["old.rs\n".into(), format!("{good}{}\n", trust::SOURCE)] {
+        assert!(std::panic::catch_unwind(|| trust::previous_list(&bad)).is_err());
+    }
+    assert_ne!(
+        trust::previous_list(&format!("{good}extra.rs\n")),
         "old.rs\n"
     );
 }

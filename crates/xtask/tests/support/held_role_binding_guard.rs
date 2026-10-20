@@ -1,4 +1,6 @@
 //! Exact additive v4 binding hook and compatibility block, never old exclusions.
+#[path = "held_runtime_trust_guard.rs"]
+pub(crate) mod trust;
 pub(crate) const FILE: &str = "tools/long-run-supervisor-074/src/diagnostic_held_build.rs";
 #[allow(dead_code)]
 pub(crate) const SOURCE: &str = "tools/long-run-supervisor-074/src/diagnostic_held_role_binding.rs";
@@ -36,10 +38,11 @@ and independent held-key enrollment remain separate gates.
 <!-- END HELD ROLE BINDING V4 -->
 "##;
 pub(crate) fn normalize(path: &str, raw: &str) -> String {
+    let raw = trust::normalize(path, raw);
     let exact = match path {
         FILE => HOOK,
         COMPAT => BLOCK,
-        _ => return raw.into(),
+        _ => return raw,
     };
     assert_eq!(
         raw.matches(exact).count(),

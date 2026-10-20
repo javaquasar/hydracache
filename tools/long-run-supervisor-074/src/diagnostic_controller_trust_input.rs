@@ -5,6 +5,9 @@ use crate::diagnostic_ipc::{DiagnosticPolicy, DiagnosticRequest};
 #[path = "diagnostic_controller_build_input.rs"]
 pub mod build_input;
 
+#[path = "diagnostic_held_runtime_trust.rs"]
+pub mod held_runtime;
+
 pub const CONTROLLER_INPUT_SCHEMA: &str = "diagnostic-controller-trust-input-074-v1";
 pub const FIXED_CONTROLLER_PATH: &str = "/etc/hydracache-perf/controller-trust-074.json";
 const CONTROLLER_FILE: &str = "controller-trust-074.json";
