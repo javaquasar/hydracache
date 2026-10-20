@@ -1,4 +1,6 @@
 //! Exact additive module only; no old source, schema or live check is excluded.
+#[path = "held_role_binding_guard.rs"]
+pub(crate) mod binding;
 pub(crate) const FILE: &str = "tools/long-run-supervisor-074/src/diagnostic_held_build.rs";
 // The predecessor bridge imports only normalize; the dedicated fixture test uses
 // these two source-list controls. Do not relax warnings for the whole module.
@@ -6,8 +8,9 @@ pub(crate) const FILE: &str = "tools/long-run-supervisor-074/src/diagnostic_held
 pub(crate) const SOURCE: &str = "tools/long-run-supervisor-074/src/diagnostic_held_role_files.rs";
 pub(crate) const HOOK: &str = "\n#[cfg(target_os = \"linux\")]\n#[path = \"diagnostic_held_role_files.rs\"]\npub mod role_files;\n";
 pub(crate) fn normalize(path: &str, raw: &str) -> String {
+    let raw = binding::normalize(path, raw);
     if path != FILE {
-        return raw.into();
+        return raw;
     }
     assert_eq!(raw.matches(HOOK).count(), 1, "exact role-file module hook");
     raw.replacen(HOOK, "", 1)

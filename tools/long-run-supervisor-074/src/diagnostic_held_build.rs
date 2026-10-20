@@ -14,6 +14,9 @@ use serde::{Deserialize, Serialize};
 #[path = "diagnostic_held_role_files.rs"]
 pub mod role_files;
 
+#[path = "diagnostic_held_role_binding.rs"]
+pub mod role_binding;
+
 pub const POLICY_SCHEMA: &str = "diagnostic-held-build-policy-074-v1";
 pub const BODY_SCHEMA: &str = "diagnostic-held-build-074-v1";
 pub const RECEIPT_SCHEMA: &str = "diagnostic-signed-held-build-074-v1";

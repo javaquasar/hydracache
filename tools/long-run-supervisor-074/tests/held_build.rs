@@ -1,4 +1,6 @@
 //! Synthetic keys, ELF headers and Cargo events: format checks, not a real build.
+#[path = "support/held_role_binding.rs"]
+mod role_binding;
 #[path = "support/held_role_files.rs"]
 mod role_files;
 use ed25519_dalek::{Signer, SigningKey};
