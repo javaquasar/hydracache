@@ -55,3 +55,15 @@ the original receipts and rerun both compiler check lanes into distinct repair
 logs before either Before measurement. The repaired Before-only capture recipe
 uses those images; After still uses the original check recipe. No runtime
 candidate or measured invocation has occurred, and no old assertion changes.
+
+## Pre-After-capture format repair
+
+Both After compiler lanes and all 371 historical assertions pass. The first
+repository gate refuses only the runtime expression's layout: full repository
+rustfmt requires the compact chain rather than the standalone default layout.
+Retain that failed gate and source `7595dba2`. Apply repository formatting and
+update only the exact new template's whitespace, requiring whitespace-stripped
+inventory source equality. Repeat all compiler, xtask, historical and repository
+checks into distinct format logs, then use their final images in an After-only
+capture recipe. Before captures stay unchanged; no After measurement has run.
+No assertion, predicate, workload, duration or threshold changes.

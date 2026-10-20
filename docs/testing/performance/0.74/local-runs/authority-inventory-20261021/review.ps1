@@ -27,7 +27,7 @@ function Facts{
             Require ($taskReceipt.image_sha256 -cmatch '^[0-9a-f]{64}$' -and $taskReceipt.image_sha256 -ceq $taskReceipt.image_after_sha256) 'Image changed'
             Require ($taskReceipt.steps.Count -eq 2 -and ($taskReceipt.steps.name -join ',') -ceq 'inventory,inspect' -and @($taskReceipt.steps|Where-Object exit -ne 0).Count -eq 0) 'Profile failed or incomplete'
             foreach($taskFlag in @('server','product','native_gate_open')){Require ($taskReceipt.$taskFlag -is [bool] -and -not $taskReceipt.$taskFlag) 'Scope flag differs or missing'}
-            Require ($taskReceipt.recipe_sha256 -ceq (Hash (Join-Path $PSScriptRoot $(if($taskStage -ceq 'Before'){'profile-before.ps1'}else{'profile.ps1'})))) 'Profile recipe differs'
+            Require ($taskReceipt.recipe_sha256 -ceq (Hash (Join-Path $PSScriptRoot $(if($taskStage -ceq 'Before'){'profile-before.ps1'}else{'profile-after-format.ps1'})))) 'Profile recipe differs'
             Require ($taskReceipt.inputs.Count -eq 6 -and @($taskReceipt.inputs.path|Select-Object -Unique).Count -eq 6) 'Input set differs'
             foreach($taskInput in $taskReceipt.inputs){
                 $taskBlob=(& git rev-parse "$($taskReceipt.source):$($taskInput.path)").Trim()
@@ -111,12 +111,12 @@ function Facts{
         }
         $taskDeltas+=[ordered]@{lane=$taskBefore.lane;isolated_per_operation=$taskLeaf}
     }
-    foreach($taskCheckName in @('Before-check-194-repair','Before-check-188-repair','Before-check-xtask','After-check-194','After-check-188','After-check-xtask','After-check-contracts','After-check-repository')){
+    foreach($taskCheckName in @('Before-check-194-repair','Before-check-188-repair','Before-check-xtask','After-check-194-format','After-check-188-format','After-check-xtask-format','After-check-contracts-format','After-check-repository-format')){
         $taskCheck=Json "$taskCheckName-exit.json"
-        $taskKind=$taskCheckName
+        $taskKind=$taskCheckName.Replace('-format','')
         $taskCount=if($taskKind.EndsWith('xtask')){3}elseif($taskKind.EndsWith('contracts')){1}elseif($taskKind.EndsWith('repository')){4}else{11}
         Require (-not $taskCheck.failure -and $taskCheck.steps.Count -eq $taskCount -and @($taskCheck.steps.name|Select-Object -Unique).Count -eq $taskCount -and @($taskCheck.steps|Where-Object exit -ne 0).Count -eq 0) 'Checks failed or incomplete'
-        Require ($taskCheck.recipe_sha256 -ceq (Hash (Join-Path $PSScriptRoot $(if($taskCheckName.EndsWith('-repair')){'repair-check.ps1'}else{'check.ps1'})))) 'Check recipe differs'
+        Require ($taskCheck.recipe_sha256 -ceq (Hash (Join-Path $PSScriptRoot $(if($taskCheckName.EndsWith('-repair')){'repair-check.ps1'}elseif($taskCheckName.EndsWith('-format')){'after-format-check.ps1'}else{'check.ps1'})))) 'Check recipe differs'
         foreach($taskStep in $taskCheck.steps){Require ((Hash (Join-Path $PSScriptRoot $taskStep.log)) -ceq $taskStep.sha256) 'Check log changed'}
     }
     foreach($taskLane in @('194','188')){
@@ -128,6 +128,23 @@ function Facts{
             Require ($taskOriginal.failure -ceq 'Failed lint (101)' -and $taskOriginal.steps.Count -eq 10 -and $taskOriginal.steps[9].exit -eq 101 -and $taskOriginal.steps[9].name -ceq 'lint') 'Original MSRV refusal not retained'
         }
         foreach($taskStep in $taskOriginal.steps){Require ((Hash (Join-Path $PSScriptRoot $taskStep.log)) -ceq $taskStep.sha256) 'Original check log changed'}
+    }
+    foreach($taskLane in @('194','188','xtask','contracts','repository')){
+        $taskOriginal=Json "After-check-$taskLane-exit.json"
+        Require ($taskOriginal.recipe_sha256 -ceq (Hash (Join-Path $PSScriptRoot 'check.ps1'))) 'Original After recipe changed'
+        if($taskLane -ceq 'repository'){
+            Require ($taskOriginal.failure -ceq 'Failed format (1)' -and $taskOriginal.steps.Count -eq 1 -and $taskOriginal.steps[0].exit -eq 1) 'Original format refusal not retained'
+        }else{
+            $taskExpectedCount=if($taskLane -ceq 'xtask'){3}elseif($taskLane -ceq 'contracts'){1}else{11}
+            Require (-not $taskOriginal.failure -and $taskOriginal.steps.Count -eq $taskExpectedCount -and @($taskOriginal.steps|Where-Object exit -ne 0).Count -eq 0) 'Original After checks incomplete'
+        }
+        foreach($taskStep in $taskOriginal.steps){Require ((Hash (Join-Path $PSScriptRoot $taskStep.log)) -ceq $taskStep.sha256) 'Original After log changed'}
+    }
+    foreach($taskPath in @('tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs','crates/xtask/tests/support/authority_inventory_new.txt')){
+        $taskOld=((& git show "7595dba2837627ac51fc66bb05a89f6b2a59521f:$taskPath") -join "`n")
+        Require ($LASTEXITCODE -eq 0) 'Missing original formatted source'
+        $taskNew=((& git show "$($taskStages[1].lanes[0].source):$taskPath") -join "`n")
+        Require ($LASTEXITCODE -eq 0 -and ($taskOld -creplace '\s','') -ceq ($taskNew -creplace '\s','')) 'Repair is not whitespace only'
     }
     $taskCanary=Json 'pre-capture-canary-exit.json'
     Require (-not $taskCanary.failure -and -not $taskCanary.measurement_attempted -and $taskCanary.steps.Count -eq 3 -and @($taskCanary.steps|Where-Object exit -ne 0).Count -eq 0) 'Pre-capture canary incomplete'
