@@ -597,3 +597,25 @@ cessation, durable lifecycle and reconnect remain open. The separate
 [evidence packet](local-runs/held-build-authority-20261020/README.md) is explicitly
 synthetic and non-promotable; it authorizes no installation, supervisor operation,
 system-bus/original send, production enrollment or product/server workload.
+
+## P3 Local held exec mechanics before original admission
+
+The [actual local helper](held-launcher-plan-20261020.md) now separates its own
+pre-exec image and pinned worker FD from the post-exec worker image. Inherited
+bootstrap, streams, control/owner credentials, pidfds and absolute alarm are
+checked without opening a caller executable path or renewing a deadline. The
+synthetic ELF gate asserts one effect, stable PID/start ticks and exact surviving
+descriptors. An external owned subreaper verifies creator SIGKILL and reaps only
+its admitted fixture children. This is not an armed production guardian.
+
+The [packet](local-runs/held-launcher-20261020/README.md) distinguishes the initial
+26-case cohort, the failing O_PATH regression, a test-only compiler refusal and
+the final 27-case source 68b71834. It preserves all 438 previous runtime files and
+old wire bytes. Original validation frames, 46 brackets and 300/60/10 bounds stay.
+
+Next connect protected purpose-bound build production, actual retained role
+objects and this helper's bootstrap to the same original policy/epoch, fixed
+root, manager and complete frames. Do not send the old direct-worker message.
+Before original held release, prove both guardians Armed and collector custody;
+before completion/unlock, prove post-exec all-writer cessation and actual EOF.
+Durable later cells, reconnect, enrollment and server rehearsal remain gated.

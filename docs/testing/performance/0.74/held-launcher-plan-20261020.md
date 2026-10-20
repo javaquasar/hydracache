@@ -67,3 +67,25 @@ handoff, watchdog arming/all-writer cessation, durable completion/later cells an
 same-attempt reconnect remain separate joins. This package performs no production
 enrollment, server access/install, supervisor operation, original/system-bus send,
 product workload or expensive qualification.
+
+## Local implementation and remaining join
+
+25888b65 adds the real target and private kernel module without changing any of
+the 438 preceding runtime files. The original complete 26-case cohort passes,
+but a subsequent O_PATH stdin regression exposes an access-mode alias: a path
+descriptor can look read-only without being a readable pipe end. ab47ffc5
+strengthens just that mask. Its added argv oracle initially fails to compile;
+68b71834 fixes the test hex formatting and is the selected accepted source.
+
+The final matrix adds that refusal as case 27 and records actual PID/start ticks,
+pre/post-exec device/inode, complete argv, empty environment and retained FD set.
+Its [evidence packet](local-runs/held-launcher-20261020/README.md) keeps the earlier
+cohorts, failed regression and compiler refusals separate from the final runs.
+No deadline is widened or refreshed. Bootstrap, Ready/Release and fixture-only
+owner-loss carrier are registered independently in COMPAT.
+
+Next bind actual helper/host build production and retained role objects to the
+same original policy/epoch, fixed root, manager channel and full frame. Only that
+join can admit the held projection/release. Guardian arming, active collector
+handoff, post-exec all-writer cessation, durable completion/later cells and
+same-attempt reconnect still require their joined fault gates before server use.

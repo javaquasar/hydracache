@@ -14425,3 +14425,53 @@ packet contains sixty hashed members plus inventory and refuses 26 in-memory
 receipt metadata mutations. It preserves earlier evidence and the frozen
 qualification digest; this package does not rerun the full 321 controls or a new
 kernel/live/SIGKILL matrix.
+
+## Verify the executable transition without changing the process generation
+
+The next [local helper](../testing/performance/0.74/held-launcher-plan-20261020.md)
+tests the distinction that signed artifact hashes could not close. Before
+release the process must be the held launcher retaining the worker descriptor;
+after exec the same process generation must execute the worker. Its PID alone
+cannot identify the executable, and an expected image hash cannot prove either
+observation.
+
+The implementation accepts only fixed inherited descriptor roles. A sealed
+bootstrap binds content and kernel identities; Ready/Release packets bind its
+digest and token, with exact kernel sender credentials. The existing absolute
+alarm and owner/guardian pidfds are revalidated, never renewed. One execveat uses
+the worker FD, fixed arguments and empty environment, with only stdio/config
+retained. There is no pathname fallback or positive execution ACK: a closed
+channel remains uncertain rather than permitting another release.
+
+The [local fault packet](../testing/performance/0.74/local-runs/held-launcher-20261020/README.md)
+uses a tiny synthetic ELF, not HydraCache. Its marker and signal stop make the
+transition observable: PID/start ticks remain, executable device/inode changes,
+and the exact FD set, full argv and empty environment are inspected. Real SIGKILL
+cuts cover the held process, post-exec process and external fixture owner, with
+precise orphan cleanup. Other cases test expiry, both guardians, foreign same-UID
+senders, packet/rights mutations, descriptor/content substitution and exec refusal.
+
+The first 26-case cohort passes but does not cover every descriptor semantic.
+The added O_PATH stdin test finds a real gap: access-mode bits alone classify a
+path-only descriptor as read-only. It reaches Ready instead of refusing. The
+fix adds O_PATH to the mask without relaxing a predicate or deadline. A separate
+compiler error in the expanded argv oracle is retained and corrected; final
+source 68b71834 has 27 cases. This is a concrete correctness gain from a failed
+regression, not an allocation or throughput result.
+
+The helper still supplies mechanics, not original authority. Guardian liveness
+does not mean Armed, a pre-exec guard is not post-exec all-writer termination,
+and the local marker is not a product receipt. Actual purpose-bound role builds,
+retained original objects and the complete policy/epoch/root/manager frame must
+join this path before original delivery. Active collector, durable lifecycle and
+same-attempt reconnect remain separate gates; server installation stays closed.
+
+At the final selected source, GNU 1.94 and MSRV 1.88 each pass two complete
+27-case rounds and three pure protocol controls. The Windows refusal, sixteen
+unchanged build-authority cases and two capability examples per compiler pass.
+Ten source guards, three predecessor bridge controls, strict lint, fmt,
+registry/docs and the local contract pass separately. The sealed 100-member
+packet plus inventory binds exact source, recipe and image hashes, verifies
+32 receipt metadata refusal controls and preserves the earlier packets and
+qualification digest. These process observations do not promote a server or
+performance claim.

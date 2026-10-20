@@ -4458,3 +4458,40 @@ plus inventory; inventory SHA256 is
 `1066e4520b534356ab2b3cccec03281a86104b8bbbc12729248a026ab372bc35`.
 Its verifier rejects 26 in-memory receipt metadata mutations. Earlier sealed
 packets and the qualification manifest digest remain unchanged.
+
+## Local held launcher and real process cuts
+
+The [local helper plan](held-launcher-plan-20261020.md) now has a real separate
+diagnostic_held_launcher target and private Linux kernel module. Fixed inherited
+FDs, sealed bootstrap/config, pinned worker content, exact per-message owner
+credentials and the existing absolute alarm are checked before preparation and
+release. The helper performs one pinned-FD exec with fixed argv and empty
+environment; only stdio/config survive. Ready is not watchdog Armed or an exec
+ACK, and EOF cannot rearm the caller's consumed release latch.
+
+The [nonproduct process packet](local-runs/held-launcher-20261020/README.md)
+executes only a tiny synthetic ELF. It checks same PID/start ticks, changed
+executable, exact post-exec descriptors/argv/environment, real owner SIGKILL from
+an external fixture, same-UID foreign sender, guardian loss, expiry and malformed
+inputs. The first 26-case cohort is retained. An added O_PATH stdin test first
+fails because the helper accepts a non-readable path descriptor; a one-line mask
+fix closes that gap. A separate argv-oracle compiler refusal is retained before
+the final portable test fix. Selected final source is 68b71834, with 27 cases.
+
+This adds local mechanics to the previously reserved build recipe, not a signed
+production role bundle or original live admission. All 438 preceding source
+files, original 46 brackets and deadline origins remain after exact additive
+adapters. Real role receipts/objects and the original policy/epoch/root/manager/
+full-frame join remain next, followed by active collector, all-writer cessation,
+durable lifecycle and reconnect. No server/supervisor/product operation occurs.
+
+The final selected-source gate passes two rounds of all 27 cases on each GNU
+1.94/MSRV 1.88 compiler, plus three pure controls each. Windows fallback exit 2,
+sixteen build-authority tests and two capability docs per compiler pass. Ten
+source guards, three predecessor bridge controls, strict lint, fmt, registry
+check (186 registered gates), docs and local contract pass. The sealed packet has 100 hashed
+members plus inventory, SHA256
+`dd514156a15397f9d3ecf6cb42632eded704031768709aab9bbcbb33c2abdf16`.
+Its verifier refuses 32 in-memory receipt metadata mutations. Previous evidence
+and the frozen qualification digest remain unchanged; no full 321 or original
+joined SIGKILL/qualification gate is claimed.
