@@ -15329,3 +15329,55 @@ The six-profile cohort remains incomplete, so costs are limited to the three
 complete GNU observations. Source/lint/integrity passes cannot repair this live
 gate. No server, installation, supervisor control or product workload occurs;
 native execution and the independent lifecycle/trust requirements stay closed.
+
+## Fresh validation requests and the remaining authority allocations
+
+The [next local control](../testing/performance/0.74/local-runs/validation-leaf-requests-20261020/README.md)
+tests whether the large Boot and Namespace wall owners still allocate. It calls
+the actual borrowed boot comparison, all four current namespace openers and
+complete Origin revalidation. The existing opt-in allocator observes Rust
+allocation requests on the current thread. A separate pass reads kernel I/O
+counters, and a third pass checks the original kernel observation counts;
+none of these captures overlap. Each case has 32 warmups and three batches
+of 1024 operations on GNU 1.94 and MSRV 1.88.
+
+The negative allocation result is useful: boot comparison, every namespace
+opener and full Origin request zero Rust allocations/reallocations on both
+compilers. Replacing another temporary Rust buffer cannot reduce requests
+already absent from these successful paths. Their fresh filesystem checks
+remain required. Boot reads once per comparison and Origin twice per complete
+revalidation; namespace opens have no read requests, but still open and inspect
+kernel objects. With no installed strace or perf, these counters cannot count
+all syscalls or assign time to open/stat/close.
+
+The authority control uses the actual shared journal inspection engine with
+synthetic signed policies under a private nonroot temporary root. One journal
+contains one active generation; the other ends active after three explicit
+refuse/advance pairs, giving seven generations. Setup and durable publication
+are outside capture. All three samples on each compiler give identical counts:
+
+| Fixture authority inspect | Allocations per operation | Reallocations per operation | Requested bytes per operation | Read requests per operation |
+| --- | ---: | ---: | ---: | ---: |
+| One generation | 68 | 11 | 3014 | 4 |
+| Seven generations | 184 | 59 | 13292 | 28 |
+
+Requested bytes include realloc sizes and do not measure retained memory.
+Read counts subtract the independently observed empty counter bracket; raw
+character counters are not converted into workload or disk bytes. No measured
+batch writes. Fixed production ancestry and WorkerTrustInput's surrounding
+checks are absent from this fixture, so the table cannot establish the cost
+or a potential saving for the entire ActiveAuthority step. Two depths also
+cannot establish a general linear scaling law.
+
+The result narrows the next experiment to authority representation work:
+issuer-key formatting, temporary leaf names, inventory sets and context
+ownership. Each needs its own control before a candidate is accepted. It does
+not justify retaining a previous authority result or skipping any inventory,
+metadata, pin or epoch check. No runtime candidate or latency gain is adopted.
+
+Both lanes pass 47 focused tests, check and strict clippy; 361 historical and
+two new source/contract controls pass. The initial report parser rejects a
+harness-prefixed origin line, then reprocesses the original successful logs
+after an exact-prefix repair; no measurement is repeated. The existing live
+clock-order failures remain independent closed gates. There is no server,
+installation, supervisor control, clock/service change or product workload.

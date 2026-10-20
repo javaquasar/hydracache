@@ -898,3 +898,22 @@ local attribution targets, not permission to skip a live check. MSRV's first
 profile and independent matrix refuse clock-order; GNU's independent five-case
 matrix passes. Failed invocations are not retried. No runtime optimization,
 deadline change, server run or execution admission follows from this result.
+
+## Isolated allocation control before another runtime candidate
+
+The [fresh leaf control](local-runs/validation-leaf-requests-20261020/README.md)
+completes all eight cases on both compilers with three serial 1024-operation
+samples. Borrowed boot, each namespace opener and complete Origin revalidation
+request zero Rust allocations. Their remaining wall cost cannot be explained
+away by another Rust allocation removal. The shared authority fixture reader
+still requests 68 allocations/11 reallocations per inspect at one generation
+and 184/59 at seven; fixed ancestry and the full ActiveAuthority wrapper are
+outside this control. Requested bytes and read counts are retained separately
+from latency, CPU and retained memory.
+
+Both lanes pass 47 focused tests and check/strict lint; all 363 old/new
+source/contract assertions pass. The next local hypothesis is issuer-key
+formatting and temporary ownership inside authority inspection, with separate
+attribution before any substitution. All original live checks and 300/60/10
+deadlines remain. This does not rerun or repair the preceding live refusals,
+open authenticated execution or authorize a new server rehearsal.

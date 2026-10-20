@@ -4951,3 +4951,28 @@ plus inventory, SHA256
 `b089573e0dc544df769c07b64be41562f107cdc1add64b1cd0c9512df2d882d6`.
 Six earlier packets and 21 summary mutation controls verify integrity only;
 cohort completeness and both-matrix acceptance remain false. No push is made.
+
+## Fresh validation allocation and read request controls
+
+The [isolated local control](local-runs/validation-leaf-requests-20261020/README.md)
+completes eight cases, three samples of 1024 operations each, on GNU 1.94 and
+MSRV 1.88. Borrowed boot, each namespace opener and full Origin revalidation
+request zero Rust allocations/reallocations. Their measured read requests are
+1, 0 and 2 per operation respectively; this does not count open/stat/close.
+The shared fixture authority reader requests 68 allocations, 11 reallocations,
+3014 bytes and four reads at one generation; at seven generations it requests
+184 allocations, 59 reallocations, 13292 bytes and 28 reads. All samples agree.
+These are requests, not retained memory or a full ActiveAuthority latency claim.
+
+Both lanes pass 47 focused tests and check/strict lint. All 361 historical plus
+two new controls and format/docs/registry/local contracts pass. Parser/formatter
+capability failures remain disclosed; successful observations are not retried.
+No runtime candidate, clock/service change or server operation follows. See the
+[plan outcome](validation-leaf-requests-plan-20261020.md#local-outcome).
+Existing live time refusals and native execution admission remain closed.
+
+Evidence commit `9193dd5afd8031fe8499fde880e1de8064ff27a3` retains 53 members
+plus inventory, SHA256
+`9861517676b8ed06b49ebe9d3ebd3c9d8d4835c74fd81c4ff6703edccd9f9ad3`.
+Seven preceding packets and nine summary scope mutations verify; full syscall
+coverage, full ActiveAuthority measurement and native admission remain false.

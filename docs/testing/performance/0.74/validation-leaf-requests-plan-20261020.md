@@ -40,3 +40,53 @@ formatting, documentation, gated registry and local performance contracts.
 Retain hashes, receipts, raw logs, negative results and prior sealed inventory
 anchors. Commit instrumentation separately from evidence and conclusions;
 do not push through the existing red live gate.
+
+## Local outcome
+
+Instrumentation `463d8753`, measured source
+`a574a8ae32ff37ff029f6798a7a1efde1cddd909`, adds only an opt-in test module.
+All previous runtime bodies and checks reconstruct exactly. Both compiler
+lanes pass 47 focused tests, affected-package check and strict clippy; 361
+historical assertions and two new source/contract controls pass. Full formatting,
+docs, registry and local non-promotable performance checks also pass.
+
+All eight cases complete three allocation and three I/O batches on each compiler.
+Every per-case allocation sample is identical across both lanes. Borrowed boot,
+all four namespace openers and full Origin revalidation request zero Rust heap
+allocations/reallocations. Boot performs one read request per operation, Origin
+two, and namespace zero; zero reads does not mean zero open/stat/close calls.
+The empty counter bracket contributes one read, retained raw and subtracted only
+from request counts. Every measured operation batch has zero write requests.
+
+Fixture authority inspect at one generation requests 68 allocations,
+11 reallocations and 3014 bytes per operation, with four read requests.
+At seven generations it requests 184 allocations, 59 reallocations and
+13292 bytes, with 28 reads. Requested bytes include realloc requests; they are
+not retained memory. Fixed ancestry and the full ActiveAuthority wrapper are
+not measured. The 1/7 depth comparison shows remaining allocation work in the
+shared journal reader, not a proven linear law or timing improvement.
+
+Both images retain their hashes; their separate processes report the same boot
+`8bb31f38-cbcc-4081-8cae-e4bc496179fd`. This does not prove clock continuity.
+The first report parser refuses the harness-prefixed origin line before writing
+a summary. Its original recipe and failure remain retained; the corrected parser
+accepts only the exact harness prefix and reprocesses unchanged logs. Neither
+measurement is repeated. The Windows formatter capability failure remains
+separate from the successful WSL formatting check.
+
+No runtime candidate is adopted. Allocation removal in these successful Boot,
+Namespace and Origin paths has no remaining measured Rust requests to target.
+The next isolated hypothesis is authority issuer-key formatting and temporary
+name/context ownership; attribute each separately before changing the reader.
+Do not cache authority observations, skip inventory/metadata checks or extrapolate
+these requests into full-frame latency. Existing live clock-order refusals and
+native/server admission remain closed; no push or new server run occurs.
+
+Raw observations and verification recipes are in the
+[local packet](local-runs/validation-leaf-requests-20261020/README.md).
+
+Evidence commit `9193dd5afd8031fe8499fde880e1de8064ff27a3` retains 53 members
+plus inventory, SHA256
+`9861517676b8ed06b49ebe9d3ebd3c9d8d4835c74fd81c4ff6703edccd9f9ad3`.
+Read-only verification rehashes all seven preceding sealed packets and rejects
+nine summary scope mutations while keeping native/server/product flags false.
