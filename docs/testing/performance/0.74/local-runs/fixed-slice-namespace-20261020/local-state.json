@@ -1,0 +1,11 @@
+{
+  "source": "2f27453f48e038457b3591e98c43ce1f40a91e31",
+  "clock_service": "active",
+  "clock_changed": false,
+  "temporary_cgroup_roots": [],
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "original_join": false,
+  "server": false,
+  "supervisor": false,
+  "product": false
+}

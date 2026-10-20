@@ -1,0 +1,8 @@
+{
+  "reference": "75f3aeabde2c461bec9c4574c691b13e2bc1cc99",
+  "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\performance_contract_074-affcfab4e5118d5a.exe",
+  "sha256": "da916ea68f63bad92cbe26ef4cf07032cdbaa87a99575635dbe72e98a6b12c4e",
+  "recorded_after_start": true,
+  "command": "--test-threads=8",
+  "fresh_final_image_run": false
+}

@@ -1,0 +1,22 @@
+{
+  "source": "2f27453f48e038457b3591e98c43ce1f40a91e31",
+  "compiler": "1.94.0",
+  "image": "979d04f55b8e0310e07e8db75f5f54bcc23b44f90bce898ef53c7a517bfd5232  /home/artur/.cache/hydracache-074-194-check/release/deps/hydracache_long_run_supervisor_074-b26b156d3dcd0098",
+  "recipe": "8c44a2bb14dead9da23ed02f3e482f5972dd222798ca1847baf15b098af353f2",
+  "ordinary_tests": 9,
+  "kernel_cases": 9,
+  "doc_tests": 247,
+  "host_anchors_unchanged": true,
+  "cleanup": true,
+  "production_runtime_changed": false,
+  "original_join": false,
+  "manager_ownership": false,
+  "exclusive_population": false,
+  "artifact_admission": false,
+  "original_send": false,
+  "server": false,
+  "supervisor": false,
+  "product": false,
+  "qualification": false,
+  "clock_changed": false
+}

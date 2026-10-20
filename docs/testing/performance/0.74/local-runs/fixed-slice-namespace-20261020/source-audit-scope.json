@@ -1,0 +1,11 @@
+{
+  "reference": "75f3aeabde2c461bec9c4574c691b13e2bc1cc99",
+  "selected": "2f27453f48e038457b3591e98c43ce1f40a91e31",
+  "command": "git diff --exit-code 75f3aeab 2f27453f -- tools/long-run-supervisor-074/src crates/xtask/tests crates/xtask/src docs/COMPAT.md docs/testing/gated-test-registry.toml Cargo.lock",
+  "input_diff_empty": true,
+  "kernel_fixture_changed": true,
+  "fresh_full_source_audit_on_selected": false,
+  "original_join": false,
+  "server": false,
+  "product": false
+}

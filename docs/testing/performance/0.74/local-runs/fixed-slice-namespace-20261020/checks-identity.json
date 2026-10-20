@@ -1,0 +1,11 @@
+{
+  "source": "75f3aeabde2c461bec9c4574c691b13e2bc1cc99",
+  "recipe": "b33517f88b260382f38d5d0aef45430e6f9ecc680c2810b74a583989ef985d62",
+  "source_tests": 6,
+  "windows_lib_tests": 60,
+  "windows_doc_tests": 20,
+  "original_join": false,
+  "server": false,
+  "supervisor": false,
+  "product": false
+}

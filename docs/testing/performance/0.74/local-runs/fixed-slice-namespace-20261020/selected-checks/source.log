@@ -1,0 +1,14 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 21.53s
+     Running tests\diagnostic_artifact_fixture_074.rs (target\debug\deps\diagnostic_artifact_fixture_074-d6c8dfda08fafa68.exe)
+
+running 6 tests
+test immutable_fixture_adapter_refuses_missing_duplicate_and_unrelated_test_drift ... ok
+test immutable_fixture_changes_only_old_input_helper_not_any_old_assertion ... ok
+test immutable_fixture_is_exact_worker_blob_and_checkout_keeps_raw_lf ... ok
+test immutable_fixture_preserves_all_437_runtime_sources_and_production_inputs ... ok
+test namespace_adapter_refuses_missing_duplicate_and_unrelated_drift ... ok
+test namespace_fixture_is_test_only_private_mount_and_not_manager_authority ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 75.99s
+

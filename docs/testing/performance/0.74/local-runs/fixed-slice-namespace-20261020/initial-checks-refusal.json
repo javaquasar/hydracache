@@ -1,0 +1,10 @@
+{
+  "initial_source": "75f3aeabde2c461bec9c4574c691b13e2bc1cc99",
+  "head_after_fixture_correction": "2f27453f48e038457b3591e98c43ce1f40a91e31",
+  "receipt_published": false,
+  "failure": "Source drift after completed commands",
+  "action": "Preserve individual logs and rerun all local checks under selected-checks with a stable HEAD",
+  "server": false,
+  "supervisor": false,
+  "product": false
+}

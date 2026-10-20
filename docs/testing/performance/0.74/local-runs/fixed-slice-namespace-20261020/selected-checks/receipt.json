@@ -1,0 +1,16 @@
+{
+  "source": "2f27453f48e038457b3591e98c43ce1f40a91e31",
+  "recipe": "4eb4a3c279b581808f57cef3e86099833f08173990e548c4032837e50cc92b0a",
+  "source_tests": 6,
+  "windows_lib_tests": 60,
+  "windows_doc_tests": 20,
+  "strict_lint": true,
+  "format": true,
+  "registry": true,
+  "docs": true,
+  "local_contract": true,
+  "original_join": false,
+  "server": false,
+  "supervisor": false,
+  "product": false
+}

@@ -1,0 +1,44 @@
+
+running 1 test
+test diagnostic_two_phase_launch::root_enrollment::kernel::fixed_slice::tests::namespace::privileged_fixed_slice_namespace_matrix ... 
+running 1 test
+test diagnostic_two_phase_launch::root_enrollment::kernel::fixed_slice::tests::namespace::privileged_fixed_slice_namespace_matrix ... HC074-FIXED-NAMESPACE case=healthy positive_pin=true checked=true observer_readonly=true original_join=false manager_ownership=false send=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1319 filtered out; finished in 0.00s
+
+
+running 1 test
+test diagnostic_two_phase_launch::root_enrollment::kernel::fixed_slice::tests::namespace::privileged_fixed_slice_namespace_matrix ... HC074-FIXED-NAMESPACE case=different-attempt positive_pin=true checked=true observer_readonly=true original_join=false manager_ownership=false send=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1319 filtered out; finished in 0.00s
+
+
+running 1 test
+test diagnostic_two_phase_launch::root_enrollment::kernel::fixed_slice::tests::namespace::privileged_fixed_slice_namespace_matrix ... FAILED
+
+failures:
+
+failures:
+    diagnostic_two_phase_launch::root_enrollment::kernel::fixed_slice::tests::namespace::privileged_fixed_slice_namespace_matrix
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1319 filtered out; finished in 0.00s
+
+FAILED
+
+failures:
+
+failures:
+    diagnostic_two_phase_launch::root_enrollment::kernel::fixed_slice::tests::namespace::privileged_fixed_slice_namespace_matrix
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1319 filtered out; finished in 0.02s
+
+
+thread 'diagnostic_two_phase_launch::root_enrollment::kernel::fixed_slice::tests::namespace::privileged_fixed_slice_namespace_matrix' (996) panicked at tools/long-run-supervisor-074/src/../tests/support/fixed_slice_namespace.rs:264:9:
+named-root-replaced: 
+thread 'diagnostic_two_phase_launch::root_enrollment::kernel::fixed_slice::tests::namespace::privileged_fixed_slice_namespace_matrix' (1002) panicked at tools/long-run-supervisor-074/src/../tests/support/fixed_slice_namespace.rs:164:72:
+called `Result::unwrap()` on an `Err` value: Os { code: 1, kind: PermissionDenied, message: "Operation not permitted" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

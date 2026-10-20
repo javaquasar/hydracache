@@ -1,0 +1,32 @@
+
+running 1 test
+test diagnostic_two_phase_launch::root_enrollment::kernel::fixed_slice::tests::namespace::privileged_fixed_slice_namespace_matrix ... 
+running 1 test
+test diagnostic_two_phase_launch::root_enrollment::kernel::fixed_slice::tests::namespace::privileged_fixed_slice_namespace_matrix ... FAILED
+
+failures:
+
+failures:
+    diagnostic_two_phase_launch::root_enrollment::kernel::fixed_slice::tests::namespace::privileged_fixed_slice_namespace_matrix
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1319 filtered out; finished in 0.00s
+
+
+thread 'diagnostic_two_phase_launch::root_enrollment::kernel::fixed_slice::tests::namespace::privileged_fixed_slice_namespace_matrix' (793) panicked at tools/long-run-supervisor-074/src/../tests/support/fixed_slice_namespace.rs:261:9:
+healthy: 
+thread 'diagnostic_two_phase_launch::root_enrollment::kernel::fixed_slice::tests::namespace::privileged_fixed_slice_namespace_matrix' (795) panicked at tools/long-run-supervisor-074/src/../tests/support/fixed_slice_namespace.rs:93:5:
+assertion `left != right` failed
+  left: "mnt:[4026532220]"
+ right: "mnt:[4026532220]"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_two_phase_launch::root_enrollment::kernel::fixed_slice::tests::namespace::privileged_fixed_slice_namespace_matrix
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1319 filtered out; finished in 0.01s
+
