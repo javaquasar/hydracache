@@ -15495,3 +15495,71 @@ frequency, original 300/60/10 bounds and all independent execution, retirement,
 lifecycle, reconnect and trust gates stay unchanged. There is no server,
 installation, supervisor or clock/service operation, and the old native gate
 remains closed.
+
+## Reopening journal leaves without cloning their names
+
+The [leaf name control](../testing/performance/0.74/authority-leaf-name-plan-20261020.md)
+first separates parse-time ownership from repeated inspection. `history` parses
+records while opening the journal. The retained `ActiveAuthority` path calls
+`inspect`, which reopens and compares original leaf objects but does not parse
+them again. Removing a context clone in `Record::parse` would therefore not
+remove requests from this measured repeated-inspect owner. That parse candidate
+is deferred for this owner, without claiming it is irrelevant to cold opening.
+
+Inside actual inspection, `Leaf::revalidate` clones its retained name only to
+call an opening routine that stores another owned name. The temporary object
+is then used for its fresh stamp and bytes, not its name. The single candidate
+extracts the checked synchronous read into a private borrowed-name helper.
+Initial opening still owns the name; repeated validation retains the fresh
+File through both comparisons. It keeps original metadata-before-open order,
+ownership, mode, device, byte budget, bounded read and final metadata checks.
+Directory inventory and all other validation rounds are unchanged.
+
+Frozen owned-open/reference, borrowed-read proposal and actual arms cover
+record and commit leaves separately. An early metadata refusal must avoid both
+the name copy and reopening. A synthetic wrong retained-name assertion isolates
+the failed-open path; it is not a claim that unlinking a real leaf leaves its
+original inode stamp unchanged. Independent filesystem faults cover unlink,
+rename/replacement, symlink/hardlink, unsafe mode, changed content, ownership
+and over-budget reads. A 64-case seeded name/payload corpus includes empty and
+full-budget files. Complete inspect must conserve the record-plus-commit leaf
+reduction at both tested journal depths, with unchanged fresh observations.
+
+Three samples of 1024 operations on each compiler give identical results:
+
+| Operation | Allocations Before to After | Reallocations Before to After | Requested bytes Before to After |
+| --- | ---: | ---: | ---: |
+| Record leaf revalidation, 512-byte payload | 3 to 2 | 0 to 0 | 555 to 534 |
+| Commit leaf revalidation, 65-byte payload | 3 to 2 | 0 to 0 | 112 to 89 |
+| Early original metadata refusal | 0 to 0 | 0 to 0 | 0 to 0 |
+| Synthetic missing retained name | 2 to 1 | 0 to 0 | 43 to 22 |
+| Complete fixture inspect with 1 generation | 35 to 33 | 8 to 8 | 2642 to 2598 |
+| Complete fixture inspect with 7 generations | 151 to 137 | 56 to 56 | 12920 to 12612 |
+
+Record and commit name clones cost one allocation each, requesting exactly
+21 and 23 bytes. Their sum survives complete inspection at both depths: two
+allocations/44 requested bytes at one generation and fourteen/308 at seven.
+All read counts remain four and 28; every non-authority leaf and fresh kernel
+count remains equal. The fresh CString and content allocations still exist.
+This locally accepts a specific representation saving, not a claim that fewer
+checks or an allocator replacement improved the result. Two depths do not
+establish a general scaling law, and requested bytes are not retained memory.
+
+The final compiler lanes pass 191 authority tests each with 12 manual/privileged
+tests ignored, focused checks and strict all-feature clippy. All 369 source
+contracts and repository checks pass after two test-only corrections. The new
+source template initially leaves a blank registry separator; the first full
+historical gate then finds that a top-of-file test hook truncates an unchanged
+source-prefix assertion before the runtime lock. Repair only the template and
+move only the identical test declaration after existing tests. No old assertion
+or runtime predicate is changed. An additional targeted Cargo diagnostic fails
+before execution on a Windows executable lock and supplies no correctness
+evidence. All original logs remain; no measured cohort is retried or replaced.
+
+Before and After use different WSL boots. The experiment measures Rust requests,
+not stable time, CPU, complete syscall coverage, retained memory or full
+ActiveAuthority latency. Original live observation frequency and 300/60/10 bounds
+remain, as do all independent execution, writer retirement, lifecycle, reconnect
+and enrollment gates. No server, installation, supervisor or clock/service
+operation occurs. The next local question is expected-inventory construction,
+not removal or reuse of a directory observation.

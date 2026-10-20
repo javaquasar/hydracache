@@ -956,3 +956,26 @@ occurs. Next local attribution may isolate remaining parse/context, name or
 inventory ownership, one hypothesis at a time. Authenticated original delivery,
 all-writer cessation, later cells, joined SIGKILL/lost-ACK, reconnect and real
 enrollment remain independent closed gates, not consequences of this saving.
+
+## Authority repeated leaf read ownership candidate
+
+The [leaf name control](local-runs/authority-leaf-name-20261020/README.md)
+separates cold history parsing from retained active inspection. Parsing context
+ownership is not adopted for this repeated owner. Instead runtime `843f6fe9`
+borrows only temporary reopen names into the same checked read; initial owned
+names, fresh File lifetime, inventory, error order and all 300/60/10 limits stay.
+Final measured source is `a3fe9098`, with only a test-hook placement repair.
+
+Both compilers conserve two fewer allocations/44 requested bytes per complete
+one-generation fixture inspect and fourteen/308 at seven, without changing
+reallocations, reads or kernel observations. Final 191-test authority suites,
+checks/strict lint, all 369 contracts and repository checks pass. Failed source
+template/hook checks and an unrelated Windows pre-test build lock are retained;
+no old assertion or measured cohort is replaced.
+
+Distinct WSL boots and old live time refusals remain. Expected inventory
+construction is the next local attribution question; directory scanning cannot
+be cached or skipped. Original delivery, all-writer cessation, later lifecycle
+cells, SIGKILL/lost-ACK, reconnect and real enrollment remain separately closed.
+No server/live-matrix run, clock/service change, supervisor control or product
+workload occurs, and tool identity changes cannot inherit campaign admission.

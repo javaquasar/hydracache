@@ -62,3 +62,43 @@ Keep original recipes unchanged. The separately frozen After-only profile
 selects repaired build/check receipts with identical probe selectors, inputs,
 iterations and capture behavior; the repair reviewer validates both recipe
 identities and retains the failed historical gate.
+
+## Local outcome
+
+The runtime substitution is `843f6fe9`; final measured source, including only
+the test-hook placement repair, is `a3fe909860fafdf550768c95c1178a1fc070944d`.
+Before source is `895740e49d20a6236d4a1536db9eebd8d3b1128c`. The
+[paired packet](local-runs/authority-leaf-name-20261020/README.md) retains one
+Before/After capture per compiler, with three samples per case and no measured
+cohort retry. Frozen reference/workload and qualification inputs remain equal.
+
+Record leaf revalidation changes 3/0/555 to 2/0/534 allocations/reallocations/
+requested bytes; commit changes 3/0/112 to 2/0/89. Metadata refusal remains
+0/0/0 and synthetic missing-name changes 2/0/43 to 1/0/22. Complete fixture
+inspect conserves 2/0/44 at one generation (35/8/2642 to 33/8/2598) and
+14/0/308 at seven (151/56/12920 to 137/56/12612). Reads remain 4/28; other
+leaves and fresh kernel counts remain equal in every sample on both compilers.
+The bounded request candidate is locally accepted, with no timing/CPU/retained
+memory, cache API or full ActiveAuthority claim.
+
+Final repaired compiler checks pass 191 authority tests each, 12 ignored manual
+tests, focused kernel/trust/counter controls, all-target check and strict
+all-feature clippy. All 369 source/contracts and repository checks pass. The
+initial template refusal, original historical hook-placement refusal and the
+additional Windows build-lock diagnostic remain retained. The last diagnostic
+executes no test and supplies no correctness evidence; the full repair gate
+passes the unchanged old assertion. No old assertion or runtime predicate is
+weakened, and no failed measured invocation is replaced.
+
+Before/After WSL boots differ. Old live clock-order and execution/trust/lifecycle
+gates remain closed; no live matrix or server run occurs. Parse/context stays
+unchanged and outside the repeated-inspect owner. Next local attribution may
+isolate expected inventory construction, not cache or skip a directory scan.
+All checks, original windows, qualification inputs and operating restrictions
+remain. Rebuild changes the tool identity; no old campaign admission transfers.
+
+Evidence commit `64f72dd645ca14e9cedbafb0fdc3ef610205a0fb` seals 159 members
+plus inventory SHA256
+`384430c3e8a18f08e521ffb3d7ca4aba8428001f8011347265577a7a5c139a12`.
+Ten prior packets rehash and ten summary scope mutations refuse. The sealed
+packet remains immutable; further hypotheses require a separate control.

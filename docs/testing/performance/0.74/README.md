@@ -5029,3 +5029,32 @@ plus inventory, SHA256
 `25796efbc05cbcca3a7c646d70624774979c84fb16c4beb84746a4c0cc70a01f`.
 Nine prior packets and ten summary scope mutations verify integrity, not live
 admission or a time/performance claim.
+
+## Authority leaf name ownership reduction
+
+The [paired leaf name control](local-runs/authority-leaf-name-20261020/README.md)
+accepts runtime `843f6fe9`, measured with test-only placement repair `a3fe9098`.
+`Leaf::revalidate` borrows its retained name into the unchanged checked read,
+holding the fresh File through stamp/byte comparison. Initial name ownership,
+inventory, metadata/ownership/budget checks and every live window remain.
+Parse/context is outside this repeated-inspect owner and remains unchanged.
+
+Three samples on both compilers conserve exactly one allocation/21 requested
+bytes for each record name and one/23 for commit. Complete fixture inspect
+changes 35/8/2642 to 33/8/2598 at one generation and 151/56/12920 to
+137/56/12612 at seven, in allocations/reallocations/requested bytes. Reads
+stay 4/28; all other leaf/kernel observations remain equal. These are bounded
+requests, not retained memory, API capacity or full ActiveAuthority timing.
+
+Final repaired checks pass authority 191 per lane, strict lint, all 369 source
+contracts and repository checks. Initial source-template and test-hook placement
+refusals remain retained; a separate Windows executable-lock build failure ran
+no assertion and supplies no evidence. No measured cohort is retried. Distinct
+Before/After boots and earlier time refusals leave native/server admission
+closed. No push, server, supervisor, clock/service or product operation occurs.
+
+Evidence commit `64f72dd645ca14e9cedbafb0fdc3ef610205a0fb` seals 159 members
+plus inventory, SHA256
+`384430c3e8a18f08e521ffb3d7ca4aba8428001f8011347265577a7a5c139a12`.
+Ten prior packets and ten summary scope mutations verify integrity and bounded
+request conservation, not time stability, numerical release or server admission.
