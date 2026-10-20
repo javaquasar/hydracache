@@ -16,10 +16,6 @@ use std::os::unix::fs::{MetadataExt, PermissionsExt};
 use std::path::{Component, Path};
 use std::rc::Rc;
 
-#[cfg(test)]
-#[path = "../tests/support/authority_leaf_name_controls.rs"]
-pub(crate) mod leaf_name_controls;
-
 #[path = "diagnostic_authority_fixed.rs"]
 pub mod fixed;
 
@@ -597,3 +593,7 @@ impl FixtureAuthorityRegistry {
 #[cfg(test)]
 #[path = "diagnostic_authority_fixture_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "../tests/support/authority_leaf_name_controls.rs"]
+pub(crate) mod leaf_name_controls;
