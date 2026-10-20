@@ -1,0 +1,887 @@
+{
+  "schema": "fresh-kernel-cost-local-v1",
+  "baseline_source": "c0664f851a74a222e9d4706e4c96c4926e1974fb",
+  "candidate_source": "bc53b78fbabd7481d8f2f6bbbb5cc964e380fd65",
+  "paired_allocation_samples": 12,
+  "reference_allocations_per_open": 1,
+  "candidate_allocations_per_open": 0,
+  "reference_requested_bytes_per_open": 7,
+  "candidate_requested_bytes_per_open": 0,
+  "fresh_calls_unchanged": true,
+  "allocation_candidate_accepted": true,
+  "phases": [
+    {
+      "cohort": "Baseline",
+      "lane": "194",
+      "phase": "origin",
+      "iterations": 64,
+      "wall_ns": [
+        3263874,
+        1622324,
+        1240988
+      ],
+      "process_cpu_ns": [
+        1507287,
+        1764369,
+        1350673
+      ],
+      "nested_origin_ns": [
+        1126547,
+        1609662,
+        1232285
+      ],
+      "nested_boot_ns": [
+        492714,
+        740991,
+        558258
+      ],
+      "nested_namespace_ns": [
+        377698,
+        566559,
+        419650
+      ],
+      "nested_document_ns": [
+        42949,
+        66259,
+        42162
+      ]
+    },
+    {
+      "cohort": "Baseline",
+      "lane": "194",
+      "phase": "sender",
+      "iterations": 64,
+      "wall_ns": [
+        3989140,
+        4782887,
+        3883410
+      ],
+      "process_cpu_ns": [
+        4345648,
+        5212329,
+        4141290
+      ],
+      "nested_origin_ns": [
+        2374923,
+        2672296,
+        2260523
+      ],
+      "nested_boot_ns": [
+        1102861,
+        1075545,
+        1089256
+      ],
+      "nested_namespace_ns": [
+        749624,
+        976863,
+        696677
+      ],
+      "nested_document_ns": [
+        656749,
+        678978,
+        693174
+      ]
+    },
+    {
+      "cohort": "Baseline",
+      "lane": "194",
+      "phase": "pidfd",
+      "iterations": 64,
+      "wall_ns": [
+        233754,
+        327901,
+        237307
+      ],
+      "process_cpu_ns": [
+        252003,
+        354541,
+        256347
+      ],
+      "nested_origin_ns": [
+        0,
+        0,
+        0
+      ],
+      "nested_boot_ns": [
+        0,
+        0,
+        0
+      ],
+      "nested_namespace_ns": [
+        0,
+        0,
+        0
+      ],
+      "nested_document_ns": [
+        85040,
+        150544,
+        77549
+      ]
+    },
+    {
+      "cohort": "Baseline",
+      "lane": "194",
+      "phase": "status-document",
+      "iterations": 64,
+      "wall_ns": [
+        159215,
+        291070,
+        175845
+      ],
+      "process_cpu_ns": [
+        170795,
+        304579,
+        189238
+      ],
+      "nested_origin_ns": [
+        0,
+        0,
+        0
+      ],
+      "nested_boot_ns": [
+        0,
+        0,
+        0
+      ],
+      "nested_namespace_ns": [
+        0,
+        0,
+        0
+      ],
+      "nested_document_ns": [
+        151255,
+        254978,
+        167563
+      ]
+    },
+    {
+      "cohort": "Baseline",
+      "lane": "194",
+      "phase": "status-metadata",
+      "iterations": 64,
+      "wall_ns": [
+        19197,
+        20517,
+        20090
+      ],
+      "process_cpu_ns": [
+        19352,
+        20602,
+        19943
+      ],
+      "nested_origin_ns": [
+        0,
+        0,
+        0
+      ],
+      "nested_boot_ns": [
+        0,
+        0,
+        0
+      ],
+      "nested_namespace_ns": [
+        0,
+        0,
+        0
+      ],
+      "nested_document_ns": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "cohort": "Baseline",
+      "lane": "194",
+      "phase": "status-filesystem",
+      "iterations": 64,
+      "wall_ns": [
+        10426,
+        10417,
+        9858
+      ],
+      "process_cpu_ns": [
+        10077,
+        10017,
+        9222
+      ],
+      "nested_origin_ns": [
+        0,
+        0,
+        0
+      ],
+      "nested_boot_ns": [
+        0,
+        0,
+        0
+      ],
+      "nested_namespace_ns": [
+        0,
+        0,
+        0
+      ],
+      "nested_document_ns": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "cohort": "Baseline",
+      "lane": "188",
+      "phase": "origin",
+      "iterations": 64,
+      "wall_ns": [
+        2593147,
+        1029315,
+        1076826
+      ],
+      "process_cpu_ns": [
+        1447759,
+        1120200,
+        1169985
+      ],
+      "nested_origin_ns": [
+        1085911,
+        1022382,
+        1066311
+      ],
+      "nested_boot_ns": [
+        479005,
+        436557,
+        437088
+      ],
+      "nested_namespace_ns": [
+        354172,
+        339007,
+        356221
+      ],
+      "nested_document_ns": [
+        39158,
+        37479,
+        38247
+      ]
+    },
+    {
+      "cohort": "Baseline",
+      "lane": "188",
+      "phase": "sender",
+      "iterations": 64,
+      "wall_ns": [
+        3923300,
+        3716644,
+        3624564
+      ],
+      "process_cpu_ns": [
+        4272996,
+        4050148,
+        3948949
+      ],
+      "nested_origin_ns": [
+        2219790,
+        2179871,
+        2139831
+      ],
+      "nested_boot_ns": [
+        984905,
+        947566,
+        927092
+      ],
+      "nested_namespace_ns": [
+        711652,
+        704622,
+        709217
+      ],
+      "nested_document_ns": [
+        752961,
+        623941,
+        613992
+      ]
+    },
+    {
+      "cohort": "Baseline",
+      "lane": "188",
+      "phase": "pidfd",
+      "iterations": 64,
+      "wall_ns": [
+        231845,
+        210092,
+        213784
+      ],
+      "process_cpu_ns": [
+        250167,
+        226676,
+        230685
+      ],
+      "nested_origin_ns": [
+        0,
+        0,
+        0
+      ],
+      "nested_boot_ns": [
+        0,
+        0,
+        0
+      ],
+      "nested_namespace_ns": [
+        0,
+        0,
+        0
+      ],
+      "nested_document_ns": [
+        93719,
+        71515,
+        77493
+      ]
+    },
+    {
+      "cohort": "Baseline",
+      "lane": "188",
+      "phase": "status-document",
+      "iterations": 64,
+      "wall_ns": [
+        157006,
+        195860,
+        157705
+      ],
+      "process_cpu_ns": [
+        169141,
+        209380,
+        169607
+      ],
+      "nested_origin_ns": [
+        0,
+        0,
+        0
+      ],
+      "nested_boot_ns": [
+        0,
+        0,
+        0
+      ],
+      "nested_namespace_ns": [
+        0,
+        0,
+        0
+      ],
+      "nested_document_ns": [
+        149293,
+        184359,
+        149774
+      ]
+    },
+    {
+      "cohort": "Baseline",
+      "lane": "188",
+      "phase": "status-metadata",
+      "iterations": 64,
+      "wall_ns": [
+        18831,
+        20951,
+        19985
+      ],
+      "process_cpu_ns": [
+        18784,
+        20684,
+        20005
+      ],
+      "nested_origin_ns": [
+        0,
+        0,
+        0
+      ],
+      "nested_boot_ns": [
+        0,
+        0,
+        0
+      ],
+      "nested_namespace_ns": [
+        0,
+        0,
+        0
+      ],
+      "nested_document_ns": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "cohort": "Baseline",
+      "lane": "188",
+      "phase": "status-filesystem",
+      "iterations": 64,
+      "wall_ns": [
+        9888,
+        10717,
+        10763
+      ],
+      "process_cpu_ns": [
+        9300,
+        9963,
+        10167
+      ],
+      "nested_origin_ns": [
+        0,
+        0,
+        0
+      ],
+      "nested_boot_ns": [
+        0,
+        0,
+        0
+      ],
+      "nested_namespace_ns": [
+        0,
+        0,
+        0
+      ],
+      "nested_document_ns": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "cohort": "Candidate",
+      "lane": "194",
+      "phase": "origin",
+      "iterations": 64,
+      "wall_ns": [
+        1182833,
+        1246540,
+        1280659
+      ],
+      "process_cpu_ns": [
+        1171393,
+        1243815,
+        1277893
+      ],
+      "nested_origin_ns": [
+        1155095,
+        1238759,
+        1272858
+      ],
+      "nested_boot_ns": [
+        509758,
+        588132,
+        569549
+      ],
+      "nested_namespace_ns": [
+        382654,
+        384777,
+        435807
+      ],
+      "nested_document_ns": [
+        42611,
+        44290,
+        43697
+      ]
+    },
+    {
+      "cohort": "Candidate",
+      "lane": "194",
+      "phase": "sender",
+      "iterations": 64,
+      "wall_ns": [
+        4389334,
+        4702205,
+        4616480
+      ],
+      "process_cpu_ns": [
+        4385521,
+        4698100,
+        4612633
+      ],
+      "nested_origin_ns": [
+        2652446,
+        2816019,
+        2645663
+      ],
+      "nested_boot_ns": [
+        1280776,
+        1236420,
+        1203468
+      ],
+      "nested_namespace_ns": [
+        804622,
+        1013943,
+        889352
+      ],
+      "nested_document_ns": [
+        693626,
+        753917,
+        681121
+      ]
+    },
+    {
+      "cohort": "Candidate",
+      "lane": "194",
+      "phase": "pidfd",
+      "iterations": 64,
+      "wall_ns": [
+        259726,
+        307146,
+        249936
+      ],
+      "process_cpu_ns": [
+        256662,
+        303664,
+        247813
+      ],
+      "nested_origin_ns": [
+        0,
+        0,
+        0
+      ],
+      "nested_boot_ns": [
+        0,
+        0,
+        0
+      ],
+      "nested_namespace_ns": [
+        0,
+        0,
+        0
+      ],
+      "nested_document_ns": [
+        96490,
+        142642,
+        82541
+      ]
+    },
+    {
+      "cohort": "Candidate",
+      "lane": "194",
+      "phase": "status-document",
+      "iterations": 64,
+      "wall_ns": [
+        174101,
+        174925,
+        169357
+      ],
+      "process_cpu_ns": [
+        172180,
+        173207,
+        167755
+      ],
+      "nested_origin_ns": [
+        0,
+        0,
+        0
+      ],
+      "nested_boot_ns": [
+        0,
+        0,
+        0
+      ],
+      "nested_namespace_ns": [
+        0,
+        0,
+        0
+      ],
+      "nested_document_ns": [
+        167233,
+        167642,
+        163061
+      ]
+    },
+    {
+      "cohort": "Candidate",
+      "lane": "194",
+      "phase": "status-metadata",
+      "iterations": 64,
+      "wall_ns": [
+        19084,
+        21577,
+        19592
+      ],
+      "process_cpu_ns": [
+        17576,
+        19486,
+        18025
+      ],
+      "nested_origin_ns": [
+        0,
+        0,
+        0
+      ],
+      "nested_boot_ns": [
+        0,
+        0,
+        0
+      ],
+      "nested_namespace_ns": [
+        0,
+        0,
+        0
+      ],
+      "nested_document_ns": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "cohort": "Candidate",
+      "lane": "194",
+      "phase": "status-filesystem",
+      "iterations": 64,
+      "wall_ns": [
+        10148,
+        11482,
+        10317
+      ],
+      "process_cpu_ns": [
+        8833,
+        9394,
+        8874
+      ],
+      "nested_origin_ns": [
+        0,
+        0,
+        0
+      ],
+      "nested_boot_ns": [
+        0,
+        0,
+        0
+      ],
+      "nested_namespace_ns": [
+        0,
+        0,
+        0
+      ],
+      "nested_document_ns": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "cohort": "Candidate",
+      "lane": "188",
+      "phase": "origin",
+      "iterations": 64,
+      "wall_ns": [
+        1179686,
+        1138340,
+        1132642
+      ],
+      "process_cpu_ns": [
+        1168467,
+        1135334,
+        1130537
+      ],
+      "nested_origin_ns": [
+        1148160,
+        1131069,
+        1126538
+      ],
+      "nested_boot_ns": [
+        501320,
+        482013,
+        501698
+      ],
+      "nested_namespace_ns": [
+        383872,
+        393139,
+        367950
+      ],
+      "nested_document_ns": [
+        42416,
+        41228,
+        40571
+      ]
+    },
+    {
+      "cohort": "Candidate",
+      "lane": "188",
+      "phase": "sender",
+      "iterations": 64,
+      "wall_ns": [
+        4032645,
+        3756674,
+        3932974
+      ],
+      "process_cpu_ns": [
+        4009146,
+        3753674,
+        3929564
+      ],
+      "nested_origin_ns": [
+        2418416,
+        2230991,
+        2333907
+      ],
+      "nested_boot_ns": [
+        1153677,
+        958416,
+        1004818
+      ],
+      "nested_namespace_ns": [
+        740047,
+        749180,
+        809215
+      ],
+      "nested_document_ns": [
+        653471,
+        596347,
+        632971
+      ]
+    },
+    {
+      "cohort": "Candidate",
+      "lane": "188",
+      "phase": "pidfd",
+      "iterations": 64,
+      "wall_ns": [
+        221944,
+        218084,
+        213781
+      ],
+      "process_cpu_ns": [
+        219407,
+        216463,
+        211763
+      ],
+      "nested_origin_ns": [
+        0,
+        0,
+        0
+      ],
+      "nested_boot_ns": [
+        0,
+        0,
+        0
+      ],
+      "nested_namespace_ns": [
+        0,
+        0,
+        0
+      ],
+      "nested_document_ns": [
+        81213,
+        80231,
+        78889
+      ]
+    },
+    {
+      "cohort": "Candidate",
+      "lane": "188",
+      "phase": "status-document",
+      "iterations": 64,
+      "wall_ns": [
+        166673,
+        164073,
+        176583
+      ],
+      "process_cpu_ns": [
+        164799,
+        162411,
+        174424
+      ],
+      "nested_origin_ns": [
+        0,
+        0,
+        0
+      ],
+      "nested_boot_ns": [
+        0,
+        0,
+        0
+      ],
+      "nested_namespace_ns": [
+        0,
+        0,
+        0
+      ],
+      "nested_document_ns": [
+        159525,
+        157288,
+        169371
+      ]
+    },
+    {
+      "cohort": "Candidate",
+      "lane": "188",
+      "phase": "status-metadata",
+      "iterations": 64,
+      "wall_ns": [
+        20507,
+        18378,
+        19114
+      ],
+      "process_cpu_ns": [
+        18642,
+        16926,
+        17436
+      ],
+      "nested_origin_ns": [
+        0,
+        0,
+        0
+      ],
+      "nested_boot_ns": [
+        0,
+        0,
+        0
+      ],
+      "nested_namespace_ns": [
+        0,
+        0,
+        0
+      ],
+      "nested_document_ns": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "cohort": "Candidate",
+      "lane": "188",
+      "phase": "status-filesystem",
+      "iterations": 64,
+      "wall_ns": [
+        10751,
+        10316,
+        10139
+      ],
+      "process_cpu_ns": [
+        9211,
+        8826,
+        8674
+      ],
+      "nested_origin_ns": [
+        0,
+        0,
+        0
+      ],
+      "nested_boot_ns": [
+        0,
+        0,
+        0
+      ],
+      "nested_namespace_ns": [
+        0,
+        0,
+        0
+      ],
+      "nested_document_ns": [
+        0,
+        0,
+        0
+      ]
+    }
+  ],
+  "latency_claim": false,
+  "full_functional_matrix_retested": false,
+  "native_execution_gate_passed": false,
+  "sigkill_retested": false,
+  "lost_ack_retested": false,
+  "deadlines_changed": false,
+  "clock_services_changed": false,
+  "server": false,
+  "product": false
+}

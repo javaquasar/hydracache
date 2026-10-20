@@ -1,0 +1,24 @@
+{
+  "source": "bc53b78fbabd7481d8f2f6bbbb5cc964e380fd65",
+  "own_builds_and_checks_finished": true,
+  "images": [
+    {
+      "image": "Candidate-188-alloc-image.json",
+      "sha256": "47aa2faf0e00a91ae310a8716126f5869c762b1e3a9cac24384a81196455d02f"
+    },
+    {
+      "image": "Candidate-188-plain-image.json",
+      "sha256": "30769ce227223fa40e1c6dfe1acc8f24b50e367239c242a2f5332d43b311c8dc"
+    },
+    {
+      "image": "Candidate-194-alloc-image.json",
+      "sha256": "539c0a996f6cbc77c6eefc4539471e587c4c36e37f61d2b903aeacdb68612cbe"
+    },
+    {
+      "image": "Candidate-194-plain-image.json",
+      "sha256": "1eecae4f6b23ead7d8a7c2fad3cb3a210db44fe6405f7b89450b9d33cf213152"
+    }
+  ],
+  "server": false,
+  "product": false
+}
