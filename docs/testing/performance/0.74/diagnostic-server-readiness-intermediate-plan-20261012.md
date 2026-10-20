@@ -670,3 +670,29 @@ frame. This early borrow alone cannot replace that later join. Keep production
 build/enrollment, real-image hashing attribution, authenticated delivery,
 Armed/custody/all-writer cessation and later lifecycle/reconnect independently
 gated. No server installation, supervisor operation or workload is authorized.
+
+## P3 Consuming original placement and retained role join
+
+The [private join](held-consuming-join-plan-20261020.md) consumes FixedPlacement,
+PinnedRoles and fixed held trust in one holder; failed custody returns no retry
+owner. Complete original frames surround fresh trust/provenance and full role
+checks in two constant-depth rounds. Exact signed v3 bytes, full receipt statement
+and actual authority/request observations must agree. Old frame bodies, clock
+origins, bounds and source selectors remain unchanged; final clocks follow hashing.
+
+Local orchestration models and actual kernel/authority/memfd bridges are separate
+from the privileged consuming-holder end-to-end gate. That gate and real cost
+attribution remain next, without dropping checks or extending time. Then retain
+the authenticated-delivery, guardian Armed/custody/all-writer cessation, durable
+completion/later cells/reconnect and joined SIGKILL/lost-ACK gates. Root/cgroup2
+availability from read-only WSL preflight does not count as a healthy composition.
+
+The consuming candidate at d9d37a8a/f07dcca3 is not yet qualified. Compiler/model,
+capability, strict lint and exact old-source guards pass, but complete local Linux
+cohorts refuse original kernel inputs. Some later samples are traced to
+clock-order; the first and other untraced failures remain unclassified. Local
+timesyncd stop/restore, held WSL and CPU affinity do not close that gate. Preserve
+all these refusals; do not use model passes or a coarse observer to admit the
+real holder. Resolve original-clock input reproducibility on a stable Linux
+context or through a separately scoped investigation before cost/SIGKILL and
+server rehearsal. No server or Windows clock configuration was modified.

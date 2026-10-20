@@ -4590,3 +4590,40 @@ The sealed packet has 59 hashed members plus inventory, SHA256
 `062948c1d6be9aadeb4ba98e03bb04bba007f2bcdf70c727f280cee62b6cf8cf`.
 Its verifier refuses 40 in-memory receipt/format metadata mutations without
 editing the packet or changing earlier evidence.
+
+## Consumed placement and held roles under complete original frames
+
+The [consuming join](held-consuming-join-plan-20261020.md) moves the actual
+FixedPlacement, PinnedRoles and fixed held trust source into one private holder.
+Both success and failure retain every owner; Drop retires originals/root controls
+before original custody, role descriptors and source are dropped. There is no
+retry-original/FD/source extractor or execution/unlock API.
+
+Two rounds bracket fresh source/provenance and full retained-file checks with
+unchanged complete FixedPlacement frames. Exact v3 bytes and full receipt
+statements must agree, not just image hashes. Actual request and authority
+revision/policy/epoch/trust snapshot cannot drift across rounds. All original
+live checks, 46 brackets and 300/60/10 origins/deadlines remain unchanged.
+
+The [local packet](local-runs/held-consuming-join-20261020/README.md) distinguishes
+modeled frame/drop faults from real local kernel/authority/memfd bridge tests.
+The private production type compiles; a privileged end-to-end new-holder run and
+its cost attribution are still required, followed by joined SIGKILL/lost-ACK and
+the remaining delivery/Armed/all-writer/lifecycle/reconnect gates. No server,
+supervisor, production enrollment or product execution is performed here.
+
+At source f07dcca3 this remains an implementation candidate, not a closed local
+join gate. Two GNU/MSRV rounds of ten new orchestration models and five preceding
+fixed models, eleven capability docs and strict lint pass; two 38-test preceding
+integration rounds per compiler and Windows two 28-test rounds/four docs pass.
+Eighteen exact source guards and repository checks remain green. Complete Linux
+execution cohorts fail original kernel/time checks; service-stop, continuously
+held WSL and CPU-0 experiments do not establish a fix. Their failures remain
+separate from the model-only receipts. No timeout/assertion is relaxed. A stable
+Linux comparison or scoped original-clock investigation is needed before the
+privileged full-holder gate and further launch readiness can close.
+
+The negative/partial evidence is sealed as 201 hashed members plus inventory,
+SHA256 `617f703d5b931e3156d4d2a4a5a60db1cfb9a338e5281a3d090e51f677299f1a`.
+Its verifier refuses 72 metadata mutations and explicitly reports
+local_join_gate_passed=false. Evidence integrity is not live execution acceptance.

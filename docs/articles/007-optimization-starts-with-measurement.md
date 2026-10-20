@@ -14622,3 +14622,105 @@ The separate sealed packet contains 59 hashed members plus inventory. Forty
 in-memory receipt/format metadata mutations refuse, while earlier sealed packets
 and the qualification digest remain unchanged. This verifies the scope and
 selection of the evidence, not a production trust enrollment or broader launch.
+
+## Consume placement and role custody without exporting a retry owner
+
+An original request inspection and retained role files are still separate facts
+until one owner retains both with the actual placement/frame. The
+[consuming implementation](../testing/performance/0.74/held-consuming-join-plan-20261020.md)
+moves FixedPlacement, PinnedRoles and the independent fixed held source into a
+private holder. The constructor cannot replace these with hashes, a caller's
+snapshot or another key. Failure keeps the consumed objects in an opaque failed
+holder instead of returning a fresh attempt. On Drop, explicit retirement comes
+first; the old placement/original custody drops before the role descriptors and
+new trust source. No send/start, replay, original extraction or unlock follows.
+
+Each new validation uses two constant-depth rounds. An unchanged complete
+FixedPlacement frame opens the round; fresh held trust/provenance inspection and
+full checks of the retained role files follow; another unchanged complete frame
+closes it. Final original clocks therefore follow hashing. This adds four frame
+calls rather than removing any live leaf, and keeps the original 46 brackets and
+300/60/10 origins/deadlines. Its cost still needs attribution on the privileged
+path; a correctness-only model is not evidence that the extra work fits a live
+admission window. No deadline is enlarged to accommodate the composition.
+
+The provenance check deliberately compares more than executable hashes. A second
+valid receipt can describe the same two images but a different signed build log.
+The private adapter matches the full consumed VerifiedBuild statement against
+the receipt freshly verified through the fixed held source. It then reuses the
+unchanged seal, descriptor, positional hash and metadata checks. V4 must preserve
+the exact signed v3 placement bytes, tying it to the same original consent/root
+constraints. Actual request and authority revision/epoch/policy/trust snapshot
+remain stable across rounds; no cached evidence substitutes for fresh checks.
+
+The local tests distinguish three levels. The production type and exact original
+owner projection compile. Orchestration probes exercise eight stage cuts and
+184 modeled leaf refusals across four frames, consuming signatures and failed
+holder/drop ordering. Separate tests use actual kernel input, active authority
+and sealed memfds to check healthy revalidation, exact placement bytes, source
+replacement, real metadata drift and different valid receipt provenance. These
+tests use synthetic signers and documents and do not construct the complete
+privileged FixedPlacement holder. Its end-to-end healthy/fault run, attribution
+and later SIGKILL/lost-ACK checks remain distinct gates before server admission.
+
+The first frozen GNU cohort adds a separate caution: both new 16-test rounds
+pass, but a preceding trust test fails its exact expected-error assertion on the
+second round. That assertion did not log the unexpected value, so its cause
+cannot be assigned retrospectively to a clock, scheduling or product defect.
+The implementation preserves the assertion and every runtime check. A test-only
+wrapper calls the same old function under the existing first-kernel-refusal
+recorder; eight fresh samples pass without a recorded kernel refusal. They do
+not explain the earlier failure. First logs and recipe remain distinct from the
+later confirmed cohort, and the unclassified refusal remains a qualification
+risk rather than a reason to enlarge a timeout or accept another error kind.
+
+The next diagnostic does capture a specific refusal: two original realtime
+samples are 6.642 seconds out of order while boottime advances about 142 ms in
+the same boot. The unchanged
+kernel guard correctly rejects clock-order. Temporarily stopping only the
+previously approved local WSL timesyncd does not prevent another recorded
+rollback; the monotonic journal places that sample between service stop and
+restoration. The service is restored active. These observations identify those
+later clock refusals, not the exact unlogged first error or a proven sole actor.
+
+The follow-up fixture holds one continuously observed WSL process through the
+Linux tests, with fixed preparation before any new request origin is created.
+Clock services stay enabled and no clock is set. Any rollback during the test
+phase remains a refusal. Separating environment preparation from an already
+admitted attempt is important: neither warmup nor a fresh test may renew or
+repair an existing 300/60/10 origin. The preserved failed cohorts make that
+distinction inspectable instead of disguising environment failures as success.
+
+That single-session experiment still fails the original clock-order guard even
+though its coarser 100 ms observer sees no backwards sample. The correct response
+is not to let the observer override the original predicate. Independent libc,
+direct-syscall and Python clock probes, including forced CPU rotations, do not
+reproduce the discrepancy either; none establishes a sole actor or a global
+clock trajectory. The same test image passes an initial CPU-0-affined invocation,
+so the next local smoke records its affinity explicitly. It is a restricted test
+context, not a proven clock repair or evidence for unrestricted production
+execution. The ordinary CPU/clock gate remains false, with every refusal retained.
+
+Repetition rejects that affinity hypothesis too. GNU's second CPU-0 17-test
+selection fails before the real metadata mutation with Input(Kernel(Invalid));
+that particular assertion does not record a precise kernel site. MSRV's
+preceding trust selection also fails. These samples must not all be attributed
+to the previously captured clock-order event without their own evidence. Neither
+compiler receives a successful complete live execution receipt. Pinning a CPU,
+waiting or stopping a service has not established a fix.
+
+The final result therefore has a deliberate split. The consuming production
+type compiles; two rounds of the ten new orchestration models and five preceding
+fixed models pass on GNU/MSRV, along with eleven capability examples and strict
+lint. Windows and exact source/compatibility guards also pass. The complete
+local live/kernel gate stays red, with all failed cohorts preserved. A stable
+Linux-context comparison or a separately scoped clock-sampling investigation
+is required before privileged full-holder execution, cost attribution and the
+later SIGKILL/lost-ACK gates can close. No runtime predicate or deadline is
+changed to manufacture a green result.
+
+The final evidence packet seals 201 hashed members plus inventory and rejects
+72 in-memory metadata mutations. Its successful integrity verification still
+reports local_join_gate_passed=false. Preserving that distinction allows the
+implementation and reproducible model checks to be reviewed without promoting
+an unresolved original-input failure into launch permission.

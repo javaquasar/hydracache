@@ -44,3 +44,25 @@ capability docs, strict Linux/Windows lint, source guards, fmt, registry/docs an
 local contract. Document confirmed correctness separately from unmeasured cost,
 privileged full-path/SIGKILL/lost-ACK and production admission gates. No server
 access/installation, supervisor operation, product or expensive workload.
+
+## Candidate result and open gates
+
+Implementation d9d37a8a; final tested code source f07dcca3. Three new runtime
+files retain all 443 previous files after exact hooks. The private consuming
+owner, complete original-frame calls, receipt-statement/role-FD binding, sticky
+failed custody and drop order are implemented. Both compilers pass two rounds
+of ten new models/five previous fixed models, eleven capability docs and strict
+lint. Exact source guards and Windows/repository checks pass.
+
+The complete local Linux join gate is NOT passed. Failed unbound, timesyncd-stop,
+held-session and CPU-affinity cohorts remain in the
+[evidence](local-runs/held-consuming-join-20261020/README.md). Traced later samples
+show clock-order refusal; other samples lack an exact original error/site and
+remain unclassified. No clock source, assertion, predicate or deadline is changed.
+The authorized local timesyncd operation restores active state in finally.
+
+Next resolve reproducibility of original kernel/time observations on a stable
+Linux context or with a separately scoped clock investigation, then exercise
+the privileged complete holder and attribute its four-frame/full-hash cost.
+Only after those gates can original delivery, all-writer lifecycle and joined
+SIGKILL/lost-ACK/server-readiness work advance. This plan is not marked complete.
