@@ -1,6 +1,9 @@
 //! Opt-in test binary only. Rust requests, not libc malloc, CPU, RSS or authority.
 use super::*;
 
+#[path = "../tests/support/authority_inventory_alloc.rs"]
+mod authority_inventory_alloc;
+
 #[path = "../tests/support/authority_leaf_name_alloc.rs"]
 mod authority_leaf_name_alloc;
 

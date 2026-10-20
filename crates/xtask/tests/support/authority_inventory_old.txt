@@ -1,0 +1,24 @@
+    fn inventory(&self) -> Result<usize, AuthorityError> {
+        let mut seen = BTreeSet::new();
+        for entry in fs::read_dir(format!("/proc/self/fd/{}", self.leaf.as_raw_fd()))? {
+            let entry = entry?;
+            let name = entry
+                .file_name()
+                .into_string()
+                .map_err(|_| AuthorityError::Invalid)?;
+            if !seen.insert(name) || seen.len() > MAX_GENERATIONS * 2 {
+                return Err(AuthorityError::Budget);
+            }
+        }
+        if seen.len() % 2 != 0 {
+            return Err(AuthorityError::Invalid);
+        }
+        let generations = seen.len() / 2;
+        let expected: BTreeSet<_> = (1..=generations)
+            .flat_map(|revision| [name(revision, "json"), name(revision, "commit")])
+            .collect();
+        if seen != expected {
+            return Err(AuthorityError::Invalid);
+        }
+        Ok(generations)
+    }

@@ -597,3 +597,7 @@ mod tests;
 #[cfg(test)]
 #[path = "../tests/support/authority_leaf_name_controls.rs"]
 pub(crate) mod leaf_name_controls;
+
+#[cfg(test)]
+#[path = "../tests/support/authority_inventory_controls.rs"]
+pub(crate) mod inventory_controls;
