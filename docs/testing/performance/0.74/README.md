@@ -4810,3 +4810,27 @@ The recheck packet seals 25 members plus inventory, SHA256
 Its verifier rejects 17 summary-field mutations and rehashes the PID/preparation
 packets. Formatting, docs, registry and local performance-contract checks pass;
 qualification remains byte-exact.
+
+## Authorized native recheck after allocation changes
+
+The [new isolated native control](local-runs/held-native-recheck-20261020/README.md)
+uses the same GNU/MSRV images as the preceding local cohort. Both refuse the
+first healthy case inside owned-root preparation, before placement/join, at the
+original causal ten-second window. Ages are 10,003,954,927 and 10,068,587,556 ns;
+first custody observations are already 9,176,614,214 and 9,237,420,814 ns. No
+following case or retry is executed. These observations establish a rejecting
+frontier, not an accepted latency difference or a clock actor.
+
+Postflight passes: all campaign markers absent, no owned fixture residue,
+unchanged boot, active supervisor PID 8839/NRestarts zero, installed executable,
+receipt and host mount tables. No installation, clock/service operation,
+original start or product workload occurs. Native composition and joined
+SIGKILL/lost-ACK remain closed. Next attribute preparation before the first
+custody observation locally, preserving checks and original deadlines; the
+one-off native authorization does not permit another run.
+
+The native recheck seals 57 members plus inventory, SHA256
+`2a7be06fe6f93e3e8761b29afebaf89ac6266d7c405b457ef8ea26d60259bd63`.
+All 17 raw export hashes and three earlier seals verify; 52 summary mutations
+refuse. Local formatting, docs, registry and non-promotable contract checks pass.
+Qualification remains unchanged; evidence integrity does not open the native gate.

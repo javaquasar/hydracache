@@ -803,3 +803,24 @@ control requires separate authorization. Original delivery, all-writer cessation
 durable completion/later cells, reconnect and real enrollment remain independent
 prerequisites. Do not start joined SIGKILL/lost-ACK or server execution by treating
 the MSRV pass or allocation reductions as a replacement for these gates.
+
+## Native recheck after the allocation changes
+
+The [separately authorized native recheck](local-runs/held-native-recheck-20261020/README.md)
+executes the same exact normal images once per compiler, serially and without
+attribution or case override. GNU and MSRV both refuse healthy during
+`prepare_owned_root_guardians` before placement/join, at original causal ages
+10,003,954,927 and 10,068,587,556 ns. Kernel refusal records are null; first
+custody observations already consume 9,176,614,214 and 9,237,420,814 ns. No retry,
+remaining case or changed deadline. The prior native/WSL failures remain intact;
+different refusal frontiers do not establish a comparative performance claim.
+
+All host preflights and independent postflight pass with unchanged supervisor,
+installed artifacts, boot and mount tables, and no owned fixture residue.
+Only new temporary staging/export and existing private fixture resources are
+used. No installation, original start, clock/time-service operation or product
+workload. This consumes the approved isolated control; another native run needs
+separate authorization. Next local attribution must cover preparation before
+first custody and through owned-root closing validation. Native composition,
+joined SIGKILL/lost-ACK and all independent execution/lifecycle/trust gates stay
+closed, regardless of accepted allocation reductions or evidence integrity.

@@ -15088,3 +15088,35 @@ native run of these exact images, with failures retained and the same limits.
 Joined SIGKILL/lost-ACK, authenticated delivery, all-writer cessation, durable
 later cells and reconnect still need their own proof. No server, installation,
 supervisor or time-service operation is part of this local recheck.
+
+### Native recheck after the allocation changes
+
+The authorized [native control](../testing/performance/0.74/local-runs/held-native-recheck-20261020/README.md)
+uses those same exact GNU/MSRV images on the dedicated Linux host. It transfers
+no new release into service: root copies the test inputs into a fresh protected
+temporary directory, verifies hashes and executes each full matrix once inside
+the existing isolated fixture. Case selection, profiling and retry overrides
+are absent; every original check and time origin remains.
+
+Both compilers refuse the first healthy case inside owned-root preparation,
+before signed placement or the consuming join. Their original causal ages are
+10,003,954,927 and 10,068,587,556 ns against the unchanged ten-second window.
+The first custody observations are already 9,176,614,214 and 9,237,420,814 ns.
+No kernel refusal is captured. This locates the next attribution before and
+through that preparation frontier; it does not implicate role hashing that
+was never reached. A different frontier from the earlier native refusal is not
+itself a speedup or regression estimate.
+
+The allocation hypotheses remain accepted for their measured request reductions,
+but they have not closed execution readiness. Next measure the preparation
+chain and closing validation locally, without renewing authority, skipping
+fresh observations or extending a deadline. A repeated server invocation is not
+an alternative to that attribution and needs separate permission.
+
+The server's supervisor, installed executable/receipt, boot and host mount
+tables are unchanged; no owned fixture cgroup or temporary root remains. New
+protected staging and evidence directories are retained. There is no clock or
+service operation, original manager start, product workload or qualification.
+The negative native gate and the earlier WSL clock-order refusal stay distinct,
+with authenticated delivery, all-writer cessation, durable later cells, joined
+SIGKILL/lost-ACK and reconnect still requiring their independent proof.

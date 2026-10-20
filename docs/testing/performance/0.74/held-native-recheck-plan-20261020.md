@@ -52,3 +52,28 @@ postflight. Any refusal remains negative evidence, not a retry trigger or a
 deadline amendment. This gate alone cannot close authenticated delivery,
 all-writer cessation, joined SIGKILL/lost-ACK, later cells, reconnect or real
 production enrollment. Preserve all preceding local/native refusals and seals.
+
+## Retained negative outcome
+
+Both lanes refuse the first healthy case at the original causal window inside
+`prepare_owned_root_guardians`, before placement/join. GNU records age
+10,003,954,927 ns, MSRV 10,068,587,556 ns; both original kernel refusal records
+are null. First custody observations already use 9,176,614,214 and 9,237,420,814 ns.
+No later case, attribution run or retry occurs. These are rejecting admission
+observations, not a throughput estimate or attribution to a specific clock actor.
+
+Wrapper exit is 1; all host and independent postflight checks pass. Supervisor,
+installed artifacts, boot and mount tables remain unchanged; no owned fixture
+root/cgroup remains. Protected temporary staging/export copies are retained.
+The one-off native authorization is consumed; next work is local preparation
+attribution with every original check/origin/deadline preserved.
+
+The [packet](local-runs/held-native-recheck-20261020/README.md) seals 57 members
+plus inventory at SHA256
+`2a7be06fe6f93e3e8761b29afebaf89ac6266d7c405b457ef8ea26d60259bd63`.
+Its verifier checks all 17 raw export files, three prior packet inventories and
+52 summary mutations. Formatting, docs, registry and local performance contracts
+pass. Qualification stays byte-exact at
+`11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc`.
+Native composition and independent joined execution/lifecycle/trust gates remain
+false. No release, clock/service or product operation is performed.
