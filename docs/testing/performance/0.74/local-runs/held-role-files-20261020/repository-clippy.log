@@ -1,0 +1,19 @@
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+    Checking xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+error: constant `SOURCE` is never used
+ --> crates\xtask\tests\support\held_role_files_guard.rs:3:18
+  |
+3 | pub(crate) const SOURCE: &str = "tools/long-run-supervisor-074/src/diagnostic_held_role_files.rs";
+  |                  ^^^^^^
+  |
+  = note: `-D dead-code` implied by `-D warnings`
+  = help: to override `-D warnings` add `#[expect(dead_code)]` or `#[allow(dead_code)]`
+
+error: function `previous_list` is never used
+  --> crates\xtask\tests\support\held_role_files_guard.rs:12:15
+   |
+12 | pub(crate) fn previous_list(current: &str) -> String {
+   |               ^^^^^^^^^^^^^
+
+error: could not compile `xtask` (test "performance_contract_074") due to 2 previous errors
+warning: build failed, waiting for other jobs to finish...

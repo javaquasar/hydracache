@@ -1,0 +1,13 @@
+{
+  "source": "3fa2d487ab3c9dd6ca694b1800ae7ec31c4e9386",
+  "mode": "repository",
+  "recipe": "bd72d1f31b4021ae193c5310404ab1b71b0044abbd9fd330bc324753b254c9af",
+  "original_join": false,
+  "role_receipt_issued": false,
+  "original_send": false,
+  "server": false,
+  "supervisor": false,
+  "product": false,
+  "full_joined_sigkill": false,
+  "clock_changed": false
+}

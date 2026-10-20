@@ -1,0 +1,26 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+warning: constant `SOURCE` is never used
+ --> crates\xtask\tests\support\held_role_files_guard.rs:3:18
+  |
+3 | pub(crate) const SOURCE: &str = "tools/long-run-supervisor-074/src/diagnostic_held_role_files.rs";
+  |                  ^^^^^^
+  |
+  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `previous_list` is never used
+  --> crates\xtask\tests\support\held_role_files_guard.rs:12:15
+   |
+12 | pub(crate) fn previous_list(current: &str) -> String {
+   |               ^^^^^^^^^^^^^
+
+warning: `xtask` (test "performance_contract_074") generated 2 warnings
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 17.70s
+     Running tests\performance_contract_074.rs (target\debug\deps\performance_contract_074-affcfab4e5118d5a.exe)
+
+running 3 tests
+test live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::prearmed::redundant::original_context::pending::root_enrollment::transport::guardian::creator::original_join::retirement::preparation::leaf_path::owned_root::closing::boot_comparison::held_placement::owned_placement::preparation::cost::fixed_slice::fixed_slice_is_readonly_owned_and_not_an_execution_or_release_capability ... ok
+test live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::prearmed::redundant::original_context::pending::root_enrollment::transport::guardian::creator::original_join::retirement::preparation::leaf_path::owned_root::closing::boot_comparison::held_placement::owned_placement::preparation::cost::fixed_slice::fixed_slice_adapter_refuses_missing_duplicate_hooks_and_old_body_drift ... ok
+test live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::prearmed::redundant::original_context::pending::root_enrollment::transport::guardian::creator::original_join::retirement::preparation::leaf_path::owned_root::closing::boot_comparison::held_placement::owned_placement::preparation::cost::fixed_slice::fixed_slice_preserves_all_432_original_sources_wire_registry_and_harness ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 318 filtered out; finished in 51.12s
+

@@ -1,0 +1,9 @@
+{
+  "source": "82570db8589065df5711f2faf51d02406168cf79",
+  "recipe": "1ea9d5ba104021f017427bf2fb6a962218f1a0763610988b195fc686fab9c657",
+  "phase": "post-format-output-scan",
+  "native_format_exit": 0,
+  "wrapper_exit": 1,
+  "error": "Get-Content could not find repository-fmt.log after silent formatter",
+  "accepted": false
+}

@@ -1,0 +1,12 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0599]: no method named `pin_sealed_roles` found for struct `VerifiedBuild` in the current scope
+  --> tools/long-run-supervisor-074/tests/support/held_role_files.rs:40:35
+   |
+40 | ...f).pin_sealed_roles(ho...
+   |       ^^^^^^^^^^^^^^^^ method not ...in `VerifiedBuild`
+   |
+   = note: the full name for the type has been written to '/home/artur/.cache/hydracache-074-194-check/debug/deps/held_build-fa11368a71c604e1.long-type-8385099539228732890.txt'
+   = note: consider using `--verbose` to print the full type name to the console
+
+For more information about this error, try `rustc --explain E0599`.
+error: could not compile `hydracache-long-run-supervisor-074` (test "held_build") due to 1 previous error

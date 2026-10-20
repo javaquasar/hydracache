@@ -1,0 +1,37 @@
+held-build-authority-20261020
+{
+  "verified": true,
+  "files": 60,
+  "metadata_mutation_refusals": 26,
+  "inventory_sha256": "1066e4520b534356ab2b3cccec03281a86104b8bbbc12729248a026ab372bc35",
+  "static_build_authority_only": true,
+  "actual_role_build": false,
+  "original_join": false,
+  "server": false,
+  "product": false
+}
+held-launcher-20261020
+{
+  "verified": true,
+  "files": 100,
+  "receipt_metadata_mutations_refused": 32,
+  "inventory_sha256": "dd514156a15397f9d3ecf6cb42632eded704031768709aab9bbcbb33c2abdf16",
+  "process_cases_per_round": 27,
+  "rounds_per_linux_compiler": 2,
+  "original_join": false,
+  "all_writer_revocation": false,
+  "server": false,
+  "product": false
+}
+fixed-slice-namespace-20261020
+{
+  "verified": true,
+  "files": 95,
+  "metadata_mutations_refused": 0,
+  "inventory_sha256": "00e1dc901bf374c3f49dee27bb466ef709796b39010878e992fe27a97d08e411",
+  "original_join": false,
+  "server": false,
+  "product": false
+}
+frozen-lock-fixture-20261020
+frozen lock fixture evidence: 73 hashed files; 0 mutation refusals; runtime and admission unchanged

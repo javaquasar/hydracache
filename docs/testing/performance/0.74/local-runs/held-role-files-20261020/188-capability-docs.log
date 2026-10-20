@@ -1,0 +1,47 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 39.22s
+   Doc-tests hydracache_long_run_supervisor_074
+
+running 4 tests
+error[E0599]: no method named `start` found for struct `PinnedRoles` in the current scope
+ --> tools/long-run-supervisor-074/src/diagnostic_held_role_files.rs:87:45
+  |
+6 | fn cannot_start(roles: PinnedRoles) { roles.start(); }
+  |                                             ^^^^^ method not found in `PinnedRoles`
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0599`.
+error[E0599]: no method named `unlock` found for struct `hydracache_long_run_supervisor_074::diagnostic_builder::held_build::VerifiedBuild` in the current scope
+ --> tools/long-run-supervisor-074/src/diagnostic_held_build.rs:283:48
+  |
+6 | fn cannot_unlock(build: VerifiedBuild) { build.unlock(); }
+  |                                                ^^^^^^ method not found in `VerifiedBuild`
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0599`.
+test tools/long-run-supervisor-074/src/diagnostic_held_role_files.rs - diagnostic_builder::held_build::role_files::PinnedRoles (line 84) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_held_build.rs - diagnostic_builder::held_build::VerifiedBuild (line 280) - compile fail ... ok
+error[E0599]: no method named `start` found for struct `CheckedPolicy` in the current scope
+ --> tools/long-run-supervisor-074/src/diagnostic_held_build.rs:73:49
+  |
+6 | fn cannot_start(policy: CheckedPolicy) { policy.start(); }
+  |                                                 ^^^^^ method not found in `CheckedPolicy`
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0599`.
+test tools/long-run-supervisor-074/src/diagnostic_held_build.rs - diagnostic_builder::held_build::CheckedPolicy (line 70) - compile fail ... ok
+error[E0599]: no method named `into_raw_fd` found for struct `PinnedRoles` in the current scope
+test tools/long-run-supervisor-074/src/diagnostic_held_role_files.rs - diagnostic_builder::held_build::role_files::PinnedRoles (line 88) - compile fail ... ok
+ --> tools/long-run-supervisor-074/src/diagnostic_held_role_files.rs:91:47
+  |
+
+6 | fn cannot_extract(roles: PinnedRoles) { roles.into_raw_fd(); }
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 247 filtered out; finished in 0.28s
+
+  |                                               ^^^^^^^^^^^ method not found in `PinnedRoles`
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0599`.
