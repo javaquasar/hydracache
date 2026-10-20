@@ -7,9 +7,10 @@ fn root() -> std::path::PathBuf {
     std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..")
 }
 fn read(path: &str) -> String {
-    std::fs::read_to_string(root().join(path))
+    let raw = std::fs::read_to_string(root().join(path))
         .unwrap()
-        .replace('\r', "")
+        .replace('\r', "");
+    prefix::fresh_status::pid_path::custody_cost::document_scratch::normalize(path, &raw)
 }
 fn git(args: &[&str]) -> String {
     let out = std::process::Command::new("git")

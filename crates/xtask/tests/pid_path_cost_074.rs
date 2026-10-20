@@ -2,13 +2,14 @@
 mod guard;
 const BASE: &str = "b63a0e81ad808d6f65e8c8d818ee4c090c3718ff";
 fn read(path: &str) -> String {
-    std::fs::read_to_string(
+    let raw = std::fs::read_to_string(
         std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("../..")
             .join(path),
     )
     .unwrap()
-    .replace('\r', "")
+    .replace('\r', "");
+    guard::custody_cost::document_scratch::normalize(path, &raw)
 }
 fn old(commit: &str, path: &str) -> String {
     let out = std::process::Command::new("git")

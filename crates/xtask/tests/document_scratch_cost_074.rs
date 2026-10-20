@@ -129,6 +129,8 @@ fn document_scratch_adoption_is_the_frozen_helper_and_reconstructs_all_473_old_b
     for exact in [
         "        let mut scratch = DocumentBuffer::new();\n",
         guard::WRAPPER,
+        "alive_read(&self.pidfd, self.credentials.pid, |file| scratch.read(file))?;",
+        "projection(scratch.read(file)?, &self.credentials)?",
     ] {
         for changed in [raw.replacen(exact, "", 1), format!("{raw}{exact}")] {
             assert!(
@@ -142,4 +144,54 @@ fn document_scratch_adoption_is_the_frozen_helper_and_reconstructs_all_473_old_b
         guard::normalize(guard::SOURCE, &changed),
         old(guard::SOURCE)
     );
+}
+
+#[test]
+fn legacy_source_views_preserve_every_old_assertion_and_only_restore_known_scratch_shapes() {
+    for (path, view) in [
+        (
+            "crates/xtask/tests/fresh_kernel_cost_074.rs",
+            "guard::pid_path::custody_cost::document_scratch",
+        ),
+        (
+            "crates/xtask/tests/pid_path_cost_074.rs",
+            "guard::custody_cost::document_scratch",
+        ),
+        (
+            "crates/xtask/tests/held_preparation_cost_074.rs",
+            "prefix::fresh_status::pid_path::custody_cost::document_scratch",
+        ),
+    ] {
+        let out = std::process::Command::new("git")
+            .args([
+                "show",
+                &format!("1f3715498cb3b9b1328061a3647f90c1c3bd2e19:{path}"),
+            ])
+            .current_dir(root())
+            .output()
+            .unwrap();
+        assert!(out.status.success());
+        let old = String::from_utf8(out.stdout).unwrap().replace('\r', "");
+        let start = old.find("fn read(path: &str) -> String {").unwrap();
+        let end = start + old[start..].find("\n}\n").unwrap() + 2;
+        let original = &old[start..end];
+        let expected = original
+            .replacen(
+                "    std::fs::read_to_string(",
+                "    let raw = std::fs::read_to_string(",
+                1,
+            )
+            .replacen(
+                ".replace('\\r', \"\")\n}",
+                &format!(".replace('\\r', \"\");\n    {view}::normalize(path, &raw)\n}}"),
+                1,
+            );
+        let current = read(path);
+        assert_eq!(current.matches(&expected).count(), 1);
+        assert_eq!(
+            current.replacen(&expected, original, 1),
+            old,
+            "no old assertion may be removed: {path}"
+        );
+    }
 }
