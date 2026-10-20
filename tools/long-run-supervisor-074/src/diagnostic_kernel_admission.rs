@@ -358,7 +358,7 @@ struct Sender {
 impl Sender {
     fn pin(origin: &Origin, credentials: libc::ucred, pidfd: OwnedFd) -> Result<Self, KernelError> {
         alive(&pidfd, credentials.pid)?;
-        let directory = origin.child(&credentials.pid.to_string(), true)?;
+        let directory = origin.child(credentials.pid, true)?;
         let m = directory.metadata()?;
         let status = origin::fixed_child(&directory, c"status", false)?;
         let sm = status.metadata()?;
@@ -382,7 +382,7 @@ impl Sender {
         );
         origin.revalidate()?;
         alive(&self.pidfd, self.credentials.pid)?;
-        let directory = origin.child(&self.credentials.pid.to_string(), true)?;
+        let directory = origin.child(self.credentials.pid, true)?;
         for file in [&directory, &self.directory] {
             let m = file.metadata()?;
             if (m.dev(), m.ino()) != self.directory_id {

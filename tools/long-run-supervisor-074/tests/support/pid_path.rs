@@ -1,36 +1,7 @@
 //! One uncached signed decimal key; all actual opens remain fresh.
 use super::*;
 
-// BEGIN STACK PID NAME
-pub(super) struct PidName {
-    bytes: [u8; 12],
-    start: usize,
-}
-impl PidName {
-    pub(super) fn new(pid: i32) -> Self {
-        let mut bytes = [0; 12];
-        let mut start = 11;
-        let mut remaining = pid.unsigned_abs();
-        loop {
-            start -= 1;
-            bytes[start] = b'0' + (remaining % 10) as u8;
-            remaining /= 10;
-            if remaining == 0 {
-                break;
-            }
-        }
-        if pid < 0 {
-            start -= 1;
-            bytes[start] = b'-';
-        }
-        Self { bytes, start }
-    }
-    pub(super) fn as_c_str(&self) -> &std::ffi::CStr {
-        std::ffi::CStr::from_bytes_with_nul(&self.bytes[self.start..])
-            .expect("signed i32 digits and one terminal NUL fit twelve bytes")
-    }
-}
-// END STACK PID NAME
+pub(super) use super::PidName;
 
 #[test]
 fn pid_path_signed_edges_and_seeded_values_match_complete_decimal() {
