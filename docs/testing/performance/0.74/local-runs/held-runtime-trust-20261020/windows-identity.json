@@ -1,0 +1,15 @@
+{
+  "source": "d2cfdf2334c0da2173689f8a4566bd013bc5bfe6",
+  "mode": "windows",
+  "recipe": "92230d8c5b97ce84d45159c601cd743bcbc7947ca4d551fd3d49adec6f981b3a",
+  "early_controller_join": false,
+  "late_original_join": false,
+  "production_enrollment": false,
+  "production_role_receipt_issued": false,
+  "original_send": false,
+  "server": false,
+  "supervisor": false,
+  "product": false,
+  "full_joined_sigkill": false,
+  "clock_changed": false
+}

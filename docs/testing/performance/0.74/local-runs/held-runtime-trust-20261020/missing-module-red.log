@@ -1,0 +1,8 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error: couldn't read `tools/long-run-supervisor-074/src/diagnostic_held_runtime_trust.rs`: No such file or directory (os error 2)
+ --> tools/long-run-supervisor-074/src/diagnostic_controller_trust_input.rs:9:1
+  |
+9 | p..._runtime;
+  | ^...^^^^^^^^^
+
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 1 previous error

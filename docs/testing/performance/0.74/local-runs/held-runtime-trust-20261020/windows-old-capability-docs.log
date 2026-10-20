@@ -1,0 +1,47 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.61s
+   Doc-tests hydracache_long_run_supervisor_074
+
+running 4 tests
+error[E0599]: no method named `unlock` found for struct `hydracache_long_run_supervisor_074::diagnostic_builder::held_build::VerifiedBuild` in the current scope
+   --> tools\long-run-supervisor-074\src\diagnostic_held_build.rs:286:48
+    |
+286 | fn cannot_unlock(build: VerifiedBuild) { build.unlock(); }
+    |                                                ^^^^^^ method not found in `hydracache_long_run_supervisor_074::diagnostic_builder::held_build::VerifiedBuild`
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0599`.
+test tools\long-run-supervisor-074\src\diagnostic_held_build.rs - diagnostic_builder::held_build::VerifiedBuild (line 283) - compile fail ... ok
+error[E0599]: no method named `start` found for struct `Inspection` in the current scope
+   --> tools\long-run-supervisor-074\src\diagnostic_held_role_binding.rs:123:11
+    |
+123 |     value.start();
+    |           ^^^^^ method not found in `Inspection`
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0599`.
+test tools\long-run-supervisor-074\src\diagnostic_held_role_binding.rs - diagnostic_builder::held_build::role_binding::Inspection (line 119) - compile fail ... ok
+error[E0599]: no method named `start` found for struct `CheckedPolicy` in the current scope
+  --> tools\long-run-supervisor-074\src\diagnostic_held_build.rs:76:49
+   |
+76 | fn cannot_start(policy: CheckedPolicy) { policy.start(); }
+   |                                                 ^^^^^ method not found in `CheckedPolicy`
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0599`.
+test tools\long-run-supervisor-074\src\diagnostic_held_build.rs - diagnostic_builder::held_build::CheckedPolicy (line 73) - compile fail ... ok
+error[E0616]: field `build` of struct `Inspection` is private
+   --> tools\long-run-supervisor-074\src\diagnostic_held_role_binding.rs:129:19
+    |
+129 |     let _ = value.build;
+    |                   ^^^^^ private field
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0616`.
+test tools\long-run-supervisor-074\src\diagnostic_held_role_binding.rs - diagnostic_builder::held_build::role_binding::Inspection (line 125) - compile fail ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 20 filtered out; finished in 0.56s
+

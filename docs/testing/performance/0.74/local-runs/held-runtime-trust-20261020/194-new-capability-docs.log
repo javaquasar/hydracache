@@ -1,0 +1,99 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 10.05s
+   Doc-tests hydracache_long_run_supervisor_074
+
+running 5 tests
+error[E0616]: field `original` of struct `OriginalHeldTrust` is private
+   --> tools/long-run-supervisor-074/src/diagnostic_held_runtime_trust.rs:271:19
+    |
+271 | ...ue.original;
+    |       ^^^^^^^^ private field
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0616`.
+test tools/long-run-supervisor-074/src/diagnostic_held_runtime_trust.rs - diagnostic_worker_policy::trusted_input::controller_input::held_runtime::OriginalHeldTrust (line 267) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_held_runtime_trust.rs - diagnostic_worker_policy::trusted_input::controller_input::held_runtime::HeldTrustInput (line 158) - compile fail ... ok
+error[E0599]: no method named `clone` found for struct `HeldTrustInput` in the current scope
+   --> tools/long-run-supervisor-074/src/diagnostic_held_runtime_trust.rs:162:11
+    |
+162 | ...ue.clone();
+    |       ^^^^^ method not found in `HeldTrustInput`
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0599`.
+error[E0599]: no method named `start` found for struct `OriginalHeldTrust<'h, 'q, 'c, 'b, 's, 'a, 'p>` in the current scope
+   --> tools/long-run-supervisor-074/src/diagnostic_held_runtime_trust.rs:265:11
+    |
+265 | ...ue.start();
+    |       ^^^^^ method not found in `OriginalHeldTrust<'_, '_, '_, '_, '_, '_, '_>`
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0599`.
+test tools/long-run-supervisor-074/src/diagnostic_held_runtime_trust.rs - diagnostic_worker_policy::trusted_input::controller_input::held_runtime::OriginalHeldTrust (line 261) - compile fail ... ok
+error[E0277]: `Rc<()>` cannot be sent between threads safely
+   --> tools/long-run-supervisor-074/src/diagnostic_held_runtime_trust.rs:168:24
+    |
+168 |    ...read::spawn...drop(value));
+    |    ...-----------...^^^^^^^^^^^
+    |     |                  |
+    |     |                  `Rc<()>` cannot be sent between threads safely
+    |     |                  within this `{closure@...}`
+    |     required by a bound introduced by this call
+    |
+    = help: within `{closure@...}`, the trait `Send` is not implemented for `Rc<()>`
+note: required because it appears within the type `PhantomData<...>`
+   --> /rustc/4a4ef493e3a1488c6e321570238084b38948f6db/library/core/src/marker.rs:819:11
+note: required because it appears within the type `HeldTrustInput`
+   --> tools/long-run-supervisor-074/src/diagnostic_held_runtime_trust.rs:175:12
+    |
+175 | ...ct Held...tInput {
+    |       ^^^^...^^^^^^
+note: required because it's used within this closure
+   --> tools/long-run-supervisor-074/src/diagnostic_held_runtime_trust.rs:168:24
+    |
+168 | ...wn(move || dr...
+    |       ^^^^^^^
+note: required by a bound in `spawn`
+   --> /rustc/4a4ef493e3a1488c6e321570238084b38948f6db/library/std/src/thread/functions.rs:125:0
+    = note: the full name for the type has been written to '/tmp/rustdoctest33UwaD/rust_out.long-type-14644563189732520457.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0277`.
+test tools/long-run-supervisor-074/src/diagnostic_held_runtime_trust.rs - diagnostic_worker_policy::trusted_input::controller_input::held_runtime::HeldTrustInput (line 164) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_held_runtime_trust.rs - diagnostic_worker_policy::trusted_input::controller_input::held_runtime::HeldTrustInput (line 170) - compile fail ... ok
+error[E0277]: the trait bound `HeldTrustInput: serde::de::DeserializeOwned` is not satisfied
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 253 filtered out; finished in 0.14s
+
+   --> tools/long-run-supervisor-074/src/diagnostic_held_runtime_trust.rs:174:19
+    |
+174 | ...::<HeldTrustIn...();
+    |       ^^^^^^^^^^^...unsatisfied trait bound
+    |
+    = help: the trait `for<'de> Deserialize<'de>` is not implemented for `HeldTrustInput`
+    = help: the following other types implement trait `Deserialize<'de>`:
+              `&[u8]` implements `Deserialize<'de>`
+              `&...` implements `Deserialize<'de>`
+              `&str` implements `Deserialize<'de>`
+              `()` implements `Deserialize<'de>`
+              `(...,)` implements `Deserialize<'de>`
+              `(..., ...)` implements `Deserialize<'de>`
+              `(..., ..., ...)` implements `Deserialize<'de>`
+              `(..., ..., ..., ...)` implements `Deserialize<'de>`
+            and 295 others
+    = note: required for `HeldTrustInput` to implement `DeserializeOwned`
+note: required by a bound in `requires_decode`
+   --> tools/long-run-supervisor-074/src/diagnostic_held_runtime_trust.rs:173:23
+    |
+173 | ...T: serde::de::Dese...}
+    |       ^^^^^^^^^^^^^^^...ired by this bound in `requires_decode`
+    = note: the full name for the type has been written to '/tmp/rustdoctestHMzuOj/rust_out.long-type-6131140809142194755.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0277`.
