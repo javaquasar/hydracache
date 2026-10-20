@@ -1,0 +1,9 @@
+
+running 4 tests
+test diagnostic_kernel_admission::origin::document_scratch_tests::document_scratch_single_read_seeded_short_poison_error_and_budget ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::document_scratch::document_scratch_allocation_attribution ... ignored, manual nonroot per-invocation document buffer allocation control
+test diagnostic_kernel_admission::tests::document_scratch::document_scratch_actual_documents_exclude_previous_bytes_and_preserve_errors ... ok
+test diagnostic_kernel_admission::tests::document_scratch::document_scratch_sender_preserves_fresh_counts_and_original_refusals ... ok
+
+test result: ok. 3 passed; 0 failed; 1 ignored; 0 measured; 1387 filtered out; finished in 0.00s
+

@@ -1,0 +1,176 @@
+{
+  "schema": "local-custody-preparation-cost-v1",
+  "baseline": "72efce2401e753b857f7fc03f3300b6aae19bd5d",
+  "observer": "b28a29ebe465f27762828689ce759a6716fda5b4",
+  "prototype": "4952b0f28fd752d9e479ed5f5ed34e6184bbb836",
+  "runtime": "1f3715498cb3b9b1328061a3647f90c1c3bd2e19",
+  "allocation_pairs": [
+    {
+      "cohort": "Prototype",
+      "lane": "194",
+      "sample": 0,
+      "reference_requests": 16,
+      "candidate_requests": 13,
+      "reference_bytes": 262600,
+      "candidate_bytes": 65989,
+      "reallocations": 4
+    },
+    {
+      "cohort": "Prototype",
+      "lane": "194",
+      "sample": 1,
+      "reference_requests": 16,
+      "candidate_requests": 13,
+      "reference_bytes": 262600,
+      "candidate_bytes": 65989,
+      "reallocations": 4
+    },
+    {
+      "cohort": "Prototype",
+      "lane": "194",
+      "sample": 2,
+      "reference_requests": 16,
+      "candidate_requests": 13,
+      "reference_bytes": 262600,
+      "candidate_bytes": 65989,
+      "reallocations": 4
+    },
+    {
+      "cohort": "Prototype",
+      "lane": "188",
+      "sample": 0,
+      "reference_requests": 16,
+      "candidate_requests": 13,
+      "reference_bytes": 262600,
+      "candidate_bytes": 65989,
+      "reallocations": 4
+    },
+    {
+      "cohort": "Prototype",
+      "lane": "188",
+      "sample": 1,
+      "reference_requests": 16,
+      "candidate_requests": 13,
+      "reference_bytes": 262600,
+      "candidate_bytes": 65989,
+      "reallocations": 4
+    },
+    {
+      "cohort": "Prototype",
+      "lane": "188",
+      "sample": 2,
+      "reference_requests": 16,
+      "candidate_requests": 13,
+      "reference_bytes": 262600,
+      "candidate_bytes": 65989,
+      "reallocations": 4
+    },
+    {
+      "cohort": "Final",
+      "lane": "194",
+      "sample": 0,
+      "reference_requests": 16,
+      "candidate_requests": 13,
+      "reference_bytes": 262600,
+      "candidate_bytes": 65989,
+      "reallocations": 4
+    },
+    {
+      "cohort": "Final",
+      "lane": "194",
+      "sample": 1,
+      "reference_requests": 16,
+      "candidate_requests": 13,
+      "reference_bytes": 262600,
+      "candidate_bytes": 65989,
+      "reallocations": 4
+    },
+    {
+      "cohort": "Final",
+      "lane": "194",
+      "sample": 2,
+      "reference_requests": 16,
+      "candidate_requests": 13,
+      "reference_bytes": 262600,
+      "candidate_bytes": 65989,
+      "reallocations": 4
+    },
+    {
+      "cohort": "Final",
+      "lane": "188",
+      "sample": 0,
+      "reference_requests": 16,
+      "candidate_requests": 13,
+      "reference_bytes": 262600,
+      "candidate_bytes": 65989,
+      "reallocations": 4
+    },
+    {
+      "cohort": "Final",
+      "lane": "188",
+      "sample": 1,
+      "reference_requests": 16,
+      "candidate_requests": 13,
+      "reference_bytes": 262600,
+      "candidate_bytes": 65989,
+      "reallocations": 4
+    },
+    {
+      "cohort": "Final",
+      "lane": "188",
+      "sample": 2,
+      "reference_requests": 16,
+      "candidate_requests": 13,
+      "reference_bytes": 262600,
+      "candidate_bytes": 65989,
+      "reallocations": 4
+    }
+  ],
+  "baseline_phase_rows": 60,
+  "candidate_phase_rows": 60,
+  "baseline_output_wall_min_ns": 2827822598,
+  "baseline_output_wall_max_ns": 3057662641,
+  "baseline_closing_wall_min_ns": 67092292,
+  "baseline_closing_wall_max_ns": 73603393,
+  "local_matrices": [
+    {
+      "lane": "194",
+      "exit": 0,
+      "completed_cases": [
+        "healthy",
+        "revalidate",
+        "role-before",
+        "role-after",
+        "trust-after"
+      ],
+      "original_refusals": []
+    },
+    {
+      "lane": "188",
+      "exit": 0,
+      "completed_cases": [
+        "healthy",
+        "revalidate",
+        "role-before",
+        "role-after",
+        "trust-after"
+      ],
+      "original_refusals": []
+    }
+  ],
+  "local_matrix_passed": true,
+  "allocation_effect_confirmed": true,
+  "numerical_latency_gain_accepted": false,
+  "native_execution_gate_passed": false,
+  "joined_sigkill_lost_ack_retested": false,
+  "original_delivery_retested": false,
+  "all_writer_cessation_proved": false,
+  "later_cells_retested": false,
+  "reconnect_retested": false,
+  "production_enrollment": false,
+  "earlier_refusals_retained": true,
+  "deadline_changed": false,
+  "live_checks_changed": false,
+  "server": false,
+  "product": false
+}

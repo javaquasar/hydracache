@@ -1,0 +1,9 @@
+    Checking xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+error: file is loaded as a module multiple times: `crates\xtask\tests\support\document_scratch_guard.rs`
+  |
+  = help: replace all but one `mod` item with `use` items
+  = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#duplicate_mod
+  = note: `-D clippy::duplicate-mod` implied by `-D warnings`
+  = help: to override `-D warnings` add `#[allow(clippy::duplicate_mod)]`
+
+error: could not compile `xtask` (test "performance_contract_074") due to 1 previous error

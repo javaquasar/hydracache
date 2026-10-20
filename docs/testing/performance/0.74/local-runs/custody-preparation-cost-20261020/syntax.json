@@ -1,0 +1,17 @@
+{
+  "powershell_syntax_passed": true,
+  "scripts": [
+    "checked-layout.ps1",
+    "checks.ps1",
+    "facts.ps1",
+    "final-probes.ps1",
+    "phases.ps1",
+    "profile.ps1",
+    "scratch.ps1",
+    "seal.ps1",
+    "snapshot.ps1",
+    "verify.ps1"
+  ],
+  "server": false,
+  "product": false
+}

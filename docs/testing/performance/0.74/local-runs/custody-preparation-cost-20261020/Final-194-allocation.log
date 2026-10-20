@@ -1,0 +1,12 @@
+
+running 1 test
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::document_scratch::document_scratch_allocation_attribution ... HC074-DOCUMENT-SCRATCH-ALLOC {"candidate":{"allocations":13312,"reallocations":4096,"requested_bytes":67572736},"candidate_first":false,"iterations":1024,"product":false,"reference":{"allocations":16384,"reallocations":4096,"requested_bytes":268902400},"rust_requests_only":true,"sample":0,"server":false}
+HC074-DOCUMENT-SCRATCH-ALLOC {"candidate":{"allocations":13312,"reallocations":4096,"requested_bytes":67572736},"candidate_first":true,"iterations":1024,"product":false,"reference":{"allocations":16384,"reallocations":4096,"requested_bytes":268902400},"rust_requests_only":true,"sample":1,"server":false}
+HC074-DOCUMENT-SCRATCH-ALLOC {"candidate":{"allocations":13312,"reallocations":4096,"requested_bytes":67572736},"candidate_first":false,"iterations":1024,"product":false,"reference":{"allocations":16384,"reallocations":4096,"requested_bytes":268902400},"rust_requests_only":true,"sample":2,"server":false}
+HC074-DOCUMENT-SCRATCH-TIME {"allocation_counter_active":false,"candidate_wall_ns":210375901,"iterations":4096,"product":false,"reference_wall_ns":226155200,"sample":0,"server":false}
+HC074-DOCUMENT-SCRATCH-TIME {"allocation_counter_active":false,"candidate_wall_ns":244894400,"iterations":4096,"product":false,"reference_wall_ns":263785370,"sample":1,"server":false}
+HC074-DOCUMENT-SCRATCH-TIME {"allocation_counter_active":false,"candidate_wall_ns":210127311,"iterations":4096,"product":false,"reference_wall_ns":230140331,"sample":2,"server":false}
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1390 filtered out; finished in 1.76s
+

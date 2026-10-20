@@ -1,0 +1,8 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.76s
+     Running tests\document_scratch_cost_074.rs (target\debug\deps\document_scratch_cost_074-39d1d260cc62c866.exe)
+
+running 1 test
+test legacy_source_views_preserve_every_old_assertion_and_only_restore_known_scratch_shapes ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.18s
+

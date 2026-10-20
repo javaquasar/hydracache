@@ -1,0 +1,61 @@
+{
+  "through": "f140dafff43e390aaab0478147cc001360aad7a4",
+  "commits": [
+    {
+      "sha": "5101f98074bf379aceeb64cb40f8eccaa022ea8f",
+      "subject": "docs: preregister custody preparation attribution and one scratch-buffer hypothesis"
+    },
+    {
+      "sha": "c527a330d3c63e090bffb3e35d80a3c6a6e8287a",
+      "subject": "test: observe first custody and closing boundaries without changing validation bodies"
+    },
+    {
+      "sha": "b28a29ebe465f27762828689ce759a6716fda5b4",
+      "subject": "test: bind custody hook adapter to its formatter-exact multiline mark"
+    },
+    {
+      "sha": "4952b0f28fd752d9e479ed5f5ed34e6184bbb836",
+      "subject": "test: freeze complete sender reference and per-call scratch prototype"
+    },
+    {
+      "sha": "10f085d6af7e0f4176cbb3c2e6ad698310366f6a",
+      "subject": "test: retain preparation baseline, repeated scratch allocation savings and red bindings"
+    },
+    {
+      "sha": "218178fd943cd62c4935b4771d3601f06e357551",
+      "subject": "perf: reuse document bytes only within one original sender validation"
+    },
+    {
+      "sha": "017e26db0f491ee4a224f74028f5926536ab7d09",
+      "subject": "fix: declare scratch helper within the original kernel macro scope"
+    },
+    {
+      "sha": "e7169c17a61e3c10a5ffb6f0a92fb7a748873878",
+      "subject": "test: reconstruct every frozen sender body and exact scratch implementation"
+    },
+    {
+      "sha": "1f3715498cb3b9b1328061a3647f90c1c3bd2e19",
+      "subject": "refactor: keep frozen scratch body inline and preserve all 446 runtime paths"
+    },
+    {
+      "sha": "d6c4546983e8dc824ee1f57a0cfee5443ec80c15",
+      "subject": "test: preserve legacy canaries through exact predecessor views and verify actual scratch calls"
+    },
+    {
+      "sha": "410a7acbe85e52f24f8761d5b3ee428793b88ace",
+      "subject": "test: retain nested kernel and boot canaries through the same exact source view"
+    },
+    {
+      "sha": "9a256313736ad21eeecb170981476c8a5b176294",
+      "subject": "test: retain exact legacy header spacing in source-view proof"
+    },
+    {
+      "sha": "5e5dc5c09c4c1a6a1df6dee9723eff52a1876082",
+      "subject": "test: preserve separator when reversing nested view import"
+    },
+    {
+      "sha": "f140dafff43e390aaab0478147cc001360aad7a4",
+      "subject": "test: share one predecessor implementation without duplicate module loads"
+    }
+  ]
+}

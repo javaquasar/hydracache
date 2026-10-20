@@ -1,0 +1,14 @@
+{
+  "source": "f140dafff43e390aaab0478147cc001360aad7a4",
+  "process_group": 287,
+  "verified_members": [
+    "cargo test seven source/contract targets",
+    "document_scratch_cost_074 test binary",
+    "owned git read child"
+  ],
+  "action": "SIGTERM",
+  "reason": "duplicate read-only WSL source suite on /mnt/c; Windows owner finished and final native-Windows suite is running",
+  "runtime_or_fault_test_stopped": false,
+  "server": false,
+  "product": false
+}

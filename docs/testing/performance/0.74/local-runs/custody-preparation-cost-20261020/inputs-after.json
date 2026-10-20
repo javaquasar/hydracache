@@ -1,0 +1,67 @@
+{
+  "stage": "after",
+  "bundle": [
+    {
+      "name": "build-log.jsonl",
+      "bytes": 349647,
+      "sha256": "8a2a495348bd317f7a2092a622838fc489bdcf077f4a8269210b2b78381b3c58"
+    },
+    {
+      "name": "build-receipt-v1.json",
+      "bytes": 1735,
+      "sha256": "e32bb7cd9b6cbf1d91d52abc79cb1e0225b3a7f6602e82e5b9a303c3645a77d7"
+    },
+    {
+      "name": "Cargo.lock.observer",
+      "bytes": 88159,
+      "sha256": "e3be470f5a1bff4e917e841fc5bfbd257ff12559206bbc1481c3c4bca528eb1d"
+    },
+    {
+      "name": "Cargo.lock.root",
+      "bytes": 175300,
+      "sha256": "be46eaf8e97e507bda5e3f2b671d0d622e6a639ce1d4613769a4693723d62b19"
+    },
+    {
+      "name": "direct.json",
+      "bytes": 694,
+      "sha256": "5485b10f50906833006ad3f3a40b4909760ef01e3f2c86395e4366bf83cc6ef9"
+    },
+    {
+      "name": "embedded.json",
+      "bytes": 696,
+      "sha256": "5c219730c8a782ed47dfa0b291a29f44f753c3688f8548c136174a89cee55149"
+    },
+    {
+      "name": "resp2.json",
+      "bytes": 694,
+      "sha256": "f0aba16dfe0354801d0b3c83ee9fc2d1b4751be5f50280634690ed4bcf3030ae"
+    },
+    {
+      "name": "resp3.json",
+      "bytes": 694,
+      "sha256": "b680683c291d0a4dadbac1901f051ba0fedcac0ac9127d197e0261fe6fdabdd7"
+    },
+    {
+      "name": "timing-controls-074",
+      "bytes": 26500176,
+      "sha256": "bda1c094f3de7c6d42ec45c757838c7a41a8ff1d63a025c661af84455169a101"
+    }
+  ],
+  "qualification_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "prior_inventories": [
+    [
+      "held-native-recheck-20261020",
+      "2a7be06fe6f93e3e8761b29afebaf89ac6266d7c405b457ef8ea26d60259bd63"
+    ],
+    [
+      "held-composition-recheck-20261020",
+      "0bfa7cef4d3ebd69c9e751fe6e4304a8bade3133122dcc48249c9d1396bfe1c0"
+    ],
+    [
+      "pid-path-cost-20261020",
+      "982d9598426830f6b3e44f9a701220b5778ceb3e6b568922d3b2ee405a0e6b05"
+    ]
+  ],
+  "server": false,
+  "product": false
+}
