@@ -1,9 +1,11 @@
 //! Exact context binding substitution only, preserving the accepted key encoder.
+#[path = "authority_leaf_name_guard.rs"]
+mod authority_leaf_name;
 #[macro_export]
 macro_rules! hc074_authority_context_view {
     ($path:expr, $source:expr) => {{
         let path: &str = $path;
-        let mut raw: String = $source.to_owned();
+        let mut raw: String = $crate::hc074_authority_leaf_name_view!(path, $source);
         let gate = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/tests/support/authority_context_gate.txt")).replace('\r', "");
         for (file, exact, marker) in [
             ("tools/long-run-supervisor-074/src/diagnostic_authority_registry.rs", "\n#[cfg(all(test, target_os = \"linux\"))]\n#[path = \"../tests/support/authority_context_controls.rs\"]\npub(crate) mod context_controls;\n", "authority_context_controls"),
