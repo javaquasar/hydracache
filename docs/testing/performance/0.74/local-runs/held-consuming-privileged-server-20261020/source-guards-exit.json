@@ -1,0 +1,4 @@
+{
+  "command": "cargo test --locked -p xtask --test diagnostic_artifact_fixture_074",
+  "exit": 0
+}

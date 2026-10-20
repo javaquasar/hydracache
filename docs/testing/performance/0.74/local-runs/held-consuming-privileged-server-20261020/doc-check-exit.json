@@ -1,0 +1,4 @@
+{
+  "command": "cargo xtask doc-check",
+  "exit": 0
+}

@@ -1,0 +1,4 @@
+{
+  "command": "cargo xtask performance-contract-check --release 0.74",
+  "exit": 0
+}

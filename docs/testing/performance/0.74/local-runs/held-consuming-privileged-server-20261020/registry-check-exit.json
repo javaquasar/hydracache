@@ -1,0 +1,4 @@
+{
+  "command": "cargo xtask gated-test-check",
+  "exit": 0
+}

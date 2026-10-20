@@ -1,0 +1,4 @@
+{
+  "command": "cargo test --locked -p xtask --test performance_contract_074",
+  "exit": 0
+}

@@ -1,0 +1,4 @@
+{
+  "exit": 0,
+  "command": "cargo clippy --locked -p xtask --all-targets --all-features -- -D warnings"
+}

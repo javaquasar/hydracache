@@ -1,0 +1,11 @@
+{
+  "protected_root": "/tmp/hc074-held-root-20261020.Scmc35",
+  "wrapper_exit": 1,
+  "postflight_exit": 0,
+  "export_root": "/tmp/hc074-held-export-20261020.5aKC9v",
+  "stage_shell_exit": 127,
+  "no_retry": true,
+  "wrapper_started_once": true,
+  "raw_files_verified": 17,
+  "stage_shell_extra_crlf": true
+}

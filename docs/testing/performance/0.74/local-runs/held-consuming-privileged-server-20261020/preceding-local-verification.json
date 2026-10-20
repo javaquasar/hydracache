@@ -1,0 +1,12 @@
+{
+  "evidence_verified": true,
+  "files": 108,
+  "metadata_mutations_refused": 32,
+  "actual_holder_observed": true,
+  "final_matrix_passed": false,
+  "full_joined_sigkill": false,
+  "real_role_image_cost": false,
+  "clock_actor_established": false,
+  "server": false,
+  "product": false
+}

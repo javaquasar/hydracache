@@ -1,0 +1,30 @@
+run.sh: OK
+inputs.sha256: OK
+join-194: OK
+join-188: OK
+bundle/build-log.jsonl: OK
+bundle/build-receipt-v1.json: OK
+bundle/Cargo.lock.observer: OK
+bundle/Cargo.lock.root: OK
+bundle/direct.json: OK
+bundle/embedded.json: OK
+bundle/resp2.json: OK
+bundle/resp3.json: OK
+bundle/timing-controls-074: OK
+ROOT=/tmp/hc074-held-root-20261020.Scmc35
+500:root:root /tmp/hc074-held-root-20261020.Scmc35/run.sh
+400:root:root /tmp/hc074-held-root-20261020.Scmc35/bundle/build-receipt-v1.json
+400:root:root /tmp/hc074-held-root-20261020.Scmc35/bundle/Cargo.lock.observer
+400:root:root /tmp/hc074-held-root-20261020.Scmc35/bundle/direct.json
+400:root:root /tmp/hc074-held-root-20261020.Scmc35/bundle/timing-controls-074
+400:root:root /tmp/hc074-held-root-20261020.Scmc35/bundle/resp3.json
+400:root:root /tmp/hc074-held-root-20261020.Scmc35/bundle/resp2.json
+400:root:root /tmp/hc074-held-root-20261020.Scmc35/bundle/Cargo.lock.root
+400:root:root /tmp/hc074-held-root-20261020.Scmc35/bundle/embedded.json
+400:root:root /tmp/hc074-held-root-20261020.Scmc35/bundle/build-log.jsonl
+500:root:root /tmp/hc074-held-root-20261020.Scmc35/join-188
+500:root:root /tmp/hc074-held-root-20261020.Scmc35/join-194
+500:root:root /tmp/hc074-held-root-20261020.Scmc35/inputs.sha256
+WRAPPER_PID=264392
+/bin/sh: 32: 
+: not found

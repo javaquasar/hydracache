@@ -1,0 +1,4 @@
+{
+  "exit": 1,
+  "command": "cargo fmt --all -- --check"
+}

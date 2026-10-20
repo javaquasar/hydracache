@@ -1,0 +1,4 @@
+{
+  "command": "cargo fmt -p xtask -p hydracache-long-run-supervisor-074 -- --check",
+  "exit": 0
+}
