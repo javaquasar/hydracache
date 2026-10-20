@@ -2,7 +2,7 @@ param([Parameter(Mandatory)][ValidateSet('194','188','windows','repository')][st
       [Parameter(Mandatory)][ValidatePattern('^[0-9a-f]{40}$')][string]$Source)
 $ErrorActionPreference='Stop'
 $taskRoot=(Resolve-Path (Join-Path $PSScriptRoot '../../../../../..')).Path
-$taskOutput=Join-Path $PSScriptRoot 'held-session'
+$taskOutput=Join-Path $PSScriptRoot 'affinity-smoke'
 if(-not (Test-Path -LiteralPath $taskOutput)){New-Item -ItemType Directory -Path $taskOutput | Out-Null}
 Push-Location $taskRoot
 try {
@@ -29,7 +29,7 @@ try {
     }
     Frozen
     $taskRecipe=(Get-FileHash $PSCommandPath -Algorithm SHA256).Hash.ToLowerInvariant()
-    $taskFlags=[ordered]@{typed_consuming_join=($Mode -in @('194','188'));kernel_role_bridge=($Mode -in @('194','188'));privileged_full_join=$false;late_original_join=$false;production_enrollment=$false;production_role_receipt_issued=$false;original_send=$false;server=$false;supervisor=$false;product=$false;full_joined_sigkill=$false;clock_changed=$false}
+    $taskFlags=[ordered]@{local_cpu_affinity=@(if($Mode -in @('194','188')){0});unrestricted_cpu_gate_passed=$false;typed_consuming_join=($Mode -in @('194','188'));kernel_role_bridge=($Mode -in @('194','188'));privileged_full_join=$false;late_original_join=$false;production_enrollment=$false;production_role_receipt_issued=$false;original_send=$false;server=$false;supervisor=$false;product=$false;full_joined_sigkill=$false;clock_changed=$false}
     $taskIdentity=[ordered]@{source=$Source;mode=$Mode;recipe=$taskRecipe}
     foreach($taskFlag in $taskFlags.Keys){$taskIdentity[$taskFlag]=$taskFlags[$taskFlag]}
     $taskIdentity | ConvertTo-Json | Set-Content (Join-Path $taskOutput "$Mode-identity.json") -Encoding utf8NoBOM
@@ -72,10 +72,10 @@ try {
             foreach($taskRound in 1..2){
                 $taskArgs=$taskSelection.filter+@('--nocapture','--test-threads=1')
                 if($Mode -ceq 'windows'){Run "$($taskSelection.name)-tests-$taskRound" $taskImage $taskArgs $taskSelection.count}
-                else{Run "$($taskSelection.name)-tests-$taskRound" 'wsl.exe' (@('-d','Ubuntu','--',$taskImage)+$taskArgs) $taskSelection.count}
+                else{Run "$($taskSelection.name)-tests-$taskRound" 'wsl.exe' (@('-d','Ubuntu','--','taskset','-c','0',$taskImage)+$taskArgs) $taskSelection.count}
                 if($taskSelection.name -ceq 'new'){
-                    Run "trust-$taskRound" 'wsl.exe' @('-d','Ubuntu','--',$taskImage,'held_runtime::tests::','--skip','consuming_held_bridge','--nocapture','--test-threads=1') 26
-                    Run "fixed-$taskRound" 'wsl.exe' @('-d','Ubuntu','--',$taskImage,'fixed_slice::tests::fixed_placement_','--nocapture','--test-threads=1') 5
+                    Run "trust-$taskRound" 'wsl.exe' @('-d','Ubuntu','--','taskset','-c','0',$taskImage,'held_runtime::tests::','--skip','consuming_held_bridge','--nocapture','--test-threads=1') 26
+                    Run "fixed-$taskRound" 'wsl.exe' @('-d','Ubuntu','--','taskset','-c','0',$taskImage,'fixed_slice::tests::fixed_placement_','--nocapture','--test-threads=1') 5
                 }
             }
             if((ImageHash) -cne $taskHash){throw 'Image changed'}

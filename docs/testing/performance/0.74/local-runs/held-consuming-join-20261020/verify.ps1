@@ -1,10 +1,12 @@
 param([Parameter(Mandatory)][ValidatePattern('^[0-9a-f]{40}$')][string]$Source)
 $ErrorActionPreference='Stop'
-$taskReceiptRoot=Join-Path $PSScriptRoot 'held-session'
+$taskReceiptRoot=Join-Path $PSScriptRoot 'affinity-smoke'
 $taskRecipe=(Get-FileHash (Join-Path $PSScriptRoot 'checks.ps1') -Algorithm SHA256).Hash.ToLowerInvariant()
-$taskFlags=@('privileged_full_join','late_original_join','production_enrollment','production_role_receipt_issued','original_send','server','supervisor','product','full_joined_sigkill','clock_changed')
+$taskFlags=@('unrestricted_cpu_gate_passed','privileged_full_join','late_original_join','production_enrollment','production_role_receipt_issued','original_send','server','supervisor','product','full_joined_sigkill','clock_changed')
 function ReadJson([string]$Name){$taskFolder=if($Name -in @('inventory.json','summary.json')){$PSScriptRoot}else{$taskReceiptRoot};Get-Content -Raw -LiteralPath (Join-Path $taskFolder $Name)|ConvertFrom-Json}
 function Scope($Value,[string]$Mode){
+    $taskExpected=if($Mode -in @('194','188')){'0'}else{''}
+    if($Value.local_cpu_affinity -isnot [System.Array] -or ($Value.local_cpu_affinity -join ',') -cne $taskExpected){throw 'Fixed-affinity-only scope'}
     foreach($taskFlag in $taskFlags){if($Value.$taskFlag -isnot [bool] -or $Value.$taskFlag -cne $false){throw "Scope upgrade: $taskFlag"}}
     foreach($taskFlag in @('typed_consuming_join','kernel_role_bridge')){if($Value.$taskFlag -isnot [bool] -or $Value.$taskFlag -cne ($Mode -in @('194','188'))){throw 'Consuming scope'}}
 }
@@ -76,7 +78,7 @@ $taskProbe=Get-Content -Raw (Join-Path $PSScriptRoot 'clock-probe-before.log')|C
 if($taskProbe.samples -ne 3000 -or @($taskProbe.backwards).Count -ne 0 -or $taskProbe.manual_clock_change -isnot [bool] -or $taskProbe.manual_clock_change -cne $false){throw 'Retained opening clock probe'}
 if(-not (Get-Content -Raw (Join-Path $PSScriptRoot 'stable-clock/194-new-tests-1.log')).Contains('site: "clock-order"')){throw 'Refusal despite local service stop missing'}
 $taskSession=Get-Content -Raw (Join-Path $PSScriptRoot 'held-clock-session-receipt.json')|ConvertFrom-Json
-if($taskSession.source -cne $Source -or $taskSession.complete -isnot [bool] -or $taskSession.complete -cne $true -or $taskSession.observer_exit -ne 0 -or $taskSession.test_phase_backwards -ne 0 -or $taskSession.single_wsl_process -isnot [bool] -or $taskSession.single_wsl_process -cne $true -or $taskSession.recipe -cne (Get-FileHash (Join-Path $PSScriptRoot 'clock-session.ps1') -Algorithm SHA256).Hash.ToLowerInvariant() -or $taskSession.observer_recipe -cne (Get-FileHash (Join-Path $PSScriptRoot 'clock-session.py') -Algorithm SHA256).Hash.ToLowerInvariant()){throw 'Held session binding'}
+if($taskSession.source -cne '542face4dccfab11fff073a7b1f896dbebcb254e' -or $taskSession.complete -isnot [bool] -or $taskSession.complete -cne $false -or $taskSession.observer_exit -ne 0 -or $taskSession.test_phase_backwards -ne 0 -or $taskSession.single_wsl_process -isnot [bool] -or $taskSession.single_wsl_process -cne $true -or $taskSession.recipe -cne (Get-FileHash (Join-Path $PSScriptRoot 'clock-session.ps1') -Algorithm SHA256).Hash.ToLowerInvariant() -or $taskSession.observer_recipe -cne (Get-FileHash (Join-Path $PSScriptRoot 'clock-session.py') -Algorithm SHA256).Hash.ToLowerInvariant()){throw 'Retained failed held session binding'}
 foreach($taskFlag in @('service_changed','manual_clock_changed','windows_clock_changed','server','supervisor')){if($taskSession.$taskFlag -isnot [bool] -or $taskSession.$taskFlag -cne $false){throw 'Held session scope'}}
 $taskEvents=@(Get-Content (Join-Path $PSScriptRoot 'held-clock-session.log')|ForEach-Object{$_|ConvertFrom-Json})
 foreach($taskEvent in @('start','ready','begin','finish')){if(@($taskEvents|Where-Object event -CEQ $taskEvent).Count -ne 1){throw 'Held session event selection'}}
@@ -86,7 +88,7 @@ foreach($taskMode in @('194','188')){foreach($taskRound in 1..2){$taskRaw=Get-Co
 if(-not (Get-Content -Raw (Join-Path $PSScriptRoot 'missing-module-red.log')).Contains('diagnostic_held_role_provenance.rs')){throw 'Missing preimplementation refusal'}
 # In-memory metadata controls never modify the sealed packet.
 $taskNegative=0;$taskBase=ReadJson 'windows-receipt.json'
-foreach($taskField in (@('source','mode','recipe','passed','new_tests','old_tests','docs','rounds','typed_consuming_join','kernel_role_bridge')+$taskFlags)){
+foreach($taskField in (@('source','mode','recipe','passed','new_tests','old_tests','docs','rounds','typed_consuming_join','kernel_role_bridge','local_cpu_affinity')+$taskFlags)){
     foreach($taskKind in @('change','missing')){
         $taskBad=$taskBase|ConvertTo-Json|ConvertFrom-Json
         if($taskKind -ceq 'missing'){$taskBad.PSObject.Properties.Remove($taskField)}
@@ -107,4 +109,4 @@ foreach($taskField in @('native_exit','empty_output')){
         if(-not $taskRefused){throw "Accepted silent format mutation: $taskField/$taskKind"};$taskNegative++
     }
 }
-[ordered]@{verified=$true;files=$taskMembers.Count;receipt_metadata_mutations_refused=$taskNegative;inventory_sha256=(Get-FileHash $taskInventoryPath -Algorithm SHA256).Hash.ToLowerInvariant();typed_consuming_join=$true;kernel_role_bridge=$true;privileged_full_join=$false;late_original_join=$false;server=$false;product=$false}|ConvertTo-Json
+[ordered]@{verified=$true;files=$taskMembers.Count;receipt_metadata_mutations_refused=$taskNegative;inventory_sha256=(Get-FileHash $taskInventoryPath -Algorithm SHA256).Hash.ToLowerInvariant();fixed_affinity_smoke=$true;unrestricted_cpu_gate_passed=$false;typed_consuming_join=$true;kernel_role_bridge=$true;privileged_full_join=$false;late_original_join=$false;server=$false;product=$false}|ConvertTo-Json
