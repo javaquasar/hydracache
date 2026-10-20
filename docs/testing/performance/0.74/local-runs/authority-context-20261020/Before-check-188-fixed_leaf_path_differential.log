@@ -1,0 +1,8 @@
+    Finished `release` profile [optimized] target(s) in 1.76s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-188-check/release/deps/hydracache_long_run_supervisor_074-1dbb29096ebc6338)
+
+running 1 test
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::fixed_leaf_path_differential_identity_flags_and_unknown_names ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1407 filtered out; finished in 0.00s
+

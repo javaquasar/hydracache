@@ -1,0 +1,25 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 7.26s
+     Running tests\authority_context_074.rs (target\debug\deps\authority_context_074-6287c06552dbfff4.exe)
+
+running 2 tests
+test authority_context_candidate_matches_contract_and_frozen_prefix_order ... FAILED
+test authority_context_restores_preceding_sources_without_changing_key_encoder ... ok
+
+failures:
+
+---- authority_context_candidate_matches_contract_and_frozen_prefix_order stdout ----
+
+thread 'authority_context_candidate_matches_contract_and_frozen_prefix_order' (40544) panicked at crates\xtask\tests\authority_context_074.rs:81:5:
+assertion failed: reference.contains(&format!("{ref_prefix}{}",
+            old.replace("self.", "record.")))
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    authority_context_candidate_matches_contract_and_frozen_prefix_order
+
+test result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.25s
+
+error: test failed, to rerun pass `-p xtask --test authority_context_074`

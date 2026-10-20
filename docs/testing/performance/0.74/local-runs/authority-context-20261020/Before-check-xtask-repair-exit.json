@@ -1,0 +1,28 @@
+{
+  "stage": "Before",
+  "source": "c1227b58d811ca1f59f2d683c67891664d047587",
+  "recipe_sha256": "6407438677322f537d6174071a7d500f60d6f0f7873f40d30e5b338a8af4399f",
+  "steps": [
+    {
+      "sha256": "071efac884f6adf9a807af739c5e061a3f7c5fef7a413d3f1642d498328fe2b8",
+      "name": "focused",
+      "log": "Before-check-xtask-repair-focused.log",
+      "exit": 0
+    },
+    {
+      "sha256": "f9cf69f34eb3c97dd58ed2c4f855b2e33686e7c6d85e8e16677a4b7d73e782ae",
+      "name": "check",
+      "log": "Before-check-xtask-repair-check.log",
+      "exit": 0
+    },
+    {
+      "sha256": "f2724b94c83245ef0936ca9985d23840406a0515406a2f8f5e6fb9a4e6a9fbd1",
+      "name": "lint",
+      "log": "Before-check-xtask-repair-lint.log",
+      "exit": 0
+    }
+  ],
+  "failure": null,
+  "server": false,
+  "product": false
+}

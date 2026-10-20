@@ -1,0 +1,12 @@
+{
+  "stage": "Before focused xtask source control",
+  "native_exit": 101,
+  "retained_source": "xtask-canary-refused.rs",
+  "retained_receipt": "Before-check-xtask-exit.json",
+  "cause": "The new source canary expected method-body indentation in the free reference helper. The helper already preserves the runtime prefix and context expression exactly at its four-space shallower scope.",
+  "repair": "Account for the exact four-space indentation difference in this new canary. Keep all old assertions, helper/runtime code and failed logs unchanged; run separate repair checks.",
+  "measurement_attempted": false,
+  "runtime_candidate_applied": false,
+  "server": false,
+  "product": false
+}
