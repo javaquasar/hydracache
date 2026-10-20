@@ -9,8 +9,10 @@ function Facts{
     $taskLanes=@()
     foreach($taskLane in @('194','188')){
         $taskReceipt=Read-Json "profile-$taskLane-exit.json"
+        Require ($taskReceipt.source -cmatch '^[0-9a-f]{40}$' -and $taskReceipt.image_sha256 -cmatch '^[0-9a-f]{64}$' -and $taskReceipt.lane -ceq $taskLane) 'Invalid source/image/lane identity'
         Require ($taskReceipt.exit -eq 0 -and $taskReceipt.image_sha256 -ceq $taskReceipt.image_after_sha256) 'Failed profile or changed image'
-        Require (-not $taskReceipt.server -and -not $taskReceipt.product -and -not $taskReceipt.native_gate_open -and -not $taskReceipt.runtime_candidate) 'Scope differs'
+        foreach($taskFlag in @('server','product','native_gate_open','runtime_candidate')){Require ($taskReceipt.$taskFlag -is [bool] -and -not $taskReceipt.$taskFlag) 'Scope differs or is missing'}
+        Require ($taskReceipt.inputs.Count -eq 5 -and @($taskReceipt.inputs.path|Select-Object -Unique).Count -eq 5) 'Input set differs'
         foreach($taskInput in $taskReceipt.inputs){Require ((Hash (Join-Path $taskRepo $taskInput.path)) -ceq $taskInput.sha256) "Input changed: $($taskInput.path)"}
         Require ($taskReceipt.recipe_sha256 -ceq (Hash (Join-Path $PSScriptRoot 'profile.ps1'))) 'Profile recipe drift'
         $taskAlloc=@();$taskIo=@();$taskOrigins=@()
@@ -43,6 +45,8 @@ function Facts{
     Require ($taskLanes[0].source -ceq $taskLanes[1].source) 'Different sources'
     foreach($taskLane in @('194','188','xtask','contracts','repository')){
         $taskCheck=Read-Json "check-$taskLane-exit.json"
+        $taskStepCount=switch($taskLane){'194'{12};'188'{12};'xtask'{3};'contracts'{1};'repository'{4}}
+        Require ($taskCheck.steps.Count -eq $taskStepCount -and @($taskCheck.steps.name|Select-Object -Unique).Count -eq $taskStepCount) 'Check steps missing or duplicated'
         Require (-not $taskCheck.failure -and @($taskCheck.steps|Where-Object exit -ne 0).Count -eq 0) 'Checks failed'
         Require ($taskCheck.recipe_sha256 -ceq (Hash (Join-Path $PSScriptRoot 'check.ps1'))) 'Check recipe drift'
         foreach($taskStep in $taskCheck.steps){Require ((Hash (Join-Path $PSScriptRoot $taskStep.log)) -ceq $taskStep.sha256) 'Check log drift'}
