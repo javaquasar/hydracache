@@ -37,3 +37,15 @@ the old registry, refusing missing/duplicate hooks and unrelated drift. Run the
 existing nine fixed-slice/placement ordinary controls, new fixture, strict lint,
 scoped formatting, documentation, registry and local performance contract checks.
 Do not use a zero-case invocation as success or reseal earlier evidence packets.
+
+## Thread namespace fixture correction
+
+The first GNU child refuses before its bind mount: unshare succeeds on the Rust
+test thread, but /proc/self/ns/mnt describes the thread-group leader rather than
+that thread. The original parent cleanup removes the exact temporary directories.
+Replace only the new fixture's namespace observations with
+/proc/thread-self/ns/mnt. Keep the inequality before any mount and all host
+anchor, refusal and cleanup assertions. Retain the first failed cohort rather
+than counting it as a positive pin. Interrupt the separately owned source audit
+before the repair and rerun it against the selected corrected source; no partial
+audit is a completed gate. This correction changes no original live predicate.

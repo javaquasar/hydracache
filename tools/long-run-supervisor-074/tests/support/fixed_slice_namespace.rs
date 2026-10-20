@@ -88,9 +88,12 @@ impl Drop for Fixture {
     }
 }
 fn private_mount(source: &Path) {
-    let original = std::fs::read_link("/proc/self/ns/mnt").unwrap();
+    let original = std::fs::read_link("/proc/thread-self/ns/mnt").unwrap();
     assert_eq!(unsafe { libc::unshare(libc::CLONE_NEWNS) }, 0);
-    assert_ne!(std::fs::read_link("/proc/self/ns/mnt").unwrap(), original);
+    assert_ne!(
+        std::fs::read_link("/proc/thread-self/ns/mnt").unwrap(),
+        original
+    );
     assert_eq!(
         unsafe {
             libc::mount(
@@ -222,7 +225,7 @@ fn privileged_fixed_slice_namespace_matrix() {
         );
         return;
     }
-    let original_namespace = std::fs::read_link("/proc/self/ns/mnt").unwrap();
+    let original_namespace = std::fs::read_link("/proc/thread-self/ns/mnt").unwrap();
     let original_anchors = identities(&anchors().unwrap()).unwrap();
     let original_system = stamp(&File::open(format!("{MOUNT}/system.slice")).unwrap()).unwrap();
     for (case, label) in CASES.iter().enumerate() {
@@ -263,7 +266,7 @@ fn privileged_fixed_slice_namespace_matrix() {
             "HC074-FIXED-NAMESPACE case={label} positive_pin=true checked=true"
         )));
         assert_eq!(
-            std::fs::read_link("/proc/self/ns/mnt").unwrap(),
+            std::fs::read_link("/proc/thread-self/ns/mnt").unwrap(),
             original_namespace
         );
         assert_eq!(identities(&anchors().unwrap()).unwrap(), original_anchors);

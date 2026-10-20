@@ -203,5 +203,7 @@ fn namespace_fixture_is_test_only_private_mount_and_not_manager_authority() {
         assert!(!raw.contains(forbidden), "{forbidden}");
     }
     assert_eq!(raw.matches("#[ignore =").count(), 1);
+    assert_eq!(raw.matches("/proc/thread-self/ns/mnt").count(), 4);
+    assert!(!raw.contains("/proc/self/ns/mnt"));
     assert!(namespace::GATE.contains("ship_mandatory = false"));
 }
