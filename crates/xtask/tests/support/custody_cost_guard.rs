@@ -1,7 +1,7 @@
 //! Exact test-only observation hooks, never a validator-body exclusion.
 pub(crate) const HOOKS: [(&str, &str); 4] = [
     ("tools/long-run-supervisor-074/src/diagnostic_validation_trace.rs", "\n#[cfg(target_os = \"linux\")]\n#[path = \"../tests/support/custody_boundaries.rs\"]\npub(crate) mod custody_boundaries;\n"),
-    ("tools/long-run-supervisor-074/src/diagnostic_original_enrollment_frame_build.rs", "            #[cfg(test)]\n            crate::diagnostic_ipc::validation_trace::custody_boundaries::mark(\"before-first-custody\");\n"),
+    ("tools/long-run-supervisor-074/src/diagnostic_original_enrollment_frame_build.rs", "            #[cfg(test)]\n            crate::diagnostic_ipc::validation_trace::custody_boundaries::mark(\n                \"before-first-custody\",\n            );\n"),
     ("tools/long-run-supervisor-074/src/diagnostic_original_enrollment_frame_build.rs", "            #[cfg(test)]\n            crate::diagnostic_ipc::validation_trace::custody_boundaries::mark(\"closing-enter\");\n"),
     ("tools/long-run-supervisor-074/src/diagnostic_original_enrollment_frame_build.rs", "            #[cfg(test)]\n            crate::diagnostic_ipc::validation_trace::custody_boundaries::mark(\"closing-exit\");\n"),
 ];
