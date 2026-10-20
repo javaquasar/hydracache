@@ -499,7 +499,10 @@ impl FixtureAuthorityRegistry {
     }
 }
 fn name(revision: usize, suffix: &str) -> String {
-    format!("{revision:016x}.{suffix}")
+    use std::fmt::Write as _;
+    let mut output = String::with_capacity(17 + suffix.len());
+    write!(&mut output, "{revision:016x}.{suffix}").expect("String formatting cannot fail");
+    output
 }
 fn marker_bytes(record: &[u8]) -> Vec<u8> {
     format!("{}\n", sha256_hex(record)).into_bytes()
