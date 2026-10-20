@@ -935,3 +935,24 @@ IDs; no native live matrix is retried or time refusal removed. Fixed production
 ancestry, full ActiveAuthority latency, real original execution and all lifecycle,
 writer retirement, trust and reconnect gates remain separate. The next local
 hypotheses are temporary context/name/inventory ownership, one at a time.
+
+## Authority binding context ownership candidate
+
+The [paired local control](local-runs/authority-context-20261020/README.md)
+accepts only direct ordered field equality inside `Record::bind`, runtime
+`b8e02d6a`. Issuer/policy/epoch prefix and every original context comparison
+remain; parser/history context construction is not part of this candidate.
+Both compiler lanes conserve exactly two fewer allocations and 68 fewer
+requested bytes per complete fixture inspect at one and seven generations,
+with unchanged reallocations, reads and fresh kernel observations. Prefix
+issuer/epoch refusals retain their short circuits and cost. All 367 old/new
+contracts, before/after authority suites, checks and strict lint pass.
+
+These bounded requests do not establish full ActiveAuthority time, stable
+clocks or native preparation within its unchanged admission window. Distinct
+Before/After WSL boots and old live clock-order refusals remain explicit.
+No native rerun, server installation, supervisor operation or product workload
+occurs. Next local attribution may isolate remaining parse/context, name or
+inventory ownership, one hypothesis at a time. Authenticated original delivery,
+all-writer cessation, later cells, joined SIGKILL/lost-ACK, reconnect and real
+enrollment remain independent closed gates, not consequences of this saving.

@@ -15430,3 +15430,68 @@ ancestry and the full ActiveAuthority wrapper remain outside the fixture.
 No cache API or full-frame speedup is claimed, and no server, installation,
 supervisor or clock/service operation occurs. Further temporary context,
 name and inventory ownership must be tested as separate hypotheses.
+
+## Authority context equality without temporary ownership
+
+The [next preregistered control](../testing/performance/0.74/authority-context-plan-20261020.md)
+starts after the issuer-key encoder substitution. `Record::bind` constructs an
+owned `AssertedWorkerHost` only to compare it with the supplied host assertion.
+That construction clones machine and boot strings. The candidate compares the
+four existing fields directly in the derived equality order: machine, boot,
+user namespace and mount namespace. Issuer, policy digest and epoch remain the
+prefix, including their original short circuits. The `context()` method itself,
+its parser/history callers and the preceding encoder are not changed.
+
+Before changing runtime, a frozen owned-context reference and a proposed arm
+are compared with actual binding. A seeded differential covers 256 contexts
+with 17 healthy, individual-field and simultaneous pin/context cases, including
+empty or malformed asserted host fields. Each arm must preserve the exact
+decision and Binding refusal class; canonical record bytes and digests remain
+unchanged. Prefix refusal fixtures deliberately also contain a wrong context,
+so a correct early issuer/epoch rejection must not acquire its cloning cost.
+
+The allocation experiment uses four binding cases, 32 warmups and three batches
+of 1024 operations per arm on each compiler, rotating arm order. The unchanged
+eight-case inspect/Origin/leaf control then tests whether the isolated saving
+survives complete authority inspection at one and seven generations. Captures
+of Rust requests, kernel observations and I/O requests do not overlap. No
+temporary journal names, inventory structures, live result or observation
+frequency belongs to this candidate.
+
+All three samples on GNU 1.94 and MSRV 1.88 agree after the isolated runtime
+substitution:
+
+| Operation | Allocations Before to After | Reallocations Before to After | Requested bytes Before to After |
+| --- | ---: | ---: | ---: |
+| Healthy or context-mismatch complete binding | 3 to 1 | 0 to 0 | 132 to 64 |
+| Issuer/epoch refusal with a wrong host | 1 to 1 | 0 to 0 | 64 to 64 |
+| Complete fixture inspect with 1 generation | 37 to 35 | 8 to 8 | 2710 to 2642 |
+| Complete fixture inspect with 7 generations | 153 to 151 | 56 to 56 | 12988 to 12920 |
+
+The reduction is exactly two allocations and 68 requested bytes per complete
+inspect at both depths, matching the isolated binding. Zero reallocation
+reduction is the expected result: cloning the two existing strings does not
+grow them. Prefix refusals retain their short circuit and unchanged cost.
+Journal reads stay four and 28 per operation; all six other leaf cases and
+fresh kernel counts remain equal. This is a conserved representation saving,
+not a saving achieved by omitting an inventory, metadata or live check. The
+candidate is locally accepted; remaining parser/context and name/inventory
+ownership have not been changed or credited with a gain.
+
+Both stages pass 189 authority tests per compiler, with 11 manual/privileged
+tests ignored, plus focused kernel/trust checks, all-target check and strict
+all-feature clippy. All 367 old/new source contracts and repository checks pass.
+The first new source-canary test incorrectly expects method indentation inside
+a free reference helper; its failure is retained, and only that new canary is
+corrected before any measurement. No old assertion or measured cohort is
+replaced. Committed reference/workload/qualification blobs and normalized
+hashes are required to match across stages.
+
+Before and After again report different WSL boots. Request measurements cannot
+prove continuous identity, stable time, retained memory, CPU or full-frame
+latency; the fixed production ancestry and full ActiveAuthority wrapper are
+still absent. No cache API gain or server readiness is claimed. Live observation
+frequency, original 300/60/10 bounds and all independent execution, retirement,
+lifecycle, reconnect and trust gates stay unchanged. There is no server,
+installation, supervisor or clock/service operation, and the old native gate
+remains closed.

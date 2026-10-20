@@ -5000,3 +5000,32 @@ inventory, SHA256
 `6d7cadf2d084320d4d68c5fe73a44e6fe964003bb8e6e53d6b8c1af0905413f0`.
 Eight earlier packets and ten summary mutations verify integrity/conservation
 without opening native/server/product gates.
+
+## Authority binding context ownership reduction
+
+The [isolated context control](local-runs/authority-context-20261020/README.md)
+accepts runtime `b8e02d6a`: direct field equality removes two temporary String
+clones from `Record::bind`. Issuer/policy/epoch prefix and machine/boot/namespace
+order remain; `context()` and parser/history callers are unchanged. A seeded
+256-context, 17-case differential preserves decisions, Binding errors and
+canonical bytes/digests. Prefix refusals also carry wrong host assertions.
+
+Three 1024-operation samples on each compiler change complete binding from
+3/0/132 to 1/0/64 allocations/reallocations/requested bytes. Issuer/epoch
+refusals remain 1/0/64. Complete fixture inspect changes 37/8/2710 to 35/8/2642
+at one generation and 153/56/12988 to 151/56/12920 at seven. The 2/0/68
+reduction conserves exactly; reads remain 4/28 and all other leaf/kernel counts
+remain equal. This is request reduction, not full ActiveAuthority/API latency.
+
+Before/after authority suites pass 189 tests per lane, plus focused checks,
+strict lint, all 367 source/contracts and repository checks. The initial new
+source-canary indentation failure is retained separately from its exact repair,
+before measurements. Before/After boot IDs differ; no continuity, time repair
+or native/server admission is claimed. All live checks and 300/60/10 remain;
+no push, server, clock/service, supervisor or product operation occurs.
+
+Evidence commit `b3446db5e24e0439be6be868774b406b72839b9d` seals 106 members
+plus inventory, SHA256
+`25796efbc05cbcca3a7c646d70624774979c84fb16c4beb84746a4c0cc70a01f`.
+Nine prior packets and ten summary scope mutations verify integrity, not live
+admission or a time/performance claim.

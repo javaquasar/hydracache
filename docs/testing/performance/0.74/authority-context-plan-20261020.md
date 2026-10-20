@@ -44,3 +44,39 @@ by a successful allocation control.
 All work is local. Preserve all live checks, their frequency and 300/60/10
 deadlines. No server, clock/service control, installation, supervisor operation,
 product workload, full qualification or push through the red live gate.
+
+## Local outcome
+
+The one-expression runtime substitution is `b8e02d6a`. Frozen Before source is
+`acdcdc30bbd37641ac06440d0aa2b9ec75908711`; After source is
+`b8e02d6aee043e6d39d1719d8dcc9f44706aff03`. The
+[paired packet](local-runs/authority-context-20261020/README.md) retains three
+samples of each binding case and unchanged eight-case inspect control on both
+compilers, without retrying a measured cohort.
+
+Healthy/context-mismatch binding requests change from 3 allocations, zero
+reallocations and 132 bytes to 1/0/64. Issuer/epoch prefix refusals remain 1/0/64,
+even with a wrong host. Complete fixture inspect changes from 37/8/2710 to
+35/8/2642 at one generation and 153/56/12988 to 151/56/12920 at seven. The
+2/0/68 reduction conserves in every sample; reads stay 4/28 and all six other
+leaf cases and fresh kernel counts remain equal. The candidate is locally
+accepted for requests only, not CPU, retained memory or full-frame latency.
+
+Both stages pass 189 authority tests on each compiler (11 manual/privileged
+tests ignored), focused controls, all-target checks and strict all-feature
+clippy. All 367 historical/current contracts and repository checks pass. The
+initial new source-canary indentation refusal is retained with its separate
+repair; it precedes any measurement and changes no prior assertion.
+
+Before/After report different WSL boot IDs; neither live continuity nor the
+old clock-order/native gate is repaired. The next representation hypothesis
+must isolate remaining parse/context, name or inventory ownership, one at a
+time, before another substitution. No live check, its frequency, 300/60/10
+deadline, qualification identity or independent execution/trust/lifecycle gate
+changes. No push, server or clock/service operation occurs.
+
+Evidence commit is `b3446db5e24e0439be6be868774b406b72839b9d`, with 106
+members plus inventory SHA256
+`25796efbc05cbcca3a7c646d70624774979c84fb16c4beb84746a4c0cc70a01f`.
+Nine earlier packets rehash and ten summary scope mutations refuse. The sealed
+packet is immutable; further hypotheses require a separate preregistered packet.
