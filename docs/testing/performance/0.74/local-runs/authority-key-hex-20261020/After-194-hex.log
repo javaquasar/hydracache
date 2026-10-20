@@ -1,0 +1,9 @@
+
+running 1 test
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_hex_alloc::authority_hex_allocation_attribution ... HC074-AUTHORITY-HEX {"actual":{"allocations":1024,"reallocations":0,"requested_bytes":65536},"iterations":1024,"order":[0,1,2],"product":false,"proposed":{"allocations":1024,"reallocations":0,"requested_bytes":65536},"reference":{"allocations":32768,"reallocations":3072,"requested_bytes":376832},"rust_requests_only":true,"sample":0,"server":false,"timing_claim":false,"warmups":32}
+HC074-AUTHORITY-HEX {"actual":{"allocations":1024,"reallocations":0,"requested_bytes":65536},"iterations":1024,"order":[1,2,0],"product":false,"proposed":{"allocations":1024,"reallocations":0,"requested_bytes":65536},"reference":{"allocations":32768,"reallocations":3072,"requested_bytes":376832},"rust_requests_only":true,"sample":1,"server":false,"timing_claim":false,"warmups":32}
+HC074-AUTHORITY-HEX {"actual":{"allocations":1024,"reallocations":0,"requested_bytes":65536},"iterations":1024,"order":[2,0,1],"product":false,"proposed":{"allocations":1024,"reallocations":0,"requested_bytes":65536},"reference":{"allocations":32768,"reallocations":3072,"requested_bytes":376832},"rust_requests_only":true,"sample":2,"server":false,"timing_claim":false,"warmups":32}
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1404 filtered out; finished in 0.00s
+

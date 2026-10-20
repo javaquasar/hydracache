@@ -1,0 +1,28 @@
+{
+  "stage": "After",
+  "source": "fb247d9d1d7073b2eea88eddbe98e18f45246c17",
+  "recipe_sha256": "6b732e286f7db1a94ae6a64075919aabe795b4262e976793bbcb893ba1f4564e",
+  "steps": [
+    {
+      "exit": 0,
+      "sha256": "e5ba4ce6e8795ad20eb68bd0cfc7bb3ef5882cc7fdac062c4c55c4cc7167ad44",
+      "name": "focused",
+      "log": "After-check-xtask-focused.log"
+    },
+    {
+      "exit": 0,
+      "sha256": "e2e7289e07eb485fa3fc88ec87edbc6d947f970ce1f552f1a912d0ee4c169c80",
+      "name": "check",
+      "log": "After-check-xtask-check.log"
+    },
+    {
+      "exit": 0,
+      "sha256": "7f5f0abb090a7112dac78b9b8b9e35bcacb5d80af751f961892d3c6292c32e57",
+      "name": "lint",
+      "log": "After-check-xtask-lint.log"
+    }
+  ],
+  "failure": null,
+  "server": false,
+  "product": false
+}

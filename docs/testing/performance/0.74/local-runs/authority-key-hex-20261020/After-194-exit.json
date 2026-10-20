@@ -1,0 +1,54 @@
+{
+  "stage": "After",
+  "lane": "194",
+  "source": "33ddeff958a1c6ee3712def385913bcf861b55f4",
+  "image": "/home/artur/.cache/hydracache-074-194-check/release/deps/hydracache_long_run_supervisor_074-c3c253bf49d23fef",
+  "image_sha256": "75f7a17c4eaebf63dc6c4bf6671d0acbdd1b64df31d324b618eb963332ed4b53",
+  "image_after_sha256": "75f7a17c4eaebf63dc6c4bf6671d0acbdd1b64df31d324b618eb963332ed4b53",
+  "inputs": [
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_authority_registry.rs",
+      "normalized_sha256": "da8ace55061ad19546685edc0c8c48ea0d28691592f9128c5c78e0a594a7560f",
+      "blob": "5b15130458f1648257641f9c07761914e1c5a051"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/tests/support/authority_hex_controls.rs",
+      "normalized_sha256": "ddbf5d361e585c551b23e5a8c515559fe98e25dd455225288ecb2a467a7ed12d",
+      "blob": "8f88f21c7d70c99765ebb89b7b3144ad2f94227f"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/tests/support/authority_hex_alloc.rs",
+      "normalized_sha256": "cda4a6ff5d70f41401bb1511939d818333bd2fac7eaf3f86dce6e4f23fc47b43",
+      "blob": "c835a3e732f80e73d14d77324dad292830437b40"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/tests/support/validation_leaf_requests.rs",
+      "normalized_sha256": "29d46c2111289fa21793a6b578eef1c25bcb84aea5193dba03670ac7c8c9ff69",
+      "blob": "df80e253f10d4520d765c4af3d70eb9d2cbdfe8a"
+    },
+    {
+      "path": "docs/testing/performance/0.74/authority-key-hex-contract.toml",
+      "normalized_sha256": "b0a88c47b7becf741534a6e32d93e1d56dd5a60f403ee82e1fdb9a37090376fc",
+      "blob": "e7c58f1c62f96062364195f117b46e11ba6f4ab9"
+    },
+    {
+      "path": "docs/testing/performance/0.74/qualification-manifest.toml",
+      "normalized_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+      "blob": "1ba704159a59c16455fd0c9f4f15f9fda66ca9b1"
+    }
+  ],
+  "steps": [
+    {
+      "exit": 0,
+      "name": "hex"
+    },
+    {
+      "exit": 0,
+      "name": "inspect"
+    }
+  ],
+  "recipe_sha256": "b35bf948ef376ea11ce8ea03713c978b2c7ce96ba7c932c027907c7e1e8d033c",
+  "server": false,
+  "product": false,
+  "native_gate_open": false
+}
