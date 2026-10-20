@@ -1,5 +1,4 @@
 //! Exact reversible ownership-only substitution; never a live-check waiver.
-
 #[path = "performance_contract_074_held_placement.rs"]
 mod held_placement;
 #[path = "document_scratch_guard.rs"]

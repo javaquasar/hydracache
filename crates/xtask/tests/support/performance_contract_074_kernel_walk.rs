@@ -1,5 +1,4 @@
 //! Exact test-only additions, never removal or relocation of an old guard.
-
 #[path = "performance_contract_074_boot_buffer.rs"]
 mod boot_buffer;
 #[path = "document_scratch_guard.rs"]
