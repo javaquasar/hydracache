@@ -1,4 +1,6 @@
 //! Reversible literal status calls and test hooks, never a whole-body waiver.
+#[path = "pid_path_guard.rs"]
+pub(crate) mod pid_path;
 pub(crate) const HOOKS: [(&str, &str); 2] = [
     ("tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs", "\n#[cfg(test)]\n#[path = \"../tests/support/fresh_kernel_cost.rs\"]\nmod fresh_kernel_cost;\n"),
     ("tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs", "\n#[path = \"../tests/support/fresh_status_alloc.rs\"]\nmod fresh_status;\n"),
@@ -9,7 +11,7 @@ pub(crate) const CHANGES: [(&str, &str, &str); 3] = [
     ("tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs", "let named = origin::fixed_child(&self.directory, c\"status\", false)?;", "let named = origin::child(&self.directory, \"status\", false)?;"),
 ];
 pub(crate) fn normalize(path: &str, raw: &str) -> String {
-    let mut raw = raw.to_owned();
+    let mut raw = pid_path::normalize(path, raw);
     for (file, exact) in HOOKS {
         if path == file {
             assert_eq!(
