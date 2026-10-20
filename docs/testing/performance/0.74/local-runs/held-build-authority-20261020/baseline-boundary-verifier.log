@@ -1,0 +1,9 @@
+{
+  "verified": true,
+  "files": 25,
+  "inventory_sha256": "08cf6c8310a31edcd641ad7603207d00d23135d7fb0665e14b279bd52b8c31fa",
+  "topology_approved": false,
+  "held_artifact_admission": false,
+  "server": false,
+  "product": false
+}

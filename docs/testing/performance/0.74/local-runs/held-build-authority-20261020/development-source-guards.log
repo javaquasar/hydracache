@@ -1,0 +1,93 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+error[E0603]: function `only_new_source` is private
+   --> crates\xtask\tests\diagnostic_artifact_fixture_074.rs:233:33
+    |
+233 |     use namespace::held_build::{only_new_source, NEW_SOURCE};
+    |                                 ^^^^^^^^^^^^^^^ private function
+    |
+note: the function `only_new_source` is defined here
+   --> crates\xtask\tests\support\held_build_guard.rs:56:1
+    |
+ 56 | pub(super) fn only_new_source(old: &str, current: &str) -> bool {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0603]: constant `NEW_SOURCE` is private
+   --> crates\xtask\tests\diagnostic_artifact_fixture_074.rs:233:50
+    |
+233 |     use namespace::held_build::{only_new_source, NEW_SOURCE};
+    |                                                  ^^^^^^^^^^ private constant
+    |
+note: the constant `NEW_SOURCE` is defined here
+   --> crates\xtask\tests\support\held_build_guard.rs:3:1
+    |
+  3 | pub(super) const NEW_SOURCE: &str = "tools/long-run-supervisor-074/src/diagnostic_held_build.rs";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0603]: function `only_new_source` is private
+  --> crates\xtask\tests\diagnostic_artifact_fixture_074.rs:91:36
+   |
+91 |     assert!(namespace::held_build::only_new_source(&old, &current));
+   |                                    ^^^^^^^^^^^^^^^ private function
+   |
+note: the function `only_new_source` is defined here
+  --> crates\xtask\tests\support\held_build_guard.rs:56:1
+   |
+56 | pub(super) fn only_new_source(old: &str, current: &str) -> bool {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0603]: constant `BUILDER` is private
+   --> crates\xtask\tests\diagnostic_artifact_fixture_074.rs:214:33
+    |
+214 |         (namespace::held_build::BUILDER, namespace::held_build::HOOK),
+    |                                 ^^^^^^^ private constant
+    |
+note: the constant `BUILDER` is defined here
+   --> crates\xtask\tests\support\held_build_guard.rs:2:1
+    |
+  2 | pub(super) const BUILDER: &str = "tools/long-run-supervisor-074/src/diagnostic_builder.rs";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0603]: constant `HOOK` is private
+   --> crates\xtask\tests\diagnostic_artifact_fixture_074.rs:214:65
+    |
+214 |         (namespace::held_build::BUILDER, namespace::held_build::HOOK),
+    |                                                                 ^^^^ private constant
+    |
+note: the constant `HOOK` is defined here
+   --> crates\xtask\tests\support\held_build_guard.rs:4:1
+    |
+  4 | pub(super) const HOOK: &str = "\n#[path = \"diagnostic_held_build.rs\"]\npub mod held_build;\n";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0603]: constant `COMPAT` is private
+   --> crates\xtask\tests\diagnostic_artifact_fixture_074.rs:215:33
+    |
+215 |         (namespace::held_build::COMPAT, namespace::held_build::BLOCK),
+    |                                 ^^^^^^ private constant
+    |
+note: the constant `COMPAT` is defined here
+   --> crates\xtask\tests\support\held_build_guard.rs:5:1
+    |
+  5 | pub(super) const COMPAT: &str = "docs/COMPAT.md";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0603]: constant `BLOCK` is private
+   --> crates\xtask\tests\diagnostic_artifact_fixture_074.rs:215:64
+    |
+215 |         (namespace::held_build::COMPAT, namespace::held_build::BLOCK),
+    |                                                                ^^^^^ private constant
+    |
+note: the constant `BLOCK` is defined here
+   --> crates\xtask\tests\support\held_build_guard.rs:6:1
+    |
+  6 | / pub(super) const BLOCK: &str = r##"
+  7 | | <!-- BEGIN HELD BUILD AUTHORITY V1 -->
+  8 | | ## Purpose-bound held runtime build v1
+...   |
+ 41 | | <!-- END HELD BUILD AUTHORITY V1 -->
+ 42 | | "##;
+    | |____^
+
+For more information about this error, try `rustc --explain E0603`.
+error: could not compile `xtask` (test "diagnostic_artifact_fixture_074") due to 7 previous errors

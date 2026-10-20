@@ -1,0 +1,30 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 16.65s
+   Doc-tests hydracache_long_run_supervisor_074
+
+running 2 tests
+error[E0599]: no method named `unlock` found for struct `VerifiedBuild` in the current scope
+   --> tools/long-run-supervisor-074/src/diagnostic_held_build.rs:279:48
+    |
+279 | ...ld.unlock(); }
+    |       ^^^^^^ method not found in `VerifiedBuild`
+    |
+    = note: the full name for the type has been written to '/tmp/rustdoctestVsCnAA/rust_out.long-type-6985934988944939158.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0599`.
+test tools/long-run-supervisor-074/src/diagnostic_held_build.rs - diagnostic_builder::held_build::VerifiedBuild (line 276) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_held_build.rs - diagnostic_builder::held_build::CheckedPolicy (line 66) - compile fail ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 247 filtered out; finished in 0.19s
+
+error[E0599]: no method named `start` found for struct `CheckedPolicy` in the current scope
+  --> tools/long-run-supervisor-074/src/diagnostic_held_build.rs:69:49
+   |
+69 | ...cy.start(); }
+   |       ^^^^^ method not found in `CheckedPolicy`
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0599`.

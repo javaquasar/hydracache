@@ -1,0 +1,23 @@
+{
+  "source": "48854c1e67b8acf8eaf7a36fd2381ad2b52ac9ed",
+  "baseline": "a3a6682565132ca83fb9fa5c0360f8f06512b027",
+  "recipe": "f97ea66f353abcfd7d14e5c1eee63cdcd12871c9cd0b47fd48a0517ce7625ea6",
+  "old_sources_reconstructed": 437,
+  "named_runtime_additions": 1,
+  "new_integration_tests_per_compiler": 16,
+  "new_compile_fail_docs_per_compiler": 2,
+  "source_guard_tests": 8,
+  "predecessor_bridge_tests": 3,
+  "registered_gates": 184,
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "actual_role_build": false,
+  "original_join": false,
+  "original_send": false,
+  "production_enrollment": false,
+  "server": false,
+  "supervisor": false,
+  "product": false,
+  "new_live_or_fault_matrix": false,
+  "full_321_rerun": false,
+  "clock_changed": false
+}

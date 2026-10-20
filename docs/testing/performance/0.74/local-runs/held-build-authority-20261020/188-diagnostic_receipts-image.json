@@ -1,0 +1,7 @@
+{
+  "source": "48854c1e67b8acf8eaf7a36fd2381ad2b52ac9ed",
+  "image": "/home/artur/.cache/hydracache-074-188-check/debug/deps/diagnostic_receipts-db13a06bee09071f",
+  "sha256": "cd7bc79c6abdca787c8bf9bfae1df0dd1fa9de2aaa5680e158848a3b31983386",
+  "expected_tests": 9,
+  "actual_role_build": false
+}

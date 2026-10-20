@@ -1,0 +1,15 @@
+{
+  "source": "48854c1e67b8acf8eaf7a36fd2381ad2b52ac9ed",
+  "mode": "194",
+  "recipe": "f97ea66f353abcfd7d14e5c1eee63cdcd12871c9cd0b47fd48a0517ce7625ea6",
+  "passed": true,
+  "original_join": false,
+  "original_send": false,
+  "actual_role_build": false,
+  "production_enrollment": false,
+  "server": false,
+  "supervisor": false,
+  "product": false,
+  "new_live_or_fault_matrix": false,
+  "clock_changed": false
+}

@@ -1,0 +1,7 @@
+{
+  "source": "48854c1e67b8acf8eaf7a36fd2381ad2b52ac9ed",
+  "image": "/home/artur/.cache/hydracache-074-188-check/debug/deps/held_build-74e4237fa1de90eb",
+  "sha256": "cfd80c69dbca49aeb9afe10a7e87ee7e8af29a608fbe1b4a6a03e28ce7239fc0",
+  "expected_tests": 16,
+  "actual_role_build": false
+}

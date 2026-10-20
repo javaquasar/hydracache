@@ -1,0 +1,22 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 23.41s
+     Running tests\held_build.rs (target\debug\deps\held_build-18a1c01ed9387d03.exe)
+
+running 13 tests
+test cargo_raw_bounds_duplicates_and_nonterminated_records_refuse ... ok
+test cargo_missing_duplicate_foreign_failure_and_trailing_events_refuse ... ok
+test cargo_exact_targets_package_sources_output_profiles_and_features_required ... ok
+test changed_contents_and_each_expected_role_refuse_without_execution_authority ... ok
+test canonical_bounded_documents_signature_encoding_and_domains_are_strict ... ok
+test independent_pins_controller_epoch_and_three_distinct_nonweak_keys_required ... ok
+held-build content corruption seed=0x74b017 iterations=128
+test independent_policy_source_and_epoch_binding_prevents_receipt_reuse ... ok
+test repinned_invalid_policy_fields_and_unsigned_unknown_fields_refuse ... ok
+test separate_policy_signer_receipt_contents_and_three_roles_roundtrip ... ok
+test all_observation_fields_checked_before_signing_and_after_signature ... ok
+test seeded_content_corruption_cannot_reuse_checked_receipt ... ok
+test signer_requires_distinct_valid_elf_and_exact_nonempty_root_lock ... ok
+test every_receipt_binding_refuses_unsigned_mutation_and_resigned_invalid_semantics ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.32s
+
