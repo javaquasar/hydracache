@@ -1,0 +1,6 @@
+ea826383f0a6a86ba0b8af291338ae7c13471e11	docs: preregister isolated authority name capacity control
+a3ed48de1cce8acc30f2e6865d4bd0c255522bfa	docs: freeze name capacity captures and preserve new canary refusal
+1d2a140f6f272a42614c744459b238a5653c017f	docs: freeze three-arm capacity conservation reviewer
+5364b8215c3892f40987d3284dff6be853208e4d	test: add exact name capacity controls without changing old assertions
+f53ed4a78e4e79f8e4ac2591a87907cfc91d62ca	test: retain paired name capacity baseline before runtime mutation
+433a7cb1806d7296c8dff72bf83620eb48a91d42	perf: reserve authority name capacity without changing formatter bytes
