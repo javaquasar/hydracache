@@ -4673,3 +4673,30 @@ This packet seals 108 hashed members plus inventory, SHA256
 `46956c62bddd8def65e8132d905d6235d41f51572f9571573ecf92bbe5aca710`.
 Its verifier rejects 32 metadata mutations, records actual_holder_observed=true
 and keeps final_matrix_passed, full_joined_sigkill and real_role_image_cost false.
+
+## Privileged native Linux placement expiry
+
+The separately authorized [native root control](held-consuming-privileged-server-plan-20261020.md)
+uses those same exact GNU/MSRV release test images in protected temporary
+staging. Each matrix refuses its first healthy case while binding signed
+placement, before FixedPlacement or consuming held roles. Original first
+expiry observations are 10,120,568,145 ns (GNU causal) and 10,014,035,477 ns
+(MSRV custody) against the unchanged ten-second window. No retry or attribution
+invocation follows. Neither native matrix passes; full joined SIGKILL remains
+gated. This expiry is not the earlier WSL clock-order observation.
+
+The [separate packet](local-runs/held-consuming-privileged-server-20261020/README.md)
+retains raw logs/exits, hash-bound transfer and protected staging, transport
+errors and independent postflight. Supervisor PID 8839/restarts 0, installed
+artifacts, host mount context and checked inactive campaign state remain
+unchanged; owned fixture roots/cgroups are gone. No install, clock/service
+operation, original send or product workload occurred. Next attribute cost
+before/through placement without changing checks or deadlines; role hashing
+was not reached and cannot explain this refusal from these observations alone.
+
+The native packet seals 51 hashed members plus inventory, SHA256
+`4d592e07dcc6a8dc461827801b724bea1ca803d22d8a61f50915988e28fec079`.
+Its verifier rejects 47 summary metadata mutations and preserves
+native_matrix_passed=false. The 321 contract tests, 20 historical-source guards,
+strict xtask lint, targeted formatting, docs/registry and local contract pass;
+none promotes the refused execution cohort or changes qualification identity.

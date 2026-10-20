@@ -14818,3 +14818,40 @@ local gate stays red despite the successful MSRV matrix. Stable native Linux
 privileged control is the next environment boundary; joined real SIGKILL,
 lost acknowledgement, delivery, all-writer lifecycle and reconnect verification
 must still follow before launch permission can be considered.
+
+## Native placement expiry before the consuming join
+
+The authorized privileged native Linux control changes the diagnosis of the
+next blocker without erasing any WSL evidence. It uses the same hash-bound
+GNU and MSRV release test images, a root-owned temporary staging directory,
+a uniquely owned cgroup subtree and a private mount namespace. No clock or
+service setting changes, release installation, manager start message or product
+traffic is involved. Each compiler receives one full matrix invocation, with
+unchanged checks, original origins and admission deadlines; there is no retry.
+
+Both invocations stop on the first healthy case while binding signed placement.
+GNU records the causal window expired at age 10,120,568,145 ns. MSRV records
+custody expiry at 10,014,035,477 ns. These are single diagnostic observations
+against the original ten-second bound, not latency estimates or optimization
+claims. The captured kernel-refusal reports are null. Unlike the traced WSL
+sample, the observed refusal is expiry; the result neither establishes global
+clock stability nor identifies one implementation cost as the cause.
+
+The first custody observations already occur at ages 9,126,504,822 ns and
+9,165,257,066 ns. Much of the window has therefore elapsed before the observed
+placement operation can finish. Crucially, this run never constructs the new
+FixedPlacement or enters the consuming held-role join. Attributing its failure
+to that join's four frames or full-role hashing would be unsupported. The next
+measurement must separate earlier preparation/enrollment and placement costs,
+including their existing full validation rounds. It must preserve the original
+checks and cannot turn a profiling clock into an admission clock.
+
+Failing at this boundary is the correct safety behavior. Extending a deadline,
+resetting an origin or treating a partial matrix as a pass would hide the cost
+instead of explaining it. The raw streams, exits, image identities and failed
+healthy reports remain a separate negative server packet. Independent postflight
+finds the same running supervisor, installed executable and receipt, unchanged
+host mount table and no remaining owned fixture cgroups or roots. Passing those
+safety and evidence checks does not close the execution gate. Joined SIGKILL,
+lost acknowledgement, all-writer lifecycle and reconnect remain behind a healthy
+complete composition rather than being attempted on this refused owner.

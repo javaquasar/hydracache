@@ -715,3 +715,18 @@ cost, and terminal collector/custodian processes do not prove root guardian
 exit. Root guardians may still retain the fence. Preserve all failed cohorts
 and unchanged original bounds. The next privileged native Linux environment
 control needs separate authority; no server install or product permission follows.
+
+That isolated privileged control is now authorized and completed, separately
+from any installation or product permission. The same GNU/MSRV images both
+refuse the first healthy case during signed-placement binding: original causal
+or custody age exceeds the unchanged ten-second window. No FixedPlacement or
+new consuming-role join is reached, and no matrix is retried. The
+[native refusal packet](local-runs/held-consuming-privileged-server-20261020/README.md)
+retains both original reports and exits; earlier WSL failures remain sealed.
+
+The next P3 gate is attribution before/through preparation, enrollment and
+placement, not a deadline extension or premature joined SIGKILL. Keep all live
+checks and original origins. Independent postflight confirms unchanged installed
+artifacts, running supervisor PID/restarts, absent campaign markers and no owned
+fixture cgroups/roots. Production delivery/trust, all-writer cessation, durable
+lifecycle and reconnect gates remain open; server admission is still closed.
