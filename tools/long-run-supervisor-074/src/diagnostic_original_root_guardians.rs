@@ -99,12 +99,18 @@ fn prepare<'root>(
     root: &'root mut RootSource,
 ) -> Result<BoundGuardians<'root>, PendingError> {
     owner.full_round()?;
+    #[cfg(test)]
+    crate::diagnostic_ipc::validation_trace::custody_boundaries::mark("owned-opening");
     let binding = owner.binding(root.identity())?;
     let [fence, alarm] = owner.descriptors()?;
     let mut controls = root.prepare(fence, alarm, binding)?;
     controls.observe()?;
+    #[cfg(test)]
+    crate::diagnostic_ipc::validation_trace::custody_boundaries::mark("owned-controls");
     owner.full_round()?;
     controls.observe()?;
+    #[cfg(test)]
+    crate::diagnostic_ipc::validation_trace::custody_boundaries::mark("owned-closing");
     Ok(controls)
 }
 impl RootOwner for OriginalWatchdogContext<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {

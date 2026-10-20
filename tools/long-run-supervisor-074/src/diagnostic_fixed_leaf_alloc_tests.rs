@@ -1,5 +1,8 @@
 //! Opt-in test binary only. Rust requests, not libc malloc, CPU, RSS or authority.
 use super::*;
+
+#[path = "../tests/support/projection_alloc.rs"]
+mod projection_fields;
 use std::alloc::{GlobalAlloc, Layout, System};
 use std::cell::Cell;
 

@@ -195,9 +195,18 @@ impl<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>
                 return Err(OriginalSinkError::Privilege);
             }
             // The entire uncertain chain is already retained before the first effect.
+            #[cfg(test)]
+            crate::diagnostic_ipc::validation_trace::custody_boundaries::mark("outputs-enter");
             held.pipes.starting.publish_joined(&mut checkpoint)?;
+            #[cfg(test)]
+            crate::diagnostic_ipc::validation_trace::custody_boundaries::mark("outputs-starting");
             held.pipes.prepare_joined(&mut checkpoint)?;
-            held.prepare(|at| checkpoint(OutputJoinStage::Sinks(at)))
+            #[cfg(test)]
+            crate::diagnostic_ipc::validation_trace::custody_boundaries::mark("outputs-pipes");
+            let result = held.prepare(|at| checkpoint(OutputJoinStage::Sinks(at)));
+            #[cfg(test)]
+            crate::diagnostic_ipc::validation_trace::custody_boundaries::mark("outputs-sinks");
+            result
         })();
         match result {
             Ok(()) => Ok(held),

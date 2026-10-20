@@ -69,9 +69,13 @@ impl<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>
             original: self,
             binding: None,
         };
+        #[cfg(test)]
+        crate::diagnostic_ipc::validation_trace::custody_boundaries::mark("owned-enter");
         let result = match owner.original.watchdog_context_round(None) {
             Ok(binding) => {
                 owner.binding = Some(binding);
+                #[cfg(test)]
+                crate::diagnostic_ipc::validation_trace::custody_boundaries::mark("owned-context");
                 prepare(&mut owner, root)
             }
             Err(error) => Err(error.into()),

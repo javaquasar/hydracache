@@ -1,4 +1,6 @@
 //! One exact predecessor implementation shared by source views without duplicate modules.
+#[path = "remaining_preparation_guard.rs"]
+mod remaining;
 #[macro_export]
 macro_rules! hc074_document_scratch_view {
     (@items) => {
@@ -19,7 +21,7 @@ macro_rules! hc074_document_scratch_view {
             *raw = raw.replace(new, old);
         }
         pub(crate) fn normalize(path: &str, source: &str) -> String {
-            let mut raw = source.to_owned();
+            let mut raw = $crate::hc074_remaining_preparation_view!(path, source);
             if path == SOURCE && raw.contains(HOOK) {
                 restore(&mut raw, HOOK, "use origin::{Origin, TimePoint};", 1);
                 restore(

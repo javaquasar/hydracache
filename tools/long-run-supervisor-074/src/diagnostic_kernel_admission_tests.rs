@@ -1,5 +1,8 @@
 use super::*;
 
+#[path = "../tests/support/projection_cost.rs"]
+pub(super) mod projection_cost;
+
 #[path = "../tests/support/projection_prefix.rs"]
 pub(super) mod projection_prefix;
 
