@@ -6,6 +6,9 @@ use crate::diagnostic_artifacts::{
 use crate::diagnostic_lease::{DiagnosticIdentity, SOURCE_COMMIT};
 use crate::{canonical_json, is_hash, sha256_hex};
 use ed25519_dalek::{Signer, SigningKey, VerifyingKey};
+
+#[path = "diagnostic_held_build.rs"]
+pub mod held_build;
 use serde::{Deserialize, Serialize};
 
 #[cfg(target_os = "linux")]

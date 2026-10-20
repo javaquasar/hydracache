@@ -1,4 +1,6 @@
 //! Remove only the exact opt-in test hook and its manual registry entry.
+#[path = "held_build_guard.rs"]
+pub(super) mod held_build;
 pub(super) const FILE: &str = "tools/long-run-supervisor-074/src/diagnostic_fixed_slice_tests.rs";
 pub(super) const HOOK: &str =
     "\n#[path = \"../tests/support/fixed_slice_namespace.rs\"]\nmod namespace;\n";
@@ -37,10 +39,11 @@ HC074_FIXED_SLICE_NAMESPACE = "1"
 # END FIXED SLICE NAMESPACE GATE
 "##;
 pub(super) fn normalize(path: &str, raw: &str) -> String {
+    let raw = held_build::normalize(path, raw);
     let exact = match path {
         FILE => HOOK,
         REGISTRY => GATE,
-        _ => return raw.to_owned(),
+        _ => return raw,
     };
     assert_eq!(
         raw.matches(exact).count(),

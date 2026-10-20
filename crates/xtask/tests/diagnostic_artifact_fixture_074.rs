@@ -6,6 +6,17 @@ use std::path::PathBuf;
 mod namespace;
 
 const BASE: &str = "23c57b77523ad1cc16b1a79fc90b02a125f8d9b8";
+const NEW_SOURCE: &str = "tools/long-run-supervisor-074/src/diagnostic_held_build.rs";
+fn only_new_source(old: &str, current: &str) -> bool {
+    let old_set: std::collections::BTreeSet<_> = old.lines().collect();
+    let current_set: std::collections::BTreeSet<_> = current.lines().collect();
+    old.lines().count() == old_set.len()
+        && current.lines().count() == current_set.len()
+        && !old_set.contains(NEW_SOURCE)
+        && current_set.len() == old_set.len() + 1
+        && old_set.is_subset(&current_set)
+        && current_set.difference(&old_set).copied().eq([NEW_SOURCE])
+}
 const FILE: &str = "tools/long-run-supervisor-074/tests/diagnostic_artifacts.rs";
 const RECEIPTS: &str = "tools/long-run-supervisor-074/tests/diagnostic_receipts.rs";
 const OLD_RECEIPT_LOCK: &str = "include_bytes!(\"../../../Cargo.lock\")";
@@ -88,7 +99,7 @@ fn immutable_fixture_preserves_all_437_runtime_sources_and_production_inputs() {
     let old = git(&["ls-tree", "-r", "--name-only", BASE, "--", paths[0]]);
     let current = git(&["ls-files", "--", paths[0]]);
     assert_eq!(old.lines().count(), 437);
-    assert_eq!(current, old);
+    assert!(only_new_source(&old, &current));
     for path in old.lines().chain(paths[1..].iter().copied()) {
         assert_eq!(
             namespace::normalize(path, &read(path)),
@@ -206,4 +217,39 @@ fn namespace_fixture_is_test_only_private_mount_and_not_manager_authority() {
     assert_eq!(raw.matches("/proc/thread-self/ns/mnt").count(), 4);
     assert!(!raw.contains("/proc/self/ns/mnt"));
     assert!(namespace::GATE.contains("ship_mandatory = false"));
+}
+
+#[test]
+fn held_build_adapter_rejects_missing_duplicate_and_unrelated_old_drift() {
+    for (path, exact) in [
+        (namespace::held_build::BUILDER, namespace::held_build::HOOK),
+        (namespace::held_build::COMPAT, namespace::held_build::BLOCK),
+    ] {
+        let raw = read(path);
+        for bad in [raw.replacen(exact, "", 1), format!("{raw}{exact}")] {
+            assert!(std::panic::catch_unwind(|| namespace::normalize(path, &bad)).is_err());
+        }
+        assert_eq!(
+            namespace::normalize(path, &raw),
+            git(&["show", &format!("{BASE}:{path}")])
+        );
+        assert_ne!(
+            namespace::normalize(path, &format!("{raw}\n// drift\n")),
+            git(&["show", &format!("{BASE}:{path}")])
+        );
+    }
+}
+#[test]
+fn held_build_source_allowlist_requires_all_old_files_and_exactly_one_named_addition() {
+    let old = "old/a.rs\nold/b.rs\n";
+    assert!(only_new_source(old, &format!("{old}{NEW_SOURCE}\n")));
+    for bad in [
+        old.into(),
+        format!("old/a.rs\n{NEW_SOURCE}\n"),
+        format!("{old}{NEW_SOURCE}\nextra.rs\n"),
+        format!("{old}wrong.rs\n"),
+        format!("{old}{NEW_SOURCE}\n{NEW_SOURCE}\n"),
+    ] {
+        assert!(!only_new_source(old, &bad));
+    }
 }
