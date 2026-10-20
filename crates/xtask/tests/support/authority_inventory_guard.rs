@@ -1,9 +1,11 @@
 //! Exact expected-container substitution, without suppressing any live prefix.
+#[path = "authority_name_capacity_guard.rs"]
+mod authority_name_capacity;
 #[macro_export]
 macro_rules! hc074_authority_inventory_view {
     ($path:expr, $source:expr) => {{
         let path: &str = $path;
-        let mut raw: String = $source.to_owned();
+        let mut raw: String = $crate::hc074_authority_name_capacity_view!(path, $source);
         let gate = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/tests/support/authority_inventory_gate.txt")).replace('\r', "");
         for (file, exact, marker) in [
             ("tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs", "\n#[cfg(test)]\n#[path = \"../tests/support/authority_inventory_controls.rs\"]\npub(crate) mod inventory_controls;\n", "authority_inventory_controls"),

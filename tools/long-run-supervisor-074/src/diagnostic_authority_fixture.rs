@@ -600,3 +600,7 @@ pub(crate) mod leaf_name_controls;
 #[cfg(test)]
 #[path = "../tests/support/authority_inventory_controls.rs"]
 pub(crate) mod inventory_controls;
+
+#[cfg(test)]
+#[path = "../tests/support/authority_name_capacity_controls.rs"]
+pub(crate) mod name_capacity_controls;
