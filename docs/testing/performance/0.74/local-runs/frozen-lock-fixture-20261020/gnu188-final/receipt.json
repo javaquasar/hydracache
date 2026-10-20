@@ -1,0 +1,30 @@
+{
+  "source": "84fee2cce1d139d4361ae5cccc09d147eba357ab",
+  "compiler": "1.88.0",
+  "targets": [
+    {
+      "target": "diagnostic_artifacts",
+      "passed": 31,
+      "image": "148ef7daebb4b5a63468c82c9372d1a0537f9272bdacba1dd47f3cbe0c8dd606  /home/artur/.cache/hydracache-074-188-check/debug/deps/diagnostic_artifacts-7481888953d987bc"
+    },
+    {
+      "target": "diagnostic_receipts",
+      "passed": 9,
+      "image": "bc19b2fcc72ed159570328da1b9f0021acef053023f79c94245f081592fe539d  /home/artur/.cache/hydracache-074-188-check/debug/deps/diagnostic_receipts-db13a06bee09071f"
+    }
+  ],
+  "recipe": "214f760efd137fd9523b683e7ecd4f9d0b92383770d3f7d71284046b02decd17",
+  "artifact_tests": 31,
+  "receipt_tests": 9,
+  "seeded_mutations": 32,
+  "ordinary_targets_passed": true,
+  "runtime_changed": false,
+  "production_pin_changed": false,
+  "new_live_matrix": false,
+  "clock_changed": false,
+  "original_send": false,
+  "server": false,
+  "supervisor": false,
+  "product": false,
+  "qualification": false
+}

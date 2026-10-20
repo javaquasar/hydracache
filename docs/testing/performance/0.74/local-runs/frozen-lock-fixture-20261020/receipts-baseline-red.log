@@ -1,0 +1,18 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.41s
+     Running tests\diagnostic_receipts.rs (target\debug\deps\diagnostic_receipts-db0aa7bebd5e5bee.exe)
+
+running 1 test
+
+thread 'all_four_p0_surfaces_bind_identity_and_reject_input_drift' (23104) panicked at tools\long-run-supervisor-074\tests\diagnostic_receipts.rs:83:6:
+called `Result::unwrap()` on an `Err` value: Invalid
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test all_four_p0_surfaces_bind_identity_and_reject_input_drift ... FAILED
+
+failures:
+
+failures:
+    all_four_p0_surfaces_bind_identity_and_reject_input_drift
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 7 filtered out; finished in 0.02s
+
+error: test failed, to rerun pass `-p hydracache-long-run-supervisor-074 --test diagnostic_receipts`

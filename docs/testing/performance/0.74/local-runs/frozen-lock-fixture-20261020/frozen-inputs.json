@@ -1,0 +1,9 @@
+{
+  "source": "84fee2cce1d139d4361ae5cccc09d147eba357ab",
+  "baseline": "23c57b77523ad1cc16b1a79fc90b02a125f8d9b8",
+  "frozen_inputs_diff_exit": 0,
+  "runtime_sources": 437,
+  "fixture_bytes": 175300,
+  "fixture_sha256": "be46eaf8e97e507bda5e3f2b671d0d622e6a639ce1d4613769a4693723d62b19",
+  "qualification_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+}

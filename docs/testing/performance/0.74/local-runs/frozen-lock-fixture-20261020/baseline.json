@@ -1,0 +1,7 @@
+{
+  "source": "383d65ba20b24ff53f8e77115ba8e3a3aef18f82",
+  "exit_code": 101,
+  "expected_red": true,
+  "runtime_changed": false,
+  "production_pin_changed": false
+}

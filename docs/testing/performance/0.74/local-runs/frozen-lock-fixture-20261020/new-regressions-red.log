@@ -1,0 +1,26 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.32s
+     Running tests\diagnostic_artifacts.rs (target\debug\deps\diagnostic_artifacts-5c314b19b63a9f42.exe)
+
+running 2 tests
+
+thread 'frozen_fixture_tests::frozen_fixture_exact_bytes_and_seeded_corruption_remain_bound' (30872) panicked at tools\long-run-supervisor-074\tests\diagnostic_artifacts.rs:35:9:
+assertion `left == right` failed
+  left: "629b483af08c2bb9137e9bd8fd120fde6c7a3d33ca9afba07e7de98097ed7b99"
+ right: "be46eaf8e97e507bda5e3f2b671d0d622e6a639ce1d4613769a4693723d62b19"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test frozen_fixture_tests::frozen_fixture_exact_bytes_and_seeded_corruption_remain_bound ... FAILED
+
+thread 'frozen_fixture_tests::frozen_fixture_moving_workspace_and_resigned_substitution_remain_refused' (12804) panicked at /rustc/4a4ef493e3a1488c6e321570238084b38948f6db/library\std\src\sync\lazy_lock.rs:410:5:
+LazyLock instance has previously been poisoned
+test frozen_fixture_tests::frozen_fixture_moving_workspace_and_resigned_substitution_remain_refused ... FAILED
+
+failures:
+
+failures:
+    frozen_fixture_tests::frozen_fixture_exact_bytes_and_seeded_corruption_remain_bound
+    frozen_fixture_tests::frozen_fixture_moving_workspace_and_resigned_substitution_remain_refused
+
+test result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 15 filtered out; finished in 0.04s
+
+error: test failed, to rerun pass `-p hydracache-long-run-supervisor-074 --test diagnostic_artifacts`

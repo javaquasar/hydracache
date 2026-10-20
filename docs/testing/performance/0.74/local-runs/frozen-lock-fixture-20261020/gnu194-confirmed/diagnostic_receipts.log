@@ -1,0 +1,14 @@
+
+running 9 tests
+test all_four_p0_surfaces_bind_identity_and_reject_input_drift ... ok
+test claim_flags_wrong_boundaries_and_uncertain_terminal_never_pass ... ok
+test concurrent_offline_readers_return_identical_non_promotable_packets ... ok
+test failed_incomplete_and_cpu_unusable_attempts_remain_distinct ... ok
+test malformed_duplicate_unknown_missing_and_oversized_bytes_fail_closed ... ok
+test packet_replay_recomputes_decision_and_binds_original_bytes ... ok
+test resp_wire_requires_fifo_routing_and_byte_verified_success ... ok
+test sample_accounting_latency_and_cpu_are_recomputed ... ok
+test synthetic_valid_report_survives_readonly_spool_and_offline_verification ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 121.77s
+

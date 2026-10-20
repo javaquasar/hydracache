@@ -1,0 +1,397 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.63s
+     Running unittests src\lib.rs (target\debug\deps\hydracache_long_run_supervisor_074-91cc7594fd779cb0.exe)
+
+running 60 tests
+test diagnostic_ipc::validation_trace_tests::validation_trace_actual_authentication_early_error_is_counted_without_signature ... ok
+test diagnostic_controller_producer::tests::producer_strict_request_schema_builder_identity_and_budget ... ok
+test diagnostic_artifacts::local_audit_tests::local_file_reader_enforces_exact_budget_and_regular_leaf ... ok
+test diagnostic_ipc::validation_trace_tests::validation_trace_disabled_and_success_do_not_invent_time_refusals ... ok
+test diagnostic_controller_producer::tests::producer_roundtrip_exact_request_domain_audience_and_synthetic_signature ... ok
+test diagnostic_ipc::validation_trace_tests::validation_trace_first_time_facts_are_not_replaced_or_authority ... ok
+HC074-VALIDATION-COST Report { stages: [Stats { wall_ns: 104200, authentication_calls: 1, authentication_ns: 98600, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }], first_time: Some(TimeRefusal { stage: Unassigned, operation: Reserve, issued: 1, expires: 61, now: 0 }), time_refusals: 1 }
+test diagnostic_ipc::validation_trace_tests::validation_trace_nested_unwind_and_ambient_scope_restore_original_frame ... ok
+test diagnostic_lease::transition_tests::transition_completion_and_terminal_replay_never_skip_or_restart_cells ... ok
+test diagnostic_lease::transition_tests::transition_entire_stage_graph_is_explicit ... ok
+test diagnostic_ipc::validation_trace_tests::validation_trace_independent_threads_keep_numeric_reports_separate ... ok
+test diagnostic_lease::transition_tests::transition_original_inode_and_stop_reason_are_sticky ... ok
+test diagnostic_ipc::validation_trace_tests::validation_trace_actual_signed_window_and_signature_errors_are_distinct ... ok
+test diagnostic_lease::transition_tests::transition_identity_revision_clock_and_cell_drift_refuse_without_mutation ... ok
+test diagnostic_receipts::tests::pinned_hdr_projection_checks_bucket_edges_and_ceil_rank ... ok
+test diagnostic_lease::transition_tests::transition_start_and_heartbeat_cannot_revive_expired_budgets ... ok
+test diagnostic_receipts::tests::strict_json_rejects_nested_duplicates_and_depth_without_tail_repair ... ok
+test diagnostic_receipts::tests::seeded_hdr_projection_preserves_rank_bounds_and_overflow_accounting ... ok
+test diagnostic_two_phase_launch::root_enrollment::tests::root_enrollment_every_ack_byte_mutation_refuses_and_cannot_restore ... ok
+test diagnostic_two_phase_launch::root_enrollment::tests::root_enrollment_all_kinds_roundtrip_with_exact_offsets ... ok
+test diagnostic_two_phase_launch::root_enrollment::tests::root_enrollment_seeded_bindings_roundtrip_without_deadline_renewal ... ok
+test diagnostic_two_phase_launch::root_enrollment::tests::root_enrollment_invalid_shapes_versions_fields_and_old_packets_refuse ... ok
+test diagnostic_two_phase_launch::root_enrollment::tests::root_enrollment_send_uncertainty_and_ack_are_sticky_without_authority ... ok
+test diagnostic_two_phase_launch::tests::held_placement::held_placement_all_packet_kinds_zero_fields_and_foreign_attempt_refuse ... ok
+test diagnostic_controller_producer::tests::producer_retained_audience_and_internal_body_corruption_refuse ... ok
+test diagnostic_controller_producer::tests::producer_wrong_selected_key_time_and_retained_identity_refuse ... ok
+test diagnostic_lease::transition_tests::transition_four_cells_seeded_histories_and_mutations ... ok
+test diagnostic_two_phase_launch::tests::held_placement::held_placement_roundtrip_exact_root_and_data_only_scope ... ok
+test diagnostic_two_phase_launch::tests::two_phase_launch_digest_binds_every_consent_claim_and_artifact_role ... ok
+test diagnostic_two_phase_launch::tests::held_placement::held_placement_unknown_duplicate_noncanonical_budget_and_hex_refuse ... ok
+test diagnostic_two_phase_launch::tests::held_placement::held_placement_versions_and_signature_domains_do_not_upgrade_old_claims ... ok
+test diagnostic_two_phase_launch::tests::two_phase_launch_domain_signature_and_digest_refuse_independent_drift ... ok
+test diagnostic_two_phase_launch::tests::two_phase_launch_inherits_old_consent_bounds_without_new_clock_or_renewal ... ok
+test diagnostic_lease::transition_tests::transition_publisher_refuses_invalid_candidate_before_any_write ... ok
+test diagnostic_two_phase_launch::tests::held_placement::held_placement_changed_signed_fields_digest_and_key_refuse ... ok
+test diagnostic_worker_policy::authority_registry::tests::authority_registry_canonical_record_and_independent_bindings_are_exact ... ok
+test diagnostic_lease::transition_tests::transition_publisher_refuses_stale_revision_without_replacing_state ... ok
+test diagnostic_two_phase_launch::tests::two_phase_launch_roundtrip_is_expected_bytes_not_start_authority ... ok
+test diagnostic_worker_policy::authority_registry::tests::authority_registry_rejects_malformed_future_duplicate_noncanonical_and_oversized_records ... ok
+test diagnostic_worker_policy::authority_registry::tests::authority_registry_refusal_and_higher_epoch_are_distinct_monotonic_transitions ... ok
+test diagnostic_worker_policy::proof_reuse_tests::worker_proof_reuse_independent_concurrent_owners_share_no_cached_authority ... ok
+test diagnostic_worker_policy::proof_reuse_tests::worker_proof_reuse_two_constructors_are_not_one_shared_admission ... ok
+test diagnostic_worker_policy::authority_registry::tests::authority_registry_seeded_history_mutations_never_adopt_gaps_or_changed_refusals ... ok
+test host_receipt::tests::canonical_receipt_round_trips_and_detects_drift ... ok
+test diagnostic_worker_policy::proof_reuse_tests::worker_proof_reuse_verifies_once_and_retains_projection_integrity ... ok
+test host_receipt::tests::cpuset_parser_canonicalizes_ranges ... ok
+test host_receipt::tests::host_observation_v1_rejects_worker_authority_extensions ... ok
+test host_receipt::tests::installed_binary_identity_requires_every_manifest_field ... ok
+test host_receipt::tests::partition_and_fixed_probe_set_are_fail_closed ... ok
+test host_receipt::tests::live_observation_ignores_only_namespace_local_mount_id ... ok
+test host_receipt::tests::provisioning_source_is_strict_and_binary_bound ... ok
+test host_receipt::tests::provisioning_v1_rejects_worker_authority_extensions ... ok
+test diagnostic_two_phase_launch::tests::held_placement::held_placement_seeded_names_and_identity_binding_are_deterministic ... ok
+test host_receipt::tests::quarantine_recovery_allows_only_the_provisioned_supervisor_identity_to_change ... ok
+test start_evidence::tests::bounded_input_and_create_new_output_are_enforced ... ok
+test start_evidence::tests::rejects_non_start_and_invalid_campaign_before_touching_paths ... ok
+test diagnostic_two_phase_launch::tests::two_phase_launch_document_bounds_and_unknown_shapes_refuse ... ok
+test diagnostic_worker_policy::proof_reuse_tests::worker_proof_reuse_reference_matches_every_retained_projection_field ... ok
+test diagnostic_controller_producer::tests::producer_seeded_valid_messages_and_independent_preparations ... ok
+test diagnostic_worker_policy::authority_registry::tests::authority_registry_generation_capacity_is_finite_and_no_epoch_wrap_is_possible ... ok
+test diagnostic_worker_policy::proof_reuse_tests::worker_proof_reuse_reference_matches_seeded_input_trust_context_and_priority ... ok
+
+test result: ok. 60 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.74s
+
+     Running unittests src\bin\diagnostic_builder.rs (target\debug\deps\diagnostic_builder-9cfe5afc0176de71.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\bin\diagnostic_controller.rs (target\debug\deps\diagnostic_controller-45cc9f7b6f40cd55.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\bin\diagnostic_signer_isolation_probe.rs (target\debug\deps\diagnostic_signer_isolation_probe-c5617a88413a8eb1.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\bin\diagnostic_signer_owned_probe.rs (target\debug\deps\diagnostic_signer_owned_probe-4e82bb8ced9d1037.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\bin\diagnostic_signer_root_probe.rs (target\debug\deps\diagnostic_signer_root_probe-72c9762bda97222a.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\main.rs (target\debug\deps\hydracache_long_run_supervisor_074-4661872b50370bf0.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\abort_lifecycle.rs (target\debug\deps\abort_lifecycle-a1d9dcfb8c0c47b5.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\archive.rs (target\debug\deps\archive-188d3841b04ee4a6.exe)
+
+running 4 tests
+test hardlinked_input_is_rejected_without_creating_an_archive ... ok
+test create_new_limits_and_output_placement_fail_closed ... ok
+test archive_replay_verification_rejects_digest_and_extra_file_drift ... ok
+test archive_bytes_and_headers_are_deterministic ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+
+     Running tests\authorization.rs (target\debug\deps\authorization-5e322e1c40221c3d.exe)
+
+running 3 tests
+test exact_signed_authorization_is_accepted ... ok
+test digest_signature_and_request_binding_tamper_fail_closed ... ok
+test repository_actor_and_time_window_are_enforced ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running tests\chain.rs (target\debug\deps\chain-37140bce31940985.exe)
+
+running 6 tests
+test complete_json_without_terminal_newline_is_still_a_torn_record ... ok
+test rejects_middle_corruption_sequence_gap_hash_break_and_identity_drift ... ok
+test refuses_replaying_a_sequence_or_reusing_a_stale_head ... ok
+test verifies_complete_chain_and_recovers_only_incomplete_tail ... ok
+test append_refuses_to_write_after_a_torn_tail_without_explicit_recovery ... ok
+test append_syncs_chain_and_exact_head ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests\checkpoint_evidence.rs (target\debug\deps\checkpoint_evidence-2001ba711ef3a308.exe)
+
+running 7 tests
+test live_chain_can_be_observed_before_a_controller_attaches_its_head ... ok
+test non_regular_checkpoint_journal_is_rejected_before_parsing ... ok
+test exact_chain_head_role_and_process_identity_are_required ... ok
+test live_observation_retries_a_journal_and_head_commit_window ... ok
+test live_observation_retries_an_incomplete_appended_record ... ok
+test terminal_evidence_requires_the_final_phase_and_retains_role_identity ... ok
+test stale_head_and_non_live_state_fail_closed ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.19s
+
+     Running tests\config.rs (target\debug\deps\config-b21e1b7af3fc821a.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\diagnostic_artifacts.rs (target\debug\deps\diagnostic_artifacts-5c314b19b63a9f42.exe)
+
+running 17 tests
+test builder_policy_requires_external_pin_and_distinct_controller_key ... ok
+test checked_statement_binds_exact_model_intent_without_enrolling_execution ... ok
+test diagnostic_build_attestation_has_a_separate_domain ... ok
+test builder_signing_checks_observation_and_contents_before_signing ... ok
+test cargo_local_path_accepts_exact_version_fragment_not_foreign_sources ... ok
+test every_signed_top_level_field_refuses_unsigned_mutation ... ok
+test every_artifact_is_hash_bound_and_p0_configs_cannot_drift ... ok
+test frozen_fixture_tests::frozen_fixture_moving_workspace_and_resigned_substitution_remain_refused ... ok
+test builder_signer_cli_refuses_missing_or_unknown_commands ... ok
+test signed_receipt_is_strict_canonical_bounded_and_lease_bound ... ok
+test signed_build_statement_binds_all_fields_and_rejects_other_domains ... ok
+test unsigned_content_inspection_never_becomes_build_or_execution_authority ... ok
+test frozen_fixture_tests::frozen_fixture_exact_bytes_and_seeded_corruption_remain_bound ... ok
+test cargo_log_requires_one_unprofiled_binary_and_final_success ... ok
+test elf_checks_are_structural_only_and_refuse_truncated_or_wrong_architecture ... ok
+test even_resigned_source_toolchain_features_and_limits_cannot_drift ... ok
+test unsigned_file_audit_has_read_only_cli_and_refuses_changed_inputs ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.58s
+
+     Running tests\diagnostic_boot_buffer_allocations.rs (target\debug\deps\diagnostic_boot_buffer_allocations-a41a4d4188319bf7.exe)
+
+running 4 tests
+test allocator_capture_restores_on_panic_and_refuses_nesting ... ok
+test fixed_boot_reader_uses_one_small_read ... ok
+test fixed_boot_reader_allocation_pairs ... ok
+test allocator_capture_is_thread_local ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\diagnostic_collector.rs (target\debug\deps\diagnostic_collector-4cd023f25e2a5324.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\diagnostic_collector_starting_publication.rs (target\debug\deps\diagnostic_collector_starting_publication-eb8d2617be82efd2.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\diagnostic_collector_starting_record.rs (target\debug\deps\diagnostic_collector_starting_record-f618695c42de486f.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\diagnostic_context_files.rs (target\debug\deps\diagnostic_context_files-652ba3ee49c4c5ba.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\diagnostic_fixed_grouped_preparation.rs (target\debug\deps\diagnostic_fixed_grouped_preparation-8fe7a0fc751247ef.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\diagnostic_intent_projection.rs (target\debug\deps\diagnostic_intent_projection-e4f892c318bbea17.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\diagnostic_ipc.rs (target\debug\deps\diagnostic_ipc-e77a03a3a50693fd.exe)
+
+running 21 tests
+test campaign_claim_refuses_diagnostic_reserve_without_backend_calls ... ok
+test authorization_window_has_exclusive_expiry_and_no_future_skew ... ok
+test diagnostic_signatures_have_a_separate_domain ... ok
+test changed_request_and_cross_lease_nonce_reuse_are_refused ... ok
+test completed_replay_is_cached_without_extending_heartbeat ... ok
+test backend_failure_is_cached_without_leaking_paths_or_releasing_marker ... ok
+test cancel_replay_after_terminal_release_never_stops_tree_again ... ok
+test malformed_packets_unknown_fields_and_unsigned_overrides_are_rejected ... ok
+test concurrent_same_revision_has_at_most_one_mutation ... ok
+test peer_and_signed_principal_denials_do_not_create_ledger_or_lease ... ok
+test foreign_or_missing_lease_and_reversed_clock_never_mutate ... ok
+test corrupt_future_noncanonical_or_pending_ledgers_fail_closed ... ok
+test persisted_heartbeat_crash_gap_does_not_repeat_mutation ... ok
+test producer_public_api_is_separate_from_receiver_and_host_execution ... ok
+test pending_intent_blocks_reexecution_and_new_requests ... ok
+test stale_revision_and_controller_takeover_are_refused_before_mutation ... ok
+test signature_binds_every_request_field_and_rejects_campaign_domain ... ok
+test status_is_signed_and_never_refreshes_controller_liveness ... ok
+test ledger_digest_duplicate_identity_and_invalid_response_are_rejected ... ok
+test producer_cli_unknown_or_incomplete_commands_refuse_without_echoing_inputs ... ok
+test ledger_capacity_never_evicts_replay_protection ... ok
+
+test result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 15.40s
+
+     Running tests\diagnostic_lease.rs (target\debug\deps\diagnostic_lease-1322ebe572557b04.exe)
+
+running 18 tests
+test cancel_before_start_never_needs_a_backend_or_spawns_work ... ok
+test existing_campaign_and_each_fixture_context_refuse_reservation ... ok
+test diagnostic_and_campaign_reservations_share_one_short_transaction_lock ... ok
+test boot_clock_and_lease_identity_drift_fail_without_backend_calls ... ok
+test malformed_or_ambiguous_diagnostic_markers_fail_closed ... ok
+test durable_start_intent_is_never_replayed_as_a_second_spawn ... ok
+test exited_leader_never_certifies_a_populated_child_tree ... ok
+test concurrent_campaign_and_diagnostic_admission_has_exactly_one_winner ... ok
+test expired_controller_cannot_revive_or_extend_a_cell_deadline ... ok
+test terminal_receipt_conflict_does_not_release_the_marker ... ok
+test overflowing_receipt_counters_stop_instead_of_wrapping_or_retrying ... ok
+test terminal_publication_gap_recovers_identical_receipt_without_spawn ... ok
+test overflow_and_invalid_receipts_are_retained_without_retry ... ok
+test cleanup_failure_and_identity_drift_keep_host_claimed ... ok
+test four_fixed_cells_finish_once_and_terminal_evidence_precedes_release ... ok
+test unknown_schema_fields_and_noncanonical_digest_drift_fail_closed ... ok
+test remaining_total_budget_caps_the_fixed_unit_without_padding ... ok
+test controller_loss_and_deadlines_stop_tree_before_release ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.96s
+
+     Running tests\diagnostic_manager.rs (target\debug\deps\diagnostic_manager-658aef1b0e69d4e5.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\diagnostic_original_collector_pipes.rs (target\debug\deps\diagnostic_original_collector_pipes-f7d87af3434c81a0.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\diagnostic_original_fence.rs (target\debug\deps\diagnostic_original_fence-762587271841af73.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\diagnostic_original_output_join.rs (target\debug\deps\diagnostic_original_output_join-ca6aa2dd24d5280b.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\diagnostic_original_pipe_transport.rs (target\debug\deps\diagnostic_original_pipe_transport-95643dc0914e5e57.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\diagnostic_original_start_material.rs (target\debug\deps\diagnostic_original_start_material-9639d1c0e6d39955.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\diagnostic_prebuilt_copy.rs (target\debug\deps\diagnostic_prebuilt_copy-20993c1328fde77b.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\diagnostic_preconsent_frame.rs (target\debug\deps\diagnostic_preconsent_frame-e9957a8425281755.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\diagnostic_receipts.rs (target\debug\deps\diagnostic_receipts-db0aa7bebd5e5bee.exe)
+
+running 8 tests
+test all_four_p0_surfaces_bind_identity_and_reject_input_drift ... FAILED
+test claim_flags_wrong_boundaries_and_uncertain_terminal_never_pass ... FAILED
+test concurrent_offline_readers_return_identical_non_promotable_packets ... FAILED
+test failed_incomplete_and_cpu_unusable_attempts_remain_distinct ... FAILED
+test malformed_duplicate_unknown_missing_and_oversized_bytes_fail_closed ... FAILED
+test resp_wire_requires_fifo_routing_and_byte_verified_success ... FAILED
+test packet_replay_recomputes_decision_and_binds_original_bytes ... FAILED
+test sample_accounting_latency_and_cpu_are_recomputed ... FAILED
+
+failures:
+
+---- all_four_p0_surfaces_bind_identity_and_reject_input_drift stdout ----
+
+thread 'all_four_p0_surfaces_bind_identity_and_reject_input_drift' (21896) panicked at tools\long-run-supervisor-074\tests\diagnostic_receipts.rs:83:6:
+called `Result::unwrap()` on an `Err` value: Invalid
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- claim_flags_wrong_boundaries_and_uncertain_terminal_never_pass stdout ----
+
+thread 'claim_flags_wrong_boundaries_and_uncertain_terminal_never_pass' (29948) panicked at tools\long-run-supervisor-074\tests\diagnostic_receipts.rs:83:6:
+called `Result::unwrap()` on an `Err` value: Invalid
+
+---- concurrent_offline_readers_return_identical_non_promotable_packets stdout ----
+
+thread 'concurrent_offline_readers_return_identical_non_promotable_packets' (35132) panicked at tools\long-run-supervisor-074\tests\diagnostic_receipts.rs:83:6:
+called `Result::unwrap()` on an `Err` value: Invalid
+
+---- failed_incomplete_and_cpu_unusable_attempts_remain_distinct stdout ----
+
+thread 'failed_incomplete_and_cpu_unusable_attempts_remain_distinct' (15932) panicked at tools\long-run-supervisor-074\tests\diagnostic_receipts.rs:83:6:
+called `Result::unwrap()` on an `Err` value: Invalid
+
+---- malformed_duplicate_unknown_missing_and_oversized_bytes_fail_closed stdout ----
+
+thread 'malformed_duplicate_unknown_missing_and_oversized_bytes_fail_closed' (15304) panicked at tools\long-run-supervisor-074\tests\diagnostic_receipts.rs:83:6:
+called `Result::unwrap()` on an `Err` value: Invalid
+
+---- resp_wire_requires_fifo_routing_and_byte_verified_success stdout ----
+
+thread 'resp_wire_requires_fifo_routing_and_byte_verified_success' (4264) panicked at tools\long-run-supervisor-074\tests\diagnostic_receipts.rs:83:6:
+called `Result::unwrap()` on an `Err` value: Invalid
+
+---- packet_replay_recomputes_decision_and_binds_original_bytes stdout ----
+
+thread 'packet_replay_recomputes_decision_and_binds_original_bytes' (31104) panicked at tools\long-run-supervisor-074\tests\diagnostic_receipts.rs:83:6:
+called `Result::unwrap()` on an `Err` value: Invalid
+
+---- sample_accounting_latency_and_cpu_are_recomputed stdout ----
+
+thread 'sample_accounting_latency_and_cpu_are_recomputed' (15292) panicked at tools\long-run-supervisor-074\tests\diagnostic_receipts.rs:83:6:
+called `Result::unwrap()` on an `Err` value: Invalid
+
+
+failures:
+    all_four_p0_surfaces_bind_identity_and_reject_input_drift
+    claim_flags_wrong_boundaries_and_uncertain_terminal_never_pass
+    concurrent_offline_readers_return_identical_non_promotable_packets
+    failed_incomplete_and_cpu_unusable_attempts_remain_distinct
+    malformed_duplicate_unknown_missing_and_oversized_bytes_fail_closed
+    packet_replay_recomputes_decision_and_binds_original_bytes
+    resp_wire_requires_fifo_routing_and_byte_verified_success
+    sample_accounting_latency_and_cpu_are_recomputed
+
+test result: FAILED. 0 passed; 8 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+error: test failed, to rerun pass `-p hydracache-long-run-supervisor-074 --test diagnostic_receipts`

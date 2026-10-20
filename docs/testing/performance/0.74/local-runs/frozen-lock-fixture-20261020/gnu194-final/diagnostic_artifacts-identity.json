@@ -1,0 +1,5 @@
+{
+  "target": "diagnostic_artifacts",
+  "image": "cf8d3bbbe571addd8df4e760fa10043c117a5f2ab2764a2645cddcf2a5659cfe  /home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_artifacts-49081b6809c48549",
+  "expected_tests": 31
+}

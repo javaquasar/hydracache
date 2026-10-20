@@ -1,0 +1,20 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.50s
+     Running tests\diagnostic_artifacts.rs (target\debug\deps\diagnostic_artifacts-5c314b19b63a9f42.exe)
+
+running 1 test
+
+thread 'builder_policy_requires_external_pin_and_distinct_controller_key' (21788) panicked at tools\long-run-supervisor-074\tests\diagnostic_artifacts.rs:35:9:
+assertion `left == right` failed
+  left: "629b483af08c2bb9137e9bd8fd120fde6c7a3d33ca9afba07e7de98097ed7b99"
+ right: "be46eaf8e97e507bda5e3f2b671d0d622e6a639ce1d4613769a4693723d62b19"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test builder_policy_requires_external_pin_and_distinct_controller_key ... FAILED
+
+failures:
+
+failures:
+    builder_policy_requires_external_pin_and_distinct_controller_key
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 14 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p hydracache-long-run-supervisor-074 --test diagnostic_artifacts`

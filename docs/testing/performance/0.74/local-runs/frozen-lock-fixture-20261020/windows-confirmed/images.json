@@ -1,0 +1,634 @@
+[
+  {
+    "target": "diagnostic_original_pipe_transport",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_original_pipe_transport-95643dc0914e5e57.exe",
+    "sha256": "2862f6e94896be0aee4cd0150cb6467ceacc4d7fabdc02d124d402c7915727c8"
+  },
+  {
+    "target": "checkpoint_evidence",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\checkpoint_evidence-2001ba711ef3a308.exe",
+    "sha256": "eb02dfbedc8dcb1190a0cec7c644da5782624a858370ca93906a711f9da6ae11"
+  },
+  {
+    "target": "seal_artifact",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\seal_artifact-6ddcaec6bd42d5ea.exe",
+    "sha256": "d5bf64cd9c0a816ae046d73fdf10eaf56d8305226e9550da593f9c2ef6a57e5a"
+  },
+  {
+    "target": "diagnostic_worker_account",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_worker_account-e566ea70246f63e3.exe",
+    "sha256": "f8b05f1309ea50a18fd8f4480846a6636a6c8407579fd61e0959f6afe736b0c4"
+  },
+  {
+    "target": "watchdog",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\watchdog-f394e445dfb7165f.exe",
+    "sha256": "7ca6ed6252337ab31c0a1cdf346f04d18aa72f54b507d219df3a02377b393435"
+  },
+  {
+    "target": "diagnostic_reviewed_trust",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_reviewed_trust-a20cb26d12e92898.exe",
+    "sha256": "d8508f45152d5ab05f2aca27e5ba1de808ff166729fcb828c0f99e39c1d6e2d2"
+  },
+  {
+    "target": "diagnostic_spool",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_spool-df6e0d648d074bd8.exe",
+    "sha256": "9bb06e8fc2336e4561f2544432699fa9b805aa36fab772e923c22fd81eaa9477"
+  },
+  {
+    "target": "diagnostic_tree",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_tree-9634e3dcf5cccb5f.exe",
+    "sha256": "955a7e4620b7257ab71c7d014acadef9540634ed82f660835971ed5d81431271"
+  },
+  {
+    "target": "diagnostic_signer_issuer",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_signer_issuer-69dcf5870987e2a7.exe",
+    "sha256": "bd726fc6a54c203715524fb583a4e2aa30d7405287f5d00d8f46193d17210e83"
+  },
+  {
+    "target": "hydracache-long-run-supervisor-074",
+    "kind": [
+      "bin"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\hydracache_long_run_supervisor_074-4661872b50370bf0.exe",
+    "sha256": "329cf5b5fffeee6fcf4d2b8dd2cce7a9359773afc771541c0e096371bbbfd0cb"
+  },
+  {
+    "target": "config",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\config-b21e1b7af3fc821a.exe",
+    "sha256": "73030daf98748b85c496117a318ae5e2bea8f40ccc7226785b736097f18d85d9"
+  },
+  {
+    "target": "diagnostic_signer_root_cli",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_signer_root_cli-fb09204d9ba86368.exe",
+    "sha256": "fbb195b10eda678088c5f8e9f9435a2162c4ac85742daa02fbf0036b1bf0ba67"
+  },
+  {
+    "target": "archive",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\archive-188d3841b04ee4a6.exe",
+    "sha256": "3326c01203015de63d9d9c5a516bc291dcbb35ff8812638655e435ceb2721532"
+  },
+  {
+    "target": "diagnostic_signer_gnu",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_signer_gnu-8d21dbfb7dd78717.exe",
+    "sha256": "c7fc40d111e7ae760fc5ef038538c421bc06166d799a6fbf38d8c9992fb06154"
+  },
+  {
+    "target": "progress_loss",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\progress_loss-ba9f4cbecde09457.exe",
+    "sha256": "d0b960b611c3e5f32f448a4c96c32b9609cf7799ef14b068fa940b155b4334ea"
+  },
+  {
+    "target": "seal_lifecycle",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\seal_lifecycle-a23bb68957e210ff.exe",
+    "sha256": "ca6396de763a2dcbd4f2a969e82f255090c05bc85b7406bb1801e020e6d8c087"
+  },
+  {
+    "target": "provisioning",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\provisioning-489ace5e9f47bef6.exe",
+    "sha256": "c7caa5ef7e782db49d5fac19bace708fd687e22534a5dfca1cb3e4818cd9ab7e"
+  },
+  {
+    "target": "abort_lifecycle",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\abort_lifecycle-a1d9dcfb8c0c47b5.exe",
+    "sha256": "c4bb2c60e0b7958356e835601e04f8b6f1b73cb74328db9fbc038f98d90b0cef"
+  },
+  {
+    "target": "diagnostic_prebuilt_copy",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_prebuilt_copy-20993c1328fde77b.exe",
+    "sha256": "421c21c481f99f71ccc02a5b003b82a4ad7b355807e0697f859bea77b76fb17d"
+  },
+  {
+    "target": "diagnostic_signer_bootstrap_context",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_signer_bootstrap_context-43806547b045cee0.exe",
+    "sha256": "8d5a1819ebc66f8c367c635880952c0352d099cb25d1a1023bd8d24ab998079b"
+  },
+  {
+    "target": "diagnostic_ipc",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_ipc-e77a03a3a50693fd.exe",
+    "sha256": "307d6881c2ba6603e763dff911a7a60ecc2305b8ed6bf3152a2ac8fe7ecb36f8"
+  },
+  {
+    "target": "mutation",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\mutation-6592b57aa83c3850.exe",
+    "sha256": "29547c93c4e3749672f1a65f2d4be86c44c65cb81dcf8816c91e03c0226ebef2"
+  },
+  {
+    "target": "manifest",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\manifest-844755f6d7cc3b4f.exe",
+    "sha256": "814c4e067d51a2f9dbc8400324a86103be83a6b178bb9729ed5ad2ca9d5a2ab4"
+  },
+  {
+    "target": "diagnostic_worker_kernel_binding",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_worker_kernel_binding-37d2fcfa995c33a4.exe",
+    "sha256": "2921f272c49e73a92b201a07b1b51d238695eff7fe2629f803887b562f321497"
+  },
+  {
+    "target": "diagnostic_signer_build",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_signer_build-59488ae7007a4adc.exe",
+    "sha256": "79b522256c0deee55ea5385953bf179456d6a80f777a28073d444d8dc6a57298"
+  },
+  {
+    "target": "host_execution",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\host_execution-145817249aafe71f.exe",
+    "sha256": "94c941b247279ca208e0acfe6ec9cfb2b63f797788e7073daf1cf0f4cf8c70d0"
+  },
+  {
+    "target": "diagnostic_signer_isolation_probe",
+    "kind": [
+      "bin"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_signer_isolation_probe-c5617a88413a8eb1.exe",
+    "sha256": "000df3ebb6bf6bb2021bc548e44456635f01e2afb76de9e6d310d34ae0ed874f"
+  },
+  {
+    "target": "diagnostic_signer_isolation",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_signer_isolation-00e1f365e35352d5.exe",
+    "sha256": "3ccb4b52454f7ad0c81801ea93712b8f4323819b3ccd5f33313d4e9f50161e6a"
+  },
+  {
+    "target": "diagnostic_worker_context",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_worker_context-97128168acd8e94b.exe",
+    "sha256": "f244b90fddb5d9db8e43d0f494f10ebe7e531b10105cf5a79b829c074848d31e"
+  },
+  {
+    "target": "diagnostic_worker_files",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_worker_files-2be3abe141c55b06.exe",
+    "sha256": "529d32c34e2f6337a11ee830f7c50f5a3dd47b7716c44f8eeef4d7269affdf2f"
+  },
+  {
+    "target": "process_identity",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\process_identity-d7709a4a880d664c.exe",
+    "sha256": "cbac4b9de96bc63299fb3ec52e77a08c5e6f31ccc979f6ae438990670a3c7cb9"
+  },
+  {
+    "target": "systemd_notify",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\systemd_notify-bd4de0d8f96e5e49.exe",
+    "sha256": "199a62de0adcbbc42617798207172bc675513482cf723b114adb4804b10ef553"
+  },
+  {
+    "target": "request_builder",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\request_builder-f5a597e5ed932204.exe",
+    "sha256": "e70eeb2c03d594c0d3303aa34512312b7ac63114873839c96dfee33fe678ab34"
+  },
+  {
+    "target": "diagnostic_boot_buffer_allocations",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_boot_buffer_allocations-a41a4d4188319bf7.exe",
+    "sha256": "c83ef2d85aef2f5a5730f612ea88a93305896ce217467b7c363733642fe71ce9"
+  },
+  {
+    "target": "systemd_unit",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\systemd_unit-93c8585587e7258b.exe",
+    "sha256": "e30e63973d07d02a32374878591d1f347674a7316139434d7f711f095d405d85"
+  },
+  {
+    "target": "diagnostic_worker_policy",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_worker_policy-05b257e5b9cabe58.exe",
+    "sha256": "94c13c24272033778161858cfd26f1b1dfe43e00305050564853edfc31f95907"
+  },
+  {
+    "target": "diagnostic_receipts",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_receipts-db0aa7bebd5e5bee.exe",
+    "sha256": "7dba4fe079c5bc11ecda6b35c2371d8be12c416866a648f6a7cd541193dfee75"
+  },
+  {
+    "target": "diagnostic_original_fence",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_original_fence-762587271841af73.exe",
+    "sha256": "23760192307b53b5522c6796664ada1fdf47a4c92c88eefb4a75d0109b4ee3f4"
+  },
+  {
+    "target": "service",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\service-50f34a5a24b6813f.exe",
+    "sha256": "8a877210ce03bc3054b6137cb1be50341472173584f07698693116277b16ac43"
+  },
+  {
+    "target": "diagnostic_intent_projection",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_intent_projection-e4f892c318bbea17.exe",
+    "sha256": "8d678718d1f00b906b397671ff1ae912650014d8e6c99d8068535d3b91647bc4"
+  },
+  {
+    "target": "chain",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\chain-37140bce31940985.exe",
+    "sha256": "917ff91b194d3f926937d01557668c61e66e5c9841a7e8e6c58acb0581127151"
+  },
+  {
+    "target": "diagnostic_collector",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_collector-4cd023f25e2a5324.exe",
+    "sha256": "ef6a81dd19f406297a2788cc8ebf5ad71dce7df8e86988c22889d308b0e77946"
+  },
+  {
+    "target": "diagnostic_signer_root_probe",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_signer_root_probe-8b210f3582e1234c.exe",
+    "sha256": "83beb92288c379e8fac85d1f4166f3d9d36fe1e0878d4c824c32be7bfa6457fd"
+  },
+  {
+    "target": "diagnostic_preconsent_frame",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_preconsent_frame-e9957a8425281755.exe",
+    "sha256": "4c2bb076590f6ae04d705630fca82742f82d2564023a396767b1dd0578b6a6c5"
+  },
+  {
+    "target": "diagnostic_builder",
+    "kind": [
+      "bin"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_builder-9cfe5afc0176de71.exe",
+    "sha256": "c86318a9e7ec4beb7bbfb2825f57901c7aacc08249aecf7706dd59a9634ed914"
+  },
+  {
+    "target": "diagnostic_signer_runtime_input",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_signer_runtime_input-ca87090c70e843dc.exe",
+    "sha256": "622df277b0441feda67930e51aef00906c6f16753b8981a8fb126c324c341d47"
+  },
+  {
+    "target": "diagnostic_start_consent",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_start_consent-8213bbad80285ad9.exe",
+    "sha256": "7c93240454eb92bb97fcbb53389c34d1e3536506609b222147832d537a3d80e9"
+  },
+  {
+    "target": "state_store",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\state_store-83dcf706d0efd055.exe",
+    "sha256": "7c6046470c072e6794e66aca19dfd8c1633419af006f866fdb671591fa3cc45d"
+  },
+  {
+    "target": "diagnostic_context_files",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_context_files-652ba3ee49c4c5ba.exe",
+    "sha256": "542f00594b22d77abba10217149c8780b4d3040cf24c5b6cdbead007357a9304"
+  },
+  {
+    "target": "spawn",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\spawn-91ecab1321102aa9.exe",
+    "sha256": "bcdf1429a6276be578d1e2bc6c6ca91aed3a0c08669929ffafc58e15a5f64cd3"
+  },
+  {
+    "target": "start_lifecycle",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\start_lifecycle-cab83b3d08121fa8.exe",
+    "sha256": "417c0a3f9022474d43f68f7bd13efd0188bf102d8bfa1dcbd44bf4e5b6e336f2"
+  },
+  {
+    "target": "lease_expiry",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\lease_expiry-b032dfa2da20c01c.exe",
+    "sha256": "f29f3994ece0ddf5e3f23b735c43217a7d02243af724094e9f8fc3185fc3a7ce"
+  },
+  {
+    "target": "diagnostic_original_start_material",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_original_start_material-9639d1c0e6d39955.exe",
+    "sha256": "d4d50a92e779ebe1a2ec08a5a5ad6c9e549f935b6c5ccb8759b53e2d0390a378"
+  },
+  {
+    "target": "diagnostic_fixed_grouped_preparation",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_fixed_grouped_preparation-8fe7a0fc751247ef.exe",
+    "sha256": "9bf48d27280b4918cc1d3a15919ce0dc207ace8c7f1c019a6fbdc418d0874106"
+  },
+  {
+    "target": "unix_transport",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\unix_transport-bc444a8b3e2216ea.exe",
+    "sha256": "35ad57bf8b096c45e53ff91df59b7292c4ae8a4a6b1e7b6f05ee26c62d6c0c38"
+  },
+  {
+    "target": "diagnostic_signer_child_entry",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_signer_child_entry-b1ad182eb6b46256.exe",
+    "sha256": "1b3cf3f2b2825db853de34799077793a849429cbd902529dfa83e508844e4580"
+  },
+  {
+    "target": "diagnostic_original_output_join",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_original_output_join-ca6aa2dd24d5280b.exe",
+    "sha256": "848577750ff8251b98b1da9bdf8e3ddd678396f25a4064f061271838f984283c"
+  },
+  {
+    "target": "diagnostic_manager",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_manager-658aef1b0e69d4e5.exe",
+    "sha256": "a9f804343c30a63e562a70cb50e32b4a7e04912d29459cc45bddc41f28d51c7e"
+  },
+  {
+    "target": "diagnostic_signer_owned_probe",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_signer_owned_probe-46842ae8397ee795.exe",
+    "sha256": "7f3969baa47a20b8d8760fbd7920524a50db33f4ca320ceb3c72af6582c07a7b"
+  },
+  {
+    "target": "server",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\server-c7fd155896317ba8.exe",
+    "sha256": "d400804cd17a035a19dc79bea5508a23060afc866d22c24089ab37ae46b25628"
+  },
+  {
+    "target": "protocol",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\protocol-2ab6c37c9b74c2b9.exe",
+    "sha256": "48b4408d00dfa1581612c9cd51bbdc66dd02a7bcef76688b112aaac08b77d6f1"
+  },
+  {
+    "target": "diagnostic_collector_starting_record",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_collector_starting_record-f618695c42de486f.exe",
+    "sha256": "f503aa2c2e523fc7a1b51d4be88d2c1aa71c2a4749c87c77954b16a883b71748"
+  },
+  {
+    "target": "diagnostic_collector_starting_publication",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_collector_starting_publication-eb8d2617be82efd2.exe",
+    "sha256": "8d95f20f907539d92d8b9e3377761ba3821c1833e9aaef51615428a4a9786649"
+  },
+  {
+    "target": "authorization",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\authorization-5e322e1c40221c3d.exe",
+    "sha256": "099305e65046089060ebbb7412afa45e154a2557782015b4dfe329af8081df29"
+  },
+  {
+    "target": "seal_input",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\seal_input-8256d4886bdd2fa2.exe",
+    "sha256": "6a0a640cfbe1ffe4420e6a09b156559a752b2fdbb8593d2335520a08db54d526"
+  },
+  {
+    "target": "diagnostic_lease",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_lease-1322ebe572557b04.exe",
+    "sha256": "017270fe299c43d45974488c324ba0a574465b09ed038a9433878c79700f6abc"
+  },
+  {
+    "target": "state_machine",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\state_machine-242ced71d4358474.exe",
+    "sha256": "9650420ab08ff5e6f20f0b4655b42621aa279ebbfa743a4027aff144e2bf2eff"
+  },
+  {
+    "target": "diagnostic_signer_owned_probe",
+    "kind": [
+      "bin"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_signer_owned_probe-4e82bb8ced9d1037.exe",
+    "sha256": "6dbb5b5292685407208a9223bd51b6c9b712030f8b5076a5416272d76f65eda9"
+  },
+  {
+    "target": "diagnostic_signer_owned_cli",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_signer_owned_cli-f3cbe87ce06e57b1.exe",
+    "sha256": "aca8d3e1000f37c026dd77334467d58e8b05d7eb4b9cf0a361ba60dc1c78a21e"
+  },
+  {
+    "target": "event_journal",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\event_journal-81756423f9611bcb.exe",
+    "sha256": "df283c360ff7758f0c2dd8a1e214fd3a98d8ba7fa818afa7a86111277f8dfc40"
+  },
+  {
+    "target": "diagnostic_signer_root_probe",
+    "kind": [
+      "bin"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_signer_root_probe-72c9762bda97222a.exe",
+    "sha256": "d4c97ef5b14ba485777f9f7bfbb2b02867f5dc495f822173d2b8a84e7ed87fe0"
+  },
+  {
+    "target": "diagnostic_root_owned_input",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_root_owned_input-cd05540efe27ab01.exe",
+    "sha256": "eab9394e19f83660b1399cf78e8929a93c8e96f6630b2c7c9b4387bd8b4f99b4"
+  },
+  {
+    "target": "diagnostic_controller",
+    "kind": [
+      "bin"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_controller-45cc9f7b6f40cd55.exe",
+    "sha256": "b91745579bce17dcf17ebf090d5d0fb6907518e1f2683e310b19a707322e99c6"
+  },
+  {
+    "target": "diagnostic_task_api",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_task_api-6f0fcca4e78f7b69.exe",
+    "sha256": "b2ceb2060e6439b0e2d7d3ba60929b2251af4cf0d03166e11964c2c41a23f51c"
+  },
+  {
+    "target": "diagnostic_original_collector_pipes",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_original_collector_pipes-f7d87af3434c81a0.exe",
+    "sha256": "fcf95b67cf64a92f2042aacf1e9628daa676827cf2242b6545b5d28d4d0097ce"
+  },
+  {
+    "target": "diagnostic_signer_root_guard",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_signer_root_guard-02f6b107cccac221.exe",
+    "sha256": "0840a95d0858f276fd48173abf2b7c3f5dad360e031221c9aca64c29936e68ce"
+  },
+  {
+    "target": "hydracache_long_run_supervisor_074",
+    "kind": [
+      "lib"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\hydracache_long_run_supervisor_074-91cc7594fd779cb0.exe",
+    "sha256": "db0c893f7f8bb99e2811e664f8f460ed24a3de64d02b22e52f7cc4826f5224f7"
+  },
+  {
+    "target": "measurement_loss",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\measurement_loss-710e68973a282f00.exe",
+    "sha256": "ef8d1b9cfd27b6a497de187b79d0a5780139c301b4a2f17bc198cd55e04cb674"
+  },
+  {
+    "target": "diagnostic_artifacts",
+    "kind": [
+      "test"
+    ],
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_artifacts-5c314b19b63a9f42.exe",
+    "sha256": "12bca0ea91a761742458001b548dfdd854db83ca3339855b80c9431621b04804"
+  }
+]

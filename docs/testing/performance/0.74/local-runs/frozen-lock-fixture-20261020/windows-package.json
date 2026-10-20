@@ -1,0 +1,10 @@
+{
+  "source": "9f787ff81deaf54218def4030b5f76593e80a889",
+  "exit_code": 101,
+  "all_ordinary_package_tests_passed": false,
+  "ignored_selected": false,
+  "server": false,
+  "supervisor": false,
+  "product": false,
+  "qualification": false
+}

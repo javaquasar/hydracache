@@ -1,0 +1,9 @@
+{
+  "source": "d58d6a1a3f4d9d7a920703f7b29487b6c5ff8291",
+  "baseline": "23c57b77523ad1cc16b1a79fc90b02a125f8d9b8",
+  "baseline_test_diff_exit": 0,
+  "target_exit": 101,
+  "expected_red": true,
+  "runtime_changed": false,
+  "production_pin_changed": false
+}

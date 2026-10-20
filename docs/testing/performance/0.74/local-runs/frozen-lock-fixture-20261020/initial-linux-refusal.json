@@ -1,0 +1,11 @@
+{
+  "source": "9f787ff81deaf54218def4030b5f76593e80a889",
+  "initial_recipe_sha256": "a2f57176c868dbf9a6af938195f35f4b3361c0c2a4805886e6dfa76e9b6a42f9",
+  "recorded_after_refusal": true,
+  "lint_passed": false,
+  "new_seed_numeric_value_changed": false,
+  "artifact_target_executed": false,
+  "receipt_target_executed": false,
+  "runtime_changed": false,
+  "production_pin_changed": false
+}
