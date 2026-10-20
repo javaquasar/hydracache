@@ -1,0 +1,18 @@
+{
+  "source": "68b71834b7f9ec13a48ccbea93cd244935e9cf0b",
+  "mode": "windows",
+  "recipe": "3aa6d744ca2c5a0624f06232b17b54005bad7ad7c4dc8c345249e6ab0a72dd92",
+  "passed": true,
+  "matrix_rounds": 0,
+  "cases_per_round": 0,
+  "original_join": false,
+  "watchdogs_armed": false,
+  "all_writer_revocation": false,
+  "trusted_role_build_production": false,
+  "original_send": false,
+  "server": false,
+  "supervisor": false,
+  "product": false,
+  "full_joined_sigkill": false,
+  "clock_changed": false
+}

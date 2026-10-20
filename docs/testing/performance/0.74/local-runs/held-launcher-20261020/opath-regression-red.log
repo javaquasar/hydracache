@@ -1,0 +1,47 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 8.11s
+     Running tests/held_launcher.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/held_launcher-f0e05cdfc88cb274)
+
+running 1 test
+test owned_launcher_process_fault_matrix ... held_launcher seed=0x74e7ec case=healthy deadline_unchanged=true original_join=false product=false all_writer_revocation=false
+held_launcher seed=0x74e7ec case=owner-loss original_join=false product=false all_writer_revocation=false
+held_launcher seed=0x74e7ec case=foreign-sender deadline_unchanged=true original_join=false product=false all_writer_revocation=false
+held_launcher seed=0x74e7ec case=sigkill-held deadline_unchanged=true original_join=false product=false all_writer_revocation=false
+held_launcher seed=0x74e7ec case=sigkill-after-exec deadline_unchanged=true original_join=false product=false all_writer_revocation=false
+held_launcher seed=0x74e7ec case=lost-confirmation deadline_unchanged=true original_join=false product=false all_writer_revocation=false
+held_launcher seed=0x74e7ec case=guardian-one-loss deadline_unchanged=true original_join=false product=false all_writer_revocation=false
+held_launcher seed=0x74e7ec case=guardian-two-loss deadline_unchanged=true original_join=false product=false all_writer_revocation=false
+held_launcher seed=0x74e7ec case=expiry deadline_unchanged=true original_join=false product=false all_writer_revocation=false
+held_launcher seed=0x74e7ec case=guard-wins-over-release deadline_unchanged=true original_join=false product=false all_writer_revocation=false
+held_launcher seed=0x74e7ec case=socket-loss deadline_unchanged=true original_join=false product=false all_writer_revocation=false
+held_launcher seed=0x74e7ec case=short deadline_unchanged=true original_join=false product=false all_writer_revocation=false
+held_launcher seed=0x74e7ec case=long deadline_unchanged=true original_join=false product=false all_writer_revocation=false
+held_launcher seed=0x74e7ec case=wrong-token deadline_unchanged=true original_join=false product=false all_writer_revocation=false
+held_launcher seed=0x74e7ec case=wrong-digest deadline_unchanged=true original_join=false product=false all_writer_revocation=false
+held_launcher seed=0x74e7ec case=rights deadline_unchanged=true original_join=false product=false all_writer_revocation=false
+held_launcher seed=0x74e7ec case=duplicate deadline_unchanged=true original_join=false product=false all_writer_revocation=false
+held_launcher seed=0x74e7ec case=bad-hash deadline_unchanged=true original_join=false product=false all_writer_revocation=false
+held_launcher seed=0x74e7ec case=bad-stream deadline_unchanged=true original_join=false product=false all_writer_revocation=false
+held_launcher seed=0x74e7ec case=bad-pidfd deadline_unchanged=true original_join=false product=false all_writer_revocation=false
+held_launcher seed=0x74e7ec case=unsealed-config deadline_unchanged=true original_join=false product=false all_writer_revocation=false
+held_launcher seed=0x74e7ec case=exec-refused deadline_unchanged=true original_join=false product=false all_writer_revocation=false
+held_launcher seed=0x74e7ec case=changed-alarm deadline_unchanged=true original_join=false product=false all_writer_revocation=false
+held_launcher seed=0x74e7ec case=bad-config-hash deadline_unchanged=true original_join=false product=false all_writer_revocation=false
+held_launcher seed=0x74e7ec case=unsealed-worker deadline_unchanged=true original_join=false product=false all_writer_revocation=false
+held_launcher seed=0x74e7ec case=root-file-wrong-hash deadline_unchanged=true original_join=false product=false all_writer_revocation=false
+
+thread 'owned_launcher_process_fault_matrix' (520) panicked at tools/long-run-supervisor-074/tests/support/held_launcher_process.rs:459:9:
+assertion `left != right` failed
+  left: 0
+ right: 0
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    owned_launcher_process_fault_matrix
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.42s
+
+error: test failed, to rerun pass `-p hydracache-long-run-supervisor-074 --test held_launcher`

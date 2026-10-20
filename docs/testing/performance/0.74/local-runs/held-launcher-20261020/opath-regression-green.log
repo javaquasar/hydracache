@@ -1,0 +1,27 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0277]: the trait bound `Array<u8, ...>: LowerHex` is not satisfied
+   --> tools/long-run-supervisor-074/tests/support/held_launcher_process.rs:455:38
+    |
+455 | ...!("{:x}", Sha256::digest(elf()));
+    |       ----   ^^^^^^^^^^^^^^^^^^^^^ u...trait bound
+    |       |
+    |       required by this formatting parameter
+    |
+    = help: the trait `LowerHex` is not implemented for `Array<u8, ...>`
+    = help: the following other types implement trait `LowerHex`:
+              &...
+              &mut ...
+              Saturating<...>
+              Wrapping<...>
+              Bytes
+              BytesMut
+              Signature
+              BitFlags<...>
+            and 102 others
+    = note: the full name for the type has been written to '/home/artur/.cache/hydracache-074-194-check/debug/deps/held_launcher-f0e05cdfc88cb274.long-type-1971198845661272525.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+    = note: this error originates in the macro `$crate::__export::format_args` which comes from the expansion of the macro `format` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+For more information about this error, try `rustc --explain E0277`.
+error: could not compile `hydracache-long-run-supervisor-074` (test "held_launcher") due to 1 previous error
+warning: build failed, waiting for other jobs to finish...

@@ -1,0 +1,16 @@
+{
+  "source": "25888b65b3edad116d891b56ce5f61b69b510d76",
+  "mode": "194",
+  "recipe": "35a7f0431b422a1c7fc5e96b237cb352976c037ec1ab92c4a89741ab45f50281",
+  "helper_binary_built": true,
+  "original_join": false,
+  "watchdogs_armed": false,
+  "all_writer_revocation": false,
+  "trusted_role_build_production": false,
+  "original_send": false,
+  "server": false,
+  "supervisor": false,
+  "product": false,
+  "full_joined_sigkill": false,
+  "clock_changed": false
+}

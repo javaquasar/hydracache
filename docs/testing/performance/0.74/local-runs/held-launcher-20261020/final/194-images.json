@@ -1,0 +1,28 @@
+{
+  "source": "68b71834b7f9ec13a48ccbea93cd244935e9cf0b",
+  "mode": "194",
+  "recipe": "3aa6d744ca2c5a0624f06232b17b54005bad7ad7c4dc8c345249e6ab0a72dd92",
+  "images": [
+    {
+      "role": "helper",
+      "path": "/home/artur/.cache/hydracache-074-194-check/debug/diagnostic_held_launcher",
+      "sha256": "05521dca07098bda159c786438367bcb6dfee257d38b11902a9d1e4bb0ad073f"
+    },
+    {
+      "role": "unit",
+      "path": "/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_held_launcher-4388ae446d77bea7",
+      "sha256": "fb38556772c28adcc4eca1b95f669fa24445fef63b8b1b33c158a39ed1ac7343"
+    },
+    {
+      "role": "build-authority-tests",
+      "path": "/home/artur/.cache/hydracache-074-194-check/debug/deps/held_build-fa11368a71c604e1",
+      "sha256": "4a9570da3809dc27b3b2cdf2fb902b3dde070fde46d173e2aa9db7f7419de50c"
+    },
+    {
+      "role": "process-matrix",
+      "path": "/home/artur/.cache/hydracache-074-194-check/debug/deps/held_launcher-f0e05cdfc88cb274",
+      "sha256": "7149688d33f85443943f596e5fc2d842635b3d41939c6602cc83d8746ff613f4"
+    }
+  ],
+  "role_receipt_issued": false
+}

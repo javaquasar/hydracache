@@ -1,0 +1,27 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.52s
+   Doc-tests hydracache_long_run_supervisor_074
+
+running 2 tests
+error[E0599]: no method named `start` found for struct `CheckedPolicy` in the current scope
+  --> tools\long-run-supervisor-074\src\diagnostic_held_build.rs:69:49
+   |
+69 | fn cannot_start(policy: CheckedPolicy) { policy.start(); }
+   |                                                 ^^^^^ method not found in `CheckedPolicy`
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0599`.
+test tools\long-run-supervisor-074\src\diagnostic_held_build.rs - diagnostic_builder::held_build::CheckedPolicy (line 66) - compile fail ... ok
+error[E0599]: no method named `unlock` found for struct `hydracache_long_run_supervisor_074::diagnostic_builder::held_build::VerifiedBuild` in the current scope
+   --> tools\long-run-supervisor-074\src\diagnostic_held_build.rs:279:48
+    |
+279 | fn cannot_unlock(build: VerifiedBuild) { build.unlock(); }
+    |                                                ^^^^^^ method not found in `hydracache_long_run_supervisor_074::diagnostic_builder::held_build::VerifiedBuild`
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0599`.
+test tools\long-run-supervisor-074\src\diagnostic_held_build.rs - diagnostic_builder::held_build::VerifiedBuild (line 276) - compile fail ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 20 filtered out; finished in 0.37s
+

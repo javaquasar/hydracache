@@ -1,0 +1,6 @@
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.79s
+     Running `target\debug\xtask.exe gated-test-check`
+gated-test-check: docs/testing/gated-test-registry.toml: unregistered ignored test hydracache-long-run-supervisor-074/held_launcher::owned_launcher_process_fault_matrix in tools/long-run-supervisor-074/tests/held_launcher.rs
+gated-test-check: docs/testing/gated-test-registry.toml: unregistered cfg-gated target hydracache-long-run-supervisor-074/held_launcher (all (target_os = "linux" , target_arch = "x86_64")) in tools/long-run-supervisor-074/tests/held_launcher.rs
+Error: "gated-test-check found 2 problem(s)"
+error: process didn't exit successfully: `target\debug\xtask.exe gated-test-check` (exit code: 1)

@@ -1,0 +1,23 @@
+{
+  "source": "25888b65b3edad116d891b56ce5f61b69b510d76",
+  "mode": "windows",
+  "recipe": "35a7f0431b422a1c7fc5e96b237cb352976c037ec1ab92c4a89741ab45f50281",
+  "images": [
+    {
+      "role": "helper",
+      "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\diagnostic_held_launcher.exe",
+      "sha256": "c02f267ddaf48b32715e9f13a3a6b62433b67257f76feaed67d8dfbce7a4749c"
+    },
+    {
+      "role": "unit",
+      "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_held_launcher-0e5314d3baac88ab.exe",
+      "sha256": "defeec3f12c59ca6491d0240accab49d2a86bb5d7313930625098ff438e71e99"
+    },
+    {
+      "role": "build-authority-tests",
+      "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\held_build-986347a7c55d6a1a.exe",
+      "sha256": "8c935e85eb9a6e991893755d9529839398d98405b0faae96eaa52c8a3412e11f"
+    }
+  ],
+  "role_receipt_issued": false
+}

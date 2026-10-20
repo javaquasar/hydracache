@@ -1,0 +1,8 @@
+error: no bin target named `diagnostic_held_launcher` in `hydracache-long-run-supervisor-074` package
+help: available bin targets:
+    diagnostic_builder
+    diagnostic_controller
+    diagnostic_signer_isolation_probe
+    diagnostic_signer_owned_probe
+    diagnostic_signer_root_probe
+    hydracache-long-run-supervisor-074

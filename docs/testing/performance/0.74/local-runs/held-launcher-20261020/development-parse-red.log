@@ -1,0 +1,7 @@
+error: expected expression, found `==`
+  --> \\?\C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074\src\diagnostic_held_launcher_kernel.rs:26:77
+   |
+26 | fn sealed(fd: RawFd) -> bool { unsafe { libc::fcntl(fd,libc::F_GET_SEALS) } == SEALS }
+   |                                                                             ^^ expected expression
+
+Error writing files: failed to resolve mod `kernel`: cannot parse \\?\C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074\src\diagnostic_held_launcher_kernel.rs

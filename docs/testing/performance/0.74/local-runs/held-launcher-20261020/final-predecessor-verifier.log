@@ -1,0 +1,11 @@
+{
+  "verified": true,
+  "files": 60,
+  "metadata_mutation_refusals": 26,
+  "inventory_sha256": "1066e4520b534356ab2b3cccec03281a86104b8bbbc12729248a026ab372bc35",
+  "static_build_authority_only": true,
+  "actual_role_build": false,
+  "original_join": false,
+  "server": false,
+  "product": false
+}

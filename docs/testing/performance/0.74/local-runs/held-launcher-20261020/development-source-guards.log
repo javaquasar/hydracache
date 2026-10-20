@@ -1,0 +1,119 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 13.13s
+     Running tests\diagnostic_artifact_fixture_074.rs (target\debug\deps\diagnostic_artifact_fixture_074-d6c8dfda08fafa68.exe)
+
+running 10 tests
+
+thread 'held_build_adapter_rejects_missing_duplicate_and_unrelated_old_drift' (32792) panicked at crates\xtask\tests\support\held_build_guard.rs:51:5:
+assertion `left == right` failed: exact held build addition: tools/long-run-supervisor-074/src/diagnostic_builder.rs
+  left: 0
+ right: 1
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'immutable_fixture_adapter_refuses_missing_duplicate_and_unrelated_test_drift' (9228) panicked at crates\xtask\tests\diagnostic_artifact_fixture_074.rs:95:5:
+assertion `left == right` failed: exact immutable helper
+  left: 0
+ right: 1
+
+thread 'held_build_adapter_rejects_missing_duplicate_and_unrelated_old_drift' (32792) panicked at crates\xtask\tests\support\held_build_guard.rs:51:5:
+assertion `left == right` failed: exact held build addition: tools/long-run-supervisor-074/src/diagnostic_builder.rs
+  left: 2
+ right: 1
+
+thread 'immutable_fixture_adapter_refuses_missing_duplicate_and_unrelated_test_drift' (9228) panicked at crates\xtask\tests\diagnostic_artifact_fixture_074.rs:95:5:
+assertion `left == right` failed: exact immutable helper
+  left: 2
+ right: 1
+
+thread 'immutable_fixture_adapter_refuses_missing_duplicate_and_unrelated_test_drift' (9228) panicked at crates\xtask\tests\diagnostic_artifact_fixture_074.rs:96:5:
+assertion `left == right` failed: exact regression hook
+  left: 0
+ right: 1
+
+thread 'launcher_adapter_refuses_missing_duplicate_and_unrelated_drift' (2848) panicked at crates\xtask\tests\support\held_launcher_guard.rs:115:5:
+assertion `left == right` failed: exact held launcher addition: docs/COMPAT.md
+  left: 0
+ right: 1
+test held_build_source_allowlist_requires_all_old_files_and_exactly_one_named_addition ... ok
+
+thread 'immutable_fixture_adapter_refuses_missing_duplicate_and_unrelated_test_drift' (9228) panicked at crates\xtask\tests\diagnostic_artifact_fixture_074.rs:96:5:
+assertion `left == right` failed: exact regression hook
+  left: 2
+ right: 1
+
+thread 'launcher_adapter_refuses_missing_duplicate_and_unrelated_drift' (2848) panicked at crates\xtask\tests\support\held_launcher_guard.rs:115:5:
+assertion `left == right` failed: exact held launcher addition: docs/COMPAT.md
+  left: 2
+ right: 1
+
+thread 'namespace_adapter_refuses_missing_duplicate_and_unrelated_drift' (1164) panicked at crates\xtask\tests\support\fixed_slice_namespace_guard.rs:48:5:
+assertion `left == right` failed: exact namespace test hook: tools/long-run-supervisor-074/src/diagnostic_fixed_slice_tests.rs
+  left: 0
+ right: 1
+
+thread 'namespace_adapter_refuses_missing_duplicate_and_unrelated_drift' (1164) panicked at crates\xtask\tests\support\fixed_slice_namespace_guard.rs:48:5:
+assertion `left == right` failed: exact namespace test hook: tools/long-run-supervisor-074/src/diagnostic_fixed_slice_tests.rs
+  left: 2
+ right: 1
+
+thread 'immutable_fixture_adapter_refuses_missing_duplicate_and_unrelated_test_drift' (9228) panicked at crates\xtask\tests\diagnostic_artifact_fixture_074.rs:100:5:
+assertion `left == right` failed: exact receipt lock input
+  left: 0
+ right: 1
+
+thread 'immutable_fixture_adapter_refuses_missing_duplicate_and_unrelated_test_drift' (9228) panicked at crates\xtask\tests\diagnostic_artifact_fixture_074.rs:100:5:
+assertion `left == right` failed: exact receipt lock input
+  left: 2
+ right: 1
+
+thread 'namespace_adapter_refuses_missing_duplicate_and_unrelated_drift' (1164) panicked at crates\xtask\tests\support\fixed_slice_namespace_guard.rs:48:5:
+assertion `left == right` failed: exact namespace test hook: docs/testing/gated-test-registry.toml
+  left: 0
+ right: 1
+
+thread 'namespace_adapter_refuses_missing_duplicate_and_unrelated_drift' (1164) panicked at crates\xtask\tests\support\fixed_slice_namespace_guard.rs:48:5:
+assertion `left == right` failed: exact namespace test hook: docs/testing/gated-test-registry.toml
+  left: 2
+ right: 1
+
+thread 'launcher_adapter_refuses_missing_duplicate_and_unrelated_drift' (2848) panicked at crates\xtask\tests\diagnostic_artifact_fixture_074.rs:16:9:
+assertion `left == right` failed: exact new launcher source
+  left: 0
+ right: 1
+
+thread 'launcher_adapter_refuses_missing_duplicate_and_unrelated_drift' (2848) panicked at crates\xtask\tests\diagnostic_artifact_fixture_074.rs:16:9:
+assertion `left == right` failed: exact new launcher source
+  left: 2
+ right: 1
+
+thread 'launcher_adapter_refuses_missing_duplicate_and_unrelated_drift' (2848) panicked at crates\xtask\tests\diagnostic_artifact_fixture_074.rs:16:9:
+assertion `left == right` failed: exact new launcher source
+  left: 0
+ right: 1
+
+thread 'launcher_adapter_refuses_missing_duplicate_and_unrelated_drift' (2848) panicked at crates\xtask\tests\diagnostic_artifact_fixture_074.rs:16:9:
+assertion `left == right` failed: exact new launcher source
+  left: 2
+ right: 1
+test launcher_adapter_refuses_missing_duplicate_and_unrelated_drift ... ok
+test immutable_fixture_changes_only_old_input_helper_not_any_old_assertion ... ok
+test namespace_fixture_is_test_only_private_mount_and_not_manager_authority ... ok
+test immutable_fixture_adapter_refuses_missing_duplicate_and_unrelated_test_drift ... ok
+test immutable_fixture_is_exact_worker_blob_and_checkout_keeps_raw_lf ... ok
+
+thread 'held_build_adapter_rejects_missing_duplicate_and_unrelated_old_drift' (32792) panicked at crates\xtask\tests\support\held_build_guard.rs:51:5:
+assertion `left == right` failed: exact held build addition: docs/COMPAT.md
+  left: 0
+ right: 1
+
+thread 'held_build_adapter_rejects_missing_duplicate_and_unrelated_old_drift' (32792) panicked at crates\xtask\tests\support\held_build_guard.rs:51:5:
+assertion `left == right` failed: exact held build addition: docs/COMPAT.md
+  left: 2
+ right: 1
+test namespace_adapter_refuses_missing_duplicate_and_unrelated_drift ... ok
+test held_build_adapter_rejects_missing_duplicate_and_unrelated_old_drift ... ok
+test launcher_preserves_all_438_preceding_sources_and_exact_old_formats ... ok
+test immutable_fixture_preserves_all_437_runtime_sources_and_production_inputs ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 54.78s
+

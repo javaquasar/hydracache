@@ -1,0 +1,11 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 8.89s
+     Running unittests src/bin/diagnostic_held_launcher.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_held_launcher-4388ae446d77bea7)
+
+running 3 tests
+test kernel::tests::bootstrap_refuses_reserved_magic_zero_token_and_bad_or_alias_pids ... ok
+test kernel::tests::malformed_time_and_duplicate_fdinfo_refuse ... ok
+test kernel::tests::exact_release_binds_every_packet_and_bootstrap_byte ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
