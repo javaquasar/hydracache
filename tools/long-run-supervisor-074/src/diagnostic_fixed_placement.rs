@@ -2,6 +2,9 @@
 use super::*;
 use crate::diagnostic_two_phase_launch::root_enrollment::FixedSlice;
 
+#[path = "diagnostic_consuming_held_join.rs"]
+mod held_join;
+
 trait SliceControls: PlacementControls {
     type Slice;
     fn pin(&mut self, attempt: [u8; 32]) -> Result<Self::Slice, PendingError>;

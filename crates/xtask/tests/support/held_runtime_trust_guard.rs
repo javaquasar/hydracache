@@ -1,4 +1,6 @@
 //! Exact additive early held trust source, not an old-source exclusion.
+#[path = "consuming_held_join_guard.rs"]
+pub(crate) mod consuming;
 pub(crate) const FILE: &str =
     "tools/long-run-supervisor-074/src/diagnostic_controller_trust_input.rs";
 #[allow(dead_code)]
@@ -43,10 +45,11 @@ admission. No migration/fallback or changes to old signed formats, live checks,
 <!-- END HELD RUNTIME TRUST V1 -->
 "##;
 pub(crate) fn normalize(path: &str, raw: &str) -> String {
+    let raw = consuming::normalize(path, raw);
     let exact = match path {
         FILE => HOOK,
         COMPAT => BLOCK,
-        _ => return raw.into(),
+        _ => return raw,
     };
     assert_eq!(
         raw.matches(exact).count(),

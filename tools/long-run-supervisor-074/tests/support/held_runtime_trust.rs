@@ -1,4 +1,6 @@
 //! Synthetic configuration/keys and actual local kernel inputs, never enrollment.
+#[path = "consuming_held_bridge.rs"]
+mod consuming_held_bridge;
 use super::*;
 use ed25519_dalek::{Signer, SigningKey};
 use serde_json::json;
