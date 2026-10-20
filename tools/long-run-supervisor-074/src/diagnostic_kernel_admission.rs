@@ -8,6 +8,10 @@ use std::os::unix::fs::{FileExt, MetadataExt, OpenOptionsExt};
 use std::sync::Arc;
 use thiserror::Error;
 
+#[path = "diagnostic_document_scratch.rs"]
+mod document_scratch;
+use document_scratch::{alive_read, DocumentBuffer};
+
 // BEGIN TEST ONLY KERNEL REFUSAL TRACE
 #[cfg(test)]
 #[path = "diagnostic_kernel_refusal_trace.rs"]
@@ -381,7 +385,8 @@ impl Sender {
             crate::diagnostic_ipc::validation_trace::kernel_walk::Kind::Sender,
         );
         origin.revalidate()?;
-        alive(&self.pidfd, self.credentials.pid)?;
+        let mut scratch = DocumentBuffer::new();
+        alive_read(&self.pidfd, self.credentials.pid, |file| scratch.read(file))?;
         let directory = origin.child(self.credentials.pid, true)?;
         for file in [&directory, &self.directory] {
             let m = file.metadata()?;
@@ -393,48 +398,17 @@ impl Sender {
         for file in [&named, &self.status] {
             let m = file.metadata()?;
             if (m.dev(), m.ino()) != self.status_id
-                || projection(&bounded(file)?, &self.credentials)? != self.projection
+                || projection(scratch.read(file)?, &self.credentials)? != self.projection
             {
                 return Err(kernel_invalid!("sender-status-binding"));
             }
         }
-        alive(&self.pidfd, self.credentials.pid)?;
+        alive_read(&self.pidfd, self.credentials.pid, |file| scratch.read(file))?;
         origin.revalidate()
     }
 }
 fn alive(pidfd: &OwnedFd, pid: libc::pid_t) -> Result<(), KernelError> {
-    #[cfg(test)]
-    let _kernel_walk = crate::diagnostic_ipc::validation_trace::kernel_walk::span(
-        crate::diagnostic_ipc::validation_trace::kernel_walk::Kind::Alive,
-    );
-    let mut poll = libc::pollfd {
-        fd: pidfd.as_raw_fd(),
-        events: libc::POLLIN,
-        revents: 0,
-    };
-    let ready = unsafe { libc::poll(&mut poll, 1, 0) };
-    if ready < 0 {
-        return Err(std::io::Error::last_os_error().into());
-    }
-    if ready != 0 || poll.revents != 0 {
-        return Err(KernelError::NotLive);
-    }
-    let info = OpenOptions::new()
-        .read(true)
-        .custom_flags(libc::O_NOFOLLOW | libc::O_CLOEXEC)
-        .open(format!("/proc/thread-self/fdinfo/{}", pidfd.as_raw_fd()))?;
-    let raw = bounded(&info)?;
-    origin::filesystem(&info, 0x9fa0)?;
-    let text = std::str::from_utf8(&raw).map_err(|_| kernel_invalid!("pidfd-info-utf8"))?;
-    let mut lines = text.lines().filter_map(|line| line.strip_prefix("Pid:"));
-    let observed = kernel_required!(lines.next(), "pidfd-info-missing-pid")?
-        .trim()
-        .parse::<i32>()
-        .map_err(|_| kernel_invalid!("pidfd-info-pid-number"))?;
-    if lines.next().is_some() || observed != pid || pid <= 0 {
-        return Err(KernelError::NotLive);
-    }
-    Ok(())
+    alive_read(pidfd, pid, bounded)
 }
 #[cfg(test)]
 #[path = "diagnostic_kernel_admission_tests.rs"]

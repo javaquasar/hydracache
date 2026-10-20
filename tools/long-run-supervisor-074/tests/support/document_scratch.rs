@@ -1,8 +1,6 @@
 //! Frozen old validator and one buffer-only prototype, never an admission route.
+use crate::diagnostic_kernel_admission::document_scratch::{alive_read, DocumentBuffer};
 use crate::diagnostic_kernel_admission::*;
-#[path = "document_scratch_impl.rs"]
-mod scratch;
-use scratch::{alive_read, DocumentBuffer};
 impl Sender {
     pub(in crate::diagnostic_kernel_admission) fn scratch_reference(
         &self,
