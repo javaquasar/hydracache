@@ -389,3 +389,6 @@ docs/testing/performance/0.74/local-runs/held-role-files-20261020/**/*.log white
 
 docs/testing/performance/0.74/local-runs/held-role-binding-20261020/** -text whitespace=cr-at-eol
 docs/testing/performance/0.74/local-runs/held-role-binding-20261020/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/held-runtime-trust-20261020/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/held-runtime-trust-20261020/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
