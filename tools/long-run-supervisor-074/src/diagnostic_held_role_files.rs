@@ -81,13 +81,18 @@ fn inspect(file: &File, expected: &ArtifactDigest) -> Result<Stamp, ArtifactErro
 
 /// Retains two immutable files and the consumed checked receipt. This is not
 /// installed-path, creator, running-process, original-policy or epoch proof.
-/// ```compile_fail
+/// ```compile_fail,E0599
 /// use hydracache_long_run_supervisor_074::diagnostic_builder::held_build::role_files::PinnedRoles;
-/// fn cannot_start(roles: PinnedRoles) { roles.start(); }
+/// fn cannot_start(roles: PinnedRoles) {
+///     roles.start();
+/// }
 /// ```
-/// ```compile_fail
+/// ```compile_fail,E0277
 /// use hydracache_long_run_supervisor_074::diagnostic_builder::held_build::role_files::PinnedRoles;
-/// fn cannot_extract(roles: PinnedRoles) { roles.into_raw_fd(); }
+/// use std::os::fd::IntoRawFd;
+/// fn cannot_extract(roles: PinnedRoles) {
+///     let _ = IntoRawFd::into_raw_fd(roles);
+/// }
 /// ```
 pub struct PinnedRoles {
     build: VerifiedBuild,

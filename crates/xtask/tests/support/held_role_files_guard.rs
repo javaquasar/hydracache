@@ -1,5 +1,8 @@
 //! Exact additive module only; no old source, schema or live check is excluded.
 pub(crate) const FILE: &str = "tools/long-run-supervisor-074/src/diagnostic_held_build.rs";
+// The predecessor bridge imports only normalize; the dedicated fixture test uses
+// these two source-list controls. Do not relax warnings for the whole module.
+#[allow(dead_code)]
 pub(crate) const SOURCE: &str = "tools/long-run-supervisor-074/src/diagnostic_held_role_files.rs";
 pub(crate) const HOOK: &str = "\n#[cfg(target_os = \"linux\")]\n#[path = \"diagnostic_held_role_files.rs\"]\npub mod role_files;\n";
 pub(crate) fn normalize(path: &str, raw: &str) -> String {
@@ -9,6 +12,7 @@ pub(crate) fn normalize(path: &str, raw: &str) -> String {
     assert_eq!(raw.matches(HOOK).count(), 1, "exact role-file module hook");
     raw.replacen(HOOK, "", 1)
 }
+#[allow(dead_code)]
 pub(crate) fn previous_list(current: &str) -> String {
     assert_eq!(
         current.lines().filter(|p| *p == SOURCE).count(),
