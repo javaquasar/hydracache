@@ -14381,3 +14381,47 @@ both observations the same executable check would hide a transition that needs
 its own original-frame and lost-ack coverage. This topology and build-authority
 proposal needs approval before implementation; it does not enroll a key, choose
 an install path, extract a library or authorize a server run.
+
+## Separate build purposes without expanding execution authority
+
+The operator subsequently approved the minimal local contract. Its
+[first implementation](../testing/performance/0.74/held-build-authority-plan-20261020.md)
+keeps the old worker authority intact and adds a separate policy, constrained
+signer and receipt/content verifier. The useful hypothesis here is about a trust
+boundary, not speed: a worker receipt should not become authority for new helper
+roles merely because all artifacts belong to the same release.
+
+Two independent policy pins must authenticate the same controller, and the worker
+builder, held-runtime builder and controller keys must all differ. The new policy
+selects exact source/tree/root-lock inputs and an expected epoch. Its receipt
+binds clean isolated-build observations, an exact GNU release recipe, distinct
+host/helper images, raw build log and the fixed role map: launcher from the
+helper, watchdog and collector from the original host image. Cargo log inspection
+requires both exact binary records and one successful final event, rejecting
+wrong packages, profiles, features, missing/duplicate targets and trailing events.
+
+Sixteen synthetic integration cases include valid controls followed by altered
+policies, re-signed invalid statements, content/role substitutions and 128 seeded
+binary corruptions. They pass on Windows, GNU 1.94 and MSRV 1.88. Opaque checked
+results have no start or unlock method. Exact source adapters preserve all 437
+previous source files rather than relaxing the old live predicates or deadlines.
+The [separate packet](../testing/performance/0.74/local-runs/held-build-authority-20261020/README.md)
+records these tests and their limited scope; they are not a throughput claim.
+
+What remains matters as much as what passes. Invented ELF headers and Cargo
+events test the contract but cannot certify real images. A signature attests a
+trusted build job's observations; it is not independent reproduction of that
+build. The expected epoch is reviewed configuration, not a live original epoch.
+Matching expected hashes is not descriptor custody or process identity. The next
+package must implement the real held launcher and its inherited-FD, one-shot
+worker-exec boundary, then join retained role objects to the original owner and
+full validation frame. No production key, installation, server operation,
+original message or workload is authorized by this component.
+
+The selected-source gate also passes the complete old artifact/receipt selections
+on each compiler, eight exact source guards, three predecessor bridge controls,
+strict lint, fmt, registry/docs and the local non-promotable contract. The sealed
+packet contains sixty hashed members plus inventory and refuses 26 in-memory
+receipt metadata mutations. It preserves earlier evidence and the frozen
+qualification digest; this package does not rerun the full 321 controls or a new
+kernel/live/SIGKILL matrix.

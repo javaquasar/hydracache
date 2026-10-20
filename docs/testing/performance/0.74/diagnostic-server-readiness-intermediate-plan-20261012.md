@@ -578,3 +578,22 @@ An active collector requires its own admitted handoff; it is not the current
 quarantine renamed. Preserve the old worker contract and every original live
 predicate/deadline. No production path, key enrollment, host operation or original
 delivery is authorized by the proposal or by unchanged artifact regressions.
+
+## P3 Approved purpose-bound static build authority
+
+The subsequent operator continuation approves the minimal local topology and
+[build-authority plan](held-build-authority-plan-20261020.md). At 48854c1e the
+separate policy, constrained signer and receipt/content verifier are implemented,
+without extending the frozen worker policy. The same controller must authenticate
+both independently pinned policies; the three keys differ. Receipt checks bind
+the policy/epoch, exact source/recipe, distinct host/helper images and fixed role
+map. These are static assertions, not a live authority epoch or admitted files.
+
+Next implement the real held-launcher bootstrap and one-shot pinned worker exec,
+then protected role build production and retained objects. Join those objects to
+original policy/epoch, fixed root, manager and full frames before held projection
+and delivery. Active collector handoff, joined SIGKILL/lost-ACK, all-writer
+cessation, durable lifecycle and reconnect remain open. The separate
+[evidence packet](local-runs/held-build-authority-20261020/README.md) is explicitly
+synthetic and non-promotable; it authorizes no installation, supervisor operation,
+system-bus/original send, production enrollment or product/server workload.

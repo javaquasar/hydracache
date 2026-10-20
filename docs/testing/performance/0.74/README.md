@@ -4432,3 +4432,29 @@ held launcher has no production target. The proposed minimal contract retains
 that topology, adds one held launcher and separate purpose-bound build authority,
 and explicitly distinguishes pre-exec launcher/worker-FD binding from post-exec
 worker identity. It is a proposal, not an enrolled policy or installed path.
+
+The operator subsequently approved its minimal local implementation; the
+[purpose-bound build plan](held-build-authority-plan-20261020.md) records that
+scope. The first package at 48854c1e implements a separate policy, constrained
+signer and canonical receipt/content verifier for two images and three roles.
+Both independently pinned builder policies must authenticate the same controller,
+with three distinct keys. The new receipt binds an expected epoch, exact source,
+fixed recipe, role map and raw ELF/lock/log digests. None is live epoch, custody
+or original-start proof. The worker policy, old formats and original checks stay
+unchanged after the exact additive module/COMPAT adapters.
+
+The [new evidence packet](local-runs/held-build-authority-20261020/README.md)
+uses synthetic keys, ELF headers and Cargo events. An actual launcher binary,
+protected build production, original role-file admission and full held projection
+remain next. No server, supervisor, enrollment, original send or product workload
+is opened by this static component.
+
+The accepted selected-source gate passes sixteen new integration tests and two
+compile-fail controls per compiler. Old artifact/receipt selections pass 17/8 on
+Windows and 31/9 per GNU compiler; eight source guards, three old bridge controls,
+strict lint, format, registry/docs and the local contract pass. No full 321 or
+new kernel/live/fault matrix is claimed. The packet has sixty hashed members
+plus inventory; inventory SHA256 is
+`1066e4520b534356ab2b3cccec03281a86104b8bbbc12729248a026ab372bc35`.
+Its verifier rejects 26 in-memory receipt metadata mutations. Earlier sealed
+packets and the qualification manifest digest remain unchanged.

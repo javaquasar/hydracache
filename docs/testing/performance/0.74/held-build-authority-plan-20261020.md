@@ -75,3 +75,21 @@ durable lifecycle and reconnect before any separately authorized server rehearsa
 
 No production keys/pins, host admission, install path, server, stable supervisor,
 original/system-bus send, product workload or expensive qualification is opened.
+
+## First package implementation
+
+Source 48854c1e implements the new portable diagnostic_builder::held_build module,
+three registered formats, separate domain, fixed two-image recipe/role map and
+opaque checked outputs. Sixteen synthetic integration tests cover canonical and
+signed binding mutations, distinct same-controller keys and independent pins,
+source/epoch, ELF/lock/content, Cargo records and 128 seeded bit corruptions
+(seed 0x0074_b017). Two compile-fail examples deny start/unlock capabilities.
+The exact adapters reconstruct all 437 previous source files and allow only the
+single named runtime addition. They preserve old schemas, tests, locks, registry
+and qualification digest. Selected-source results and preliminary compiler
+refusals are retained in the [packet](local-runs/held-build-authority-20261020/README.md).
+
+This closes only the static purpose-bound build-authority component. No protected
+producer has issued a real role receipt and no held launcher has been built.
+Proceed with the actual local helper and nonproduct process/FD tests described
+above; do not substitute this signed-data check for the original live join.

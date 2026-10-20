@@ -129,3 +129,18 @@ qualification digest remain unchanged. These are old regression checks and a
 recorded architecture boundary, not a new held-artifact implementation or live
 fault cohort. Stop for topology/build-authority approval rather than introducing
 another hash wrapper which labels that unresolved authority as complete.
+
+## Approved local continuation
+
+The operator subsequently approved the proposed minimal contract by continuation.
+The [implementation plan](held-build-authority-plan-20261020.md) records its exact
+scope: one future held launcher, existing keepers in the original host image,
+separate build purpose, and distinct pre/post-exec identity. This is local design
+approval, not production enrollment or installation. The sealed audit packet
+above remains historical and unchanged, including its false approval field.
+
+The first implementation at 48854c1e adds the separate static build-policy,
+constrained signer and receipt/content verifier. It does not yet implement the
+launcher target, retain original role files or join them to the live frame.
+The [new packet](local-runs/held-build-authority-20261020/README.md) separates
+synthetic format tests from actual role builds and later execution gates.
