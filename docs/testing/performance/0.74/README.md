@@ -4495,3 +4495,37 @@ members plus inventory, SHA256
 Its verifier refuses 32 in-memory receipt metadata mutations. Previous evidence
 and the frozen qualification digest remain unchanged; no full 321 or original
 joined SIGKILL/qualification gate is claimed.
+
+## Retained sealed role files
+
+The [retained-role package](held-role-files-plan-20261020.md) connects a consumed
+checked held-build receipt to two actual open, immutable Linux files. PinnedRoles
+requires exact seals, read-only non-O_PATH CLOEXEC descriptors, distinct kernel
+identities, bounded ELF/content hashes and the signed lock/log. Revalidation
+retains the same descriptors and stamps, does not move shared offsets and refuses
+permanently after a mismatch. No pathname opening, FD extraction or launch API
+is added. A writable alias of the same sealed file cannot change its bytes.
+
+Ten additional Linux integration tests cover concurrent offset changes, metadata
+drift and 32 seeded content mutations. The
+[separate packet](local-runs/held-role-files-20261020/README.md) records compiler,
+test image and recipe identities. It preserves a compiler diagnostic panic and
+strict-lint refusal separately from corrected selected-source acceptance.
+
+This closes descriptor-backed content retention, not original admission.
+FixedPlacement, its signed role claims, original controller/policy/epoch and
+unchanged complete frame must still consume these objects in one checked join.
+Protected receipt production, actual helper/bootstrap/process binding, active
+collector and all-writer cessation remain subsequent gates. No server,
+supervisor, original message, product execution or new SIGKILL matrix is opened.
+
+Accepted source 82570db8 passes two rounds of all 26 tests and four capability
+docs on each GNU/MSRV compiler, plus two 16-test rounds and two docs on Windows.
+Twelve source guards, three predecessor bridge controls, strict lint, registry
+(186 registered), docs and local contract pass. Silent formatting is explicitly
+rechecked after a missing-log wrapper refusal; its completion receipt binds the
+recovery recipe. The packet verifier refuses 34 metadata mutations. Real-image
+rehash cost remains unmeasured, and earlier sealed packets/qualification stay fixed.
+
+The sealed packet has 86 hashed members plus inventory, SHA256
+`c9fdc73c1f89b2037af2eacb87af8b6576a1e0af29629a1ef584dd0974316faf`.

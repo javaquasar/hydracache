@@ -14475,3 +14475,51 @@ packet plus inventory binds exact source, recipe and image hashes, verifies
 32 receipt metadata refusal controls and preserves the earlier packets and
 qualification digest. These process observations do not promote a server or
 performance claim.
+
+## Retain the checked role files without mistaking content for authority
+
+The next [local package](../testing/performance/0.74/held-role-files-plan-20261020.md)
+tests a smaller prerequisite than original launch. A signed receipt plus caller
+bytes does not retain the object whose content was checked. PinnedRoles consumes
+the checked receipt and two already-open Linux files, then retains both files
+and their kernel stamps. Four exact immutable seals, read-only access, CLOEXEC
+and rejection of O_PATH are mandatory. Receipt hashes, bounded ELF headers,
+distinct role identities and signed lock/log must agree.
+
+Full hashing uses a fixed 64 KiB buffer and positional reads rather than seeking
+the shared open-file description. Tests change an alias's offset concurrently
+with revalidation and verify that checks still read the entire intended content.
+A writable alias of the same sealed file cannot modify bytes. Metadata changes,
+swapped roles, missing seals and changed expectations refuse; restoring a correct
+argument cannot revive the refused object. Thirty-two seeded content corruptions
+exercise both roles. These are kernel/content correctness observations, not
+throughput, CPU or allocation measurements.
+
+The verification harness itself also needs a failure model. GNU 1.94 panics in
+its diagnostic renderer for one short compile-fail example, but rustdoc reports
+the example as successful because compilation failed. That result cannot prove
+the intended missing capability. Multi-line formatting reproduces the panic.
+The FD-extraction control instead tests the absent IntoRawFd trait with explicit
+E0277, while start requires E0599. The recipe also refuses compiler-panic output.
+An independent xtask lint failure concerns two source-list helpers unused by an
+older bridge; narrow test-only annotations preserve strict warnings elsewhere.
+
+Content, provenance and authority remain different facts. The new owned files
+contain synthetic ELF fixtures authenticated by synthetic test keys. They are
+not the running host, installed helper or evidence of protected build production.
+No descriptor extraction or launch API follows from PinnedRoles. The following
+join must consume the same original FixedPlacement and admitted policy/epoch,
+with original role claims and the complete unchanged validation frame. Only
+after that join can bootstrap/process binding and authenticated delivery advance.
+All-writer cessation, durable completion and same-attempt reconnect remain
+separate gates; this package performs no server or supervisor operation.
+
+At selected source 82570db8 each Linux compiler passes two rounds of all 26
+integration controls and four capability examples without compiler panic.
+Windows retains sixteen controls in two rounds and two older examples. Twelve
+source guards, three predecessor bridge checks, strict lint, registry/docs and
+the local contract pass. A silent formatter exposes a separate log-wrapper bug;
+an explicit exit-code/source-frozen recheck closes it with a second hashed recipe,
+not an edited earlier log. Thirty-four receipt metadata mutations refuse.
+Attribution on real role images is still required before placing this hashing
+work inside the original deadline frame.

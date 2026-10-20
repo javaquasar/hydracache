@@ -619,3 +619,21 @@ root, manager and complete frames. Do not send the old direct-worker message.
 Before original held release, prove both guardians Armed and collector custody;
 before completion/unlock, prove post-exec all-writer cessation and actual EOF.
 Durable later cells, reconnect, enrollment and server rehearsal remain gated.
+
+## P3 Retained role content before authority join
+
+The [retained-role implementation](held-role-files-plan-20261020.md) now consumes
+the checked receipt and two sealed read-only files. It validates the signed role
+map against actual ELF/content and retains kernel stamps, without exporting FDs
+or granting execution. Positional hashing preserves shared offsets; refusal is
+sticky. The ten new Linux controls use synthetic bytes and keys, not a protected
+production role build. The [packet](local-runs/held-role-files-20261020/README.md)
+also records a diagnostic-renderer panic that ordinary compile-fail reporting
+incorrectly calls successful; final acceptance must exclude that panic.
+
+Next consume this retained content with the same FixedPlacement, admitted held
+policy/controller/epoch, original signed claims and unchanged complete frames.
+Neither static ExpectedTrust input nor content custody establishes live authority.
+Then bind bootstrap/helper/worker process identity before original delivery;
+watchdog Armed, active collector, all-writer termination, later durable cells and
+reconnect remain required before a separately authorized server rehearsal.
