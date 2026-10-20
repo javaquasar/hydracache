@@ -1,0 +1,29 @@
+{
+  "through": "1b7e93bebe2f496be2664385dc37ca3a531f0618",
+  "commits": [
+    {
+      "sha": "07cd8d77476e3e6db70005a85dad8cc6b89cf8b3",
+      "subject": "docs: preregister remaining preparation attribution and bounded projection hypothesis"
+    },
+    {
+      "sha": "d62c8e7ae8ee551fde04081f999352c4cb551d2d",
+      "subject": "test: split remaining preparation and freeze bounded projection differential controls"
+    },
+    {
+      "sha": "7ae3b2b475a18735ffd770abb372f11f2f7af1ec",
+      "subject": "test: retain six preparation baselines and repeated bounded projection allocation controls"
+    },
+    {
+      "sha": "723d5cc5566a310f1e481f4789ad1326fa0e07e8",
+      "subject": "perf: parse bounded scalar credentials without temporary vectors"
+    },
+    {
+      "sha": "c661be1f0267a3fb77c3bfa57b02e99b4144f4c6",
+      "subject": "test: bind formatted projection body and reconstruct every preceding validator"
+    },
+    {
+      "sha": "1b7e93bebe2f496be2664385dc37ca3a531f0618",
+      "subject": "test: compose predecessor views idempotently and independently require current hooks"
+    }
+  ]
+}

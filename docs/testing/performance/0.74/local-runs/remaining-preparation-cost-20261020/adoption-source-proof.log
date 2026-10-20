@@ -1,0 +1,24 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.43s
+     Running tests\custody_preparation_cost_074.rs (target\debug\deps\custody_preparation_cost_074-61e3b7ecb94bd878.exe)
+
+running 2 tests
+test custody_observer_adapter_refuses_missing_duplicate_and_preserves_unrelated_drift ... ok
+test custody_observation_hooks_reconstruct_all_preceding_469_bodies ... FAILED
+
+failures:
+
+---- custody_observation_hooks_reconstruct_all_preceding_469_bodies stdout ----
+
+thread 'custody_observation_hooks_reconstruct_all_preceding_469_bodies' (14272) panicked at crates\xtask\tests\support\document_scratch_guard.rs:61:1:
+assertion `left == right` failed: exact bounded projection parser
+  left: 0
+ right: 1
+
+
+failures:
+    custody_observation_hooks_reconstruct_all_preceding_469_bodies
+
+test result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 9.06s
+
+error: test failed, to rerun pass `-p xtask --test custody_preparation_cost_074`

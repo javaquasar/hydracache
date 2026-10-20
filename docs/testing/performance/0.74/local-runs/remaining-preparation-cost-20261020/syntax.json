@@ -1,0 +1,15 @@
+{
+  "powershell_syntax_passed": true,
+  "scripts": [
+    "checks.ps1",
+    "facts.ps1",
+    "fresh.ps1",
+    "review-checks.ps1",
+    "run.ps1",
+    "seal.ps1",
+    "snapshot.ps1",
+    "verify.ps1"
+  ],
+  "server": false,
+  "product": false
+}

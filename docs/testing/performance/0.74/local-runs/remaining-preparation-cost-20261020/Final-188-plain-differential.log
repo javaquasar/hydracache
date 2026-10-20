@@ -1,0 +1,8 @@
+
+running 2 tests
+test diagnostic_kernel_admission::tests::projection_cost::projection_fields_complete_sender_preserves_reads_counts_and_original_refusals ... ok
+test diagnostic_kernel_admission::tests::projection_cost::projection_fields_differential_seeded_boundaries_duplicates_and_error_order ... HC074-PROJECTION-DIFFERENTIAL cases=804 seed=0x074f1e1d server=false product=false
+ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 1384 filtered out; finished in 0.00s
+

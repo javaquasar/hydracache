@@ -1,0 +1,18 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.82s
+     Running tests\fresh_kernel_cost_074.rs (target\debug\deps\fresh_kernel_cost_074-ed809435805cdf06.exe)
+
+running 2 tests
+test fresh_status_reconstructs_all_changed_old_bodies_and_hooks ... ok
+test fresh_status_adapter_refuses_missing_duplicate_and_other_validation_drift ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.60s
+
+     Running tests\remaining_preparation_cost_074.rs (target\debug\deps\remaining_preparation_cost_074-afbc179f28cdbba3.exe)
+
+running 2 tests
+test remaining_preparation_marks_restore_exact_preceding_bodies_and_reject_drift ... ok
+test bounded_projection_recovers_all_473_preceding_bodies_and_frozen_parsers ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 33.82s
+

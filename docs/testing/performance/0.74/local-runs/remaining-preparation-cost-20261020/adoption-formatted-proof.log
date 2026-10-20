@@ -1,0 +1,27 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.36s
+     Running tests\custody_preparation_cost_074.rs (target\debug\deps\custody_preparation_cost_074-61e3b7ecb94bd878.exe)
+
+running 2 tests
+test custody_observer_adapter_refuses_missing_duplicate_and_preserves_unrelated_drift ... ok
+test custody_observation_hooks_reconstruct_all_preceding_469_bodies ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 23.76s
+
+     Running tests\document_scratch_cost_074.rs (target\debug\deps\document_scratch_cost_074-39d1d260cc62c866.exe)
+
+running 3 tests
+test document_scratch_reference_and_prototype_preserve_complete_sender_and_pidfd_checks ... ok
+test legacy_source_views_preserve_every_old_assertion_and_only_restore_known_scratch_shapes ... ok
+test document_scratch_adoption_is_the_frozen_helper_and_reconstructs_all_473_old_bodies ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 23.23s
+
+     Running tests\remaining_preparation_cost_074.rs (target\debug\deps\remaining_preparation_cost_074-afbc179f28cdbba3.exe)
+
+running 2 tests
+test remaining_preparation_marks_restore_exact_preceding_bodies_and_reject_drift ... ok
+test bounded_projection_recovers_all_473_preceding_bodies_and_frozen_parsers ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 23.73s
+
