@@ -151,11 +151,11 @@ fn legacy_source_views_preserve_every_old_assertion_and_only_restore_known_scrat
     for (path, view) in [
         (
             "crates/xtask/tests/support/performance_contract_074_kernel_walk.rs",
-            "scratch_view",
+            "macro",
         ),
         (
             "crates/xtask/tests/support/performance_contract_074_boot_comparison.rs",
-            "scratch_view",
+            "macro",
         ),
         (
             "crates/xtask/tests/fresh_kernel_cost_074.rs",
@@ -183,6 +183,11 @@ fn legacy_source_views_preserve_every_old_assertion_and_only_restore_known_scrat
         let start = old.find("fn read(path: &str) -> String {").unwrap();
         let end = start + old[start..].find("\n}\n").unwrap() + 2;
         let original = &old[start..end];
+        let call = if view == "macro" {
+            "crate::hc074_document_scratch_view!(path, &raw)".to_owned()
+        } else {
+            format!("{view}::normalize(path, &raw)")
+        };
         let expected = original
             .replacen(
                 "    std::fs::read_to_string(",
@@ -191,15 +196,10 @@ fn legacy_source_views_preserve_every_old_assertion_and_only_restore_known_scrat
             )
             .replacen(
                 ".replace('\\r', \"\")\n}",
-                &format!(".replace('\\r', \"\");\n    {view}::normalize(path, &raw)\n}}"),
+                &format!(".replace('\\r', \"\");\n    {call}\n}}"),
                 1,
             );
-        let mut current = read(path);
-        if view == "scratch_view" {
-            let hook = "\n#[path = \"document_scratch_guard.rs\"]\nmod scratch_view;\n";
-            assert_eq!(current.matches(hook).count(), 1);
-            current = current.replacen(hook, "\n", 1);
-        }
+        let current = read(path);
         assert_eq!(current.matches(&expected).count(), 1);
         assert_eq!(
             current.replacen(&expected, original, 1),

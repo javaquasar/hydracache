@@ -1,8 +1,6 @@
 //! Exact reversible ownership-only substitution; never a live-check waiver.
 #[path = "performance_contract_074_held_placement.rs"]
 mod held_placement;
-#[path = "document_scratch_guard.rs"]
-mod scratch_view;
 const BASE: &str = "aa84aeb8";
 const PREFIX: &str = "tools/long-run-supervisor-074/src/";
 const HOOKS: &[(&str, &str, &str)] = &[
@@ -149,7 +147,7 @@ fn read(path: &str) -> String {
     let raw = std::fs::read_to_string(root().join(path))
         .unwrap()
         .replace('\r', "");
-    scratch_view::normalize(path, &raw)
+    crate::hc074_document_scratch_view!(path, &raw)
 }
 fn git(args: &[&str]) -> String {
     let value = std::process::Command::new("git")
