@@ -290,6 +290,10 @@ mod boot_buffer_tests;
 mod fresh_kernel_cost;
 
 #[cfg(test)]
+#[path = "../tests/support/pid_path.rs"]
+mod pid_path;
+
+#[cfg(test)]
 #[path = "diagnostic_fixed_leaf_path_tests.rs"]
 mod fixed_leaf_path_tests;
 

@@ -12,6 +12,9 @@ mod projection_prefix;
 #[path = "../tests/support/fresh_status_alloc.rs"]
 mod fresh_status;
 
+#[path = "../tests/support/pid_path_alloc.rs"]
+mod pid_path;
+
 #[derive(Clone, Copy, Default, Debug, PartialEq, Eq, serde::Serialize)]
 struct Counts {
     allocations: u64,
