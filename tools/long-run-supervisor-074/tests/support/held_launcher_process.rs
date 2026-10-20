@@ -452,7 +452,10 @@ impl Attempt {
         );
         assert_eq!(args[1], b"--run");
         assert_eq!(args[2], b"/proc/self/fd/5");
-        let digest = format!("{:x}", Sha256::digest(elf()));
+        let digest: String = Sha256::digest(elf())
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect();
         assert_eq!(args[3], digest.as_bytes());
         assert_eq!(
             args[4],
