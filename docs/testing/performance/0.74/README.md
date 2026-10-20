@@ -4731,3 +4731,31 @@ The new packet seals 166 hashed members plus inventory, SHA256
 Its verifier rejects 65 summary metadata mutations, accepts the allocation leaf
 and keeps both execution gates false. The preceding native/WSL packet inventories
 re-verify byte-exact; no older refusal is replaced or reclassified.
+
+## Fresh kernel observation attribution and fixed status names
+
+The [fresh kernel cost plan](fresh-kernel-cost-plan-20261020.md) separates actual
+origin/sender validation from standalone pidfd, status read, metadata and
+filesystem controls. Each baseline 64-sender batch retains 128 origin checks,
+256 boot checks, 512 namespace opens, 128 pidfd checks, 128 projections and 512
+nested document reads. Origin occupies 2.14 to 2.67 ms in those six baseline
+instrumented batches; nested spans are inclusive and must not be summed.
+
+Runtime candidate `f3009600` changes only the two literal status open sites to
+the existing fixed C string helper. Paired controls on GNU 1.94/MSRV 1.88 remove
+one Rust allocation request and seven requested bytes per explicit status open,
+with no reallocations. They keep every open/read/stat/filesystem/liveness check,
+object binding, error path and original time bound. Separate timing arms have
+mixed directions; no numerical latency or product API gain is accepted.
+
+The [new evidence](local-runs/fresh-kernel-cost-20261020/README.md) retains the red
+runtime binding, fixed-name controls and source reconstruction checks. It does
+not rerun or reopen the prior full local/native execution gate, SIGKILL/lost-ACK
+or reconnect. No server, installation, service/clock change or product workload
+is involved. Fresh kernel observations remain the larger mandatory cost, not a
+cache-removal opportunity established by these controls.
+
+The packet seals 96 hashed members plus inventory, SHA256
+`cdd73b900d1697d64beef507f23e8b2bfbad20598dc6e984f53e1a9b4ed075cc`;
+41 summary mutations are refused. All 347 source/contract tests and both compiler
+lanes' targeted functional/lint checks pass. Qualification remains unchanged.

@@ -14941,3 +14941,69 @@ The honest next boundary is cost attribution of the remaining fresh kernel
 observations and a separately authorized native control, with the same live
 checks and deadlines. Original delivery, joined process-death/lost-ACK, lifecycle
 and reconnect work must not inherit a launch permit from this leaf improvement.
+
+## Attributing fresh kernel observations without caching them
+
+Fresh kernel checks are not interchangeable with repeated parsing of a retained
+snapshot. A sender can exit, a namespace can change, a pathname can point at a
+different object, and an originally pinned descriptor can become uncertain.
+The next [local attribution](../testing/performance/0.74/local-runs/fresh-kernel-cost-20261020/README.md)
+therefore keeps the actual origin and sender validators intact and measures
+their nested operations. Separate controls observe pidfd liveness, bounded status
+reads, metadata and filesystem type checks. They execute no product or original
+start and grant no admission authority.
+
+Three baseline batches per compiler use 64 iterations each. Every sender batch
+still performs 128 origin checks, 256 boot checks, 512 namespace opens, 128 pidfd
+checks, 128 projections and 512 nested document reads. The nested origin spans
+occupy 2.14 to 2.67 ms across the six baseline sender batches. Their boot and
+namespace spans overlap the enclosing origin span: adding them would count the
+same work twice. Standalone leaf timings are also not extra components to add
+to a sender batch. Current-process CPU is observed separately and includes all
+threads; it is not exclusive kernel CPU or a syscall trace.
+
+This attribution confirms that fresh context validation is a substantial part
+of sender validation. It does not justify replacing live reads with cached values,
+opening fewer namespace objects, omitting retained-versus-named comparisons or
+resetting a deadline. The small confirmed avoidable cost is different: both
+literal status open sites construct a new `CString` for the same seven bytes,
+including the NUL terminator. The already existing fixed opener performs the
+same openat and proc filesystem verification using a borrowed C string.
+
+The single runtime candidate routes those two sites to that helper. The
+dynamic PID pathname remains dynamic; document buffers and projection vectors
+remain owned as before. O_NOFOLLOW, O_CLOEXEC, O_NONBLOCK, object identity,
+fresh reads, numeric/group parsing, pidfd checks and the original validation
+order are unchanged. A red test first establishes that the runtime sites have
+not yet adopted the measured helper; it must become green independently of
+the paired allocation control.
+
+Each compiler compares three alternating pairs of 1024 opens after equal warmup.
+The dynamic primitive makes 1024 Rust allocation requests for 7168 bytes; the
+fixed primitive makes none, with zero reallocations on both arms. That is one
+temporary request and seven requested bytes removed per explicit status open,
+not a zero-allocation sender. Timing uses a separate uncounted loop. Its mixed
+baseline directions do not support a numerical latency improvement, and these
+short local batches must not be extrapolated to placement or API throughput.
+
+The post-candidate controls repeat the same allocation result on both compilers;
+the two runtime bindings pass and all 72 before/after phase rows preserve their
+fresh call counts. Twelve allocation pairs are retained across the two cohorts.
+The 347 source/contract tests and both compiler lanes' targeted functional/lint
+checks pass. These checks accept the isolated pathname allocation removal, not
+the earlier refused full execution matrix.
+
+The preservation argument combines live differential tests with source guards.
+The tests compare the opened object and descriptor flags, preserve missing-name,
+symlink, non-directory and non-proc refusals, and show that repeated document
+reads observe changed bytes. Exact adapters reconstruct the preceding runtime
+by reversing only the two calls, helper visibility and named test hooks. No
+whole validator body is excluded; unrelated changes to liveness, filesystem,
+projection or packet-hold checks remain visible.
+
+Allocation acceptance remains separate from execution readiness. The earlier
+clock-order and native expiry refusals remain retained; these controls do not
+rerun the full lifecycle, SIGKILL/lost-ACK or reconnect matrix. The next larger
+optimization needs evidence for another avoidable cost, not permission to skip
+fresh observations. All original deadlines and independent launch gates remain
+in force.

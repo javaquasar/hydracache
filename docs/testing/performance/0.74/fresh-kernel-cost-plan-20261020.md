@@ -42,3 +42,26 @@ qualification manifest remain untouched. Record exact source and executable
 hashes for each compiler and every invocation, retain failures, then seal a
 strict inventory. Final acceptance and remaining expensive observations will be
 recorded here after the controls complete.
+
+## Accepted local result
+
+Candidate `f3009600` adopts the existing fixed opener at two literal status
+sites. The reviewed source is `bc53b78fbabd7481d8f2f6bbbb5cc964e380fd65`.
+All 72 before/after phase reports retain the exact fresh call counts. Baseline
+and candidate controls provide 12 paired allocation samples across GNU 1.94 and
+MSRV 1.88: one request and seven requested bytes per open become zero, with no
+reallocations. The baseline runtime-binding test refuses as intended; both
+post-candidate bindings pass. Timing remains observation only, without an
+accepted latency claim or deadline change.
+
+The 347 selected source/contract tests and both compiler lanes' targeted kernel,
+join, trust, observer and strict lint checks pass. No larger avoidable kernel
+cost is established by these controls. Fresh origin/boot/namespace work remains
+mandatory; the full functional/native, joined SIGKILL/lost-ACK and reconnect
+gates are not rerun or opened. The [new packet](local-runs/fresh-kernel-cost-20261020/README.md)
+retains every invocation and rehashes the unchanged preceding evidence seals.
+
+The packet seals 96 hashed members plus inventory, SHA256
+`cdd73b900d1697d64beef507f23e8b2bfbad20598dc6e984f53e1a9b4ed075cc`.
+Its verifier rejects 41 summary mutations. Qualification SHA256 remains
+`11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc`.

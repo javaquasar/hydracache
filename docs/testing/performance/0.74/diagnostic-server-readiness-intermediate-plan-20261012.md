@@ -749,3 +749,23 @@ follow. All local contract/source tests and compiler checks pass, but full local
 and native execution gates remain false. Next isolate the remaining expensive
 fresh kernel observations without caching or skipping them; obtain separately
 authorized native control before joined SIGKILL/lost-ACK or server admission.
+
+## Fresh kernel cost boundary on 20 October
+
+The [fresh observation controls](local-runs/fresh-kernel-cost-20261020/README.md)
+retain actual origin/sender traversal and independently measure pidfd, bounded
+status read, metadata and filesystem checks. The origin work remains a major
+nested cost. No live observation is cached or omitted, and no deadline or
+validation schedule changes.
+
+One isolated candidate, `f3009600`, removes construction of the constant status
+pathname at its two runtime sites, using the existing fixed C string opener.
+The paired leaf result is one fewer Rust allocation request and seven fewer
+requested bytes per explicit status open. This does not establish a latency
+gain, fix prior clock-order/native expiry or open a server execution gate.
+
+The next larger cost candidate must have its own unchanged-workload baseline
+and confirmed attribution. Full functional composition, authenticated delivery,
+joined all-writer SIGKILL/lost-ACK and reconnect still require their independent
+gates; a native control requires separate authorization. Installation,
+supervisor maintenance and product campaigns remain outside this local step.
