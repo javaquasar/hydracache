@@ -300,6 +300,9 @@ fn bounded(file: &File) -> Result<Vec<u8>, KernelError> {
     bytes.truncate(count);
     Ok(bytes)
 }
+#[path = "diagnostic_projection_groups.rs"]
+mod projection_groups;
+
 #[derive(Debug, PartialEq, Eq)]
 struct Projection {
     uid: [u32; 4],
@@ -322,7 +325,8 @@ fn projection(bytes: &[u8], credentials: &libc::ucred) -> Result<Projection, Ker
             .split_ascii_whitespace()
             .take(33)
             .map(|v| v.parse::<u32>().map_err(|_| kernel_invalid!("proc-u32")))
-            .collect::<Result<Vec<_>, _>>()?;
+            .collect::<Result<projection_groups::Values, _>>()?
+            .into_vec();
         if values.len() > 32 {
             return Err(kernel_invalid!("projection-group-budget"));
         }

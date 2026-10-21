@@ -70,6 +70,19 @@ fn pidfd_info_path_restores_entire_old_origin_and_keeps_all_other_old_runtime_fi
     let old_changes: Vec<_> = changed
         .lines()
         .filter(|p| previous.lines().any(|old| old == *p))
+        .filter(|p| {
+            if *p == "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs" {
+                // A successor may change only the exact bounded-collection leaf.
+                // Require the entire earlier file, not a filename exemption.
+                assert_eq!(
+                    crate::hc074_projection_groups_view!(*p, &read(p)),
+                    git(&["show", &format!("f9e7cada:{p}")])
+                );
+                false
+            } else {
+                true
+            }
+        })
         .collect();
     assert_eq!(
         old_changes,

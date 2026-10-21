@@ -37,9 +37,57 @@ if($Mode -ceq 'Review'){
 & git diff --quiet $Candidate -- tools/long-run-supervisor-074 tools/local-profile-session-074 crates Cargo.lock docs/COMPAT.md docs/testing/gated-test-registry.toml docs/testing/performance/0.74/qualification-manifest.toml
 Need ($LASTEXITCODE -eq 0) 'Candidate source drift'
 Need ((Hash 'docs/testing/performance/0.74/qualification-manifest.toml') -ceq '11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc') 'Qualification drift'
-foreach($taskMethod in @('check_projection_groups.ps1','review_projection_groups.ps1')){
+foreach($taskMethod in @('check_projection_groups.ps1','check_projection_groups_controls.ps1','review_projection_groups.ps1')){
     Need ((Hash "tools/local-profile-session-074/$taskMethod") -ceq (Hash (Join-Path $taskPacket "method/$taskMethod"))) 'Method snapshot drift'
 }
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+foreach($taskStage in @('baseline','candidate')){
+    $taskCommit=if($taskStage -ceq 'baseline'){$Baseline}else{$Candidate}
+    $taskArchive=[IO.Compression.ZipFile]::OpenRead((Join-Path $taskPacket "source/$taskStage.zip"))
+    try{
+        $taskSeen=@{}
+        foreach($taskEntry in $taskArchive.Entries){
+            $taskPath=$taskEntry.FullName
+            if($taskPath.EndsWith('/')){continue}
+            Need (-not[IO.Path]::IsPathRooted($taskPath) -and -not $taskPath.Contains([char]92) -and -not($taskPath.Split([char]47) -contains '..') -and -not $taskSeen.ContainsKey($taskPath)) 'Unsafe archive member'
+            $taskSeen[$taskPath]=$true
+            $taskReader=[IO.StreamReader]::new($taskEntry.Open(),[Text.UTF8Encoding]::new($false))
+            try{$taskText=$taskReader.ReadToEnd()}finally{$taskReader.Dispose()}
+            $taskOriginal=(& git show "${taskCommit}:$taskPath") -join "`n"
+            Need ($LASTEXITCODE -eq 0 -and $taskText.Replace("`r",'').TrimEnd([char]10) -ceq $taskOriginal.TrimEnd([char]10)) 'Archived source differs from exact commit'
+        }
+        Need ($taskSeen.ContainsKey('tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs') -and $taskSeen.ContainsKey('tools/long-run-supervisor-074/tests/support/projection_groups_alloc.rs')) 'Missing source snapshot'
+        if($taskStage -ceq 'candidate'){Need ($taskSeen.ContainsKey('tools/long-run-supervisor-074/src/diagnostic_projection_groups.rs') -and $taskSeen.ContainsKey('tools/long-run-supervisor-074/tests/support/projection_groups.rs')) 'Missing candidate helper/tests'}
+    }finally{$taskArchive.Dispose()}
+}
+function Unit([string]$Path,[int]$Count){
+    $taskText=Get-Content -LiteralPath (Join-Path $taskPacket $Path) -Raw
+    Need ($taskText -match "test result: ok\. $Count passed; 0 failed; 0 ignored;" -and $taskText -notmatch 'test result: FAILED') "Unit outcome drift: $Path"
+}
+foreach($taskLane in @('194','188')){
+    Unit "baseline/$taskLane-allocations.log" 1
+    Unit "candidate/$taskLane-allocations.log" 5
+    Unit "candidate/$taskLane-projection_groups.log" 3
+    Unit "candidate/$taskLane-consuming_join.log" 10
+    # The retained initial selector matched nothing. It is not coverage.
+    Unit "candidate/$taskLane-kernel_projection.log" 0
+    $taskControls=Load (Join-Path $taskPacket "controls/$taskLane-result.json")
+    Need ($taskControls.lane -ceq $taskLane -and $taskControls.steps.Count -eq 4 -and $taskControls.original_owner_profiles -eq 0 -and -not $taskControls.server -and -not $taskControls.product) 'Control scope drift'
+    foreach($taskStep in $taskControls.steps){
+        Need ($taskStep.exit -eq 0 -and $taskStep.sha256 -ceq (Hash (Join-Path $taskPacket "controls/$($taskStep.log)"))) 'Control log drift'
+        Unit "controls/$($taskStep.log)" 1
+    }
+}
+foreach($taskPair in @(@('baseline',17),@('candidate',19))){
+    $taskText=Get-Content -LiteralPath (Join-Path $taskPacket "$($taskPair[0])/host-canaries.log") -Raw
+    $taskTotal=0
+    foreach($taskMatch in [regex]::Matches($taskText,'test result: ok\. (\d+) passed; 0 failed; 0 ignored;')){$taskTotal += [int]$taskMatch.Groups[1].Value}
+    Need ($taskTotal -eq $taskPair[1] -and $taskText -notmatch 'test result: FAILED') 'Source canary outcome drift'
+}
+Need ((Get-Item (Join-Path $taskPacket 'final/format.log')).Length -eq 0) 'Format refused'
+Need ((Get-Content (Join-Path $taskPacket 'final/docs.log') -Raw) -match 'doc-check: OK') 'Docs refused'
+Need ((Get-Content (Join-Path $taskPacket 'final/registry.log') -Raw) -match 'OK \(186 discovered gates, all registered\)') 'Registry refused'
+Need ((Get-Content (Join-Path $taskPacket 'final/performance.log') -Raw) -match 'OK \(local, non-promotable\)') 'Performance contract refused'
 foreach($taskStage in @('baseline','candidate')){
     foreach($taskLane in @('host','194','188')){
         $taskResult=Load (Join-Path $taskPacket "$taskStage/$taskLane-result.json")
@@ -69,7 +117,7 @@ foreach($taskLane in @('194','188')){
         $taskOldBytes+=$taskOld.counts.requested_bytes;$taskNewBytes+=$taskNew.counts.requested_bytes;$taskOldRealloc+=$taskOld.counts.reallocations
     }
     Need ($taskOldBytes -gt $taskNewBytes -and $taskOldRealloc -gt 0) 'No measured reduction'
-    $taskLanes+=@{lane=$taskLane;invocations=1792;reference_requested_bytes=$taskOldBytes;candidate_requested_bytes=$taskNewBytes;reference_reallocations=$taskOldRealloc;candidate_reallocations=0}
+    $taskLanes+=[ordered]@{lane=$taskLane;invocations=1792;reference_requested_bytes=$taskOldBytes;candidate_requested_bytes=$taskNewBytes;reference_reallocations=$taskOldRealloc;candidate_reallocations=0}
 }
 $taskSummary=[ordered]@{baseline_source=$Baseline;candidate_source=$Candidate;lanes=$taskLanes;allocation_only=$true;timing_improvement_proven=$false;original_material_gate_passed=$false;original_windows_seconds=@(300,60,10);first_refusal_ages_ns=@(10042390247,10010835739);original_owner_profiles=0;server=$false;product=$false}
 if($Mode -ceq 'Seal'){
