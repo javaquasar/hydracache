@@ -16375,3 +16375,48 @@ substitution, and retains all twenty-two previous packets. Runtime, observers,
 original 300/60/10 windows and qualification inputs remain unchanged. There
 are zero new timing profiles, no accepted optimization or product performance
 claim, and no clock/service/server operation.
+
+### Kernel observer cost on the recorded aggregate topology
+
+The [standalone observer control](../testing/performance/0.74/local-runs/observer-topology-cost-20261021/README.md)
+imports the existing observer modules without changing the live path. It
+replays 46 rounds and exactly 894,608 kernel spans with the recorded per-step
+nodes, roots and edges. The aggregate admits a uniform-arity canonical replay;
+it does not recover original per-occurrence distribution or temporal/sibling
+order. Cross-observer nesting was not recorded either. Live/auth observers
+remain inactive and no real guard body, syscall, filesystem or crypto workload
+is replayed. This isolates a kernel component, not full observer overhead.
+
+Six independently started cases per compiler balance all six orders of dormant
+hooks, active kernel spans, and active kernel plus round snapshots/deltas.
+Three repetitions per mode retain every sample without warmup, retries or
+outlier exclusion. Walk wall/parent CPU are separate from report aggregation
+and JSON serialization. Raw graph/count conservation, body checksum, completed
+rounds and serialized byte counts verify independently.
+
+| Six per-case median walk CPU deltas | GNU 1.94 | MSRV 1.88 |
+| --- | ---: | ---: |
+| Active kernel minus dormant hooks | +45.548 to +67.690 ms | +44.741 to +59.714 ms |
+| Adding round snapshots/deltas | -10.741 to +22.882 ms | -1.815 to +26.242 ms |
+
+Kernel activation adds measured CPU in every case. The round snapshot/delta
+effect changes sign, so this series does not establish its magnitude. Outside
+the walk, round-mode aggregation records 0.182–0.354/0.176–4.086 ms parent CPU
+(GNU/MSRV) and serialization 0.023–0.041/0.025–0.078 ms. The wide MSRV aggregate
+observation remains. This is only the kernel/round subset report, not full
+phase/live/auth reporting; decoding is excluded from observer timing.
+
+These repeated synthetic observations must not be subtracted from live phase
+times. Short checksum bodies, canonical ordering, inactive observer layers
+and standalone optimization/callsite context prevent calibration to the
+original preparation. They neither repair the original ten-second expirations
+nor prove that observer cost explains or excludes their full cause. No new
+optimization is accepted; actual fresh kernel/authority primitives and the
+remaining observer layers still need separation.
+
+GNU/MSRV each pass 19 tests, all-target checks and strict all-feature lint.
+Seven reader controls, nine mutations on a retained actual report and all
+twenty-three preceding packets verify. The ordinary-user WSL session keeps
+boot/source/configuration/input/images unchanged. Original live checks,
+300/60/10 windows and qualification remain frozen; there are no service/clock/
+server, supervisor, installation or product actions, and no admission claim.

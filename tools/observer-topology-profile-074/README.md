@@ -7,7 +7,9 @@ The original runtime tree and 300/60/10 windows must remain byte-identical.
 
 The complete outputs subphase in both sealed refused prefixes has the same
 per-step kernel nodes, roots and edges: 894,608 spans across 46 rounds. Every
-count divides exactly by 46, and child arity is uniform. `topology.py` verifies
+count divides exactly by 46, and edge totals admit a uniform-arity canonical
+reconstruction. This does not prove original per-occurrence/per-round arity.
+`topology.py` verifies
 the input inventory and exports those integer counts. Rust validates flow,
 arity, an acyclic graph and bounded depth, then constructs a canonical event
 tape. Original temporal/sibling order, per-occurrence nesting distribution and

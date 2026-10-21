@@ -1,0 +1,26 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.16s
+     Running unittests src/main.rs (/home/artur/.cache/hydracache-074-observer-control-188/debug/deps/observer_topology_profile_074-7f6f8dcf2d39561f)
+
+running 19 tests
+test tests::canonical_plan_keeps_exact_nodes_roots_edges_and_checksum ... ok
+test tests::empty_graph_keeps_46_complete_rounds_without_kernel_calls ... ok
+test tests::fixed_seed_rounds_and_schema_are_not_tunable ... ok
+test tests::malformed_counts_nonuniform_edges_and_cycles_refuse ... ok
+test tests::six_orders_balance_each_position ... ok
+test trace::custody_boundaries::custody_boundary_capture_is_inactive_nested_thread_local_and_unwind_safe ... ok
+test trace::kernel_walk::tests::kernel_numeric_capture_is_thread_local ... ok
+test trace::kernel_walk::tests::kernel_numeric_empty_and_inactive_capture ... ok
+test trace::kernel_walk::tests::kernel_numeric_escaping_span_cannot_complete_capture ... ok
+test trace::kernel_walk::tests::kernel_numeric_nested_capture_and_unwind_restore_original ... ok
+test trace::kernel_walk::tests::kernel_numeric_nested_edges_are_counted_once ... ok
+test trace::kernel_walk::tests::kernel_numeric_recursive_kinds_keep_direct_edges ... ok
+test trace::live_walk::tests::empty_and_inactive_spans_cannot_leak_into_capture ... ok
+test trace::live_walk::tests::nested_capture_and_panic_restore_original_frame ... ok
+test trace::live_walk::tests::nested_spans_count_direct_children_once ... ok
+test trace::live_walk::tests::thread_local_capture_does_not_observe_another_thread ... ok
+test trace::round_cost::round_cost_deltas_preserve_parent_counts_errors_and_panic_identity ... ok
+test trace::round_cost::round_cost_escaping_span_cannot_complete_capture ... ok
+test trace::round_cost::round_cost_inactive_and_nested_captures_do_not_leak ... ok
+
+test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+

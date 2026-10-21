@@ -1,0 +1,11 @@
+offline partial attribution verified; complete cohort=false; native admission=false
+{
+  "integrity_verified": true,
+  "prior_packets_verified": 22,
+  "complete_profile_cohort": false,
+  "product": false,
+  "server": false,
+  "native_gate_open": false,
+  "mode": "Review",
+  "new_profile_invocations": 0
+}

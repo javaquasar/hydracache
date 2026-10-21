@@ -1291,3 +1291,21 @@ numeric topology, then investigate per-call kernel/authority costs while
 retaining every live predicate and original window. Delivery, all-writer
 cessation, lifecycle, SIGKILL/lost-ACK, reconnect, enrollment and server gates
 stay closed. No service, clock, server, installation or product action occurs.
+
+### Recorded topology observer control
+
+The [synthetic observer packet](local-runs/observer-topology-cost-20261021/README.md)
+isolates kernel capture and round snapshots at the recorded aggregate graph,
+not original temporal/cross-observer execution. Original live source and
+300/60/10 windows remain byte-identical. Twelve independent cases complete
+without privilege, manager, real guard body or product execution.
+
+Kernel activation has positive CPU deltas in all six cases per compiler;
+added round snapshot effects change sign and are unresolved. Aggregation and
+serialization are measured separately for the kernel/round report subset.
+No result is subtracted from live cost or converted to a healthy admission.
+Both compilers pass 19 tests/check/strict lint, seven reader controls and nine
+real-report mutations pass, and twenty-three prior packets verify. Next
+separate fresh kernel/authority work; live/auth observer costs and all original
+delivery, writer cessation, lifecycle, SIGKILL/lost-ACK, reconnect, trust and
+server gates remain. No clock, service, server or installation changes occur.

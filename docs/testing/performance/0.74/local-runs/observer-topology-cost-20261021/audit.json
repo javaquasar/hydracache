@@ -1,0 +1,43 @@
+{
+  "mutations": [
+    {
+      "mutation": "walker-count",
+      "refused": true
+    },
+    {
+      "mutation": "root-count",
+      "refused": true
+    },
+    {
+      "mutation": "edge-time",
+      "refused": true
+    },
+    {
+      "mutation": "negative-cpu",
+      "refused": true
+    },
+    {
+      "mutation": "invented-order",
+      "refused": true
+    },
+    {
+      "mutation": "numeric-admission",
+      "refused": true
+    },
+    {
+      "mutation": "repeats",
+      "refused": true
+    },
+    {
+      "mutation": "serialized-bytes",
+      "refused": true
+    },
+    {
+      "mutation": "mode-order",
+      "refused": true
+    }
+  ],
+  "server": false,
+  "product": false,
+  "native_gate_open": false
+}

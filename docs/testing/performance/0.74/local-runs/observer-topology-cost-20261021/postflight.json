@@ -1,0 +1,21 @@
+{
+  "boot": "96e1b1b1-88fd-4cd7-8a0e-fab03baa93ae",
+  "config": {
+    "/etc/systemd/timesyncd.conf": "e6734751f8aaf19fddfff891ad246387f5f59bd9ff1a5f0cac2c34bc81941c62",
+    "/etc/wsl.conf": "ca76852426d685301ce8b4461d2bc40d1901c93aea8c0b4b684707c94e4cf507",
+    "/mnt/c/Users/ArturBuzov/.wslconfig": null
+  },
+  "hashes": {
+    "/home/artur/.cache/hydracache-074-observer-control-188/release/observer-topology-profile-074": "af335017fbb78d47326053b16a2d5c281450ec0586feec299640703728e5eb17",
+    "/home/artur/.cache/hydracache-074-observer-control-194/release/observer-topology-profile-074": "1661e54c91e47e1da233ff6ed69ad93fe02326d98006e7e3f2962963b7841443",
+    "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/docs/testing/performance/0.74/local-runs/observer-topology-cost-20261021/input.json": "4e8d251ff2739572ef2175d1f70798e31027d2f6557c0fd570c9e03881c4a268",
+    "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/docs/testing/performance/0.74/qualification-manifest.toml": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+    "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/local-profile-session-074/runner.py": "24c7cb0809515ae310b25e5654df879f23ea2fa99994637604d11f5f6e453550",
+    "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/observer-topology-profile-074/run.py": "8f0ceb1c8329f469f160c9c8f656d8b641fe8b190eef66af03993ef92c4be755"
+  },
+  "pid": 1308,
+  "source": "7c47fac18acc0640e62de3af5b1d5239bc931f2d",
+  "start_ticks": "3322",
+  "tracked_dirty": "",
+  "uid": 1000
+}

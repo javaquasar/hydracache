@@ -5426,3 +5426,24 @@ and complete subphases do not become healthy attempts. Next isolate observer
 bookkeeping at the same numeric topology before another kernel/authority
 candidate. No runtime/observer, deadline, clock/service/server or product change
 is made; no new timing profile or native admission follows.
+
+### Synthetic kernel observer control
+
+The [new diagnostic packet](local-runs/observer-topology-cost-20261021/README.md)
+holds the recorded per-step kernel nodes/roots/edges and 46 rounds equal in a
+canonical synthetic replay. Original temporal/per-occurrence/cross-observer
+order remains unknown; live/auth observers and real guard bodies are absent.
+Twelve independent cases/all mode permutations retain every repetition.
+
+Active kernel capture adds +45.548–67.690 ms GNU / +44.741–59.714 ms MSRV in
+six per-case median CPU differences per 894,608-span graph. Added round
+snapshot/delta differences have mixed signs and remain unresolved. Report
+aggregation/serialization are timed separately and cover only the kernel/round
+subset. Never subtract these observations from live phases or infer product
+acceleration, full observer cost or repaired admission.
+
+Both compilers pass 19 tests/check/strict lint; seven reader controls and nine
+actual-report mutations pass. All twenty-three prior packets remain verified.
+No existing runtime/observer, original window, clock/service/configuration,
+server or product changes occur. Next isolate fresh kernel/authority primitives
+without relaxing any live gate; remaining observer layers are still unmeasured.

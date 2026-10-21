@@ -1,0 +1,10 @@
+{
+  "bytes": 55617,
+  "case": 4,
+  "containment_failure": null,
+  "exit": 0,
+  "lane": "194",
+  "log_sha256": "70a84ba811c14c81923305c869dbc154daca830466412913561da84dfea2aa7b",
+  "source": "7c47fac18acc0640e62de3af5b1d5239bc931f2d",
+  "wall_seconds": 0.6189814249999941
+}

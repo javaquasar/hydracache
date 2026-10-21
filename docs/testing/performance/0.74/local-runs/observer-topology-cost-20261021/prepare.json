@@ -1,0 +1,80 @@
+{
+  "recipe_sha256": "bef43258671e5d5f78d222596e69efa46bae1678ee3ffd2b1cb46fd832f5600e",
+  "steps": [
+    {
+      "log": "prior-review.log",
+      "sha256": "109f695a7ba07059bbf56a62df4f785c29bc19a496f0de33fdbe17bd85af9b9c",
+      "name": "prior-review",
+      "exit": 0
+    },
+    {
+      "log": "topology.log",
+      "sha256": "ff1016197445d846ae3336cf0ad675ce01b1a1ca948eba8cebce94ce4227bd3e",
+      "name": "topology",
+      "exit": 0
+    },
+    {
+      "log": "reader-tests.log",
+      "sha256": "6bd85266396d4d2bd5809f4067b858fcc70f45f84bae34f278234e928a600e7f",
+      "name": "reader-tests",
+      "exit": 0
+    },
+    {
+      "log": "194-test.log",
+      "sha256": "27616556509967e4816c2722a0b96ba50257e2aac9464276f1f39a678c7a284d",
+      "name": "194-test",
+      "exit": 0
+    },
+    {
+      "log": "194-check.log",
+      "sha256": "4e5127f6763ee148417e66542e2c774041d5cb9ae6cc0a361f3249e7add60712",
+      "name": "194-check",
+      "exit": 0
+    },
+    {
+      "log": "194-clippy.log",
+      "sha256": "5a3df8949e3ff2edec03240b3d5778c767bd91beef666643015aba689056bd23",
+      "name": "194-clippy",
+      "exit": 0
+    },
+    {
+      "log": "194-build.log",
+      "sha256": "57f5686970e73f02970c3288e11dc1e7b0ec05c74d8363d9e1bf53a0b4cdf475",
+      "name": "194-build",
+      "exit": 0
+    },
+    {
+      "log": "188-test.log",
+      "sha256": "3ec08d967f0b7c912437c90aea95ca505a1909eb42688679a6efa0d5e10161a0",
+      "name": "188-test",
+      "exit": 0
+    },
+    {
+      "log": "188-check.log",
+      "sha256": "12b63ea2f1341c1c56bcdff61cecea8024b78a41bfdc141f4f2e8383a2a0c5ec",
+      "name": "188-check",
+      "exit": 0
+    },
+    {
+      "log": "188-clippy.log",
+      "sha256": "7f487e4469b34561c19a755a3add5116dd0b6aa890511e6bd28266b209c9729f",
+      "name": "188-clippy",
+      "exit": 0
+    },
+    {
+      "log": "188-build.log",
+      "sha256": "02fc6e18bf6eeac1e94a43b41561c0393f0555826d953541ec2641d5bfb4fa9d",
+      "name": "188-build",
+      "exit": 0
+    }
+  ],
+  "product": false,
+  "server": false,
+  "failure": null,
+  "images": {
+    "194": "1661e54c91e47e1da233ff6ed69ad93fe02326d98006e7e3f2962963b7841443",
+    "188": "af335017fbb78d47326053b16a2d5c281450ec0586feec299640703728e5eb17"
+  },
+  "source": "7c47fac18acc0640e62de3af5b1d5239bc931f2d",
+  "native_gate_open": false
+}

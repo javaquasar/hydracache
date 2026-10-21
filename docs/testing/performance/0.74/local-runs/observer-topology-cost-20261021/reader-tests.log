@@ -1,0 +1,12 @@
+test_all_orders_and_exact_graph (__main__.ReviewTests.test_all_orders_and_exact_graph) ... ok
+test_boolean_integer_equality_is_not_coerced (__main__.ReviewTests.test_boolean_integer_equality_is_not_coerced) ... ok
+test_capture_roots_edges_and_time_mutations_refused (__main__.ReviewTests.test_capture_roots_edges_and_time_mutations_refused) ... ok
+test_missing_round_or_mode_refused (__main__.ReviewTests.test_missing_round_or_mode_refused) ... ok
+test_negative_cpu_and_serialized_bytes_refused (__main__.ReviewTests.test_negative_cpu_and_serialized_bytes_refused) ... ok
+test_scope_and_schedule_mutations_refused (__main__.ReviewTests.test_scope_and_schedule_mutations_refused) ... ok
+test_walker_counts_and_checksum_mutations_refused (__main__.ReviewTests.test_walker_counts_and_checksum_mutations_refused) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.204s
+
+OK

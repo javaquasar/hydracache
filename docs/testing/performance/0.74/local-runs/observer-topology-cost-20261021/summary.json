@@ -1,0 +1,330 @@
+{
+  "admission_exercised": false,
+  "checksum": 14775821962021164686,
+  "full_observer_cost_measured": false,
+  "lanes": [
+    {
+      "cases": 6,
+      "deltas": {
+        "kernel_minus_inactive": {
+          "parent_process_cpu_ns": {
+            "maximum": 67689831,
+            "minimum": 45548234,
+            "per_case_median_delta_ns": [
+              45548234,
+              60065918,
+              58414681,
+              61953470,
+              67689831,
+              56458680
+            ]
+          },
+          "wall_ns": {
+            "maximum": 67696586,
+            "minimum": 45528660,
+            "per_case_median_delta_ns": [
+              45528660,
+              60089646,
+              58428665,
+              61967338,
+              67696586,
+              56453596
+            ]
+          }
+        },
+        "rounds_minus_kernel": {
+          "parent_process_cpu_ns": {
+            "maximum": 22881696,
+            "minimum": -10740740,
+            "per_case_median_delta_ns": [
+              22881696,
+              -626401,
+              -10740740,
+              4601662,
+              -8875120,
+              11717113
+            ]
+          },
+          "wall_ns": {
+            "maximum": 22882462,
+            "minimum": -10746285,
+            "per_case_median_delta_ns": [
+              22882462,
+              -647554,
+              -10746285,
+              4597072,
+              -8859456,
+              11863466
+            ]
+          }
+        }
+      },
+      "lane": "194",
+      "modes": {
+        "inactive": {
+          "aggregation": {
+            "parent_process_cpu_ns": {
+              "maximum": 15874,
+              "minimum": 1351
+            },
+            "wall_ns": {
+              "maximum": 15217,
+              "minimum": 943
+            }
+          },
+          "serialization": {
+            "parent_process_cpu_ns": {
+              "maximum": 6541,
+              "minimum": 1190
+            },
+            "wall_ns": {
+              "maximum": 6249,
+              "minimum": 889
+            }
+          },
+          "walk": {
+            "parent_process_cpu_ns": {
+              "maximum": 19293125,
+              "minimum": 11944428
+            },
+            "wall_ns": {
+              "maximum": 19290854,
+              "minimum": 11944107
+            }
+          }
+        },
+        "kernel": {
+          "aggregation": {
+            "parent_process_cpu_ns": {
+              "maximum": 31011,
+              "minimum": 10131
+            },
+            "wall_ns": {
+              "maximum": 30478,
+              "minimum": 9805
+            }
+          },
+          "serialization": {
+            "parent_process_cpu_ns": {
+              "maximum": 7037,
+              "minimum": 4820
+            },
+            "wall_ns": {
+              "maximum": 6684,
+              "minimum": 4522
+            }
+          },
+          "walk": {
+            "parent_process_cpu_ns": {
+              "maximum": 98043532,
+              "minimum": 58651593
+            },
+            "wall_ns": {
+              "maximum": 98048205,
+              "minimum": 58648586
+            }
+          }
+        },
+        "rounds": {
+          "aggregation": {
+            "parent_process_cpu_ns": {
+              "maximum": 354043,
+              "minimum": 182033
+            },
+            "wall_ns": {
+              "maximum": 353362,
+              "minimum": 181577
+            }
+          },
+          "serialization": {
+            "parent_process_cpu_ns": {
+              "maximum": 40658,
+              "minimum": 22991
+            },
+            "wall_ns": {
+              "maximum": 40221,
+              "minimum": 22605
+            }
+          },
+          "walk": {
+            "parent_process_cpu_ns": {
+              "maximum": 91620329,
+              "minimum": 61306374
+            },
+            "wall_ns": {
+              "maximum": 91615130,
+              "minimum": 61314177
+            }
+          }
+        }
+      },
+      "samples_per_mode": 18
+    },
+    {
+      "cases": 6,
+      "deltas": {
+        "kernel_minus_inactive": {
+          "parent_process_cpu_ns": {
+            "maximum": 59713681,
+            "minimum": 44741260,
+            "per_case_median_delta_ns": [
+              44741260,
+              48467346,
+              59713681,
+              59337127,
+              48695008,
+              47738472
+            ]
+          },
+          "wall_ns": {
+            "maximum": 59690749,
+            "minimum": 44747394,
+            "per_case_median_delta_ns": [
+              44747394,
+              48346693,
+              59690749,
+              59334298,
+              48695532,
+              47738629
+            ]
+          }
+        },
+        "rounds_minus_kernel": {
+          "parent_process_cpu_ns": {
+            "maximum": 26242381,
+            "minimum": -1815495,
+            "per_case_median_delta_ns": [
+              26242381,
+              6828680,
+              7006116,
+              -1815495,
+              -17595,
+              14622135
+            ]
+          },
+          "wall_ns": {
+            "maximum": 26240464,
+            "minimum": -1821108,
+            "per_case_median_delta_ns": [
+              26240464,
+              6852111,
+              7029508,
+              -1821108,
+              -12170,
+              14621178
+            ]
+          }
+        }
+      },
+      "lane": "188",
+      "modes": {
+        "inactive": {
+          "aggregation": {
+            "parent_process_cpu_ns": {
+              "maximum": 3197,
+              "minimum": 671
+            },
+            "wall_ns": {
+              "maximum": 1462,
+              "minimum": 376
+            }
+          },
+          "serialization": {
+            "parent_process_cpu_ns": {
+              "maximum": 7211,
+              "minimum": 1009
+            },
+            "wall_ns": {
+              "maximum": 6832,
+              "minimum": 763
+            }
+          },
+          "walk": {
+            "parent_process_cpu_ns": {
+              "maximum": 18776239,
+              "minimum": 11198727
+            },
+            "wall_ns": {
+              "maximum": 18772185,
+              "minimum": 11197309
+            }
+          }
+        },
+        "kernel": {
+          "aggregation": {
+            "parent_process_cpu_ns": {
+              "maximum": 46726,
+              "minimum": 10099
+            },
+            "wall_ns": {
+              "maximum": 45530,
+              "minimum": 9764
+            }
+          },
+          "serialization": {
+            "parent_process_cpu_ns": {
+              "maximum": 6779,
+              "minimum": 4622
+            },
+            "wall_ns": {
+              "maximum": 6471,
+              "minimum": 4342
+            }
+          },
+          "walk": {
+            "parent_process_cpu_ns": {
+              "maximum": 90243985,
+              "minimum": 56804773
+            },
+            "wall_ns": {
+              "maximum": 90240539,
+              "minimum": 56801502
+            }
+          }
+        },
+        "rounds": {
+          "aggregation": {
+            "parent_process_cpu_ns": {
+              "maximum": 4086225,
+              "minimum": 176474
+            },
+            "wall_ns": {
+              "maximum": 4083649,
+              "minimum": 176030
+            }
+          },
+          "serialization": {
+            "parent_process_cpu_ns": {
+              "maximum": 78189,
+              "minimum": 25312
+            },
+            "wall_ns": {
+              "maximum": 69724,
+              "minimum": 24957
+            }
+          },
+          "walk": {
+            "parent_process_cpu_ns": {
+              "maximum": 93244688,
+              "minimum": 56680823
+            },
+            "wall_ns": {
+              "maximum": 93239979,
+              "minimum": 56674278
+            }
+          }
+        }
+      },
+      "samples_per_mode": 18
+    }
+  ],
+  "live_guard_invocations": 0,
+  "native_gate_open": false,
+  "original_order_known": false,
+  "overhead_subtracted_from_live": false,
+  "product": false,
+  "schema": "observer-topology-summary-074-v1",
+  "server": false,
+  "source": "7c47fac18acc0640e62de3af5b1d5239bc931f2d",
+  "synthetic": true
+}
