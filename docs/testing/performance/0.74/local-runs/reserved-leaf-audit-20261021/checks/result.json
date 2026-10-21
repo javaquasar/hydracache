@@ -1,0 +1,81 @@
+{
+  "runtime_changed": false,
+  "new_profile_invocations": 0,
+  "product": false,
+  "observer_changed": false,
+  "steps": [
+    {
+      "log": "audit-controls.log",
+      "sha256": "450f2874def09365444b756f20bc5cb131e035ab46699e5407414518ba9858ca",
+      "exit": 0,
+      "name": "audit-controls"
+    },
+    {
+      "log": "round-controls.log",
+      "sha256": "22865977d9438cacfdc6c1e30a88c954d9584dc9a965ba2bbaa4e33d74d5f6ad",
+      "exit": 0,
+      "name": "round-controls"
+    },
+    {
+      "log": "reader-controls.log",
+      "sha256": "ffd401b3543ff45063169919c47fa50d59d67446602c4b3c8d6e4ec04e6a855f",
+      "exit": 0,
+      "name": "reader-controls"
+    },
+    {
+      "log": "arithmetic-controls.log",
+      "sha256": "5c6ffd7ad6acc543fd60a70113a11f2ac505f4e89318a2f8289bea142e21e3c1",
+      "exit": 0,
+      "name": "arithmetic-controls"
+    },
+    {
+      "log": "derived-facts.log",
+      "sha256": "4ea75f4853e851926a3c406e88578a6e6385c85e62eec26d5d8049473948c1fa",
+      "exit": 0,
+      "name": "derived-facts"
+    },
+    {
+      "log": "source-canaries.log",
+      "sha256": "02bbb90505478e0372900055a941ec6745925dfeab2791e2b39252b724c88ee5",
+      "exit": 0,
+      "name": "source-canaries"
+    },
+    {
+      "log": "check.log",
+      "sha256": "d8fba2d79fc1071b3c3a9557decae0042e898c3889b9fe91029d21ad2314a1cb",
+      "exit": 0,
+      "name": "check"
+    },
+    {
+      "log": "clippy.log",
+      "sha256": "ea4b239fc831abb1c03f14102f9a915b0bcdd90ad8891b0c130bd8e08a73e3ae",
+      "exit": 0,
+      "name": "clippy"
+    },
+    {
+      "log": "docs.log",
+      "sha256": "27a3e727e2f612eadafed529e7dba8687ad8c0a513a853317dd19b2d5cd5c65c",
+      "exit": 0,
+      "name": "docs"
+    },
+    {
+      "log": "registry.log",
+      "sha256": "d28ff4b9153241440b5e32e03075f6c69189e1b5a23dcc58daef437a5f2bf0e4",
+      "exit": 0,
+      "name": "registry"
+    },
+    {
+      "log": "performance.log",
+      "sha256": "099b8341172a87c84b4f16eb6c6b21a5e86dc3e5241e07e2ed7ec5e56fb41c0a",
+      "exit": 0,
+      "name": "performance"
+    },
+    {
+      "log": "protected-source.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit": 0,
+      "name": "protected-source"
+    }
+  ],
+  "server": false
+}

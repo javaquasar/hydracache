@@ -1,0 +1,20 @@
+test_all_eleven_phases_reconcile_and_no_round_phase_has_no_dominant_step (__main__.ArithmeticTests.test_all_eleven_phases_reconcile_and_no_round_phase_has_no_dominant_step) ... ok
+test_auth_subset_and_invalid_numeric_types_refuse (__main__.ArithmeticTests.test_auth_subset_and_invalid_numeric_types_refuse) ... ok
+test_both_first_partial_rounds_and_disjoint_wall_partition (__main__.ArithmeticTests.test_both_first_partial_rounds_and_disjoint_wall_partition) ... ok
+test_inclusive_and_auth_views_are_not_added_to_wall_partition (__main__.ArithmeticTests.test_inclusive_and_auth_views_are_not_added_to_wall_partition) ... ok
+test_kernel_phase_subset_underflow_never_clamped (__main__.ArithmeticTests.test_kernel_phase_subset_underflow_never_clamped) ... ok
+test_nonround_residual_never_assumed_to_be_effects_or_clamped (__main__.ArithmeticTests.test_nonround_residual_never_assumed_to_be_effects_or_clamped) ... ok
+test_optional_cpu_stays_optional_and_is_not_wall_time (__main__.ArithmeticTests.test_optional_cpu_stays_optional_and_is_not_wall_time) ... ok
+test_original_output_signature_is_not_renormalized (__main__.ArithmeticTests.test_original_output_signature_is_not_renormalized) ... ok
+test_root_edge_node_and_round_completion_mutations_refuse (__main__.ArithmeticTests.test_root_edge_node_and_round_completion_mutations_refuse) ... ok
+test_scope_cannot_be_changed (__main__.ArithmeticTests.test_scope_cannot_be_changed) ... ok
+test_analyzer_has_no_process_network_clock_service_or_runtime_entry (__main__.PacketTests.test_analyzer_has_no_process_network_clock_service_or_runtime_entry) ... ok
+test_member_and_inventory_drift_and_extra_member_refuse (__main__.PacketTests.test_member_and_inventory_drift_and_extra_member_refuse) ... ok
+test_pinned_whole_packet_keeps_both_first_refusals_and_no_readiness_claim (__main__.PacketTests.test_pinned_whole_packet_keeps_both_first_refusals_and_no_readiness_claim) ... ok
+test_publish_exclusive_and_verify_never_replace_derived_evidence (__main__.PacketTests.test_publish_exclusive_and_verify_never_replace_derived_evidence) ... ok
+test_unsafe_duplicate_inventory_paths_refuse_even_with_controlled_new_pin (__main__.PacketTests.test_unsafe_duplicate_inventory_paths_refuse_even_with_controlled_new_pin) ... ok
+
+----------------------------------------------------------------------
+Ran 15 tests in 0.921s
+
+OK
