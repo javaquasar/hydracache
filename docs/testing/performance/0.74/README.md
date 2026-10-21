@@ -5535,3 +5535,20 @@ fixtures or server actions. The audit retains a writer-owner ledger, fault-cut
 prerequisites and implementation order; full joined SIGKILL/lost-ACK admission
 remains closed. Next implement the exact consuming held-unit projection before
 transport. All live predicates, original windows and qualification remain intact.
+
+### Consumed owner held unit projection
+
+The [held projection](held-unit-projection-20261021.md) now derives exact
+semantic unit/slice/root, retained image/stream/guardian identities, original
+manager correlation and absolute bounds from the consumed holder. Its only
+constructor takes that owner without replacement arguments, preserves both
+unchanged full validation calls around derivation, and returns only opaque
+revalidation or the retained refused owner. Four additive module hooks leave
+all previous runtime bodies unchanged.
+
+This is not a runnable unit or original send capability. Dedicated stdin,
+release endpoint, sealed config copy, creator pidfd and sealed bootstrap still
+need actual kernel materialization and expanded inventory binding. Existing
+legacy message/reply transport, qualification, completion and fence semantics
+are unchanged. The next gate is that owner-bound materialization and original
+live-window validation, not a server run or full SIGKILL/lost-ACK claim.

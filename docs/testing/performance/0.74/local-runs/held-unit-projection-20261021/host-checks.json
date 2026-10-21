@@ -1,0 +1,60 @@
+{
+  "new_original_live_fixture": false,
+  "base": "392fa72188f84ca348e9f21c3e689d6546f48afb",
+  "product": false,
+  "failure": null,
+  "steps": [
+    {
+      "name": "canaries",
+      "sha256": "f28eec1474f86ecad1688a96a962abfcf569c6814ffdbc39482decd7e69a6a41",
+      "exit": 0,
+      "log": "host-canaries.log"
+    },
+    {
+      "name": "check",
+      "sha256": "78cc80f186ddf51ed3de23aaa60cb2a0592077da545a89dbee68c54efa87fdfc",
+      "exit": 0,
+      "log": "host-check.log"
+    },
+    {
+      "name": "clippy",
+      "sha256": "c46996b26e673119cdc8ac6378069eab83322a824c79b52c4ace2dd734a6f55a",
+      "exit": 0,
+      "log": "host-clippy.log"
+    },
+    {
+      "name": "format",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit": 0,
+      "log": "host-format.log"
+    },
+    {
+      "name": "docs",
+      "sha256": "d2e3a278c0580031e15d543f4bb5c3ef199b35e78be1da96c227ac47d9d088a2",
+      "exit": 0,
+      "log": "host-docs.log"
+    },
+    {
+      "name": "registry",
+      "sha256": "0cdc926d3010f4822f776d60f25cb5a733f05d38cdf23efdb3c590069e4d6781",
+      "exit": 0,
+      "log": "host-registry.log"
+    },
+    {
+      "name": "performance",
+      "sha256": "5b764278fa661dfea81803d55d32c376f5cfc5be6facd598cfe364794c6c8522",
+      "exit": 0,
+      "log": "host-performance.log"
+    },
+    {
+      "name": "diff",
+      "sha256": "0ea0b7c8a1277c61070169d4c084392c0981114dbb682371fb8c792bac38e5d0",
+      "exit": 0,
+      "log": "host-diff.log"
+    }
+  ],
+  "original_send": false,
+  "lane": "host",
+  "server": false,
+  "performance_measurement": false
+}

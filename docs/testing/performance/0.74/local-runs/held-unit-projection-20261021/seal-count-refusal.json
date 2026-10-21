@@ -1,0 +1,13 @@
+{
+  "stage": "pre-seal-review",
+  "command": "pwsh -NoProfile -File docs/testing/performance/0.74/local-runs/held-unit-projection-20261021/review.ps1 -Mode Seal",
+  "exit": 1,
+  "error": "Wrong count: 194 reply",
+  "mistaken_expected_reply_count": 10,
+  "actual_reply_count_both_compilers": 12,
+  "explanation": "dispatch_reply also selects two exchange tests besides five state and five flag tests",
+  "binding_or_inventory_created": false,
+  "raw_test_logs_changed": false,
+  "test_or_runtime_predicates_changed": false,
+  "test_workload_rerun": false
+}

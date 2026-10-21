@@ -1,0 +1,29 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 6.08s
+     Running tests\boot_operations_074.rs (target\debug\deps\boot_operations_074-2f6a720f745bea5e.exe)
+
+running 2 tests
+test boot_operations_only_exact_hook_gate_and_directory_ownership_may_normalize ... ok
+test boot_operations_fresh_open_expression_and_original_runtime_are_frozen ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.72s
+
+     Running tests\held_preparation_cost_074.rs (target\debug\deps\held_preparation_cost_074-28392e0d6a703446.exe)
+
+running 4 tests
+test projection_reference_is_the_complete_frozen_decoder_not_a_relaxed_model ... ok
+test projection_prefix_adapter_refuses_missing_duplicate_and_unrelated_guard_drift ... ok
+test held_preparation_observer_adapter_cannot_hide_missing_duplicate_or_changed_assertion ... ok
+test held_preparation_and_prefix_reconstruct_all_old_runtime_and_fixture_assertions ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 57.10s
+
+     Running tests\held_unit_projection_074.rs (target\debug\deps\held_unit_projection_074-a20498d8f0d85ed3.exe)
+
+running 3 tests
+test held_unit_projection_has_no_runnable_spec_transport_or_descriptor_export ... ok
+test held_unit_projection_only_four_exact_additive_hooks_restore_prior_sources ... ok
+test held_unit_projection_preserves_all_other_admission_transport_and_fixture_bytes ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.36s
+

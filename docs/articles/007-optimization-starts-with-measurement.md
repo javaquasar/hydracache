@@ -16604,3 +16604,36 @@ running another privileged fixture. It adds no timing claim, removes no live
 predicate and extends no deadline. The next bounded implementation is the exact
 held-unit projection from the consumed owner, before enabling transport and
 designing a joined SIGKILL/lost-ACK matrix.
+
+### Held unit semantics without enabling transport
+
+The [consuming held projection](../testing/performance/0.74/held-unit-projection-20261021.md)
+separates a command description from an execution capability. The hypothesis
+was that the retained placement, role files, bundle, streams and Armed root
+guardians can determine one exact held-unit meaning without exporting any of
+those owners or modifying the existing legacy message. The new consuming
+constructor accepts no replacement inputs and returns an opaque owner whose
+only operation is revalidation; failures retain the same refused attempt.
+
+The projection fixes unit/slice/cgroup names, retained image and stream
+identities, manager/message correlation, original origins and absolute bounds,
+hardening and the launcher's eleven semantic FD roles. Two unchanged full
+holder validations surround its construction and comparison. The second full
+validation is not replaced by equality with an old snapshot. No check or
+300/60/10-second window is removed or renewed.
+
+The implementation also exposes a concrete prerequisite: the current owner
+does not yet hold a dedicated stdin pipe, release channel, sealed config copy or
+the sealed 256-byte launcher bootstrap. The projection names those required
+objects explicitly but does not fabricate their identities. It is therefore
+not a runnable systemd spec and supplies no send or release permission. Next
+materialize and bind those objects under the same owner and an expanded exact
+inventory before joining durable transport uncertainty and process binding.
+This is a correctness boundary, not a CPU or product throughput improvement.
+
+Ten new projection controls pass on both GNU 1.94 and MSRV 1.88, including
+256 seeded context substitutions, every validation callback cut and changes
+to each unit property/FD role. Each compiler passes 70 selected local tests;
+source canaries reconstruct the unchanged historical runtime and both
+compilers pass affected-package checks and strict all-feature lint. The
+original-owner live projection remains a separate gate after materialization.

@@ -1,0 +1,9 @@
+warning: in the working copy of '.gitattributes', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'crates/xtask/tests/support/boot_operations_guard.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/articles/007-optimization-starts-with-measurement.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/performance/0.74/README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/performance/0.74/diagnostic-server-readiness-intermediate-plan-20261012.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tools/long-run-supervisor-074/src/diagnostic_artifacts_linux.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tools/long-run-supervisor-074/src/diagnostic_consuming_held_join.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tools/long-run-supervisor-074/src/diagnostic_held_role_files.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tools/long-run-supervisor-074/src/diagnostic_root_guardian_original_kernel.rs', LF will be replaced by CRLF the next time Git touches it

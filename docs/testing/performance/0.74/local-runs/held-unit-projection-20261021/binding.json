@@ -1,0 +1,33 @@
+{
+  "reports": [
+    {
+      "path": "docs/testing/performance/0.74/held-unit-projection-20261021.md",
+      "sha256": "26bcc6c36caaffbf4c3b193bd227186b6060ba2c5dcac85c07f77cd73a44db99"
+    },
+    {
+      "path": "docs/articles/007-optimization-starts-with-measurement.md",
+      "sha256": "75dadbf15ee2260bdedb2047cdf38c413f1c055e8451d31e5dff88607c4d5af1"
+    },
+    {
+      "path": "docs/testing/performance/0.74/README.md",
+      "sha256": "c6b7d084c0aa7b402970da62f3a01cbca95d50c41e909096bb97e5a224bdbc43"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-server-readiness-intermediate-plan-20261012.md",
+      "sha256": "6ec76c873d11729eaa0ec64c945dcc65ba3ec8597556092a584eba80e5e7bd69"
+    }
+  ],
+  "runtime_source": "99ed157e9fa8077f6bca5b3a33c9202c3375a0af",
+  "all_writers_proven": false,
+  "original_send": false,
+  "semantic_projection": true,
+  "full_sigkill_matrix": false,
+  "performance_claim": false,
+  "recipe_sha256": "556f10b72cdff2b216c60cff4baed6b949136af1147679036f64a8848a04ddb8",
+  "original_windows_seconds": [
+    300,
+    60,
+    10
+  ],
+  "materialized_unit": false
+}

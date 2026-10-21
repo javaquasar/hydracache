@@ -1,0 +1,16 @@
+{
+  "steps": [
+    {
+      "exit": 0,
+      "name": "docs",
+      "log": "final-docs.log",
+      "sha256": "cca31713196d5d49463d004c104d67706d3f49c9c4ea6d64e5b2a9496a505c6d"
+    },
+    {
+      "exit": 0,
+      "name": "diff",
+      "log": "final-diff.log",
+      "sha256": "9c93724debd6d70937fef3e398206a67651f47f20bdc11caa266652aeb606324"
+    }
+  ]
+}

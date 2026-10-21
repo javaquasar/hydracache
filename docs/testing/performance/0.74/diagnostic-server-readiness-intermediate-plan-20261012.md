@@ -1412,3 +1412,22 @@ The audit passes 32 existing local unit/property controls per compiler and
 reviews the preceding sealed chain, without new privileged fixtures or manager
 operations. No runtime, live check, original 300/60/10 window, qualification,
 clock/service/idle policy, server, supervisor, installation or product change.
+
+### Consumed held unit semantics implemented without transport
+
+The [held projection implementation](held-unit-projection-20261021.md)
+consumes the existing joined owner and retains its placement, trust, roles,
+manager/message identity and Armed root guardians. The closed result exposes
+only revalidation, with unchanged full holder validations before and after
+projection and exact closing/retained equality. Failure retains and retires
+the same original owner. No live predicate or original deadline changes.
+
+The unit and eleven FD slots are an exact semantic projection, not a runnable
+systemd specification. Next bind newly materialized dedicated stdin, release
+endpoint, sealed original config copy, creator pidfd and sealed bootstrap to
+this owner and an expanded exact descriptor inventory. Then run a separate
+original live-window gate before adding one-shot transport and durable
+uncertainty. Actual process/barrier binding, active collection and complete
+writer cessation must still precede completion/cells 2–4 and the full joined
+SIGKILL/lost-ACK matrix. Production enrollment and server rehearsal remain
+independent gates; this step does not open them.
