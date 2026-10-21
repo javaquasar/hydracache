@@ -114,3 +114,35 @@ inventory SHA256
 Use `preflight-review.ps1 -Mode Review`. Final repository checks pass; all
 67 raw Git files and twenty previous packets verify. The evidence proves
 retention of a premeasurement refusal, not a complete cost cohort.
+
+## Separate single session method
+
+The authorized successor is `tools/local-profile-session-074/runner.py`, launched
+once by `launch.ps1` into the new `single-session-rounds-20261021` packet. It
+encloses fresh metadata, the unchanged GNU/MSRV three-sample schedule and
+postflight in one WSL process. Preparation builds occur before entry as artur
+with rustup auto-install disabled. The exact unchanged runtime inherits the
+sealed 155 focused checks/check/lint per compiler, while default images receive
+a fresh source-bound build and hash. Inherited tests are not new executions.
+
+The wrapper adds finite containment and raw-log bounds, not admission time:
+1200-second child timeout plus original five-second grace; 1210-second outer
+child bound, 7500-second parent budget, 7530-second outer entry bound, 32 MiB per
+profile log. Preserve every original live check and 300/60/10 window. Fixed
+arguments/environment select only the existing healthy synthetic preparation.
+No new runtime, observers, product execution or full functional matrix occurs.
+
+Source, boot, parent PID/start ticks, configuration, fixture inventory, original
+bundle, qualification, driver/pins/preparation and image observations must agree
+before/after each invocation. Metadata drift or containment/interruption stops
+the session; a normal test refusal stops only its compiler lane. Existing output
+directories refuse re-entry. Postflight is attempted on errors/signals; external
+SIGKILL/host loss can leave incomplete evidence and never authorizes resume.
+Owned process-group termination is containment, not an all-writer proof.
+
+Test scheduling, stopping, metadata drift, exclusive artifacts, interruption,
+postflight failure and Linux raw-output/timeout/pipe-holder/log-cap controls
+before freezing the method. Reuse the sealed conservation predicates for raw
+profiles, verify all twenty-one previous packets, then seal the new evidence.
+One session does not prove stable time or repair old negative gates. No clock,
+service, idle-policy or server change is allowed.
