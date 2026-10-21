@@ -37,7 +37,8 @@ function Verify-Inventory([string]$Directory,[string]$ExpectedHash){
 function Facts{
     foreach($taskLane in @('194','188','xtask','contracts','repository')){
         $taskCheck=Json "Capture-check-$taskLane-exit.json"
-        Require (-not $taskCheck.failure -and $taskCheck.steps.Count -gt 0 -and @($taskCheck.steps|Where-Object exit -ne 0).Count -eq 0) 'Incomplete check lane'
+        $taskCount=if($taskLane -ceq 'xtask'){3}elseif($taskLane -ceq 'contracts'){1}elseif($taskLane -ceq 'repository'){4}else{11}
+        Require (-not $taskCheck.failure -and $taskCheck.steps.Count -eq $taskCount -and @($taskCheck.steps.name|Select-Object -Unique).Count -eq $taskCount -and @($taskCheck.steps|Where-Object exit -ne 0).Count -eq 0) 'Incomplete check lane'
         Require ($taskCheck.recipe_sha256 -ceq (Hash (Join-Path $PSScriptRoot 'check.ps1'))) 'Check recipe changed'
         foreach($taskStep in $taskCheck.steps){Require ((Hash (Join-Path $PSScriptRoot $taskStep.log)) -ceq $taskStep.sha256) 'Check log changed'}
         Inactive $taskCheck @('server','product')
@@ -122,7 +123,9 @@ function Facts{
                 }else{
                     Require (Same $taskA.kernel_calls $taskB.kernel_calls) 'Tracked kernel control changed'
                     foreach($taskField in @('kernel_iterations','allocator_active','all_syscalls_observed')){Require (Same $taskA.$taskField $taskB.$taskField) 'Full I/O scope changed'}
-                    foreach($taskField in @('rchar','wchar','syscr','syscw')){
+                    # The proc I/O snapshot text has variable-width counters; retain its
+                    # raw rchar, but do not equate its own byte length across processes.
+                    foreach($taskField in @('wchar','syscr','syscw')){
                         Require (($taskA.observed.$taskField-$taskA.empty.$taskField) -eq ($taskB.observed.$taskField-$taskB.empty.$taskField)) 'Full I/O deltas changed'
                     }
                 }

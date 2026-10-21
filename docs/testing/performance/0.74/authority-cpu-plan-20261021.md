@@ -40,7 +40,11 @@ concurrent local builds or measured lanes. Separately run the unchanged
 eight-case allocation/read control, comparing all observations with the sealed
 owners packet; require the same allocation/read counts and fixture payloads.
 This does not count all syscalls or measure API throughput, wall latency, RSS,
-retained memory or copied bytes. No measured failure may be retried as healthy.
+retained memory or copied bytes. Preserve raw proc I/O `rchar`; its snapshot
+text has variable-width counters, so its own byte length is not an invariant
+between different processes. Exact read/write counts and tracked kernel calls
+remain required. Review all check-lane step names, counts, exits and hashes.
+No measured failure may be retried as healthy.
 
 Add only an opt-in test hook and registered manual diagnostic, with an exact
 source adapter that preserves every other byte and rejects partial/duplicate
