@@ -1,9 +1,11 @@
 //! Exact pathname and hooks only; all old predicate bodies are reconstructed.
+#[path = "projection_groups_guard.rs"]
+mod groups;
 #[macro_export]
 macro_rules! hc074_pidfd_info_path_view {
     ($path:expr,$source:expr) => {{
         let path: &str = $path;
-        let mut raw: String = $source.to_owned();
+        let mut raw: String = $crate::hc074_projection_groups_view!(path, $source);
         if path == "tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs" {
             let hook = "\n#[path = \"diagnostic_pidfd_info_path.rs\"]\nmod pidfd_info_path;\n";
             let new = ".open(pidfd_info_path::InfoPath::new(pidfd.as_raw_fd()).as_path())?;";

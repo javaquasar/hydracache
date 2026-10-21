@@ -1,6 +1,9 @@
 //! Opt-in test binary only. Rust requests, not libc malloc, CPU, RSS or authority.
 use super::*;
 
+#[path = "../tests/support/projection_groups_alloc.rs"]
+mod projection_groups;
+
 #[path = "../tests/support/pidfd_info_path_alloc.rs"]
 mod pidfd_info_path;
 
