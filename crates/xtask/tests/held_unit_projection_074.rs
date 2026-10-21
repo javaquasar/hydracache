@@ -107,7 +107,11 @@ fn held_unit_projection_preserves_all_other_admission_transport_and_fixture_byte
         "tools/long-run-supervisor-074/tests/support/consuming_held_join.rs",
         "tools/long-run-supervisor-074/tests/support/consuming_held_live.rs",
     ] {
-        assert_eq!(read(path), old(path), "{path}");
+        assert_eq!(
+            crate::hc074_held_material_live_view!(path, &read(path)),
+            old(path),
+            "{path}"
+        );
     }
 }
 

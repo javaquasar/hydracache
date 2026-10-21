@@ -333,7 +333,13 @@ fn run_original(case: &str) {
                     }
                     assert_eq!(format!("{:?}", held.revalidate().unwrap_err()), "Refused");
                 }
-                drop(held);
+                if let Ok(mode) = std::env::var("HC074_HELD_MATERIAL_LIVE") {
+                    assert_eq!(mode, "original-once-v1");
+                    assert_eq!(case, "healthy");
+                    measured("projection-materialization", || held.fixture_materialize());
+                } else {
+                    drop(held);
+                }
             }
             cgroup.empty();
             for pin in &custodians {

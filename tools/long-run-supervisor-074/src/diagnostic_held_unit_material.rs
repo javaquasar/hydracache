@@ -208,3 +208,7 @@ impl<'root, 'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>
 #[cfg(test)]
 #[path = "diagnostic_held_unit_material_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "../tests/support/held_material_live_api.rs"]
+mod live_api;
