@@ -1045,3 +1045,25 @@ or qualification operation occurs. Original delivery, all-writer cessation,
 later cells, SIGKILL/lost-ACK, reconnect and real enrollment remain independent
 closed gates. Remaining observed-inventory and record-read requests need a
 separate attribution baseline, not a cache of live state or longer deadline.
+
+## Remaining request owners
+
+The [actual-phase control](local-runs/authority-breakdown-20261021/README.md),
+source `20e6fc12`, changes test instrumentation only. Runtime bytes restore
+exactly to `ad5d8ad0` after removing hooks; every live check and original
+300/60/10 window remains. Full fixture inspect stays 25/0/1718 at depth one
+and 101/0/8500 at seven, in allocations/reallocations/requested bytes, with
+reads 4/28. Both compilers and three samples conserve actual phase costs.
+
+Two inventories account for 16/68 allocations; record/marker revalidation
+4/28; directory checks and bind 5/5. Expected comparison remains zero, while
+fd-path formatting is a measured one-allocation/28-byte subset per inventory.
+Its ownership is a next isolated hypothesis, not a new accepted reduction or
+permission to cache observed state. Zero read counters do not remove metadata
+checks or establish timing readiness.
+
+Both lanes pass 199 authority tests, affected checks/strict lint, 377 source
+assertions and repository gates. No capture fails or is replaced. Workload,
+qualification and old live refusals remain unchanged; independent delivery,
+all-writer cessation, later cells, SIGKILL/lost-ACK, reconnect and real enrollment
+gates stay closed. No new live/server, supervisor, clock/service or product run.

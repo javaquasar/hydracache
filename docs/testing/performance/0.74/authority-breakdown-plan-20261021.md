@@ -51,3 +51,36 @@ Local nonroot synthetic controls only. No new server/live matrix, installation,
 supervisor, clock/service, product, qualification or push operation. Old native
 clock-order refusals and independent original-delivery, writer-cessation,
 lifecycle, SIGKILL/lost-ACK, reconnect and trust/enrollment gates remain closed.
+
+## Local outcome
+
+Capture source `20e6fc1217420d02dee91d2ac7ec9bae766a3273` has one invocation
+per compiler, with all three samples agreeing. The
+[packet](local-runs/authority-breakdown-20261021/README.md) conserves full
+inspection exactly: 25 allocations/1718 requested bytes/4 reads at one
+generation; 101/8500/28 at seven; reallocations stay zero.
+
+Two inventories contribute 16/68 allocations and 924/3316 requested bytes;
+records plus markers contribute 4/28 and 666/5056; two directory checks and
+bind contribute 5/5 and 128/128. Inventory equals its scan; prebuilt expected
+comparison costs zero. Fd-path formatting is an included subset, measured at
+one allocation/28 requested bytes per inventory, not an extra additive phase.
+The unchanged eight-case full control and cross-compiler payload hashes agree.
+
+Both lanes pass 199 authority tests, ancillary controls, all-target checks and
+strict all-feature lint; all 377 source assertions and repository gates pass.
+No recorded check or capture fails or is replaced. Runtime bytes are
+unchanged after removing exact test hooks, as are workload/qualification input
+blobs. This is attribution only, not a new reduction or CPU/latency result.
+
+The next isolated hypothesis is fd-path String ownership, preserving the same
+fresh read_dir and all guards. It needs its own preregistered paired baseline;
+no observed-set, read-buffer, cache, deadline or observation-frequency change
+is authorized by these request counts. All earlier live refusals remain.
+
+Evidence `c3e9fb5b5b7b1b1f571a2ed150f153cebaf08fb3` seals 51 members plus
+inventory SHA256
+`c758e549722903dd77d20e20da00347a3a950964ee8bb682ad43a10a6782003d`.
+All fourteen prior packets and their members remain intact; eight structural
+JSON and twelve scope mutations are rejected, and all 52 Git entries preserve
+raw packet bytes. This packet is immutable and does not authorize a new run.

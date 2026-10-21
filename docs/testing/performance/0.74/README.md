@@ -5151,3 +5151,31 @@ All thirteen preceding packets rehash unchanged; eight structural JSON and
 ten summary-scope mutations are rejected. All 96 committed packet files match
 their raw worktree bytes without Git filters. This proves packet integrity and
 request conservation, not live/native/server admission.
+
+## Remaining authority request decomposition
+
+The [actual-phase attribution](local-runs/authority-breakdown-20261021/README.md)
+uses source `20e6fc12`, without changing runtime bytes after exact test-hook
+removal. Both compilers and all three samples preserve full fixture inspect
+at 25/0/1718 and 101/0/8500 for depths one/seven, in allocations/reallocations/
+requested bytes, with reads 4/28. This is attribution, not another win.
+
+Two inventories contribute 16/68 allocations and 924/3316 bytes; records plus
+markers 4/28 and 666/5056; two directory checks plus bind 5/5 and 128/128.
+All request/read metrics conserve exactly. Inventory equals its scan; expected
+comparison stays zero. Fd-path formatting is an included one-allocation/28-byte
+subset per inventory and needs a separate paired candidate before any saving.
+Zero read counters do not mean zero metadata/directory checks or prove latency.
+
+Both lanes pass 199 authority tests, affected checks/strict lint, all 377 source
+assertions and repository gates. No capture is retried, and frozen workload,
+qualification, original windows and live checks remain. Native/server admission
+stays closed; no push, new server/live matrix, installation, supervisor,
+clock/service, product or qualification operation occurs.
+
+Evidence commit `c3e9fb5b5b7b1b1f571a2ed150f153cebaf08fb3` seals 51 members
+plus inventory SHA256
+`c758e549722903dd77d20e20da00347a3a950964ee8bb682ad43a10a6782003d`.
+Fourteen preceding packets remain intact. Eight structural JSON and twelve
+scope mutations are refused; all 52 committed packet files preserve raw bytes.
+This verifies attribution integrity, not another runtime improvement or admission.

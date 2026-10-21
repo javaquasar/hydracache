@@ -15749,3 +15749,65 @@ The write-once packet seal verifies thirteen preceding packets and every
 member, rejects eight structural JSON and ten scope mutations, and preserves
 all 96 committed packet files without Git byte transformations. That integrity
 check is separate from the measured request reduction and from every live gate.
+
+## Remaining authority requests by actual phase
+
+Removing temporary expected names leaves other allocations in complete fixture
+inspection. The next [attribution control](../testing/performance/0.74/authority-breakdown-plan-20261021.md)
+separates their owners before choosing another candidate. It measures actual
+directory revalidation, inventory, record and marker revalidation, and final
+bind/view on the original retained objects. Two directory checks and two
+inventories, plus records, markers and bind, must reproduce the measured full
+path for every request metric. This is decomposition, not a Before/After win.
+
+Within inventory, a frozen scanner preserves the directory loop, UTF-8,
+duplicate, budget and parity checks. Its requests plus a prebuilt-set expected
+comparison must equal actual inventory. Fd-path formatting is only a subset of
+that scan, so its cost is not added again. The expected-set control cannot prove
+freshness: a test removes a marker and keeps the stale pure comparison true,
+while fresh inventory/full inspection refuse and the full path latches refusal.
+
+The [packet](../testing/performance/0.74/local-runs/authority-breakdown-20261021/README.md)
+binds entry sizes and payload hashes, exact source and compiler images, three
+rotated samples per phase and the unchanged eight-case leaf control. Allocator
+and /proc I/O observations are separate. Exact source guards remove only new
+test hooks, preserving every runtime byte and the original admission windows.
+
+All three samples on GNU 1.94 and MSRV 1.88 agree. These are per-phase requests;
+the record and marker rows each cover the whole selected journal. There is no
+runtime mutation or Before/After reduction in this packet.
+
+| Phase | Allocations at 1 / 7 generations | Requested bytes at 1 / 7 | Read requests at 1 / 7 |
+| --- | ---: | ---: | ---: |
+| Full inspect | 25 / 101 | 1718 / 8500 | 4 / 28 |
+| One directory check | 2 / 2 | 32 / 32 | 0 / 0 |
+| One inventory | 8 / 34 | 462 / 1658 | 0 / 0 |
+| All records | 2 / 14 | 577 / 4433 | 2 / 14 |
+| All markers | 2 / 14 | 89 / 623 | 2 / 14 |
+| Bind/view | 1 / 1 | 64 / 64 | 0 / 0 |
+
+After applying the full path's multiplicities, inventory contributes 16/68
+allocations and 924/3316 requested bytes, records plus markers 4/28 and
+666/5056, and directory checks plus bind 5/5 and 128/128. Their sum reproduces
+full inspection exactly. Reallocations stay zero. The separate unchanged leaf
+control matches too, and entry payload hashes agree across compilers.
+
+Inventory's entire request cost is in the frozen scan; its prebuilt expected
+comparison remains zero. Fd-path formatting is already included in that scan
+and independently costs one allocation/28 requested bytes per invocation.
+That is a narrow next ownership hypothesis, not an accepted saving. A new
+paired candidate must retain the same fresh read_dir, exact path bytes, refusal
+order and original windows; observed-container or buffer changes stay separate.
+
+This locates Rust request owners, not the CPU or latency bottleneck. Zero read
+counters for directory/inventory do not mean zero directory or metadata checks.
+Both compiler lanes pass 199 authority tests, affected checks and strict lint;
+all 377 source assertions and repository gates pass. No capture is retried.
+Runtime, workload and qualification remain unchanged; old clock-order refusals
+and independent execution/lifecycle/trust gates remain closed. No new server,
+live matrix, supervisor, clock/service, product or qualification operation occurs.
+
+The attribution packet retains 51 members plus its inventory, verifies all
+fourteen preceding packets, and rejects eight structural JSON and twelve scope
+mutations. All 52 committed files preserve raw bytes. This integrity proof does
+not turn a phase decomposition into a performance win or live admission.
