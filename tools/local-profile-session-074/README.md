@@ -69,3 +69,27 @@ Windows `.git` pointer. Postflight is attempted but also refuses. The bound
 successor uses the same Windows Git reader as the launcher, inside WSL, with
 optional index writes disabled and a ten-second subprocess timeout. It never
 rewrites `.git`, changes Git configuration or continues either failed packet.
+
+## Offline refused prefix attribution
+
+`attribute_partial.py` only reads the sealed bound packet. It starts no WSL
+fixture, service, manager or product process. It verifies its pinned 55-member
+inventory and reconstructs the two original failed prefixes, ordered phases,
+all eight step rows, partial-round completion, kernel graph count/time
+conservation and unchanged output signature (46 rounds, 782 authentications).
+It joins each original expiration to its actual unfinished validation step.
+
+Run `python -B tools/local-profile-session-074/test_attribute_partial.py` before
+freezing the analyzer. Generate once with `attribute_partial.py --output <new
+facts.json>` and subsequently use `--verify --output <same facts.json>` to
+reconstruct it without replacement. Keep derived attribution in the separate
+`partial-preparation-attribution-20261021` packet, never in the sealed input.
+
+Each compiler supplies one refused prefix, not a cohort or a compiler
+comparison. Complete subphases do not repair the enclosing attempt. Round-step,
+live, kernel and authentication spans overlap. Only kernel time outside its
+instrumented children is reconciled additively within its own tree; this is
+wall time, not exclusive CPU. Residuals are not assigned to filesystem effects,
+authority or observer cost. Phase CPU excludes children, inter-phase work and
+report aggregation/emission, and phase sums are not the admission origin's age.
+No overhead subtraction, performance win or native admission follows.

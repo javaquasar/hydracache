@@ -169,3 +169,21 @@ preflight packet. The runner is exercised; complete residual attribution and
 native admission remain incomplete. Next use its partial phase/step traces to
 locate preparation costs before expiration, without another runtime change or
 retry in this packet.
+
+## Offline partial preparation attribution
+
+Use the sealed bound packet from `06b55d5e` as read-only input, inventory SHA256
+`91a6e589235f2552ae9335680f47d4a20a418efeefcc3bc9fd2a05ba96f12afe`.
+Freeze the offline analyzer and falsifying controls before producing a separate
+`partial-preparation-attribution-20261021` packet. No new timing profile,
+runtime/observer change, WSL configuration, service or server action is part of
+this step. Verify all twenty-two prior packets through the existing reviewer.
+
+Reconstruct each original failed prefix separately, distinguish complete
+subphases from incomplete attempts, validate ordered round prefixes and kernel
+graph conservation, and join the original expiration to the unfinished step.
+Attribute phase, step, kernel, live and authentication spans without adding
+overlapping clocks or subtracting observer overhead. Parent CPU excludes child
+CPU and report emission; phase sums are not issued age. Use these observations
+to select the next cost-control hypothesis, not to admit a product change,
+pool compiler samples, retry either lane or relax original windows.
