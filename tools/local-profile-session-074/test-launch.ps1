@@ -10,6 +10,7 @@ $Source='a'*40
 $taskPreparation=@{'194'=@{sha256=('b'*64)};'188'=@{sha256=('c'*64)}}
 $taskPrior='docs/testing/performance/0.74/local-runs/validation-round-residual-20261021'
 $taskWslRepo='/synthetic-local-control'
+$taskName='single-session-rounds-bound-20261021'
 # Exercise the actual source expression with synthetic values; no WSL launch.
 $taskPins=& ([scriptblock]::Create($taskAssignments[0].Right.Extent.Text))
 $taskEncoded=ConvertTo-Json -InputObject $taskPins -Depth 8

@@ -8,9 +8,10 @@ if((& git rev-parse HEAD).Trim() -cne $Source -or (& git status --porcelain --un
 if($LASTEXITCODE -ne 0){throw 'Runtime/observer source changed'}
 $taskPrior='docs/testing/performance/0.74/local-runs/validation-round-residual-20261021'
 & "$taskRepo/$taskPrior/preflight-review.ps1" -Mode Review
-$taskPrefix=Join-Path $taskRepo 'target/single-session-rounds-verified-20261021'
-$taskPacket=Join-Path $taskRepo 'docs/testing/performance/0.74/local-runs/single-session-rounds-verified-20261021'
-if((Test-Path $taskPacket) -or @(Get-ChildItem -LiteralPath (Join-Path $taskRepo 'target') -Filter 'single-session-rounds-verified-20261021-*').Count){throw 'Never retry or overwrite preparation/session'}
+$taskName='single-session-rounds-bound-20261021'
+$taskPrefix=Join-Path $taskRepo "target/$taskName"
+$taskPacket=Join-Path $taskRepo "docs/testing/performance/0.74/local-runs/$taskName"
+if((Test-Path $taskPacket) -or @(Get-ChildItem -LiteralPath (Join-Path $taskRepo 'target') -Filter "$taskName-*").Count){throw 'Never retry or overwrite preparation/session'}
 $taskLaunchIntent=ConvertTo-Json -InputObject @{source=$Source;server=$false;product=$false;single_profile_session=$true}
 New-Item -ItemType File -Path "$taskPrefix-launch.intent.json" -Value $taskLaunchIntent -ErrorAction Stop|Out-Null
 $taskPreparation=@{}
@@ -30,11 +31,11 @@ foreach($taskLane in @('194','188')){
 $taskPreparationPath="$taskPrefix-preparation.json"
 ConvertTo-Json -InputObject $taskPreparation -Depth 8|Set-Content -Encoding utf8NoBOM $taskPreparationPath
 $taskWslRepo='/mnt/c/Workspace/prj/jq/cashe/hydracache-074'
-$taskPins=@{source=$Source;bundle=(Get-Content "$taskPrior/context-Verified-Before.json" -Raw|ConvertFrom-Json).bundle;images=@{'194'=$taskPreparation['194'].sha256;'188'=$taskPreparation['188'].sha256};preparation="$taskWslRepo/target/single-session-rounds-verified-20261021-preparation.json"}
+$taskPins=@{source=$Source;bundle=(Get-Content "$taskPrior/context-Verified-Before.json" -Raw|ConvertFrom-Json).bundle;images=@{'194'=$taskPreparation['194'].sha256;'188'=$taskPreparation['188'].sha256};preparation="$taskWslRepo/target/$taskName-preparation.json"}
 ConvertTo-Json -InputObject $taskPins -Depth 8|Set-Content -Encoding utf8NoBOM "$taskPrefix-pins.json"
 # This is the ONE WSL entry enclosing fresh metadata, all profiles, postflight.
 # Outer containment includes prechecks; it never changes Rust admission windows.
-& wsl.exe -d Ubuntu -u root -- /usr/bin/timeout --signal=TERM --kill-after=15s 7530s /usr/bin/python3 -B "$taskWslRepo/tools/local-profile-session-074/runner.py" --source $Source --pins "$taskWslRepo/target/single-session-rounds-verified-20261021-pins.json" --output "$taskWslRepo/docs/testing/performance/0.74/local-runs/single-session-rounds-verified-20261021" *> "$taskPrefix-session.log"
+& wsl.exe -d Ubuntu -u root -- /usr/bin/timeout --signal=TERM --kill-after=15s 7530s /usr/bin/python3 -B "$taskWslRepo/tools/local-profile-session-074/runner.py" --source $Source --pins "$taskWslRepo/target/$taskName-pins.json" --output "$taskWslRepo/docs/testing/performance/0.74/local-runs/$taskName" *> "$taskPrefix-session.log"
 $taskExit=[int]$LASTEXITCODE
 @{source=$Source;exit=$taskExit;single_profile_session=$true;session_log_sha256=(Hash "$taskPrefix-session.log");recipe_sha256=(Hash $PSCommandPath);server=$false;product=$false}|ConvertTo-Json|Set-Content -Encoding utf8NoBOM "$taskPrefix-launch-exit.json"
 Write-Output "Single session exited $taskExit; preserve all receipts, never rerun this packet."

@@ -152,3 +152,10 @@ keys after two builds, before any metadata/profile session. Preserve those
 preparation artifacts. Correct only the keys to strings and freeze a separate
 `single-session-rounds-verified-20261021` prefix before the authorized session;
 the first prefix is not reused. No measured profile exists to retry.
+
+At `deea7ea9`, the verified prefix records a zero-profile refusal: Linux Git
+cannot resolve this linked worktree's Windows absolute `.git` pointer, including
+in attempted postflight. Preserve its intent/result and raw launcher artifacts.
+The separate bound prefix uses read-only Windows Git from inside the same WSL
+process, with optional index writes disabled. No `.git` rewrite or global Git
+configuration change occurs; the subprocess keeps its original ten-second bound.

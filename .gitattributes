@@ -497,3 +497,7 @@ docs/testing/performance/0.74/local-runs/single-session-rounds-20261021/**/*.log
 docs/testing/performance/0.74/local-runs/single-session-rounds-verified-20261021/** -text whitespace=cr-at-eol
 
 docs/testing/performance/0.74/local-runs/single-session-rounds-verified-20261021/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/single-session-rounds-bound-20261021/** -text whitespace=cr-at-eol
+
+docs/testing/performance/0.74/local-runs/single-session-rounds-bound-20261021/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol

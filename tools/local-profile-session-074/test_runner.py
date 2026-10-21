@@ -5,6 +5,7 @@ import json
 import os
 from pathlib import Path
 import signal
+import subprocess
 import sys
 import tempfile
 import time
@@ -247,6 +248,30 @@ class PreparationTests(unittest.TestCase):
         path.write_text(json.dumps(receipt), encoding="utf-8")
         with self.assertRaisesRegex(RuntimeError, "Focused checks"):
             runner.verify_preparation(self.repo, self.pins)
+
+
+class GitReaderTests(unittest.TestCase):
+    def test_fixed_reader_is_bounded_and_no_optional_writes(self):
+        with patch.object(runner.subprocess, "run", return_value=subprocess.CompletedProcess([], 0, "a"*40+"\n", "")) as call:
+            self.assertEqual(runner.git(Path("/mnt/c/Workspace/prj/jq/cashe/hydracache-074"), "rev-parse", "HEAD"), "a"*40)
+        self.assertIn("--no-optional-locks", call.call_args.args[0])
+        self.assertEqual(call.call_args.kwargs["timeout"], 10)
+        self.assertTrue(call.call_args.args[0][0].endswith("/Git/cmd/git.exe"))
+
+    def test_failed_reader_preserves_stderr_and_refuses(self):
+        with patch.object(runner.subprocess, "run", return_value=subprocess.CompletedProcess([], 128, "", "synthetic pointer refusal")):
+            with self.assertRaisesRegex(RuntimeError, "synthetic pointer refusal"):
+                runner.git(Path("/mnt/c/Workspace/prj/jq/cashe/hydracache-074"), "rev-parse", "HEAD")
+
+    def test_other_repository_not_addressed(self):
+        with self.assertRaisesRegex(RuntimeError, "Unexpected local repository"):
+            runner.git(Path("/other/repository"), "status")
+
+    @unittest.skipUnless(sys.platform == "linux" and Path("/mnt/c/Program Files/Git/cmd/git.exe").exists(), "Local WSL reader integration")
+    def test_real_linked_worktree_reader(self):
+        repo = Path("/mnt/c/Workspace/prj/jq/cashe/hydracache-074")
+        self.assertRegex(runner.git(repo, "rev-parse", "HEAD"), r"^[0-9a-f]{40}$")
+        runner.git(repo, "status", "--porcelain", "--untracked-files=no")
 
 
 @unittest.skipUnless(sys.platform == "linux", "Linux process-group and selector controls")

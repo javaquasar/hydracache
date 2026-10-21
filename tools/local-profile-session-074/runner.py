@@ -58,10 +58,15 @@ def write_new(path, value):
 
 
 def git(repo, *args):
+    # Linked worktree .git stores a Windows absolute path. Use the same Windows
+    # Git reader as the launcher, without changing .git or refreshing its index.
+    require(str(repo) == "/mnt/c/Workspace/prj/jq/cashe/hydracache-074", "Unexpected local repository")
     result = subprocess.run(
-        ["/usr/bin/git", "-c", f"safe.directory={repo}", "-C", str(repo), *args], capture_output=True,
-        timeout=10, check=True, text=True,
+        ["/mnt/c/Program Files/Git/cmd/git.exe", "--no-optional-locks", "-C",
+         "C:/Workspace/prj/jq/cashe/hydracache-074", *args], capture_output=True,
+        timeout=10, check=False, text=True,
     )
+    require(result.returncode == 0, f"Git reader refused ({result.returncode}): {result.stderr[:4096]}")
     return result.stdout.strip()
 
 
@@ -94,6 +99,7 @@ def snapshot(repo, pins):
         qualification_sha256=sha(repo / "docs/testing/performance/0.74/qualification-manifest.toml"),
         driver_sha256=sha(Path(__file__)), pins_sha256=sha(pins),
         preparation_sha256=sha(read_json(pins)["preparation"]),
+        git_reader_sha256=sha("/mnt/c/Program Files/Git/cmd/git.exe"),
     )
 
 
@@ -283,8 +289,8 @@ def main():
     pins = read_json(args.pins)
     require(args.source == pins["source"], "Source argument mismatch")
     require(args.output.parent.resolve() == repo / "docs/testing/performance/0.74/local-runs" and
-            re.fullmatch(r"single-session-rounds-verified-20261021", args.output.name), "Only this new local packet")
-    require(args.pins.resolve() == repo / "target/single-session-rounds-verified-20261021-pins.json", "Unexpected pins location")
+            re.fullmatch(r"single-session-rounds-bound-20261021", args.output.name), "Only this new local packet")
+    require(args.pins.resolve() == repo / "target/single-session-rounds-bound-20261021-pins.json", "Unexpected pins location")
     # Prechecks run inside the same WSL invocation, before fresh context/profiles.
     result = run_session(args.output, pins, lambda: snapshot(repo, args.pins),
                          lambda lane, log, deadline: capture(command(lane), child_env(repo), log, deadline),
