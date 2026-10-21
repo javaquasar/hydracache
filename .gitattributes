@@ -568,3 +568,6 @@ docs/testing/performance/0.74/local-runs/collector-peer-baseline-20261021/**/*.l
 
 docs/testing/performance/0.74/local-runs/collector-peer-capacity-20261022/** -text whitespace=cr-at-eol
 docs/testing/performance/0.74/local-runs/collector-peer-capacity-20261022/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/reserved-reconciliation-20261022/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/reserved-reconciliation-20261022/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
