@@ -1,0 +1,45 @@
+{
+  "baseline_source": "71638d9db2817c1a1d24edddb467e2cbf7a4ec9e",
+  "runtime_before": "8717ea4f482a995226a799df1d39b77d4665a60a",
+  "lanes": [
+    {
+      "lane": "194",
+      "constructions": 2304,
+      "allocations": 2304,
+      "reallocations": 0,
+      "requested_bytes": 64768,
+      "production_length_constructions": 512,
+      "production_length_allocations": 512,
+      "production_length_requested_bytes": 18432,
+      "pure_unit_controls": 5,
+      "allocator_counter_controls": 2
+    },
+    {
+      "lane": "188",
+      "constructions": 2304,
+      "allocations": 2304,
+      "reallocations": 0,
+      "requested_bytes": 64768,
+      "production_length_constructions": 512,
+      "production_length_allocations": 512,
+      "production_length_requested_bytes": 18432,
+      "pure_unit_controls": 5,
+      "allocator_counter_controls": 2
+    }
+  ],
+  "baseline_only": true,
+  "runtime_candidate_implemented": false,
+  "timing_improvement_proven": false,
+  "original_windows_seconds": [
+    300,
+    60,
+    10
+  ],
+  "first_refusal_ages_ns": [
+    10042390247,
+    10010835739
+  ],
+  "new_original_owner_profiles": 0,
+  "server": false,
+  "product": false
+}

@@ -1,0 +1,28 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error: no rules expected `.`
+  --> tools/long-run-supervisor-074/src/../tests/support/context_document_buffer_baseline.rs:61:44
+   |
+61 |                 "production_length":[33,37].contains(&length),"rust_requests_only":true,
+   |                                            ^ no rules expected this token in macro call
+   |
+   = note: while trying to match end of macro
+
+error[E0689]: can't call method `saturating_sub` on ambiguous numeric type `{integer}`
+   --> tools/long-run-supervisor-074/src/../tests/support/context_document_buffer_baseline.rs:183:42
+    |
+182 |     for length in [0, 1, 4, 33, 37, 63] {
+    |         ------ you must specify a type for this binding, like `i32`
+183 |         let expected = "a".repeat(length.saturating_sub(1));
+    |                                          ^^^^^^^^^^^^^^
+
+error[E0689]: can't call method `saturating_sub` on ambiguous numeric type `{integer}`
+   --> tools/long-run-supervisor-074/src/../tests/support/context_document_buffer_baseline.rs:184:33
+    |
+182 |     for length in [0, 1, 4, 33, 37, 63] {
+    |         ------ you must specify a type for this binding, like `i32`
+183 |         let expected = "a".repeat(length.saturating_sub(1));
+184 |         for count in [0, length.saturating_sub(1), length + 1, usize::MAX] {
+    |                                 ^^^^^^^^^^^^^^
+
+For more information about this error, try `rustc --explain E0689`.
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 3 previous errors

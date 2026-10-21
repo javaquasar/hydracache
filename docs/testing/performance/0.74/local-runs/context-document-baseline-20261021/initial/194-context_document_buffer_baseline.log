@@ -1,0 +1,10 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error: no rules expected `.`
+  --> tools/long-run-supervisor-074/src/../tests/support/context_document_buffer_baseline.rs:61:44
+   |
+61 | ...37].con...
+   |       ^ no rules expected this token in macro call
+   |
+   = note: while trying to match end of macro
+
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 1 previous error
