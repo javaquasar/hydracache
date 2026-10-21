@@ -1,0 +1,185 @@
+//! Local current-thread CPU observations of actual methods, not validation authority.
+use super::*;
+use crate::diagnostic_worker_policy::authority_registry::fixture::owners_controls::{
+    Fixture, Uncounted, PHASES,
+};
+
+const ITERATIONS: usize = 2048;
+const SAMPLES: usize = 14;
+const WARMUPS: usize = 32;
+const CASES: [&str; 7] = [
+    "full",
+    "directory",
+    "inventory",
+    "records",
+    "markers",
+    "bind",
+    "empty",
+];
+
+fn nanoseconds(seconds: i64, nanos: i64) -> Option<u64> {
+    if seconds < 0 || !(0..1_000_000_000).contains(&nanos) {
+        return None;
+    }
+    (seconds as u64)
+        .checked_mul(1_000_000_000)?
+        .checked_add(nanos as u64)
+}
+fn reading(status: i32, seconds: i64, nanos: i64) -> Option<u64> {
+    if status != 0 {
+        return None;
+    }
+    nanoseconds(seconds, nanos)
+}
+fn cpu() -> u64 {
+    let mut value = libc::timespec {
+        tv_sec: 0,
+        tv_nsec: 0,
+    };
+    let status = unsafe { libc::clock_gettime(libc::CLOCK_THREAD_CPUTIME_ID, &mut value) };
+    reading(status, value.tv_sec, value.tv_nsec).expect("valid thread CPU reading; no fallback")
+}
+fn position(sample: usize, slot: usize) -> usize {
+    assert!(sample < SAMPLES && slot < CASES.len());
+    if sample < 7 {
+        (sample + slot) % 7
+    } else {
+        (sample - 7 + 7 - slot) % 7
+    }
+}
+fn run(fixture: &mut Fixture, index: usize) {
+    if index < 6 {
+        fixture
+            .run(std::hint::black_box(PHASES[index].1), &mut Uncounted)
+            .unwrap();
+    } else {
+        assert_eq!(index, 6);
+        std::hint::black_box(());
+    }
+}
+fn batch(fixture: &mut Fixture, index: usize) -> u64 {
+    assert!(!COUNTS.with(|state| state.get().active));
+    let before = cpu();
+    for _ in 0..ITERATIONS {
+        run(fixture, std::hint::black_box(index));
+    }
+    let elapsed = cpu()
+        .checked_sub(before)
+        .expect("thread CPU moved backwards; no repair");
+    assert!(!COUNTS.with(|state| state.get().active));
+    elapsed
+}
+#[test]
+fn authority_cpu_readings_refuse_syscall_errors_invalid_times_overflow_and_reversal() {
+    assert_eq!(reading(0, 2, 7), Some(2_000_000_007));
+    assert_eq!(reading(0, 0, 0), Some(0));
+    for (status, sec, ns) in [
+        (-1, 0, 0),
+        (1, 0, 0),
+        (0, -1, 0),
+        (0, 0, -1),
+        (0, 0, 1_000_000_000),
+        (0, i64::MAX, 0),
+    ] {
+        assert_eq!(reading(status, sec, ns), None);
+    }
+    assert_eq!(7_u64.checked_sub(8), None);
+    assert_eq!(8_u64.checked_sub(8), Some(0));
+    assert_eq!(8_u64.checked_sub(7), Some(1));
+    assert!(cpu().checked_sub(cpu()).is_none_or(|delta| delta == 0));
+}
+#[test]
+fn authority_cpu_rotation_covers_every_position_in_both_directions() {
+    for start in [0, 7] {
+        let mut counts = [[0; 7]; 7];
+        for sample in start..start + 7 {
+            let mut seen = [false; 7];
+            for slot in 0..7 {
+                let index = position(sample, slot);
+                assert!(!seen[index]);
+                seen[index] = true;
+                counts[index][slot] += 1;
+            }
+            assert!(seen.into_iter().all(|entry| entry));
+        }
+        assert_eq!(counts, [[1; 7]; 7]);
+    }
+    assert!(std::panic::catch_unwind(|| position(14, 0)).is_err());
+    assert!(std::panic::catch_unwind(|| position(0, 7)).is_err());
+    let mut fixture = Fixture::new(1);
+    assert!(batch(&mut fixture, 6) > 0);
+    assert!(std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        capture(|| batch(&mut fixture, 6));
+    }))
+    .is_err());
+    assert!(!COUNTS.with(|state| state.get().active));
+}
+#[test]
+#[ignore = "manual local thread CPU attribution; no product or admission"]
+fn authority_cpu_actual_phase_attribution() {
+    assert_ne!(unsafe { libc::geteuid() }, 0);
+    let origin = Origin::open().unwrap();
+    let mut resolution = libc::timespec {
+        tv_sec: 0,
+        tv_nsec: 0,
+    };
+    let status = unsafe { libc::clock_getres(libc::CLOCK_THREAD_CPUTIME_ID, &mut resolution) };
+    let resolution = reading(status, resolution.tv_sec, resolution.tv_nsec).unwrap();
+    assert!(resolution > 0);
+    let pairs = (0..64)
+        .map(|_| {
+            let before = cpu();
+            cpu()
+                .checked_sub(before)
+                .expect("backwards clock-pair reading")
+        })
+        .collect::<Vec<_>>();
+    println!(
+        "HC074-AUTHORITY-CPU-ORIGIN {}",
+        serde_json::json!({
+            "pid":std::process::id(),"boot_id":origin.boot,"uid":unsafe { libc::geteuid() },
+            "clock":"CLOCK_THREAD_CPUTIME_ID","resolution_ns":resolution,"clock_pair_ns":pairs,
+            "samples":SAMPLES,"iterations":ITERATIONS,"warmups":WARMUPS,
+            "runtime_changed":false,"server":false,"product":false,"native_gate_open":false,
+        })
+    );
+    for depth in [1, 7] {
+        let mut fixture = Fixture::new(depth);
+        println!("HC074-AUTHORITY-CPU-FIXTURE {}", fixture.identity());
+        for index in 0..7 {
+            for _ in 0..WARMUPS {
+                run(&mut fixture, index);
+            }
+        }
+        for sample in 0..SAMPLES {
+            let mut totals = [0_u64; 7];
+            for slot in 0..7 {
+                let index = position(sample, slot);
+                totals[index] = batch(&mut fixture, index);
+                assert!(totals[index] > 0);
+                println!(
+                    "HC074-AUTHORITY-CPU {}",
+                    serde_json::json!({
+                        "generations":depth,"phase":CASES[index],"sample":sample,"position":slot,
+                        "iterations":ITERATIONS,"cpu_ns":totals[index],"allocator_active":false,
+                        "traced_methods":false,"runtime_changed":false,"server":false,"product":false,
+                    })
+                );
+            }
+            let full = i128::from(totals[0]);
+            let components = 2 * i128::from(totals[1])
+                + 2 * i128::from(totals[2])
+                + i128::from(totals[3])
+                + i128::from(totals[4])
+                + i128::from(totals[5]);
+            println!(
+                "HC074-AUTHORITY-CPU-RESIDUAL {}",
+                serde_json::json!({
+                    "generations":depth,"sample":sample,"full_ns":totals[0],"components_ns":components,
+                    "signed_residual_ns":full-components,"empty_ns":totals[6],"iterations":ITERATIONS,
+                })
+            );
+        }
+    }
+    origin.revalidate().unwrap();
+}
