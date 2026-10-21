@@ -1,9 +1,11 @@
 //! Reverse one storage constructor and exact hooks; never exclude a live body.
+#[path = "trust_component_baseline_guard.rs"]
+mod trust_baseline;
 #[macro_export]
 macro_rules! hc074_context_document_stack_view {
     ($path:expr,$source:expr) => {{
         let path: &str = $path;
-        let mut raw: String = $source.to_owned();
+        let mut raw: String = $crate::hc074_trust_component_baseline_view!(path,$source);
         if path == "tools/long-run-supervisor-074/src/diagnostic_worker_context.rs"
             && (raw.contains("diagnostic_context_document_buffer.rs") || raw.contains("document_buffer::Scratch"))
         {
