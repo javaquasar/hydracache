@@ -644,3 +644,7 @@ pub(crate) mod fd_path_controls;
 #[cfg(test)]
 #[path = "../tests/support/authority_owners_controls.rs"]
 pub(crate) mod owners_controls;
+
+#[cfg(test)]
+#[path = "../tests/support/authority_open_name_controls.rs"]
+pub(crate) mod open_name_controls;

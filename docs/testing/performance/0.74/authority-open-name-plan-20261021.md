@@ -54,3 +54,13 @@ separate. On failed semantics or unconfirmed primary request effect, retain
 the result and revert only this candidate. No install, server/live matrix,
 supervisor, clock/service, product workload, qualification or push is authorized
 by this plan. Old live/time failures and independent admission gates remain.
+
+## Frozen local comparison method
+
+The new packet `local-runs/authority-open-name-20261021/README.md` specifies
+the source-bound alternating helper pairs, separate cold leaf open and warm
+revalidation, and unchanged owners/full controls. Baseline runtime remains
+the original CString helper. Authoring preflight failures are retained before
+the repaired instrumentation gate; they are not measured runtime cohorts.
+Helper CPU ranges and signed pairs will not be promoted into an allocation
+CPU estimate or a product nonregression claim.

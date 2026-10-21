@@ -481,3 +481,7 @@ docs/testing/performance/0.74/local-runs/authority-cpu-20261021/**/*.log whitesp
 docs/testing/performance/0.74/local-runs/authority-leaf-cpu-20261021/** -text whitespace=cr-at-eol
 
 docs/testing/performance/0.74/local-runs/authority-leaf-cpu-20261021/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-open-name-20261021/** -text whitespace=cr-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-open-name-20261021/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
