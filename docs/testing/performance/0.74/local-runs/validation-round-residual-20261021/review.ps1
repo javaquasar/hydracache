@@ -64,8 +64,9 @@ function Facts{
     $taskInitial=Json 'context-Before.json';$taskCleanup=Json 'root-toolchain-cleanup.json'
     Require ($taskInitial.recipe_sha256 -ceq (Hash (Join-Path $PSScriptRoot 'context.ps1')) -and @($taskInitial.commands|Where-Object {$_.output.Contains('has been auto-installed')}).Count -eq 2) 'Initial context mutation must remain visible'
     Require ($taskCleanup.exit -eq 0 -and $taskCleanup.after.Contains('no installed toolchains') -and $taskCleanup.preflight_auto_installed -eq $true -and $taskCleanup.read_only_query_was_false -eq $true -and $taskCleanup.measured_invocations_started -eq $false -and $taskCleanup.artur_toolchains_touched -eq $false) 'Root toolchain side effect/cleanup not accounted'
-    $taskBefore=Json 'context-Verified-Before.json';$taskAfter=Json 'context-Verified-After.json';$taskSource=$taskBefore.source
-    Require ($taskAfter.source -ceq $taskSource -and $taskSource -cmatch '^[0-9a-f]{40}$') 'Context source changed'
+    $taskBefore=Json 'context-Verified-Before.json';$taskAfter=Json 'context-Verified-After.json';$taskSource=$taskAfter.source
+    & git merge-base --is-ancestor $taskBefore.source $taskSource
+    Require ($LASTEXITCODE -eq 0 -and $taskSource -cmatch '^[0-9a-f]{40}$') 'Context source ancestry changed'
     & git diff --quiet b074f8f9f3d8f9766b3b04c59a8291941a7e3b1d $taskSource -- tools/long-run-supervisor-074 crates/xtask Cargo.lock
     Require ($LASTEXITCODE -eq 0) 'Runtime/observer tree changed'
     $taskOldInputs=Get-Content (Join-Path $PSScriptRoot '../validation-round-cost-20261020/inputs-before.json') -Raw|ConvertFrom-Json
@@ -81,10 +82,13 @@ function Facts{
     $taskOld=@(Rows (Join-Path $PSScriptRoot '../validation-round-cost-20261020/194-Profile-0.log') 'HC074-HELD-PHASE ')
     $taskLanes=@()
     foreach($taskLane in @('194','188')){
-        $taskCheck=Json "check-$taskLane-exit.json";$taskCohort=Json "$taskLane-cohort.json"
-        Require ($taskCheck.source -ceq $taskSource -and $taskCheck.lane -ceq $taskLane -and -not $taskCheck.failure -and $taskCheck.steps.Count -eq 11 -and @($taskCheck.steps|Where-Object exit -ne 0).Count -eq 0 -and $taskCheck.recipe_sha256 -ceq (Hash (Join-Path $PSScriptRoot 'check.ps1'))) 'Focused gate incomplete'
+        $taskRefused=Json "check-$taskLane-exit.json"
+        Require ($taskRefused.failure.Contains('diagnostic_kernel_admission::.log') -and $taskRefused.steps.Count -eq 7 -and @($taskRefused.steps|Where-Object exit -ne 0).Count -eq 0 -and $taskRefused.recipe_sha256 -ceq (Hash (Join-Path $PSScriptRoot 'check.ps1'))) 'Original filename refusal missing'
+        foreach($taskStep in $taskRefused.steps){Require ($taskStep.sha256 -ceq (Hash (Join-Path $PSScriptRoot $taskStep.log))) 'Original preflight log changed'}
+        $taskCheck=Json "check-Verified-$taskLane-exit.json";$taskCohort=Json "$taskLane-cohort.json"
+        Require ($taskCheck.source -ceq $taskSource -and $taskCheck.lane -ceq $taskLane -and -not $taskCheck.failure -and $taskCheck.steps.Count -eq 11 -and @($taskCheck.steps|Where-Object exit -ne 0).Count -eq 0 -and $taskCheck.recipe_sha256 -ceq (Hash (Join-Path $PSScriptRoot 'check-repair.ps1'))) 'Focused gate incomplete'
         foreach($taskStep in $taskCheck.steps){Require ($taskStep.sha256 -ceq (Hash (Join-Path $PSScriptRoot $taskStep.log))) 'Check log changed'}
-        $taskImages=@(Get-Content (Join-Path $PSScriptRoot "check-$taskLane-build.log")|Where-Object {$_.StartsWith('{')}|ForEach-Object {$_|ConvertFrom-Json}|Where-Object {$_.reason -ceq 'compiler-artifact' -and $_.target.name -ceq 'hydracache_long_run_supervisor_074' -and $_.profile.test -and $_.executable})
+        $taskImages=@(Get-Content (Join-Path $PSScriptRoot "check-Verified-$taskLane-build.log")|Where-Object {$_.StartsWith('{')}|ForEach-Object {$_|ConvertFrom-Json}|Where-Object {$_.reason -ceq 'compiler-artifact' -and $_.target.name -ceq 'hydracache_long_run_supervisor_074' -and $_.profile.test -and $_.executable})
         Require ($taskImages.Count -eq 1 -and $taskImages[0].features.Count -eq 0) 'Default image required'
         Require ($taskCohort.source -ceq $taskSource -and $taskCohort.lane -ceq $taskLane -and $taskCohort.recipe_sha256 -ceq (Hash (Join-Path $PSScriptRoot 'profile.ps1'))) 'Cohort identity changed'
         $taskStopped=$false;$taskProfiles=@();$taskRefusals=@();$taskStepRows=@()

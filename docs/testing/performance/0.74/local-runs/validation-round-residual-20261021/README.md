@@ -7,7 +7,7 @@ compiler. It does not repeat an old failed invocation into a healthy result,
 run a new functional live matrix or authorize original start/server admission.
 
 Commit the method and recipes first. Run `context-repair.ps1 -Stage Before`, both
-`check.ps1` compiler lanes, then `profile.ps1` for GNU and MSRV sequentially.
+`check-repair.ps1` compiler lanes, then `profile.ps1` for GNU and MSRV sequentially.
 Use the exact clean committed Source. The harness is the existing owned-root
 private-namespace/cgroup fixture, with original bounds and no manager send.
 Default release images have no allocation-counter feature. Each profile has
@@ -39,9 +39,16 @@ controls pass before any profile is attempted.
 
 The original root-run version query had an unintended tool side effect: rustup
 auto-installed GNU/MSRV into `/root/.rustup`. Its initial context receipt and
-exact timestamps/size observations are retained. Both just-created root copies
+exact path/size observations are retained. Both just-created root copies
 were uninstalled explicitly with pinned rustup targets; the root toolchain list
 is empty afterward, while artur's toolchains, clocks and services are untouched.
 The initial query was not read-only. `context-repair.ps1` queries as artur with
 `RUSTUP_AUTO_INSTALL=0`; its separately named Verified receipts are the active
 pre/post context. No profile had started before this tooling repair/cleanup.
+
+Both first check wrappers stop before the kernel selector because its Rust
+`::` separator is invalid in a Windows log filename. All seven preceding steps
+pass; both refusal receipts and logs remain. `check-repair.ps1` changes only
+log filename encoding and the output prefix, preserving the exact test filters.
+The context source may precede a documentation/recipe-only commit; ancestry,
+unchanged Rust/observer tree and equal pre/post configuration remain required.

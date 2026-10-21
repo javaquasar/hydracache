@@ -75,3 +75,10 @@ service configuration are untouched. Use the separately source-bound
 `context-repair.ps1` and Verified pre/post receipts, querying as artur with
 auto-install explicitly disabled. Retain the initial receipt and cleanup record;
 do not retune measurements or transfer old admission as a result of this repair.
+
+The first two compiler wrappers retain a Windows filename refusal before the
+kernel selector: Rust filter separators cannot appear in log names. The repair
+encodes only filenames and uses a new prefix; filters and all numerical targets
+remain. Verified pre-context may come from an ancestor method commit, provided
+the full Rust/observer tree is identical and pre/post boot/configuration agree.
+All measured invocations still bind one exact committed source and image.
