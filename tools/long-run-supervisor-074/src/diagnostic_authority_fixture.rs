@@ -542,7 +542,7 @@ fn regular(m: &Metadata, uid: u32, gid: u32, mode: u32) -> Result<(), AuthorityE
 fn open_at(parent: &File, name: &str, directory: bool) -> Result<File, AuthorityError> {
     let mut short_name = [0_u8; 24];
     let owned_name;
-    let name = if !directory && name.len() < short_name.len() {
+    let name = if name.len() < short_name.len() {
         short_name[..name.len()].copy_from_slice(name.as_bytes());
         std::ffi::CStr::from_bytes_with_nul(&short_name[..name.len() + 1])
             .map_err(|_| AuthorityError::Invalid)?

@@ -142,6 +142,43 @@ fn authority_open_name_differential_symlink_fifo_and_retained_parent() {
     assert_eq!(compare(&parent, "file", false), Some(libc::ENOENT));
 }
 
+#[test]
+fn authority_short_directory_differential_valid_utf8_boundaries_and_fixed_components() {
+    let root = root();
+    let parent = File::open(root.path()).unwrap();
+    let mut names: Vec<String> = [
+        "var",
+        "lib",
+        "hydracache-performance",
+        "worker-authority-074",
+    ]
+    .into_iter()
+    .map(str::to_owned)
+    .collect();
+    names.extend([
+        "a".repeat(23),
+        "a".repeat(24),
+        "a".repeat(25),
+        "a".repeat(255),
+        format!("{}a", "é".repeat(11)),
+        "é".repeat(12),
+    ]);
+    let mut seed = 0x074d_1a24_u64;
+    for index in 0..64 {
+        seed ^= seed << 13;
+        seed ^= seed >> 7;
+        seed ^= seed << 17;
+        names.push(format!("d-{index:02}-{seed:016x}"));
+    }
+    for name in names {
+        fs::create_dir(root.path().join(&name)).unwrap();
+        assert_eq!(compare(&parent, &name, true), None);
+        assert_eq!(compare(&parent, &name, false), None);
+    }
+    // These are children of the private /tmp fixture, not real fixed host paths.
+    eprintln!("short-directory seed=0x074d1a24 seeded=64 bytes=23/24 fixed-components=4");
+}
+
 #[cfg(feature = "fixed-leaf-alloc-probe")]
 pub(crate) struct Probe {
     root: tempfile::TempDir,
