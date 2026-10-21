@@ -99,3 +99,42 @@ fn authority_open_name_freezes_original_syscall_and_clock_bodies() {
         assert_eq!(read(path), baseline(path));
     }
 }
+
+#[test]
+fn authority_open_name_candidate_restores_only_the_exact_allocation_branch() {
+    let path = "tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs";
+    let raw = read(path);
+    assert!(raw.contains("let mut short_name = [0_u8; 24];"));
+    for (before, after) in [
+        ("!directory &&", "directory &&"),
+        (
+            "name.len() < short_name.len()",
+            "name.len() <= short_name.len()",
+        ),
+        ("name.len() + 1", "name.len()"),
+        ("from_bytes_with_nul", "from_bytes_with_nul_unchecked"),
+    ] {
+        let changed = raw.replacen(before, after, 1);
+        assert_ne!(changed, raw);
+        assert!(
+            std::panic::catch_unwind(|| crate::hc074_authority_open_name_view!(path, &changed))
+                .is_err()
+        );
+    }
+    // Flags, syscall, errno capture and ownership remain outside normalization.
+    for (before, after) in [
+        ("libc::O_NOFOLLOW", "libc::O_APPEND"),
+        ("File::from_raw_fd(fd)", "File::from_raw_fd(fd + 1)"),
+        (
+            "std::io::Error::last_os_error()",
+            "std::io::Error::other(\"drift\")",
+        ),
+    ] {
+        let changed = raw.replacen(before, after, 1);
+        assert_ne!(changed, raw);
+        assert_ne!(
+            crate::hc074_authority_open_name_view!(path, &changed),
+            baseline(path)
+        );
+    }
+}
