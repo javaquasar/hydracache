@@ -1,0 +1,10 @@
+{
+  "baseline_runtime_source": "5310113d3a104b97f09325b4ac7f89c7f85263c4",
+  "probe_and_reviewer_source": "fa5df665dc20313d7461225b58a63d74f792b6ff",
+  "preregistration_source": "e519e88d",
+  "platform": "windows-msvc",
+  "model_only": true,
+  "runtime_candidate_implemented": false,
+  "server": false,
+  "product": false
+}
