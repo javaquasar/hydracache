@@ -27,6 +27,14 @@ into a positive result, choose an acceptance threshold or claim an improvement.
 The original full inspection includes a different cache/branch schedule from
 separate phases; CPU residuals and sample ranges must remain visible.
 
+The existing opt-in test binary still installs its counting allocator even when
+the thread-local observer is inactive. Its inactive TLS bookkeeping, fixture
+dispatch, assertions and the boundary clock reads remain part of these CPU
+observations. The empty control does not estimate per-allocation bookkeeping,
+so these samples cannot establish production CPU costs or isolate allocator,
+kernel and payload-copy CPU within a phase. A separate candidate must use
+matching instrumentation on both sides and retain those limits.
+
 Use one capture per compiler, GNU 1.94 and MSRV 1.88, sequentially without
 concurrent local builds or measured lanes. Separately run the unchanged
 eight-case allocation/read control, comparing all observations with the sealed
