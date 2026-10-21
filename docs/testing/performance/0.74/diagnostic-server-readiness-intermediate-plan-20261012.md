@@ -1564,3 +1564,17 @@ repair. Next evaluate one short owned C-string candidate with generic fallback
 and exact open/error semantics. Do not equate pure allocation success with a
 successful material/cleanup/delivery/all-writer or fault/reconnect/server gate.
 No live replay, clock/service change or server work occurs.
+
+### Short owned trust name candidate retained after pure comparison
+
+The [storage successor](trust-component-stack-20261021.md) replaces only the
+shared child-name constructor with owned local bytes for short names, retaining
+generic CString fallback. Exact whole-file restoration, complete child models
+and pointer/error/ownership controls preserve open semantics, fresh-check counts
+and order, original windows and both first Causal failures. GNU/MSRV counters
+confirm short-name request removal, not full preparation timing.
+
+First missing-import test compiles remain beside the cfg(test) import repair.
+No material, cleanup/EOF/fence, authenticated delivery/all-writer, full fault/
+reconnect or server gate is promoted. Next isolate collector peer growth with
+its own baseline and canonical/error contract. No live or server work occurs.

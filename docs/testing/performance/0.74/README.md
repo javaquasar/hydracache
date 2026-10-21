@@ -5678,3 +5678,18 @@ Both first compile errors and the one test-only repair remain separate. The
 seven prior packets are preserved. Production trust bodies, original windows
 and first Causal refusals remain unchanged. There is no new runtime candidate,
 timing claim, live replay or readiness promotion.
+
+### Short owned names in the shared trust helper
+
+The [isolated trust-name candidate](trust-component-stack-20261021.md) uses
+local terminated storage through 31 bytes and unchanged CString fallback for
+long names. Parent/flags/open/error/File handling and all fresh-check windows
+remain. GNU/MSRV pure controls remove 1536 requests/29696 bytes from the fixed
+name subset; long inputs remain unchanged. Short NUL refusals keep Invalid
+before open while avoiding the discarded owned error allocation.
+
+Complete-body/seeded/pointer/ownership controls and 31 source canaries pass.
+Initial missing test-import compile refusals are retained separately from the
+cfg(test) repair. Eight prior packet seals remain intact. This is allocation
+evidence only, not measured preparation latency or server admission. No live,
+clock/service, server or product operation occurs.

@@ -16938,3 +16938,40 @@ first source and failures. Production trust bodies are unchanged. The result
 supports a later isolated short C-string experiment, not a runtime change or
 timing claim. Seven prior packet seals, original windows and both first Causal
 refusals remain; no live or server run and no readiness promotion follows.
+
+### Keep trust-name ownership while removing short requests
+
+The [next isolated candidate](../testing/performance/0.74/trust-component-stack-20261021.md)
+keeps the shared trust helper's syscall contract and changes only its temporary
+name storage. Names through 31 bytes use a private owned 32-byte terminated
+array; longer names still use CString. No path validation is added: empty,
+Unicode and slash/dot forms keep their previous conversion behavior. Short
+embedded-NUL inputs still produce Invalid before open, without creating an
+owned error payload that child immediately discarded. Long NUL inputs retain
+the original CString fallback.
+
+Ownership matters as much as the byte count. The actual helper supplies the
+pointer tested against its exact terminated bytes, and mutation of the original
+input, moves and nested independent values preserve that content. Complete
+old/new body models and the same 512 seeded schedules retain parent, flags,
+one open callback, NUL priority, last-error only for a negative result and no
+EINTR retry. Exact source reversal leaves the original openat and File handling
+intact. These are pure models, not real filesystem or writer-cessation tests.
+
+GNU 1.94 and MSRV 1.88 both confirm zero requests for the six fixed names: the
+1536-conversion subset changes from 1536 requests/29696 bytes to zero. Across
+all 5376 valid constructions, requests change from 5376 to 1536 and requested
+bytes from 1274880 to 1221632; six large fallback cases dominate those remaining
+bytes and are unchanged. The four separate short-NUL cases change from 1024
+requests/5888 bytes to zero. The unmodified baseline counters still match their
+earlier seal. No reallocation occurs.
+
+The result supports keeping this allocation leaf, not a claim that preparation
+is faster. Branching, copying, initialization and local storage still cost work;
+the 32-byte array is not the whole type's stack footprint. No full-path timing,
+CPU, RSS, retention or admission headroom is inferred from this synthetic corpus
+or multiplied by old trace counts. First compile failures from inherited test
+imports remain, followed by a cfg(test)-only repair and green focused checks.
+All eight prior seals, original windows and first Causal refusals remain. There
+is no live replay, server action or new readiness promotion; collector peer
+growth needs its own separate experiment.
