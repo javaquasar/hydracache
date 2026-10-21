@@ -80,6 +80,14 @@ class SessionTests(unittest.TestCase):
             runner.write_new(path, [2])
         self.assertEqual(runner.read_json(path), [1])
 
+    def test_original_windows_bundle_order_preserved(self):
+        bundle = Path(self.temp.name) / "bundle"
+        bundle.mkdir()
+        for name in ("Cargo.lock.root", "build-log.jsonl", "direct.json"):
+            (bundle / name).write_bytes(b"synthetic")
+        self.assertEqual([row["name"] for row in runner.bundle_inventory(bundle)],
+                         ["build-log.jsonl", "Cargo.lock.root", "direct.json"])
+
     def test_initial_metadata_refusals_start_no_children(self):
         for key, value in (("source", "c" * 40), ("tracked_dirty", "M runtime"),
                            ("uid", 1000), ("fixtures", ["owned-residue"]), ("boot", "invalid"),

@@ -71,6 +71,12 @@ def fixtures():
                   for p in Path(root).glob("hc074-root-fixture-*"))
 
 
+def bundle_inventory(bundle):
+    # Preserve the existing Windows receipt's case-insensitive name ordering.
+    return [dict(name=p.name, bytes=p.stat().st_size, sha256=sha(p))
+            for p in sorted(Path(bundle).iterdir(), key=lambda p: p.name.casefold())]
+
+
 def snapshot(repo, pins):
     bundle = repo / "target/diagnostic-start-material-bundle-20261017"
     config = [Path("/etc/wsl.conf"), Path("/etc/systemd/timesyncd.conf"),
@@ -83,8 +89,7 @@ def snapshot(repo, pins):
         start_ticks=Path("/proc/self/stat").read_text().rsplit(")", 1)[1].split()[19],
         config={str(p): sha(p) if p.exists() else None for p in config},
         fixtures=fixtures(),
-        bundle=[dict(name=p.name, bytes=p.stat().st_size, sha256=sha(p))
-                for p in sorted(bundle.iterdir())],
+        bundle=bundle_inventory(bundle),
         images={lane: sha(path) for lane, path in IMAGES.items()},
         qualification_sha256=sha(repo / "docs/testing/performance/0.74/qualification-manifest.toml"),
         driver_sha256=sha(Path(__file__)), pins_sha256=sha(pins),
