@@ -16225,3 +16225,53 @@ registry/local performance receipts and read-only environment capture before
 the original byte-pinned raw-log reviewer. All 110 Git files preserve raw
 bytes. Qualification inputs remain frozen; the next analysis concerns residual
 complete-round cost, not a speedup inferred from saved allocation requests.
+
+### Residual round profiling refuses changed boot before measurement
+
+The [residual-round preparation](../testing/performance/0.74/local-runs/validation-round-residual-20261021/README.md)
+reuses the existing eight-step observer and synthetic consuming-holder harness,
+without another runtime patch. Source `bd758f788ed6620517872bcde9e3019403ca9d34`
+has the same Rust/observer tree as `b074f8f9`. Default release images exclude
+the opt-in allocation counter. Both GNU 1.94/MSRV 1.88 pass all-target checks,
+strict all-feature clippy and 155 focused tests. The previous 388 historical
+assertions remain sealed rather than being presented as newly executed.
+
+The new cohort does not start. Verified context observes boot
+`8876378d-93ab-4088-8e23-0dbff703ad6a`; readiness observes
+`6519029e-ab30-495e-aead-513788961aa0`, and postflight
+`77fc72a8-1fe5-4dd0-aa2b-516ddaad0803`. Configuration, original bundle and
+qualification hashes still agree, but they cannot substitute for boot identity.
+Zero profile and new live-matrix invocations means no new residual wall/CPU
+range, no before/after claim and no repaired native admission. No WSL restart,
+idle-policy change, clock/service control or server operation is performed;
+the actor behind boot changes is not established by these observations.
+
+Tool preparation also exposes two distinct authoring problems. An empty-array
+JSON serialization refusal is retained with its original reviewer. Windows log
+filenames reject Rust filter separators; a new prefix/filename encoding fixes
+only the wrapper, not the test filters. Separately, the original root-run
+rustup version query auto-installs two toolchains. That query was not read-only:
+the receipt and exact paths remain, both just-created root copies are explicitly
+uninstalled, and artur's toolchains are untouched. Corrected queries use artur
+with auto-install disabled. None of these repairs changes runtime predicates
+or retries a measured process.
+
+Eight conservation/binding canaries and four preflight-refusal mutations remain
+separate from native success. The terminal packet keeps integrity true only
+with profile completeness, new cost measurement and execution admission false.
+All twenty prior packets and old clock/lifecycle refusals remain. This is an
+environment admission result, not evidence that the allocation candidate sped
+up complete validation rounds.
+
+The next cohort needs one bounded WSL session around fresh metadata, scheduled
+profiles and postflight so separate wrapper entries do not require an assumed
+session lifetime. External process/boot loss must still fail; a persistent
+session neither changes idle policy nor proves stable time. It must be a new
+identified cohort, not continuation or replacement of this refused packet.
+
+Evidence `133803a86b51df62ddcf163b0585cf797e5c7744` seals 66 members plus
+inventory SHA256
+`15c86f32b3f56c0c86ac526ad72b54b32aa3cf75625543cea3dd3d9aee9c2807`.
+Effective preflight review preserves false completeness/admission flags, final
+repository checks and all twenty preceding packets. All 67 Git files preserve
+raw bytes. Integrity of a refused preparation is not a successful measurement.

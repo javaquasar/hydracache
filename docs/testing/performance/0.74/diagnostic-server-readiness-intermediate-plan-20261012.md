@@ -1214,3 +1214,35 @@ inventory SHA256
 Final repository and read-only environment receipts pass the additional
 `final-review.ps1` wrapper before the original byte-pinned raw-log review;
 all 110 Git files preserve raw bytes. Qualification inputs remain frozen.
+
+### Residual validation profile preparation
+
+The [residual profile packet](local-runs/validation-round-residual-20261021/README.md)
+terminates before measurement because verified preflight, readiness and
+postflight boot IDs differ. Source `bd758f788ed6620517872bcde9e3019403ca9d34`
+keeps all runtime/observer bytes unchanged from `b074f8f9`; GNU/MSRV each pass
+155 focused tests, affected checks and strict lint. Default images are ready,
+but no profile or new full matrix starts. No residual-cost range or execution
+admission is obtained. Bundle, qualification and configuration hashes agree;
+the boot-change actor is not proved, and no time/service/idle-policy changes
+or WSL restart command is performed.
+
+Tooling failures and the initial root rustup query's auto-installed copies
+remain documented; both just-created toolchains are explicitly removed.
+Corrected version queries disable auto-install and use artur. The preflight
+reviewer preserves all twenty old packets, eight round/binding and four
+preflight mutation refusals, and false completeness/native admission flags.
+
+Next, prepare a separate bounded single-session local driver around fresh
+context, serial scheduled profiles and postflight. Preserve the original
+six-profile schedule, first-refusal stopping, all live checks and 300/60/10
+windows. Do not continue the refused packet, assume external boot/time stability,
+or change server/supervisor/product state. Old delivery, all-writer cessation,
+lifecycle/cells 2–4, joined SIGKILL/lost-ACK, reconnect and trust/enrollment gates
+remain independent and closed.
+
+The residual preflight evidence `133803a86b51df62ddcf163b0585cf797e5c7744`
+seals 66 members plus inventory SHA256
+`15c86f32b3f56c0c86ac526ad72b54b32aa3cf75625543cea3dd3d9aee9c2807`.
+All 67 raw Git files, twenty prior packets and final repository checks verify;
+zero profile invocations and false completeness/admission remain explicit.

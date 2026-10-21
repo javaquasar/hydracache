@@ -5357,3 +5357,28 @@ Effective `final-review.ps1 -Mode Review` verifies final repository/environment
 receipts and delegates to the original byte-pinned raw-log reviewer. All
 110 Git files preserve raw bytes. The local performance contract remains
 non-promotable; no native or server admission gate opens.
+
+### Residual round preflight refuses changed boot
+
+The [new packet](local-runs/validation-round-residual-20261021/README.md) reuses
+unchanged runtime and observers at source `bd758f788ed6620517872bcde9e3019403ca9d34`.
+GNU/MSRV each pass 155 focused tests, affected checks and strict lint. Default
+release images compile, but boot changes between context/readiness/postflight
+refuse the cohort before any profile or new functional matrix starts. No new
+round-cost range, CPU gain or native admission follows. Configuration, bundle
+and qualification remain equal; the actor behind boot changes is unproved.
+
+Authoring/filename refusals and the initial root rustup query's auto-install
+side effect are retained; both just-created root toolchains are explicitly
+removed. Corrected metadata queries disable auto-install and use artur. Eight
+round/binding and four preflight mutations are refused. All twenty previous
+packets remain. Effective review is `preflight-review.ps1 -Mode Review`.
+The next cohort needs a bounded single WSL session, not a retry of this one.
+No time-setting, service-control, idle-policy, supervisor, server or product
+command is issued.
+
+Evidence `133803a86b51df62ddcf163b0585cf797e5c7744` seals 66 members plus
+inventory SHA256
+`15c86f32b3f56c0c86ac526ad72b54b32aa3cf75625543cea3dd3d9aee9c2807`.
+All 67 raw Git files and twenty previous packets verify. Final repository gates
+pass; completeness and admission remain false because no measured profile ran.

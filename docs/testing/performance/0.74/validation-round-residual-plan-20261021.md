@@ -82,3 +82,35 @@ encodes only filenames and uses a new prefix; filters and all numerical targets
 remain. Verified pre-context may come from an ancestor method commit, provided
 the full Rust/observer tree is identical and pre/post boot/configuration agree.
 All measured invocations still bind one exact committed source and image.
+
+## Preflight disposition
+
+The cohort is refused before its first measured invocation. Verified context
+boot `8876378d-93ab-4088-8e23-0dbff703ad6a` differs from readiness boot
+`6519029e-ab30-495e-aead-513788961aa0` and postflight boot
+`77fc72a8-1fe5-4dd0-aa2b-516ddaad0803`. The actor is not proved; no WSL
+restart, idle-policy, clock or service change is performed. Do not repeat this
+cohort or publish a residual-cost range from it.
+
+At source `bd758f788ed6620517872bcde9e3019403ca9d34`, both compilers pass
+155 focused tests, affected checks and strict lint, with unchanged runtime/
+observer bytes. Source/image preparation is complete but cost measurement is
+not. Original authoring failures, root toolchain side effect/explicit cleanup,
+filename refusals, all twenty previous packets and old time failures remain.
+Use the separate preflight reviewer for this terminal packet; its integrity
+result must keep cohort completeness and native/server admission false.
+
+The next method must be a separately identified cohort with one bounded WSL
+session enclosing fresh context, serial scheduled profiles and postflight.
+Keeping that session alive is not a configuration change, time correction or
+permission to survive a boot change. Any new driver must preserve the exact
+harness, default images, six-profile schedule, stopping rule and 300/60/10
+windows, with no original send, product execution or server operation. This
+packet itself is closed rather than retried with a replacement boot.
+
+Evidence `133803a86b51df62ddcf163b0585cf797e5c7744` seals 66 members plus
+inventory SHA256
+`15c86f32b3f56c0c86ac526ad72b54b32aa3cf75625543cea3dd3d9aee9c2807`.
+Use `preflight-review.ps1 -Mode Review`. Final repository checks pass; all
+67 raw Git files and twenty previous packets verify. The evidence proves
+retention of a premeasurement refusal, not a complete cost cohort.
