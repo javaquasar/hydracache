@@ -16324,3 +16324,54 @@ profiles. No further runtime optimization is accepted here. Old negative packets
 and native/delivery/lifecycle/reconnect/enrollment gates remain; qualification
 inputs are frozen. No clock, service, idle-policy, installation, supervisor,
 server or product action is taken.
+
+### Offline attribution locates the cost before expiration
+
+The [refused-prefix attribution](../testing/performance/0.74/local-runs/partial-preparation-attribution-20261021/README.md)
+does not run another profile. It reconstructs the immutable single-session
+logs, checks ordered partial rounds, joins each original refusal to its
+unfinished step and reconciles kernel root/edge count and wall conservation.
+One GNU and one MSRV prefix remain individual observations, not a paired
+comparison or a complete cost cohort. Complete `outputs` subphases do not
+repair their enclosing attempts.
+
+| Observed outputs component | GNU 1.94 prefix | MSRV 1.88 prefix |
+| --- | ---: | ---: |
+| Phase wall | 7.461490 s | 6.178922 s |
+| Parent process CPU | 7.360031 s | 6.147695 s |
+| ReservedLive share of eight-step wall | 85.5913% | 86.0838% |
+| Wall outside round steps | 44.406 ms | 26.411 ms |
+
+All eight output steps complete 46 times and reconcile to the original parent
+call signature. ReservedLive accounts for 736 of 782 authentication calls,
+but their measured wall is only 81.994/82.488 ms within that step. Kernel spans
+outside their instrumented children account for 3.921874/3.245885 s there;
+Boot and Namespace together contribute 1.988862/1.719685 s in that accounting,
+with 129,904/259,808 calls respectively. Frequent fresh checks, including their
+instrumentation, are a stronger next cost-control target than cryptographic
+work in these observations. None of the counts authorizes caching a live check
+or reducing its frequency.
+
+The 2.426508/2.050431 s of ReservedLive outside instrumented kernel spans is
+not a measured authority or allocation total. ActiveAuthority's separately
+observed 0.993633/0.834129 s overlaps other observers; its 14,812 calls and
+authentication/kernel spans cannot be added as independent CPU components.
+Likewise the small wall aggregate outside round steps does not isolate fsync.
+The original failure sites, owned-root preparation and enrollment, expose the
+expired accumulated admission lifetime rather than proving they caused its
+largest measured cost.
+
+Source inspection identifies another limit: phase wall/CPU stop before report
+aggregation and JSON emission. Those operations and other inter-phase work
+can consume the original window without appearing in phase sums. Child CPU
+is also excluded. The next control should isolate observer bookkeeping at the
+same numeric call/edge topology before proposing changes to the repeatedly
+observed kernel/authority primitives. Observer overhead is neither subtracted
+nor assumed negligible, and a synthetic control could not replace live admission.
+
+The offline method passes 18 falsifying/reconstruction controls on both Windows
+and Linux, plus five scope mutations including numeric-for-boolean gate
+substitution, and retains all twenty-two previous packets. Runtime, observers,
+original 300/60/10 windows and qualification inputs remain unchanged. There
+are zero new timing profiles, no accepted optimization or product performance
+claim, and no clock/service/server operation.

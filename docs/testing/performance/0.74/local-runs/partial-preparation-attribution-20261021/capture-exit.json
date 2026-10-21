@@ -1,0 +1,43 @@
+{
+  "native_gate_open": false,
+  "steps": [
+    {
+      "sha256": "015d226f648c9e284136d634db765a695c74295a2410372aaaee2f08ed1c5252",
+      "log": "prior-review.log",
+      "name": "prior-review",
+      "exit": 0
+    },
+    {
+      "sha256": "fc74411774ce123f7be8d456c190b156c42f3e1e261c64a327ba88e00185a109",
+      "log": "windows-tests.log",
+      "name": "windows-tests",
+      "exit": 0
+    },
+    {
+      "sha256": "0c3fd18e63b35550cdbf082182fbe36314aa9fd8950db6d10ef0baac5f6f46c6",
+      "log": "linux-tests.log",
+      "name": "linux-tests",
+      "exit": 0
+    },
+    {
+      "sha256": "0802166373199661bd2ad07ef372aa85af7d5759724040973d66718211ec5b74",
+      "log": "derive.log",
+      "name": "derive",
+      "exit": 0
+    },
+    {
+      "sha256": "0802166373199661bd2ad07ef372aa85af7d5759724040973d66718211ec5b74",
+      "log": "reconstruct.log",
+      "name": "reconstruct",
+      "exit": 0
+    }
+  ],
+  "product": false,
+  "server": false,
+  "new_profile_invocations": 0,
+  "recipe_sha256": "14f29d836758a333fe6f52428edbe7ef13368fa7e8ed39a3ef5d6be89400916e",
+  "source": "42eefbec2242b8123799b2b50fea3ed338ccdf2e",
+  "observer_changed": false,
+  "failure": null,
+  "runtime_changed": false
+}

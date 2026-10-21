@@ -1272,3 +1272,22 @@ resume this one. Original delivery, all-writer cessation, lifecycle cells 2–4,
 joined SIGKILL/lost-ACK, reconnection and production enrollment remain separate
 closed gates. Installation/supervisor maintenance and server workload are not
 authorized by this local runner step.
+
+### Offline partial preparation attribution
+
+The [derived attribution packet](local-runs/partial-preparation-attribution-20261021/README.md)
+reconstructs the two sealed failed prefixes with zero new timing profiles.
+Outputs completes 46 rounds in each prefix; ReservedLive owns approximately
+86% of its measured step wall. Its frequent Boot/Namespace work and overlapping
+authority observations are the next cost-control targets, not permission to
+remove checks, change cryptographic policy or extend the ten-second window.
+
+Eighteen controls pass on both Windows and Linux; partial-round/refusal joins,
+graph conservation and all twenty-two prior packets verify. No complete cohort,
+native admission or new optimization is obtained. Phase CPU excludes children
+and report emission, so phase sums and residuals cannot reconstruct admission
+age or exclusive CPU ownership. First isolate observer bookkeeping at the same
+numeric topology, then investigate per-call kernel/authority costs while
+retaining every live predicate and original window. Delivery, all-writer
+cessation, lifecycle, SIGKILL/lost-ACK, reconnect, enrollment and server gates
+stay closed. No service, clock, server, installation or product action occurs.

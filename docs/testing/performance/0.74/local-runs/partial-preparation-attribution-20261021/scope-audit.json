@@ -1,0 +1,27 @@
+{
+  "new_profile_invocations": 0,
+  "mutations": [
+    {
+      "refused": true,
+      "mutation": "numeric-gate"
+    },
+    {
+      "refused": true,
+      "mutation": "completion"
+    },
+    {
+      "refused": true,
+      "mutation": "new-profile"
+    },
+    {
+      "refused": true,
+      "mutation": "runtime"
+    },
+    {
+      "refused": true,
+      "mutation": "overhead"
+    }
+  ],
+  "product": false,
+  "server": false
+}

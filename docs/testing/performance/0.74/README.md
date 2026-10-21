@@ -5406,3 +5406,23 @@ inherited through exact Rust bytes, not rerun. All twenty-one old packets and
 time refusals remain. No server, installation, supervisor or product action
 occurs. Next: attribute the retained preparation traces before expiration;
 do not retry this packet or extend its original windows.
+
+### Offline attribution before the expiration boundary
+
+The [new derived packet](local-runs/partial-preparation-attribution-20261021/README.md)
+reads the sealed single-session logs without another profile. Both refused
+prefixes contain a complete 46-round outputs subphase. ReservedLive accounts
+for 85.5913%/86.0838% of its eight-step wall in the individual GNU/MSRV
+observations. Boot/Namespace spans and overlapping authority work select the
+next cost-control targets; authentication is not the largest observed span.
+The aggregate outside rounds does not isolate fsync, and neither uninstrumented
+residuals nor overlapping spans are exclusive CPU attribution.
+
+The analyzer validates partial-round completion, original refusal/unfinished
+step binding and graph conservation. Eighteen controls pass on each platform;
+all twenty-two prior packets remain verified. Phase/report-emission boundaries
+are explicit: phase sums are not issued age, observer overhead is not subtracted,
+and complete subphases do not become healthy attempts. Next isolate observer
+bookkeeping at the same numeric topology before another kernel/authority
+candidate. No runtime/observer, deadline, clock/service/server or product change
+is made; no new timing profile or native admission follows.
