@@ -1,0 +1,3 @@
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.08s
+     Running `target\debug\xtask.exe gated-test-check`
+gated-test-check: OK (186 discovered gates, all registered)

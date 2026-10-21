@@ -1,0 +1,68 @@
+{
+  "stage": "Capture",
+  "lane": "188",
+  "source": "b99c1c759630cf632c0a13a905c3ddf9d822def5",
+  "image": "/home/artur/.cache/hydracache-074-188-check/release/deps/hydracache_long_run_supervisor_074-1dbb29096ebc6338",
+  "image_sha256": "192c6451cad5b46e0fbfc502360db624b6f7224c349f2ac83940b30f198006f6",
+  "image_after_sha256": "192c6451cad5b46e0fbfc502360db624b6f7224c349f2ac83940b30f198006f6",
+  "inputs": [
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs",
+      "blob": "d7bc5ce48ccfe277f7252cc8e8841c7ac6612e71",
+      "normalized_sha256": "6dc6796e3e18682de1216f37ca51a4fe98841a9322cd79dce555cddca1a24b89"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/tests/support/authority_owners_controls.rs",
+      "blob": "da720d1522987bc4a1e60d7592e65e6e7e6026ea",
+      "normalized_sha256": "c4f04ccb7b3d7bd17e13241b1cefc6657661e5560d1b1ce51f3445e71d5202ce"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/tests/support/authority_cpu.rs",
+      "blob": "931b29218125e1a5a1410752ffff105f4a486625",
+      "normalized_sha256": "589efa1c6680464dc231177a96214b6e663e846902ec3c3be1b65a7255117890"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/tests/support/authority_leaf_cpu.rs",
+      "blob": "779b994ddaab10fa52bf9f0b928b1ccd0b2c2144",
+      "normalized_sha256": "4347f9105e9edd964765d516a3503d1ddd36d3c02656571582355816a301f436"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/tests/support/authority_owners_alloc.rs",
+      "blob": "3071e98263499b1bfced33a1ddae77a0bb3c4a5a",
+      "normalized_sha256": "9a0e607f1bc6d14543cded858ba47370fd140c7a6e6a288709734ba5c9e07499"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/tests/support/validation_leaf_requests.rs",
+      "blob": "df80e253f10d4520d765c4af3d70eb9d2cbdfe8a",
+      "normalized_sha256": "29d46c2111289fa21793a6b578eef1c25bcb84aea5193dba03670ac7c8c9ff69"
+    },
+    {
+      "path": "docs/testing/performance/0.74/authority-leaf-cpu-plan-20261021.md",
+      "blob": "ce762a041a43c9a564ca9639d2244930a3043c48",
+      "normalized_sha256": "9ddeca062852e5b50da579c217c1a020fd16c24dfd074bdc220a7039a9cb10ab"
+    },
+    {
+      "path": "docs/testing/performance/0.74/qualification-manifest.toml",
+      "blob": "1ba704159a59c16455fd0c9f4f15f9fda66ca9b1",
+      "normalized_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    }
+  ],
+  "steps": [
+    {
+      "name": "cpu",
+      "exit": 0
+    },
+    {
+      "name": "owners",
+      "exit": 0
+    },
+    {
+      "name": "inspect",
+      "exit": 0
+    }
+  ],
+  "recipe_sha256": "b56cfca4e90375ed572d353e2c387862a1c2bb27333fb8c8c3b5f73b2b69ed37",
+  "server": false,
+  "product": false,
+  "native_gate_open": false
+}

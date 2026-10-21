@@ -1,0 +1,76 @@
+{
+  "stage": "Capture",
+  "source": "231600d21a321e2993583177cfaaa86b8d1f3001",
+  "recipe_sha256": "277279c46092019304928efc49fb63956045f71a71b583814a15d24227a42847",
+  "steps": [
+    {
+      "log": "Capture-check-194-check.log",
+      "exit": 0,
+      "sha256": "a67e3c2614950eb9ddbe30be6641bf33b9601db20568ce9f4457e5de8a66dce2",
+      "name": "check"
+    },
+    {
+      "log": "Capture-check-194-lint.log",
+      "exit": 0,
+      "sha256": "d057cee3f0faa16ab74fd6e1ec8b0e0b14e604c324d9de6cea05e63c78531444",
+      "name": "lint"
+    },
+    {
+      "log": "Capture-check-194-authority_.log",
+      "exit": 0,
+      "sha256": "8e0a8b9c70519059caf31a32521a5eb841a666c8aaae4ccb5e5ee1cca0ddb3a7",
+      "name": "authority_"
+    },
+    {
+      "log": "Capture-check-194-validation_leaf_requests_.log",
+      "exit": 0,
+      "sha256": "fd858578849b6d2a662fa47103973aa1c30b03f0e4dfbe162927c82d70371e5e",
+      "name": "validation_leaf_requests_"
+    },
+    {
+      "log": "Capture-check-194-fixed_leaf_alloc_counter.log",
+      "exit": 0,
+      "sha256": "9edb37f5fbefa4ce272c7e099db163df0114ea8784a968ec92f039aa1df537bd",
+      "name": "fixed_leaf_alloc_counter"
+    },
+    {
+      "log": "Capture-check-194-fixed_leaf_path_differential.log",
+      "exit": 0,
+      "sha256": "dd7c243bfbadd837c2072345026073430d3f09b6e24eae16d611ec8dead60639",
+      "name": "fixed_leaf_path_differential"
+    },
+    {
+      "log": "Capture-check-194-fixed_leaf_path_preserves.log",
+      "exit": 0,
+      "sha256": "713b3e54c6305c17186c3e5b6f67c432728e0db0cb79ddd0630defb5c41cb0b3",
+      "name": "fixed_leaf_path_preserves"
+    },
+    {
+      "log": "Capture-check-194-kernel_time_.log",
+      "exit": 0,
+      "sha256": "9e35a71e953f36b39c1e1b8d0003fbf6aa76684d920345275c6ced4230f40165",
+      "name": "kernel_time_"
+    },
+    {
+      "log": "Capture-check-194-kernel_worker_context_.log",
+      "exit": 0,
+      "sha256": "7c70c20f88fd51f5048042de95144b8ba4802ff5d96c9892d1a69fbcf130a1b4",
+      "name": "kernel_worker_context_"
+    },
+    {
+      "log": "Capture-check-194-worker_trust_input_.log",
+      "exit": 0,
+      "sha256": "62dca41223bb935cb5107583b5e37bd2f84fbcf9e4209b433ffe1ae1a48f5b31",
+      "name": "worker_trust_input_"
+    },
+    {
+      "log": "Capture-check-194-build.log",
+      "exit": 0,
+      "sha256": "8b6eb62d146bb6d9ed22bf91f0969c816029ae9206097ef01eee6b67f9298626",
+      "name": "build"
+    }
+  ],
+  "failure": null,
+  "server": false,
+  "product": false
+}
