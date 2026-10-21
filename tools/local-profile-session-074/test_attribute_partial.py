@@ -161,6 +161,16 @@ class AttributionTests(unittest.TestCase):
             actual = tuple(word.strip() for word in body.split(",") if word.strip())
             self.assertEqual(actual, expected)
 
+    def test_retained_recipe_cli_reads_only_explicit_pinned_input(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory)/"facts.json"
+            args = ["attribute_partial.py","--input",str(PACKET),"--output",str(path)]
+            with patch("sys.argv",args):
+                subject.main()
+            with patch("sys.argv",args+["--verify"]):
+                subject.main()
+            self.assertFalse(subject.load(path)["native_gate_open"])
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

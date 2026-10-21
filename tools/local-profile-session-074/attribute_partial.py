@@ -227,10 +227,11 @@ def publish(path, facts, verify=False):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--input", type=Path, help="Read the same pinned packet from a retained recipe")
     parser.add_argument("--verify", action="store_true")
     args = parser.parse_args()
     repo = Path(__file__).resolve().parents[2]
-    facts = analyze(repo / "docs/testing/performance/0.74/local-runs" / PACKET)
+    facts = analyze(args.input or repo / "docs/testing/performance/0.74/local-runs" / PACKET)
     publish(args.output, facts, args.verify)
     print("offline partial attribution verified; complete cohort=false; native admission=false")
 
