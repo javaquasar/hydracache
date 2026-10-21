@@ -1,0 +1,117 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.24s
+     Running tests\boot_operations_074.rs (target\debug\deps\boot_operations_074-2f6a720f745bea5e.exe)
+
+running 2 tests
+test boot_operations_only_exact_hook_gate_and_directory_ownership_may_normalize ... ok
+test boot_operations_fresh_open_expression_and_original_runtime_are_frozen ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.45s
+
+     Running tests\collector_peer_baseline_074.rs (target\debug\deps\collector_peer_baseline_074-dc2a11c468ba7366.exe)
+
+running 3 tests
+test collector_peer_baseline_controls_have_no_live_capabilities ... ok
+test collector_peer_baseline_freezes_complete_peer_and_wrapper_bodies ... ok
+test collector_peer_baseline_changes_only_a_private_allocator_test_hook ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.21s
+
+     Running tests\collector_peer_capacity_074.rs (target\debug\deps\collector_peer_capacity_074-9c791ff7ac9f9550.exe)
+
+running 3 tests
+test collector_peer_capacity_controls_have_no_live_capabilities_or_ignored_tests ... ok
+test collector_peer_capacity_freezes_baseline_corpus_reference_and_complete_wrapper ... ok
+test collector_peer_capacity_restores_both_old_files_and_rejects_validation_or_union_drift ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.26s
+
+     Running tests\context_document_baseline_074.rs (target\debug\deps\context_document_baseline_074-a9b20f8566ae375d.exe)
+
+running 3 tests
+test context_document_baseline_controls_have_no_live_or_host_capabilities ... ok
+test context_document_baseline_model_has_the_complete_original_read_body ... ok
+test context_document_baseline_changes_only_one_test_hook_not_any_runtime_body ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.37s
+
+     Running tests\context_document_stack_074.rs (target\debug\deps\context_document_stack_074-e8250ae2e893f3c4.exe)
+
+running 3 tests
+test context_document_stack_storage_and_controls_have_no_live_capabilities ... ok
+test context_document_stack_models_keep_complete_baseline_and_candidate_bodies ... ok
+test context_document_stack_exactly_restores_both_old_files_and_rejects_live_predicate_drift ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.32s
+
+     Running tests\held_material_074.rs (target\debug\deps\held_material_074-65c16a24996a862b.exe)
+
+running 4 tests
+test held_material_inventory_requires_fresh_original_owner_and_deadline_after_census ... ok
+test held_material_closed_api_contains_no_transport_mapping_fork_exec_or_serialization ... ok
+test held_material_only_two_exact_hooks_restore_complete_projected_owner_and_bundle_bodies ... ok
+test held_material_keeps_original_frames_retirement_launcher_format_and_qualification_frozen ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.46s
+
+     Running tests\held_material_live_074.rs (target\debug\deps\held_material_live_074-f1d7cb4d54e74b14.exe)
+
+running 1 test
+test held_material_live_adapter_restores_exact_previous_bodies_and_rejects_hook_drift ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+
+     Running tests\held_preparation_cost_074.rs (target\debug\deps\held_preparation_cost_074-28392e0d6a703446.exe)
+
+running 4 tests
+test projection_reference_is_the_complete_frozen_decoder_not_a_relaxed_model ... ok
+test projection_prefix_adapter_refuses_missing_duplicate_and_unrelated_guard_drift ... ok
+test held_preparation_observer_adapter_cannot_hide_missing_duplicate_or_changed_assertion ... ok
+test held_preparation_and_prefix_reconstruct_all_old_runtime_and_fixture_assertions ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 33.89s
+
+     Running tests\held_unit_projection_074.rs (target\debug\deps\held_unit_projection_074-a20498d8f0d85ed3.exe)
+
+running 3 tests
+test held_unit_projection_has_no_runnable_spec_transport_or_descriptor_export ... ok
+test held_unit_projection_only_four_exact_additive_hooks_restore_prior_sources ... ok
+test held_unit_projection_preserves_all_other_admission_transport_and_fixture_bytes ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.87s
+
+     Running tests\pidfd_info_path_074.rs (target\debug\deps\pidfd_info_path_074-24dbad550ff553cf.exe)
+
+running 3 tests
+test pidfd_info_path_helper_is_private_pure_owned_bytes_without_cache_or_new_kernel_calls ... ok
+test pidfd_info_path_only_exact_allocation_hook_is_added_at_baseline ... ok
+test pidfd_info_path_restores_entire_old_origin_and_keeps_all_other_old_runtime_files ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.47s
+
+     Running tests\projection_groups_074.rs (target\debug\deps\projection_groups_074-a0a9400e1e689d4e.exe)
+
+running 2 tests
+test projection_groups_helper_is_bounded_local_and_has_no_live_capabilities ... ok
+test projection_groups_reconstructs_entire_old_parser_and_every_changed_old_source ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.53s
+
+     Running tests\trust_component_baseline_074.rs (target\debug\deps\trust_component_baseline_074-134fb6af1414410a.exe)
+
+running 3 tests
+test trust_component_baseline_controls_have_no_live_capabilities_or_ignored_tests ... ok
+test trust_component_baseline_model_restores_the_complete_child_body_and_fixed_names ... ok
+test trust_component_baseline_changes_only_one_private_test_hook ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.32s
+
+     Running tests\trust_component_stack_074.rs (target\debug\deps\trust_component_stack_074-ad6838c2e244ac3f.exe)
+
+running 3 tests
+test trust_component_stack_storage_adapter_and_controls_have_no_live_capabilities ... ok
+test trust_component_stack_models_and_corpus_match_the_full_baseline_and_actual_body ... ok
+test trust_component_stack_restores_both_entire_old_files_and_rejects_predicate_drift ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.45s
+
