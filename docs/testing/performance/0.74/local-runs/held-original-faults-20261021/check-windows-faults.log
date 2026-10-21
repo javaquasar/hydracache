@@ -1,0 +1,17 @@
+test_all_case_shapes_and_unexpected_original_failure (__main__.ReaderTests.test_all_case_shapes_and_unexpected_original_failure) ... ok
+test_expected_rejection_does_not_accept_any_failure (__main__.ReaderTests.test_expected_rejection_does_not_accept_any_failure) ... ok
+test_budget_refuses_dispatch_not_extended (__main__.SessionTests.test_budget_refuses_dispatch_not_extended) ... ok
+test_context_drift_stops_all (__main__.SessionTests.test_context_drift_stops_all) ... ok
+test_environment_only_changes_original_case (__main__.SessionTests.test_environment_only_changes_original_case) ... ok
+test_exact_eight_cases_once (__main__.SessionTests.test_exact_eight_cases_once) ... ok
+test_existing_packet_never_resumed (__main__.SessionTests.test_existing_packet_never_resumed) ... ok
+test_healthy_predecessor_bytes_membership_and_path_guard (__main__.SessionTests.test_healthy_predecessor_bytes_membership_and_path_guard) ... ok
+test_interrupt_keeps_intent_and_postflight (__main__.SessionTests.test_interrupt_keeps_intent_and_postflight) ... ok
+test_postflight_failure_never_green (__main__.SessionTests.test_postflight_failure_never_green) ... ok
+test_precheck_refusal_keeps_postflight_no_children (__main__.SessionTests.test_precheck_refusal_keeps_postflight_no_children) ... ok
+test_unexpected_refusal_stops_lane_without_retry (__main__.SessionTests.test_unexpected_refusal_stops_lane_without_retry) ... ok
+
+----------------------------------------------------------------------
+Ran 12 tests in 1.091s
+
+OK

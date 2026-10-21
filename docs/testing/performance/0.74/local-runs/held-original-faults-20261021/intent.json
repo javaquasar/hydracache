@@ -1,0 +1,53 @@
+{
+  "child_containment_seconds": 1210,
+  "child_timeout_seconds": 1200,
+  "kill_after_seconds": 5,
+  "max_log_bytes": 33554432,
+  "native_gate_open": false,
+  "original_send": false,
+  "original_windows_seconds": [
+    300,
+    60,
+    10
+  ],
+  "product": false,
+  "schedule": [
+    [
+      "194",
+      "revalidate"
+    ],
+    [
+      "194",
+      "role-before"
+    ],
+    [
+      "194",
+      "role-after"
+    ],
+    [
+      "194",
+      "trust-after"
+    ],
+    [
+      "188",
+      "revalidate"
+    ],
+    [
+      "188",
+      "role-before"
+    ],
+    [
+      "188",
+      "role-after"
+    ],
+    [
+      "188",
+      "trust-after"
+    ]
+  ],
+  "schema": "original-held-local-faults-074-v1",
+  "seed": "0x074c051e",
+  "server": false,
+  "session_seconds": 7500,
+  "source": "026d71817f7dba11f9c51c7b5c5f7cc2be03a192"
+}

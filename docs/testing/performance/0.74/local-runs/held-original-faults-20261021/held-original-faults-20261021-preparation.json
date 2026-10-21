@@ -1,0 +1,18 @@
+{
+  "188": {
+    "image": "/home/artur/.cache/hydracache-074-188-check/release/deps/hydracache_long_run_supervisor_074-d2aba7f58d773234",
+    "exit": 0,
+    "sha256": "76ed20676de65bac6fc764009bd74d620e2a891f2e076987b584209a2aa720d8",
+    "source": "026d71817f7dba11f9c51c7b5c5f7cc2be03a192",
+    "build_log": "held-original-faults-20261021-188-build.log",
+    "build_log_sha256": "8285d3e96b347d98d08eab8561f395b95c76193450b58b9c0a6f3fdb3ee3d133"
+  },
+  "194": {
+    "image": "/home/artur/.cache/hydracache-074-194-check/release/deps/hydracache_long_run_supervisor_074-b26b156d3dcd0098",
+    "exit": 0,
+    "sha256": "0a02f83ac44685645c8b532c0052dad86f4953f39a5c56c1bb7cce0f7a857af5",
+    "source": "026d71817f7dba11f9c51c7b5c5f7cc2be03a192",
+    "build_log": "held-original-faults-20261021-194-build.log",
+    "build_log_sha256": "e146e234739987cc3b45764f3bee81d62e6cd31f836edbfbcd38579f139d5e21"
+  }
+}

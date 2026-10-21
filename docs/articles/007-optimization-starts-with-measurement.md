@@ -16543,3 +16543,38 @@ bounded request reduction. The new end-to-end finding is narrower: preparation
 can finish locally with every live check and original deadline intact. A causal
 CPU claim still needs a separately designed matched comparison; delivery,
 writer, lifecycle, trust and server gates remain independent.
+
+### Original holder faults within unchanged admission windows
+
+The [remaining local holder cases](../testing/performance/0.74/local-runs/held-original-faults-20261021/README.md)
+all pass: repeat live validation, role mode drift before join, role mode drift
+after join and trust drift after join, once per compiler. The latter three
+require their exact Roles/Trust refusals; post-join refusal remains sticky,
+including after restoring the trust document. A test panic, expiry or timeout
+cannot substitute for those negative assertions.
+
+The original fixture verifies live timer and retained fence, then empty
+synthetic cgroup, terminal custodians and EOF after holder/failure drop. All
+eight original invocations return successfully without changing Rust code,
+observers or the 300/60/10-second windows. Reported live ages stay below 7.011
+seconds. Corresponding cases have equal validation-round call counts across the
+two compilers; different cases retain their different call paths rather than being
+treated as equivalent benchmark workloads.
+
+These results validate the local synthetic holder's refusal and cleanup
+semantics, not authenticated delivery or cessation of every production writer.
+No manager send/start, completion, product workload or server action occurs.
+The eight-case packet and preceding healthy cohort preserve raw source/image/
+bundle/boot bindings and original guards; old refused attempts remain sealed.
+Full SIGKILL/lost-ACK, connection recovery and enrollment still require their
+own original-path prerequisites and separate fault evidence.
+
+A stronger full-phase count comparison is negative and retained. In two
+accept-consent pairs, totals differ by one standalone Sample and its nested
+Origin/Boot/Namespace/Document calls. All original validation-round counts
+agree; the difference is wholly outside those rounds and matches the unchanged
+relay's bounded empty-receive polling path. That attribution is an inference
+from source and count structure, not direct syscall-attempt telemetry. Raw
+inequality stays in evidence; no counters, timing, predicates or deadlines are
+normalized to turn it into equality. Fixture correctness passes independently
+of that failed cost-comparability hypothesis.

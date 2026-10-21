@@ -1,0 +1,8 @@
+{
+  "new_fixture_invocations": 0,
+  "product": false,
+  "refusal": "Same-case compiler call signature drift",
+  "log_sha256": "895dd48c972c82f0ed05f1ef7cd751fb3b8bc05293c4f85042a482113ed9fcd9",
+  "expected_negative_full_count_equality": true,
+  "server": false
+}

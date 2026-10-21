@@ -1,0 +1,9 @@
+{
+  "bytes": 167397,
+  "case": "role-before",
+  "containment_failure": null,
+  "exit": 0,
+  "lane": "194",
+  "log_sha256": "1c3d0bec13f268fedfc71d52b167350c76e279463d4b9a6a3fe67d3a65a88acf",
+  "wall_seconds": 8.983544159000004
+}

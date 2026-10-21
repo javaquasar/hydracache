@@ -1,0 +1,33 @@
+{
+  "product": false,
+  "steps": [
+    {
+      "exit": 0,
+      "name": "windows",
+      "log": "localization-windows.log",
+      "sha256": "03a1dc9508731d471519773890832a267ace6227a0700dc9be4b0e3b125f9e0e"
+    },
+    {
+      "exit": 0,
+      "name": "linux",
+      "log": "localization-linux.log",
+      "sha256": "e9e727323fb33aa1333f0dea47186816e297160c63388f73f5c7b5841ff8bebf"
+    },
+    {
+      "exit": 0,
+      "name": "docs",
+      "log": "localization-docs.log",
+      "sha256": "a30eb26bdcd89418481e9dbdc0aebdccb2ffcefb237a87f60d0c2d6eb187a0c6"
+    },
+    {
+      "exit": 0,
+      "name": "diff",
+      "log": "localization-diff.log",
+      "sha256": "c6bf05fdb6bbd7e5f98e9ec3b7083a69e1ce5b27fb23334b5dcb596a3966dc5e"
+    }
+  ],
+  "server": false,
+  "new_fixture_invocations": 0,
+  "source": "026d71817f7dba11f9c51c7b5c5f7cc2be03a192",
+  "failure": null
+}

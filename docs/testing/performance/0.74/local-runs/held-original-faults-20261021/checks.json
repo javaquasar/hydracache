@@ -1,0 +1,69 @@
+{
+  "product": false,
+  "source": "026d71817f7dba11f9c51c7b5c5f7cc2be03a192",
+  "native_gate_open": false,
+  "steps": [
+    {
+      "name": "windows-runner",
+      "exit": 0,
+      "log": "check-windows-runner.log",
+      "sha256": "d5169ee2f2e48835c7b2706215177d1dfe4abe13d0660ed770dfac0bd5648c14"
+    },
+    {
+      "name": "windows-faults",
+      "exit": 0,
+      "log": "check-windows-faults.log",
+      "sha256": "1dcfcb47d96f60104ab4f733baa707792888b297cdfc7a97aceb37e4f34f6bba"
+    },
+    {
+      "name": "linux-runner",
+      "exit": 0,
+      "log": "check-linux-runner.log",
+      "sha256": "5a462db370e76debe3c354ea1e928cfc4c3073feccfac57b357bbfa45da58648"
+    },
+    {
+      "name": "linux-faults",
+      "exit": 0,
+      "log": "check-linux-faults.log",
+      "sha256": "b3a68e36512268eb88be0bf70b311d939fbb274d6df8eaf2cb3a3eb7cb1a39f1"
+    },
+    {
+      "name": "source-canaries",
+      "exit": 0,
+      "log": "check-source-canaries.log",
+      "sha256": "5b21f218a015efce38ff72978ae7ec920987e4e583db09f11864d80aaf66a8f3"
+    },
+    {
+      "name": "format",
+      "exit": 0,
+      "log": "check-format.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "docs",
+      "exit": 0,
+      "log": "check-docs.log",
+      "sha256": "78d049ba5b9165eba43a5b4d850d9dcda677c224c4ebd8f0819095e21e8539a3"
+    },
+    {
+      "name": "registry",
+      "exit": 0,
+      "log": "check-registry.log",
+      "sha256": "921900e25ec2f9afc8e16ec37f85f1b9afc5100d2ff50c6ed3ab47022397eba0"
+    },
+    {
+      "name": "performance",
+      "exit": 0,
+      "log": "check-performance.log",
+      "sha256": "a31c0bbe054d1970ea68f630616985d964351b13d8c779420807a49aa7b3497c"
+    },
+    {
+      "name": "diff",
+      "exit": 0,
+      "log": "check-diff.log",
+      "sha256": "c6bf05fdb6bbd7e5f98e9ec3b7083a69e1ce5b27fb23334b5dcb596a3966dc5e"
+    }
+  ],
+  "server": false,
+  "failure": null
+}

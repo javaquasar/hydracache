@@ -1366,3 +1366,27 @@ the same windows and no retries. Original delivery, all-writer cessation,
 lifecycle/SIGKILL/lost-ACK, reconnect, production trust and installed-source
 server gates are not closed by a preparation-only success. No clocks,
 services, installation, supervisor, product or server actions occurred.
+
+### Remaining original holder refusal cases complete locally
+
+The [local holder fault packet](local-runs/held-original-faults-20261021/README.md)
+passes revalidate, role-before, role-after and trust-after on both GNU and MSRV,
+once each, with original live predicates and 300/60/10-second windows. Exact
+Roles/Trust errors, post-join sticky refusal, live timer, retained fence and
+synthetic empty-cgroup/terminal-custodian/EOF cleanup are asserted by the
+unchanged original harness. Metadata, default images, original bundle and
+postflight remain stable; raw failures would not be retried or relabeled.
+
+These four remaining holder fixture cases are now covered. They are not
+original start/delivery, all-production-writer cessation, durable lifecycle,
+full SIGKILL/lost-ACK, reconnect or production enrollment proof. Next audit
+those original-path prerequisites and remaining local matrix boundaries
+before a separate experiment. No clock/service/idle-policy, server,
+supervisor, installation, product or qualification action is introduced.
+
+Full-phase count equality is separately negative: two accept-consent pairs
+differ by one standalone Sample outside the otherwise equal validation rounds.
+The delta matches the unchanged bounded nonblocking relay polling signature;
+this is inference, not direct receive-attempt telemetry. The refused strict
+comparison and original raw counts remain. No deadline, predicate or acceptance
+threshold changes to accommodate this cost-comparability observation.

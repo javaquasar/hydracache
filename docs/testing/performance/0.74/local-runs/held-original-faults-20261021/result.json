@@ -1,0 +1,86 @@
+{
+  "elapsed_seconds": 96.224729059,
+  "failure": null,
+  "full_matrix": false,
+  "measured_profile_invocations": 8,
+  "native_gate_open": false,
+  "original_send": false,
+  "product": false,
+  "profiles": [
+    {
+      "bytes": 183797,
+      "case": "revalidate",
+      "containment_failure": null,
+      "exit": 0,
+      "lane": "194",
+      "log_sha256": "f246564a69e38c71a0c02d90f5da786789e5ff4834e7ebc573938bc13825f97b",
+      "wall_seconds": 8.707502587999997
+    },
+    {
+      "bytes": 167397,
+      "case": "role-before",
+      "containment_failure": null,
+      "exit": 0,
+      "lane": "194",
+      "log_sha256": "1c3d0bec13f268fedfc71d52b167350c76e279463d4b9a6a3fe67d3a65a88acf",
+      "wall_seconds": 8.983544159000004
+    },
+    {
+      "bytes": 167363,
+      "case": "role-after",
+      "containment_failure": null,
+      "exit": 0,
+      "lane": "194",
+      "log_sha256": "645ff76fc71b69f287c0a34f479eb70d7610af8ddd2174e6249bcdb605334e85",
+      "wall_seconds": 8.281424111999996
+    },
+    {
+      "bytes": 167389,
+      "case": "trust-after",
+      "containment_failure": null,
+      "exit": 0,
+      "lane": "194",
+      "log_sha256": "91931a9d868b62e91889f0423ec692560e3849ca874958856806c911a2d68ca7",
+      "wall_seconds": 8.421577510999995
+    },
+    {
+      "bytes": 183873,
+      "case": "revalidate",
+      "containment_failure": null,
+      "exit": 0,
+      "lane": "188",
+      "log_sha256": "58fabd76fae0d3a6c6930600b852ea6a3a92969234e7afa138739eb9a333194e",
+      "wall_seconds": 9.185033312999991
+    },
+    {
+      "bytes": 167017,
+      "case": "role-before",
+      "containment_failure": null,
+      "exit": 0,
+      "lane": "188",
+      "log_sha256": "63e16696b8c8734efb9b982c6798aaace0180b54ddedec6e8a32fbf9b65405ab",
+      "wall_seconds": 8.059458745
+    },
+    {
+      "bytes": 167237,
+      "case": "role-after",
+      "containment_failure": null,
+      "exit": 0,
+      "lane": "188",
+      "log_sha256": "08a209b11a5fa79858ba8045547b447527bf118d6f017d23607e2cdf5998355d",
+      "wall_seconds": 7.755024262999996
+    },
+    {
+      "bytes": 167275,
+      "case": "trust-after",
+      "containment_failure": null,
+      "exit": 0,
+      "lane": "188",
+      "log_sha256": "369fcc00c5d6d71a88d7ea6f9cdf1181977a74886fa35d6c6388c33f9db23e5f",
+      "wall_seconds": 8.07213277400001
+    }
+  ],
+  "schedule_completed": true,
+  "server": false,
+  "source": "026d71817f7dba11f9c51c7b5c5f7cc2be03a192"
+}

@@ -5501,3 +5501,21 @@ directory change: prior refusals have a different WSL boot and remain intact.
 Original send/completion, full fault matrix, writer cessation, reconnect, trust
 and server admission remain separate. No clocks, services, server, supervisor,
 installation, product or qualification workload was changed or run.
+
+### Remaining original holder fault cases
+
+The [local original holder packet](local-runs/held-original-faults-20261021/README.md)
+passes all four remaining cases on GNU and MSRV: revalidate, role-before,
+role-after and trust-after. Exact injected refusal types, sticky refusal,
+timer/fence retention and synthetic custodian/EOF cleanup are asserted by the
+unchanged Rust harness. All eight invocations pass within original windows;
+reported live ages remain below 7.011 seconds. Original validation-round counts,
+metadata and postflight agree; no attempt is retried. Full-phase kernel equality
+does not: two accept-consent pairs differ by a standalone Sample outside the
+rounds, consistent with unchanged nonblocking relay polling. The negative
+comparison and raw counts remain, without normalization or timing subtraction.
+
+This closes these fixture cases only. Original delivery, cessation of all
+production writers, full SIGKILL/lost-ACK, reconnect, production enrollment
+and server admission remain independent. No clocks, services, server,
+supervisor, installation or product/qualification workload was changed or run.

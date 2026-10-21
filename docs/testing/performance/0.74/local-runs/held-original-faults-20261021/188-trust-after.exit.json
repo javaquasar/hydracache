@@ -1,0 +1,9 @@
+{
+  "bytes": 167275,
+  "case": "trust-after",
+  "containment_failure": null,
+  "exit": 0,
+  "lane": "188",
+  "log_sha256": "369fcc00c5d6d71a88d7ea6f9cdf1181977a74886fa35d6c6388c33f9db23e5f",
+  "wall_seconds": 8.07213277400001
+}

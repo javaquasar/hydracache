@@ -1,0 +1,9 @@
+{
+  "bytes": 183797,
+  "case": "revalidate",
+  "containment_failure": null,
+  "exit": 0,
+  "lane": "194",
+  "log_sha256": "f246564a69e38c71a0c02d90f5da786789e5ff4834e7ebc573938bc13825f97b",
+  "wall_seconds": 8.707502587999997
+}

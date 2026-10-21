@@ -1,0 +1,99 @@
+{
+  "all_production_writers_proven": false,
+  "full_paired_phase_kernel_counts_equal": false,
+  "full_sigkill_matrix": false,
+  "guard_changed": false,
+  "interpretation": "Outside-round delta matches the unchanged bounded empty-receive polling path; inference, not recvmsg attempt telemetry",
+  "native_gate_open": false,
+  "original_delivery_proven": false,
+  "pairs": [
+    {
+      "case": "revalidate",
+      "differences": [
+        {
+          "inferred_additional_standalone_samples": 1,
+          "msrv_minus_gnu_kernel_calls": [
+            0,
+            0,
+            0,
+            0,
+            2,
+            4,
+            8,
+            1,
+            0,
+            4
+          ],
+          "outside_round_call_delta": [
+            0,
+            0,
+            0,
+            0,
+            2,
+            4,
+            8,
+            1,
+            0,
+            4
+          ],
+          "phase": "accept-consent"
+        }
+      ],
+      "full_phase_kernel_counts_equal": false,
+      "validation_step_auth_live_counts_equal": true
+    },
+    {
+      "case": "role-before",
+      "differences": [],
+      "full_phase_kernel_counts_equal": true,
+      "validation_step_auth_live_counts_equal": true
+    },
+    {
+      "case": "role-after",
+      "differences": [],
+      "full_phase_kernel_counts_equal": true,
+      "validation_step_auth_live_counts_equal": true
+    },
+    {
+      "case": "trust-after",
+      "differences": [
+        {
+          "inferred_additional_standalone_samples": -1,
+          "msrv_minus_gnu_kernel_calls": [
+            0,
+            0,
+            0,
+            0,
+            -2,
+            -4,
+            -8,
+            -1,
+            0,
+            -4
+          ],
+          "outside_round_call_delta": [
+            0,
+            0,
+            0,
+            0,
+            -2,
+            -4,
+            -8,
+            -1,
+            0,
+            -4
+          ],
+          "phase": "accept-consent"
+        }
+      ],
+      "full_phase_kernel_counts_equal": false,
+      "validation_step_auth_live_counts_equal": true
+    }
+  ],
+  "product": false,
+  "raw_counts_normalized": false,
+  "schema": "original-held-fault-call-localization-074-v1",
+  "server": false,
+  "timing_overhead_subtracted": false,
+  "validation_step_auth_live_counts_equal": true
+}

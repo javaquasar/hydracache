@@ -1,0 +1,80 @@
+{
+  "boot": "0ff1164f-006c-4759-a0b0-f9d363f8941c",
+  "bundle": [
+    {
+      "bytes": 349647,
+      "name": "build-log.jsonl",
+      "sha256": "8a2a495348bd317f7a2092a622838fc489bdcf077f4a8269210b2b78381b3c58"
+    },
+    {
+      "bytes": 1735,
+      "name": "build-receipt-v1.json",
+      "sha256": "e32bb7cd9b6cbf1d91d52abc79cb1e0225b3a7f6602e82e5b9a303c3645a77d7"
+    },
+    {
+      "bytes": 88159,
+      "name": "Cargo.lock.observer",
+      "sha256": "e3be470f5a1bff4e917e841fc5bfbd257ff12559206bbc1481c3c4bca528eb1d"
+    },
+    {
+      "bytes": 175300,
+      "name": "Cargo.lock.root",
+      "sha256": "be46eaf8e97e507bda5e3f2b671d0d622e6a639ce1d4613769a4693723d62b19"
+    },
+    {
+      "bytes": 694,
+      "name": "direct.json",
+      "sha256": "5485b10f50906833006ad3f3a40b4909760ef01e3f2c86395e4366bf83cc6ef9"
+    },
+    {
+      "bytes": 696,
+      "name": "embedded.json",
+      "sha256": "5c219730c8a782ed47dfa0b291a29f44f753c3688f8548c136174a89cee55149"
+    },
+    {
+      "bytes": 694,
+      "name": "resp2.json",
+      "sha256": "f0aba16dfe0354801d0b3c83ee9fc2d1b4751be5f50280634690ed4bcf3030ae"
+    },
+    {
+      "bytes": 694,
+      "name": "resp3.json",
+      "sha256": "b680683c291d0a4dadbac1901f051ba0fedcac0ac9127d197e0261fe6fdabdd7"
+    },
+    {
+      "bytes": 26500176,
+      "name": "timing-controls-074",
+      "sha256": "bda1c094f3de7c6d42ec45c757838c7a41a8ff1d63a025c661af84455169a101"
+    }
+  ],
+  "config": {
+    "/etc/systemd/timesyncd.conf": "e6734751f8aaf19fddfff891ad246387f5f59bd9ff1a5f0cac2c34bc81941c62",
+    "/etc/wsl.conf": "ca76852426d685301ce8b4461d2bc40d1901c93aea8c0b4b684707c94e4cf507",
+    "/mnt/c/Users/ArturBuzov/.wslconfig": null
+  },
+  "driver_sha256": "24c7cb0809515ae310b25e5654df879f23ea2fa99994637604d11f5f6e453550",
+  "fault_method": {
+    "attribute_partial.py": "59f798edfc9d6d9b7fc1e2d1b278cfa18d253b6622c74b1f1d7be16faf3e547a",
+    "launch_local_faults.ps1": "9078b11bb1703966dcecb80b9740ec6587828fd2d730030aae17b46134ed3f17",
+    "review_local_faults.py": "94b8dee44108b3b1724f73ce2841e3c6279e3ad91775c5eb29a8b6d9eb632bfc",
+    "run_local_faults.py": "c02b710f512737860c6d5af183f7b9848360eb96b787e06677bd040489216059",
+    "run_preparation_impact.py": "e1ec5f5cb2bc669be4ab8d82158d467afc220d3975fd30ee0bea2e311ef8464f",
+    "runner.py": "24c7cb0809515ae310b25e5654df879f23ea2fa99994637604d11f5f6e453550",
+    "test_local_faults.py": "6902f4a8447dd13a5296892d737fe488052ec9410a37261407a5b94b27a8a4cf"
+  },
+  "fixtures": [],
+  "git_reader_sha256": "34a408843194be320d8a87a3c12cd5c7d2e08d03b24567a41db32e21d12569d2",
+  "images": {
+    "188": "76ed20676de65bac6fc764009bd74d620e2a891f2e076987b584209a2aa720d8",
+    "194": "0a02f83ac44685645c8b532c0052dad86f4953f39a5c56c1bb7cce0f7a857af5"
+  },
+  "kernel": "6.6.87.2-microsoft-standard-WSL2",
+  "pid": 385,
+  "pins_sha256": "a1e3715ca879dc6f690f414f01458983c085978f5817d956e79e08c1f25a9a21",
+  "preparation_sha256": "9dfc6acd605138bd01d5b9b71257da53f9a05a4d4a943f10832bb406fa4a3e78",
+  "qualification_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "source": "026d71817f7dba11f9c51c7b5c5f7cc2be03a192",
+  "start_ticks": "6737",
+  "tracked_dirty": "",
+  "uid": 0
+}

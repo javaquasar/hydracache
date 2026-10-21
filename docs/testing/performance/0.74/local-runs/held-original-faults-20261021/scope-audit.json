@@ -1,0 +1,35 @@
+{
+  "mutations": [
+    {
+      "refused": true,
+      "mutation": "numeric-completion"
+    },
+    {
+      "refused": true,
+      "mutation": "numeric-native"
+    },
+    {
+      "refused": true,
+      "mutation": "sigkill"
+    },
+    {
+      "refused": true,
+      "mutation": "delivery"
+    },
+    {
+      "refused": true,
+      "mutation": "writers"
+    },
+    {
+      "refused": true,
+      "mutation": "speedup"
+    },
+    {
+      "refused": true,
+      "mutation": "failed-fixture"
+    }
+  ],
+  "product": false,
+  "native_gate_open": false,
+  "server": false
+}

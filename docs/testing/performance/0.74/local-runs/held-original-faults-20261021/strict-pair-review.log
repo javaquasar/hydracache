@@ -1,0 +1,26 @@
+operation probes reconstructed; observer overhead not subtracted; native admission=false
+operation probes reconstructed; observer overhead not subtracted; native admission=false
+{
+  "integrity_verified": true,
+  "server": false,
+  "product": false,
+  "cpu_speedup_claim": false,
+  "prior_packets_verified": 25,
+  "allocation_reduction_verified": true,
+  "mode": "Review",
+  "native_gate_open": false
+}
+Original preparation outcome and conserved prefixes verified; native admission=false
+Original ages, live calls and complete cohort graph verified offline
+{
+  "complete_preparation_cohort": true,
+  "mode": "Review",
+  "server": false,
+  "members": 70,
+  "inventory_sha256": "c1a697c7f1c281d7b0330800d516340ce5cf3c3eee5cd55b26ee637b023b346c",
+  "native_gate_open": false,
+  "prior_packets_verified": 26,
+  "causal_speedup_claim": false,
+  "product": false
+}
+Original local fault outcomes reconstructed; no full SIGKILL/server admission

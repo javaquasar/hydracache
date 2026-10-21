@@ -1,0 +1,55 @@
+{
+  "bundle": [
+    {
+      "sha256": "8a2a495348bd317f7a2092a622838fc489bdcf077f4a8269210b2b78381b3c58",
+      "name": "build-log.jsonl",
+      "bytes": 349647
+    },
+    {
+      "sha256": "e32bb7cd9b6cbf1d91d52abc79cb1e0225b3a7f6602e82e5b9a303c3645a77d7",
+      "name": "build-receipt-v1.json",
+      "bytes": 1735
+    },
+    {
+      "sha256": "e3be470f5a1bff4e917e841fc5bfbd257ff12559206bbc1481c3c4bca528eb1d",
+      "name": "Cargo.lock.observer",
+      "bytes": 88159
+    },
+    {
+      "sha256": "be46eaf8e97e507bda5e3f2b671d0d622e6a639ce1d4613769a4693723d62b19",
+      "name": "Cargo.lock.root",
+      "bytes": 175300
+    },
+    {
+      "sha256": "5485b10f50906833006ad3f3a40b4909760ef01e3f2c86395e4366bf83cc6ef9",
+      "name": "direct.json",
+      "bytes": 694
+    },
+    {
+      "sha256": "5c219730c8a782ed47dfa0b291a29f44f753c3688f8548c136174a89cee55149",
+      "name": "embedded.json",
+      "bytes": 696
+    },
+    {
+      "sha256": "f0aba16dfe0354801d0b3c83ee9fc2d1b4751be5f50280634690ed4bcf3030ae",
+      "name": "resp2.json",
+      "bytes": 694
+    },
+    {
+      "sha256": "b680683c291d0a4dadbac1901f051ba0fedcac0ac9127d197e0261fe6fdabdd7",
+      "name": "resp3.json",
+      "bytes": 694
+    },
+    {
+      "sha256": "bda1c094f3de7c6d42ec45c757838c7a41a8ff1d63a025c661af84455169a101",
+      "name": "timing-controls-074",
+      "bytes": 26500176
+    }
+  ],
+  "source": "026d71817f7dba11f9c51c7b5c5f7cc2be03a192",
+  "preparation": "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/target/held-original-faults-20261021-preparation.json",
+  "images": {
+    "188": "76ed20676de65bac6fc764009bd74d620e2a891f2e076987b584209a2aa720d8",
+    "194": "0a02f83ac44685645c8b532c0052dad86f4953f39a5c56c1bb7cce0f7a857af5"
+  }
+}
