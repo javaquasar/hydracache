@@ -1,0 +1,21 @@
+{
+  "boot": "0ad3d48b-dd37-4bc8-a75f-56f1e002fa0a",
+  "config": {
+    "/etc/systemd/timesyncd.conf": "e6734751f8aaf19fddfff891ad246387f5f59bd9ff1a5f0cac2c34bc81941c62",
+    "/etc/wsl.conf": "ca76852426d685301ce8b4461d2bc40d1901c93aea8c0b4b684707c94e4cf507",
+    "/mnt/c/Users/ArturBuzov/.wslconfig": null
+  },
+  "dirty": "",
+  "fixtures": [],
+  "hashes": {
+    "/home/artur/.cache/hydracache-074-188-check/release/deps/hydracache_long_run_supervisor_074-1dbb29096ebc6338": "3f3fa045294e691bf6f689190fdb94f8afdc9e264c31973033df356bdb8f0f8a",
+    "/home/artur/.cache/hydracache-074-194-check/release/deps/hydracache_long_run_supervisor_074-c3c253bf49d23fef": "21029668b9433043715d2351c3387005b30526450823f696297cdd2d644751c1",
+    "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/docs/testing/performance/0.74/qualification-manifest.toml": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+    "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/local-profile-session-074/run_boot_ops.py": "5a2942d92c12b31822a980ffa7b31753b38a2f29be8b7831af37abf9367c455a",
+    "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/local-profile-session-074/runner.py": "24c7cb0809515ae310b25e5654df879f23ea2fa99994637604d11f5f6e453550"
+  },
+  "pid": 321,
+  "source": "3d3a2180c6b54ea9156ae2bac609f36966359908",
+  "start_ticks": "523",
+  "uid": 1000
+}

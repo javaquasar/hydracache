@@ -1326,3 +1326,24 @@ qualification inputs remain frozen. Next isolate actual fresh primitive
 costs before any candidate; this offline attribution does not close original
 delivery, writer cessation, lifecycle, SIGKILL/lost-ACK, reconnect, trust or
 server gates. No clock, service, server, supervisor or installation action.
+
+### Boot operation attribution and directory request reduction
+
+The [local operation packet](local-runs/boot-authority-operations-20261021/README.md)
+separates Boot open/filesystem/read/decode/close windows without a production
+Boot change. It accepts one isolated short directory-name encoding change in
+the shared authority helper: the existing bounded stack buffer now covers
+short directories while all fresh checks, flags, errors, owner lifetimes and
+original 300/60/10 windows remain. Before/after controls on both compilers
+confirm two fewer allocations/eight requested bytes per synthetic inspect,
+with unchanged read/kernel/site counts, payloads and policy epochs.
+
+Candidate authority selection passes 214 tests per compiler, affected checks
+and strict lint. Source canaries, thirteen reader/runner controls per OS and
+repository/evidence checks pass; old refusals and authoring failures remain.
+Different stage boots and mixed CPU pairs preclude a CPU gain or nonregression
+claim. This is not fixed-root enrollment, a healthy original attempt, native
+performance or server admission. No clock/service/server/supervisor/install/
+product action occurs. Delivery, all-writer cessation, lifecycle, fault,
+reconnect, enrollment and exact installed-source gates stay separate; next
+validate another isolated owner or unchanged full-frame preparation locally.

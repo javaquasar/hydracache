@@ -1,0 +1,11 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `release` profile [optimized] target(s) in 3m 53s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/release/deps/hydracache_long_run_supervisor_074-c3c253bf49d23fef)
+
+running 3 tests
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::boot_operations::boot_operations_clock_schedule_and_returned_owner_lifetime_are_checked ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::boot_operations::boot_operations_selected_cpu_attribution ... ignored, manual local Boot operation CPU attribution; no authority or admission
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::boot_operations::boot_operations_values_fresh_errors_flags_and_trace_counts_match_actual ... ok
+
+test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 1443 filtered out; finished in 0.02s
+

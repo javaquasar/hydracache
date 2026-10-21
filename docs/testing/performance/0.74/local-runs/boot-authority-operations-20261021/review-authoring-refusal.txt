@@ -1,0 +1,14 @@
+The first final-review invocation reconstructed both unchanged stage summaries,
+then refused before creating inventory.json. PowerShell selected String.Split's
+string/count overload for the two separator strings and could not convert the
+backslash to an integer. The path check now explicitly converts separators to
+char values. No profile, estimator, expected count, source or summary changes;
+no timing invocation is repeated. The original command result remains in the
+chat; this note is not claimed as a raw stdout/stderr capture.
+
+The next invocation correctly refused a mistyped custody inventory pin in the
+new verifier, still before inventory creation. The correct pin is copied from
+the already committed authority-leaf-cpu-20261021/review.ps1 line 182 and the
+other preceding immutable reviewers, not fitted to a new measurement. The
+old custody packet is Git-clean and unchanged. No old inventory or measured
+data is edited. The verifier's copied hash typo is the only correction.

@@ -1,0 +1,12 @@
+{
+  "bytes": 50502,
+  "containment_failure": null,
+  "exit": 0,
+  "image_sha256": "ae2f0d9f9827e3ff82acecca44429a01b000fd0e22d304d15e235fea6bf5ce84",
+  "job": "phases",
+  "lane": "194",
+  "log_sha256": "53c54a1d6e6cf65ea92078b0f9086a20dcd34e78eb179263c4a23a13d4e966b5",
+  "source": "a0cb7fe3ebf199d01e067adb389e3fb06557c152",
+  "stage": "Baseline",
+  "wall_seconds": 7.367947574000002
+}

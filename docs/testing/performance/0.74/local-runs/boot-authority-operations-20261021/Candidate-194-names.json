@@ -1,0 +1,12 @@
+{
+  "bytes": 36919,
+  "containment_failure": null,
+  "exit": 0,
+  "image_sha256": "21029668b9433043715d2351c3387005b30526450823f696297cdd2d644751c1",
+  "job": "names",
+  "lane": "194",
+  "log_sha256": "489231221e6415c8114c8cbb5877ed7a6d4a24e5b757953541690b3e753bb724",
+  "source": "3d3a2180c6b54ea9156ae2bac609f36966359908",
+  "stage": "Candidate",
+  "wall_seconds": 0.4188576270000013
+}

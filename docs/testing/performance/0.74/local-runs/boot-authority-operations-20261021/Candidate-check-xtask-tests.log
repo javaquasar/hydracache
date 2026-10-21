@@ -1,0 +1,66 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 16.74s
+     Running tests\authority_breakdown_074.rs (target\debug\deps\authority_breakdown_074-819d13884627dfcf.exe)
+
+running 2 tests
+test authority_breakdown_contract_preserves_scan_reader_and_non_admission_scope ... ok
+test authority_breakdown_restores_every_runtime_byte_and_rejects_hook_drift ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.88s
+
+     Running tests\authority_cpu_074.rs (target\debug\deps\authority_cpu_074-b9335b66fbadcccd.exe)
+
+running 1 test
+test authority_cpu_only_adds_exact_test_hooks_and_preserves_runtime ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.68s
+
+     Running tests\authority_inventory_074.rs (target\debug\deps\authority_inventory_074-8e86af1042e9bbf2.exe)
+
+running 2 tests
+test authority_inventory_contract_preserves_observed_prefix_formatter_and_deadlines ... ok
+test authority_inventory_exact_view_restores_baseline_and_rejects_unknown_or_duplicate_hooks ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.61s
+
+     Running tests\authority_leaf_cpu_074.rs (target\debug\deps\authority_leaf_cpu_074-e1aeb5266f286798.exe)
+
+running 2 tests
+test authority_leaf_cpu_reuses_frozen_traces_and_exact_clock_bodies ... ok
+test authority_leaf_cpu_only_adds_exact_test_hooks_and_preserves_runtime ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.61s
+
+     Running tests\authority_open_name_074.rs (target\debug\deps\authority_open_name_074-42e6fcd1461c72eb.exe)
+
+running 3 tests
+test authority_open_name_candidate_restores_only_the_exact_allocation_branch ... ok
+test authority_open_name_restores_exact_test_hooks_and_preserves_unrelated_drift ... ok
+test authority_open_name_freezes_original_syscall_and_clock_bodies ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.36s
+
+     Running tests\authority_owners_074.rs (target\debug\deps\authority_owners_074-1e67cfb5ef310bc8.exe)
+
+running 3 tests
+test authority_owners_contract_keeps_request_scope_and_frozen_io_reader ... ok
+test authority_owners_observation_wrappers_restore_exact_runtime_tokens_and_refuse_drift ... ok
+test authority_owners_only_adds_exact_hooks_and_preserves_every_runtime_byte ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.51s
+
+     Running tests\boot_operations_074.rs (target\debug\deps\boot_operations_074-2f6a720f745bea5e.exe)
+
+running 2 tests
+test boot_operations_only_exact_hook_gate_and_directory_ownership_may_normalize ... ok
+test boot_operations_fresh_open_expression_and_original_runtime_are_frozen ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.17s
+
+     Running tests\validation_leaf_requests_074.rs (target\debug\deps\validation_leaf_requests_074-e4cd1d103e61b4e6.exe)
+
+running 2 tests
+test validation_leaf_requests_keep_measurement_scopes_and_limits_explicit ... ok
+test validation_leaf_requests_only_add_exact_test_hook_and_registered_manual_gate ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.36s
+

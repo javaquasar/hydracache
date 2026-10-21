@@ -1,0 +1,9 @@
+{
+  "exit": 0,
+  "source": "3d3a2180c6b54ea9156ae2bac609f36966359908",
+  "stage": "Candidate",
+  "recipe_sha256": "dce2f0bd7f53c39296cff605533b90ba40ebb91e4425c00a46d66a0cf5ad3147",
+  "native_gate_open": false,
+  "server": false,
+  "product": false
+}

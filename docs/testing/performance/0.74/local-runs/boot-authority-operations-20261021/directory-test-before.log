@@ -1,0 +1,10 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `release` profile [optimized] target(s) in 2m 47s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/release/deps/hydracache_long_run_supervisor_074-c3c253bf49d23fef)
+
+running 1 test
+short-directory seed=0x074d1a24 seeded=64 bytes=23/24 fixed-components=4
+test diagnostic_worker_policy::authority_registry::fixture::open_name_controls::authority_short_directory_differential_valid_utf8_boundaries_and_fixed_components ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1445 filtered out; finished in 0.02s
+

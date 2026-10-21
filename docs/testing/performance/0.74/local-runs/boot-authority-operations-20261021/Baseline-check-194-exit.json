@@ -1,0 +1,117 @@
+{
+  "product": false,
+  "failure": null,
+  "server": false,
+  "head": "c80a3fb8d18df0e2de43137a9aac7fd90c4e50ff",
+  "stage": "Baseline",
+  "steps": [
+    {
+      "sha256": "64ca8f652a002bb7a3d29cf66d3f127f3e97cc83443dd98f09d50ac1c409d364",
+      "exit": 0,
+      "name": "check",
+      "log": "Baseline-check-194-check.log"
+    },
+    {
+      "sha256": "1f49960d9b749004f776d89a7f61ee4cb1b3dc1d2eace66a0a0848ff86f201d0",
+      "exit": 0,
+      "name": "clippy",
+      "log": "Baseline-check-194-clippy.log"
+    },
+    {
+      "sha256": "f4385424b29f46f8f58ccd0408a520fa887bda0405ed314bf8cc1d0e79898e74",
+      "exit": 0,
+      "name": "boot_operations_",
+      "log": "Baseline-check-194-boot_operations_.log"
+    },
+    {
+      "sha256": "1a4d950f8c098ca2b65957200d41d16b9a3f8fa9e6d71b48b30b7f7205024944",
+      "exit": 0,
+      "name": "authority_",
+      "log": "Baseline-check-194-authority_.log"
+    },
+    {
+      "sha256": "4cdced0ca3bb2d4071367d6b0971598e825e5e02ca940c0449a7199b8d32e2ff",
+      "exit": 0,
+      "name": "validation_leaf_requests_",
+      "log": "Baseline-check-194-validation_leaf_requests_.log"
+    },
+    {
+      "sha256": "b8dfe44d82c394589b36cc09bee93e5e993adb66c86936ab61c10484a6518d78",
+      "exit": 0,
+      "name": "boot_",
+      "log": "Baseline-check-194-boot_.log"
+    },
+    {
+      "sha256": "064ada634b0adadf4401a0f64d5e242b53a672a4f7a4be35c7c2bcdf4569e997",
+      "exit": 0,
+      "name": "fixed_leaf_path_",
+      "log": "Baseline-check-194-fixed_leaf_path_.log"
+    },
+    {
+      "sha256": "70d00f9132b4ffd3f1015763f618cbdb32bd3630c33570c77d6249630337e2bb",
+      "exit": 0,
+      "name": "worker_trust_input_",
+      "log": "Baseline-check-194-worker_trust_input_.log"
+    },
+    {
+      "sha256": "9275a512c8661b527247cea07c2e285e29560ffd957711832fd2355312d32242",
+      "exit": 0,
+      "name": "kernel_time_",
+      "log": "Baseline-check-194-kernel_time_.log"
+    },
+    {
+      "sha256": "8b715226c30f3478263f274dcfd8e67c4b597b25d9f01cfe6c1a5774f7867cb5",
+      "exit": 0,
+      "name": "build",
+      "log": "Baseline-check-194-build.log"
+    }
+  ],
+  "inputs": [
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs",
+      "sha256": "0d71f6b25fdd2596966cf186e747a375571faa315725a5de76f05f484c62efde"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs",
+      "sha256": "f4c8962262e85e8b252449c0840befe394e2f6fd794fc97732bd436cc93e4818"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/tests/support/boot_operations.rs",
+      "sha256": "c4beef6ed7f933d7cd7635307a3468e5af49d114139495ce04945145c3e0ca2e"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/tests/support/authority_open_name_controls.rs",
+      "sha256": "bb6d8699159f0907996c50844f2761b829c86d0c61eba567584dec003ffcb360"
+    },
+    {
+      "path": "crates/xtask/tests/boot_operations_074.rs",
+      "sha256": "d39c5b968c2ab6f0d24d1b1d41dd4312ca8d6723787757165966e3fe2c8c902d"
+    },
+    {
+      "path": "crates/xtask/tests/authority_open_name_074.rs",
+      "sha256": "de8949147040b65c3495062a71257c20fa718a67239a4e8230da613de510673b"
+    },
+    {
+      "path": "crates/xtask/tests/support/boot_operations_guard.rs",
+      "sha256": "55e2181a1ae70028d4d7b9bfe1306f647df799e063c7047c2e0563cb3c8d071b"
+    },
+    {
+      "path": "crates/xtask/tests/support/authority_open_name_guard.rs",
+      "sha256": "5eb0e0f3b73d2e71011552e36c4157fee461075b584fa8487fb8416738179e9c"
+    },
+    {
+      "path": "crates/xtask/tests/support/boot_operations_gate.txt",
+      "sha256": "178da77e108d5448f21d7896d0424f456cc3ec6098821dd533ae75cbf4b62da6"
+    },
+    {
+      "path": "docs/testing/gated-test-registry.toml",
+      "sha256": "f804574332d89bc1c73cecb7d8d6f0b228a747748f0ca5b1de8d4d0bd9ae1dc2"
+    },
+    {
+      "path": "docs/testing/performance/0.74/qualification-manifest.toml",
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    }
+  ],
+  "lane": "194",
+  "recipe_sha256": "8561a3b53f2ad4b544eb598dc730ce1258b5981a9cbf514ca79af50db60a0d9b"
+}

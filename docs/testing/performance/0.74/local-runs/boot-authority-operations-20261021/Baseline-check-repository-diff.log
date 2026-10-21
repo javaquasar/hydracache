@@ -1,0 +1,4 @@
+warning: in the working copy of '.gitattributes', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'crates/xtask/tests/authority_open_name_074.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'crates/xtask/tests/support/authority_open_name_guard.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs', LF will be replaced by CRLF the next time Git touches it

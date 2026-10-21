@@ -1,0 +1,27 @@
+{
+  "native_gate_open": false,
+  "product": false,
+  "mutations": [
+    {
+      "refused": true,
+      "mutation": "numeric-gate"
+    },
+    {
+      "refused": true,
+      "mutation": "speedup"
+    },
+    {
+      "refused": true,
+      "mutation": "overhead"
+    },
+    {
+      "refused": true,
+      "mutation": "numeric-allocation"
+    },
+    {
+      "refused": true,
+      "mutation": "cpu-nonregression"
+    }
+  ],
+  "server": false
+}

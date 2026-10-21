@@ -16456,3 +16456,62 @@ qualification remain unchanged. The next hypothesis is a real-callsite split
 of Boot setup/teardown, Namespace and authority reader cost; no caching,
 check-frequency reduction, optimization, new timing profile or server action
 is accepted by this offline result.
+
+### Boot operation windows and bounded directory name encoding
+
+The [local operation study](../testing/performance/0.74/local-runs/boot-authority-operations-20261021/README.md)
+adds a test-only Boot walk and reuses the existing actual authority probes.
+It measures each selected operation separately, preserving fresh syscalls,
+FD flags, error handling, errno and original close/decode order. An actual
+Boot call and an uncounted equivalent walk remain independent controls.
+No production Boot function or live validation schedule changes.
+
+| Baseline selected Boot window in us | GNU 1.94 | MSRV 1.88 |
+| --- | ---: | ---: |
+| Open, four calls per Boot | 1.391 | 1.293 |
+| Filesystem check, four calls | 0.412 | 0.618 |
+| Bounded read, one call | 0.762 | 0.691 |
+| Decode and compare, one call | 0.333 | 0.305 |
+| Close, four calls | 0.525 | 0.553 |
+| Empty callback | 0.207 | 0.205 |
+
+These are medians of sixteen batch means per mode, including selected-clock
+overhead, not an additive syscall CPU budget. Decode ranges overlap the empty
+control; its different return/body type prevents using it as a correction.
+Open has a larger observed window, but fresh opens and filesystem checks are
+required predicates. This attribution accepts no Boot shortcut or decode win.
+
+Authority's full/directory/inventory/leaf probes likewise retain separate
+timing windows. They confirm repeated heap ownership for short directory
+names. One isolated runtime change extends the existing 24-byte stack name
+encoding to directories; longer names keep CString. NUL checks, fresh open/
+metadata/read operations, flags, first errors and descriptor lifetimes remain.
+The new successful-directory differential test first passes on baseline,
+including UTF-8, 23/24-byte boundaries, seeded names and fixed components
+created inside a private /tmp fixture.
+
+Both compilers reproduce three request batches: full synthetic authority
+inspect drops 21 to 19 allocations at depth one and 85 to 83 at depth seven.
+Requested bytes drop 1616 to 1608 and 8122 to 8114, respectively; reallocations
+remain zero. Two fresh directory validations each avoid one four-byte request.
+All other helper/cold/warm cases, payload/epoch identities, traced sites and
+read/kernel counts agree. This is a shared authority-engine request reduction,
+not measured fixed-root enrollment, RSS/retained-memory savings or API speedup.
+
+CPU remains unresolved. Each stage has stable metadata within one WSL parent,
+but the two stages have different boot IDs. Directory helper pair ranges have
+both signs in all compiler/stage combinations; unchanged Boot medians also
+move between stages. Neither CPU acceleration nor nonregression is proved.
+No stage is retried, no outlier removed and no observer overhead subtracted.
+The accepted result is narrowly the deterministic allocation reduction.
+
+Candidate authority selection passes 214 tests per compiler, with affected
+checks/strict lint, source canaries, thirteen reader/runner controls on each
+OS and repository checks. Authoring failures and twenty-five earlier evidence
+packets remain. The inherited raw `runtime_changed=false` fields describe
+unchanged probe instrumentation, not a claim that baseline and candidate
+runtime are identical; committed source receipts identify the one-line change.
+Original windows, qualification and live predicates stay frozen. Earlier
+original ten-second refusals and delivery/writer/lifecycle/reconnect/enrollment
+gates remain separate and closed; no service/clock/server or product action
+turns this diagnostic improvement into release admission.

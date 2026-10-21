@@ -1,0 +1,117 @@
+{
+  "inputs": [
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs",
+      "sha256": "3b3c75f41dbd8a8db1f73d61af3b0c701a666c3ebeed326ae49012ed0c01fb6c"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs",
+      "sha256": "f4c8962262e85e8b252449c0840befe394e2f6fd794fc97732bd436cc93e4818"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/tests/support/boot_operations.rs",
+      "sha256": "c4beef6ed7f933d7cd7635307a3468e5af49d114139495ce04945145c3e0ca2e"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/tests/support/authority_open_name_controls.rs",
+      "sha256": "24f9db0606b4bc8d86f60f886ea2a66e9de454fd5902804e8a97a4996950f436"
+    },
+    {
+      "path": "crates/xtask/tests/boot_operations_074.rs",
+      "sha256": "d39c5b968c2ab6f0d24d1b1d41dd4312ca8d6723787757165966e3fe2c8c902d"
+    },
+    {
+      "path": "crates/xtask/tests/authority_open_name_074.rs",
+      "sha256": "de8949147040b65c3495062a71257c20fa718a67239a4e8230da613de510673b"
+    },
+    {
+      "path": "crates/xtask/tests/support/boot_operations_guard.rs",
+      "sha256": "55e2181a1ae70028d4d7b9bfe1306f647df799e063c7047c2e0563cb3c8d071b"
+    },
+    {
+      "path": "crates/xtask/tests/support/authority_open_name_guard.rs",
+      "sha256": "5eb0e0f3b73d2e71011552e36c4157fee461075b584fa8487fb8416738179e9c"
+    },
+    {
+      "path": "crates/xtask/tests/support/boot_operations_gate.txt",
+      "sha256": "178da77e108d5448f21d7896d0424f456cc3ec6098821dd533ae75cbf4b62da6"
+    },
+    {
+      "path": "docs/testing/gated-test-registry.toml",
+      "sha256": "f804574332d89bc1c73cecb7d8d6f0b228a747748f0ca5b1de8d4d0bd9ae1dc2"
+    },
+    {
+      "path": "docs/testing/performance/0.74/qualification-manifest.toml",
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    }
+  ],
+  "server": false,
+  "recipe_sha256": "1a1653c682286eda5fd52629b076512f121c4501969197e5001c51fbcffca5d2",
+  "head": "a0cb7fe3ebf199d01e067adb389e3fb06557c152",
+  "lane": "188",
+  "stage": "Candidate",
+  "steps": [
+    {
+      "name": "check",
+      "exit": 0,
+      "sha256": "e526f2922e59ce6cb80bcea23323d046d05cac0436a42c8c70d91a1d468ba3f5",
+      "log": "Candidate-check-188-check.log"
+    },
+    {
+      "name": "clippy",
+      "exit": 0,
+      "sha256": "f7b584c173607e9ebb39d788e5d201f80dd73d46228b19c4087264716f90a240",
+      "log": "Candidate-check-188-clippy.log"
+    },
+    {
+      "name": "boot_operations_",
+      "exit": 0,
+      "sha256": "b1510f611682c33ca9dda918fc3f17e8306a0c5b41c8ff37bc663c44a00188ba",
+      "log": "Candidate-check-188-boot_operations_.log"
+    },
+    {
+      "name": "authority_",
+      "exit": 0,
+      "sha256": "a2033844c241a71d65663a998fb0095513112af333aeb57f55b88c9e639df6b2",
+      "log": "Candidate-check-188-authority_.log"
+    },
+    {
+      "name": "validation_leaf_requests_",
+      "exit": 0,
+      "sha256": "aefc2353dde771178a89ef27169b5920924021b1b904c3b066d7e6a10733ce65",
+      "log": "Candidate-check-188-validation_leaf_requests_.log"
+    },
+    {
+      "name": "boot_",
+      "exit": 0,
+      "sha256": "b514045747a792184f13a61a8724df6dc5e88ee6d46faa1768d4be2d6653d616",
+      "log": "Candidate-check-188-boot_.log"
+    },
+    {
+      "name": "fixed_leaf_path_",
+      "exit": 0,
+      "sha256": "f97cd309053a62911a9b8510907887f844e1f3fdb77d7d2e558b13c1d178f370",
+      "log": "Candidate-check-188-fixed_leaf_path_.log"
+    },
+    {
+      "name": "worker_trust_input_",
+      "exit": 0,
+      "sha256": "f4bad492c1bddbb580b13ad6508be5bf2647845d04a8b222d5fb4c0e0fda3f7e",
+      "log": "Candidate-check-188-worker_trust_input_.log"
+    },
+    {
+      "name": "kernel_time_",
+      "exit": 0,
+      "sha256": "4d861c3b8532e4cffac60b1fec6a8f8c9b22053a69c5633e3878551de69bea60",
+      "log": "Candidate-check-188-kernel_time_.log"
+    },
+    {
+      "name": "build",
+      "exit": 0,
+      "sha256": "3a9dbec6e74ffe625915254bf042e33d524c63a31f9975a7b440c9b1c09c4760",
+      "log": "Candidate-check-188-build.log"
+    }
+  ],
+  "failure": null,
+  "product": false
+}

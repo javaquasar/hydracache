@@ -1,0 +1,9 @@
+{
+  "product": false,
+  "exit": 0,
+  "native_gate_open": false,
+  "recipe_sha256": "dce2f0bd7f53c39296cff605533b90ba40ebb91e4425c00a46d66a0cf5ad3147",
+  "source": "a0cb7fe3ebf199d01e067adb389e3fb06557c152",
+  "server": false,
+  "stage": "Baseline"
+}

@@ -1,0 +1,12 @@
+{
+  "bytes": 50438,
+  "containment_failure": null,
+  "exit": 0,
+  "image_sha256": "21029668b9433043715d2351c3387005b30526450823f696297cdd2d644751c1",
+  "job": "phases",
+  "lane": "194",
+  "log_sha256": "1c974a1ecede63e43a74bf74223160fafafafebd4ae44342e6e8a8c749ed3d92",
+  "source": "3d3a2180c6b54ea9156ae2bac609f36966359908",
+  "stage": "Candidate",
+  "wall_seconds": 5.623690219
+}

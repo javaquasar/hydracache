@@ -1,0 +1,49 @@
+    Finished `release` profile [optimized] target(s) in 19.05s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/release/deps/hydracache_long_run_supervisor_074-c3c253bf49d23fef)
+
+running 42 tests
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_breakdown_alloc::authority_breakdown_allocation_attribution ... ignored, manual local request decomposition; not timing or admission
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_breakdown_alloc::authority_breakdown_io_parser_refuses_missing_duplicate_overflow_and_bad_text ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_breakdown_alloc::authority_breakdown_retained_io_reader_observes_reads_without_writes ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_context_alloc::authority_context_allocation_attribution ... ignored, manual nonroot context ownership and prefix request attribution; no timing or admission
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_cpu::authority_cpu_actual_phase_attribution ... ignored, manual local thread CPU attribution; no product or admission
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_cpu::authority_cpu_readings_refuse_syscall_errors_invalid_times_overflow_and_reversal ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_cpu::authority_cpu_rotation_covers_every_position_in_both_directions ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_expected_name_alloc::authority_expected_name_allocation_attribution ... ignored, manual local expected inventory requests; not timing or admission
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_fd_path_alloc::authority_fd_path_allocation_attribution ... ignored, manual local fd-path requests; not timing or admission
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_hex_alloc::authority_hex_allocation_attribution ... ignored, manual local nonroot authority key formatting requests; not admission or timing
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_inventory_alloc::authority_inventory_allocation_attribution ... ignored, manual local expected inventory requests; not timing or admission
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_leaf_cpu::authority_leaf_cpu_clock_and_case_schedule_refuse_invalid_inputs ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_leaf_cpu::authority_leaf_cpu_selected_attribution ... ignored, manual local selected fresh leaf CPU; no runtime or admission
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_leaf_cpu::authority_leaf_cpu_selected_observer_preserves_values_errors_and_owner_lifetime ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_leaf_name_alloc::authority_leaf_name_allocation_attribution ... ignored, manual nonroot three-arm leaf name requests and refusal controls; not timing or admission
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_name_capacity_alloc::authority_name_capacity_allocation_attribution ... ignored, manual local three-arm name capacity requests; not timing or admission
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_open_name_alloc::authority_open_name_allocation_cpu_attribution ... ignored, manual local short open-name pairs and cold/warm requests; no admission
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_open_name_alloc::authority_open_name_clock_and_pair_order_are_checked ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_owners_alloc::authority_owners_allocation_attribution ... ignored, manual local expression allocation owners; not timing or admission
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_owners_alloc::authority_owners_expression_counter_retains_values_and_partitions_requests ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_owners_alloc::authority_owners_io_parser_refuses_missing_duplicate_overflow_and_bad_text ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_owners_alloc::authority_owners_retained_io_reader_observes_reads_without_writes ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::boot_comparison::boot_comparison_allocation_attribution ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::boot_operations::boot_operations_clock_schedule_and_returned_owner_lifetime_are_checked ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::boot_operations::boot_operations_selected_cpu_attribution ... ignored, manual local Boot operation CPU attribution; no authority or admission
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::boot_operations::boot_operations_values_fresh_errors_flags_and_trace_counts_match_actual ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::document_scratch::document_scratch_allocation_attribution ... ignored, manual nonroot per-invocation document buffer allocation control
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::fixed_leaf_alloc_counter_restores_nested_unwind_and_thread_state ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::fixed_leaf_alloc_counter_zeroed_reallocation_and_inactive_forwarding ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::fixed_leaf_path_allocation_attribution ... ignored, manual opt-in allocation requests through actual kernel leaf calls; not timing or admission
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::fresh_status::fresh_status_opener_allocation_attribution ... ignored, manual local nonroot fresh status allocation control; not product timing
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::pid_path::pid_path_allocation_attribution ... ignored, manual local nonroot uncached PID pathname control; no execution or admission
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::projection_fields::projection_fields_allocation_attribution ... ignored, manual local nonroot complete Sender bounded projection allocation control
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::projection_prefix::projection_prefix_allocation_and_timing_attribution ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::validation_leaf_requests::validation_leaf_requests_attribution ... ignored, manual local nonroot allocation and proc I/O request controls; not admission or timing
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::validation_leaf_requests::validation_leaf_requests_authority_drift_is_sticky_and_never_reinitializes ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::validation_leaf_requests::validation_leaf_requests_io_parser_refuses_missing_duplicate_overflow_and_bad_text ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::validation_leaf_requests::validation_leaf_requests_retained_io_reader_observes_reads_without_writes ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::fixed_leaf_path_cost_abba ... ignored, manual local paired fixed path leaf costs; no admission or product workload
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::fixed_leaf_path_differential_identity_flags_and_unknown_names ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::fixed_leaf_path_preserves_original_trace_counts_and_sticky_drift ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::fixed_leaf_path_single_cost ... ignored, manual actual leaf in one image; external crossover only, no admission or product
+
+test result: ok. 21 passed; 0 failed; 21 ignored; 0 measured; 1403 filtered out; finished in 1.25s
+

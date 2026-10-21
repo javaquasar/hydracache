@@ -1,0 +1,37 @@
+{
+  "child_seconds": 1200,
+  "images": {
+    "188": "/home/artur/.cache/hydracache-074-188-check/release/deps/hydracache_long_run_supervisor_074-1dbb29096ebc6338",
+    "194": "/home/artur/.cache/hydracache-074-194-check/release/deps/hydracache_long_run_supervisor_074-c3c253bf49d23fef"
+  },
+  "jobs": [
+    [
+      "boot",
+      "boot_operations_selected_cpu_attribution"
+    ],
+    [
+      "phases",
+      "authority_cpu_actual_phase_attribution"
+    ],
+    [
+      "leaf",
+      "authority_leaf_cpu_selected_attribution"
+    ],
+    [
+      "names",
+      "authority_open_name_allocation_cpu_attribution"
+    ],
+    [
+      "owners",
+      "authority_owners_allocation_attribution"
+    ],
+    [
+      "full",
+      "validation_leaf_requests_attribution"
+    ]
+  ],
+  "product": false,
+  "server": false,
+  "session_seconds": 15000,
+  "source": "a0cb7fe3ebf199d01e067adb389e3fb06557c152"
+}

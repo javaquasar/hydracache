@@ -1,0 +1,12 @@
+{
+  "bytes": 36951,
+  "containment_failure": null,
+  "exit": 0,
+  "image_sha256": "ae2f0d9f9827e3ff82acecca44429a01b000fd0e22d304d15e235fea6bf5ce84",
+  "job": "names",
+  "lane": "194",
+  "log_sha256": "c14dc78457fe86e3cfc53a1eaeea002b717712ef836304b48263c9be96c4bfb1",
+  "source": "a0cb7fe3ebf199d01e067adb389e3fb06557c152",
+  "stage": "Baseline",
+  "wall_seconds": 0.6140531150000044
+}

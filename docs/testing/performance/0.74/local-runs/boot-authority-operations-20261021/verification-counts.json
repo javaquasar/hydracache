@@ -1,0 +1,28 @@
+{
+  "historical_xtask_tests_passed": 390,
+  "server": false,
+  "targeted": [
+    {
+      "stage": "Baseline",
+      "unique_targeted_tests_passed": 254,
+      "lane": "194"
+    },
+    {
+      "stage": "Baseline",
+      "unique_targeted_tests_passed": 254,
+      "lane": "188"
+    },
+    {
+      "stage": "Candidate",
+      "unique_targeted_tests_passed": 255,
+      "lane": "194"
+    },
+    {
+      "stage": "Candidate",
+      "unique_targeted_tests_passed": 255,
+      "lane": "188"
+    }
+  ],
+  "source": "3d3a2180c6b54ea9156ae2bac609f36966359908",
+  "product": false
+}

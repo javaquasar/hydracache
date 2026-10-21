@@ -1,0 +1,117 @@
+{
+  "lane": "188",
+  "failure": null,
+  "head": "c80a3fb8d18df0e2de43137a9aac7fd90c4e50ff",
+  "recipe_sha256": "8561a3b53f2ad4b544eb598dc730ce1258b5981a9cbf514ca79af50db60a0d9b",
+  "product": false,
+  "stage": "Baseline",
+  "steps": [
+    {
+      "sha256": "c21c2b9e0536d35db1ba08a60f5ac10fe724db9e223c979f50dd7e4babb5ca24",
+      "log": "Baseline-check-188-check.log",
+      "exit": 0,
+      "name": "check"
+    },
+    {
+      "sha256": "96dbb82bf80444e4c02e1140d30140b01efa96da825f03c1fecdd279aa4e8bd0",
+      "log": "Baseline-check-188-clippy.log",
+      "exit": 0,
+      "name": "clippy"
+    },
+    {
+      "sha256": "b3b7cca8799ec9ff6b1d28fda9013b55f0a9dcdeef97dffec155da62983c69c0",
+      "log": "Baseline-check-188-boot_operations_.log",
+      "exit": 0,
+      "name": "boot_operations_"
+    },
+    {
+      "sha256": "d2ae02c129720bbbf33ccc88984c4acae3813b6015f0af69b207436674f115fa",
+      "log": "Baseline-check-188-authority_.log",
+      "exit": 0,
+      "name": "authority_"
+    },
+    {
+      "sha256": "62705f942e6117852bc69d86916233633c62ef63fa6cda6e264c0cc137050ed7",
+      "log": "Baseline-check-188-validation_leaf_requests_.log",
+      "exit": 0,
+      "name": "validation_leaf_requests_"
+    },
+    {
+      "sha256": "806624e4928e49486c2fa91ff47153c0245cf0b42dd925e05859f2579ffdde1c",
+      "log": "Baseline-check-188-boot_.log",
+      "exit": 0,
+      "name": "boot_"
+    },
+    {
+      "sha256": "cc08e69d4b92340d36452fc818d3384c4d3383fd30925fcd4615040172e1f866",
+      "log": "Baseline-check-188-fixed_leaf_path_.log",
+      "exit": 0,
+      "name": "fixed_leaf_path_"
+    },
+    {
+      "sha256": "3c24d59d88d55dd91eb8f484eacfa3bcd794f7fe6965f77474d03b08b27412cc",
+      "log": "Baseline-check-188-worker_trust_input_.log",
+      "exit": 0,
+      "name": "worker_trust_input_"
+    },
+    {
+      "sha256": "36df6c20e25de6dc5912b6c8069bbf1a1e3d8ffba34d89b037496968abd8d88f",
+      "log": "Baseline-check-188-kernel_time_.log",
+      "exit": 0,
+      "name": "kernel_time_"
+    },
+    {
+      "sha256": "528328a27d1397c87aa62092f53ddaae144b2de74040e0cd0cf5ab2fda414629",
+      "log": "Baseline-check-188-build.log",
+      "exit": 0,
+      "name": "build"
+    }
+  ],
+  "server": false,
+  "inputs": [
+    {
+      "sha256": "0d71f6b25fdd2596966cf186e747a375571faa315725a5de76f05f484c62efde",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs"
+    },
+    {
+      "sha256": "f4c8962262e85e8b252449c0840befe394e2f6fd794fc97732bd436cc93e4818",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs"
+    },
+    {
+      "sha256": "c4beef6ed7f933d7cd7635307a3468e5af49d114139495ce04945145c3e0ca2e",
+      "path": "tools/long-run-supervisor-074/tests/support/boot_operations.rs"
+    },
+    {
+      "sha256": "bb6d8699159f0907996c50844f2761b829c86d0c61eba567584dec003ffcb360",
+      "path": "tools/long-run-supervisor-074/tests/support/authority_open_name_controls.rs"
+    },
+    {
+      "sha256": "d39c5b968c2ab6f0d24d1b1d41dd4312ca8d6723787757165966e3fe2c8c902d",
+      "path": "crates/xtask/tests/boot_operations_074.rs"
+    },
+    {
+      "sha256": "de8949147040b65c3495062a71257c20fa718a67239a4e8230da613de510673b",
+      "path": "crates/xtask/tests/authority_open_name_074.rs"
+    },
+    {
+      "sha256": "55e2181a1ae70028d4d7b9bfe1306f647df799e063c7047c2e0563cb3c8d071b",
+      "path": "crates/xtask/tests/support/boot_operations_guard.rs"
+    },
+    {
+      "sha256": "5eb0e0f3b73d2e71011552e36c4157fee461075b584fa8487fb8416738179e9c",
+      "path": "crates/xtask/tests/support/authority_open_name_guard.rs"
+    },
+    {
+      "sha256": "178da77e108d5448f21d7896d0424f456cc3ec6098821dd533ae75cbf4b62da6",
+      "path": "crates/xtask/tests/support/boot_operations_gate.txt"
+    },
+    {
+      "sha256": "f804574332d89bc1c73cecb7d8d6f0b228a747748f0ca5b1de8d4d0bd9ae1dc2",
+      "path": "docs/testing/gated-test-registry.toml"
+    },
+    {
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+      "path": "docs/testing/performance/0.74/qualification-manifest.toml"
+    }
+  ]
+}

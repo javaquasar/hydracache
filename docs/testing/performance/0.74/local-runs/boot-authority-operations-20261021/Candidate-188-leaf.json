@@ -1,0 +1,12 @@
+{
+  "bytes": 241225,
+  "containment_failure": null,
+  "exit": 0,
+  "image_sha256": "3f3fa045294e691bf6f689190fdb94f8afdc9e264c31973033df356bdb8f0f8a",
+  "job": "leaf",
+  "lane": "188",
+  "log_sha256": "12cffe6dd991edcbdb112871e616da76873b895701fd2b76538e620bcf78c878",
+  "source": "3d3a2180c6b54ea9156ae2bac609f36966359908",
+  "stage": "Candidate",
+  "wall_seconds": 14.787331873
+}

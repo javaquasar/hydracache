@@ -1,0 +1,16 @@
+No measured profile had run during the initial authoring failures.
+The first Boot control compilation resolved boot_comparison to the allocation
+test module instead of the runtime module (E0425). The explicit runtime import
+fixes that name resolution. Its command result remains in the chat, not as a
+claimed raw file in this packet.
+The first canary test expected a missing marker to panic, although preserving
+unrecognized text also makes baseline equality refuse. The marker was widened
+to the unchanged operation name while the removed block remains exact.
+The retained Baseline-check-xtask preflight then found its mutation was aimed
+at a substring also present in leaf_name.len() <= 21. The mutation now targets
+the whole candidate predicate. BaselineRepair has a separate prefix; no old
+log or profile is overwritten. No runtime candidate had been applied.
+Preflight source canaries and Rust compiler-image inputs are separate dependency
+domains. A corrected xtask-only canary does not rebuild the unchanged tool image;
+all actual tool inputs are hash-bound before profiling, and the successful
+corrected canary receipt binds its own inputs independently.

@@ -5464,3 +5464,25 @@ qualification stay unchanged. No new optimization or admission follows.
 Next isolate the real Boot shell, Namespace and authority reader operations;
 outside-kernel wall cannot be assigned to authority. No clock/service/server,
 supervisor, installation or product action occurs.
+
+### Boot operation costs and short directory name ownership
+
+The [operation packet](local-runs/boot-authority-operations-20261021/README.md)
+adds selected Boot open/filesystem/read/decode/close windows and remeasures the
+unchanged authority phase/leaf probes. Boot runtime stays unchanged. A single
+candidate extends the existing bounded short-name stack encoding to directory
+opens without changing flags, errno, FD lifetimes, fresh checks or deadlines.
+
+Both compilers reproduce full /tmp authority inspections at 21 to 19 and
+85 to 83 allocations for depths one/seven, with eight requested bytes removed
+per inspection, zero reallocations and unchanged read/kernel counts, payloads,
+epochs and unrelated helper cases. These are request savings only. Selected
+clock windows are not a CPU partition; distinct WSL boots and mixed-sign CPU
+pairs prevent CPU speedup/nonregression or original-admission claims.
+
+Authority selection passes 214 tests per compiler, checks and strict lint;
+source canaries, thirteen reader/runner controls per OS, repository gates and
+twenty-five prior packets verify. Authoring failures and old time refusals
+remain. No server, clock/service, installation, supervisor, product or
+qualification action occurs. Next retain the unchanged full-frame gates and
+test another isolated measured owner; native/server admission remains closed.

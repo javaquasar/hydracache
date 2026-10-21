@@ -1,0 +1,75 @@
+{
+  "steps": [
+    {
+      "log": "Candidate-check-xtask-tests.log",
+      "sha256": "e11ad4031f1ba750896b022d941c32bd79b07aceef008aeff824d44b7b5c2690",
+      "name": "tests",
+      "exit": 0
+    },
+    {
+      "log": "Candidate-check-xtask-check.log",
+      "sha256": "9bc06bd745722acc4fcc26800a3353cbd05b5f7d55c01fb7b7729bc1b282b644",
+      "name": "check",
+      "exit": 0
+    },
+    {
+      "log": "Candidate-check-xtask-clippy.log",
+      "sha256": "eb3cfcef4824f1ab27de6a5d80bf9c65886f0d986618858e77a088f2b29c216f",
+      "name": "clippy",
+      "exit": 0
+    }
+  ],
+  "failure": null,
+  "stage": "Candidate",
+  "inputs": [
+    {
+      "sha256": "3b3c75f41dbd8a8db1f73d61af3b0c701a666c3ebeed326ae49012ed0c01fb6c",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs"
+    },
+    {
+      "sha256": "f4c8962262e85e8b252449c0840befe394e2f6fd794fc97732bd436cc93e4818",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs"
+    },
+    {
+      "sha256": "c4beef6ed7f933d7cd7635307a3468e5af49d114139495ce04945145c3e0ca2e",
+      "path": "tools/long-run-supervisor-074/tests/support/boot_operations.rs"
+    },
+    {
+      "sha256": "24f9db0606b4bc8d86f60f886ea2a66e9de454fd5902804e8a97a4996950f436",
+      "path": "tools/long-run-supervisor-074/tests/support/authority_open_name_controls.rs"
+    },
+    {
+      "sha256": "d39c5b968c2ab6f0d24d1b1d41dd4312ca8d6723787757165966e3fe2c8c902d",
+      "path": "crates/xtask/tests/boot_operations_074.rs"
+    },
+    {
+      "sha256": "de8949147040b65c3495062a71257c20fa718a67239a4e8230da613de510673b",
+      "path": "crates/xtask/tests/authority_open_name_074.rs"
+    },
+    {
+      "sha256": "55e2181a1ae70028d4d7b9bfe1306f647df799e063c7047c2e0563cb3c8d071b",
+      "path": "crates/xtask/tests/support/boot_operations_guard.rs"
+    },
+    {
+      "sha256": "5eb0e0f3b73d2e71011552e36c4157fee461075b584fa8487fb8416738179e9c",
+      "path": "crates/xtask/tests/support/authority_open_name_guard.rs"
+    },
+    {
+      "sha256": "178da77e108d5448f21d7896d0424f456cc3ec6098821dd533ae75cbf4b62da6",
+      "path": "crates/xtask/tests/support/boot_operations_gate.txt"
+    },
+    {
+      "sha256": "f804574332d89bc1c73cecb7d8d6f0b228a747748f0ca5b1de8d4d0bd9ae1dc2",
+      "path": "docs/testing/gated-test-registry.toml"
+    },
+    {
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+      "path": "docs/testing/performance/0.74/qualification-manifest.toml"
+    }
+  ],
+  "lane": "xtask",
+  "server": false,
+  "head": "a0cb7fe3ebf199d01e067adb389e3fb06557c152",
+  "product": false,
+  "recipe_sha256": "1a1653c682286eda5fd52629b076512f121c4501969197e5001c51fbcffca5d2"
+}

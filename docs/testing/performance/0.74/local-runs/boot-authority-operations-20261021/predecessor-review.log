@@ -1,0 +1,10 @@
+fresh Boot/Document/Namespace partition verified; authority overlap unrecorded; no new profiles
+{
+  "mode": "Review",
+  "new_profile_invocations": 0,
+  "native_gate_open": false,
+  "prior_packets_verified": 24,
+  "product": false,
+  "integrity_verified": true,
+  "server": false
+}
