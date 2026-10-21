@@ -150,6 +150,9 @@ function Facts{
         $taskLanes+=@{lane=$taskLane;origin=$taskOrigin;depths=$taskDepths;image_sha256=$taskReceipt.image_sha256}
     }
     Require ((Hash (Join-Path $taskRepo 'docs/testing/performance/0.74/qualification-manifest.toml')) -ceq '11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc') 'Frozen qualification differs'
+    $taskEnvironment=Json 'environment.json'
+    Require ($taskEnvironment.source -ceq $taskSource -and $taskEnvironment.recipe_sha256 -ceq (Hash (Join-Path $PSScriptRoot 'environment.ps1')) -and $taskEnvironment.commands.Count -eq 6 -and ($taskEnvironment.commands.name -join ',') -ceq 'kernel,cpu,online,distribution,rust194,rust188' -and @($taskEnvironment.commands|Where-Object exit -ne 0).Count -eq 0) 'Environment receipt incomplete'
+    Inactive $taskEnvironment @('affinity_pinned','services_changed','clocks_changed','server','product')
     [ordered]@{schema='authority-thread-cpu-attribution-v1';source=$taskSource;lanes=$taskLanes;full_control_equal=$true;runtime_changed=$false;improvement_claimed=$false;cpu_only=$true;overhead_subtracted=$false;existing_live_refusals_retained=$true;native_gate_open=$false;server=$false;product=$false}
 }
 $taskFacts=Facts
