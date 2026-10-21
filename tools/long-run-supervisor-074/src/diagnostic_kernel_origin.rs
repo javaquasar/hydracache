@@ -3,6 +3,9 @@ use super::*;
 use std::ffi::CString;
 use std::os::fd::FromRawFd;
 
+#[path = "diagnostic_pidfd_info_path.rs"]
+mod pidfd_info_path;
+
 #[derive(Debug, Clone)]
 pub struct KernelTimePoint {
     boot: String,
@@ -366,7 +369,7 @@ pub(super) fn alive_read<T: AsRef<[u8]>>(
     let info = OpenOptions::new()
         .read(true)
         .custom_flags(libc::O_NOFOLLOW | libc::O_CLOEXEC)
-        .open(format!("/proc/thread-self/fdinfo/{}", pidfd.as_raw_fd()))?;
+        .open(pidfd_info_path::InfoPath::new(pidfd.as_raw_fd()).as_path())?;
     let raw = read(&info)?;
     origin::filesystem(&info, 0x9fa0)?;
     let text = std::str::from_utf8(raw.as_ref()).map_err(|_| kernel_invalid!("pidfd-info-utf8"))?;

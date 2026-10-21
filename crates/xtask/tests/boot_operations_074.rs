@@ -103,7 +103,10 @@ fn boot_operations_only_exact_hook_gate_and_directory_ownership_may_normalize() 
 #[test]
 fn boot_operations_fresh_open_expression_and_original_runtime_are_frozen() {
     let origin = "tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs";
-    assert_eq!(read(origin), old(origin));
+    assert_eq!(
+        crate::hc074_pidfd_info_path_view!(origin, &read(origin)),
+        old(origin)
+    );
     for path in [
         "tools/long-run-supervisor-074/src/diagnostic_boot_document.rs",
         "tools/long-run-supervisor-074/src/diagnostic_boot_comparison.rs",
