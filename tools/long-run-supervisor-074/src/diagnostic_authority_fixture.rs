@@ -255,12 +255,28 @@ impl Directory {
             return Err(AuthorityError::Invalid);
         }
         let generations = seen.len() / 2;
-        if !seen.iter().map(String::as_str).eq((1..=generations)
-            .flat_map(|revision| [name(revision, "commit"), name(revision, "json")]))
-        {
+        if !Self::expected_inventory(&seen, generations) {
             return Err(AuthorityError::Invalid);
         }
         Ok(generations)
+    }
+
+    fn expected_inventory(seen: &BTreeSet<String>, generations: usize) -> bool {
+        let mut observed = seen.iter();
+        for revision in 1..=generations {
+            for suffix in ["commit", "json"] {
+                let mut expected = std::io::Cursor::new([0_u8; 23]);
+                write!(&mut expected, "{revision:016x}.{suffix}")
+                    .expect("bounded journal name fits 23 bytes");
+                let length = expected.position() as usize;
+                if observed.next().map(|name| name.as_bytes())
+                    != Some(&expected.get_ref()[..length])
+                {
+                    return false;
+                }
+            }
+        }
+        observed.next().is_none()
     }
 }
 use std::os::unix::fs::OpenOptionsExt;
