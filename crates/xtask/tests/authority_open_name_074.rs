@@ -103,7 +103,7 @@ fn authority_open_name_freezes_original_syscall_and_clock_bodies() {
 #[test]
 fn authority_open_name_candidate_restores_only_the_exact_allocation_branch() {
     let path = "tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs";
-    let raw = read(path);
+    let raw = crate::hc074_boot_operations_view!(path, &read(path));
     assert!(raw.contains("let mut short_name = [0_u8; 24];"));
     for (before, after) in [
         ("!directory &&", "directory &&"),

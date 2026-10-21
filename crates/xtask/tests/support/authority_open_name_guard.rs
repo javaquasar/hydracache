@@ -1,9 +1,11 @@
 //! Restore only the exact bounded file-name allocation and exact test hooks.
+#[path = "boot_operations_guard.rs"]
+mod boot_operations;
 #[macro_export]
 macro_rules! hc074_authority_open_name_view {
     ($path:expr, $source:expr) => {{
         let path: &str = $path;
-        let mut raw: String = $source.to_owned();
+        let mut raw: String = $crate::hc074_boot_operations_view!(path, $source);
         if path == "tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs"
             && raw.contains("let mut short_name = [0_u8; 24];")
         {

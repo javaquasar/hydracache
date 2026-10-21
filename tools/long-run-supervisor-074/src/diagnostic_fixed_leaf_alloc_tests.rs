@@ -1,6 +1,9 @@
 //! Opt-in test binary only. Rust requests, not libc malloc, CPU, RSS or authority.
 use super::*;
 
+#[path = "../tests/support/boot_operations.rs"]
+mod boot_operations;
+
 #[path = "../tests/support/authority_open_name_alloc.rs"]
 mod authority_open_name_alloc;
 
