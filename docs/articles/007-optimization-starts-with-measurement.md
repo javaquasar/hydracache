@@ -16637,3 +16637,36 @@ to each unit property/FD role. Each compiler passes 70 selected local tests;
 source canaries reconstruct the unchanged historical runtime and both
 compilers pass affected-package checks and strict all-feature lint. The
 original-owner live projection remains a separate gate after materialization.
+
+### Kernel materialization without delivery
+
+The [materialization step](../testing/performance/0.74/held-unit-material-20261021.md)
+now consumes that same projected owner and creates its EOF stdin pipe, empty
+authenticated release socketpair, sealed read-only config and bootstrap, and
+creator pidfd. The config is a bounded positional copy of the original retained
+bundle object, not a supplied pathname. The bootstrap binds the original
+absolute bound, creator, Armed root guardians, worker/config hashes and exact
+stream/channel objects using the existing 256-byte grammar.
+
+The new inventory observes twenty specified FD roles while the old full
+validators remain intact. Creation and fresh extended inspections are enclosed
+by unchanged complete projected-owner validations; later observations compare
+with the first inventory rather than rebasing it. Missing objects are not
+recreated after admission. Failure and Drop retire the original owner before
+new resource closure, without disarming guardians or freeing the fence.
+
+Local controls use real kernel objects for seals, EOF, peer credentials, empty
+queues, changed flags/positions and partial allocation cleanup. A separate
+model tests the consuming bracket and sticky refusal. The unresolved question
+is whole original-owner preparation in its original windows, not whether a
+memfd or socket can be created in isolation. No timing/throughput gain follows
+from these mechanics, and transport, release, all-writer proof and server
+admission remain closed.
+
+The final local cohorts pass 82 selected tests per compiler, thirteen source
+canaries, checks and strict lint. Review rejected the first implementation as
+complete despite green mechanics tests: its new descriptor census came after
+the last fresh deadline sample. The corrected candidate checks the same
+original absolute bound again after the final stamp. Both cohorts remain
+separate, with exact source reconstruction; no old predicate or deadline is
+weakened to accept the correction.

@@ -1,0 +1,54 @@
+{
+  "product": false,
+  "original_send": false,
+  "new_original_live_fixture": false,
+  "base": "c9cc5a2e",
+  "steps": [
+    {
+      "sha256": "9f97ad099c0423f59e5e6ea390afebaa4cd6c6f49cda9be3f0388419b33aea06",
+      "exit": 0,
+      "log": "194-material.log",
+      "name": "material"
+    },
+    {
+      "sha256": "90936d34f9bd58607febd913d442a70721ff0d9fd93c93326e58f88d741cb494",
+      "exit": 0,
+      "log": "194-projection.log",
+      "name": "projection"
+    },
+    {
+      "sha256": "17a3c18ec650a3e5f33e994f9341ea474ad702ac66baf0c051794035491869a2",
+      "exit": 0,
+      "log": "194-consuming.log",
+      "name": "consuming"
+    },
+    {
+      "sha256": "ae3e460944a05f8984ca3c102bb14074338dfe46b93338653db2824886b8bbd3",
+      "exit": 0,
+      "log": "194-reply.log",
+      "name": "reply"
+    },
+    {
+      "sha256": "9a209720809ea5762489dee8c69a136dc4a52f9171ea6b5158c97ad5604af441",
+      "exit": 0,
+      "log": "194-roles.log",
+      "name": "roles"
+    },
+    {
+      "sha256": "96b976ff154c586e3ead730f4e137cb3779bef975cf8710348f5e6c8f783e717",
+      "exit": 0,
+      "log": "194-check.log",
+      "name": "check"
+    },
+    {
+      "sha256": "523a49fcd2bae80ecbed711f7c1675d579b48f646eba6d93320297a9d76a653c",
+      "exit": 0,
+      "log": "194-clippy.log",
+      "name": "clippy"
+    }
+  ],
+  "failure": null,
+  "lane": "194",
+  "performance_measurement": false,
+  "server": false
+}

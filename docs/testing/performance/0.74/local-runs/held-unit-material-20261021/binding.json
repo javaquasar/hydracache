@@ -1,0 +1,35 @@
+{
+  "performance_claim": false,
+  "runtime_source": "d1bf3d00edb94cc22c3163ac26e8f6d955d2a2b2",
+  "original_windows_seconds": [
+    300,
+    60,
+    10
+  ],
+  "materialized": true,
+  "original_send": false,
+  "recipe_sha256": "8e34b404421f5f3d600efa8b357f7152cbb2cd42f3030c2cea28050155de6d02",
+  "server": false,
+  "extended_descriptor_roles": 20,
+  "reports": [
+    {
+      "sha256": "51100845fcf030f263e26d7ea54a69eb748f8028e3fd634bb6c9f24be083560f",
+      "path": "docs/testing/performance/0.74/held-unit-material-20261021.md"
+    },
+    {
+      "sha256": "a2331d18e2b3368677c1822c8ceda7db6c203ba9fb6bab6d40b762c403622601",
+      "path": "docs/articles/007-optimization-starts-with-measurement.md"
+    },
+    {
+      "sha256": "938b562fe53d807a0ae9ab98f85e970448d66a5238aa8d5f75ef1db79594151a",
+      "path": "docs/testing/performance/0.74/README.md"
+    },
+    {
+      "sha256": "bde37f03f6373f6f43d25d358a3e45292a697bd157c8100678efafc3f7cf2624",
+      "path": "docs/testing/performance/0.74/diagnostic-server-readiness-intermediate-plan-20261012.md"
+    }
+  ],
+  "original_owner_live_gate": false,
+  "new_kernel_objects": 6,
+  "initial_candidate_accepted": false
+}

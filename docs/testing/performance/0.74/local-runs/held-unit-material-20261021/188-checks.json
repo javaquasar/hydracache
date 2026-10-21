@@ -1,0 +1,54 @@
+{
+  "lane": "188",
+  "steps": [
+    {
+      "log": "188-material.log",
+      "name": "material",
+      "exit": 0,
+      "sha256": "1c735189f285a01dcffe2234a345597c89b763ea572f6efb83b546f3d9b24003"
+    },
+    {
+      "log": "188-projection.log",
+      "name": "projection",
+      "exit": 0,
+      "sha256": "5157e91df2aafe380126edf9630244dda1df916001bea88204dc606ed59077d1"
+    },
+    {
+      "log": "188-consuming.log",
+      "name": "consuming",
+      "exit": 0,
+      "sha256": "e6538675b9e84bbee754a42a9b220eeb5b07a505f93598d0a9a54b9711b107c3"
+    },
+    {
+      "log": "188-reply.log",
+      "name": "reply",
+      "exit": 0,
+      "sha256": "1b583a06c965c6bdec7b522951a83dfe2f482de95d3a074928e34e7b0e9d2aeb"
+    },
+    {
+      "log": "188-roles.log",
+      "name": "roles",
+      "exit": 0,
+      "sha256": "e2f8588ef99610ea9d0c7cb08b6c0eaed86f1017add16d38b4224e7e321701e3"
+    },
+    {
+      "log": "188-check.log",
+      "name": "check",
+      "exit": 0,
+      "sha256": "c9e3704978f877c472a2a1c626c9ad8d258f50141ffbb210069641d06101844a"
+    },
+    {
+      "log": "188-clippy.log",
+      "name": "clippy",
+      "exit": 0,
+      "sha256": "b96269eb4bc1c1bb0738c3e61b4de80241c712176765fb9c799358bc22021718"
+    }
+  ],
+  "original_send": false,
+  "performance_measurement": false,
+  "server": false,
+  "new_original_live_fixture": false,
+  "failure": null,
+  "product": false,
+  "base": "c9cc5a2e"
+}

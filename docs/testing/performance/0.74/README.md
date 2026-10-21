@@ -5552,3 +5552,19 @@ need actual kernel materialization and expanded inventory binding. Existing
 legacy message/reply transport, qualification, completion and fence semantics
 are unchanged. The next gate is that owner-bound materialization and original
 live-window validation, not a server run or full SIGKILL/lost-ACK claim.
+
+### Held unit materialization under the original owner
+
+The [kernel materialization](held-unit-material-20261021.md) creates the missing
+stdin/release endpoints, sealed original config/bootstrap and creator pidfd by
+consuming the projected holder. The extended inventory binds fourteen retained
+FDs and six new objects, with complete original validations before and after
+fresh inspection. Failure is sticky and retains the same owner; no descriptor,
+token, message, send/release or retry capability is exported.
+
+The local gate covers real kernel mechanics, deterministic substitutions and
+consuming-bracket models, not a whole authenticated original-owner invocation.
+Next verify that composition in the unchanged original windows before opening
+durable original delivery. Existing schemas, qualification, live checks and
+server admission remain unchanged; no clock/service/server/product action is
+part of this step.

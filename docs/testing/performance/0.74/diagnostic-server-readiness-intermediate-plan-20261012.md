@@ -1431,3 +1431,21 @@ uncertainty. Actual process/barrier binding, active collection and complete
 writer cessation must still precede completion/cells 2–4 and the full joined
 SIGKILL/lost-ACK matrix. Production enrollment and server rehearsal remain
 independent gates; this step does not open them.
+
+### Kernel materialization implemented with extended inventory
+
+The [materialized holder](held-unit-material-20261021.md) now consumes the
+projected owner, copies and seals the original config, creates EOF stdin,
+release socketpair, sealed bootstrap and creator pidfd, and binds twenty
+specified FD roles. Fresh inspection includes original context and exact
+object/flag/position equality, bounded content and peer/kernel checks, inside
+the unchanged complete validation bracket. No deadline is reconstructed or
+extended; failure/drop retire the same owner without a send or release method.
+
+The next local gate is whole original-owner projection/materialization in the
+original windows, retaining any first refusal. Current real-kernel unit tests
+use synthetic role expectations and the bracket controls are models; they do
+not close that composition gate. FD inheritance/delivery, durable uncertainty,
+actual process/barrier binding, active collection, complete writer cessation,
+completion/cells 2–4, SIGKILL/lost-ACK/reconnect and production enrollment still
+precede server admission. This step changes no clock, service or server state.

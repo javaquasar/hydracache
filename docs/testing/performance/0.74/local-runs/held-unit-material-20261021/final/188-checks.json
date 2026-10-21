@@ -1,0 +1,54 @@
+{
+  "product": false,
+  "lane": "188",
+  "failure": null,
+  "steps": [
+    {
+      "name": "material",
+      "sha256": "f1049f233f1f4920b742d361cc0dd42c32684b984b7180f92652f88ea3046d02",
+      "exit": 0,
+      "log": "188-material.log"
+    },
+    {
+      "name": "projection",
+      "sha256": "81bb7e404efa3784994b62c4a237bfa95503be12f469bbcf7bf4bfcd67745b77",
+      "exit": 0,
+      "log": "188-projection.log"
+    },
+    {
+      "name": "consuming",
+      "sha256": "2f05e46170287e20fd7659cdca08671f14792916a57e3372dbc42ece4cd5ce4d",
+      "exit": 0,
+      "log": "188-consuming.log"
+    },
+    {
+      "name": "reply",
+      "sha256": "44ba6fdbe352612a28d193eb8ab905bdc7f0245849b597891ec8a6fe5a27fbed",
+      "exit": 0,
+      "log": "188-reply.log"
+    },
+    {
+      "name": "roles",
+      "sha256": "c0d08072889112a1c349cb937ac3d5022b2bc79a7eb02a02d420ac08399e6d31",
+      "exit": 0,
+      "log": "188-roles.log"
+    },
+    {
+      "name": "check",
+      "sha256": "de0ff2b959548691374b6b3df4ca7eb30aa98d6fd83a1c45708fb86009d76da7",
+      "exit": 0,
+      "log": "188-check.log"
+    },
+    {
+      "name": "clippy",
+      "sha256": "94e847540d4aafc89d0e92cb3c10bbe1ab96c4c68eb107f6476dec240a2d0860",
+      "exit": 0,
+      "log": "188-clippy.log"
+    }
+  ],
+  "performance_measurement": false,
+  "base": "c9cc5a2e",
+  "original_send": false,
+  "new_original_live_fixture": false,
+  "server": false
+}

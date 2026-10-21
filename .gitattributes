@@ -532,3 +532,6 @@ docs/testing/performance/0.74/local-runs/original-delivery-writers-audit-2026102
 
 docs/testing/performance/0.74/local-runs/held-unit-projection-20261021/** -text whitespace=cr-at-eol
 docs/testing/performance/0.74/local-runs/held-unit-projection-20261021/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/held-unit-material-20261021/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/held-unit-material-20261021/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol

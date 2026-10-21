@@ -1,0 +1,3438 @@
+[
+  {
+    "sha256": "d2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c",
+    "path": "Cargo.lock"
+  },
+  {
+    "sha256": "037c4ebfaf17da39bdb75bef681d5e1a1c6bcc3ef5b5bf3b81bb0b838f5487ce",
+    "path": "crates/xtask/src/bench_budget.rs"
+  },
+  {
+    "sha256": "32a8ccbe6820026094dfe92711933c6008ca02d5a7dec1fb36cdb101c4c4e245",
+    "path": "crates/xtask/src/canary_check.rs"
+  },
+  {
+    "sha256": "dbe780be06de90b93c864c377eb67d75c9050f5c6dfe577ab70a9660248b4bd6",
+    "path": "crates/xtask/src/canary_sweep.rs"
+  },
+  {
+    "sha256": "c94458899e44a01059fa161a5fb9b457437bf2b2d694178db66bdc35bafd709e",
+    "path": "crates/xtask/src/ci_admission.rs"
+  },
+  {
+    "sha256": "b2bfcf8d6be890965e367e0461cee995f94746caac15d9c69b65f756f6e5cdfc",
+    "path": "crates/xtask/src/ci_topology.rs"
+  },
+  {
+    "sha256": "88664e75e0d0b376f3ba75188f14ca1d1290d3b840b03ab0697e473ef91a6039",
+    "path": "crates/xtask/src/client_conformance.rs"
+  },
+  {
+    "sha256": "5e3548498872291dc7a805e79bb9c1a66088699a70358bf423302872a19d330e",
+    "path": "crates/xtask/src/client_package.rs"
+  },
+  {
+    "sha256": "65f91a07c4ffe248e69fdfd9a903aae222b9c4c07c9b20d150f42874e7c02fb4",
+    "path": "crates/xtask/src/client_plane_bakeoff.rs"
+  },
+  {
+    "sha256": "2d0cb796be542cf5c5256ce7e2b74312e6240ad1b4dd43ba6aa71935913afdf6",
+    "path": "crates/xtask/src/client_plane_ci.rs"
+  },
+  {
+    "sha256": "dd733b4605ac3d7cb5b48533c9e72987be1a4c4d3555ca059a93cd3cc4280f31",
+    "path": "crates/xtask/src/client_plane_compat.rs"
+  },
+  {
+    "sha256": "3d7c4d11062e789749cc73da73996f039a026870d73ff7632ac5d67eafe2b4b6",
+    "path": "crates/xtask/src/client_plane_fault.rs"
+  },
+  {
+    "sha256": "d47e64168d0c9a937544db3948a1dec715d590b5627591078a2d58a9f69a98cb",
+    "path": "crates/xtask/src/client_plane_generation.rs"
+  },
+  {
+    "sha256": "3590f60bc5be9001f95707b613d1bdb6f230778fab281b1b8dc53db137e6a8ec",
+    "path": "crates/xtask/src/client_plane_java.rs"
+  },
+  {
+    "sha256": "164516904068958b4a89a8fa9bcd986e966b83a27fb093b41478d9328f918853",
+    "path": "crates/xtask/src/client_plane_python.rs"
+  },
+  {
+    "sha256": "7617b39174ba7e4839760929759b1ba0d9bfb0a68a8b0817046fc5171ca97925",
+    "path": "crates/xtask/src/client_plane_rust.rs"
+  },
+  {
+    "sha256": "1a22a334a8fc2a015cb10301dc13bf750bd2f8988b98ae6ea49035b6f3ced140",
+    "path": "crates/xtask/src/client_plane_spike.rs"
+  },
+  {
+    "sha256": "8128af2acfa0be0295bfb6762848822fbfe672bb327ac87a3ad9e377672ba9fe",
+    "path": "crates/xtask/src/client_schema.rs"
+  },
+  {
+    "sha256": "a7208cb033a51d34d9b05b90258a5d7748ef693064833cc6990e584745d2cd85",
+    "path": "crates/xtask/src/compat_check.rs"
+  },
+  {
+    "sha256": "147efa1b750d5f5ecfbe4ec6b6115e863524c2b7691705404a98c7723375e737",
+    "path": "crates/xtask/src/coverage_ratchet.rs"
+  },
+  {
+    "sha256": "6563927aa81323f29bd4a9f12a1cec62e86a1fd700656b4aba6c0f926b7342b3",
+    "path": "crates/xtask/src/determinism_sweep.rs"
+  },
+  {
+    "sha256": "83d2f2cc22508669c9c5cd8024ede7c3975a5889460892f24d48eb4f19dbda0d",
+    "path": "crates/xtask/src/doc_check.rs"
+  },
+  {
+    "sha256": "f17c500c9b730adeade1875b2e071b50f3c7463e51f5e6a55720df3f61131857",
+    "path": "crates/xtask/src/durable_inspect.rs"
+  },
+  {
+    "sha256": "7fe0166119f0099bd05be3939ade563992b6c84964aa4aaabf3f32022bdaaf22",
+    "path": "crates/xtask/src/evidence_run.rs"
+  },
+  {
+    "sha256": "d5c5463f3b77e8c6e39bc9c47f7f217c2bb2ffe3c3ae3d2fe0e6071a5dfb33e9",
+    "path": "crates/xtask/src/evidence_run/windows_job.rs"
+  },
+  {
+    "sha256": "11849d6ee9ea71ea1f1f8d3d2a557573f62ab29d71b96a82aa001c34c05e53b2",
+    "path": "crates/xtask/src/fast_suite.rs"
+  },
+  {
+    "sha256": "f0264b376901aa886da5df851040a79b84e80f1ea06082c0f21e0ea4cc80d50f",
+    "path": "crates/xtask/src/feature_leak.rs"
+  },
+  {
+    "sha256": "18e1ac7ecc134fb19627fe338d839cc2d2ad8f16b073a94a53d2ca40d3d21c0e",
+    "path": "crates/xtask/src/gated_tests.rs"
+  },
+  {
+    "sha256": "9b70a00fd8c0440ac92cc73b652f257da5a2e73f4d633277283b07e2ddbd3019",
+    "path": "crates/xtask/src/host_attestation.rs"
+  },
+  {
+    "sha256": "27e15b43137cf5b36139446d343f0aa242272bae1c0ea36081deb7ff71138efc",
+    "path": "crates/xtask/src/lib.rs"
+  },
+  {
+    "sha256": "5e0c0897b163b73f1f2f79a38d3f6058790b997a8a1dd884e79189ec5de0b9e4",
+    "path": "crates/xtask/src/long_run_campaign.rs"
+  },
+  {
+    "sha256": "95f70dfa53430ad17adb8ae28163675eb83d636303f715751b675da5535a6d82",
+    "path": "crates/xtask/src/main.rs"
+  },
+  {
+    "sha256": "e7ac7e7636a93a608f47fb08d9caf861c589c42c705753818414d5c2eca815dd",
+    "path": "crates/xtask/src/management_center.rs"
+  },
+  {
+    "sha256": "73ecaf554d35184fe7dd7c46d2e6cb3710b2818ff8ef02128e65c2bc5a1d870c",
+    "path": "crates/xtask/src/memory_baseline.rs"
+  },
+  {
+    "sha256": "34a7d3669d83275fad21d43df915c606c457c8c03daea40f9e7f62c3909f6316",
+    "path": "crates/xtask/src/memory_campaign.rs"
+  },
+  {
+    "sha256": "567ed6af90a369bcb91bbb07519d36e240e926a14e9d6a435552b835adb7416c",
+    "path": "crates/xtask/src/memory_contracts.rs"
+  },
+  {
+    "sha256": "6a6566cff2cd6198364ef0fc5ca90efd580432072f124114a9354ecef03175f5",
+    "path": "crates/xtask/src/memory_ownership.rs"
+  },
+  {
+    "sha256": "d827b8067267683b7382b5274f744f2624d21218207c889ba32f1fd19d95bbfb",
+    "path": "crates/xtask/src/memory_statistics.rs"
+  },
+  {
+    "sha256": "188536ef1d5b785b101d8c7cb58a1a152a3ef8cce9155a69c800e2eacdfbf75c",
+    "path": "crates/xtask/src/migration_conformance.rs"
+  },
+  {
+    "sha256": "3742f39d78c78a1b6e6cc9e035eba9b2003565b4922df80825369de4198476ef",
+    "path": "crates/xtask/src/miri_check.rs"
+  },
+  {
+    "sha256": "117ccd32e6ecd60d398b01cc208232bf587f183193f48f9773cd3db63e3b2fbe",
+    "path": "crates/xtask/src/mutants.rs"
+  },
+  {
+    "sha256": "2eca0bac33ce18c33197dba830729ab121a9e4ed24ea506d065c8239f29acd01",
+    "path": "crates/xtask/src/perf_bootstrap.rs"
+  },
+  {
+    "sha256": "51bf1881c52b343ecffb313c444327e57f811724dae22858ffd1e320c1e645c6",
+    "path": "crates/xtask/src/perf_budget.rs"
+  },
+  {
+    "sha256": "4019ce6bc5138e4f1788e18aa531bfcb74477e988ee5bd6e4e11f099cdfdf811",
+    "path": "crates/xtask/src/perf_full_dress.rs"
+  },
+  {
+    "sha256": "327ac931d8b2aa7d8a3590ae90e2cecb24991edad9836fd7cc788c62cd75f947",
+    "path": "crates/xtask/src/perf_qualification.rs"
+  },
+  {
+    "sha256": "0a967ded28008e2b063622f3f8e5590b6240411b152008d853232a211cd66711",
+    "path": "crates/xtask/src/perf_reference.rs"
+  },
+  {
+    "sha256": "63218eaa9c6adf1aaffb88940659300164254b8d885ce484fe104fde7a595db6",
+    "path": "crates/xtask/src/perf.rs"
+  },
+  {
+    "sha256": "1d0d5d46037774871ab014bf67cb435b7a67cf6826f38c57ce077d68d82d0206",
+    "path": "crates/xtask/src/performance_contract_074.rs"
+  },
+  {
+    "sha256": "d227c9663312ea49df7e80bdf1e670261582433ecb58e9ce2ecdc47a3e806420",
+    "path": "crates/xtask/src/performance_contract.rs"
+  },
+  {
+    "sha256": "d24f8e781a44d0f52f375d0bc83059518fb7a12cc975cc686b8c874d8f050231",
+    "path": "crates/xtask/src/performance_local.rs"
+  },
+  {
+    "sha256": "4fa1e895d432b6e3b98f5d414d3df3cc607cd41006c793c56353b0f7d2a3739c",
+    "path": "crates/xtask/src/performance_overhead.rs"
+  },
+  {
+    "sha256": "eedd06028713ba2a848776fb7b58a518a80cbb5dc78ca114de98bf8b03e693c9",
+    "path": "crates/xtask/src/quarantine.rs"
+  },
+  {
+    "sha256": "871518a1d57a1b749ce95245ac08dedd1ab2dc531dcc8e5c05d79c3f5b11db24",
+    "path": "crates/xtask/src/raft_spec_check.rs"
+  },
+  {
+    "sha256": "270c2566cd5c076783aaf3304af07e21b434324239268108de31e29e6d181cc5",
+    "path": "crates/xtask/src/release_evidence.rs"
+  },
+  {
+    "sha256": "5c0fa8c1b768c7ded28add3f4ec0d9666914639249eb6ae4550c80b2814e60e5",
+    "path": "crates/xtask/src/release_governance.rs"
+  },
+  {
+    "sha256": "3c8174f8421a255a29a3d2dff5bdb953ee294f477ba462542dcd3f2146b515f5",
+    "path": "crates/xtask/src/tsan_check.rs"
+  },
+  {
+    "sha256": "8275b2093464899319bb5de2246ec8893e872ebf67e91d1bb4e2d65ca3a41918",
+    "path": "crates/xtask/src/verify.rs"
+  },
+  {
+    "sha256": "ad8e813053944554d4b4daac14377ca530b0f2cf6d28e161b04bc19d25bbc92b",
+    "path": "crates/xtask/tests/allocation_copy_071.rs"
+  },
+  {
+    "sha256": "64d163bd29789303cf957341af1b887d97aa0b69b7abcb87823bd32eb85f44ce",
+    "path": "crates/xtask/tests/allocation_retention_070.rs"
+  },
+  {
+    "sha256": "80202b7a7a8f37e8c1aa527595b70c68f5dd792d3588e3f17513d91a94fef8d1",
+    "path": "crates/xtask/tests/allocator_matrix_071.rs"
+  },
+  {
+    "sha256": "5293953c992b8cf7760c4f9fc25b57d9e6f4de7310eb28bfca81e382fe8d855a",
+    "path": "crates/xtask/tests/authority_breakdown_074.rs"
+  },
+  {
+    "sha256": "8644cf373ee5597d0226d5084575a824f54d7e40301cb86778248f63c6be90ae",
+    "path": "crates/xtask/tests/authority_context_074.rs"
+  },
+  {
+    "sha256": "1e8e28624175d25dd08939a9b821e64130749dd221ebef6d8a7d95cf6a8c92b7",
+    "path": "crates/xtask/tests/authority_cpu_074.rs"
+  },
+  {
+    "sha256": "f7d483f3607316d5b4e01d4773d4093ef0a07ed39a7e7e04bc35237015221b4f",
+    "path": "crates/xtask/tests/authority_expected_name_074.rs"
+  },
+  {
+    "sha256": "8eec87b856ced811211db39a0b0c3b7b321d645e7877d862466395c7f7b198ff",
+    "path": "crates/xtask/tests/authority_fd_path_074.rs"
+  },
+  {
+    "sha256": "5e3059b971b0a445a9bc3c39a1c9bf65f06a392b47c8c54ef8f36628cedc9b7a",
+    "path": "crates/xtask/tests/authority_inventory_074.rs"
+  },
+  {
+    "sha256": "6a61f3a73f7bb09872ac0ca179b7802a322d10f8c643f635f14dac5c65de3589",
+    "path": "crates/xtask/tests/authority_key_hex_074.rs"
+  },
+  {
+    "sha256": "d4d6f4aa339e24bd43b1776929b8661ea03dd4a0bf49c22691d85b26ed049f41",
+    "path": "crates/xtask/tests/authority_leaf_cpu_074.rs"
+  },
+  {
+    "sha256": "3ad157fd1dd31b63e1ce797321ba4fc71d56fed536508ff21ed8c95ec91ecadf",
+    "path": "crates/xtask/tests/authority_leaf_name_074.rs"
+  },
+  {
+    "sha256": "4419ec9993fda528563e237c5f2688f9c53488a2753d3b210b15400b2e6f3180",
+    "path": "crates/xtask/tests/authority_name_capacity_074.rs"
+  },
+  {
+    "sha256": "de8949147040b65c3495062a71257c20fa718a67239a4e8230da613de510673b",
+    "path": "crates/xtask/tests/authority_open_name_074.rs"
+  },
+  {
+    "sha256": "e74849596ae04f15c155d06ff16a60b36d0ad9678268730fcbcb85b1b8e085a8",
+    "path": "crates/xtask/tests/authority_owners_074.rs"
+  },
+  {
+    "sha256": "e524068de42847f9e543abec5e0a3cf708e46b1aa17ac7f6d432e2e61518abc4",
+    "path": "crates/xtask/tests/bench_budget.rs"
+  },
+  {
+    "sha256": "d39c5b968c2ab6f0d24d1b1d41dd4312ca8d6723787757165966e3fe2c8c902d",
+    "path": "crates/xtask/tests/boot_operations_074.rs"
+  },
+  {
+    "sha256": "9b3ff2ae4331c78978dfa07bf9b08a4b479eebcfcd57d3d45c17ff6627f6318e",
+    "path": "crates/xtask/tests/canary_check.rs"
+  },
+  {
+    "sha256": "c77a577d961a5844e6446c7173d407d57e88d896ece377477de90e3ae2967abb",
+    "path": "crates/xtask/tests/cancellation_safety.rs"
+  },
+  {
+    "sha256": "139ccba78844ab057e6b8a30a0c2082413e78b566cbed87d1a1c19d4321e2dd0",
+    "path": "crates/xtask/tests/ci_reliability_071.rs"
+  },
+  {
+    "sha256": "2b54b3481e0e24d0988059d10ca403a33e352f522ad1742c2f23cadb109b7224",
+    "path": "crates/xtask/tests/client_plane_ci.rs"
+  },
+  {
+    "sha256": "cf97af9029c33edc6e0f9e49955ae427e55b32cb5c002ecbc10fb7689837b9c7",
+    "path": "crates/xtask/tests/client_release_068.rs"
+  },
+  {
+    "sha256": "99589c239866e20189e55c719223d9fea1fa56c9223bf879cf80f50d33cd5a34",
+    "path": "crates/xtask/tests/coverage_ratchet.rs"
+  },
+  {
+    "sha256": "75c654c4ab7ec16c9cac73a21c0e47451184d331fb4b5b9df4ffa7afd0c74cc1",
+    "path": "crates/xtask/tests/custody_preparation_cost_074.rs"
+  },
+  {
+    "sha256": "523c94ff4f5f84009b91c696ada570334b7a21a4a487e0b710215e08ddefe506",
+    "path": "crates/xtask/tests/demo_static.rs"
+  },
+  {
+    "sha256": "63303d586aa84bbe77b6e4fe5073f6cd5f2102f7965f4307f53f89d8b2995400",
+    "path": "crates/xtask/tests/determinism_sweep.rs"
+  },
+  {
+    "sha256": "93ca89a049f40d1ae6b2c82078578abc82656e9a22c9496f565873827e3c9afb",
+    "path": "crates/xtask/tests/diagnostic_artifact_fixture_074.rs"
+  },
+  {
+    "sha256": "5430bd4a60b8dac57bb53e7ac3ce652d28d09b65582419cfc3cbe1ea642307aa",
+    "path": "crates/xtask/tests/doc_check.rs"
+  },
+  {
+    "sha256": "5f08d663a835310945fc2b9f1524dbd809ccd6b7db5fc1af8a99ed3e713dcfec",
+    "path": "crates/xtask/tests/document_scratch_cost_074.rs"
+  },
+  {
+    "sha256": "4ca309b854146459fe384d58b050d039fc8058f52c90e631715a5422b06a0e34",
+    "path": "crates/xtask/tests/evidence_run.rs"
+  },
+  {
+    "sha256": "5c310eab0201efc1e3446946df0f8b6f54b6c8974c48c6772aade01d84d741aa",
+    "path": "crates/xtask/tests/fast_suite.rs"
+  },
+  {
+    "sha256": "0cab4860903a2f18dc9bb955debf0406e06be94d53c26284344c779c7f133f26",
+    "path": "crates/xtask/tests/fresh_kernel_cost_074.rs"
+  },
+  {
+    "sha256": "1f05d72c6ac7ca78ea7179dff4cf1ef72871f5d806617895c8608717e709ca1c",
+    "path": "crates/xtask/tests/gated_tests.rs"
+  },
+  {
+    "sha256": "26e0951d97d00c9a16fb7177690c94fc8df9d4c812cc51e34cfe704374617cf9",
+    "path": "crates/xtask/tests/held_material_074.rs"
+  },
+  {
+    "sha256": "a9ac6d7d285b354797c603fc13a8cf9d3fcc9c52fcab07164fd237949c6f7f16",
+    "path": "crates/xtask/tests/held_preparation_cost_074.rs"
+  },
+  {
+    "sha256": "d30a5e290a9aad8b8e54853f42a8b23004db4428ae3e62f2ee9c916e41b09842",
+    "path": "crates/xtask/tests/held_unit_projection_074.rs"
+  },
+  {
+    "sha256": "b1764838adb1579d6cf8da0d0990d2c0b08dbeaf1ec58eccd352c23c5540e3d7",
+    "path": "crates/xtask/tests/long_run_campaign_074.rs"
+  },
+  {
+    "sha256": "3cc94c0a27c429bffee215b35aa4b908c860d2388202cc5ef36bb2e80340ac33",
+    "path": "crates/xtask/tests/management_center_072.rs"
+  },
+  {
+    "sha256": "c5dab38288328757ebcd3064fd8a38b1cb1a7279785a617de4295f9f4775e2ed",
+    "path": "crates/xtask/tests/management_compat_072.rs"
+  },
+  {
+    "sha256": "8fef91cbf09acb80577587d6ecd0c0667617e48789bb29a9b3188d2f845f89cf",
+    "path": "crates/xtask/tests/memory_baseline_071.rs"
+  },
+  {
+    "sha256": "883bc1ed810fbb0b09602583b24264598621be77ad7a9e70326d1e0ee1cd24b6",
+    "path": "crates/xtask/tests/memory_campaign_admission_071.rs"
+  },
+  {
+    "sha256": "bad6709e70411838071d801a257eaf4c3b5a80a71960f5cd42b8331f37fe1337",
+    "path": "crates/xtask/tests/memory_compat_071.rs"
+  },
+  {
+    "sha256": "98b7d4ed6933837ffda01b3e216c62d9689776c18eb04c01e391d58e5511d540",
+    "path": "crates/xtask/tests/memory_contracts_071.rs"
+  },
+  {
+    "sha256": "e6b9af7f3b4ee2c2ef62b117db85b67da0368922b9baa3d6927d9e35a05bab78",
+    "path": "crates/xtask/tests/memory_decision_071.rs"
+  },
+  {
+    "sha256": "0c3c6c21490314387a069d51739e1d5b7c93ad917ae5248c79bf3ef3a1e8aca3",
+    "path": "crates/xtask/tests/memory_host_profile_071.rs"
+  },
+  {
+    "sha256": "d9ec47d4fc163e183bdf83cfd578e168d68fea46cee4e599d15dd25156a70ea5",
+    "path": "crates/xtask/tests/memory_ownership_071.rs"
+  },
+  {
+    "sha256": "f8943b0f122fe24d6476246d563bb8792a9429d3d652afa35f7dd3bf98c5254a",
+    "path": "crates/xtask/tests/memory_profile_071.rs"
+  },
+  {
+    "sha256": "3ab230aa8ba4b73707b0c5c73326b968844e7c1be24b65e7f29ccf283ad7af05",
+    "path": "crates/xtask/tests/memory_regression_071.rs"
+  },
+  {
+    "sha256": "8ee814d4978f6de23182ff5f4006beb848e1cdf02c7f9d72670a3a2472e0e5c8",
+    "path": "crates/xtask/tests/memory_statistics_071.rs"
+  },
+  {
+    "sha256": "4ca4376a75f27393507de4d89957c87ea4e8b15c7e2a21e5bdae41d77d3c39d4",
+    "path": "crates/xtask/tests/migration_conformance_069.rs"
+  },
+  {
+    "sha256": "03fc88efc984850df094bff397b3b21cdcd7d4affb2aede1b904bd76c0599641",
+    "path": "crates/xtask/tests/miri_check.rs"
+  },
+  {
+    "sha256": "73468bba1ca5c2b6c55e3020cf2da7b21ada828240bc5699d78e0344474559b3",
+    "path": "crates/xtask/tests/mutants.rs"
+  },
+  {
+    "sha256": "04a816ae0ec28a2f0185814390681b63af8f788d0975579d28294cebcc162ddb",
+    "path": "crates/xtask/tests/perf_attestation_0671.rs"
+  },
+  {
+    "sha256": "9e12d3dff6ccb92329bbb5e64e809f9b41d322ca53f58f40ca2f31aabc0f51dd",
+    "path": "crates/xtask/tests/perf_bootstrap_0671.rs"
+  },
+  {
+    "sha256": "da6af8e3dc3d8e53e239a4da1790eb087aeb57dae36d25769eaeffb71e96e6bf",
+    "path": "crates/xtask/tests/perf_budget_067.rs"
+  },
+  {
+    "sha256": "9770779a87592e17d60f0e9faaa55cbf820a3f5d524e7acffe1fc51792490e1d",
+    "path": "crates/xtask/tests/perf_ci_instruction.rs"
+  },
+  {
+    "sha256": "0eb3dee2d86245f282f02ab15dd27e7e7ac9c63c9f3f84f46c1ede8560fef9c9",
+    "path": "crates/xtask/tests/perf_exploratory_harness.rs"
+  },
+  {
+    "sha256": "1cd3fd588550321775dada952459a47ea4a7d70c16fbd31cef1f119151c41397",
+    "path": "crates/xtask/tests/perf_exploratory_reports.rs"
+  },
+  {
+    "sha256": "ac086d1382a9683b60184a8bf0b98267e08748950abfd7dec757595c35e8d5d0",
+    "path": "crates/xtask/tests/perf_full_dress_0671.rs"
+  },
+  {
+    "sha256": "3c21ddbdeea6e5c0d281e70501e99c11790f726ebf74393661648c702fd6c61c",
+    "path": "crates/xtask/tests/perf_host_tuning.rs"
+  },
+  {
+    "sha256": "339b792a2ad1c64bd09c7fcc864d4a986fec036a4aed4c8686c348528b6ac37c",
+    "path": "crates/xtask/tests/perf_local_orchestration_0671.rs"
+  },
+  {
+    "sha256": "6fbe4ada51dcd669287c1088f9638461df1d7c4815f2831bdd7b6acccadf5812",
+    "path": "crates/xtask/tests/perf_prebuild_067.rs"
+  },
+  {
+    "sha256": "81c5f292084c73ddbfe067d8be3d18af62cc2ef24fd2bbcb448a44ac95e8e519",
+    "path": "crates/xtask/tests/perf_qualification_0671.rs"
+  },
+  {
+    "sha256": "c09714b16654d974bb9eb247a54730babd90feed6ab128c1db7b4530d2a945b9",
+    "path": "crates/xtask/tests/perf_reference_0671.rs"
+  },
+  {
+    "sha256": "44e05cef5cb2584c95930169d74729fcb440f0429c4c6f022199006951dd2d36",
+    "path": "crates/xtask/tests/perf_runner_0671.rs"
+  },
+  {
+    "sha256": "c2401d8c3c1231b1abbf8e3c5f59b20f156a628017a878d9c90332638846cc58",
+    "path": "crates/xtask/tests/performance_contract_067.rs"
+  },
+  {
+    "sha256": "08fed23c274aa925d8f5fe16dc243b7a4103ff2f254fc18c28a93b156c633fe8",
+    "path": "crates/xtask/tests/performance_contract_073.rs"
+  },
+  {
+    "sha256": "1a12172f2312f5592efafaedfcb8c74d51925d12fcb5ba3529338da73e4ce20d",
+    "path": "crates/xtask/tests/performance_contract_074.rs"
+  },
+  {
+    "sha256": "cbc5c6c4bcb3e4617ca4e0b10da2125b30b6beb729d7418a648c15f4a5f110ac",
+    "path": "crates/xtask/tests/performance_local_073.rs"
+  },
+  {
+    "sha256": "de40b15b3a46e94c00995f3f6628b1a34d597843292084517a751b82b3e0c211",
+    "path": "crates/xtask/tests/pid_path_cost_074.rs"
+  },
+  {
+    "sha256": "bd6cfb1c4b781b277a5ffc2e0fe6d6d2bc4ba4fbbd2ed9dfa0e3de5caf0be004",
+    "path": "crates/xtask/tests/quarantine.rs"
+  },
+  {
+    "sha256": "bc16bd25b31dff69465ad87892b52bfb1785e58111bed6c32c497d8b4d35f8f0",
+    "path": "crates/xtask/tests/raft_spec_check.rs"
+  },
+  {
+    "sha256": "2d26d9a8c64cb3aa88a4d52ebe7b013ff5e6ad3349303428ce78e321e8de300c",
+    "path": "crates/xtask/tests/release_evidence.rs"
+  },
+  {
+    "sha256": "9f0a7ec8d88539038a3bc187de475a9093415b84d538d6679f9c99a2aabf486f",
+    "path": "crates/xtask/tests/release_governance_071.rs"
+  },
+  {
+    "sha256": "e70593335000f36f563751a1bac2e525bf005acfa6cfb430804f7c674a5e5b23",
+    "path": "crates/xtask/tests/release_governance.rs"
+  },
+  {
+    "sha256": "cd95120e0b0b6abe371fe991531f098b8e5ed9137df0d79608d74a98ce5dbac6",
+    "path": "crates/xtask/tests/remaining_preparation_cost_074.rs"
+  },
+  {
+    "sha256": "acca1d951cd7e4fff92a09a5bfaa69eaa7f496c7e931a60e24bf8e01f0396eaf",
+    "path": "crates/xtask/tests/starting_effects_cost_074.rs"
+  },
+  {
+    "sha256": "70bee5737c4e6d86e29cebaf4182bcc723940e73147d95ac052814d55632273f",
+    "path": "crates/xtask/tests/support/authority_breakdown_gate.txt"
+  },
+  {
+    "sha256": "5b94c70acee6ca77b184d6c7f44f21ebb8b3fdc462d87e53a5b25e906f4fc49a",
+    "path": "crates/xtask/tests/support/authority_breakdown_guard.rs"
+  },
+  {
+    "sha256": "07e942817154d5bbe9aaef0426386f6f26661daba6d129a3dc3c5450f870d745",
+    "path": "crates/xtask/tests/support/authority_context_gate.txt"
+  },
+  {
+    "sha256": "95bac9a9428c084922a4d51e6454268b0aad3ac8b7db7399d36460fb65ef33be",
+    "path": "crates/xtask/tests/support/authority_context_guard.rs"
+  },
+  {
+    "sha256": "6748b12ee11d8526b67eddf88d5b1fa4dbc450ced6967697613456b1bd9e5067",
+    "path": "crates/xtask/tests/support/authority_cpu_gate.txt"
+  },
+  {
+    "sha256": "d02d94c60ea4caff6cf79d20825a920c2e54e32c225ecd0ad66bad6ae16ec318",
+    "path": "crates/xtask/tests/support/authority_cpu_guard.rs"
+  },
+  {
+    "sha256": "e4140ac98db8ab05ef027bc73ff8f49701f7ac86261a3e6b36a78a1bdd3a1835",
+    "path": "crates/xtask/tests/support/authority_expected_name_gate.txt"
+  },
+  {
+    "sha256": "5a29d5aa6f6b9c78f2709c79badf1fe8c7556b6e785544ab09b5eea0050c1285",
+    "path": "crates/xtask/tests/support/authority_expected_name_guard.rs"
+  },
+  {
+    "sha256": "a1a607741634ff311e9459b3b529e1c81b77b51d37e1a6d060f53e5954e51171",
+    "path": "crates/xtask/tests/support/authority_expected_name_new.txt"
+  },
+  {
+    "sha256": "07257fc8eb2b340bde1f0298b9770f14bc9aa093deed4c03d8cfaaa2ee3c49e7",
+    "path": "crates/xtask/tests/support/authority_expected_name_old.txt"
+  },
+  {
+    "sha256": "7279fb5dcf5bccb63aeb9a857fae4b01daa42b354853c88e28182aff50809c63",
+    "path": "crates/xtask/tests/support/authority_fd_path_gate.txt"
+  },
+  {
+    "sha256": "b7411255123b213837426eb56bdaba4afe80aab27615416d7538b78beceb9706",
+    "path": "crates/xtask/tests/support/authority_fd_path_guard.rs"
+  },
+  {
+    "sha256": "df782374691a5447409efe9783293bde60219082f3d5216c3779b865a2079619",
+    "path": "crates/xtask/tests/support/authority_fd_path_new.txt"
+  },
+  {
+    "sha256": "2a4f728cfab5f2f7aac55d09987d29f5310f00f353b3f0738e37d316f84c35e5",
+    "path": "crates/xtask/tests/support/authority_fd_path_old.txt"
+  },
+  {
+    "sha256": "a65f8e39657f6ef92beb79fe5c89440f2b3a2f74f41dc62755b642d1e752723e",
+    "path": "crates/xtask/tests/support/authority_hex_gate.txt"
+  },
+  {
+    "sha256": "683741191e50c3760cd523714babed160279a8117c79b7ea79a512d77315f890",
+    "path": "crates/xtask/tests/support/authority_hex_guard.rs"
+  },
+  {
+    "sha256": "09881a0581e1afcec533d98bd32a6c0a701350f416a93cd34c12b5390e0b868d",
+    "path": "crates/xtask/tests/support/authority_inventory_gate.txt"
+  },
+  {
+    "sha256": "a8088c1b58770f958607bc62f4828940716962e258204848a33b1b85a9ebd631",
+    "path": "crates/xtask/tests/support/authority_inventory_guard.rs"
+  },
+  {
+    "sha256": "07257fc8eb2b340bde1f0298b9770f14bc9aa093deed4c03d8cfaaa2ee3c49e7",
+    "path": "crates/xtask/tests/support/authority_inventory_new.txt"
+  },
+  {
+    "sha256": "963e296051d88a8a524097bd4109997bb787aaa9ea6281492feeff895b1d9c13",
+    "path": "crates/xtask/tests/support/authority_inventory_old.txt"
+  },
+  {
+    "sha256": "e2b964f0b6df027b333cb7804ff476721f1857144cd6433424374e43224d1a49",
+    "path": "crates/xtask/tests/support/authority_leaf_cpu_gate.txt"
+  },
+  {
+    "sha256": "3787f8d47cd58767dc144c2f2c4d7dfda76b95252a6b77d640f539cdf10ce914",
+    "path": "crates/xtask/tests/support/authority_leaf_cpu_guard.rs"
+  },
+  {
+    "sha256": "d468fea987385a1698c1ea8e76c80dc8b3ef7ee9fb0bd9f308e65ebbf8759bb1",
+    "path": "crates/xtask/tests/support/authority_leaf_name_gate.txt"
+  },
+  {
+    "sha256": "e8b8695ff3934be2fc8be248efd9b0378e30a3cf4462319e42641b34857f8c8f",
+    "path": "crates/xtask/tests/support/authority_leaf_name_guard.rs"
+  },
+  {
+    "sha256": "29bc6635ab2ab83e1cf8c565480c12524d1ca9ef1a9dd4a9048db10d4656da21",
+    "path": "crates/xtask/tests/support/authority_leaf_name_new.txt"
+  },
+  {
+    "sha256": "44473bdfa5c8c4170ddf0c7c633429f3bc229a067573c2cd7e1619d7229fa221",
+    "path": "crates/xtask/tests/support/authority_leaf_name_old.txt"
+  },
+  {
+    "sha256": "cb9ab4d3b515d6a84333bd1d14839af07b80f23a626ff2ac4168bc37b67ee8a7",
+    "path": "crates/xtask/tests/support/authority_name_capacity_gate.txt"
+  },
+  {
+    "sha256": "ffd4637b7236d7b0497d160df6388490e850a6b6a75ce85a295bf877fca3b75f",
+    "path": "crates/xtask/tests/support/authority_name_capacity_guard.rs"
+  },
+  {
+    "sha256": "2229e31522b35c9da643a9d32087a2be12f432d11e59d569032e852f58964add",
+    "path": "crates/xtask/tests/support/authority_name_capacity_new.txt"
+  },
+  {
+    "sha256": "883fb652ddca4f753da4f69384124cfb606e0e7bc35fa661fddc47e21cb969a0",
+    "path": "crates/xtask/tests/support/authority_name_capacity_old.txt"
+  },
+  {
+    "sha256": "e4aa9f648ca4c05ac5498aa051cb1ff2b8a129b43557f73a3f04a1cff4d003c2",
+    "path": "crates/xtask/tests/support/authority_name_capacity_read_new.txt"
+  },
+  {
+    "sha256": "98d0f39f6c209aa72fd84d7ecee79c021c71d17d25001f08e3bbb2706149af84",
+    "path": "crates/xtask/tests/support/authority_name_capacity_read_old.txt"
+  },
+  {
+    "sha256": "9514d99a1bae529920980de04a5e1c08459e31619f7639558aa32e4210c18771",
+    "path": "crates/xtask/tests/support/authority_open_name_candidate.txt"
+  },
+  {
+    "sha256": "c461edbdc6e0bc80da82b709a3f40e83e6f6cbd92b42f78ec9a2a8369d511a1f",
+    "path": "crates/xtask/tests/support/authority_open_name_gate.txt"
+  },
+  {
+    "sha256": "5eb0e0f3b73d2e71011552e36c4157fee461075b584fa8487fb8416738179e9c",
+    "path": "crates/xtask/tests/support/authority_open_name_guard.rs"
+  },
+  {
+    "sha256": "ca38b372455554005720e4171e42482f6b787170a84ab40856dec6f58a87a63e",
+    "path": "crates/xtask/tests/support/authority_owners_gate.txt"
+  },
+  {
+    "sha256": "3fdebc8a98fb3b522700876dd55b34f427298c8856c196182eff4d48eadf5e34",
+    "path": "crates/xtask/tests/support/authority_owners_guard.rs"
+  },
+  {
+    "sha256": "178da77e108d5448f21d7896d0424f456cc3ec6098821dd533ae75cbf4b62da6",
+    "path": "crates/xtask/tests/support/boot_operations_gate.txt"
+  },
+  {
+    "sha256": "7f5d5f70ca9289105ec4bd46baf86990b13a879f3b5b55331cb30dcc08560904",
+    "path": "crates/xtask/tests/support/boot_operations_guard.rs"
+  },
+  {
+    "sha256": "ce111d49c56012d63f3a4bdab1f0038ec58622f1da5dc1201cbb2f7d3b0f1a6e",
+    "path": "crates/xtask/tests/support/consuming_held_join_guard.rs"
+  },
+  {
+    "sha256": "ea335423fdb01856c723e9fd41f412d04545bd261d09cc83dd2fabad41e2193d",
+    "path": "crates/xtask/tests/support/consuming_held_live_guard.rs"
+  },
+  {
+    "sha256": "9db6f7ae30301f8040b21f485574eaa8ec72202046c3c305b51fcfad6e0882ec",
+    "path": "crates/xtask/tests/support/custody_cost_guard.rs"
+  },
+  {
+    "sha256": "ffbe6713982d35bbb2d2e665f17e160ee1a57165a2fc788d6f5bb97c3de3261d",
+    "path": "crates/xtask/tests/support/document_scratch_guard.rs"
+  },
+  {
+    "sha256": "ab7dce399180d762ce5bbacd738d163fa4121be5bfa24be54bb92bd0f0904ae7",
+    "path": "crates/xtask/tests/support/fixed_slice_namespace_guard.rs"
+  },
+  {
+    "sha256": "3b98eaed3badcb3cda57930e45cae7fcaf2e2bad56a0f6729547050346b4949d",
+    "path": "crates/xtask/tests/support/fresh_status_guard.rs"
+  },
+  {
+    "sha256": "4158a303c636b58a167b76104f0a491634a4a45838022a932ca111b2a48f50fb",
+    "path": "crates/xtask/tests/support/held_build_guard.rs"
+  },
+  {
+    "sha256": "28869049ded6d7fcdccb7f91f816f2e4445cd3a605e5e382dcc893ebf84e43fb",
+    "path": "crates/xtask/tests/support/held_launcher_guard.rs"
+  },
+  {
+    "sha256": "28a1ca4a0ff36c6743608daf3d71d96baa756e93068c8171c6781659bb1d66be",
+    "path": "crates/xtask/tests/support/held_material_guard.rs"
+  },
+  {
+    "sha256": "a58afe7f809b01be6ff20511a60fba71cf7d3127fa7b424d54dc8c9bb0b6a4a9",
+    "path": "crates/xtask/tests/support/held_role_binding_guard.rs"
+  },
+  {
+    "sha256": "6e866c7d58fe8c40fccd15f58c47f5682299e25af560817adced13bf7de5c053",
+    "path": "crates/xtask/tests/support/held_role_files_guard.rs"
+  },
+  {
+    "sha256": "bfe6355747ee3d2e95c8d0ee7e51af70830564c633ed2ef075f53d5690844f90",
+    "path": "crates/xtask/tests/support/held_runtime_trust_guard.rs"
+  },
+  {
+    "sha256": "df4e3b49148ded249e31cbfc796bc50a58cfaf885acb7799b149d00a6701bbd6",
+    "path": "crates/xtask/tests/support/held_unit_projection_guard.rs"
+  },
+  {
+    "sha256": "02f4b1fd12b035c811d03aa82f801c7036c25d39e6b0fd9054d9e28288249399",
+    "path": "crates/xtask/tests/support/performance_contract_074_barred_collector.rs"
+  },
+  {
+    "sha256": "cbdbb574bbdf9be481db09db5849aaef79406899712061ba52433084faad924c",
+    "path": "crates/xtask/tests/support/performance_contract_074_barred_custody.rs"
+  },
+  {
+    "sha256": "c135772ef2366fb1f9cfe4982660bfb3025a3285fbcc64cce9e125aadc2473b5",
+    "path": "crates/xtask/tests/support/performance_contract_074_boot_buffer.rs"
+  },
+  {
+    "sha256": "535dc8492c0e95fedf5e32a5f0e47d4ff766a9ea0c32902abdbd87c8bb4d0e2b",
+    "path": "crates/xtask/tests/support/performance_contract_074_boot_comparison.rs"
+  },
+  {
+    "sha256": "c8e9b10a47bb42fbe44cd156608ccaf43accea63be9fb5c5548f8dea5ae5e4d9",
+    "path": "crates/xtask/tests/support/performance_contract_074_cgroup_root_enrollment.rs"
+  },
+  {
+    "sha256": "f9de0199919ed6d9d8ab30615dde034c515cc50f2b03011afc5127575c332efe",
+    "path": "crates/xtask/tests/support/performance_contract_074_cgroup_root_transport.rs"
+  },
+  {
+    "sha256": "6ab74569e6f90c0563445aff9342b96b656c827a415e58e90e80ae37f64bbdec",
+    "path": "crates/xtask/tests/support/performance_contract_074_claim_construction.rs"
+  },
+  {
+    "sha256": "4cf2f9d1e94e81269ac2dfb5797171b09e54460c4625748330368c1abb108a29",
+    "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs"
+  },
+  {
+    "sha256": "9bcffe7a5c79daab3fb5aa8ccd2ec9c1fe1f8bc5446742d07dbd3a3c97cd533d",
+    "path": "crates/xtask/tests/support/performance_contract_074_collector_causal.rs"
+  },
+  {
+    "sha256": "f6bc8a7e98bb230330b716656ec42169090321ff56f8f66bf0aecbb9712c6dc5",
+    "path": "crates/xtask/tests/support/performance_contract_074_collector_intent.rs"
+  },
+  {
+    "sha256": "de3b1f050464603e5b6773074e3645e653f387da5e329f1816eea54c3306ee21",
+    "path": "crates/xtask/tests/support/performance_contract_074_collector_notices.rs"
+  },
+  {
+    "sha256": "afb6b698fb89fa77c1699ec9109ff41496a241c3b74085087ee88d71a0f49f23",
+    "path": "crates/xtask/tests/support/performance_contract_074_collector_progress.rs"
+  },
+  {
+    "sha256": "cab7c5c32c4ac36b616c0d8df597961caf96590fa83b266e9718802f4ddbdfd8",
+    "path": "crates/xtask/tests/support/performance_contract_074_collector_reserved.rs"
+  },
+  {
+    "sha256": "53c9f7554abb12bb4962b4f9bafb6bfe381655225a17bd023be33d69c0b10a58",
+    "path": "crates/xtask/tests/support/performance_contract_074_consent_budget.rs"
+  },
+  {
+    "sha256": "06fba26221a311f652fa09b1484ae176dcef3f4980dc24094a31b60e2773c489",
+    "path": "crates/xtask/tests/support/performance_contract_074_custody_join.rs"
+  },
+  {
+    "sha256": "7766dc70d876853ec0222bc000344bb1210981c5cba3d5bc7b61a44c269852e3",
+    "path": "crates/xtask/tests/support/performance_contract_074_custody_loss.rs"
+  },
+  {
+    "sha256": "f67637b9a524a3422eed9f7ab18f36c1225c82bd427271967527fcfa7c5402c8",
+    "path": "crates/xtask/tests/support/performance_contract_074_dispatch_exchange.rs"
+  },
+  {
+    "sha256": "c193eaf66fff6ea47d127bbd0d6e6f13cdacdf2f4b9244a58707851c6959884f",
+    "path": "crates/xtask/tests/support/performance_contract_074_enrollment_frame.rs"
+  },
+  {
+    "sha256": "226b8d481852582e8bd7de4ad6f3de9210354d2141115db303c09145c6e9afed",
+    "path": "crates/xtask/tests/support/performance_contract_074_fence_custody.rs"
+  },
+  {
+    "sha256": "59a6259c0cc044205052f8da7d36bc6e833308119dee30ec667147100fdb14a2",
+    "path": "crates/xtask/tests/support/performance_contract_074_fixed_grouped.rs"
+  },
+  {
+    "sha256": "b29d6ad86e0e35b1b827e66807a84d3c82de5cadb8aa2e7bc6d31906ae87cb0b",
+    "path": "crates/xtask/tests/support/performance_contract_074_fixed_leaf_path.rs"
+  },
+  {
+    "sha256": "814b0b8a2267334e756e39b7d567309bb11cd12434da1e19349f9192ce65d631",
+    "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs"
+  },
+  {
+    "sha256": "bf145b4a26fa55c7fff8d0ee31ae0344fbafcccd8a44f68577b95ba68ce0e6c1",
+    "path": "crates/xtask/tests/support/performance_contract_074_gnu_preparation.rs"
+  },
+  {
+    "sha256": "6935060fea9e2dfb7373fcd24e945d3ebfe8edddfaaabcd0bd88cd25b10fcf8d",
+    "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs"
+  },
+  {
+    "sha256": "fb4a61229aad3f9aa771c998a06c2efcd82a9a3404d98eab991aaab4cccd5d97",
+    "path": "crates/xtask/tests/support/performance_contract_074_kernel_refusal.rs"
+  },
+  {
+    "sha256": "1f2ea8e56ad8c75cad5338cc332c0af2748ca66f0e188dd8c0f2fc0efae5476a",
+    "path": "crates/xtask/tests/support/performance_contract_074_kernel_walk.rs"
+  },
+  {
+    "sha256": "b7ba08cd0075567409512b452a18cb79cd2070dba298d33d7f12efdc8d6da5d4",
+    "path": "crates/xtask/tests/support/performance_contract_074_live_walk.rs"
+  },
+  {
+    "sha256": "d870a4492c0163b8a236c4fc9ca78e1565f4c744232b93b3cbaefde57e7ab1d7",
+    "path": "crates/xtask/tests/support/performance_contract_074_manager_channel.rs"
+  },
+  {
+    "sha256": "99df8488ca268a4a8dcd631c92ae8b4b7462b39e53a66a54c4b612aaab2d1f53",
+    "path": "crates/xtask/tests/support/performance_contract_074_negotiated_dispatch.rs"
+  },
+  {
+    "sha256": "56fa1c2c3b52ec27f398f46c1452b9a2f525bf8638361b3d57730a1750215f40",
+    "path": "crates/xtask/tests/support/performance_contract_074_original_barrier.rs"
+  },
+  {
+    "sha256": "a3a2cb78336dc71c2ea00ff3b3d02a7002484361bfea59bbe72030a32f4aa8d3",
+    "path": "crates/xtask/tests/support/performance_contract_074_original_collector.rs"
+  },
+  {
+    "sha256": "2066fcc683f2572e43037c53cac251461d1281999ef48941e305048ff80d7d4f",
+    "path": "crates/xtask/tests/support/performance_contract_074_original_descriptors.rs"
+  },
+  {
+    "sha256": "00db7138612bd8b434025dbb11fdd1fdd795462c80e01eb7e4803edb2b88cc2d",
+    "path": "crates/xtask/tests/support/performance_contract_074_original_manager_join.rs"
+  },
+  {
+    "sha256": "909caf389bfc68ffe396f5cf6df9bebd65df8bba124f45db8a6e87c33071829f",
+    "path": "crates/xtask/tests/support/performance_contract_074_original_manager_message.rs"
+  },
+  {
+    "sha256": "ad2e76f8db79a5b468d6ff9f6d5caadebf12832cf6c4c98e2bf7a55711afbc7f",
+    "path": "crates/xtask/tests/support/performance_contract_074_original_pending_watchdog.rs"
+  },
+  {
+    "sha256": "5fc4b12f22a45bbe1d16397b63457a41b250afd44bafcfa9ef01bd3179198fde",
+    "path": "crates/xtask/tests/support/performance_contract_074_original_pipes.rs"
+  },
+  {
+    "sha256": "ffd74067904318c0f4260e82b61ceb938d46dac9420c314d0eeef014c4b08398",
+    "path": "crates/xtask/tests/support/performance_contract_074_original_reply_binding.rs"
+  },
+  {
+    "sha256": "7a73cb577521f171edf6ac3946ebebe4c8e6e914d58c4b77b6fecbaa93547728",
+    "path": "crates/xtask/tests/support/performance_contract_074_original_root_join.rs"
+  },
+  {
+    "sha256": "37010ae8511f0110467d4b58111fd19b6d33722b654c8a1250fffa6542763819",
+    "path": "crates/xtask/tests/support/performance_contract_074_original_start_consent.rs"
+  },
+  {
+    "sha256": "60bc3b6353b9c2519e01ef49a7c33158f9f438db10670a60ae96de4286a0567d",
+    "path": "crates/xtask/tests/support/performance_contract_074_original_watchdog_context.rs"
+  },
+  {
+    "sha256": "6bb54c9c39b114bd35870e64d54c71d29b0b08166587bf47b006a862346ed7c9",
+    "path": "crates/xtask/tests/support/performance_contract_074_output_join.rs"
+  },
+  {
+    "sha256": "bff753edfcad7d58bc981b1cc79d350f4e400f34eb0b4007eb550627e7dcce4c",
+    "path": "crates/xtask/tests/support/performance_contract_074_owned_placement.rs"
+  },
+  {
+    "sha256": "18d47f302c895f17ec227a34e0635cc54cc5d7ff272c3288f2e366e279256c20",
+    "path": "crates/xtask/tests/support/performance_contract_074_owned_root_manager.rs"
+  },
+  {
+    "sha256": "da2204b4c0a685ad2cde5710a2b1b65ca4ccde71073580fd1f3ea0b6d7ebe3c8",
+    "path": "crates/xtask/tests/support/performance_contract_074_pipe_transport.rs"
+  },
+  {
+    "sha256": "d26674423a26383e1409afd302404fb2bd040bb1f935b7dd5f1cc8961c950a4a",
+    "path": "crates/xtask/tests/support/performance_contract_074_placement_preparation.rs"
+  },
+  {
+    "sha256": "07ece38f41e2bd3c4a22e094e6c91dd13bcfdf5d9a59691949970a352e7f8ca9",
+    "path": "crates/xtask/tests/support/performance_contract_074_placement_stage_cost.rs"
+  },
+  {
+    "sha256": "4b0c6ed461c856df6bc6c1b12aba60dc3d0c24aeae6be4c98e0e5e409f67102d",
+    "path": "crates/xtask/tests/support/performance_contract_074_plain_worker.rs"
+  },
+  {
+    "sha256": "35c18e30c83ae291b681a5501a0ab8b63588a562d9075516c7c8770ea723663f",
+    "path": "crates/xtask/tests/support/performance_contract_074_prearmed.rs"
+  },
+  {
+    "sha256": "4ae83cee2b3bc1f3b14457a5bfaf04105edcb050e4df6a79cd5ad65262f044ce",
+    "path": "crates/xtask/tests/support/performance_contract_074_preconsent_frame.rs"
+  },
+  {
+    "sha256": "927a79d66f37edab63ac1507cb65d76eca737f86ee1ebf50d829c3dec057a4c5",
+    "path": "crates/xtask/tests/support/performance_contract_074_preparation_budget.rs"
+  },
+  {
+    "sha256": "812afce7ae317387f589c8c3af5455c2f719b50b92e234d278e0c508c9310dcc",
+    "path": "crates/xtask/tests/support/performance_contract_074_redundant.rs"
+  },
+  {
+    "sha256": "086e28af21d0803eba29a735c5b31fcaaa213cdfaf5df54aea383d2793877ead",
+    "path": "crates/xtask/tests/support/performance_contract_074_reply_flags.rs"
+  },
+  {
+    "sha256": "fe00b84c16dc876d30656adc28a5b3cc57018953b7b832ba611c71174156da0e",
+    "path": "crates/xtask/tests/support/performance_contract_074_reply_state.rs"
+  },
+  {
+    "sha256": "89c5e7f672fc0a3471bde7e56eea59f8a464a788a8b0279440f6e371a6743b51",
+    "path": "crates/xtask/tests/support/performance_contract_074_root_creator.rs"
+  },
+  {
+    "sha256": "328df0be5194ed5575bde7a669455a3ceb7bc386665b672be1ff7f6a97fb2815",
+    "path": "crates/xtask/tests/support/performance_contract_074_root_guardian.rs"
+  },
+  {
+    "sha256": "935002f171df8771bfcde46fd539848c48991eb2f839adea8147c59cfd1d9fd3",
+    "path": "crates/xtask/tests/support/performance_contract_074_root_retirement.rs"
+  },
+  {
+    "sha256": "19d4747f47e8313d28502d97588057e7c9e47453567386995c8a1e91090828f7",
+    "path": "crates/xtask/tests/support/performance_contract_074_safety_alarm.rs"
+  },
+  {
+    "sha256": "ce103d8d91e154b1ea025301e6b06ac63802b8608e8e22730de546f725e868e3",
+    "path": "crates/xtask/tests/support/performance_contract_074_short_fence.rs"
+  },
+  {
+    "sha256": "22a11f6c5d6bb50e8fad6f513395eedc105fff2dc2e65731a8b7ea3060fda450",
+    "path": "crates/xtask/tests/support/performance_contract_074_start_consent.rs"
+  },
+  {
+    "sha256": "0f16ab21abacf6de0b2a418fa3e9844e44997cf2b4198a7621b0ac72aa6b1f0e",
+    "path": "crates/xtask/tests/support/performance_contract_074_start_material.rs"
+  },
+  {
+    "sha256": "f76e23b30dbf55116807fc2e9bf5c0b6c3f9bbbd1837a3fbcdb56538fc9b860f",
+    "path": "crates/xtask/tests/support/performance_contract_074_starting_publication.rs"
+  },
+  {
+    "sha256": "03ed536b8c8a8b8a607cec783ad7ed51796d4ce3d3605f52426f849219d42609",
+    "path": "crates/xtask/tests/support/performance_contract_074_starting_record.rs"
+  },
+  {
+    "sha256": "733908531479c7a2db0ffd0e89ae79e484f85e0079493ec2f04d8b16b956a310",
+    "path": "crates/xtask/tests/support/performance_contract_074_two_phase_launch.rs"
+  },
+  {
+    "sha256": "e126bfcc394a3088f146be1f9bca25638fc4151a14be2ddf43b4bd18ca6c668e",
+    "path": "crates/xtask/tests/support/performance_contract_074_validation_cost.rs"
+  },
+  {
+    "sha256": "e120d81430f261b677d3f74ac856895ee46b5f3ed5b9d4ae9f9f3597f00acc60",
+    "path": "crates/xtask/tests/support/performance_contract_074_validation_frame.rs"
+  },
+  {
+    "sha256": "547ad8179a918f54fe85883c834c8f67ffe760addaeb7cfdaf493780f36cf2d6",
+    "path": "crates/xtask/tests/support/performance_contract_074_worker_proof.rs"
+  },
+  {
+    "sha256": "350c4602ad92893bf07a29ee3d054e08456e0f852bd61ac53aee8d1014a70497",
+    "path": "crates/xtask/tests/support/pid_path_guard.rs"
+  },
+  {
+    "sha256": "8ac781a0a877adeddec17585219482b90da9bc47f904105e0f09c8c49312a7f2",
+    "path": "crates/xtask/tests/support/projection_prefix_guard.rs"
+  },
+  {
+    "sha256": "b79bd6b91d060209334d6e870e205f4b10c4c5c662ed2d8a42ebdb394e0987c3",
+    "path": "crates/xtask/tests/support/remaining_preparation_guard.rs"
+  },
+  {
+    "sha256": "d3ac8eb46db49943bd400963b0ccfc68229ee61db556bdaa913e385a8d0dc868",
+    "path": "crates/xtask/tests/support/validation_leaf_requests_gate.txt"
+  },
+  {
+    "sha256": "3a3ff6005ef801cd7d77fe5902700cf9273a5f2bb2434419d78bf2e1a292b187",
+    "path": "crates/xtask/tests/tsan_check.rs"
+  },
+  {
+    "sha256": "af58739f3ab1e827aa0f7bf8aa0a5a53f2bbd0ef57df76bcb9d4907461e57fbb",
+    "path": "crates/xtask/tests/validation_leaf_requests_074.rs"
+  },
+  {
+    "sha256": "2c4249e6db5966f88cf73b81c3b1087b451dd309b7af4f2cd07f1994a5540906",
+    "path": "crates/xtask/tests/validation_round_cost_074.rs"
+  },
+  {
+    "sha256": "2cbc12198a4603081d3c09e95ede43237f14ec708cec871306bd27244467c205",
+    "path": "docs/COMPAT.md"
+  },
+  {
+    "sha256": "f804574332d89bc1c73cecb7d8d6f0b228a747748f0ca5b1de8d4d0bd9ae1dc2",
+    "path": "docs/testing/gated-test-registry.toml"
+  },
+  {
+    "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+    "path": "docs/testing/performance/0.74/qualification-manifest.toml"
+  },
+  {
+    "sha256": "0cf41097a192e27f290ac5f2d00f5daf9a771363a9866565971b0e516a9dd377",
+    "path": "tools/long-run-supervisor-074/src/abort_backend.rs"
+  },
+  {
+    "sha256": "00a53e5bf5615029717790de7de8daa8f105bce7015a08944a352b04c0b3f5b2",
+    "path": "tools/long-run-supervisor-074/src/abort_lifecycle.rs"
+  },
+  {
+    "sha256": "733cb99bff1768b5d97111857a507293f0f345ff808d20f225e2f2f324c00957",
+    "path": "tools/long-run-supervisor-074/src/archive.rs"
+  },
+  {
+    "sha256": "b13806efd66a695fdc5fb5b6bfb2ae38cb6b32ca70df6272709655d8ec65e7da",
+    "path": "tools/long-run-supervisor-074/src/artifact.rs"
+  },
+  {
+    "sha256": "2dc5c8c79f916c97f7906edfceb2f77e4a640d00029c5e1ec8bb9e3b0f440f27",
+    "path": "tools/long-run-supervisor-074/src/auth.rs"
+  },
+  {
+    "sha256": "624484cb2c26145c623e11aed07be1fd77592fb31f1ddd2d8da429050ae24a7d",
+    "path": "tools/long-run-supervisor-074/src/bin/diagnostic_builder.rs"
+  },
+  {
+    "sha256": "27db522a25c0fed49d372db4dfb60e6968e28c0ed325e83266e1151b6940b9d9",
+    "path": "tools/long-run-supervisor-074/src/bin/diagnostic_controller.rs"
+  },
+  {
+    "sha256": "1b5d0ca7f24af08d628d26e15d9f85adec3aeb3e0dc1f6c812ce49756925c56a",
+    "path": "tools/long-run-supervisor-074/src/bin/diagnostic_held_launcher.rs"
+  },
+  {
+    "sha256": "8eb1461f1a6bff586edfe6075c9edc3a8dc96f36939ce7cac8fdba31e58ad27a",
+    "path": "tools/long-run-supervisor-074/src/bin/diagnostic_signer_isolation_probe.rs"
+  },
+  {
+    "sha256": "f698853ec81dcc12e9609bf184d8e3b6439caf5e6f54d447a3007f80ff25b9e6",
+    "path": "tools/long-run-supervisor-074/src/bin/diagnostic_signer_owned_probe.rs"
+  },
+  {
+    "sha256": "004636e32ec7f43a15627889f87c32ed111d9fb777917fcc9084476264bcf9fb",
+    "path": "tools/long-run-supervisor-074/src/bin/diagnostic_signer_root_probe.rs"
+  },
+  {
+    "sha256": "34c2d84fc8f15ee62b1dfd06a096bd5ce687859586d486772d0d51d02625d96a",
+    "path": "tools/long-run-supervisor-074/src/campaign_smoke.rs"
+  },
+  {
+    "sha256": "321ad5f30c501b305da09f9802b56905c10b897373586e9ada42fa19881f1b64",
+    "path": "tools/long-run-supervisor-074/src/checkpoint_evidence.rs"
+  },
+  {
+    "sha256": "1f14f771e13b1b0be3dfe49456a91f49d4e21aef4d1a63be518a773c6003c08b",
+    "path": "tools/long-run-supervisor-074/src/client.rs"
+  },
+  {
+    "sha256": "96ec2527c824e660c2b3816a816dc6293789bb35b11f5d87770578649f0b3661",
+    "path": "tools/long-run-supervisor-074/src/config.rs"
+  },
+  {
+    "sha256": "d742f17e745caa400b9e41b83dfeedd542d4649ab4627e0548c186f35c1accd7",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_artifacts_linux.rs"
+  },
+  {
+    "sha256": "6cff71b3c16ed6c017e0fc117aa76e13852a9ae67d897f41beea672cfc03e851",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_artifacts.rs"
+  },
+  {
+    "sha256": "b96bb51ed1c8e68c19eb8624e5b442f7f1bdc5f9fb0a05dbd268a16663fd3adb",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_attempt_publication_tests.rs"
+  },
+  {
+    "sha256": "58113662860ed1f0a6f5e2c80dbef7c40e02a5ae74ff3c7f133c26f9a0ced9c5",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_attempt_publication.rs"
+  },
+  {
+    "sha256": "3f89e78e5224b37ed864f7b510996a1c71a3b53518b32b2b27a2e7257a6ff532",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_authority_checkpoint.rs"
+  },
+  {
+    "sha256": "848a31bc3ff546d66a22ae4920ebd894e192061b9dda11b5482b858c68bf9354",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_authority_fixed_tests.rs"
+  },
+  {
+    "sha256": "fd1e10a038ae046888c8ff3c76303e36e5ed49a46aef2025391f8aa009d554a1",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_authority_fixed.rs"
+  },
+  {
+    "sha256": "09af700f81af7c1647ca76dfedf14ce51a18434723c49b9cdf441f7a019a6b4f",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_authority_fixture_tests.rs"
+  },
+  {
+    "sha256": "3b3c75f41dbd8a8db1f73d61af3b0c701a666c3ebeed326ae49012ed0c01fb6c",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs"
+  },
+  {
+    "sha256": "fa50229dbcc2c465b82c1c3a6bc4a849e99a4d5d0296b9e7c30ba85c3dfb873f",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_authority_intent_tests.rs"
+  },
+  {
+    "sha256": "f6f3fe692e65d6af515cc22ca0cca1082ec31063ff5fbb2e16a621e79d73fdd8",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_authority_intent.rs"
+  },
+  {
+    "sha256": "307e74b40e75c1757d176413247faa770c99789669274d2f8b3af04ae6b873d6",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_authority_registry_tests.rs"
+  },
+  {
+    "sha256": "1e936fe855eedad6d0e5dacbd76d534a45cc8df11cd30f06f8e2ed77258bc53e",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_authority_registry.rs"
+  },
+  {
+    "sha256": "7e6ab3a8be1fb8deb4e4d581cc2b84c3574cc9f640fae79ddc97f0caef8b5efc",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_autonomous_watchdog_tests.rs"
+  },
+  {
+    "sha256": "f8c3457db0af04ea598868f4ba6d72e178cfa28f390e8f1107fc0b44999b1ead",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_autonomous_watchdog.rs"
+  },
+  {
+    "sha256": "db85cd57e64d33b9095766c80b7acd8dba7161454eab8834c583ebf5236ccf1b",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_boot_buffer_tests.rs"
+  },
+  {
+    "sha256": "e4d0154a7fd3a3d1e7d3ca2698f570b6165bbe33fb6bfce4e1a02e59016a0483",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_boot_comparison_alloc_tests.rs"
+  },
+  {
+    "sha256": "ab72a531988cb2372a25199f2c8a32e2bacae1154582e90db57fa21573b3252b",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_boot_comparison_tests.rs"
+  },
+  {
+    "sha256": "d6f4b02fd424cd80b8f4462b7f87e6149c84bbfe21a4fc83b685c5a6926b2040",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_boot_comparison.rs"
+  },
+  {
+    "sha256": "8e1a063dc637e4b92f8699848f4cf232b839663051d75e9c421f691815d96472",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_boot_document.rs"
+  },
+  {
+    "sha256": "866ac90ac8f4a49e66c133cd82dbf76149ce088450a805b8abecceadfee0a049",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_builder_linux.rs"
+  },
+  {
+    "sha256": "313c2582775949094d8ab7f4e5adaea0342a703c3e2872d8f05a565529eca159",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_builder.rs"
+  },
+  {
+    "sha256": "7c750525eb9b06ab49e69fd608052ac9034eb3f3341c059bd3ac29a8072addcd",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_bundle_material.rs"
+  },
+  {
+    "sha256": "b759d0ea94748e989b231a61d4c0262d8113a286c5fcecac5d0d78bfa77230a5",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_bundle_projection.rs"
+  },
+  {
+    "sha256": "7095041c0f85e005fc08053fba56fc86760d7dfa6f4d26636a0dc2015ec2b455",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_causal_time_observation.rs"
+  },
+  {
+    "sha256": "f4f4709260f259eedb6f2de9140ae8b81c45b3dbaa0cf7cfdfc94becac6763b2",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_cgroup_root_fault_tests.rs"
+  },
+  {
+    "sha256": "f26918103e56cb3b20853871781170e424c56cc83070a458fa03eda3036c77c4",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_cgroup_root_tests.rs"
+  },
+  {
+    "sha256": "c465f2ba032cdf633a106723a5562db9ae0f650ae50d9c046fa442bb8f0a59fa",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_cgroup_root_transport_fault_tests.rs"
+  },
+  {
+    "sha256": "33732600eb4fa3c8e436a68caa3a24d2741c4daac92d7e6965b1282873b45554",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_cgroup_root_transport_tests.rs"
+  },
+  {
+    "sha256": "ac8807c22e040945811347e1d7583b27e326447ec6e8b1bbb2018bf87ab9ad33",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_cgroup_root_transport.rs"
+  },
+  {
+    "sha256": "51e60a20306b75d29c347764e8a44772500f11eee1b1a889f3ca0dfe6789076f",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_cgroup_root.rs"
+  },
+  {
+    "sha256": "789ac8b461a7efad8aaa36da3d3ba705bb50e62c54afec06aaa875d30a6facb1",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_closing_age_trace.rs"
+  },
+  {
+    "sha256": "14f24e1697b6df2978c89e12d1cc83cb5952374c4a6fa04fe72c18c8f2e373d9",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_closing_validation_fixture.rs"
+  },
+  {
+    "sha256": "93424033cf865cd41603008ad04bad026006ec2752ba0f22694d1deb1473ebcd",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_collector_causal_codec_tests.rs"
+  },
+  {
+    "sha256": "e1cc97a855be1f0a07c35fd7836e59a51a6172a64527a559393ac8a2bca43eb3",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_collector_causal_tests.rs"
+  },
+  {
+    "sha256": "1788f87b54843f12733f6ca561592ab85ccd142918d2ad6f4cbb9c3c0f7f5fe7",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs"
+  },
+  {
+    "sha256": "73afeb80bf72be2bd43e3785fbefdef005bd924875b05323894f08ed16e73a3d",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_collector_crash_tests.rs"
+  },
+  {
+    "sha256": "d69408d9c7a8aaa8d49ef74095885c9166384682873b63252ca032aa76780171",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_collector_intent.rs"
+  },
+  {
+    "sha256": "561cfbd01a3e99322a7444f3b10522cc65f68ff3d9d1dbeffb5b71fb01aad320",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_collector_progress_tests.rs"
+  },
+  {
+    "sha256": "4df062bbaebb77e6f4cf16a770ee49e87f24371fd12e2278ec2160ee4c718a7e",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_collector_progress.rs"
+  },
+  {
+    "sha256": "27b35701d57d5651ed13a9d6c98247730a625dd4c1b47bce94c4da547ac66a17",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_collector_reservation_storage.rs"
+  },
+  {
+    "sha256": "8651951847038c8babd306b75004456c62399af0687937c37b41d26b29747077",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_collector_reserved_crash_tests.rs"
+  },
+  {
+    "sha256": "b6803374b1d026d01881f4e15263c859b22d94bbaf1864dac65ae866363401cd",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_collector_reserved_tests.rs"
+  },
+  {
+    "sha256": "81f16769a8d95d62a78b5fc792ae234ca9979bb32b4847f69011e2eca1dfe2cf",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_collector_reserved.rs"
+  },
+  {
+    "sha256": "4e4c25c9bb71daf0040b0497835cd3172ebaffb93eeccb00af14c114b272a093",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_collector_starting_crash_tests.rs"
+  },
+  {
+    "sha256": "a939ecae2e11dc43e4cb684fd51a1bd4e9cbcb9131e084a84d47047fd269c6d5",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_collector_starting_publication_tests.rs"
+  },
+  {
+    "sha256": "ec40a433a6735f587afd143d84eb9ec7b74a23bd2123d776fe3f79f6c325cc40",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_collector_starting_publication.rs"
+  },
+  {
+    "sha256": "6a6b52c87fa9af4d397f2b1a39015ca93f0638bb0ca19ef1470f516994cca73e",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_collector_starting_record_tests.rs"
+  },
+  {
+    "sha256": "400652f620a8057baab185b32a06ab2342e2ae70d06c5e8b86edaebaa1f76583",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_collector_starting_record.rs"
+  },
+  {
+    "sha256": "22bafaef0b1e2dfe2006d1b173932ff7668e01707898218e0286b598a3e666f2",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_collector_starting_storage.rs"
+  },
+  {
+    "sha256": "d2f9eb343474f5dc24d3033497245e95e5d91d3c2f141029590dd1085e504b8e",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_collector_tests.rs"
+  },
+  {
+    "sha256": "63390f1c70706b57ad03596576d0af362ed24ab66ae52fd3472fb84297f09a49",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_collector.rs"
+  },
+  {
+    "sha256": "6480627a62d6c6c1c54362f8d8ecaaaaa035c13b16a16ded3a0138e864e0c7b1",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_consent_budget_tests.rs"
+  },
+  {
+    "sha256": "d4703a21669a88e1c6d7040e73cc386a604c2bfadd989920ea192b36cfc58b33",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_consuming_held_join.rs"
+  },
+  {
+    "sha256": "d4a80d6c9fbbcc70a9c521715c94a2183b5502e2aa48388bc51053ee88ec74a8",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_context_files.rs"
+  },
+  {
+    "sha256": "bc770a918ac1362183104e4517ec4b15e602ed8588b2c341120a576a0db0963b",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_context_replay_tests.rs"
+  },
+  {
+    "sha256": "3c8f6ac9d58b65881e1b279b283784d2ee7de6cbc0bf6c2b6fd3c7badb0ea95a",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_controller_attempt_crash_tests.rs"
+  },
+  {
+    "sha256": "d005b727878a3bc7c59e5e05f916dbbb25fef674abf6c85a5ff965308a3c5955",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_controller_attempt_tests.rs"
+  },
+  {
+    "sha256": "bf70240adb53eeffa1f78c29cf66290d3e56fe0778d570e7cd8aae921634aded",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_controller_build_input_tests.rs"
+  },
+  {
+    "sha256": "7df6881fa899224e4e97ae6e618f441258f42a2daabe6f2f042fe7fef3c96577",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_controller_build_input.rs"
+  },
+  {
+    "sha256": "853d927849a498ca8c13606040be115d3d2815a15fe2752803e2d226e0e0ce77",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_controller_component_cost_tests.rs"
+  },
+  {
+    "sha256": "3d8801ff7e488f397eab9c2847a11996dd6e0adb78c029c3e36e43eb92eefd28",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_controller_fence_preflight_tests.rs"
+  },
+  {
+    "sha256": "2dd436143d03faf3a974e8f828f4b53367ba8c6a0d589013c728cd292d32b2e4",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_controller_fence_preflight.rs"
+  },
+  {
+    "sha256": "56f56329dccc6dfe997145ebc2e9f935961efe7f89617a64293409b79318f500",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_controller_producer_linux_tests.rs"
+  },
+  {
+    "sha256": "ebf098a81265d120b7a39232d16167a16eff85b59c49b73d252e3e549e0590fd",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_controller_producer_linux.rs"
+  },
+  {
+    "sha256": "c51fb79c441bdcc66c4089fbe97a2f0c159e9f2441db2ac03957c52abb480583",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_controller_producer_tests.rs"
+  },
+  {
+    "sha256": "aba51c416f3645ed398e68a0d297080ecd9d8bb4755f4df3463b81d2b662d4b5",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_controller_producer.rs"
+  },
+  {
+    "sha256": "664bbb4d73f02649b3984ef4e0d1ea64a292a18f9a404e357340069216d28ac7",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_controller_request_attempt.rs"
+  },
+  {
+    "sha256": "2e4decea852087464983c9485249a63ece2af6e0057356afdba467e53c1f1cfd",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_controller_trust_input_tests.rs"
+  },
+  {
+    "sha256": "db9e97c1ff11fa3cf95f9c54c6dbf065bfa4b0f07d558eab23c7aff76c7314b8",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_controller_trust_input.rs"
+  },
+  {
+    "sha256": "fbc7ce7072957d5543e9bbe8815127fb781b4a567996315f920ff75b0b2c6905",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_socket_tests.rs"
+  },
+  {
+    "sha256": "32668eb8d87dd62a71c9c677c16e9d1146bf447ff1a44144f33eaef7fa50470b",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs"
+  },
+  {
+    "sha256": "3a10d18ef079e33da17e7e48dc28b34e43c11fcc315985bdc91f82d3bcd1ddbf",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange.rs"
+  },
+  {
+    "sha256": "2b573afc8c5a7a61b73467fb1f86bb37b62e02eff3ec6201c6adaa4ba8a31efb",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_dispatch_negotiated_recv_tests.rs"
+  },
+  {
+    "sha256": "a9c1b3caa736074e78d5ac67934472a1f53e126cf5d0c77030370bf3bb80895f",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_dispatch_negotiated_tests.rs"
+  },
+  {
+    "sha256": "2a931adae40f43147c5ee7050354e62afc54c05120c18a730a01bbf69c84b7cc",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_dispatch_reply_flags_tests.rs"
+  },
+  {
+    "sha256": "d1d970db92b60c0c474932f55210b29c0eaf632d5ad15636763dfe8034a07116",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_dispatch_reply_state_tests.rs"
+  },
+  {
+    "sha256": "e9e609c811dbe406f6304e2471b12d24737f91db62c1723735324c0a02fc1d30",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_early_attempt_storage.rs"
+  },
+  {
+    "sha256": "7d63c7575b8aa5740fa959121db1856f1c20c5c7f8fcaa637d6584d46238faf0",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_early_attempt_tests.rs"
+  },
+  {
+    "sha256": "d415bc72bd0a5c8c7e329742c4920347bfd74881d26274391871ca47611d6ee2",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_early_attempt.rs"
+  },
+  {
+    "sha256": "9cfc8e29c84bc78cea5e007f56cb7109be24670ef04f2200c5997d4f2ed54f4c",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_empty_fenced_intent_tests.rs"
+  },
+  {
+    "sha256": "02cb507440b303e395d4ecf6b1fa282bad8216c55d2e4f731682b4560acf847e",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_empty_fenced_intent.rs"
+  },
+  {
+    "sha256": "dbf608cad5cd9e769b226e8713437eea557628848af5f2a5d0dd8b4d3c8a1055",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_empty_reservation_fence_tests.rs"
+  },
+  {
+    "sha256": "1cc4341621eb3fe991eacde2c80adad1f50de8c7c3b5e7938d233ca3d9a36bab",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_empty_reservation_fence.rs"
+  },
+  {
+    "sha256": "06a511378df78a4883c5f293b73cce0662eac4fe3345a191978748b3a4c67c2d",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_fenced_intent_tests.rs"
+  },
+  {
+    "sha256": "35694e84626e3b6febb397989c855737482c15c454d4a886e5786d09db1a396c",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_fenced_intent.rs"
+  },
+  {
+    "sha256": "6e7fe02b99a3cae9accd893265f36a9fb11715eb1c549f13ebfd1a0df4a629a7",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_fixed_campaign_admission_tests.rs"
+  },
+  {
+    "sha256": "33e66f5cc542370bf94d102b4af0597aeaf9717351c0124ccfbd01338f7b1bc1",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_fixed_campaign_admission.rs"
+  },
+  {
+    "sha256": "1c83be4b01c78976529678985d1e0994ca742cdfdcb2acfbc8952bd7f9fb2fa4",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_fixed_grouped_preparation_crash_tests.rs"
+  },
+  {
+    "sha256": "69257b73545fec5f286fec3a10b5157beb5872c15d0e35bbe94a0d217d690a81",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_fixed_grouped_preparation_join_tests.rs"
+  },
+  {
+    "sha256": "b606a4a880f05b4120ae0e665adcddd131ce4ab721881ddd1462d39aa9794a10",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_fixed_grouped_preparation_tests.rs"
+  },
+  {
+    "sha256": "f4c8962262e85e8b252449c0840befe394e2f6fd794fc97732bd436cc93e4818",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs"
+  },
+  {
+    "sha256": "750a7fbd019ced6313af4e0ee5a4b3ccd7bd5f771c5a0ac94538c3d06e38a87e",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_path_tests.rs"
+  },
+  {
+    "sha256": "c8e2a9a46490e0cce35c0aa220866d26e51b0a1ec17f2466717c675870294f8f",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_fixed_placement_tests.rs"
+  },
+  {
+    "sha256": "061b56f017b9ab89f7b9610c7f83696e8e6cec5669a5ca3b74593de563cc3343",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_fixed_placement.rs"
+  },
+  {
+    "sha256": "35948fa8f3c7a425e4d2195377b9bb22dff5f1446a884e3779ef180375fea777",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_fixed_slice_guardians.rs"
+  },
+  {
+    "sha256": "ed35f74c688e3ed4aafc3983960829c8bc9dd1120095e9e3be5ce81809026689",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_fixed_slice_tests.rs"
+  },
+  {
+    "sha256": "f8199776b31d3b5fe89739ff60e742f2159dcf1f2d985252af847d28b4befd43",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_fixed_slice.rs"
+  },
+  {
+    "sha256": "828a11466b72f62d7f7bb2bb73cc6552e3f4911c2f98be7b671645718c04a5bc",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_fixture_recovery_tests.rs"
+  },
+  {
+    "sha256": "bd5530a6cb776780700d5b9416aab0a35c476ec6e38f2b5e80288c229c961d0f",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_fixture_recovery.rs"
+  },
+  {
+    "sha256": "26b7cd3e97d02dd79932256f10b0748b2e5c1629555cedfc659799f2cbec7fd1",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_gnu_preparation_cost_tests.rs"
+  },
+  {
+    "sha256": "22d8573ff169313b3d83e839b795a708732c081200c54198aceaa55c78a6fc5f",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_grouped_preparation_candidate.rs"
+  },
+  {
+    "sha256": "408468a76f43112dcb2b3089f4732d7e094b004cac8719e51a15984c629da71d",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_grouped_preparation_crash_tests.rs"
+  },
+  {
+    "sha256": "3f3141a13703c07f2116496c660b0f457159b2a87c0226e431885cffd452e505",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_grouped_preparation_join_tests.rs"
+  },
+  {
+    "sha256": "9bc61526c9a57b32d2fc7fbb9a8e248745ce082ecb43d8ecb94cf86e90b48e00",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_held_barrier_tests.rs"
+  },
+  {
+    "sha256": "fae8e04e9e3269d0865cbbaf5ee8f0b079b8124f80dd29861eab61fad86e80e7",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_held_barrier.rs"
+  },
+  {
+    "sha256": "39089cdfde97fca1cf76a360b2f80ae173980a4803980c350f915a7e62bea30b",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_held_build.rs"
+  },
+  {
+    "sha256": "6594f3cfe80d5add3e514732dc1cc8f86bda5e1f1aa8a472db4f4a6b8f2231bb",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_held_late_trust.rs"
+  },
+  {
+    "sha256": "cbe302e3978ebb4e96775206ce41a4bc423c3d1ab483b44882a00af82f867735",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_held_launcher_kernel.rs"
+  },
+  {
+    "sha256": "55c434fdc4cd81c8d2b4c14700d102c67c827c9edb15b02399c27c8a42801d8d",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_held_placement_tests.rs"
+  },
+  {
+    "sha256": "c050714425a8485605856d3c5f680e3b1387fd4886d441ed65a6fce768006d5a",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_held_placement.rs"
+  },
+  {
+    "sha256": "848f90671f720e86c4a1205ad4121bb98309bc50bd20db3ca9de719616ccb284",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_held_role_binding.rs"
+  },
+  {
+    "sha256": "4f2747ee777ce51d02a541af20c7ca807e76f5e66f036b22e295de1a9c6b8bb1",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_held_role_files.rs"
+  },
+  {
+    "sha256": "54e0c7df6f75c069d2a4cb5efcf924f86dfdd71b7e87ba9b411d036d66fd7223",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_held_role_projection.rs"
+  },
+  {
+    "sha256": "0ed410f73ccde5806882ca46d06df002c5d1296b6e0a24f9d1e97df16cb5576c",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_held_role_provenance.rs"
+  },
+  {
+    "sha256": "2930181d490de67bdd611c3054221ed35d3905b645e984a591854b9342e396eb",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_held_runtime_trust.rs"
+  },
+  {
+    "sha256": "14c073f8208b7595d29f7bd250fcad557ccba1f9a0c284fc2f35a203b5ac0bf9",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_held_unit_material_kernel_tests.rs"
+  },
+  {
+    "sha256": "8e6d2dd95873f76e2e1e7fabdecaa8bf4eeffb44bd4c367cc735f2d35e502de7",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_held_unit_material_kernel.rs"
+  },
+  {
+    "sha256": "da0a9b854969bb344505435bb5c4133266d50116dd5e805f240cf4457e13b970",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_held_unit_material_tests.rs"
+  },
+  {
+    "sha256": "57f22b47a92c5a3e569dc1e32a7b7a6e889015876b6a08583f059e3a52934943",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_held_unit_material.rs"
+  },
+  {
+    "sha256": "5301c3425e770be6e04ae58e50adaf9d49109147631c8900b5d672af5b67b384",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_held_unit_projection_tests.rs"
+  },
+  {
+    "sha256": "f2bc04d719101b2bc5e23044f80f49db9a32e1ecc3c9f334a79e959ad5cf0cbd",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_held_unit_projection.rs"
+  },
+  {
+    "sha256": "0e950b31b6bfee7f5ee84c4740dabbd974af6dd9325abf579ebb53c2c3fad780",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_inherited_pending_watchdog_tests.rs"
+  },
+  {
+    "sha256": "819847117c4fcfe17fec4dc9aa4d7e03a9e2baa962a553829b63de14f84d8129",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_inherited_pending_watchdog.rs"
+  },
+  {
+    "sha256": "cd1cd01955f5a8fde961e5f15e4c17bb20f8271bd302eee17caa58260d577cf7",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_initial_consumption_storage.rs"
+  },
+  {
+    "sha256": "efc80e14f6d8e1924dc32ace94e8932fbe99e9b03d7d1d8e381b84127254578e",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_initial_consumption_tests.rs"
+  },
+  {
+    "sha256": "395f53672edf988ac54137ebe2b253000f1d8be7f906c2a71227086ba7e68963",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_initial_consumption.rs"
+  },
+  {
+    "sha256": "b06aa93d7ae4553ec54b2ed7ab30bfe49b3f76a703d11965d8927c431a3ee818",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_intent_fixed_storage_tests.rs"
+  },
+  {
+    "sha256": "d764d42f920bf6b060cfe5f0faf8839450f5e4bdcb086fac853432fe3574a42c",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_intent_fixed_storage.rs"
+  },
+  {
+    "sha256": "22dc47572b9c1a9588a0f5c7c0fe89406f6097cce4b7e889afb4879f04e54b30",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_intent_journal_tests.rs"
+  },
+  {
+    "sha256": "e8f02772fdfd9b3cc0ea215c1a3b52a048c3d10fdd43b99fcc9a4dea6a1b0edd",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_intent_journal.rs"
+  },
+  {
+    "sha256": "9e90a85ad9c35c2744d2725a96ef1c7093a1985e0daa105772fbe7839bf6efec",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_intent_projection_tests.rs"
+  },
+  {
+    "sha256": "7e913cf6f8b6f0d9e7bb7d32c4435f0352dd3f2f546769d3ae81f3000608e941",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_intent_projection.rs"
+  },
+  {
+    "sha256": "1e50c3ff6d867c2c3f384ecdfce74028ff39b94e55dd1e81d2a856f88fa3440a",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_ipc.rs"
+  },
+  {
+    "sha256": "b990bdfa8c63413d82450f047f728fe3194342602276f0b2c8f1aedf84c44bf1",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_admission_tests.rs"
+  },
+  {
+    "sha256": "1e8bcb04d53ab996932e96333af2dfc838d598fc61af3a606b468886c834f6e1",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs"
+  },
+  {
+    "sha256": "b5206f8051330c11f7979f6afd61376054fd5c2ca38030e60b2bdbf40972543d",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_ancillary.rs"
+  },
+  {
+    "sha256": "97b0fa0be4a59f245a7857a1106c1275030660922436fd8d9a65b1e4ce2c5395",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_collector_inputs.rs"
+  },
+  {
+    "sha256": "c12bae0d3770afbcfa15eeb7d7d334234551d47024a17bce7bed817abc4831d5",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_manager_binding_tests.rs"
+  },
+  {
+    "sha256": "c61476f51c23c7393ccb25ee1c6f79e9c44a0f43cdc12a4ba45b75a4744f66e6",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_manager_binding.rs"
+  },
+  {
+    "sha256": "b9090e2d318e6cc49d44f29300b9542fb67f183662098261494070e8a02a92da",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs"
+  },
+  {
+    "sha256": "13b9fe620dcd4b3bff719f3b4f62eb1b38c33809d1ed0f81a597a49734e2c9a8",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_progress.rs"
+  },
+  {
+    "sha256": "0dceb5c182144a65c4c1e04531672953e17426bac43b35a9cc6891104cb59fa7",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_refusal_trace.rs"
+  },
+  {
+    "sha256": "28a107ef9b16c28a836d0944fef604707439b1fd390dafcf3ddf856c884d4e1a",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_start_consent_tests.rs"
+  },
+  {
+    "sha256": "7a8726e5a19ba8ee27b168709c6f80f23338db50755b17948f256903042d5d95",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_start_consent.rs"
+  },
+  {
+    "sha256": "25a78dbe87d1da8dd4d8d34f8a7cc12424f07e9d99aa3dc2c112ed34ff35a269",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_walk_trace.rs"
+  },
+  {
+    "sha256": "a0df0b79a11422df4279a7c5bb8485d5297853639039a02f5127503b52508cc5",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_lease.rs"
+  },
+  {
+    "sha256": "4d2343aef6aae07a6c8a198525734e2dbb99392f424f93e3f238e9241d670b8b",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_live_execution.rs"
+  },
+  {
+    "sha256": "99c73ade3abb85f1e44f1f59f28e375e348033b88bd187645249f2a17cd717c0",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_live_identity.rs"
+  },
+  {
+    "sha256": "a48c2405154ee516fdb1a7a4f1945c58c0a65a5adabb229bb04d5c8eb609835d",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_live_walk_trace.rs"
+  },
+  {
+    "sha256": "dedbee622bc143a7177c7edb660d115338c14cb9e845a7c891bc086e0ae974eb",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_loaded.rs"
+  },
+  {
+    "sha256": "6ed19516345e555b556817a2727b4c5d30ce10dc73c59ab8b78f91375001cd66",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel_tests.rs"
+  },
+  {
+    "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs"
+  },
+  {
+    "sha256": "3d6567947ff6073ea76f95bbf8916a91f3d7d6560a22ad51686208d1259cb3f6",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_manager_channel_tests.rs"
+  },
+  {
+    "sha256": "ffb8302f2351ee07605e367c42c472a960fca808a5ac8c2d48c13b10097f4a07",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs"
+  },
+  {
+    "sha256": "dada14e6c223e77fb96a2ab60dc2cabf08479358b42e0dafe6b2ceeb15a77f72",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_manager_receiver_pin.rs"
+  },
+  {
+    "sha256": "7950deead36bcc6514f1c2f73be3cbce126a6e7a3bff3d1a55d11eac0be674db",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_manager.rs"
+  },
+  {
+    "sha256": "e55c677cfb66e41cccec397456a824eaa81e425a4dcefd3f88ca34217e6c8b8b",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_mount_namespace_tests.rs"
+  },
+  {
+    "sha256": "48e788f2e7af9b646207e54801d259e782af2b6a167fa82ced53706f0695ab0d",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_mount_namespace.rs"
+  },
+  {
+    "sha256": "d985ba336d59719efbf8b700ebfb7a098b623ee63cd623940b3662043d70f3cc",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_named_output.rs"
+  },
+  {
+    "sha256": "9749eb4c43aeacf1e17f08f2e578520f0361111912b8787c143035dc80967207",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_namespace_credentials.rs"
+  },
+  {
+    "sha256": "d73bbf59bca7daac92c1eecbf5c500afafbe41cf07e67a60e7298f43ee1f51d3",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_namespace_worker_binding.rs"
+  },
+  {
+    "sha256": "a46e82e5e2f855e10d20695dd7ffd9306cf015d8600508bba6a0bde497e295cd",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_observed_reservation_tests.rs"
+  },
+  {
+    "sha256": "ef17da44a591887d43581f16ab3549a4f80270a94a7f59fea58911dceba7dff3",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_observed_reservation.rs"
+  },
+  {
+    "sha256": "29bf1155738510ae1c884b9f61b38ecc1f9247e7321a16f39ea8e3f28b7c1b03",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_oidc_input_tests.rs"
+  },
+  {
+    "sha256": "cc87300e46cc8449a6fa57c45e061d0c488ccddd3c911426110272eb8dc2514e",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_oidc_input.rs"
+  },
+  {
+    "sha256": "a9ce16f41bf18c8059aad93588ffcdce050ccea93cb8a8ae5ae4938055489096",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_oidc_profile.rs"
+  },
+  {
+    "sha256": "85a819cf20a7110887b4cf2b125bcefe5cace3afbf4bb34c1541727a0e2d8528",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_oidc_roster_tests.rs"
+  },
+  {
+    "sha256": "06d693658f5f140a06c13540cc23434f69509d3483cb25a7afa96d227f36d23a",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_addressed_transfer_tests.rs"
+  },
+  {
+    "sha256": "00a93c58e8c3af93e1832e3cff7c9b4e6ee74f7fbb90abd7c16f1d646cc1cb69",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_barred_collector_kernel.rs"
+  },
+  {
+    "sha256": "f118ad55d0b2e062643f68546cb13fdc87d35edbae8f129dfe8517af631b06f2",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_barred_collector_test_api.rs"
+  },
+  {
+    "sha256": "faa17e2b3cccbbc6bd5bae86ab58eae1a53d6134088abe9c750247bcab0676da",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_barred_collector_tests.rs"
+  },
+  {
+    "sha256": "cc8bad9193692c3a9e7bd0c6ff563c5c2dbdd0f7345b8fefc6d958aa7d1ff57e",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_barred_collector.rs"
+  },
+  {
+    "sha256": "a1c8f5135d105a3a5a6d87ef8589cbe1f3c3dea8dada19ac6850520c145c17f0",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_barred_custody_test_api.rs"
+  },
+  {
+    "sha256": "dd0e426c1b817403960be998d9843b646a604893edf4d4ee89a1912a7ad121ff",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_barred_custody_tests.rs"
+  },
+  {
+    "sha256": "2aea5e4cda9338c0fc21abd97e30602679900e46b6a20f0fb7c4b759171aac4b",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_barred_custody.rs"
+  },
+  {
+    "sha256": "e655734661a23f69d83815f0297e27748bf2a53703a832171f2bc44a49c78784",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_collector_custody_storage_tests.rs"
+  },
+  {
+    "sha256": "6e504612f2c97095aaad18fefc954d7035463b03243b4a411fe5393b9f7e4cd7",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_collector_custody_storage.rs"
+  },
+  {
+    "sha256": "a0d47a90d14b01e14af5ffc834316d2efac64fc18d4175c150c46b0ca798181a",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_collector_notice_tests.rs"
+  },
+  {
+    "sha256": "4422270bac669a695d26cbfc32a4f61395cd466f4e8a6fc57929c244a3774304",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_collector_pipe_kernel_tests.rs"
+  },
+  {
+    "sha256": "b2ccc67618169d6f1625a1c796e35665d9180da8e6f00400258994ada942603e",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_collector_pipes_tests.rs"
+  },
+  {
+    "sha256": "d2a0d29d67f46a9eac4848b8c3fa9b4bfce458d125f90df5e0d48cccbf35df64",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_collector_pipes.rs"
+  },
+  {
+    "sha256": "70e40dbd536e9d37c0cb56f8960bc19396f0f1f0984d90a724406dcfd066bd3b",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_collector_sink_kernel_tests.rs"
+  },
+  {
+    "sha256": "e0b7c86b31cbe438e11498b783c58ad2d50e609fcb04472334465d918d228d5f",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_collector_sink_storage.rs"
+  },
+  {
+    "sha256": "9162ca505e14a49345015e9e1c91b2702391b4a646536a95333a73a8123739b7",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_collector_sinks_tests.rs"
+  },
+  {
+    "sha256": "ee934f1312161238226e6618910c25717a36f8719b4613d45da51e4309ea961d",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_collector_sinks.rs"
+  },
+  {
+    "sha256": "309f336310d10236811d79088ce050bf991c7a46ee6d3f6a9856a47a95110bca",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_collector_tests.rs"
+  },
+  {
+    "sha256": "9ad9bc4fbaeb7eb7ab2de4eacc32be4a16c812c35baa9c4973f30510a20c3cfd",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_collector.rs"
+  },
+  {
+    "sha256": "fe4e686bd46880431b8c8677dbc26bc751e059d85efe45c212b9c7d39a967e3c",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_custody_join_process_tests.rs"
+  },
+  {
+    "sha256": "0ac556f8863e3f4ef380a2770212bef5e880d4f1ccac5c96f5bca559f02c7535",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_custody_join_tests.rs"
+  },
+  {
+    "sha256": "361663b98b5bfd8d6650b69d11ddd6edec0b830b01aa29f824086883ca045449",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs"
+  },
+  {
+    "sha256": "ba25b8b4f3d1791adf637a63afe0b0f66b6d434c30695fe2ad2012ae28b67b82",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_custody_loss_tests.rs"
+  },
+  {
+    "sha256": "d557bd89c5cbdefdfd8b5996a6acd68dbc98213034c6aba30a1434589c0061a2",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_descriptor_barrier_tests.rs"
+  },
+  {
+    "sha256": "ff90c7e0376ba29fe355af29bbc0efae44291a4652ff35bc422ff077d3dd819d",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_descriptor_holder_tests.rs"
+  },
+  {
+    "sha256": "7978cd67bf5fca11aa06e17d949d1caf6f757b2e9f21735918875f9f147f63d4",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_descriptor_plan_tests.rs"
+  },
+  {
+    "sha256": "62157d77b0e8b5d26a6e0d7802e593eb451872347320140a2d12869f9e1f4aaa",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_descriptor_plan.rs"
+  },
+  {
+    "sha256": "4a83ba209e3ba26617127b8d596be1bfaf922bb13c913a96ade1430d1686e5ae",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_enrollment_fault_tests.rs"
+  },
+  {
+    "sha256": "37061633a1f3b16320278776937513648e8fed7d52e81fea92840282b5aadee3",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_enrollment_frame_build.rs"
+  },
+  {
+    "sha256": "3ef4da8d96b7dedaf9ac0dd75ce923c44b1ae3cb21a92619b0361d0b027d9288",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_enrollment_frame_test_api.rs"
+  },
+  {
+    "sha256": "f0f4e07df396f246943abbac53353348e442b2c94266436bddfeac488d1c891d",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_enrollment_frame_tests.rs"
+  },
+  {
+    "sha256": "e670d7a59ba74d23cbb663f13924edb6c749eb7287c2d90d6cbbae76f4b3e876",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_enrollment_frame.rs"
+  },
+  {
+    "sha256": "90054c0e23d4da752bf57230414116f676d40e600d52748968b7a9a39316fbb1",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_fence_custody_tests.rs"
+  },
+  {
+    "sha256": "bdcec7a74579a1c85e9e12cfb3e75eaa826615373804defc7bb95c65ffe44c11",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_fence_tests.rs"
+  },
+  {
+    "sha256": "56fe527da87c8ce36fb87bfedc1684ac96b6e0a11d5c53ee381fd1224817f8ac",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_fence.rs"
+  },
+  {
+    "sha256": "8d03adde5a6420d26a7ad071c12cd7e1f89192c6cdddea2066f3ef8fc2ce09cf",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_grouped_preparation.rs"
+  },
+  {
+    "sha256": "fef596e654b0b4c98d5c0aa26bd6fde560cd379318087876b44047137bc97722",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_kernel_walk_cost_tests.rs"
+  },
+  {
+    "sha256": "cd289c3a1947972e8d36bac82eb060f8d294d367fa5a87ab6b3d87107abd549c",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_live_walk_cost_tests.rs"
+  },
+  {
+    "sha256": "58af4719f337ceafdcf62afbc5a1af98132e7cf90687b625dc68d19a1cd28b03",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_manager_frame_tests.rs"
+  },
+  {
+    "sha256": "90734e5e3590a70b8f8cfd04f8bfcf7b082853512ffd3ab0f782b85ab43a5e64",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_manager_join_tests.rs"
+  },
+  {
+    "sha256": "617bf72f9473324b47854a428bb6cdb7a462451120f4e4ed480f651bba4a0a47",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_manager_join.rs"
+  },
+  {
+    "sha256": "4d60bc7742c4838a90593c73af6f27beb95e5f34d3aca864dfe7c939fe33b7f8",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_manager_message_frame_tests.rs"
+  },
+  {
+    "sha256": "cd128f235f0aac51bc948aa40e0c49cd3d45fe2a67f7cbaff915ef75d0f5e2ee",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_manager_message_red.rs"
+  },
+  {
+    "sha256": "9763cccb7bb3a45d836c34ce4661f0fe96eca47041c4244b1247213451e47bb8",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_manager_message_test_api.rs"
+  },
+  {
+    "sha256": "0e57912330b92230885f15eaee932dc303a51bf78b47a0835ab40cbbf1334d1f",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_manager_message_units.rs"
+  },
+  {
+    "sha256": "95ba07f143ead7683c2c3d20b178560f6d086d2643f09f030f690b45fd9b17da",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_manager_message.rs"
+  },
+  {
+    "sha256": "aa98f0b4af20359688f8460280a930d989a3a9a72f791709529fdf5b31df2c76",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_output_join_crash_tests.rs"
+  },
+  {
+    "sha256": "f666a42a22ee3cf5fc95818f4d4ef9b15cd514dcbe0ab0b5b4349e155abda2c3",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_output_join_fault_tests.rs"
+  },
+  {
+    "sha256": "004bd84f4943b5d63f108cc5b2d829b7f8648b6c1076dce968319799c7e9d59f",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_output_join.rs"
+  },
+  {
+    "sha256": "721b700557cda35b737359122e1f38dcccabbdafc6f4e2a6510de5a62a8f3b7b",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_pending_watchdog_frame_tests.rs"
+  },
+  {
+    "sha256": "f82a1a76aa0963f734c56e0aa924b03c18925c417ecee3b822df861c45de1c62",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_pending_watchdog_test_api.rs"
+  },
+  {
+    "sha256": "895dea88caf4c388380072eee5a6fa5dab49b5c1a90dfaf9bcbe72beb0652252",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_pending_watchdog.rs"
+  },
+  {
+    "sha256": "ea5fc4d2b5620cd758780a8fea5ec3640f7efb3712ca105bc652f0d92ba095dd",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport_join_tests.rs"
+  },
+  {
+    "sha256": "f88e0f99f22380c37617300e6bb1074668a2064e37e4195fdda8b332fb5bd10f",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport_tests.rs"
+  },
+  {
+    "sha256": "e761ec070542dca7268ecacd3dbd43d09cb6f5ed05bc19933a35e1589a109a1b",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport.rs"
+  },
+  {
+    "sha256": "cb9581ab7cae1813f8d885c8995196f5143c84a870814d0c8d74ddfc2e767e8b",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_plain_worker_tests.rs"
+  },
+  {
+    "sha256": "5351b60a74757bb57f8cb79c2642614ff10304a3438dafa24c0858e447a78f9d",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_preparation_budget_tests.rs"
+  },
+  {
+    "sha256": "4d03c017e4b138b0e4ff0a6cc746cce58de7f5cf272e2ae977bee24eb4e23198",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_reply_binding_frame_tests.rs"
+  },
+  {
+    "sha256": "27a8fc475441f047efd28c5da0bb9f8d079c9ecf129cc09fe9c9975b5e849866",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_reply_binding_tests.rs"
+  },
+  {
+    "sha256": "42ef39f78427fb54e6fb4612885fe069a86b57bc5f83ff91218f93b2ad54a9ab",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_reply_payload_tests.rs"
+  },
+  {
+    "sha256": "5405d5540eabf7be4c4fef85ee24f946d412664f0b115d99351dca957852858b",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_root_guardian_frame_tests.rs"
+  },
+  {
+    "sha256": "5568c69e3eee8fa2410d60bb925e7947441f7ef04b62a026f85179a40aad7217",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_root_guardian_test_api.rs"
+  },
+  {
+    "sha256": "ee7cd8cfd3ba135676eac663543c62370bb3b75b11d7abe3c95bfa0416acc477",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_root_guardian_tests.rs"
+  },
+  {
+    "sha256": "5f7d7b39a30cc90cdc0b394bf3591b156b4d5f722d33b1afc22fd54ac89a0e88",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_root_guardians.rs"
+  },
+  {
+    "sha256": "2afeadc28a9efa78f3d482e266954ce1300d15629d5b3829c47c7771b56100b0",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_root_retirement_frame_tests.rs"
+  },
+  {
+    "sha256": "7419c9f890797187cfd1f4ce5f86b3f2757da239813d8b46bf6650c304128b65",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_root_retirement_tests.rs"
+  },
+  {
+    "sha256": "a5a26e1627f62dfe16516b1379d7e5a84f30d7d062e442737832a11a18cd345f",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_safety_alarm_join_tests.rs"
+  },
+  {
+    "sha256": "5e7fd2b111cff13049a4bfcf71b7fc15956a3658b01ff923555fa3549f09d02c",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_safety_alarm_tests.rs"
+  },
+  {
+    "sha256": "0eefef4e77e807acd0c9413f83ba9f3c97372c71ce2d6923f73092828fb48fad",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_safety_alarm.rs"
+  },
+  {
+    "sha256": "a45bcf72db0967771f0d59c1ede79be294efa04eea625142c03a50fe67084c66",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_start_consent_binding_tests.rs"
+  },
+  {
+    "sha256": "76a0a5e0149342e8577caa68a7fc0f421462ba9f42fbfab96e62522559f126ae",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_start_consent_tests.rs"
+  },
+  {
+    "sha256": "168fef8d678bd77f405c87145250155588e5fda5716100bfb26ac1d6d8c80698",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_start_consent.rs"
+  },
+  {
+    "sha256": "89b6b250028160c5156faf0c89582b739d3facffa9ee325bfc9eee3f5cd3ca8a",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_start_material_join_tests.rs"
+  },
+  {
+    "sha256": "49439bba041141b5efd3035a204c3ff5de85519c4b6206185d664887ab49348a",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_start_material_tests.rs"
+  },
+  {
+    "sha256": "874efb8015333b5ff4b3dd2b26e8e8c0ec3706f5ffbbe80d7dc0fd8b9dbde887",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_start_material.rs"
+  },
+  {
+    "sha256": "2c4fdc9120ea95c614b6f8e021ebdef0640521b9bebe8677817ba928220d6ff8",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_watchdog_context_frame_tests.rs"
+  },
+  {
+    "sha256": "c372a4114182494fc8a900e9be7a37e29cce4c1d602cf906a677dd57fd013c6b",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_watchdog_context_test_api.rs"
+  },
+  {
+    "sha256": "87270271dc38e9b3e98805f420702ea9c16875c5086ada3c97fa1aa4ab713ba6",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_watchdog_context_tests.rs"
+  },
+  {
+    "sha256": "8c8388c9fce9317fdeada367f99089bac9b86de4b9f417e44f68eccfcbbeebf1",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_watchdog_context.rs"
+  },
+  {
+    "sha256": "3c2f266c7342ec1551fce535f999978854cf40c3918d42f03d6b8e5e2091f8ca",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_output_preparation.rs"
+  },
+  {
+    "sha256": "f3cc7b4f1fd5de445b7801dd4dd51a5b023fcb1eed0c507c377da92b1b9e7014",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_owned_placement_fixture_api.rs"
+  },
+  {
+    "sha256": "d66e2ef9c0ede1dd610509e19b72376cd31890ae34959e06a08211ac50b2d9f6",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_owned_placement_live_tests.rs"
+  },
+  {
+    "sha256": "5f07735cddb10c28418ccb418ee44f6b8ce301374c3e82f7ad6ced89411e5be5",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_owned_placement_tests.rs"
+  },
+  {
+    "sha256": "5fd4ae28b88d4fff5a36dd0e94683ebf528d81d8c01dec1cfe49f0776a5727ee",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_owned_placement.rs"
+  },
+  {
+    "sha256": "d69d21aedbe667fc7425b8e899902bfe710017d7ba54e515fb89a8236f1370a7",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_owned_root_creator_fixture.rs"
+  },
+  {
+    "sha256": "6b5dc832ddaa40e89bcc209a0f7d685c7fda05ee0653c3a9e07e9618e9bd6b88",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_owned_root_manager_test_api.rs"
+  },
+  {
+    "sha256": "477e129074b1c9f70da9a89ed4e94fdde0672eb3a0a3923d6321f4e64dcf4968",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_owned_root_manager.rs"
+  },
+  {
+    "sha256": "e47612c9dad6281d253f4d6d1c82ac9d692e64f8aa0727b9ca10240b5ab7559a",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_placement_preparation_cost.rs"
+  },
+  {
+    "sha256": "42197448bf65ec1142adf42e9ac79154997eddb7413536ad298742138c43abdc",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_placement_preparation_trace.rs"
+  },
+  {
+    "sha256": "dac5239ad45aa32e9d952a9c5f4f6f5edc1a36974095c99061c40d8928b7756e",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_policy_credentials_tests.rs"
+  },
+  {
+    "sha256": "276363690f4445a090fca3c2753f229fa2954f6b3e12aba57293995de8a1e2a2",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_policy_credentials.rs"
+  },
+  {
+    "sha256": "ae256993e583bd79e0e34155b0c695d9cc2846e29171b0f78603d6b4a8446741",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_prearmed_watchdog_fixture.rs"
+  },
+  {
+    "sha256": "a47f071dbcce4d156eca4bf079b8b1b5d5dd6feb4d8e376bd59f6168434fc7c8",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_prearmed_watchdog_tests.rs"
+  },
+  {
+    "sha256": "8c8d9af999d1d47ea8efe8cc42740f62339f0a5cea40879a7540fc7223522652",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_prearmed_watchdog.rs"
+  },
+  {
+    "sha256": "efea372b182164883f10487178ccf1170b1d403d7331b6498ef218e603f08ad0",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_prebuilt_copy_tests.rs"
+  },
+  {
+    "sha256": "a7302d0e24070589ea0d64ce92bf1cce69088b0951cc8fe129bed9ffe0469227",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_prebuilt_copy.rs"
+  },
+  {
+    "sha256": "421cb9d4ec62701e63490ab81329a53a4df753451a20a638053bede3c52ec5c0",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_preconsent_frame_tests.rs"
+  },
+  {
+    "sha256": "5d91ada6967e522f161fe7ad16ff0a18b018bab77c7d8652993544e9fd566333",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_preconsent_frame.rs"
+  },
+  {
+    "sha256": "6aae25d986cbce9053d78d4302de7499f53300fb34d8145c50a11265122e73ec",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_privileged_authority_fixture.rs"
+  },
+  {
+    "sha256": "01a96e7a340ccd6e932131e052f14327049d95595950eb8d4858ffc4c8af4ead",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_privileged_controller_fixture.rs"
+  },
+  {
+    "sha256": "4c119b94296c8f505a69ab474c7693964bf0d28fb8a51e157eb3437188eba572",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_privileged_controller_relay.rs"
+  },
+  {
+    "sha256": "11189d1743dde8636a320ab5c5ce5676e3a0e47c418d92ad9d5981ae010ac052",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_privileged_enrollment_fixture.rs"
+  },
+  {
+    "sha256": "13b3c8511f3c1fac2de06aaad44ae9209c6eb581bf82a925e22c181652a5bec1",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_privileged_fence_fixture.rs"
+  },
+  {
+    "sha256": "c28e651f9aba276026b0067aa27aea3eab318eb2abf5583cebf40bf4a0a2ab88",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_privileged_fixture_origin.rs"
+  },
+  {
+    "sha256": "44464fdbc1d35c47a05923b2bea5cb9618b5063cd61898fec4dc7af22ddbdc29",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_privileged_root_cgroup_fixture.rs"
+  },
+  {
+    "sha256": "7640859678c012992afa84790865620ba90560403774ff0a4865e8638bc4e189",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_privileged_root_frame_tests.rs"
+  },
+  {
+    "sha256": "4644644ab17f7394277cd3203447e354eeda398b18bf9626a4fdd3661e113baa",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_privileged_worker_fixture.rs"
+  },
+  {
+    "sha256": "db6ab3ea4ce919672bee5abeb2063566ca9c233f9723fc3abdc15f37459399a2",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_process_crash_tests.rs"
+  },
+  {
+    "sha256": "bf234b6a85969dd9318b1c7e420b10fd7515f824e29af9402bec4f8955ba1d9a",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_process_credentials.rs"
+  },
+  {
+    "sha256": "5e8e9e388c9be63fcf27048fab92a6852fd53d05a0885ff3e8757fc224c4a179",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_process_executable.rs"
+  },
+  {
+    "sha256": "9101a388d67240a26f19efa8da3efb24d1bdcb303ce11f4faf0ceea8f8985328",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_process_io.rs"
+  },
+  {
+    "sha256": "4569e7a8a22f9f9ba838c341dfe4aec78a432b15d7b36743fcb5dd8c1752adc8",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_process_terminal_tests.rs"
+  },
+  {
+    "sha256": "89f0c66f6f1612b4aedb6dbcb6ccfa3fcde7ecd6ee555a7c8ab7961a90d9624c",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_process_terminal.rs"
+  },
+  {
+    "sha256": "6873afcec923a19a53e2a19393c1d67290d37f0fa61375aa04bd8380d185183e",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_process.rs"
+  },
+  {
+    "sha256": "9160882f212cc79eb519c9a74a6f3b8f2501a15bbe09b413cdde031de65e2ca0",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_receipts.rs"
+  },
+  {
+    "sha256": "68fd16dfff8bd32ebc3e765df7668b5691484cebde2ed67913ebebd630a3c7c2",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_recovery_authority_tests.rs"
+  },
+  {
+    "sha256": "cbd8de8ada1731b5912f80752e2891d7a4bddfc13401824362f31b42d178efbb",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_redundant_watchdog_fixture.rs"
+  },
+  {
+    "sha256": "2226ef08f6e9dc5d63bd5f11ab60820d23466e9b2870ea3fd447a9c6f519b9ec",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_redundant_watchdog_tests.rs"
+  },
+  {
+    "sha256": "01ef7ceb39c4eb4f9ac328930d67266efe402b12fd84d82bfe83a5272ceb73f9",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_redundant_watchdog.rs"
+  },
+  {
+    "sha256": "805ba1944c0f983f5f3d487c5b2019f7de5b5d3261e3bc4ae3f188128408681c",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_reservation_publication_storage.rs"
+  },
+  {
+    "sha256": "ef1a7089d4f71872781abeea75b81612e8c070aecfa3c76f94b8da65e623189b",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_reservation_publication_tests.rs"
+  },
+  {
+    "sha256": "6ee7a3c4bc33419a5d112486f15c97b14d505f2a33d6b77b74629a08bf331ac5",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_reservation_publication.rs"
+  },
+  {
+    "sha256": "3f92872a7cfb6da57fddd48d4f8f4d21f8d39013bb32d3510cbc5dfb0032cf30",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_reserved_state_tests.rs"
+  },
+  {
+    "sha256": "d55c6ac34b061585b45fc53d6a31a4570ece37c344846c06ffc7f61001ec4e8c",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_reserved_state.rs"
+  },
+  {
+    "sha256": "9b5c7dc4403fd5fd1db37b8f20ede8524fdbb8993258256aacbbeac52139c466",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_retained_producer_tests.rs"
+  },
+  {
+    "sha256": "b950578f1363d6c0dc2b42ed4e702fb99db55d931f97a2088f9ed655c7090b13",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_reviewed_trust.rs"
+  },
+  {
+    "sha256": "830692baa9b45238549c09938e00fa837b47ae7043eb7c1e779fcdbf9fb166c8",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_root_creator_tests.rs"
+  },
+  {
+    "sha256": "d35e8ec1ec61f1f594dddd44b20ede6421c4d008039e6466622551a55c11271f",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_root_enrollment_tests.rs"
+  },
+  {
+    "sha256": "038bc3b658cc71e921a9030a4ea283dedeae6d232a140ce3579c16795bc6039e",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_root_enrollment.rs"
+  },
+  {
+    "sha256": "34b566c8007eeb5c6cfd1ce3abbcb07df35bdf7ed918f038aadcea50099c6024",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_root_guardian_fault_tests.rs"
+  },
+  {
+    "sha256": "b1b1c0bae084a96b63a8bebedde9e75a989f54b91ad1e45fd1dd5dbea592bbaa",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_root_guardian_original_kernel_fault_tests.rs"
+  },
+  {
+    "sha256": "0bf0920a035c64a1d7d7bdd88fb989702c8343b354438f07fe4194d28b0d5ca2",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_root_guardian_original_kernel.rs"
+  },
+  {
+    "sha256": "8afd463f45157ea63499af606029bccbc4fb3c5b3e88900a9a774d78d9177a78",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_root_guardian_projection.rs"
+  },
+  {
+    "sha256": "bbaed4aef3c8338d8425f945c15d7178778960ea4723eaf20538551c4225cc56",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_root_guardian_raw.rs"
+  },
+  {
+    "sha256": "05c05b7b1d0981c733b99f52510a48155ee7f0e496b1b29b4dfa2c54bbab021e",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_root_guardian_tests.rs"
+  },
+  {
+    "sha256": "5f469b6162188f2caa488994ce7890adba4c0292df94a6346f78873aa90dc3ed",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_root_guardian.rs"
+  },
+  {
+    "sha256": "2a97ebaf56477847dc2ffe08f4a971901547327cd7fe8bdaa0731205231fcd39",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_root_owned_input_tests.rs"
+  },
+  {
+    "sha256": "10b90d53dbb99b0c145880ba16cb0cdea8d2d16005684eaaf8fd3f4c1f9b6a4c",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_root_owned_input.rs"
+  },
+  {
+    "sha256": "8e86891c4e2e5f9c1c557fcb4ef7b6d86055c332d83648590e1186c5544c0e93",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_root_placement_binding.rs"
+  },
+  {
+    "sha256": "b1fb38c1cf81ef22354252af64d2d1a203f8ff9ca87a3504a1b8727fa75198a3",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signed_authority_tests.rs"
+  },
+  {
+    "sha256": "9fa67be28d71c843f5c10e0de50cc0307dffc8c7e58b69a4b24ca1dc15311990",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signed_authority.rs"
+  },
+  {
+    "sha256": "848e7db5b867e86aba008549488b55d8eeba2691daf2d47af57d2ad85da583a7",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signed_history.rs"
+  },
+  {
+    "sha256": "afd8187b9a10294be93277b61cba0587327890355857a91270d1fed53d42d533",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signed_mount_tests.rs"
+  },
+  {
+    "sha256": "9b86d8151ee706fa2a9a120147a2c9cc4ace63f5ea0453c136b36eb509eb3e29",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signed_mount.rs"
+  },
+  {
+    "sha256": "50a00a74b08c6b727bc4ffc56cf11cac17a4f658bf0e4a8f5753474447dac245",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signed_opening_tests.rs"
+  },
+  {
+    "sha256": "c1384bff925bba23e2c0039f128fe81d6419830756d6ecd08573b1b5db3c3189",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signed_opening.rs"
+  },
+  {
+    "sha256": "5cecd6e1ee1c78f8c8d6ee30c1b5875e9614b0c140398b27fc60eaea752b3f4b",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signed_tasks_tests.rs"
+  },
+  {
+    "sha256": "c67e03b19f48449d5e773d97f4415623abf159f72cf8e3589b78a5183e482d5b",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signed_tasks.rs"
+  },
+  {
+    "sha256": "914d7c4b3d341fb6a4956ff9f9c2bd123e4d05f8df8208d51f77c557ca087854",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_bootstrap_context.rs"
+  },
+  {
+    "sha256": "0d53d0008fa6091cf6efe56dc325fbe31bd316084d34f7f0b6ba64ff8000a8f1",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_build.rs"
+  },
+  {
+    "sha256": "14c9f29093c9b4ba0186fd67c465ce4922d82d1c6cf1d27753ada799fa3e2641",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_bundle_tests.rs"
+  },
+  {
+    "sha256": "a285435ecc18aa1a38889b0305b2ea7b478a979bee83875dd050e44d5dcbdcb1",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_bundle.rs"
+  },
+  {
+    "sha256": "29d8abde786bd644f1de38e7af8921745dc6af450d72e8a8a9128a2cabb9edad",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_constructor_guard.rs"
+  },
+  {
+    "sha256": "259f9aa219e58cb980a25f13c23e4003e277eb746ce276774aaf317a013a446d",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs"
+  },
+  {
+    "sha256": "b158dbf98dc216578577d4040512f156177db6d69b093a29e57b62ba76241a70",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_creator_loss_fixture.rs"
+  },
+  {
+    "sha256": "0106d7be6c478891ba67590db46478c6be034aa33d752339530ee07ff7de0781",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_creator_task.rs"
+  },
+  {
+    "sha256": "5069952b46f7d6ac534db364726e7f1bde484fdd7d50463cb0113971422516f7",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_executable_tests.rs"
+  },
+  {
+    "sha256": "701dd5770ec5250b453a94625649bc5ab294156706f875f78d00996bf9d6afa2",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_executable.rs"
+  },
+  {
+    "sha256": "f15b21ccdf556394749505513799c3c3520cb1f96c3853037f5a9aefec295bfc",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_first_exec_fixture_tests.rs"
+  },
+  {
+    "sha256": "6f95dda5cf4ee94c7c49cec3f6d26129349dbdbdccb70804be12b9f71b9fb243",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_first_exec_fixture.rs"
+  },
+  {
+    "sha256": "e0c331986047ab4c046dce0c9795e600b7ed4107fbd89729c38675b45e33a3a5",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_gnu.rs"
+  },
+  {
+    "sha256": "e60e416792b3a26768e053cd5bb578a14b833245ecd8d9dae409030bf7cd959d",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_handoff_fixture.rs"
+  },
+  {
+    "sha256": "c83169be6d5fff97adbb87fa5c65c1436b70ab5f9c077bd1118b73415d057371",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_handoff_helper.rs"
+  },
+  {
+    "sha256": "c55eacf5de3ff872fa67353a1d94d4a3a063d00a9b07739f0044f4bf5abf9c29",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs"
+  },
+  {
+    "sha256": "282492bb23e4d2e7ac5e14ff0a1ddf18f55721d4a4bc4e9e9604702412072d2c",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_isolation_core.rs"
+  },
+  {
+    "sha256": "97167d08e5bafc5e79aa82d052f47da9347ca38dd73726781da106fddcef5a3c",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_isolation_linux_tests.rs"
+  },
+  {
+    "sha256": "bdf801d18589ae4ec0fb4fb24db1cf9680ef7595954d74a660bd16b855967db9",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_isolation_linux.rs"
+  },
+  {
+    "sha256": "bd952ee03b85617d86dcbc824dd79ce6b1b6503c7413c81b618eb589e04e480e",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_isolation.rs"
+  },
+  {
+    "sha256": "61aeaf85bb181795fc8a5fb7febd97a9af9ecbbda5d206169510a3a80f616df8",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_issuer.rs"
+  },
+  {
+    "sha256": "b5cbe86d230ba684a5a3bb4851a5ac2092b9d16c5f4bfd536b5269a6a9629c09",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_joined_fixture_tests.rs"
+  },
+  {
+    "sha256": "41a04acee1c0e3876dd208fae705936fc54946f23379118594a2c89704b0f683",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_joined_fixture.rs"
+  },
+  {
+    "sha256": "139d97d4a4858f4becd22965a94bfc1675da156b1d088bce084a1918403663cb",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_joined_helper.rs"
+  },
+  {
+    "sha256": "42bc0f84d888434ed86bb43725ad69b821ab0facf194b0b024e64b212972eb63",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs"
+  },
+  {
+    "sha256": "b3acf60064ecc6bd84a6941aeb30f8cc282d95b42785202a77938e1d584fb750",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture.rs"
+  },
+  {
+    "sha256": "13d69f18d0e00422b3e461835dd1e8019a4c310fa9a5acd31c37691e9221210a",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_namespace_helper.rs"
+  },
+  {
+    "sha256": "75ee02d3c2ac3ccef4c95b5180335148850d76b2d5a1311db8d87c87e44936f8",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_owned_probe_loss_tests.rs"
+  },
+  {
+    "sha256": "9a10b237b1373a2b9349217884b61efad1ac2a70f031ca38870e44c8bc90c718",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_owned_probe_tests.rs"
+  },
+  {
+    "sha256": "515bf7766ee15e2bd629a36dd5f1f3d3e613d9b137fb519c02b6aa7e6ef4d4cf",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_owned_probe.rs"
+  },
+  {
+    "sha256": "5561657515b8056e29b67c2d33b18c9f3c4ad857cf63cf96822c95726de89ef6",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_exec_tests.rs"
+  },
+  {
+    "sha256": "53d5f03d9d2064fa6245709d81716dca6f6b5beaf89b2ffc4277478c4c2f8821",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_exec.rs"
+  },
+  {
+    "sha256": "e63fa3fd7655b6758e1c11747380b31a89a603a27ea471324606a161a132e02a",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_handoff_tests.rs"
+  },
+  {
+    "sha256": "6570fac9bac8509baad1b5a89a7ca8223cae9de4032c9a66367d1bd5b6f943a6",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_handoff.rs"
+  },
+  {
+    "sha256": "a18a991134a00d43c848ab4f21d6500ad3d168b8059c7d70e702570926e4d708",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_isolation_tests.rs"
+  },
+  {
+    "sha256": "ad90885859bf1f542354ff64759477c9689d551582ca450780fcc9fe517c9179",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_isolation.rs"
+  },
+  {
+    "sha256": "0ec7638993cf1671c6b7738bad3b507238b4299c283f1d6337d64cb2884dbd17",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_loss.rs"
+  },
+  {
+    "sha256": "d6c2194679db6f4fd61503da55d0a4ad611bcc2475d20f623e605667aa0aa27f",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_maps.rs"
+  },
+  {
+    "sha256": "f8f635b1183d7f9df1b4234d923fef27e3e80bd48f2b9ff3feb6d213a525b155",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_tests.rs"
+  },
+  {
+    "sha256": "0e652a3af7da6f1c7578b502f67033f39d16e1cfd57284f02b4dcf4dc0f2844b",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root.rs"
+  },
+  {
+    "sha256": "e2a5bc2df2bd6f8c34a5fb47982e24530cd01d55d10455b50856ca26544e1df7",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_root_fixture_tests.rs"
+  },
+  {
+    "sha256": "347adc3ed03207570bdc2ee1c450bbf25817efa2ffe2d82e8ea1c171626857e5",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_root_fixture.rs"
+  },
+  {
+    "sha256": "7423b2bc12386418eb9a54279ba7d4c27673e447cc5645eca92b7dba1bff91d9",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture_tests.rs"
+  },
+  {
+    "sha256": "1a4c41df0b617255d078a070046822ebe4dc008a7e0699553fd863a6237dc1c4",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture.rs"
+  },
+  {
+    "sha256": "66680bb06d3149746778b738c8fd7c0be8e5495c9ac5d0d2303fdb60dbdae831",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_rooted_maps.rs"
+  },
+  {
+    "sha256": "51cbdc34f74c6b0036e52adff0e3afe2c8cb0721db27d3e6ffd3beb7686822b9",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_runtime_elf.rs"
+  },
+  {
+    "sha256": "1b3824cb2f9ee8d94095ab9f90747926eb65972abac935a2e90988c8db9074e5",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_runtime_fixture_tests.rs"
+  },
+  {
+    "sha256": "9557b740ad2fd4b659ed6b8e1d2f51288cb1116cdfa129eb1d96f6631442e427",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_runtime_fixture.rs"
+  },
+  {
+    "sha256": "f2241d9e5790f817972ec5561361d6315dba89b0e3dc549449f089888de7cd54",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_runtime_input_tests.rs"
+  },
+  {
+    "sha256": "6a34fa369fe5fc4b6938399b3b71706ea873c31ec054032bb9b9358faca1195d",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_runtime_input.rs"
+  },
+  {
+    "sha256": "e11c2934b1eb6d320bbf433242b45429559dc7f5a9bad08651cb24c2c333fd54",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_seccomp_fixture_tests.rs"
+  },
+  {
+    "sha256": "6c7d04b1bb8c87d67ad97d18090c21b52b84557e55eeadf8eba4935198c0130d",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_seccomp_fixture.rs"
+  },
+  {
+    "sha256": "940e896285be63c8789b488eff65ee419046898630dbf404584ca4b900ca7f89",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs"
+  },
+  {
+    "sha256": "5d8554823f6fb1e88351a117aa7b2068a0f5fe9a45e488f7b230a99ca7d76350",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_channel.rs"
+  },
+  {
+    "sha256": "bba4ddc135f62794e8e6d7784aa9683e79567db50c6c8e765bc0c5e67e7c40c2",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_fixture.rs"
+  },
+  {
+    "sha256": "1e6e7b2dc1efe57a13549a571171d9dcc08b751fd6f2f85584e42f496957bf5c",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs"
+  },
+  {
+    "sha256": "adc30e9e62280f560127c8d720d629ef8f013ce3998da69d31e60248c1d5fe5b",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_spool.rs"
+  },
+  {
+    "sha256": "15d0f74a11f4d1f96e1aad97dca69b5ee36c2f27a5d5563ee1563d679f66b0f7",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_start_consent.rs"
+  },
+  {
+    "sha256": "1368f2ee196e0013d550840b368744095707e409c2dbb5cd6a2e63366538bf84",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_starting_intent_storage.rs"
+  },
+  {
+    "sha256": "7c78dc0620286064792f2bfd44aa2d5a10bef4fd24e969f2f5c803ccd240c9fd",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_starting_intent_tests.rs"
+  },
+  {
+    "sha256": "7974c6f8d0a5f15c72bd8a19dabb06d644714f141b6acc159fc53c5b079ed190",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_starting_intent.rs"
+  },
+  {
+    "sha256": "3c46ba41dcedd6846eb109c367dc109283ace22bc33ace4429d12988f8281932",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_storage_preflight.rs"
+  },
+  {
+    "sha256": "cf0c02c9cac054ca49dda877ef852c556afb17f4b59084cb44eb7c1720502332",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_transition_tests.rs"
+  },
+  {
+    "sha256": "fec9872f01295d58eb974f2570236147dd6eb023c86de3b43c5c06ef46146b4d",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_transition.rs"
+  },
+  {
+    "sha256": "0c4c5c1ad2ef0decadb519d7d8522775f523b21e8613fb4e910f63ffc334d79d",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_tree.rs"
+  },
+  {
+    "sha256": "804e3c16fdb77ac3e45271f2d8b17da1492cc9127700c63e3b281103796eb93d",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_two_phase_launch_tests.rs"
+  },
+  {
+    "sha256": "7334085c049f21a7b97727c78efdb8f59e1fd6dea72dd606f9b3e0e319ab6daa",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_two_phase_launch.rs"
+  },
+  {
+    "sha256": "a017f9d22b60ca59ab5e2fc4a7b0a542c82a0a64549b780b9779d91131e0c3fd",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_unit.rs"
+  },
+  {
+    "sha256": "00edf36063b7a02b06ed81bc2a34787f2a9697374c538f7a0e19e0b50edf280e",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_user_namespace.rs"
+  },
+  {
+    "sha256": "83016675a883fd45b2079883ec17dc9b45111df7ed48a8c606973c9c0da6bc09",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_validation_cost_tests.rs"
+  },
+  {
+    "sha256": "2e70a9b38f0a9fbf24b1458166a5e1260d434b781f78773930bea4271861ed5b",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_validation_frame_budget_tests.rs"
+  },
+  {
+    "sha256": "3eb1cf09c968ff39f20dddce726adeb2a1dd8fb8a3c054bc3e289ad2d960c300",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_validation_frame_tests.rs"
+  },
+  {
+    "sha256": "6ae6d77f724c03e6449342f22152e685216af477172f39c6239d329ae0b78e6e",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs"
+  },
+  {
+    "sha256": "e3a03f5c9a23d59534dfcb12e7745d9910c74d642a73be19c112647e67de485b",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_validation_leaf_cost_tests.rs"
+  },
+  {
+    "sha256": "aace13c92b4f5c7f8d112431cbb8dda1de0bd72cdff61d8e5b23723180d9907b",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_validation_trace_tests.rs"
+  },
+  {
+    "sha256": "a3a5fd83f5f1c79945a8282adaac1b895f5f89d63a952365c538c15858bc1be2",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_validation_trace.rs"
+  },
+  {
+    "sha256": "9097dc95a1851d47531d4f252efd251f95fd0f51548d2e6f8c5ade699e86b7e9",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_worker_account.rs"
+  },
+  {
+    "sha256": "85137feb8840bc7e51c37f217f715630280880bc427939d6f31c533401cab03a",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_worker_binding.rs"
+  },
+  {
+    "sha256": "233c6315cbb4a73ad62eef4cadbf414bc99d91ef1ac40f71c730bd21db8e43ac",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_worker_context.rs"
+  },
+  {
+    "sha256": "bd1219631b01f792cecaeaca7f830750a1d2165a87ad60b741a6d049bdd0bf6c",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_worker_files.rs"
+  },
+  {
+    "sha256": "153a71dc617694e2b275fecfa1dc09faafb85a57920794a3e7005858bfb732c0",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_worker_kernel_binding.rs"
+  },
+  {
+    "sha256": "769c3de1224225b790d7e32b34f59b34e9263bdf292afa2b89ba3fdc718b68f8",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_worker_policy.rs"
+  },
+  {
+    "sha256": "81095183cfc7cb01fa6c366a436f60bc510dc1e5128b99be34cdb530d044baf7",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_worker_progress.rs"
+  },
+  {
+    "sha256": "bab755b79736a086ce4284fcb038247370c87f26b524346f36a09560e1ac00f8",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_worker_proof_reuse_tests.rs"
+  },
+  {
+    "sha256": "abab38d5f84cc25db872179f9fd01a90374176e8da05e30766f29fbad7db2f8b",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_worker_start_consent.rs"
+  },
+  {
+    "sha256": "8a724a0d7c1d40fc3982972e63aebe68b8684fda109d3c793f5cbb7b7e7417a8",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_worker_tasks_tests.rs"
+  },
+  {
+    "sha256": "4031489ab3fd5745b3c44ce7d0059372fd65a3377392e4761b4cc1aae64c7e46",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_worker_tasks.rs"
+  },
+  {
+    "sha256": "52c22d0a6278aa388302fe3a6210d2c0724fb741145662b0677eab95bee52ba3",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_worker_trust_input_tests.rs"
+  },
+  {
+    "sha256": "e04f3d30a5d98b9cea96954ab4a8c5f7804a6e00b2fb0306fcd8fa531431c4eb",
+    "path": "tools/long-run-supervisor-074/src/diagnostic_worker_trust_input.rs"
+  },
+  {
+    "sha256": "44249d91f17b47d6d1529b22b420d5fee1123b391a08ed13ee4fe965698aea8f",
+    "path": "tools/long-run-supervisor-074/src/event.rs"
+  },
+  {
+    "sha256": "ba4891d33bbf66a7b8c674b2a01a482af885098f21cb6a26579a2a90da648fd7",
+    "path": "tools/long-run-supervisor-074/src/host_claim_construction_tests.rs"
+  },
+  {
+    "sha256": "08c383642b0beec756edb744660179f97b3ce976c466346f0c3282b64813ddc4",
+    "path": "tools/long-run-supervisor-074/src/host_execution_fixed_admission_tests.rs"
+  },
+  {
+    "sha256": "b38e4382ebf6bc6947b0c14ee2da8554e6820099ad55bd7f937d89437f034ad1",
+    "path": "tools/long-run-supervisor-074/src/host_execution.rs"
+  },
+  {
+    "sha256": "ce6ba5c2bfdcea381dfc805f2ac1f0df063e36255f3d3591d92182ab8a1e90c8",
+    "path": "tools/long-run-supervisor-074/src/host_receipt.rs"
+  },
+  {
+    "sha256": "33e2991a27243a91f325a72bb6d5e07dd753bf4d6c722c656229a0e1f0746342",
+    "path": "tools/long-run-supervisor-074/src/host_short_fence_tests.rs"
+  },
+  {
+    "sha256": "e5c558ab519d4b50408bdb3af2c95a58cc181ba47c66a72bad58a6ea23c7e0de",
+    "path": "tools/long-run-supervisor-074/src/lease_expiry.rs"
+  },
+  {
+    "sha256": "1dab14929bf0d2094c754e57228dbd5cb4761c233097831e513807614cfbfac2",
+    "path": "tools/long-run-supervisor-074/src/lib.rs"
+  },
+  {
+    "sha256": "6ac3db6af4049e48ce42762b09ff69774642daf7c800c65ccc2f602056c9b6bd",
+    "path": "tools/long-run-supervisor-074/src/main.rs"
+  },
+  {
+    "sha256": "31bb3b328971b87b0cebcc7bf8f73a95e9cbd22b2ef0b8d2e9f1da2153229dbe",
+    "path": "tools/long-run-supervisor-074/src/manifest_evidence.rs"
+  },
+  {
+    "sha256": "24a641ab475223a387a6fd9a5f6c72685d3334c8e271f076d80bade8eec57248",
+    "path": "tools/long-run-supervisor-074/src/manifest.rs"
+  },
+  {
+    "sha256": "5719bd99aaa20321927eaedc05b98904c8e58ce3865684041aeb7185d06132a5",
+    "path": "tools/long-run-supervisor-074/src/measurement_loss.rs"
+  },
+  {
+    "sha256": "3c9a199270231f6015dcd2e773d05f965ff2704c7ffd30c798f2c996ef59f288",
+    "path": "tools/long-run-supervisor-074/src/mutation.rs"
+  },
+  {
+    "sha256": "c8a36fe48e8e9c33986f06c39badb13838eeea58f29d9b4ed89fa9aa98b0f3b6",
+    "path": "tools/long-run-supervisor-074/src/process_identity.rs"
+  },
+  {
+    "sha256": "7afec695a848bd5cf298b826f4ecc482449e988641b465ac2f888d402da021f9",
+    "path": "tools/long-run-supervisor-074/src/progress_loss.rs"
+  },
+  {
+    "sha256": "3801a13daf8cfef0f4b620683887adcbfac691e2a3decef0a6efe92537f75066",
+    "path": "tools/long-run-supervisor-074/src/protocol.rs"
+  },
+  {
+    "sha256": "df6799093d97a9e44d44a34ae3fa2b1e3fc83f19f0f6eabf4f68e07b6e365705",
+    "path": "tools/long-run-supervisor-074/src/request_builder.rs"
+  },
+  {
+    "sha256": "59aff1c2fbae0bdbb517fa15fcacbc24721b12896b5af9da3922923f3a7094a3",
+    "path": "tools/long-run-supervisor-074/src/role_overhead_smoke.rs"
+  },
+  {
+    "sha256": "c63f4e57fbe133eeb577c4475fa3d5e901dc6c62b7545c1568f315a113f88326",
+    "path": "tools/long-run-supervisor-074/src/seal_artifact.rs"
+  },
+  {
+    "sha256": "fdc7774d51aad51aadf1e3474c0e3552d4e27b32f941429e78b551d2a6a6aa79",
+    "path": "tools/long-run-supervisor-074/src/seal_input.rs"
+  },
+  {
+    "sha256": "f0e1921a2a8e0eec929d015aafda87d1de1c022c540d5fc61b4b9e92765bd15b",
+    "path": "tools/long-run-supervisor-074/src/seal_lifecycle.rs"
+  },
+  {
+    "sha256": "72a89f8651bba1df518abf2d84a18835ef4aeba268a55c45b75e12a0b25f77ec",
+    "path": "tools/long-run-supervisor-074/src/sealed_permissions.rs"
+  },
+  {
+    "sha256": "958075ed03d82343e31e6ea8cd67c3201f3df9795690e1d0a1e62e683573ad09",
+    "path": "tools/long-run-supervisor-074/src/server.rs"
+  },
+  {
+    "sha256": "16b596bf58944c2e6f3acac528ba8d76141332a79648cd873d109c17d4240e91",
+    "path": "tools/long-run-supervisor-074/src/service.rs"
+  },
+  {
+    "sha256": "6c55e14b0cca8ab2951b8bab6f15e5e1e82d154574a80333357a9a2d773f6946",
+    "path": "tools/long-run-supervisor-074/src/spawn.rs"
+  },
+  {
+    "sha256": "327329985b55729d8aec06f34104cbeaa6eee3f732aceae32e88bd2af35473df",
+    "path": "tools/long-run-supervisor-074/src/start_evidence.rs"
+  },
+  {
+    "sha256": "1a11a22e9613e9a6b7408ea35dfcb9fe67f20f53faf7990ee4527a101038ec0c",
+    "path": "tools/long-run-supervisor-074/src/start_lifecycle.rs"
+  },
+  {
+    "sha256": "79c35f715535f0c92326d1d8a472bcaec0a49de0555eeaac6487b1bc507e1d86",
+    "path": "tools/long-run-supervisor-074/src/state_store.rs"
+  },
+  {
+    "sha256": "be05271226586a07876c2420b3a709a39ee966065cea35f2308f5e3029320d65",
+    "path": "tools/long-run-supervisor-074/src/state.rs"
+  },
+  {
+    "sha256": "7d1f5dc1e525b6f6dcd8a7662e9a43e5c07531ba18238090e0f8f36de052b473",
+    "path": "tools/long-run-supervisor-074/src/systemd_notify.rs"
+  },
+  {
+    "sha256": "1f4f911bccb721b25c105443ad3bee81bbf147054db1d83001f4859ceede4704",
+    "path": "tools/long-run-supervisor-074/src/systemd_smoke.rs"
+  },
+  {
+    "sha256": "e4e6c064b936d761404b17f814da0f3af271e6040eb2272ccc918a15f871028f",
+    "path": "tools/long-run-supervisor-074/src/systemd_spawn.rs"
+  },
+  {
+    "sha256": "4b8f35e341b489f5928206b2df3f09525abb081b937e35cefd5c1ca1bad01cac",
+    "path": "tools/long-run-supervisor-074/src/systemd_unit.rs"
+  },
+  {
+    "sha256": "0b3325ed3cd1fa0fe733945a09317294153983c1e5ce62fa9a9578bea8a3940c",
+    "path": "tools/long-run-supervisor-074/src/unix_transport.rs"
+  },
+  {
+    "sha256": "3a6a567239093f8525a9e1df96493df93f888e7ad1af1fde810bff9fb3422c32",
+    "path": "tools/long-run-supervisor-074/src/watchdog.rs"
+  },
+  {
+    "sha256": "f88e40cc2169052416123c66430bca3caa22825befbe4a65b0365b14668b6065",
+    "path": "tools/long-run-supervisor-074/tests/abort_lifecycle.rs"
+  },
+  {
+    "sha256": "3e5e9601b3bbf0cb70411affcae736811266fe257166ddc46958aaef4ef769b1",
+    "path": "tools/long-run-supervisor-074/tests/archive.rs"
+  },
+  {
+    "sha256": "ef21d5e0408139e8a49d6e30c07b6224e1d285f8dfb0a111db30cab883b4e026",
+    "path": "tools/long-run-supervisor-074/tests/authorization.rs"
+  },
+  {
+    "sha256": "933412c558da0c2e24309d0d229841b6ede40ea4d9eee774d135d707fd56fe6a",
+    "path": "tools/long-run-supervisor-074/tests/chain.rs"
+  },
+  {
+    "sha256": "679715c095634967a5a891306a135c2ded054721cc24f0ee1e34a2a68c3e61a9",
+    "path": "tools/long-run-supervisor-074/tests/checkpoint_evidence.rs"
+  },
+  {
+    "sha256": "7e2512990fb2498b0cc8619bedcf11f9e10f57ceced33a7fc9a008a85ab98036",
+    "path": "tools/long-run-supervisor-074/tests/config.rs"
+  },
+  {
+    "sha256": "53469d83a0fe92befe13db1d0eecdc53365e69b2243af551043198c0a09e843e",
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_artifacts.rs"
+  },
+  {
+    "sha256": "83c1c19f9266cd76e5c09aa0a0225fe2ace7ed795155b3677c83a08873ec68ee",
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_boot_buffer_allocations.rs"
+  },
+  {
+    "sha256": "5194a5c55f94bb8255fa7e217124d2da6b235f579641f3115a9cae5129d04f33",
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_collector_starting_publication.rs"
+  },
+  {
+    "sha256": "908cebd1b3abc6f8e186e241f94ea0e5e5a9cd8cf215a439b30c6949a54f88d2",
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_collector_starting_record.rs"
+  },
+  {
+    "sha256": "37442cfb925190fc2be74ca131b1e5c0eac52ae987290e8835f4a97d36cbf480",
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_collector.rs"
+  },
+  {
+    "sha256": "08d89f2c7ca0568fa1f44f36ead5c555c522ac0248108879d5493bc0a6929f4b",
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_context_files.rs"
+  },
+  {
+    "sha256": "79d567d66dd9b54f998319f69fc5cbd8d1346d64c82eec3dd68e123ab0442008",
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_fixed_grouped_preparation.rs"
+  },
+  {
+    "sha256": "2502593dcfc1576c05a30a157e6962abd3c1096eb1235facc4016780742e3c2b",
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_intent_projection.rs"
+  },
+  {
+    "sha256": "b88a3b4bc61af4bdeddb2d872905ca51f2845ac61c83f9cc430d6102ce0d558c",
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_ipc.rs"
+  },
+  {
+    "sha256": "dec9551a1532f35ee401c8f0008d94da278e3799eee1112dee7ed457448b8224",
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_lease.rs"
+  },
+  {
+    "sha256": "585d35cf7b54e5eb742f6b87ca6ceaa8f068d922662023b0e17d65e9275e33c8",
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_manager.rs"
+  },
+  {
+    "sha256": "0dd4bd373159c589d8d7710e73ab370c895ba02f7c22e4977b6f7ceb182dd7a4",
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_original_collector_pipes.rs"
+  },
+  {
+    "sha256": "bcd6516b482526d9aaeeff74b107d4caee70113fd985033e6e2638916dad2758",
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_original_fence.rs"
+  },
+  {
+    "sha256": "5e368741c87f13bf9c7807b3dccbed89049c5af575b1ad8ca033917cdaaef0bf",
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_original_output_join.rs"
+  },
+  {
+    "sha256": "36ef03317f27f809c2e6baf208f3164041abdab18cf2e3cdc456f1ce6ab8d1bc",
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_original_pipe_transport.rs"
+  },
+  {
+    "sha256": "3c5d503c66258293679853ac1040c38ee8c6f32c9629fe2dc64ef45269e5283f",
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_original_start_material.rs"
+  },
+  {
+    "sha256": "a7ad40e658517230539c04dddd908cb86320487ee19bc6fd5dba773bf23b688f",
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_prebuilt_copy.rs"
+  },
+  {
+    "sha256": "1ef2de0c0807b64da415ebfdcf89303aa13666c9fb648b23728e77ff99f0e235",
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_preconsent_frame.rs"
+  },
+  {
+    "sha256": "18c1c479ee84e8bdaa86a9c56007331d32788e4a44258296e073f6c153547bb0",
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_receipts.rs"
+  },
+  {
+    "sha256": "573b68fd6b9ac1ca5f7717e8fd38b189ed53fd2c8ef064d0ca685ee60a745736",
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_reviewed_trust.rs"
+  },
+  {
+    "sha256": "45fe73bdb931ddaa4f618d4eaa02c5daae0c2567a990d193e2927e83b4ab4194",
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_root_owned_input.rs"
+  },
+  {
+    "sha256": "e2a8c21460ea26551b76c2ebe592be08d06351de868128b71a2dd973ae817986",
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_signer_bootstrap_context.rs"
+  },
+  {
+    "sha256": "c1a3fd6370b85688e66f7cb3056446b0ab7a3a48d5b7a72acbe3a6b5e0b14d59",
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_signer_build.rs"
+  },
+  {
+    "sha256": "c0f4abc0ba15a16b4453d0761d5e1696733a64bc3d72084cffa3303634757258",
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_signer_child_entry.rs"
+  },
+  {
+    "sha256": "eaeba5370f9746b68ea67ca824a71aab340303b320602043c42cffb403aed6e6",
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_signer_gnu.rs"
+  },
+  {
+    "sha256": "359da1e855cc172798a786ff15e673c1351182339b33c0be87dafa756cbf808a",
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_signer_isolation.rs"
+  },
+  {
+    "sha256": "ba4b4ed1d153d0a7094a319a22518b89db67e5af964ea91504e32da3da051ed8",
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_signer_issuer.rs"
+  },
+  {
+    "sha256": "d02698ca09016b55b0a45f5eb624d7ada247a270d363fbed4c44d886feca2eaf",
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_signer_owned_cli.rs"
+  },
+  {
+    "sha256": "17fc7941072ae2eb6a74040989130f7de9cae1a3036827f4c0613cdd4396fd7c",
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_signer_owned_probe.rs"
+  },
+  {
+    "sha256": "51ee93d1e1d383079fb8feac6ad2ae444daecc8292fa901b90d41f287c1ef746",
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_signer_root_cli.rs"
+  },
+  {
+    "sha256": "8580eb7c824fa1e917fda2b965672f32e6dbfadacd74551285fe1f32fb78ca9d",
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_signer_root_guard.rs"
+  },
+  {
+    "sha256": "f41c14a2151b9d726c7dbc0b4f4948080f8e87d2ab64b284b619a77562ecb96a",
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_signer_root_probe.rs"
+  },
+  {
+    "sha256": "6ad447f69418dfa001c8d74baefad651d54c211650d25f3a1e47d948972e3eec",
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_signer_runtime_input.rs"
+  },
+  {
+    "sha256": "40fe7bc99b3880c6c7374632f982cf31d999bbf2d49e463eeb4e43aa2ae255ed",
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_spool.rs"
+  },
+  {
+    "sha256": "5124c444cdca8cba25cda713f7b506164c82442d0476f09cbdd49605572a2461",
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_start_consent.rs"
+  },
+  {
+    "sha256": "4a17285977d9f26cb1bd9e4c9ccc231e95074b41f567bdc4cd83a35e3ff70de7",
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_task_api.rs"
+  },
+  {
+    "sha256": "a69ed4ce843004b9b04aaba670c4065cdd726f5c64e696a6d8225871cdae71d6",
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_tree.rs"
+  },
+  {
+    "sha256": "f18577768716fc2f5579897e62d0dc70d8a715df68598227b37aa2da97d19fe5",
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_worker_account.rs"
+  },
+  {
+    "sha256": "626409142d8ccb08238b64fc1ddc317ff4bf0d2d57679afc3676e9ccb6df06a6",
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_worker_context.rs"
+  },
+  {
+    "sha256": "4049142668bceedaf334180d6b06a42094175f6d8a9e30440c90faec456660ed",
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_worker_files.rs"
+  },
+  {
+    "sha256": "5847abc876f0b40ef47cee94b8122e5ed34a8d30ff5c0f452b20b9bb5bde134b",
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_worker_kernel_binding.rs"
+  },
+  {
+    "sha256": "e613efbcfed921976bc7fbc7aa1ea4e94d52b81121ede3938f6380e7bbe5fd35",
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_worker_policy.rs"
+  },
+  {
+    "sha256": "02f08bf76ef26c7ad36b000b22484a30de7f9b5d416a073acf1a787fc570d63c",
+    "path": "tools/long-run-supervisor-074/tests/event_journal.rs"
+  },
+  {
+    "sha256": "be46eaf8e97e507bda5e3f2b671d0d622e6a639ce1d4613769a4693723d62b19",
+    "path": "tools/long-run-supervisor-074/tests/fixtures/diagnostic-pilot-root-Cargo.lock"
+  },
+  {
+    "sha256": "553eba394feac4dd4f699f2c47e445f4f8122f019ba9e585fa8c0d7d39575a2c",
+    "path": "tools/long-run-supervisor-074/tests/fixtures/public-synthetic-oidc-rsa-2048.pk8.b64"
+  },
+  {
+    "sha256": "36e0a02482df40776b22595d0345de449675732a84ce293c55bec59b1e74bac6",
+    "path": "tools/long-run-supervisor-074/tests/fixtures/README.md"
+  },
+  {
+    "sha256": "84d5d6727e5952b13ecbe44a093afcd82abc684289ae0eab920348477c32139c",
+    "path": "tools/long-run-supervisor-074/tests/held_build.rs"
+  },
+  {
+    "sha256": "fa1d0b3962e2f6451d9d69db8e287b1740daf1e25db2fe8914b7568666fc4230",
+    "path": "tools/long-run-supervisor-074/tests/held_launcher.rs"
+  },
+  {
+    "sha256": "ead2c585cae13e5ffd2db59a70849b3637ef6342b9162b951b1e11b73eada6b2",
+    "path": "tools/long-run-supervisor-074/tests/host_execution.rs"
+  },
+  {
+    "sha256": "300e0e15c24650d4ea1e10022f5acb444d3d741de904f89353d1bd2b24b4368d",
+    "path": "tools/long-run-supervisor-074/tests/lease_expiry.rs"
+  },
+  {
+    "sha256": "6a96ebbe074d991271c445733a62783983c4770ca47e3e25adaafc204d9746f2",
+    "path": "tools/long-run-supervisor-074/tests/manifest.rs"
+  },
+  {
+    "sha256": "1c48caeee5118bedff2095be342cc2cdbf0a5a1984ec878480a7a20602634b2f",
+    "path": "tools/long-run-supervisor-074/tests/measurement_loss.rs"
+  },
+  {
+    "sha256": "c38c712d32ca83cef54e825a03b5263fa5faadff8180a2dec20e0351c744dd7b",
+    "path": "tools/long-run-supervisor-074/tests/mutation.rs"
+  },
+  {
+    "sha256": "484d480c9a2a19149e262ea90d90bd9ec7a45cd7da4bbcb080b0026092618352",
+    "path": "tools/long-run-supervisor-074/tests/original_custody_owner_loss.py"
+  },
+  {
+    "sha256": "74f45b553988174c0230a892d3891d4d8ff4dbbc23dfe48f6fcd7246f42a2536",
+    "path": "tools/long-run-supervisor-074/tests/original_enrollment_owner_loss.py"
+  },
+  {
+    "sha256": "99d5fe84dbe31778054fca5292be0e4823896afe5be278e3379d0fcbf034e57d",
+    "path": "tools/long-run-supervisor-074/tests/owned_root_creator_sigkill.py"
+  },
+  {
+    "sha256": "ab38f07138481d86d72517729787e725dfa93f70f62a68403d5a3890a142b70e",
+    "path": "tools/long-run-supervisor-074/tests/prearmed_watchdog.py"
+  },
+  {
+    "sha256": "a3d6b38d602c019adb9e3b44ab5e37524254f406c607e99539aab188079508e6",
+    "path": "tools/long-run-supervisor-074/tests/process_identity.rs"
+  },
+  {
+    "sha256": "ec6e5d66b813907405aac074b93d282a96423260191e253700a57f76dc346475",
+    "path": "tools/long-run-supervisor-074/tests/progress_loss.rs"
+  },
+  {
+    "sha256": "580af7020ab1f17ce9a813c9bbf7651847c700edcdf9869450b79ece18a9207f",
+    "path": "tools/long-run-supervisor-074/tests/protocol.rs"
+  },
+  {
+    "sha256": "d179a84838d196b6da083de30c8ff5c58e6fc7fb979142e45cd74ddacf36a6f3",
+    "path": "tools/long-run-supervisor-074/tests/provisioning.rs"
+  },
+  {
+    "sha256": "b7311def05efc6b59100946adf683fed61167a9127a710cc34bf4b266258e756",
+    "path": "tools/long-run-supervisor-074/tests/redundant_watchdog.py"
+  },
+  {
+    "sha256": "9933722c1c6f02ecb60fb3417df38b620f20f54d1595520dae4c24e5aba4940c",
+    "path": "tools/long-run-supervisor-074/tests/request_builder.rs"
+  },
+  {
+    "sha256": "79a98d31a69193b4a19a5242c435d633513bbb37c74b9618c587f7c00298eb3f",
+    "path": "tools/long-run-supervisor-074/tests/root_creator_sigkill.py"
+  },
+  {
+    "sha256": "3dc2f1aaa875f7bcd582792c95a46f59d5e50dc45b4d6f486e7f626a377fc8d0",
+    "path": "tools/long-run-supervisor-074/tests/seal_artifact.rs"
+  },
+  {
+    "sha256": "52d9d6113cce223b24cc3adf6b9f41d1da808252e8eaf3190366ebd708977265",
+    "path": "tools/long-run-supervisor-074/tests/seal_input.rs"
+  },
+  {
+    "sha256": "14445dbcd56e590653cf5d7f94e5e27bcd2ff21a2fe9632ca1d9570d2e5732c4",
+    "path": "tools/long-run-supervisor-074/tests/seal_lifecycle.rs"
+  },
+  {
+    "sha256": "b56d719506d3f294673a9a93a3524e439eaae9a26acc6c5e09952619234abcb0",
+    "path": "tools/long-run-supervisor-074/tests/server.rs"
+  },
+  {
+    "sha256": "f3bc40ccb2cb78e7be13ef45b8c2f770d6fc825952dfdf8a474156801abb79a9",
+    "path": "tools/long-run-supervisor-074/tests/service.rs"
+  },
+  {
+    "sha256": "e5f25587e52588e691ffedc4ad75a2cb43f59c329df19cfa26a3f44b529f0f57",
+    "path": "tools/long-run-supervisor-074/tests/spawn.rs"
+  },
+  {
+    "sha256": "7b6c5b4ae1b0b5edc593afe381efc40d87e3a68ce603f3b9233c065e5653589b",
+    "path": "tools/long-run-supervisor-074/tests/start_lifecycle.rs"
+  },
+  {
+    "sha256": "df5f597e72572f9380c2c711c05f0ab706231b546eaa30799c59abf1b4400387",
+    "path": "tools/long-run-supervisor-074/tests/state_machine.rs"
+  },
+  {
+    "sha256": "4cecd199c4700c3c0f08d9e171fd445e7b1e49a1b13bb27e4fc6f1df5976d5bb",
+    "path": "tools/long-run-supervisor-074/tests/state_store.rs"
+  },
+  {
+    "sha256": "ffb83b4113734757adc5833f5863a2278948e69ded9375af66c95a4e2c0bd788",
+    "path": "tools/long-run-supervisor-074/tests/support/authority_breakdown_alloc.rs"
+  },
+  {
+    "sha256": "4e440e4056517cead5c18f0721738bd98d73874fe3c32f71cc7fe3baddef9eea",
+    "path": "tools/long-run-supervisor-074/tests/support/authority_breakdown_controls.rs"
+  },
+  {
+    "sha256": "243b9b7a74f6525b5a6bf103d1c39eb0ed406c5385871c70db657a592711be2d",
+    "path": "tools/long-run-supervisor-074/tests/support/authority_context_alloc.rs"
+  },
+  {
+    "sha256": "c5143488fb9506511c1376c59619d47bb9e1816839c153a818d30ea77e6e3735",
+    "path": "tools/long-run-supervisor-074/tests/support/authority_context_controls.rs"
+  },
+  {
+    "sha256": "589efa1c6680464dc231177a96214b6e663e846902ec3c3be1b65a7255117890",
+    "path": "tools/long-run-supervisor-074/tests/support/authority_cpu.rs"
+  },
+  {
+    "sha256": "1183c0e75fba94267d3ae5df85b16c68af36d45b3c5f822a902c2df329c03ced",
+    "path": "tools/long-run-supervisor-074/tests/support/authority_expected_name_alloc.rs"
+  },
+  {
+    "sha256": "06fa23d20b7e627fc1e78fe2b7ce89c7c41585798ef6decab304a5bc63fa8a29",
+    "path": "tools/long-run-supervisor-074/tests/support/authority_expected_name_controls.rs"
+  },
+  {
+    "sha256": "f96039c68aaa4a270e3732f2ad8a865eeb9a6780fb1208bb65277402b50939bf",
+    "path": "tools/long-run-supervisor-074/tests/support/authority_fd_path_alloc.rs"
+  },
+  {
+    "sha256": "79ceb26ad4da3d59532af03cd1d98c3648f291f45b16bb6816e52896ac4abcfa",
+    "path": "tools/long-run-supervisor-074/tests/support/authority_fd_path_controls.rs"
+  },
+  {
+    "sha256": "cda4a6ff5d70f41401bb1511939d818333bd2fac7eaf3f86dce6e4f23fc47b43",
+    "path": "tools/long-run-supervisor-074/tests/support/authority_hex_alloc.rs"
+  },
+  {
+    "sha256": "ddbf5d361e585c551b23e5a8c515559fe98e25dd455225288ecb2a467a7ed12d",
+    "path": "tools/long-run-supervisor-074/tests/support/authority_hex_controls.rs"
+  },
+  {
+    "sha256": "929fc1febacb2ca543f00580d09b5561f906351666823bed971a8d1ef1bbdf9d",
+    "path": "tools/long-run-supervisor-074/tests/support/authority_inventory_alloc.rs"
+  },
+  {
+    "sha256": "b3d806fc4fc814d15a29d7f6db962ba90432dcd67068ae33ca4075ae53202b20",
+    "path": "tools/long-run-supervisor-074/tests/support/authority_inventory_controls.rs"
+  },
+  {
+    "sha256": "4347f9105e9edd964765d516a3503d1ddd36d3c02656571582355816a301f436",
+    "path": "tools/long-run-supervisor-074/tests/support/authority_leaf_cpu.rs"
+  },
+  {
+    "sha256": "dd2d43ac4fbb7590d389bebc16fad809d523969a27034a38f522915fc5e21bec",
+    "path": "tools/long-run-supervisor-074/tests/support/authority_leaf_name_alloc.rs"
+  },
+  {
+    "sha256": "5307654caf3c0ca47e1c7d8a89b27e1a1a44fd72f657b5f3f3365ddf2acdae5f",
+    "path": "tools/long-run-supervisor-074/tests/support/authority_leaf_name_controls.rs"
+  },
+  {
+    "sha256": "ae6fb01829406c724d8ce9a626eeb6c1a550297804850d29c5c40a88cac366bb",
+    "path": "tools/long-run-supervisor-074/tests/support/authority_name_capacity_alloc.rs"
+  },
+  {
+    "sha256": "8035555e691fe72daf26fe3d18da05f9e9b0a41adbaa2d7c920b73fcfc720e55",
+    "path": "tools/long-run-supervisor-074/tests/support/authority_name_capacity_controls.rs"
+  },
+  {
+    "sha256": "2fa2e8c3e8e569ae3d24115b3183ff9f6b4737b00ee2f6c09db21c7e1a540ec2",
+    "path": "tools/long-run-supervisor-074/tests/support/authority_open_name_alloc.rs"
+  },
+  {
+    "sha256": "24f9db0606b4bc8d86f60f886ea2a66e9de454fd5902804e8a97a4996950f436",
+    "path": "tools/long-run-supervisor-074/tests/support/authority_open_name_controls.rs"
+  },
+  {
+    "sha256": "9a0e607f1bc6d14543cded858ba47370fd140c7a6e6a288709734ba5c9e07499",
+    "path": "tools/long-run-supervisor-074/tests/support/authority_owners_alloc.rs"
+  },
+  {
+    "sha256": "c4f04ccb7b3d7bd17e13241b1cefc6657661e5560d1b1ce51f3445e71d5202ce",
+    "path": "tools/long-run-supervisor-074/tests/support/authority_owners_controls.rs"
+  },
+  {
+    "sha256": "c4beef6ed7f933d7cd7635307a3468e5af49d114139495ce04945145c3e0ca2e",
+    "path": "tools/long-run-supervisor-074/tests/support/boot_operations.rs"
+  },
+  {
+    "sha256": "40f6f3ba9c781ae8eae73811287264182248a2b8bc20809377ee2f27cf49a9b4",
+    "path": "tools/long-run-supervisor-074/tests/support/consuming_held_bridge.rs"
+  },
+  {
+    "sha256": "0e9d2b46c47585047fd29767010ead5c732ee6ad1a386c612525a0e766bea08e",
+    "path": "tools/long-run-supervisor-074/tests/support/consuming_held_cost.rs"
+  },
+  {
+    "sha256": "75325295635edf1662f2a7cb9e58c8a50dbb96554f77d66da8390387623b00c6",
+    "path": "tools/long-run-supervisor-074/tests/support/consuming_held_join.rs"
+  },
+  {
+    "sha256": "948fdbaec5c92af0ef13f99237e0a7838ffe8a44b976c2b91617695da866150c",
+    "path": "tools/long-run-supervisor-074/tests/support/consuming_held_live_api.rs"
+  },
+  {
+    "sha256": "d6b73445f354c9482c7a6a1a2e041f2e7be0eb24a803247b747ae6349c79964f",
+    "path": "tools/long-run-supervisor-074/tests/support/consuming_held_live_documents.rs"
+  },
+  {
+    "sha256": "708cbe8ae79244158f6ffdfa536dae9e846d0198e2baddedb6d54201f215dcd5",
+    "path": "tools/long-run-supervisor-074/tests/support/consuming_held_live_namespace.rs"
+  },
+  {
+    "sha256": "ab5f78f53a3e63f636dc56c1b1f6d8c5829adf757e98ae2e77fc0f788fefaab8",
+    "path": "tools/long-run-supervisor-074/tests/support/consuming_held_live.rs"
+  },
+  {
+    "sha256": "7814d06f511a3a490618bcfa3c54d89271ef4049a68396b3359eeef175b1c866",
+    "path": "tools/long-run-supervisor-074/tests/support/custody_boundaries.rs"
+  },
+  {
+    "sha256": "610b383c69936acdf92a14357aec0a81099dcedeef842f63a1d5987890282497",
+    "path": "tools/long-run-supervisor-074/tests/support/diagnostic_bootstrap_context.rs"
+  },
+  {
+    "sha256": "b01cd6c920dbc29c9866bf0a6d06f01c942f0ce93b62dc66536d9304c1eb2406",
+    "path": "tools/long-run-supervisor-074/tests/support/diagnostic_collector_intent.rs"
+  },
+  {
+    "sha256": "17173646a62d5cb1e62c8306f80be4bbe259a2545578a4ee3fd552793d31033c",
+    "path": "tools/long-run-supervisor-074/tests/support/diagnostic_gnu_images.rs"
+  },
+  {
+    "sha256": "2e9e0ec4d127547207ff2a456bebb8d0e2b10f82d831c8cbfc3ece39a19da2f7",
+    "path": "tools/long-run-supervisor-074/tests/support/document_scratch_alloc.rs"
+  },
+  {
+    "sha256": "4706fe75398a2ff5b9af1a40ed6a2f1612f359d870350449a23a000850570cdf",
+    "path": "tools/long-run-supervisor-074/tests/support/document_scratch_impl.rs"
+  },
+  {
+    "sha256": "ceec1239c5edc8b837a7fc156b43eb08e643261b3113e3a0b9a0333f7348d688",
+    "path": "tools/long-run-supervisor-074/tests/support/document_scratch.rs"
+  },
+  {
+    "sha256": "88a4af972038706debe8ae6a49ea1a8d25ece2dcd42169d9e719fb629d94a8d7",
+    "path": "tools/long-run-supervisor-074/tests/support/fixed_slice_namespace.rs"
+  },
+  {
+    "sha256": "e05c52819507a378fd6d50a9187608b7b6af90b86cc10100f0be746d0714f3a9",
+    "path": "tools/long-run-supervisor-074/tests/support/fresh_kernel_cost.rs"
+  },
+  {
+    "sha256": "d0769418c0975257479bef52ee3522d3823501ba34599c66668404a3e6a527be",
+    "path": "tools/long-run-supervisor-074/tests/support/fresh_status_alloc.rs"
+  },
+  {
+    "sha256": "ef7cc11221ba29268a79c84e9bbec3aadf71c35ea5da119cd04401cd8d60c25d",
+    "path": "tools/long-run-supervisor-074/tests/support/frozen_lock_fixture_tests.rs"
+  },
+  {
+    "sha256": "aac7ef6e524e417e9564252cbcb5984eefacc2646321bdcf1250c9affff11752",
+    "path": "tools/long-run-supervisor-074/tests/support/held_launcher_process.rs"
+  },
+  {
+    "sha256": "1c8d98c6dc9830b61b372057b54365b0b37c65a298ba0f71c9befc059fc03d37",
+    "path": "tools/long-run-supervisor-074/tests/support/held_role_binding.rs"
+  },
+  {
+    "sha256": "4d6851509f5d4842dcfdd3366e7598786a725e21460993f1b5d085f97d179955",
+    "path": "tools/long-run-supervisor-074/tests/support/held_role_files.rs"
+  },
+  {
+    "sha256": "46ab27e1ab7d49a8a349f2749061b004352fccf8637dc393cfaf556fc7dd4ff6",
+    "path": "tools/long-run-supervisor-074/tests/support/held_runtime_trust.rs"
+  },
+  {
+    "sha256": "1a73f81b4c93fa0a07f572571d61b5043a7d1a976d1e805bb81916bc16d822d8",
+    "path": "tools/long-run-supervisor-074/tests/support/pid_path_alloc.rs"
+  },
+  {
+    "sha256": "4a3e393a022238823ced4063197dcb4c25f1223d85744dc62e78e30dcef11d29",
+    "path": "tools/long-run-supervisor-074/tests/support/pid_path.rs"
+  },
+  {
+    "sha256": "bb3d5deb6f8462747fd22c11fabd1b9222cb00ad87f876111f1cad050bddee56",
+    "path": "tools/long-run-supervisor-074/tests/support/projection_alloc.rs"
+  },
+  {
+    "sha256": "a40fdf08009ddf07217c8811e2b870e24d340457f7ca4ba601b3bda1a9944848",
+    "path": "tools/long-run-supervisor-074/tests/support/projection_candidate.rs"
+  },
+  {
+    "sha256": "4cf3f2b130922b8a2bc324c2fcbc1793c192d7e637e9e3d3ef6504c936af0544",
+    "path": "tools/long-run-supervisor-074/tests/support/projection_cost.rs"
+  },
+  {
+    "sha256": "afd37c0662e6d8bc5784fb4db400afdbc2d855427be5e89decb226410fe08b21",
+    "path": "tools/long-run-supervisor-074/tests/support/projection_prefix_alloc.rs"
+  },
+  {
+    "sha256": "72225abebdfd4edf570119bacd2ea2d9b87cd5281a5d44b513cecc6c8e1790dc",
+    "path": "tools/long-run-supervisor-074/tests/support/projection_prefix.rs"
+  },
+  {
+    "sha256": "e9e91d683db4b1b7e13dfb243503c287293a1f57914259b6028186db150d2cd9",
+    "path": "tools/long-run-supervisor-074/tests/support/projection_reference.rs"
+  },
+  {
+    "sha256": "66cd6a22c891cef443c73ed59874a751de49467c1b6f29f75acd8c0c1cd65011",
+    "path": "tools/long-run-supervisor-074/tests/support/root_process_guard.rs"
+  },
+  {
+    "sha256": "50781445a5d1a8fcc142116c4aec1eb76a31b4ecbd88f73a59668eec2aa3333e",
+    "path": "tools/long-run-supervisor-074/tests/support/round_cost.rs"
+  },
+  {
+    "sha256": "29d46c2111289fa21793a6b578eef1c25bcb84aea5193dba03670ac7c8c9ff69",
+    "path": "tools/long-run-supervisor-074/tests/support/validation_leaf_requests.rs"
+  },
+  {
+    "sha256": "7688baf85fcbf20b43ce2a95557fe012c65a9969bc95ec022082d5bbeffec9dd",
+    "path": "tools/long-run-supervisor-074/tests/systemd_notify.rs"
+  },
+  {
+    "sha256": "0f19373d0aa7b1e7e62bef30702175f0a5c00c09e12a3c0a1655d74708d160d7",
+    "path": "tools/long-run-supervisor-074/tests/systemd_unit.rs"
+  },
+  {
+    "sha256": "ed38273b823b3bec472b2f26a0a015c62a906b008a357d37dbd5a695a717557c",
+    "path": "tools/long-run-supervisor-074/tests/test_original_custody_owner_loss.py"
+  },
+  {
+    "sha256": "ea69d0b60f7023026182ccdf1391aa2ec1bbfea515da9b286271f41127f63b87",
+    "path": "tools/long-run-supervisor-074/tests/test_original_enrollment_owner_loss.py"
+  },
+  {
+    "sha256": "20ab1ad6487bf5b44a482280696a9d87e872a01b09dda5b668f4484fe90cf92e",
+    "path": "tools/long-run-supervisor-074/tests/unix_transport.rs"
+  },
+  {
+    "sha256": "26a781a589560cc34b5e713b8095352a1a74486aca48620f5377a5a03715cbf2",
+    "path": "tools/long-run-supervisor-074/tests/watchdog.rs"
+  }
+]
