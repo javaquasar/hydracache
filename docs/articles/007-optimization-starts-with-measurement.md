@@ -16975,3 +16975,37 @@ imports remain, followed by a cfg(test)-only repair and green focused checks.
 All eight prior seals, original windows and first Causal refusals remain. There
 is no live replay, server action or new readiness promotion; collector peer
 growth needs its own separate experiment.
+
+### Separate peer vector growth from canonicalization
+
+The [collector peer baseline](../testing/performance/0.74/collector-peer-baseline-20261021.md)
+freezes the small union helper before changing it. Supplementary groups are
+copied into an exact-length Vec, primary is pushed, then the vector is sorted
+and deduplicated. The final value remains owned and retains uid. Even when
+primary is already present or duplicates collapse to one group, the current
+push first grows a nonempty exact-capacity copy. The empty case instead makes
+its first allocation at push.
+
+GNU 1.94 and MSRV 1.88 agree on 7936 allocations, 7680 reallocations and
+1798144 requested bytes across the same 31 cases and 256 constructions each.
+A separate one-construction stage control for each case conserves those
+requests between to_vec and push. Sort/dedup makes no allocator request on the
+corpus; that is not a claim that canonicalization takes no CPU. At input length
+32, growth leaves capacity 64 even when dedup shortens the result. An absent
+primary still produces a complete 33-group union, not a truncated value.
+
+The controls compare canonical values with an independent BTreeSet oracle,
+including 1024 seeded cases, integer extremes, unchanged inputs and independent
+owned outputs. Generic cases beyond the 32-group input limit test the helper,
+not admission. The complete surrounding wrapper is frozen separately with
+synthetic sender/time/hold receivers: first errors, peer work between both
+sender checks, final time extraction, latching and refused reentry all retain
+their order. Source reversal recovers the entire production body; no actual
+KernelPacket or clock is exercised.
+
+First test compile and capability-canary failures remain in evidence. Explicit
+usize and owned labels outside measurement repair those tests without changing
+the operation or relaxing the canary. All nine prior packet seals and original
+windows/refusals remain. The result supports a later isolated capacity-reserve
+experiment, not a runtime change or saved preparation time. No live/server run
+or material/fault/readiness promotion follows from this allocation baseline.

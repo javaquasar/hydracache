@@ -1578,3 +1578,18 @@ First missing-import test compiles remain beside the cfg(test) import repair.
 No material, cleanup/EOF/fence, authenticated delivery/all-writer, full fault/
 reconnect or server gate is promoted. Next isolate collector peer growth with
 its own baseline and canonical/error contract. No live or server work occurs.
+
+### Collector peer growth baseline and wrapper contract retained
+
+The [separate pure baseline](collector-peer-baseline-20261021.md) confirms
+to_vec allocation followed by push growth for nonempty supplementary lists,
+while sort/dedup makes no allocator requests in this corpus. Complete peer and
+wrapper source comparisons, BTreeSet union controls and synthetic first-error/
+latch/reentry cases preserve ownership, no truncation and validation order.
+
+Only a private opt-in test hook changes in old supervisor code. First test
+compile/canary refusals remain alongside the explicit-type/owned-label repairs.
+Next consider reserving room for primary in one separate growth candidate;
+the current baseline implements none. Original windows, first Causal refusals
+and all material/cleanup/delivery/all-writer/fault/reconnect/server gates remain.
+No live replay, clock/service change or server operation occurs.

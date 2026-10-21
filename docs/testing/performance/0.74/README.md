@@ -5693,3 +5693,17 @@ Initial missing test-import compile refusals are retained separately from the
 cfg(test) repair. Eight prior packet seals remain intact. This is allocation
 evidence only, not measured preparation latency or server admission. No live,
 clock/service, server or product operation occurs.
+
+### Pure baseline for collector peer vector growth
+
+The [collector peer baseline](collector-peer-baseline-20261021.md) freezes
+to_vec/push/sort/dedup without changing the live collector. GNU/MSRV each retain
+7936 allocations, 7680 reallocations and 1798144 requested bytes across 7936
+constructions. Separate stage controls attribute the growth to push; sort/dedup
+requests no allocation on this corpus, without implying zero CPU cost.
+
+Canonical union, no truncation, ownership and complete synthetic wrapper
+first-error/latch controls pass with 34 source canaries. First compile/canary
+refusals and test-only repairs remain separate; nine earlier seals remain.
+This baseline implements no growth candidate or timing improvement and opens
+no material/fault/server gate. No live, service or server action occurs.
