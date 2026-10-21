@@ -1,9 +1,11 @@
 //! Remove only the exact opt-in test adapter, never a production predicate.
+#[path = "pidfd_info_path_guard.rs"]
+mod pidfd;
 #[macro_export]
 macro_rules! hc074_held_material_live_view {
     ($path:expr,$source:expr) => {{
         let path: &str = $path;
-        let mut raw: String = $source.to_owned();
+        let mut raw: String = $crate::hc074_pidfd_info_path_view!(path, $source);
         if path == "tools/long-run-supervisor-074/src/diagnostic_held_unit_material.rs"
             && raw.contains("held_material_live_api.rs")
         {
