@@ -1481,3 +1481,17 @@ caching successes is not authorized by this attribution. Unassigned effects,
 observer overhead and stage timings remain unresolved. Original construction
 success still does not admit full revalidation, completion, all writers or the
 server; downstream fault/reconnect/enrollment gates remain independent.
+
+### First fresh check allocation candidate implemented without live replay
+
+The [isolated pidfd pathname candidate](pidfd-info-path-20261021.md) removes heap
+formatting of one fresh fdinfo pathname, not the observation itself. Its exact
+old origin reconstruction preserves all predicates, their order and the original
+windows. GNU/MSRV pure allocator controls and own-process units confirm pathname
+equivalence, zero formatter requests, unchanged trace counts and refusal behavior.
+
+No new original-owner profile or timing claim follows. The two first Causal
+refusals and failed material gate stay closed, as do EOF/fence, delivery,
+all-writer cessation, SIGKILL/lost-ACK/reconnect and server admission. Keep further
+cost candidates separate; a future timing comparison needs separate admission
+and must never replace the original refused cohort. No server/service action.

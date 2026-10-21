@@ -16746,3 +16746,35 @@ saving is predicted from this partial cohort. Both original expirations, missing
 cleanup footer and failed readiness stay intact. Runtime, check frequency and
 deadlines do not change, and no new WSL session, service or server run is needed
 for this attribution.
+
+### Remove pathname ownership without removing a fresh check
+
+The first [isolated candidate](../testing/performance/0.74/pidfd-info-path-20261021.md)
+under that repeated path targets an explicit temporary allocation rather than
+reducing observations. Alive opens `/proc/thread-self/fdinfo/<pidfd>` afresh after
+polling the original descriptor. Its pathname was a formatted heap String.
+The candidate substitutes bounded owned stack bytes using the existing signed
+decimal formatter, leaving every poll, open flag, read, procfs/PID predicate,
+error order and deadline untouched. Source canaries reconstruct the complete old
+origin file after reversing exactly this one operand and module hook.
+
+Before wiring the candidate, a pure reference control measured one 50-byte Rust
+allocation request per pathname on GNU 1.94 and MSRV 1.88. For nine descriptor
+edges and 256 constructions each, the reference totals 2304 allocations and
+115200 requested bytes per compiler; the stack helper totals zero allocations,
+reallocations and requested bytes. Expected values and report emission are outside
+capture. This isolates pathname ownership: it does not mean the fresh validator
+or its document buffers allocate nothing, and it says nothing about libc/RSS.
+
+Signed boundaries and 16384 seeded values test the full decimal spelling and
+ownership lifetime. Separate own-process pidfd units compare fresh identity,
+content, flags and errno outcomes, preserve Alive/Document call counts, and reject
+malformed/duplicate PID fields or read errors without retry. No original owner,
+campaign or product process is run. The old sticky owner remains unchanged.
+
+The result justifies retaining one allocation-only candidate. It does not show
+how much of the measured ReservedLive wall time was spent allocating this string,
+whether preparation now fits ten seconds, or any native API throughput gain.
+The first refused logs and sealed attribution remain intact; no new live sample
+is selected to replace them. A future timing comparison must be separately
+admitted, with the same fresh-check graph and original windows.

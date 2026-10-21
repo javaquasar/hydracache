@@ -5597,3 +5597,15 @@ Outside-step residue is not assigned to fsync, allocations, sealing or observer
 cost. Next review a separate fresh-check implementation-cost candidate within
 ReservedLive and its dominant kernel inspections; do not collapse checks, cache
 successes or repeat this refused cohort to pass. No WSL/server/service action.
+
+### Isolated allocation candidate in the fresh pidfd check
+
+The [pidfd pathname candidate](pidfd-info-path-20261021.md) replaces only the
+temporary formatted String below ReservedLive with owned stack bytes. Fresh
+poll/open/read/procfs/PID checks, their order and all original windows remain.
+GNU/MSRV pure controls retain one 50-byte Rust request in the reference and
+zero in the candidate; this does not measure full Alive/ReservedLive latency.
+
+Boundary/seeded, actual self-pidfd, refusal, trace and source reconstruction
+controls pass without an original-owner replay. No first refusal or sealed
+attribution is replaced, and no timing improvement or server admission is claimed.
