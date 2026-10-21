@@ -37,6 +37,11 @@ function Range($Values){@{minimum=($Values|Measure-Object -Minimum).Minimum;maxi
 function Facts{
     $taskResult=Json 'result.json';$taskIntent=Json 'intent.json';$taskPins=Json 'single-session-rounds-bound-20261021-pins.json'
     $taskSource=$taskResult.source
+    foreach($taskName in @('intent.json','result.json')){
+        Require ((Hash (Join-Path $taskPacket "tooling-refusals/verified/$taskName")) -ceq (Hash (Join-Path (Split-Path $taskPacket) "single-session-rounds-verified-20261021/$taskName"))) 'Original zero-profile refusal changed'
+    }
+    $taskRefused=Json 'tooling-refusals/verified/result.json'
+    Require ($taskRefused.source -ceq 'deea7ea96a97119df13a9b0c0007e250c50f51aa' -and $taskRefused.measured_profile_invocations -eq 0 -and -not $taskRefused.profiles.Count -and $taskRefused.failure.Contains('Postflight: CalledProcessError') -and -not $taskRefused.schedule_completed) 'Git preflight refusal erased'
     Require ($taskSource -cmatch '^[0-9a-f]{40}$' -and $taskPins.source -ceq $taskSource -and $taskIntent.source -ceq $taskSource) 'Source binding changed'
     & git diff --quiet b074f8f9f3d8f9766b3b04c59a8291941a7e3b1d $taskSource -- tools/long-run-supervisor-074 crates Cargo.lock
     Require ($LASTEXITCODE -eq 0) 'Runtime/observer changed'
@@ -44,7 +49,12 @@ function Facts{
     Require ((Same @($taskIntent.original_windows_seconds) @(300,60,10)) -and $taskIntent.child_timeout_seconds -eq 1200 -and $taskIntent.kill_after_seconds -eq 5 -and $taskIntent.child_containment_seconds -eq 1210 -and $taskIntent.session_seconds -eq 7500 -and $taskIntent.max_log_bytes -eq 33554432) 'Original or wrapper bounds changed'
     $taskMetadata=Json 'metadata.json';$taskPostflight=Json 'postflight.json'
     Require ((Same $taskMetadata $taskPostflight) -and -not $taskMetadata.fixtures.Count -and -not $taskMetadata.tracked_dirty) 'Session continuity not proved'
-    Require ($taskMetadata.source -ceq $taskSource -and $taskMetadata.pins_sha256 -ceq (Hash (Join-Path $taskPacket 'single-session-rounds-bound-20261021-pins.json')) -and $taskMetadata.driver_sha256 -ceq (Hash (Join-Path $PSScriptRoot 'runner.py')) -and $taskMetadata.preparation_sha256 -ceq (Hash (Join-Path $taskPacket 'single-session-rounds-bound-20261021-preparation.json'))) 'Method or preparation bytes changed'
+    Require ($taskMetadata.source -ceq $taskSource -and $taskMetadata.pins_sha256 -ceq (Hash (Join-Path $taskPacket 'single-session-rounds-bound-20261021-pins.json')) -and $taskMetadata.driver_sha256 -ceq (Hash (Join-Path $taskPacket 'method/runner.py')) -and $taskMetadata.preparation_sha256 -ceq (Hash (Join-Path $taskPacket 'single-session-rounds-bound-20261021-preparation.json'))) 'Method or preparation bytes changed'
+    foreach($taskName in @('runner.py','launch.ps1','test_runner.py','test-launch.ps1')){
+        $taskBlob=(& git rev-parse "${taskSource}:tools/local-profile-session-074/$taskName").Trim()
+        $taskStored=(& git hash-object --no-filters -- (Join-Path $taskPacket "method/$taskName")).Trim()
+        Require ($taskBlob -ceq $taskStored) 'Retained method differs from measured source'
+    }
     Require ($taskMetadata.qualification_sha256 -ceq '11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc' -and $taskMetadata.qualification_sha256 -ceq (Hash 'docs/testing/performance/0.74/qualification-manifest.toml')) 'Qualification changed'
     $taskOriginal=Get-Content (Join-Path $taskPrior 'context-Verified-Before.json') -Raw|ConvertFrom-Json
     Require ((Same $taskMetadata.bundle $taskOriginal.bundle) -and (Same $taskMetadata.images $taskPins.images)) 'Frozen inputs changed'
@@ -71,7 +81,11 @@ function Facts{
                 $taskSuccessful+=,@($taskPhases)
             }else{
                 $taskStopped=$true
-                $taskPartial+=@{sample=$taskSample;exit=$taskRow.exit;partial_phase_count=$taskPhases.Count;original=@(Rows "$taskPrefix.log" 'HC074-HELD-LIVE-ORIGINAL ')}
+                $taskOriginalRows=@(Rows "$taskPrefix.log" 'HC074-HELD-LIVE-ORIGINAL ')
+                Require ($taskOriginalRows.Count -eq 1 -and $taskOriginalRows[0].returned -eq $false) 'Original profile refusal missing'
+                Inactive $taskOriginalRows[0] @('deadline_changed','guard_clock_added','server','product')
+                foreach($taskPhaseRow in $taskPhases){Inactive $taskPhaseRow @('deadline_changed','guard_clock_added','server','product')}
+                $taskPartial+=@{sample=$taskSample;exit=$taskRow.exit;partial_phase_count=$taskPhases.Count;original=$taskOriginalRows}
             }
         }
         Require ($taskStopped -or $taskSuccessful.Count -eq 3) 'Unexplained missing profile'
@@ -86,7 +100,7 @@ function Facts{
     Require ((Same $taskActual @($taskResult.profiles)) -and $taskInvocations -eq $taskResult.measured_profile_invocations) 'Profile schedule/result differs'
     Require (-not $taskResult.failure -and $taskResult.schedule_completed -eq (@($taskLanes|Where-Object complete_profile_cohort -ne $true).Count -eq 0)) 'Result completeness changed'
     $taskLaunch=Json 'single-session-rounds-bound-20261021-launch-exit.json'
-    Require ($taskLaunch.source -ceq $taskSource -and $taskLaunch.single_profile_session -eq $true -and $taskLaunch.session_log_sha256 -ceq (Hash (Join-Path $taskPacket 'single-session-rounds-bound-20261021-session.log')) -and $taskLaunch.recipe_sha256 -ceq (Hash (Join-Path $PSScriptRoot 'launch.ps1')) -and $taskLaunch.exit -eq $(if($taskResult.schedule_completed){0}else{1})) 'Launcher receipt changed'
+    Require ($taskLaunch.source -ceq $taskSource -and $taskLaunch.single_profile_session -eq $true -and $taskLaunch.session_log_sha256 -ceq (Hash (Join-Path $taskPacket 'single-session-rounds-bound-20261021-session.log')) -and $taskLaunch.recipe_sha256 -ceq (Hash (Join-Path $taskPacket 'method/launch.ps1')) -and $taskLaunch.exit -eq $(if($taskResult.schedule_completed){0}else{1})) 'Launcher receipt changed'
     @{source=$taskSource;runtime_changed=$false;prior_packets_verified=21;boot=$taskMetadata.boot;parent_pid=$taskMetadata.pid;parent_start_ticks=$taskMetadata.start_ticks;session_continuity_observed=$true;measured_profile_invocations=$taskInvocations;lanes=$taskLanes;complete_profile_cohort=$taskResult.schedule_completed;old_time_refusals_retained=$true;native_gate_open=$false;server=$false;product=$false}
 }
 function Inventory{@{files=@(Get-ChildItem -LiteralPath $taskPacket -Recurse -File|Where-Object Name -ne 'inventory.json'|Sort-Object FullName|ForEach-Object {@{path=$_.FullName.Substring($taskPacket.Length+1).Replace('\','/');bytes=$_.Length;sha256=(Hash $_.FullName)}})}}
@@ -98,8 +112,13 @@ if($Mode -ceq 'WriteSummary'){
 }else{Require (Same $taskFacts (Json 'summary.json')) 'Summary changed'}
 if($Mode -in @('Seal','Review')){
     $taskChecks=Json 'final-check-exit.json'
-    Require (-not $taskChecks.failure -and ($taskChecks.steps.name -join ',') -ceq 'format,docs,registry,performance,diff' -and @($taskChecks.steps|Where-Object exit -ne 0).Count -eq 0) 'Repository checks incomplete'
+    Require (-not $taskChecks.failure -and ($taskChecks.steps.name -join ',') -ceq 'format,docs,registry,performance,diff' -and @($taskChecks.steps|Where-Object exit -ne 0).Count -eq 0 -and $taskChecks.recipe_sha256 -ceq (Hash (Join-Path $taskPacket 'final-check.ps1'))) 'Repository checks incomplete'
     foreach($taskStep in $taskChecks.steps){Require ($taskStep.sha256 -ceq (Hash (Join-Path $taskPacket $taskStep.log))) 'Repository log changed'}
+    Require ((Get-Content (Join-Path $taskPacket 'single-session-method-root-tests-bound-verified.log') -Raw).Contains('Ran 29 tests') -and (Get-Content (Join-Path $taskPacket 'single-session-method-root-tests-bound-verified.log') -Raw).Contains("`nOK")) 'Linux controls incomplete'
+    Require ((Get-Content (Join-Path $taskPacket 'single-session-method-windows-tests-bound-verified.log') -Raw).Contains('OK (skipped=7)')) 'Windows controls incomplete'
+    Require ((Get-Content (Join-Path $taskPacket 'launcher-controls.log') -Raw).Contains('launcher-controls: 2 passed')) 'Launcher controls incomplete'
+    $taskAudit=Json 'reviewer-controls.json'
+    Require (($taskAudit.mutations.mutation -join ',') -ceq 'parent,missing,edge,scope' -and @($taskAudit.mutations|Where-Object refused -ne $true).Count -eq 0) 'Conservation controls incomplete'
 }
 if($Mode -ceq 'Seal'){
     Require (-not(Test-Path (Join-Path $taskPacket 'inventory.json'))) 'Never reseal'
