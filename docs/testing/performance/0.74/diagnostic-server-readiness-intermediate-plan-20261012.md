@@ -1550,3 +1550,17 @@ No original-owner attempt or server action is repeated. First Causal refusals,
 material/cleanup/EOF/fence, authenticated delivery/all writers, full fault/reconnect
 and server gates remain closed. Next audit trust component C strings as a
 separate pure baseline/candidate; no timing or readiness promotion is implied.
+
+### Trust component baseline retained without runtime mutation
+
+The [shared CString baseline](trust-component-baseline-20261021.md) retains six
+fixed names plus generic and embedded-NUL shapes. GNU/MSRV counters and the
+complete-child-body model establish allocation and first-error contracts before
+any replacement. Only an opt-in pure test hook changes in old supervisor code;
+all trust bodies, observation counts/order and original windows remain intact.
+
+First compile refusals are retained beside the one test-only payload-inspection
+repair. Next evaluate one short owned C-string candidate with generic fallback
+and exact open/error semantics. Do not equate pure allocation success with a
+successful material/cleanup/delivery/all-writer or fault/reconnect/server gate.
+No live replay, clock/service change or server work occurs.

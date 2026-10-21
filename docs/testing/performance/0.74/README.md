@@ -5663,3 +5663,18 @@ refusal and two test-only corrections remain separate. Six earlier seals and
 249 members are preserved. This is allocation evidence only, not preparation
 latency or product throughput; first Causal refusals and all material/server
 gates remain unchanged. No live, service or server action occurs.
+
+### Pure baseline for shared trust component names
+
+The [trust CString baseline](trust-component-baseline-20261021.md) freezes the
+shared worker/controller/held-runtime/OIDC conversion before a replacement.
+GNU/MSRV measure one length+1 request per name; the six-fixed-name subset totals
+1536 requests/29696 bytes per compiler. Embedded-NUL refusals also allocate in
+the current operation, while the complete-body model confirms no subsequent
+open. Generic names are retained rather than narrowed to fixed literals.
+
+Twenty-eight source canaries and pure seeded/error/ownership controls pass.
+Both first compile errors and the one test-only repair remain separate. The
+seven prior packets are preserved. Production trust bodies, original windows
+and first Causal refusals remain unchanged. There is no new runtime candidate,
+timing claim, live replay or readiness promotion.

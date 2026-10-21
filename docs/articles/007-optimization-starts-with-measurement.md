@@ -16904,3 +16904,37 @@ counts/order and both first Causal refusals are preserved. There is no live
 replay, clock/service change, server run or new material/server admission. The
 next trust-string leaf needs its own baseline rather than being folded into
 this successful allocation comparison.
+
+### Freeze shared trust-name conversion before replacing it
+
+The next [pure baseline](../testing/performance/0.74/trust-component-baseline-20261021.md)
+isolates `CString::new(name)` in the common trust-reader child helper. That
+helper serves worker, controller, held-runtime and OIDC configuration readers.
+Six fixed components do not define its whole contract: empty, Unicode,
+slash/dot and arbitrary-length strings can also reach conversion. They may
+convert successfully even when a later OS open would reject them. A short-name
+optimization must not silently become a new path validator.
+
+GNU 1.94 and MSRV 1.88 agree on one length+1 Rust request per conversion, with
+no reallocation. The fixed-name subset, with 256 constructions per name, totals
+1536 requests and 29696 bytes per compiler. The broader valid corpus totals
+5376 requests and 1274880 bytes; it deliberately includes a 4096-byte case and
+is not a production frequency distribution. Four separate embedded-NUL shapes
+total 1024 requests and 5888 bytes. The current CString operation owns the
+rejected bytes, so conversion refusal does not mean allocation-free refusal.
+
+A complete child-body model preserves conversion before open, the original
+parent, exact terminated bytes and flags, one open callback and last-error
+only for a negative result. It does not retry EINTR. Restoring three synthetic
+operands recovers the production body token for token; a 512-case seeded
+schedule control and explicit first-error/ownership cases freeze that boundary.
+The model has no real File or syscall and cannot prove a filesystem race or
+successful descriptor transfer.
+
+Both first Linux compiles expose an error in inspecting `NulError`: its payload
+must be consumed with `into_vec`, not read with a nonexistent `as_bytes` method.
+That one test-only repair and the corrected cohort remain separate from the
+first source and failures. Production trust bodies are unchanged. The result
+supports a later isolated short C-string experiment, not a runtime change or
+timing claim. Seven prior packet seals, original windows and both first Causal
+refusals remain; no live or server run and no readiness promotion follows.
