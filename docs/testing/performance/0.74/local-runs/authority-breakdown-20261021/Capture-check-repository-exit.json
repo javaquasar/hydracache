@@ -1,0 +1,34 @@
+{
+  "stage": "Capture",
+  "source": "20e6fc1217420d02dee91d2ac7ec9bae766a3273",
+  "recipe_sha256": "c912ba155b5132d230a1b7904c74a2407ec824b2b72bcb35cde552c53eaf6f31",
+  "steps": [
+    {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "log": "Capture-check-repository-format.log",
+      "name": "format",
+      "exit": 0
+    },
+    {
+      "sha256": "fae1bff9693b8616a34be085a01e55f095b435d24eac7e5289f04fd3637e59d5",
+      "log": "Capture-check-repository-docs.log",
+      "name": "docs",
+      "exit": 0
+    },
+    {
+      "sha256": "04a6bf81ce9b2d6220a9ddf727f946f0250b12adea04c5cdf9f1735fd2045864",
+      "log": "Capture-check-repository-registry.log",
+      "name": "registry",
+      "exit": 0
+    },
+    {
+      "sha256": "3def1a05a3dc04492bcf0cc689ec8218130f5f4e99766c351dbcb8301567fa84",
+      "log": "Capture-check-repository-performance.log",
+      "name": "performance",
+      "exit": 0
+    }
+  ],
+  "failure": null,
+  "server": false,
+  "product": false
+}

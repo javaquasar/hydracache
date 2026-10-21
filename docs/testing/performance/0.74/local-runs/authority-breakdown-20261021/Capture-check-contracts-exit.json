@@ -1,0 +1,16 @@
+{
+  "stage": "Capture",
+  "source": "60b720cad79e48a058056f55150520bcdf8624aa",
+  "recipe_sha256": "c912ba155b5132d230a1b7904c74a2407ec824b2b72bcb35cde552c53eaf6f31",
+  "steps": [
+    {
+      "exit": 0,
+      "log": "Capture-check-contracts-historical.log",
+      "sha256": "38a157c20815cbd44c7d1ca03484fe7efa5700bd1f7427c199133ca54e34b803",
+      "name": "historical"
+    }
+  ],
+  "failure": null,
+  "server": false,
+  "product": false
+}

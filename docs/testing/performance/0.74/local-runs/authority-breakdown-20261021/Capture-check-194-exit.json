@@ -1,0 +1,76 @@
+{
+  "stage": "Capture",
+  "source": "60b720cad79e48a058056f55150520bcdf8624aa",
+  "recipe_sha256": "c912ba155b5132d230a1b7904c74a2407ec824b2b72bcb35cde552c53eaf6f31",
+  "steps": [
+    {
+      "log": "Capture-check-194-authority_.log",
+      "name": "authority_",
+      "exit": 0,
+      "sha256": "3aec8c4260c91f253770a2776ba998420c8cc4c0e756ba521c8ae6b13d35402d"
+    },
+    {
+      "log": "Capture-check-194-validation_leaf_requests_.log",
+      "name": "validation_leaf_requests_",
+      "exit": 0,
+      "sha256": "7a0ed7c506a3b4f9b2a300ed3eec512b7338b395992d7f73651086c14de04dcb"
+    },
+    {
+      "log": "Capture-check-194-fixed_leaf_alloc_counter.log",
+      "name": "fixed_leaf_alloc_counter",
+      "exit": 0,
+      "sha256": "039834c87a7f9741b075b4430743a07a4c152733a955fcd134d54902180e5245"
+    },
+    {
+      "log": "Capture-check-194-fixed_leaf_path_differential.log",
+      "name": "fixed_leaf_path_differential",
+      "exit": 0,
+      "sha256": "31e7fd3caad0943dacf1d9117b2034e75eddd10328df6f19979b5374d046c8c5"
+    },
+    {
+      "log": "Capture-check-194-fixed_leaf_path_preserves.log",
+      "name": "fixed_leaf_path_preserves",
+      "exit": 0,
+      "sha256": "daa235eba9ea47e580474440a6ef2ae5ecbb4cea75d20de12f75068c3c8f214e"
+    },
+    {
+      "log": "Capture-check-194-kernel_time_.log",
+      "name": "kernel_time_",
+      "exit": 0,
+      "sha256": "8dd24e62f10384a609dcfb6b793cbf4b5d6744345ba7bc10bca6200b4e0f11a7"
+    },
+    {
+      "log": "Capture-check-194-kernel_worker_context_.log",
+      "name": "kernel_worker_context_",
+      "exit": 0,
+      "sha256": "7b57f853cef054bfb629205d3ea05785adf389fd6d82cfc3bba9c62ae150f0cb"
+    },
+    {
+      "log": "Capture-check-194-worker_trust_input_.log",
+      "name": "worker_trust_input_",
+      "exit": 0,
+      "sha256": "5b5470c34f29c5f23004f59ac1993f0b7785cbe999cfde9ff73e448a551bca65"
+    },
+    {
+      "log": "Capture-check-194-check.log",
+      "name": "check",
+      "exit": 0,
+      "sha256": "bf9f15a5982fd2641ee00476bbad0b63811f2ae917279f5b2bee3fa05448d883"
+    },
+    {
+      "log": "Capture-check-194-lint.log",
+      "name": "lint",
+      "exit": 0,
+      "sha256": "159aff255863c583cfb14a39e1fa835b12957f51f1ab4e8b693387c83552b767"
+    },
+    {
+      "log": "Capture-check-194-build.log",
+      "name": "build",
+      "exit": 0,
+      "sha256": "f6ca187f932f32da2c152dcff73b2a7f189b04a3c3fcf85571852eb0e2354f6b"
+    }
+  ],
+  "failure": null,
+  "server": false,
+  "product": false
+}
