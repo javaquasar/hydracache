@@ -1,0 +1,38 @@
+{
+  "server": false,
+  "product": false,
+  "mutations": [
+    {
+      "mutation": "parent",
+      "refused": true
+    },
+    {
+      "mutation": "missing",
+      "refused": true
+    },
+    {
+      "mutation": "edge",
+      "refused": true
+    },
+    {
+      "mutation": "scope",
+      "refused": true
+    },
+    {
+      "mutation": "continue-after-refusal",
+      "refused": true
+    },
+    {
+      "mutation": "source",
+      "refused": true
+    },
+    {
+      "mutation": "image",
+      "refused": true
+    },
+    {
+      "mutation": "bundle",
+      "refused": true
+    }
+  ]
+}

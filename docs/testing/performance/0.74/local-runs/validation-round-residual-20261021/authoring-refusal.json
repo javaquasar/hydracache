@@ -1,0 +1,9 @@
+{
+  "error": "JsonNode.Parse: Value cannot be null (utf8Json); empty pipeline array did not serialize",
+  "server": false,
+  "refused_recipe_sha256": "da6df2f54fd00f62e99481b087e49903830bbf834572977fad56d29a75f6e897",
+  "stage": "reviewer-authoring-audit",
+  "product": false,
+  "repair": "Serialize explicit InputObject, including empty arrays; targets and measurements unchanged",
+  "measured_invocations_started": false
+}
