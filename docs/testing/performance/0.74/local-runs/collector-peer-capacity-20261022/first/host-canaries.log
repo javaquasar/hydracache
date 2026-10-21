@@ -1,0 +1,43 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 19s
+     Running tests\boot_operations_074.rs (target\debug\deps\boot_operations_074-2f6a720f745bea5e.exe)
+
+running 2 tests
+test boot_operations_only_exact_hook_gate_and_directory_ownership_may_normalize ... ok
+test boot_operations_fresh_open_expression_and_original_runtime_are_frozen ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.98s
+
+     Running tests\collector_peer_baseline_074.rs (target\debug\deps\collector_peer_baseline_074-dc2a11c468ba7366.exe)
+
+running 3 tests
+test collector_peer_baseline_controls_have_no_live_capabilities ... ok
+test collector_peer_baseline_freezes_complete_peer_and_wrapper_bodies ... ok
+test collector_peer_baseline_changes_only_a_private_allocator_test_hook ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.47s
+
+     Running tests\collector_peer_capacity_074.rs (target\debug\deps\collector_peer_capacity_074-9c791ff7ac9f9550.exe)
+
+running 3 tests
+test collector_peer_capacity_controls_have_no_live_capabilities_or_ignored_tests ... ok
+test collector_peer_capacity_freezes_baseline_corpus_reference_and_complete_wrapper ... FAILED
+test collector_peer_capacity_restores_both_old_files_and_rejects_validation_or_union_drift ... ok
+
+failures:
+
+---- collector_peer_capacity_freezes_baseline_corpus_reference_and_complete_wrapper stdout ----
+
+thread 'collector_peer_capacity_freezes_baseline_corpus_reference_and_complete_wrapper' (17220) panicked at crates\xtask\tests\collector_peer_capacity_074.rs:148:5:
+assertion `left == right` failed
+  left: "{ # ! [doc = \" Pure test-only forwarding to the actual private peer helper; no live packet.\"] use super ::*; pub (crate) fn candidate_peer (uid : u32 , gid : u32 , supplementary : & [u32]) -> DiagnosticPeer { peer (uid , gid , supplementary) } }"
+ right: "{ use super ::*; pub (crate) fn candidate_peer (uid : u32 , gid : u32 , supplementary :& [u32]) -> DiagnosticPeer { peer (uid , gid , supplementary) } }"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    collector_peer_capacity_freezes_baseline_corpus_reference_and_complete_wrapper
+
+test result: FAILED. 2 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.52s
+
+error: test failed, to rerun pass `-p xtask --test collector_peer_capacity_074`
