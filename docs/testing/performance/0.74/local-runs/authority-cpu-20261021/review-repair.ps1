@@ -35,10 +35,20 @@ function Verify-Inventory([string]$Directory,[string]$ExpectedHash){
     $taskInventory.files.Count
 }
 function Facts{
+    $taskOriginalSource=[IO.File]::ReadAllText((Join-Path $PSScriptRoot 'authority_cpu-original.rs.txt')).Replace("`r",'')
+    $taskOldLoop="let mut seen = [false; 7];`n            for slot in 0..7 {"
+    $taskNewLoop="let mut seen = [false; 7];`n            for (slot, count) in counts.iter_mut().enumerate() {"
+    Require ($taskOriginalSource.Contains($taskOldLoop)) 'Original test loop missing'
+    $taskRepaired=$taskOriginalSource.Replace($taskOldLoop,$taskNewLoop).Replace('counts[index][slot] += 1;','count[index] += 1;')
+    Require ($taskRepaired -ceq [IO.File]::ReadAllText((Join-Path $taskRepo 'tools/long-run-supervisor-074/tests/support/authority_cpu.rs')).Replace("`r",'')) 'Changes extend beyond the test-only lint repair'
     $taskOriginal=Json 'Capture-check-194-exit.json'
     Require ($taskOriginal.failure -ceq 'Failed lint (101)' -and $taskOriginal.steps.Count -eq 10 -and $taskOriginal.steps[-1].exit -eq 101) 'Original GNU lint refusal missing'
     Require ($taskOriginal.recipe_sha256 -ceq (Hash (Join-Path $PSScriptRoot 'check.ps1'))) 'Original check recipe changed'
     foreach($taskStep in $taskOriginal.steps){Require ((Hash (Join-Path $PSScriptRoot $taskStep.log)) -ceq $taskStep.sha256) 'Original check log changed'}
+    $taskOriginalMsrv=Json 'Capture-check-188-exit.json'
+    Require (-not $taskOriginalMsrv.failure -and $taskOriginalMsrv.steps.Count -eq 11 -and @($taskOriginalMsrv.steps|Where-Object exit -ne 0).Count -eq 0) 'Original MSRV preflight missing'
+    Require ($taskOriginalMsrv.recipe_sha256 -ceq (Hash (Join-Path $PSScriptRoot 'check.ps1'))) 'Original MSRV recipe changed'
+    foreach($taskStep in $taskOriginalMsrv.steps){Require ((Hash (Join-Path $PSScriptRoot $taskStep.log)) -ceq $taskStep.sha256) 'Original MSRV check log changed'}
     foreach($taskLane in @('194','188','xtask','contracts','repository')){
         $taskSuffix=if($taskLane -in @('194','188')){'-repair'}else{''}
         $taskRecipe=if($taskSuffix){'check-repair.ps1'}else{'check.ps1'}
