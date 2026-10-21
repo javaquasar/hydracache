@@ -1,9 +1,11 @@
 //! Reverse one constructor/import and exact hooks; never exclude a live body.
+#[path = "collector_peer_baseline_guard.rs"]
+mod peer_baseline;
 #[macro_export]
 macro_rules! hc074_trust_component_stack_view {
     ($path:expr,$source:expr) => {{
         let path: &str=$path;
-        let mut raw:String=$source.to_owned();
+        let mut raw:String=$crate::hc074_collector_peer_baseline_view!(path,$source);
         if path=="tools/long-run-supervisor-074/src/diagnostic_worker_trust_input.rs"
             && (raw.contains("diagnostic_trust_component_name.rs")||raw.contains("component_name::Name"))
         {
