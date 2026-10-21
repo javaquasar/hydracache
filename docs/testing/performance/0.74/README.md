@@ -5636,3 +5636,15 @@ This is a review-risk order, not a timing ranking. Large scratch, authority and
 inventory ownership, temporary FD duplication and canonical reconstruction need
 their own attribution/error review. Fresh checks, original windows, first Causal
 refusals and closed material/server gates remain unchanged.
+
+### Pure baseline for local context document scratch
+
+The [short document baseline](context-document-buffer-baseline-20261021.md)
+freezes the existing Vec operation and complete read-body model before a runtime
+candidate. GNU/MSRV controls measure one request of length+1 bytes, including
+34/38 bytes for the two production lengths; no reallocation is observed.
+Exact read-slice and first-error model controls pass without File/Probe/live IO.
+
+Only an opt-in test hook changes in old supervisor sources. Initial compiler
+errors and corrected test sources remain separate. No stack replacement,
+measured speedup, live replay or readiness promotion is included.

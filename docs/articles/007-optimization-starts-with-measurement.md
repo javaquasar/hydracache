@@ -16840,3 +16840,25 @@ The four earlier evidence seals and all first refusals remain intact. Seventeen
 source hashes and thirteen witnesses make the inventory reproducible without
 new runtime observations. No successful material or server gate is inferred;
 the next experiment still needs its own baseline, isolated patch and controls.
+
+### Freeze small document scratch before changing its ownership
+
+The [next baseline](../testing/performance/0.74/context-document-buffer-baseline-20261021.md)
+isolates the existing local-context Vec construction. GNU 1.94 and MSRV 1.88
+both request length+1 bytes once per buffer, without reallocation. Across nine
+sizes and 256 constructions each this totals 2304 requests and 64768 bytes;
+the production-length subset totals 512 requests and 18432 bytes. These are
+allocator requests, not measured LocalContext time or predicted saved wall time.
+
+A pure model freezes the complete read body with only metadata operands replaced
+by synthetic observations. Source comparison restores those operands and keeps
+all other tokens. Successful cases preserve metadata/read/metadata and exact
+zeroed callback slices. Refusals retain short/overrun handling, I/O propagation,
+no retry, and metadata priority over later content checks. The model establishes
+that contract, not a real metadata race or successful original-owner execution.
+
+The first test compilation errors remain alongside the two test-only fixes and
+the corrected results. Production worker context is unchanged. This baseline
+contains no stack implementation: a later candidate must preserve 34/38-byte
+read slices and generic length behavior, then demonstrate its own result. No
+live attempt is repeated and no material/server gate is promoted.

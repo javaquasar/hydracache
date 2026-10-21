@@ -1522,3 +1522,16 @@ No candidate is implemented in this audit. Trust C-string and peer-growth
 experiments stay separate; larger buffers, inventory and FD/representation
 changes need additional review. First refusals and cleanup/delivery/all-writer,
 SIGKILL/lost-ACK/reconnect and server blockers remain unchanged. No host action.
+
+### Short document baseline retained before replacement
+
+The [pure scratch baseline](context-document-buffer-baseline-20261021.md)
+confirms the existing Rust request sizes and freezes metadata/read/error order
+with an exact-body synthetic model. The production worker-context file and
+all live checks/original windows remain unchanged; only a private opt-in test
+module hook is added. First compiler errors are retained, not hidden.
+
+Next consider one short stack-storage candidate with exact slice length,
+zeroing and generic compatibility. No implementation or timing improvement is
+claimed here. Material, cleanup, delivery/all-writer, fault/reconnect and server
+gates remain closed; no original-owner or server run occurs.
