@@ -1,0 +1,39 @@
+{
+  "failure": null,
+  "steps": [
+    {
+      "exit": 0,
+      "name": "format",
+      "log": "final-check-format.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "exit": 0,
+      "name": "docs",
+      "log": "final-check-docs.log",
+      "sha256": "0792546524a91c532c25c8bb000c39b729953dc86cc85534943db663c99d32aa"
+    },
+    {
+      "exit": 0,
+      "name": "registry",
+      "log": "final-check-registry.log",
+      "sha256": "e37560026ff32ccbc9332332b0fe25e248b9248ace7edfc1402f65d695d73dea"
+    },
+    {
+      "exit": 0,
+      "name": "performance",
+      "log": "final-check-performance.log",
+      "sha256": "ebbc7f9a584b882fa73b53a930eed906a7bd1ee000e69bccc23e4757819cd01e"
+    },
+    {
+      "exit": 0,
+      "name": "diff",
+      "log": "final-check-diff.log",
+      "sha256": "c6bf05fdb6bbd7e5f98e9ec3b7083a69e1ce5b27fb23334b5dcb596a3966dc5e"
+    }
+  ],
+  "product": false,
+  "recipe_sha256": "10397172d01941a853959f0e4c92565b4b33978a265ee4e6cfabee496db8ca20",
+  "source": "d17179f32aa0adcaa05ac47ec88d4a1020189762",
+  "server": false
+}

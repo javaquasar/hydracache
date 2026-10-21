@@ -1309,3 +1309,20 @@ real-report mutations pass, and twenty-three prior packets verify. Next
 separate fresh kernel/authority work; live/auth observer costs and all original
 delivery, writer cessation, lifecycle, SIGKILL/lost-ACK, reconnect, trust and
 server gates remain. No clock, service, server or installation changes occur.
+
+### Fresh kernel and authority cost boundaries
+
+The [offline split](local-runs/fresh-kernel-authority-20261021/README.md)
+uses actual recorded fresh Boot/Namespace calls and separates Boot's Document
+child from its setup/check/close/decode shell. Exact kernel partitions now
+include that read once. Authority/authentication remain independent because
+their cross-observer intersections were not recorded. No exclusive CPU or
+syscall cost is inferred and no existing expired attempt is retried.
+
+Ten new controls and eighteen original reader tests pass on both Windows
+and Linux, together with repository checks and all twenty-four previous
+packets. All live predicates, source bytes, original 300/60/10 windows and
+qualification inputs remain frozen. Next isolate actual fresh primitive
+costs before any candidate; this offline attribution does not close original
+delivery, writer cessation, lifecycle, SIGKILL/lost-ACK, reconnect, trust or
+server gates. No clock, service, server, supervisor or installation action.

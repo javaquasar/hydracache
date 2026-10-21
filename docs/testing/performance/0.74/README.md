@@ -5447,3 +5447,20 @@ actual-report mutations pass. All twenty-three prior packets remain verified.
 No existing runtime/observer, original window, clock/service/configuration,
 server or product changes occur. Next isolate fresh kernel/authority primitives
 without relaxing any live gate; remaining observer layers are still unmeasured.
+
+### Fresh kernel and authority partition
+
+The [derived fresh-operation packet](local-runs/fresh-kernel-authority-20261021/README.md)
+splits recorded Boot into its outside-document and bounded-read spans,
+Namespace into its own fresh-call span, and leaves ActiveAuthority and
+authentication as independent overlapping observations. Exact per-step kernel
+partitions reconcile without converting wall to CPU or inventing authority
+intersections. All phases and original refusals remain; no profile is rerun.
+
+Ten new controls plus eighteen original reader tests pass on Windows and
+Linux; twenty-four prior packets and format/docs/registry/local performance
+checks verify. Runtime/observers, live checks, original windows and
+qualification stay unchanged. No new optimization or admission follows.
+Next isolate the real Boot shell, Namespace and authority reader operations;
+outside-kernel wall cannot be assigned to authority. No clock/service/server,
+supervisor, installation or product action occurs.

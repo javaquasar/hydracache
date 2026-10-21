@@ -1,0 +1,25 @@
+test_both_partial_prefixes_keep_original_refusal (__main__.AttributionTests.test_both_partial_prefixes_keep_original_refusal) ... ok
+test_derived_output_is_exclusive_and_reconstructed_on_verify (__main__.AttributionTests.test_derived_output_is_exclusive_and_reconstructed_on_verify) ... ok
+test_duplicate_or_out_of_range_edge_refused (__main__.AttributionTests.test_duplicate_or_out_of_range_edge_refused) ... ok
+test_full_analysis_keeps_interpretation_and_gates_false (__main__.AttributionTests.test_full_analysis_keeps_interpretation_and_gates_false) ... ok
+test_graph_and_round_remainders_reconcile (__main__.AttributionTests.test_graph_and_round_remainders_reconcile) ... ok
+test_inventory_pin_and_member_bytes_are_checked (__main__.AttributionTests.test_inventory_pin_and_member_bytes_are_checked) ... ok
+test_kernel_node_edge_root_mutations_refused (__main__.AttributionTests.test_kernel_node_edge_root_mutations_refused) ... ok
+test_missing_or_reordered_step_refused (__main__.AttributionTests.test_missing_or_reordered_step_refused) ... ok
+test_missing_reordered_duplicate_phase_refused (__main__.AttributionTests.test_missing_reordered_duplicate_phase_refused) ... ok
+test_negative_fractional_bool_and_impossible_wall_refused (__main__.AttributionTests.test_negative_fractional_bool_and_impossible_wall_refused) ... ok
+test_observer_names_follow_current_unchanged_source (__main__.AttributionTests.test_observer_names_follow_current_unchanged_source) ... ok
+test_optional_cpu_is_not_inferred_or_clamped_to_wall (__main__.AttributionTests.test_optional_cpu_is_not_inferred_or_clamped_to_wall) ... ok
+test_parent_count_auth_and_output_round_signature_mutations_refused (__main__.AttributionTests.test_parent_count_auth_and_output_round_signature_mutations_refused) ... ok
+test_refusal_boot_age_and_site_mutations_refused (__main__.AttributionTests.test_refusal_boot_age_and_site_mutations_refused) ... ok
+test_retained_recipe_cli_reads_only_explicit_pinned_input (__main__.AttributionTests.test_retained_recipe_cli_reads_only_explicit_pinned_input) ... ok
+test_returned_failure_or_original_exit_erased_refused (__main__.AttributionTests.test_returned_failure_or_original_exit_erased_refused) ... ok
+test_round_count_completion_and_continuation_mutations_refused (__main__.AttributionTests.test_round_count_completion_and_continuation_mutations_refused) ... ok
+test_scope_flags_cannot_be_relaxed (__main__.AttributionTests.test_scope_flags_cannot_be_relaxed) ... ok
+
+----------------------------------------------------------------------
+Ran 18 tests in 24.299s
+
+OK
+offline partial attribution verified; complete cohort=false; native admission=false
+offline partial attribution verified; complete cohort=false; native admission=false

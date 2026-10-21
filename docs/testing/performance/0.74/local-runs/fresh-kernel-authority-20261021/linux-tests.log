@@ -1,0 +1,17 @@
+test_actual_partition_reconciles (__main__.FreshTests.test_actual_partition_reconciles) ... ok
+test_changed_leaf_parent_even_with_conserved_counts_refused (__main__.FreshTests.test_changed_leaf_parent_even_with_conserved_counts_refused) ... ok
+test_empty_step_has_no_invented_cost (__main__.FreshTests.test_empty_step_has_no_invented_cost) ... ok
+test_exclusive_publish_and_cli_verification (__main__.FreshTests.test_exclusive_publish_and_cli_verification) ... ok
+test_impossible_authority_wall_refused (__main__.FreshTests.test_impossible_authority_wall_refused) ... ok
+test_new_authority_child_is_not_silently_excluded (__main__.FreshTests.test_new_authority_child_is_not_silently_excluded) ... ok
+test_numeric_and_edge_corruption_refused (__main__.FreshTests.test_numeric_and_edge_corruption_refused) ... ok
+test_refusals_and_scope_preserved (__main__.FreshTests.test_refusals_and_scope_preserved) ... ok
+test_verifier_refuses_numeric_boolean_gate_substitution (__main__.FreshTests.test_verifier_refuses_numeric_boolean_gate_substitution) ... ok
+fresh Boot/Document/Namespace partition verified; authority overlap unrecorded; no new profiles
+fresh Boot/Document/Namespace partition verified; authority overlap unrecorded; no new profiles
+test_zero_call_with_time_refused (__main__.FreshTests.test_zero_call_with_time_refused) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 73.629s
+
+OK

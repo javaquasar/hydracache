@@ -16420,3 +16420,39 @@ twenty-three preceding packets verify. The ordinary-user WSL session keeps
 boot/source/configuration/input/images unchanged. Original live checks,
 300/60/10 windows and qualification remain frozen; there are no service/clock/
 server, supervisor, installation or product actions, and no admission claim.
+
+### Fresh Boot and Namespace versus authority
+
+The [offline fresh-operation partition](../testing/performance/0.74/local-runs/fresh-kernel-authority-20261021/README.md)
+separates the already recorded real calls without another live preparation.
+In the complete 46-round outputs ReservedLive step, each compiler records
+129,904 Boot calls and 259,808 Namespace calls. Boot outside its
+Document child takes 1.053708/0.938471 s; the child adds
+0.124464/0.090995 s. Thus Boot inclusive is 1.178172/1.029466 s, while
+Namespace accounts for 0.935155/0.781214 s. These are individual instrumented
+wall observations from refused prefixes, not repeatable performance claims.
+
+Including Boot's read child matters: the earlier outside-children sum of
+Boot plus Namespace deliberately excluded it. Boot inclusive, Namespace and
+other kernel intervals now form an exact non-overlapping kernel partition.
+Boot's shell includes fresh proc opens, filesystem checks, descriptor closure
+and decoding; the larger shell does not identify any one of those operations
+as the cause. Namespace includes fresh nsfs open/filesystem/metadata checks,
+whereas retained-descriptor checks remain in Origin's shell.
+
+ActiveAuthority independently records 14,812 calls and 0.993633/0.834129 s.
+It wraps registry inspection and refusal handling, not just cryptography.
+Authentication independently records 736 calls and 0.081994/0.082488 s.
+Their intersections with kernel intervals were not recorded, so neither can
+be added to the partition or subtracted from the outside-kernel remainder.
+This is a useful measurement boundary: exact within-observer accounting is
+available, but exclusive cross-observer CPU ownership is not.
+
+The analyzer preserves both expired final rounds and original refusal ages.
+Ten new controls and eighteen inherited reader tests run on both Windows and
+Linux; twenty-four prior evidence packets and local repository checks verify.
+Runtime, observers, all live predicates, original 300/60/10 windows and
+qualification remain unchanged. The next hypothesis is a real-callsite split
+of Boot setup/teardown, Namespace and authority reader cost; no caching,
+check-frequency reduction, optimization, new timing profile or server action
+is accepted by this offline result.

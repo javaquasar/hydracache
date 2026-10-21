@@ -1,0 +1,55 @@
+{
+  "server": false,
+  "product": false,
+  "recipe_sha256": "c867d4fe6ab67b86dc29c5fae624b650d8be666d5e70ca67a608eefce002a9c2",
+  "native_gate_open": false,
+  "steps": [
+    {
+      "name": "prior-review",
+      "sha256": "3a913d48de6ca42ce933c3222e9a0f16accce7a018c72337c102255e9b3e4565",
+      "exit": 0,
+      "log": "prior-review.log"
+    },
+    {
+      "name": "windows-parent",
+      "sha256": "8bbbe8bb95ce0acc2ca3fe380ca80b0d7b4ce5ff77a61c5ba95bfe4b5cc78de8",
+      "exit": 0,
+      "log": "windows-parent.log"
+    },
+    {
+      "name": "windows-tests",
+      "sha256": "9a3ff82b6a38ffdb93a0caa32e09cfd1cf3611ffcdfb8444b053a6e8279bebce",
+      "exit": 0,
+      "log": "windows-tests.log"
+    },
+    {
+      "name": "linux-parent",
+      "sha256": "e4c65898efabd08bffffbd5fdb991d73c00a97aea6383113cad54c2f0d58da5d",
+      "exit": 0,
+      "log": "linux-parent.log"
+    },
+    {
+      "name": "linux-tests",
+      "sha256": "feb93e4a71e90c0c7c564d2509bb04602b764a3bc40d42fa0850b5d10b139d87",
+      "exit": 0,
+      "log": "linux-tests.log"
+    },
+    {
+      "name": "derive",
+      "sha256": "2ad02a3fdb9f6aa811180458ee75fd9f960e5cd27ea85dbe9fcf29ce1f17309d",
+      "exit": 0,
+      "log": "derive.log"
+    },
+    {
+      "name": "reconstruct",
+      "sha256": "2ad02a3fdb9f6aa811180458ee75fd9f960e5cd27ea85dbe9fcf29ce1f17309d",
+      "exit": 0,
+      "log": "reconstruct.log"
+    }
+  ],
+  "runtime_changed": false,
+  "source": "d17179f32aa0adcaa05ac47ec88d4a1020189762",
+  "failure": null,
+  "new_profile_invocations": 0,
+  "observer_changed": false
+}

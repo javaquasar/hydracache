@@ -1,0 +1,12 @@
+exact per-step nodes/roots/edges; canonical ordering only; live guards=0
+synthetic counts verified; no live overhead subtraction or admission
+{
+  "prior_packets_verified": 23,
+  "mode": "Review",
+  "live_guard_invocations": 0,
+  "integrity_verified": true,
+  "native_gate_open": false,
+  "product": false,
+  "server": false,
+  "synthetic_cases": 12
+}
