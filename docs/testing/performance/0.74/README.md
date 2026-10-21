@@ -5568,3 +5568,17 @@ Next verify that composition in the unchanged original windows before opening
 durable original delivery. Existing schemas, qualification, live checks and
 server admission remain unchanged; no clock/service/server/product action is
 part of this step.
+
+### First whole original owner materialization gate
+
+The [first full local gate](held-material-live-20261021.md) reaches production
+projection and materialization on GNU 1.94 and MSRV 1.88, including the extended
+twenty-FD inventory. Its subsequent full revalidation refuses with original
+`Causal(Time)` at ages 10042390247 ns and 10010835739 ns. Both first outcomes
+remain; there is no retry, changed origin, relaxed check or extended window.
+
+The complete gate is not passed. Postflight observes no fixture residue, but
+panic bypasses the old successful EOF/custodian/fence footer, so those assertions
+are not promoted. Next attribute the retained combined phase offline before a
+separately reviewed cost candidate. Durable delivery and all downstream
+SIGKILL/lost-ACK/reconnect and server gates remain closed.

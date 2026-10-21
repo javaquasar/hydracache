@@ -1449,3 +1449,19 @@ not close that composition gate. FD inheritance/delivery, durable uncertainty,
 actual process/barrier binding, active collection, complete writer cessation,
 completion/cells 2–4, SIGKILL/lost-ACK/reconnect and production enrollment still
 precede server admission. This step changes no clock, service or server state.
+
+### Original owner construction returns but full revalidation expires
+
+The [first complete materialization gate](held-material-live-20261021.md) retains
+one original call per compiler, without retry. Production projection and
+materialization return on both lanes; subsequent full revalidation refuses
+`Causal(Time)` beyond the unchanged ten-second original origin. Full composition
+readiness remains false. Empty postflight residue is not a passing EOF/fence or
+all-writer proof because refusal bypasses those final fixture assertions.
+
+Keep this packet closed. Next attribute the retained combined validation/effect
+cost offline, then review a separate candidate that preserves every fresh check
+and original deadline. No clock, service, server, installation, supervisor,
+product or original-send action is authorized by this failed gate. Durable
+uncertainty, delivery/process binding, collection, all-writer cessation,
+completion/cells 2–4 and joined SIGKILL/lost-ACK/reconnect remain downstream.

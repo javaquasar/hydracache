@@ -16670,3 +16670,40 @@ the last fresh deadline sample. The corrected candidate checks the same
 original absolute bound again after the final stamp. Both cohorts remain
 separate, with exact source reconstruction; no old predicate or deadline is
 weakened to accept the correction.
+
+### Original owner construction does not close the full live gate
+
+The [first complete original-owner run](../testing/performance/0.74/held-material-live-20261021.md)
+asks a different question from isolated kernel tests: can the consumed owner
+project the held unit, create all missing kernel material, revalidate it and
+complete the existing cleanup assertions within the original absolute windows?
+The preregistered experiment uses one healthy invocation per compiler, with the
+same synthetic bundle and seed, unchanged full validators and 300/60/10-second
+windows. An opt-in test-only adapter calls the production methods; exact source
+reconstruction preserves the previous fixture and runtime bodies.
+
+Both GNU 1.94 and MSRV 1.88 return from projection and materialization, including
+the twenty-FD inventory. Both then refuse at the single full material
+revalidation call with `Causal(Time)`. The first expired ages are 10042390247 ns
+and 10010835739 ns against the original 10000000000 ns window. Boot and original
+origins are conserved; this is not a wrapper timeout or inventory substitution.
+The first outcomes stay negative. There is no retry-to-pass, deadline extension,
+clock/service change or new server run.
+
+The extra combined phase occupies 4418926816 ns and 4653421864 ns respectively
+in these refused prefixes. It includes multiple unchanged full frames, effects,
+inspection, observations and unwinding; it does not separately measure memfd
+creation, sealing, projection or the census. Its retained step/kernel graph
+reconciles each call and span, with one unfinished Causal step in each lane.
+These two prefixes establish where admission stopped, not a compiler comparison
+or a CPU/throughput improvement. The next cost hypothesis must come from offline
+attribution of this existing evidence, not deletion of checks or selection of
+a later successful sample.
+
+The distinction also applies to cleanup. Postflight sees no matching fixture
+residue, but panic skips the successful post-drop EOF/custodian/fence assertions.
+That observation cannot establish safe unlock or cessation of every writer.
+The full material gate therefore remains closed despite successful construction
+and 82 green selected tests per compiler. Authenticated single delivery, durable
+uncertainty, process/barrier binding and the joined SIGKILL/lost-ACK/reconnect
+matrix remain downstream; no product or server readiness is claimed.

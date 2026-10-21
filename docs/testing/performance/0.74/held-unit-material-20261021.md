@@ -125,3 +125,11 @@ active collection, all-writer cessation, completion/cells 2–4 or joined
 SIGKILL/lost-ACK/reconnect admission. Server enrollment/rehearsal is separate.
 No clocks, services, host settings, installation, supervisor or server are
 changed; no product workload or performance measurement is run.
+
+## Subsequent whole owner gate
+
+The separately retained [first original-owner gate](held-material-live-20261021.md)
+now reaches projection and materialization on both compilers, then refuses full
+material revalidation with the original Causal time predicate. The mechanics
+results above remain valid in their original scope, but full composition
+readiness is false. No first refusal is retried or overwritten.
