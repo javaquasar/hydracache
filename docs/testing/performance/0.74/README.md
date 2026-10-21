@@ -5737,3 +5737,19 @@ structural checks accompany the new offline tool. The next bounded work is a
 proc document-buffer baseline and lifetime/error contract, not a new live
 attempt. All original windows, qualification and material/fault/reconnect/server
 gates remain unchanged; there is no new measurement or host operation.
+
+### Pure proc document construction and reuse baseline
+
+The [separate buffer baseline](proc-document-baseline-20261022.md) isolates the
+remaining zeroed constructor request without repeating the already adopted
+complete Sender reuse optimization. Two first Windows MSVC compiler lanes pass
+seven pure tests each: 256 instances request 256 zeroed allocations and 16777472
+bytes per compiler; four synthetic reads per instance add no requests. Separate
+stage controls are not pooled, and no elapsed/physical-zeroing claim follows.
+
+Forty source canaries, strict checks/lints, twenty offline reviewer/reconciliation
+controls, formatting and structural gates pass. Thirteen prior seals and 770
+members remain intact. Runtime and original windows/refusals are unchanged;
+there is no new storage candidate, WSL/live profile or server operation. Next
+isolate sample boot ownership before any representation change. Material,
+cleanup/delivery/all-writer, full fault/reconnect and server gates remain closed.

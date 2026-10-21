@@ -1624,3 +1624,19 @@ any storage candidate or separately admitted full-path comparison. No runtime,
 observer, qualification, clock/service or server change occurs. Material,
 cleanup/EOF/fence, authenticated delivery/all writers, full SIGKILL/lost-ACK,
 reconnect and server gates remain closed.
+
+### Remaining proc buffer baseline preserves the existing reuse optimization
+
+The [pure constructor/reuse baseline](proc-document-baseline-20261022.md)
+confirms one remaining zeroed request per modeled buffer and allocation-free
+reuse on its synthetic corpus. It does not repeat the older complete Sender
+comparison or add a runtime candidate. Two first Windows compiler lanes, exact
+body/source guards and thirteen preceding raw seals preserve the distinction
+between an allocation request and live preparation cost.
+
+Keep the current buffer unchanged. A smaller slice, missing zeroing, cached
+observation or large nested stack buffer is not justified by these counters.
+Next isolate sample boot ownership with the full original surrounding frame
+preserved. All live checks, 300/60/10-second windows, first Causal refusals and
+material/cleanup/delivery/all-writer/fault/reconnect/server gates remain. No WSL,
+service/clock change, installation or server action occurs.

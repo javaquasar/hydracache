@@ -17079,3 +17079,37 @@ The next narrow baseline is the invocation-local proc document buffer, not a
 65537-byte stack replacement or a cache of previously checked observations.
 All fresh checks and original windows remain; material cleanup, delivery/all
 writers, full fault/reconnect and server admission still require their own gates.
+
+### Attribute the remaining buffer without counting old reuse twice
+
+The [proc document baseline](../testing/performance/0.74/proc-document-baseline-20261022.md)
+isolates the current constructor and read reuse. The earlier complete Sender
+experiment already removed three redundant allocations by adopting one owned
+buffer per validation. Repeating that delta as a new optimization would hide
+what remains: one eagerly allocated, zeroed 65537-byte Vec, retained only for
+the invocation and reused across the original reads.
+
+A dependency-free Windows test image models the complete current constructor
+and read_with body. A source canary removes only the exact File adapter before
+comparing tokens; synthetic error and trace receivers are not a live kernel
+path. Both installed MSVC compilers, Rust 1.94 and 1.88, report 256 zeroed
+allocations, no reallocations and 16777472 requested bytes for 256 instances with
+four reads each. A separate one-instance stage control attributes the one
+request to construction, no requests to reuse, and one matching layout to drop.
+It is not pooled into the main corpus.
+
+The distinction between requested zeroed bytes and zeroing cost matters here.
+Allocator implementation, page state, initialization and later reads affect
+elapsed cost; deallocation also need not release memory to the OS. These
+counters cannot rank the constructor against fresh kernel checks or prove
+preparation headroom. The result supports retaining the current runtime while
+considering a separately justified design, not immediately substituting a large
+stack buffer, a shorter read or uninitialized storage.
+
+Seeded prefix, long-to-short tail, independent ownership and error controls keep
+one callback and no retry. Source canaries preserve the complete Sender schedule.
+Thirteen earlier seals and 770 members, including the original reuse experiment,
+are verified without another live or WSL run. The next narrow ownership baseline
+is the boot clone in Origin::sample; changes to representation or its surrounding
+fresh checks remain separate work. Original windows, Causal refusals and all
+material/fault/reconnect/server gates remain unchanged.
