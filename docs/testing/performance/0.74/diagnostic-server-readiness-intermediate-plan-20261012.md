@@ -1465,3 +1465,19 @@ and original deadline. No clock, service, server, installation, supervisor,
 product or original-send action is authorized by this failed gate. Durable
 uncertainty, delivery/process binding, collection, all-writer cessation,
 completion/cells 2–4 and joined SIGKILL/lost-ACK/reconnect remain downstream.
+
+### Repeated validation round cost attributed without new execution
+
+The [offline round attribution](held-material-round-attribution-20261021.md)
+identifies ReservedLive as the dominant measured step in the new refused phase,
+with Boot/Namespace/Origin dominant in the phase's in-step kernel tree. All 22 observed
+phase partitions conserve; the original two Causal refusals and failed readiness
+remain. No runtime, observer, deadline, check frequency, WSL, clock/service or
+server operation changes.
+
+The next candidate should address measured fresh worker/authority inspection
+implementation cost under the same call graph. Coalescing full validations or
+caching successes is not authorized by this attribution. Unassigned effects,
+observer overhead and stage timings remain unresolved. Original construction
+success still does not admit full revalidation, completion, all writers or the
+server; downstream fault/reconnect/enrollment gates remain independent.

@@ -16707,3 +16707,42 @@ The full material gate therefore remains closed despite successful construction
 and 82 green selected tests per compiler. Authenticated single delivery, durable
 uncertainty, process/barrier binding and the joined SIGKILL/lost-ACK/reconnect
 matrix remain downstream; no product or server readiness is claimed.
+
+### Repeated validation cost isolated from sealed first refusals
+
+The [offline attribution](../testing/performance/0.74/held-material-round-attribution-20261021.md)
+uses those same two first logs, not a new profile. It verifies the sealed packet,
+reconstructs its original outcome and checks all eight step prefixes and nested
+kernel counts/times. Each observed phase is partitioned into kernel and other
+wall within the steps, plus kernel and unassigned wall outside. All 22 phase
+partitions conserve exactly; nested inclusive spans are not added together.
+
+In the final combined phase, the repeated eight-step scopes occupy 3.271562271 s
+on GNU and 3.425518109 s on MSRV, or 74.04% and 73.61% of each refused prefix.
+ReservedLive alone occupies 2.808784775 s and 2.941286486 s, about 63% of the whole
+phase. Its calls finish before the later Causal refusal. Within the kernel tree
+of the steps, Boot, Namespace and Origin account for about 71.4% of wall outside
+their instrumented children. That is an implementation-cost investigation target,
+not permission to reuse an earlier boot/namespace/authority observation.
+
+Source inspection shows why the deep path repeats: material validation calls
+projected-owner validation twice; each projected round validates the consuming
+holder twice; each consuming validation preserves four placement frames plus
+two trust and two role inspections. Those layers bracket different state. Their
+call multiplicity is confirmed in source, but the logs do not separate the
+projection, creation and revalidation timestamps. Removing an intermediate
+validation would change the contract and is not an accepted cost fix.
+
+The remaining outside-step wall is not automatically effect time. After
+accounting for outside-step kernel spans, 0.766917781 s and 0.824444588 s remain
+unassigned. The logs cannot split that residue into allocations, sealing, fsync,
+hashing or observer overhead. Instrumented message authentication occupies only
+about 1.2% of the combined phase, but this does not include every cryptographic
+check. Wall spans are not exclusive CPU; phase sums are not admission age.
+
+The next justified target is cheaper implementation of the same repeated fresh
+checks, starting with ReservedLive and its kernel/authority inspections. No
+saving is predicted from this partial cohort. Both original expirations, missing
+cleanup footer and failed readiness stay intact. Runtime, check frequency and
+deadlines do not change, and no new WSL session, service or server run is needed
+for this attribution.

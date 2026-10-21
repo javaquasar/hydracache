@@ -5582,3 +5582,18 @@ panic bypasses the old successful EOF/custodian/fence footer, so those assertion
 are not promoted. Next attribute the retained combined phase offline before a
 separately reviewed cost candidate. Durable delivery and all downstream
 SIGKILL/lost-ACK/reconnect and server gates remain closed.
+
+### Offline attribution of repeated material validation rounds
+
+The [sealed-log attribution](held-material-round-attribution-20261021.md)
+conserves all 22 phase partitions without new profiles. Eight-step rounds
+occupy 74.04%/73.61% of the final refused phase; ReservedLive alone accounts
+for 63.56%/63.21%. Boot, Namespace and Origin contribute about 71.4% of the
+instrumented kernel wall within those steps. These are overlapping-path wall
+observations, not exclusive CPU or a measured optimization gain.
+
+Both first Causal expirations, original windows and failed material gate remain.
+Outside-step residue is not assigned to fsync, allocations, sealing or observer
+cost. Next review a separate fresh-check implementation-cost candidate within
+ReservedLive and its dominant kernel inspections; do not collapse checks, cache
+successes or repeat this refused cohort to pass. No WSL/server/service action.
