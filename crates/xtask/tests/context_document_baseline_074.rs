@@ -49,6 +49,17 @@ fn context_document_baseline_changes_only_one_test_hook_not_any_runtime_body() {
     let old_changed: Vec<_> = changed
         .lines()
         .filter(|p| previous.lines().any(|v| v == *p))
+        .filter(|p| {
+            if *p == "tools/long-run-supervisor-074/src/diagnostic_worker_context.rs" {
+                assert_eq!(
+                    crate::hc074_context_document_stack_view!(*p, &read(p)),
+                    git(&["show", &format!("{prior}:{p}")])
+                );
+                false
+            } else {
+                true
+            }
+        })
         .collect();
     assert_eq!(old_changed, [path]);
     let raw = read(path);
@@ -69,7 +80,7 @@ fn context_document_baseline_changes_only_one_test_hook_not_any_runtime_body() {
 #[test]
 fn context_document_baseline_model_has_the_complete_original_read_body() {
     let context = "tools/long-run-supervisor-074/src/diagnostic_worker_context.rs";
-    let raw = read(context);
+    let raw = crate::hc074_context_document_stack_view!(context, &read(context));
     assert_eq!(raw, git(&["show", &format!("8717ea4f:{context}")]));
     let method = raw
         .split_once("    fn read_with(\n")

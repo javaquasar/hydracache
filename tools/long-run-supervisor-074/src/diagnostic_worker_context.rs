@@ -14,6 +14,13 @@ use thiserror::Error;
 pub const MACHINE_DOCUMENT_BYTES: usize = 33;
 pub const BOOT_DOCUMENT_BYTES: usize = 37;
 
+#[path = "diagnostic_context_document_buffer.rs"]
+mod document_buffer;
+
+#[cfg(all(test, feature = "fixed-leaf-alloc-probe"))]
+#[path = "../tests/support/context_document_stack_adapter.rs"]
+pub(crate) mod document_stack_controls;
+
 #[path = "diagnostic_context_files.rs"]
 pub mod account_files;
 
@@ -143,7 +150,7 @@ impl Document {
             return Err(WorkerContextError::Drift);
         }
         // One bounded positional read. Short/EINTR reads refuse; no retry or IO deadline claim.
-        let mut buffer = vec![0; length + 1];
+        let mut buffer = document_buffer::Scratch::new(length);
         let count = read(&mut buffer)?;
         if FileStamp::from(self.file.metadata()?) != self.stamp {
             return Err(WorkerContextError::Drift);

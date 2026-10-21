@@ -1,6 +1,9 @@
 //! Opt-in test binary only. Rust requests, not libc malloc, CPU, RSS or authority.
 use super::*;
 
+#[path = "../tests/support/context_document_stack.rs"]
+mod context_document_stack;
+
 #[path = "../tests/support/context_document_buffer_baseline.rs"]
 mod context_document_buffer_baseline;
 
