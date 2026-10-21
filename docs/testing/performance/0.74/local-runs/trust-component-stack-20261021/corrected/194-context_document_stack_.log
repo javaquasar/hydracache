@@ -1,0 +1,21 @@
+    Finished `release` profile [optimized] target(s) in 6.11s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/release/deps/hydracache_long_run_supervisor_074-c3c253bf49d23fef)
+
+running 4 tests
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::context_document_stack::context_document_stack_boundary_owned_storage_and_healthy_models ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::context_document_stack::context_document_stack_candidate_requests ... HC074-CONTEXT-DOCUMENT-CANDIDATE {"counts":{"allocations":0,"reallocations":0,"requested_bytes":0},"iterations":256,"length":0,"product":false,"production_length":false,"profile":false,"rust_requests_only":true,"server":false,"timing_claim":false}
+HC074-CONTEXT-DOCUMENT-CANDIDATE {"counts":{"allocations":0,"reallocations":0,"requested_bytes":0},"iterations":256,"length":1,"product":false,"production_length":false,"profile":false,"rust_requests_only":true,"server":false,"timing_claim":false}
+HC074-CONTEXT-DOCUMENT-CANDIDATE {"counts":{"allocations":0,"reallocations":0,"requested_bytes":0},"iterations":256,"length":4,"product":false,"production_length":false,"profile":false,"rust_requests_only":true,"server":false,"timing_claim":false}
+HC074-CONTEXT-DOCUMENT-CANDIDATE {"counts":{"allocations":0,"reallocations":0,"requested_bytes":0},"iterations":256,"length":32,"product":false,"production_length":false,"profile":false,"rust_requests_only":true,"server":false,"timing_claim":false}
+HC074-CONTEXT-DOCUMENT-CANDIDATE {"counts":{"allocations":0,"reallocations":0,"requested_bytes":0},"iterations":256,"length":33,"product":false,"production_length":true,"profile":false,"rust_requests_only":true,"server":false,"timing_claim":false}
+HC074-CONTEXT-DOCUMENT-CANDIDATE {"counts":{"allocations":0,"reallocations":0,"requested_bytes":0},"iterations":256,"length":36,"product":false,"production_length":false,"profile":false,"rust_requests_only":true,"server":false,"timing_claim":false}
+HC074-CONTEXT-DOCUMENT-CANDIDATE {"counts":{"allocations":0,"reallocations":0,"requested_bytes":0},"iterations":256,"length":37,"product":false,"production_length":true,"profile":false,"rust_requests_only":true,"server":false,"timing_claim":false}
+HC074-CONTEXT-DOCUMENT-CANDIDATE {"counts":{"allocations":256,"reallocations":0,"requested_bytes":9984},"iterations":256,"length":38,"product":false,"production_length":false,"profile":false,"rust_requests_only":true,"server":false,"timing_claim":false}
+HC074-CONTEXT-DOCUMENT-CANDIDATE {"counts":{"allocations":256,"reallocations":0,"requested_bytes":16384},"iterations":256,"length":63,"product":false,"production_length":false,"profile":false,"rust_requests_only":true,"server":false,"timing_claim":false}
+ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::context_document_stack::context_document_stack_explicit_first_refusals_and_no_arithmetic_before_metadata ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::context_document_stack::context_document_stack_seeded_body_error_and_schedule_differential ... HC074-CONTEXT-STACK-DIFFERENTIAL seed=0x074c5a19 samples=384 model_only=true
+ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 1496 filtered out; finished in 0.01s
+

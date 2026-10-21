@@ -1,0 +1,30 @@
+{
+  "ignored_tests_run": false,
+  "runtime_candidate_implemented": true,
+  "original_owner_profiles": 0,
+  "product": false,
+  "failure": null,
+  "cohort": "first",
+  "lane": "host",
+  "steps": [
+    {
+      "exit": 0,
+      "sha256": "4953052c5d4f456245e1dc47c09e9e24f17c86e05876eaeed2789ceab6cf2da6",
+      "log": "host-canaries.log",
+      "name": "canaries"
+    },
+    {
+      "exit": 0,
+      "sha256": "40d19603c3a483b26ee7ccddf8fab54118a6c0345e9bbdbc47bd5d24b5a92381",
+      "log": "host-check.log",
+      "name": "check"
+    },
+    {
+      "exit": 0,
+      "sha256": "99f5fd4bf31d2af9616f3c0ace4583a22ba9fd6215cd5275d4f15e92672242a8",
+      "log": "host-clippy.log",
+      "name": "clippy"
+    }
+  ],
+  "server": false
+}

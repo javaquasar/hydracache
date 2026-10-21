@@ -1,0 +1,37 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0433]: failed to resolve: use of undeclared type `CString`
+   --> tools/long-run-supervisor-074/src/../tests/support/held_runtime_trust.rs:234:28
+    |
+234 | ... = CString::n...
+    |       ^^^^^^^ use of undeclared type `CString`
+    |
+    = note: struct `crate::diagnostic_worker_policy::local_files::tests::CString` exists but is inaccessible
+help: a struct with a similar name exists
+    |
+234 -                 let path = CString::new(path.as_os_str().as_bytes()).unwrap();
+234 +                 let path = String::new(path.as_os_str().as_bytes()).unwrap();
+    |
+help: consider importing this struct
+    |
+  4 + use std::ffi::CString;
+    |
+
+error[E0433]: failed to resolve: use of undeclared type `CString`
+   --> tools/long-run-supervisor-074/src/diagnostic_worker_trust_input_tests.rs:353:28
+    |
+353 | ... = CString::n...
+    |       ^^^^^^^ use of undeclared type `CString`
+    |
+    = note: struct `crate::diagnostic_worker_policy::local_files::tests::CString` exists but is inaccessible
+help: a struct with a similar name exists
+    |
+353 -                 let name = CString::new(model.config().to_str().unwrap()).unwrap();
+353 +                 let name = String::new(model.config().to_str().unwrap()).unwrap();
+    |
+help: consider importing this struct
+    |
+  4 + use std::ffi::CString;
+    |
+
+For more information about this error, try `rustc --explain E0433`.
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 2 previous errors

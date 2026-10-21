@@ -1,0 +1,18 @@
+{
+  "steps": [
+    {
+      "name": "trust_component_stack_",
+      "log": "188-trust_component_stack_.log",
+      "sha256": "f64d7110461c594cc0be7c6234ec3d87264e3c5733032ba15ae4911e1d76eaf7",
+      "exit": 101
+    }
+  ],
+  "lane": "188",
+  "cohort": "first",
+  "failure": "Check refused: first/188/trust_component_stack_ (101)",
+  "product": false,
+  "original_owner_profiles": 0,
+  "ignored_tests_run": false,
+  "runtime_candidate_implemented": true,
+  "server": false
+}

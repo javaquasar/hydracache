@@ -1,0 +1,18 @@
+{
+  "original_owner_profiles": 0,
+  "cohort": "first",
+  "ignored_tests_run": false,
+  "failure": "Check refused: first/194/trust_component_stack_ (101)",
+  "steps": [
+    {
+      "log": "194-trust_component_stack_.log",
+      "sha256": "4d7f58ce67a8ce3d50d256d85c4d16e2049673d7e1340b49a88bf03c01e196bc",
+      "exit": 101,
+      "name": "trust_component_stack_"
+    }
+  ],
+  "product": false,
+  "server": false,
+  "lane": "194",
+  "runtime_candidate_implemented": true
+}

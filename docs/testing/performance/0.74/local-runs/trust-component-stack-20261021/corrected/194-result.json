@@ -1,0 +1,54 @@
+{
+  "product": false,
+  "original_owner_profiles": 0,
+  "lane": "194",
+  "failure": null,
+  "steps": [
+    {
+      "log": "194-trust_component_stack_.log",
+      "name": "trust_component_stack_",
+      "sha256": "5fa916ca0ad2884cfbbaa1d8e191fc293c7745e6a625b79509b3fed2d3eddc27",
+      "exit": 0
+    },
+    {
+      "log": "194-trust_component_baseline_.log",
+      "name": "trust_component_baseline_",
+      "sha256": "49369f3c76a640900cf4fd4745fbff2a2b70362f757702a20ab634589d17d265",
+      "exit": 0
+    },
+    {
+      "log": "194-context_document_stack_.log",
+      "name": "context_document_stack_",
+      "sha256": "6be5b30250d25a0dbbe03ec6adc917fc240867e8c09c60a2efda2802fb238edb",
+      "exit": 0
+    },
+    {
+      "log": "194-context_document_buffer_baseline.log",
+      "name": "context_document_buffer_baseline",
+      "sha256": "768ff1467e18f0c7b5353fcbd1e2c0bd9b67d9d03fb1da41bbf59485fc8f7c32",
+      "exit": 0
+    },
+    {
+      "log": "194-fixed_leaf_alloc_counter.log",
+      "name": "fixed_leaf_alloc_counter",
+      "sha256": "efb7337cacb35f6ac9f79292ec2bc9bfdafc239a1038a623d6fefddb925fabbe",
+      "exit": 0
+    },
+    {
+      "log": "194-check.log",
+      "name": "check",
+      "sha256": "5bced5610681d82ece34817cff897c5187c8e80047dbd97ab8a92f8b36a8a741",
+      "exit": 0
+    },
+    {
+      "log": "194-clippy.log",
+      "name": "clippy",
+      "sha256": "8de9832b272842bb4c9888aaa102db286aca4342299b642c7b2b7f5bd36ee3a5",
+      "exit": 0
+    }
+  ],
+  "cohort": "corrected",
+  "server": false,
+  "ignored_tests_run": false,
+  "runtime_candidate_implemented": true
+}

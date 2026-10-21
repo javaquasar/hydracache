@@ -1,0 +1,54 @@
+{
+  "failure": null,
+  "runtime_candidate_implemented": true,
+  "server": false,
+  "product": false,
+  "steps": [
+    {
+      "name": "trust_component_stack_",
+      "exit": 0,
+      "log": "188-trust_component_stack_.log",
+      "sha256": "8a00f4378a7d8d6866cc48bebcd4e820c4ff16d535ade9dc2ea6578bb61a4ad6"
+    },
+    {
+      "name": "trust_component_baseline_",
+      "exit": 0,
+      "log": "188-trust_component_baseline_.log",
+      "sha256": "6923ce99b9ca6fecef0fb2d917093ac5c3aae2f42f194cfb9021263b039df710"
+    },
+    {
+      "name": "context_document_stack_",
+      "exit": 0,
+      "log": "188-context_document_stack_.log",
+      "sha256": "92ad00f0cca3635de5e4b8b512be54b7e13f6d5b23d32d2b5133990bf5af7324"
+    },
+    {
+      "name": "context_document_buffer_baseline",
+      "exit": 0,
+      "log": "188-context_document_buffer_baseline.log",
+      "sha256": "840609d8fb4e45980cd47e5653733eac0850664e79331574c8ad65f52a960516"
+    },
+    {
+      "name": "fixed_leaf_alloc_counter",
+      "exit": 0,
+      "log": "188-fixed_leaf_alloc_counter.log",
+      "sha256": "403de0178560e53120a9e10ef797bd2740c766a56093d619015f0b17d3db7b70"
+    },
+    {
+      "name": "check",
+      "exit": 0,
+      "log": "188-check.log",
+      "sha256": "8f51186a937a5888b21853cb70fe475c5cdde0140ff5a1ccc031604055aa16b9"
+    },
+    {
+      "name": "clippy",
+      "exit": 0,
+      "log": "188-clippy.log",
+      "sha256": "eb34a5436ad569af30670e7d26f542f78afd34fe74d7f9e1d84dd0b5982227f6"
+    }
+  ],
+  "cohort": "corrected",
+  "original_owner_profiles": 0,
+  "lane": "188",
+  "ignored_tests_run": false
+}
