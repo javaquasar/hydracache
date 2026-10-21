@@ -1,0 +1,38 @@
+{
+  "product": false,
+  "failure": null,
+  "steps": [
+    {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "log": "repository-format.log",
+      "exit": 0,
+      "name": "format"
+    },
+    {
+      "sha256": "74b85d0233f51c4d9042374c048ce41b130bbae01ef6805b3df404886d64b2d8",
+      "log": "repository-docs.log",
+      "exit": 0,
+      "name": "docs"
+    },
+    {
+      "sha256": "7ccce827e5cfa7f14a7c88ac345505eb532fc153e0045c76beee97f3ebbb53ab",
+      "log": "repository-registry.log",
+      "exit": 0,
+      "name": "registry"
+    },
+    {
+      "sha256": "04c57d8bbc9172aaca86f5e03b21ac4546d68c667624d919fd2f9c61b73f2e8a",
+      "log": "repository-performance.log",
+      "exit": 0,
+      "name": "performance"
+    },
+    {
+      "sha256": "9c93724debd6d70937fef3e398206a67651f47f20bdc11caa266652aeb606324",
+      "log": "repository-diff.log",
+      "exit": 0,
+      "name": "diff"
+    }
+  ],
+  "server": false,
+  "source": "3107fe33360f97a17ae336f2da6714832924dd68"
+}

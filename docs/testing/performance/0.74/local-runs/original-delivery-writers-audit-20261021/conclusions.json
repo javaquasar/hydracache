@@ -1,0 +1,30 @@
+{
+  "audit_source": "3107fe33360f97a17ae336f2da6714832924dd68",
+  "runtime_changed": false,
+  "live_predicates_changed": false,
+  "original_windows_seconds": [300, 60, 10],
+  "new_original_fixture_invocations": 0,
+  "selected_existing_controls_per_compiler": 32,
+  "original_delivery_proven": false,
+  "all_production_writers_proven": false,
+  "full_sigkill_matrix_ready": false,
+  "durable_original_completion_proven": false,
+  "production_enrollment_proven": false,
+  "reply_flag_compatibility_implemented": true,
+  "four_cell_coordinator_model_implemented": true,
+  "next_bounded_step": "consuming held-unit projection before transport",
+  "blockers": [
+    "held-unit projection is not the prepared legacy worker message",
+    "consuming original transport and durable send uncertainty are not connected",
+    "original held executable/process/streams/root binding and release are not connected",
+    "external writer copies and active collector terminal proof are not composed",
+    "durable original completion/cells/recovery are not the existing backend model",
+    "production trust/host enrollment remains a separate gate"
+  ],
+  "performance_claim": false,
+  "root_execution": false,
+  "original_send": false,
+  "native_gate_open": false,
+  "server": false,
+  "product": false
+}

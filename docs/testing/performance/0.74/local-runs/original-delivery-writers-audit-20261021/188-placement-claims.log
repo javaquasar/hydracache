@@ -1,0 +1,12 @@
+
+running 6 tests
+test diagnostic_two_phase_launch::tests::held_placement::held_placement_all_packet_kinds_zero_fields_and_foreign_attempt_refuse ... ok
+test diagnostic_two_phase_launch::tests::held_placement::held_placement_changed_signed_fields_digest_and_key_refuse ... ok
+test diagnostic_two_phase_launch::tests::held_placement::held_placement_roundtrip_exact_root_and_data_only_scope ... ok
+test diagnostic_two_phase_launch::tests::held_placement::held_placement_seeded_names_and_identity_binding_are_deterministic ... HC074-HELD-PLACEMENT seed=0x074e5a1c identities=128 runtime_admission=false
+ok
+test diagnostic_two_phase_launch::tests::held_placement::held_placement_unknown_duplicate_noncanonical_budget_and_hex_refuse ... ok
+test diagnostic_two_phase_launch::tests::held_placement::held_placement_versions_and_signature_domains_do_not_upgrade_old_claims ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 1402 filtered out; finished in 0.02s
+

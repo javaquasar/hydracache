@@ -1,0 +1,188 @@
+{
+  "source": "3107fe33360f97a17ae336f2da6714832924dd68",
+  "recipe_sha256": "039c4f7a5bfe227ba09f1ff208ce57122508de67479349898ef6a724f9a2be04",
+  "fixture_sha256": "ab5f78f53a3e63f636dc56c1b1f6d8c5829adf757e98ae2e77fc0f788fefaab8",
+  "qualification_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "source_files": [
+    {
+      "sha256": "2caa77e32ccc7049423246edcc567e1ff4f94c6c9fbe7729550917a34cde9b08",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_consuming_held_join.rs"
+    },
+    {
+      "sha256": "061b56f017b9ab89f7b9610c7f83696e8e6cec5669a5ca3b74593de563cc3343",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_fixed_placement.rs"
+    },
+    {
+      "sha256": "5fd4ae28b88d4fff5a36dd0e94683ebf528d81d8c01dec1cfe49f0776a5727ee",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_owned_placement.rs"
+    },
+    {
+      "sha256": "477e129074b1c9f70da9a89ed4e94fdde0672eb3a0a3923d6321f4e64dcf4968",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_owned_root_manager.rs"
+    },
+    {
+      "sha256": "617bf72f9473324b47854a428bb6cdb7a462451120f4e4ed480f651bba4a0a47",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_manager_join.rs"
+    },
+    {
+      "sha256": "95ba07f143ead7683c2c3d20b178560f6d086d2643f09f030f690b45fd9b17da",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_manager_message.rs"
+    },
+    {
+      "sha256": "8c8388c9fce9317fdeada367f99089bac9b86de4b9f417e44f68eccfcbbeebf1",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_watchdog_context.rs"
+    },
+    {
+      "sha256": "895dea88caf4c388380072eee5a6fa5dab49b5c1a90dfaf9bcbe72beb0652252",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_pending_watchdog.rs"
+    },
+    {
+      "sha256": "5f7d7b39a30cc90cdc0b394bf3591b156b4d5f722d33b1afc22fd54ac89a0e88",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_root_guardians.rs"
+    },
+    {
+      "sha256": "ffb8302f2351ee07605e367c42c472a960fca808a5ac8c2d48c13b10097f4a07",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs"
+    },
+    {
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs"
+    },
+    {
+      "sha256": "dada14e6c223e77fb96a2ab60dc2cabf08479358b42e0dafe6b2ceeb15a77f72",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_manager_receiver_pin.rs"
+    },
+    {
+      "sha256": "3a10d18ef079e33da17e7e48dc28b34e43c11fcc315985bdc91f82d3bcd1ddbf",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange.rs"
+    },
+    {
+      "sha256": "32668eb8d87dd62a71c9c677c16e9d1146bf447ff1a44144f33eaef7fa50470b",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs"
+    },
+    {
+      "sha256": "d1d970db92b60c0c474932f55210b29c0eaf632d5ad15636763dfe8034a07116",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_dispatch_reply_state_tests.rs"
+    },
+    {
+      "sha256": "2a931adae40f43147c5ee7050354e62afc54c05120c18a730a01bbf69c84b7cc",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_dispatch_reply_flags_tests.rs"
+    },
+    {
+      "sha256": "62157d77b0e8b5d26a6e0d7802e593eb451872347320140a2d12869f9e1f4aaa",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_descriptor_plan.rs"
+    },
+    {
+      "sha256": "361663b98b5bfd8d6650b69d11ddd6edec0b830b01aa29f824086883ca045449",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs"
+    },
+    {
+      "sha256": "e670d7a59ba74d23cbb663f13924edb6c749eb7287c2d90d6cbbae76f4b3e876",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_enrollment_frame.rs"
+    },
+    {
+      "sha256": "37061633a1f3b16320278776937513648e8fed7d52e81fea92840282b5aadee3",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_enrollment_frame_build.rs"
+    },
+    {
+      "sha256": "2aea5e4cda9338c0fc21abd97e30602679900e46b6a20f0fb7c4b759171aac4b",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_barred_custody.rs"
+    },
+    {
+      "sha256": "cc8bad9193692c3a9e7bd0c6ff563c5c2dbdd0f7345b8fefc6d958aa7d1ff57e",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_barred_collector.rs"
+    },
+    {
+      "sha256": "00a93c58e8c3af93e1832e3cff7c9b4e6ee74f7fbb90abd7c16f1d646cc1cb69",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_barred_collector_kernel.rs"
+    },
+    {
+      "sha256": "6e504612f2c97095aaad18fefc954d7035463b03243b4a411fe5393b9f7e4cd7",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_collector_custody_storage.rs"
+    },
+    {
+      "sha256": "22bafaef0b1e2dfe2006d1b173932ff7668e01707898218e0286b598a3e666f2",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_collector_starting_storage.rs"
+    },
+    {
+      "sha256": "ec40a433a6735f587afd143d84eb9ec7b74a23bd2123d776fe3f79f6c325cc40",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_collector_starting_publication.rs"
+    },
+    {
+      "sha256": "7334085c049f21a7b97727c78efdb8f59e1fd6dea72dd606f9b3e0e319ab6daa",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_two_phase_launch.rs"
+    },
+    {
+      "sha256": "804e3c16fdb77ac3e45271f2d8b17da1492cc9127700c63e3b281103796eb93d",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_two_phase_launch_tests.rs"
+    },
+    {
+      "sha256": "c050714425a8485605856d3c5f680e3b1387fd4886d441ed65a6fce768006d5a",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_held_placement.rs"
+    },
+    {
+      "sha256": "55c434fdc4cd81c8d2b4c14700d102c67c827c9edb15b02399c27c8a42801d8d",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_held_placement_tests.rs"
+    },
+    {
+      "sha256": "fae8e04e9e3269d0865cbbaf5ee8f0b079b8124f80dd29861eab61fad86e80e7",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_held_barrier.rs"
+    },
+    {
+      "sha256": "cbe302e3978ebb4e96775206ce41a4bc423c3d1ab483b44882a00af82f867735",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_held_launcher_kernel.rs"
+    },
+    {
+      "sha256": "038bc3b658cc71e921a9030a4ea283dedeae6d232a140ce3579c16795bc6039e",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_root_enrollment.rs"
+    },
+    {
+      "sha256": "d35e8ec1ec61f1f594dddd44b20ede6421c4d008039e6466622551a55c11271f",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_root_enrollment_tests.rs"
+    },
+    {
+      "sha256": "51e60a20306b75d29c347764e8a44772500f11eee1b1a889f3ca0dfe6789076f",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_cgroup_root.rs"
+    },
+    {
+      "sha256": "f8199776b31d3b5fe89739ff60e742f2159dcf1f2d985252af847d28b4befd43",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_fixed_slice.rs"
+    },
+    {
+      "sha256": "5f469b6162188f2caa488994ce7890adba4c0292df94a6346f78873aa90dc3ed",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_root_guardian.rs"
+    },
+    {
+      "sha256": "bbaed4aef3c8338d8425f945c15d7178778960ea4723eaf20538551c4225cc56",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_root_guardian_raw.rs"
+    },
+    {
+      "sha256": "744d25f3ebce193798dd0aa6667483abec71545de6eeae90b60a3a90cbfe0e7c",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_root_guardian_original_kernel.rs"
+    },
+    {
+      "sha256": "8e86891c4e2e5f9c1c557fcb4ef7b6d86055c332d83648590e1186c5544c0e93",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_root_placement_binding.rs"
+    },
+    {
+      "sha256": "7419c9f890797187cfd1f4ce5f86b3f2757da239813d8b46bf6650c304128b65",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_root_retirement_tests.rs"
+    },
+    {
+      "sha256": "a0df0b79a11422df4279a7c5bb8485d5297853639039a02f5127503b52508cc5",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_lease.rs"
+    },
+    {
+      "sha256": "1e50c3ff6d867c2c3f384ecdfce74028ff39b94e55dd1e81d2a856f88fa3440a",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_ipc.rs"
+    },
+    {
+      "sha256": "958075ed03d82343e31e6ea8cd67c3201f3df9795690e1d0a1e62e683573ad09",
+      "path": "tools/long-run-supervisor-074/src/server.rs"
+    },
+    {
+      "sha256": "1b5d0ca7f24af08d628d26e15d9f85adec3aeb3e0dc1f6c812ce49756925c56a",
+      "path": "tools/long-run-supervisor-074/src/bin/diagnostic_held_launcher.rs"
+    }
+  ]
+}

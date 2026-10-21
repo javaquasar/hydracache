@@ -1,0 +1,208 @@
+{
+  "native_gate_open": false,
+  "source": "3107fe33360f97a17ae336f2da6714832924dd68",
+  "failure": null,
+  "server": false,
+  "original_send": false,
+  "new_original_fixture_invocations": 0,
+  "selectors": [
+    [
+      "reply-flags",
+      "dispatch_reply_flags_",
+      5
+    ],
+    [
+      "reply-state",
+      "dispatch_reply_state_",
+      5
+    ],
+    [
+      "uncertain",
+      "dispatch_arms_uncertain_before_transport_and_never_rearms",
+      1
+    ],
+    [
+      "lost-ack",
+      "dispatch_delayed_reply_cannot_heal_a_closed_unknown_outcome",
+      1
+    ],
+    [
+      "hidden-alias",
+      "dispatch_job_and_drop_do_not_prove_cessation_of_hidden_message_aliases",
+      1
+    ],
+    [
+      "owner-drop",
+      "dispatch_failure_and_uncertain_drop_retain_pipe_writers_until_owner_destruction",
+      1
+    ],
+    [
+      "manager-error",
+      "dispatch_manager_error_is_retained_without_exposing_its_payload_or_retry",
+      1
+    ],
+    [
+      "root-claims",
+      "root_enrollment_",
+      5
+    ],
+    [
+      "placement-claims",
+      "held_placement_",
+      6
+    ],
+    [
+      "launch-claims",
+      "two_phase_launch_",
+      5
+    ],
+    [
+      "retirement",
+      "original_root_retirement_refuses_owner_first_and_cannot_retry_pending_or_consumed",
+      1
+    ]
+  ],
+  "steps": [
+    {
+      "log": "prior-review.log",
+      "exit": 0,
+      "sha256": "0ff582bdab918fd8566a022de4077e1e97ec78f325f4c8beaa1668917d5b9d58",
+      "name": "prior-review"
+    },
+    {
+      "log": "194-reply-flags.log",
+      "exit": 0,
+      "sha256": "0d74e9d761e2f63acfddd638e33d2e1d225ce718293ae1c393a4647b400575b3",
+      "name": "194-reply-flags"
+    },
+    {
+      "log": "194-reply-state.log",
+      "exit": 0,
+      "sha256": "799bccb813229f5244d76f88fd7628b3561d5d47ca4804f9b461f2bb6e0e9ab9",
+      "name": "194-reply-state"
+    },
+    {
+      "log": "194-uncertain.log",
+      "exit": 0,
+      "sha256": "434319438e47e6f86537458887336c2fb444694ab8f4a4ceea34d9e203a7f619",
+      "name": "194-uncertain"
+    },
+    {
+      "log": "194-lost-ack.log",
+      "exit": 0,
+      "sha256": "bae79eea2efa304cfdf24ae55c3f92f6e23ecb7d0546a32c1645aa93372c875d",
+      "name": "194-lost-ack"
+    },
+    {
+      "log": "194-hidden-alias.log",
+      "exit": 0,
+      "sha256": "7a8ef97a03e4a7767811d26df94d818634d1c97b6510f75f14569e38cf265a06",
+      "name": "194-hidden-alias"
+    },
+    {
+      "log": "194-owner-drop.log",
+      "exit": 0,
+      "sha256": "baa2bf3988238f91b42d9d0e016920ff99829b540b29194de9b636124e388d1c",
+      "name": "194-owner-drop"
+    },
+    {
+      "log": "194-manager-error.log",
+      "exit": 0,
+      "sha256": "4652c1148db052b98a0e4a2e608188b668f359892b4bb07d4d557954e995b27e",
+      "name": "194-manager-error"
+    },
+    {
+      "log": "194-root-claims.log",
+      "exit": 0,
+      "sha256": "47a5e75cf91875748037e8af9f4a9e624ef06fd055f903c083af9897383bae0e",
+      "name": "194-root-claims"
+    },
+    {
+      "log": "194-placement-claims.log",
+      "exit": 0,
+      "sha256": "4b45c17c346f6810d7054da42afa9329e046f224dc49ef3ace54493829fdf0b8",
+      "name": "194-placement-claims"
+    },
+    {
+      "log": "194-launch-claims.log",
+      "exit": 0,
+      "sha256": "55bd96a057621b588f9ddb2090f4ec57f4921262bdb9b1ae2fb6bb06eaf1829c",
+      "name": "194-launch-claims"
+    },
+    {
+      "log": "194-retirement.log",
+      "exit": 0,
+      "sha256": "92b2239f7e2460879b51d088058ba95d5c96c92915775081afa5ed58f5519030",
+      "name": "194-retirement"
+    },
+    {
+      "log": "188-reply-flags.log",
+      "exit": 0,
+      "sha256": "0d74e9d761e2f63acfddd638e33d2e1d225ce718293ae1c393a4647b400575b3",
+      "name": "188-reply-flags"
+    },
+    {
+      "log": "188-reply-state.log",
+      "exit": 0,
+      "sha256": "799bccb813229f5244d76f88fd7628b3561d5d47ca4804f9b461f2bb6e0e9ab9",
+      "name": "188-reply-state"
+    },
+    {
+      "log": "188-uncertain.log",
+      "exit": 0,
+      "sha256": "434319438e47e6f86537458887336c2fb444694ab8f4a4ceea34d9e203a7f619",
+      "name": "188-uncertain"
+    },
+    {
+      "log": "188-lost-ack.log",
+      "exit": 0,
+      "sha256": "bae79eea2efa304cfdf24ae55c3f92f6e23ecb7d0546a32c1645aa93372c875d",
+      "name": "188-lost-ack"
+    },
+    {
+      "log": "188-hidden-alias.log",
+      "exit": 0,
+      "sha256": "7a8ef97a03e4a7767811d26df94d818634d1c97b6510f75f14569e38cf265a06",
+      "name": "188-hidden-alias"
+    },
+    {
+      "log": "188-owner-drop.log",
+      "exit": 0,
+      "sha256": "baa2bf3988238f91b42d9d0e016920ff99829b540b29194de9b636124e388d1c",
+      "name": "188-owner-drop"
+    },
+    {
+      "log": "188-manager-error.log",
+      "exit": 0,
+      "sha256": "4652c1148db052b98a0e4a2e608188b668f359892b4bb07d4d557954e995b27e",
+      "name": "188-manager-error"
+    },
+    {
+      "log": "188-root-claims.log",
+      "exit": 0,
+      "sha256": "097dc076205118145cbbd4715d890b2beed6f69d59a363b005d61c1b7329bf4f",
+      "name": "188-root-claims"
+    },
+    {
+      "log": "188-placement-claims.log",
+      "exit": 0,
+      "sha256": "2ed2fcfd695781bb04dc2a93862583f4a27fe48f4fdcd2dd6f03258b30dccead",
+      "name": "188-placement-claims"
+    },
+    {
+      "log": "188-launch-claims.log",
+      "exit": 0,
+      "sha256": "55bd96a057621b588f9ddb2090f4ec57f4921262bdb9b1ae2fb6bb06eaf1829c",
+      "name": "188-launch-claims"
+    },
+    {
+      "log": "188-retirement.log",
+      "exit": 0,
+      "sha256": "92b2239f7e2460879b51d088058ba95d5c96c92915775081afa5ed58f5519030",
+      "name": "188-retirement"
+    }
+  ],
+  "full_sigkill_matrix": false,
+  "product": false,
+  "root_execution": false
+}

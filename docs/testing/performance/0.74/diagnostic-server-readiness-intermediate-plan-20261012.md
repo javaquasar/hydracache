@@ -1390,3 +1390,25 @@ The delta matches the unchanged bounded nonblocking relay polling signature;
 this is inference, not direct receive-attempt telemetry. The refused strict
 comparison and original raw counts remain. No deadline, predicate or acceptance
 threshold changes to accommodate this cost-comparability observation.
+
+### Original delivery and writer cessation prerequisite audit
+
+The [current source audit](original-delivery-writers-prerequisites-audit-20261021.md)
+keeps the full joined SIGKILL/lost-ACK gate closed. Full frames, original manager
+identity/message preparation, root Armed/revocation mechanics and holder
+retirement exist. The consumed holder has no delivery/release API; the original
+message still uses the legacy worker projection, and reply state remains
+preparation-only. A standalone held launcher exists but is not that integration.
+
+The missing proof spans creator/message/queued/manager writer copies outside
+the root cgroup, an active collector rather than barred IO, terminal sink/journal
+writers, durable completion and the original cells 2–4/recovery bridge. Those
+model transitions already exist; they must not be mistaken for original-path
+admission. The next bounded implementation is exact held-unit projection from
+the consumed owner, followed by one-shot authenticated delivery and terminal
+writer protocol before new joined fault cuts.
+
+The audit passes 32 existing local unit/property controls per compiler and
+reviews the preceding sealed chain, without new privileged fixtures or manager
+operations. No runtime, live check, original 300/60/10 window, qualification,
+clock/service/idle policy, server, supervisor, installation or product change.

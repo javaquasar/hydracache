@@ -1,0 +1,38 @@
+operation probes reconstructed; observer overhead not subtracted; native admission=false
+operation probes reconstructed; observer overhead not subtracted; native admission=false
+{
+  "integrity_verified": true,
+  "server": false,
+  "allocation_reduction_verified": true,
+  "prior_packets_verified": 25,
+  "cpu_speedup_claim": false,
+  "product": false,
+  "mode": "Review",
+  "native_gate_open": false
+}
+Original preparation outcome and conserved prefixes verified; native admission=false
+Original ages, live calls and complete cohort graph verified offline
+{
+  "inventory_sha256": "c1a697c7f1c281d7b0330800d516340ce5cf3c3eee5cd55b26ee637b023b346c",
+  "members": 70,
+  "complete_preparation_cohort": true,
+  "product": false,
+  "prior_packets_verified": 26,
+  "server": false,
+  "mode": "Review",
+  "native_gate_open": false,
+  "causal_speedup_claim": false
+}
+Original local fault outcomes reconstructed; no full SIGKILL/server admission
+Raw full-phase inequality retained; original validation round/auth/live counts agree
+{
+  "remaining_fixture_cases_complete": true,
+  "inventory_sha256": "80e78ab80251b43ea405eea99234595b226497dfe5c2e4367581c8db8219d96b",
+  "members": 85,
+  "product": false,
+  "prior_packets_verified": 27,
+  "server": false,
+  "mode": "Review",
+  "native_gate_open": false,
+  "full_sigkill_matrix": false
+}

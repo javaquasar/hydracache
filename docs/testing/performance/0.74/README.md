@@ -5519,3 +5519,19 @@ This closes these fixture cases only. Original delivery, cessation of all
 production writers, full SIGKILL/lost-ACK, reconnect, production enrollment
 and server admission remain independent. No clocks, services, server,
 supervisor, installation or product/qualification workload was changed or run.
+
+### Original delivery and all writer prerequisites
+
+The [source audit](original-delivery-writers-prerequisites-audit-20261021.md)
+distinguishes implemented local mechanisms from missing original-path composition.
+The consuming holder remains nonexecuting; its legacy-worker message needs a
+held-unit projection, durable one-shot original transport and process/barrier
+binding. Root guardians do not prove external writer-copy closure, and the
+collector is still barred. Existing four-cell model transitions are not the
+kernel-authenticated completion backend.
+
+Thirty-two existing local controls pass per compiler without new ignored/root
+fixtures or server actions. The audit retains a writer-owner ledger, fault-cut
+prerequisites and implementation order; full joined SIGKILL/lost-ACK admission
+remains closed. Next implement the exact consuming held-unit projection before
+transport. All live predicates, original windows and qualification remain intact.

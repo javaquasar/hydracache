@@ -1,0 +1,38 @@
+{
+  "server": false,
+  "product": false,
+  "mutations": [
+    {
+      "refused": true,
+      "mutation": "numeric-native"
+    },
+    {
+      "refused": true,
+      "mutation": "delivery"
+    },
+    {
+      "refused": true,
+      "mutation": "writers"
+    },
+    {
+      "refused": true,
+      "mutation": "matrix"
+    },
+    {
+      "refused": true,
+      "mutation": "completion"
+    },
+    {
+      "refused": true,
+      "mutation": "renewal"
+    },
+    {
+      "refused": true,
+      "mutation": "erase-compatibility"
+    },
+    {
+      "refused": true,
+      "mutation": "erase-model"
+    }
+  ]
+}

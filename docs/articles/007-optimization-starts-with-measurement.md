@@ -16578,3 +16578,29 @@ from source and count structure, not direct syscall-attempt telemetry. Raw
 inequality stays in evidence; no counters, timing, predicates or deadlines are
 normalized to turn it into equality. Fixture correctness passes independently
 of that failed cost-comparability hypothesis.
+
+### Prerequisites before original delivery fault injection
+
+The [original delivery and writer audit](../testing/performance/0.74/original-delivery-writers-prerequisites-audit-20261021.md)
+finds an intentionally closed integration boundary. The consuming holder has
+full live/trust/role validation and retirement, but no original send/release
+method. Its prepared message still represents the legacy worker projection,
+not a held-launcher unit. A fixed manager address and prepared reply state do
+not supply the missing consuming transport or durable send-uncertainty record.
+Reply flag compatibility is already implemented and is not that blocker.
+
+Independent root guardians can retain and revoke a pinned cgroup, including
+later population. They cannot close every copy outside that cgroup: creator
+message aliases, queued SCM_RIGHTS and manager ownership also matter. Existing
+hidden-alias tests show that a successful job reply and owner drop can leave
+both streams without EOF. The current collector is barred rather than an
+active reconciler, and guardian revocation notice is not safe-unlock proof.
+
+The lifecycle coordinator already models four cells. What remains is its
+connection to authenticated original delivery, active collection and a durable
+all-writers terminal proof; the model's caller/backend facts cannot replace
+those sources. The audit passes 32 existing local controls per compiler without
+running another privileged fixture. It adds no timing claim, removes no live
+predicate and extends no deadline. The next bounded implementation is the exact
+held-unit projection from the consumed owner, before enabling transport and
+designing a joined SIGKILL/lost-ACK matrix.

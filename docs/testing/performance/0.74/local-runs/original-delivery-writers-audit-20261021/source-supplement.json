@@ -1,0 +1,42 @@
+{
+  "files": [
+    {
+      "sha256": "e761ec070542dca7268ecacd3dbd43d09cb6f5ed05bc19933a35e1589a109a1b",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport.rs"
+    },
+    {
+      "sha256": "a017f9d22b60ca59ab5e2fc4a7b0a542c82a0a64549b780b9779d91131e0c3fd",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_unit.rs"
+    },
+    {
+      "sha256": "848f90671f720e86c4a1205ad4121bb98309bc50bd20db3ca9de719616ccb284",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_held_role_binding.rs"
+    },
+    {
+      "sha256": "6594f3cfe80d5add3e514732dc1cc8f86bda5e1f1aa8a472db4f4a6b8f2231bb",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_held_late_trust.rs"
+    },
+    {
+      "sha256": "4d2343aef6aae07a6c8a198525734e2dbb99392f424f93e3f238e9241d670b8b",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_live_execution.rs"
+    },
+    {
+      "sha256": "99c73ade3abb85f1e44f1f59f28e375e348033b88bd187645249f2a17cd717c0",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_live_identity.rs"
+    },
+    {
+      "sha256": "4e4c25c9bb71daf0040b0497835cd3172ebaffb93eeccb00af14c114b272a093",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_collector_starting_crash_tests.rs"
+    },
+    {
+      "sha256": "830692baa9b45238549c09938e00fa837b47ae7043eb7c1e779fcdbf9fb166c8",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_root_creator_tests.rs"
+    },
+    {
+      "sha256": "05c05b7b1d0981c733b99f52510a48155ee7f0e496b1b29b4dfa2c54bbab021e",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_root_guardian_tests.rs"
+    }
+  ],
+  "source": "3107fe33360f97a17ae336f2da6714832924dd68",
+  "report_sha256": "7c7b272c21ef4fca42d75d87ecd9274f0378391ac2071bd67e6f84766cfa835f"
+}
