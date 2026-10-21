@@ -1,9 +1,11 @@
 //! Reverse only exact inline group ownership edits; no predicate exclusions.
+#[path = "context_document_baseline_guard.rs"]
+mod context_baseline;
 #[macro_export]
 macro_rules! hc074_projection_groups_view {
     ($path:expr,$source:expr) => {{
         let path: &str = $path;
-        let mut raw: String = $source.to_owned();
+        let mut raw: String = $crate::hc074_context_document_baseline_view!(path,$source);
         if path == "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs"
             && (raw.contains("diagnostic_projection_groups.rs") || raw.contains("projection_groups::"))
         {
