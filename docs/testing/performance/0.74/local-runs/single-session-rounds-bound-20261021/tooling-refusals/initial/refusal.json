@@ -1,0 +1,13 @@
+{
+  "kind": "operator-reconstructed-tooling-refusal",
+  "source": "9cb6a13e913e8678d34d077762372661adc7f2af",
+  "stage": "PowerShell pins serialization before WSL profile entry",
+  "error": "Keys must be strings.",
+  "default_builds_completed": 2,
+  "measured_profile_invocations": 0,
+  "postflight_started": false,
+  "original_target_prefix_preserved": true,
+  "continued": false,
+  "server": false,
+  "product": false
+}

@@ -1,0 +1,61 @@
+test_descendant_pipe_holder_is_bounded (__main__.CaptureTests.test_descendant_pipe_holder_is_bounded) ... skipped 'Linux process-group and selector controls'
+test_log_cap_keeps_partial_bytes (__main__.CaptureTests.test_log_cap_keeps_partial_bytes) ... skipped 'Linux process-group and selector controls'
+test_missing_binary_leaves_new_log (__main__.CaptureTests.test_missing_binary_leaves_new_log) ... skipped 'Linux process-group and selector controls'
+test_nonzero_is_not_retried (__main__.CaptureTests.test_nonzero_is_not_retried) ... skipped 'Linux process-group and selector controls'
+test_success_and_raw_output (__main__.CaptureTests.test_success_and_raw_output) ... skipped 'Linux process-group and selector controls'
+test_timeout_stops_only_own_child (__main__.CaptureTests.test_timeout_stops_only_own_child) ... skipped 'Linux process-group and selector controls'
+test_failed_reader_preserves_stderr_and_refuses (__main__.GitReaderTests.test_failed_reader_preserves_stderr_and_refuses) ... FAIL
+test_fixed_reader_is_bounded_and_no_optional_writes (__main__.GitReaderTests.test_fixed_reader_is_bounded_and_no_optional_writes) ... ERROR
+test_other_repository_not_addressed (__main__.GitReaderTests.test_other_repository_not_addressed) ... ok
+test_real_linked_worktree_reader (__main__.GitReaderTests.test_real_linked_worktree_reader) ... skipped 'Local WSL reader integration'
+test_allocation_feature_or_wrong_executable_refused (__main__.PreparationTests.test_allocation_feature_or_wrong_executable_refused) ... ok
+test_changed_build_log_refused (__main__.PreparationTests.test_changed_build_log_refused) ... ok
+test_incomplete_checks_refused (__main__.PreparationTests.test_incomplete_checks_refused) ... ok
+test_original_default_images_and_checks (__main__.PreparationTests.test_original_default_images_and_checks) ... ok
+test_source_bundle_and_lane_mutations_refused (__main__.PreparationTests.test_source_bundle_and_lane_mutations_refused) ... ok
+test_exact_command_no_send_or_product (__main__.SessionTests.test_exact_command_no_send_or_product) ... ok
+test_exception_and_interruption_keep_intent_and_postflight (__main__.SessionTests.test_exception_and_interruption_keep_intent_and_postflight) ... ok
+test_existing_packet_never_resumed (__main__.SessionTests.test_existing_packet_never_resumed) ... ok
+test_first_refusal_stops_only_lane (__main__.SessionTests.test_first_refusal_stops_only_lane) ... ok
+test_initial_metadata_refusals_start_no_children (__main__.SessionTests.test_initial_metadata_refusals_start_no_children) ... ok
+test_later_refusal_keeps_earlier_success (__main__.SessionTests.test_later_refusal_keeps_earlier_success) ... ok
+test_live_metadata_drift_stops_all_lanes (__main__.SessionTests.test_live_metadata_drift_stops_all_lanes) ... ok
+test_new_write_does_not_overwrite (__main__.SessionTests.test_new_write_does_not_overwrite) ... ok
+test_original_windows_bundle_order_preserved (__main__.SessionTests.test_original_windows_bundle_order_preserved) ... ok
+test_postflight_failure_cannot_be_success (__main__.SessionTests.test_postflight_failure_cannot_be_success) ... ok
+test_predispatch_drift_never_starts_child (__main__.SessionTests.test_predispatch_drift_never_starts_child) ... ok
+test_preparation_refusal_keeps_postflight_without_profiles (__main__.SessionTests.test_preparation_refusal_keeps_postflight_without_profiles) ... ok
+test_session_budget_never_extends_admission (__main__.SessionTests.test_session_budget_never_extends_admission) ... ok
+test_six_serial_samples_fixed_order_and_postflight (__main__.SessionTests.test_six_serial_samples_fixed_order_and_postflight) ... ok
+
+======================================================================
+ERROR: test_fixed_reader_is_bounded_and_no_optional_writes (__main__.GitReaderTests.test_fixed_reader_is_bounded_and_no_optional_writes)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\local-profile-session-074\test_runner.py", line 256, in test_fixed_reader_is_bounded_and_no_optional_writes
+    self.assertEqual(runner.git(Path("/mnt/c/Workspace/prj/jq/cashe/hydracache-074"), "rev-parse", "HEAD"), "a"*40)
+                     ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\local-profile-session-074\runner.py", line 63, in git
+    require(str(repo) == "/mnt/c/Workspace/prj/jq/cashe/hydracache-074", "Unexpected local repository")
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\local-profile-session-074\runner.py", line 36, in require
+    raise RuntimeError(message)
+RuntimeError: Unexpected local repository
+
+======================================================================
+FAIL: test_failed_reader_preserves_stderr_and_refuses (__main__.GitReaderTests.test_failed_reader_preserves_stderr_and_refuses)
+----------------------------------------------------------------------
+RuntimeError: Unexpected local repository
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\local-profile-session-074\test_runner.py", line 263, in test_failed_reader_preserves_stderr_and_refuses
+    with self.assertRaisesRegex(RuntimeError, "synthetic pointer refusal"):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: "synthetic pointer refusal" does not match "Unexpected local repository"
+
+----------------------------------------------------------------------
+Ran 29 tests in 1.174s
+
+FAILED (failures=1, errors=1, skipped=7)

@@ -159,3 +159,13 @@ in attempted postflight. Preserve its intent/result and raw launcher artifacts.
 The separate bound prefix uses read-only Windows Git from inside the same WSL
 process, with optional index writes disabled. No `.git` rewrite or global Git
 configuration change occurs; the subprocess keeps its original ten-second bound.
+
+The bound session at `c1aa6399` preserves every recorded context boundary under
+one boot/parent and records postflight without fixture residue. GNU and MSRV
+each stop at sample 0 on original `Causal(Time)` expiration, respectively
+10,175,057,064 and 10,006,497,560 ns. No later samples or complete cost cohorts
+exist. Keep this result separate from old clock reversals and the terminal
+preflight packet. The runner is exercised; complete residual attribution and
+native admission remain incomplete. Next use its partial phase/step traces to
+locate preparation costs before expiration, without another runtime change or
+retry in this packet.

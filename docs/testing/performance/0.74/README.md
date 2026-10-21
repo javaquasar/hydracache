@@ -5382,3 +5382,27 @@ inventory SHA256
 `15c86f32b3f56c0c86ac526ad72b54b32aa3cf75625543cea3dd3d9aee9c2807`.
 All 67 raw Git files and twenty previous packets verify. Final repository gates
 pass; completeness and admission remain false because no measured profile ran.
+
+### Bounded WSL session and original expiration
+
+The [separate single-session packet](local-runs/single-session-rounds-bound-20261021/README.md)
+uses source `c1aa639990c4d2434a896ab7e90d93a0f8ce4b8a` and unchanged Rust
+runtime/observers. Fresh metadata, GNU/MSRV profiles and postflight share one
+parent PID/start ticks and boot. Configuration, original bundle, qualification,
+image hashes and empty fixture inventory agree at every recorded boundary.
+The wrapper's continuity objective is observed without clock/service/idle-policy
+changes, but neither lane completes: sample 0 returns original `Causal(Time)`
+and exit 101. GNU expires at 10,175,057,064 ns; MSRV at 10,006,497,560 ns.
+Later samples remain absent. These are ten-second expiration events, not a
+repaired healthy gate or a residual performance range.
+
+All admission checks/windows remain. The runner bounds children/session/logs,
+refuses existing packets, attempts error postflight and never automatically
+retries. Its initial JSON and linked-worktree Git failures are retained with
+zero profiles. Final local tests pass 29 Linux controls, 22 Windows controls
+(seven Linux-only skips), two PowerShell serialization controls and four
+conservation mutations. The preceding 155 focused checks per compiler remain
+inherited through exact Rust bytes, not rerun. All twenty-one old packets and
+time refusals remain. No server, installation, supervisor or product action
+occurs. Next: attribute the retained preparation traces before expiration;
+do not retry this packet or extend its original windows.

@@ -1,0 +1,71 @@
+{
+  "boot": "2f7a5c19-00ad-4d6e-899d-c394e74cf9fb",
+  "bundle": [
+    {
+      "bytes": 349647,
+      "name": "build-log.jsonl",
+      "sha256": "8a2a495348bd317f7a2092a622838fc489bdcf077f4a8269210b2b78381b3c58"
+    },
+    {
+      "bytes": 1735,
+      "name": "build-receipt-v1.json",
+      "sha256": "e32bb7cd9b6cbf1d91d52abc79cb1e0225b3a7f6602e82e5b9a303c3645a77d7"
+    },
+    {
+      "bytes": 88159,
+      "name": "Cargo.lock.observer",
+      "sha256": "e3be470f5a1bff4e917e841fc5bfbd257ff12559206bbc1481c3c4bca528eb1d"
+    },
+    {
+      "bytes": 175300,
+      "name": "Cargo.lock.root",
+      "sha256": "be46eaf8e97e507bda5e3f2b671d0d622e6a639ce1d4613769a4693723d62b19"
+    },
+    {
+      "bytes": 694,
+      "name": "direct.json",
+      "sha256": "5485b10f50906833006ad3f3a40b4909760ef01e3f2c86395e4366bf83cc6ef9"
+    },
+    {
+      "bytes": 696,
+      "name": "embedded.json",
+      "sha256": "5c219730c8a782ed47dfa0b291a29f44f753c3688f8548c136174a89cee55149"
+    },
+    {
+      "bytes": 694,
+      "name": "resp2.json",
+      "sha256": "f0aba16dfe0354801d0b3c83ee9fc2d1b4751be5f50280634690ed4bcf3030ae"
+    },
+    {
+      "bytes": 694,
+      "name": "resp3.json",
+      "sha256": "b680683c291d0a4dadbac1901f051ba0fedcac0ac9127d197e0261fe6fdabdd7"
+    },
+    {
+      "bytes": 26500176,
+      "name": "timing-controls-074",
+      "sha256": "bda1c094f3de7c6d42ec45c757838c7a41a8ff1d63a025c661af84455169a101"
+    }
+  ],
+  "config": {
+    "/etc/systemd/timesyncd.conf": "e6734751f8aaf19fddfff891ad246387f5f59bd9ff1a5f0cac2c34bc81941c62",
+    "/etc/wsl.conf": "ca76852426d685301ce8b4461d2bc40d1901c93aea8c0b4b684707c94e4cf507",
+    "/mnt/c/Users/ArturBuzov/.wslconfig": null
+  },
+  "driver_sha256": "24c7cb0809515ae310b25e5654df879f23ea2fa99994637604d11f5f6e453550",
+  "fixtures": [],
+  "git_reader_sha256": "34a408843194be320d8a87a3c12cd5c7d2e08d03b24567a41db32e21d12569d2",
+  "images": {
+    "188": "a90e1cc91e158126b29a4253fe340018500429503b8f4805fba0a14ec859243d",
+    "194": "d291f31263ba8c2be3f6c470abe5b8aebdbf3e7a494607002c9a363ee9f185bb"
+  },
+  "kernel": "6.6.87.2-microsoft-standard-WSL2",
+  "pid": 433,
+  "pins_sha256": "bf2aca30908bef044589cf0486421a5b676b38da26aee337591dcf61ae93207c",
+  "preparation_sha256": "957d5c92b1d4aee9e8a7bd61fbd5cdfafd9bd9be092e57b3dc6c6e83b51d3188",
+  "qualification_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "source": "c1aa639990c4d2434a896ab7e90d93a0f8ce4b8a",
+  "start_ticks": "9546",
+  "tracked_dirty": "",
+  "uid": 0
+}

@@ -1246,3 +1246,29 @@ seals 66 members plus inventory SHA256
 `15c86f32b3f56c0c86ac526ad72b54b32aa3cf75625543cea3dd3d9aee9c2807`.
 All 67 raw Git files, twenty prior packets and final repository checks verify;
 zero profile invocations and false completeness/admission remain explicit.
+
+### Single session preparation reaches the original deadline
+
+The [bounded local runner](local-runs/single-session-rounds-bound-20261021/README.md)
+is implemented and exercised at `c1aa639990c4d2434a896ab7e90d93a0f8ce4b8a`.
+One WSL parent encloses fresh metadata, fixed serial compiler lanes and
+postflight. Boot, PID/start ticks, configuration, original bundle, qualification,
+images and empty fixture inventory agree at recorded boundaries. No runtime or
+observer change, time/service/idle-policy adjustment or server action occurs.
+
+GNU/MSRV both refuse their first healthy preparation with original ten-second
+expiration (`Causal(Time)`, exit 101): ages 10,175,057,064/10,006,497,560 ns.
+Their later samples stay absent and neither cohort supplies complete round
+cost. The wrapper fixes the inter-entry lifetime assumption in this observation,
+not time stability, all-writer cessation or native admission. The two earlier
+zero-profile tooling failures remain separate. Final local controls pass 29
+Linux tests, 22 Windows tests plus seven skips, two PowerShell controls and four
+conservation mutations; previous compiler checks remain inherited.
+
+Next, attribute preparation before actual expiration from the retained partial
+phase/round evidence. Any subsequent candidate needs its own frozen method and
+packet, unchanged original checks/windows and fresh bounded execution; do not
+resume this one. Original delivery, all-writer cessation, lifecycle cells 2–4,
+joined SIGKILL/lost-ACK, reconnection and production enrollment remain separate
+closed gates. Installation/supervisor maintenance and server workload are not
+authorized by this local runner step.

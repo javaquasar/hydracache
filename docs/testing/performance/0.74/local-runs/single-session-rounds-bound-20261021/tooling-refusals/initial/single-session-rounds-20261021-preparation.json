@@ -1,0 +1,18 @@
+{
+  "188": {
+    "sha256": "a90e1cc91e158126b29a4253fe340018500429503b8f4805fba0a14ec859243d",
+    "image": "/home/artur/.cache/hydracache-074-188-check/release/deps/hydracache_long_run_supervisor_074-d2aba7f58d773234",
+    "source": "9cb6a13e913e8678d34d077762372661adc7f2af",
+    "build_log_sha256": "99552173ca04d41b224e3eccb9e9fe7efde00dc42b184f9126b84085388e8c59",
+    "exit": 0,
+    "build_log": "single-session-rounds-20261021-188-build.log"
+  },
+  "194": {
+    "sha256": "d291f31263ba8c2be3f6c470abe5b8aebdbf3e7a494607002c9a363ee9f185bb",
+    "image": "/home/artur/.cache/hydracache-074-194-check/release/deps/hydracache_long_run_supervisor_074-b26b156d3dcd0098",
+    "source": "9cb6a13e913e8678d34d077762372661adc7f2af",
+    "build_log_sha256": "ef3a58f7683505c3ba56ae7b8091a4983b6b15c4f08500d45812d38d33b3aed5",
+    "exit": 0,
+    "build_log": "single-session-rounds-20261021-194-build.log"
+  }
+}

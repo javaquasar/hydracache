@@ -16275,3 +16275,52 @@ inventory SHA256
 Effective preflight review preserves false completeness/admission flags, final
 repository checks and all twenty preceding packets. All 67 Git files preserve
 raw bytes. Integrity of a refused preparation is not a successful measurement.
+
+### A bounded WSL session preserves context but reaches the original deadline
+
+The [single-session packet](../testing/performance/0.74/local-runs/single-session-rounds-bound-20261021/README.md)
+tests the wrapper hypothesis without changing Rust runtime or observers. One
+bounded WSL parent encloses fresh metadata, serial GNU/MSRV healthy preparation
+profiles and postflight. Every observed boundary retains boot
+`2f7a5c19-00ad-4d6e-899d-c394e74cf9fb`, parent PID 433/start ticks 9546,
+configuration, original bundle and default-feature image hashes. There is no
+matching fixture residue. This cohort demonstrates continuity at those
+boundaries; it does not establish stable wall time or explain the earlier
+inter-entry boot changes.
+
+The wrapper succeeds at preserving this context, while the healthy harness
+still refuses. GNU sample 0 expires at age 10,175,057,064 ns in the original
+window check; MSRV sample 0 expires at 10,006,497,560 ns in final clocks. Both
+retain `Causal(Time)`, exit 101 and identical issued/current boot. These are
+original ten-second expiration events, not the older realtime-reversal cases.
+Six and seven partial phase rows remain respectively. Each lane stops there;
+samples 1–2 are absent. Neither lane supplies a complete residual-cost range,
+and partial wall spans cannot support a speedup or non-regression claim.
+
+Containment does not change admission: original 300/60/10 windows and all live
+checks remain. Child timeout stays 1200 seconds with five-second termination
+grace; the wrapper adds finite child/session bounds and a 32 MiB log cap.
+Exclusive packet creation prevents retry after an interrupted or refused
+attempt. Metadata drift or containment failure stops the entire session;
+ordinary test refusal stops only its compiler lane. Error paths attempt
+postflight and terminate only the fresh child process group. External SIGKILL
+can still leave incomplete evidence; process-group cleanup is not the separate
+all-writer cessation proof required for execution admission.
+
+Two zero-profile tooling failures are retained rather than pooled into the
+cohort. Numeric PowerShell JSON lane keys refuse before entry; string-key
+controls close that bug. Linux Git then refuses the linked worktree's Windows
+absolute pointer, including attempted postflight. The bound reader uses the
+same Windows Git inside WSL with optional index writes disabled and a bounded
+read, without rewriting `.git` or changing global configuration. Final local
+controls pass 29 Linux tests, 22 Windows tests with seven Linux-only skips, two
+PowerShell serialization controls and four conservation mutations. The sealed
+155 focused tests/check/lint per compiler are inherited through exact unchanged
+Rust bytes, not newly executed checks.
+
+The next cost question is preparation before these actual expiration boundaries,
+using the retained partial phase/round traces without treating them as complete
+profiles. No further runtime optimization is accepted here. Old negative packets
+and native/delivery/lifecycle/reconnect/enrollment gates remain; qualification
+inputs are frozen. No clock, service, idle-policy, installation, supervisor,
+server or product action is taken.

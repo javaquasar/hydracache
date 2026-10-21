@@ -1,0 +1,32 @@
+{
+  "elapsed_seconds": 39.525392294000014,
+  "failure": null,
+  "full_matrix": false,
+  "measured_profile_invocations": 2,
+  "native_gate_open": false,
+  "original_send": false,
+  "product": false,
+  "profiles": [
+    {
+      "bytes": 100494,
+      "containment_failure": null,
+      "exit": 101,
+      "lane": "194",
+      "log_sha256": "0ecf6b21589fd4f087b79bb7446deef71ddd97a15bd6428e5112b55061ad1676",
+      "sample": 0,
+      "wall_seconds": 14.963974589000003
+    },
+    {
+      "bytes": 120293,
+      "containment_failure": null,
+      "exit": 101,
+      "lane": "188",
+      "log_sha256": "393b537e26d1b31d2e53cf3455d3668a7b014dfff999c81b0ff3cf4550a248ef",
+      "sample": 0,
+      "wall_seconds": 14.414224155
+    }
+  ],
+  "schedule_completed": false,
+  "server": false,
+  "source": "c1aa639990c4d2434a896ab7e90d93a0f8ce4b8a"
+}
