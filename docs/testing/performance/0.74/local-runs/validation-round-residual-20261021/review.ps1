@@ -61,13 +61,16 @@ function Facts{
     $taskPrior=Join-Path (Split-Path $PSScriptRoot) 'authority-open-name-20261021'
     Require ((Hash (Join-Path $taskPrior 'inventory.json')) -ceq '7d5a88964d1df7498aced1d5ce81fbd8b4ad16fe693645bb5044503717a67ce8') 'Prior seal changed'
     & (Join-Path $taskPrior 'final-review.ps1') -Mode Review|Out-Null
-    $taskBefore=Json 'context-Before.json';$taskAfter=Json 'context-After.json';$taskSource=$taskBefore.source
+    $taskInitial=Json 'context-Before.json';$taskCleanup=Json 'root-toolchain-cleanup.json'
+    Require ($taskInitial.recipe_sha256 -ceq (Hash (Join-Path $PSScriptRoot 'context.ps1')) -and @($taskInitial.commands|Where-Object {$_.output.Contains('has been auto-installed')}).Count -eq 2) 'Initial context mutation must remain visible'
+    Require ($taskCleanup.exit -eq 0 -and $taskCleanup.after.Contains('no installed toolchains') -and $taskCleanup.preflight_auto_installed -eq $true -and $taskCleanup.read_only_query_was_false -eq $true -and $taskCleanup.measured_invocations_started -eq $false -and $taskCleanup.artur_toolchains_touched -eq $false) 'Root toolchain side effect/cleanup not accounted'
+    $taskBefore=Json 'context-Verified-Before.json';$taskAfter=Json 'context-Verified-After.json';$taskSource=$taskBefore.source
     Require ($taskAfter.source -ceq $taskSource -and $taskSource -cmatch '^[0-9a-f]{40}$') 'Context source changed'
     & git diff --quiet b074f8f9f3d8f9766b3b04c59a8291941a7e3b1d $taskSource -- tools/long-run-supervisor-074 crates/xtask Cargo.lock
     Require ($LASTEXITCODE -eq 0) 'Runtime/observer tree changed'
     $taskOldInputs=Get-Content (Join-Path $PSScriptRoot '../validation-round-cost-20261020/inputs-before.json') -Raw|ConvertFrom-Json
     foreach($taskContext in @($taskBefore,$taskAfter)){
-        Require ($taskContext.recipe_sha256 -ceq (Hash (Join-Path $PSScriptRoot 'context.ps1')) -and ($taskContext.commands.name -join ',') -ceq 'boot,config,kernel,fixtures,compiler194,compiler188' -and @($taskContext.commands|Where-Object exit -ne 0).Count -eq 0) 'Context receipt changed'
+        Require ($taskContext.recipe_sha256 -ceq (Hash (Join-Path $PSScriptRoot 'context-repair.ps1')) -and ($taskContext.commands.name -join ',') -ceq 'boot,config,kernel,fixtures,compiler194,compiler188' -and @($taskContext.commands|Where-Object {$_.exit -ne 0 -or $_.output.Contains('auto-installed')}).Count -eq 0) 'Context receipt changed'
         Require (-not ($taskContext.commands|Where-Object name -ceq 'fixtures').output.Trim()) 'Owned fixture residue'
         Bundle-Equal $taskContext.bundle $taskOldInputs.bundle
         Require ($taskContext.qualification_sha256 -ceq '11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc') 'Qualification changed'
@@ -119,7 +122,7 @@ function Facts{
         $taskRanges=if($taskComplete){@(foreach($taskStep in 0..7){$taskParts=@($taskStepRows|Where-Object step -eq $taskStep);@{step=$taskStep;samples=3;wall_ns=(Range $taskParts.wall_ns);share_percent=(Range $taskParts.share_percent);outside_instrumented_kernel_ns=(Range $taskParts.outside_instrumented_kernel_ns)}})}else{@()}
         $taskLanes+=@{lane=$taskLane;complete_profile_cohort=$taskComplete;profiles=$taskProfiles;refusals=$taskRefusals;complete_sample_steps=$taskStepRows;full_cohort_ranges=$taskRanges}
     }
-    @{schema='validation-round-residual-074-v1';source=$taskSource;runtime_baseline='b074f8f9f3d8f9766b3b04c59a8291941a7e3b1d';boot=$taskBoot;lanes=$taskLanes;complete_profile_cohort=@($taskLanes|Where-Object complete_profile_cohort -ne $true).Count -eq 0;runtime_changed_this_step=$false;new_full_matrix_run=$false;product_gain_claimed=$false;historical_refusals_retained=$true;native_gate_open=$false;server=$false;product=$false}
+    @{schema='validation-round-residual-074-v1';source=$taskSource;runtime_baseline='b074f8f9f3d8f9766b3b04c59a8291941a7e3b1d';boot=$taskBoot;lanes=$taskLanes;complete_profile_cohort=@($taskLanes|Where-Object complete_profile_cohort -ne $true).Count -eq 0;preflight_toolchain_side_effect=$true;root_toolchain_cleanup_verified=$true;runtime_changed_this_step=$false;new_full_matrix_run=$false;product_gain_claimed=$false;historical_refusals_retained=$true;native_gate_open=$false;server=$false;product=$false}
 }
 function Inventory{@{schema='sha256-local-file-inventory-v1';files=@(Get-ChildItem -LiteralPath $PSScriptRoot -File -Recurse|Where-Object Name -ne 'inventory.json'|Sort-Object FullName|ForEach-Object {@{path=$_.FullName.Substring($PSScriptRoot.Length+1).Replace('\','/');bytes=$_.Length;sha256=(Hash $_.FullName)}})}}
 if($Mode -ceq 'Audit'){

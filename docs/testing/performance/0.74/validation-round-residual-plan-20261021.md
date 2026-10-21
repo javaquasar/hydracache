@@ -61,3 +61,17 @@ changed source/bundle/image and attempted continuation after refusal. Update
 the article and intermediate readiness plan with confirmed observations and
 remaining gaps. No server run, installation, supervisor stop, product workload,
 qualification, threshold retuning or push is authorized here.
+
+## Premeasurement tooling repairs
+
+The initial reviewer audit rejected empty-array JSON serialization; the refused
+recipe and failure are retained, and explicit InputObject serialization preserves
+all count targets. Eight falsifying controls pass before measurement.
+
+The first context version query unintentionally auto-installed two root rustup
+toolchains. This was not a read-only query. Both exact just-created copies were
+uninstalled before any profile, with receipts; artur's toolchains and clock/
+service configuration are untouched. Use the separately source-bound
+`context-repair.ps1` and Verified pre/post receipts, querying as artur with
+auto-install explicitly disabled. Retain the initial receipt and cleanup record;
+do not retune measurements or transfer old admission as a result of this repair.

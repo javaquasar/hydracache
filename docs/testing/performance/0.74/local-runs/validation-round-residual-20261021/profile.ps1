@@ -8,7 +8,7 @@ if((& git rev-parse HEAD).Trim() -cne $Source -or (& git status --porcelain -- t
 if($LASTEXITCODE -ne 0){throw 'Runtime/observer changed'}
 $taskCheck=Get-Content (Join-Path $PSScriptRoot "check-$Lane-exit.json") -Raw|ConvertFrom-Json
 if($taskCheck.failure -or $taskCheck.source -cne $Source -or $taskCheck.steps.Count -ne 11 -or @($taskCheck.steps|Where-Object exit -ne 0).Count){throw 'Checks incomplete'}
-$taskContext=Get-Content (Join-Path $PSScriptRoot 'context-Before.json') -Raw|ConvertFrom-Json
+$taskContext=Get-Content (Join-Path $PSScriptRoot 'context-Verified-Before.json') -Raw|ConvertFrom-Json
 $taskOldInputs=Get-Content (Join-Path $PSScriptRoot '../validation-round-cost-20261020/inputs-before.json') -Raw|ConvertFrom-Json
 if(-not [System.Text.Json.Nodes.JsonNode]::DeepEquals([System.Text.Json.Nodes.JsonNode]::Parse(($taskContext.bundle|ConvertTo-Json -Depth 6 -Compress)),[System.Text.Json.Nodes.JsonNode]::Parse(($taskOldInputs.bundle|ConvertTo-Json -Depth 6 -Compress)))){throw 'Original bundle changed'}
 if($taskContext.source -cne $Source -or @($taskContext.commands|Where-Object exit -ne 0).Count -or ($taskContext.commands|Where-Object name -ceq 'fixtures').output.Trim()){throw 'Context refused'}
