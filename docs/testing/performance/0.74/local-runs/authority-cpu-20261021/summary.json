@@ -1,0 +1,1235 @@
+{
+  "schema": "authority-thread-cpu-attribution-v1",
+  "source": "bcd8aee4071055b3b79376459f065e12c7ec1b50",
+  "lanes": [
+    {
+      "image_sha256": "9e88d6c27638fc3f281a7b8f554458f67d4e2675dfb4e47b826a2aa60d0ce9cf",
+      "origin": {
+        "boot_id": "196ee350-76a4-4f36-9985-4d9ab77f352b",
+        "clock": "CLOCK_THREAD_CPUTIME_ID",
+        "clock_pair_ns": [
+          514,
+          195,
+          193,
+          191,
+          190,
+          209,
+          198,
+          189,
+          194,
+          189,
+          193,
+          188,
+          188,
+          187,
+          187,
+          189,
+          187,
+          188,
+          189,
+          201,
+          188,
+          189,
+          190,
+          212,
+          190,
+          190,
+          190,
+          189,
+          189,
+          189,
+          192,
+          189,
+          189,
+          193,
+          190,
+          203,
+          188,
+          190,
+          191,
+          187,
+          209,
+          188,
+          189,
+          224,
+          207,
+          189,
+          188,
+          188,
+          190,
+          187,
+          190,
+          186,
+          188,
+          188,
+          192,
+          201,
+          188,
+          188,
+          187,
+          189,
+          191,
+          209,
+          187,
+          191
+        ],
+        "iterations": 2048,
+        "native_gate_open": false,
+        "pid": 368,
+        "product": false,
+        "resolution_ns": 1,
+        "runtime_changed": false,
+        "samples": 14,
+        "server": false,
+        "uid": 1000,
+        "warmups": 32
+      },
+      "lane": "194",
+      "depths": [
+        {
+          "phases": [
+            {
+              "phase": "full",
+              "max_ns_per_call": 43399.4609375,
+              "raw_batch_ns": [
+                52508097,
+                60569879,
+                87186627,
+                75501166,
+                70093667,
+                77480191,
+                64384212,
+                72113904,
+                55787113,
+                57799615,
+                54769260,
+                68873495,
+                88882096,
+                66990691
+              ],
+              "min_ns_per_call": 25638.71923828125,
+              "median_ns_per_call": 33169.96728515625
+            },
+            {
+              "phase": "directory",
+              "max_ns_per_call": 7949.81689453125,
+              "raw_batch_ns": [
+                7564301,
+                9582954,
+                7558105,
+                14593037,
+                14390051,
+                15236289,
+                15877268,
+                11278567,
+                7022521,
+                7524590,
+                7648252,
+                12468503,
+                16281225,
+                14917229
+              ],
+              "min_ns_per_call": 3428.96533203125,
+              "median_ns_per_call": 5797.62451171875
+            },
+            {
+              "phase": "inventory",
+              "max_ns_per_call": 7334.75732421875,
+              "raw_batch_ns": [
+                8166844,
+                10722144,
+                7450287,
+                15021583,
+                14163923,
+                9279515,
+                8095913,
+                7708280,
+                7978001,
+                10859106,
+                10553731,
+                12225733,
+                13191078,
+                10166319
+              ],
+              "min_ns_per_call": 3637.83544921875,
+              "median_ns_per_call": 5058.60595703125
+            },
+            {
+              "phase": "records",
+              "max_ns_per_call": 7035.8447265625,
+              "raw_batch_ns": [
+                10306102,
+                10077736,
+                9716724,
+                14409410,
+                7453207,
+                7960933,
+                14249655,
+                7916834,
+                9847358,
+                6984396,
+                6577095,
+                7455201,
+                7168611,
+                12240497
+              ],
+              "min_ns_per_call": 3211.47216796875,
+              "median_ns_per_call": 4315.834228515625
+            },
+            {
+              "phase": "markers",
+              "max_ns_per_call": 8044.50048828125,
+              "raw_batch_ns": [
+                8061131,
+                13291193,
+                10077071,
+                6249017,
+                6665626,
+                8176443,
+                6431431,
+                8087187,
+                7048473,
+                6199151,
+                6880771,
+                9330655,
+                11677116,
+                16475137
+              ],
+              "min_ns_per_call": 3026.92919921875,
+              "median_ns_per_call": 3942.46044921875
+            },
+            {
+              "phase": "bind",
+              "max_ns_per_call": 1180.37744140625,
+              "raw_batch_ns": [
+                179858,
+                176270,
+                155497,
+                203744,
+                2417413,
+                160530,
+                161302,
+                155106,
+                163210,
+                186032,
+                185606,
+                159993,
+                162622,
+                162717
+              ],
+              "min_ns_per_call": 75.7353515625,
+              "median_ns_per_call": 79.572021484375
+            },
+            {
+              "phase": "empty",
+              "max_ns_per_call": 1.7568359375,
+              "raw_batch_ns": [
+                2630,
+                3025,
+                2912,
+                3598,
+                3525,
+                2953,
+                3350,
+                3303,
+                3248,
+                2131,
+                3324,
+                3235,
+                1934,
+                2922
+              ],
+              "min_ns_per_call": 0.9443359375,
+              "median_ns_per_call": 1.5283203125
+            }
+          ],
+          "residuals": [
+            {
+              "signed_ns_per_call": 1220.076171875,
+              "sample": 0
+            },
+            {
+              "signed_ns_per_call": -1750.740234375,
+              "sample": 1
+            },
+            {
+              "signed_ns_per_call": 18174.09716796875,
+              "sample": 2
+            },
+            {
+              "signed_ns_per_call": -2241.33056640625,
+              "sample": 3
+            },
+            {
+              "signed_ns_per_call": -1733.65576171875,
+              "sample": 4
+            },
+            {
+              "signed_ns_per_call": 5932.94775390625,
+              "sample": 5
+            },
+            {
+              "signed_ns_per_call": -2150.6533203125,
+              "sample": 6
+            },
+            {
+              "signed_ns_per_call": 8779.82568359375,
+              "sample": 7
+            },
+            {
+              "signed_ns_per_call": 4261.244140625,
+              "sample": 8
+            },
+            {
+              "signed_ns_per_call": 3741.525390625,
+              "sample": 9
+            },
+            {
+              "signed_ns_per_call": 2305.5771484375,
+              "sample": 10
+            },
+            {
+              "signed_ns_per_call": 1239.8310546875,
+              "sample": 11
+            },
+            {
+              "signed_ns_per_call": 5336.49462890625,
+              "sample": 12
+            },
+            {
+              "signed_ns_per_call": -5886.111328125,
+              "sample": 13
+            }
+          ],
+          "generations": 1,
+          "identity": {
+            "entries": [
+              {
+                "marker_bytes": 65,
+                "marker_name_bytes": 23,
+                "marker_sha256": "a95a6f07efbec97207c766840652b192b323297318883d48eb183ad40399507a",
+                "record_bytes": 555,
+                "record_name_bytes": 21,
+                "record_sha256": "4b1692bece1b908273bfbb80ab62807a15dcc3545c3729d6379c20bc4333aee3",
+                "revision": 1
+              }
+            ],
+            "epoch": 7,
+            "generations": 1,
+            "leaf_fd": 11,
+            "revision": 1,
+            "root_name_bytes": 27
+          }
+        },
+        {
+          "phases": [
+            {
+              "phase": "full",
+              "max_ns_per_call": 112374.67041015625,
+              "raw_batch_ns": [
+                230143325,
+                176651059,
+                223087272,
+                188196364,
+                159151321,
+                200376786,
+                192326348,
+                163347692,
+                224850494,
+                221483889,
+                150484504,
+                221239174,
+                227259456,
+                150544355
+              ],
+              "min_ns_per_call": 73478.76171875,
+              "median_ns_per_call": 95874.78857421875
+            },
+            {
+              "phase": "directory",
+              "max_ns_per_call": 7823.60498046875,
+              "raw_batch_ns": [
+                8311566,
+                16022743,
+                15057045,
+                11818973,
+                7017997,
+                7012558,
+                9580500,
+                7359292,
+                7315313,
+                8296388,
+                7809054,
+                14254166,
+                11694124,
+                7680877
+              ],
+              "min_ns_per_call": 3424.1005859375,
+              "median_ns_per_call": 4054.67626953125
+            },
+            {
+              "phase": "inventory",
+              "max_ns_per_call": 14740.2587890625,
+              "raw_batch_ns": [
+                22972752,
+                26801317,
+                26084570,
+                29065148,
+                17552374,
+                27913696,
+                25382395,
+                18240574,
+                30188050,
+                28503812,
+                20254194,
+                25977212,
+                23728414,
+                18665070
+              ],
+              "min_ns_per_call": 8570.4951171875,
+              "median_ns_per_call": 12538.966552734375
+            },
+            {
+              "phase": "records",
+              "max_ns_per_call": 31867.58837890625,
+              "raw_batch_ns": [
+                52703963,
+                60360170,
+                57141779,
+                63242355,
+                45971262,
+                65264821,
+                50524161,
+                43765005,
+                61964803,
+                57782121,
+                56422174,
+                54546903,
+                60680347,
+                49815974
+              ],
+              "min_ns_per_call": 21369.63134765625,
+              "median_ns_per_call": 27725.574462890625
+            },
+            {
+              "phase": "markers",
+              "max_ns_per_call": 38481.353515625,
+              "raw_batch_ns": [
+                69870243,
+                57347207,
+                62737609,
+                61528975,
+                55434307,
+                70770487,
+                78809812,
+                43808759,
+                69228264,
+                70541252,
+                43834369,
+                47336626,
+                71878381,
+                66118280
+              ],
+              "min_ns_per_call": 21390.99560546875,
+              "median_ns_per_call": 31458.957275390625
+            },
+            {
+              "phase": "bind",
+              "max_ns_per_call": 378.5693359375,
+              "raw_batch_ns": [
+                192146,
+                461189,
+                775310,
+                170830,
+                345343,
+                227213,
+                184804,
+                158729,
+                161902,
+                192638,
+                149889,
+                189947,
+                173557,
+                188452
+              ],
+              "min_ns_per_call": 73.18798828125,
+              "median_ns_per_call": 92.382568359375
+            },
+            {
+              "phase": "empty",
+              "max_ns_per_call": 41.79833984375,
+              "raw_batch_ns": [
+                3199,
+                85603,
+                3035,
+                3191,
+                3311,
+                3485,
+                1819,
+                2046,
+                2771,
+                2447,
+                2834,
+                2464,
+                2601,
+                1950
+              ],
+              "min_ns_per_call": 0.88818359375,
+              "median_ns_per_call": 1.368408203125
+            }
+          ],
+          "residuals": [
+            {
+              "signed_ns_per_call": 21879.07080078125,
+              "sample": 0
+            },
+            {
+              "signed_ns_per_call": -13264.46630859375,
+              "sample": 1
+            },
+            {
+              "signed_ns_per_call": 9838.546875,
+              "sample": 2
+            },
+            {
+              "signed_ns_per_call": -9040.0576171875,
+              "sample": 3
+            },
+            {
+              "signed_ns_per_call": 4033.04052734375,
+              "sample": 4
+            },
+            {
+              "signed_ns_per_call": -2801.87646484375,
+              "sample": 5
+            },
+            {
+              "signed_ns_per_call": -3475.69287109375,
+              "sample": 6
+            },
+            {
+              "signed_ns_per_call": 11921.61474609375,
+              "sample": 7
+            },
+            {
+              "signed_ns_per_call": 9027.73388671875,
+              "sample": 8
+            },
+            {
+              "signed_ns_per_call": 9456.7763671875,
+              "sample": 9
+            },
+            {
+              "signed_ns_per_call": -2953.33203125,
+              "sample": 10
+            },
+            {
+              "signed_ns_per_call": 18897.9208984375,
+              "sample": 11
+            },
+            {
+              "signed_ns_per_call": 11563.52294921875,
+              "sample": 12
+            },
+            {
+              "signed_ns_per_call": -8921.01806640625,
+              "sample": 13
+            }
+          ],
+          "generations": 7,
+          "identity": {
+            "entries": [
+              {
+                "marker_bytes": 65,
+                "marker_name_bytes": 23,
+                "marker_sha256": "a95a6f07efbec97207c766840652b192b323297318883d48eb183ad40399507a",
+                "record_bytes": 555,
+                "record_name_bytes": 21,
+                "record_sha256": "4b1692bece1b908273bfbb80ab62807a15dcc3545c3729d6379c20bc4333aee3",
+                "revision": 1
+              },
+              {
+                "marker_bytes": 65,
+                "marker_name_bytes": 23,
+                "marker_sha256": "e39a4f9f03d1d4db9fff900972b3938265ba5d54ea6a1bfee32a8b08ffb46339",
+                "record_bytes": 624,
+                "record_name_bytes": 21,
+                "record_sha256": "f4cb266dca6991b33a08b5265bec58c91ba3e7e8cf8219e1ac30530976f35dc2",
+                "revision": 2
+              },
+              {
+                "marker_bytes": 65,
+                "marker_name_bytes": 23,
+                "marker_sha256": "2100383918f9c01052e44e4252c268311e1423ee96205e01af96087c303724a1",
+                "record_bytes": 617,
+                "record_name_bytes": 21,
+                "record_sha256": "ed2e9582d62f874cabc3007ea1b5be49cc076f8fc0e2c2f2f7bb4746d1f25433",
+                "revision": 3
+              },
+              {
+                "marker_bytes": 65,
+                "marker_name_bytes": 23,
+                "marker_sha256": "fac47fa48df303aee69de55b883689594ecffcd21fb27a8be881fdbe78f3f026",
+                "record_bytes": 624,
+                "record_name_bytes": 21,
+                "record_sha256": "bac55300d40a388680c6b2eb5ec7bbcf0089f4f830e3286f4fbe637add73cdb9",
+                "revision": 4
+              },
+              {
+                "marker_bytes": 65,
+                "marker_name_bytes": 23,
+                "marker_sha256": "110ece711401b0793767eebf031e157eeb5b2e070b6e492439977c846c058392",
+                "record_bytes": 617,
+                "record_name_bytes": 21,
+                "record_sha256": "5231a3268485c8fff4ac8469970a4fbf82b788cb423a0189b412b38ceda44857",
+                "revision": 5
+              },
+              {
+                "marker_bytes": 65,
+                "marker_name_bytes": 23,
+                "marker_sha256": "ab8b04bdf4491995eed461970a4b3a058b4da99ba111cdf542ae79f65f69b4a2",
+                "record_bytes": 624,
+                "record_name_bytes": 21,
+                "record_sha256": "1807989e2ebed8e4156046dd885a34a2a4c27204c032d2710418f8f23363ab0d",
+                "revision": 6
+              },
+              {
+                "marker_bytes": 65,
+                "marker_name_bytes": 23,
+                "marker_sha256": "88a22ea62e4de746f493bce1a8168703e7058c0b45c184c881938bf0547fb5a4",
+                "record_bytes": 618,
+                "record_name_bytes": 21,
+                "record_sha256": "7edcfe7608881ae0560ed96a5255fa44c189890fe92b38b0ea1a194b4440baa2",
+                "revision": 7
+              }
+            ],
+            "epoch": 10,
+            "generations": 7,
+            "leaf_fd": 11,
+            "revision": 7,
+            "root_name_bytes": 27
+          }
+        }
+      ]
+    },
+    {
+      "image_sha256": "bed2be825e8ca860aa421ac8f7c52dbea71eac33d9edde7114ddc0e9b5519069",
+      "origin": {
+        "boot_id": "196ee350-76a4-4f36-9985-4d9ab77f352b",
+        "clock": "CLOCK_THREAD_CPUTIME_ID",
+        "clock_pair_ns": [
+          657,
+          206,
+          197,
+          212,
+          192,
+          194,
+          200,
+          223,
+          193,
+          248,
+          192,
+          191,
+          195,
+          209,
+          209,
+          193,
+          209,
+          196,
+          193,
+          210,
+          199,
+          193,
+          195,
+          192,
+          193,
+          196,
+          194,
+          198,
+          201,
+          200,
+          202,
+          198,
+          200,
+          199,
+          227,
+          200,
+          200,
+          202,
+          200,
+          200,
+          200,
+          201,
+          215,
+          200,
+          200,
+          201,
+          202,
+          197,
+          214,
+          205,
+          201,
+          199,
+          208,
+          212,
+          199,
+          199,
+          200,
+          198,
+          199,
+          201,
+          199,
+          212,
+          199,
+          201
+        ],
+        "iterations": 2048,
+        "native_gate_open": false,
+        "pid": 354,
+        "product": false,
+        "resolution_ns": 1,
+        "runtime_changed": false,
+        "samples": 14,
+        "server": false,
+        "uid": 1000,
+        "warmups": 32
+      },
+      "lane": "188",
+      "depths": [
+        {
+          "phases": [
+            {
+              "phase": "full",
+              "max_ns_per_call": 40333.71484375,
+              "raw_batch_ns": [
+                63594462,
+                66898064,
+                74183877,
+                61900815,
+                66972749,
+                52454529,
+                70612849,
+                82603448,
+                78934000,
+                67856959,
+                81915502,
+                60798458,
+                65772666,
+                57016401
+              ],
+              "min_ns_per_call": 25612.56298828125,
+              "median_ns_per_call": 32683.303955078125
+            },
+            {
+              "phase": "directory",
+              "max_ns_per_call": 7756.31201171875,
+              "raw_batch_ns": [
+                9932716,
+                13575833,
+                7946659,
+                11056158,
+                9481053,
+                7412965,
+                11633832,
+                12028366,
+                15884927,
+                14547470,
+                10021239,
+                8626675,
+                13324757,
+                7401488
+              ],
+              "min_ns_per_call": 3614.0078125,
+              "median_ns_per_call": 5145.848876953125
+            },
+            {
+              "phase": "inventory",
+              "max_ns_per_call": 9913.126953125,
+              "raw_batch_ns": [
+                8043012,
+                8001422,
+                18089309,
+                8119217,
+                9070128,
+                16121311,
+                20302084,
+                8917729,
+                8069923,
+                14799501,
+                11884238,
+                9811715,
+                8766564,
+                10798762
+              ],
+              "min_ns_per_call": 3906.9443359375,
+              "median_ns_per_call": 4609.824951171875
+            },
+            {
+              "phase": "records",
+              "max_ns_per_call": 7018.06201171875,
+              "raw_batch_ns": [
+                10543395,
+                7880026,
+                6175217,
+                9787869,
+                6492000,
+                6430338,
+                14372991,
+                13901606,
+                14255030,
+                8564447,
+                8104016,
+                7312429,
+                11411227,
+                7352870
+              ],
+              "min_ns_per_call": 3015.24267578125,
+              "median_ns_per_call": 4069.448974609375
+            },
+            {
+              "phase": "markers",
+              "max_ns_per_call": 6854.93505859375,
+              "raw_batch_ns": [
+                6011329,
+                6842166,
+                13978491,
+                7914447,
+                13269396,
+                10172357,
+                6169819,
+                6248546,
+                13830229,
+                14038907,
+                11943599,
+                10357914,
+                7577518,
+                7551694
+              ],
+              "min_ns_per_call": 2935.21923828125,
+              "median_ns_per_call": 4415.7236328125
+            },
+            {
+              "phase": "bind",
+              "max_ns_per_call": 303.689453125,
+              "raw_batch_ns": [
+                621956,
+                189219,
+                159622,
+                156726,
+                160515,
+                163387,
+                159603,
+                166271,
+                214489,
+                161020,
+                194053,
+                182084,
+                186369,
+                189480
+              ],
+              "min_ns_per_call": 76.5263671875,
+              "median_ns_per_call": 85.047607421875
+            },
+            {
+              "phase": "empty",
+              "max_ns_per_call": 1.7265625,
+              "raw_batch_ns": [
+                2891,
+                3125,
+                3297,
+                2276,
+                2289,
+                2937,
+                2833,
+                3234,
+                2583,
+                2708,
+                2364,
+                2704,
+                3536,
+                2869
+              ],
+              "min_ns_per_call": 1.111328125,
+              "median_ns_per_call": 1.39208984375
+            }
+          ],
+          "residuals": [
+            {
+              "signed_ns_per_call": 5110.5107421875,
+              "sample": 0
+            },
+            {
+              "signed_ns_per_call": 4312.56982421875,
+              "sample": 1
+            },
+            {
+              "signed_ns_per_call": 878.22802734375,
+              "sample": 2
+            },
+            {
+              "signed_ns_per_call": 2778.81982421875,
+              "sample": 3
+            },
+            {
+              "signed_ns_per_call": 4857.654296875,
+              "sample": 4
+            },
+            {
+              "signed_ns_per_call": -5556.69189453125,
+              "sample": 5
+            },
+            {
+              "signed_ns_per_call": -6817.087890625,
+              "sample": 6
+            },
+            {
+              "signed_ns_per_call": 9958.41552734375,
+              "sample": 7
+            },
+            {
+              "signed_ns_per_call": 1330.34765625,
+              "sample": 8
+            },
+            {
+              "signed_ns_per_call": -6641.28759765625,
+              "sample": 9
+            },
+            {
+              "signed_ns_per_call": 8722.109375,
+              "sample": 10
+            },
+            {
+              "signed_ns_per_call": 2963.50146484375,
+              "sample": 11
+            },
+            {
+              "signed_ns_per_call": 1179.1552734375,
+              "sample": 12
+            },
+            {
+              "signed_ns_per_call": 2696.21923828125,
+              "sample": 13
+            }
+          ],
+          "generations": 1,
+          "identity": {
+            "entries": [
+              {
+                "marker_bytes": 65,
+                "marker_name_bytes": 23,
+                "marker_sha256": "a95a6f07efbec97207c766840652b192b323297318883d48eb183ad40399507a",
+                "record_bytes": 555,
+                "record_name_bytes": 21,
+                "record_sha256": "4b1692bece1b908273bfbb80ab62807a15dcc3545c3729d6379c20bc4333aee3",
+                "revision": 1
+              }
+            ],
+            "epoch": 7,
+            "generations": 1,
+            "leaf_fd": 11,
+            "revision": 1,
+            "root_name_bytes": 27
+          }
+        },
+        {
+          "phases": [
+            {
+              "phase": "full",
+              "max_ns_per_call": 105673.173828125,
+              "raw_batch_ns": [
+                154224685,
+                216418660,
+                161845007,
+                152499792,
+                201306428,
+                214418271,
+                143646993,
+                198465325,
+                172333061,
+                146249475,
+                182411800,
+                173787598,
+                163852269,
+                175749259
+              ],
+              "min_ns_per_call": 70140.13330078125,
+              "median_ns_per_call": 84502.11401367188
+            },
+            {
+              "phase": "directory",
+              "max_ns_per_call": 7961.81494140625,
+              "raw_batch_ns": [
+                7724542,
+                16305797,
+                7388511,
+                9480284,
+                7038699,
+                7192361,
+                6603262,
+                7014250,
+                11025920,
+                6864463,
+                6602793,
+                9309933,
+                6991310,
+                6898478
+              ],
+              "min_ns_per_call": 3224.02001953125,
+              "median_ns_per_call": 3474.3798828125
+            },
+            {
+              "phase": "inventory",
+              "max_ns_per_call": 16341.7333984375,
+              "raw_batch_ns": [
+                19135436,
+                29230456,
+                25386563,
+                21845234,
+                31830584,
+                33467870,
+                16862236,
+                26550871,
+                22742910,
+                21469040,
+                21254780,
+                26178805,
+                30921015,
+                17194142
+              ],
+              "min_ns_per_call": 8233.513671875,
+              "median_ns_per_call": 11750.359619140625
+            },
+            {
+              "phase": "records",
+              "max_ns_per_call": 33183.11181640625,
+              "raw_batch_ns": [
+                48270544,
+                66799469,
+                52553811,
+                42548120,
+                65775564,
+                60834920,
+                41658361,
+                67959013,
+                64795436,
+                42230015,
+                43181951,
+                56727888,
+                62703809,
+                40112860
+              ],
+              "min_ns_per_call": 19586.357421875,
+              "median_ns_per_call": 26680.102294921875
+            },
+            {
+              "phase": "markers",
+              "max_ns_per_call": 32655.2119140625,
+              "raw_batch_ns": [
+                62257167,
+                60819326,
+                64875853,
+                41888455,
+                61481082,
+                66877874,
+                43142362,
+                50583835,
+                58391026,
+                38654722,
+                60669150,
+                59169141,
+                62093533,
+                41003212
+              ],
+              "min_ns_per_call": 18874.3759765625,
+              "median_ns_per_call": 29257.395263671875
+            },
+            {
+              "phase": "bind",
+              "max_ns_per_call": 739.37060546875,
+              "raw_batch_ns": [
+                156663,
+                160965,
+                1514231,
+                147608,
+                149042,
+                178908,
+                139379,
+                148869,
+                152248,
+                147944,
+                171405,
+                174400,
+                260466,
+                146260
+              ],
+              "min_ns_per_call": 68.05615234375,
+              "median_ns_per_call": 75.417724609375
+            },
+            {
+              "phase": "empty",
+              "max_ns_per_call": 1.83154296875,
+              "raw_batch_ns": [
+                2209,
+                3452,
+                3751,
+                2675,
+                2258,
+                2980,
+                3154,
+                2929,
+                3222,
+                2718,
+                2751,
+                2273,
+                2195,
+                2777
+              ],
+              "min_ns_per_call": 1.07177734375,
+              "median_ns_per_call": 1.349609375
+            }
+          ],
+          "residuals": [
+            {
+              "signed_ns_per_call": -4970.52978515625,
+              "sample": 0
+            },
+            {
+              "signed_ns_per_call": -1188.2841796875,
+              "sample": 1
+            },
+            {
+              "signed_ns_per_call": -11059.099609375,
+              "sample": 2
+            },
+            {
+              "signed_ns_per_call": 2570.59228515625,
+              "sample": 3
+            },
+            {
+              "signed_ns_per_call": -1873.9384765625,
+              "sample": 4
+            },
+            {
+              "signed_ns_per_call": 2542.04443359375,
+              "sample": 5
+            },
+            {
+              "signed_ns_per_call": 5749.94873046875,
+              "sample": 6
+            },
+            {
+              "signed_ns_per_call": 6173.5185546875,
+              "sample": 7
+            },
+            {
+              "signed_ns_per_call": -9054.35009765625,
+              "sample": 8
+            },
+            {
+              "signed_ns_per_call": 4174.701171875,
+              "sample": 9
+            },
+            {
+              "signed_ns_per_call": 11071.361328125,
+              "sample": 10
+            },
+            {
+              "signed_ns_per_call": -6475.24755859375,
+              "sample": 11
+            },
+            {
+              "signed_ns_per_call": -18081.14697265625,
+              "sample": 12
+            },
+            {
+              "signed_ns_per_call": 22608.24560546875,
+              "sample": 13
+            }
+          ],
+          "generations": 7,
+          "identity": {
+            "entries": [
+              {
+                "marker_bytes": 65,
+                "marker_name_bytes": 23,
+                "marker_sha256": "a95a6f07efbec97207c766840652b192b323297318883d48eb183ad40399507a",
+                "record_bytes": 555,
+                "record_name_bytes": 21,
+                "record_sha256": "4b1692bece1b908273bfbb80ab62807a15dcc3545c3729d6379c20bc4333aee3",
+                "revision": 1
+              },
+              {
+                "marker_bytes": 65,
+                "marker_name_bytes": 23,
+                "marker_sha256": "e39a4f9f03d1d4db9fff900972b3938265ba5d54ea6a1bfee32a8b08ffb46339",
+                "record_bytes": 624,
+                "record_name_bytes": 21,
+                "record_sha256": "f4cb266dca6991b33a08b5265bec58c91ba3e7e8cf8219e1ac30530976f35dc2",
+                "revision": 2
+              },
+              {
+                "marker_bytes": 65,
+                "marker_name_bytes": 23,
+                "marker_sha256": "2100383918f9c01052e44e4252c268311e1423ee96205e01af96087c303724a1",
+                "record_bytes": 617,
+                "record_name_bytes": 21,
+                "record_sha256": "ed2e9582d62f874cabc3007ea1b5be49cc076f8fc0e2c2f2f7bb4746d1f25433",
+                "revision": 3
+              },
+              {
+                "marker_bytes": 65,
+                "marker_name_bytes": 23,
+                "marker_sha256": "fac47fa48df303aee69de55b883689594ecffcd21fb27a8be881fdbe78f3f026",
+                "record_bytes": 624,
+                "record_name_bytes": 21,
+                "record_sha256": "bac55300d40a388680c6b2eb5ec7bbcf0089f4f830e3286f4fbe637add73cdb9",
+                "revision": 4
+              },
+              {
+                "marker_bytes": 65,
+                "marker_name_bytes": 23,
+                "marker_sha256": "110ece711401b0793767eebf031e157eeb5b2e070b6e492439977c846c058392",
+                "record_bytes": 617,
+                "record_name_bytes": 21,
+                "record_sha256": "5231a3268485c8fff4ac8469970a4fbf82b788cb423a0189b412b38ceda44857",
+                "revision": 5
+              },
+              {
+                "marker_bytes": 65,
+                "marker_name_bytes": 23,
+                "marker_sha256": "ab8b04bdf4491995eed461970a4b3a058b4da99ba111cdf542ae79f65f69b4a2",
+                "record_bytes": 624,
+                "record_name_bytes": 21,
+                "record_sha256": "1807989e2ebed8e4156046dd885a34a2a4c27204c032d2710418f8f23363ab0d",
+                "revision": 6
+              },
+              {
+                "marker_bytes": 65,
+                "marker_name_bytes": 23,
+                "marker_sha256": "88a22ea62e4de746f493bce1a8168703e7058c0b45c184c881938bf0547fb5a4",
+                "record_bytes": 618,
+                "record_name_bytes": 21,
+                "record_sha256": "7edcfe7608881ae0560ed96a5255fa44c189890fe92b38b0ea1a194b4440baa2",
+                "revision": 7
+              }
+            ],
+            "epoch": 10,
+            "generations": 7,
+            "leaf_fd": 11,
+            "revision": 7,
+            "root_name_bytes": 27
+          }
+        }
+      ]
+    }
+  ],
+  "full_control_equal": true,
+  "runtime_changed": false,
+  "improvement_claimed": false,
+  "cpu_only": true,
+  "overhead_subtracted": false,
+  "existing_live_refusals_retained": true,
+  "native_gate_open": false,
+  "server": false,
+  "product": false
+}

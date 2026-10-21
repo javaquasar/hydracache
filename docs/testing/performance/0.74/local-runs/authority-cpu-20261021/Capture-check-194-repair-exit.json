@@ -1,0 +1,76 @@
+{
+  "stage": "Capture",
+  "source": "b3942c1cb16fcd665ba76042b56fa8a6bdd4dfb3",
+  "recipe_sha256": "acd74433e6a5c6c3bcb27e23cfa48bf8407463c10ca72d3933b29fb37a915430",
+  "steps": [
+    {
+      "log": "Capture-check-194-repair-authority_.log",
+      "name": "authority_",
+      "sha256": "d41dd31d78f509dffe2bbb18cc34ba185e0af4d53d3c4c945b3c533d7bc0bab7",
+      "exit": 0
+    },
+    {
+      "log": "Capture-check-194-repair-validation_leaf_requests_.log",
+      "name": "validation_leaf_requests_",
+      "sha256": "5a3c8abab30fc323e8214dd24064b342a77271062276fd3731bce9842636370c",
+      "exit": 0
+    },
+    {
+      "log": "Capture-check-194-repair-fixed_leaf_alloc_counter.log",
+      "name": "fixed_leaf_alloc_counter",
+      "sha256": "4661640ec966cdeea3f1d62fc461221e07bf6dd78806131c7f7c7c51b6d0c97f",
+      "exit": 0
+    },
+    {
+      "log": "Capture-check-194-repair-fixed_leaf_path_differential.log",
+      "name": "fixed_leaf_path_differential",
+      "sha256": "4412385d67b30e61d53cf36e45439e059beae4bc35c3ed53016a3faf36ffda8f",
+      "exit": 0
+    },
+    {
+      "log": "Capture-check-194-repair-fixed_leaf_path_preserves.log",
+      "name": "fixed_leaf_path_preserves",
+      "sha256": "ccd43552b8d17db00323ffa7cf696f03c51564734aac83782a3ed16e2e18d4c2",
+      "exit": 0
+    },
+    {
+      "log": "Capture-check-194-repair-kernel_time_.log",
+      "name": "kernel_time_",
+      "sha256": "d663904d3a3046491e83f5eeac9e946179e2c2126ce27c80fab4970b68612737",
+      "exit": 0
+    },
+    {
+      "log": "Capture-check-194-repair-kernel_worker_context_.log",
+      "name": "kernel_worker_context_",
+      "sha256": "f01d9a62d356df5df41b06b46638c711b3fd06abd08711bc0b9d7c5c432cb2bc",
+      "exit": 0
+    },
+    {
+      "log": "Capture-check-194-repair-worker_trust_input_.log",
+      "name": "worker_trust_input_",
+      "sha256": "506afd9fea336d7d2e782233f962df34037e8af668f3138c91948b6859b9355c",
+      "exit": 0
+    },
+    {
+      "log": "Capture-check-194-repair-check.log",
+      "name": "check",
+      "sha256": "30225cc3a5226f1352a3f4ea9e528a6ff8702c8bd98cc44adaae5502bb670c16",
+      "exit": 0
+    },
+    {
+      "log": "Capture-check-194-repair-lint.log",
+      "name": "lint",
+      "sha256": "7d9b4cee1be16c777ddc0c3ef81216f75c704c10b78bd4b0cf6f15d8e17da205",
+      "exit": 0
+    },
+    {
+      "log": "Capture-check-194-repair-build.log",
+      "name": "build",
+      "sha256": "2db0afd02928ab0dfe2851506f50b5003d5b6318b1919e2002705e9b943193a5",
+      "exit": 0
+    }
+  ],
+  "failure": null,
+  "server": false,
+  "product": false
+}

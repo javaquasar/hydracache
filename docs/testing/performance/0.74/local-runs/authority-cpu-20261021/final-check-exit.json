@@ -1,0 +1,39 @@
+{
+  "source": "bcd8aee4071055b3b79376459f065e12c7ec1b50",
+  "recipe_sha256": "a67f46609f757506f7e8b8a7b3bda00fe812dd47262fb6c38fb42bcf8dba3c82",
+  "steps": [
+    {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "name": "format",
+      "exit": 0,
+      "log": "final-check-format.log"
+    },
+    {
+      "sha256": "0511c83189467b47527eb6fd9d69867ce62d528f1c54bf28a5d05d52c1711ecb",
+      "name": "docs",
+      "exit": 0,
+      "log": "final-check-docs.log"
+    },
+    {
+      "sha256": "80c79819a5b5de8641bdb5c2f514ab0022776d65bca4474916bc9279f523d1c0",
+      "name": "registry",
+      "exit": 0,
+      "log": "final-check-registry.log"
+    },
+    {
+      "sha256": "d83a23ed107af28fa7b5dd9846cfac43bef4dbed9e8d6bc9705cc279ade0ca8c",
+      "name": "performance",
+      "exit": 0,
+      "log": "final-check-performance.log"
+    },
+    {
+      "sha256": "6d976c80dfc0603f24f0999cb914d780dde40debe487da8e986a1fe70933e3f5",
+      "name": "diff",
+      "exit": 0,
+      "log": "final-check-diff.log"
+    }
+  ],
+  "failure": null,
+  "server": false,
+  "product": false
+}

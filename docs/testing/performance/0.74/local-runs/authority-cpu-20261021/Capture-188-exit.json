@@ -1,0 +1,54 @@
+{
+  "stage": "Capture",
+  "lane": "188",
+  "source": "bcd8aee4071055b3b79376459f065e12c7ec1b50",
+  "image": "/home/artur/.cache/hydracache-074-188-check/release/deps/hydracache_long_run_supervisor_074-1dbb29096ebc6338",
+  "image_sha256": "bed2be825e8ca860aa421ac8f7c52dbea71eac33d9edde7114ddc0e9b5519069",
+  "image_after_sha256": "bed2be825e8ca860aa421ac8f7c52dbea71eac33d9edde7114ddc0e9b5519069",
+  "inputs": [
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs",
+      "normalized_sha256": "6dc6796e3e18682de1216f37ca51a4fe98841a9322cd79dce555cddca1a24b89",
+      "blob": "d7bc5ce48ccfe277f7252cc8e8841c7ac6612e71"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/tests/support/authority_owners_controls.rs",
+      "normalized_sha256": "c4f04ccb7b3d7bd17e13241b1cefc6657661e5560d1b1ce51f3445e71d5202ce",
+      "blob": "da720d1522987bc4a1e60d7592e65e6e7e6026ea"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/tests/support/authority_cpu.rs",
+      "normalized_sha256": "589efa1c6680464dc231177a96214b6e663e846902ec3c3be1b65a7255117890",
+      "blob": "931b29218125e1a5a1410752ffff105f4a486625"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/tests/support/validation_leaf_requests.rs",
+      "normalized_sha256": "29d46c2111289fa21793a6b578eef1c25bcb84aea5193dba03670ac7c8c9ff69",
+      "blob": "df80e253f10d4520d765c4af3d70eb9d2cbdfe8a"
+    },
+    {
+      "path": "docs/testing/performance/0.74/authority-cpu-plan-20261021.md",
+      "normalized_sha256": "ecff3cc10c54a6b573e18d4ed67959ce927edf2b57709b338680641e7441d0ca",
+      "blob": "f27e10adaf5427bfc2337ba18d204ef8b66065a1"
+    },
+    {
+      "path": "docs/testing/performance/0.74/qualification-manifest.toml",
+      "normalized_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+      "blob": "1ba704159a59c16455fd0c9f4f15f9fda66ca9b1"
+    }
+  ],
+  "steps": [
+    {
+      "name": "cpu",
+      "exit": 0
+    },
+    {
+      "name": "inspect",
+      "exit": 0
+    }
+  ],
+  "recipe_sha256": "042f95e63a80de07b951781cd8656c39f83420cec315dd70ba0e37f7a9933a3c",
+  "server": false,
+  "product": false,
+  "native_gate_open": false
+}
