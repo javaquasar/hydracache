@@ -1,6 +1,9 @@
 //! Opt-in test binary only. Rust requests, not libc malloc, CPU, RSS or authority.
 use super::*;
 
+#[path = "../tests/support/authority_leaf_cpu.rs"]
+mod authority_leaf_cpu;
+
 #[path = "../tests/support/authority_cpu.rs"]
 mod authority_cpu;
 

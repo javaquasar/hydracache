@@ -1,9 +1,11 @@
 //! Remove only the exact opt-in test hook and manual registration.
+#[path = "authority_leaf_cpu_guard.rs"]
+mod authority_leaf_cpu;
 #[macro_export]
 macro_rules! hc074_authority_cpu_view {
     ($path:expr, $source:expr) => {{
         let path: &str = $path;
-        let mut raw: String = $source.to_owned();
+        let mut raw: String = $crate::hc074_authority_leaf_cpu_view!(path, $source);
         let gate = include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
             "/tests/support/authority_cpu_gate.txt"
