@@ -15882,3 +15882,92 @@ preceding packets without changes, and rejects eight structural JSON and ten
 scope mutations. All 91 committed files preserve raw bytes. These integrity
 checks support reproducibility of the request result; they do not widen it
 into a CPU/latency or server-readiness claim.
+
+## Remaining requests by expression owner
+
+After removing fd-path ownership, complete fixture inspection still requests
+23 allocations/1662 bytes at one generation and 99/8444 at seven. The next
+[control](../testing/performance/0.74/authority-owners-plan-20261021.md) asks
+which expressions own those requests. It changes instrumentation only, not
+runtime. Actual full, directory, inventory, record, marker and bind methods
+still run on the original retained objects.
+
+Three independent test copies observe individual inventory and leaf-read
+expressions. The allocator counter surrounds each expression without an outer
+capture; stack totals must equal separately captured actual methods. I/O uses
+an uncounted observer, so allocator accounting does not include its own observer
+reads. Call counts ensure that iterator next, name/insertion, metadata, open
+and read expressions are not silently omitted. The unchanged eight-case
+full-inspect control remains the independent whole-path reference.
+
+Preserving values is not sufficient if the copy changes resource lifetime.
+Expanding for into while initially keeps the iterator in the outer scope.
+The final copy explicitly retires it immediately after the loop, before parity
+and canonical comparison, as the original for does. A kernel-FD control checks
+descriptors for the isolated directory inode at that boundary. Source canaries
+reject missing or duplicate retirement and recover the original method tokens
+after removing only known observers, aliases and iterator expansion. They
+preserve literal bytes and guard order, while recognizing the equivalent
+postfix try/dot spacing pair without conflating logical/ref operators.
+
+The [packet](../testing/performance/0.74/local-runs/authority-owners-20261021/README.md)
+retains an early PowerShell arithmetic refusal and a punctuation-spacing
+canary refusal, both before measurement. Original recipes/logs remain; repaired
+recipes and the iterator audit do not replace them. Final capture source is
+`cd75c7cd`. GNU 1.94 and MSRV 1.88 each run one capture, 32 warmups and three
+rotated 1024-operation samples. All request metrics, call counts and entry
+payload/name identities agree. No measured invocation fails or is retried.
+
+The expression observations reconstruct actual inventory and both leaf phases.
+After applying full inspection's two-inventory multiplicity, the ownership
+partition is:
+
+| Full-path owner | Allocations at 1 / 7 generations | Requested bytes at 1 / 7 |
+| --- | ---: | ---: |
+| Two directory checks plus bind | 5 / 5 | 128 / 128 |
+| Two read_dir opens | 4 / 4 | 128 / 128 |
+| Iterator next | 4 / 28 | 92 / 644 |
+| file_name | 4 / 28 | 88 / 616 |
+| BTreeSet insert | 2 / 6 | 560 / 1872 |
+| Record and marker open_at | 2 / 14 | 46 / 322 |
+| Record and marker initial Vec capacities | 2 / 14 | 620 / 4734 |
+| Complete inspect | 23 / 99 | 1662 / 8444 |
+
+Reallocations remain zero. One inventory is 7/434 or 33/1630, records 2/577
+or 14/4433, and markers 2/89 or 14/623, in allocations/requested bytes. The
+initial record buffers account for 555/4279 bytes across their selected
+journal, and marker buffers 65/455. Healthy open_at groups contribute one
+22-byte request per record name and one 24-byte request per marker name;
+inspection of that unchanged helper identifies CString::new as its Rust-owned
+name construction. The OS open still runs.
+
+Stack path and expected comparison remain zero-request. Metadata expressions
+and read_to_end add no Rust requests beyond the initial capacity for these
+healthy payloads; that does not make their checks or kernel work free. Full
+read requests remain 4/28, all six non-authority cases and tracked kernel counts
+stay equal, and every expression sum reproduces its actual phase. This avoids
+misreading zero allocator requests as permission to remove a live check.
+
+These results identify different possible ownership goals. At depth seven,
+next/file_name dominate the allocation count with 56 of 99 requests; initial
+read buffers dominate requested bytes with 4734 of 8444. A container change,
+prepared name ownership and fresh read-buffer ownership are distinct hypotheses.
+None is selected as a latency win from counts alone. CPU relevance and a new
+paired control must precede any isolated runtime candidate, retaining fresh
+observations, refusal order, descriptor lifetime and original 300/60/10 windows.
+
+Both lanes pass the refreshed 206 authority tests, ancillary controls, affected
+all-target checks and strict all-feature lint. All 382 source assertions across
+20 targets and repository format/docs/registry/local performance checks pass.
+Runtime bytes, frozen workload and qualification inputs remain unchanged.
+This is not an additional reduction, retained-memory/RSS, copied-byte, all-
+syscall, full ActiveAuthority or cache API claim. Old live/time refusals and
+independent execution/lifecycle/trust gates remain; no earlier host receipt
+transfers to this source. No server/live matrix, installation, supervisor,
+clock/service, product, qualification or push operation occurs.
+
+The sealed attribution packet contains 91 members plus its inventory and
+verifies all sixteen preceding packets without mutation. Eight structural
+JSON and twelve scope mutations are refused, and all 92 committed files
+preserve raw bytes. That integrity proof supports the ownership partition;
+it does not turn attribution into another runtime improvement or admission.

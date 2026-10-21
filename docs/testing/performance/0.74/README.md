@@ -5210,3 +5210,37 @@ inventory SHA256
 `ff4d9e59bffefb40eb1712f253eaebce701a34b832a5417211ec88b144fa2440`.
 All fifteen previous packets rehash unchanged; eight structural JSON and ten
 scope mutations are rejected. All 91 committed files preserve raw bytes.
+
+## Remaining allocation owners
+
+The [expression control](local-runs/authority-owners-20261021/README.md), source
+`cd75c7cd`, attributes remaining requests without changing runtime bytes after
+exact hook removal. Token/literal, filesystem refusal and kernel-FD tests
+preserve guards, order, original iterator retirement and 300/60/10 windows.
+
+Both compilers and all three samples agree. One inventory's open/next/name/
+insert requests sum to 7/0/434 at depth one and 33/0/1630 at seven, in
+allocations/reallocations/requested bytes. Record/marker requests split into
+open_at and initial Vec capacity; metadata and read_to_end add zero heap
+requests for these healthy payloads, not zero work.
+
+At depth seven, two inventories' next/name calls contribute 56 allocations
+and 1260 requested bytes; insertion 6/1872; all leaf open_at calls 14/322;
+initial buffers 14/4734. Inventory open and directory/bind supply the remaining
+9/256. Full fixture inspect stays 23/0/1662 and 99/0/8444 with reads 4/28.
+Actual/traced sums, six other cases, tracked kernel counts and payload identities
+agree. No measured invocation fails or is retried.
+
+Both lanes pass refreshed 206 authority tests, affected checks/strict lint,
+382 source assertions and repository gates. Authoring arithmetic and spacing
+refusals plus the iterator audit remain recorded. Frozen workload/qualification
+and sixteen prior evidence packets remain inputs, not permission for admission.
+CPU/latency attribution must precede a separate ownership candidate; heap counts
+do not establish API gains or repair live/time failures. No server/live matrix,
+installation, supervisor, clock/service, product, qualification or push occurs.
+
+Evidence `0cef175d23430a550d7b24489dace6c5a5c98310` seals 91 members plus
+inventory SHA256
+`9c561339ebcbb08f379121996306bf0e11a7264d5c5ac5dff7abc678d289fe17`.
+Sixteen preceding packets remain intact; eight structural JSON and twelve
+scope mutations are rejected. All 92 Git entries preserve raw bytes.

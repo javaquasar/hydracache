@@ -1090,3 +1090,26 @@ record-read ownership need separate attribution. Delivery, all-writer cessation,
 later cells, SIGKILL/lost-ACK, reconnect and real enrollment remain independent
 closed gates. Workload and qualification stay frozen; no new server/live,
 supervisor, clock/service, product, qualification or push operation occurs.
+
+## Remaining allocation owner attribution
+
+The [expression-level packet](local-runs/authority-owners-20261021/README.md),
+source `cd75c7cd`, changes test hooks only. Full fixture inspect remains
+23/0/1662 at depth one and 99/0/8444 at seven, in allocations/reallocations/
+requested bytes, with 4/28 reads. Actual/traced phase sums, all six other cases
+and tracked kernel counts agree on both compilers and all three samples.
+
+At depth seven, initial read buffers own 14 allocations/4734 requested bytes
+of the full path. The two inventories' next/file_name own 56/1260, set insertion
+6/1872, and leaf open_at 14/322. These locate request ownership, not CPU/latency
+or a safe change to observation frequency. Metadata/read checks remain live;
+zero extra heap requests do not mean zero kernel work.
+
+Both lanes pass refreshed 206 authority tests, affected checks/strict lint,
+382 source assertions and repository gates. Source and kernel-FD controls
+retain original iterator/File lifetime, guard/error order and 300/60/10 windows.
+Authoring failures are retained before measurement; no capture fails or is
+retried. Workload/qualification remain frozen. CPU relevance and each ownership
+hypothesis need separate preregistered controls. Old live/time, delivery,
+all-writer cessation, later cells, SIGKILL/lost-ACK, reconnect and real enrollment
+gates remain independent; no server or product admission is granted.

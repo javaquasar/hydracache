@@ -52,3 +52,40 @@ copied bytes, all-syscall, full ActiveAuthority and cache API claims remain out
 of scope. Separate boots or lower heap counts cannot repair old live refusals
 or transfer earlier host receipts. Delivery, writer cessation, lifecycle,
 SIGKILL/lost-ACK, reconnect and enrollment remain independent closed gates.
+
+## Local outcome
+
+Capture source is `cd75c7cd73873a94285db966d738263e79361758`. The
+[packet](local-runs/authority-owners-20261021/README.md) has one capture per
+compiler and three agreeing samples, with no failed/retried measured invocation.
+Token restoration and kernel-FD checks preserve the original iterator-retirement
+boundary before parity/canonical checks; actual runtime bytes remain unchanged.
+
+One inventory costs 7/0/434 at depth one and 33/0/1630 at seven, in allocations/
+reallocations/requested bytes. Its open/next/file_name/insert groups account for
+all requests. Record and marker phases split exactly into open_at and initial
+Vec capacity. Stack path, expected comparison, metadata and read_to_end add
+zero Rust requests for these healthy fixtures, without removing their work.
+
+At full-path multiplicities, depth-seven next/file_name contribute 56/1260,
+set insertion 6/1872, leaf open_at 14/322 and initial buffers 14/4734, in
+allocations/requested bytes. Inventory open contributes 4/128 and directory/
+bind 5/128. These sum to the unchanged full 99/0/8444. Depth one remains
+23/0/1662; reads 4/28, all six non-authority cases and tracked kernel counts
+remain equal. Actual/traced phase sums and payload identities agree.
+
+Both lanes pass the refreshed 206 authority tests, ancillary controls, affected
+checks and strict all-feature lint. All 382 source assertions and repository
+gates pass. Original PowerShell arithmetic and punctuation-spacing authoring
+refusals remain, together with earlier positive checks and the premeasurement
+retirement audit; only the final lifetime recipes own capture/review. Workload
+and qualification stay frozen. CPU/latency relevance needs a separate control
+before selecting an isolated runtime hypothesis. No API or server gate opens.
+
+Evidence `0cef175d23430a550d7b24489dace6c5a5c98310` seals 91 members plus
+inventory SHA256
+`9c561339ebcbb08f379121996306bf0e11a7264d5c5ac5dff7abc678d289fe17`.
+All sixteen preceding packets remain intact; eight structural JSON and twelve
+scope mutations are refused. All 92 committed packet files preserve raw bytes.
+The packet is immutable; frozen qualification SHA256 remains
+`11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc`.
