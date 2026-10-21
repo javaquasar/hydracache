@@ -15686,3 +15686,66 @@ as do old clock-order and independent original-delivery, writer-cessation,
 lifecycle, SIGKILL/lost-ACK, reconnect and trust gates. No new live matrix,
 server, installation, supervisor, clock/service, product or qualification run
 occurs. Tool identity changes do not transfer preceding campaign admission.
+
+## Comparing expected journal names without ownership
+
+The next [isolated control](../testing/performance/0.74/authority-expected-name-plan-20261021.md)
+targets the allocation that capacity reservation deliberately leaves behind.
+Inventory does not need to retain its expected names: only observed filenames
+belong to its BTreeSet. The candidate formats each expected commit/json name
+into a 23-byte stack Cursor with the same hexadecimal formatter and compares
+the complete bytes. It does not parse observed names, reuse a directory scan,
+change the observed container, or alter names retained for opening/publication.
+
+The reference and proposal are frozen before runtime mutation. Differential
+tests cover every depth through 128, seeded mutations, individual byte changes,
+missing/extra names and malformed suffixes. Formatter boundaries through
+usize::MAX verify the stack capacity; the actual filesystem suite preserves
+UTF-8, parity, budget and I/O refusal classes. A new exact source adapter also
+preserves historical assertions and refuses unrecognized bodies. Its first
+authoring refusal exposes a missing known historical template; that explicit
+input is added without editing any old assertion or replacing the refusal log.
+
+Pure comparison uses prebuilt observed sets, separating expected-name ownership
+from filesystem work. Complete eight-case fixture inspection is measured
+separately and owns acceptance: its two inventories must save exactly twice
+the isolated comparison requests, while reads and tracked kernel calls stay
+equal. These are paired GNU 1.94/MSRV 1.88 controls, not a new live matrix or
+production admission. The [packet](../testing/performance/0.74/local-runs/authority-expected-name-20261021/README.md)
+retains the source/image identities, recipes, samples and native exits.
+
+All three 1024-operation samples on GNU 1.94 and MSRV 1.88 agree:
+
+| Operation | Allocations Before to After | Requested bytes Before to After |
+| --- | ---: | ---: |
+| Pure comparison at 1 generation | 2 to 0 | 44 to 0 |
+| Pure comparison at 7 generations | 14 to 0 | 308 to 0 |
+| Pure comparison at 128 generations | 256 to 0 | 5632 to 0 |
+| Complete fixture inspect at 1 generation | 29 to 25 | 1806 to 1718 |
+| Complete fixture inspect at 7 generations | 129 to 101 | 9116 to 8500 |
+
+Reallocations remain zero. The complete one-generation path saves four
+allocations and 88 requested bytes; depth seven saves 28/616. Both equal
+twice the isolated healthy comparison, with no extra saving credited from
+another stage. The invalid first-name comparator preserves refusal and saves
+2/44 in the pure control only; empty comparison remains zero. Read requests
+stay four and 28, six other cases and tracked kernel observations stay equal.
+Owned observed names and opening/publication names deliberately still allocate.
+
+The candidate is accepted for this request reduction, not CPU, latency,
+retained memory, copied bytes, cache API throughput or full ActiveAuthority.
+Both compiler lanes pass 196 authority tests, focused checks and strict lint;
+all 375 source assertions and repository gates pass. Workload, reference and
+qualification inputs stay frozen. Before/After boots differ, so these cohorts
+do not establish process continuity or repair the retained clock-order failures.
+
+All live checks and original 300/60/10 windows stay unchanged. Original
+delivery, all-writer cessation, later cells, SIGKILL/lost-ACK, reconnect and
+trust/enrollment remain independent gates. No new server/live matrix,
+installation, supervisor, clock/service, product or qualification run occurs;
+the rebuilt tool does not inherit a preceding campaign's admission.
+
+The write-once packet seal verifies thirteen preceding packets and every
+member, rejects eight structural JSON and ten scope mutations, and preserves
+all 96 committed packet files without Git byte transformations. That integrity
+check is separate from the measured request reduction and from every live gate.

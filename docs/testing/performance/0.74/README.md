@@ -5119,3 +5119,35 @@ plus inventory SHA256
 Twelve prior packets rehash unchanged; ten scope mutations and eight structural
 JSON negative controls pass. Initial allocations remain unchanged: the accepted
 result concerns capacity-growth requests, not a new native/server admission.
+
+## Expected journal names without temporary ownership
+
+The [paired expected-name control](local-runs/authority-expected-name-20261021/README.md)
+accepts runtime `be357d10` for comparing expected inventory names in a 23-byte
+stack Cursor with the unchanged formatter. Before source is `fe387e89`.
+Observed names, the fresh scan, cardinality/refusal guards, owned opening and
+publication names and original 300/60/10 windows stay unchanged.
+
+All three samples on both compilers conserve twice the pure comparator saving
+through complete fixture inspect: 29/0/1806 becomes 25/0/1718 at depth one,
+129/0/9116 becomes 101/0/8500 at seven, in allocations/reallocations/requested
+bytes per operation. Reads stay 4/28; six other cases and tracked kernel counts
+stay equal. This is not a CPU, latency, retained-memory, copied-byte, cache API
+or full ActiveAuthority claim.
+
+Both lanes pass 196 authority tests, ancillary checks, all-target check and
+strict all-feature lint; 375 old/new source assertions and repository checks
+pass. One premeasurement adapter refusal is retained, adding only the exact
+known older template without changing any old assertion. No measured capture
+is retried. Separate boots, old clock-order failures and independent lifecycle,
+delivery, retirement, reconnect and trust gates leave native/server admission
+closed. No push, new server/live matrix, installation, supervisor, clock/service,
+product or qualification operation occurs.
+
+Evidence commit `bdf4cadabfeb9695f94db8d89bfd20c69d79bb00` seals 95 members
+plus inventory SHA256
+`4249e3cd970a5159951a22b5e40762b4aaa97eee003118d664bb67110376464f`.
+All thirteen preceding packets rehash unchanged; eight structural JSON and
+ten summary-scope mutations are rejected. All 96 committed packet files match
+their raw worktree bytes without Git filters. This proves packet integrity and
+request conservation, not live/native/server admission.

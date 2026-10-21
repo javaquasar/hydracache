@@ -1021,3 +1021,27 @@ all-writer cessation, later cells, SIGKILL/lost-ACK, reconnect and real
 enrollment remain independent closed gates. Expected-name String ownership is
 a possible next local attribution question, not permission to skip observation
 or extend an eligibility window.
+
+## Expected-name ownership local outcome
+
+The [isolated expected-name control](local-runs/authority-expected-name-20261021/README.md)
+accepts runtime `be357d10` for temporary expected-name comparison only. The
+same formatter now writes to a 23-byte stack Cursor. Observed inventory,
+opening/publication names, all fresh/live checks, error order and original
+300/60/10 windows remain. Complete fixture inspect conserves 4 fewer
+allocations/88 fewer requested bytes at depth one and 28/616 at seven,
+exactly twice the pure comparator saving. Reads stay 4/28, reallocations
+stay zero, and six other cases and tracked kernel counts remain equal.
+
+Both compilers pass 196 authority tests, affected checks/strict lint, all
+375 source assertions and repository checks. The first new adapter's refusal
+of an exact old restored template stays retained; only that known input is
+added and no old assertion or measured invocation is replaced. Before/After
+boots differ. Request conservation neither repairs old clock-order refusals
+nor measures full ActiveAuthority, timing, retained memory or cache APIs.
+
+No new live matrix, server, installation, supervisor, clock/service, product
+or qualification operation occurs. Original delivery, all-writer cessation,
+later cells, SIGKILL/lost-ACK, reconnect and real enrollment remain independent
+closed gates. Remaining observed-inventory and record-read requests need a
+separate attribution baseline, not a cache of live state or longer deadline.
