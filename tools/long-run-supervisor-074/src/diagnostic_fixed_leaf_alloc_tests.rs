@@ -1,6 +1,9 @@
 //! Opt-in test binary only. Rust requests, not libc malloc, CPU, RSS or authority.
 use super::*;
 
+#[path = "../tests/support/trust_component_stack.rs"]
+mod trust_component_stack;
+
 #[path = "../tests/support/trust_component_baseline.rs"]
 mod trust_component_baseline;
 

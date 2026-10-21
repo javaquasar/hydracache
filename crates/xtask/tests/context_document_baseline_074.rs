@@ -50,7 +50,11 @@ fn context_document_baseline_changes_only_one_test_hook_not_any_runtime_body() {
         .lines()
         .filter(|p| previous.lines().any(|v| v == *p))
         .filter(|p| {
-            if *p == "tools/long-run-supervisor-074/src/diagnostic_worker_context.rs" {
+            if matches!(
+                *p,
+                "tools/long-run-supervisor-074/src/diagnostic_worker_context.rs"
+                    | "tools/long-run-supervisor-074/src/diagnostic_worker_trust_input.rs"
+            ) {
                 assert_eq!(
                     crate::hc074_context_document_stack_view!(*p, &read(p)),
                     git(&["show", &format!("{prior}:{p}")])

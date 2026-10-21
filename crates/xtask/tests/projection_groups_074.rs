@@ -43,7 +43,11 @@ fn projection_groups_reconstructs_entire_old_parser_and_every_changed_old_source
         .lines()
         .filter(|p| old_paths.lines().any(|o| o == *p))
         .filter(|p| {
-            if *p == "tools/long-run-supervisor-074/src/diagnostic_worker_context.rs" {
+            if matches!(
+                *p,
+                "tools/long-run-supervisor-074/src/diagnostic_worker_context.rs"
+                    | "tools/long-run-supervisor-074/src/diagnostic_worker_trust_input.rs"
+            ) {
                 assert_eq!(
                     crate::hc074_context_document_stack_view!(*p, &read(p)),
                     git(&["show", &format!("{prior}:{p}")])

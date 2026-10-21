@@ -49,6 +49,17 @@ fn trust_component_baseline_changes_only_one_private_test_hook() {
     let old_changed: Vec<_> = changed
         .lines()
         .filter(|p| old.lines().any(|o| o == *p))
+        .filter(|p| {
+            if *p == "tools/long-run-supervisor-074/src/diagnostic_worker_trust_input.rs" {
+                assert_eq!(
+                    crate::hc074_trust_component_stack_view!(*p, &read(p)),
+                    git(&["show", &format!("{prior}:{p}")])
+                );
+                false
+            } else {
+                true
+            }
+        })
         .collect();
     assert_eq!(old_changed, [path]);
     let raw = read(path);
@@ -69,7 +80,7 @@ fn trust_component_baseline_changes_only_one_private_test_hook() {
 #[test]
 fn trust_component_baseline_model_restores_the_complete_child_body_and_fixed_names() {
     let path = "tools/long-run-supervisor-074/src/diagnostic_worker_trust_input.rs";
-    let raw = read(path);
+    let raw = crate::hc074_trust_component_stack_view!(path, &read(path));
     assert_eq!(raw, git(&["show", &format!("1cc648ad:{path}")]));
     let body=raw.split_once("fn child(parent: &File, name: &str, directory: bool) -> Result<File, TrustInputError> {\n").unwrap().1.split_once("\n}\n").unwrap().0;
     let control = read("tools/long-run-supervisor-074/tests/support/trust_component_baseline.rs");

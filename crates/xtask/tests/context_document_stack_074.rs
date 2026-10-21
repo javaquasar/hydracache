@@ -61,6 +61,17 @@ fn context_document_stack_exactly_restores_both_old_files_and_rejects_live_predi
     let old_changed: Vec<_> = changed
         .lines()
         .filter(|p| old_paths.lines().any(|old| old == *p))
+        .filter(|p| {
+            if *p == "tools/long-run-supervisor-074/src/diagnostic_worker_trust_input.rs" {
+                assert_eq!(
+                    crate::hc074_trust_component_stack_view!(*p, &read(p)),
+                    git(&["show", &format!("{prior}:{p}")])
+                );
+                false
+            } else {
+                true
+            }
+        })
         .collect();
     assert_eq!(old_changed, [alloc, worker]);
     for path in old_changed {

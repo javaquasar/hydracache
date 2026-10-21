@@ -4,6 +4,7 @@ use super::{AssertedWorkerHost, CheckedWorkerPolicy, WorkerPolicyError, WorkerPo
 use crate::{canonical_json, is_hash};
 use ed25519_dalek::VerifyingKey;
 use serde::{Deserialize, Serialize};
+#[cfg(test)]
 use std::ffi::CString;
 use std::fs::{File, Metadata, OpenOptions};
 use std::marker::PhantomData;
@@ -12,6 +13,13 @@ use std::os::unix::fs::{FileExt, MetadataExt, OpenOptionsExt};
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
 use thiserror::Error;
+
+#[path = "diagnostic_trust_component_name.rs"]
+mod component_name;
+
+#[cfg(all(test, feature = "fixed-leaf-alloc-probe"))]
+#[path = "../tests/support/trust_component_stack_adapter.rs"]
+pub(crate) mod component_stack_controls;
 
 #[path = "diagnostic_worker_kernel_binding.rs"]
 mod kernel_binding;
@@ -148,7 +156,7 @@ impl Directory {
     }
 }
 fn child(parent: &File, name: &str, directory: bool) -> Result<File, TrustInputError> {
-    let name = CString::new(name).map_err(|_| TrustInputError::Invalid)?;
+    let name = component_name::Name::new(name).map_err(|_| TrustInputError::Invalid)?;
     let flags = libc::O_RDONLY
         | libc::O_NOFOLLOW
         | libc::O_CLOEXEC

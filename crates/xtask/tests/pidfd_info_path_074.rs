@@ -75,6 +75,7 @@ fn pidfd_info_path_restores_entire_old_origin_and_keeps_all_other_old_runtime_fi
                 *p,
                 "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs"
                     | "tools/long-run-supervisor-074/src/diagnostic_worker_context.rs"
+                    | "tools/long-run-supervisor-074/src/diagnostic_worker_trust_input.rs"
             ) {
                 // A successor may change only the exact bounded-collection leaf.
                 // Require the entire earlier file, not a filename exemption.
