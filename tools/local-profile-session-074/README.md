@@ -50,9 +50,15 @@ After committing the method, launch **once** at the exact clean source:
 
 Build preparation can use separate WSL entries; the measured metadata/profile/
 postflight interval uses exactly one. The fixed packet is
-`docs/testing/performance/0.74/local-runs/single-session-rounds-20261021`.
+`docs/testing/performance/0.74/local-runs/single-session-rounds-verified-20261021`.
 Preparation and launcher receipts first live under the matching `target/` prefix
 and must be retained with that packet before sealing. No installation, supervisor
 control, manager original send, product workload or server operation is present.
 Successful wrapper completion still needs independent raw-log conservation
 review and never opens native/server admission. Old clock refusals remain.
+
+The initial method source `9cb6a13e913e8678d34d077762372661adc7f2af`
+refused JSON serialization of numeric PowerShell lane keys before a profile
+session started. Its two builds/preparation and launch intent remain under the
+original target prefix. The corrected string keys use a separate verified
+prefix; this is not replacement of a measured profile or its admission context.

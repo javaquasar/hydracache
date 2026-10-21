@@ -2,7 +2,7 @@ param([ValidateSet('Facts','WriteSummary','Seal','Review','Audit')][string]$Mode
 $ErrorActionPreference='Stop'
 $taskRepo=(Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
 Set-Location $taskRepo
-$taskPacket=Join-Path $taskRepo 'docs/testing/performance/0.74/local-runs/single-session-rounds-20261021'
+$taskPacket=Join-Path $taskRepo 'docs/testing/performance/0.74/local-runs/single-session-rounds-verified-20261021'
 $taskPrior=Join-Path (Split-Path $taskPacket) 'validation-round-residual-20261021'
 function Require([bool]$Condition,[string]$Message){if(-not $Condition){throw $Message}}
 function Hash([string]$Path){(Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant()}
@@ -35,7 +35,7 @@ if($Mode -ceq 'Audit'){
 }
 function Range($Values){@{minimum=($Values|Measure-Object -Minimum).Minimum;maximum=($Values|Measure-Object -Maximum).Maximum}}
 function Facts{
-    $taskResult=Json 'result.json';$taskIntent=Json 'intent.json';$taskPins=Json 'single-session-rounds-20261021-pins.json'
+    $taskResult=Json 'result.json';$taskIntent=Json 'intent.json';$taskPins=Json 'single-session-rounds-verified-20261021-pins.json'
     $taskSource=$taskResult.source
     Require ($taskSource -cmatch '^[0-9a-f]{40}$' -and $taskPins.source -ceq $taskSource -and $taskIntent.source -ceq $taskSource) 'Source binding changed'
     & git diff --quiet b074f8f9f3d8f9766b3b04c59a8291941a7e3b1d $taskSource -- tools/long-run-supervisor-074 crates Cargo.lock
@@ -44,11 +44,11 @@ function Facts{
     Require ((Same @($taskIntent.original_windows_seconds) @(300,60,10)) -and $taskIntent.child_timeout_seconds -eq 1200 -and $taskIntent.kill_after_seconds -eq 5 -and $taskIntent.child_containment_seconds -eq 1210 -and $taskIntent.session_seconds -eq 7500 -and $taskIntent.max_log_bytes -eq 33554432) 'Original or wrapper bounds changed'
     $taskMetadata=Json 'metadata.json';$taskPostflight=Json 'postflight.json'
     Require ((Same $taskMetadata $taskPostflight) -and -not $taskMetadata.fixtures.Count -and -not $taskMetadata.tracked_dirty) 'Session continuity not proved'
-    Require ($taskMetadata.source -ceq $taskSource -and $taskMetadata.pins_sha256 -ceq (Hash (Join-Path $taskPacket 'single-session-rounds-20261021-pins.json')) -and $taskMetadata.driver_sha256 -ceq (Hash (Join-Path $PSScriptRoot 'runner.py')) -and $taskMetadata.preparation_sha256 -ceq (Hash (Join-Path $taskPacket 'single-session-rounds-20261021-preparation.json'))) 'Method or preparation bytes changed'
+    Require ($taskMetadata.source -ceq $taskSource -and $taskMetadata.pins_sha256 -ceq (Hash (Join-Path $taskPacket 'single-session-rounds-verified-20261021-pins.json')) -and $taskMetadata.driver_sha256 -ceq (Hash (Join-Path $PSScriptRoot 'runner.py')) -and $taskMetadata.preparation_sha256 -ceq (Hash (Join-Path $taskPacket 'single-session-rounds-verified-20261021-preparation.json'))) 'Method or preparation bytes changed'
     Require ($taskMetadata.qualification_sha256 -ceq '11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc' -and $taskMetadata.qualification_sha256 -ceq (Hash 'docs/testing/performance/0.74/qualification-manifest.toml')) 'Qualification changed'
     $taskOriginal=Get-Content (Join-Path $taskPrior 'context-Verified-Before.json') -Raw|ConvertFrom-Json
     Require ((Same $taskMetadata.bundle $taskOriginal.bundle) -and (Same $taskMetadata.images $taskPins.images)) 'Frozen inputs changed'
-    $taskPreparation=Json 'single-session-rounds-20261021-preparation.json'
+    $taskPreparation=Json 'single-session-rounds-verified-20261021-preparation.json'
     $taskLanes=@();$taskActual=@();$taskInvocations=0
     foreach($taskLane in @('194','188')){
         $taskBuild=$taskPreparation.$taskLane
@@ -85,8 +85,8 @@ function Facts{
     }
     Require ((Same $taskActual @($taskResult.profiles)) -and $taskInvocations -eq $taskResult.measured_profile_invocations) 'Profile schedule/result differs'
     Require (-not $taskResult.failure -and $taskResult.schedule_completed -eq (@($taskLanes|Where-Object complete_profile_cohort -ne $true).Count -eq 0)) 'Result completeness changed'
-    $taskLaunch=Json 'single-session-rounds-20261021-launch-exit.json'
-    Require ($taskLaunch.source -ceq $taskSource -and $taskLaunch.single_profile_session -eq $true -and $taskLaunch.session_log_sha256 -ceq (Hash (Join-Path $taskPacket 'single-session-rounds-20261021-session.log')) -and $taskLaunch.recipe_sha256 -ceq (Hash (Join-Path $PSScriptRoot 'launch.ps1')) -and $taskLaunch.exit -eq $(if($taskResult.schedule_completed){0}else{1})) 'Launcher receipt changed'
+    $taskLaunch=Json 'single-session-rounds-verified-20261021-launch-exit.json'
+    Require ($taskLaunch.source -ceq $taskSource -and $taskLaunch.single_profile_session -eq $true -and $taskLaunch.session_log_sha256 -ceq (Hash (Join-Path $taskPacket 'single-session-rounds-verified-20261021-session.log')) -and $taskLaunch.recipe_sha256 -ceq (Hash (Join-Path $PSScriptRoot 'launch.ps1')) -and $taskLaunch.exit -eq $(if($taskResult.schedule_completed){0}else{1})) 'Launcher receipt changed'
     @{source=$taskSource;runtime_changed=$false;prior_packets_verified=21;boot=$taskMetadata.boot;parent_pid=$taskMetadata.pid;parent_start_ticks=$taskMetadata.start_ticks;session_continuity_observed=$true;measured_profile_invocations=$taskInvocations;lanes=$taskLanes;complete_profile_cohort=$taskResult.schedule_completed;old_time_refusals_retained=$true;native_gate_open=$false;server=$false;product=$false}
 }
 function Inventory{@{files=@(Get-ChildItem -LiteralPath $taskPacket -Recurse -File|Where-Object Name -ne 'inventory.json'|Sort-Object FullName|ForEach-Object {@{path=$_.FullName.Substring($taskPacket.Length+1).Replace('\','/');bytes=$_.Length;sha256=(Hash $_.FullName)}})}}

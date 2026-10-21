@@ -278,8 +278,8 @@ def main():
     pins = read_json(args.pins)
     require(args.source == pins["source"], "Source argument mismatch")
     require(args.output.parent.resolve() == repo / "docs/testing/performance/0.74/local-runs" and
-            re.fullmatch(r"single-session-rounds-20261021", args.output.name), "Only this new local packet")
-    require(args.pins.resolve() == repo / "target/single-session-rounds-20261021-pins.json", "Unexpected pins location")
+            re.fullmatch(r"single-session-rounds-verified-20261021", args.output.name), "Only this new local packet")
+    require(args.pins.resolve() == repo / "target/single-session-rounds-verified-20261021-pins.json", "Unexpected pins location")
     # Prechecks run inside the same WSL invocation, before fresh context/profiles.
     result = run_session(args.output, pins, lambda: snapshot(repo, args.pins),
                          lambda lane, log, deadline: capture(command(lane), child_env(repo), log, deadline),

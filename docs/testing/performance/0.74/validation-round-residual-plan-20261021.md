@@ -146,3 +146,9 @@ before freezing the method. Reuse the sealed conservation predicates for raw
 profiles, verify all twenty-one previous packets, then seal the new evidence.
 One session does not prove stable time or repair old negative gates. No clock,
 service, idle-policy or server change is allowed.
+
+The first launcher at `9cb6a13e` refuses numeric PowerShell JSON dictionary
+keys after two builds, before any metadata/profile session. Preserve those
+preparation artifacts. Correct only the keys to strings and freeze a separate
+`single-session-rounds-verified-20261021` prefix before the authorized session;
+the first prefix is not reused. No measured profile exists to retry.
