@@ -1,0 +1,18 @@
+{
+  "194": {
+    "build_log": "held-material-live-20261021-194-build.log",
+    "source": "1d6d179bd7150ef564560821a897794e20b24b36",
+    "sha256": "bbc689a597c56bf5039ff5195d3ea83b26819cf3221871672e8fb266c83477fc",
+    "image": "/home/artur/.cache/hydracache-074-194-check/release/deps/hydracache_long_run_supervisor_074-b26b156d3dcd0098",
+    "build_log_sha256": "649b5dd9666e07164bac22bc24fe3ff1057e6a4d2cf028657b0851950211cc5f",
+    "exit": 0
+  },
+  "188": {
+    "build_log": "held-material-live-20261021-188-build.log",
+    "source": "1d6d179bd7150ef564560821a897794e20b24b36",
+    "sha256": "cacd4fea4bfe267ef952496a9596de7dee38658b4aa339ea5216a8f2f73d6c39",
+    "image": "/home/artur/.cache/hydracache-074-188-check/release/deps/hydracache_long_run_supervisor_074-d2aba7f58d773234",
+    "build_log_sha256": "a3a1f6209732d304d0e24eabdb5aed5f8a7390cff566f885c5925106bf308ba3",
+    "exit": 0
+  }
+}

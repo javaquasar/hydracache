@@ -1,0 +1,57 @@
+{
+  "steps": [
+    {
+      "exit": 0,
+      "log": "host-canaries.log",
+      "name": "canaries",
+      "sha256": "1f430e1f1e55e929a7dd6efa89bf87ef3ff9615c9fc5a9fb5357b67156dba3c7"
+    },
+    {
+      "exit": 0,
+      "log": "host-check.log",
+      "name": "check",
+      "sha256": "c2e4431475e80911ae8d692cacc7a959791c7a08f0a65d994458ea0049d6fcde"
+    },
+    {
+      "exit": 0,
+      "log": "host-clippy.log",
+      "name": "clippy",
+      "sha256": "483114ee7706c87ac172d9506952e53996364afe11459e5143ece8655a142495"
+    },
+    {
+      "exit": 0,
+      "log": "host-format.log",
+      "name": "format",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "exit": 0,
+      "log": "host-docs.log",
+      "name": "docs",
+      "sha256": "7871a4cd76db1e028b99f1191ca79ac3a5652810ab6a963a06790cbcfb27e42f"
+    },
+    {
+      "exit": 0,
+      "log": "host-registry.log",
+      "name": "registry",
+      "sha256": "48f1c29b7d119b62ebc60794bee5b2d30fc07dc469024b33e58e90c475afddc3"
+    },
+    {
+      "exit": 0,
+      "log": "host-performance.log",
+      "name": "performance",
+      "sha256": "01891126f8507e14c113c6b92d8333abbcbed084db90888981253d2abc64db9e"
+    },
+    {
+      "exit": 0,
+      "log": "host-diff.log",
+      "name": "diff",
+      "sha256": "fb1cd731e516c640484100c2acc978fdd95736ea8206e0451d5333faf4f2910f"
+    }
+  ],
+  "original_live_invoked": false,
+  "failure": null,
+  "lane": "host",
+  "product": false,
+  "server": false
+}

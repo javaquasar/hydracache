@@ -1,0 +1,24 @@
+{
+  "calls_per_lane": 1,
+  "child_containment_seconds": 1210,
+  "child_timeout_seconds": 1200,
+  "kill_after_seconds": 5,
+  "max_log_bytes": 33554432,
+  "native_gate_open": false,
+  "original_send": false,
+  "original_windows_seconds": [
+    300,
+    60,
+    10
+  ],
+  "product": false,
+  "schedule": [
+    "194",
+    "188"
+  ],
+  "schema": "original-held-material-live-074-v1",
+  "seed": "0x074c051e",
+  "server": false,
+  "session_seconds": 7500,
+  "source": "1d6d179bd7150ef564560821a897794e20b24b36"
+}

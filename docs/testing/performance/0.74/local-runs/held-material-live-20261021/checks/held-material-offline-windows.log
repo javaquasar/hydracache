@@ -1,0 +1,14 @@
+test_complete_and_first_refused_prefix_are_distinct (__main__.ReaderTests.test_complete_and_first_refused_prefix_are_distinct) ... ok
+test_scope_order_raw_exit_and_cleanup_mutations_refuse (__main__.ReaderTests.test_scope_order_raw_exit_and_cleanup_mutations_refuse) ... ok
+test_budget_refuses_without_dispatch (__main__.SessionTests.test_budget_refuses_without_dispatch) ... ok
+test_clean_environment_only_healthy_opt_in (__main__.SessionTests.test_clean_environment_only_healthy_opt_in) ... ok
+test_context_drift_stops_everything (__main__.SessionTests.test_context_drift_stops_everything) ... ok
+test_first_refusals_retained_one_call_each_and_no_resume (__main__.SessionTests.test_first_refusals_retained_one_call_each_and_no_resume) ... ok
+test_postflight_failure_never_becomes_success (__main__.SessionTests.test_postflight_failure_never_becomes_success) ... ok
+test_preflight_refuses_without_dispatch (__main__.SessionTests.test_preflight_refuses_without_dispatch) ... ok
+test_success_needs_both_integer_zero_receipts (__main__.SessionTests.test_success_needs_both_integer_zero_receipts) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.751s
+
+OK
