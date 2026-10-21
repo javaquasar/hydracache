@@ -1,6 +1,10 @@
 //! Private original peer/time snapshot, not an exported admission capability.
 use super::*;
 
+#[cfg(all(test, feature = "fixed-leaf-alloc-probe"))]
+#[path = "../tests/support/collector_peer_capacity_adapter.rs"]
+pub(crate) mod capacity_controls;
+
 #[path = "diagnostic_kernel_start_consent.rs"]
 mod start_consent;
 
@@ -8,7 +12,8 @@ mod start_consent;
 mod progress;
 
 fn peer(uid: u32, gid: u32, supplementary: &[u32]) -> DiagnosticPeer {
-    let mut gids = supplementary.to_vec();
+    let mut gids = Vec::with_capacity(supplementary.len() + 1);
+    gids.extend_from_slice(supplementary);
     gids.push(gid);
     gids.sort_unstable();
     gids.dedup();

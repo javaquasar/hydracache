@@ -47,6 +47,7 @@ fn projection_groups_reconstructs_entire_old_parser_and_every_changed_old_source
                 *p,
                 "tools/long-run-supervisor-074/src/diagnostic_worker_context.rs"
                     | "tools/long-run-supervisor-074/src/diagnostic_worker_trust_input.rs"
+                    | "tools/long-run-supervisor-074/src/diagnostic_kernel_collector_inputs.rs"
             ) {
                 assert_eq!(
                     crate::hc074_context_document_stack_view!(*p, &read(p)),

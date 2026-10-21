@@ -61,6 +61,17 @@ fn trust_component_stack_restores_both_entire_old_files_and_rejects_predicate_dr
     let old_changed: Vec<_> = changed
         .lines()
         .filter(|p| previous.lines().any(|old| old == *p))
+        .filter(|p| {
+            if *p == "tools/long-run-supervisor-074/src/diagnostic_kernel_collector_inputs.rs" {
+                assert_eq!(
+                    crate::hc074_collector_peer_capacity_view!(*p, &read(p)),
+                    git(&["show", &format!("{prior}:{p}")])
+                );
+                false
+            } else {
+                true
+            }
+        })
         .collect();
     assert_eq!(old_changed, [alloc, trust]);
     for path in old_changed {

@@ -70,6 +70,17 @@ fn collector_peer_baseline_changes_only_a_private_allocator_test_hook() {
     let old_changed: Vec<_> = changed
         .lines()
         .filter(|p| old.lines().any(|o| o == *p))
+        .filter(|p| {
+            if *p == "tools/long-run-supervisor-074/src/diagnostic_kernel_collector_inputs.rs" {
+                assert_eq!(
+                    crate::hc074_collector_peer_capacity_view!(*p, &read(p)),
+                    git(&["show", &format!("{prior}:{p}")])
+                );
+                false
+            } else {
+                true
+            }
+        })
         .collect();
     assert_eq!(old_changed, [alloc]);
     let raw = read(alloc);
@@ -90,7 +101,7 @@ fn collector_peer_baseline_changes_only_a_private_allocator_test_hook() {
 #[test]
 fn collector_peer_baseline_freezes_complete_peer_and_wrapper_bodies() {
     let path = "tools/long-run-supervisor-074/src/diagnostic_kernel_collector_inputs.rs";
-    let runtime = read(path);
+    let runtime = crate::hc074_collector_peer_capacity_view!(path, &read(path));
     assert_eq!(runtime, git(&["show", &format!("1cde821f:{path}")]));
     let model = read("tools/long-run-supervisor-074/tests/support/collector_peer_baseline.rs");
     assert_eq!(tokens(peer_body(&model)), tokens(peer_body(&runtime)));

@@ -1,6 +1,9 @@
 //! Opt-in test binary only. Rust requests, not libc malloc, CPU, RSS or authority.
 use super::*;
 
+#[path = "../tests/support/collector_peer_capacity.rs"]
+mod collector_peer_capacity;
+
 #[path = "../tests/support/collector_peer_baseline.rs"]
 mod collector_peer_baseline;
 
