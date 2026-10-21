@@ -16809,3 +16809,34 @@ full validator. CPU, RSS, retained memory and ten-second admission headroom are
 not inferred from requested bytes. No original-owner attempt is repeated, and
 the first two Causal refusals remain intact. The next timing comparison needs
 its own admission; server readiness and downstream fault proofs remain closed.
+
+### Audit the remaining leaves without borrowing old timing for new code
+
+The next [offline audit](../testing/performance/0.74/reserved-leaf-audit-20261021.md)
+separates ReservedLive from the other seven validation steps in the already
+retained logs. Its GNU/MSRV step walls remain 2808784775/2941286486 ns, of which
+1745205141/1828186002 ns are kernel wall outside instrumented children. This
+refines the old attribution; it is not a new measurement of either allocation
+candidate. Boot/Namespace/Origin remain prominent, but their spans contain fresh
+opens, metadata, reads, waiting and observer work rather than one known leaf cost.
+
+Source inspection finds a small distinct opportunity in local worker context:
+the machine and boot document reads still allocate short zeroed vectors. This
+is not Origin's already stack-backed boot reader. A complete successful Probe
+observation has two document pairs, with each read still bracketed by retained
+metadata and each pair by namespaces. The first proposed experiment would keep
+that schedule and use only pure allocation controls before any implementation.
+In particular a replacement must present the same 34/38-byte read slices, not
+quietly give both documents a full-sized buffer.
+
+Short C-string construction in trust readers and peer-vector growth are two
+other independent candidates. Large proc scratch, authority inventory/buffers,
+temporary FD duplication and request canonicalization require broader lifetime
+or first-error review. The audit ranks these by review scope, not elapsed gain.
+The LocalContext live span cannot be called the cost of its tiny vectors, and
+old call counts cannot turn later allocator counters into a synthetic speedup.
+
+The four earlier evidence seals and all first refusals remain intact. Seventeen
+source hashes and thirteen witnesses make the inventory reproducible without
+new runtime observations. No successful material or server gate is inferred;
+the next experiment still needs its own baseline, isolated patch and controls.

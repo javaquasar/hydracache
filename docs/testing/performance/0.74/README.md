@@ -5622,3 +5622,17 @@ latency is not measured by these counters.
 Seeded values, first-error/visit order, full-document refusal and trace controls,
 older parser models and whole-source reversal pass. Original windows and first
 Causal refusals remain; there is no live replay or changed server admission.
+
+### Offline inventory of remaining ReservedLive leaves
+
+The [remaining-leaf audit](reserved-leaf-audit-20261021.md) narrows the existing
+trace to ReservedLive itself, preserving all four prior packet seals. It separates
+old measured source from the current two allocation candidates and retains
+seventeen source hashes and thirteen implementation witnesses without new runs.
+
+The next lowest-scope experiment is the short local machine/boot document scratch,
+followed separately by trust component C strings and collector peer-vector growth.
+This is a review-risk order, not a timing ranking. Large scratch, authority and
+inventory ownership, temporary FD duplication and canonical reconstruction need
+their own attribution/error review. Fresh checks, original windows, first Causal
+refusals and closed material/server gates remain unchanged.

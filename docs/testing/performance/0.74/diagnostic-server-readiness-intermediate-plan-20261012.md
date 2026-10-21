@@ -1508,3 +1508,17 @@ The first two Causal refusals and all prior seals remain unchanged. Full materia
 revalidation, cleanup/EOF/fence, authenticated delivery, all writers and downstream
 SIGKILL/lost-ACK/reconnect/server gates stay independent. No live replay,
 clock/service change or server run is performed.
+
+### Remaining ReservedLive leaves audited offline
+
+The [offline leaf inventory](reserved-leaf-audit-20261021.md) retains a
+ReservedLive-only view of the same refused traces and source witnesses at the
+current tree. Old span wall is not promoted into post-candidate performance.
+The next bounded work package is a pure baseline for local context document
+scratch, preserving callback slice lengths, both metadata observations, single
+read/error schedule and original windows before any implementation.
+
+No candidate is implemented in this audit. Trust C-string and peer-growth
+experiments stay separate; larger buffers, inventory and FD/representation
+changes need additional review. First refusals and cleanup/delivery/all-writer,
+SIGKILL/lost-ACK/reconnect and server blockers remain unchanged. No host action.
