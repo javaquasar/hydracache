@@ -1,0 +1,18 @@
+{
+  "runtime_candidate_implemented": false,
+  "cohort": "first",
+  "failure": "Check refused: first/188/trust_component_baseline_ (101)",
+  "original_owner_profiles": 0,
+  "server": false,
+  "steps": [
+    {
+      "name": "trust_component_baseline_",
+      "exit": 101,
+      "sha256": "b1e23b2cdf8e29bd8a96af5862509cd33099b89a656fb8851b4ddb6ca12a89c6",
+      "log": "188-trust_component_baseline_.log"
+    }
+  ],
+  "ignored_tests_run": false,
+  "product": false,
+  "lane": "188"
+}

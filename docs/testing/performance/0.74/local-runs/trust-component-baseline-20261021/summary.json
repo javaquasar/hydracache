@@ -1,0 +1,54 @@
+{
+  "baseline_source": "a72457aade616e67d2fc5693f6105c8063d6e9e1",
+  "lanes": [
+    {
+      "lane": "194",
+      "valid_constructions": 5376,
+      "valid_allocations": 5376,
+      "valid_requested_bytes": 1274880,
+      "production_constructions": 1536,
+      "production_allocations": 1536,
+      "production_requested_bytes": 29696,
+      "nul_constructions": 1024,
+      "nul_allocations": 1024,
+      "nul_requested_bytes": 5888,
+      "reallocations": 0,
+      "pure_baseline_controls": 5,
+      "prior_pure_controls": 9,
+      "counter_controls": 2
+    },
+    {
+      "lane": "188",
+      "valid_constructions": 5376,
+      "valid_allocations": 5376,
+      "valid_requested_bytes": 1274880,
+      "production_constructions": 1536,
+      "production_allocations": 1536,
+      "production_requested_bytes": 29696,
+      "nul_constructions": 1024,
+      "nul_allocations": 1024,
+      "nul_requested_bytes": 5888,
+      "reallocations": 0,
+      "pure_baseline_controls": 5,
+      "prior_pure_controls": 9,
+      "counter_controls": 2
+    }
+  ],
+  "source_canaries": 28,
+  "prior_members_verified": 303,
+  "first_linux_compile_refusals_retained": true,
+  "runtime_candidate_implemented": false,
+  "timing_improvement_proven": false,
+  "original_windows_seconds": [
+    300,
+    60,
+    10
+  ],
+  "first_refusal_ages_ns": [
+    10042390247,
+    10010835739
+  ],
+  "new_original_owner_profiles": 0,
+  "server": false,
+  "product": false
+}

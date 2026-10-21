@@ -1,0 +1,18 @@
+{
+  "steps": [
+    {
+      "sha256": "f1b3f3ecbecad586e092ab0329133d5e40fc201ba11cece6bb773c1a683b7da3",
+      "exit": 101,
+      "name": "trust_component_baseline_",
+      "log": "194-trust_component_baseline_.log"
+    }
+  ],
+  "runtime_candidate_implemented": false,
+  "lane": "194",
+  "server": false,
+  "original_owner_profiles": 0,
+  "cohort": "first",
+  "failure": "Check refused: first/194/trust_component_baseline_ (101)",
+  "product": false,
+  "ignored_tests_run": false
+}
