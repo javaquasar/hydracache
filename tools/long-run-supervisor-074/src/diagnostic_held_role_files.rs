@@ -10,6 +10,9 @@ use std::os::unix::fs::{FileExt, MetadataExt};
 #[path = "diagnostic_held_role_provenance.rs"]
 mod provenance;
 
+#[path = "diagnostic_held_role_projection.rs"]
+mod projection;
+
 const SEALS: i32 = libc::F_SEAL_SEAL | libc::F_SEAL_GROW | libc::F_SEAL_SHRINK | libc::F_SEAL_WRITE;
 
 #[derive(PartialEq, Eq)]

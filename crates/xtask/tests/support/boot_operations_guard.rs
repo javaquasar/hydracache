@@ -1,9 +1,11 @@
 //! Only the exact opt-in operation hook and its manual gate may disappear.
+#[path = "held_unit_projection_guard.rs"]
+mod held_unit_projection;
 #[macro_export]
 macro_rules! hc074_boot_operations_view {
     ($path:expr, $source:expr) => {{
         let path: &str = $path;
-        let mut raw: String = $source.to_owned();
+        let mut raw: String = $crate::hc074_held_unit_projection_view!(path, $source);
         if path == "tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs"
             && raw.contains("let mut short_name = [0_u8; 24];")
         {

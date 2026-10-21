@@ -102,3 +102,6 @@ impl BoundGuardians<'_> {
 
 #[path = "diagnostic_root_placement_binding.rs"]
 mod placement;
+
+#[path = "diagnostic_root_guardian_projection.rs"]
+mod projection;

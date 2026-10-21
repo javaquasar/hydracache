@@ -222,3 +222,6 @@ impl<'root, 'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>
 #[cfg(test)]
 #[path = "../tests/support/consuming_held_join.rs"]
 mod consuming_held_tests;
+
+#[path = "diagnostic_held_unit_projection.rs"]
+mod unit_projection;

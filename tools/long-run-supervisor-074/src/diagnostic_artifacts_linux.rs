@@ -27,6 +27,9 @@ const FILES: [&str; 9] = [
     "resp3.json",
 ];
 
+#[path = "diagnostic_bundle_projection.rs"]
+mod projection;
+
 #[derive(Clone, PartialEq, Eq)]
 struct Stamp {
     dev: u64,
