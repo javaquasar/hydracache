@@ -1,0 +1,53 @@
+{
+  "lane": "194",
+  "source": "33d65e45c8f705132707e7ec59bbfc7b9510513f",
+  "product": false,
+  "recipe_sha256": "fcafeedb817dd3cd60bb75717713c144eb9f77b136435917525a816962bf44eb",
+  "steps": [
+    {
+      "exit": 0,
+      "log": "check-194-check.log",
+      "sha256": "9708059e4f540e358e2ab48c2a63bda4f02a2ca45498c64942f224376cf39e2c",
+      "name": "check"
+    },
+    {
+      "exit": 0,
+      "log": "check-194-lint.log",
+      "sha256": "dda2cba0a9d3486cb033451704e8de1a9f678bed1b6895fc629064f1443c42ab",
+      "name": "lint"
+    },
+    {
+      "exit": 0,
+      "log": "check-194-build.log",
+      "sha256": "ce979f87a1500f5b3ff6b885257075655eb35178f2f4378e02b47351cbfd87fd",
+      "name": "build"
+    },
+    {
+      "exit": 0,
+      "log": "check-194-round_cost_.log",
+      "sha256": "443b996c909c00e91108def02c4835f4626fbce45660f7bf5d5affca60f11abb",
+      "name": "round_cost_"
+    },
+    {
+      "exit": 0,
+      "log": "check-194-validation_frame_.log",
+      "sha256": "fb2a257e0cd791cd44d3dd4047de5e2a4b8ac957d89e467fc69c5811dae5ee61",
+      "name": "validation_frame_"
+    },
+    {
+      "exit": 0,
+      "log": "check-194-collector_starting_.log",
+      "sha256": "ae7acddab5283c692e4e56cea81580970f1c9ce6e35e84100a4ce6a44959fdfe",
+      "name": "collector_starting_"
+    },
+    {
+      "exit": 0,
+      "log": "check-194-consuming_held.log",
+      "sha256": "f32b35123d1afde78e6d973e4812c44893cb53f8ebee7ce9df8d45e016daa7e1",
+      "name": "consuming_held"
+    }
+  ],
+  "failure": "The filename, directory name, or volume label syntax is incorrect. : 'C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\docs\\testing\\performance\\0.74\\local-runs\\validation-round-residual-20261021\\check-194-diagnostic_kernel_admission::.log'.",
+  "server": false,
+  "allocator_probe": false
+}

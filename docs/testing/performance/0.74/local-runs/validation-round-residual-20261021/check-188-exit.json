@@ -1,0 +1,53 @@
+{
+  "failure": "The filename, directory name, or volume label syntax is incorrect. : 'C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\docs\\testing\\performance\\0.74\\local-runs\\validation-round-residual-20261021\\check-188-diagnostic_kernel_admission::.log'.",
+  "server": false,
+  "steps": [
+    {
+      "log": "check-188-check.log",
+      "sha256": "6a8b1290ba4eb2a2a5b3c2cd2d77c403ca8c32c1353ba523f88ab43b5477241f",
+      "exit": 0,
+      "name": "check"
+    },
+    {
+      "log": "check-188-lint.log",
+      "sha256": "b942fd1f6b930a5324934e12b4602e542b796fbdd0457324ac5df06efb933a84",
+      "exit": 0,
+      "name": "lint"
+    },
+    {
+      "log": "check-188-build.log",
+      "sha256": "1fd01751bdce0fe9b64cacbcf9f8aefeae4fed7c149b5ead807457aef3039665",
+      "exit": 0,
+      "name": "build"
+    },
+    {
+      "log": "check-188-round_cost_.log",
+      "sha256": "ab2ae9ae48ca6dc7cf19331e2b960986c8cb02f62864e909113c6ef85c7a00e8",
+      "exit": 0,
+      "name": "round_cost_"
+    },
+    {
+      "log": "check-188-validation_frame_.log",
+      "sha256": "133ed7fac1eb9f00853a3fda378a90eb588f9080569eb9a5dbaad1d531f76d60",
+      "exit": 0,
+      "name": "validation_frame_"
+    },
+    {
+      "log": "check-188-collector_starting_.log",
+      "sha256": "4e392a10f78885a5903991f6f476d8aa7281299a7a20377aaff61a1ce9a38874",
+      "exit": 0,
+      "name": "collector_starting_"
+    },
+    {
+      "log": "check-188-consuming_held.log",
+      "sha256": "c5432d577dd5433972839590376918b8a29740f7fe64769ae1e8630a6f288956",
+      "exit": 0,
+      "name": "consuming_held"
+    }
+  ],
+  "source": "33d65e45c8f705132707e7ec59bbfc7b9510513f",
+  "allocator_probe": false,
+  "lane": "188",
+  "product": false,
+  "recipe_sha256": "fcafeedb817dd3cd60bb75717713c144eb9f77b136435917525a816962bf44eb"
+}

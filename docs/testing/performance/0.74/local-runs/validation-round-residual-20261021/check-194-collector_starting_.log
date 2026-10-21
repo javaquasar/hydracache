@@ -1,0 +1,31 @@
+warning: variant `Reference` is never constructed
+ --> tools/long-run-supervisor-074/src/../tests/support/authority_name_capacity_controls.rs:5:5
+  |
+4 | pub(crate) enum Reading {
+  |                 ------- variant in this enum
+5 |     Reference,
+  |     ^^^^^^^^^
+  |
+  = note: `Reading` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `hydracache-long-run-supervisor-074` (lib test) generated 1 warning
+    Finished `release` profile [optimized] target(s) in 4.21s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/release/deps/hydracache_long_run_supervisor_074-b26b156d3dcd0098)
+
+running 12 tests
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::starting_storage::tests::collector_starting_storage_exact_phase_order_and_old_inventory ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::starting_storage::tests::collector_starting_storage_exclusive_create_and_fd_mutations_refuse ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::starting_storage::tests::collector_starting_storage_refuses_reentry_skips_early_ack_and_unexpected_third_file ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::starting_record::tests::collector_starting_record_all_prefixes_and_noncanonical_forms_refuse ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::starting_record::tests::collector_starting_record_consistent_rehash_cannot_substitute_prior_bindings ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::starting_record::tests::collector_starting_record_future_grammar_and_rehashed_state_refuse ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::starting_record::tests::collector_starting_record_roundtrip_is_not_signature_or_runtime_authority ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::starting_record::tests::collector_starting_record_seeded_all_leaf_mutations_refuse ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::collector_starting_publication_boundaries_and_live_refusal ... ignored, manual nonroot original Starting writes, interruption and live drift; no execution
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::crash_tests::collector_starting_process_child ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::crash_tests::collector_starting_process_crash_all_stages_and_lost_ack ... ignored, manual nonroot Linux original collector Starting SIGKILL proof
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::crash_tests::collector_starting_process_protocol_accepts_only_bounded_expected_records ... ok
+
+test result: ok. 10 passed; 0 failed; 2 ignored; 0 measured; 1395 filtered out; finished in 0.64s
+

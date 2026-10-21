@@ -1,0 +1,77 @@
+{
+  "server": false,
+  "failure": null,
+  "source": "bd758f788ed6620517872bcde9e3019403ca9d34",
+  "steps": [
+    {
+      "exit": 0,
+      "sha256": "bd656b5b968b93961101e8df25a3a681643657b23f275d196b07856799220bd4",
+      "name": "check",
+      "log": "check-Verified-188-check.log"
+    },
+    {
+      "exit": 0,
+      "sha256": "13ad79b5ccf50fc0830ed6eec4e5cdcd5e8569b05f858c1daa842da46e6e0f74",
+      "name": "lint",
+      "log": "check-Verified-188-lint.log"
+    },
+    {
+      "exit": 0,
+      "sha256": "9c8d9ad2a89fdd3b0c7fa955b483b445d7d2eb0d4481efcae5156ed4e4b48fb0",
+      "name": "build",
+      "log": "check-Verified-188-build.log"
+    },
+    {
+      "exit": 0,
+      "sha256": "465029b40a7634150cc36834820412d18ed829250150f7fd273dd0c2418de53d",
+      "name": "round_cost_",
+      "log": "check-Verified-188-round_cost_.log"
+    },
+    {
+      "exit": 0,
+      "sha256": "15f5edcd2cb7f37fb358958ddc768a25dc3adc4a9a333b7a15206aca6a6b2e9a",
+      "name": "validation_frame_",
+      "log": "check-Verified-188-validation_frame_.log"
+    },
+    {
+      "exit": 0,
+      "sha256": "e5bdf47ee1f1f63687f9c34f1a760f404771e55a426f54f1818f933190dded71",
+      "name": "collector_starting_",
+      "log": "check-Verified-188-collector_starting_.log"
+    },
+    {
+      "exit": 0,
+      "sha256": "c01eb6cb947637032f5eadaebb6e45ea49a5a52c0411e8a15f07399971904390",
+      "name": "consuming_held",
+      "log": "check-Verified-188-consuming_held.log"
+    },
+    {
+      "exit": 0,
+      "sha256": "259295126c261e11e9d4a80a3fa9af3719cb082771643c2c7977e08b11b0ad4d",
+      "name": "diagnostic_kernel_admission::",
+      "log": "check-Verified-188-diagnostic_kernel_admission__.log"
+    },
+    {
+      "exit": 0,
+      "sha256": "cce2b6ccf9d0bc7de47be07fbab087df4641ceab55eacec09f19d993684d0162",
+      "name": "held_runtime::tests::",
+      "log": "check-Verified-188-held_runtime__tests__.log"
+    },
+    {
+      "exit": 0,
+      "sha256": "420ab9c71f15ed8eef745cdbcd44904c417135450a91d4cd5ea06ad7cf1c0eda",
+      "name": "preparation_cost_observer",
+      "log": "check-Verified-188-preparation_cost_observer.log"
+    },
+    {
+      "exit": 0,
+      "sha256": "5c29ee6551fe3bc9ca396305a3c93843109e0de52218c1c7186c8e22fb5f0460",
+      "name": "custody_boundary_capture",
+      "log": "check-Verified-188-custody_boundary_capture.log"
+    }
+  ],
+  "product": false,
+  "lane": "188",
+  "allocator_probe": false,
+  "recipe_sha256": "dcd93fe22ebe0aed4d7ec78686046b212562a85dc8dcc941928adf0a82685822"
+}

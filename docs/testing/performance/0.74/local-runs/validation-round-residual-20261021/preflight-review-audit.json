@@ -1,0 +1,22 @@
+{
+  "server": false,
+  "mutations": [
+    {
+      "mutation": "profile-count",
+      "refused": true
+    },
+    {
+      "mutation": "reason",
+      "refused": true
+    },
+    {
+      "mutation": "admission",
+      "refused": true
+    },
+    {
+      "mutation": "boot",
+      "refused": true
+    }
+  ],
+  "product": false
+}

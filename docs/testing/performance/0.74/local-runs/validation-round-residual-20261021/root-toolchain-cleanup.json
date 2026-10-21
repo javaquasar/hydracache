@@ -1,0 +1,26 @@
+{
+  "removed_exact_root_toolchains": [
+    "1.94.0-x86_64-unknown-linux-gnu",
+    "1.88.0-x86_64-unknown-linux-gnu"
+  ],
+  "read_only_query_was_false": true,
+  "prior_resolved_targets": [
+    "/root/.rustup/toolchains/1.94.0-x86_64-unknown-linux-gnu",
+    "/root/.rustup/toolchains/1.88.0-x86_64-unknown-linux-gnu"
+  ],
+  "list_exit": 0,
+  "artur_toolchains_touched": false,
+  "source": "2ac302131f051c8e66b0897de4ee92d02d887dc9",
+  "after": "no installed toolchains\nwarn: no toolchain installed and no default toolchain set\nhelp: run 'rustup default stable' to download the latest stable release of Rust and set it as your default toolchain.",
+  "product": false,
+  "measured_invocations_started": false,
+  "preflight_auto_installed": true,
+  "exit": 0,
+  "server": false,
+  "clocks_changed": false,
+  "services_changed": false,
+  "prior_directory_bytes": [
+    1254862526,
+    1185871727
+  ]
+}

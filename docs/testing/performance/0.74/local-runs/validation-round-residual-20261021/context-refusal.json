@@ -1,0 +1,17 @@
+{
+  "schema": "validation-round-residual-context-refusal-074-v1",
+  "clock_or_service_changed": false,
+  "server": false,
+  "reason": "boot-changed-before-profile",
+  "before_boot": "8876378d-93ab-4088-8e23-0dbff703ad6a",
+  "after_boot": "77fc72a8-1fe5-4dd0-aa2b-516ddaad0803",
+  "native_gate_open": false,
+  "full_matrix_invocations": 0,
+  "product": false,
+  "source": "bd758f788ed6620517872bcde9e3019403ca9d34",
+  "intermediate_boot_observed": "6519029e-ab30-495e-aead-513788961aa0",
+  "continued_after_context_refusal": false,
+  "before_context_source": "33d65e45c8f705132707e7ec59bbfc7b9510513f",
+  "boot_change_actor_proved": false,
+  "measured_profile_invocations": 0
+}

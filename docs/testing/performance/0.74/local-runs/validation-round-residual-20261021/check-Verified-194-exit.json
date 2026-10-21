@@ -1,0 +1,77 @@
+{
+  "steps": [
+    {
+      "exit": 0,
+      "sha256": "51b58ef9a4748ade7ec082c394c9e6afb406fa9927d4e86caba7c5d43a34b1ca",
+      "name": "check",
+      "log": "check-Verified-194-check.log"
+    },
+    {
+      "exit": 0,
+      "sha256": "96cad8b2a4a049cf9831f9800f49fe6b90437cb9d35dd5be7b2aa483ce7a440c",
+      "name": "lint",
+      "log": "check-Verified-194-lint.log"
+    },
+    {
+      "exit": 0,
+      "sha256": "2e7222fe739f8550fca0775017d72e9a3edb58183d7b4e995edf0949cf03a51c",
+      "name": "build",
+      "log": "check-Verified-194-build.log"
+    },
+    {
+      "exit": 0,
+      "sha256": "5c892e5bef3e44667b158b7a0d7f206e46567de776b434e42085d1878d4619f7",
+      "name": "round_cost_",
+      "log": "check-Verified-194-round_cost_.log"
+    },
+    {
+      "exit": 0,
+      "sha256": "9ac510398fbb3339f26353b6409de8e5e281e63eb26db8d2856fae654286cb2b",
+      "name": "validation_frame_",
+      "log": "check-Verified-194-validation_frame_.log"
+    },
+    {
+      "exit": 0,
+      "sha256": "8d74f7161444b79a52b7306e548fd7894345c8829c8524b61dbeb005986b2f27",
+      "name": "collector_starting_",
+      "log": "check-Verified-194-collector_starting_.log"
+    },
+    {
+      "exit": 0,
+      "sha256": "c74bcf976be69ef03a6413e81fa3cf9c9113a2dd5348346b7888a99936504400",
+      "name": "consuming_held",
+      "log": "check-Verified-194-consuming_held.log"
+    },
+    {
+      "exit": 0,
+      "sha256": "5d1ba253f38f2c334c19209e36abe359c97221938b9237b99091f0328177a886",
+      "name": "diagnostic_kernel_admission::",
+      "log": "check-Verified-194-diagnostic_kernel_admission__.log"
+    },
+    {
+      "exit": 0,
+      "sha256": "9e5540d6f2ee6524771b54734d0c62ec53e4c6e8b0257f4875d0d45dc5a37b00",
+      "name": "held_runtime::tests::",
+      "log": "check-Verified-194-held_runtime__tests__.log"
+    },
+    {
+      "exit": 0,
+      "sha256": "e7af14ea2b669ae77411902db72aa8dfe19caa2bd5d3608504eda475d6d31159",
+      "name": "preparation_cost_observer",
+      "log": "check-Verified-194-preparation_cost_observer.log"
+    },
+    {
+      "exit": 0,
+      "sha256": "d98af9f274dd81bc60f39bee25d71c5dcf37a063f271476c9df45c278a73a362",
+      "name": "custody_boundary_capture",
+      "log": "check-Verified-194-custody_boundary_capture.log"
+    }
+  ],
+  "product": false,
+  "failure": null,
+  "recipe_sha256": "dcd93fe22ebe0aed4d7ec78686046b212562a85dc8dcc941928adf0a82685822",
+  "source": "bd758f788ed6620517872bcde9e3019403ca9d34",
+  "server": false,
+  "allocator_probe": false,
+  "lane": "194"
+}

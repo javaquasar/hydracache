@@ -1,0 +1,129 @@
+{
+  "source": "bd758f788ed6620517872bcde9e3019403ca9d34",
+  "qualification_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "stage": "After",
+  "commands": [
+    {
+      "name": "boot",
+      "exe": "/usr/bin/cat",
+      "output": "77fc72a8-1fe5-4dd0-aa2b-516ddaad0803",
+      "exit": 0,
+      "args": [
+        "/proc/sys/kernel/random/boot_id"
+      ]
+    },
+    {
+      "name": "config",
+      "exe": "/usr/bin/sha256sum",
+      "output": "ca76852426d685301ce8b4461d2bc40d1901c93aea8c0b4b684707c94e4cf507  /etc/wsl.conf\ne6734751f8aaf19fddfff891ad246387f5f59bd9ff1a5f0cac2c34bc81941c62  /etc/systemd/timesyncd.conf",
+      "exit": 0,
+      "args": [
+        "/etc/wsl.conf",
+        "/etc/systemd/timesyncd.conf"
+      ]
+    },
+    {
+      "name": "kernel",
+      "exe": "/usr/bin/uname",
+      "output": "Linux 6.6.87.2-microsoft-standard-WSL2 x86_64",
+      "exit": 0,
+      "args": [
+        "-srm"
+      ]
+    },
+    {
+      "name": "fixtures",
+      "exe": "/usr/bin/find",
+      "output": "",
+      "exit": 0,
+      "args": [
+        "/tmp",
+        "/sys/fs/cgroup",
+        "-maxdepth",
+        "1",
+        "-name",
+        "hc074-root-fixture-*",
+        "-print"
+      ]
+    },
+    {
+      "name": "compiler194",
+      "exe": "/home/artur/.cargo/bin/rustc",
+      "output": "rustc 1.94.0 (4a4ef493e 2026-03-02)\nbinary: rustc\ncommit-hash: 4a4ef493e3a1488c6e321570238084b38948f6db\ncommit-date: 2026-03-02\nhost: x86_64-unknown-linux-gnu\nrelease: 1.94.0\nLLVM version: 21.1.8",
+      "exit": 0,
+      "args": [
+        "+1.94.0",
+        "--version",
+        "--verbose"
+      ]
+    },
+    {
+      "name": "compiler188",
+      "exe": "/home/artur/.cargo/bin/rustc",
+      "output": "rustc 1.88.0 (6b00bc388 2025-06-23)\nbinary: rustc\ncommit-hash: 6b00bc3880198600130e1cf62b8f8a93494488cc\ncommit-date: 2025-06-23\nhost: x86_64-unknown-linux-gnu\nrelease: 1.88.0\nLLVM version: 20.1.5",
+      "exit": 0,
+      "args": [
+        "+1.88.0",
+        "--version",
+        "--verbose"
+      ]
+    }
+  ],
+  "clocks_changed": false,
+  "windows_config": {
+    "exists": false,
+    "sha256": null
+  },
+  "recipe_sha256": "dfa3c168fb90ea401b85f8ab1a8a72cca4ba858ec1138be07f327d2be252d484",
+  "services_changed": false,
+  "wsl_state_before_entry": " \u0000 \u0000N\u0000A\u0000M\u0000E\u0000 \u0000 \u0000 \u0000 \u0000 \u0000 \u0000 \u0000 \u0000 \u0000 \u0000 \u0000 \u0000 \u0000 \u0000S\u0000T\u0000A\u0000T\u0000E\u0000 \u0000 \u0000 \u0000 \u0000 \u0000 \u0000 \u0000 \u0000 \u0000 \u0000 \u0000V\u0000E\u0000R\u0000S\u0000I\u0000O\u0000N\u0000\n\u0000\n\u0000*\u0000 \u0000U\u0000b\u0000u\u0000n\u0000t\u0000u\u0000 \u0000 \u0000 \u0000 \u0000 \u0000 \u0000 \u0000 \u0000 \u0000 \u0000 \u0000 \u0000S\u0000t\u0000o\u0000p\u0000p\u0000e\u0000d\u0000 \u0000 \u0000 \u0000 \u0000 \u0000 \u0000 \u0000 \u0000 \u00002\u0000\n\u0000\n\u0000 \u0000 \u0000d\u0000o\u0000c\u0000k\u0000e\u0000r\u0000-\u0000d\u0000e\u0000s\u0000k\u0000t\u0000o\u0000p\u0000 \u0000 \u0000 \u0000 \u0000S\u0000t\u0000o\u0000p\u0000p\u0000e\u0000d\u0000 \u0000 \u0000 \u0000 \u0000 \u0000 \u0000 \u0000 \u0000 \u00002\u0000\n\u0000\n\u0000",
+  "server": false,
+  "bundle": [
+    {
+      "bytes": 349647,
+      "name": "build-log.jsonl",
+      "sha256": "8a2a495348bd317f7a2092a622838fc489bdcf077f4a8269210b2b78381b3c58"
+    },
+    {
+      "bytes": 1735,
+      "name": "build-receipt-v1.json",
+      "sha256": "e32bb7cd9b6cbf1d91d52abc79cb1e0225b3a7f6602e82e5b9a303c3645a77d7"
+    },
+    {
+      "bytes": 88159,
+      "name": "Cargo.lock.observer",
+      "sha256": "e3be470f5a1bff4e917e841fc5bfbd257ff12559206bbc1481c3c4bca528eb1d"
+    },
+    {
+      "bytes": 175300,
+      "name": "Cargo.lock.root",
+      "sha256": "be46eaf8e97e507bda5e3f2b671d0d622e6a639ce1d4613769a4693723d62b19"
+    },
+    {
+      "bytes": 694,
+      "name": "direct.json",
+      "sha256": "5485b10f50906833006ad3f3a40b4909760ef01e3f2c86395e4366bf83cc6ef9"
+    },
+    {
+      "bytes": 696,
+      "name": "embedded.json",
+      "sha256": "5c219730c8a782ed47dfa0b291a29f44f753c3688f8548c136174a89cee55149"
+    },
+    {
+      "bytes": 694,
+      "name": "resp2.json",
+      "sha256": "f0aba16dfe0354801d0b3c83ee9fc2d1b4751be5f50280634690ed4bcf3030ae"
+    },
+    {
+      "bytes": 694,
+      "name": "resp3.json",
+      "sha256": "b680683c291d0a4dadbac1901f051ba0fedcac0ac9127d197e0261fe6fdabdd7"
+    },
+    {
+      "bytes": 26500176,
+      "name": "timing-controls-074",
+      "sha256": "bda1c094f3de7c6d42ec45c757838c7a41a8ff1d63a025c661af84455169a101"
+    }
+  ],
+  "product": false
+}

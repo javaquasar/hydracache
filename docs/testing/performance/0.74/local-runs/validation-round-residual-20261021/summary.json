@@ -1,0 +1,53 @@
+{
+  "preflight_toolchain_side_effect": true,
+  "native_gate_open": false,
+  "context_refusal": {
+    "schema": "validation-round-residual-context-refusal-074-v1",
+    "clock_or_service_changed": false,
+    "server": false,
+    "reason": "boot-changed-before-profile",
+    "before_boot": "8876378d-93ab-4088-8e23-0dbff703ad6a",
+    "after_boot": "77fc72a8-1fe5-4dd0-aa2b-516ddaad0803",
+    "native_gate_open": false,
+    "full_matrix_invocations": 0,
+    "product": false,
+    "source": "bd758f788ed6620517872bcde9e3019403ca9d34",
+    "intermediate_boot_observed": "6519029e-ab30-495e-aead-513788961aa0",
+    "continued_after_context_refusal": false,
+    "before_context_source": "33d65e45c8f705132707e7ec59bbfc7b9510513f",
+    "boot_change_actor_proved": false,
+    "measured_profile_invocations": 0
+  },
+  "prior_packets_verified": 20,
+  "source_runtime_changed": false,
+  "boot_continuity_proved": false,
+  "measured_profile_invocations": 0,
+  "schema": "validation-round-residual-preflight-074-v1",
+  "old_time_refusals_retained": true,
+  "source": "bd758f788ed6620517872bcde9e3019403ca9d34",
+  "product": false,
+  "complete_profile_cohort": false,
+  "server": false,
+  "runtime_baseline": "b074f8f9f3d8f9766b3b04c59a8291941a7e3b1d",
+  "new_round_cost_measured": false,
+  "configuration_unchanged": true,
+  "lanes": [
+    {
+      "focused_tests_passed": 155,
+      "complete_profile_cohort": false,
+      "profiles_started": 0,
+      "check_and_strict_lint_passed": true,
+      "default_test_image": "/home/artur/.cache/hydracache-074-194-check/release/deps/hydracache_long_run_supervisor_074-b26b156d3dcd0098",
+      "lane": "194"
+    },
+    {
+      "focused_tests_passed": 155,
+      "complete_profile_cohort": false,
+      "profiles_started": 0,
+      "check_and_strict_lint_passed": true,
+      "default_test_image": "/home/artur/.cache/hydracache-074-188-check/release/deps/hydracache_long_run_supervisor_074-d2aba7f58d773234",
+      "lane": "188"
+    }
+  ],
+  "root_toolchain_cleanup_verified": true
+}
