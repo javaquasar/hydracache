@@ -1,0 +1,616 @@
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:10:
+             if raw.contains("diagnostic_pidfd_info_path.rs") || raw.contains("pidfd_info_path::") {
+                 assert_eq!(raw.matches(hook).count(), 1);
+                 assert_eq!(raw.matches(new).count(), 1);
+[31m-                raw = raw.replacen(hook, "", 1).replacen(new, ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;", 1);
+(B[m[32m+                raw = raw.replacen(hook, "", 1).replacen(
+(B[m[32m+                    new,
+(B[m[32m+                    ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;",
+(B[m[32m+                    1,
+(B[m[32m+                );
+(B[m             }
+         }
+         if path == "tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs"
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:17:
+             && raw.contains("mod pidfd_info_path;")
+         {
+[31m-            let hook = "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m[32m+            let hook =
+(B[m[32m+                "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m             assert_eq!(raw.matches(hook).count(), 1);
+             raw = raw.replacen(hook, "", 1);
+         }
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:10:
+             if raw.contains("diagnostic_pidfd_info_path.rs") || raw.contains("pidfd_info_path::") {
+                 assert_eq!(raw.matches(hook).count(), 1);
+                 assert_eq!(raw.matches(new).count(), 1);
+[31m-                raw = raw.replacen(hook, "", 1).replacen(new, ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;", 1);
+(B[m[32m+                raw = raw.replacen(hook, "", 1).replacen(
+(B[m[32m+                    new,
+(B[m[32m+                    ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;",
+(B[m[32m+                    1,
+(B[m[32m+                );
+(B[m             }
+         }
+         if path == "tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs"
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:17:
+             && raw.contains("mod pidfd_info_path;")
+         {
+[31m-            let hook = "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m[32m+            let hook =
+(B[m[32m+                "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m             assert_eq!(raw.matches(hook).count(), 1);
+             raw = raw.replacen(hook, "", 1);
+         }
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:10:
+             if raw.contains("diagnostic_pidfd_info_path.rs") || raw.contains("pidfd_info_path::") {
+                 assert_eq!(raw.matches(hook).count(), 1);
+                 assert_eq!(raw.matches(new).count(), 1);
+[31m-                raw = raw.replacen(hook, "", 1).replacen(new, ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;", 1);
+(B[m[32m+                raw = raw.replacen(hook, "", 1).replacen(
+(B[m[32m+                    new,
+(B[m[32m+                    ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;",
+(B[m[32m+                    1,
+(B[m[32m+                );
+(B[m             }
+         }
+         if path == "tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs"
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:17:
+             && raw.contains("mod pidfd_info_path;")
+         {
+[31m-            let hook = "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m[32m+            let hook =
+(B[m[32m+                "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m             assert_eq!(raw.matches(hook).count(), 1);
+             raw = raw.replacen(hook, "", 1);
+         }
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:10:
+             if raw.contains("diagnostic_pidfd_info_path.rs") || raw.contains("pidfd_info_path::") {
+                 assert_eq!(raw.matches(hook).count(), 1);
+                 assert_eq!(raw.matches(new).count(), 1);
+[31m-                raw = raw.replacen(hook, "", 1).replacen(new, ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;", 1);
+(B[m[32m+                raw = raw.replacen(hook, "", 1).replacen(
+(B[m[32m+                    new,
+(B[m[32m+                    ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;",
+(B[m[32m+                    1,
+(B[m[32m+                );
+(B[m             }
+         }
+         if path == "tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs"
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:17:
+             && raw.contains("mod pidfd_info_path;")
+         {
+[31m-            let hook = "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m[32m+            let hook =
+(B[m[32m+                "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m             assert_eq!(raw.matches(hook).count(), 1);
+             raw = raw.replacen(hook, "", 1);
+         }
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:10:
+             if raw.contains("diagnostic_pidfd_info_path.rs") || raw.contains("pidfd_info_path::") {
+                 assert_eq!(raw.matches(hook).count(), 1);
+                 assert_eq!(raw.matches(new).count(), 1);
+[31m-                raw = raw.replacen(hook, "", 1).replacen(new, ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;", 1);
+(B[m[32m+                raw = raw.replacen(hook, "", 1).replacen(
+(B[m[32m+                    new,
+(B[m[32m+                    ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;",
+(B[m[32m+                    1,
+(B[m[32m+                );
+(B[m             }
+         }
+         if path == "tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs"
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:17:
+             && raw.contains("mod pidfd_info_path;")
+         {
+[31m-            let hook = "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m[32m+            let hook =
+(B[m[32m+                "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m             assert_eq!(raw.matches(hook).count(), 1);
+             raw = raw.replacen(hook, "", 1);
+         }
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:10:
+             if raw.contains("diagnostic_pidfd_info_path.rs") || raw.contains("pidfd_info_path::") {
+                 assert_eq!(raw.matches(hook).count(), 1);
+                 assert_eq!(raw.matches(new).count(), 1);
+[31m-                raw = raw.replacen(hook, "", 1).replacen(new, ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;", 1);
+(B[m[32m+                raw = raw.replacen(hook, "", 1).replacen(
+(B[m[32m+                    new,
+(B[m[32m+                    ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;",
+(B[m[32m+                    1,
+(B[m[32m+                );
+(B[m             }
+         }
+         if path == "tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs"
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:17:
+             && raw.contains("mod pidfd_info_path;")
+         {
+[31m-            let hook = "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m[32m+            let hook =
+(B[m[32m+                "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m             assert_eq!(raw.matches(hook).count(), 1);
+             raw = raw.replacen(hook, "", 1);
+         }
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:10:
+             if raw.contains("diagnostic_pidfd_info_path.rs") || raw.contains("pidfd_info_path::") {
+                 assert_eq!(raw.matches(hook).count(), 1);
+                 assert_eq!(raw.matches(new).count(), 1);
+[31m-                raw = raw.replacen(hook, "", 1).replacen(new, ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;", 1);
+(B[m[32m+                raw = raw.replacen(hook, "", 1).replacen(
+(B[m[32m+                    new,
+(B[m[32m+                    ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;",
+(B[m[32m+                    1,
+(B[m[32m+                );
+(B[m             }
+         }
+         if path == "tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs"
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:17:
+             && raw.contains("mod pidfd_info_path;")
+         {
+[31m-            let hook = "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m[32m+            let hook =
+(B[m[32m+                "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m             assert_eq!(raw.matches(hook).count(), 1);
+             raw = raw.replacen(hook, "", 1);
+         }
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:10:
+             if raw.contains("diagnostic_pidfd_info_path.rs") || raw.contains("pidfd_info_path::") {
+                 assert_eq!(raw.matches(hook).count(), 1);
+                 assert_eq!(raw.matches(new).count(), 1);
+[31m-                raw = raw.replacen(hook, "", 1).replacen(new, ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;", 1);
+(B[m[32m+                raw = raw.replacen(hook, "", 1).replacen(
+(B[m[32m+                    new,
+(B[m[32m+                    ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;",
+(B[m[32m+                    1,
+(B[m[32m+                );
+(B[m             }
+         }
+         if path == "tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs"
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:17:
+             && raw.contains("mod pidfd_info_path;")
+         {
+[31m-            let hook = "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m[32m+            let hook =
+(B[m[32m+                "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m             assert_eq!(raw.matches(hook).count(), 1);
+             raw = raw.replacen(hook, "", 1);
+         }
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:10:
+             if raw.contains("diagnostic_pidfd_info_path.rs") || raw.contains("pidfd_info_path::") {
+                 assert_eq!(raw.matches(hook).count(), 1);
+                 assert_eq!(raw.matches(new).count(), 1);
+[31m-                raw = raw.replacen(hook, "", 1).replacen(new, ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;", 1);
+(B[m[32m+                raw = raw.replacen(hook, "", 1).replacen(
+(B[m[32m+                    new,
+(B[m[32m+                    ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;",
+(B[m[32m+                    1,
+(B[m[32m+                );
+(B[m             }
+         }
+         if path == "tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs"
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:17:
+             && raw.contains("mod pidfd_info_path;")
+         {
+[31m-            let hook = "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m[32m+            let hook =
+(B[m[32m+                "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m             assert_eq!(raw.matches(hook).count(), 1);
+             raw = raw.replacen(hook, "", 1);
+         }
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:10:
+             if raw.contains("diagnostic_pidfd_info_path.rs") || raw.contains("pidfd_info_path::") {
+                 assert_eq!(raw.matches(hook).count(), 1);
+                 assert_eq!(raw.matches(new).count(), 1);
+[31m-                raw = raw.replacen(hook, "", 1).replacen(new, ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;", 1);
+(B[m[32m+                raw = raw.replacen(hook, "", 1).replacen(
+(B[m[32m+                    new,
+(B[m[32m+                    ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;",
+(B[m[32m+                    1,
+(B[m[32m+                );
+(B[m             }
+         }
+         if path == "tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs"
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:17:
+             && raw.contains("mod pidfd_info_path;")
+         {
+[31m-            let hook = "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m[32m+            let hook =
+(B[m[32m+                "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m             assert_eq!(raw.matches(hook).count(), 1);
+             raw = raw.replacen(hook, "", 1);
+         }
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:10:
+             if raw.contains("diagnostic_pidfd_info_path.rs") || raw.contains("pidfd_info_path::") {
+                 assert_eq!(raw.matches(hook).count(), 1);
+                 assert_eq!(raw.matches(new).count(), 1);
+[31m-                raw = raw.replacen(hook, "", 1).replacen(new, ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;", 1);
+(B[m[32m+                raw = raw.replacen(hook, "", 1).replacen(
+(B[m[32m+                    new,
+(B[m[32m+                    ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;",
+(B[m[32m+                    1,
+(B[m[32m+                );
+(B[m             }
+         }
+         if path == "tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs"
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:17:
+             && raw.contains("mod pidfd_info_path;")
+         {
+[31m-            let hook = "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m[32m+            let hook =
+(B[m[32m+                "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m             assert_eq!(raw.matches(hook).count(), 1);
+             raw = raw.replacen(hook, "", 1);
+         }
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:10:
+             if raw.contains("diagnostic_pidfd_info_path.rs") || raw.contains("pidfd_info_path::") {
+                 assert_eq!(raw.matches(hook).count(), 1);
+                 assert_eq!(raw.matches(new).count(), 1);
+[31m-                raw = raw.replacen(hook, "", 1).replacen(new, ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;", 1);
+(B[m[32m+                raw = raw.replacen(hook, "", 1).replacen(
+(B[m[32m+                    new,
+(B[m[32m+                    ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;",
+(B[m[32m+                    1,
+(B[m[32m+                );
+(B[m             }
+         }
+         if path == "tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs"
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:17:
+             && raw.contains("mod pidfd_info_path;")
+         {
+[31m-            let hook = "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m[32m+            let hook =
+(B[m[32m+                "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m             assert_eq!(raw.matches(hook).count(), 1);
+             raw = raw.replacen(hook, "", 1);
+         }
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:10:
+             if raw.contains("diagnostic_pidfd_info_path.rs") || raw.contains("pidfd_info_path::") {
+                 assert_eq!(raw.matches(hook).count(), 1);
+                 assert_eq!(raw.matches(new).count(), 1);
+[31m-                raw = raw.replacen(hook, "", 1).replacen(new, ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;", 1);
+(B[m[32m+                raw = raw.replacen(hook, "", 1).replacen(
+(B[m[32m+                    new,
+(B[m[32m+                    ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;",
+(B[m[32m+                    1,
+(B[m[32m+                );
+(B[m             }
+         }
+         if path == "tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs"
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:17:
+             && raw.contains("mod pidfd_info_path;")
+         {
+[31m-            let hook = "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m[32m+            let hook =
+(B[m[32m+                "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m             assert_eq!(raw.matches(hook).count(), 1);
+             raw = raw.replacen(hook, "", 1);
+         }
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:10:
+             if raw.contains("diagnostic_pidfd_info_path.rs") || raw.contains("pidfd_info_path::") {
+                 assert_eq!(raw.matches(hook).count(), 1);
+                 assert_eq!(raw.matches(new).count(), 1);
+[31m-                raw = raw.replacen(hook, "", 1).replacen(new, ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;", 1);
+(B[m[32m+                raw = raw.replacen(hook, "", 1).replacen(
+(B[m[32m+                    new,
+(B[m[32m+                    ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;",
+(B[m[32m+                    1,
+(B[m[32m+                );
+(B[m             }
+         }
+         if path == "tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs"
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:17:
+             && raw.contains("mod pidfd_info_path;")
+         {
+[31m-            let hook = "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m[32m+            let hook =
+(B[m[32m+                "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m             assert_eq!(raw.matches(hook).count(), 1);
+             raw = raw.replacen(hook, "", 1);
+         }
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:10:
+             if raw.contains("diagnostic_pidfd_info_path.rs") || raw.contains("pidfd_info_path::") {
+                 assert_eq!(raw.matches(hook).count(), 1);
+                 assert_eq!(raw.matches(new).count(), 1);
+[31m-                raw = raw.replacen(hook, "", 1).replacen(new, ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;", 1);
+(B[m[32m+                raw = raw.replacen(hook, "", 1).replacen(
+(B[m[32m+                    new,
+(B[m[32m+                    ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;",
+(B[m[32m+                    1,
+(B[m[32m+                );
+(B[m             }
+         }
+         if path == "tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs"
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:17:
+             && raw.contains("mod pidfd_info_path;")
+         {
+[31m-            let hook = "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m[32m+            let hook =
+(B[m[32m+                "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m             assert_eq!(raw.matches(hook).count(), 1);
+             raw = raw.replacen(hook, "", 1);
+         }
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:10:
+             if raw.contains("diagnostic_pidfd_info_path.rs") || raw.contains("pidfd_info_path::") {
+                 assert_eq!(raw.matches(hook).count(), 1);
+                 assert_eq!(raw.matches(new).count(), 1);
+[31m-                raw = raw.replacen(hook, "", 1).replacen(new, ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;", 1);
+(B[m[32m+                raw = raw.replacen(hook, "", 1).replacen(
+(B[m[32m+                    new,
+(B[m[32m+                    ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;",
+(B[m[32m+                    1,
+(B[m[32m+                );
+(B[m             }
+         }
+         if path == "tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs"
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:17:
+             && raw.contains("mod pidfd_info_path;")
+         {
+[31m-            let hook = "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m[32m+            let hook =
+(B[m[32m+                "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m             assert_eq!(raw.matches(hook).count(), 1);
+             raw = raw.replacen(hook, "", 1);
+         }
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:10:
+             if raw.contains("diagnostic_pidfd_info_path.rs") || raw.contains("pidfd_info_path::") {
+                 assert_eq!(raw.matches(hook).count(), 1);
+                 assert_eq!(raw.matches(new).count(), 1);
+[31m-                raw = raw.replacen(hook, "", 1).replacen(new, ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;", 1);
+(B[m[32m+                raw = raw.replacen(hook, "", 1).replacen(
+(B[m[32m+                    new,
+(B[m[32m+                    ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;",
+(B[m[32m+                    1,
+(B[m[32m+                );
+(B[m             }
+         }
+         if path == "tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs"
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:17:
+             && raw.contains("mod pidfd_info_path;")
+         {
+[31m-            let hook = "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m[32m+            let hook =
+(B[m[32m+                "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m             assert_eq!(raw.matches(hook).count(), 1);
+             raw = raw.replacen(hook, "", 1);
+         }
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:10:
+             if raw.contains("diagnostic_pidfd_info_path.rs") || raw.contains("pidfd_info_path::") {
+                 assert_eq!(raw.matches(hook).count(), 1);
+                 assert_eq!(raw.matches(new).count(), 1);
+[31m-                raw = raw.replacen(hook, "", 1).replacen(new, ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;", 1);
+(B[m[32m+                raw = raw.replacen(hook, "", 1).replacen(
+(B[m[32m+                    new,
+(B[m[32m+                    ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;",
+(B[m[32m+                    1,
+(B[m[32m+                );
+(B[m             }
+         }
+         if path == "tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs"
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:17:
+             && raw.contains("mod pidfd_info_path;")
+         {
+[31m-            let hook = "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m[32m+            let hook =
+(B[m[32m+                "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m             assert_eq!(raw.matches(hook).count(), 1);
+             raw = raw.replacen(hook, "", 1);
+         }
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:10:
+             if raw.contains("diagnostic_pidfd_info_path.rs") || raw.contains("pidfd_info_path::") {
+                 assert_eq!(raw.matches(hook).count(), 1);
+                 assert_eq!(raw.matches(new).count(), 1);
+[31m-                raw = raw.replacen(hook, "", 1).replacen(new, ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;", 1);
+(B[m[32m+                raw = raw.replacen(hook, "", 1).replacen(
+(B[m[32m+                    new,
+(B[m[32m+                    ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;",
+(B[m[32m+                    1,
+(B[m[32m+                );
+(B[m             }
+         }
+         if path == "tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs"
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:17:
+             && raw.contains("mod pidfd_info_path;")
+         {
+[31m-            let hook = "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m[32m+            let hook =
+(B[m[32m+                "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m             assert_eq!(raw.matches(hook).count(), 1);
+             raw = raw.replacen(hook, "", 1);
+         }
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:10:
+             if raw.contains("diagnostic_pidfd_info_path.rs") || raw.contains("pidfd_info_path::") {
+                 assert_eq!(raw.matches(hook).count(), 1);
+                 assert_eq!(raw.matches(new).count(), 1);
+[31m-                raw = raw.replacen(hook, "", 1).replacen(new, ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;", 1);
+(B[m[32m+                raw = raw.replacen(hook, "", 1).replacen(
+(B[m[32m+                    new,
+(B[m[32m+                    ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;",
+(B[m[32m+                    1,
+(B[m[32m+                );
+(B[m             }
+         }
+         if path == "tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs"
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:17:
+             && raw.contains("mod pidfd_info_path;")
+         {
+[31m-            let hook = "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m[32m+            let hook =
+(B[m[32m+                "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m             assert_eq!(raw.matches(hook).count(), 1);
+             raw = raw.replacen(hook, "", 1);
+         }
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:10:
+             if raw.contains("diagnostic_pidfd_info_path.rs") || raw.contains("pidfd_info_path::") {
+                 assert_eq!(raw.matches(hook).count(), 1);
+                 assert_eq!(raw.matches(new).count(), 1);
+[31m-                raw = raw.replacen(hook, "", 1).replacen(new, ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;", 1);
+(B[m[32m+                raw = raw.replacen(hook, "", 1).replacen(
+(B[m[32m+                    new,
+(B[m[32m+                    ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;",
+(B[m[32m+                    1,
+(B[m[32m+                );
+(B[m             }
+         }
+         if path == "tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs"
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:17:
+             && raw.contains("mod pidfd_info_path;")
+         {
+[31m-            let hook = "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m[32m+            let hook =
+(B[m[32m+                "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m             assert_eq!(raw.matches(hook).count(), 1);
+             raw = raw.replacen(hook, "", 1);
+         }
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:10:
+             if raw.contains("diagnostic_pidfd_info_path.rs") || raw.contains("pidfd_info_path::") {
+                 assert_eq!(raw.matches(hook).count(), 1);
+                 assert_eq!(raw.matches(new).count(), 1);
+[31m-                raw = raw.replacen(hook, "", 1).replacen(new, ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;", 1);
+(B[m[32m+                raw = raw.replacen(hook, "", 1).replacen(
+(B[m[32m+                    new,
+(B[m[32m+                    ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;",
+(B[m[32m+                    1,
+(B[m[32m+                );
+(B[m             }
+         }
+         if path == "tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs"
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:17:
+             && raw.contains("mod pidfd_info_path;")
+         {
+[31m-            let hook = "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m[32m+            let hook =
+(B[m[32m+                "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m             assert_eq!(raw.matches(hook).count(), 1);
+             raw = raw.replacen(hook, "", 1);
+         }
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:10:
+             if raw.contains("diagnostic_pidfd_info_path.rs") || raw.contains("pidfd_info_path::") {
+                 assert_eq!(raw.matches(hook).count(), 1);
+                 assert_eq!(raw.matches(new).count(), 1);
+[31m-                raw = raw.replacen(hook, "", 1).replacen(new, ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;", 1);
+(B[m[32m+                raw = raw.replacen(hook, "", 1).replacen(
+(B[m[32m+                    new,
+(B[m[32m+                    ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;",
+(B[m[32m+                    1,
+(B[m[32m+                );
+(B[m             }
+         }
+         if path == "tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs"
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:17:
+             && raw.contains("mod pidfd_info_path;")
+         {
+[31m-            let hook = "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m[32m+            let hook =
+(B[m[32m+                "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m             assert_eq!(raw.matches(hook).count(), 1);
+             raw = raw.replacen(hook, "", 1);
+         }
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:10:
+             if raw.contains("diagnostic_pidfd_info_path.rs") || raw.contains("pidfd_info_path::") {
+                 assert_eq!(raw.matches(hook).count(), 1);
+                 assert_eq!(raw.matches(new).count(), 1);
+[31m-                raw = raw.replacen(hook, "", 1).replacen(new, ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;", 1);
+(B[m[32m+                raw = raw.replacen(hook, "", 1).replacen(
+(B[m[32m+                    new,
+(B[m[32m+                    ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;",
+(B[m[32m+                    1,
+(B[m[32m+                );
+(B[m             }
+         }
+         if path == "tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs"
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:17:
+             && raw.contains("mod pidfd_info_path;")
+         {
+[31m-            let hook = "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m[32m+            let hook =
+(B[m[32m+                "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m             assert_eq!(raw.matches(hook).count(), 1);
+             raw = raw.replacen(hook, "", 1);
+         }
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:10:
+             if raw.contains("diagnostic_pidfd_info_path.rs") || raw.contains("pidfd_info_path::") {
+                 assert_eq!(raw.matches(hook).count(), 1);
+                 assert_eq!(raw.matches(new).count(), 1);
+[31m-                raw = raw.replacen(hook, "", 1).replacen(new, ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;", 1);
+(B[m[32m+                raw = raw.replacen(hook, "", 1).replacen(
+(B[m[32m+                    new,
+(B[m[32m+                    ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;",
+(B[m[32m+                    1,
+(B[m[32m+                );
+(B[m             }
+         }
+         if path == "tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs"
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:17:
+             && raw.contains("mod pidfd_info_path;")
+         {
+[31m-            let hook = "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m[32m+            let hook =
+(B[m[32m+                "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m             assert_eq!(raw.matches(hook).count(), 1);
+             raw = raw.replacen(hook, "", 1);
+         }
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:10:
+             if raw.contains("diagnostic_pidfd_info_path.rs") || raw.contains("pidfd_info_path::") {
+                 assert_eq!(raw.matches(hook).count(), 1);
+                 assert_eq!(raw.matches(new).count(), 1);
+[31m-                raw = raw.replacen(hook, "", 1).replacen(new, ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;", 1);
+(B[m[32m+                raw = raw.replacen(hook, "", 1).replacen(
+(B[m[32m+                    new,
+(B[m[32m+                    ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;",
+(B[m[32m+                    1,
+(B[m[32m+                );
+(B[m             }
+         }
+         if path == "tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs"
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:17:
+             && raw.contains("mod pidfd_info_path;")
+         {
+[31m-            let hook = "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m[32m+            let hook =
+(B[m[32m+                "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m             assert_eq!(raw.matches(hook).count(), 1);
+             raw = raw.replacen(hook, "", 1);
+         }
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:10:
+             if raw.contains("diagnostic_pidfd_info_path.rs") || raw.contains("pidfd_info_path::") {
+                 assert_eq!(raw.matches(hook).count(), 1);
+                 assert_eq!(raw.matches(new).count(), 1);
+[31m-                raw = raw.replacen(hook, "", 1).replacen(new, ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;", 1);
+(B[m[32m+                raw = raw.replacen(hook, "", 1).replacen(
+(B[m[32m+                    new,
+(B[m[32m+                    ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;",
+(B[m[32m+                    1,
+(B[m[32m+                );
+(B[m             }
+         }
+         if path == "tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs"
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:17:
+             && raw.contains("mod pidfd_info_path;")
+         {
+[31m-            let hook = "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m[32m+            let hook =
+(B[m[32m+                "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m             assert_eq!(raw.matches(hook).count(), 1);
+             raw = raw.replacen(hook, "", 1);
+         }
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:10:
+             if raw.contains("diagnostic_pidfd_info_path.rs") || raw.contains("pidfd_info_path::") {
+                 assert_eq!(raw.matches(hook).count(), 1);
+                 assert_eq!(raw.matches(new).count(), 1);
+[31m-                raw = raw.replacen(hook, "", 1).replacen(new, ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;", 1);
+(B[m[32m+                raw = raw.replacen(hook, "", 1).replacen(
+(B[m[32m+                    new,
+(B[m[32m+                    ".open(format!(\"/proc/thread-self/fdinfo/{}\", pidfd.as_raw_fd()))?;",
+(B[m[32m+                    1,
+(B[m[32m+                );
+(B[m             }
+         }
+         if path == "tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs"
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask/tests/support/pidfd_info_path_guard.rs:17:
+             && raw.contains("mod pidfd_info_path;")
+         {
+[31m-            let hook = "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m[32m+            let hook =
+(B[m[32m+                "\n#[path = \"../tests/support/pidfd_info_path_alloc.rs\"]\nmod pidfd_info_path;\n";
+(B[m             assert_eq!(raw.matches(hook).count(), 1);
+             raw = raw.replacen(hook, "", 1);
+         }

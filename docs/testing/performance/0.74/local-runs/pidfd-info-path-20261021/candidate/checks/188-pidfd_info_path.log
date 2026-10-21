@@ -1,0 +1,27 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+warning: variant `Reference` is never constructed
+ --> tools/long-run-supervisor-074/src/../tests/support/authority_name_capacity_controls.rs:5:5
+  |
+4 | pub(crate) enum Reading {
+  |                 ------- variant in this enum
+5 |     Reference,
+  |     ^^^^^^^^^
+  |
+  = note: `Reading` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+  = note: `#[warn(dead_code)]` on by default
+
+warning: `hydracache-long-run-supervisor-074` (lib test) generated 1 warning
+    Finished `release` profile [optimized] target(s) in 2m 06s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-188-check/release/deps/hydracache_long_run_supervisor_074-d2aba7f58d773234)
+
+running 6 tests
+test diagnostic_kernel_admission::origin::pidfd_info_path::tests::pidfd_info_path_changed_document_and_pid_fields_refuse_without_reusing_success ... ok
+test diagnostic_kernel_admission::origin::pidfd_info_path::tests::pidfd_info_path_each_actual_read_keeps_alive_document_trace_and_original_pid ... ok
+test diagnostic_kernel_admission::origin::pidfd_info_path::tests::pidfd_info_path_fresh_open_identity_flags_and_missing_name_match_reference ... ok
+test diagnostic_kernel_admission::origin::pidfd_info_path::tests::pidfd_info_path_non_pidfd_poll_refuses_before_read ... ok
+test diagnostic_kernel_admission::origin::pidfd_info_path::tests::pidfd_info_path_read_errors_propagate_once_without_retry ... ok
+test diagnostic_kernel_admission::origin::pidfd_info_path::tests::pidfd_info_path_signed_boundaries_seed_and_owned_lifetime ... HC074-PIDFD-PATH-PROPERTY seed=0x074fd174 cases=16384 signed_edges=true owned=true profile=false server=false product=false
+ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 1430 filtered out; finished in 0.00s
+

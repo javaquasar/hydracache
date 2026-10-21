@@ -1,0 +1,53 @@
+{
+  "failure": null,
+  "original_owner_profiles": 0,
+  "server": false,
+  "product": false,
+  "ignored_tests_run": false,
+  "lane": "194",
+  "stage": "candidate",
+  "steps": [
+    {
+      "name": "pidfd_info_path",
+      "exit": 0,
+      "sha256": "d6a3e00da7f1b71614c510efee5d87f1328aec35fd33fa34a6921458fe2a27d8",
+      "log": "194-pidfd_info_path.log"
+    },
+    {
+      "name": "document_scratch",
+      "exit": 0,
+      "sha256": "277d743f1aed9ac97b6c26a326a459d433501d4a288e94a95a0c11f5bbcdf9b4",
+      "log": "194-document_scratch.log"
+    },
+    {
+      "name": "boot_comparison",
+      "exit": 0,
+      "sha256": "31ddd7e59210178f817edd419c8433eb52c447454cf0c2f11019e730fd404565",
+      "log": "194-boot_comparison.log"
+    },
+    {
+      "name": "consuming_join",
+      "exit": 0,
+      "sha256": "5e6db6d3e6923b72ba451b211675d01955abd09231eb656b32b2b02df30952ef",
+      "log": "194-consuming_join.log"
+    },
+    {
+      "name": "allocations",
+      "exit": 0,
+      "sha256": "9521598bc490b2a45fc6816b51472abca00770095011b64f299fe581e56978bd",
+      "log": "194-allocations.log"
+    },
+    {
+      "name": "check",
+      "exit": 0,
+      "sha256": "7d52d0890ba6b84c8f840adb82067c298295e01c6e68f6c37470d49f935ab056",
+      "log": "194-check.log"
+    },
+    {
+      "name": "clippy",
+      "exit": 0,
+      "sha256": "6069d569bc53001fdcd65c9cb9d7b8436cc32810f7d2c8db6410afc90ae85029",
+      "log": "194-clippy.log"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+warning: variant `Reference` is never constructed
+ --> tools/long-run-supervisor-074/src/../tests/support/authority_name_capacity_controls.rs:5:5
+  |
+4 | pub(crate) enum Reading {
+  |                 ------- variant in this enum
+5 |     Reference,
+  |     ^^^^^^^^^
+  |
+  = note: `Reading` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+  = note: `#[warn(dead_code)]` on by default
+
+warning: `hydracache-long-run-supervisor-074` (lib test) generated 1 warning
+    Finished `release` profile [optimized] target(s) in 3.62s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-188-check/release/deps/hydracache_long_run_supervisor_074-d2aba7f58d773234)
+
+running 4 tests
+test diagnostic_kernel_admission::origin::boot_comparison_tests::boot_comparison_byte_mutations_lengths_and_original_failure_sites ... ok
+test diagnostic_kernel_admission::origin::boot_comparison_tests::boot_comparison_fresh_trace_counts_and_original_sticky_drift ... ok
+test diagnostic_kernel_admission::origin::boot_comparison_tests::boot_comparison_real_proc_and_filesystem_failures_match ... ok
+test diagnostic_kernel_admission::origin::boot_comparison_tests::boot_comparison_seeded_documents_and_single_read_faults ... HC074-BOOT-COMPARE seed=0x074cb036 documents=1024 mutations=9728 unchanged_read=true
+ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 1432 filtered out; finished in 0.00s
+

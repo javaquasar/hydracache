@@ -1,0 +1,53 @@
+{
+  "ignored_tests_run": false,
+  "server": false,
+  "failure": null,
+  "original_owner_profiles": 0,
+  "product": false,
+  "stage": "candidate",
+  "steps": [
+    {
+      "sha256": "a1d7143540122d918d946e44c3c29002b02bfb434678277779556212e0feba9c",
+      "log": "188-pidfd_info_path.log",
+      "exit": 0,
+      "name": "pidfd_info_path"
+    },
+    {
+      "sha256": "b1d1afee411d7fe2eaa661d9e27935aed19dda55f8e9cab9c5bd295f73da9014",
+      "log": "188-document_scratch.log",
+      "exit": 0,
+      "name": "document_scratch"
+    },
+    {
+      "sha256": "08449d123f10d3e6b0cc9eed000a16381bb9bfb037099a3feb71d3fe764beda7",
+      "log": "188-boot_comparison.log",
+      "exit": 0,
+      "name": "boot_comparison"
+    },
+    {
+      "sha256": "8209c60b79404429887911c5dfbfd481eba0717cc10c3ae01d4ece0ff16928a9",
+      "log": "188-consuming_join.log",
+      "exit": 0,
+      "name": "consuming_join"
+    },
+    {
+      "sha256": "e6426d932ac0e5ac6f6ae48406b3bd25c7d15e0e4a47de40aebb00cfa38eff44",
+      "log": "188-allocations.log",
+      "exit": 0,
+      "name": "allocations"
+    },
+    {
+      "sha256": "72c9d7fd92e2f208ae378b0b375511ae08b6d8b1d322095a804c549b72f0af98",
+      "log": "188-check.log",
+      "exit": 0,
+      "name": "check"
+    },
+    {
+      "sha256": "b897de8ed32d1f6bada31f94fd434094b666a0f3d7ffccbf1e88c92ccf274532",
+      "log": "188-clippy.log",
+      "exit": 0,
+      "name": "clippy"
+    }
+  ],
+  "lane": "188"
+}

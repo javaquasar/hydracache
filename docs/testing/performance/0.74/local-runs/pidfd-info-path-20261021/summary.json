@@ -1,0 +1,44 @@
+{
+  "baseline_source": "1c7e00f327e45be8ec543fcd9b8da21faf481874",
+  "candidate_source": "0cb604afdc14adb544ba613fd6d46189401254b4",
+  "lanes": [
+    {
+      "lane": "194",
+      "cases": 9,
+      "iterations_per_case": 256,
+      "reference_allocations": 2304,
+      "reference_requested_bytes": 115200,
+      "candidate_allocations": 0,
+      "candidate_reallocations": 0,
+      "candidate_requested_bytes": 0,
+      "selected_unit_executions": 32
+    },
+    {
+      "lane": "188",
+      "cases": 9,
+      "iterations_per_case": 256,
+      "reference_allocations": 2304,
+      "reference_requested_bytes": 115200,
+      "candidate_allocations": 0,
+      "candidate_reallocations": 0,
+      "candidate_requested_bytes": 0,
+      "selected_unit_executions": 32
+    }
+  ],
+  "allocation_only_candidate": true,
+  "timing_improvement_proven": false,
+  "native_api_improvement_proven": false,
+  "original_material_gate_passed": false,
+  "original_owner_profiles": 0,
+  "original_windows_seconds": [
+    300,
+    60,
+    10
+  ],
+  "first_refusal_ages_ns": [
+    10042390247,
+    10010835739
+  ],
+  "server": false,
+  "product": false
+}

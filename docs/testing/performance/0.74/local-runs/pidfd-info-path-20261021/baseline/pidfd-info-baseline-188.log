@@ -1,0 +1,18 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `release` profile [optimized] target(s) in 2m 06s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-188-check/release/deps/hydracache_long_run_supervisor_074-1dbb29096ebc6338)
+
+running 1 test
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::pidfd_info_path::pidfd_info_path_reference_requests ... HC074-PIDFD-PATH-REFERENCE {"fd":-2147483648,"iterations":256,"product":false,"profile":false,"reference":{"allocations":256,"reallocations":0,"requested_bytes":12800},"rust_requests_only":true,"server":false}
+HC074-PIDFD-PATH-REFERENCE {"fd":-1,"iterations":256,"product":false,"profile":false,"reference":{"allocations":256,"reallocations":0,"requested_bytes":12800},"rust_requests_only":true,"server":false}
+HC074-PIDFD-PATH-REFERENCE {"fd":0,"iterations":256,"product":false,"profile":false,"reference":{"allocations":256,"reallocations":0,"requested_bytes":12800},"rust_requests_only":true,"server":false}
+HC074-PIDFD-PATH-REFERENCE {"fd":1,"iterations":256,"product":false,"profile":false,"reference":{"allocations":256,"reallocations":0,"requested_bytes":12800},"rust_requests_only":true,"server":false}
+HC074-PIDFD-PATH-REFERENCE {"fd":9,"iterations":256,"product":false,"profile":false,"reference":{"allocations":256,"reallocations":0,"requested_bytes":12800},"rust_requests_only":true,"server":false}
+HC074-PIDFD-PATH-REFERENCE {"fd":10,"iterations":256,"product":false,"profile":false,"reference":{"allocations":256,"reallocations":0,"requested_bytes":12800},"rust_requests_only":true,"server":false}
+HC074-PIDFD-PATH-REFERENCE {"fd":99,"iterations":256,"product":false,"profile":false,"reference":{"allocations":256,"reallocations":0,"requested_bytes":12800},"rust_requests_only":true,"server":false}
+HC074-PIDFD-PATH-REFERENCE {"fd":100,"iterations":256,"product":false,"profile":false,"reference":{"allocations":256,"reallocations":0,"requested_bytes":12800},"rust_requests_only":true,"server":false}
+HC074-PIDFD-PATH-REFERENCE {"fd":2147483647,"iterations":256,"product":false,"profile":false,"reference":{"allocations":256,"reallocations":0,"requested_bytes":12800},"rust_requests_only":true,"server":false}
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1468 filtered out; finished in 0.00s
+

@@ -1,0 +1,23 @@
+{
+  "product": false,
+  "stage": "baseline",
+  "server": false,
+  "steps": [
+    {
+      "log": "188-check.log",
+      "name": "check",
+      "sha256": "7694196c813b5633fec13aedfb5bb0ad2473a4614bec26cbabb456291d064404",
+      "exit": 0
+    },
+    {
+      "log": "188-clippy.log",
+      "name": "clippy",
+      "sha256": "d1b3c88da5c0e047bbfe8f82007b145a7a77db86fefb5f7037d9c582b08cc61d",
+      "exit": 0
+    }
+  ],
+  "ignored_tests_run": false,
+  "lane": "188",
+  "original_owner_profiles": 0,
+  "failure": null
+}
