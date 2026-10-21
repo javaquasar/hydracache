@@ -295,3 +295,6 @@ impl<'root, 'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>
 #[cfg(test)]
 #[path = "diagnostic_held_unit_projection_tests.rs"]
 mod tests;
+
+#[path = "diagnostic_held_unit_material.rs"]
+mod material;

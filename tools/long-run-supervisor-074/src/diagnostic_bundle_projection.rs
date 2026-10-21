@@ -1,6 +1,9 @@
 //! Retained content identities only. The caller still owes fresh full frames.
 use super::*;
 
+#[path = "diagnostic_bundle_material.rs"]
+mod material;
+
 impl BundleSnapshot {
     pub(crate) fn projection_contents(
         &self,

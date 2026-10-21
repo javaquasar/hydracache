@@ -1,9 +1,11 @@
 //! Exact additive projection hooks only. No validation body may disappear.
+#[path = "held_material_guard.rs"]
+mod material;
 #[macro_export]
 macro_rules! hc074_held_unit_projection_view {
     ($path:expr, $source:expr) => {{
         let path: &str = $path;
-        let mut raw: String = $source.to_owned();
+        let mut raw: String = $crate::hc074_held_material_view!(path, $source);
         for (file, hook) in [
             (
                 "diagnostic_consuming_held_join.rs",
