@@ -631,3 +631,7 @@ pub(crate) mod expected_name_controls;
 #[cfg(test)]
 #[path = "../tests/support/authority_breakdown_controls.rs"]
 pub(crate) mod breakdown_controls;
+
+#[cfg(test)]
+#[path = "../tests/support/authority_fd_path_controls.rs"]
+pub(crate) mod fd_path_controls;

@@ -1,13 +1,14 @@
 #[path = "support/document_scratch_guard.rs"]
 mod guard;
 fn read(path: &str) -> String {
-    std::fs::read_to_string(
+    let raw = std::fs::read_to_string(
         std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("../..")
             .join(path),
     )
     .unwrap()
-    .replace('\r', "")
+    .replace('\r', "");
+    crate::hc074_authority_fd_path_view!(path, &raw)
 }
 #[test]
 fn authority_breakdown_restores_every_runtime_byte_and_rejects_hook_drift() {

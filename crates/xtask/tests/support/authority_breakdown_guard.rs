@@ -1,9 +1,11 @@
-//! Test-only hooks; no runtime body substitution.
+//! Test-only hooks; newer exact fd-path ownership is restored first.
+#[path = "authority_fd_path_guard.rs"]
+mod authority_fd_path;
 #[macro_export]
 macro_rules! hc074_authority_breakdown_view {
     ($path:expr, $source:expr) => {{
         let path: &str = $path;
-        let mut raw: String = $source.to_owned();
+        let mut raw: String = $crate::hc074_authority_fd_path_view!(path, $source);
         let gate = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/tests/support/authority_breakdown_gate.txt")).replace('\r', "");
         for (file, exact, marker) in [
             ("tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs", "\n#[cfg(test)]\n#[path = \"../tests/support/authority_breakdown_controls.rs\"]\npub(crate) mod breakdown_controls;\n", "authority_breakdown_controls"),
