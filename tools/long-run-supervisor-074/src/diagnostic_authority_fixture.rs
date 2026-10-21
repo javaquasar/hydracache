@@ -241,7 +241,12 @@ impl Directory {
     }
     fn inventory(&self) -> Result<usize, AuthorityError> {
         let mut seen = BTreeSet::new();
-        for entry in fs::read_dir(format!("/proc/self/fd/{}", self.leaf.as_raw_fd()))? {
+        let mut path = std::io::Cursor::new([0_u8; 25]);
+        write!(&mut path, "/proc/self/fd/{}", self.leaf.as_raw_fd())
+            .expect("i32 fd path fits 25 bytes");
+        let length = path.position() as usize;
+        let path = std::str::from_utf8(&path.get_ref()[..length]).expect("fd path is ASCII");
+        for entry in fs::read_dir(path)? {
             let entry = entry?;
             let name = entry
                 .file_name()
