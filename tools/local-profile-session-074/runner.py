@@ -60,7 +60,7 @@ def write_new(path, value):
 def git(repo, *args):
     # Linked worktree .git stores a Windows absolute path. Use the same Windows
     # Git reader as the launcher, without changing .git or refreshing its index.
-    require(str(repo) == "/mnt/c/Workspace/prj/jq/cashe/hydracache-074", "Unexpected local repository")
+    require(repo.as_posix() == "/mnt/c/Workspace/prj/jq/cashe/hydracache-074", "Unexpected local repository")
     result = subprocess.run(
         ["/mnt/c/Program Files/Git/cmd/git.exe", "--no-optional-locks", "-C",
          "C:/Workspace/prj/jq/cashe/hydracache-074", *args], capture_output=True,
