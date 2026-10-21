@@ -1593,3 +1593,18 @@ Next consider reserving room for primary in one separate growth candidate;
 the current baseline implements none. Original windows, first Causal refusals
 and all material/cleanup/delivery/all-writer/fault/reconnect/server gates remain.
 No live replay, clock/service change or server operation occurs.
+
+### Peer primary capacity candidate retained after matched pure controls
+
+The [single growth candidate](collector-peer-capacity-20261022.md) reserves
+input length+1 before copy and keeps push/sort/dedup, ownership and the complete
+live collector wrapper. GNU/MSRV counters confirm no reallocation on the matched
+corpus; complete-source reversal and both synthetic first-error/latch arms
+preserve validation counts/order and original windows. Full-path timing remains
+unmeasured.
+
+The first host expected-text refusal remains beside the exact canary repair;
+Linux pure controls are not replayed. All ten prior seals and first Causal
+failures remain. Next reconcile retained leaf candidates and unresolved offline
+owners before any separately admitted timing comparison. Material/cleanup/
+delivery/all-writer/fault/reconnect/server gates stay closed; no host action.

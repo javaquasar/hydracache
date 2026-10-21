@@ -17009,3 +17009,37 @@ the operation or relaxing the canary. All nine prior packet seals and original
 windows/refusals remain. The result supports a later isolated capacity-reserve
 experiment, not a runtime change or saved preparation time. No live/server run
 or material/fault/readiness promotion follows from this allocation baseline.
+
+### Reserve the primary slot without changing the peer contract
+
+The [isolated capacity candidate](../testing/performance/0.74/collector-peer-capacity-20261022.md)
+uses the baseline's attribution directly: reserve supplementary.len()+1 slots,
+copy the input slice, then keep primary push, sort and dedup. It deliberately
+does not combine this with skipping a known-present primary or shrinking the
+result. UID, owned Vec values, generic no-truncation behavior and all surrounding
+validation stay unchanged. A private test-only adapter calls the real helper;
+the old reference and BTreeSet oracle remain separate checks.
+
+GNU 1.94 and MSRV 1.88 both retain 7936 allocations while reallocations change
+from 7680 to zero. Requested bytes change from 1798144 to 627712 on the same
+31 cases and 256 constructions each. The unchanged baseline main and stage
+records match their earlier seal. Independent one-construction stage controls
+show a single initial reserve request and no requests during copy, push or
+canonicalization. Those controls are not pooled into the main operation count.
+
+At 32 supplementary groups the candidate capacity is 33 instead of 64, while
+an absent primary still yields the complete 33-group union. At empty input it
+is one instead of four. Duplicate-heavy results keep capacity input length+1,
+not their final deduplicated length. These are observed Vec capacities and Rust
+requests, not RSS or allocator-retention measurements. Copies, sorting and
+allocation still have costs, so neither the corpus totals nor old trace call
+counts establish a full preparation-time improvement.
+
+The same 1024 seeded union cases and both synthetic wrapper arms preserve
+values, ownership, first-error/latch behavior and refused reentry. Exact
+whole-file reversal keeps the live wrapper and original checks/windows intact.
+The first host canary refuses a mistake in its expected token text; the source
+and failure remain before an exact-text-only repair. Linux controls are not
+replayed to pass that source assertion. All ten prior seals and first Causal
+refusals remain. No live/server run or new material/fault/readiness admission
+follows from this successful allocation candidate.

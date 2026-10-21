@@ -5707,3 +5707,17 @@ first-error/latch controls pass with 34 source canaries. First compile/canary
 refusals and test-only repairs remain separate; nine earlier seals remain.
 This baseline implements no growth candidate or timing improvement and opens
 no material/fault/server gate. No live, service or server action occurs.
+
+### Collector peer primary capacity candidate
+
+The [isolated reserve candidate](collector-peer-capacity-20261022.md) allocates
+room for the original supplementary copy plus primary before retaining the
+same push/sort/dedup and owned output. GNU/MSRV each keep 7936 allocations,
+remove 7680 reallocations and reduce requested bytes from 1798144 to 627712
+on the matched corpus. Unchanged baseline/stage rows match their earlier seal.
+
+Canonical-union, ownership, both synthetic wrapper arms and 37 source canaries
+pass. The first expected-token host-canary refusal and exact-text repair remain
+separate; Linux controls are not replayed. Ten earlier seals, original windows,
+fresh checks and first Causal refusals remain. No timing, full-path or server
+promotion follows, and no live/server/service/product action occurs.
