@@ -5277,3 +5277,36 @@ inventory SHA256
 `5169a17fdc585ac15be3447a802be5e8b289346ee59e2eb420fcca8b31828d4e`.
 All seventeen prior inventories and members remain intact; eight structural
 JSON and nine scope mutations are refused. All 85 Git files preserve raw bytes.
+
+### Selected CPU windows inside fresh leaf checks
+
+The [leaf CPU packet](local-runs/authority-leaf-cpu-20261021/README.md) and
+[plan](authority-leaf-cpu-plan-20261021.md), source
+`b99c1c759630cf632c0a13a905c3ddf9d822def5`, retain twenty balanced
+1024-operation samples per case/depth/kind. Each run times one existing
+expression, with actual/traced and empty controls. Runtime, old observer
+bodies, clock functions and original live checks/windows remain unchanged.
+
+At depth seven, selected buffer medians are 238–273 ns per leaf, against
+192–215 ns for empty callbacks, with overlapping ranges. Open medians are
+1088–1276 ns; metadata 589–743 ns and read 811–864 ns. These include clock
+overhead and exclude other work such as later buffer destruction. They neither
+partition production CPU nor justify removing fresh checks. Outliers and all
+raw ranges remain; nothing is subtracted, filtered or retried.
+
+All 54 owner observations and the eight-case full control match prior counts,
+payloads and epochs. Full requests remain 23/99 allocations, zero reallocations,
+1662/8444 bytes and 4/28 reads. Both lanes pass 210 authority tests, affected
+checks/strict lint, 385 source assertions and repository gates. No preflight
+or measured invocation fails. A bounded file-name encoding candidate needs
+separate cold/warm and fault controls; no runtime change is accepted here.
+No new live/server/product, supervisor, clock/service, qualification or push
+action occurs; qualification and old live/time refusals remain unchanged.
+
+The [next candidate plan](authority-open-name-plan-20261021.md) is preregistered,
+not implemented: short file-name encoding only, with directory handling excluded.
+Evidence `9a460ee7e0ac2b2f9f829b9fd8c8be4a8b28f27f` seals 59 members plus
+inventory SHA256
+`4a4c317f7e9cc878b57aa205324d865577cd17772bff3dea0d7e513c01b2d805`.
+All eighteen prior packets and 60 raw Git files verify. Eight structural JSON
+and ten scope mutations are refused; no admission gate opens.

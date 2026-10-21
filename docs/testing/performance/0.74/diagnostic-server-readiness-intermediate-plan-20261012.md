@@ -1141,3 +1141,35 @@ inventory SHA256
 `5169a17fdc585ac15be3447a802be5e8b289346ee59e2eb420fcca8b31828d4e`.
 All seventeen preceding packets and 85 raw Git entries verify. Eight structural
 JSON and nine scope mutations are refused; qualification remains frozen.
+
+### Selected leaf CPU observations
+
+The [selected leaf packet](local-runs/authority-leaf-cpu-20261021/README.md)
+uses source `b99c1c759630cf632c0a13a905c3ddf9d822def5`. Each of seven
+source-checked observer sites is timed independently, with actual/traced/empty
+controls and twenty balanced 1024-operation samples per cluster. Runtime, old
+traces, fresh checks, owner lifetime and 300/60/10 windows remain unchanged.
+
+Depth-seven buffer-window medians are 238–273 ns per leaf against empty
+192–215 ns; ranges overlap. Open, metadata and read have larger medians, but
+the windows include timer work and exclude other operations. No exact CPU
+partition, buffer bottleneck, runtime optimization or speedup is established.
+Retain all outliers. A separate short file-name stack-encoding candidate must
+preserve directory/fallback/NUL semantics and fresh kernel checks, and pass
+cold/warm and fault controls before acceptance.
+
+Both compilers complete once without preflight or measured failure/retry.
+Owner/full controls and payload/epoch identities agree. Both lanes pass 210
+authority tests, affected checks/strict lint, 385 historical assertions and
+repository gates. Old live/time, delivery, all-writer cessation, lifecycle,
+SIGKILL/lost-ACK, reconnect and real enrollment remain independent closed
+gates. No server, installation, supervisor, clock/service, product or
+qualification operation occurs.
+
+Evidence `9a460ee7e0ac2b2f9f829b9fd8c8be4a8b28f27f` seals 59 members plus
+inventory SHA256
+`4a4c317f7e9cc878b57aa205324d865577cd17772bff3dea0d7e513c01b2d805`.
+All eighteen preceding packets and 60 raw Git entries verify; eight structural
+JSON and ten scope mutations are refused. The
+[short file-name candidate](authority-open-name-plan-20261021.md) is only
+preregistered, with no directory optimization or transferred server receipt.

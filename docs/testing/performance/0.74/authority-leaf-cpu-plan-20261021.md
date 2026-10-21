@@ -55,3 +55,36 @@ Do not run another live matrix, server operation, installation, supervisor
 action, clock/service change, product workload, release qualification or push.
 Earlier live/time failures and independent delivery, all-writer cessation,
 lifecycle, SIGKILL/lost-ACK, reconnect and enrollment gates remain closed.
+
+## Local outcome
+
+The [packet](local-runs/authority-leaf-cpu-20261021/README.md), capture source
+`b99c1c759630cf632c0a13a905c3ddf9d822def5`, retains all 800 CPU rows per
+compiler and twenty samples per cluster/case. Neither preflights nor measured
+invocations fail; none is retried. Source canaries and synthetic clocks retain
+the exact prior clock bodies, observer expressions and returned-owner lifetime.
+
+At depth seven, selected initial-buffer medians span 238–273 ns per leaf;
+empty medians span 192–215 ns, with overlapping ranges. Open spans
+1088–1276 ns, metadata 589–743 ns and read 811–864 ns in the selected
+median windows. Their instrumentation and lifetime scope do not establish
+pure allocator cost or an exact CPU partition. No buffer optimization is
+accepted; all outliers remain without subtraction or filtering.
+
+Owner/full controls match prior allocation/read counts, sites, payloads and
+epochs. Both lanes pass 210 authority tests, ancillary checks, all-target
+checks and strict all-feature lint. All 385 source assertions and repository
+gates pass. A separate bounded read-only file-name encoding candidate may
+test request reduction with cold/warm and fault controls; no CPU gain follows
+from the aggregate open window. Workload, qualification, original windows
+and old live/time refusals remain frozen; no server or product gate opens.
+
+Evidence `9a460ee7e0ac2b2f9f829b9fd8c8be4a8b28f27f` seals 59 members plus
+inventory SHA256
+`4a4c317f7e9cc878b57aa205324d865577cd17772bff3dea0d7e513c01b2d805`.
+All eighteen prior packets remain intact; eight structural JSON and ten scope
+mutations are refused. All 60 Git entries preserve raw bytes. The immutable
+packet does not authorize the separately
+[preregistered candidate](authority-open-name-plan-20261021.md) as a gain.
+Qualification SHA256 remains
+`11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc`.

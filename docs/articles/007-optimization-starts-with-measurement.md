@@ -16043,3 +16043,77 @@ plus inventory SHA256
 All seventeen preceding packets remain intact; eight structural JSON and nine
 scope mutations are refused. All 85 Git files preserve raw bytes. This supports
 the local observation record, not another runtime improvement or server gate.
+
+### CPU windows inside fresh leaf revalidation
+
+The [selected leaf packet](../testing/performance/0.74/local-runs/authority-leaf-cpu-20261021/README.md)
+continues from actual-phase attribution. Source
+`b99c1c759630cf632c0a13a905c3ddf9d822def5` times seven existing observer
+expressions one at a time. Runtime and old trace methods remain unchanged;
+source canaries also require the exact preceding clock-function bodies.
+
+Each depth and record/marker cluster compares actual, uncounted traced, seven
+selected sites and an empty callback. Thirty-two warmups precede twenty
+1024-operation batches per case, with ten forward and ten reverse rotations.
+Outer CPU measures a complete phase; selected CPU is divided by the number
+of leaves. These denominators must not be interchanged.
+
+| Selected window at seven generations | GNU record ns per leaf | GNU marker | MSRV record | MSRV marker |
+| --- | ---: | ---: | ---: | ---: |
+| Held metadata | 659 | 740 | 621 | 644 |
+| open_at | 1157 | 1276 | 1116 | 1088 |
+| Before metadata | 682 | 723 | 601 | 662 |
+| Parent metadata | 698 | 681 | 630 | 595 |
+| Initial buffer | 267 | 273 | 238 | 239 |
+| Bounded read_to_end | 811 | 864 | 815 | 819 |
+| After metadata | 740 | 743 | 589 | 604 |
+| Empty callback | 206 | 215 | 192 | 196 |
+
+These are medians of batch means, including window overhead, not production
+latency. At depth seven, GNU buffer ranges are 204.33–511.72 ns against empty
+184.67–550.99 ns; MSRV ranges are 193.18–714.06 ns against 173.02–779.79 ns.
+The overlap does not establish initial allocation as a separable CPU
+bottleneck. Buffer destruction is outside this window, and the empty callback
+returns a different value type. Neither subtraction nor a zero-allocator-cost
+claim follows from these observations.
+
+Open includes both CString work and the syscall; metadata windows exclude
+surrounding predicates, and read covers the bounded read_to_end call. Larger
+medians do not justify caching metadata or removing checks. Independently
+observed windows also cannot be summed into an exact CPU partition. Actual
+record/marker phase medians at depth seven are 30.39/27.47 us on GNU and
+23.99/26.09 us on MSRV, with overlapping actual/traced ranges. Sequential
+compiler lanes are not a paired compiler comparison.
+
+The local WSL context is retained without affinity or clock/service changes.
+The inactive counting allocator still contributes bookkeeping. All outliers
+remain, including the depth-one GNU held-metadata batch mean of 10.28 us per
+leaf. No cause is assigned and no sample is retried or filtered. The common
+recorded boot does not prove reconnect or continuity with preceding captures.
+
+Separate post-CPU controls preserve all 54 owner observations per compiler:
+actual/traced requests, site counts and reads. Full inspection remains
+23/99 allocations, 1662/8444 requested bytes and 4/28 reads, no reallocations;
+all six other cases, tracked kernel counts and payload/epoch identities agree.
+Both lanes pass 210 authority tests, ancillary checks and strict lint. All
+385 source assertions and repository gates pass. No preflight or measured
+invocation fails. All live checks and original 300/60/10 windows remain.
+
+The allocation-byte hypothesis therefore does not select a buffer CPU
+optimization. A narrower next candidate can test stack encoding of short
+read-only file names in open_at, keeping directory handling, long-name
+fallback, NUL validation, flags and all fresh checks. It needs its own
+cold/warm baseline and fault proof; this aggregate open window does not prove
+CString CPU cost or a speedup. The shared journal is also used by the fixed
+registry, but these fixture samples do not measure full fixed ancestry or
+ActiveAuthority. No server, product or admission claim transfers to that path.
+
+The [next candidate plan](../testing/performance/0.74/authority-open-name-plan-20261021.md)
+limits stack encoding to short file names when directory=false; it is not yet
+implemented. Directory handling is deliberately excluded from this hypothesis.
+Evidence `9a460ee7e0ac2b2f9f829b9fd8c8be4a8b28f27f` seals 59 members plus
+inventory SHA256
+`4a4c317f7e9cc878b57aa205324d865577cd17772bff3dea0d7e513c01b2d805`.
+All eighteen prior packets remain intact; eight structural JSON and ten scope
+mutations are refused. All 60 Git files preserve raw bytes. This is integrity
+of local observations, not another optimization or admission result.
