@@ -15971,3 +15971,75 @@ verifies all sixteen preceding packets without mutation. Eight structural
 JSON and twelve scope mutations are refused, and all 92 committed files
 preserve raw bytes. That integrity proof supports the ownership partition;
 it does not turn attribution into another runtime improvement or admission.
+
+### Thread CPU attribution of fresh authority phases
+
+The [CPU packet](../testing/performance/0.74/local-runs/authority-cpu-20261021/README.md)
+tests whether allocation ownership identifies the next useful CPU target.
+Capture source `bcd8aee4071055b3b79376459f065e12c7ec1b50` adds only an
+opt-in diagnostic. Runtime bytes, live observations, error order and the
+original 300/60/10 windows remain unchanged.
+
+The experiment times six actual fixture methods with Linux thread CPU time,
+not the expression-observer copies used to count allocations. At each depth,
+32 warmups precede fourteen batches of 2048 calls per case. Seven forward and
+seven reverse rotations balance positions; an empty dispatch loop and 64
+adjacent clock pairs remain separate controls. GNU 1.94 and MSRV 1.88 each run
+once, sequentially after checks/builds finish. Clock errors, invalid fields,
+overflow and backwards readings refuse without wall-clock fallback or repair.
+
+| Compiler | Generations | Full fixture CPU minimum us | Median us | Maximum us |
+| --- | ---: | ---: | ---: | ---: |
+| GNU 1.94 | 1 | 25.64 | 33.17 | 43.40 |
+| GNU 1.94 | 7 | 73.48 | 95.87 | 112.37 |
+| MSRV 1.88 | 1 | 25.61 | 32.68 | 40.33 |
+| MSRV 1.88 | 7 | 70.14 | 84.50 | 105.67 |
+
+Each number is batch CPU divided by 2048, not wall latency or a cache API
+measurement. The unpinned WSL2 environment exposes eight CPUs on an Intel
+Core Ultra 7 258V; its kernel and compiler receipts are retained. The inactive
+counting allocator still performs TLS bookkeeping. Fixture dispatch, assertions
+and clock boundaries also remain, so these are diagnostic-binary costs rather
+than production CPU estimates. Sequential compiler lanes do not establish a
+compiler improvement or regression.
+
+At seven generations, the median of each round's records-plus-markers CPU is
+59.19 us on GNU and 56.96 us on MSRV. Twice inventory is 25.08 and 23.50 us.
+This changes the next investigation's priority: inventory next/file_name owned
+56 of 99 allocations, but fresh leaf revalidation is the larger of these two
+CPU groups. Its work includes open, metadata, bounded reads and byte/stamp
+comparisons. Initial buffers owning 4734 of 8444 requested bytes does not prove
+that buffer allocation dominates that CPU. At depth one, directory and
+inventory costs remain substantial; the deeper-journal result is not a
+universal bottleneck claim.
+
+Timing does not conserve like integer request counts. At depth seven,
+full minus twice directory minus twice inventory minus records minus markers
+minus bind ranges from -13.26 to +21.88 us on GNU and -18.08 to +22.61 us on
+MSRV. Separate phase schedules and local variance matter. Negative residuals
+and empty costs remain raw, with no subtraction, clamping or selected acceptance
+threshold. The next narrow study should separate leaf open/metadata/read costs
+from buffer ownership before choosing an isolated candidate; this packet
+accepts no runtime optimization or gain.
+
+The unchanged eight-case control retains full inspection's 23/99 allocations,
+1662/8444 requested bytes and 4/28 read requests at depths one/seven, with no
+reallocations. All six other cases, tracked kernel counts, payload/name hashes
+and epochs agree with the sealed owners packet. Both lanes share the recorded
+boot, not proof of reconnect or continuity with old captures. Earlier live/time
+refusals remain independent and unrepaired.
+
+Both lanes pass 208 authority tests, ancillary controls, affected checks and
+strict all-feature clippy. All 383 source assertions and repository gates
+pass. The original GNU lint refusal is retained with its source and the
+test-only repair; no measured invocation fails or is retried. Frozen workload
+and qualification inputs remain. Server/lifecycle/trust gates stay closed;
+no server, supervisor, clock/service, product, qualification or push action
+belongs to this local CPU attribution.
+
+Evidence commit `497c2c8e10465897f675822de12d472d6ab9ed6f` seals 84 members
+plus inventory SHA256
+`5169a17fdc585ac15be3447a802be5e8b289346ee59e2eb420fcca8b31828d4e`.
+All seventeen preceding packets remain intact; eight structural JSON and nine
+scope mutations are refused. All 85 Git files preserve raw bytes. This supports
+the local observation record, not another runtime improvement or server gate.

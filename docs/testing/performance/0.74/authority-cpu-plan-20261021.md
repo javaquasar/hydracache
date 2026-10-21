@@ -62,3 +62,32 @@ No new live matrix, clock/service action, server run, installation, supervisor
 operation, product workload, expensive qualification or push belongs here.
 Delivery, writer cessation, durable lifecycle, SIGKILL/lost-ACK, reconnect and
 trust enrollment remain independent closed gates.
+
+## Local outcome
+
+Capture source is `bcd8aee4071055b3b79376459f065e12c7ec1b50`; the
+[packet](local-runs/authority-cpu-20261021/README.md) retains one successful
+capture per compiler and all fourteen samples per case/depth. Full fixture CPU
+medians at one/seven generations are 33.17/95.87 us on GNU and 32.68/84.50 us
+on MSRV, within the diagnostic instrumentation/environment limits above.
+At seven, median per-round record-plus-marker CPU is 59.19/56.96 us versus
+25.08/23.50 us for twice inventory. Leaf open/metadata/read versus buffer
+ownership is the next attribution target; no runtime hypothesis is accepted.
+
+Negative residuals and the complete sample ranges remain. Full requests stay
+23/99 allocations, zero reallocations, 1662/8444 bytes and 4/28 reads; all six
+other cases, tracked kernel calls and fixture payload/epoch identities agree.
+Both lanes pass 208 authority tests, ancillary checks, all-target checks and
+strict all-feature lint. All 383 source assertions and repository gates pass.
+Original GNU lint refusal and successful MSRV preflight remain beside the
+exact test-only repair. Neither measured invocation fails or is retried.
+Old live/time failures and independent server gates remain closed; no
+qualification, clock/service, product or server operation occurs.
+
+Evidence `497c2c8e10465897f675822de12d472d6ab9ed6f` seals 84 members plus
+inventory SHA256
+`5169a17fdc585ac15be3447a802be5e8b289346ee59e2eb420fcca8b31828d4e`.
+All seventeen prior packets remain intact; eight structural JSON and nine scope
+mutations are refused. All 85 Git entries preserve raw bytes. The packet is
+immutable; qualification SHA256 stays
+`11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc`.

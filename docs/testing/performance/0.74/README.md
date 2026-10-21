@@ -5244,3 +5244,36 @@ inventory SHA256
 `9c561339ebcbb08f379121996306bf0e11a7264d5c5ac5dff7abc678d289fe17`.
 Sixteen preceding packets remain intact; eight structural JSON and twelve
 scope mutations are rejected. All 92 Git entries preserve raw bytes.
+
+### Thread CPU attribution of actual authority phases
+
+The [CPU packet](local-runs/authority-cpu-20261021/README.md) and
+[plan](authority-cpu-plan-20261021.md) use capture source
+`bcd8aee4071055b3b79376459f065e12c7ec1b50`. Actual six-phase methods, not
+traced copies, run under thread CPU time: 32 warmups and fourteen counterbalanced
+2048-call batches per case/depth, one successful capture per compiler.
+Runtime bytes and the original live checks/windows remain unchanged.
+
+Full fixture CPU medians at depths one/seven are 33.17/95.87 us on GNU and
+32.68/84.50 us on MSRV; full ranges and signed residuals remain in the packet.
+At seven, each round's combined record/marker revalidation has median CPU
+59.19/56.96 us, versus 25.08/23.50 us for twice inventory. These diagnostic
+costs include inactive allocator bookkeeping and fixture/clock overhead, with
+unpinned affinity. They are not production latency, compiler comparisons or
+an accepted improvement. Open/metadata/read versus buffer ownership needs a
+narrower leaf study before selecting a runtime candidate.
+
+The unchanged full control retains 23/99 allocations, 1662/8444 requested bytes
+and 4/28 reads, no reallocations, six other cases, tracked kernel counts and
+fixture payloads/epochs. Both lanes pass 208 authority tests, ancillary controls,
+affected checks/strict lint, 383 source assertions and repository gates.
+The premeasurement GNU lint refusal and exact test-only repair remain; neither
+capture fails or is retried. Qualification and old live/time refusals remain
+unchanged. No server/live matrix, installation, supervisor, clock/service,
+product, qualification, push or admission action occurs.
+
+Evidence `497c2c8e10465897f675822de12d472d6ab9ed6f` seals 84 members plus
+inventory SHA256
+`5169a17fdc585ac15be3447a802be5e8b289346ee59e2eb420fcca8b31828d4e`.
+All seventeen prior inventories and members remain intact; eight structural
+JSON and nine scope mutations are refused. All 85 Git files preserve raw bytes.

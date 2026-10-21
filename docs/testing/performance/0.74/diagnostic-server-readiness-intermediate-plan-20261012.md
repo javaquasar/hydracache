@@ -1113,3 +1113,31 @@ retried. Workload/qualification remain frozen. CPU relevance and each ownership
 hypothesis need separate preregistered controls. Old live/time, delivery,
 all-writer cessation, later cells, SIGKILL/lost-ACK, reconnect and real enrollment
 gates remain independent; no server or product admission is granted.
+
+### CPU attribution before another ownership candidate
+
+The [local CPU packet](local-runs/authority-cpu-20261021/README.md), source
+`bcd8aee4071055b3b79376459f065e12c7ec1b50`, measures six actual fixture phases
+with thread CPU time, 32 warmups and fourteen counterbalanced 2048-call batches.
+Both compilers complete once without measured failure/retry. Exact source
+restoration retains all runtime checks, fresh owners and 300/60/10 windows.
+
+Depth-seven record-plus-marker revalidation has per-round median CPU
+59.19/56.96 us on GNU/MSRV, against 25.08/23.50 us for twice inventory. This
+prioritizes a narrower leaf open/metadata/read-versus-buffer study; it does not
+identify an accepted ownership change. Diagnostic allocator/fixture overhead,
+unpinned scheduling, full ranges and signed residuals prevent a production
+CPU or latency claim. No runtime candidate is accepted.
+
+Full allocation/read controls and payload/epoch identities remain unchanged.
+Both lanes pass 208 authority tests, affected checks/strict lint, 383 historical
+source assertions and repository gates. Original lint refusal and test-only
+repair remain. Old live/time failures, delivery, all-writer cessation, durable
+lifecycle, joined SIGKILL/lost-ACK, reconnect and real enrollment remain closed
+independent gates. No new live/server/product or clock/service action occurs.
+
+Evidence `497c2c8e10465897f675822de12d472d6ab9ed6f` seals 84 members plus
+inventory SHA256
+`5169a17fdc585ac15be3447a802be5e8b289346ee59e2eb420fcca8b31828d4e`.
+All seventeen preceding packets and 85 raw Git entries verify. Eight structural
+JSON and nine scope mutations are refused; qualification remains frozen.
