@@ -1,0 +1,47 @@
+{
+  "ignored_tests_run": false,
+  "server": false,
+  "product": false,
+  "steps": [
+    {
+      "sha256": "08416cc921b524c73dba2652e44bcea79259d57b49cb46e166acfb863610a4a5",
+      "exit": 0,
+      "name": "allocations",
+      "log": "194-allocations.log"
+    },
+    {
+      "sha256": "d71222249a7bea4da2d77c433a73e9261eb3a2181114fcc2e078148b43c20c12",
+      "exit": 0,
+      "name": "projection_groups",
+      "log": "194-projection_groups.log"
+    },
+    {
+      "sha256": "72c1d74c6cb9a95714087c9007dc846812b9c1e3a1872709ad5ddb77503be7d2",
+      "exit": 0,
+      "name": "kernel_projection",
+      "log": "194-kernel_projection.log"
+    },
+    {
+      "sha256": "71cad929ac9e6c7cf16067c6c51390ae0df8127d26c0f63a3e44bd6f89fb151f",
+      "exit": 0,
+      "name": "consuming_join",
+      "log": "194-consuming_join.log"
+    },
+    {
+      "sha256": "88640b86cfa8e38f04fd189c64d88f0c10dbae208b380c11b08a3db9b2b3d94f",
+      "exit": 0,
+      "name": "check",
+      "log": "194-check.log"
+    },
+    {
+      "sha256": "6d5969c813678f9007c8164bf5e4445c5c310af7d59c949022bd079834177492",
+      "exit": 0,
+      "name": "clippy",
+      "log": "194-clippy.log"
+    }
+  ],
+  "stage": "candidate",
+  "lane": "194",
+  "original_owner_profiles": 0,
+  "failure": null
+}

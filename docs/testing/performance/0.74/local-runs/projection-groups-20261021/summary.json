@@ -1,0 +1,37 @@
+{
+  "baseline_source": "55c1983602fb14e1870ea3817cfb31e77c2775d8",
+  "candidate_source": "355ab0126b25a8e4a693ee3b70b5a1f944004977",
+  "lanes": [
+    {
+      "lane": "194",
+      "invocations": 1792,
+      "reference_requested_bytes": 237568,
+      "candidate_requested_bytes": 93184,
+      "reference_reallocations": 2560,
+      "candidate_reallocations": 0
+    },
+    {
+      "lane": "188",
+      "invocations": 1792,
+      "reference_requested_bytes": 237568,
+      "candidate_requested_bytes": 93184,
+      "reference_reallocations": 2560,
+      "candidate_reallocations": 0
+    }
+  ],
+  "allocation_only": true,
+  "timing_improvement_proven": false,
+  "original_material_gate_passed": false,
+  "original_windows_seconds": [
+    300,
+    60,
+    10
+  ],
+  "first_refusal_ages_ns": [
+    10042390247,
+    10010835739
+  ],
+  "original_owner_profiles": 0,
+  "server": false,
+  "product": false
+}

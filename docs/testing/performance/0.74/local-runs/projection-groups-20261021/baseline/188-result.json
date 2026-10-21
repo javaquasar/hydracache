@@ -1,0 +1,29 @@
+{
+  "product": false,
+  "stage": "baseline",
+  "original_owner_profiles": 0,
+  "failure": null,
+  "lane": "188",
+  "steps": [
+    {
+      "log": "188-allocations.log",
+      "name": "allocations",
+      "sha256": "0003b0f9a0ef3ff61dd1a98cd96d52eed175f9e435e2b6b40701b46ca6efbc1e",
+      "exit": 0
+    },
+    {
+      "log": "188-check.log",
+      "name": "check",
+      "sha256": "26a6dc1ac1a400fb586db3bc81f326f6923a7be3062e52da8caf876dac5ca315",
+      "exit": 0
+    },
+    {
+      "log": "188-clippy.log",
+      "name": "clippy",
+      "sha256": "0a757350d5b3b453780e934664a0bf22ca0c7bf6932ddc2c5874641830413305",
+      "exit": 0
+    }
+  ],
+  "ignored_tests_run": false,
+  "server": false
+}

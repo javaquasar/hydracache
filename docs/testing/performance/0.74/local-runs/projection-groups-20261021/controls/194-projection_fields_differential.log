@@ -1,0 +1,22 @@
+    Blocking waiting for file lock on artifact directory
+warning: variant `Reference` is never constructed
+ --> tools/long-run-supervisor-074/src/../tests/support/authority_name_capacity_controls.rs:5:5
+  |
+4 | pub(crate) enum Reading {
+  |                 ------- variant in this enum
+5 |     Reference,
+  |     ^^^^^^^^^
+  |
+  = note: `Reading` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `hydracache-long-run-supervisor-074` (lib test) generated 1 warning
+    Finished `release` profile [optimized] target(s) in 2.33s
+
+running 1 test
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/release/deps/hydracache_long_run_supervisor_074-b26b156d3dcd0098)
+test diagnostic_kernel_admission::tests::projection_cost::projection_fields_differential_seeded_boundaries_duplicates_and_error_order ... HC074-PROJECTION-DIFFERENTIAL cases=804 seed=0x074f1e1d server=false product=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1438 filtered out; finished in 0.00s
+

@@ -1,0 +1,32 @@
+{
+  "server": false,
+  "product": false,
+  "original_owner_profiles": 0,
+  "lane": "194",
+  "steps": [
+    {
+      "sha256": "1f19b9cb56d866c22527f2e7313ede8ef3ab623563e622dd6b544989edb9c2e4",
+      "filter": "projection_prefix_differential",
+      "exit": 0,
+      "log": "194-projection_prefix_differential.log"
+    },
+    {
+      "sha256": "e78f7c95ac0925321b4502b866608f9ef844d727a001986b46a13e1a1cf47b5e",
+      "filter": "projection_fields_differential",
+      "exit": 0,
+      "log": "194-projection_fields_differential.log"
+    },
+    {
+      "sha256": "4d9dad44f1b12bba686870beec951d2fbdc8b5bb6c68005b6cc490fec46bf053",
+      "filter": "kernel_refusal_capture_projection",
+      "exit": 0,
+      "log": "194-kernel_refusal_capture_projection.log"
+    },
+    {
+      "sha256": "23231ee7103503249a51ac5bf6e45f877a8762898d907c64e48e61c340cae82e",
+      "filter": "kernel_admission_seeded_status",
+      "exit": 0,
+      "log": "194-kernel_admission_seeded_status.log"
+    }
+  ]
+}

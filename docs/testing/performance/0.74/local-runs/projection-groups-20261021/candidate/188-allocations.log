@@ -1,0 +1,27 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `release` profile [optimized] target(s) in 2m 11s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-188-check/release/deps/hydracache_long_run_supervisor_074-1dbb29096ebc6338)
+
+running 5 tests
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::projection_groups::projection_groups_candidate_requests ... HC074-PROJECTION-GROUPS-CANDIDATE {"counts":{"allocations":0,"reallocations":0,"requested_bytes":0},"iterations":256,"length":0,"product":false,"profile":false,"rust_requests_only":true,"server":false}
+HC074-PROJECTION-GROUPS-CANDIDATE {"counts":{"allocations":256,"reallocations":0,"requested_bytes":1024},"iterations":256,"length":1,"product":false,"profile":false,"rust_requests_only":true,"server":false}
+HC074-PROJECTION-GROUPS-CANDIDATE {"counts":{"allocations":256,"reallocations":0,"requested_bytes":4096},"iterations":256,"length":4,"product":false,"profile":false,"rust_requests_only":true,"server":false}
+HC074-PROJECTION-GROUPS-CANDIDATE {"counts":{"allocations":256,"reallocations":0,"requested_bytes":5120},"iterations":256,"length":5,"product":false,"profile":false,"rust_requests_only":true,"server":false}
+HC074-PROJECTION-GROUPS-CANDIDATE {"counts":{"allocations":256,"reallocations":0,"requested_bytes":16384},"iterations":256,"length":16,"product":false,"profile":false,"rust_requests_only":true,"server":false}
+HC074-PROJECTION-GROUPS-CANDIDATE {"counts":{"allocations":256,"reallocations":0,"requested_bytes":32768},"iterations":256,"length":32,"product":false,"profile":false,"rust_requests_only":true,"server":false}
+HC074-PROJECTION-GROUPS-CANDIDATE {"counts":{"allocations":256,"reallocations":0,"requested_bytes":33792},"iterations":256,"length":33,"product":false,"profile":false,"rust_requests_only":true,"server":false}
+ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::projection_groups::projection_groups_reference_requests ... HC074-PROJECTION-GROUPS-REFERENCE {"counts":{"allocations":0,"reallocations":0,"requested_bytes":0},"iterations":256,"length":0,"product":false,"profile":false,"rust_requests_only":true,"server":false}
+HC074-PROJECTION-GROUPS-REFERENCE {"counts":{"allocations":256,"reallocations":0,"requested_bytes":4096},"iterations":256,"length":1,"product":false,"profile":false,"rust_requests_only":true,"server":false}
+HC074-PROJECTION-GROUPS-REFERENCE {"counts":{"allocations":256,"reallocations":0,"requested_bytes":4096},"iterations":256,"length":4,"product":false,"profile":false,"rust_requests_only":true,"server":false}
+HC074-PROJECTION-GROUPS-REFERENCE {"counts":{"allocations":256,"reallocations":256,"requested_bytes":12288},"iterations":256,"length":5,"product":false,"profile":false,"rust_requests_only":true,"server":false}
+HC074-PROJECTION-GROUPS-REFERENCE {"counts":{"allocations":256,"reallocations":512,"requested_bytes":28672},"iterations":256,"length":16,"product":false,"profile":false,"rust_requests_only":true,"server":false}
+HC074-PROJECTION-GROUPS-REFERENCE {"counts":{"allocations":256,"reallocations":768,"requested_bytes":61440},"iterations":256,"length":32,"product":false,"profile":false,"rust_requests_only":true,"server":false}
+HC074-PROJECTION-GROUPS-REFERENCE {"counts":{"allocations":256,"reallocations":1024,"requested_bytes":126976},"iterations":256,"length":33,"product":false,"profile":false,"rust_requests_only":true,"server":false}
+ok
+test diagnostic_kernel_admission::projection_groups::tests::projection_groups_documents_keep_first_refusal_and_projection_trace ... ok
+test diagnostic_kernel_admission::projection_groups::tests::projection_groups_result_short_circuit_keeps_first_error_and_visit_order ... ok
+test diagnostic_kernel_admission::projection_groups::tests::projection_groups_seeded_values_and_owned_vec_match_reference ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 1476 filtered out; finished in 0.00s
+

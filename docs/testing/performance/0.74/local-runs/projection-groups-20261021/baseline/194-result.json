@@ -1,0 +1,29 @@
+{
+  "ignored_tests_run": false,
+  "server": false,
+  "original_owner_profiles": 0,
+  "steps": [
+    {
+      "sha256": "29e709b6c5f17aecd8368c2ffb741e98fa6b5f2bbbab6b3c548d762fc14f962e",
+      "exit": 0,
+      "name": "allocations",
+      "log": "194-allocations.log"
+    },
+    {
+      "sha256": "e9bfac6692c1d4eb733cc5dede48d3e98225ccfbfed5ef7fc3a4031d3a76931b",
+      "exit": 0,
+      "name": "check",
+      "log": "194-check.log"
+    },
+    {
+      "sha256": "84500507541e8063a71760e0bd51bda9a7a2289e8d5a878d306c5b9ade8a0be1",
+      "exit": 0,
+      "name": "clippy",
+      "log": "194-clippy.log"
+    }
+  ],
+  "failure": null,
+  "stage": "baseline",
+  "product": false,
+  "lane": "194"
+}

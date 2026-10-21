@@ -1,0 +1,13 @@
+warning: variant `Reference` is never constructed
+ --> tools/long-run-supervisor-074/src/../tests/support/authority_name_capacity_controls.rs:5:5
+  |
+4 | pub(crate) enum Reading {
+  |                 ------- variant in this enum
+5 |     Reference,
+  |     ^^^^^^^^^
+  |
+  = note: `Reading` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+  = note: `#[warn(dead_code)]` on by default
+
+warning: `hydracache-long-run-supervisor-074` (lib test) generated 1 warning
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.19s
