@@ -1,0 +1,48 @@
+{
+  "failure": null,
+  "server": false,
+  "lane": "188",
+  "ignored_tests_run": false,
+  "runtime_candidate_implemented": false,
+  "product": false,
+  "original_owner_profiles": 0,
+  "steps": [
+    {
+      "exit": 0,
+      "log": "188-collector_peer_baseline_.log",
+      "sha256": "7a6dec8bd8547cff72b5e1cf646b07b6747087c9e9046c01b2f7258485107b3c",
+      "name": "collector_peer_baseline_"
+    },
+    {
+      "exit": 0,
+      "log": "188-trust_component_stack_.log",
+      "sha256": "243fbb94c7cc06c075ca976c7871db7634e284c7404c346da2f8084f75bdbd3d",
+      "name": "trust_component_stack_"
+    },
+    {
+      "exit": 0,
+      "log": "188-context_document_stack_.log",
+      "sha256": "a7878c58e7b39c051047f74fff4486b13114bc3c60524be0ba775a7cd017e33b",
+      "name": "context_document_stack_"
+    },
+    {
+      "exit": 0,
+      "log": "188-fixed_leaf_alloc_counter.log",
+      "sha256": "7dfb01617e000df30b95a5d7eac6cbbef885c9aa5319e5fa79becb39bed7f8e5",
+      "name": "fixed_leaf_alloc_counter"
+    },
+    {
+      "exit": 0,
+      "log": "188-check.log",
+      "sha256": "6ae8d681d27bfff7765eb6ee2970ce0dfad1bc9306072672a5ed1a8d6826ecb6",
+      "name": "check"
+    },
+    {
+      "exit": 0,
+      "log": "188-clippy.log",
+      "sha256": "f22a40debb0f12aa823323081d60a332a9ba33d8eb9b7792df7aa7aaf33f4067",
+      "name": "clippy"
+    }
+  ],
+  "cohort": "corrected"
+}

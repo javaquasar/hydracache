@@ -562,3 +562,6 @@ docs/testing/performance/0.74/local-runs/trust-component-baseline-20261021/**/*.
 
 docs/testing/performance/0.74/local-runs/trust-component-stack-20261021/** -text whitespace=cr-at-eol
 docs/testing/performance/0.74/local-runs/trust-component-stack-20261021/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/collector-peer-baseline-20261021/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/collector-peer-baseline-20261021/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol

@@ -1,0 +1,32 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 11.67s
+     Running tests\boot_operations_074.rs (target\debug\deps\boot_operations_074-2f6a720f745bea5e.exe)
+
+running 2 tests
+test boot_operations_only_exact_hook_gate_and_directory_ownership_may_normalize ... ok
+test boot_operations_fresh_open_expression_and_original_runtime_are_frozen ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.48s
+
+     Running tests\collector_peer_baseline_074.rs (target\debug\deps\collector_peer_baseline_074-dc2a11c468ba7366.exe)
+
+running 3 tests
+test collector_peer_baseline_controls_have_no_live_capabilities ... FAILED
+test collector_peer_baseline_freezes_complete_peer_and_wrapper_bodies ... ok
+test collector_peer_baseline_changes_only_a_private_allocator_test_hook ... ok
+
+failures:
+
+---- collector_peer_baseline_controls_have_no_live_capabilities stdout ----
+
+thread 'collector_peer_baseline_controls_have_no_live_capabilities' (37144) panicked at crates\xtask\tests\collector_peer_baseline_074.rs:172:9:
+unexpected capability static
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    collector_peer_baseline_controls_have_no_live_capabilities
+
+test result: FAILED. 2 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.22s
+
+error: test failed, to rerun pass `-p xtask --test collector_peer_baseline_074`

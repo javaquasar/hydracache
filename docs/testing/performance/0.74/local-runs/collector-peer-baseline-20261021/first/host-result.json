@@ -1,0 +1,18 @@
+{
+  "original_owner_profiles": 0,
+  "ignored_tests_run": false,
+  "product": false,
+  "failure": "Check refused: first/host/canaries (101)",
+  "server": false,
+  "runtime_candidate_implemented": false,
+  "lane": "host",
+  "cohort": "first",
+  "steps": [
+    {
+      "log": "host-canaries.log",
+      "exit": 101,
+      "sha256": "3fbf61f945f88cf33f87af63c383f38edce2ff46588b47d0916f22c7bdb538eb",
+      "name": "canaries"
+    }
+  ]
+}
