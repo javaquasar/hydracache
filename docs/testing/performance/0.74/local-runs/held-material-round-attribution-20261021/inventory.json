@@ -1,0 +1,96 @@
+{
+  "files": [
+    {
+      "sha256": "6c776ae889a6d711c5507e4d27c02d1536621d3f0cf576a5220fca1d2ec5c1b4",
+      "bytes": 167,
+      "path": "checks/doc-check.log"
+    },
+    {
+      "sha256": "f2991041f5de24bea2c8313b2080ea6467999d0629443e517d1091d6424b35c4",
+      "bytes": 87,
+      "path": "checks/generation.log"
+    },
+    {
+      "sha256": "5874d429ff362e0ddc3888dfffb0a03edca3dcf719baa6542fc8f01961f8e715",
+      "bytes": 215,
+      "path": "checks/performance-contract.log"
+    },
+    {
+      "sha256": "49486c0e1fa4328349d3fc520d5d1aa03c87b1c931a9f930674e756f1dadcc63",
+      "bytes": 2764,
+      "path": "checks/prior-arithmetic-reader.log"
+    },
+    {
+      "sha256": "de0bdc625c4896a44b66273d5afeb6139f9df8ae88d14cdf332491c8257d698f",
+      "bytes": 1213,
+      "path": "checks/prior-material-reader.log"
+    },
+    {
+      "sha256": "ad8a24b20f20a8d54dd50690182fc15937e2c6e2599e1131f2bdbd9c46c03103",
+      "bytes": 274,
+      "path": "checks/registry.log"
+    },
+    {
+      "sha256": "109502e952572c5f5f97f7e07cd73c3626ffe7d8f70a80ea060b104123dfa54e",
+      "bytes": 2577,
+      "path": "checks/source-canaries.log"
+    },
+    {
+      "sha256": "89f9c66946449b6a64b24bab4fda9fe7fa7d344d5ce62c83f8b8efa4b8c3c211",
+      "bytes": 8583,
+      "path": "checks/test-initial.py"
+    },
+    {
+      "sha256": "95724b05bc2d68ee10b4b3fba88402f3655e799f81d2e7f94dc9eb04ad3ae7b6",
+      "bytes": 2377,
+      "path": "checks/tests-corrected-oracle.log"
+    },
+    {
+      "sha256": "85447676f1b17991f6650a6fe989ad04b4470cbd2105072a61c5bddf46b965ff",
+      "bytes": 2377,
+      "path": "checks/tests-frozen.log"
+    },
+    {
+      "sha256": "25006eb0d09c81f32515b326d30aa56272116aa13c077c985cd9e1940be1abf7",
+      "bytes": 3253,
+      "path": "checks/tests-initial.log"
+    },
+    {
+      "sha256": "85a09568fd379a55866aecd55b83e4ac44642f41c39667f1ae26c65fdf019f25",
+      "bytes": 73,
+      "path": "checks/xtask-check.log"
+    },
+    {
+      "sha256": "00d60508a86cbf4605c27757005985760f567d83ddbd94cf7853f7279e0864d1",
+      "bytes": 157,
+      "path": "checks/xtask-clippy.log"
+    },
+    {
+      "sha256": "814b3b888924e93629abbfb89fa4b6085340ad093424fcd7f7a1b8b9b87d0989",
+      "bytes": 236242,
+      "path": "facts.json"
+    },
+    {
+      "sha256": "040610e50d3b2ff81df492c860d25d1a214f61451ef09e425c7cfccd5c99d72c",
+      "bytes": 9023,
+      "path": "method/attribute_material_rounds.py"
+    },
+    {
+      "sha256": "1a61485525447ed57e71b8d18966d99332bed069a750f5dc5fbe78988c56aa23",
+      "bytes": 8834,
+      "path": "method/test_attribute_material_rounds.py"
+    },
+    {
+      "sha256": "d283a11c602fb35adab56608a50b8f85e03a4bee7c683d163165b55799140894",
+      "bytes": 1741,
+      "path": "README.md"
+    },
+    {
+      "sha256": "32f9580cae63e3f706e6d7209504793d77b18999fc2c99c4d3320baa1a003b3e",
+      "bytes": 5342,
+      "path": "review.ps1"
+    }
+  ],
+  "measured_source": "1d6d179bd7150ef564560821a897794e20b24b36",
+  "analyzer_source": "5536087e7ad1acfa1af66f796631bdfb4338d2e0"
+}
