@@ -48,3 +48,35 @@ Local nonroot synthetic controls only. No server runs, install, supervisor,
 clock/service changes, new live matrix, product workload, qualification or push
 through the red native gate. Original delivery, writer cessation, lifecycle,
 SIGKILL/lost-ACK, reconnect and trust/enrollment gates remain independent.
+
+## Local outcome
+
+Before `3635e560599a4987bcc5f9652ec170d33323e6bd` is retained before mutation
+in `89691d5e`. After/runtime is `86dbd967555b0dadd0161d8d6cb151c760222b13`.
+The [paired packet](local-runs/authority-fd-path-20261021/README.md) records
+one capture per compiler/stage. All three samples on GNU 1.94 and MSRV 1.88
+agree: pure formatting becomes zero heap requests, versus one allocation and
+28 requested bytes in the reference, for all eight descriptor cases.
+
+Full inspect conserves twice that saving: allocations/reallocations/bytes
+25/0/1718 become 23/0/1662 at depth one; 101/0/8500 become 99/0/8444 at seven.
+Read requests remain 4/28; all six other cases and tracked kernel counts stay
+equal. Reference/proposal/workload/qualification blobs are unchanged. No
+measured invocation is retried or replaced.
+
+Both lanes pass 201 authority tests, ancillary checks, affected all-target
+check and strict all-feature lint. All 379 historical/current source assertions
+and repository gates pass. The exact adapter restores the complete previous
+runtime; every old assertion remains. This accepts only the local request
+reduction. Separate boots do not establish continuity or repair old live time
+failures. Delivery, writer cessation, lifecycle, SIGKILL/lost-ACK, reconnect
+and real enrollment remain independent closed gates; there is no server or
+product admission and no push.
+
+Evidence `e0ca280b398395bda189aec1cc3841c4eb738957` seals 90 members plus
+inventory SHA256
+`ff4d9e59bffefb40eb1712f253eaebce701a34b832a5417211ec88b144fa2440`.
+All fifteen prior packets remain intact; eight structural JSON and ten scope
+mutations are refused. All 91 Git entries preserve raw bytes. The packet is
+immutable, and frozen qualification SHA256 remains
+`11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc`.

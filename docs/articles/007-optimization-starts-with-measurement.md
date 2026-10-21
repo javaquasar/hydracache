@@ -15811,3 +15811,74 @@ The attribution packet retains 51 members plus its inventory, verifies all
 fourteen preceding packets, and rejects eight structural JSON and twelve scope
 mutations. All 52 committed files preserve raw bytes. This integrity proof does
 not turn a phase decomposition into a performance win or live admission.
+
+## Removing fd path ownership without caching inventory
+
+The phase attribution isolates one temporary allocation for each inventory
+path. Its [separate candidate](../testing/performance/0.74/authority-fd-path-plan-20261021.md)
+asks whether that ownership is necessary. The hypothesis is not that directory
+observation can be reused: every inventory still performs the original fresh
+read_dir and retains the observed BTreeSet, UTF-8 conversion, duplicate,
+budget, parity and canonical-name checks. All other metadata/read checks,
+refusal order and original 300/60/10 windows remain.
+
+Only path storage changes. The identical decimal formatter writes into a
+25-byte stack Cursor instead of creating a String. The prefix takes 14 bytes;
+even i32::MIN needs only 11 more. The borrowed ASCII slice remains alive for
+read_dir. No custom integer encoder, parser, cached path/view or observed-set
+change is combined with this hypothesis. Capacity and byte tests cover decimal
+boundaries, i32 extrema and 4096 descriptors from a fixed seed. Negative values
+are pure formatting controls, not admitted descriptors.
+
+The [packet](../testing/performance/0.74/local-runs/authority-fd-path-20261021/README.md)
+retains Before source `3635e560` and its observations before implementation.
+After/runtime is `86dbd967`. Each compiler/stage has one capture with 32 warmups
+and three alternating 1024-operation samples. Pure reference/proposal arms
+cover eight descriptor values. Runtime acceptance belongs to real filesystem
+mutation/error tests, exact source restoration and the unchanged eight-case
+full-inspect control, not a simulated actual formatting arm.
+
+Both GNU 1.94 and MSRV 1.88 repeat the same result in all three samples. The
+pure reference requests one allocation and 28 bytes per path; the stack proposal
+requests neither. Complete fixture inspection must conserve that cost twice
+because it performs two inventories. Its measurements do so exactly:
+
+| Journal depth | Allocations Before / After | Requested bytes Before / After | Read requests Before / After |
+| --- | ---: | ---: | ---: |
+| One generation | 25 / 23 | 1718 / 1662 | 4 / 4 |
+| Seven generations | 101 / 99 | 8500 / 8444 | 28 / 28 |
+
+Reallocations remain zero. The six non-authority cases and tracked kernel
+counts stay equal. This distinguishes removing temporary path ownership from
+silently removing a scan: the byte-for-byte runtime restoration and filesystem
+refusal tests retain the checks, while full-path requests fall by exactly the
+isolated saving. Frozen reference/proposal, full workload and qualification
+input blobs remain identical. No capture fails or is retried.
+
+Both lanes pass 201 authority tests, ancillary controls, affected all-target
+checks and strict all-feature lint. All 379 historical/current source assertions
+across 19 targets and repository format/docs/registry/local performance gates
+pass. Historical assertions are unchanged; their input adapters restore only
+the exact newer substitution and preserve unrelated drift.
+
+The candidate is accepted for local Rust-request reduction: two allocations
+and 56 requested bytes per complete fixture inspect at both tested depths.
+Requested bytes are not retained memory or RSS, and these counts do not prove
+CPU/latency, full ActiveAuthority or cache API throughput gains. Before/After
+boots differ; independent counter controls neither establish connection/process
+continuity nor repair old live clock-order failures. Earlier host receipts do
+not transfer to this source, and native/server admission remains closed.
+
+Remaining observed-name/container and record-read ownership require their own
+attribution, semantic controls and paired candidate. They are not permission
+to cache live state, reuse unverified bytes or extend deadlines. Delivery,
+all-writer cessation, lifecycle, SIGKILL/lost-ACK, reconnect and real enrollment
+stay independent. This step runs no server/live matrix, installation,
+supervisor, clock/service, product or qualification operation and does not push
+through the red native gate.
+
+The sealed packet retains 90 members plus its inventory, verifies all fifteen
+preceding packets without changes, and rejects eight structural JSON and ten
+scope mutations. All 91 committed files preserve raw bytes. These integrity
+checks support reproducibility of the request result; they do not widen it
+into a CPU/latency or server-readiness claim.

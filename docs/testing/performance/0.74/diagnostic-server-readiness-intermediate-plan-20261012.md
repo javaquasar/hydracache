@@ -1067,3 +1067,26 @@ assertions and repository gates. No capture fails or is replaced. Workload,
 qualification and old live refusals remain unchanged; independent delivery,
 all-writer cessation, later cells, SIGKILL/lost-ACK, reconnect and real enrollment
 gates stay closed. No new live/server, supervisor, clock/service or product run.
+
+## Inventory fd path ownership outcome
+
+The [local paired candidate](local-runs/authority-fd-path-20261021/README.md),
+Before `3635e560` and After `86dbd967`, removes only fd-path String ownership.
+Its 25-byte stack buffer preserves the decimal formatter and fresh read_dir.
+Exact source guards retain the complete runtime apart from that substitution;
+all live predicates, refusal order and original 300/60/10 windows remain.
+
+Both compilers and three samples conserve the isolated saving twice in full
+fixture inspect: 25/0/1718 becomes 23/0/1662 at depth one, and 101/0/8500 becomes
+99/0/8444 at seven, in allocations/reallocations/requested bytes. Reads stay
+4/28; all six other cases and tracked kernel counts remain equal. Both lanes
+pass 201 authority tests, affected checks/strict lint, 379 source assertions
+and repository gates. No measured invocation fails or is replaced.
+
+This is local request reduction, not CPU/latency or live admission. Separate
+boots do not repair old clock-order failures or establish continuity; earlier
+host receipts do not transfer to the new source. Observed-name/container and
+record-read ownership need separate attribution. Delivery, all-writer cessation,
+later cells, SIGKILL/lost-ACK, reconnect and real enrollment remain independent
+closed gates. Workload and qualification stay frozen; no new server/live,
+supervisor, clock/service, product, qualification or push operation occurs.

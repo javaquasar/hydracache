@@ -5179,3 +5179,34 @@ plus inventory SHA256
 Fourteen preceding packets remain intact. Eight structural JSON and twelve
 scope mutations are refused; all 52 committed packet files preserve raw bytes.
 This verifies attribution integrity, not another runtime improvement or admission.
+
+## Inventory fd path ownership
+
+The [paired control](local-runs/authority-fd-path-20261021/README.md) replaces
+only Directory::inventory's temporary fd-path String with the same decimal
+formatter in a 25-byte stack buffer. The fresh read_dir, observed inventory,
+UTF-8, duplicate/budget/parity/canonical guards, metadata/read checks and original
+300/60/10 windows remain. Exact source canaries restore the complete previous
+runtime without changing historical assertions.
+
+Before `3635e560` and After `86dbd967` each have one capture per compiler.
+All three samples on GNU 1.94 and MSRV 1.88 agree. Pure formatting removes one
+allocation/28 requested bytes. Full fixture inspect removes exactly two such
+costs: 25/0/1718 becomes 23/0/1662 at depth one, and 101/0/8500 becomes
+99/0/8444 at seven, in allocations/reallocations/requested bytes. Reads remain
+4/28; six non-authority cases and tracked kernel counts stay equal. Frozen
+reference/proposal/workload/qualification inputs remain unchanged.
+
+Both lanes pass 201 authority tests, affected checks/strict lint, 379 source
+assertions and repository gates. No capture fails or is retried. This accepts
+local Rust-request reduction only, not CPU/latency, retained memory or cache
+API gains. Separate boots are not time repair or continuity evidence. Old
+live/native/server gates and source-specific receipt requirements remain;
+no server/live matrix, supervisor, clock/service, product or qualification run
+occurs, and nothing is pushed through the red native gate.
+
+Evidence `e0ca280b398395bda189aec1cc3841c4eb738957` seals 90 members plus
+inventory SHA256
+`ff4d9e59bffefb40eb1712f253eaebce701a34b832a5417211ec88b144fa2440`.
+All fifteen previous packets rehash unchanged; eight structural JSON and ten
+scope mutations are rejected. All 91 committed files preserve raw bytes.
