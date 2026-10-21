@@ -1,0 +1,34 @@
+{
+  "stage": "BaselineRepair",
+  "source": "6eeb4b630324c01e06547ca25ff8629b62668b39",
+  "recipe_sha256": "311fc3a99960add7cb4c4ced8f2ebc6a4399dad80a10ad279760abb7b229cad0",
+  "steps": [
+    {
+      "exit": 0,
+      "name": "format",
+      "log": "BaselineRepair-check-repository-format.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "exit": 0,
+      "name": "docs",
+      "log": "BaselineRepair-check-repository-docs.log",
+      "sha256": "38a38370ee330601858ec1b436a20fceb15412245b51befc7542dd5a6fdb1a89"
+    },
+    {
+      "exit": 0,
+      "name": "registry",
+      "log": "BaselineRepair-check-repository-registry.log",
+      "sha256": "5a3f55a0007829ac72db1b26da615f62c6b14bcc658ffd18d2666437f9d1627d"
+    },
+    {
+      "exit": 0,
+      "name": "performance",
+      "log": "BaselineRepair-check-repository-performance.log",
+      "sha256": "3def1a05a3dc04492bcf0cc689ec8218130f5f4e99766c351dbcb8301567fa84"
+    }
+  ],
+  "failure": null,
+  "server": false,
+  "product": false
+}

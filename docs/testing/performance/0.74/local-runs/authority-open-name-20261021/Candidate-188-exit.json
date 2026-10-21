@@ -1,0 +1,74 @@
+{
+  "stage": "Candidate",
+  "lane": "188",
+  "source": "b074f8f9f3d8f9766b3b04c59a8291941a7e3b1d",
+  "image": "/home/artur/.cache/hydracache-074-188-check/release/deps/hydracache_long_run_supervisor_074-1dbb29096ebc6338",
+  "image_sha256": "d17cb252e8ac5bfc0c45213901a26256820532cc957a6312002190812593614b",
+  "image_after_sha256": "d17cb252e8ac5bfc0c45213901a26256820532cc957a6312002190812593614b",
+  "inputs": [
+    {
+      "normalized_sha256": "0d71f6b25fdd2596966cf186e747a375571faa315725a5de76f05f484c62efde",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs",
+      "blob": "7e774503b71cff8e50e68ba5d830491da44869cd"
+    },
+    {
+      "normalized_sha256": "c4f04ccb7b3d7bd17e13241b1cefc6657661e5560d1b1ce51f3445e71d5202ce",
+      "path": "tools/long-run-supervisor-074/tests/support/authority_owners_controls.rs",
+      "blob": "da720d1522987bc4a1e60d7592e65e6e7e6026ea"
+    },
+    {
+      "normalized_sha256": "589efa1c6680464dc231177a96214b6e663e846902ec3c3be1b65a7255117890",
+      "path": "tools/long-run-supervisor-074/tests/support/authority_cpu.rs",
+      "blob": "931b29218125e1a5a1410752ffff105f4a486625"
+    },
+    {
+      "normalized_sha256": "2fa2e8c3e8e569ae3d24115b3183ff9f6b4737b00ee2f6c09db21c7e1a540ec2",
+      "path": "tools/long-run-supervisor-074/tests/support/authority_open_name_alloc.rs",
+      "blob": "4b74d18633fb78063409e57b7d9d291fa3a368f2"
+    },
+    {
+      "normalized_sha256": "bb6d8699159f0907996c50844f2761b829c86d0c61eba567584dec003ffcb360",
+      "path": "tools/long-run-supervisor-074/tests/support/authority_open_name_controls.rs",
+      "blob": "d10a366f6d4eb45df25b4476022de8dd972e5928"
+    },
+    {
+      "normalized_sha256": "9a0e607f1bc6d14543cded858ba47370fd140c7a6e6a288709734ba5c9e07499",
+      "path": "tools/long-run-supervisor-074/tests/support/authority_owners_alloc.rs",
+      "blob": "3071e98263499b1bfced33a1ddae77a0bb3c4a5a"
+    },
+    {
+      "normalized_sha256": "29d46c2111289fa21793a6b578eef1c25bcb84aea5193dba03670ac7c8c9ff69",
+      "path": "tools/long-run-supervisor-074/tests/support/validation_leaf_requests.rs",
+      "blob": "df80e253f10d4520d765c4af3d70eb9d2cbdfe8a"
+    },
+    {
+      "normalized_sha256": "ce538f0af2f7045a25c39bf52afa3ed756d28d287b7df8b173aab1399fc9fa89",
+      "path": "docs/testing/performance/0.74/authority-open-name-plan-20261021.md",
+      "blob": "434a5ca349b08d6e6a604517b41889b41b3cbd58"
+    },
+    {
+      "normalized_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+      "path": "docs/testing/performance/0.74/qualification-manifest.toml",
+      "blob": "1ba704159a59c16455fd0c9f4f15f9fda66ca9b1"
+    }
+  ],
+  "steps": [
+    {
+      "name": "cpu",
+      "exit": 0
+    },
+    {
+      "name": "owners",
+      "exit": 0
+    },
+    {
+      "name": "inspect",
+      "exit": 0
+    }
+  ],
+  "recipe_sha256": "3a0831affdc6f62eca94512ea89ff32f464fc968e123babd8bc93682e6fdcf4e",
+  "server": false,
+  "product": false,
+  "native_gate_open": false,
+  "legacy_row_flags_are_not_comparative": true
+}

@@ -1,0 +1,76 @@
+{
+  "stage": "Candidate",
+  "source": "275cd253875dc32eda5c6d2ba3c3b1c2290e9da2",
+  "recipe_sha256": "311fc3a99960add7cb4c4ced8f2ebc6a4399dad80a10ad279760abb7b229cad0",
+  "steps": [
+    {
+      "log": "Candidate-check-194-check.log",
+      "sha256": "561bb74fefee6f9ae73c0b1420d53f7b6bee1b1210fb17c259f32546fb8dc7a3",
+      "exit": 0,
+      "name": "check"
+    },
+    {
+      "log": "Candidate-check-194-lint.log",
+      "sha256": "a67cd37d210e380fe6fd4e4f7fe6fc2cfea380bf95c67b4785d7521531dc657c",
+      "exit": 0,
+      "name": "lint"
+    },
+    {
+      "log": "Candidate-check-194-authority_.log",
+      "sha256": "2748c2baf2311ecd5c4fcc606c67e3c2d2a5462fb6201f1fd8188bd1018c0452",
+      "exit": 0,
+      "name": "authority_"
+    },
+    {
+      "log": "Candidate-check-194-validation_leaf_requests_.log",
+      "sha256": "2456d1565a9077b136bbbc8e2deb9e97f68b4f0ccb3b3c4b513c2b428b13be9c",
+      "exit": 0,
+      "name": "validation_leaf_requests_"
+    },
+    {
+      "log": "Candidate-check-194-fixed_leaf_alloc_counter.log",
+      "sha256": "935a7db4af9ca3f336b67e8edacec21ff238c1f686a8d71dd13a6ead65535ec8",
+      "exit": 0,
+      "name": "fixed_leaf_alloc_counter"
+    },
+    {
+      "log": "Candidate-check-194-fixed_leaf_path_differential.log",
+      "sha256": "26ffab9a3d0da3dc4b446dec2b8f38cb26e9fbe2e79387f25f88875002fffd40",
+      "exit": 0,
+      "name": "fixed_leaf_path_differential"
+    },
+    {
+      "log": "Candidate-check-194-fixed_leaf_path_preserves.log",
+      "sha256": "b54557e58ffbddebd9552c75685f0331517cd869109b89a9a085ffae6be73798",
+      "exit": 0,
+      "name": "fixed_leaf_path_preserves"
+    },
+    {
+      "log": "Candidate-check-194-kernel_time_.log",
+      "sha256": "bcf51d699e8516a217d4950617c5e6fa58d4171829457ae7dc6edaef19da437c",
+      "exit": 0,
+      "name": "kernel_time_"
+    },
+    {
+      "log": "Candidate-check-194-kernel_worker_context_.log",
+      "sha256": "256eb22323ab65c8b9ef48c34963dca0b243e2055c698ee5f5b597b2b26ed449",
+      "exit": 0,
+      "name": "kernel_worker_context_"
+    },
+    {
+      "log": "Candidate-check-194-worker_trust_input_.log",
+      "sha256": "8f14d924a9e06aecc39934ea6841c145e68cadaf018844236401dd74aeea6a5f",
+      "exit": 0,
+      "name": "worker_trust_input_"
+    },
+    {
+      "log": "Candidate-check-194-build.log",
+      "sha256": "2d4913a5917845607444ce89f9892fb0829195b9215de11c42c44175a5f27fe0",
+      "exit": 0,
+      "name": "build"
+    }
+  ],
+  "failure": null,
+  "server": false,
+  "product": false
+}

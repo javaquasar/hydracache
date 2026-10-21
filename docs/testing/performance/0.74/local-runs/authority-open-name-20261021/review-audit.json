@@ -1,0 +1,22 @@
+{
+  "server": false,
+  "product": false,
+  "mutations": [
+    {
+      "mutation": "requests",
+      "refused": true
+    },
+    {
+      "mutation": "scope",
+      "refused": true
+    },
+    {
+      "mutation": "difference",
+      "refused": true
+    },
+    {
+      "mutation": "order",
+      "refused": true
+    }
+  ]
+}

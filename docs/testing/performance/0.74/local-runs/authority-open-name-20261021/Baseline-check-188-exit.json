@@ -1,0 +1,22 @@
+{
+  "stage": "Baseline",
+  "source": "6eeb4b630324c01e06547ca25ff8629b62668b39",
+  "recipe_sha256": "384f7109c5726d6c12ce04e655ea338efc26507091dc60629603c83c6ac43810",
+  "steps": [
+    {
+      "log": "Baseline-check-188-check.log",
+      "sha256": "d3c1aba530380e518783bbcff1dc137eeec274bc6f9558ef397112179175518d",
+      "name": "check",
+      "exit": 0
+    },
+    {
+      "log": "Baseline-check-188-lint.log",
+      "sha256": "8623326b5f6c1a4c9aac701fa99f614d3101fe93ef0ad37134c52c99d08d3692",
+      "name": "lint",
+      "exit": 101
+    }
+  ],
+  "failure": "Failed lint (101)",
+  "server": false,
+  "product": false
+}

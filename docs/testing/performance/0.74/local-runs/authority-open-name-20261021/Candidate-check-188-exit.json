@@ -1,0 +1,76 @@
+{
+  "stage": "Candidate",
+  "source": "275cd253875dc32eda5c6d2ba3c3b1c2290e9da2",
+  "recipe_sha256": "311fc3a99960add7cb4c4ced8f2ebc6a4399dad80a10ad279760abb7b229cad0",
+  "steps": [
+    {
+      "sha256": "42176d22eac77e74d0e1acf29118a4caaef76b206b3e8020e5dfa94d27107053",
+      "name": "check",
+      "exit": 0,
+      "log": "Candidate-check-188-check.log"
+    },
+    {
+      "sha256": "be99e7157e4e024d58d7c72bb8d8e5d1f8cf81b09351a52bfa5218889656a082",
+      "name": "lint",
+      "exit": 0,
+      "log": "Candidate-check-188-lint.log"
+    },
+    {
+      "sha256": "4bfb2e6254eca249e20684f716294fbd8c390e132e0e04569c785640c83c6086",
+      "name": "authority_",
+      "exit": 0,
+      "log": "Candidate-check-188-authority_.log"
+    },
+    {
+      "sha256": "660a611dbccee37fa1c844f27f74f0e717b1c759f0c02be4b6b01ede6cf2e228",
+      "name": "validation_leaf_requests_",
+      "exit": 0,
+      "log": "Candidate-check-188-validation_leaf_requests_.log"
+    },
+    {
+      "sha256": "94a9d796ce979a5b962736af10f369bc9e54d8523a08bcb24c4147109b7ae223",
+      "name": "fixed_leaf_alloc_counter",
+      "exit": 0,
+      "log": "Candidate-check-188-fixed_leaf_alloc_counter.log"
+    },
+    {
+      "sha256": "6af5864e69bf58aaf7324b8e51b7d9cac24dedf0f0159d77aefb233bfc12224b",
+      "name": "fixed_leaf_path_differential",
+      "exit": 0,
+      "log": "Candidate-check-188-fixed_leaf_path_differential.log"
+    },
+    {
+      "sha256": "fe179cfebea1de77b3add8c99f4f84ba613e078fd62e7933f1ce53455c69c003",
+      "name": "fixed_leaf_path_preserves",
+      "exit": 0,
+      "log": "Candidate-check-188-fixed_leaf_path_preserves.log"
+    },
+    {
+      "sha256": "1329ed5ffab817a4d614be40724c09fb203486692925226e25e67043a7e75d60",
+      "name": "kernel_time_",
+      "exit": 0,
+      "log": "Candidate-check-188-kernel_time_.log"
+    },
+    {
+      "sha256": "5cd90476a53029e2ec3d6dff60ec6a37cda49e902ee64b1c9814433ddc3976bf",
+      "name": "kernel_worker_context_",
+      "exit": 0,
+      "log": "Candidate-check-188-kernel_worker_context_.log"
+    },
+    {
+      "sha256": "5c99cb0d96169a98c896c9430b120f9403f624f141551f85bff52c2a6928fb31",
+      "name": "worker_trust_input_",
+      "exit": 0,
+      "log": "Candidate-check-188-worker_trust_input_.log"
+    },
+    {
+      "sha256": "656e7b4c2c5635db17b501b560172a091d9644f290f48ab346d2443f811a3cad",
+      "name": "build",
+      "exit": 0,
+      "log": "Candidate-check-188-build.log"
+    }
+  ],
+  "failure": null,
+  "server": false,
+  "product": false
+}

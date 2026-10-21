@@ -1,0 +1,28 @@
+{
+  "stage": "BaselineRepair",
+  "source": "6eeb4b630324c01e06547ca25ff8629b62668b39",
+  "recipe_sha256": "311fc3a99960add7cb4c4ced8f2ebc6a4399dad80a10ad279760abb7b229cad0",
+  "steps": [
+    {
+      "log": "BaselineRepair-check-xtask-focused.log",
+      "exit": 0,
+      "name": "focused",
+      "sha256": "a55215399f2c68fffafc3a0ed9d121371b7b0638423ba51736e972a7eaf514e3"
+    },
+    {
+      "log": "BaselineRepair-check-xtask-check.log",
+      "exit": 0,
+      "name": "check",
+      "sha256": "a0cb02cf30371084c7d839607487bb789f2be713077798d60b716775ce8baa8f"
+    },
+    {
+      "log": "BaselineRepair-check-xtask-lint.log",
+      "exit": 0,
+      "name": "lint",
+      "sha256": "0289e0a69089abea8aa01aac0770fd3f3d2b96430e7e810fdb8f78dad61088b0"
+    }
+  ],
+  "failure": null,
+  "server": false,
+  "product": false
+}

@@ -1,0 +1,76 @@
+{
+  "stage": "BaselineRepair",
+  "source": "6eeb4b630324c01e06547ca25ff8629b62668b39",
+  "recipe_sha256": "311fc3a99960add7cb4c4ced8f2ebc6a4399dad80a10ad279760abb7b229cad0",
+  "steps": [
+    {
+      "exit": 0,
+      "log": "BaselineRepair-check-188-check.log",
+      "name": "check",
+      "sha256": "334ad4814cd22fc7917484d9da554a26c0088ac8ced7de9b29fd342e1e6ec729"
+    },
+    {
+      "exit": 0,
+      "log": "BaselineRepair-check-188-lint.log",
+      "name": "lint",
+      "sha256": "fb4f715f19c6087f644f5206dff442af90b3fe07dfad384c1c0f565df6c502c8"
+    },
+    {
+      "exit": 0,
+      "log": "BaselineRepair-check-188-authority_.log",
+      "name": "authority_",
+      "sha256": "0e4c7ef8bf4fdf42cae1c82a53d36e58a4cdb0be52d0535f75bd355e923bd6b1"
+    },
+    {
+      "exit": 0,
+      "log": "BaselineRepair-check-188-validation_leaf_requests_.log",
+      "name": "validation_leaf_requests_",
+      "sha256": "5e0c9dbe63694d94e2bbdfa8914b5e23b1a6a18603e626dea72adf1feb31220a"
+    },
+    {
+      "exit": 0,
+      "log": "BaselineRepair-check-188-fixed_leaf_alloc_counter.log",
+      "name": "fixed_leaf_alloc_counter",
+      "sha256": "efa8b82d220520a227304e839d0ccfdd4d40ce1e1e89994dce831eb50ebaa4bb"
+    },
+    {
+      "exit": 0,
+      "log": "BaselineRepair-check-188-fixed_leaf_path_differential.log",
+      "name": "fixed_leaf_path_differential",
+      "sha256": "242131025d48aa8ab70f494145c450be9309a140cfd417d0dc62948ddff880b0"
+    },
+    {
+      "exit": 0,
+      "log": "BaselineRepair-check-188-fixed_leaf_path_preserves.log",
+      "name": "fixed_leaf_path_preserves",
+      "sha256": "00212d0343db0d4379fb49cbfa3603146c646fa0b433370df654b3d3624d56f6"
+    },
+    {
+      "exit": 0,
+      "log": "BaselineRepair-check-188-kernel_time_.log",
+      "name": "kernel_time_",
+      "sha256": "59f4245345dbc659065f1792c021d783bc133b11a90c71ef3aaac04d51cfcde0"
+    },
+    {
+      "exit": 0,
+      "log": "BaselineRepair-check-188-kernel_worker_context_.log",
+      "name": "kernel_worker_context_",
+      "sha256": "df944c178d02a2383d006e95b8af2a5def9203e989b0216a9774536ebf8fde35"
+    },
+    {
+      "exit": 0,
+      "log": "BaselineRepair-check-188-worker_trust_input_.log",
+      "name": "worker_trust_input_",
+      "sha256": "33eca25fbaf72e1d09da1a7a9edd1b2eb90c1df41e956ca71dbc31d08792c510"
+    },
+    {
+      "exit": 0,
+      "log": "BaselineRepair-check-188-build.log",
+      "name": "build",
+      "sha256": "90c2fee28685deb42938f7f21ec47aca30d80deb9d7587747fbd7d7f815f7fab"
+    }
+  ],
+  "failure": null,
+  "server": false,
+  "product": false
+}

@@ -1,0 +1,34 @@
+{
+  "stage": "Candidate",
+  "source": "275cd253875dc32eda5c6d2ba3c3b1c2290e9da2",
+  "recipe_sha256": "311fc3a99960add7cb4c4ced8f2ebc6a4399dad80a10ad279760abb7b229cad0",
+  "steps": [
+    {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "log": "Candidate-check-repository-format.log",
+      "exit": 0,
+      "name": "format"
+    },
+    {
+      "sha256": "90aecf1ccc83dd30e33cd5cc1b2ec13550419e8c243b70b3ff710152ce7658e9",
+      "log": "Candidate-check-repository-docs.log",
+      "exit": 0,
+      "name": "docs"
+    },
+    {
+      "sha256": "5b15b156616b86bd4e9da39b970d8ecd201061b59db8899b66a9b84817ac15d3",
+      "log": "Candidate-check-repository-registry.log",
+      "exit": 0,
+      "name": "registry"
+    },
+    {
+      "sha256": "bf74a74b560d3ce62ae13dfad20c77c849c9fd0b79c0a6d2c6214a9bb2184895",
+      "log": "Candidate-check-repository-performance.log",
+      "exit": 0,
+      "name": "performance"
+    }
+  ],
+  "failure": null,
+  "server": false,
+  "product": false
+}

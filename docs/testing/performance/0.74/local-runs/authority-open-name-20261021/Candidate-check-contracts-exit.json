@@ -1,0 +1,16 @@
+{
+  "stage": "Candidate",
+  "source": "b074f8f9f3d8f9766b3b04c59a8291941a7e3b1d",
+  "recipe_sha256": "311fc3a99960add7cb4c4ced8f2ebc6a4399dad80a10ad279760abb7b229cad0",
+  "steps": [
+    {
+      "log": "Candidate-check-contracts-historical.log",
+      "sha256": "9a6bc95e11578a972b5f63fb5c1149927c433a2a1320b400a4e085f5fb28b844",
+      "exit": 0,
+      "name": "historical"
+    }
+  ],
+  "failure": null,
+  "server": false,
+  "product": false
+}
