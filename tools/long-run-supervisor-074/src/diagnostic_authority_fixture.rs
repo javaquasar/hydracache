@@ -640,3 +640,7 @@ pub(crate) mod breakdown_controls;
 #[cfg(test)]
 #[path = "../tests/support/authority_fd_path_controls.rs"]
 pub(crate) mod fd_path_controls;
+
+#[cfg(test)]
+#[path = "../tests/support/authority_owners_controls.rs"]
+pub(crate) mod owners_controls;

@@ -1,9 +1,11 @@
 //! Exact path ownership and test hooks only; preserve all unrelated drift.
+#[path = "authority_owners_guard.rs"]
+mod authority_owners;
 #[macro_export]
 macro_rules! hc074_authority_fd_path_view {
     ($path:expr, $source:expr) => {{
         let path: &str = $path;
-        let mut raw: String = $source.to_owned();
+        let mut raw: String = $crate::hc074_authority_owners_view!(path, $source);
         let gate = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/tests/support/authority_fd_path_gate.txt")).replace('\r', "");
         for (file, exact, marker) in [
             ("tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs", "\n#[cfg(test)]\n#[path = \"../tests/support/authority_fd_path_controls.rs\"]\npub(crate) mod fd_path_controls;\n", "authority_fd_path_controls"),
