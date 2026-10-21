@@ -1,0 +1,28 @@
+{
+  "stage": "Capture",
+  "source": "a2e4fa37792ea15d43d29c54d9656aef71d54ec8",
+  "recipe_sha256": "c2336cddeb706f4406a6b7ff52079bd1d28cb903e1ca8ad4dc10cfa1e5a13ad5",
+  "steps": [
+    {
+      "sha256": "919efa046f757dd26ced0b9dafefa1beb9e763785d0f7fb7e4e78aa9f92995fe",
+      "log": "Capture-check-xtask-repair-focused.log",
+      "exit": 0,
+      "name": "focused"
+    },
+    {
+      "sha256": "81feca6de67d85f1be318e67cdff0e29e06f3ed33224402deebea2a36656598a",
+      "log": "Capture-check-xtask-repair-check.log",
+      "exit": 0,
+      "name": "check"
+    },
+    {
+      "sha256": "33c028d0510714f7c9ed2d5db6a7e98c9d553fc9fc2c990d8f131eafbb308792",
+      "log": "Capture-check-xtask-repair-lint.log",
+      "exit": 0,
+      "name": "lint"
+    }
+  ],
+  "failure": null,
+  "server": false,
+  "product": false
+}

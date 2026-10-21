@@ -1,0 +1,11 @@
+    Finished `release` profile [optimized] target(s) in 16.08s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-188-check/release/deps/hydracache_long_run_supervisor_074-1dbb29096ebc6338)
+
+running 4 tests
+test diagnostic_kernel_admission::origin::tests::kernel_time_original_proc_boot_and_namespace_drift_refuse ... ok
+test diagnostic_kernel_admission::origin::tests::kernel_time_packet_hold_has_exclusive_boottime_boundary ... ok
+test diagnostic_kernel_admission::origin::tests::kernel_time_timespec_and_ordering_edges_refuse ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::owned_placement::preparation_trace::tests::preparation_trace_copies_already_received_kernel_time_and_boot_exactly ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 1428 filtered out; finished in 0.00s
+

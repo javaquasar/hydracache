@@ -1,0 +1,15 @@
+{
+  "schema": "authority-owners-authoring-preflight-v1",
+  "source": "0b451238219900dc397042e6996f81e31cf60ff0",
+  "original_refused": true,
+  "original_failure": {
+    "type": "System.Management.Automation.RuntimeException",
+    "message": "Cannot convert the \"System.Object[]\" value of type \"System.Object[]\" to type \"System.UInt32\"."
+  },
+  "repair_verified": true,
+  "original_recipe_sha256": "7c280d45bc42ea72c3d0629464522ec3b39f372d84761fffb452fdd4f3604f7e",
+  "repair_recipe_sha256": "495ce604b3cb99db23042fefb6364a5d746f93f6531fb821fb65f3b0ac78bf22",
+  "measured": false,
+  "server": false,
+  "product": false
+}

@@ -1,0 +1,16 @@
+{
+  "stage": "Capture",
+  "source": "0b451238219900dc397042e6996f81e31cf60ff0",
+  "recipe_sha256": "07aab1ac80cd3db2abf8c5428b69ff9af24653ad8232383d17f0c411f0ef8163",
+  "steps": [
+    {
+      "name": "focused",
+      "sha256": "4486c2fd2affdde10454289453d3957b0d688039cd5a025b7576311bb59f7f78",
+      "exit": 101,
+      "log": "Capture-check-xtask-focused.log"
+    }
+  ],
+  "failure": "Failed focused (101)",
+  "server": false,
+  "product": false
+}

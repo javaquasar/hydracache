@@ -1,0 +1,76 @@
+{
+  "stage": "Capture",
+  "source": "dc75da4ce3b60e0a982e12d2d0a2247f32dbfb50",
+  "recipe_sha256": "480fb31a7fdf70a0f5cc8026c136fc79a3b9f2e8598d173e21b2b7e35729aacf",
+  "steps": [
+    {
+      "exit": 0,
+      "sha256": "f75206bbad244d66730547c441de4891be0d020e68a2f1dbe6060460a40b09a7",
+      "name": "authority_",
+      "log": "Capture-check-194-lifetime-authority_.log"
+    },
+    {
+      "exit": 0,
+      "sha256": "b9867f4a1121c3147d5dcbaeddd62bbd85da25566c2ca4b59bc1c073ca39a944",
+      "name": "validation_leaf_requests_",
+      "log": "Capture-check-194-lifetime-validation_leaf_requests_.log"
+    },
+    {
+      "exit": 0,
+      "sha256": "a18bb4089df38d52f43177fcb38da92e887ff5653effdcced813a22ffa8b2994",
+      "name": "fixed_leaf_alloc_counter",
+      "log": "Capture-check-194-lifetime-fixed_leaf_alloc_counter.log"
+    },
+    {
+      "exit": 0,
+      "sha256": "ad5252bd5245296fe534a05a54d91737742b07032923b2d7207838537a55887f",
+      "name": "fixed_leaf_path_differential",
+      "log": "Capture-check-194-lifetime-fixed_leaf_path_differential.log"
+    },
+    {
+      "exit": 0,
+      "sha256": "e200a6461ad4da99c060760a69dfed9a19891f8ddaafa32a80fab393b4ba57d7",
+      "name": "fixed_leaf_path_preserves",
+      "log": "Capture-check-194-lifetime-fixed_leaf_path_preserves.log"
+    },
+    {
+      "exit": 0,
+      "sha256": "7cdd882da529559d480aca4e10bbc8a5a2fdfcaa84be6241c50e466c708ab722",
+      "name": "kernel_time_",
+      "log": "Capture-check-194-lifetime-kernel_time_.log"
+    },
+    {
+      "exit": 0,
+      "sha256": "41d443742d95d4cc975afaa99fef6b7e0552f41e032fd527a622842b9e8ebf0b",
+      "name": "kernel_worker_context_",
+      "log": "Capture-check-194-lifetime-kernel_worker_context_.log"
+    },
+    {
+      "exit": 0,
+      "sha256": "6aaab1c3444e3c64424768961266de60cdbbfea749de92a794d619e8d3977add",
+      "name": "worker_trust_input_",
+      "log": "Capture-check-194-lifetime-worker_trust_input_.log"
+    },
+    {
+      "exit": 0,
+      "sha256": "ab850e1cf25a441744b11499ffd0bd4652de8f3817c739dde19e7aa61f1792d2",
+      "name": "check",
+      "log": "Capture-check-194-lifetime-check.log"
+    },
+    {
+      "exit": 0,
+      "sha256": "94994874055491469ddf5bd04cc8ec8272dcec0639874b55919501c59cb7cc6a",
+      "name": "lint",
+      "log": "Capture-check-194-lifetime-lint.log"
+    },
+    {
+      "exit": 0,
+      "sha256": "2f60b88c6e4f5a586b7553966d56835ac64d29c77f7adeacad085652cea52e3a",
+      "name": "build",
+      "log": "Capture-check-194-lifetime-build.log"
+    }
+  ],
+  "failure": null,
+  "server": false,
+  "product": false
+}

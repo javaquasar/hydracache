@@ -1,0 +1,10 @@
+    Finished `release` profile [optimized] target(s) in 12.34s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-188-check/release/deps/hydracache_long_run_supervisor_074-1dbb29096ebc6338)
+
+running 3 tests
+test diagnostic_kernel_admission::origin::tests::kernel_worker_context_namespace_type_and_object_are_independent_checks ... ok
+test diagnostic_kernel_admission::origin::tests::kernel_worker_context_original_typed_namespaces_and_drift_refuse ... ok
+test diagnostic_kernel_admission::tests::kernel_worker_context_packet_sender_clock_and_prior_refusal_are_sticky ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 1429 filtered out; finished in 0.00s
+
