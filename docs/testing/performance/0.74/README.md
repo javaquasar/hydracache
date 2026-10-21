@@ -5721,3 +5721,19 @@ pass. The first expected-token host-canary refusal and exact-text repair remain
 separate; Linux controls are not replayed. Ten earlier seals, original windows,
 fresh checks and first Causal refusals remain. No timing, full-path or server
 promotion follows, and no live/server/service/product action occurs.
+
+### Offline reconciliation of retained allocation leaves
+
+The [current reconciliation](reserved-reconciliation-20261022.md) verifies eleven
+raw input seals and 491 members, six unchanged reader methods, nineteen current
+source hashes and thirteen leaf witnesses. Five leaves now have separate
+allocation-only candidates; eight owners in the earlier leaf inventory remain
+for attribution or semantic review. Cohorts stay separate, with exact source
+pairs and missing counters left absent. No combined speedup is inferred.
+
+The old ReservedLive wall partition and first Causal(Time) refusals are
+reconstructed unchanged. Pure mutation/readers, Windows source canaries and
+structural checks accompany the new offline tool. The next bounded work is a
+proc document-buffer baseline and lifetime/error contract, not a new live
+attempt. All original windows, qualification and material/fault/reconnect/server
+gates remain unchanged; there is no new measurement or host operation.

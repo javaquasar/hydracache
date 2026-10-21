@@ -17043,3 +17043,39 @@ and failure remain before an exact-text-only repair. Linux controls are not
 replayed to pass that source assertion. All ten prior seals and first Causal
 refusals remain. No live/server run or new material/fault/readiness admission
 follows from this successful allocation candidate.
+
+### Reconcile allocation leaves without inventing a combined speedup
+
+The [offline reconciliation](../testing/performance/0.74/reserved-reconciliation-20261022.md)
+joins the retained candidates back to the earlier ReservedLive leaf inventory.
+The first three remaining items now have implementations: short context document
+scratch, short shared trust names, and capacity for primary in the collector
+peer. Together with the already retained pidfd pathname and Groups collection,
+there are five allocation-only leaves, not five measured full-path speedups.
+
+The allocation corpora differ: 2304 pathname constructions, 1792 Groups
+collections, 2304 mixed-size document constructions, 5376 valid trust names and
+7936 peers per compiler. Summing their bytes would imply a workload that was
+never executed. Multiplying those differences by old trace counts would also
+join two different source identities and miss fallback frequencies, surrounding
+work and observer effects. The reconciler therefore keeps every source pair,
+operation count and counter set separate. A counter absent from an older summary
+stays absent rather than becoming zero.
+
+The old material trace still has its first Causal(Time) refusals and unfinished
+round. Its nested wall partition is useful for identifying scopes to inspect;
+it cannot tell us how quickly today's implementation completes. Eleven input
+seals and 491 members, six unchanged reader methods, nineteen current source
+hashes and thirteen unique leaf witnesses connect those two kinds of evidence
+without replacing either. This is an offline consistency check, not another
+measurement or a successful retry of the refused attempt.
+
+Eight owners remain in that leaf inventory. Proc document scratch needs an
+allocation/zeroing/read baseline and a lifetime review; sample boot cloning
+needs representation analysis; authority record/inventory, trust snapshots and
+temporary descriptors need their own exact error and observation contracts.
+Canonical request rebuilding and fresh kernel walks span multiple operations.
+The next narrow baseline is the invocation-local proc document buffer, not a
+65537-byte stack replacement or a cache of previously checked observations.
+All fresh checks and original windows remain; material cleanup, delivery/all
+writers, full fault/reconnect and server admission still require their own gates.

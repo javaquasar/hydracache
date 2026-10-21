@@ -1608,3 +1608,19 @@ Linux pure controls are not replayed. All ten prior seals and first Causal
 failures remain. Next reconcile retained leaf candidates and unresolved offline
 owners before any separately admitted timing comparison. Material/cleanup/
 delivery/all-writer/fault/reconnect/server gates stay closed; no host action.
+
+### Retained allocation leaves reconciled with the old refused trace
+
+The [separate offline reconciliation](reserved-reconciliation-20261022.md)
+checks eleven raw seals and all 491 members while leaving the older reviewers
+frozen. Current source witnesses retain five allocation-only candidates and
+eight unresolved owners in that leaf inventory. Different corpora/source pairs
+are not summed or extrapolated into current preparation headroom.
+
+The original wall partition, first Causal(Time) ages, live checks and
+300/60/10-second windows remain. Next isolate the invocation-local proc document
+buffer's construction/reuse and first-error contract in a pure baseline, before
+any storage candidate or separately admitted full-path comparison. No runtime,
+observer, qualification, clock/service or server change occurs. Material,
+cleanup/EOF/fence, authenticated delivery/all writers, full SIGKILL/lost-ACK,
+reconnect and server gates remain closed.
