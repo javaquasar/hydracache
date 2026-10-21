@@ -1,6 +1,6 @@
 # Proposed short file name encoding candidate
 
-This is a preregistration, not an implemented or accepted runtime change.
+This section records the original preregistration; the local outcome follows below.
 Baseline code is `b99c1c759630cf632c0a13a905c3ddf9d822def5`, with the
 conserved owners and selected leaf CPU packets. The aggregate open window
 includes CString allocation/destruction and the syscall; it does not establish
@@ -64,3 +64,39 @@ the original CString helper. Authoring preflight failures are retained before
 the repaired instrumentation gate; they are not measured runtime cohorts.
 Helper CPU ranges and signed pairs will not be promoted into an allocation
 CPU estimate or a product nonregression claim.
+
+## Local outcome
+
+Instrumentation baseline `275cd253875dc32eda5c6d2ba3c3b1c2290e9da2` precedes
+candidate `b074f8f9`. GNU 1.94/MSRV 1.88 reproduce the exact primary request
+targets in all three batches, with the same reads, fresh expression counts,
+actual/traced equality, payloads and epochs. Directory/inventory and six other
+full controls remain equal. Cold leaf open includes the owned name; cold and
+warm each remove one short-name request, with no new retained heap field.
+The allocation hypothesis is confirmed locally, without a CPU gain claim.
+
+Twenty alternating paired CPU batches per helper case retain both difference
+signs and overlapping ranges, including the unchanged baseline. No CPU
+nonregression or product/API improvement follows. Logical zeroing/copying of
+the 24-byte buffer is not physical-copy, compiled-stack-size or RSS evidence.
+The method and all raw observations are retained in the comparison packet.
+
+Both stages pass 213 authority tests per compiler, ancillary controls, affected
+checks and strict clippy. Differential file/FD controls and exact source
+canaries preserve fallback, NUL, flags, errno, ownership and fresh checks.
+The original failed authoring preflights and test-only repair remain, before
+any measured baseline; no measured cohort fails or is retried. Existing live
+refusals, original windows and independent admission gates remain unchanged.
+
+All 388 historical/source assertions across 23 targets pass, and raw-log
+review confirms exact targets while preserving the nineteen earlier packets.
+Four reviewer mutations are refused. Next, measure residual complete-round
+cost before selecting another runtime hypothesis; do not transfer helper CPU
+observations into API or admission claims.
+
+Evidence `de0ed3fee20b110e0c48dae6876e64eca2411527` seals 109 members plus
+inventory SHA256
+`7d5a88964d1df7498aced1d5ce81fbd8b4ad16fe693645bb5044503717a67ce8`.
+Effective review is `final-review.ps1 -Mode Review`; final repository and
+read-only environment receipts pass. All 110 Git files preserve raw bytes.
+Qualification and independent server admission requirements remain unchanged.

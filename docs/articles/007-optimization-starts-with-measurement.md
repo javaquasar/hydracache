@@ -16108,12 +16108,120 @@ CString CPU cost or a speedup. The shared journal is also used by the fixed
 registry, but these fixture samples do not measure full fixed ancestry or
 ActiveAuthority. No server, product or admission claim transfers to that path.
 
-The [next candidate plan](../testing/performance/0.74/authority-open-name-plan-20261021.md)
-limits stack encoding to short file names when directory=false; it is not yet
-implemented. Directory handling is deliberately excluded from this hypothesis.
+At this stage the [next candidate plan](../testing/performance/0.74/authority-open-name-plan-20261021.md)
+preregistered short file-name encoding when directory=false, before implementation.
+Directory handling was deliberately excluded from this hypothesis.
 Evidence `9a460ee7e0ac2b2f9f829b9fd8c8be4a8b28f27f` seals 59 members plus
 inventory SHA256
 `4a4c317f7e9cc878b57aa205324d865577cd17772bff3dea0d7e513c01b2d805`.
 All eighteen prior packets remain intact; eight structural JSON and ten scope
 mutations are refused. All 60 Git files preserve raw bytes. This is integrity
 of local observations, not another optimization or admission result.
+
+### Short file names remove requests without establishing a CPU gain
+
+The next [local comparison](../testing/performance/0.74/local-runs/authority-open-name-20261021/README.md)
+tests only CString ownership inside `open_at`. Instrumentation source
+`275cd253875dc32eda5c6d2ba3c3b1c2290e9da2` first captures the original
+runtime. Candidate `b074f8f9` then encodes names of at most 23 UTF-8 bytes in
+a 24-byte stack buffer, only when directory=false. A safe CStr constructor
+checks interior NUL on every call. Empty names still reach the kernel;
+directory opens and longer names retain the original allocating fallback.
+The syscall, flags, errno capture and owned descriptor transfer are unchanged.
+
+The hypothesis is fewer allocation requests, not a CPU saving inferred from
+the preceding open window. Both GNU 1.94 and MSRV 1.88 reproduce the exact
+preregistered request change in all three 1024-operation batches. Full journal
+inspection uses identical record/marker hashes, epochs and retained owners:
+
+| Fixture depth | Baseline allocations | Candidate allocations | Baseline requested bytes | Candidate requested bytes | Reads in both |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| One generation | 23 | 21 | 1662 | 1616 | 4 |
+| Seven generations | 99 | 85 | 8444 | 8122 | 28 |
+
+These are Rust requests per fixture inspection, with zero reallocations.
+Two leaf opens per generation stop requesting 22 and 24 bytes for their
+21-byte record and 23-byte marker names. Actual/traced controls retain all
+fresh expression call counts and reads. Directory/inventory work and the six
+other boot, namespace and origin controls have no request reduction attributed
+to this candidate. Neither the cache data APIs nor complete ActiveAuthority
+admission are measured by this fixture.
+
+Cold leaf open includes cloning the owned name, the fresh read and destruction;
+warm revalidation starts with a retained leaf. For the separate 65-byte helper
+payload, cold record requests change from 3 allocations/108 bytes to 2/86,
+and cold marker from 3/112 to 2/88. Warm record changes from 2/87 to 1/65,
+and warm marker from 2/89 to 1/65. These reproduce across both compiler lanes
+and all three batches. They are leaf-open measurements, not whole-registry
+initialization. No name ownership or new retained heap field is moved into setup.
+
+The CPU experiment compares the frozen original helper with the actual helper
+inside each source-local process. Six successful names cover record, marker,
+24-byte fallback, 23-byte multibyte UTF-8, 255-byte fallback and directory.
+After 32 warmups, twenty paired 1024-call batches alternate reference-first
+and actual-first order. The window includes open, name destruction, close and
+loop work with the counting allocator inactive. Signed differences below are
+actual minus reference per call, summarized as medians of batch differences:
+
+| Candidate helper case | GNU median ns | GNU pair range ns | MSRV median ns | MSRV pair range ns |
+| --- | ---: | ---: | ---: | ---: |
+| Record | 9.57 | -600.58 to 697.59 | 2.15 | -182.70 to 81.42 |
+| Marker | -9.87 | -1306.38 to 50.63 | -3.06 | -960.95 to 1025.85 |
+| 24-byte fallback | 1.76 | -1539.89 to 807.18 | -0.76 | -1363.31 to 714.40 |
+| Multibyte short name | 10.57 | -1222.75 to 1045.43 | 12.23 | -796.04 to 1013.22 |
+| 255-byte fallback | -20.94 | -1211.70 to 1013.77 | 8.28 | -1444.65 to 1682.23 |
+| Directory | -9.08 | -1449.73 to 929.73 | 11.03 | -91.25 to 1355.26 |
+
+Every case has positive and negative pairs. The unchanged baseline already
+has both signs: record pair medians are 8.29/8.34 ns on GNU/MSRV, and marker
+-6.00/-8.42 ns. Baseline directory medians are 43.88/3.09 ns despite equivalent
+helpers. The candidate therefore confirms fewer requests but does not establish
+a CPU gain or CPU nonregression. Do not subtract baseline bias or empty clock
+pairs to manufacture an allocation CPU estimate. Full raw ranges and outliers
+remain, with no filtered or repeated measured cohort.
+
+WSL affinity is unpinned; inactive allocator bookkeeping, helper branching,
+cache state and scheduling remain part of the diagnostic context. Recorded
+clock resolution is 1 ns, not an accuracy claim; observed empty clock pairs
+span 132–524 ns across the four captures. A common recorded boot identifies
+these observations but does not repair earlier time refusals or prove remote
+reconnect continuity.
+
+The stack buffer removes a heap request, not the need to encode bytes. Source
+operations zero 24 bytes and copy the complete short name. These logical writes
+do not prove fewer physical copies, a smaller compiled stack frame, lower RSS
+or retained memory. Longer names and directory opens keep their original request
+cost. The changed helper is shared with the fixed journal, but its full ancestry,
+live validation frames and product APIs still need their own gates.
+
+Differential controls cover byte boundaries, multibyte names, seeded names,
+NUL at every tested position, empty/missing/overlong names, type mismatches,
+symlinks, nonblocking FIFO, descriptor flags and raw errno. Both descriptors
+remain live through identity comparisons; retained-parent replacement still
+resolves through the original parent. Existing mutation/sticky refusal tests
+remain, and exact source restoration rejects altered short-name branches
+without normalizing flags, errno or ownership changes. All live predicates,
+observation rounds and original 300/60/10 windows are preserved.
+
+Three failed authoring preflights remain: GNU divisibility lint, MSRV format
+lint and registry whitespace rejected by a source canary. Their corrected
+test-only gate precedes the baseline; no measured invocation fails or is
+retried. Both runtime stages pass 213 authority tests per compiler plus ancillary
+controls, affected checks and strict clippy. The request result does not open
+the native, lifecycle or server gates. No server, install, supervisor, clock/
+service, product workload, qualification or push action is part of this work.
+
+All 388 historical/source assertions across 23 targets pass. Raw-log review
+reconstructs the exact request deltas, cold/warm counts and paired CPU ranges;
+the previous nineteen sealed packets remain intact. Four changed-request,
+scope, signed-difference and order mutations are refused. This accepts the
+narrow allocation effect while leaving the independent admission gates closed.
+
+Evidence commit `de0ed3fee20b110e0c48dae6876e64eca2411527` seals 109 members
+plus inventory SHA256
+`7d5a88964d1df7498aced1d5ce81fbd8b4ad16fe693645bb5044503717a67ce8`.
+`final-review.ps1 -Mode Review` also checks the final format/documentation/
+registry/local performance receipts and read-only environment capture before
+the original byte-pinned raw-log reviewer. All 110 Git files preserve raw
+bytes. Qualification inputs remain frozen; the next analysis concerns residual
+complete-round cost, not a speedup inferred from saved allocation requests.

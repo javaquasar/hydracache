@@ -5303,10 +5303,57 @@ separate cold/warm and fault controls; no runtime change is accepted here.
 No new live/server/product, supervisor, clock/service, qualification or push
 action occurs; qualification and old live/time refusals remain unchanged.
 
-The [next candidate plan](authority-open-name-plan-20261021.md) is preregistered,
-not implemented: short file-name encoding only, with directory handling excluded.
+The [next candidate plan](authority-open-name-plan-20261021.md) was preregistered
+at this stage: short file-name encoding only, with directory handling excluded.
 Evidence `9a460ee7e0ac2b2f9f829b9fd8c8be4a8b28f27f` seals 59 members plus
 inventory SHA256
 `4a4c317f7e9cc878b57aa205324d865577cd17772bff3dea0d7e513c01b2d805`.
 All eighteen prior packets and 60 raw Git files verify. Eight structural JSON
 and ten scope mutations are refused; no admission gate opens.
+
+### Short file name allocation comparison
+
+The [comparison packet](local-runs/authority-open-name-20261021/README.md)
+implements the [preregistered candidate](authority-open-name-plan-20261021.md).
+Baseline instrumentation is `275cd253875dc32eda5c6d2ba3c3b1c2290e9da2`;
+runtime candidate is `b074f8f9`. Only short file names in open_at use a bounded
+24-byte stack encoding, with per-call NUL validation. Directory and long-name
+CString paths, flags, errno, File ownership and all fresh checks remain.
+
+Both GNU 1.94/MSRV 1.88 reproduce three 1024-operation samples: full fixture
+inspection changes allocations 23/99 to 21/85 and requested bytes 1662/8444
+to 1616/8122 at depths one/seven. Reads remain 4/28, reallocations zero.
+Actual/traced controls preserve call counts, payload hashes and epochs; six
+other full-control cases and directory/inventory requests remain unchanged.
+Separate 65-byte leaf controls show cold record/marker 3 allocations to 2,
+warm 2 to 1, without moving owned-name work into setup. These are local Rust
+requests, not physical copies, RSS, API throughput or whole-registry startup.
+
+Twenty alternating paired 1024-call helper CPU samples per name preserve raw
+signed differences and ranges. GNU record/marker pair medians are 9.57/-9.87 ns;
+MSRV 2.15/-3.06 ns. Every case has both signs, including the unchanged baseline.
+No CPU gain or CPU nonregression is established. No overhead/baseline bias is
+subtracted, no measured cohort fails or is retried, and no outlier is removed.
+
+Both stages pass 213 authority tests per compiler, ancillary controls, affected
+checks and strict all-feature lint. New differential tests cover NUL, UTF-8,
+23/24-byte boundaries, errno, flags, FIFO, symlinks and retained parent identity.
+Exact source canaries preserve old checks/lifetimes; four reviewer mutations
+are refused. Original failed authoring preflights and their test-only repair
+remain. Live checks and original 300/60/10 windows are unchanged. The old time,
+native, delivery, lifecycle and server gates are not opened by this request
+reduction; no server/live/product, installation, supervisor or clock/service
+action occurs, and qualification inputs remain frozen.
+
+All 388 historical/source assertions across 23 targets pass, and raw-log review
+preserves all nineteen prior packets. The confirmed effect is fewer Rust
+requests; the next analysis is residual complete-round cost, not another
+optimization inferred from these ambiguous helper CPU pairs.
+
+Evidence `de0ed3fee20b110e0c48dae6876e64eca2411527` seals 109 members plus
+inventory SHA256
+`7d5a88964d1df7498aced1d5ce81fbd8b4ad16fe693645bb5044503717a67ce8`.
+Effective `final-review.ps1 -Mode Review` verifies final repository/environment
+receipts and delegates to the original byte-pinned raw-log reviewer. All
+110 Git files preserve raw bytes. The local performance contract remains
+non-promotable; no native or server admission gate opens.

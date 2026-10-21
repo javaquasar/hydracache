@@ -1171,5 +1171,46 @@ inventory SHA256
 `4a4c317f7e9cc878b57aa205324d865577cd17772bff3dea0d7e513c01b2d805`.
 All eighteen preceding packets and 60 raw Git entries verify; eight structural
 JSON and ten scope mutations are refused. The
-[short file-name candidate](authority-open-name-plan-20261021.md) is only
-preregistered, with no directory optimization or transferred server receipt.
+[short file-name candidate](authority-open-name-plan-20261021.md) was preregistered
+at this stage, with no directory optimization or transferred server receipt.
+
+### Short file name request reduction
+
+The [local candidate](local-runs/authority-open-name-20261021/README.md)
+now compares baseline `275cd253875dc32eda5c6d2ba3c3b1c2290e9da2` with runtime
+`b074f8f9`. Only file names of at most 23 UTF-8 bytes avoid CString allocation;
+per-call NUL checks, directory/long-name fallback, syscall/errno/FD ownership,
+fresh validation frames and original 300/60/10 windows remain unchanged.
+
+GNU 1.94/MSRV 1.88 each reproduce full fixture requests 23/99 to 21/85
+allocations and 1662/8444 to 1616/8122 bytes, with zero reallocations and
+unchanged 4/28 reads. Both actual/traced owners and all six other full controls
+agree, with the same payloads and epochs. Separate cold/warm leaf controls
+confirm one fewer request per leaf rather than a shift into retained setup.
+These fixture counts do not measure full fixed ancestry or ActiveAuthority.
+
+CPU helper pairs include both signs and overlapping raw ranges on both
+compilers, as does the unchanged baseline. Request reduction is confirmed;
+CPU gain and CPU nonregression are not. Source-level stack writes are not
+physical-copy or RSS evidence. Both stages pass 213 authority tests per lane,
+ancillary controls, affected checks and strict lint. The three failed authoring
+preflights remain; no measured invocation fails, is filtered or is retried.
+
+Next, quantify the residual cost in complete validation rounds before choosing
+another runtime hypothesis. Retain the original time failures and separate
+delivery, all-writer cessation, durable lifecycle/cells 2–4, joined SIGKILL/
+lost-ACK, reconnect, trust/enrollment and server gates. This local helper change
+does not reopen them. No new live/server workload, installation, supervisor,
+clock/service or qualification action is authorized by this comparison.
+
+All 388 historical/source assertions across 23 targets pass. Raw-log review
+confirms the exact primary request effect and preserves nineteen prior packets.
+Four reviewer mutations are refused; CPU ambiguity and old admission refusals
+remain explicit rather than being converted into a healthy release result.
+
+Evidence `de0ed3fee20b110e0c48dae6876e64eca2411527` seals 109 members plus
+inventory SHA256
+`7d5a88964d1df7498aced1d5ce81fbd8b4ad16fe693645bb5044503717a67ce8`.
+Final repository and read-only environment receipts pass the additional
+`final-review.ps1` wrapper before the original byte-pinned raw-log review;
+all 110 Git files preserve raw bytes. Qualification inputs remain frozen.
