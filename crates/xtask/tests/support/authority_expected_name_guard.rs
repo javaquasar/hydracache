@@ -1,9 +1,11 @@
 //! Exact expected-name ownership substitution only; unrelated drift is retained.
+#[path = "authority_breakdown_guard.rs"]
+mod authority_breakdown;
 #[macro_export]
 macro_rules! hc074_authority_expected_name_view {
     ($path:expr, $source:expr) => {{
         let path: &str = $path;
-        let mut raw: String = $source.to_owned();
+        let mut raw: String = $crate::hc074_authority_breakdown_view!(path, $source);
         let gate = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/tests/support/authority_expected_name_gate.txt")).replace('\r', "");
         for (file, exact, marker) in [
             ("tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs", "\n#[cfg(test)]\n#[path = \"../tests/support/authority_expected_name_controls.rs\"]\npub(crate) mod expected_name_controls;\n", "authority_expected_name_controls"),

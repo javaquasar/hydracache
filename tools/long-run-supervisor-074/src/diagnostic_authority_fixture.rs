@@ -627,3 +627,7 @@ pub(crate) mod name_capacity_controls;
 #[cfg(test)]
 #[path = "../tests/support/authority_expected_name_controls.rs"]
 pub(crate) mod expected_name_controls;
+
+#[cfg(test)]
+#[path = "../tests/support/authority_breakdown_controls.rs"]
+pub(crate) mod breakdown_controls;

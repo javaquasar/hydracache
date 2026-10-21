@@ -1,0 +1,8 @@
+schema = "authority-breakdown-local-control-074-v1"
+runtime_changed = false
+candidate_enabled = false
+allocation_reduction_claimed = false
+server_admitted = false
+latency_gain_claimed = false
+fresh_checks_changed = false
+deadlines_changed = false
