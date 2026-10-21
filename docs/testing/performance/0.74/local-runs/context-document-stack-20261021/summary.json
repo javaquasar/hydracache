@@ -1,0 +1,57 @@
+{
+  "candidate_source": "71e784faff8791cce02b1d98d30adff5278cda37",
+  "baseline_source": "71638d9db2817c1a1d24edddb467e2cbf7a4ec9e",
+  "lanes": [
+    {
+      "lane": "194",
+      "constructions": 2304,
+      "reference_allocations": 2304,
+      "reference_requested_bytes": 64768,
+      "candidate_allocations": 512,
+      "candidate_requested_bytes": 26368,
+      "reallocations": 0,
+      "production_length_constructions": 512,
+      "reference_production_allocations": 512,
+      "reference_production_requested_bytes": 18432,
+      "candidate_production_allocations": 0,
+      "candidate_production_requested_bytes": 0,
+      "candidate_controls": 4,
+      "unchanged_baseline_controls": 5,
+      "allocator_counter_controls": 2
+    },
+    {
+      "lane": "188",
+      "constructions": 2304,
+      "reference_allocations": 2304,
+      "reference_requested_bytes": 64768,
+      "candidate_allocations": 512,
+      "candidate_requested_bytes": 26368,
+      "reallocations": 0,
+      "production_length_constructions": 512,
+      "reference_production_allocations": 512,
+      "reference_production_requested_bytes": 18432,
+      "candidate_production_allocations": 0,
+      "candidate_production_requested_bytes": 0,
+      "candidate_controls": 4,
+      "unchanged_baseline_controls": 5,
+      "allocator_counter_controls": 2
+    }
+  ],
+  "source_canaries": 25,
+  "prior_members_verified": 249,
+  "first_gnu_lint_refusal_retained": true,
+  "runtime_candidate_implemented": true,
+  "timing_improvement_proven": false,
+  "original_windows_seconds": [
+    300,
+    60,
+    10
+  ],
+  "first_refusal_ages_ns": [
+    10042390247,
+    10010835739
+  ],
+  "new_original_owner_profiles": 0,
+  "server": false,
+  "product": false
+}

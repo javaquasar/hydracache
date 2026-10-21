@@ -553,3 +553,6 @@ docs/testing/performance/0.74/local-runs/reserved-leaf-audit-20261021/**/*.log w
 
 docs/testing/performance/0.74/local-runs/context-document-baseline-20261021/** -text whitespace=cr-at-eol
 docs/testing/performance/0.74/local-runs/context-document-baseline-20261021/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/context-document-stack-20261021/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/context-document-stack-20261021/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol

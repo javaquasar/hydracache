@@ -1,0 +1,41 @@
+{
+  "cohort": "first",
+  "failure": "Check refused: first/194/clippy (101)",
+  "product": false,
+  "steps": [
+    {
+      "name": "context_document_stack_",
+      "sha256": "c2e037c1fc93cd121ed305c170dfa7f45c0902b840562bbf0c0a9dfe17a00e0d",
+      "log": "194-context_document_stack_.log",
+      "exit": 0
+    },
+    {
+      "name": "context_document_buffer_baseline",
+      "sha256": "cb82a076a86b5707eaefa391bb5ae87ed90793dcd196f25692c130878ac128b1",
+      "log": "194-context_document_buffer_baseline.log",
+      "exit": 0
+    },
+    {
+      "name": "fixed_leaf_alloc_counter",
+      "sha256": "596212f40ada7c99dd078c237c2345eca623cfb091717f8353da1de147df5b7a",
+      "log": "194-fixed_leaf_alloc_counter.log",
+      "exit": 0
+    },
+    {
+      "name": "check",
+      "sha256": "15256eed543f44d7e10afd61827d4dc45b7e0e50c4cb795797be75e4a14a2094",
+      "log": "194-check.log",
+      "exit": 0
+    },
+    {
+      "name": "clippy",
+      "sha256": "0fb021b04b166b45781869148af8034015951b06524dd42457e2214996f8ded4",
+      "log": "194-clippy.log",
+      "exit": 101
+    }
+  ],
+  "original_owner_profiles": 0,
+  "server": false,
+  "ignored_tests_run": false,
+  "lane": "194"
+}
