@@ -1,0 +1,28 @@
+{
+  "source": "be357d1073a6dc0cfccfc50437dc253311e1d847",
+  "recipe_sha256": "ec102beb55b13e956e4c9f93d0e6225dbb6727fbed3dd09fb04177f34f0b0a5d",
+  "workload_and_qualification_equal": true,
+  "steps": [
+    {
+      "name": "docs",
+      "sha256": "3a582dd53198252495a0c06792704254fba595e9c9d672e02a732ca6ed56b93a",
+      "exit": 0,
+      "log": "final-docs.log"
+    },
+    {
+      "name": "registry",
+      "sha256": "3230f39584b4b5b0e2c8044f2cf721ae2a87842f34a8e7ad30d01c21a501e1a3",
+      "exit": 0,
+      "log": "final-registry.log"
+    },
+    {
+      "name": "performance",
+      "sha256": "b3bb5bc9c7f57f619e3dacc81ac1966f83834453558fc81f7d275c5d69e48bb0",
+      "exit": 0,
+      "log": "final-performance.log"
+    }
+  ],
+  "failure": null,
+  "server": false,
+  "product": false
+}
