@@ -1,0 +1,44 @@
+{
+  "child_containment_seconds": 1210,
+  "child_timeout_seconds": 1200,
+  "kill_after_seconds": 5,
+  "max_log_bytes": 33554432,
+  "native_gate_open": false,
+  "original_send": false,
+  "original_windows_seconds": [
+    300,
+    60,
+    10
+  ],
+  "product": false,
+  "schedule": [
+    [
+      "194",
+      0
+    ],
+    [
+      "194",
+      1
+    ],
+    [
+      "194",
+      2
+    ],
+    [
+      "188",
+      0
+    ],
+    [
+      "188",
+      1
+    ],
+    [
+      "188",
+      2
+    ]
+  ],
+  "schema": "local-single-session-074-v1",
+  "server": false,
+  "session_seconds": 7500,
+  "source": "019c11daf56820762dd09fe82496db45aef26fd5"
+}

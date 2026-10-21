@@ -1,0 +1,51 @@
+{
+  "product": false,
+  "failure": null,
+  "source": "019c11daf56820762dd09fe82496db45aef26fd5",
+  "server": false,
+  "native_gate_open": false,
+  "steps": [
+    {
+      "name": "linux-age-audit",
+      "sha256": "326e9776bd1597e91fc45861e3e8dca4ea8592276e0fc042d33a8e282cfa1845",
+      "log": "completion-linux-age-audit.log",
+      "exit": 0
+    },
+    {
+      "name": "source-canaries",
+      "sha256": "7f809635e3efc3eb08ced3cdd3f5c8f3605e8f8f80bfd9a34378774640413ce3",
+      "log": "completion-source-canaries.log",
+      "exit": 0
+    },
+    {
+      "name": "format",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "log": "completion-format.log",
+      "exit": 0
+    },
+    {
+      "name": "docs",
+      "sha256": "fd8deabe9d02fc1dd952682d1b072bb111240a8d51f1ce8e10c4d55e0401c17c",
+      "log": "completion-docs.log",
+      "exit": 0
+    },
+    {
+      "name": "registry",
+      "sha256": "88fcf509ecc13f44bee96d881174f0738bffc876773dac08a4ca8d7d512a6713",
+      "log": "completion-registry.log",
+      "exit": 0
+    },
+    {
+      "name": "performance",
+      "sha256": "492eb6561af658677cf1f2e52ed662153e043955dd3eba5aaea00cd127545d1e",
+      "log": "completion-performance.log",
+      "exit": 0
+    },
+    {
+      "name": "diff",
+      "sha256": "c6bf05fdb6bbd7e5f98e9ec3b7083a69e1ce5b27fb23334b5dcb596a3966dc5e",
+      "log": "completion-diff.log",
+      "exit": 0
+    }
+  ]
+}

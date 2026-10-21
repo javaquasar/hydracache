@@ -1347,3 +1347,22 @@ performance or server admission. No clock/service/server/supervisor/install/
 product action occurs. Delivery, all-writer cessation, lifecycle, fault,
 reconnect, enrollment and exact installed-source gates stay separate; next
 validate another isolated owner or unchanged full-frame preparation locally.
+
+### Full healthy local preparation completes in unchanged windows
+
+The [directory candidate preparation cohort](local-runs/directory-preparation-impact-20261021/README.md)
+completes all six scheduled healthy samples, three per compiler, under the
+unchanged original 300/60/10-second admission windows. All ten phases and their
+full validation call graphs remain; live age/causal observations, source,
+original bundle, default-feature images, boot/configuration and postflight
+checks agree. Largest reported live ages remain below 5.612 seconds. Raw child
+times include setup/reporting/cleanup and are not the admission age.
+
+The earlier time refusals remain immutable. A distinct WSL lifetime prevents
+attributing this cohort's shorter preparation to the isolated allocation
+change. Healthy preparation is now demonstrated for this local lifetime only;
+the next separate local gate is the remaining original fault scenarios with
+the same windows and no retries. Original delivery, all-writer cessation,
+lifecycle/SIGKILL/lost-ACK, reconnect, production trust and installed-source
+server gates are not closed by a preparation-only success. No clocks,
+services, installation, supervisor, product or server actions occurred.

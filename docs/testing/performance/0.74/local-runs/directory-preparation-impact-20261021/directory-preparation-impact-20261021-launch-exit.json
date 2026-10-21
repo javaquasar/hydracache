@@ -1,0 +1,9 @@
+{
+  "product": false,
+  "recipe_sha256": "1423641f8afee4010f636659dc6cb98af461baa89f07b265cc4905293fdca581",
+  "server": false,
+  "single_profile_session": true,
+  "exit": 0,
+  "source": "019c11daf56820762dd09fe82496db45aef26fd5",
+  "session_log_sha256": "ff7eb4e05e05ab373fabc265ebb9e1ddfbf4fb2d2e4296cdc4b60cca4d4a2454"
+}

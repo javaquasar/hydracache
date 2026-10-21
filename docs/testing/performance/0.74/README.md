@@ -5486,3 +5486,18 @@ twenty-five prior packets verify. Authoring failures and old time refusals
 remain. No server, clock/service, installation, supervisor, product or
 qualification action occurs. Next retain the unchanged full-frame gates and
 test another isolated measured owner; native/server admission remains closed.
+
+### Full preparation after short directory encoding
+
+The [local full preparation cohort](local-runs/directory-preparation-impact-20261021/README.md)
+completes three GNU and three MSRV healthy original profiles, all ten phases,
+with fresh default-feature images, the original bundle and unchanged 300/60/10
+windows. Whole child ranges are 6.995–7.352 and 7.204–7.299 seconds; largest
+reported live ages are 5.283–5.475 and 5.420–5.612 seconds. All six call graphs,
+complete-output signatures, metadata and postflight checks agree.
+
+This establishes healthy local preparation, not a causal CPU gain from the
+directory change: prior refusals have a different WSL boot and remain intact.
+Original send/completion, full fault matrix, writer cessation, reconnect, trust
+and server admission remain separate. No clocks, services, server, supervisor,
+installation, product or qualification workload was changed or run.

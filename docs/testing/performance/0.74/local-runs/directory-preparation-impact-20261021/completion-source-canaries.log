@@ -1,0 +1,19 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 23.84s
+     Running tests\authority_open_name_074.rs (target\debug\deps\authority_open_name_074-42e6fcd1461c72eb.exe)
+
+running 3 tests
+test authority_open_name_candidate_restores_only_the_exact_allocation_branch ... ok
+test authority_open_name_restores_exact_test_hooks_and_preserves_unrelated_drift ... ok
+test authority_open_name_freezes_original_syscall_and_clock_bodies ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.40s
+
+     Running tests\boot_operations_074.rs (target\debug\deps\boot_operations_074-2f6a720f745bea5e.exe)
+
+running 2 tests
+test boot_operations_only_exact_hook_gate_and_directory_ownership_may_normalize ... ok
+test boot_operations_fresh_open_expression_and_original_runtime_are_frozen ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.35s
+

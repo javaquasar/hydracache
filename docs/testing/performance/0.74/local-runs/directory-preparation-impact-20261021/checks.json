@@ -1,0 +1,45 @@
+{
+  "steps": [
+    {
+      "name": "windows-runner",
+      "log": "check-windows-runner.log",
+      "sha256": "c4b9387cf9b37aa0c81c5728ee01101ec078ec1395c20309cf05868568be01ae",
+      "exit": 0
+    },
+    {
+      "name": "windows-impact",
+      "log": "check-windows-impact.log",
+      "sha256": "c7d7876bc0a8e871f4c587e02fea5b3590ec3b72f1c614cc0389dbdc73eb727d",
+      "exit": 0
+    },
+    {
+      "name": "windows-age-audit",
+      "log": "check-windows-age-audit.log",
+      "sha256": "248ed52481ca5009d408a7328078a0d4c92351150ed7e8b4710f13f02dde6f9e",
+      "exit": 0
+    },
+    {
+      "name": "linux-runner",
+      "log": "check-linux-runner.log",
+      "sha256": "5b512f8ad349efd1c6352272ab23d0f0238951fa4ffd2c9efa5321e34901d2f9",
+      "exit": 0
+    },
+    {
+      "name": "linux-impact",
+      "log": "check-linux-impact.log",
+      "sha256": "cae399dbc6d1c787477c3a93ad89c45cf7a13bef096873bf72a44c45e9bd84d6",
+      "exit": 0
+    },
+    {
+      "name": "linux-age-audit",
+      "log": "check-linux-age-audit.log",
+      "sha256": "0f8e8e4b16c3426d8d6e74a9880c8487771d1c456378daeaa38e240d0481f1e6",
+      "exit": 2
+    }
+  ],
+  "source": "019c11daf56820762dd09fe82496db45aef26fd5",
+  "failure": "Check refused linux-age-audit",
+  "server": false,
+  "product": false,
+  "native_gate_open": false
+}

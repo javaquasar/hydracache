@@ -16515,3 +16515,31 @@ Original windows, qualification and live predicates stay frozen. Earlier
 original ten-second refusals and delivery/writer/lifecycle/reconnect/enrollment
 gates remain separate and closed; no service/clock/server or product action
 turns this diagnostic improvement into release admission.
+
+### Full local preparation after the directory change
+
+The [full preparation cohort](../testing/performance/0.74/local-runs/directory-preparation-impact-20261021/README.md)
+tests the accepted directory encoding candidate with fresh default-feature
+images and the unchanged original synthetic harness. Three GNU and three MSRV
+samples complete all ten phases under the original 300/60/10-second windows.
+Whole child invocations range from 6.995 to 7.352 seconds on GNU and 7.204 to
+7.299 seconds on MSRV. The largest reported live site age per sample ranges
+from 5.283 to 5.475 and 5.420 to 5.612 seconds, respectively. These are different
+measurements: child duration includes setup/reporting/cleanup, while live age
+comes from the original admission origin, not a sum of phase timers.
+
+All six phase/step/live/kernel/authentication call graphs agree; complete
+outputs keep 46 rounds and 782 authentications. Original causal and age traces
+retain their call counts and no refusal. One WSL parent holds metadata through
+postflight, with stable source, boot, PID/start ticks, configuration, original
+bundle and images, and no matching fixture residue. No original send, completion
+or product workload occurs; this is healthy preparation, not a fault/reconnect
+or all-writer cessation proof.
+
+The previous refused preparation remains evidence, not a replaced attempt.
+Its WSL boot differs, so this cohort cannot attribute the shorter times to two
+fewer authority allocation requests. The confirmed optimization remains the
+bounded request reduction. The new end-to-end finding is narrower: preparation
+can finish locally with every live check and original deadline intact. A causal
+CPU claim still needs a separately designed matched comparison; delivery,
+writer, lifecycle, trust and server gates remain independent.

@@ -1,0 +1,56 @@
+{
+  "ages": [
+    {
+      "highest_reported_site_age_ns": 5446808778,
+      "lane": "194",
+      "last_causal_age_ns": 5435142941,
+      "sample": 0
+    },
+    {
+      "highest_reported_site_age_ns": 5282710088,
+      "lane": "194",
+      "last_causal_age_ns": 5271256085,
+      "sample": 1
+    },
+    {
+      "highest_reported_site_age_ns": 5474666386,
+      "lane": "194",
+      "last_causal_age_ns": 5463908230,
+      "sample": 2
+    },
+    {
+      "highest_reported_site_age_ns": 5469383225,
+      "lane": "188",
+      "last_causal_age_ns": 5457462505,
+      "sample": 0
+    },
+    {
+      "highest_reported_site_age_ns": 5611853144,
+      "lane": "188",
+      "last_causal_age_ns": 5599280526,
+      "sample": 1
+    },
+    {
+      "highest_reported_site_age_ns": 5420198930,
+      "lane": "188",
+      "last_causal_age_ns": 5409126347,
+      "sample": 2
+    }
+  ],
+  "causal_observations": 155,
+  "cohort_call_graph_equal": true,
+  "live_age_calls": [
+    184,
+    81,
+    78
+  ],
+  "native_gate_open": false,
+  "original_windows_seconds": [
+    300,
+    60,
+    10
+  ],
+  "overhead_subtracted": false,
+  "product": false,
+  "server": false
+}
