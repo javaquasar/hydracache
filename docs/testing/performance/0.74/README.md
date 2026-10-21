@@ -5648,3 +5648,18 @@ Exact read-slice and first-error model controls pass without File/Probe/live IO.
 Only an opt-in test hook changes in old supervisor sources. Initial compiler
 errors and corrected test sources remain separate. No stack replacement,
 measured speedup, live replay or readiness promotion is included.
+
+### Short context document storage candidate
+
+The [isolated stack scratch candidate](context-document-stack-20261021.md)
+now uses owned local storage for lengths through 37, with exact zeroed read
+slices and the original Vec fallback. Fresh metadata/read/error order, all
+observation counts and original windows remain. Pure GNU/MSRV controls confirm
+zero requests for production lengths 33/37; across the whole mixed-size cohort,
+2304/64768 baseline requests/bytes become 512/26368, with fallback unchanged.
+
+Seeded complete-body models and 25 source canaries pass. The first GNU test-lint
+refusal and two test-only corrections remain separate. Six earlier seals and
+249 members are preserved. This is allocation evidence only, not preparation
+latency or product throughput; first Causal refusals and all material/server
+gates remain unchanged. No live, service or server action occurs.

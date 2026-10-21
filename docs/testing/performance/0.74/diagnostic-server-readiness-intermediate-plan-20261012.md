@@ -1535,3 +1535,18 @@ Next consider one short stack-storage candidate with exact slice length,
 zeroing and generic compatibility. No implementation or timing improvement is
 claimed here. Material, cleanup, delivery/all-writer, fault/reconnect and server
 gates remain closed; no original-owner or server run occurs.
+
+### Short document stack candidate kept after pure controls
+
+The [storage-only successor](context-document-stack-20261021.md) implements
+private invocation-local scratch through length 37 and unchanged generic Vec
+fallback. Exact whole-source reversal and complete-body models retain both
+fresh metadata observations, read/error order, call counts and 300/60/10-second
+windows. GNU/MSRV allocation controls confirm the short-request removal, not
+full preparation timing. The first GNU test-lint refusal is retained separately
+from its two test-only fixes and the green focused cohort.
+
+No original-owner attempt or server action is repeated. First Causal refusals,
+material/cleanup/EOF/fence, authenticated delivery/all writers, full fault/reconnect
+and server gates remain closed. Next audit trust component C strings as a
+separate pure baseline/candidate; no timing or readiness promotion is implied.

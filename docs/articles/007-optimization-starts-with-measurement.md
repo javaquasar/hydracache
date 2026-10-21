@@ -16862,3 +16862,45 @@ the corrected results. Production worker context is unchanged. This baseline
 contains no stack implementation: a later candidate must preserve 34/38-byte
 read slices and generic length behavior, then demonstrate its own result. No
 live attempt is repeated and no material/server gate is promoted.
+
+### Replace short document storage, not the fresh observation
+
+The [isolated successor](../testing/performance/0.74/context-document-stack-20261021.md)
+tests the proposed storage change against that frozen baseline. A private owned
+38-byte array handles document lengths through 37. The read callback sees only
+length+1 zeroed bytes: still 34 for the machine document and 38 for boot. Larger
+lengths keep the original Vec construction. The array is not the total enum or
+stack footprint, and none of this caches a previous successful observation.
+
+The important contract is the allocation site's position. First metadata still
+precedes construction, read is still attempted once, and the second metadata
+observation and all count/newline/content predicates keep their order. Read
+errors still propagate before closing metadata; no retry is introduced. Complete
+file reversal checks the old production source, while a pure complete-body
+adapter substitutes only the two metadata operands. A 384-case seeded model
+compares first errors and event schedules, including malformed/short/overrun
+reads, EINTR/EIO/EBADF and metadata refusal. It is not evidence of a real
+metadata-race test or an original-owner success.
+
+GNU 1.94 and MSRV 1.88 both confirm the allocation hypothesis. With the same
+nine sizes and 256 constructions each, requests fall from 2304 to 512 and
+requested bytes from 64768 to 26368. The production-length subset changes from
+512 requests/18432 bytes to zero; the two larger fallback sizes are unchanged.
+The baseline is rerun unchanged and agrees with its earlier sealed counters.
+No reallocation is observed in either arm.
+
+This justifies keeping the leaf as an allocation candidate. It does not justify
+calling LocalContext faster: zeroing, enum handling and possible stack copying
+still cost something, and no complete preparation timing is taken here. CPU,
+RSS, retained memory and ten-second headroom are not derived from allocator
+requests or multiplied by old observed call counts. This is a monitoring-tool
+preparation change, not an RESP/native throughput result.
+
+The first GNU lint refusal in two test expressions remains in evidence; only
+those expressions change in the distinct corrected pure cohort. All focused
+controls, strict lint, formatting and local structural gates then pass. Six
+earlier raw seals and 249 members remain intact. Original windows, fresh-check
+counts/order and both first Causal refusals are preserved. There is no live
+replay, clock/service change, server run or new material/server admission. The
+next trust-string leaf needs its own baseline rather than being folded into
+this successful allocation comparison.
