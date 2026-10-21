@@ -1495,3 +1495,16 @@ refusals and failed material gate stay closed, as do EOF/fence, delivery,
 all-writer cessation, SIGKILL/lost-ACK/reconnect and server admission. Keep further
 cost candidates separate; a future timing comparison needs separate admission
 and must never replace the original refused cohort. No server/service action.
+
+### Fresh Groups allocation candidate leaves admission unchanged
+
+The [bounded collection leaf](projection-groups-20261021.md) preserves the final
+Vec representation, all fresh reads, limits, field/error order, validation graph
+and original windows. GNU/MSRV pure controls confirm exact-size requests without
+vector growth; full-file guards and deterministic parser controls remain green.
+It is an allocation-only candidate, not a successful material run or timing proof.
+
+The first two Causal refusals and all prior seals remain unchanged. Full material
+revalidation, cleanup/EOF/fence, authenticated delivery, all writers and downstream
+SIGKILL/lost-ACK/reconnect/server gates stay independent. No live replay,
+clock/service change or server run is performed.

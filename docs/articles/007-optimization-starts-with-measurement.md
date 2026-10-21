@@ -16778,3 +16778,34 @@ whether preparation now fits ten seconds, or any native API throughput gain.
 The first refused logs and sealed attribution remain intact; no new live sample
 is selected to replace them. A future timing comparison must be separately
 admitted, with the same fresh-check graph and original windows.
+
+### Reduce bounded collection growth while preserving the decoder
+
+The next [fresh-check leaf](../testing/performance/0.74/projection-groups-20261021.md)
+targets the `Groups:` projection built from each fresh proc-status document.
+The decoder takes at most 33 integers and then refuses more than 32. Collecting
+that iterator directly into Vec grows capacity several times for longer lists.
+The candidate first collects the same Result iterator into 33 local u32 slots,
+then creates the same final owned vector with exact capacity. It changes neither
+the number of proc reads nor the retained identity type or caller conversions.
+
+Keeping the extra slot matters: an invalid 33rd integer must retain its original
+numeric error before the group-budget check, while a valid 33rd integer reaches
+the budget refusal. Seeded value tests, first-error/visit-order controls and full
+documents verify that distinction. Exact whole-file reversal keeps every other
+field, live predicate, error path and deadline under the earlier source guards.
+Changing a bound or removing a fresh validation cannot disappear in normalization.
+
+Before implementation, GNU 1.94 and MSRV 1.88 each measured seven lengths and
+256 pure collections per length. Across those 1792 calls, the reference made
+1536 allocations, 2560 reallocations and 237568 requested bytes. The candidate
+keeps 1536 allocations, requests no reallocations and totals 93184 bytes. The
+empty list still allocates nothing; nonempty results keep the same owned values.
+Reference counts after wiring agree with the earlier baseline.
+
+This result supports an allocation-only candidate, not a speed claim. The local
+scratch and final copy also have cost, and these controls do not time it or the
+full validator. CPU, RSS, retained memory and ten-second admission headroom are
+not inferred from requested bytes. No original-owner attempt is repeated, and
+the first two Causal refusals remain intact. The next timing comparison needs
+its own admission; server readiness and downstream fault proofs remain closed.

@@ -5609,3 +5609,16 @@ zero in the candidate; this does not measure full Alive/ReservedLive latency.
 Boundary/seeded, actual self-pidfd, refusal, trace and source reconstruction
 controls pass without an original-owner replay. No first refusal or sealed
 attribution is replaced, and no timing improvement or server admission is claimed.
+
+### Exact allocation in the fresh Groups projection
+
+The next [isolated collection candidate](projection-groups-20261021.md) retains
+the owned Vec and all parser/live predicates but collects the bounded numbers
+into temporary scratch before allocating exact final capacity. GNU/MSRV pure
+controls over 1792 collections each retain 1536 allocations, remove 2560
+reallocations and reduce requested bytes from 237568 to 93184. Full preparation
+latency is not measured by these counters.
+
+Seeded values, first-error/visit order, full-document refusal and trace controls,
+older parser models and whole-source reversal pass. Original windows and first
+Causal refusals remain; there is no live replay or changed server admission.
