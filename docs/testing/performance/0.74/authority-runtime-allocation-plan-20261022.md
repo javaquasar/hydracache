@@ -72,3 +72,17 @@ Keep all live checks/count/order, 300/60/10 windows, first Causal refusals and r
 qualification digest 11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc.
 No live preparation, original start, service/clock change, privileged operation,
 server, installation, supervisor action, product workload or SIGKILL campaign.
+
+## Pre-measure provenance correction
+
+The fifth build/control-only attempt exposed Cargo reuse across source roots:
+its installed role reported fresh:true with the baseline executable and digest.
+Do not signal that attempt or use it as a comparison. Its finite method wait
+must refuse before any measurement. Use separate target directories per compiler
+and role; require a freshly compiled selected libtest artifact and distinct
+baseline/installed paths and SHA-256 before ready. Copying dependency bytes from
+that completed build to newly owned targets is allowed only with original/new
+hash inventories, no hardlinks/source writes, and exclusion of supervisor package
+artifacts/fingerprints. All selected supervisor images must compile afresh.
+This correction precedes every measured cell and changes no workload, runtime,
+counter, live check, original window or first refusal.
