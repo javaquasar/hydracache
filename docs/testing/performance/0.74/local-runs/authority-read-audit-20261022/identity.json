@@ -1,0 +1,11 @@
+{
+  "schema": "offline-authority-read-identity-074-v1",
+  "starting_tree": "3f48a7c9",
+  "preregistered_scope_source": "8fb9f314",
+  "auditor_and_controls_source": "338bfd6b0b63b6c4e2747b8ae22ccf8fc8e7f6fc",
+  "runtime_candidate_implemented": false,
+  "new_measurements": 0,
+  "original_owner_profiles": 0,
+  "server": false,
+  "product": false
+}

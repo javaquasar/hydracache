@@ -1,0 +1,141 @@
+{
+  "schema": "offline-authority-read-inventory-074-v1",
+  "auditor_source": "338bfd6b0b63b6c4e2747b8ae22ccf8fc8e7f6fc",
+  "files": [
+    {
+      "bytes": 2083,
+      "path": "checks/audit-controls.log",
+      "sha256": "915d9906dfe68433fbcf8592df9d1396ca3adf3e005c59affe47cecb147d0cc9"
+    },
+    {
+      "bytes": 7857,
+      "path": "checks/canaries.log",
+      "sha256": "e1efe1322f5e993f9a9395e2e776c79afe0af25a3c659af5f275c0aca42b8b67"
+    },
+    {
+      "bytes": 73,
+      "path": "checks/check.log",
+      "sha256": "990f651d544f33bbbbd3226d27064da65be5ca98fb33cd817c554b58d8f43f74"
+    },
+    {
+      "bytes": 73,
+      "path": "checks/clippy.log",
+      "sha256": "e8e3f1da9e0d71334c8c3c4b0f5247c1cb19c8bb67416c5e49caec57e75c0a21"
+    },
+    {
+      "bytes": 251,
+      "path": "checks/docs.log",
+      "sha256": "5daea11d9142895333bb8a54e51eccbb767afa0c459d6826f7e43a098e0b4bc9"
+    },
+    {
+      "bytes": 0,
+      "path": "checks/format.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 215,
+      "path": "checks/performance.log",
+      "sha256": "4bcb6fa6bec99b88f24d5b10411a8e3eda7c4c2f2b981105798b2f69938fa69d"
+    },
+    {
+      "bytes": 1283,
+      "path": "checks/prior-boot-controls.log",
+      "sha256": "6f8c15d2b506c33357c0f5d89e5eabf4f7e880894318300da412b8c85862c8c5"
+    },
+    {
+      "bytes": 111,
+      "path": "checks/prior-inline-controls.log",
+      "sha256": "3972c94fca3af17bc3ca50e1288c2898036bf3d5e0ebe57cc7596286344c14dc"
+    },
+    {
+      "bytes": 1137,
+      "path": "checks/prior-proc-controls.log",
+      "sha256": "ed37b8d8afbccda4321e3142e1ac791627c9efe1859ed3726fd47fd390a497fe"
+    },
+    {
+      "bytes": 1740,
+      "path": "checks/prior-reconciliation-controls.log",
+      "sha256": "2f192fcd96ada3113eee5068aa497b3ff51edb251412c3873e44725b841bd52d"
+    },
+    {
+      "bytes": 0,
+      "path": "checks/protected-source.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 190,
+      "path": "checks/registry.log",
+      "sha256": "5a3f55a0007829ac72db1b26da615f62c6b14bcc658ffd18d2666437f9d1627d"
+    },
+    {
+      "bytes": 2573,
+      "path": "checks/result.json",
+      "sha256": "955c97cb1c11720f428f92d840c89342a26e975b343396325a96d57dd9252e7e"
+    },
+    {
+      "bytes": 933,
+      "path": "development-note.md",
+      "sha256": "5f4e742c7443b267c8cc0b7bfb3eaaaf3c9cc9c88fe68976b3a39fa4c3650452"
+    },
+    {
+      "bytes": 8591,
+      "path": "facts.json",
+      "sha256": "2ca50844687a20ff7181fb646685bbf655cf13625d44fd9f05dcce71aed74149"
+    },
+    {
+      "bytes": 347,
+      "path": "identity.json",
+      "sha256": "4dee2b7e18c6185b177ccdcedc5649f85c8f3494da64ed17664cfb124a2aa6c7"
+    },
+    {
+      "bytes": 1973,
+      "path": "method/docs/testing/performance/0.74/authority-read-audit-plan-20261022.md",
+      "sha256": "24d9997c825c7fa844962e859ba8c9de1c00b1fe5cc10b26310817285dc62c39"
+    },
+    {
+      "bytes": 6810,
+      "path": "method/tools/long-run-supervisor-074/src/diagnostic_authority_fixed.rs",
+      "sha256": "04a086ba1a2f70637b7f23c34d1d5e47d8ca08c0f3cfc72fc0fa8296e431a690"
+    },
+    {
+      "bytes": 22308,
+      "path": "method/tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs",
+      "sha256": "437b66c3f3c6138fb46d7e36dbe4d0e74559b0ebac5ea9bfc5c8e060f3fc7232"
+    },
+    {
+      "bytes": 9932,
+      "path": "method/tools/long-run-supervisor-074/src/diagnostic_authority_registry.rs",
+      "sha256": "fe7f6455ff27e3f476802d2594d39ae43547ab714396da2203f2567f9674a229"
+    },
+    {
+      "bytes": 16787,
+      "path": "method/tools/long-run-supervisor-074/tests/support/authority_owners_controls.rs",
+      "sha256": "c6c6c7e7aa8158959fb70a37b3443c1ecd7649d10aab9e2da0778b7da0770b14"
+    },
+    {
+      "bytes": 11329,
+      "path": "method/tools/offline-authority-read-audit-074/audit_read.py",
+      "sha256": "22a7f81da5e7bdb3a604b6e29f523aeb716c2a7d33325cd62eed8ffd55a1b0fb"
+    },
+    {
+      "bytes": 2984,
+      "path": "method/tools/offline-authority-read-audit-074/check.ps1",
+      "sha256": "f128c5806a7dcf27854f2deed73a7d961cf13a19c22e8ba23f1298d28e7d9e02"
+    },
+    {
+      "bytes": 1486,
+      "path": "method/tools/offline-authority-read-audit-074/README.md",
+      "sha256": "6acb74eaa8340d5c2eef4b344159f901e22cd1ddedef6b3bff793d54d865122a"
+    },
+    {
+      "bytes": 9062,
+      "path": "method/tools/offline-authority-read-audit-074/test_audit_read.py",
+      "sha256": "c77d4e600408a34cc27abc9849c0277305b1dd6ce5b549488f9a561e758867d0"
+    },
+    {
+      "bytes": 922,
+      "path": "summary.json",
+      "sha256": "209841fed1c27cfb4807d9754179fa0079ea942519132150520fe9747982ca35"
+    }
+  ]
+}

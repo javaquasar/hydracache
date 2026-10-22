@@ -1,0 +1,13 @@
+test_changed_counter_corpus_seed_error_and_gate_refuse (__main__.ReviewTests.test_changed_counter_corpus_seed_error_and_gate_refuse) ... ok
+test_exact_first_two_windows_lanes_and_old_seals (__main__.ReviewTests.test_exact_first_two_windows_lanes_and_old_seals) ... ok
+test_main_and_stage_are_not_pooled (__main__.ReviewTests.test_main_and_stage_are_not_pooled) ... ok
+test_missing_duplicate_unknown_and_partial_controls_refuse (__main__.ReviewTests.test_missing_duplicate_unknown_and_partial_controls_refuse) ... ok
+test_no_promotion_or_changed_original_refusals (__main__.ReviewTests.test_no_promotion_or_changed_original_refusals) ... ok
+test_receipt_wrong_exit_names_hash_or_platform_refuses (__main__.ReviewTests.test_receipt_wrong_exit_names_hash_or_platform_refuses) ... ok
+test_separate_output_and_exclusive_publication (__main__.ReviewTests.test_separate_output_and_exclusive_publication) ... ok
+test_source_drift_refuses_except_line_endings (__main__.ReviewTests.test_source_drift_refuses_except_line_endings) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.689s
+
+OK

@@ -1,0 +1,234 @@
+{
+  "audit": {
+    "caller_refusal": "shared journal latches errors; Leaf::read itself is not a sticky registry",
+    "explicit_constructor_expressions_per_read": 1,
+    "fixed_budgets": {
+      "generations": 128,
+      "marker": 65,
+      "record": 2048
+    },
+    "fresh_descriptor_retained_through_comparisons": true,
+    "measured_allocation_requests": null,
+    "measured_reallocations": null,
+    "measured_wall_ns": null,
+    "owned_roles": [
+      {
+        "bytes": "Leaf.raw",
+        "disposition": "keep-owned",
+        "file": "Leaf.file",
+        "lifetime": "retained original Leaf owner",
+        "owner": "retained-leaf",
+        "purpose": "expected bytes and original descriptor/stamp for future fresh comparisons"
+      },
+      {
+        "bytes": "named.2",
+        "disposition": "baseline-required-before-transient-buffer-proposal",
+        "file": "named.0",
+        "lifetime": "through stamp and byte comparisons",
+        "owner": "fresh-revalidation",
+        "purpose": "independent newly opened bytes and stamp"
+      }
+    ],
+    "proposal": "separate transient revalidation scratch from retained Leaf.raw only after its own bounded-read baseline",
+    "read_body_sha256": "eb9e20e13593612420efb216956d7293d18af8a027618edb2b8ec6dd70788a37",
+    "read_limit": "budget + 1; post-stamp and exact original length still required",
+    "read_steps": [
+      {
+        "expression": "let mut file = open_at(dir, name, false)?;",
+        "line": 90,
+        "path": "tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs"
+      },
+      {
+        "expression": "let before = file.metadata()?;",
+        "line": 91,
+        "path": "tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs"
+      },
+      {
+        "expression": "regular(&before, uid, gid, 0o400)?;",
+        "line": 92,
+        "path": "tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs"
+      },
+      {
+        "expression": "if before.dev() != dir.metadata()?.dev() || before.len() > budget as u64 {\n            return Err(AuthorityError::Budget);\n        }",
+        "line": 93,
+        "path": "tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs"
+      },
+      {
+        "expression": "let stamp = Stamp::of(&before);",
+        "line": 96,
+        "path": "tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs"
+      },
+      {
+        "expression": "let mut raw = Vec::with_capacity(before.len() as usize);",
+        "line": 97,
+        "path": "tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs"
+      },
+      {
+        "expression": "(&mut file).take(budget as u64 + 1).read_to_end(&mut raw)?;",
+        "line": 98,
+        "path": "tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs"
+      },
+      {
+        "expression": "if Stamp::of(&file.metadata()?) != stamp || raw.len() as u64 != stamp.len {\n            return Err(AuthorityError::Invalid);\n        }",
+        "line": 99,
+        "path": "tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs"
+      },
+      {
+        "expression": "Ok((file, stamp, raw))",
+        "line": 102,
+        "path": "tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs"
+      }
+    ],
+    "rejected_shortcuts": [
+      "reuse cached bytes as fresh evidence",
+      "overwrite expected Leaf.raw during comparison",
+      "read_exact only the old length",
+      "replace budget+1 with old metadata length",
+      "drop the fresh descriptor before comparisons",
+      "remove metadata/ownership or caller latching"
+    ],
+    "revalidate_body_sha256": "b4f57fd0e18c04783499c31e582846f857b11112cb04533474a03179d449ee4a",
+    "stamp_fields": [
+      "dev",
+      "ino",
+      "uid",
+      "gid",
+      "mode",
+      "links",
+      "len",
+      "mtime",
+      "mtime_ns",
+      "ctime",
+      "ctime_ns"
+    ],
+    "trace_control_source_only": true
+  },
+  "clocks_changed": false,
+  "first_refusals": [
+    {
+      "age_ns": 10042390247,
+      "diagnostic_reason": "expired",
+      "issued_boot": "6a709ad1-c736-45a2-bd6a-351e07f6b8f3",
+      "issued_ns": 463631383166,
+      "now_boot": "6a709ad1-c736-45a2-bd6a-351e07f6b8f3",
+      "now_ns": 473673773413,
+      "site": "window"
+    },
+    {
+      "age_ns": 10010835739,
+      "diagnostic_reason": "expired",
+      "issued_boot": "6a709ad1-c736-45a2-bd6a-351e07f6b8f3",
+      "issued_ns": 476668137622,
+      "now_boot": "6a709ad1-c736-45a2-bd6a-351e07f6b8f3",
+      "now_ns": 486678973361,
+      "site": "window"
+    }
+  ],
+  "full_sigkill_matrix": false,
+  "input_members_verified": 928,
+  "input_packets": [
+    {
+      "inventory_sha256": "0c385fbfe209fad1903aa2c0e620817c458f413eec8bd36fa32be5c01fbb4109",
+      "members": 65,
+      "packet": "held-material-live-20261021"
+    },
+    {
+      "inventory_sha256": "84c2d0a10e1d2d66b4dc76e1c041b9920d90d85621461bc3e83102569a6e1a2f",
+      "members": 18,
+      "packet": "held-material-round-attribution-20261021"
+    },
+    {
+      "inventory_sha256": "dc7af6cd78dfc1b69c7443078a8c6e2edc4504e294f74d30df93e085f8471daa",
+      "members": 51,
+      "packet": "pidfd-info-path-20261021"
+    },
+    {
+      "inventory_sha256": "ae7db79c3e579b7ad9f1939d2571aab27452b62f81c89b46b98340381f4b91c6",
+      "members": 52,
+      "packet": "projection-groups-20261021"
+    },
+    {
+      "inventory_sha256": "d66631eec23dc969f372d73c2bb83519058214383023564ec269ec542f854c4e",
+      "members": 23,
+      "packet": "reserved-leaf-audit-20261021"
+    },
+    {
+      "inventory_sha256": "8db3e4df5579ec7a471886505191825609b5c839732670bece6702ae101afcb6",
+      "members": 40,
+      "packet": "context-document-baseline-20261021"
+    },
+    {
+      "inventory_sha256": "7a65d50c19622754bda58fd389ef03d3f07254465d96f1e16b586cdec94f71f0",
+      "members": 54,
+      "packet": "context-document-stack-20261021"
+    },
+    {
+      "inventory_sha256": "7eacd69041a722fc3d6153ef8be43eff87bf945a8fb6ccdd456acadff1bfcc9d",
+      "members": 45,
+      "packet": "trust-component-baseline-20261021"
+    },
+    {
+      "inventory_sha256": "e588fd8ae6b06a6e808446328b819240c4bb0e35955309e843ddb1078668fd85",
+      "members": 53,
+      "packet": "trust-component-stack-20261021"
+    },
+    {
+      "inventory_sha256": "cc19972e68a264b7b84ac48400f43e1b981d5a0e762ad7a9aee1a67548bf2452",
+      "members": 41,
+      "packet": "collector-peer-baseline-20261021"
+    },
+    {
+      "inventory_sha256": "846b5e7d6d07a47bd03c64be0a207b24b197b39ceddb25e4fc3b06cd049b05ae",
+      "members": 49,
+      "packet": "collector-peer-capacity-20261022"
+    },
+    {
+      "inventory_sha256": "d3aa773d6254d5297d303cfc8ba7a397e06ae8a2d4978e39e29c496062b3fb72",
+      "members": 42,
+      "packet": "reserved-reconciliation-20261022"
+    },
+    {
+      "inventory_sha256": "3194244cb4e45c6f4f611b946afaa6a6a8b3aaf83179457c260d0a9e25f93864",
+      "members": 237,
+      "packet": "custody-preparation-cost-20261020"
+    },
+    {
+      "inventory_sha256": "dbaa727197cf3c08b5206b40050bef4424f8a1e1793191ca661ba5540a81c306",
+      "members": 43,
+      "packet": "proc-document-baseline-20261022"
+    },
+    {
+      "inventory_sha256": "fd07cd7911ab50d51e5a471de9ae5b427ec4076636396fe12861c46433ac6b10",
+      "members": 43,
+      "packet": "sample-boot-baseline-20261022"
+    },
+    {
+      "inventory_sha256": "6bee3c2c239d2e38f9ad06a9098e756edc8dc248b6c48eb51f425b61b36b4ebf",
+      "members": 72,
+      "packet": "sample-boot-inline-20261022"
+    }
+  ],
+  "new_measurements": 0,
+  "original_material_gate_passed": false,
+  "original_owner_profiles": 0,
+  "original_windows_seconds": [
+    300,
+    60,
+    10
+  ],
+  "previous_boot_decision": "reject-for-adoption",
+  "product": false,
+  "qualification_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "reconnect_proven": false,
+  "runtime_candidate_implemented": false,
+  "schema": "offline-authority-read-audit-074-v1",
+  "server": false,
+  "services_changed": false,
+  "source_pins": {
+    "tools/long-run-supervisor-074/src/diagnostic_authority_fixed.rs": "fd1e10a038ae046888c8ff3c76303e36e5ed49a46aef2025391f8aa009d554a1",
+    "tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs": "3b3c75f41dbd8a8db1f73d61af3b0c701a666c3ebeed326ae49012ed0c01fb6c",
+    "tools/long-run-supervisor-074/src/diagnostic_authority_registry.rs": "1e936fe855eedad6d0e5dacbd76d534a45cc8df11cd30f06f8e2ed77258bc53e",
+    "tools/long-run-supervisor-074/tests/support/authority_owners_controls.rs": "c4f04ccb7b3d7bd17e13241b1cefc6657661e5560d1b1ce51f3445e71d5202ce"
+  },
+  "starting_tree": "3f48a7c9"
+}

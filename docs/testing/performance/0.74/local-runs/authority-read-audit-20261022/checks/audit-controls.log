@@ -1,0 +1,16 @@
+test_auditor_has_no_launch_network_clock_or_dynamic_execution_capability (__main__.AuthorityReadAuditTests.test_auditor_has_no_launch_network_clock_or_dynamic_execution_capability) ... ok
+test_eof_bound_length_stamp_and_error_propagation_shortcuts_refuse (__main__.AuthorityReadAuditTests.test_eof_bound_length_stamp_and_error_propagation_shortcuts_refuse) ... ok
+test_fresh_comparison_must_not_reuse_mutate_or_drop_the_original_evidence (__main__.AuthorityReadAuditTests.test_fresh_comparison_must_not_reuse_mutate_or_drop_the_original_evidence) ... ok
+test_old_packets_boot_rejection_windows_refusals_and_gates_remain (__main__.AuthorityReadAuditTests.test_old_packets_boot_rejection_windows_refusals_and_gates_remain) ... ok
+test_open_before_regular_parent_and_bounded_read_order_is_fixed (__main__.AuthorityReadAuditTests.test_open_before_regular_parent_and_bounded_read_order_is_fixed) ... ok
+test_output_is_separate_exclusive_and_read_only_verify_refuses_drift (__main__.AuthorityReadAuditTests.test_output_is_separate_exclusive_and_read_only_verify_refuses_drift) ... ok
+test_registry_latching_fixed_route_and_original_budgets_are_preserved (__main__.AuthorityReadAuditTests.test_registry_latching_fixed_route_and_original_budgets_are_preserved) ... ok
+test_regular_file_flags_and_all_stamp_fields_are_preserved (__main__.AuthorityReadAuditTests.test_regular_file_flags_and_all_stamp_fields_are_preserved) ... ok
+test_retained_and_temporary_owners_are_distinct_without_cost_claim (__main__.AuthorityReadAuditTests.test_retained_and_temporary_owners_are_distinct_without_cost_claim) ... ok
+test_unique_complete_witnesses_and_bodies_not_substring_presence_alone (__main__.AuthorityReadAuditTests.test_unique_complete_witnesses_and_bodies_not_substring_presence_alone) ... ok
+test_whole_source_pin_refuses_unrelated_changes_but_accepts_line_endings (__main__.AuthorityReadAuditTests.test_whole_source_pin_refuses_unrelated_changes_but_accepts_line_endings) ... ok
+
+----------------------------------------------------------------------
+Ran 11 tests in 1.851s
+
+OK
