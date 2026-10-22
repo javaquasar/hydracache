@@ -1,0 +1,18 @@
+{
+  "argv": [
+    "/usr/bin/taskset",
+    "--cpu-list",
+    "0",
+    "/home/artur/.cache/hydracache-074-runtime-cpu-20261022/first/target-194-baseline/release/deps/hydracache_long_run_supervisor_074-5138eed558b3af90",
+    "diagnostic_worker_policy::authority_registry::fixture::tests::runtime_cpu::runtime_cpu_clocks",
+    "--exact",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "cwd": "/home/artur/.cache/hydracache-074-runtime-cpu-20261022/first/baseline",
+  "exit": 0,
+  "name": "194-baseline-control-0",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stdout_sha256": "8363904dc69422bdb884b90ac4f193e1e010705c64d408087148dfc4e168636f",
+  "timeout": false
+}

@@ -1,0 +1,18 @@
+{
+  "argv": [
+    "/usr/bin/taskset",
+    "--cpu-list",
+    "0",
+    "/home/artur/.cache/hydracache-074-runtime-cpu-20261022/first/target-188-installed/release/deps/hydracache_long_run_supervisor_074-19566b75c882a260",
+    "diagnostic_worker_policy::authority_registry::fixture::tests::runtime_cpu::runtime_cpu_measurement",
+    "--exact",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "cwd": "/home/artur/.cache/hydracache-074-runtime-cpu-20261022/first/installed",
+  "exit": 0,
+  "name": "188-pair-0-installed",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stdout_sha256": "5b5a75cbb81ab7350df6cc2b782b7eb032ca6605782139889f9ae44bf2db1b64",
+  "timeout": false
+}

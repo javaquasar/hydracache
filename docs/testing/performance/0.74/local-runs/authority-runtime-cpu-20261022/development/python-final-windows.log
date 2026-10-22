@@ -1,0 +1,12 @@
+test_child_only_affinity_and_exact_selection (__main__.Controls.test_child_only_affinity_and_exact_selection) ... ok
+test_exact_overlay_no_allocator_or_original_edits (__main__.Controls.test_exact_overlay_no_allocator_or_original_edits) ... ok
+test_fresh_artifact_and_uninterleaved_success (__main__.Controls.test_fresh_artifact_and_uninterleaved_success) ... ok
+test_inventory_tracks_every_byte_excluding_only_root_inventory (__main__.Controls.test_inventory_tracks_every_byte_excluding_only_root_inventory) ... ok
+test_primary_needs_both_compilers_and_strict_practical_interval (__main__.Controls.test_primary_needs_both_compilers_and_strict_practical_interval) ... ok
+test_rows_clocks_membership_and_corpus_guards (__main__.Controls.test_rows_clocks_membership_and_corpus_guards) ... ok
+test_seven_pairs_keep_zero_and_negative_effects_without_selection (__main__.Controls.test_seven_pairs_keep_zero_and_negative_effects_without_selection) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.111s
+
+OK

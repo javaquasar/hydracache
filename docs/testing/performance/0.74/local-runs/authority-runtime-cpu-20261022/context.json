@@ -1,0 +1,13 @@
+{
+  "schema": "authority-runtime-cpu-context-074-v1",
+  "predecessor": "496e3628c1975e5e006c1b8a12ecef8211314c3367cff1d0d50b40c7846f9913",
+  "product": false,
+  "server": false,
+  "method": "12d158427322d3e58c3e06a79f3038d95dec36ec",
+  "runtime_changed": false,
+  "live": false,
+  "runtime_sources": {
+    "baseline": "33c54b0cda8c330b115009cdf092ad002077cedf",
+    "installed": "66d5f371680d085a24de8f2558e1f049c71b9e7b"
+  }
+}

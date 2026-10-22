@@ -1,0 +1,3112 @@
+[
+  {
+    "bytes": 954,
+    "path": "tools/long-run-supervisor-074/Cargo.toml",
+    "sha256": "11cacdb5af350eb09b6aacfc852a67422cafbaee2e8e018393062082b39f92dd"
+  },
+  {
+    "bytes": 1272,
+    "path": "tools/long-run-supervisor-074/examples/inspect_root_owned_input.rs",
+    "sha256": "adc92aa6a1928acaeeb412234fec45fd0130d538a25d0a47f0e4ae2573e2baef"
+  },
+  {
+    "bytes": 3875,
+    "path": "tools/long-run-supervisor-074/examples/inspect_signer_gnu_catalog.rs",
+    "sha256": "521de9d528bfde48f33de78e45c7a32b7d09182bc82e33e2e75bce5208f03c5b"
+  },
+  {
+    "bytes": 1826,
+    "path": "tools/long-run-supervisor-074/examples/prepare_unsigned_prebuilt.rs",
+    "sha256": "a51711decc74815f4513be5a5b5e357f40696a5997ee657f1aa5b01b4ee606ad"
+  },
+  {
+    "bytes": 7821,
+    "path": "tools/long-run-supervisor-074/examples/verify_signer_issuer_public.rs",
+    "sha256": "d9af3fe86f56bbcb4216af29a417c16e121b5c2dc072a201a02246bf645eec04"
+  },
+  {
+    "bytes": 54306,
+    "path": "tools/long-run-supervisor-074/src/abort_backend.rs",
+    "sha256": "d659aaf00bb8c3d285e379f9a41893ca1092ae098fd529a378b44876082bf9fc"
+  },
+  {
+    "bytes": 15875,
+    "path": "tools/long-run-supervisor-074/src/abort_lifecycle.rs",
+    "sha256": "65358b1e71ad3169a82a6fcfc3c642b89eff395003a25e76f12babe6ca16ecbc"
+  },
+  {
+    "bytes": 13493,
+    "path": "tools/long-run-supervisor-074/src/archive.rs",
+    "sha256": "a61c6aba51fc335a6904822a494102f58780fb5423a055a861cb8c768451ab65"
+  },
+  {
+    "bytes": 29368,
+    "path": "tools/long-run-supervisor-074/src/artifact.rs",
+    "sha256": "360c4e432d831125cded59296fa65de1e59a897f9b9215ab6daa2bfde5be3ec2"
+  },
+  {
+    "bytes": 5144,
+    "path": "tools/long-run-supervisor-074/src/auth.rs",
+    "sha256": "8dcc74c2f421de3bbe950adc45cb94dfdcf45041b97af8448c16e69aa15acbdb"
+  },
+  {
+    "bytes": 1462,
+    "path": "tools/long-run-supervisor-074/src/bin/diagnostic_builder.rs",
+    "sha256": "9b2cae5a49c18b5b46e42d90626f61467ff2c01a723500b3431a7f63645a2e8e"
+  },
+  {
+    "bytes": 1506,
+    "path": "tools/long-run-supervisor-074/src/bin/diagnostic_controller.rs",
+    "sha256": "4ceae6b1ca49ad6752f85f0a6ce46f955b82795be02c60097a11c47fa6e1fc43"
+  },
+  {
+    "bytes": 645,
+    "path": "tools/long-run-supervisor-074/src/bin/diagnostic_held_launcher.rs",
+    "sha256": "7ddb3c2a389eef4882163d8be93482fa83cd3e16858ebacc1c0a53a8228ad7b6"
+  },
+  {
+    "bytes": 884,
+    "path": "tools/long-run-supervisor-074/src/bin/diagnostic_signer_isolation_probe.rs",
+    "sha256": "da322d664803576187d3c77dfc85e5f0f333edb1e2f119002012cb92e67282d7"
+  },
+  {
+    "bytes": 466,
+    "path": "tools/long-run-supervisor-074/src/bin/diagnostic_signer_owned_probe.rs",
+    "sha256": "3e530cc5a0e76d01467c48ae8107f27345a142d4ca5476e19a44c5d0065f8e45"
+  },
+  {
+    "bytes": 3179,
+    "path": "tools/long-run-supervisor-074/src/bin/diagnostic_signer_root_probe.rs",
+    "sha256": "c3c923a41c26f79322c2c70a68f4f46ade9e314849b71957022b08b8aa37b2c7"
+  },
+  {
+    "bytes": 99656,
+    "path": "tools/long-run-supervisor-074/src/campaign_smoke.rs",
+    "sha256": "a0b240aa9168e0c5a6f900471a15b157063e4ac1efec786ab5e69067ed1cc15b"
+  },
+  {
+    "bytes": 7250,
+    "path": "tools/long-run-supervisor-074/src/checkpoint_evidence.rs",
+    "sha256": "1edd418a00c738fb3a829c7b58148c738c0a2ebcf56ea0c7f7c0473a133eeefa"
+  },
+  {
+    "bytes": 2223,
+    "path": "tools/long-run-supervisor-074/src/client.rs",
+    "sha256": "1ddacf6f09d53dd4616f499e66b49980497f114954d4a81d1bdf5531c9f3e982"
+  },
+  {
+    "bytes": 4560,
+    "path": "tools/long-run-supervisor-074/src/config.rs",
+    "sha256": "5a5da7b5ee45226e766597a526a71795da087e6de770311d283e09fa9d26d536"
+  },
+  {
+    "bytes": 19884,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_artifacts.rs",
+    "sha256": "a0d14f925f29395710aad2ed7b24f04da4e2d8b08b201a84e81bbe5f57adbbb7"
+  },
+  {
+    "bytes": 35698,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_artifacts_linux.rs",
+    "sha256": "9e581a64b79b11161fb6d22c2bbcf76f380957a61c9d988fe8ab4cc06b7a719a"
+  },
+  {
+    "bytes": 8132,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_attempt_publication.rs",
+    "sha256": "4b115df922a132d7436b57c6df0e761a45fdfb0d74784550e4a2c03c0e9d1bc4"
+  },
+  {
+    "bytes": 19522,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_attempt_publication_tests.rs",
+    "sha256": "d740e76221e43148132059396487140b6a9b4fd7112e69d349ae749f24851ee3"
+  },
+  {
+    "bytes": 3377,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_authority_checkpoint.rs",
+    "sha256": "bcc25aee8bbb336cc744732e2552a940025fc1e91d39e6fc0f34b225b1e450ba"
+  },
+  {
+    "bytes": 6810,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_authority_fixed.rs",
+    "sha256": "04a086ba1a2f70637b7f23c34d1d5e47d8ca08c0f3cfc72fc0fa8296e431a690"
+  },
+  {
+    "bytes": 12074,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_authority_fixed_tests.rs",
+    "sha256": "c557569b2dbda3ebf40e4b3799faa85c10fdff13432a205c666e7442bf749571"
+  },
+  {
+    "bytes": 21649,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs",
+    "sha256": "3b3c75f41dbd8a8db1f73d61af3b0c701a666c3ebeed326ae49012ed0c01fb6c"
+  },
+  {
+    "bytes": 13682,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_authority_fixture_tests.rs",
+    "sha256": "480f4000846dbdbf5e4a711743aca1d6bea11470d244b8a6c8f66d44a6d43bd4"
+  },
+  {
+    "bytes": 9017,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_authority_intent.rs",
+    "sha256": "8bde972654a5c5cba4b5990ffc681577bdceb98aa7c111f1309f89b1c2c982eb"
+  },
+  {
+    "bytes": 23485,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_authority_intent_tests.rs",
+    "sha256": "c2e5fedc19ba78b9c2aa531fdf9aa89698be739e6bd63e9fe688c30790a0c222"
+  },
+  {
+    "bytes": 9932,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_authority_registry.rs",
+    "sha256": "fe7f6455ff27e3f476802d2594d39ae43547ab714396da2203f2567f9674a229"
+  },
+  {
+    "bytes": 9124,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_authority_registry_tests.rs",
+    "sha256": "0ebe97ebe7df86d7c1d19f353746884682fb920263d7464cd3e1fc8c93fd3d56"
+  },
+  {
+    "bytes": 21491,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_autonomous_watchdog.rs",
+    "sha256": "669bcac8a2e94ac41b94c216d408f1d968e86f1effe9cf6eae9b17bb508972a3"
+  },
+  {
+    "bytes": 21182,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_autonomous_watchdog_tests.rs",
+    "sha256": "2c76b8992e1eebc0da2f7f5111100b49d6001ac3e7cf4441bee8c8fa5a2d6e06"
+  },
+  {
+    "bytes": 5370,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_boot_buffer_tests.rs",
+    "sha256": "786ff701ee0aff5357ca68c4d188728eb4cceaf9e0aef7843553c11845e5b4d7"
+  },
+  {
+    "bytes": 352,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_boot_comparison.rs",
+    "sha256": "514c97b2dec35d443f7a13afc8e2c7cb4afb3ef8886d166b14ee52618952ac14"
+  },
+  {
+    "bytes": 3112,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_boot_comparison_alloc_tests.rs",
+    "sha256": "c5fa74c3cc032ed0224a5735dd4c77ab681a7ec5f6d6f6a9ec49fa231405a475"
+  },
+  {
+    "bytes": 4407,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_boot_comparison_tests.rs",
+    "sha256": "0a5a58f6341bc6c7159126802551717cbe0c43edc11251b99df649d002627627"
+  },
+  {
+    "bytes": 453,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_boot_document.rs",
+    "sha256": "70c85777f6a18fe351828e76361629276bf7e95aba1377804d1d2f8fc4c505c3"
+  },
+  {
+    "bytes": 6611,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_builder.rs",
+    "sha256": "460992ff77d9f7f73fcb55d7606d6705a64a4110a1c0dfa2efdd8122282a5493"
+  },
+  {
+    "bytes": 9789,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_builder_linux.rs",
+    "sha256": "ba410a2177144366969389db63ad3f59cc68b9cf740b872a48e9cb445066a2f4"
+  },
+  {
+    "bytes": 2273,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_bundle_material.rs",
+    "sha256": "a795277d291b4420125f95113ffab0076ba40c81f9d4ed68f710cf718b7e0903"
+  },
+  {
+    "bytes": 2017,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_bundle_projection.rs",
+    "sha256": "5ed1c7b883510a6f182020c315154eacc5f900d60e62dc57dc862043da6a7ccc"
+  },
+  {
+    "bytes": 5008,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_causal_time_observation.rs",
+    "sha256": "1cbddf59400f4bfc0579b3496af6cf142d8a4b105c90ea5a7efc2c51e370f709"
+  },
+  {
+    "bytes": 8241,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_cgroup_root.rs",
+    "sha256": "282943c754c044d76aeb356770e1b87907661d7f96c516b39ce0cc1f78f1d286"
+  },
+  {
+    "bytes": 14244,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_cgroup_root_fault_tests.rs",
+    "sha256": "0597e1cc6545df6370d5e45e30396262169114a77eb3f4f81aa174115e4ebd5f"
+  },
+  {
+    "bytes": 2403,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_cgroup_root_tests.rs",
+    "sha256": "1dc46d2665da360a66ab3c31956be3926742163412755bbc47cabff0d991df90"
+  },
+  {
+    "bytes": 13494,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_cgroup_root_transport.rs",
+    "sha256": "07570482a20819db5a93ec9e82ccf87820cbf0a4fa34a7c0be8efaf982dd6c60"
+  },
+  {
+    "bytes": 6086,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_cgroup_root_transport_fault_tests.rs",
+    "sha256": "27fc2174481a2ae1f4e4fa1f5eba3e7662bc0dd263562376334a0e882dce23d4"
+  },
+  {
+    "bytes": 7927,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_cgroup_root_transport_tests.rs",
+    "sha256": "b1bcc535575b005899411b7fa6665923c8bf30a0f705f174c5db0498b7e1d326"
+  },
+  {
+    "bytes": 4368,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_closing_age_trace.rs",
+    "sha256": "ae711433437e79602741449ef23c6f16b92309a0035ec2ac6345298cb24c34e7"
+  },
+  {
+    "bytes": 3059,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_closing_validation_fixture.rs",
+    "sha256": "1012f2f7ddd63fcc838d243fb5394ce161979d500aa3a37d99c09a3dfe82a2be"
+  },
+  {
+    "bytes": 20162,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_collector.rs",
+    "sha256": "4bae2e3d58a916716dfe8f360f754bdeceb876f0255eae6d090cf32fd85de5c7"
+  },
+  {
+    "bytes": 18131,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+    "sha256": "df5011ffcdcdd5452361fb02194e466adcacb2d8dacb5d894602b207f5cb4d21"
+  },
+  {
+    "bytes": 4572,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_collector_causal_codec_tests.rs",
+    "sha256": "3ab35549665e832f0bcf3aaba627ee1865abe7ba8e3fad9c14bb86b5bb87ceb0"
+  },
+  {
+    "bytes": 8011,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_collector_causal_tests.rs",
+    "sha256": "bd976b43918b01ec496bdc1f9ae9b710ef8125512e5b7403d49301d935dce674"
+  },
+  {
+    "bytes": 7809,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_collector_crash_tests.rs",
+    "sha256": "77815a1234ab0f9e687c032b1e7216ca231fb450a2e7e09dd35743aed72ba3f3"
+  },
+  {
+    "bytes": 11831,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_collector_intent.rs",
+    "sha256": "1ddd6e9c0c4b2396587f744c827c1d6d27069837e0a7726b85eeceec1be56894"
+  },
+  {
+    "bytes": 11841,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_collector_progress.rs",
+    "sha256": "de2b61d844ea35bee2701437308fdade85110ea8359825982d351c3aa191de70"
+  },
+  {
+    "bytes": 8355,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_collector_progress_tests.rs",
+    "sha256": "d68642f3fe464f6fd9f3ba0ca48f5d6b83f47535b770b67d7a3350adc49cf424"
+  },
+  {
+    "bytes": 6422,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_collector_reservation_storage.rs",
+    "sha256": "6a0ad2ceb858705f824d3dddd6d0213be3ac7627bb6009a8d3d758ea5c919f78"
+  },
+  {
+    "bytes": 16579,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_collector_reserved.rs",
+    "sha256": "855391c04b95e8adea474f5634697cb958be58801560031f64ce66a1ee1b72c5"
+  },
+  {
+    "bytes": 21439,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_collector_reserved_crash_tests.rs",
+    "sha256": "8fffe3d580364da68eadef21ba53ed657a710424515ef3b2f26cd3a53ed09828"
+  },
+  {
+    "bytes": 20412,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_collector_reserved_tests.rs",
+    "sha256": "dd7f2bf7043648c402a70a6eaa8af2edc4a2bedf0954dd910541ea6b8d7b0a95"
+  },
+  {
+    "bytes": 21134,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_collector_starting_crash_tests.rs",
+    "sha256": "e3ebb121077d51ea05e57700f82137d5afd484cd60983cd49445572a4865da55"
+  },
+  {
+    "bytes": 9039,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_collector_starting_publication.rs",
+    "sha256": "78598442f9c275ba96e0fcae5aa78b03a3089b3c7c15f559bd77f9a357c107f9"
+  },
+  {
+    "bytes": 10964,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_collector_starting_publication_tests.rs",
+    "sha256": "667e62bedb5f3311c6fa0d67cd9354f2f10ef46e2c7b0ab5aee1f9e893dfc805"
+  },
+  {
+    "bytes": 6957,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_collector_starting_record.rs",
+    "sha256": "1ae5d3c0447ab6dec930a48cf6fb5a3ee07c5f66029f32a2a3cb0a5ca01732e3"
+  },
+  {
+    "bytes": 13812,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_collector_starting_record_tests.rs",
+    "sha256": "537dcf6bda4b02639c222293260ce09f8b99bc457ec35e14e4d67a5d3e808df9"
+  },
+  {
+    "bytes": 13299,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_collector_starting_storage.rs",
+    "sha256": "906fef1edea91b45dd542e10cd98ce703cfacbc07c9b7630b3f8c5680cf65608"
+  },
+  {
+    "bytes": 16708,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_collector_tests.rs",
+    "sha256": "be364d60a3b063d34216396ba36cd49aeaf9d04b1f3897a87afd68126521df64"
+  },
+  {
+    "bytes": 7752,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_consent_budget_tests.rs",
+    "sha256": "e72812f57f84deb6a59854471d9ce31ca84833d17325c06bb66e37ee413d71f3"
+  },
+  {
+    "bytes": 7480,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_consuming_held_join.rs",
+    "sha256": "e8a87d0f14d00462634f98efea3c37bb0016fb9760ea91fbc30b8d69e0081b8b"
+  },
+  {
+    "bytes": 1032,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_context_document_buffer.rs",
+    "sha256": "c56daa80ac6cec87ea8c36f8baba3c194115915062c31bf54f7291b07c244f8c"
+  },
+  {
+    "bytes": 9902,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_context_files.rs",
+    "sha256": "67615e956b516abb8db383cc89b09a0e225d448cd974cde935a15f47aeb681b9"
+  },
+  {
+    "bytes": 5883,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_context_replay_tests.rs",
+    "sha256": "4001cf27685c360f3e35d48b84ee28b1557fd4cbd99e8ae7f48cd1c9844ceb72"
+  },
+  {
+    "bytes": 19972,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_controller_attempt_crash_tests.rs",
+    "sha256": "ece5bc9148e9f88776b62e5bd2502b2a13cf572f7d66891f52c267d836c36a5c"
+  },
+  {
+    "bytes": 16669,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_controller_attempt_tests.rs",
+    "sha256": "07ab15dd621ee14e91fc39bdb6846998c480bfa57087fbba8224dd8e6e98da23"
+  },
+  {
+    "bytes": 4907,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_controller_build_input.rs",
+    "sha256": "ecc3710b4b676dbd4dbd7896428296a893aaaaf9e596ab9acb55e70caea8c649"
+  },
+  {
+    "bytes": 9916,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_controller_build_input_tests.rs",
+    "sha256": "9f46a5773c27871a493639a18efdb5fee53f6a81ee51ae9ba7ed1a8b59bbd8f4"
+  },
+  {
+    "bytes": 6314,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_controller_component_cost_tests.rs",
+    "sha256": "75c06de18ada5d2ec5cf3e0623dae3014c9f2402d73b14b9d712c0fcc98f357b"
+  },
+  {
+    "bytes": 8076,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_controller_fence_preflight.rs",
+    "sha256": "470c99d3038cd0b8239819487d5d924e6e9b7ff031ff9231612be0b27dc337e9"
+  },
+  {
+    "bytes": 17611,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_controller_fence_preflight_tests.rs",
+    "sha256": "6edc14c80997089bf8744e72fb22013d9d514743878eca5f66c627479bfd590f"
+  },
+  {
+    "bytes": 6188,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_controller_producer.rs",
+    "sha256": "1e287cca5125a99d94e24600b87f599597aa0cd9736fa9552f4512a095d6fbab"
+  },
+  {
+    "bytes": 4246,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_controller_producer_linux.rs",
+    "sha256": "fe27474a4429ff4ff8d1c326cd224905546b68c83578e2a99dc4e525daa4478f"
+  },
+  {
+    "bytes": 4543,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_controller_producer_linux_tests.rs",
+    "sha256": "e764bb2098be8d223e846eb5e346753511b8947acca14eadab9db35fc428d7cf"
+  },
+  {
+    "bytes": 9217,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_controller_producer_tests.rs",
+    "sha256": "5549749ca83308ac266fee4ce7ce01af73ccedeb5bb73410592982d4010daf97"
+  },
+  {
+    "bytes": 12071,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_controller_request_attempt.rs",
+    "sha256": "870827af82ddaeae6525b743c65dfeb90eb036b469c22875b644dc61ec088c88"
+  },
+  {
+    "bytes": 9418,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_controller_trust_input.rs",
+    "sha256": "0b9a7c51d1984bbb908e42c80ab2e4bd9351fa02ae888eda4b0d3d4629bf67b7"
+  },
+  {
+    "bytes": 16853,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_controller_trust_input_tests.rs",
+    "sha256": "2d59eaf66ea64a471b99d5782416ade5db65f197f027921c5eeb68b421d4ab79"
+  },
+  {
+    "bytes": 9203,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange.rs",
+    "sha256": "ec3f64aca657df112ddfadcda8c846c5f1da9fcf57d854ee31d3eab66e815dda"
+  },
+  {
+    "bytes": 8421,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_socket_tests.rs",
+    "sha256": "16adbce6a78122eb9738f379691e642c31417d74c2c98de8c2a3684332257aaf"
+  },
+  {
+    "bytes": 14734,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs",
+    "sha256": "ece49c725c4cb86a37599756d8a5d1e137ba4750b8a245dfae98a1759d094ae1"
+  },
+  {
+    "bytes": 6339,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_dispatch_negotiated_recv_tests.rs",
+    "sha256": "712c4abfc9b25244753b9edd7c4694def0b3b911d9f5b42fe9ad92d89e3cbbcb"
+  },
+  {
+    "bytes": 17876,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_dispatch_negotiated_tests.rs",
+    "sha256": "714c503e2255a2e44441c348a3bbd5fdf24c26232036761af415804f680c795a"
+  },
+  {
+    "bytes": 6359,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_dispatch_reply_flags_tests.rs",
+    "sha256": "5f65abe6eb947129fe0611e30d585d303c05ec62096888505e610564ad6b1402"
+  },
+  {
+    "bytes": 9580,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_dispatch_reply_state_tests.rs",
+    "sha256": "ad2652328f4c4ea8a4d15d16e18cbf17a3cead037a1b7cdd4dce3ffeae302679"
+  },
+  {
+    "bytes": 10568,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_early_attempt.rs",
+    "sha256": "1948c714b338617ae2df263ff035580a40b525bc7ea737f9220102acfecb4779"
+  },
+  {
+    "bytes": 10953,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_early_attempt_storage.rs",
+    "sha256": "6f806bba9bd3b47fdb41d3e83779153586fec80b05c1b9e804b4dff0708cd786"
+  },
+  {
+    "bytes": 17425,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_early_attempt_tests.rs",
+    "sha256": "bdc011082fe79782c8420e6e5d4aeb70d8197c205a4316963203ba56eb17c1c4"
+  },
+  {
+    "bytes": 9671,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_empty_fenced_intent.rs",
+    "sha256": "1a11e46256febea055c7fcf2b7e78733a9ab6e3e8a4bf390d7ea29b10d277522"
+  },
+  {
+    "bytes": 17827,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_empty_fenced_intent_tests.rs",
+    "sha256": "4c6dd88894fe5ea517d805cfbe6ef18f4eb5830b686e697d1bc94e015b0b30fd"
+  },
+  {
+    "bytes": 6001,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_empty_reservation_fence.rs",
+    "sha256": "7cfe353db2b37af2d041731443bab914b26c8ff14dd09c34ab9c7bc3f660aa8c"
+  },
+  {
+    "bytes": 15820,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_empty_reservation_fence_tests.rs",
+    "sha256": "440b28d721da7b68fb1ce3e7efddc060abcbeb2c4681195bf87c8ef57220df4e"
+  },
+  {
+    "bytes": 9681,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_fenced_intent.rs",
+    "sha256": "f81d86cf6813a70bd3525325bdc19ecbc32c281a96e92bbc62a7d231b4332af1"
+  },
+  {
+    "bytes": 17068,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_fenced_intent_tests.rs",
+    "sha256": "57e686b57251498860510ab7f5d95242580d5155f33b00f227fff81a449dcfac"
+  },
+  {
+    "bytes": 6832,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_fixed_campaign_admission.rs",
+    "sha256": "fe2a62ea592bf74d084a84a779adff1da55525d09faf29ab802fbb728366370f"
+  },
+  {
+    "bytes": 3860,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_fixed_campaign_admission_tests.rs",
+    "sha256": "5a8a7c55d898cb62f4e3dd8e09454579ec8ccd3f9c6d17b33c43b27f93cf14ed"
+  },
+  {
+    "bytes": 13616,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_fixed_grouped_preparation_crash_tests.rs",
+    "sha256": "90d844c990c52e14151a030b9d42f938ed6847e65d85e8c21c4f4fb97dfc16bf"
+  },
+  {
+    "bytes": 11313,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_fixed_grouped_preparation_join_tests.rs",
+    "sha256": "d608fbc0dc3a17821b3c58d56aff8a52210e4fee2add09ec708531a865661a21"
+  },
+  {
+    "bytes": 5577,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_fixed_grouped_preparation_tests.rs",
+    "sha256": "d6bf862e5f7042c8bbeb5c51b7ab47fd5918fea9200584db70f75f8ef442da63"
+  },
+  {
+    "bytes": 8807,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs",
+    "sha256": "a33cb0b9b8e188fd2078c098c129f8f48a927c1362cb7c65228d8fdf6222deef"
+  },
+  {
+    "bytes": 6770,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_path_tests.rs",
+    "sha256": "f94ac563080e56360ead069e266bb2853f05687fb974a83da968b48f6cf911bc"
+  },
+  {
+    "bytes": 3648,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_fixed_placement.rs",
+    "sha256": "20eec2425b45454004e9d4e174040202fa683b1ce883a6f86f00c5966a5829bb"
+  },
+  {
+    "bytes": 6525,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_fixed_placement_tests.rs",
+    "sha256": "f8358a5a6537fd744d0bede9814524ae4486c22dc6cdc8f907e970e5df0147b3"
+  },
+  {
+    "bytes": 4768,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_fixed_slice.rs",
+    "sha256": "026ed10cf2e8d6d04d8d3f5d0788bfbfe2bfb5e577a8831260dc5e919e49563b"
+  },
+  {
+    "bytes": 1066,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_fixed_slice_guardians.rs",
+    "sha256": "6ff6cfd51ae716defc3b3af43b40e5144c686d3a8e626026ad2cde96ea1562ef"
+  },
+  {
+    "bytes": 5501,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_fixed_slice_tests.rs",
+    "sha256": "4cdce9fe517c092b51b8b4aa0f05040502c9b04db33fcd9fcab4d1ebd33e8783"
+  },
+  {
+    "bytes": 8415,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_fixture_recovery.rs",
+    "sha256": "d4132d12eac3bec9a4e5ba4ed58e62782f159e8a392876a589d4a601fe0fdab3"
+  },
+  {
+    "bytes": 13235,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_fixture_recovery_tests.rs",
+    "sha256": "e017a90cab3fd4c91fd4eda682b81c38e0b9b46c8583d23df34746228add5070"
+  },
+  {
+    "bytes": 4441,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_gnu_preparation_cost_tests.rs",
+    "sha256": "95909c3877a1c31df4edc0dc133c73e30dfb425f39c0a35968853f19b410fc84"
+  },
+  {
+    "bytes": 7742,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_grouped_preparation_candidate.rs",
+    "sha256": "dfe4ba50d03acecf227d0c67bec520e674f56f76add26d41d2bfcad77dc06a83"
+  },
+  {
+    "bytes": 13377,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_grouped_preparation_crash_tests.rs",
+    "sha256": "41297a60ac5c1fd0ff3363e45d6ac433d4a2e681a05abb0a2e06f9816e7935c9"
+  },
+  {
+    "bytes": 7997,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_grouped_preparation_join_tests.rs",
+    "sha256": "03a58c97f301bdd6e087488acb26b0f51eeacdf6b5d7879bfe0699a57a0ac872"
+  },
+  {
+    "bytes": 5847,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_held_barrier.rs",
+    "sha256": "2f19daea07813dcd79a0be589879e49196a85ffa32969a152bfd33b8a8db3c33"
+  },
+  {
+    "bytes": 19244,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_held_barrier_tests.rs",
+    "sha256": "ce0eb4eee16d93155499082d042f0942ab9db5ba0057c1a12c0ab3f03c038f7e"
+  },
+  {
+    "bytes": 16792,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_held_build.rs",
+    "sha256": "93fc471a862fd42fdd5135ae914b17dd53af42dd915118111d14b94429c9ff30"
+  },
+  {
+    "bytes": 2629,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_held_late_trust.rs",
+    "sha256": "f9a0e14ca9b18aa11bab253a5d0f9293e7a2c14b093760123e8c377a070670e5"
+  },
+  {
+    "bytes": 19923,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_held_launcher_kernel.rs",
+    "sha256": "b358b4db7500d645650acb9f5c30fc90f4f6370001705a3f88bedb742e06ef51"
+  },
+  {
+    "bytes": 7223,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_held_placement.rs",
+    "sha256": "03dfb4cd7fab26b6305eb1eba1d42a0ed5ee36a5bdd90006f251b9c9ceca5d54"
+  },
+  {
+    "bytes": 10269,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_held_placement_tests.rs",
+    "sha256": "1ddadeb0709019f3049c761a6409c53c25500d06cb2f9a2e3cb8e59fbb827fe5"
+  },
+  {
+    "bytes": 6429,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_held_role_binding.rs",
+    "sha256": "b83d961aa89c6bc2293abcaa363ea3437298ef3f8b7721885cccfebd8ac3f49e"
+  },
+  {
+    "bytes": 6052,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_held_role_files.rs",
+    "sha256": "15ad8ab4629cd1e890fb9500db83c542ff3e6ef30b61479df01529b3aedefde3"
+  },
+  {
+    "bytes": 1262,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_held_role_projection.rs",
+    "sha256": "e5734020a0c40173dabcfbdf59f5d788ec0da7f8f3a269c3ff78ea940155e322"
+  },
+  {
+    "bytes": 725,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_held_role_provenance.rs",
+    "sha256": "eafea2d9a2fa2cceb1e2e4e43dbf1a70d88542cb75765c1046cbfb5fd90f8716"
+  },
+  {
+    "bytes": 15084,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_held_runtime_trust.rs",
+    "sha256": "5daa94643ed3437e018b372b698537de57f5308709db7c890b0f058535bbfd78"
+  },
+  {
+    "bytes": 7212,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_held_unit_material.rs",
+    "sha256": "0b10e66a438fbd71a9db47511851c38696e949924aba9737b91ae51fe0373163"
+  },
+  {
+    "bytes": 15563,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_held_unit_material_kernel.rs",
+    "sha256": "e3d11a3f3d9c0dc4b4328d07c318102f4a8b85b80931b5c0d6c78d1b0fa54a96"
+  },
+  {
+    "bytes": 8537,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_held_unit_material_kernel_tests.rs",
+    "sha256": "b9ab9297a9310ac9469e8543df648fdeaf48752e5db4a4ba911d221fbbf75b6f"
+  },
+  {
+    "bytes": 6172,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_held_unit_material_tests.rs",
+    "sha256": "246a6caf2fa7e68f707be3b7142a2d6cdd52461ebada1e1368c0aecafb82a067"
+  },
+  {
+    "bytes": 10830,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_held_unit_projection.rs",
+    "sha256": "dc0c911cf196326528257ae1af52dfb1de4ee53abc05e3a2524416d0858e5a72"
+  },
+  {
+    "bytes": 11670,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_held_unit_projection_tests.rs",
+    "sha256": "388e9cbb4fb6de0dad940ee7998bd5467d84111655e721f28a1d8f1a74659339"
+  },
+  {
+    "bytes": 7428,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_inherited_pending_watchdog.rs",
+    "sha256": "a60839325f5178922b1429161bef3701d34040aa55b7c8e0d846d374a7b332ff"
+  },
+  {
+    "bytes": 4674,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_inherited_pending_watchdog_tests.rs",
+    "sha256": "f93d7404b26f5e5df6ce9901fcb423ca2725133dfc9a135bceba3c31f35a5242"
+  },
+  {
+    "bytes": 9761,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_initial_consumption.rs",
+    "sha256": "d7008a777cf2e09344e9891df22be2281e19c2ed6fd11e81456a513b3c1726ef"
+  },
+  {
+    "bytes": 14083,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_initial_consumption_storage.rs",
+    "sha256": "2373b8054adde89d75cc13b1ca52643ab1b7333646b061c2c743b6a7fa70cb1d"
+  },
+  {
+    "bytes": 19339,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_initial_consumption_tests.rs",
+    "sha256": "f9b9d2e2ad31407de030b17adfec6d481fea6a255e5fb3d61b566dc61633874c"
+  },
+  {
+    "bytes": 7518,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_intent_fixed_storage.rs",
+    "sha256": "7e4681fa7b1b350c9807304aba3a4f798d2c4f7cd81e0fdd2796aaeae1ddec5a"
+  },
+  {
+    "bytes": 6639,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_intent_fixed_storage_tests.rs",
+    "sha256": "97a08fb3a9698cc9fb3afdfab8889eb3c6514bd73ba5af0c2cc09c13c1ef8ef3"
+  },
+  {
+    "bytes": 20616,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_intent_journal.rs",
+    "sha256": "4e84ef152cb3a89993e88ac67ceba1744d826f8537ab57e72225a028a469b4d8"
+  },
+  {
+    "bytes": 47271,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_intent_journal_tests.rs",
+    "sha256": "dc2887a93ed312ab8cd455e3d2195cd80d66ed52acec3bbcf36afccd3515c760"
+  },
+  {
+    "bytes": 16234,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_intent_projection.rs",
+    "sha256": "cf2bf77ebf2d33d45fb75abfdc6ca37944e5a347c8fad1fcb6ebc74bd2880149"
+  },
+  {
+    "bytes": 3326,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_intent_projection_tests.rs",
+    "sha256": "ff44104ccca288353619b739122d41529ea4f1edcb62b753eba3c16e7cec6d91"
+  },
+  {
+    "bytes": 18484,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_ipc.rs",
+    "sha256": "ea004d804bf036cb733eee03285999e3141e10cdebdf1655dcc64d79236229dd"
+  },
+  {
+    "bytes": 16008,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs",
+    "sha256": "3be858b311aa81c5e424f7130d500ff2883ca4fb92e9844e24ae46490528cba1"
+  },
+  {
+    "bytes": 19523,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_admission_tests.rs",
+    "sha256": "3c4b084652d3c51bab54029335005f6fd1b182599816109bd04f51f4b4998d82"
+  },
+  {
+    "bytes": 10126,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_ancillary.rs",
+    "sha256": "0e2638995f202b7b1d2932b8386dd3dfac6716189cda2eb708b55e72203c3d05"
+  },
+  {
+    "bytes": 2955,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_collector_inputs.rs",
+    "sha256": "c5b7aadef95cc4248a4a3c4dc12259bca89e0c4a1ce594a02a5dfe5a9fc76925"
+  },
+  {
+    "bytes": 2241,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_manager_binding.rs",
+    "sha256": "07a13318d37ff44a2f50fb0bde93fe0a0e65c899db9e8f8cc3f8d7cfa243483e"
+  },
+  {
+    "bytes": 3332,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_manager_binding_tests.rs",
+    "sha256": "ea720edbb1465a68a621eafcb4c136bbde5438cd551f89f2baa14ae0d6b7245b"
+  },
+  {
+    "bytes": 22751,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs",
+    "sha256": "7afaa057a7198eb443d56956bad0f8167aad6703b55975896eee5d03e176685a"
+  },
+  {
+    "bytes": 9853,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_progress.rs",
+    "sha256": "25da558267831850dd9eb6f0d6b4b4911702982ba5d830c2f6c71e71f3fee78b"
+  },
+  {
+    "bytes": 4881,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_refusal_trace.rs",
+    "sha256": "2d1be638c9cee1df73bfc55c9b5314bbd317cd5025ea2ebcd114d5bf745d78c8"
+  },
+  {
+    "bytes": 2980,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_start_consent.rs",
+    "sha256": "fb289ef044d3709651d76566448957e0a72d228349b9cb5253dcdeecc052601d"
+  },
+  {
+    "bytes": 7158,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_start_consent_tests.rs",
+    "sha256": "e46305b5eec1374e3904c7868c7301e608f42c89f3f5326db147d4cf5fd20b0a"
+  },
+  {
+    "bytes": 7102,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_walk_trace.rs",
+    "sha256": "1dcbe8427966577c1528a22707504927050942a8d8df17f4bf993e03dabd81c8"
+  },
+  {
+    "bytes": 26397,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_lease.rs",
+    "sha256": "897f7892e0107878e7bf1d357e2f82b193f760232cd3496a730107503880af5c"
+  },
+  {
+    "bytes": 10104,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_live_execution.rs",
+    "sha256": "cb924e15360d01fcb9bb113598b73ed977b4f9a2060c52d8712ccf569702304f"
+  },
+  {
+    "bytes": 23546,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_live_identity.rs",
+    "sha256": "48deb239083a4a7166e7173752352ca64dd0c704a4518b8f242dcba758d81d7a"
+  },
+  {
+    "bytes": 5076,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_live_walk_trace.rs",
+    "sha256": "c8017d94c6f80debfdbf06e8efa0245871eca1b452f55780f7eb8891a5d146d3"
+  },
+  {
+    "bytes": 25297,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_loaded.rs",
+    "sha256": "d2eec9d6d3c95ca01ff3e96e20a88b0549ca5c18e2c2e76eee3f48231697bf7f"
+  },
+  {
+    "bytes": 45615,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_manager.rs",
+    "sha256": "82e464cf7d3aee9e011343851fe4c39e175435793c3b84db332285878d0fd22a"
+  },
+  {
+    "bytes": 8731,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs",
+    "sha256": "f547b4aa842828792d8c056e3cbb1c59bed4d7841522e1462512e75ab1e70181"
+  },
+  {
+    "bytes": 12038,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs",
+    "sha256": "3bfd2d71da3ca1a4e6ba67f140723853623a6bc73a0a6fc1ea5271961df15008"
+  },
+  {
+    "bytes": 3826,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel_tests.rs",
+    "sha256": "df615c4ea373ac96c4998505ad48ab4950aecbb6836ea636f3bc3f4cf5972a54"
+  },
+  {
+    "bytes": 8787,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_manager_channel_tests.rs",
+    "sha256": "165aa1adc9f27975b7ba2293e87f9077187c3fdd542c83dff4370faec51564c3"
+  },
+  {
+    "bytes": 1437,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_manager_receiver_pin.rs",
+    "sha256": "c6570dc05575a0639a86015e185d915833c57948be35bae6e6ea498cf0e7a0a4"
+  },
+  {
+    "bytes": 9206,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_mount_namespace.rs",
+    "sha256": "21096379cdff5d1aee250a57229c1a6e533341ba17060fc3420dcbb43551c34e"
+  },
+  {
+    "bytes": 11462,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_mount_namespace_tests.rs",
+    "sha256": "03d153ec497fbe13ae22428517d778830665cfd2dae736f676893f356cb4e266"
+  },
+  {
+    "bytes": 32412,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_named_output.rs",
+    "sha256": "1f1ae6df0e367ebc8fb6348c75414056db7600ae14537effab4aa747b97b5296"
+  },
+  {
+    "bytes": 26770,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_namespace_credentials.rs",
+    "sha256": "06ef3cb28cc95721eafe8232fa006d3c4150ed9280bb0b8cc0e434a6dd9c0447"
+  },
+  {
+    "bytes": 20769,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_namespace_worker_binding.rs",
+    "sha256": "a2cab393184f88e865856959068a07c115e46f8822113f985c69cea49a44c370"
+  },
+  {
+    "bytes": 8400,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_observed_reservation.rs",
+    "sha256": "ea81b1520d72554c3193b79dbee35a8ecf78d1c2407e9b738335d4f4faf52b30"
+  },
+  {
+    "bytes": 11749,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_observed_reservation_tests.rs",
+    "sha256": "1b0ff287314e62391d1c96f8f83d8f0e048e019567305b1dfdf8883a82f1eeb8"
+  },
+  {
+    "bytes": 8696,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_oidc_input.rs",
+    "sha256": "a348729527a6ffe41d1ecb9c141ebf144b4dd0aa65bb0100592597c8e2b84e16"
+  },
+  {
+    "bytes": 20518,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_oidc_input_tests.rs",
+    "sha256": "0fd241589b7e8677b3db97fca131f169c2a49baa580eb9d87379cb20dea54453"
+  },
+  {
+    "bytes": 13437,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_oidc_profile.rs",
+    "sha256": "ea77577ca1b9a7230572fdfa75b73470eb065528e54f6d8b8d36d5b0c9d14940"
+  },
+  {
+    "bytes": 16763,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_oidc_roster_tests.rs",
+    "sha256": "4b5be18fa5f11840805c0402654c0aaca79a5e02cfec72a1600e3edacbeedc00"
+  },
+  {
+    "bytes": 493,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_addressed_transfer_tests.rs",
+    "sha256": "66650f702c1d78acfc8b8f8aa5e24b0829bdec22c34f197e5361561f2514c48d"
+  },
+  {
+    "bytes": 6028,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_barred_collector.rs",
+    "sha256": "75253c3cf70512cf24438127acd3f4d4cd6ed2e2b25aa89bfb725663df6f2b25"
+  },
+  {
+    "bytes": 10671,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_barred_collector_kernel.rs",
+    "sha256": "95db1a3669dd0a8bfd16ca32336919147882edc11bcfba6a9835d2215645922a"
+  },
+  {
+    "bytes": 6256,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_barred_collector_test_api.rs",
+    "sha256": "70b00b1e31d3a3aed4b06589468a5494562ec4e284c48419eb66c0eb771d9525"
+  },
+  {
+    "bytes": 6243,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_barred_collector_tests.rs",
+    "sha256": "f7583cac5117935f7308ddea8541e94345c39da3fdc4971206e675c09dd055cf"
+  },
+  {
+    "bytes": 15974,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_barred_custody.rs",
+    "sha256": "ce2b6af51d6cda7c60d7ae588073a5d19834bd723f15af7092f87df220cc3c03"
+  },
+  {
+    "bytes": 6468,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_barred_custody_test_api.rs",
+    "sha256": "bce5a9188f212c92b91ff6b237d63ccecf9c4fa699f373fbb15cf96eded45365"
+  },
+  {
+    "bytes": 7297,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_barred_custody_tests.rs",
+    "sha256": "6a1f10fa32d962c2e4015952f821deb76d11cc3c375608a985d440f19c5d3116"
+  },
+  {
+    "bytes": 5541,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_collector.rs",
+    "sha256": "0e36237153395583b39efcba3e3a88ac2553072a26dd592f05e944b2df4ec6c9"
+  },
+  {
+    "bytes": 2780,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_collector_custody_storage.rs",
+    "sha256": "40e9551e03cd752826194a5a23eaea95aa5cdde794e206a5f4f5dd538af4c335"
+  },
+  {
+    "bytes": 2880,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_collector_custody_storage_tests.rs",
+    "sha256": "004cc8f29b7073e187efcf23840e839e23d449fd931bc807acc9f0f5ebb863b1"
+  },
+  {
+    "bytes": 3615,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_collector_notice_tests.rs",
+    "sha256": "17cc21b663f3692481cb7d336de6cd5fc6148c8ef0f68f249355332945b58bf1"
+  },
+  {
+    "bytes": 3475,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_collector_pipe_kernel_tests.rs",
+    "sha256": "61c8f62036eadb8009e7cec5ee62488697f7001b4f1c01961819af5a05551dfc"
+  },
+  {
+    "bytes": 15227,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_collector_pipes.rs",
+    "sha256": "d8b2b3282482bca48f1aef1836d9633099f597e4125f3001621220bcdd466f5d"
+  },
+  {
+    "bytes": 11182,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_collector_pipes_tests.rs",
+    "sha256": "7196285c7f2e4eebd7df6f87a610312c24086e0235915b1b5d3e123a26da9656"
+  },
+  {
+    "bytes": 5805,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_collector_sink_kernel_tests.rs",
+    "sha256": "e9e3a975d285803ab22bb955c0d57dadc8a52ad7d6b15cb0e1f7b23a603daf11"
+  },
+  {
+    "bytes": 490,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_collector_sink_storage.rs",
+    "sha256": "63394e54475594faf26c61dc102c2965c1c7726587c22cc970a52cd04fb13f15"
+  },
+  {
+    "bytes": 20393,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_collector_sinks.rs",
+    "sha256": "c916b51872b9217ad0673b0a67a349fe1259c25fde2180f51826db648c972e23"
+  },
+  {
+    "bytes": 13261,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_collector_sinks_tests.rs",
+    "sha256": "1fea317c09919e885ca8b2829e3a8e06f9b9959c48e051746e98d8618a61de72"
+  },
+  {
+    "bytes": 14341,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_collector_tests.rs",
+    "sha256": "cc8bd0028ad8a1294f5e0a2bec8cba62ca2fcc797c24069617833d5d2a445d70"
+  },
+  {
+    "bytes": 20056,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs",
+    "sha256": "7f1c8f92421059731ef1baa77564151e31af118d4d09a960115b121a919564e6"
+  },
+  {
+    "bytes": 13439,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_custody_join_process_tests.rs",
+    "sha256": "4f5ecdd67501ed2b4099735d9c5653a784c7bc062a0b4d465722963375b78080"
+  },
+  {
+    "bytes": 10900,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_custody_join_tests.rs",
+    "sha256": "61815a3bb7bd58e3b181f4fe2f4d228c81e23cf71bdaabf4b4abcaa140246ee5"
+  },
+  {
+    "bytes": 7475,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_custody_loss_tests.rs",
+    "sha256": "6ec03abe57981dcd8416b63fb40e0b67fd2edfffb1789f20fc8ec587e31437ee"
+  },
+  {
+    "bytes": 8414,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_descriptor_barrier_tests.rs",
+    "sha256": "74624dcd9d0d4f46060eaf8b2957cb8ccb1284488456d721be316925a22652cd"
+  },
+  {
+    "bytes": 9525,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_descriptor_holder_tests.rs",
+    "sha256": "59519f2c92b620642ba41cba5709552ae2f06d5dac7a9a1db7d88c169659143a"
+  },
+  {
+    "bytes": 11590,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_descriptor_plan.rs",
+    "sha256": "501fec293eee20feeba06b971665be3ecd2c16b408b40881e9e75ec8021b4566"
+  },
+  {
+    "bytes": 9223,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_descriptor_plan_tests.rs",
+    "sha256": "90b38f2cf3fe195b879bc582c6ecbbae983e617191578493ff684ee2d6fd5b15"
+  },
+  {
+    "bytes": 7934,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_enrollment_fault_tests.rs",
+    "sha256": "73b05345885af954777d4d2da08336471ed2f061e5c6239d5afe1010ed7a3715"
+  },
+  {
+    "bytes": 4225,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_enrollment_frame.rs",
+    "sha256": "83e13e0cea1949142129505253c4d79dcabebf5463c272ed53781849ce86af26"
+  },
+  {
+    "bytes": 9778,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_enrollment_frame_build.rs",
+    "sha256": "61fb40ab83cf582b3761e49609abb33aca19261400913e4d213a76d999203066"
+  },
+  {
+    "bytes": 5440,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_enrollment_frame_test_api.rs",
+    "sha256": "1b2129c33ddd509a3f7285d3187bdaa1e58982f9529643ddd587e59ce905dc27"
+  },
+  {
+    "bytes": 6565,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_enrollment_frame_tests.rs",
+    "sha256": "38cc3f97ba6c740cb32e93b54f20de672e375302cbf56a2216272abde51da667"
+  },
+  {
+    "bytes": 9347,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_fence.rs",
+    "sha256": "fd9c8b0414aed6515ae1700c17cc16748ec7bf4483915bd3dc236917a0e64775"
+  },
+  {
+    "bytes": 14423,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_fence_custody_tests.rs",
+    "sha256": "b7e587941c94c49c52a123cefc829ba0b1bd33de34e1b5282d76331205ac630a"
+  },
+  {
+    "bytes": 15111,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_fence_tests.rs",
+    "sha256": "62afc4f09be119d29fb4395246c32b486e4cb2e623e8a92c55e4a8d79da5fa87"
+  },
+  {
+    "bytes": 27700,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_grouped_preparation.rs",
+    "sha256": "3fe6b4831b31e93422750b31db61a5932c17f80e049a1ee8c7555587272cbec8"
+  },
+  {
+    "bytes": 4011,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_kernel_walk_cost_tests.rs",
+    "sha256": "d7abe639df71975618b68c2764376426b556e16b6d3b6a2dcfd89b3478c51f89"
+  },
+  {
+    "bytes": 2351,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_live_walk_cost_tests.rs",
+    "sha256": "92976b2d9fb6e75dce3e4e35bb3a4aee9efaff3ab6bd6ae16f1bd24d44c7b1d8"
+  },
+  {
+    "bytes": 5850,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_manager_frame_tests.rs",
+    "sha256": "b79f71218d311737db0290b5c52ed758319e1871682bfb20004821edbf404c55"
+  },
+  {
+    "bytes": 7071,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_manager_join.rs",
+    "sha256": "4f42a9ee960d017482b1c0c18b55cf645e4ae41bae2e89eb516f38d25b657f92"
+  },
+  {
+    "bytes": 4675,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_manager_join_tests.rs",
+    "sha256": "1a07541cd6f4c45511a32fcfc05187e25f616ce3e9cf559515c47e8bd1db5cfc"
+  },
+  {
+    "bytes": 13523,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_manager_message.rs",
+    "sha256": "671ab54ca1125ebf395fd4ebcd05d315d3739976072d2e6c21f641c30a911622"
+  },
+  {
+    "bytes": 7335,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_manager_message_frame_tests.rs",
+    "sha256": "886f368624720f5ed7a8ac1aec9063e43951a116202185c07b7a13282d72d66c"
+  },
+  {
+    "bytes": 287,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_manager_message_red.rs",
+    "sha256": "9ecdf7a351f19b3eba9b114b49dc9897774b69460718457a7429db317c085bba"
+  },
+  {
+    "bytes": 1687,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_manager_message_test_api.rs",
+    "sha256": "152cfe7301a1e18b7a8c14dfe45100410a41fa36b5d9b057a46eb340e3b4334a"
+  },
+  {
+    "bytes": 8632,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_manager_message_units.rs",
+    "sha256": "7b50d7b6f5d60a53c07d88cf8883c1323bb5b2b5f3a1a4d31e4424c9f4eec082"
+  },
+  {
+    "bytes": 9509,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_output_join.rs",
+    "sha256": "02d946269f11a7ef859210257e633a1f24c37b0057763bd4637889d5a5d701a7"
+  },
+  {
+    "bytes": 19794,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_output_join_crash_tests.rs",
+    "sha256": "2e018b738313235850d50f3db7f9ede1914b6fce628a32379a3be5598423c4fe"
+  },
+  {
+    "bytes": 7352,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_output_join_fault_tests.rs",
+    "sha256": "313ef8afb8c8b5641303b9c5857286d86afc4ea56d23294ef12fb2ea80cfa0ce"
+  },
+  {
+    "bytes": 5559,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_pending_watchdog.rs",
+    "sha256": "b7709ae393e1344b75131a945178f75a67eab2177d16ff6d3028ab697fcfa596"
+  },
+  {
+    "bytes": 5481,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_pending_watchdog_frame_tests.rs",
+    "sha256": "70aac2eb35b9c16093773f8b20bd9b8aba0f4f3a594709e0120ccb59478b9f98"
+  },
+  {
+    "bytes": 3071,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_pending_watchdog_test_api.rs",
+    "sha256": "6f9a34ba4b0e221b9d0b68cea912f1fa574f7742921f3bcf8c7744c1b11885a0"
+  },
+  {
+    "bytes": 16521,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport.rs",
+    "sha256": "7044d404590cf458d8369fead94f7e18c01c2074d90ad92605a3f484a2b3161f"
+  },
+  {
+    "bytes": 9819,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport_join_tests.rs",
+    "sha256": "8fc76d21044338530cc17c5048c36482e6ac28ad8c5e6e832140d2dca22a1eb9"
+  },
+  {
+    "bytes": 10492,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport_tests.rs",
+    "sha256": "56073bdb0d22fb95b27439d39a881a2e19321ff04f1c8d4ba09bb826a637f906"
+  },
+  {
+    "bytes": 1214,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_plain_worker_tests.rs",
+    "sha256": "2dcc22ee4571a48b896e190d61d3d487ebffc47d6387a8bab3ba4f4f33b226a6"
+  },
+  {
+    "bytes": 8773,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_preparation_budget_tests.rs",
+    "sha256": "357cd36050b4afcbf719d63414222c0e5f24c80b1c8a8c01927370bc3df48ddb"
+  },
+  {
+    "bytes": 3870,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_reply_binding_frame_tests.rs",
+    "sha256": "7bbde80c5217fedd7f8797ee52fedc1fca7e22374585b892b33686d828e9c804"
+  },
+  {
+    "bytes": 3366,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_reply_binding_tests.rs",
+    "sha256": "d87c3531887e69ff53b48e343fef08882c36fae5cc2893ca433f8bf9e29918d8"
+  },
+  {
+    "bytes": 3540,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_reply_payload_tests.rs",
+    "sha256": "d2604618cafd27cdf3e48b734d7d87aec77ac2379873566580f8ab5b234fb90b"
+  },
+  {
+    "bytes": 4992,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_root_guardian_frame_tests.rs",
+    "sha256": "81e603c8d618879a6215a325627a825353bfa81a26945800a87c8fbb3103d940"
+  },
+  {
+    "bytes": 2467,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_root_guardian_test_api.rs",
+    "sha256": "af4adf1d23673d4839cecc769142637aa13032e0e4aa2b1f1d50f22911d9996e"
+  },
+  {
+    "bytes": 4612,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_root_guardian_tests.rs",
+    "sha256": "58b50940a30f379123b6d4a5bff507d9a9187eb8906a9077ae0ccbf55d087f60"
+  },
+  {
+    "bytes": 7132,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_root_guardians.rs",
+    "sha256": "1960e521d4d1e72af38297237b3190238ee9190965a42ce620643da391bc1d9e"
+  },
+  {
+    "bytes": 3155,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_root_retirement_frame_tests.rs",
+    "sha256": "d9bf91db7985d7517e9b772c9486d49f135e315991e7f2cb3ba8087101c69d93"
+  },
+  {
+    "bytes": 2214,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_root_retirement_tests.rs",
+    "sha256": "303d77ba3d6a4aa7b280b6b2da34f228b8d67cc029ef0843511aa32d35793f30"
+  },
+  {
+    "bytes": 17768,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_safety_alarm.rs",
+    "sha256": "c19757a16956bd397622a27a2e217bc07b83e6fa589f345bd34d47b3d43def42"
+  },
+  {
+    "bytes": 4781,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_safety_alarm_join_tests.rs",
+    "sha256": "01bd98d4ac8fed3970909435c568c196bc498d896add273a5b3d81a313d846d8"
+  },
+  {
+    "bytes": 5627,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_safety_alarm_tests.rs",
+    "sha256": "ecda9ffc36f21a35f3e1dd9683b0661608d6784a952406bf8634391f5b4a8b34"
+  },
+  {
+    "bytes": 15629,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_start_consent.rs",
+    "sha256": "9ed09577f485c1fd7fd6ad12dac0418939b8da4f4ae6a444af6b73c53c710347"
+  },
+  {
+    "bytes": 4024,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_start_consent_binding_tests.rs",
+    "sha256": "90ff2b81a42570ee97356869ad793e6b8047fdb3bac665e1acabb0fcc1d0841e"
+  },
+  {
+    "bytes": 8022,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_start_consent_tests.rs",
+    "sha256": "a9347837c49276b0f301133ba47e5427239373bc1e6855c9d38a8539ede81f4a"
+  },
+  {
+    "bytes": 13671,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_start_material.rs",
+    "sha256": "70cd6d6218800298ede6f80006b1c1d09c345952db2b29ceb1527f659f41ac01"
+  },
+  {
+    "bytes": 14191,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_start_material_join_tests.rs",
+    "sha256": "dc36a9fd554b37aecb0862dbcb93ac5334ca04127e35547d8ba9f9c10d32b482"
+  },
+  {
+    "bytes": 5537,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_start_material_tests.rs",
+    "sha256": "3cfd2b08101579bc5cbccd63595b7c03a715bd0199daee811812a952c181b79c"
+  },
+  {
+    "bytes": 7246,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_watchdog_context.rs",
+    "sha256": "f4f5e10469643499dbc49dc1090d1904734fb49e1a9708a187c5586638cdc48a"
+  },
+  {
+    "bytes": 5836,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_watchdog_context_frame_tests.rs",
+    "sha256": "fc84c842c72c2a6d8f46c15d339f2d7f63351ebcf27fcc374f876d0224aba8c1"
+  },
+  {
+    "bytes": 1648,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_watchdog_context_test_api.rs",
+    "sha256": "fee8f4c63341a6ca99d256e5509696b6bef585d8acb54b49785b51d224f4b7a6"
+  },
+  {
+    "bytes": 4201,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_original_watchdog_context_tests.rs",
+    "sha256": "fa8d9ccacb6e2be5331cb01dde1604624059533c6edd694c8a3bd11babc7a1b6"
+  },
+  {
+    "bytes": 30098,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_output_preparation.rs",
+    "sha256": "375643b4241b94eb4193b79babda19c14541de95bcaab9b757dcb006815f3be8"
+  },
+  {
+    "bytes": 7044,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_owned_placement.rs",
+    "sha256": "dabbbaf5a347576ba948d0c252e2de497a1eb334bf4bf4afdd46e906263205d9"
+  },
+  {
+    "bytes": 2730,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_owned_placement_fixture_api.rs",
+    "sha256": "9c25a30ce9513b6b3e6a317f3dae6b216135595e8ef4cd68981d69ac954133a5"
+  },
+  {
+    "bytes": 10777,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_owned_placement_live_tests.rs",
+    "sha256": "26bde82f00d976c18b8cda0e0bc4373860c96657519d41fcc00c615eb6079e8e"
+  },
+  {
+    "bytes": 14658,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_owned_placement_tests.rs",
+    "sha256": "7718d01dc8bab1b7fb121b6f093004e8806b8ed5bd7cf05c41ea565e34a7c7e7"
+  },
+  {
+    "bytes": 5139,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_owned_root_creator_fixture.rs",
+    "sha256": "fc1a835ea58300cd8dddc00ca58c1d362cc8cbeb2463f0319a89aac5d9650169"
+  },
+  {
+    "bytes": 4466,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_owned_root_manager.rs",
+    "sha256": "a838d107027e964de8c547c2e911d6656ca8ff80879738f7f3b1347bf6ebc9e2"
+  },
+  {
+    "bytes": 1845,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_owned_root_manager_test_api.rs",
+    "sha256": "c0d2cf4bdc187cc0241852bc030f1084ea4a247f789eeeeca771b14c0872ccea"
+  },
+  {
+    "bytes": 919,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_pidfd_info_path.rs",
+    "sha256": "f8174c17d99cff51545c123d15d55d48008038a7dc48f2c0efa9773a0b3041d6"
+  },
+  {
+    "bytes": 4238,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_placement_preparation_cost.rs",
+    "sha256": "a455bce4c0909fcb2649e13a11a337504fd6f496e6a36faa7288c8c221596a6e"
+  },
+  {
+    "bytes": 5839,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_placement_preparation_trace.rs",
+    "sha256": "0c3d3f603bcd9dbc70c55ce060cd966f0de1baa0485c1455652692e2a9ffe248"
+  },
+  {
+    "bytes": 6146,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_policy_credentials.rs",
+    "sha256": "04db89cdb4137a15d4ccc1dc3d775fef1f1bc10be304da0d461ab31c0aed5667"
+  },
+  {
+    "bytes": 22872,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_policy_credentials_tests.rs",
+    "sha256": "b934450bbca59733775332e24988e826bff025de7613d2d90ea8e01a49e62f0b"
+  },
+  {
+    "bytes": 19409,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_prearmed_watchdog.rs",
+    "sha256": "7e7bc76fa1312450c3cc467677f3afe72ab7e511906a75b2960477037d1d285b"
+  },
+  {
+    "bytes": 10427,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_prearmed_watchdog_fixture.rs",
+    "sha256": "07ecf872265d7f74d0426464f7334145c2bb633952ab3a053ad7f76ca0d1d6ec"
+  },
+  {
+    "bytes": 5240,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_prearmed_watchdog_tests.rs",
+    "sha256": "0cfb3f31c35b89aa147d37b49c9e3ea47d8ea2dea6f1723273d9da6f5205e029"
+  },
+  {
+    "bytes": 12285,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_prebuilt_copy.rs",
+    "sha256": "5aa76118af432bb3da3d31f8b0615335d277a32c2964f9723ef4765ed7e6d14f"
+  },
+  {
+    "bytes": 20412,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_prebuilt_copy_tests.rs",
+    "sha256": "dc5e09a4e24255daedf2bcedc5ce112d8aecce690ceb524fffa456323f2a3b2d"
+  },
+  {
+    "bytes": 17399,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_preconsent_frame.rs",
+    "sha256": "75bae869006302728000d270834fb1f62ee2e118cccf6cd8c1aee78146e107b7"
+  },
+  {
+    "bytes": 9873,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_preconsent_frame_tests.rs",
+    "sha256": "033b350f659dee706079e81ce31d9bf9c01935b5cad6fa383f1dc8db7d2fe6b7"
+  },
+  {
+    "bytes": 851,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_privileged_authority_fixture.rs",
+    "sha256": "aa6903e8c2d5b1f5d21e675ed0c202945be9dd76bf12481c9505a4765eae2817"
+  },
+  {
+    "bytes": 533,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_privileged_controller_fixture.rs",
+    "sha256": "921d529b71ed4527ca23db23e13a678f290640d4798568a3449b8239b9f90bf2"
+  },
+  {
+    "bytes": 6136,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_privileged_controller_relay.rs",
+    "sha256": "49ad66ff8f9b915fafab678ab254d00669d04183cb630b058ca76176f83ffaed"
+  },
+  {
+    "bytes": 811,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_privileged_enrollment_fixture.rs",
+    "sha256": "3b9181c43ef8eaff5d689b1b2eecb6590e88d8e40bcd4f017f5b5822e1a9aa77"
+  },
+  {
+    "bytes": 1379,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_privileged_fence_fixture.rs",
+    "sha256": "065e5fc0f0e4508ea645b6515d3a15c1f068d2e36adaf0cf2889b83a4bcf0f1a"
+  },
+  {
+    "bytes": 1777,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_privileged_fixture_origin.rs",
+    "sha256": "7e06f8e3ab6177fc2cbfdb75b1fff711a1b651bfb043c74c14f7c7a89213aa4a"
+  },
+  {
+    "bytes": 9965,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_privileged_root_cgroup_fixture.rs",
+    "sha256": "bd2b5d1bede0bf891255415646ccb78b5c408966e81d549e2462fcba9bbb2077"
+  },
+  {
+    "bytes": 12638,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_privileged_root_frame_tests.rs",
+    "sha256": "3f9e1bafa04b316b416c5c4e8c03013b8e4b9ab6855145c45da431ef81686a49"
+  },
+  {
+    "bytes": 1187,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_privileged_worker_fixture.rs",
+    "sha256": "4c49a8141f007c980551559d209c48d479bc9003634808d3f5d7057f7b9db803"
+  },
+  {
+    "bytes": 35331,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_process.rs",
+    "sha256": "ba3ed23ca67893f9036944b0a0767ceb9f3561ff2331b187bee49d59c74b8b5b"
+  },
+  {
+    "bytes": 45753,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_process_crash_tests.rs",
+    "sha256": "8f1b8a517b6fbaf5d1ed3ac4ebb0f2e683dabe9b29c11be7ed417c42f40db41b"
+  },
+  {
+    "bytes": 28878,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_process_credentials.rs",
+    "sha256": "d0c26dde23d796fe92fa698e9a90111abf895484d21d58572b6c3e322f0a2ba5"
+  },
+  {
+    "bytes": 4922,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_process_executable.rs",
+    "sha256": "7c939345c222c262d0b17ac5f3417da2c93123bdd8ca612275df92247627c688"
+  },
+  {
+    "bytes": 25570,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_process_io.rs",
+    "sha256": "7c8ca1825c20116fca534e457337674b3f02702f4afbec898b7a75e9561f05ef"
+  },
+  {
+    "bytes": 4634,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_process_terminal.rs",
+    "sha256": "685d13a7ecd6cf5a71263cde1c87ce4306497dbad09cfb04bd6c673597d5f43c"
+  },
+  {
+    "bytes": 13526,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_process_terminal_tests.rs",
+    "sha256": "633248b035c2c7412881381d05526baec8678fb589fd6689c81e0ea7f8070524"
+  },
+  {
+    "bytes": 747,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_projection_groups.rs",
+    "sha256": "582c14f53a0ab2dbbe96bb77deef41b5302d2a4984a9ea98e386fc5f2fda1a58"
+  },
+  {
+    "bytes": 30772,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_receipts.rs",
+    "sha256": "d1cc9c69ba110f74152aaed64f536bdbb7600c363a6440c2f5175802c146f3c3"
+  },
+  {
+    "bytes": 12629,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_recovery_authority_tests.rs",
+    "sha256": "ba561211b7ca8073ed540e8d8d85c2aa606c481814bacf0f6de161efff0f66fa"
+  },
+  {
+    "bytes": 3036,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_redundant_watchdog.rs",
+    "sha256": "f1b14f5ed3ef3505e874c8fca43dbfee2ae99cc5ce8b1070b0ab711a91a4e806"
+  },
+  {
+    "bytes": 5082,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_redundant_watchdog_fixture.rs",
+    "sha256": "7a47663bcd6337cf7655517e39b37fa23068cfd8b5fd789cbef042f336d7359b"
+  },
+  {
+    "bytes": 2208,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_redundant_watchdog_tests.rs",
+    "sha256": "a5b9250ec64773ece31be3b5d126dbbf7bb97c0d04750de3be8d4dd131cb91d1"
+  },
+  {
+    "bytes": 11909,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_reservation_publication.rs",
+    "sha256": "61864606da6dc340dfeecaa56f683555d90c232df4d7b77f0a6b80a515619b2e"
+  },
+  {
+    "bytes": 12364,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_reservation_publication_storage.rs",
+    "sha256": "e4858550d4baddfd938aa9fac3e82f82076fd5d3bbb674ea73de8ebd7021501b"
+  },
+  {
+    "bytes": 22541,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_reservation_publication_tests.rs",
+    "sha256": "f86498f9ae9533658b5bdd77a0a8bf2a34c370a9bc09e7707cbca0524dd7ff66"
+  },
+  {
+    "bytes": 8756,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_reserved_state.rs",
+    "sha256": "36b39fe784e637c645b6aa0cf23c3f7b1bc81d7ada748540d24f05b88588d3dd"
+  },
+  {
+    "bytes": 15732,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_reserved_state_tests.rs",
+    "sha256": "20dafe191cbe10a23151710c70eb0e149af8e29be3f7a925db40723a41c67cae"
+  },
+  {
+    "bytes": 8287,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_retained_producer_tests.rs",
+    "sha256": "35d8cdd5fc3968e13d244740634c9732d7a4242b5b56fb156340a90ff5cd954e"
+  },
+  {
+    "bytes": 2188,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_reviewed_trust.rs",
+    "sha256": "0575f5d9bc861216a6aa26fe086beb2b0cbd50a230a98fe2195747cc7ef14b12"
+  },
+  {
+    "bytes": 4661,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_root_creator_tests.rs",
+    "sha256": "c2b19e4bb553341e92c782ea8c4c63903815e35dc81ca57eb78c4ae260437b64"
+  },
+  {
+    "bytes": 5333,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_root_enrollment.rs",
+    "sha256": "90da348674ca815330f471e8e81c24ba8c5900714f11de4ce260302fba3896ae"
+  },
+  {
+    "bytes": 5042,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_root_enrollment_tests.rs",
+    "sha256": "01bf6b027ca69a797d427be8c84e05e89438923fc140cb82f77ba4b13a9561cd"
+  },
+  {
+    "bytes": 18008,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_root_guardian.rs",
+    "sha256": "962066dcea96ec9fe2f004fb02ad6c17f08be568cfcdbe41e8c4151a11f773aa"
+  },
+  {
+    "bytes": 11865,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_root_guardian_fault_tests.rs",
+    "sha256": "65ed15ac8dc32d66a0e0121a5e88b711bdfeadb21c025661f73963004798f170"
+  },
+  {
+    "bytes": 3190,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_root_guardian_original_kernel.rs",
+    "sha256": "b15920f5c252071770d6912030b34932b2f435aef2e8dd2b214259c44a32e170"
+  },
+  {
+    "bytes": 2734,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_root_guardian_original_kernel_fault_tests.rs",
+    "sha256": "e0eda240a4f93736b5bccc95f66030e9423d6eeb14ad89ddce838f6cab6f5a74"
+  },
+  {
+    "bytes": 1252,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_root_guardian_projection.rs",
+    "sha256": "bfa9a201d08f60cc2df70593c3c9441fcce9ca3a59ce9a3d8c04dc41b0de61b1"
+  },
+  {
+    "bytes": 16145,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_root_guardian_raw.rs",
+    "sha256": "346bad227042c568c5924b2e3466cc39b6cd8ad946b3a840805e203cdf90de93"
+  },
+  {
+    "bytes": 7452,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_root_guardian_tests.rs",
+    "sha256": "d4ced93b09645f85a922063709b313a55b68c38af6d5b8da8e8150e7f4a41295"
+  },
+  {
+    "bytes": 15816,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_root_owned_input.rs",
+    "sha256": "0e4bccf704bb459d9265af77bc04743b90aec7af83bf0805df2030601d579acf"
+  },
+  {
+    "bytes": 15302,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_root_owned_input_tests.rs",
+    "sha256": "1e5c4a4c7fb8af225c616ff85784744f9a2e1515ca6987495a6a95f57ab69091"
+  },
+  {
+    "bytes": 1245,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_root_placement_binding.rs",
+    "sha256": "f44b533408a05054cc2ba031c60a0382b6c88b322d1b2598b95d95d09acd9ffc"
+  },
+  {
+    "bytes": 14256,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signed_authority.rs",
+    "sha256": "19979be54dcfc6bac2eb89c66c7c002fda0099d53588a77814848a7db5621f4c"
+  },
+  {
+    "bytes": 24184,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signed_authority_tests.rs",
+    "sha256": "0a9bdce8a2b1300db7069256141b98af3d01da30f577e12eebba1e6118a6921b"
+  },
+  {
+    "bytes": 6643,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signed_history.rs",
+    "sha256": "9a651106e136323956c7f594baf13537c7ea267c779fb1f28cc6e48a8241c8fb"
+  },
+  {
+    "bytes": 8082,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signed_mount.rs",
+    "sha256": "c52ec9d280aefe7a3f5ba1eb22fafd005181ec7975461b7577dc178354ba9231"
+  },
+  {
+    "bytes": 19961,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signed_mount_tests.rs",
+    "sha256": "8c15d5d07bda692e0e1f5c598d10ee3191909514654efe60bdc469cc78440c10"
+  },
+  {
+    "bytes": 7587,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signed_opening.rs",
+    "sha256": "516a907b93d25e73b0d2377484c000456f560f1c2c1b52d8303bc3f64d8365ff"
+  },
+  {
+    "bytes": 15380,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signed_opening_tests.rs",
+    "sha256": "fe9e3f42105c2a235f1c3440ea32a26ca61f0d7cfa346f247a9d0b26e6800897"
+  },
+  {
+    "bytes": 8590,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signed_tasks.rs",
+    "sha256": "e4c5da834cd07d568e7112cf03220ea58dea20262508185ea564dd98d89e07f5"
+  },
+  {
+    "bytes": 16237,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signed_tasks_tests.rs",
+    "sha256": "07be1f3a9e09d7aa2982097733569060d7df52861edc6b2a81a250f76ad4ca3e"
+  },
+  {
+    "bytes": 4856,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_bootstrap_context.rs",
+    "sha256": "4e06107261c0d965b920a04fe97d63868e639e36492c4c6496971233d1052220"
+  },
+  {
+    "bytes": 10465,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_build.rs",
+    "sha256": "3175d2d7098087268a77f2adacdbcdcfc5a2b6f5555878a8baefe6099a15debb"
+  },
+  {
+    "bytes": 10979,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_bundle.rs",
+    "sha256": "e01afc1aaaea20292c31ba62a3f5880f4c73acc079c5f1f0456957e6ce5a9ee2"
+  },
+  {
+    "bytes": 15625,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_bundle_tests.rs",
+    "sha256": "3431538c353bb4d018dc8a6a4a3edcea9b40c0102b68b054f89a0751767360dc"
+  },
+  {
+    "bytes": 4037,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_constructor_guard.rs",
+    "sha256": "d18ac480fdb40f14fea162e98e6b254ce2fcaf08c0df2ee337a0efe75eaed7f9"
+  },
+  {
+    "bytes": 26652,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs",
+    "sha256": "7b4b0886f70936627a95c2e7fe907d1028e5ef12b9b7747722be0edd2b9c0f74"
+  },
+  {
+    "bytes": 27021,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_creator_loss_fixture.rs",
+    "sha256": "a367ec815eb81133e8ad978d75ce2e6fb34012081dae36fefcac47c548a87187"
+  },
+  {
+    "bytes": 4641,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_creator_task.rs",
+    "sha256": "08bea5aa095feaa0eed3310d90a1ac6d995c273e36c9139030f7b5608c90c550"
+  },
+  {
+    "bytes": 4012,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_executable.rs",
+    "sha256": "23c28e61375c121295cf38553ed7d3c987e7e61a28fb0505c12d6a59cb9d74f1"
+  },
+  {
+    "bytes": 11242,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_executable_tests.rs",
+    "sha256": "ad849143255a64c5864c2e56dc682bdf0e186d35df557f9b00d1f926ed338184"
+  },
+  {
+    "bytes": 17577,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_first_exec_fixture.rs",
+    "sha256": "918999fd38b689a5b8a07e6f06ff84a6cda4e93a169ab8239a60d9af7fae9c3e"
+  },
+  {
+    "bytes": 11084,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_first_exec_fixture_tests.rs",
+    "sha256": "76c42303142e81727f4f459194dec642b0cf262042a47eaaf1a5f88f118ecf61"
+  },
+  {
+    "bytes": 4141,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_gnu.rs",
+    "sha256": "5ef3aa25aa3dd33c04ba45a21b62e5201f96e82ccba1daf664ab2f185cc74f87"
+  },
+  {
+    "bytes": 12074,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_handoff_fixture.rs",
+    "sha256": "dd98cf5def35bf90e6220397d995c6f0ede6d959f14669d87e038bc9c47cd78a"
+  },
+  {
+    "bytes": 5162,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_handoff_helper.rs",
+    "sha256": "ab803d3013042b32b1d1bc1efbf85240b7b62f51dcf8bef962866bddfb3dc262"
+  },
+  {
+    "bytes": 10450,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs",
+    "sha256": "7b0a39038b7ebb3fa8f19b3f1e9664a26bfe02ca23b9ee59d261691833f0aa36"
+  },
+  {
+    "bytes": 2578,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_isolation.rs",
+    "sha256": "8043dec82fe2114d7af50eb45d2e6b1aa9f89c4ba77cb6bbe591614e075a9757"
+  },
+  {
+    "bytes": 3488,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_isolation_core.rs",
+    "sha256": "96171551a18029b3f6050bf180f9b3d0dbd5398917ac36218852aa7dae105fa5"
+  },
+  {
+    "bytes": 7754,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_isolation_linux.rs",
+    "sha256": "f050578cad608d6d1ab7a3b4aafec4f0b89e37c0d596a0f43eaeab553441638b"
+  },
+  {
+    "bytes": 4581,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_isolation_linux_tests.rs",
+    "sha256": "65b0ac61821fbe469b36901050405e62284ca09759d2a8c9cac1ee1ed87056cf"
+  },
+  {
+    "bytes": 2054,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_issuer.rs",
+    "sha256": "ae8054b321f322900f32fb121ec3d05bdb7809e7ef15d96c4aca8f56cffdfb6c"
+  },
+  {
+    "bytes": 27962,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_joined_fixture.rs",
+    "sha256": "75cef498dca089506b6e312e51835646f022856ac65b1de9876b02b2130c15a9"
+  },
+  {
+    "bytes": 8559,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_joined_fixture_tests.rs",
+    "sha256": "8e7a0570271e12b80f950324645e0aa6a63e1f00366962c338207a96359e0d8b"
+  },
+  {
+    "bytes": 4353,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_joined_helper.rs",
+    "sha256": "f417c37bf2d16440d72b9a06fa407655211fe7a85f787456b5d2e33218c1030a"
+  },
+  {
+    "bytes": 15444,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture.rs",
+    "sha256": "bc2b912d626acadb28eecdf75922c97a037766e796ef31dd551c3640df30d092"
+  },
+  {
+    "bytes": 17354,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs",
+    "sha256": "e5e9c1da28655b01f12fdc1ed125765e9466d15f0be85e0bbcce24269fdef612"
+  },
+  {
+    "bytes": 7025,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_namespace_helper.rs",
+    "sha256": "0bb780be1ad3444deb9eeecbb98586e12d74d85443976d78c1f3431c10bfbade"
+  },
+  {
+    "bytes": 19019,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_owned_probe.rs",
+    "sha256": "3237afb67e18a1d67b7eba2892f74df310ae44f84d2e8aed127c7be0483c10c1"
+  },
+  {
+    "bytes": 16101,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_owned_probe_loss_tests.rs",
+    "sha256": "dd757fcb9fb7bcd1a955492d6b621d5134f76db503a7e4f5e51a96e73c6c8170"
+  },
+  {
+    "bytes": 9561,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_owned_probe_tests.rs",
+    "sha256": "269f3a16972eab3fcdd0022ad5862c7f6f51ece64cfb5a051b244fd7f6f18a02"
+  },
+  {
+    "bytes": 15177,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root.rs",
+    "sha256": "180978e1a06a15d386e458f17f0504459ee9c620b9995b9490695da3f57291e5"
+  },
+  {
+    "bytes": 29386,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_exec.rs",
+    "sha256": "d09f5750a31a8b7f62b9c252807b7560dab7514eba94fb2969af421522bc6dd5"
+  },
+  {
+    "bytes": 7952,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_exec_tests.rs",
+    "sha256": "64d23e19b5d41bda11dc71d6663fa6fbd399c3bfd6fb6611a2d1953f553501ac"
+  },
+  {
+    "bytes": 30880,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_handoff.rs",
+    "sha256": "345bce29a3121c9fe4d1dec4e29472d2c44ea7db9e74886303e748beb18c2f13"
+  },
+  {
+    "bytes": 13175,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_handoff_tests.rs",
+    "sha256": "5376f72f84a6db73871c95f5b45ff5a5dffc673b9054b6a83e71b01daaf7b659"
+  },
+  {
+    "bytes": 13241,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_isolation.rs",
+    "sha256": "2624e7adca35ccc5e13c076129a3f2e11eebd5f33c24ce76e0ad5af0a2c41d5e"
+  },
+  {
+    "bytes": 8874,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_isolation_tests.rs",
+    "sha256": "53745f374fe2054550eab95d90244b40835a92d1f3506777a9cbcdc91b70c56e"
+  },
+  {
+    "bytes": 45572,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_loss.rs",
+    "sha256": "df84c3d6abaaa1a8c565f637516438bf3691d5ce2b5be3b97113ac076e144690"
+  },
+  {
+    "bytes": 4259,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_maps.rs",
+    "sha256": "f5d51db2b4b9315f728984766582e6ff91395c9afa77e4fc948741940a46d78f"
+  },
+  {
+    "bytes": 13977,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_tests.rs",
+    "sha256": "f14f71726513b5e90096858ee08ed1b8cfda3d61f6266d92d8009b6b0a3ebc72"
+  },
+  {
+    "bytes": 27153,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_root_fixture.rs",
+    "sha256": "db3bdef5691178efb70694e2014da9d711f5663ec3d7ec6795b675aaecbda1f1"
+  },
+  {
+    "bytes": 9112,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_root_fixture_tests.rs",
+    "sha256": "6edfa6fc843d1f93c04c65306f87d77ba71505f5b34acc7f7963bfc9eb5e806c"
+  },
+  {
+    "bytes": 30305,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture.rs",
+    "sha256": "0c9bf963b693d94b5b4ab2214e44f492f166393c92dfd52529f13b3db4ba9045"
+  },
+  {
+    "bytes": 13545,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture_tests.rs",
+    "sha256": "99fb35dae72d604eb5edff9ff37c9a5cda5f74c76a62340a2dfb2be8a97e4cd4"
+  },
+  {
+    "bytes": 4325,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_rooted_maps.rs",
+    "sha256": "bbd76b7295061e05750b3323a45bd9e055ed801697b0787f6d8552b35ff9dfa7"
+  },
+  {
+    "bytes": 9492,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_runtime_elf.rs",
+    "sha256": "fd56399509b566d7cc062307322a5a46d7961e13dc82d37b7be888f17d42ae6f"
+  },
+  {
+    "bytes": 10119,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_runtime_fixture.rs",
+    "sha256": "0533802f050aaf684331c87a6857e0a62b2b52f76872dd81d585759fd5ecea1f"
+  },
+  {
+    "bytes": 16353,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_runtime_fixture_tests.rs",
+    "sha256": "8af79c72a1e05f46ff91959dd63ad2cfc113be58c9ba357547c1485ceafa367a"
+  },
+  {
+    "bytes": 7476,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_runtime_input.rs",
+    "sha256": "25946336ef2333c9c030d48f3a2e72be46db8e586fbdae45901fef8cc8864852"
+  },
+  {
+    "bytes": 13649,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_runtime_input_tests.rs",
+    "sha256": "a7d2af916a9ec282bfba8de8ee5b56238c5ba6764563e008aeca6185af565cec"
+  },
+  {
+    "bytes": 18179,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_seccomp_fixture.rs",
+    "sha256": "52263dffc53ff30f4ac4bf71b648230081df670a57a92692b25e4a6c001a0dd5"
+  },
+  {
+    "bytes": 6453,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_seccomp_fixture_tests.rs",
+    "sha256": "c148868d9310481c0e6da856e91ae65be4f7c87dc15c1f24490db4cf57570a9e"
+  },
+  {
+    "bytes": 21680,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs",
+    "sha256": "982c8a8744c48f6c91de600ad054e005755dcab4b41cf5328d22c17b237193a9"
+  },
+  {
+    "bytes": 7349,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_channel.rs",
+    "sha256": "8d000c1078945038f8a7c259428b5871a85c6a451354dba682fe843bd34fcb97"
+  },
+  {
+    "bytes": 23206,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_fixture.rs",
+    "sha256": "a381598487752581c8cedeefee8cca28b5a3cfb6b715e167e2e666aec717e2c4"
+  },
+  {
+    "bytes": 8740,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs",
+    "sha256": "0c8642a73537c534ac1a8ada1314bbbe7bdbe6d6113e70a58b848427d62d9881"
+  },
+  {
+    "bytes": 25542,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_spool.rs",
+    "sha256": "2b8371029882748dfaeb3feaa90b6a350fb3cd27d8da4115518a6bef40b6c62e"
+  },
+  {
+    "bytes": 7307,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_start_consent.rs",
+    "sha256": "7bc72ed8143ebe99e4e9bc018bc317718ce1b3026dc283e7390c0c03d78dbc53"
+  },
+  {
+    "bytes": 16000,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_starting_intent.rs",
+    "sha256": "02937e9a2c93b55858694fe19a0938876ebf0f01d82a09ca5f84326de4a30958"
+  },
+  {
+    "bytes": 3802,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_starting_intent_storage.rs",
+    "sha256": "874cdb177a0d3da264df201441b76e7d3c733035c99de9df318e6f11d299e388"
+  },
+  {
+    "bytes": 37401,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_starting_intent_tests.rs",
+    "sha256": "68c25fb8af38a20d238e766ba2095f9c0fd752a7ddfddf96db4ec91a032a5310"
+  },
+  {
+    "bytes": 8195,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_storage_preflight.rs",
+    "sha256": "66c8d63ee701a4254c204f47697a7d824bbc7b7c9aeed04f856a9a9b6f6df00f"
+  },
+  {
+    "bytes": 3969,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_transition.rs",
+    "sha256": "7982cbde72c7e0a5abd0f9300a8472cc35e7630f8aa964b9a965d237d244a54a"
+  },
+  {
+    "bytes": 14196,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_transition_tests.rs",
+    "sha256": "8b78c7ff3541c9e038264bdb6d1468ba400ff30a1afa70d68edfb0bc12992e79"
+  },
+  {
+    "bytes": 21769,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_tree.rs",
+    "sha256": "92d3fa5b4c532a2cb09ddaf1f617a716d3e0783467d51113a23ba5eb447148ef"
+  },
+  {
+    "bytes": 1145,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_trust_component_name.rs",
+    "sha256": "fe6bc06155697a5931784d5a74dd1785f907ab58c7cc02eef9ecc426c840a23a"
+  },
+  {
+    "bytes": 7937,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_two_phase_launch.rs",
+    "sha256": "d59be7e4709c64d64537e1fe7f63eebab2f98615db407cba5bfbebc019bb202d"
+  },
+  {
+    "bytes": 12657,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_two_phase_launch_tests.rs",
+    "sha256": "cd32a83032c46ef394f29b527e3d655b87bd19b266ca3fc2b2d0f6aef2623a69"
+  },
+  {
+    "bytes": 5455,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_unit.rs",
+    "sha256": "3415d8f251c9dad6217282e40a6bee7bf5a0a246281be8288a62f934be8a9295"
+  },
+  {
+    "bytes": 16305,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_user_namespace.rs",
+    "sha256": "95e327def03737c3d7dcf865a140b47fe75ab84eae159993526b8801120ce584"
+  },
+  {
+    "bytes": 3210,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_validation_cost_tests.rs",
+    "sha256": "83016675a883fd45b2079883ec17dc9b45111df7ed48a8c606973c9c0da6bc09"
+  },
+  {
+    "bytes": 13270,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs",
+    "sha256": "6c0cf63c748ce7fe09a1580ef0d3dd5c60772889e5c6d3b32164d504cc3adc70"
+  },
+  {
+    "bytes": 5560,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_validation_frame_budget_tests.rs",
+    "sha256": "0dcf77a990b23d33a7f02dcbdf30c9f7fa46e9328de5dadfbe538dd11ac67569"
+  },
+  {
+    "bytes": 7466,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_validation_frame_tests.rs",
+    "sha256": "7b4e414eafe67d0ecb87f638ed51aedac367deddd3d0c7fb4963ccba0c2051f9"
+  },
+  {
+    "bytes": 3425,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_validation_leaf_cost_tests.rs",
+    "sha256": "6275071e8e31633ad49a6c666d8685c7e54a496b26c5f70913eb35e849c225d3"
+  },
+  {
+    "bytes": 6240,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_validation_trace.rs",
+    "sha256": "2b2bf406963896a90888598048c9a6f92fb66e701c64008ddf06436c5cc6d488"
+  },
+  {
+    "bytes": 7205,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_validation_trace_tests.rs",
+    "sha256": "0d7486e9863584bc7fc436173fea026807398b6f132d8fd63ec9c3fd6039f6db"
+  },
+  {
+    "bytes": 24203,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_worker_account.rs",
+    "sha256": "2a196f137ef65e0c08d0f61764a68ad3f4e618a3b93c0e62287746ee9074bb63"
+  },
+  {
+    "bytes": 20959,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_worker_binding.rs",
+    "sha256": "a982c40269d686d2165c7abe0a9d9a58a84e5f14bc7b1184e919b0c69a15dda0"
+  },
+  {
+    "bytes": 26688,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_worker_context.rs",
+    "sha256": "0ff5951f0b4467a3bcbcd65eb91f2f6a928df88f845ed38bbe46dc732b5f1345"
+  },
+  {
+    "bytes": 17897,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_worker_files.rs",
+    "sha256": "1af19690de72dabc5e18af9394b41dde967145ec39b97107d2c34d971d09ac17"
+  },
+  {
+    "bytes": 9370,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_worker_kernel_binding.rs",
+    "sha256": "fc32df04715eba5894ac8444374c4e9872eeada087cb5a34db0e156a98d2f8e4"
+  },
+  {
+    "bytes": 10778,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_worker_policy.rs",
+    "sha256": "769c3de1224225b790d7e32b34f59b34e9263bdf292afa2b89ba3fdc718b68f8"
+  },
+  {
+    "bytes": 910,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_worker_progress.rs",
+    "sha256": "395cb21d4c49fc63f9ea9b5c068758bae2b6da0bc1a1f8071b98aa4f8aad6e47"
+  },
+  {
+    "bytes": 10539,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_worker_proof_reuse_tests.rs",
+    "sha256": "654eb89f41cc41ff61b257458239db78543631d0d0d2fb972941aa5a32d1efb3"
+  },
+  {
+    "bytes": 931,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_worker_start_consent.rs",
+    "sha256": "08e13236ec660545de629f45e7ef754760d7146a49996180b7ae22f0090821c1"
+  },
+  {
+    "bytes": 16370,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_worker_tasks.rs",
+    "sha256": "a322a334695944c43469e1d5d37fe6d5f89b68fe3565c028e4048bc22b61236e"
+  },
+  {
+    "bytes": 16272,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_worker_tasks_tests.rs",
+    "sha256": "d7e4ee00ca7fd5edbade66efacb36f68ef89aaf94fa0cf7ecf24d01c8e61513a"
+  },
+  {
+    "bytes": 16964,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_worker_trust_input.rs",
+    "sha256": "e8cc9c33a55c3a1c876ebfea1bffaf81f08bc1db92a919c9e863eaa815abddbf"
+  },
+  {
+    "bytes": 27494,
+    "path": "tools/long-run-supervisor-074/src/diagnostic_worker_trust_input_tests.rs",
+    "sha256": "8448ccace343d9edad4abc8895f21d4cf9b104eab89c52ec8718dacd0f54b320"
+  },
+  {
+    "bytes": 35977,
+    "path": "tools/long-run-supervisor-074/src/event.rs",
+    "sha256": "4f1d9b22c85f0848530c524ee462170d5d1c996495febcdfae015e938b0e6107"
+  },
+  {
+    "bytes": 8794,
+    "path": "tools/long-run-supervisor-074/src/host_claim_construction_tests.rs",
+    "sha256": "a5c220232ade9262fdf66ea190da5d96dacec6f53ea80f25142e848f6e62778e"
+  },
+  {
+    "bytes": 17866,
+    "path": "tools/long-run-supervisor-074/src/host_execution.rs",
+    "sha256": "72b9adb977fd43c3b1ab02e56caf4a727d15bff859b7f477f25dedcb8da38a27"
+  },
+  {
+    "bytes": 12709,
+    "path": "tools/long-run-supervisor-074/src/host_execution_fixed_admission_tests.rs",
+    "sha256": "90a600553d399016b728986028db68c339a4b3a8a36c417efcd2b7e61d89c958"
+  },
+  {
+    "bytes": 50195,
+    "path": "tools/long-run-supervisor-074/src/host_receipt.rs",
+    "sha256": "3cedbcd38c80d7662bbc464b84ee3544c3f72f6c91bcf6fba6b59ef46afb37eb"
+  },
+  {
+    "bytes": 14358,
+    "path": "tools/long-run-supervisor-074/src/host_short_fence_tests.rs",
+    "sha256": "5bbd258ed9eaa8b07cd75923aac31ef798fb9278c79775cee1ad2dfdb981a275"
+  },
+  {
+    "bytes": 7798,
+    "path": "tools/long-run-supervisor-074/src/lease_expiry.rs",
+    "sha256": "291640e9f42a9ce97f9354a708b9af410a4a484625899b9eeb5d89f08f654eb7"
+  },
+  {
+    "bytes": 20467,
+    "path": "tools/long-run-supervisor-074/src/lib.rs",
+    "sha256": "b1e48c0f7abc23b96e93cc3c18b34bfa65d46e87dedb33a5cf5633630409f2ce"
+  },
+  {
+    "bytes": 21398,
+    "path": "tools/long-run-supervisor-074/src/main.rs",
+    "sha256": "a759a776a037a67fd2d0b23107624ac6facd7bb2ae0b7ae1945b39a858f4111f"
+  },
+  {
+    "bytes": 15483,
+    "path": "tools/long-run-supervisor-074/src/manifest.rs",
+    "sha256": "87f3c08a6deb775fa220773100e8eaeb8de886183ea82d7653ea0cbdcd9a7fb3"
+  },
+  {
+    "bytes": 4161,
+    "path": "tools/long-run-supervisor-074/src/manifest_evidence.rs",
+    "sha256": "f126d7d68c5977b02791ed683975ae74ce70d5240e562ee94f65bfc2a4f08fbb"
+  },
+  {
+    "bytes": 13372,
+    "path": "tools/long-run-supervisor-074/src/measurement_loss.rs",
+    "sha256": "000ea7a22483a00a439bdefeede817b84092efb5523ca03b74122eb8171b7629"
+  },
+  {
+    "bytes": 6838,
+    "path": "tools/long-run-supervisor-074/src/mutation.rs",
+    "sha256": "168d8c9ca546e48c51a9fdee6915ffef0290566c59149fa79855061f4a0b2f5d"
+  },
+  {
+    "bytes": 11186,
+    "path": "tools/long-run-supervisor-074/src/process_identity.rs",
+    "sha256": "83e6fbc136e8520182c5e7adfb3fd2f07f256bb0d8bcee9bd2f9aee7e68a0f45"
+  },
+  {
+    "bytes": 12829,
+    "path": "tools/long-run-supervisor-074/src/progress_loss.rs",
+    "sha256": "28dfaad95a1e8de28aaa5b676728d09d191cf4f60992f4f8695656705eb6c42d"
+  },
+  {
+    "bytes": 9650,
+    "path": "tools/long-run-supervisor-074/src/protocol.rs",
+    "sha256": "aec7829082cd158572ff5c4a54c801c1c1d44d74a075f921a574418b2f708bc0"
+  },
+  {
+    "bytes": 9890,
+    "path": "tools/long-run-supervisor-074/src/request_builder.rs",
+    "sha256": "ee2486db9c9b14cc6cab9b19ea8fd9885247aaf606141cb911ddb5cb158040c3"
+  },
+  {
+    "bytes": 10340,
+    "path": "tools/long-run-supervisor-074/src/role_overhead_smoke.rs",
+    "sha256": "b239de3947a5b515d45bfb82beb60308b2f6b908a15e9026d921a701fd8f7b17"
+  },
+  {
+    "bytes": 17956,
+    "path": "tools/long-run-supervisor-074/src/seal_artifact.rs",
+    "sha256": "d7b4f6374d6328b2d5dbfbad3fbc38cb3972fd15dc04b67a325270c9929ab2cd"
+  },
+  {
+    "bytes": 15545,
+    "path": "tools/long-run-supervisor-074/src/seal_input.rs",
+    "sha256": "f10f4f327ab36794130d56fed4cbc1cd4a3c46c241adc6ac2508e221ea6c65b8"
+  },
+  {
+    "bytes": 12439,
+    "path": "tools/long-run-supervisor-074/src/seal_lifecycle.rs",
+    "sha256": "ff6a4933731ef8137054efd2f4a87d8a36dcc4ac7837bfb03b5bd4a5bd76956c"
+  },
+  {
+    "bytes": 2219,
+    "path": "tools/long-run-supervisor-074/src/sealed_permissions.rs",
+    "sha256": "76929c3ce8dbe984d93de6a0cbd4f1433f11b942ec5bb2682de00a70a7a025b5"
+  },
+  {
+    "bytes": 59181,
+    "path": "tools/long-run-supervisor-074/src/server.rs",
+    "sha256": "b3d4153e73f02f5d909c0e203a682d27c4a0d92722705e463be327fa559bfbfa"
+  },
+  {
+    "bytes": 2843,
+    "path": "tools/long-run-supervisor-074/src/service.rs",
+    "sha256": "63624439dc162a0ff64c1fae400f7e19ba7ce9979c88d424fdbdff737ec0a3a0"
+  },
+  {
+    "bytes": 18258,
+    "path": "tools/long-run-supervisor-074/src/spawn.rs",
+    "sha256": "6a6f1f669c985d199f2516d0c10b81dc3dad9ff06bf064286c75155488331972"
+  },
+  {
+    "bytes": 18937,
+    "path": "tools/long-run-supervisor-074/src/start_evidence.rs",
+    "sha256": "e130e8d80c8c0645fdb8545a69ae49fd8edc067a8f6a3d8d471fedb36707ee1e"
+  },
+  {
+    "bytes": 14857,
+    "path": "tools/long-run-supervisor-074/src/start_lifecycle.rs",
+    "sha256": "8c16579d5bc0a7428cd1bdff9f330830e072223deedfb2d7883229d5faf2ba5c"
+  },
+  {
+    "bytes": 11685,
+    "path": "tools/long-run-supervisor-074/src/state.rs",
+    "sha256": "f05d8e4c7885922cad5cbd7f550321f872561ee958e2b47040176169e373a57c"
+  },
+  {
+    "bytes": 8678,
+    "path": "tools/long-run-supervisor-074/src/state_store.rs",
+    "sha256": "0f0eb9c58e25c4a3237375c803b8f698fd8ea6e7d5877584c59718d1571287f6"
+  },
+  {
+    "bytes": 2743,
+    "path": "tools/long-run-supervisor-074/src/systemd_notify.rs",
+    "sha256": "9338c18a2e35ea7fac1041a06bd74aa4721c41f7f6ac1455b85cf703551f908b"
+  },
+  {
+    "bytes": 19607,
+    "path": "tools/long-run-supervisor-074/src/systemd_smoke.rs",
+    "sha256": "e04ebf59fe835e32f5798fb190591b12507fe54b2f6b9c6c20fef0c3be50c944"
+  },
+  {
+    "bytes": 17031,
+    "path": "tools/long-run-supervisor-074/src/systemd_spawn.rs",
+    "sha256": "5ca65e08a00579e0e7b49e809bcccd1fda4b1f5df79037c4c018ae4167bca406"
+  },
+  {
+    "bytes": 24889,
+    "path": "tools/long-run-supervisor-074/src/systemd_unit.rs",
+    "sha256": "aa022bc5487805dcb71dc07118e6ea39a39f70be8861f56c9cc7cf05ad0e7ed5"
+  },
+  {
+    "bytes": 14858,
+    "path": "tools/long-run-supervisor-074/src/unix_transport.rs",
+    "sha256": "8292c902be5a4ca54f0e8b929e8234db286c5d3d49a984681bcde20d9dcca21b"
+  },
+  {
+    "bytes": 8496,
+    "path": "tools/long-run-supervisor-074/src/watchdog.rs",
+    "sha256": "852378e568ac9be90d745eceb55c8dced9607c4dc94cdbf028c8e539fb0d5ed6"
+  },
+  {
+    "bytes": 17515,
+    "path": "tools/long-run-supervisor-074/tests/abort_lifecycle.rs",
+    "sha256": "ababcedbafbe126c12c4dc572f10aa1d44099f590a59433d2ab5dd6e174ffb34"
+  },
+  {
+    "bytes": 6918,
+    "path": "tools/long-run-supervisor-074/tests/archive.rs",
+    "sha256": "dd661465c9751e2918c00bad0faf1f875c5149ac7da69f2e109da40d30be3ad8"
+  },
+  {
+    "bytes": 4920,
+    "path": "tools/long-run-supervisor-074/tests/authorization.rs",
+    "sha256": "9b840fb93ef34e7ae7efce4658fd9059edc97ee4637d9ef68b2823f28998fb4d"
+  },
+  {
+    "bytes": 6181,
+    "path": "tools/long-run-supervisor-074/tests/chain.rs",
+    "sha256": "69796ef8916b9f3380352fb99e3ac48f64b7e057212041517457a09cdafbb384"
+  },
+  {
+    "bytes": 10557,
+    "path": "tools/long-run-supervisor-074/tests/checkpoint_evidence.rs",
+    "sha256": "af82292873d04f6d0daff0282bd2dc7f9ac099c1110b9d0d7bad4d97e740bd30"
+  },
+  {
+    "bytes": 2230,
+    "path": "tools/long-run-supervisor-074/tests/config.rs",
+    "sha256": "6aec2b0f55f53a848c75335b9139c03e4c3048ce47452c95e6b3eb02e6e36415"
+  },
+  {
+    "bytes": 52024,
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_artifacts.rs",
+    "sha256": "069bf8232cd5ca936b5a22ac9f4d652d684769d23b93bf44213010d0e3c21ea0"
+  },
+  {
+    "bytes": 5242,
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_boot_buffer_allocations.rs",
+    "sha256": "4e0cfcb56d846618bfcae997f7ac9f05446a805b7612ab26a132b01f5c5e99bb"
+  },
+  {
+    "bytes": 2151,
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_collector.rs",
+    "sha256": "ed84f5fae515958d30e91109b72d74e0628cc0d8b7571fd549e770cbb104e13a"
+  },
+  {
+    "bytes": 542,
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_collector_starting_publication.rs",
+    "sha256": "00b0a4f890f57642f838657e21250c0391f7a044d98f50661675787f6a5275db"
+  },
+  {
+    "bytes": 502,
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_collector_starting_record.rs",
+    "sha256": "a23edffc182ef88f837015a84d884db02486e70955b694d91e89d88c0f68b841"
+  },
+  {
+    "bytes": 14145,
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_context_files.rs",
+    "sha256": "dee1275fb324fba040c6b973a50bdeb58f5afb8db8b5a153d205ffbd9bdd2eed"
+  },
+  {
+    "bytes": 624,
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_fixed_grouped_preparation.rs",
+    "sha256": "6afd8364b899a37cf033c6c0a29177ffb977aded5b2fb330023a3f89ea42291f"
+  },
+  {
+    "bytes": 20483,
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_intent_projection.rs",
+    "sha256": "234f154f11dae5b32695ef36fa086d60ec5c61c8b80597d123ec01e1cad4438b"
+  },
+  {
+    "bytes": 30056,
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_ipc.rs",
+    "sha256": "0a1430fe6ad28854d30efcd37431f28bd2dd4864a39628b91b5dff19825669e8"
+  },
+  {
+    "bytes": 18455,
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_lease.rs",
+    "sha256": "4ba84fcc5d9173ddbb5273409f82a10d3a535bcf7f37614ffdabe20cd205de29"
+  },
+  {
+    "bytes": 1900,
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_manager.rs",
+    "sha256": "eb5bae4c291ded90c479e9798909493d18bc8fabb8f9312f1bc1f4d55ec9cb26"
+  },
+  {
+    "bytes": 1037,
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_original_collector_pipes.rs",
+    "sha256": "a35aa0e0f438cda924caf294635454e392262b1b3b3988d710de67a05d753394"
+  },
+  {
+    "bytes": 2471,
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_original_fence.rs",
+    "sha256": "1f531f49818594e0f50415779a93b933d55659bd306f92e3b2d7943536f6fc35"
+  },
+  {
+    "bytes": 580,
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_original_output_join.rs",
+    "sha256": "04e6e71e13b15185eed7cbc9dedda729f992a6312d0e836faba6b7983a9f66cb"
+  },
+  {
+    "bytes": 655,
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_original_pipe_transport.rs",
+    "sha256": "eb04d7174c171400b0ab5232668aec2822242e4095b1ae3f56c83cc2af4dba61"
+  },
+  {
+    "bytes": 623,
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_original_start_material.rs",
+    "sha256": "74d144457ea99455def60c973694e4668a7a7121f25ec1bd42454b40753e2736"
+  },
+  {
+    "bytes": 3819,
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_prebuilt_copy.rs",
+    "sha256": "ae26e3602fd8d8cc2910054c17e4fc7be62365f296e961e1cf4795222508d202"
+  },
+  {
+    "bytes": 1219,
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_preconsent_frame.rs",
+    "sha256": "858768ba8936b47f0e22b1313732b4d1a6127e010d19a8c0389a51fcec137d6e"
+  },
+  {
+    "bytes": 24108,
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_receipts.rs",
+    "sha256": "eb5dd5ce398361398847798cebb2f917797dd2188f6a55e8380b0d47908f5bc7"
+  },
+  {
+    "bytes": 9636,
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_reviewed_trust.rs",
+    "sha256": "2097200e8c43d3011fb0c146263cb4b4257a982f2c468f3b3f423139be696812"
+  },
+  {
+    "bytes": 1000,
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_root_owned_input.rs",
+    "sha256": "21d025b4da862fcc93c1ea44976a080220458e0c473af847eefe6ea509ee19ca"
+  },
+  {
+    "bytes": 10536,
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_signer_bootstrap_context.rs",
+    "sha256": "b31bf598929ea9b9736bebdf574b0241df62e15ce6745253347312f9263d7bcf"
+  },
+  {
+    "bytes": 14570,
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_signer_build.rs",
+    "sha256": "9c91a3880d947821837b207a4e717838cd8e2fe2901bf31000969dd8f678c6e2"
+  },
+  {
+    "bytes": 6808,
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_signer_child_entry.rs",
+    "sha256": "5bbe87696d4943e94165dec76a0635c744821f8fb1e13c4a8c0d2f85eb51f5ee"
+  },
+  {
+    "bytes": 4722,
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_signer_gnu.rs",
+    "sha256": "b7fd398231881415fbf683d13357992daaceb927842e30e3db98040dddd05705"
+  },
+  {
+    "bytes": 5902,
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_signer_isolation.rs",
+    "sha256": "9738679dfabe31f6f729681b2d151f509ffc89faa4a8fa28e6f567375ffe472f"
+  },
+  {
+    "bytes": 6294,
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_signer_issuer.rs",
+    "sha256": "cd0e0789121bd6347930acdd663baf7436e3c66b8fb947e215cbe65dfad0b885"
+  },
+  {
+    "bytes": 594,
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_signer_owned_cli.rs",
+    "sha256": "23fc750f494cac6af5e2d8f9b66000879e861bc4ad0d7a93f846fc924b262527"
+  },
+  {
+    "bytes": 7466,
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_signer_owned_probe.rs",
+    "sha256": "352fd184a2d4548447397b0229ed896987b6579b39d1a8890264f04ce33f90ab"
+  },
+  {
+    "bytes": 1810,
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_signer_root_cli.rs",
+    "sha256": "6fecc1a62087fa167724dc7ed8b47fb9d4a6257e4e4dad8df1eb14767c5e19e9"
+  },
+  {
+    "bytes": 7066,
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_signer_root_guard.rs",
+    "sha256": "ee548b7fd4349c10b273adb3320efea174c359f2773d39f28aba71dc5100bef9"
+  },
+  {
+    "bytes": 20888,
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_signer_root_probe.rs",
+    "sha256": "7c41896fbea9dae4b483aafad9b94b4555903c909bf34a5c29b230d1bbe1669a"
+  },
+  {
+    "bytes": 520,
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_signer_runtime_input.rs",
+    "sha256": "eb4c2387a0e55048bc3213590a698eac3f721aa075b578b5ae63cd023c6e5748"
+  },
+  {
+    "bytes": 19240,
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_spool.rs",
+    "sha256": "931a971c79d7d56774e07d5c02bd65a42036b3edf3914922248416c1bcec44ea"
+  },
+  {
+    "bytes": 15583,
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_start_consent.rs",
+    "sha256": "fccf9874009efebc893e7e9c0c121cb497de18783a7804fcc27743da8c94dceb"
+  },
+  {
+    "bytes": 5782,
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_task_api.rs",
+    "sha256": "c708b825214faeb2c11c6d79eb04017ac6d2aa3afa71fe4ca829ead58c284b46"
+  },
+  {
+    "bytes": 10732,
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_tree.rs",
+    "sha256": "5dcf3f3ea581276b72fbde359a447a6fac287b60e9821404a2c1512b50090ca1"
+  },
+  {
+    "bytes": 3553,
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_worker_account.rs",
+    "sha256": "df4842def4773f103611f4135a2229d23f98c4907b055c3bec867b916730f3a8"
+  },
+  {
+    "bytes": 7591,
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_worker_context.rs",
+    "sha256": "c4adc043dc263b5ad313cb4b8e9fb390f7364987aee10f16c708188f2ef5bef0"
+  },
+  {
+    "bytes": 21066,
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_worker_files.rs",
+    "sha256": "ffd90febb30daa0c8554303b92f4bc8bf7b6cc17ab3ffcfef0a68a46195caa5f"
+  },
+  {
+    "bytes": 6911,
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_worker_kernel_binding.rs",
+    "sha256": "60f0ef12f1114af80ff7a60b50c69d46892be79a62e13e99c77a3341ab51febd"
+  },
+  {
+    "bytes": 17533,
+    "path": "tools/long-run-supervisor-074/tests/diagnostic_worker_policy.rs",
+    "sha256": "3ca0352351113162070e449af24f0d83ac2ea559778f2433ef1e706af6a82913"
+  },
+  {
+    "bytes": 12774,
+    "path": "tools/long-run-supervisor-074/tests/event_journal.rs",
+    "sha256": "01dc6680cc52e6ad1bd1d9800c1daa2e14cece1532e469f99936eaa36ca960fd"
+  },
+  {
+    "bytes": 740,
+    "path": "tools/long-run-supervisor-074/tests/fixtures/README.md",
+    "sha256": "9748260fb1c0f32e919dd3116b9b467dd081cc37fa84f866105c506872e8b5a3"
+  },
+  {
+    "bytes": 175300,
+    "path": "tools/long-run-supervisor-074/tests/fixtures/diagnostic-pilot-root-Cargo.lock",
+    "sha256": "be46eaf8e97e507bda5e3f2b671d0d622e6a639ce1d4613769a4693723d62b19"
+  },
+  {
+    "bytes": 1626,
+    "path": "tools/long-run-supervisor-074/tests/fixtures/public-synthetic-oidc-rsa-2048.pk8.b64",
+    "sha256": "44d4d74e98b7cf5db26b8b34cfc8a992d1aab953dd6a663ff05f44d48b9b6ac8"
+  },
+  {
+    "bytes": 26993,
+    "path": "tools/long-run-supervisor-074/tests/held_build.rs",
+    "sha256": "60539cc4c140813f98fcefb5480f438121c481d9014b70fc936280f98f6095a2"
+  },
+  {
+    "bytes": 291,
+    "path": "tools/long-run-supervisor-074/tests/held_launcher.rs",
+    "sha256": "c5bee9b53e3c1e16d49923c1431d2dd2561df60ace50526e8ce52ada17060973"
+  },
+  {
+    "bytes": 6759,
+    "path": "tools/long-run-supervisor-074/tests/host_execution.rs",
+    "sha256": "89d62d2fa3a152f260873bb4f70c03132821bf4e53f51539b9f6ecc44174e9bc"
+  },
+  {
+    "bytes": 7462,
+    "path": "tools/long-run-supervisor-074/tests/lease_expiry.rs",
+    "sha256": "8ae80767e8e4705fa88d1bf0931808d1ed43ee26534cd168a03c61f6adeae9b3"
+  },
+  {
+    "bytes": 15167,
+    "path": "tools/long-run-supervisor-074/tests/manifest.rs",
+    "sha256": "f2b705feecc677c0bfa03591af11a691b16286400d94c25a52d571c2bc08d145"
+  },
+  {
+    "bytes": 8884,
+    "path": "tools/long-run-supervisor-074/tests/measurement_loss.rs",
+    "sha256": "67b6386df50a4b3ecc687578820d1c89521f0b530ba98b7c8fc46af0b5a592f7"
+  },
+  {
+    "bytes": 8424,
+    "path": "tools/long-run-supervisor-074/tests/mutation.rs",
+    "sha256": "d40a2bbf20219dcfd6554f360d510eb8c249f6084861a1c1815ecc5674b13f80"
+  },
+  {
+    "bytes": 12804,
+    "path": "tools/long-run-supervisor-074/tests/original_custody_owner_loss.py",
+    "sha256": "84bc64c23d1b50139c78a185388f56192043d36a73167185da87fb39ecf1f70a"
+  },
+  {
+    "bytes": 13096,
+    "path": "tools/long-run-supervisor-074/tests/original_enrollment_owner_loss.py",
+    "sha256": "2829c5cb0ff4b4b5284df1727bc47423736ebbaf6405f2177982ee522a87728d"
+  },
+  {
+    "bytes": 15170,
+    "path": "tools/long-run-supervisor-074/tests/owned_root_creator_sigkill.py",
+    "sha256": "1b40b1c2c351f97c567d86023f29845a9e090d3696d59b46e360291769c0dafd"
+  },
+  {
+    "bytes": 14090,
+    "path": "tools/long-run-supervisor-074/tests/prearmed_watchdog.py",
+    "sha256": "0fde54c29a0ff19ed2ed08b4bc844179caff5b79d9055fdcad2383eb3d50de77"
+  },
+  {
+    "bytes": 2663,
+    "path": "tools/long-run-supervisor-074/tests/process_identity.rs",
+    "sha256": "24b00ebd2e78f54d3e309323876bed112ff896d7e0f51305bd160ee9a3074ef0"
+  },
+  {
+    "bytes": 9929,
+    "path": "tools/long-run-supervisor-074/tests/progress_loss.rs",
+    "sha256": "866ccf4b41a5d54e43675310a4f7a42662ddf6bd08c4ce83c8ac6b008f1b1289"
+  },
+  {
+    "bytes": 8562,
+    "path": "tools/long-run-supervisor-074/tests/protocol.rs",
+    "sha256": "a2a355a02701b93f977e803c55ccab4f9d851d0670bb89a06d98c7573cedb14e"
+  },
+  {
+    "bytes": 4951,
+    "path": "tools/long-run-supervisor-074/tests/provisioning.rs",
+    "sha256": "e7145ab25c6b7b997440675832c97afc8763b48788f314fc1ed29ef3a8d552aa"
+  },
+  {
+    "bytes": 13170,
+    "path": "tools/long-run-supervisor-074/tests/redundant_watchdog.py",
+    "sha256": "fd27997624b85deeed3c61c63dba109ca2d50607c3dedf7af86da717aa4d8538"
+  },
+  {
+    "bytes": 6724,
+    "path": "tools/long-run-supervisor-074/tests/request_builder.rs",
+    "sha256": "f998b8440a4ef5454d8eceb561617b016d2944be8741b54ccbdbb8da2f4bb776"
+  },
+  {
+    "bytes": 12025,
+    "path": "tools/long-run-supervisor-074/tests/root_creator_sigkill.py",
+    "sha256": "0d8c67e25b9a2c4c730774e9dc6602901b23c746d90abc10b9ead0b452c35da2"
+  },
+  {
+    "bytes": 10019,
+    "path": "tools/long-run-supervisor-074/tests/seal_artifact.rs",
+    "sha256": "8e85f7bc7571509445e2087ac8344973522395175be3b9ed5d778d41e0c3ab6f"
+  },
+  {
+    "bytes": 13631,
+    "path": "tools/long-run-supervisor-074/tests/seal_input.rs",
+    "sha256": "de57465a273ac97351d911647b86a899a7b2886055d9221db8c43e0c3544e303"
+  },
+  {
+    "bytes": 21691,
+    "path": "tools/long-run-supervisor-074/tests/seal_lifecycle.rs",
+    "sha256": "8bb83b9465801a8d8540f7d6940e257d39cb6e9bd4828212a529783b912c76f5"
+  },
+  {
+    "bytes": 75637,
+    "path": "tools/long-run-supervisor-074/tests/server.rs",
+    "sha256": "f1d5a22092493da4db6f8289161aba2f8054f10b0f4b2ea54ba39d943164b504"
+  },
+  {
+    "bytes": 5491,
+    "path": "tools/long-run-supervisor-074/tests/service.rs",
+    "sha256": "8e8313c5d7ccf60daa51be2613b328dcfef33c1f8975530ade1a3db0fc54397e"
+  },
+  {
+    "bytes": 11920,
+    "path": "tools/long-run-supervisor-074/tests/spawn.rs",
+    "sha256": "0d70db4caddd5c5f93d8cbb2966a92f1011ea3cca81a21e62f81764421fbf92e"
+  },
+  {
+    "bytes": 17744,
+    "path": "tools/long-run-supervisor-074/tests/start_lifecycle.rs",
+    "sha256": "da8aac6ab4177598ab077e1d481cdfe8b750c95b81ca01a118addaa71a914a6d"
+  },
+  {
+    "bytes": 10715,
+    "path": "tools/long-run-supervisor-074/tests/state_machine.rs",
+    "sha256": "349990c2adf6243e403e122f5cb697bdccb78adc34e272b5f70dfc4e209aa28d"
+  },
+  {
+    "bytes": 5238,
+    "path": "tools/long-run-supervisor-074/tests/state_store.rs",
+    "sha256": "e95711a39ae436a2f26da07a7cee3a1a720739b7a2add17edae1acb8ee8d0af4"
+  },
+  {
+    "bytes": 6301,
+    "path": "tools/long-run-supervisor-074/tests/support/authority_breakdown_alloc.rs",
+    "sha256": "02171ac93b6006d0d336f68342e8ab298193e1aac4f4572805b01215db38c226"
+  },
+  {
+    "bytes": 6726,
+    "path": "tools/long-run-supervisor-074/tests/support/authority_breakdown_controls.rs",
+    "sha256": "4e440e4056517cead5c18f0721738bd98d73874fe3c32f71cc7fe3baddef9eea"
+  },
+  {
+    "bytes": 2217,
+    "path": "tools/long-run-supervisor-074/tests/support/authority_context_alloc.rs",
+    "sha256": "661c8fb0d8b73ce0a1a015ba118aaeb13d4e85853f2032639dc876f05013b6ea"
+  },
+  {
+    "bytes": 6916,
+    "path": "tools/long-run-supervisor-074/tests/support/authority_context_controls.rs",
+    "sha256": "debbdb5eebb87f2cbf87ba530356a7952cd80a479e0f6feaa1ab3566f668898d"
+  },
+  {
+    "bytes": 6674,
+    "path": "tools/long-run-supervisor-074/tests/support/authority_cpu.rs",
+    "sha256": "46b342207b2f256ecc7c053e419a2e3065135be60c3faa8b57079b19cb9a6f63"
+  },
+  {
+    "bytes": 2289,
+    "path": "tools/long-run-supervisor-074/tests/support/authority_expected_name_alloc.rs",
+    "sha256": "7b11e2e87538bd0b1a8f26d674c7ca02eb2bd5696b9d4db538831b33e59abf43"
+  },
+  {
+    "bytes": 4390,
+    "path": "tools/long-run-supervisor-074/tests/support/authority_expected_name_controls.rs",
+    "sha256": "b86d753fc393d9fd64ee906b75351b0b6920d7c204ae7e2cbe18ea83af521fc1"
+  },
+  {
+    "bytes": 1790,
+    "path": "tools/long-run-supervisor-074/tests/support/authority_fd_path_alloc.rs",
+    "sha256": "c8eeb5c922106ee32544ac2cd0eda15e31b1882a98c55e652e764071888bed39"
+  },
+  {
+    "bytes": 3042,
+    "path": "tools/long-run-supervisor-074/tests/support/authority_fd_path_controls.rs",
+    "sha256": "fdaa02f358dcbd35215a1ed8935a0129ffe3b4be07d06bd04bb027e5cde5d015"
+  },
+  {
+    "bytes": 1727,
+    "path": "tools/long-run-supervisor-074/tests/support/authority_hex_alloc.rs",
+    "sha256": "44cb5619d1384fd6224fdd54029267959b55aad18d332d9ae62dc0cca72a0195"
+  },
+  {
+    "bytes": 4298,
+    "path": "tools/long-run-supervisor-074/tests/support/authority_hex_controls.rs",
+    "sha256": "39bf510750b18e98fdbc20fcdea55a5d6dc2df484b5a5594eed95fbc83eec748"
+  },
+  {
+    "bytes": 2190,
+    "path": "tools/long-run-supervisor-074/tests/support/authority_inventory_alloc.rs",
+    "sha256": "cf4dc5983f942c9684b2de20c6217c3ce7a631e7e7ca3d0f126b9f0b8e271bf1"
+  },
+  {
+    "bytes": 5847,
+    "path": "tools/long-run-supervisor-074/tests/support/authority_inventory_controls.rs",
+    "sha256": "63a91295f206bca846dde7bc6cf26c0759fec8fed2bf7e37ac65baed42f23146"
+  },
+  {
+    "bytes": 10340,
+    "path": "tools/long-run-supervisor-074/tests/support/authority_leaf_cpu.rs",
+    "sha256": "1117cb05926344ec9fb2b0e370740c11d9145265210dabe33d8e6e4ca3c2c7d2"
+  },
+  {
+    "bytes": 2324,
+    "path": "tools/long-run-supervisor-074/tests/support/authority_leaf_name_alloc.rs",
+    "sha256": "dd2d43ac4fbb7590d389bebc16fad809d523969a27034a38f522915fc5e21bec"
+  },
+  {
+    "bytes": 10187,
+    "path": "tools/long-run-supervisor-074/tests/support/authority_leaf_name_controls.rs",
+    "sha256": "5307654caf3c0ca47e1c7d8a89b27e1a1a44fd72f657b5f3f3365ddf2acdae5f"
+  },
+  {
+    "bytes": 2459,
+    "path": "tools/long-run-supervisor-074/tests/support/authority_name_capacity_alloc.rs",
+    "sha256": "ac94025d58adeeb2eb182de3340c1235f7b9ce5ad96658227de49ba25d58d18a"
+  },
+  {
+    "bytes": 2110,
+    "path": "tools/long-run-supervisor-074/tests/support/authority_name_capacity_controls.rs",
+    "sha256": "9be69b51fe8e0419501a8ff0ce5ff5a3438ad915362c836c0ace82c288010e60"
+  },
+  {
+    "bytes": 5539,
+    "path": "tools/long-run-supervisor-074/tests/support/authority_open_name_alloc.rs",
+    "sha256": "2fa2e8c3e8e569ae3d24115b3183ff9f6b4737b00ee2f6c09db21c7e1a540ec2"
+  },
+  {
+    "bytes": 10178,
+    "path": "tools/long-run-supervisor-074/tests/support/authority_open_name_controls.rs",
+    "sha256": "24f9db0606b4bc8d86f60f886ea2a66e9de454fd5902804e8a97a4996950f436"
+  },
+  {
+    "bytes": 9843,
+    "path": "tools/long-run-supervisor-074/tests/support/authority_owners_alloc.rs",
+    "sha256": "bb1c2a01995a6961b47f39b00c0b914336501da71a2ab19a6f0e6dff86de5a13"
+  },
+  {
+    "bytes": 16329,
+    "path": "tools/long-run-supervisor-074/tests/support/authority_owners_controls.rs",
+    "sha256": "c4f04ccb7b3d7bd17e13241b1cefc6657661e5560d1b1ce51f3445e71d5202ce"
+  },
+  {
+    "bytes": 12191,
+    "path": "tools/long-run-supervisor-074/tests/support/boot_operations.rs",
+    "sha256": "ce3006ac435e35184f5b97ae1558c44737cfcb55d39f9fdd1789bb1d6a4240f1"
+  },
+  {
+    "bytes": 12913,
+    "path": "tools/long-run-supervisor-074/tests/support/collector_peer_baseline.rs",
+    "sha256": "cf1670308955dadbc2e32584d4bdfcd27a7937ae0e248a81fe48c9f3e96cb6cb"
+  },
+  {
+    "bytes": 13683,
+    "path": "tools/long-run-supervisor-074/tests/support/collector_peer_capacity.rs",
+    "sha256": "6f40ff6d5afd1988cec59e7f6c920a1a72c14697e4f8ab30e7034551b307cf15"
+  },
+  {
+    "bytes": 228,
+    "path": "tools/long-run-supervisor-074/tests/support/collector_peer_capacity_adapter.rs",
+    "sha256": "af584b3c15c38e28b9e8bb0b83ef028f80df8d53e59de24c650f488b330de9a0"
+  },
+  {
+    "bytes": 9974,
+    "path": "tools/long-run-supervisor-074/tests/support/consuming_held_bridge.rs",
+    "sha256": "9086fbeea4ca5d3f40ced592095ac1955fe7a4c4a5faaeaff285bd585c8af8c5"
+  },
+  {
+    "bytes": 5257,
+    "path": "tools/long-run-supervisor-074/tests/support/consuming_held_cost.rs",
+    "sha256": "4b891fbd40dd689e491bcfca1f1d05622abc59aa51a87f23f73ae12406a32a06"
+  },
+  {
+    "bytes": 7799,
+    "path": "tools/long-run-supervisor-074/tests/support/consuming_held_join.rs",
+    "sha256": "84366691f2c50bcfb49bbd17558f6e2ac0b8083957506d0721b3bf6a473ae304"
+  },
+  {
+    "bytes": 15148,
+    "path": "tools/long-run-supervisor-074/tests/support/consuming_held_live.rs",
+    "sha256": "aab8b30a32c373fa8443d722a2d48b72ec9e9bfa1be07e2d59eb6484e60e77c7"
+  },
+  {
+    "bytes": 1410,
+    "path": "tools/long-run-supervisor-074/tests/support/consuming_held_live_api.rs",
+    "sha256": "0ace6d803fbea676f71cc169a07605e23d058ac65004d631c6a08b81fae5fdd0"
+  },
+  {
+    "bytes": 11188,
+    "path": "tools/long-run-supervisor-074/tests/support/consuming_held_live_documents.rs",
+    "sha256": "f491852965d805f6f23d2c1230be851deec3b98725e28ca866c174cc96e744cb"
+  },
+  {
+    "bytes": 2584,
+    "path": "tools/long-run-supervisor-074/tests/support/consuming_held_live_namespace.rs",
+    "sha256": "14c70b8847ec13d5a3a5a930530f73910979687bd3c00f693a92b62bdb987c58"
+  },
+  {
+    "bytes": 7634,
+    "path": "tools/long-run-supervisor-074/tests/support/context_document_buffer_baseline.rs",
+    "sha256": "c276be78a818ea3d47389ffedbf3a904095dc99f8df79e4bbff8991e89146cb1"
+  },
+  {
+    "bytes": 6964,
+    "path": "tools/long-run-supervisor-074/tests/support/context_document_stack.rs",
+    "sha256": "13ae1fd432c9f61d8b4bfb2de137126c258d18db4a4ce92538a065357ca0361f"
+  },
+  {
+    "bytes": 1107,
+    "path": "tools/long-run-supervisor-074/tests/support/context_document_stack_adapter.rs",
+    "sha256": "49f226fe280699e251600902a6dc2bdc8e9d11661a9133a71fb31eacc582d5e9"
+  },
+  {
+    "bytes": 2926,
+    "path": "tools/long-run-supervisor-074/tests/support/custody_boundaries.rs",
+    "sha256": "43089c27f2408608003f5f4bb1a2a0f91409538817c474709a738e57e2bc3cd9"
+  },
+  {
+    "bytes": 1415,
+    "path": "tools/long-run-supervisor-074/tests/support/diagnostic_bootstrap_context.rs",
+    "sha256": "d7a9c17797d3cb1c5246ede8d6484d5a7534d93a69b3870ae9e7e34346731610"
+  },
+  {
+    "bytes": 22546,
+    "path": "tools/long-run-supervisor-074/tests/support/diagnostic_collector_intent.rs",
+    "sha256": "9c143599d1c893ee9a625b374c8a132a31cf2920b7bfc0ac3296dadd34a1ce7e"
+  },
+  {
+    "bytes": 2684,
+    "path": "tools/long-run-supervisor-074/tests/support/diagnostic_gnu_images.rs",
+    "sha256": "e188233f127e0de7da87937162922b8cc634ad2529e744d74cbb49d65743b4a2"
+  },
+  {
+    "bytes": 6379,
+    "path": "tools/long-run-supervisor-074/tests/support/document_scratch.rs",
+    "sha256": "9e8364807b4d5d09b7ba25be6b3053f7648f4b3ae30529fb97081b9129980913"
+  },
+  {
+    "bytes": 2211,
+    "path": "tools/long-run-supervisor-074/tests/support/document_scratch_alloc.rs",
+    "sha256": "11d5f9bc1c2db4086ebd6a7435765e89513eb088b8470326478bdf9fc8f7e409"
+  },
+  {
+    "bytes": 4074,
+    "path": "tools/long-run-supervisor-074/tests/support/document_scratch_impl.rs",
+    "sha256": "613cb7feca0cbc33c665e71657f8aff59c561ed1b46a58a7e3af5080424202b9"
+  },
+  {
+    "bytes": 11391,
+    "path": "tools/long-run-supervisor-074/tests/support/fixed_slice_namespace.rs",
+    "sha256": "ddbd9db1182964cf9cfdeb9f8d190490e921e3c9e662cfb8587d296dfbad37a2"
+  },
+  {
+    "bytes": 6977,
+    "path": "tools/long-run-supervisor-074/tests/support/fresh_kernel_cost.rs",
+    "sha256": "50eecc19305007105754b501c03fcd7c16e64d84da2f0389585f892729f15564"
+  },
+  {
+    "bytes": 2294,
+    "path": "tools/long-run-supervisor-074/tests/support/fresh_status_alloc.rs",
+    "sha256": "7f02ad6c10dfa0a96c656eb584d40d090ba38ad5586bc8660fa5f88414950865"
+  },
+  {
+    "bytes": 2129,
+    "path": "tools/long-run-supervisor-074/tests/support/frozen_lock_fixture_tests.rs",
+    "sha256": "565a7b497e60140b7d5b9b4b61b746429bd047f0b31f719b19ab82a2e9c4bba2"
+  },
+  {
+    "bytes": 32548,
+    "path": "tools/long-run-supervisor-074/tests/support/held_launcher_process.rs",
+    "sha256": "d302617172f02486a1571c2666bd3b72bfa5f7d4457dbc244bc52105861bf79a"
+  },
+  {
+    "bytes": 1349,
+    "path": "tools/long-run-supervisor-074/tests/support/held_material_live_api.rs",
+    "sha256": "29a833ef858470e39d36bbdb33f6106a00fd46acc5aba0acc26476b40e4cfadc"
+  },
+  {
+    "bytes": 17452,
+    "path": "tools/long-run-supervisor-074/tests/support/held_role_binding.rs",
+    "sha256": "b512d125db3778e0f868b2736aa31527a948e7261daca8e12ac3dcb438bbea95"
+  },
+  {
+    "bytes": 10059,
+    "path": "tools/long-run-supervisor-074/tests/support/held_role_files.rs",
+    "sha256": "60514b0385247f8a9cb1d5c6c68683205b24f989f6ddc28733763a5d266a25ad"
+  },
+  {
+    "bytes": 28010,
+    "path": "tools/long-run-supervisor-074/tests/support/held_runtime_trust.rs",
+    "sha256": "f7648a7527ac4b9852972ad28bf6e952623045c42270200ecda659c9bfebe34c"
+  },
+  {
+    "bytes": 3640,
+    "path": "tools/long-run-supervisor-074/tests/support/pid_path.rs",
+    "sha256": "576ac33f1c074bbea1846c68d73592e6d708897a8fc8b0b050aa252f03f493e2"
+  },
+  {
+    "bytes": 2419,
+    "path": "tools/long-run-supervisor-074/tests/support/pid_path_alloc.rs",
+    "sha256": "629553d875380200a6a02beb70309e346f1bf5dba152d10f69c35225e360108e"
+  },
+  {
+    "bytes": 6902,
+    "path": "tools/long-run-supervisor-074/tests/support/pidfd_info_path.rs",
+    "sha256": "07897af596400fc3f12c15b8015fa54b14c0614a1c7142d59ec462d74acc2b40"
+  },
+  {
+    "bytes": 2310,
+    "path": "tools/long-run-supervisor-074/tests/support/pidfd_info_path_alloc.rs",
+    "sha256": "ebfb7b6db7b3a6733ac70d542a696e2e6e206ab26a50efc351feafe93070bd26"
+  },
+  {
+    "bytes": 2097,
+    "path": "tools/long-run-supervisor-074/tests/support/projection_alloc.rs",
+    "sha256": "d1129992f2ea365aad480c8b3271a591f3b39c106f037fa3630f53083b652f2b"
+  },
+  {
+    "bytes": 3002,
+    "path": "tools/long-run-supervisor-074/tests/support/projection_candidate.rs",
+    "sha256": "fb8f4e4388cff4d53f3c086734a95e2cf6524c24a1327767d758e158bdd2848c"
+  },
+  {
+    "bytes": 7645,
+    "path": "tools/long-run-supervisor-074/tests/support/projection_cost.rs",
+    "sha256": "666acc237de81956ea6b346b0d18730d5f3bb0c3e65dbeeea03db8f153db9615"
+  },
+  {
+    "bytes": 4203,
+    "path": "tools/long-run-supervisor-074/tests/support/projection_groups.rs",
+    "sha256": "f2bb152660d33e15f3cf0b0db8c85a5fb4943250c52b7b82ec2cc89870a5acd6"
+  },
+  {
+    "bytes": 2549,
+    "path": "tools/long-run-supervisor-074/tests/support/projection_groups_alloc.rs",
+    "sha256": "4fd988c0af12196462fdaa770844e6191d393abe3b836900a1b833143f70b454"
+  },
+  {
+    "bytes": 4296,
+    "path": "tools/long-run-supervisor-074/tests/support/projection_prefix.rs",
+    "sha256": "5e01a3af4e0b6cd1b5676c3c705ad1cec201fe5480fbfc96605deb50c48c62c7"
+  },
+  {
+    "bytes": 2462,
+    "path": "tools/long-run-supervisor-074/tests/support/projection_prefix_alloc.rs",
+    "sha256": "0bdaec06c99b391608003a80e3748b0326e16ba55037e6458e0da353e6b5fd6c"
+  },
+  {
+    "bytes": 1956,
+    "path": "tools/long-run-supervisor-074/tests/support/projection_reference.rs",
+    "sha256": "b8fce045380032ec19e112a2c9aa0835a851d3fc492e543c31ba39ff4836053f"
+  },
+  {
+    "bytes": 4013,
+    "path": "tools/long-run-supervisor-074/tests/support/root_process_guard.rs",
+    "sha256": "2e3327709aac90b3435939ce3ea91be02805de142d4799225d47e29ba04cc573"
+  },
+  {
+    "bytes": 8182,
+    "path": "tools/long-run-supervisor-074/tests/support/round_cost.rs",
+    "sha256": "c0f5d2dc35a9c6cec82e35a12dbd6831007a888b25cfd7e3878285c04fd9c59a"
+  },
+  {
+    "bytes": 10647,
+    "path": "tools/long-run-supervisor-074/tests/support/runtime_cpu_probe.rs",
+    "sha256": "9289a292727545fc90dcef37dac1be57aa1d10a8c158b1e7521723e7666bf513"
+  },
+  {
+    "bytes": 95,
+    "path": "tools/long-run-supervisor-074/tests/support/runtime_cpu_storage.rs",
+    "sha256": "72994ea2a225a684ebe1a99d0c1b534c9d7d641aabe00593c17807f531151872"
+  },
+  {
+    "bytes": 8175,
+    "path": "tools/long-run-supervisor-074/tests/support/trust_component_baseline.rs",
+    "sha256": "04f18a052cca7036b59e2356ab5b5b06eece12c69209eaea3fbf715b61c69940"
+  },
+  {
+    "bytes": 8862,
+    "path": "tools/long-run-supervisor-074/tests/support/trust_component_stack.rs",
+    "sha256": "d9cba232e14818eb908c7ce8868c1243f607428f49690a04a076c5c211f77585"
+  },
+  {
+    "bytes": 1389,
+    "path": "tools/long-run-supervisor-074/tests/support/trust_component_stack_adapter.rs",
+    "sha256": "9b7091ffb4705b190d001e8472c529d5199c0898e6794f7be4f809bfdd4226fe"
+  },
+  {
+    "bytes": 10684,
+    "path": "tools/long-run-supervisor-074/tests/support/validation_leaf_requests.rs",
+    "sha256": "b05d5b79c819286e9053af5a6f0a6bd539fbc547e3fbd00cf2693a9535dec54d"
+  },
+  {
+    "bytes": 958,
+    "path": "tools/long-run-supervisor-074/tests/systemd_notify.rs",
+    "sha256": "e83a0c1d9d07daceb0929471ea6086256ae0b80baba1bef7027ef92e8ee432e1"
+  },
+  {
+    "bytes": 13786,
+    "path": "tools/long-run-supervisor-074/tests/systemd_unit.rs",
+    "sha256": "928fe4cb1e26cbbf2f5acf875b7f8379c4bfe7234645239417f5f78aff7d928b"
+  },
+  {
+    "bytes": 2672,
+    "path": "tools/long-run-supervisor-074/tests/test_original_custody_owner_loss.py",
+    "sha256": "f5018ff5988364e243fe18eb3cf7e823745285f20919272a33066c0e372f35fc"
+  },
+  {
+    "bytes": 3753,
+    "path": "tools/long-run-supervisor-074/tests/test_original_enrollment_owner_loss.py",
+    "sha256": "e44969eda8ee64eddb79ff70047e293222335cb75251f673d9fd98b0a1ccaaab"
+  },
+  {
+    "bytes": 7287,
+    "path": "tools/long-run-supervisor-074/tests/unix_transport.rs",
+    "sha256": "db2c660d2d580baf4d76d805110ec78f5acb58aff7886408c4fcd1241d63eea4"
+  },
+  {
+    "bytes": 5064,
+    "path": "tools/long-run-supervisor-074/tests/watchdog.rs",
+    "sha256": "1e5a4bd7154cfca26cc3902234b94b1fe70e43731e16b2d66f6ad85d89254f65"
+  }
+]

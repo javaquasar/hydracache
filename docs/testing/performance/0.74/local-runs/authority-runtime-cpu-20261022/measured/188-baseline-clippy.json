@@ -1,0 +1,23 @@
+{
+  "argv": [
+    "/home/artur/.cargo/bin/cargo",
+    "+1.88.0",
+    "clippy",
+    "--release",
+    "--offline",
+    "--locked",
+    "-p",
+    "hydracache-long-run-supervisor-074",
+    "--lib",
+    "--tests",
+    "--",
+    "-D",
+    "warnings"
+  ],
+  "cwd": "/home/artur/.cache/hydracache-074-runtime-cpu-20261022/first/baseline",
+  "exit": 0,
+  "name": "188-baseline-clippy",
+  "stderr_sha256": "709d35948e4547842c117bd073fba801ac542312e00a2ccc7d582bd4596ca065",
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "timeout": false
+}

@@ -1,0 +1,21 @@
+{
+  "Cargo.lock": "d42eb7b51212e3fdc457a07aeb88f488da8bcda3c7df2e2f4635861017e8e65a",
+  "docs/testing/performance/0.74/diagnostic-builder-public-policy.json": "dfe81cf770088029e03f04faa4da429ef163583c0ba1b7002b8ec5606e766e22",
+  "docs/testing/performance/0.74/diagnostic-signer-issuer-public.json": "d44da42b6f71a36d8d691c43767363d6df1bb8bd85fc2f088be3c7fbdd606693",
+  "docs/testing/performance/0.74/diagnostic-signer-issuer-selection.json": "a35572f453b9939dc9e9619df0858eeaccfbacf45cddc7d8ec367e3e160e2019",
+  "docs/testing/performance/0.74/diagnostic-worker-issuer-public.json": "cb4eaf75dc83c9e0506d91f5ded3a6eff323db619440408adc71f5d665726b82",
+  "docs/testing/performance/0.74/local-runs/diagnostic-builder-hosted-37923423889/build-receipt-v1.json": "e32bb7cd9b6cbf1d91d52abc79cb1e0225b3a7f6602e82e5b9a303c3645a77d7",
+  "docs/testing/performance/0.74/rental-pilot-draft/direct.json": "5485b10f50906833006ad3f3a40b4909760ef01e3f2c86395e4366bf83cc6ef9",
+  "docs/testing/performance/0.74/rental-pilot-draft/embedded.json": "5c219730c8a782ed47dfa0b291a29f44f753c3688f8548c136174a89cee55149",
+  "docs/testing/performance/0.74/rental-pilot-draft/resp2.json": "f0aba16dfe0354801d0b3c83ee9fc2d1b4751be5f50280634690ed4bcf3030ae",
+  "docs/testing/performance/0.74/rental-pilot-draft/resp3.json": "b680683c291d0a4dadbac1901f051ba0fedcac0ac9127d197e0261fe6fdabdd7",
+  "tools/get-owner-scheduled-controls-074/Cargo.lock": "a6521ea80e520f4c0665ca0220023e7d01dbcd6d0f6ef16394b9572d14f288c2",
+  "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs": "3be858b311aa81c5e424f7130d500ff2883ca4fb92e9844e24ae46490528cba1",
+  "tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs": "7afaa057a7198eb443d56956bad0f8167aad6703b55975896eee5d03e176685a",
+  "tools/long-run-supervisor-074/src/diagnostic_signer_handoff_helper.rs": "ab803d3013042b32b1d1bc1efbf85240b7b62f51dcf8bef962866bddfb3dc262",
+  "tools/long-run-supervisor-074/src/diagnostic_signer_joined_helper.rs": "f417c37bf2d16440d72b9a06fa407655211fe7a85f787456b5d2e33218c1030a",
+  "tools/long-run-supervisor-074/src/diagnostic_signer_namespace_helper.rs": "0bb780be1ad3444deb9eeecbb98586e12d74d85443976d78c1f3431c10bfbade",
+  "tools/long-run-supervisor-074/tests/fixtures/diagnostic-pilot-root-Cargo.lock": "be46eaf8e97e507bda5e3f2b671d0d622e6a639ce1d4613769a4693723d62b19",
+  "tools/long-run-supervisor-074/tests/fixtures/public-synthetic-oidc-rsa-2048.pk8.b64": "44d4d74e98b7cf5db26b8b34cfc8a992d1aab953dd6a663ff05f44d48b9b6ac8",
+  "tools/long-run-supervisor-074/tests/support/projection_candidate.rs": "fb8f4e4388cff4d53f3c086734a95e2cf6524c24a1327767d758e158bdd2848c"
+}

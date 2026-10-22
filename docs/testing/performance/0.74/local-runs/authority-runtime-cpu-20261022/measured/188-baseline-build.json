@@ -1,0 +1,21 @@
+{
+  "argv": [
+    "/home/artur/.cargo/bin/cargo",
+    "+1.88.0",
+    "test",
+    "--release",
+    "--offline",
+    "--locked",
+    "-p",
+    "hydracache-long-run-supervisor-074",
+    "--lib",
+    "--no-run",
+    "--message-format=json"
+  ],
+  "cwd": "/home/artur/.cache/hydracache-074-runtime-cpu-20261022/first/baseline",
+  "exit": 0,
+  "name": "188-baseline-build",
+  "stderr_sha256": "da03d5143f4e08ac396fd38674b1425411e228f821078774fa5445ec2ddd4a41",
+  "stdout_sha256": "728ea371621964159a9e813ff86f390c1d65a58cfe3d8bff6ee4ad87fa47a564",
+  "timeout": false
+}

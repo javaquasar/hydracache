@@ -1,0 +1,6 @@
+
+running 1 test
+test diagnostic_worker_policy::authority_registry::fixture::tests::runtime_cpu::runtime_cpu_clocks ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1448 filtered out; finished in 0.00s
+

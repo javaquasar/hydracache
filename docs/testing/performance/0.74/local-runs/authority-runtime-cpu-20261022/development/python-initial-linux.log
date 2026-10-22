@@ -1,0 +1,8 @@
+test_child_only_affinity_and_exact_selection (__main__.Controls.test_child_only_affinity_and_exact_selection) ... ok
+test_exact_overlay_no_allocator_or_original_edits (__main__.Controls.test_exact_overlay_no_allocator_or_original_edits) ... ok
+test_fresh_artifact_and_uninterleaved_success (__main__.Controls.test_fresh_artifact_and_uninterleaved_success) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.049s
+
+OK
