@@ -1,0 +1,25 @@
+   Compiling hc074-authority-scratch-reuse v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\authority-scratch-reuse-074)
+    Finished `release` profile [optimized] target(s) in 1.79s
+     Running unittests probe.rs (target\authority-scratch-reuse-194\release\deps\hc074_authority_scratch_reuse-3759589cf31d2d51.exe)
+
+running 1 test
+test model::cost::reference_only_preflight ... HC074-SCRATCH-PREFLIGHT {"length":65,"budget":65,"sample":0,"warm":64,"calls":512,"ns":79600,"checksum":33280}
+HC074-SCRATCH-PREFLIGHT {"length":65,"budget":65,"sample":1,"warm":64,"calls":512,"ns":80300,"checksum":33280}
+HC074-SCRATCH-PREFLIGHT {"length":65,"budget":65,"sample":2,"warm":64,"calls":512,"ns":80100,"checksum":33280}
+HC074-SCRATCH-PREFLIGHT {"length":65,"budget":65,"sample":3,"warm":64,"calls":512,"ns":361000,"checksum":33280}
+HC074-SCRATCH-PREFLIGHT {"length":65,"budget":65,"sample":4,"warm":64,"calls":512,"ns":72600,"checksum":33280}
+HC074-SCRATCH-PREFLIGHT {"length":65,"budget":65,"sample":5,"warm":64,"calls":512,"ns":86200,"checksum":33280}
+HC074-SCRATCH-PREFLIGHT {"length":65,"budget":65,"sample":6,"warm":64,"calls":512,"ns":72000,"checksum":33280}
+HC074-SCRATCH-PREFLIGHT-COUNTS {"length":65,"calls":512,"checksum":33280,"counts":{"allocations":512,"zeroed":0,"reallocations":0,"requested_bytes":33280,"deallocations":512,"deallocated_bytes":33280}}
+HC074-SCRATCH-PREFLIGHT {"length":2048,"budget":2048,"sample":0,"warm":64,"calls":512,"ns":638700,"checksum":1048576}
+HC074-SCRATCH-PREFLIGHT {"length":2048,"budget":2048,"sample":1,"warm":64,"calls":512,"ns":672800,"checksum":1048576}
+HC074-SCRATCH-PREFLIGHT {"length":2048,"budget":2048,"sample":2,"warm":64,"calls":512,"ns":692600,"checksum":1048576}
+HC074-SCRATCH-PREFLIGHT {"length":2048,"budget":2048,"sample":3,"warm":64,"calls":512,"ns":745800,"checksum":1048576}
+HC074-SCRATCH-PREFLIGHT {"length":2048,"budget":2048,"sample":4,"warm":64,"calls":512,"ns":786700,"checksum":1048576}
+HC074-SCRATCH-PREFLIGHT {"length":2048,"budget":2048,"sample":5,"warm":64,"calls":512,"ns":692000,"checksum":1048576}
+HC074-SCRATCH-PREFLIGHT {"length":2048,"budget":2048,"sample":6,"warm":64,"calls":512,"ns":613900,"checksum":1048576}
+HC074-SCRATCH-PREFLIGHT-COUNTS {"length":2048,"calls":512,"checksum":1048576,"counts":{"allocations":512,"zeroed":0,"reallocations":0,"requested_bytes":1048576,"deallocations":512,"deallocated_bytes":1048576}}
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 9 filtered out; finished in 0.01s
+

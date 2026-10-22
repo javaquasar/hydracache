@@ -1,0 +1,93 @@
+{
+  "runtime_candidate_implemented": false,
+  "server": false,
+  "failure": null,
+  "original_owner_profiles": 0,
+  "product": false,
+  "steps": [
+    {
+      "name": "format",
+      "log": "format.log",
+      "exit": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "workspace-format",
+      "log": "workspace-format.log",
+      "exit": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "review-controls",
+      "log": "review-controls.log",
+      "exit": 0,
+      "sha256": "e46c5e5aa0125d19910631a5f0b0da537b42820176cb203defb4c3791a9236e8"
+    },
+    {
+      "name": "prior-read-controls",
+      "log": "prior-read-controls.log",
+      "exit": 0,
+      "sha256": "31cea49150bf174ba817ff00d56e356f5170ed0aa8fba08d9d53bfe8dea6ae31"
+    },
+    {
+      "name": "prior-audit-controls",
+      "log": "prior-audit-controls.log",
+      "exit": 0,
+      "sha256": "2c42cd3bd15e6d36da7cb458418be86cf77f302bbb597c460027e463864b288d"
+    },
+    {
+      "name": "prior-inline-controls",
+      "log": "prior-inline-controls.log",
+      "exit": 0,
+      "sha256": "120a020d00fd8f8fc57919ce5b1910181f80f857c823b58288383b94d00f6fd2"
+    },
+    {
+      "name": "prior-boot-controls",
+      "log": "prior-boot-controls.log",
+      "exit": 0,
+      "sha256": "1f0762ff8e932ef726020c88fa6c02aaf76184f96e76e9bd773e6bad6d5df3bc"
+    },
+    {
+      "name": "prior-proc-controls",
+      "log": "prior-proc-controls.log",
+      "exit": 0,
+      "sha256": "84cf5e6814c9f3feaf0e099797d565bf1cacffc5486aad3ea67ddeab9801dbcc"
+    },
+    {
+      "name": "prior-reconciliation-controls",
+      "log": "prior-reconciliation-controls.log",
+      "exit": 0,
+      "sha256": "2a38f1f9f718f2fa6ce34c77418e8ce9d97d055ec1ab7855513ab3081fe16ce7"
+    },
+    {
+      "name": "derived-facts",
+      "log": "derived-facts.log",
+      "exit": 0,
+      "sha256": "bc42adb87e52a9ae6c6ce59d901189e347403d0626d0c9abb566d1430ed6026d"
+    },
+    {
+      "name": "docs",
+      "log": "docs.log",
+      "exit": 0,
+      "sha256": "b5cd8d6eebcabb1c9cebb3ddc6737128fe95cd21b491731296d286d484a9a2d5"
+    },
+    {
+      "name": "registry",
+      "log": "registry.log",
+      "exit": 0,
+      "sha256": "5a3f55a0007829ac72db1b26da615f62c6b14bcc658ffd18d2666437f9d1627d"
+    },
+    {
+      "name": "performance",
+      "log": "performance.log",
+      "exit": 0,
+      "sha256": "bf74a74b560d3ce62ae13dfad20c77c849c9fd0b79c0a6d2c6214a9bb2184895"
+    },
+    {
+      "name": "protected-source",
+      "log": "protected-source.log",
+      "exit": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

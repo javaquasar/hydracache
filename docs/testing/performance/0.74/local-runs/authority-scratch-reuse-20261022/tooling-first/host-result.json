@@ -1,0 +1,21 @@
+{
+  "platform": "windows-msvc",
+  "original_owner_profiles": 0,
+  "runtime_candidate_implemented": false,
+  "ignored_tests_run": false,
+  "product": false,
+  "lane": "host",
+  "failure": "Baseline check refused: host/canaries (101)",
+  "cohort": "first",
+  "model_only": true,
+  "phase": "candidate",
+  "server": false,
+  "steps": [
+    {
+      "sha256": "05b973d033fc36750c56f122ac67724522d52de09d24af2dcbf787002f4ee434",
+      "name": "canaries",
+      "log": "host-canaries.log",
+      "exit": 101
+    }
+  ]
+}

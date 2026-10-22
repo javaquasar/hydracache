@@ -1,0 +1,39 @@
+{
+  "failure": null,
+  "runtime_candidate_implemented": false,
+  "cohort": "first",
+  "platform": "windows-msvc",
+  "lane": "194",
+  "ignored_tests_run": false,
+  "product": false,
+  "steps": [
+    {
+      "name": "compiler",
+      "sha256": "9f94407d1cf3d9e6f021626e30d5aa183e8f6cd21fd097f4441a6ba67aaf900a",
+      "exit": 0,
+      "log": "194-compiler.log"
+    },
+    {
+      "name": "controls",
+      "sha256": "44e565292394965f27f596d8773ed805200e7d9ec1e992da672fffadbd6e7b5b",
+      "exit": 0,
+      "log": "194-controls.log"
+    },
+    {
+      "name": "check",
+      "sha256": "0c501e08ae5e1e3b946d97ee9f5dee7879db2b824394b14e02e73c2bdaf89298",
+      "exit": 0,
+      "log": "194-check.log"
+    },
+    {
+      "name": "clippy",
+      "sha256": "3ba5dbc47b02ea14d692515001ff638696e914ed2a2c84055c136fe3970ed815",
+      "exit": 0,
+      "log": "194-clippy.log"
+    }
+  ],
+  "phase": "candidate",
+  "original_owner_profiles": 0,
+  "model_only": true,
+  "server": false
+}

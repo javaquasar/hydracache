@@ -1,0 +1,386 @@
+{
+  "schema": "owner-bound-authority-scratch-inventory-074-v1",
+  "method_source": "63a7cd27e4ee446ea95ba6c18ed8aeecab664603",
+  "files": [
+    {
+      "sha256": "14e115f5b732dfa216dd2c2db33884c3a49bec6885f27434131821af3bc84fa2",
+      "path": "candidate/first/188-check.log",
+      "bytes": 73
+    },
+    {
+      "sha256": "9645c5edb80fef8436886aff68051ddf53f572d1afd9c92bcfcc82a8c3f96c35",
+      "path": "candidate/first/188-clippy.log",
+      "bytes": 73
+    },
+    {
+      "sha256": "220e39acf207c30321661751011500541abb9d3eae20f66c59d9874975465517",
+      "path": "candidate/first/188-compiler.log",
+      "bytes": 201
+    },
+    {
+      "sha256": "24a6e2772b4d29d4bd6580f59946f3133e952edd02aa094d2295ca0f04926be3",
+      "path": "candidate/first/188-controls.log",
+      "bytes": 584367
+    },
+    {
+      "sha256": "8028bee19a6bb0c1d5c40198b4758dd7af563100f201db33ff8dc963f1a438f4",
+      "path": "candidate/first/188-result.json",
+      "bytes": 1013
+    },
+    {
+      "sha256": "0c501e08ae5e1e3b946d97ee9f5dee7879db2b824394b14e02e73c2bdaf89298",
+      "path": "candidate/first/194-check.log",
+      "bytes": 201
+    },
+    {
+      "sha256": "3ba5dbc47b02ea14d692515001ff638696e914ed2a2c84055c136fe3970ed815",
+      "path": "candidate/first/194-clippy.log",
+      "bytes": 201
+    },
+    {
+      "sha256": "9f94407d1cf3d9e6f021626e30d5aa183e8f6cd21fd097f4441a6ba67aaf900a",
+      "path": "candidate/first/194-compiler.log",
+      "bytes": 201
+    },
+    {
+      "sha256": "44e565292394965f27f596d8773ed805200e7d9ec1e992da672fffadbd6e7b5b",
+      "path": "candidate/first/194-controls.log",
+      "bytes": 584272
+    },
+    {
+      "sha256": "f7a2f61008348537cceb1e69bca7f86d5e8d1c37ad9dae6e06a670122bb65a16",
+      "path": "candidate/first/194-result.json",
+      "bytes": 1013
+    },
+    {
+      "sha256": "4fe2cacf35b7698386211860e55f3f439046286bfb65470e1dbfe4978b1f9445",
+      "path": "candidate/first/host-canaries.log",
+      "bytes": 8861
+    },
+    {
+      "sha256": "4166b1cd7d49d4f6503c7becebf828a0f0a7324bafd164b401072a4333efcf32",
+      "path": "candidate/first/host-check.log",
+      "bytes": 157
+    },
+    {
+      "sha256": "9b4653365b3e34941274d568337268ad498df9866425c0f15fe530047d9c30ec",
+      "path": "candidate/first/host-clippy.log",
+      "bytes": 157
+    },
+    {
+      "sha256": "b34250d0e682d9f33f289efce7922a30487261068b5502a190af6ac03059b9d2",
+      "path": "candidate/first/host-result.json",
+      "bytes": 839
+    },
+    {
+      "sha256": "bdb3d7ff3de2574758ecb403d3a19d550194cc8d644259286416bc50bba9d19b",
+      "path": "development-note.md",
+      "bytes": 2243
+    },
+    {
+      "sha256": "7df5232c7938e49782ce4c4759e262fa268e2b9fb5067184a7a3543fea31428c",
+      "path": "facts.json",
+      "bytes": 2886769
+    },
+    {
+      "sha256": "bc42adb87e52a9ae6c6ce59d901189e347403d0626d0c9abb566d1430ed6026d",
+      "path": "final-checks/derived-facts.log",
+      "bytes": 102
+    },
+    {
+      "sha256": "b5cd8d6eebcabb1c9cebb3ddc6737128fe95cd21b491731296d286d484a9a2d5",
+      "path": "final-checks/docs.log",
+      "bytes": 251
+    },
+    {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "path": "final-checks/format.log",
+      "bytes": 0
+    },
+    {
+      "sha256": "bf74a74b560d3ce62ae13dfad20c77c849c9fd0b79c0a6d2c6214a9bb2184895",
+      "path": "final-checks/performance.log",
+      "bytes": 215
+    },
+    {
+      "sha256": "2c42cd3bd15e6d36da7cb458418be86cf77f302bbb597c460027e463864b288d",
+      "path": "final-checks/prior-audit-controls.log",
+      "bytes": 2083
+    },
+    {
+      "sha256": "1f0762ff8e932ef726020c88fa6c02aaf76184f96e76e9bd773e6bad6d5df3bc",
+      "path": "final-checks/prior-boot-controls.log",
+      "bytes": 1283
+    },
+    {
+      "sha256": "120a020d00fd8f8fc57919ce5b1910181f80f857c823b58288383b94d00f6fd2",
+      "path": "final-checks/prior-inline-controls.log",
+      "bytes": 111
+    },
+    {
+      "sha256": "84cf5e6814c9f3feaf0e099797d565bf1cacffc5486aad3ea67ddeab9801dbcc",
+      "path": "final-checks/prior-proc-controls.log",
+      "bytes": 1137
+    },
+    {
+      "sha256": "31cea49150bf174ba817ff00d56e356f5170ed0aa8fba08d9d53bfe8dea6ae31",
+      "path": "final-checks/prior-read-controls.log",
+      "bytes": 1449
+    },
+    {
+      "sha256": "2a38f1f9f718f2fa6ce34c77418e8ce9d97d055ec1ab7855513ab3081fe16ce7",
+      "path": "final-checks/prior-reconciliation-controls.log",
+      "bytes": 1740
+    },
+    {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "path": "final-checks/protected-source.log",
+      "bytes": 0
+    },
+    {
+      "sha256": "5a3f55a0007829ac72db1b26da615f62c6b14bcc658ffd18d2666437f9d1627d",
+      "path": "final-checks/registry.log",
+      "bytes": 190
+    },
+    {
+      "sha256": "56cf820643543a4b358150c9edf0b0a62ca4b27ec5b333561cb01e7045d88dff",
+      "path": "final-checks/result.json",
+      "bytes": 2805
+    },
+    {
+      "sha256": "e46c5e5aa0125d19910631a5f0b0da537b42820176cb203defb4c3791a9236e8",
+      "path": "final-checks/review-controls.log",
+      "bytes": 1273
+    },
+    {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "path": "final-checks/workspace-format.log",
+      "bytes": 0
+    },
+    {
+      "sha256": "9c8f26fbbe887e559dc8146e7fdfcab4e0f9c6eab88cf869ccfdd9783d10eb19",
+      "path": "identity.json",
+      "bytes": 837
+    },
+    {
+      "sha256": "d5f54f0142770ae66efde9249b95dd6dd5e4f35563561d5e3fb1f786a985a2d7",
+      "path": "method/crates/xtask/tests/authority_scratch_reuse_074.rs",
+      "bytes": 5417
+    },
+    {
+      "sha256": "cb849b58f043746fa496ee0ff38cb6f6253344a94936376328f0e66c54d59156",
+      "path": "method/docs/testing/performance/0.74/authority-scratch-reuse-plan-20261022.md",
+      "bytes": 3899
+    },
+    {
+      "sha256": "bbfedce1ea4397c631356fb4452f814315b64594f5972d31a7b69453040a6054",
+      "path": "method/tools/authority-read-baseline-074/controls.rs",
+      "bytes": 16678
+    },
+    {
+      "sha256": "b5ee3010ad21a64a4404061dc8df935ebd2a0d198e07a9bda5d86b48b4deb373",
+      "path": "method/tools/authority-scratch-reuse-074/Cargo.lock",
+      "bytes": 180
+    },
+    {
+      "sha256": "01a581aada0fb80578c27739c707516a266dd3e0c05608f5bb9be44f656c8ac3",
+      "path": "method/tools/authority-scratch-reuse-074/Cargo.toml",
+      "bytes": 171
+    },
+    {
+      "sha256": "6c5040023b9e54e30bde21114b3033721dade6d5eff2c7f5c01fe0fea89aa590",
+      "path": "method/tools/authority-scratch-reuse-074/candidate.rs",
+      "bytes": 2661
+    },
+    {
+      "sha256": "ec4da3ddc390685e5ee07e3a44910aef3d4b180d3d1d3a1b3711bce086aae54b",
+      "path": "method/tools/authority-scratch-reuse-074/check.ps1",
+      "bytes": 3453
+    },
+    {
+      "sha256": "4828d36e4a0c1851825c5c7e5ad0bb99d722198271582cfcebe9d81106038901",
+      "path": "method/tools/authority-scratch-reuse-074/comparisons.rs",
+      "bytes": 13096
+    },
+    {
+      "sha256": "d1c575e4762b548892a0ece9d07b44a3c5663a7eea098e2447f3495f0cefef3d",
+      "path": "method/tools/authority-scratch-reuse-074/cost.rs",
+      "bytes": 2236
+    },
+    {
+      "sha256": "3b4aeaa162beb9ed1acb69c481dbec8b13bba7eae47c5a937c5c407c44b5e7b6",
+      "path": "method/tools/authority-scratch-reuse-074/final-check.ps1",
+      "bytes": 2832
+    },
+    {
+      "sha256": "2e5e7030026559d27671bbb32725d1b75467e4a87c34320e8eeae151d2431cbf",
+      "path": "method/tools/authority-scratch-reuse-074/model.rs",
+      "bytes": 3289
+    },
+    {
+      "sha256": "ce0911af810a61cf21939d4bf721cf70105b11acac373542556cecf3fb98bfbd",
+      "path": "method/tools/authority-scratch-reuse-074/probe.rs",
+      "bytes": 9830
+    },
+    {
+      "sha256": "bb49d38d1017df9edad30b511546e3e715569aa2b60b81bd4e66bf3e3c3fcdcf",
+      "path": "method/tools/authority-scratch-reuse-074/review_reuse.py",
+      "bytes": 15702
+    },
+    {
+      "sha256": "22689b96ff7c4ca93b965ab1a362d0f47b84569f117faa6486de1a594c413b47",
+      "path": "method/tools/authority-scratch-reuse-074/test_review_reuse.py",
+      "bytes": 5680
+    },
+    {
+      "sha256": "4b1d3473bc5086b3835abcdfad2ed9912996b0037c9dbc23bc16c122ce7109e2",
+      "path": "method/tools/proc-document-baseline-074/counter.rs",
+      "bytes": 5186
+    },
+    {
+      "sha256": "cb849b58f043746fa496ee0ff38cb6f6253344a94936376328f0e66c54d59156",
+      "path": "reference-source/docs/testing/performance/0.74/authority-scratch-reuse-plan-20261022.md",
+      "bytes": 3899
+    },
+    {
+      "sha256": "b5ee3010ad21a64a4404061dc8df935ebd2a0d198e07a9bda5d86b48b4deb373",
+      "path": "reference-source/tools/authority-scratch-reuse-074/Cargo.lock",
+      "bytes": 180
+    },
+    {
+      "sha256": "01a581aada0fb80578c27739c707516a266dd3e0c05608f5bb9be44f656c8ac3",
+      "path": "reference-source/tools/authority-scratch-reuse-074/Cargo.toml",
+      "bytes": 171
+    },
+    {
+      "sha256": "702159ce14f8421a460c79c400a74698448a287642d4fb82f7c331f936d7520b",
+      "path": "reference-source/tools/authority-scratch-reuse-074/check.ps1",
+      "bytes": 3418
+    },
+    {
+      "sha256": "d1c575e4762b548892a0ece9d07b44a3c5663a7eea098e2447f3495f0cefef3d",
+      "path": "reference-source/tools/authority-scratch-reuse-074/cost.rs",
+      "bytes": 2236
+    },
+    {
+      "sha256": "6636ee42cf97114eed6fba893c7c1afec4dcb13a7f87170589187d9603242b0d",
+      "path": "reference-source/tools/authority-scratch-reuse-074/model.rs",
+      "bytes": 3199
+    },
+    {
+      "sha256": "ce0911af810a61cf21939d4bf721cf70105b11acac373542556cecf3fb98bfbd",
+      "path": "reference-source/tools/authority-scratch-reuse-074/probe.rs",
+      "bytes": 9830
+    },
+    {
+      "sha256": "14e115f5b732dfa216dd2c2db33884c3a49bec6885f27434131821af3bc84fa2",
+      "path": "reference/first/188-check.log",
+      "bytes": 73
+    },
+    {
+      "sha256": "47be6eef2da552601977d613640bcce369533304ac1d9c68a54b160f5c491548",
+      "path": "reference/first/188-clippy.log",
+      "bytes": 201
+    },
+    {
+      "sha256": "220e39acf207c30321661751011500541abb9d3eae20f66c59d9874975465517",
+      "path": "reference/first/188-compiler.log",
+      "bytes": 201
+    },
+    {
+      "sha256": "f79ea3151351466e33c111bd851dd4400932537784c51fea84f2c70def200f05",
+      "path": "reference/first/188-controls.log",
+      "bytes": 2526
+    },
+    {
+      "sha256": "b4f9db61df58ec385c464abfb7121e098dac3470867e2ded44cca27fca71be81",
+      "path": "reference/first/188-result.json",
+      "bytes": 1013
+    },
+    {
+      "sha256": "0ef508fd09d27f1daab8872085a04aa4f24df0850d7611827ead05c47b8b3704",
+      "path": "reference/first/194-check.log",
+      "bytes": 201
+    },
+    {
+      "sha256": "0c501e08ae5e1e3b946d97ee9f5dee7879db2b824394b14e02e73c2bdaf89298",
+      "path": "reference/first/194-clippy.log",
+      "bytes": 201
+    },
+    {
+      "sha256": "9f94407d1cf3d9e6f021626e30d5aa183e8f6cd21fd097f4441a6ba67aaf900a",
+      "path": "reference/first/194-compiler.log",
+      "bytes": 201
+    },
+    {
+      "sha256": "d1c625fb0627880a878895d9d724a12c240bd8eddc94fd3a22ceaaf46c69ee08",
+      "path": "reference/first/194-controls.log",
+      "bytes": 2525
+    },
+    {
+      "sha256": "87d5cd03c80109ddbad748874618122e996f613140d28dc262ccc20476ba8f5b",
+      "path": "reference/first/194-result.json",
+      "bytes": 1013
+    },
+    {
+      "sha256": "44d061c0d9ef645095a405c25b078b28f84dc412a0a5d09df49eb68ce5c706e2",
+      "path": "summary.md",
+      "bytes": 1238
+    },
+    {
+      "sha256": "727d26e1a4319e860c9c7304ebd6b03eeb0bfdd1ace93b94339d552c4a811b20",
+      "path": "tooling-first-source/crates/xtask/tests/authority_scratch_reuse_074.rs",
+      "bytes": 5408
+    },
+    {
+      "sha256": "b5ee3010ad21a64a4404061dc8df935ebd2a0d198e07a9bda5d86b48b4deb373",
+      "path": "tooling-first-source/tools/authority-scratch-reuse-074/Cargo.lock",
+      "bytes": 180
+    },
+    {
+      "sha256": "01a581aada0fb80578c27739c707516a266dd3e0c05608f5bb9be44f656c8ac3",
+      "path": "tooling-first-source/tools/authority-scratch-reuse-074/Cargo.toml",
+      "bytes": 171
+    },
+    {
+      "sha256": "6c5040023b9e54e30bde21114b3033721dade6d5eff2c7f5c01fe0fea89aa590",
+      "path": "tooling-first-source/tools/authority-scratch-reuse-074/candidate.rs",
+      "bytes": 2661
+    },
+    {
+      "sha256": "7096afac20c34f24c739619f166946808d01fb83d52f037bf63d4eb26fcad14a",
+      "path": "tooling-first-source/tools/authority-scratch-reuse-074/check.ps1",
+      "bytes": 3453
+    },
+    {
+      "sha256": "4828d36e4a0c1851825c5c7e5ad0bb99d722198271582cfcebe9d81106038901",
+      "path": "tooling-first-source/tools/authority-scratch-reuse-074/comparisons.rs",
+      "bytes": 13096
+    },
+    {
+      "sha256": "d1c575e4762b548892a0ece9d07b44a3c5663a7eea098e2447f3495f0cefef3d",
+      "path": "tooling-first-source/tools/authority-scratch-reuse-074/cost.rs",
+      "bytes": 2236
+    },
+    {
+      "sha256": "2e5e7030026559d27671bbb32725d1b75467e4a87c34320e8eeae151d2431cbf",
+      "path": "tooling-first-source/tools/authority-scratch-reuse-074/model.rs",
+      "bytes": 3289
+    },
+    {
+      "sha256": "ce0911af810a61cf21939d4bf721cf70105b11acac373542556cecf3fb98bfbd",
+      "path": "tooling-first-source/tools/authority-scratch-reuse-074/probe.rs",
+      "bytes": 9830
+    },
+    {
+      "sha256": "05b973d033fc36750c56f122ac67724522d52de09d24af2dcbf787002f4ee434",
+      "path": "tooling-first/host-canaries.log",
+      "bytes": 2119
+    },
+    {
+      "sha256": "3b02877bf88cc6861ed5c4202c6b511e653b6fd3d03a050291fc32c878c4523d",
+      "path": "tooling-first/host-result.json",
+      "bytes": 534
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 8.47s
+     Running tests\authority_read_baseline_074.rs (target\debug\deps\authority_read_baseline_074-418128e4276c38df.exe)
+
+running 3 tests
+test authority_read_baseline_receivers_have_no_os_clock_or_launch_capability ... ok
+test authority_read_baseline_adapter_rejects_omissions_bounds_and_ownership_drift ... ok
+test authority_read_baseline_copies_complete_bodies_and_leaves_runtime_unchanged ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.25s
+
+     Running tests\authority_scratch_reuse_074.rs (target\debug\deps\authority_scratch_reuse_074-536de05f517be8e6.exe)
+
+running 3 tests
+test scratch_only_substitutes_storage_not_fresh_validation ... FAILED
+test scratch_image_has_no_os_transport_launch_or_admission_clock ... ok
+test scratch_reference_receivers_and_cost_helper_remain_frozen ... ok
+
+failures:
+
+---- scratch_only_substitutes_storage_not_fresh_validation stdout ----
+
+thread 'scratch_only_substitutes_storage_not_fresh_validation' (50356) panicked at crates\xtask\tests\authority_scratch_reuse_074.rs:97:5:
+assertion `left == right` failed
+  left: "!= self . stamp { return Err (AuthorityError :: Invalid) ; } let named = Self :: read (dir , & self . name , uid , gid , budget) ?; if named . 1 != self . stamp || named . 2 != self . raw { return Err (AuthorityError :: Invalid) ; }  Ok (())"
+ right: "!= self . stamp { return Err (AuthorityError :: Invalid) ; } let named = Self :: read (dir , & self . name , uid , gid , budget) ?; if named . 1 != self . stamp || named . 2 != self . raw { return Err (AuthorityError :: Invalid) ; } Ok (())"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    scratch_only_substitutes_storage_not_fresh_validation
+
+test result: FAILED. 2 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.43s
+
+error: test failed, to rerun pass `-p xtask --test authority_scratch_reuse_074`

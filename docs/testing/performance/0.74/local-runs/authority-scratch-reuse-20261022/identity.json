@@ -1,0 +1,20 @@
+{
+  "schema": "owner-bound-authority-scratch-source-074-v1",
+  "starting_tree": "84b5e62c",
+  "plan_commit": "2cf622f9a648a359c861d5b6e083222018ad0669",
+  "reference_source_commit": "187ac5c743a1689ed4e9352f301bcd163ade6b66",
+  "first_candidate_source_commit": "cefa6709a8404a7130707806f6da4ed92aa2c4db",
+  "tooling_repair_commit": "c9fc9ec5092f120a17b0df74286d0e31e0aeac6e",
+  "method_source_commit": "63a7cd27e4ee446ea95ba6c18ed8aeecab664603",
+  "reference_first_location": "reference/first",
+  "candidate_first_location": "candidate/first",
+  "first_source_canary_refusal": "tooling-first",
+  "platform": "windows-msvc",
+  "model_only": true,
+  "measurement_retries": 0,
+  "concurrent_host_activity_not_isolated": true,
+  "runtime_candidate_implemented": false,
+  "original_owner_profiles": 0,
+  "server": false,
+  "product": false
+}

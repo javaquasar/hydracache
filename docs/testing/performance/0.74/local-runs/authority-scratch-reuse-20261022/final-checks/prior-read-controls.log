@@ -1,0 +1,13 @@
+test_changed_corpus_trace_capacity_counts_and_scalar_types_refuse (__main__.ReadBaselineReviewTests.test_changed_corpus_trace_capacity_counts_and_scalar_types_refuse) ... ok
+test_every_first_fault_prefix_and_fake_descriptor_lifetime_remains_exact (__main__.ReadBaselineReviewTests.test_every_first_fault_prefix_and_fake_descriptor_lifetime_remains_exact) ... ok
+test_exclusive_separate_output_and_changed_check_hashes_refuse (__main__.ReadBaselineReviewTests.test_exclusive_separate_output_and_changed_check_hashes_refuse) ... ok
+test_first_lanes_seals_and_separate_weighting (__main__.ReadBaselineReviewTests.test_first_lanes_seals_and_separate_weighting) ... ok
+test_metadata_eof_partial_and_owned_result_contracts_refuse_drift (__main__.ReadBaselineReviewTests.test_metadata_eof_partial_and_owned_result_contracts_refuse_drift) ... ok
+test_missing_duplicate_unknown_reordered_and_test_outcome_rows_refuse (__main__.ReadBaselineReviewTests.test_missing_duplicate_unknown_reordered_and_test_outcome_rows_refuse) ... ok
+test_old_windows_refusals_rejection_and_closed_gates_remain (__main__.ReadBaselineReviewTests.test_old_windows_refusals_rejection_and_closed_gates_remain) ... ok
+test_source_pins_bind_complete_files_except_line_endings (__main__.ReadBaselineReviewTests.test_source_pins_bind_complete_files_except_line_endings) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 2.300s
+
+OK
