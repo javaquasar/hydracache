@@ -1,0 +1,75 @@
+{
+  "server": false,
+  "failure": null,
+  "runtime_candidate_implemented": false,
+  "product": false,
+  "original_owner_profiles": 0,
+  "steps": [
+    {
+      "log": "format.log",
+      "exit": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "name": "format"
+    },
+    {
+      "log": "workspace-format.log",
+      "exit": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "name": "workspace-format"
+    },
+    {
+      "log": "review-controls.log",
+      "exit": 0,
+      "sha256": "7f9af080bcd763232876ce550f2f63d0e3800f07997697b2747f852c383fcae9",
+      "name": "review-controls"
+    },
+    {
+      "log": "prior-boot-controls.log",
+      "exit": 0,
+      "sha256": "c38fdd31f9eb9bf6bcf5b6afe06cd4ba92570d4fa0801f3f45581143dd3ad1c7",
+      "name": "prior-boot-controls"
+    },
+    {
+      "log": "prior-proc-controls.log",
+      "exit": 0,
+      "sha256": "d1d31caba7c269b65060cff274c079c3cdc99cd0feeb2035d5b8037ba0d965d8",
+      "name": "prior-proc-controls"
+    },
+    {
+      "log": "prior-reconciliation-controls.log",
+      "exit": 0,
+      "sha256": "9fb523b95b7bea06da15462756c008194d2369537cda0601b6f10150a7c3d6c5",
+      "name": "prior-reconciliation-controls"
+    },
+    {
+      "log": "derived-facts.log",
+      "exit": 0,
+      "sha256": "242d092ad5b6b1b2f04b9c91d8c41545214968626ac59f9a4cc62398eb9cc47c",
+      "name": "derived-facts"
+    },
+    {
+      "log": "docs.log",
+      "exit": 0,
+      "sha256": "e5feee9d2221913db1ef7c27dbcaec817b913d45994dffa327982bfe2bbbed1c",
+      "name": "docs"
+    },
+    {
+      "log": "registry.log",
+      "exit": 0,
+      "sha256": "0f3634f903674c38783524f15533b7b7ab894e0358b1e10ef5eae2016c4269c2",
+      "name": "registry"
+    },
+    {
+      "log": "performance.log",
+      "exit": 0,
+      "sha256": "ecb096cae7e5d775f4e9b1d8b046bdc0d110ce1709675a579790a923527b5e98",
+      "name": "performance"
+    },
+    {
+      "log": "protected-source.log",
+      "exit": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "name": "protected-source"
+    }
+  ]
+}

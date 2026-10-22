@@ -1,0 +1,141 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.31s
+     Running tests\boot_operations_074.rs (target\debug\deps\boot_operations_074-2f6a720f745bea5e.exe)
+
+running 2 tests
+test boot_operations_only_exact_hook_gate_and_directory_ownership_may_normalize ... ok
+test boot_operations_fresh_open_expression_and_original_runtime_are_frozen ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.35s
+
+     Running tests\collector_peer_baseline_074.rs (target\debug\deps\collector_peer_baseline_074-dc2a11c468ba7366.exe)
+
+running 3 tests
+test collector_peer_baseline_controls_have_no_live_capabilities ... ok
+test collector_peer_baseline_freezes_complete_peer_and_wrapper_bodies ... ok
+test collector_peer_baseline_changes_only_a_private_allocator_test_hook ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.21s
+
+     Running tests\collector_peer_capacity_074.rs (target\debug\deps\collector_peer_capacity_074-9c791ff7ac9f9550.exe)
+
+running 3 tests
+test collector_peer_capacity_controls_have_no_live_capabilities_or_ignored_tests ... ok
+test collector_peer_capacity_freezes_baseline_corpus_reference_and_complete_wrapper ... ok
+test collector_peer_capacity_restores_both_old_files_and_rejects_validation_or_union_drift ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.24s
+
+     Running tests\context_document_baseline_074.rs (target\debug\deps\context_document_baseline_074-a9b20f8566ae375d.exe)
+
+running 3 tests
+test context_document_baseline_controls_have_no_live_or_host_capabilities ... ok
+test context_document_baseline_model_has_the_complete_original_read_body ... ok
+test context_document_baseline_changes_only_one_test_hook_not_any_runtime_body ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.30s
+
+     Running tests\context_document_stack_074.rs (target\debug\deps\context_document_stack_074-e8250ae2e893f3c4.exe)
+
+running 3 tests
+test context_document_stack_storage_and_controls_have_no_live_capabilities ... ok
+test context_document_stack_models_keep_complete_baseline_and_candidate_bodies ... ok
+test context_document_stack_exactly_restores_both_old_files_and_rejects_live_predicate_drift ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.43s
+
+     Running tests\held_material_074.rs (target\debug\deps\held_material_074-65c16a24996a862b.exe)
+
+running 4 tests
+test held_material_inventory_requires_fresh_original_owner_and_deadline_after_census ... ok
+test held_material_closed_api_contains_no_transport_mapping_fork_exec_or_serialization ... ok
+test held_material_only_two_exact_hooks_restore_complete_projected_owner_and_bundle_bodies ... ok
+test held_material_keeps_original_frames_retirement_launcher_format_and_qualification_frozen ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.04s
+
+     Running tests\held_material_live_074.rs (target\debug\deps\held_material_live_074-f1d7cb4d54e74b14.exe)
+
+running 1 test
+test held_material_live_adapter_restores_exact_previous_bodies_and_rejects_hook_drift ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+
+     Running tests\held_preparation_cost_074.rs (target\debug\deps\held_preparation_cost_074-28392e0d6a703446.exe)
+
+running 4 tests
+test projection_reference_is_the_complete_frozen_decoder_not_a_relaxed_model ... ok
+test projection_prefix_adapter_refuses_missing_duplicate_and_unrelated_guard_drift ... ok
+test held_preparation_observer_adapter_cannot_hide_missing_duplicate_or_changed_assertion ... ok
+test held_preparation_and_prefix_reconstruct_all_old_runtime_and_fixture_assertions ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 23.26s
+
+     Running tests\held_unit_projection_074.rs (target\debug\deps\held_unit_projection_074-a20498d8f0d85ed3.exe)
+
+running 3 tests
+test held_unit_projection_has_no_runnable_spec_transport_or_descriptor_export ... ok
+test held_unit_projection_only_four_exact_additive_hooks_restore_prior_sources ... ok
+test held_unit_projection_preserves_all_other_admission_transport_and_fixture_bytes ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.25s
+
+     Running tests\pidfd_info_path_074.rs (target\debug\deps\pidfd_info_path_074-24dbad550ff553cf.exe)
+
+running 3 tests
+test pidfd_info_path_helper_is_private_pure_owned_bytes_without_cache_or_new_kernel_calls ... ok
+test pidfd_info_path_only_exact_allocation_hook_is_added_at_baseline ... ok
+test pidfd_info_path_restores_entire_old_origin_and_keeps_all_other_old_runtime_files ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.41s
+
+     Running tests\proc_document_baseline_074.rs (target\debug\deps\proc_document_baseline_074-835b72688fb9017c.exe)
+
+running 3 tests
+test proc_document_baseline_model_and_controls_have_no_live_or_timing_capability ... ok
+test proc_document_baseline_core_is_complete_except_the_exact_file_adapter ... ok
+test proc_document_baseline_changes_no_runtime_source_or_sender_schedule ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+     Running tests\projection_groups_074.rs (target\debug\deps\projection_groups_074-a0a9400e1e689d4e.exe)
+
+running 2 tests
+test projection_groups_helper_is_bounded_local_and_has_no_live_capabilities ... ok
+test projection_groups_reconstructs_entire_old_parser_and_every_changed_old_source ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.36s
+
+     Running tests\sample_boot_baseline_074.rs (target\debug\deps\sample_boot_baseline_074-e9635ad2f22f9cb5.exe)
+
+running 3 tests
+test sample_boot_baseline_has_no_live_or_timing_capabilities ... ok
+test sample_boot_baseline_matches_complete_point_sample_decoder_and_prelude ... ok
+test sample_boot_baseline_preserves_runtime_and_reuses_the_exact_counter ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
+     Running tests\sample_boot_inline_074.rs (target\debug\deps\sample_boot_inline_074-dfa7c188553e8db2.exe)
+
+running 3 tests
+test inline_boot_reference_has_no_host_capability ... ok
+test inline_boot_reference_restores_the_complete_frozen_receiver_and_model ... FAILED
+test inline_boot_reference_cost_protocol_is_bounded_and_separate ... ok
+
+failures:
+
+---- inline_boot_reference_restores_the_complete_frozen_receiver_and_model stdout ----
+
+thread 'inline_boot_reference_restores_the_complete_frozen_receiver_and_model' (43228) panicked at crates\xtask\tests\sample_boot_inline_074.rs:23:5:
+assertion `left == right` failed
+  left: "//! Pure sample model: synthetic validation/clock receivers, no host capability.\n#![cfg(test)]\n#[path = \"../proc-document-baseline-074/counter.rs\"]\nmod counter;\nuse std::cell::Cell;\n\n#[derive(Debug, Clone, Copy, PartialEq, Eq)]\nenum KernelError {\n    Fault(u8),\n    Invalid(&'static str),\n}\nmacro_rules! kernel_invalid {\n    ($site:literal) => {\n        crate::KernelError::Invalid($site)\n    };\n}\n// Symbolic selectors in the copied body; never linked to libc or a clock.\nmod libc {\n    pub const CLOCK_BOOTTIME: u8 = 7;\n    pub const CLOCK_REALTIME: u8 = 0;\n}\n#[derive(Debug, Clone, Copy, PartialEq, Eq)]\nenum Event {\n    Empty,\n    Span,\n    Before,\n    BootClock,\n    RealClock,\n    After,\n}\n#[derive(Clone, Copy)]\nstruct Script {\n    faults: u8,\n    validations: u8,\n    events: [Event; 5],\n    used: usize,\n    boot_ns: u64,\n    real_ns: u64,\n}\nthread_local! { static SCRIPT: Cell<Script> = const { Cell::new(Script {\n    faults:0, validations:0, events:[Event::Empty;5], used:0, boot_ns:0, real_ns:0,\n}) }; }\nfn reset(faults: u8, boot_ns: u64, real_ns: u64) {\n    SCRIPT.set(Script {\n        faults,\n        validations: 0,\n        events: [Event::Empty; 5],\n        used: 0,\n        boot_ns,\n        real_ns,\n    });\n}\nfn event(value: Event) {\n    let mut script = SCRIPT.get();\n    assert!(script.used < script.events.len());\n    script.events[script.used] = value;\n    script.used += 1;\n    SCRIPT.set(script);\n}\nfn events() -> ([Event; 5], usize) {\n    let script = SCRIPT.get();\n    (script.events, script.used)\n}\nmod diagnostic_ipc {\n    pub mod validation_trace {\n        pub mod kernel_walk {\n            pub enum Kind {\n                Sample,\n            }\n            pub struct Span;\n            pub fn span(_: Kind) -> Span {\n                crate::event(crate::Event::Span);\n                Span\n            }\n        }\n    }\n}\nfn clock(id: u8) -> Result<u64, KernelError> {\n    let (mask, value, event) = match id {\n        libc::CLOCK_BOOTTIME => (2, SCRIPT.get().boot_ns, Event::BootClock),\n        libc::CLOCK_REALTIME => (4, SCRIPT.get().real_ns, Event::RealClock),\n        _ => panic!(\"unknown symbolic clock\"),\n    };\n    self::event(event);\n    if SCRIPT.get().faults & mask != 0 {\n        Err(KernelError::Fault(mask))\n    } else {\n        Ok(value)\n    }\n}\nmod model;\nimpl model::Origin {\n    fn revalidate(&self) -> Result<(), KernelError> {\n        let mut script = SCRIPT.get();\n        script.validations += 1;\n        assert!(script.validations <= 2);\n        let (mask, value) = if script.validations == 1 {\n            (1, Event::Before)\n        } else {\n            (8, Event::After)\n        };\n        SCRIPT.set(script);\n        event(value);\n        if script.faults & mask != 0 {\n            Err(KernelError::Fault(mask))\n        } else {\n            Ok(())\n        }\n    }\n}\n\n"
+ right: "//! Pure sample model: synthetic validation/clock receivers, no host capability.\n#![cfg(test)]\n#[path = \"../proc-document-baseline-074/counter.rs\"]\nmod counter;\nuse std::cell::Cell;\n\n#[derive(Debug, Clone, Copy, PartialEq, Eq)]\nenum KernelError {\n    Fault(u8),\n    Invalid(&'static str),\n}\nmacro_rules! kernel_invalid {\n    ($site:literal) => {\n        crate::KernelError::Invalid($site)\n    };\n}\n// Symbolic selectors in the copied body; never linked to libc or a clock.\nmod libc {\n    pub const CLOCK_BOOTTIME: u8 = 7;\n    pub const CLOCK_REALTIME: u8 = 0;\n}\n#[derive(Debug, Clone, Copy, PartialEq, Eq)]\nenum Event {\n    Empty,\n    Span,\n    Before,\n    BootClock,\n    RealClock,\n    After,\n}\n#[derive(Clone, Copy)]\nstruct Script {\n    faults: u8,\n    validations: u8,\n    events: [Event; 5],\n    used: usize,\n    boot_ns: u64,\n    real_ns: u64,\n}\nthread_local! { static SCRIPT: Cell<Script> = const { Cell::new(Script {\n    faults:0, validations:0, events:[Event::Empty;5], used:0, boot_ns:0, real_ns:0,\n}) }; }\nfn reset(faults: u8, boot_ns: u64, real_ns: u64) {\n    SCRIPT.set(Script {\n        faults,\n        validations: 0,\n        events: [Event::Empty; 5],\n        used: 0,\n        boot_ns,\n        real_ns,\n    });\n}\nfn event(value: Event) {\n    let mut script = SCRIPT.get();\n    assert!(script.used < script.events.len());\n    script.events[script.used] = value;\n    script.used += 1;\n    SCRIPT.set(script);\n}\nfn events() -> ([Event; 5], usize) {\n    let script = SCRIPT.get();\n    (script.events, script.used)\n}\nmod diagnostic_ipc {\n    pub mod validation_trace {\n        pub mod kernel_walk {\n            pub enum Kind {\n                Sample,\n            }\n            pub struct Span;\n            pub fn span(_: Kind) -> Span {\n                crate::event(crate::Event::Span);\n                Span\n            }\n        }\n    }\n}\nfn clock(id: u8) -> Result<u64, KernelError> {\n    let (mask, value, event) = match id {\n        libc::CLOCK_BOOTTIME => (2, SCRIPT.get().boot_ns, Event::BootClock),\n        libc::CLOCK_REALTIME => (4, SCRIPT.get().real_ns, Event::RealClock),\n        _ => panic!(\"unknown symbolic clock\"),\n    };\n    self::event(event);\n    if SCRIPT.get().faults & mask != 0 {\n        Err(KernelError::Fault(mask))\n    } else {\n        Ok(value)\n    }\n}\nmod model;\nimpl model::Origin {\n    fn revalidate(&self) -> Result<(), KernelError> {\n        let mut script = SCRIPT.get();\n        script.validations += 1;\n        assert!(script.validations <= 2);\n        let (mask, value) = if script.validations == 1 {\n            (1, Event::Before)\n        } else {\n            (8, Event::After)\n        };\n        SCRIPT.set(script);\n        event(value);\n        if script.faults & mask != 0 {\n            Err(KernelError::Fault(mask))\n        } else {\n            Ok(())\n        }\n    }\n}\n"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    inline_boot_reference_restores_the_complete_frozen_receiver_and_model
+
+test result: FAILED. 2 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.28s
+
+error: test failed, to rerun pass `-p xtask --test sample_boot_inline_074`

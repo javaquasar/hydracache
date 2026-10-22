@@ -1,0 +1,17 @@
+{
+  "schema": "pure-owned-inline-identity-074-v1",
+  "starting_tree": "a6f95e4e1245b52334956ab835bdea4b1f6f2332",
+  "preregistration_source": "1e8552e8",
+  "reference_preflight_source": "4ec3b04d",
+  "prototype_and_reviewer_source": "fb036e3c785a00b497ea564d3775ac37e8fadd2d",
+  "closing_check_source": "87b3e1307b6dab883f654dfd6593908313593c3c",
+  "platform": "windows-msvc",
+  "model_only": true,
+  "prototype_representation_only": true,
+  "runtime_candidate_implemented": false,
+  "measurement_retries": 0,
+  "source_canary_repair_runs": 1,
+  "original_owner_profiles": 0,
+  "server": false,
+  "product": false
+}

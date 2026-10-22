@@ -1,0 +1,34 @@
+{
+  "server": false,
+  "steps": [
+    {
+      "log": "host-canaries.log",
+      "exit": 0,
+      "name": "canaries",
+      "sha256": "91e8ab7bf84d059b267a5d5b9bf74074c29c4eb4f13f4348098ab13521e69374"
+    },
+    {
+      "log": "host-check.log",
+      "exit": 0,
+      "name": "check",
+      "sha256": "30b68d4020162af1c3eddb279eb9403739040136b290f516a8c0b1124e09c387"
+    },
+    {
+      "log": "host-clippy.log",
+      "exit": 0,
+      "name": "clippy",
+      "sha256": "9b4653365b3e34941274d568337268ad498df9866425c0f15fe530047d9c30ec"
+    }
+  ],
+  "lane": "host",
+  "cohort": "canary-repair",
+  "phase": "candidate",
+  "failure": null,
+  "product": false,
+  "original_owner_profiles": 0,
+  "ignored_tests_run": false,
+  "model_only": true,
+  "runtime_candidate_implemented": false,
+  "prototype_only": true,
+  "platform": "windows-msvc"
+}

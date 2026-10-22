@@ -1,0 +1,17 @@
+   Compiling hc074-sample-boot-inline-prototype v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\sample-boot-inline-074)
+    Finished `release` profile [optimized] target(s) in 0.79s
+     Running unittests probe.rs (target\sample-boot-inline-194\release\deps\hc074_sample_boot_inline_prototype-8c30d0ec638b17ad.exe)
+
+running 1 test
+test model::cost::reference_cost_preflight ... HC074-BOOT-INLINE-REFERENCE {"point_size":40,"point_align":8,"clone_calls":256,"clone_counts":{"allocations":256,"zeroed":0,"reallocations":0,"requested_bytes":9216,"deallocations":256,"deallocated_bytes":9216},"getter_counts":{"allocations":0,"zeroed":0,"reallocations":0,"requested_bytes":0,"deallocations":0,"deallocated_bytes":0},"iterations":262144,"warmup":32768,"checksum":9437184,"model_only":true}
+HC074-BOOT-INLINE-PREFLIGHT {"sample":0,"iterations":262144,"checksum":9437184,"reference_wall_ns":70200,"allocator_capture_active":false,"model_only":true}
+HC074-BOOT-INLINE-PREFLIGHT {"sample":1,"iterations":262144,"checksum":9437184,"reference_wall_ns":68900,"allocator_capture_active":false,"model_only":true}
+HC074-BOOT-INLINE-PREFLIGHT {"sample":2,"iterations":262144,"checksum":9437184,"reference_wall_ns":70400,"allocator_capture_active":false,"model_only":true}
+HC074-BOOT-INLINE-PREFLIGHT {"sample":3,"iterations":262144,"checksum":9437184,"reference_wall_ns":70400,"allocator_capture_active":false,"model_only":true}
+HC074-BOOT-INLINE-PREFLIGHT {"sample":4,"iterations":262144,"checksum":9437184,"reference_wall_ns":78500,"allocator_capture_active":false,"model_only":true}
+HC074-BOOT-INLINE-PREFLIGHT {"sample":5,"iterations":262144,"checksum":9437184,"reference_wall_ns":70500,"allocator_capture_active":false,"model_only":true}
+HC074-BOOT-INLINE-PREFLIGHT {"sample":6,"iterations":262144,"checksum":9437184,"reference_wall_ns":67600,"allocator_capture_active":false,"model_only":true}
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 7 filtered out; finished in 0.00s
+

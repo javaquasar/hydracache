@@ -1,0 +1,2390 @@
+{
+  "canary_repair": "one extra newline in source restoration assertion",
+  "clocks_changed": false,
+  "decision": "reject-for-adoption",
+  "decision_rule": "getter median greater on both compilers rejects adoption",
+  "first_canary_refusal_preserved": true,
+  "first_refusals": [
+    {
+      "age_ns": 10042390247,
+      "diagnostic_reason": "expired",
+      "issued_boot": "6a709ad1-c736-45a2-bd6a-351e07f6b8f3",
+      "issued_ns": 463631383166,
+      "now_boot": "6a709ad1-c736-45a2-bd6a-351e07f6b8f3",
+      "now_ns": 473673773413,
+      "site": "window"
+    },
+    {
+      "age_ns": 10010835739,
+      "diagnostic_reason": "expired",
+      "issued_boot": "6a709ad1-c736-45a2-bd6a-351e07f6b8f3",
+      "issued_ns": 476668137622,
+      "now_boot": "6a709ad1-c736-45a2-bd6a-351e07f6b8f3",
+      "now_ns": 486678973361,
+      "site": "window"
+    }
+  ],
+  "full_path_speedup_proven": false,
+  "full_sigkill_matrix": false,
+  "input_members_verified": 856,
+  "input_packets": [
+    {
+      "inventory_sha256": "0c385fbfe209fad1903aa2c0e620817c458f413eec8bd36fa32be5c01fbb4109",
+      "members": 65,
+      "packet": "held-material-live-20261021"
+    },
+    {
+      "inventory_sha256": "84c2d0a10e1d2d66b4dc76e1c041b9920d90d85621461bc3e83102569a6e1a2f",
+      "members": 18,
+      "packet": "held-material-round-attribution-20261021"
+    },
+    {
+      "inventory_sha256": "dc7af6cd78dfc1b69c7443078a8c6e2edc4504e294f74d30df93e085f8471daa",
+      "members": 51,
+      "packet": "pidfd-info-path-20261021"
+    },
+    {
+      "inventory_sha256": "ae7db79c3e579b7ad9f1939d2571aab27452b62f81c89b46b98340381f4b91c6",
+      "members": 52,
+      "packet": "projection-groups-20261021"
+    },
+    {
+      "inventory_sha256": "d66631eec23dc969f372d73c2bb83519058214383023564ec269ec542f854c4e",
+      "members": 23,
+      "packet": "reserved-leaf-audit-20261021"
+    },
+    {
+      "inventory_sha256": "8db3e4df5579ec7a471886505191825609b5c839732670bece6702ae101afcb6",
+      "members": 40,
+      "packet": "context-document-baseline-20261021"
+    },
+    {
+      "inventory_sha256": "7a65d50c19622754bda58fd389ef03d3f07254465d96f1e16b586cdec94f71f0",
+      "members": 54,
+      "packet": "context-document-stack-20261021"
+    },
+    {
+      "inventory_sha256": "7eacd69041a722fc3d6153ef8be43eff87bf945a8fb6ccdd456acadff1bfcc9d",
+      "members": 45,
+      "packet": "trust-component-baseline-20261021"
+    },
+    {
+      "inventory_sha256": "e588fd8ae6b06a6e808446328b819240c4bb0e35955309e843ddb1078668fd85",
+      "members": 53,
+      "packet": "trust-component-stack-20261021"
+    },
+    {
+      "inventory_sha256": "cc19972e68a264b7b84ac48400f43e1b981d5a0e762ad7a9aee1a67548bf2452",
+      "members": 41,
+      "packet": "collector-peer-baseline-20261021"
+    },
+    {
+      "inventory_sha256": "846b5e7d6d07a47bd03c64be0a207b24b197b39ceddb25e4fc3b06cd049b05ae",
+      "members": 49,
+      "packet": "collector-peer-capacity-20261022"
+    },
+    {
+      "inventory_sha256": "d3aa773d6254d5297d303cfc8ba7a397e06ae8a2d4978e39e29c496062b3fb72",
+      "members": 42,
+      "packet": "reserved-reconciliation-20261022"
+    },
+    {
+      "inventory_sha256": "3194244cb4e45c6f4f611b946afaa6a6a8b3aaf83179457c260d0a9e25f93864",
+      "members": 237,
+      "packet": "custody-preparation-cost-20261020"
+    },
+    {
+      "inventory_sha256": "dbaa727197cf3c08b5206b40050bef4424f8a1e1793191ca661ba5540a81c306",
+      "members": 43,
+      "packet": "proc-document-baseline-20261022"
+    },
+    {
+      "inventory_sha256": "fd07cd7911ab50d51e5a471de9ae5b427ec4076636396fe12861c46433ac6b10",
+      "members": 43,
+      "packet": "sample-boot-baseline-20261022"
+    }
+  ],
+  "lanes": [
+    {
+      "candidate": {
+        "medians_ns": {
+          "candidate_wall_ns": 2105800,
+          "reference_wall_ns": 60000
+        },
+        "old_baseline": {
+          "fixed_shape_samples": 512,
+          "fixed_shape_subset": {
+            "allocations": 512,
+            "deallocated_bytes": 18432,
+            "deallocations": 512,
+            "reallocations": 0,
+            "requested_bytes": 18432,
+            "zeroed": 0
+          },
+          "main_samples": 2304,
+          "main_totals": {
+            "allocations": 2048,
+            "deallocated_bytes": 324864,
+            "deallocations": 2048,
+            "reallocations": 0,
+            "requested_bytes": 324864,
+            "zeroed": 0
+          },
+          "rows": {
+            "DECODER": [
+              {
+                "invalid_bytes": 7,
+                "invalid_counts": 5,
+                "model_only": true,
+                "valid": 1
+              }
+            ],
+            "FAULTS": [
+              {
+                "first_error_prefix": true,
+                "masks": 16,
+                "model_only": true,
+                "refused": 15,
+                "refused_allocations": 0
+              }
+            ],
+            "MAIN": [
+              {
+                "case": "empty",
+                "counts": {
+                  "allocations": 0,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "input_capacity": 0,
+                "length": 0,
+                "output_capacity": 0,
+                "product": false,
+                "samples": 256,
+                "server": false,
+                "synthetic_frame": true,
+                "timing_claim": false
+              },
+              {
+                "case": "one",
+                "counts": {
+                  "allocations": 256,
+                  "deallocated_bytes": 256,
+                  "deallocations": 256,
+                  "reallocations": 0,
+                  "requested_bytes": 256,
+                  "zeroed": 0
+                },
+                "input_capacity": 1,
+                "length": 1,
+                "output_capacity": 1,
+                "product": false,
+                "samples": 256,
+                "server": false,
+                "synthetic_frame": true,
+                "timing_claim": false
+              },
+              {
+                "case": "below",
+                "counts": {
+                  "allocations": 256,
+                  "deallocated_bytes": 8960,
+                  "deallocations": 256,
+                  "reallocations": 0,
+                  "requested_bytes": 8960,
+                  "zeroed": 0
+                },
+                "input_capacity": 35,
+                "length": 35,
+                "output_capacity": 35,
+                "product": false,
+                "samples": 256,
+                "server": false,
+                "synthetic_frame": true,
+                "timing_claim": false
+              },
+              {
+                "case": "fixed",
+                "counts": {
+                  "allocations": 256,
+                  "deallocated_bytes": 9216,
+                  "deallocations": 256,
+                  "reallocations": 0,
+                  "requested_bytes": 9216,
+                  "zeroed": 0
+                },
+                "input_capacity": 36,
+                "length": 36,
+                "output_capacity": 36,
+                "product": false,
+                "samples": 256,
+                "server": false,
+                "synthetic_frame": true,
+                "timing_claim": false
+              },
+              {
+                "case": "fixed-spare",
+                "counts": {
+                  "allocations": 256,
+                  "deallocated_bytes": 9216,
+                  "deallocations": 256,
+                  "reallocations": 0,
+                  "requested_bytes": 9216,
+                  "zeroed": 0
+                },
+                "input_capacity": 256,
+                "length": 36,
+                "output_capacity": 36,
+                "product": false,
+                "samples": 256,
+                "server": false,
+                "synthetic_frame": true,
+                "timing_claim": false
+              },
+              {
+                "case": "above",
+                "counts": {
+                  "allocations": 256,
+                  "deallocated_bytes": 9472,
+                  "deallocations": 256,
+                  "reallocations": 0,
+                  "requested_bytes": 9472,
+                  "zeroed": 0
+                },
+                "input_capacity": 37,
+                "length": 37,
+                "output_capacity": 37,
+                "product": false,
+                "samples": 256,
+                "server": false,
+                "synthetic_frame": true,
+                "timing_claim": false
+              },
+              {
+                "case": "utf8-generic",
+                "counts": {
+                  "allocations": 256,
+                  "deallocated_bytes": 9216,
+                  "deallocations": 256,
+                  "reallocations": 0,
+                  "requested_bytes": 9216,
+                  "zeroed": 0
+                },
+                "input_capacity": 36,
+                "length": 36,
+                "output_capacity": 36,
+                "product": false,
+                "samples": 256,
+                "server": false,
+                "synthetic_frame": true,
+                "timing_claim": false
+              },
+              {
+                "case": "long",
+                "counts": {
+                  "allocations": 256,
+                  "deallocated_bytes": 16384,
+                  "deallocations": 256,
+                  "reallocations": 0,
+                  "requested_bytes": 16384,
+                  "zeroed": 0
+                },
+                "input_capacity": 64,
+                "length": 64,
+                "output_capacity": 64,
+                "product": false,
+                "samples": 256,
+                "server": false,
+                "synthetic_frame": true,
+                "timing_claim": false
+              },
+              {
+                "case": "larger",
+                "counts": {
+                  "allocations": 256,
+                  "deallocated_bytes": 262144,
+                  "deallocations": 256,
+                  "reallocations": 0,
+                  "requested_bytes": 262144,
+                  "zeroed": 0
+                },
+                "input_capacity": 1024,
+                "length": 1024,
+                "output_capacity": 1024,
+                "product": false,
+                "samples": 256,
+                "server": false,
+                "synthetic_frame": true,
+                "timing_claim": false
+              }
+            ],
+            "SEEDED": [
+              {
+                "independent_point_clone": true,
+                "model_only": true,
+                "owned_after_origin_drop": true,
+                "samples": 256,
+                "seed": "0x074b0a19"
+              }
+            ],
+            "STAGES": [
+              {
+                "case": "empty",
+                "cloned": {
+                  "allocations": 0,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "dropped": {
+                  "allocations": 0,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "frame": {
+                  "allocations": 0,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "length": 0,
+                "not_pooled": true,
+                "samples_per_arm": 1,
+                "whole_drop": {
+                  "allocations": 0,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "whole_returning": {
+                  "allocations": 0,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                }
+              },
+              {
+                "case": "one",
+                "cloned": {
+                  "allocations": 1,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 1,
+                  "zeroed": 0
+                },
+                "dropped": {
+                  "allocations": 0,
+                  "deallocated_bytes": 1,
+                  "deallocations": 1,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "frame": {
+                  "allocations": 0,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "length": 1,
+                "not_pooled": true,
+                "samples_per_arm": 1,
+                "whole_drop": {
+                  "allocations": 0,
+                  "deallocated_bytes": 1,
+                  "deallocations": 1,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "whole_returning": {
+                  "allocations": 1,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 1,
+                  "zeroed": 0
+                }
+              },
+              {
+                "case": "below",
+                "cloned": {
+                  "allocations": 1,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 35,
+                  "zeroed": 0
+                },
+                "dropped": {
+                  "allocations": 0,
+                  "deallocated_bytes": 35,
+                  "deallocations": 1,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "frame": {
+                  "allocations": 0,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "length": 35,
+                "not_pooled": true,
+                "samples_per_arm": 1,
+                "whole_drop": {
+                  "allocations": 0,
+                  "deallocated_bytes": 35,
+                  "deallocations": 1,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "whole_returning": {
+                  "allocations": 1,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 35,
+                  "zeroed": 0
+                }
+              },
+              {
+                "case": "fixed",
+                "cloned": {
+                  "allocations": 1,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 36,
+                  "zeroed": 0
+                },
+                "dropped": {
+                  "allocations": 0,
+                  "deallocated_bytes": 36,
+                  "deallocations": 1,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "frame": {
+                  "allocations": 0,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "length": 36,
+                "not_pooled": true,
+                "samples_per_arm": 1,
+                "whole_drop": {
+                  "allocations": 0,
+                  "deallocated_bytes": 36,
+                  "deallocations": 1,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "whole_returning": {
+                  "allocations": 1,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 36,
+                  "zeroed": 0
+                }
+              },
+              {
+                "case": "fixed-spare",
+                "cloned": {
+                  "allocations": 1,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 36,
+                  "zeroed": 0
+                },
+                "dropped": {
+                  "allocations": 0,
+                  "deallocated_bytes": 36,
+                  "deallocations": 1,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "frame": {
+                  "allocations": 0,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "length": 36,
+                "not_pooled": true,
+                "samples_per_arm": 1,
+                "whole_drop": {
+                  "allocations": 0,
+                  "deallocated_bytes": 36,
+                  "deallocations": 1,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "whole_returning": {
+                  "allocations": 1,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 36,
+                  "zeroed": 0
+                }
+              },
+              {
+                "case": "above",
+                "cloned": {
+                  "allocations": 1,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 37,
+                  "zeroed": 0
+                },
+                "dropped": {
+                  "allocations": 0,
+                  "deallocated_bytes": 37,
+                  "deallocations": 1,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "frame": {
+                  "allocations": 0,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "length": 37,
+                "not_pooled": true,
+                "samples_per_arm": 1,
+                "whole_drop": {
+                  "allocations": 0,
+                  "deallocated_bytes": 37,
+                  "deallocations": 1,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "whole_returning": {
+                  "allocations": 1,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 37,
+                  "zeroed": 0
+                }
+              },
+              {
+                "case": "utf8-generic",
+                "cloned": {
+                  "allocations": 1,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 36,
+                  "zeroed": 0
+                },
+                "dropped": {
+                  "allocations": 0,
+                  "deallocated_bytes": 36,
+                  "deallocations": 1,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "frame": {
+                  "allocations": 0,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "length": 36,
+                "not_pooled": true,
+                "samples_per_arm": 1,
+                "whole_drop": {
+                  "allocations": 0,
+                  "deallocated_bytes": 36,
+                  "deallocations": 1,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "whole_returning": {
+                  "allocations": 1,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 36,
+                  "zeroed": 0
+                }
+              },
+              {
+                "case": "long",
+                "cloned": {
+                  "allocations": 1,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 64,
+                  "zeroed": 0
+                },
+                "dropped": {
+                  "allocations": 0,
+                  "deallocated_bytes": 64,
+                  "deallocations": 1,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "frame": {
+                  "allocations": 0,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "length": 64,
+                "not_pooled": true,
+                "samples_per_arm": 1,
+                "whole_drop": {
+                  "allocations": 0,
+                  "deallocated_bytes": 64,
+                  "deallocations": 1,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "whole_returning": {
+                  "allocations": 1,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 64,
+                  "zeroed": 0
+                }
+              },
+              {
+                "case": "larger",
+                "cloned": {
+                  "allocations": 1,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 1024,
+                  "zeroed": 0
+                },
+                "dropped": {
+                  "allocations": 0,
+                  "deallocated_bytes": 1024,
+                  "deallocations": 1,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "frame": {
+                  "allocations": 0,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "length": 1024,
+                "not_pooled": true,
+                "samples_per_arm": 1,
+                "whole_drop": {
+                  "allocations": 0,
+                  "deallocated_bytes": 1024,
+                  "deallocations": 1,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "whole_returning": {
+                  "allocations": 1,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 1024,
+                  "zeroed": 0
+                }
+              }
+            ]
+          },
+          "stage_samples_per_arm_separate": 9
+        },
+        "rows": {
+          "FAULTS": [
+            {
+              "masks": 16,
+              "model_only": true,
+              "refused": 15,
+              "refused_allocations": 0,
+              "same_first_error_and_events": true
+            }
+          ],
+          "GETTERS": [
+            {
+              "allocator_capture_active": false,
+              "candidate_wall_ns": 2165300,
+              "checksum": 9437184,
+              "iterations": 262144,
+              "model_only": true,
+              "order": "reference-first",
+              "reference_wall_ns": 58500,
+              "sample": 0,
+              "warmup": 32768
+            },
+            {
+              "allocator_capture_active": false,
+              "candidate_wall_ns": 2086200,
+              "checksum": 9437184,
+              "iterations": 262144,
+              "model_only": true,
+              "order": "candidate-first",
+              "reference_wall_ns": 60000,
+              "sample": 1,
+              "warmup": 32768
+            },
+            {
+              "allocator_capture_active": false,
+              "candidate_wall_ns": 2071500,
+              "checksum": 9437184,
+              "iterations": 262144,
+              "model_only": true,
+              "order": "reference-first",
+              "reference_wall_ns": 61400,
+              "sample": 2,
+              "warmup": 32768
+            },
+            {
+              "allocator_capture_active": false,
+              "candidate_wall_ns": 2048100,
+              "checksum": 9437184,
+              "iterations": 262144,
+              "model_only": true,
+              "order": "candidate-first",
+              "reference_wall_ns": 54800,
+              "sample": 3,
+              "warmup": 32768
+            },
+            {
+              "allocator_capture_active": false,
+              "candidate_wall_ns": 2105800,
+              "checksum": 9437184,
+              "iterations": 262144,
+              "model_only": true,
+              "order": "reference-first",
+              "reference_wall_ns": 58000,
+              "sample": 4,
+              "warmup": 32768
+            },
+            {
+              "allocator_capture_active": false,
+              "candidate_wall_ns": 2336000,
+              "checksum": 9437184,
+              "iterations": 262144,
+              "model_only": true,
+              "order": "candidate-first",
+              "reference_wall_ns": 103600,
+              "sample": 5,
+              "warmup": 32768
+            },
+            {
+              "allocator_capture_active": false,
+              "candidate_wall_ns": 2225100,
+              "checksum": 9437184,
+              "iterations": 262144,
+              "model_only": true,
+              "order": "reference-first",
+              "reference_wall_ns": 71200,
+              "sample": 6,
+              "warmup": 32768
+            }
+          ],
+          "LAYOUT": [
+            {
+              "candidate_align": 8,
+              "candidate_clones": {
+                "allocations": 0,
+                "deallocated_bytes": 0,
+                "deallocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0,
+                "zeroed": 0
+              },
+              "candidate_getters": {
+                "allocations": 0,
+                "deallocated_bytes": 0,
+                "deallocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0,
+                "zeroed": 0
+              },
+              "candidate_size": 56,
+              "checksum": 9437184,
+              "clone_calls": 256,
+              "iterations": 262144,
+              "model_only": true,
+              "physical_copy_claim": false,
+              "reference_align": 8,
+              "reference_clones": {
+                "allocations": 256,
+                "deallocated_bytes": 9216,
+                "deallocations": 256,
+                "reallocations": 0,
+                "requested_bytes": 9216,
+                "zeroed": 0
+              },
+              "reference_getters": {
+                "allocations": 0,
+                "deallocated_bytes": 0,
+                "deallocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0,
+                "zeroed": 0
+              },
+              "reference_size": 40
+            }
+          ],
+          "OWNERSHIP": [
+            {
+              "corpus": 9,
+              "debug_and_pretty_debug_equal": true,
+              "generic": 246,
+              "model_only": true,
+              "owned_and_independent": true,
+              "seed": "0x074b0a19",
+              "seeded": 256
+            }
+          ],
+          "SAMPLES": [
+            {
+              "candidate": {
+                "allocations": 0,
+                "deallocated_bytes": 0,
+                "deallocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0,
+                "zeroed": 0
+              },
+              "case": "empty",
+              "heap_capacity": 0,
+              "input_capacity": 0,
+              "length": 0,
+              "model_only": true,
+              "reference": {
+                "allocations": 0,
+                "deallocated_bytes": 0,
+                "deallocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0,
+                "zeroed": 0
+              },
+              "samples_per_arm": 256
+            },
+            {
+              "candidate": {
+                "allocations": 0,
+                "deallocated_bytes": 0,
+                "deallocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0,
+                "zeroed": 0
+              },
+              "case": "one",
+              "heap_capacity": 0,
+              "input_capacity": 1,
+              "length": 1,
+              "model_only": true,
+              "reference": {
+                "allocations": 256,
+                "deallocated_bytes": 256,
+                "deallocations": 256,
+                "reallocations": 0,
+                "requested_bytes": 256,
+                "zeroed": 0
+              },
+              "samples_per_arm": 256
+            },
+            {
+              "candidate": {
+                "allocations": 0,
+                "deallocated_bytes": 0,
+                "deallocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0,
+                "zeroed": 0
+              },
+              "case": "below",
+              "heap_capacity": 0,
+              "input_capacity": 35,
+              "length": 35,
+              "model_only": true,
+              "reference": {
+                "allocations": 256,
+                "deallocated_bytes": 8960,
+                "deallocations": 256,
+                "reallocations": 0,
+                "requested_bytes": 8960,
+                "zeroed": 0
+              },
+              "samples_per_arm": 256
+            },
+            {
+              "candidate": {
+                "allocations": 0,
+                "deallocated_bytes": 0,
+                "deallocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0,
+                "zeroed": 0
+              },
+              "case": "fixed",
+              "heap_capacity": 0,
+              "input_capacity": 36,
+              "length": 36,
+              "model_only": true,
+              "reference": {
+                "allocations": 256,
+                "deallocated_bytes": 9216,
+                "deallocations": 256,
+                "reallocations": 0,
+                "requested_bytes": 9216,
+                "zeroed": 0
+              },
+              "samples_per_arm": 256
+            },
+            {
+              "candidate": {
+                "allocations": 0,
+                "deallocated_bytes": 0,
+                "deallocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0,
+                "zeroed": 0
+              },
+              "case": "fixed-spare",
+              "heap_capacity": 0,
+              "input_capacity": 256,
+              "length": 36,
+              "model_only": true,
+              "reference": {
+                "allocations": 256,
+                "deallocated_bytes": 9216,
+                "deallocations": 256,
+                "reallocations": 0,
+                "requested_bytes": 9216,
+                "zeroed": 0
+              },
+              "samples_per_arm": 256
+            },
+            {
+              "candidate": {
+                "allocations": 256,
+                "deallocated_bytes": 9472,
+                "deallocations": 256,
+                "reallocations": 0,
+                "requested_bytes": 9472,
+                "zeroed": 0
+              },
+              "case": "above",
+              "heap_capacity": 37,
+              "input_capacity": 37,
+              "length": 37,
+              "model_only": true,
+              "reference": {
+                "allocations": 256,
+                "deallocated_bytes": 9472,
+                "deallocations": 256,
+                "reallocations": 0,
+                "requested_bytes": 9472,
+                "zeroed": 0
+              },
+              "samples_per_arm": 256
+            },
+            {
+              "candidate": {
+                "allocations": 0,
+                "deallocated_bytes": 0,
+                "deallocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0,
+                "zeroed": 0
+              },
+              "case": "utf8-generic",
+              "heap_capacity": 0,
+              "input_capacity": 36,
+              "length": 36,
+              "model_only": true,
+              "reference": {
+                "allocations": 256,
+                "deallocated_bytes": 9216,
+                "deallocations": 256,
+                "reallocations": 0,
+                "requested_bytes": 9216,
+                "zeroed": 0
+              },
+              "samples_per_arm": 256
+            },
+            {
+              "candidate": {
+                "allocations": 256,
+                "deallocated_bytes": 16384,
+                "deallocations": 256,
+                "reallocations": 0,
+                "requested_bytes": 16384,
+                "zeroed": 0
+              },
+              "case": "long",
+              "heap_capacity": 64,
+              "input_capacity": 64,
+              "length": 64,
+              "model_only": true,
+              "reference": {
+                "allocations": 256,
+                "deallocated_bytes": 16384,
+                "deallocations": 256,
+                "reallocations": 0,
+                "requested_bytes": 16384,
+                "zeroed": 0
+              },
+              "samples_per_arm": 256
+            },
+            {
+              "candidate": {
+                "allocations": 256,
+                "deallocated_bytes": 262144,
+                "deallocations": 256,
+                "reallocations": 0,
+                "requested_bytes": 262144,
+                "zeroed": 0
+              },
+              "case": "larger",
+              "heap_capacity": 1024,
+              "input_capacity": 1024,
+              "length": 1024,
+              "model_only": true,
+              "reference": {
+                "allocations": 256,
+                "deallocated_bytes": 262144,
+                "deallocations": 256,
+                "reallocations": 0,
+                "requested_bytes": 262144,
+                "zeroed": 0
+              },
+              "samples_per_arm": 256
+            }
+          ]
+        },
+        "totals": {
+          "candidate": {
+            "allocations": 768,
+            "deallocated_bytes": 288000,
+            "deallocations": 768,
+            "reallocations": 0,
+            "requested_bytes": 288000,
+            "zeroed": 0
+          },
+          "reference": {
+            "allocations": 2048,
+            "deallocated_bytes": 324864,
+            "deallocations": 2048,
+            "reallocations": 0,
+            "requested_bytes": 324864,
+            "zeroed": 0
+          }
+        }
+      },
+      "compiler": "1.94.0",
+      "lane": "194",
+      "reference": {
+        "medians_ns": {
+          "reference_wall_ns": 70400
+        },
+        "rows": {
+          "PREFLIGHT": [
+            {
+              "allocator_capture_active": false,
+              "checksum": 9437184,
+              "iterations": 262144,
+              "model_only": true,
+              "reference_wall_ns": 70200,
+              "sample": 0
+            },
+            {
+              "allocator_capture_active": false,
+              "checksum": 9437184,
+              "iterations": 262144,
+              "model_only": true,
+              "reference_wall_ns": 68900,
+              "sample": 1
+            },
+            {
+              "allocator_capture_active": false,
+              "checksum": 9437184,
+              "iterations": 262144,
+              "model_only": true,
+              "reference_wall_ns": 70400,
+              "sample": 2
+            },
+            {
+              "allocator_capture_active": false,
+              "checksum": 9437184,
+              "iterations": 262144,
+              "model_only": true,
+              "reference_wall_ns": 70400,
+              "sample": 3
+            },
+            {
+              "allocator_capture_active": false,
+              "checksum": 9437184,
+              "iterations": 262144,
+              "model_only": true,
+              "reference_wall_ns": 78500,
+              "sample": 4
+            },
+            {
+              "allocator_capture_active": false,
+              "checksum": 9437184,
+              "iterations": 262144,
+              "model_only": true,
+              "reference_wall_ns": 70500,
+              "sample": 5
+            },
+            {
+              "allocator_capture_active": false,
+              "checksum": 9437184,
+              "iterations": 262144,
+              "model_only": true,
+              "reference_wall_ns": 67600,
+              "sample": 6
+            }
+          ],
+          "REFERENCE": [
+            {
+              "checksum": 9437184,
+              "clone_calls": 256,
+              "clone_counts": {
+                "allocations": 256,
+                "deallocated_bytes": 9216,
+                "deallocations": 256,
+                "reallocations": 0,
+                "requested_bytes": 9216,
+                "zeroed": 0
+              },
+              "getter_counts": {
+                "allocations": 0,
+                "deallocated_bytes": 0,
+                "deallocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0,
+                "zeroed": 0
+              },
+              "iterations": 262144,
+              "model_only": true,
+              "point_align": 8,
+              "point_size": 40,
+              "warmup": 32768
+            }
+          ]
+        }
+      }
+    },
+    {
+      "candidate": {
+        "medians_ns": {
+          "candidate_wall_ns": 2183900,
+          "reference_wall_ns": 54800
+        },
+        "old_baseline": {
+          "fixed_shape_samples": 512,
+          "fixed_shape_subset": {
+            "allocations": 512,
+            "deallocated_bytes": 18432,
+            "deallocations": 512,
+            "reallocations": 0,
+            "requested_bytes": 18432,
+            "zeroed": 0
+          },
+          "main_samples": 2304,
+          "main_totals": {
+            "allocations": 2048,
+            "deallocated_bytes": 324864,
+            "deallocations": 2048,
+            "reallocations": 0,
+            "requested_bytes": 324864,
+            "zeroed": 0
+          },
+          "rows": {
+            "DECODER": [
+              {
+                "invalid_bytes": 7,
+                "invalid_counts": 5,
+                "model_only": true,
+                "valid": 1
+              }
+            ],
+            "FAULTS": [
+              {
+                "first_error_prefix": true,
+                "masks": 16,
+                "model_only": true,
+                "refused": 15,
+                "refused_allocations": 0
+              }
+            ],
+            "MAIN": [
+              {
+                "case": "empty",
+                "counts": {
+                  "allocations": 0,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "input_capacity": 0,
+                "length": 0,
+                "output_capacity": 0,
+                "product": false,
+                "samples": 256,
+                "server": false,
+                "synthetic_frame": true,
+                "timing_claim": false
+              },
+              {
+                "case": "one",
+                "counts": {
+                  "allocations": 256,
+                  "deallocated_bytes": 256,
+                  "deallocations": 256,
+                  "reallocations": 0,
+                  "requested_bytes": 256,
+                  "zeroed": 0
+                },
+                "input_capacity": 1,
+                "length": 1,
+                "output_capacity": 1,
+                "product": false,
+                "samples": 256,
+                "server": false,
+                "synthetic_frame": true,
+                "timing_claim": false
+              },
+              {
+                "case": "below",
+                "counts": {
+                  "allocations": 256,
+                  "deallocated_bytes": 8960,
+                  "deallocations": 256,
+                  "reallocations": 0,
+                  "requested_bytes": 8960,
+                  "zeroed": 0
+                },
+                "input_capacity": 35,
+                "length": 35,
+                "output_capacity": 35,
+                "product": false,
+                "samples": 256,
+                "server": false,
+                "synthetic_frame": true,
+                "timing_claim": false
+              },
+              {
+                "case": "fixed",
+                "counts": {
+                  "allocations": 256,
+                  "deallocated_bytes": 9216,
+                  "deallocations": 256,
+                  "reallocations": 0,
+                  "requested_bytes": 9216,
+                  "zeroed": 0
+                },
+                "input_capacity": 36,
+                "length": 36,
+                "output_capacity": 36,
+                "product": false,
+                "samples": 256,
+                "server": false,
+                "synthetic_frame": true,
+                "timing_claim": false
+              },
+              {
+                "case": "fixed-spare",
+                "counts": {
+                  "allocations": 256,
+                  "deallocated_bytes": 9216,
+                  "deallocations": 256,
+                  "reallocations": 0,
+                  "requested_bytes": 9216,
+                  "zeroed": 0
+                },
+                "input_capacity": 256,
+                "length": 36,
+                "output_capacity": 36,
+                "product": false,
+                "samples": 256,
+                "server": false,
+                "synthetic_frame": true,
+                "timing_claim": false
+              },
+              {
+                "case": "above",
+                "counts": {
+                  "allocations": 256,
+                  "deallocated_bytes": 9472,
+                  "deallocations": 256,
+                  "reallocations": 0,
+                  "requested_bytes": 9472,
+                  "zeroed": 0
+                },
+                "input_capacity": 37,
+                "length": 37,
+                "output_capacity": 37,
+                "product": false,
+                "samples": 256,
+                "server": false,
+                "synthetic_frame": true,
+                "timing_claim": false
+              },
+              {
+                "case": "utf8-generic",
+                "counts": {
+                  "allocations": 256,
+                  "deallocated_bytes": 9216,
+                  "deallocations": 256,
+                  "reallocations": 0,
+                  "requested_bytes": 9216,
+                  "zeroed": 0
+                },
+                "input_capacity": 36,
+                "length": 36,
+                "output_capacity": 36,
+                "product": false,
+                "samples": 256,
+                "server": false,
+                "synthetic_frame": true,
+                "timing_claim": false
+              },
+              {
+                "case": "long",
+                "counts": {
+                  "allocations": 256,
+                  "deallocated_bytes": 16384,
+                  "deallocations": 256,
+                  "reallocations": 0,
+                  "requested_bytes": 16384,
+                  "zeroed": 0
+                },
+                "input_capacity": 64,
+                "length": 64,
+                "output_capacity": 64,
+                "product": false,
+                "samples": 256,
+                "server": false,
+                "synthetic_frame": true,
+                "timing_claim": false
+              },
+              {
+                "case": "larger",
+                "counts": {
+                  "allocations": 256,
+                  "deallocated_bytes": 262144,
+                  "deallocations": 256,
+                  "reallocations": 0,
+                  "requested_bytes": 262144,
+                  "zeroed": 0
+                },
+                "input_capacity": 1024,
+                "length": 1024,
+                "output_capacity": 1024,
+                "product": false,
+                "samples": 256,
+                "server": false,
+                "synthetic_frame": true,
+                "timing_claim": false
+              }
+            ],
+            "SEEDED": [
+              {
+                "independent_point_clone": true,
+                "model_only": true,
+                "owned_after_origin_drop": true,
+                "samples": 256,
+                "seed": "0x074b0a19"
+              }
+            ],
+            "STAGES": [
+              {
+                "case": "empty",
+                "cloned": {
+                  "allocations": 0,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "dropped": {
+                  "allocations": 0,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "frame": {
+                  "allocations": 0,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "length": 0,
+                "not_pooled": true,
+                "samples_per_arm": 1,
+                "whole_drop": {
+                  "allocations": 0,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "whole_returning": {
+                  "allocations": 0,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                }
+              },
+              {
+                "case": "one",
+                "cloned": {
+                  "allocations": 1,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 1,
+                  "zeroed": 0
+                },
+                "dropped": {
+                  "allocations": 0,
+                  "deallocated_bytes": 1,
+                  "deallocations": 1,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "frame": {
+                  "allocations": 0,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "length": 1,
+                "not_pooled": true,
+                "samples_per_arm": 1,
+                "whole_drop": {
+                  "allocations": 0,
+                  "deallocated_bytes": 1,
+                  "deallocations": 1,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "whole_returning": {
+                  "allocations": 1,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 1,
+                  "zeroed": 0
+                }
+              },
+              {
+                "case": "below",
+                "cloned": {
+                  "allocations": 1,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 35,
+                  "zeroed": 0
+                },
+                "dropped": {
+                  "allocations": 0,
+                  "deallocated_bytes": 35,
+                  "deallocations": 1,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "frame": {
+                  "allocations": 0,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "length": 35,
+                "not_pooled": true,
+                "samples_per_arm": 1,
+                "whole_drop": {
+                  "allocations": 0,
+                  "deallocated_bytes": 35,
+                  "deallocations": 1,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "whole_returning": {
+                  "allocations": 1,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 35,
+                  "zeroed": 0
+                }
+              },
+              {
+                "case": "fixed",
+                "cloned": {
+                  "allocations": 1,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 36,
+                  "zeroed": 0
+                },
+                "dropped": {
+                  "allocations": 0,
+                  "deallocated_bytes": 36,
+                  "deallocations": 1,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "frame": {
+                  "allocations": 0,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "length": 36,
+                "not_pooled": true,
+                "samples_per_arm": 1,
+                "whole_drop": {
+                  "allocations": 0,
+                  "deallocated_bytes": 36,
+                  "deallocations": 1,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "whole_returning": {
+                  "allocations": 1,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 36,
+                  "zeroed": 0
+                }
+              },
+              {
+                "case": "fixed-spare",
+                "cloned": {
+                  "allocations": 1,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 36,
+                  "zeroed": 0
+                },
+                "dropped": {
+                  "allocations": 0,
+                  "deallocated_bytes": 36,
+                  "deallocations": 1,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "frame": {
+                  "allocations": 0,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "length": 36,
+                "not_pooled": true,
+                "samples_per_arm": 1,
+                "whole_drop": {
+                  "allocations": 0,
+                  "deallocated_bytes": 36,
+                  "deallocations": 1,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "whole_returning": {
+                  "allocations": 1,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 36,
+                  "zeroed": 0
+                }
+              },
+              {
+                "case": "above",
+                "cloned": {
+                  "allocations": 1,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 37,
+                  "zeroed": 0
+                },
+                "dropped": {
+                  "allocations": 0,
+                  "deallocated_bytes": 37,
+                  "deallocations": 1,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "frame": {
+                  "allocations": 0,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "length": 37,
+                "not_pooled": true,
+                "samples_per_arm": 1,
+                "whole_drop": {
+                  "allocations": 0,
+                  "deallocated_bytes": 37,
+                  "deallocations": 1,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "whole_returning": {
+                  "allocations": 1,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 37,
+                  "zeroed": 0
+                }
+              },
+              {
+                "case": "utf8-generic",
+                "cloned": {
+                  "allocations": 1,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 36,
+                  "zeroed": 0
+                },
+                "dropped": {
+                  "allocations": 0,
+                  "deallocated_bytes": 36,
+                  "deallocations": 1,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "frame": {
+                  "allocations": 0,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "length": 36,
+                "not_pooled": true,
+                "samples_per_arm": 1,
+                "whole_drop": {
+                  "allocations": 0,
+                  "deallocated_bytes": 36,
+                  "deallocations": 1,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "whole_returning": {
+                  "allocations": 1,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 36,
+                  "zeroed": 0
+                }
+              },
+              {
+                "case": "long",
+                "cloned": {
+                  "allocations": 1,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 64,
+                  "zeroed": 0
+                },
+                "dropped": {
+                  "allocations": 0,
+                  "deallocated_bytes": 64,
+                  "deallocations": 1,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "frame": {
+                  "allocations": 0,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "length": 64,
+                "not_pooled": true,
+                "samples_per_arm": 1,
+                "whole_drop": {
+                  "allocations": 0,
+                  "deallocated_bytes": 64,
+                  "deallocations": 1,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "whole_returning": {
+                  "allocations": 1,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 64,
+                  "zeroed": 0
+                }
+              },
+              {
+                "case": "larger",
+                "cloned": {
+                  "allocations": 1,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 1024,
+                  "zeroed": 0
+                },
+                "dropped": {
+                  "allocations": 0,
+                  "deallocated_bytes": 1024,
+                  "deallocations": 1,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "frame": {
+                  "allocations": 0,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "length": 1024,
+                "not_pooled": true,
+                "samples_per_arm": 1,
+                "whole_drop": {
+                  "allocations": 0,
+                  "deallocated_bytes": 1024,
+                  "deallocations": 1,
+                  "reallocations": 0,
+                  "requested_bytes": 0,
+                  "zeroed": 0
+                },
+                "whole_returning": {
+                  "allocations": 1,
+                  "deallocated_bytes": 0,
+                  "deallocations": 0,
+                  "reallocations": 0,
+                  "requested_bytes": 1024,
+                  "zeroed": 0
+                }
+              }
+            ]
+          },
+          "stage_samples_per_arm_separate": 9
+        },
+        "rows": {
+          "FAULTS": [
+            {
+              "masks": 16,
+              "model_only": true,
+              "refused": 15,
+              "refused_allocations": 0,
+              "same_first_error_and_events": true
+            }
+          ],
+          "GETTERS": [
+            {
+              "allocator_capture_active": false,
+              "candidate_wall_ns": 2263800,
+              "checksum": 9437184,
+              "iterations": 262144,
+              "model_only": true,
+              "order": "reference-first",
+              "reference_wall_ns": 56900,
+              "sample": 0,
+              "warmup": 32768
+            },
+            {
+              "allocator_capture_active": false,
+              "candidate_wall_ns": 2112700,
+              "checksum": 9437184,
+              "iterations": 262144,
+              "model_only": true,
+              "order": "candidate-first",
+              "reference_wall_ns": 54800,
+              "sample": 1,
+              "warmup": 32768
+            },
+            {
+              "allocator_capture_active": false,
+              "candidate_wall_ns": 2183900,
+              "checksum": 9437184,
+              "iterations": 262144,
+              "model_only": true,
+              "order": "reference-first",
+              "reference_wall_ns": 54800,
+              "sample": 2,
+              "warmup": 32768
+            },
+            {
+              "allocator_capture_active": false,
+              "candidate_wall_ns": 2164300,
+              "checksum": 9437184,
+              "iterations": 262144,
+              "model_only": true,
+              "order": "candidate-first",
+              "reference_wall_ns": 54700,
+              "sample": 3,
+              "warmup": 32768
+            },
+            {
+              "allocator_capture_active": false,
+              "candidate_wall_ns": 2187900,
+              "checksum": 9437184,
+              "iterations": 262144,
+              "model_only": true,
+              "order": "reference-first",
+              "reference_wall_ns": 54800,
+              "sample": 4,
+              "warmup": 32768
+            },
+            {
+              "allocator_capture_active": false,
+              "candidate_wall_ns": 2617000,
+              "checksum": 9437184,
+              "iterations": 262144,
+              "model_only": true,
+              "order": "candidate-first",
+              "reference_wall_ns": 64500,
+              "sample": 5,
+              "warmup": 32768
+            },
+            {
+              "allocator_capture_active": false,
+              "candidate_wall_ns": 2147700,
+              "checksum": 9437184,
+              "iterations": 262144,
+              "model_only": true,
+              "order": "reference-first",
+              "reference_wall_ns": 54800,
+              "sample": 6,
+              "warmup": 32768
+            }
+          ],
+          "LAYOUT": [
+            {
+              "candidate_align": 8,
+              "candidate_clones": {
+                "allocations": 0,
+                "deallocated_bytes": 0,
+                "deallocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0,
+                "zeroed": 0
+              },
+              "candidate_getters": {
+                "allocations": 0,
+                "deallocated_bytes": 0,
+                "deallocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0,
+                "zeroed": 0
+              },
+              "candidate_size": 56,
+              "checksum": 9437184,
+              "clone_calls": 256,
+              "iterations": 262144,
+              "model_only": true,
+              "physical_copy_claim": false,
+              "reference_align": 8,
+              "reference_clones": {
+                "allocations": 256,
+                "deallocated_bytes": 9216,
+                "deallocations": 256,
+                "reallocations": 0,
+                "requested_bytes": 9216,
+                "zeroed": 0
+              },
+              "reference_getters": {
+                "allocations": 0,
+                "deallocated_bytes": 0,
+                "deallocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0,
+                "zeroed": 0
+              },
+              "reference_size": 40
+            }
+          ],
+          "OWNERSHIP": [
+            {
+              "corpus": 9,
+              "debug_and_pretty_debug_equal": true,
+              "generic": 246,
+              "model_only": true,
+              "owned_and_independent": true,
+              "seed": "0x074b0a19",
+              "seeded": 256
+            }
+          ],
+          "SAMPLES": [
+            {
+              "candidate": {
+                "allocations": 0,
+                "deallocated_bytes": 0,
+                "deallocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0,
+                "zeroed": 0
+              },
+              "case": "empty",
+              "heap_capacity": 0,
+              "input_capacity": 0,
+              "length": 0,
+              "model_only": true,
+              "reference": {
+                "allocations": 0,
+                "deallocated_bytes": 0,
+                "deallocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0,
+                "zeroed": 0
+              },
+              "samples_per_arm": 256
+            },
+            {
+              "candidate": {
+                "allocations": 0,
+                "deallocated_bytes": 0,
+                "deallocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0,
+                "zeroed": 0
+              },
+              "case": "one",
+              "heap_capacity": 0,
+              "input_capacity": 1,
+              "length": 1,
+              "model_only": true,
+              "reference": {
+                "allocations": 256,
+                "deallocated_bytes": 256,
+                "deallocations": 256,
+                "reallocations": 0,
+                "requested_bytes": 256,
+                "zeroed": 0
+              },
+              "samples_per_arm": 256
+            },
+            {
+              "candidate": {
+                "allocations": 0,
+                "deallocated_bytes": 0,
+                "deallocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0,
+                "zeroed": 0
+              },
+              "case": "below",
+              "heap_capacity": 0,
+              "input_capacity": 35,
+              "length": 35,
+              "model_only": true,
+              "reference": {
+                "allocations": 256,
+                "deallocated_bytes": 8960,
+                "deallocations": 256,
+                "reallocations": 0,
+                "requested_bytes": 8960,
+                "zeroed": 0
+              },
+              "samples_per_arm": 256
+            },
+            {
+              "candidate": {
+                "allocations": 0,
+                "deallocated_bytes": 0,
+                "deallocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0,
+                "zeroed": 0
+              },
+              "case": "fixed",
+              "heap_capacity": 0,
+              "input_capacity": 36,
+              "length": 36,
+              "model_only": true,
+              "reference": {
+                "allocations": 256,
+                "deallocated_bytes": 9216,
+                "deallocations": 256,
+                "reallocations": 0,
+                "requested_bytes": 9216,
+                "zeroed": 0
+              },
+              "samples_per_arm": 256
+            },
+            {
+              "candidate": {
+                "allocations": 0,
+                "deallocated_bytes": 0,
+                "deallocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0,
+                "zeroed": 0
+              },
+              "case": "fixed-spare",
+              "heap_capacity": 0,
+              "input_capacity": 256,
+              "length": 36,
+              "model_only": true,
+              "reference": {
+                "allocations": 256,
+                "deallocated_bytes": 9216,
+                "deallocations": 256,
+                "reallocations": 0,
+                "requested_bytes": 9216,
+                "zeroed": 0
+              },
+              "samples_per_arm": 256
+            },
+            {
+              "candidate": {
+                "allocations": 256,
+                "deallocated_bytes": 9472,
+                "deallocations": 256,
+                "reallocations": 0,
+                "requested_bytes": 9472,
+                "zeroed": 0
+              },
+              "case": "above",
+              "heap_capacity": 37,
+              "input_capacity": 37,
+              "length": 37,
+              "model_only": true,
+              "reference": {
+                "allocations": 256,
+                "deallocated_bytes": 9472,
+                "deallocations": 256,
+                "reallocations": 0,
+                "requested_bytes": 9472,
+                "zeroed": 0
+              },
+              "samples_per_arm": 256
+            },
+            {
+              "candidate": {
+                "allocations": 0,
+                "deallocated_bytes": 0,
+                "deallocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0,
+                "zeroed": 0
+              },
+              "case": "utf8-generic",
+              "heap_capacity": 0,
+              "input_capacity": 36,
+              "length": 36,
+              "model_only": true,
+              "reference": {
+                "allocations": 256,
+                "deallocated_bytes": 9216,
+                "deallocations": 256,
+                "reallocations": 0,
+                "requested_bytes": 9216,
+                "zeroed": 0
+              },
+              "samples_per_arm": 256
+            },
+            {
+              "candidate": {
+                "allocations": 256,
+                "deallocated_bytes": 16384,
+                "deallocations": 256,
+                "reallocations": 0,
+                "requested_bytes": 16384,
+                "zeroed": 0
+              },
+              "case": "long",
+              "heap_capacity": 64,
+              "input_capacity": 64,
+              "length": 64,
+              "model_only": true,
+              "reference": {
+                "allocations": 256,
+                "deallocated_bytes": 16384,
+                "deallocations": 256,
+                "reallocations": 0,
+                "requested_bytes": 16384,
+                "zeroed": 0
+              },
+              "samples_per_arm": 256
+            },
+            {
+              "candidate": {
+                "allocations": 256,
+                "deallocated_bytes": 262144,
+                "deallocations": 256,
+                "reallocations": 0,
+                "requested_bytes": 262144,
+                "zeroed": 0
+              },
+              "case": "larger",
+              "heap_capacity": 1024,
+              "input_capacity": 1024,
+              "length": 1024,
+              "model_only": true,
+              "reference": {
+                "allocations": 256,
+                "deallocated_bytes": 262144,
+                "deallocations": 256,
+                "reallocations": 0,
+                "requested_bytes": 262144,
+                "zeroed": 0
+              },
+              "samples_per_arm": 256
+            }
+          ]
+        },
+        "totals": {
+          "candidate": {
+            "allocations": 768,
+            "deallocated_bytes": 288000,
+            "deallocations": 768,
+            "reallocations": 0,
+            "requested_bytes": 288000,
+            "zeroed": 0
+          },
+          "reference": {
+            "allocations": 2048,
+            "deallocated_bytes": 324864,
+            "deallocations": 2048,
+            "reallocations": 0,
+            "requested_bytes": 324864,
+            "zeroed": 0
+          }
+        }
+      },
+      "compiler": "1.88.0",
+      "lane": "188",
+      "reference": {
+        "medians_ns": {
+          "reference_wall_ns": 71100
+        },
+        "rows": {
+          "PREFLIGHT": [
+            {
+              "allocator_capture_active": false,
+              "checksum": 9437184,
+              "iterations": 262144,
+              "model_only": true,
+              "reference_wall_ns": 71100,
+              "sample": 0
+            },
+            {
+              "allocator_capture_active": false,
+              "checksum": 9437184,
+              "iterations": 262144,
+              "model_only": true,
+              "reference_wall_ns": 74400,
+              "sample": 1
+            },
+            {
+              "allocator_capture_active": false,
+              "checksum": 9437184,
+              "iterations": 262144,
+              "model_only": true,
+              "reference_wall_ns": 71100,
+              "sample": 2
+            },
+            {
+              "allocator_capture_active": false,
+              "checksum": 9437184,
+              "iterations": 262144,
+              "model_only": true,
+              "reference_wall_ns": 74300,
+              "sample": 3
+            },
+            {
+              "allocator_capture_active": false,
+              "checksum": 9437184,
+              "iterations": 262144,
+              "model_only": true,
+              "reference_wall_ns": 71000,
+              "sample": 4
+            },
+            {
+              "allocator_capture_active": false,
+              "checksum": 9437184,
+              "iterations": 262144,
+              "model_only": true,
+              "reference_wall_ns": 82200,
+              "sample": 5
+            },
+            {
+              "allocator_capture_active": false,
+              "checksum": 9437184,
+              "iterations": 262144,
+              "model_only": true,
+              "reference_wall_ns": 71100,
+              "sample": 6
+            }
+          ],
+          "REFERENCE": [
+            {
+              "checksum": 9437184,
+              "clone_calls": 256,
+              "clone_counts": {
+                "allocations": 256,
+                "deallocated_bytes": 9216,
+                "deallocations": 256,
+                "reallocations": 0,
+                "requested_bytes": 9216,
+                "zeroed": 0
+              },
+              "getter_counts": {
+                "allocations": 0,
+                "deallocated_bytes": 0,
+                "deallocations": 0,
+                "reallocations": 0,
+                "requested_bytes": 0,
+                "zeroed": 0
+              },
+              "iterations": 262144,
+              "model_only": true,
+              "point_align": 8,
+              "point_size": 40,
+              "warmup": 32768
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "measurement_retries": 0,
+  "original_material_gate_passed": false,
+  "original_owner_profiles": 0,
+  "original_windows_seconds": [
+    300,
+    60,
+    10
+  ],
+  "probe_source_pins": {
+    "crates/xtask/tests/sample_boot_inline_074.rs": "3c28559917ccd0250de8f9cab47b0b7117a8bcf9181de4d1299354e3935ef7e3",
+    "docs/testing/performance/0.74/sample-boot-inline-plan-20261022.md": "ea5d5a8e1d046f6dc564b3440fdfc6050736b937c37707a4ab5f0ea199605da6",
+    "tools/sample-boot-inline-074/Cargo.lock": "6f8b4178b840231e5bac06f3fd7abaa165363ed45bda5bd8c11064b0670c2e72",
+    "tools/sample-boot-inline-074/Cargo.toml": "72b6477ee71d46e803aed4fd4eba3c964256cab730a2cbb194b619349d1804ae",
+    "tools/sample-boot-inline-074/check.ps1": "4e4fb9d8b54bdcdb08da96370b3acbed1c6a57e24abcf4847d1f11acdeed8452",
+    "tools/sample-boot-inline-074/compare.rs": "5bada85f733cd97bf41ec6f95f8d2ee8c2cb8b614ab99a7eca6027206c9212b4",
+    "tools/sample-boot-inline-074/cost.rs": "e6a7bb4a00a8c13e7a0ad74d841ea3919c0bbcccfe601896f14f316f366a7aca",
+    "tools/sample-boot-inline-074/model.rs": "ee1ca7f5e3899519ae85c1cf89950dac7b2ad63af8268b2c6e70c94974ed2cfc",
+    "tools/sample-boot-inline-074/probe.rs": "af693fcb36ad9117ab8ba06eb280ce98516ca9a277e2c893496c23df7126a24b",
+    "tools/sample-boot-inline-074/prototype.rs": "14adf00af849063ca29247fea1c5d46039df604bbb3e277b0cd9a0f04d4b5e20"
+  },
+  "product": false,
+  "prototype_representation_only": true,
+  "qualification_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "reference_source_pins": {
+    "crates/xtask/tests/sample_boot_inline_074.rs": "11dae48e672be75536dd1d45fd74090865fd97301fd4f5872c78868a2f72ff34",
+    "tools/sample-boot-inline-074/Cargo.lock": "6f8b4178b840231e5bac06f3fd7abaa165363ed45bda5bd8c11064b0670c2e72",
+    "tools/sample-boot-inline-074/Cargo.toml": "72b6477ee71d46e803aed4fd4eba3c964256cab730a2cbb194b619349d1804ae",
+    "tools/sample-boot-inline-074/check.ps1": "e238d08c07bf59a36e9d005808a9d249eeed230e293040c23af77c32760981bc",
+    "tools/sample-boot-inline-074/cost.rs": "e6a7bb4a00a8c13e7a0ad74d841ea3919c0bbcccfe601896f14f316f366a7aca",
+    "tools/sample-boot-inline-074/model.rs": "f2ed3e2841ca65e774b25d38db1d925ff793fe53464da1fbe14e0a41c3a018cf",
+    "tools/sample-boot-inline-074/probe.rs": "138629805a63831938e215b6416b353e72284cc0db46d42b077dd5bc3b6baf6d"
+  },
+  "runtime_candidate_implemented": false,
+  "schema": "pure-sample-boot-inline-074-v1",
+  "server": false,
+  "services_changed": false,
+  "source_canaries": 46
+}

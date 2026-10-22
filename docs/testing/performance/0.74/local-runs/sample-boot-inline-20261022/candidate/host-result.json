@@ -1,0 +1,22 @@
+{
+  "product": false,
+  "phase": "candidate",
+  "model_only": true,
+  "platform": "windows-msvc",
+  "runtime_candidate_implemented": false,
+  "ignored_tests_run": false,
+  "cohort": "first",
+  "prototype_only": true,
+  "original_owner_profiles": 0,
+  "failure": "Check refused: candidate/host/canaries (101)",
+  "server": false,
+  "steps": [
+    {
+      "exit": 101,
+      "sha256": "3f27e4da03d42a399d8888aa56f78c0e49502b2d9d1fff07a68ead4f837e59ac",
+      "log": "host-canaries.log",
+      "name": "canaries"
+    }
+  ],
+  "lane": "host"
+}
