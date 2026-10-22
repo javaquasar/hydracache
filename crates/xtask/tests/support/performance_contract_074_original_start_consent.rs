@@ -130,7 +130,7 @@ pub(super) fn normalize(path: &str, raw: &str) -> String {
 #[test]
 fn original_start_consent_keeps_historical_guards_and_has_no_execution_conversion() {
     let read = |p: &str| {
-        std::fs::read_to_string(super::root().join(p))
+        crate::runtime_io::read_to_string(super::root().join(p))
             .unwrap()
             .replace('\r', "")
     };

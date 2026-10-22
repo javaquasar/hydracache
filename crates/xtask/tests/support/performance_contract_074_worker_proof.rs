@@ -34,7 +34,7 @@ pub(super) fn restore_reason(raw: &str) -> String {
 #[test]
 fn worker_proof_reuse_is_one_owned_substitution_with_full_reference_and_live_guards() {
     let read = |p: &str| {
-        let raw = std::fs::read_to_string(super::root().join(p))
+        let raw = crate::runtime_io::read_to_string(super::root().join(p))
             .unwrap()
             .replace('\r', "");
         super::start_consent::normalize(p, &raw)

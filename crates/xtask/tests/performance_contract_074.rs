@@ -1,3 +1,10 @@
+#[path = "../../../tools/authority-runtime-074/gate.rs"]
+mod runtime;
+#[path = "../../../tools/authority-runtime-074/io.rs"]
+mod runtime_io;
+#[path = "../../../tools/authority-storage-source-074/contract.rs"]
+mod storage_contract;
+
 use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};

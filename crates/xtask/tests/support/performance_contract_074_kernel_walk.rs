@@ -71,7 +71,7 @@ fn root() -> std::path::PathBuf {
     std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..")
 }
 fn read(path: &str) -> String {
-    let raw = std::fs::read_to_string(root().join(path))
+    let raw = crate::runtime_io::read_to_string(root().join(path))
         .unwrap()
         .replace('\r', "");
     crate::hc074_document_scratch_view!(path, &raw)

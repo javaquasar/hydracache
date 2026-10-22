@@ -216,7 +216,7 @@ fn root() -> std::path::PathBuf {
     super::super::super::super::root()
 }
 fn read(path: &str) -> String {
-    std::fs::read_to_string(root().join(path))
+    crate::runtime_io::read_to_string(root().join(path))
         .unwrap()
         .replace('\r', "")
 }

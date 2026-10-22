@@ -28,7 +28,7 @@ pub(super) fn normalize(path: &str, raw: &str) -> String {
 #[test]
 fn output_join_preserves_original_guards_and_effect_closing_checks() {
     let read = |p: &str| {
-        std::fs::read_to_string(super::root().join(p))
+        crate::runtime_io::read_to_string(super::root().join(p))
             .unwrap()
             .replace('\r', "")
     };

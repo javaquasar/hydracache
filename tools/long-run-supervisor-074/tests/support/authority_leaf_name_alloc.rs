@@ -8,8 +8,8 @@ use crate::diagnostic_worker_policy::authority_registry::fixture::leaf_name_cont
 fn authority_leaf_name_allocation_attribution() {
     assert_ne!(unsafe { libc::geteuid() }, 0);
     for case in ["record", "commit", "metadata-refusal", "missing-name"] {
-        let fixture = LeafFixture::new(case);
-        let run = |mode, iterations| {
+        let mut fixture = LeafFixture::new(case);
+        let mut run = |mode, iterations| {
             for _ in 0..iterations {
                 let result = std::hint::black_box(fixture.check(std::hint::black_box(mode)));
                 assert_eq!(result.is_ok(), matches!(case, "record" | "commit"));

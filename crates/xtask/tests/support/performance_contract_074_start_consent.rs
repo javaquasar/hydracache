@@ -54,7 +54,7 @@ pub(super) fn normalize(path: &str, raw: &str) -> String {
 #[test]
 fn start_consent_is_data_only_and_preserves_all_original_runtime_and_static_guards() {
     let read = |p: &str| {
-        std::fs::read_to_string(super::root().join(p))
+        crate::runtime_io::read_to_string(super::root().join(p))
             .unwrap()
             .replace('\r', "")
     };

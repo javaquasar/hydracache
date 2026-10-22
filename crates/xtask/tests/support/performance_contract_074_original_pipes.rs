@@ -27,7 +27,7 @@ pub(super) fn normalize(path: &str, raw: &str) -> String {
 #[test]
 fn original_pipes_preserve_publisher_deadlines_and_private_kernel_ownership() {
     let read = |p: &str| {
-        std::fs::read_to_string(super::root().join(p))
+        crate::runtime_io::read_to_string(super::root().join(p))
             .unwrap()
             .replace('\r', "")
     };

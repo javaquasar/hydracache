@@ -80,7 +80,7 @@ fn authority_open_name_allocation_cpu_attribution() {
         })
     );
     for case in 0..6 {
-        let fixture = Probe::new(case);
+        let mut fixture = Probe::new(case);
         println!(
             "HC074-OPEN-NAME-FIXTURE {}",
             serde_json::json!({"case":case,"identity":fixture.identity()})

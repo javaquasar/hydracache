@@ -30,6 +30,7 @@ fn reference_open(
         stamp,
         raw,
         name,
+        scratch: None,
     })
 }
 
@@ -149,7 +150,7 @@ impl LeafFixture {
             _ => panic!("unknown bounded leaf name case"),
         }
     }
-    pub(crate) fn check(&self, mode: Reading) -> Result<(), AuthorityError> {
+    pub(crate) fn check(&mut self, mode: Reading) -> Result<(), AuthorityError> {
         match mode {
             Reading::Reference => {
                 reference(&self.leaf, &self.directory, self.uid, self.gid, self.budget)
@@ -191,7 +192,7 @@ fn authority_leaf_name_seeded_names_payloads_and_open_results_match_frozen_refer
                 1 => budget,
                 _ => seed as usize % (budget + 1),
             };
-            let value = LeafFixture::build(suffix, index + 1, length, seed as u8);
+            let mut value = LeafFixture::build(suffix, index + 1, length, seed as u8);
             for mode in [Reading::Reference, Reading::Proposed, Reading::Actual] {
                 assert_eq!(class(value.check(mode)), ("ok", None));
             }
@@ -276,7 +277,7 @@ fn authority_leaf_name_fault_classes_and_original_metadata_short_circuit_match()
         }
     }
     for case in ["record", "commit", "metadata-refusal", "missing-name"] {
-        let value = LeafFixture::new(case);
+        let mut value = LeafFixture::new(case);
         let expected = class(value.check(Reading::Reference));
         for mode in [Reading::Proposed, Reading::Actual] {
             assert_eq!(class(value.check(mode)), expected);

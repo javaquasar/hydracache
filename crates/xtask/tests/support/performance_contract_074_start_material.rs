@@ -130,7 +130,7 @@ pub(super) fn normalize(path: &str, raw: &str) -> String {
 #[test]
 fn original_start_material_preserves_output_runtime_and_closed_execution() {
     let read = |p: &str| {
-        std::fs::read_to_string(super::root().join(p))
+        crate::runtime_io::read_to_string(super::root().join(p))
             .unwrap()
             .replace('\r', "")
     };

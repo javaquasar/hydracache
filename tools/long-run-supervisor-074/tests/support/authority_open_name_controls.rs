@@ -257,7 +257,7 @@ impl Probe {
         .unwrap();
         drop(std::hint::black_box(file));
     }
-    pub(crate) fn leaf(&self, cold: bool) {
+    pub(crate) fn leaf(&mut self, cold: bool) {
         let uid = unsafe { libc::geteuid() };
         let gid = unsafe { libc::getegid() };
         if cold {
@@ -267,7 +267,7 @@ impl Probe {
             ));
         } else {
             self.held
-                .as_ref()
+                .as_mut()
                 .unwrap()
                 .revalidate(&self.parent, uid, gid, MAX_RECORD_BYTES)
                 .unwrap();

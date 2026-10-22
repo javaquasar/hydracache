@@ -1,5 +1,8 @@
 #[path = "../../../tools/authority-storage-source-074/contract.rs"]
 mod contract;
+#[path = "../../../tools/authority-runtime-074/gate.rs"]
+mod runtime;
+use contract as storage_contract;
 use proc_macro2::{Delimiter, Group, Ident, Punct, Spacing, TokenStream, TokenTree};
 use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
@@ -8,9 +11,11 @@ fn root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
 }
 fn read(path: &str) -> String {
-    std::fs::read_to_string(root().join(path))
-        .unwrap()
-        .replace('\r', "")
+    runtime::view(path, {
+        std::fs::read_to_string(root().join(path))
+            .unwrap()
+            .replace('\r', "")
+    })
 }
 fn frozen(path: &str) -> String {
     let output = std::process::Command::new("git")

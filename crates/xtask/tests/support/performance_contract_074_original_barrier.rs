@@ -161,7 +161,7 @@ pub(super) fn normalize(path: &str, raw: &str) -> String {
     }
 }
 fn read(path: &str) -> String {
-    std::fs::read_to_string(super::root().join(path))
+    crate::runtime_io::read_to_string(super::root().join(path))
         .unwrap()
         .replace('\r', "")
 }

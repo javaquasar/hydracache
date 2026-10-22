@@ -46,7 +46,7 @@ pub(super) fn normalize(path: &str, raw: &str) -> String {
 #[test]
 fn collector_starting_record_preserves_original_runtime_and_two_file_storage() {
     let read = |p: &str| {
-        std::fs::read_to_string(super::root().join(p))
+        crate::runtime_io::read_to_string(super::root().join(p))
             .unwrap()
             .replace('\r', "")
     };

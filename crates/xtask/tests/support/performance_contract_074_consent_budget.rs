@@ -96,7 +96,7 @@ pub(super) fn normalize(path: &str, raw: &str) -> String {
 #[test]
 fn consent_budget_is_additive_and_keeps_original_runtime_and_deadlines() {
     let read = |path: &str| {
-        std::fs::read_to_string(super::root().join(path))
+        crate::runtime_io::read_to_string(super::root().join(path))
             .unwrap()
             .replace('\r', "")
     };

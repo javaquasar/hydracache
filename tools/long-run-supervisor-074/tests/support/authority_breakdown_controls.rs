@@ -95,7 +95,7 @@ impl Fixture {
                 assert_eq!(self.registry.directory.inventory()?, self.depth);
             }
             Phase::Records => {
-                for entry in &self.registry.entries {
+                for entry in &mut self.registry.entries {
                     entry.record.revalidate(
                         &self.registry.directory.leaf,
                         self.registry.directory.uid,
@@ -105,7 +105,7 @@ impl Fixture {
                 }
             }
             Phase::Markers => {
-                for entry in &self.registry.entries {
+                for entry in &mut self.registry.entries {
                     entry.marker.revalidate(
                         &self.registry.directory.leaf,
                         self.registry.directory.uid,

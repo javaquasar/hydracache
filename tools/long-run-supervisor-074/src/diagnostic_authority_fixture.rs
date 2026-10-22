@@ -63,6 +63,7 @@ struct Leaf {
     stamp: Stamp,
     raw: Vec<u8>,
     name: String,
+    scratch: Option<Vec<u8>>,
 }
 impl Leaf {
     fn open(
@@ -78,6 +79,7 @@ impl Leaf {
             stamp,
             raw,
             name,
+            scratch: None,
         })
     }
     fn read(
@@ -101,8 +103,49 @@ impl Leaf {
         }
         Ok((file, stamp, raw))
     }
+    fn read_reusing(
+        dir: &File,
+        name: &str,
+        uid: u32,
+        gid: u32,
+        budget: usize,
+        slot: &mut Option<Vec<u8>>,
+    ) -> Result<(File, Stamp, Vec<u8>), AuthorityError> {
+        let mut file = open_at(dir, name, false)?;
+        let before = file.metadata()?;
+        regular(&before, uid, gid, 0o400)?;
+        if before.dev() != dir.metadata()?.dev() || before.len() > budget as u64 {
+            return Err(AuthorityError::Budget);
+        }
+        let stamp = Stamp::of(&before);
+        let mut raw = match slot.take() {
+            Some(mut raw) if raw.capacity() == before.len() as usize => {
+                raw.clear();
+                raw
+            }
+            _ => Vec::with_capacity(before.len() as usize),
+        };
+        (&mut file).take(budget as u64 + 1).read_to_end(&mut raw)?;
+        if Stamp::of(&file.metadata()?) != stamp || raw.len() as u64 != stamp.len {
+            return Err(AuthorityError::Invalid);
+        }
+        Ok((file, stamp, raw))
+    }
     fn revalidate(
-        &self,
+        &mut self,
+        dir: &File,
+        uid: u32,
+        gid: u32,
+        budget: usize,
+    ) -> Result<(), AuthorityError> {
+        let result = self.validate(dir, uid, gid, budget);
+        if result.is_err() {
+            self.evict_scratch();
+        }
+        result
+    }
+    fn validate(
+        &mut self,
         dir: &File,
         uid: u32,
         gid: u32,
@@ -112,11 +155,17 @@ impl Leaf {
             return Err(AuthorityError::Invalid);
         }
         // Keep the fresh File (tuple field zero) alive through both comparisons.
-        let named = Self::read(dir, &self.name, uid, gid, budget)?;
+        let named = Self::read_reusing(dir, &self.name, uid, gid, budget, &mut self.scratch)?;
         if named.1 != self.stamp || named.2 != self.raw {
             return Err(AuthorityError::Invalid);
         }
+        if named.2.capacity() == named.1.len as usize && named.2.capacity() <= budget {
+            self.scratch = Some(named.2);
+        }
         Ok(())
+    }
+    fn evict_scratch(&mut self) {
+        self.scratch = None;
     }
 }
 struct Entry {
@@ -367,6 +416,13 @@ fn open_directory(
 impl FixtureAuthorityRegistry {
     pub(crate) fn latch_refusal(&mut self) {
         self.failed = true;
+        self.evict_scratch();
+    }
+    fn evict_scratch(&mut self) {
+        for entry in &mut self.entries {
+            entry.record.evict_scratch();
+            entry.marker.evict_scratch();
+        }
     }
     pub fn is_failed(&self) -> bool {
         self.failed
@@ -386,7 +442,7 @@ impl FixtureAuthorityRegistry {
             if self.directory.inventory()? != self.entries.len() {
                 return Err(AuthorityError::Invalid);
             }
-            for entry in &self.entries {
+            for entry in &mut self.entries {
                 entry.record.revalidate(
                     &self.directory.leaf,
                     self.directory.uid,
@@ -407,7 +463,7 @@ impl FixtureAuthorityRegistry {
             Ok(())
         })();
         if result.is_err() {
-            self.failed = true;
+            self.latch_refusal();
         }
         result
     }
@@ -427,7 +483,7 @@ impl FixtureAuthorityRegistry {
                 Ok(record.view())
             });
         if result.is_err() {
-            self.failed = true;
+            self.latch_refusal();
         }
         result
     }
@@ -452,7 +508,7 @@ impl FixtureAuthorityRegistry {
         match next {
             Ok(next) => self.publish(next, fault),
             Err(error) => {
-                self.failed = true;
+                self.latch_refusal();
                 Err(error)
             }
         }
@@ -514,7 +570,7 @@ impl FixtureAuthorityRegistry {
             Ok(())
         })();
         if result.is_err() {
-            self.failed = true;
+            self.latch_refusal();
         }
         result
     }

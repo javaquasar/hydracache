@@ -34,7 +34,7 @@ pub(super) fn normalize(path: &str, raw: &str) -> String {
 #[test]
 fn collector_starting_publication_preserves_every_original_predicate_and_deadline() {
     let read = |p: &str| {
-        std::fs::read_to_string(super::root().join(p))
+        crate::runtime_io::read_to_string(super::root().join(p))
             .unwrap()
             .replace('\r', "")
     };

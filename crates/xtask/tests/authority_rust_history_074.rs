@@ -2,13 +2,19 @@
 mod contract;
 #[path = "support/authority_history_io.rs"]
 mod history;
+#[path = "../../../tools/authority-runtime-074/gate.rs"]
+mod runtime;
+#[path = "../../../tools/authority-storage-source-074/contract.rs"]
+mod storage_contract;
 use sha2::{Digest, Sha256};
 use std::collections::BTreeSet;
 
 fn read(path: &str) -> String {
-    std::fs::read_to_string(history::root().join(path))
-        .unwrap()
-        .replace("\r\n", "\n")
+    runtime::view(path, {
+        std::fs::read_to_string(history::root().join(path))
+            .unwrap()
+            .replace("\r\n", "\n")
+    })
 }
 fn old(path: &str) -> String {
     String::from_utf8(history::frozen_bytes(path).unwrap())

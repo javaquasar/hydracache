@@ -25,7 +25,7 @@ pub(super) fn normalize(path: &str, raw: &str) -> String {
 #[test]
 fn preconsent_frame_preserves_frozen_body_all_lower_guards_and_original_windows() {
     let read = |p: &str| {
-        std::fs::read_to_string(super::root().join(p))
+        crate::runtime_io::read_to_string(super::root().join(p))
             .unwrap()
             .replace('\r', "")
     };

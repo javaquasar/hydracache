@@ -73,7 +73,7 @@ fn restore_short_contract(raw: &str) -> String {
 #[test]
 fn campaign_claim_construction_preserves_admission_markers_and_successful_owner() {
     let read = |p: &str| {
-        let raw = std::fs::read_to_string(super::root().join(p))
+        let raw = crate::runtime_io::read_to_string(super::root().join(p))
             .unwrap()
             .replace('\r', "");
         super::start_consent::normalize(p, &raw)

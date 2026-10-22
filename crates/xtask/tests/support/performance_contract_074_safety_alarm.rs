@@ -300,7 +300,7 @@ pub(super) fn normalize(path: &str, raw: &str) -> String {
 #[test]
 fn rejected_original_alarm_stays_test_only_with_exact_original_guards() {
     let read = |p: &str| {
-        std::fs::read_to_string(super::root().join(p))
+        crate::runtime_io::read_to_string(super::root().join(p))
             .unwrap()
             .replace('\r', "")
     };

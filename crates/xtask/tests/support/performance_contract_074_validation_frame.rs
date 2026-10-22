@@ -116,7 +116,7 @@ pub(super) fn normalize(path: &str, raw: &str) -> String {
 #[test]
 fn validation_frame_preserves_original_guards_and_frozen_workload() {
     let read = |path: &str| {
-        std::fs::read_to_string(super::root().join(path))
+        crate::runtime_io::read_to_string(super::root().join(path))
             .unwrap()
             .replace('\r', "")
     };

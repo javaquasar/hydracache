@@ -116,9 +116,63 @@ fn leaf_read<O: Observer>(
     Ok((file, stamp, raw))
 }
 
+fn leaf_read_reusing<O: Observer>(
+    observer: &mut O,
+    dir: &File,
+    name: &str,
+    uid: u32,
+    gid: u32,
+    budget: usize,
+    slot: &mut Option<Vec<u8>>,
+) -> Result<(File, Stamp, Vec<u8>), AuthorityError> {
+    let mut file = observer.around(Site::LeafOpen, || open_at(dir, name, false))?;
+    let before = observer.around(Site::LeafBefore, || file.metadata())?;
+    regular(&before, uid, gid, 0o400)?;
+    if before.dev()
+        != observer
+            .around(Site::ParentMetadata, || dir.metadata())?
+            .dev()
+        || before.len() > budget as u64
+    {
+        return Err(AuthorityError::Budget);
+    }
+    let stamp = Stamp::of(&before);
+    let mut raw = observer.around(Site::Buffer, || match slot.take() {
+        Some(mut raw) if raw.capacity() == before.len() as usize => {
+            raw.clear();
+            raw
+        }
+        _ => Vec::with_capacity(before.len() as usize),
+    });
+    observer.around(Site::Read, || {
+        (&mut file).take(budget as u64 + 1).read_to_end(&mut raw)
+    })?;
+    if Stamp::of(&observer.around(Site::After, || file.metadata())?) != stamp
+        || raw.len() as u64 != stamp.len
+    {
+        return Err(AuthorityError::Invalid);
+    }
+    Ok((file, stamp, raw))
+}
+
 fn leaf_revalidate<O: Observer>(
     observer: &mut O,
-    leaf: &Leaf,
+    leaf: &mut Leaf,
+    dir: &File,
+    uid: u32,
+    gid: u32,
+    budget: usize,
+) -> Result<(), AuthorityError> {
+    let result = leaf_validate(observer, leaf, dir, uid, gid, budget);
+    if result.is_err() {
+        leaf.evict_scratch();
+    }
+    result
+}
+
+fn leaf_validate<O: Observer>(
+    observer: &mut O,
+    leaf: &mut Leaf,
     dir: &File,
     uid: u32,
     gid: u32,
@@ -128,9 +182,20 @@ fn leaf_revalidate<O: Observer>(
         return Err(AuthorityError::Invalid);
     }
     // Keep the fresh File (tuple field zero) alive through both comparisons.
-    let named = leaf_read(observer, dir, &leaf.name, uid, gid, budget)?;
+    let named = leaf_read_reusing(
+        observer,
+        dir,
+        &leaf.name,
+        uid,
+        gid,
+        budget,
+        &mut leaf.scratch,
+    )?;
     if named.1 != leaf.stamp || named.2 != leaf.raw {
         return Err(AuthorityError::Invalid);
+    }
+    if named.2.capacity() == named.1.len as usize && named.2.capacity() <= budget {
+        leaf.scratch = Some(named.2);
     }
     Ok(())
 }
@@ -207,11 +272,11 @@ impl Fixture {
             Phase::Directory => self.registry.directory.revalidate()?,
             Phase::Inventory => assert_eq!(self.registry.directory.inventory()?, self.depth),
             Phase::Records | Phase::Markers | Phase::TracedRecords | Phase::TracedMarkers => {
-                for entry in &self.registry.entries {
+                for entry in &mut self.registry.entries {
                     let (leaf, budget) = if matches!(phase, Phase::Records | Phase::TracedRecords) {
-                        (&entry.record, MAX_RECORD_BYTES)
+                        (&mut entry.record, MAX_RECORD_BYTES)
                     } else {
-                        (&entry.marker, COMMIT_MARKER_BYTES)
+                        (&mut entry.marker, COMMIT_MARKER_BYTES)
                     };
                     let dir = &self.registry.directory;
                     if matches!(phase, Phase::TracedRecords | Phase::TracedMarkers) {
@@ -385,7 +450,7 @@ fn authority_owners_leaf_read_and_revalidate_match_bytes_stamps_and_refusals() {
         fs::write(&path, b"original").unwrap();
         fs::set_permissions(&path, fs::Permissions::from_mode(0o400)).unwrap();
         let dir = File::open(root.path()).unwrap();
-        let leaf = Leaf::open(&dir, "record".into(), uid, gid, MAX_RECORD_BYTES).unwrap();
+        let mut leaf = Leaf::open(&dir, "record".into(), uid, gid, MAX_RECORD_BYTES).unwrap();
         match case {
             1 => {
                 fs::set_permissions(&path, fs::Permissions::from_mode(0o600)).unwrap();
@@ -421,7 +486,7 @@ fn authority_owners_leaf_read_and_revalidate_match_bytes_stamps_and_refusals() {
             actual_revalidation,
             class(leaf_revalidate(
                 &mut Uncounted,
-                &leaf,
+                &mut leaf,
                 &dir,
                 uid,
                 gid,
