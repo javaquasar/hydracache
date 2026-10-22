@@ -1656,3 +1656,19 @@ Current runtime/storage, live checks, original 300/60/10 windows, first Causal
 refusals and qualification stay unchanged. Material/cleanup/delivery/all-writer,
 full SIGKILL/lost-ACK, reconnect and server gates remain closed. No WSL, service/
 clock change, installation, supervisor operation or server action occurs.
+
+### Inline boot hypothesis rejected without runtime integration
+
+The [owned-inline comparison](sample-boot-inline-20261022.md) retains short-value
+allocation savings but rejects adoption under its predeclared getter rule:
+higher paired medians on both Windows compilers and a 40-to-56-byte point.
+No runtime representation, validation schedule or admission deadline changes.
+First raw intervals, the newline-only source-canary refusal/repair and fifteen
+older seals/856 members remain available for offline reconstruction.
+
+Next audit remaining leaf costs offline before selecting another hypothesis.
+Pure correctness and request counters do not reopen original-owner material,
+cleanup/EOF/fence, authenticated delivery/all-writer retirement, full SIGKILL/
+lost-ACK, reconnect or server gates. Original 300/60/10 windows, first refusals
+and qualification are unchanged. No WSL, clocks/services, installation, supervisor
+or server operation is included.

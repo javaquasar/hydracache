@@ -17144,3 +17144,43 @@ or extrapolating old trace counts into current headroom. Fourteen preceding
 seals and 813 members remain intact. All original checks/windows/refusals and
 material/fault/reconnect/server gates remain; there is no runtime candidate or
 new live attempt in this baseline.
+
+### Reject an allocation saving that makes the getter more expensive
+
+The [owned inline boot experiment](../testing/performance/0.74/sample-boot-inline-20261022.md)
+tests the next hypothesis separately: keep at most 36 UTF-8 bytes inside the
+point and use an owned String fallback above that boundary. Ownership, independent
+Clone, normal/alternate Debug and the original decoder contract are retained.
+Both original revalidations and clock calls still precede point construction.
+Safe UTF-8 validation remains in the inline getter; it is not removed to improve
+the result.
+
+On the same nine synthetic cases and 256 samples each, both first Windows MSVC
+compiler lanes reduce main allocation requests from 2048 to 768 and requested
+bytes from 324864 to 288000. The fixed UUID/spare-capacity subset becomes
+allocation-free. These deterministic request savings are accompanied by a value
+size increase from 40 to 56 bytes and an additional getter cost.
+
+Before implementing the candidate, the experiment fixed a rejection rule:
+higher getter medians on both compilers reject adoption despite allocation
+savings. After equal warmup, seven first pairs alternate arm order and perform
+262144 getter calls per interval with the same black_box input and checksum.
+On Rust 1.94 the reference/candidate medians are 60000/2105800 ns; on MSRV 1.88
+they are 54800/2183900 ns. Getter loops allocate nothing, and capture is inactive
+during timing. The inline path repeatedly validates UTF-8, while String already
+offers a valid str view; that is a plausible explanation of the leaf overhead,
+not an instruction-level attribution or measured full-path regression.
+
+The candidate is therefore not adopted. A lower allocation count alone does not
+establish a cheaper abstraction, and synthetic frequencies do not establish net
+preparation cost. An unchecked getter or another representation would require
+its own hypothesis and contract review. The rejected source remains solely in
+a dependency-free test image; no production rollback or live retry is needed.
+
+Twelve pure tests per compiler cover the frozen controls plus matched samples,
+all first-error prefixes, generic/seeded ownership, Clone/Debug, layout and getter
+cost. Forty-six source canaries pass after an exact newline-only assertion
+repair, whose first refusal is retained separately. No measurements were rerun
+or filtered. Fifteen prior seals and 856 members, original deadlines and first
+Causal refusals are unchanged. The result closes this representation hypothesis,
+not the material, all-writer, full fault, reconnect or server readiness gates.

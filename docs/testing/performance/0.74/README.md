@@ -5770,3 +5770,19 @@ do not establish current timing or admission headroom. An owned inline/fallback
 candidate needs its own cost/ownership gate; no representation changes here.
 Original windows/refusals and material/fault/reconnect/server gates remain, with
 no WSL/live profile, clock/service change or server action.
+
+### Owned inline boot rejected on getter cost
+
+The [isolated owned-inline comparison](sample-boot-inline-20261022.md) saves
+short-value allocator requests but fails its preregistered getter cost rule on
+both Windows MSVC compilers. On the matched nine-case corpus, main requests
+change from 2048/324864 bytes to 768/288000 bytes per compiler. The point grows
+from 40 to 56 bytes. Seven first paired intervals show higher candidate getter
+medians on both compilers; these are leaf wall intervals, not full-path speedup.
+
+Runtime remains unchanged. Twelve pure tests per compiler, forty-six repaired
+source canaries and thirty-six offline controls preserve the complete synthetic
+frame/ownership contract. The first newline-only source-guard failure and its
+separate repair remain in the packet; measurements were not rerun. Fifteen older
+seals/856 members, original windows/refusals and closed live/fault/reconnect/server
+gates remain. Next audit remaining allocation leaves offline, not a live retry.
