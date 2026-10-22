@@ -1,0 +1,9 @@
+{
+  "kind": "captured-tool-summary-not-raw-receipt",
+  "baseline": "eedd826c",
+  "argv": ["cargo", "test", "--offline", "--locked", "-p", "xtask", "--test", "bootstrap_entry_binding_074"],
+  "exit_code": 1,
+  "result": "0 passed; 1 failed; missing sealed child-entry format",
+  "original_live_join": false,
+  "retry_to_pass": false
+}
