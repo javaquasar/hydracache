@@ -145,6 +145,15 @@ class Controls(unittest.TestCase):
     @classmethod
     def setUpClass(cls): cls.expected = m.reference()
 
+    def test_portable_history_replays_facts_and_refuses_byte_tampering(self):
+        value = m.portable_history_guard()
+        self.assertEqual(value, json.loads((m.history.PACKET / 'facts.json').read_text()))
+        actual = m.history.predecessor.inventory(m.history.PACKET)
+        changed = copy.deepcopy(actual); changed[0]['sha256'] = '0' * 64
+        with patch.object(m.history.predecessor, 'inventory', return_value=changed), self.assertRaises(ValueError):
+            m.portable_history_guard()
+        with patch.object(m.history, 'sha', return_value='changed'), self.assertRaises(ValueError): m.portable_history_guard()
+
     def run_fake(self, backend):
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory) / 'cohort'

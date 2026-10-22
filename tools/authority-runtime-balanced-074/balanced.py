@@ -3,7 +3,7 @@ from collections import Counter
 from fractions import Fraction
 import json
 import math
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 import statistics
 import sys
 
@@ -62,9 +62,31 @@ def plan():
 
 
 def reference():
-    history.guard()
+    portable_history_guard()
     raw = (history.PACKET / 'measured/194-pair-0-baseline.stdout.log').read_text()
     return signature(cpu_review.parse(raw)[1])
+
+
+def portable_history_guard():
+    """Replay every historical guard using its sealed Windows inventory order."""
+    packet = history.PACKET
+    need(history.sha(packet / 'inventory.json') == history.INPUT_SHA, 'Pinned CPU inventory changed')
+    for module, name in ((cpu_review, 'review.py'), (history.predecessor, 'seal.py')):
+        need(Path(module.__file__).resolve() == (history.CPU_TOOLS / name).resolve(), 'Wrong historical reader imported')
+    for name in ('review.py', 'seal.py', 'run.py', 'probe.rs'):
+        saved = packet / 'source/method/tools/authority-runtime-cpu-074' / name
+        need(history.same_checkout_source((history.CPU_TOOLS / name).read_bytes(), saved.read_bytes()),
+             'Frozen CPU reader/method changed: ' + name)
+    rows = json.loads((packet / 'inventory.json').read_text())['files']
+    for row in rows: common.member(row['path'])
+    actual = history.predecessor.inventory(packet)
+    need(len({PureWindowsPath(row['path']) for row in actual}) == len(actual), 'Case-colliding historical members refused')
+    need(rows == sorted(actual, key=lambda row: PureWindowsPath(row['path'])), 'CPU packet membership/bytes changed')
+    value = cpu_review.facts(packet / 'measured')
+    need(value == json.loads((packet / 'facts.json').read_text()), 'CPU facts changed')
+    history.predecessor.verify_predecessor()
+    need(history.sha(history.DOCS / 'qualification-manifest.toml') == value['raw_qualification'], 'Original qualification changed')
+    return value
 
 
 def signature(rows):
