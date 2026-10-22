@@ -5835,3 +5835,18 @@ were not retried. Concurrent-host wall intervals are preliminary. Decision:
 retain an unpromoted prototype; next audit real owner lifetimes/aggregate memory
 offline, not integrate directly. Runtime, original windows/refusals, qualification
 and closed material/fault/reconnect/server gates are unchanged.
+
+### Scratch owner and retained capacity audit
+
+The [offline owner audit](authority-scratch-owner-audit-20261022.md) blocks direct
+integration of the borrowed scratch prototype. A journal owns at most 256 Leaves;
+fully populated successful caches would add up to 270464 capacity bytes per
+journal, excluding layout/allocator/transient/OS memory. The standalone wrapper
+size is not an embedded Leaf layout measurement or a global process bound.
+
+Self-reference/Vec relocation, mutable-receiver design and whole-journal eviction
+remain prerequisites. Clearing only the failed Leaf misses directory, binding,
+publication and external refusal paths. Ten new offline mutation tests and
+nineteen prior seals/1076 members preserve the boundary. Next preregister an
+owned-storage multi-entry journal model, not a runtime patch. No measurement
+image/live profile, WSL or server operation is run; original gates stay closed.

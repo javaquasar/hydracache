@@ -1720,3 +1720,19 @@ budgets offline before considering any integration candidate. Keep original
 authenticated delivery/all-writer termination, full SIGKILL/lost-ACK, reconnect
 and server admission remain closed. No WSL, clocks/services, installation,
 supervisor or server/product execution is authorized by this prototype.
+
+### Scratch integration requires journal lifetime and eviction coverage
+
+The [offline owner audit](authority-scratch-owner-audit-20261022.md) identifies
+borrowed self-reference/entries relocation and journal-wide refusal cleanup as
+integration blockers. Successful per-Leaf cache capacity would add up to 270464
+bytes per maximum journal, not measured RSS or a process-wide bound. Original
+history and descriptors remain independently owned even after sticky refusal.
+
+Next preregister an isolated owned-storage journal model covering append/reopen,
+explicit mutable receivers, all original validation brackets and complete cache
+eviction on journal errors/external latches. Preserve durable operator transition
+versus failed-owner semantics. Nineteen prior seals/1076 members and all first
+observations remain; no measurement image or live attempt is rerun. Runtime,
+300/60/10 windows, qualification and material/all-writer/full-fault/reconnect/server
+gates are unchanged. No WSL, clocks/services or server/product actions occur.

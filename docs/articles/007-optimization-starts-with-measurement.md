@@ -17293,3 +17293,37 @@ runner and whitespace-canary failures, plus an offline test-fixture repair, rema
 explicit; measurements were not rerun. Eighteen older seals/1000 members retain
 all first refusals and deadlines. No live material, SIGKILL/lost-ACK, reconnect,
 all-writer termination or server admission is inferred from storage-only tests.
+
+### Put the allocation saving back into its owner graph
+
+The [scratch owner audit](../testing/performance/0.74/authority-scratch-owner-audit-20261022.md)
+finds why a successful leaf experiment is not yet an integration patch. The
+journal owns two Leaves per generation and keeps all prior entries through
+append and refusal. Fixed, trust, kernel and signed readers borrow that original
+journal rather than duplicating it. There is no demonstrated process-wide owner
+limit behind the per-journal generation bound.
+
+At 128 generations, 256 successful caches filled to their individual budgets
+would retain up to 270464 additional bytes per journal. The previous standalone
+32-byte wrappers would add another 8192 bytes, but that is not an embedded Leaf
+layout measurement. Original bytes, parsed history, allocator overhead, transient
+growth and OS residency remain separate. Allocations saved over many calls must
+not be reported as memory that no longer exists.
+
+The borrowed prototype cannot become a field of its own Leaf or persist across
+entries Vec relocation without a different ownership design. Per-round scratch
+would lose cross-round amortization. An owned-storage candidate needs explicit
+mutable receivers/split borrows and its own layout measurement; interior
+mutability or a cross-owner pool is not an automatic substitute.
+
+Leaf-local eviction is also narrower than journal refusal. A directory/inventory
+error, later trust bind or external latch can occur without revisiting every
+cache. A future multi-entry model must clear all temporary caches while keeping
+original expected bytes/descriptors and every fresh validation bracket. It must
+also preserve the distinction between durable refused data with an explicit
+operator epoch transition and a permanently failed original owner.
+
+The offline audit and ten mutation tests retain nineteen prior seals/1076 members
+and all first scratch observations without rerunning the measurement image.
+Next test owned storage and whole-journal eviction in isolation; the runtime is
+unchanged, and no full-path or server admission follows from capacity arithmetic.
