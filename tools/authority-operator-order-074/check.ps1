@@ -7,7 +7,10 @@ Set-Location $taskRepo
 $taskOutput=Join-Path $taskRepo "target/authority-operator-order-checks/$Phase/first"
 if(-not(Test-Path -LiteralPath $taskOutput)){New-Item -ItemType Directory -Path $taskOutput -Force|Out-Null}
 if(Test-Path -LiteralPath (Join-Path $taskOutput "$Lane-result.json")){throw 'Never replace first baseline receipt'}
-$taskSelection=if($Phase -ceq 'reference'){@('model::operator_controls::legacy_counterexamples','--exact')}else{@('model::candidate_controls::candidate_')}
+. (Join-Path $PSScriptRoot 'selection.ps1')
+[string[]]$taskSelection=Get-OperatorControlSelection -Phase $Phase
+if($taskSelection[0] -cne $(if($Phase -ceq 'reference'){'model::operator_controls::legacy_counterexamples'}else{'model::candidate_controls::candidate_'})) {throw 'Wrong control selection'}
+if($taskSelection.Count -ne $(if($Phase -ceq 'reference'){2}else{1})) {throw 'Wrong control filter count'}
 $taskSteps=@();$taskFailure=$null
 function Record([string]$Name,[scriptblock]$Call){
     $taskLog=Join-Path $taskOutput "$Lane-$Name.log"
