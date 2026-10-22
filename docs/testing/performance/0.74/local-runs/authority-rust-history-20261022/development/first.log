@@ -1,0 +1,35 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.17s
+     Running tests\authority_rust_history_074.rs (target\debug\deps\authority_rust_history_074-9c7000c250482bf2.exe)
+
+running 8 tests
+test unsafe_names_outside_paths_and_missing_inputs_do_not_open_current_files ... ok
+test unsupported_commands_revisions_scopes_and_cwd_refuse_before_execution ... ok
+test diff_translation_adds_only_fixed_rhs_and_retains_all_paths_and_flags ... ok
+test historical_reads_are_fixed_and_never_fall_back_to_current_artifacts ... ok
+test independent_current_tree_gate_refuses_unapproved_source_and_runtime_drift ... FAILED
+test all_thirty_guards_preserve_complete_assertions_under_exact_io_substitutions ... FAILED
+test archived_success_does_not_admit_a_current_candidate_or_unrelated_mutation ... ok
+test guard_assertion_test_and_io_mutations_cannot_hide_behind_history ... ok
+
+failures:
+
+---- independent_current_tree_gate_refuses_unapproved_source_and_runtime_drift stdout ----
+
+thread 'independent_current_tree_gate_refuses_unapproved_source_and_runtime_drift' (6188) panicked at crates\xtask\tests\authority_rust_history_074.rs:132:9:
+current source drift crates/xtask/tests/authority_breakdown_074.rs
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- all_thirty_guards_preserve_complete_assertions_under_exact_io_substitutions stdout ----
+
+thread 'all_thirty_guards_preserve_complete_assertions_under_exact_io_substitutions' (39144) panicked at crates\xtask\tests\authority_rust_history_074.rs:66:9:
+full guard crates/xtask/tests/collector_peer_capacity_074.rs
+
+
+failures:
+    all_thirty_guards_preserve_complete_assertions_under_exact_io_substitutions
+    independent_current_tree_gate_refuses_unapproved_source_and_runtime_drift
+
+test result: FAILED. 6 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.12s
+
+error: test failed, to rerun pass `-p xtask --test authority_rust_history_074`

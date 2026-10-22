@@ -1,0 +1,140 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 8.82s
+     Running tests\authority_breakdown_074.rs (target\debug\deps\authority_breakdown_074-819d13884627dfcf.exe)
+
+running 2 tests
+test authority_breakdown_contract_preserves_scan_reader_and_non_admission_scope ... ok
+test authority_breakdown_restores_every_runtime_byte_and_rejects_hook_drift ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.54s
+
+     Running tests\authority_cpu_074.rs (target\debug\deps\authority_cpu_074-b9335b66fbadcccd.exe)
+
+running 1 test
+test authority_cpu_only_adds_exact_test_hooks_and_preserves_runtime ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.36s
+
+     Running tests\authority_expected_name_074.rs (target\debug\deps\authority_expected_name_074-d683cf929132d807.exe)
+
+running 2 tests
+test authority_expected_name_contract_keeps_exact_formatter_and_closed_gates ... ok
+test authority_expected_name_exact_view_preserves_baseline_and_refuses_drift ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.68s
+
+     Running tests\authority_fd_path_074.rs (target\debug\deps\authority_fd_path_074-5a19181f83d270b5.exe)
+
+running 2 tests
+test authority_fd_path_contract_keeps_fresh_scan_and_exact_formatter ... ok
+test authority_fd_path_exact_view_preserves_baseline_and_refuses_drift ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.58s
+
+     Running tests\authority_inventory_074.rs (target\debug\deps\authority_inventory_074-8e86af1042e9bbf2.exe)
+
+running 2 tests
+test authority_inventory_contract_preserves_observed_prefix_formatter_and_deadlines ... ok
+test authority_inventory_exact_view_restores_baseline_and_rejects_unknown_or_duplicate_hooks ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.43s
+
+     Running tests\authority_leaf_cpu_074.rs (target\debug\deps\authority_leaf_cpu_074-e1aeb5266f286798.exe)
+
+running 2 tests
+test authority_leaf_cpu_only_adds_exact_test_hooks_and_preserves_runtime ... ok
+test authority_leaf_cpu_reuses_frozen_traces_and_exact_clock_bodies ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.55s
+
+     Running tests\authority_leaf_name_074.rs (target\debug\deps\authority_leaf_name_074-8a8c1b96f6eab807.exe)
+
+running 2 tests
+test authority_leaf_name_contract_keeps_full_read_reference_and_original_drop_scope ... ok
+test authority_leaf_name_restores_previous_sources_and_refuses_unknown_implementations ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.38s
+
+     Running tests\authority_name_capacity_074.rs (target\debug\deps\authority_name_capacity_074-6d984f0580b6154a.exe)
+
+running 2 tests
+test authority_name_capacity_contract_keeps_formatter_and_all_admission_gates_closed ... ok
+test authority_name_capacity_exact_view_preserves_every_baseline_byte_and_old_assertion ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.56s
+
+     Running tests\authority_open_name_074.rs (target\debug\deps\authority_open_name_074-42e6fcd1461c72eb.exe)
+
+running 3 tests
+test authority_open_name_candidate_restores_only_the_exact_allocation_branch ... ok
+test authority_open_name_restores_exact_test_hooks_and_preserves_unrelated_drift ... ok
+test authority_open_name_freezes_original_syscall_and_clock_bodies ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.63s
+
+     Running tests\authority_operator_order_074.rs (target\debug\deps\authority_operator_order_074-c4a9e98312ad2eda.exe)
+
+running 3 tests
+test operator_fresh_validation_precedes_transition_and_publication ... ok
+test operator_image_has_no_clock_os_or_transport_capability ... ok
+test operator_reference_and_frozen_storage_remain_unchanged ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.43s
+
+     Running tests\authority_owned_journal_074.rs (target\debug\deps\authority_owned_journal_074-6a671e3afe7d0aa3.exe)
+
+running 3 tests
+test owned_storage_only_changes_borrowed_owner_to_value_and_adds_eviction ... ok
+test owned_model_has_no_os_clock_transport_or_launch_path ... ok
+test owned_journal_keeps_whole_reference_bodies_receiver_and_main ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.67s
+
+     Running tests\authority_owners_074.rs (target\debug\deps\authority_owners_074-1e67cfb5ef310bc8.exe)
+
+running 3 tests
+test authority_owners_observation_wrappers_restore_exact_runtime_tokens_and_refuse_drift ... ok
+test authority_owners_contract_keeps_request_scope_and_frozen_io_reader ... ok
+test authority_owners_only_adds_exact_hooks_and_preserves_every_runtime_byte ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.38s
+
+     Running tests\authority_read_baseline_074.rs (target\debug\deps\authority_read_baseline_074-418128e4276c38df.exe)
+
+running 3 tests
+test authority_read_baseline_adapter_rejects_omissions_bounds_and_ownership_drift ... ok
+test authority_read_baseline_receivers_have_no_os_clock_or_launch_capability ... ok
+test authority_read_baseline_copies_complete_bodies_and_leaves_runtime_unchanged ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.32s
+
+     Running tests\authority_rust_history_074.rs (target\debug\deps\authority_rust_history_074-9c7000c250482bf2.exe)
+
+running 9 tests
+test unsafe_names_outside_paths_and_missing_inputs_do_not_open_current_files ... ok
+test unsupported_commands_revisions_scopes_and_cwd_refuse_before_execution ... ok
+test diff_translation_adds_only_fixed_rhs_and_retains_all_paths_and_flags ... ok
+test historical_reads_are_fixed_and_never_fall_back_to_current_artifacts ... ok
+test every_allowed_replacement_is_an_actual_io_call_not_a_literal_or_assertion ... FAILED
+test archived_success_does_not_admit_a_current_candidate_or_unrelated_mutation ... ok
+test all_thirty_guards_preserve_complete_assertions_under_exact_io_substitutions ... ok
+test independent_current_tree_gate_refuses_unapproved_source_and_runtime_drift ... ok
+test guard_assertion_test_and_io_mutations_cannot_hide_behind_history ... ok
+
+failures:
+
+---- every_allowed_replacement_is_an_actual_io_call_not_a_literal_or_assertion stdout ----
+
+thread 'every_allowed_replacement_is_an_actual_io_call_not_a_literal_or_assertion' (49372) panicked at crates\xtask\tests\authority_rust_history_074.rs:364:9:
+assertion `left == right` failed
+  left: (1, 2)
+ right: (1, 3)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    every_allowed_replacement_is_an_actual_io_call_not_a_literal_or_assertion
+
+test result: FAILED. 8 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.58s
+
+error: test failed, to rerun pass `-p xtask --test authority_rust_history_074`

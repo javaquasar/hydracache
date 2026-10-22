@@ -1,0 +1,39 @@
+{
+  "original_first_causal_refusals_ns": [
+    "10042390247",
+    "10010835739"
+  ],
+  "raw_old_python_129_cohort_rerun": false,
+  "source_snapshot_files": 36,
+  "io_git_constructors": 40,
+  "original_owner_profiles": 0,
+  "historical_binaries": 30,
+  "runtime_changed": false,
+  "steps": 15,
+  "previous_members_verified": true,
+  "python_history_controls": 20,
+  "deadlines_changed": false,
+  "historical_source": "33c54b0cda8c330b115009cdf092ad002077cedf",
+  "historical_source_controls": 79,
+  "qualification_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "server_admitted": false,
+  "io_read_sites": 32,
+  "new_separation_controls": 10,
+  "candidate_linux_compiled": false,
+  "method_source": "fe5ebda429d9ef1f3a9ccd059600d264936cc283",
+  "allocation_or_latency_claim": false,
+  "source_archive_sha256": "65545e09820764279cc14674146044be017bb3437c99df1570f2c9b0567e59b4",
+  "compiler": "rustc 1.94.0 (4a4ef493e 2026-03-02)",
+  "fresh_check_schedule_changed": false,
+  "current_runtime_admitted": false,
+  "original_windows_seconds": [
+    300,
+    60,
+    10
+  ],
+  "previous_members": 40,
+  "previous_inventory_sha256": "4b409fcbe7428d3dd6e7b3f8e8097cb5e8c62668512f56b5b262ae5645c8cd1e",
+  "prior_candidate_source_controls": 8,
+  "schema": "authority-rust-history-facts-074-v1",
+  "repository_and_pinned_git_history_required": true
+}

@@ -1,0 +1,13 @@
+test_false_candidate_and_live_flags_refuse (__main__.FirstReviewTests.test_false_candidate_and_live_flags_refuse) ... ok
+test_generated_retirement_and_archive_bounds_refuse (__main__.FirstReviewTests.test_generated_retirement_and_archive_bounds_refuse) ... ok
+test_history_and_current_admission_are_not_pooled (__main__.FirstReviewTests.test_history_and_current_admission_are_not_pooled) ... ok
+test_original_windows_refusals_and_closed_real_gates (__main__.FirstReviewTests.test_original_windows_refusals_and_closed_real_gates) ... ok
+test_output_isolation_and_no_clobber (__main__.FirstReviewTests.test_output_isolation_and_no_clobber) ... ok
+test_sealed_inventory_or_method_source_drift_refuses (__main__.FirstReviewTests.test_sealed_inventory_or_method_source_drift_refuses) ... ok
+test_source_manifest_and_failure_receipts_refuse (__main__.FirstReviewTests.test_source_manifest_and_failure_receipts_refuse) ... ok
+test_worker_digest_and_decoded_membership_drift_refuse (__main__.FirstReviewTests.test_worker_digest_and_decoded_membership_drift_refuse) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.686s
+
+OK

@@ -1,0 +1,103 @@
+{
+  "current_runtime_admitted": false,
+  "historical_io_migrated": true,
+  "steps": [
+    {
+      "exit": 0,
+      "log": "format.log",
+      "name": "format",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "exit": 0,
+      "log": "source-format.log",
+      "name": "source-format",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "exit": 0,
+      "log": "source-controls.log",
+      "name": "source-controls",
+      "sha256": "61cc6947ed3c0fb0518c675870405fe46e03a7fb4a19e1175df6ebd5f89168cd"
+    },
+    {
+      "exit": 0,
+      "log": "workspace-format.log",
+      "name": "workspace-format",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "exit": 0,
+      "log": "history-controls.log",
+      "name": "history-controls",
+      "sha256": "7d06d6d7a506242beb67ea8179fe099abafe92495111081769419cdee5b0b5a6"
+    },
+    {
+      "exit": 0,
+      "log": "history-receipt-controls.log",
+      "name": "history-receipt-controls",
+      "sha256": "108dda6fffb5f3bdefa5d8c18e764348270f82d140d5158896a47609c9625cad"
+    },
+    {
+      "exit": 0,
+      "log": "current-baseline.log",
+      "name": "current-baseline",
+      "sha256": "20ef62ca9618189053401ba3f29dc65501350af52d00204bd6e6159a47c17389"
+    },
+    {
+      "exit": 0,
+      "log": "derived-facts.log",
+      "name": "derived-facts",
+      "sha256": "4c6160d8eb7ebd1293a5e0a69c1f5858bdba445e566667877341f8e1a6f6d7b6"
+    },
+    {
+      "exit": 0,
+      "log": "docs.log",
+      "name": "docs",
+      "sha256": "c034a3e4353b4ba63a5f73016ddc2fa3c038717b032ac6673a8669329813698e"
+    },
+    {
+      "exit": 0,
+      "log": "registry.log",
+      "name": "registry",
+      "sha256": "5a3f55a0007829ac72db1b26da615f62c6b14bcc658ffd18d2666437f9d1627d"
+    },
+    {
+      "exit": 0,
+      "log": "performance.log",
+      "name": "performance",
+      "sha256": "099b8341172a87c84b4f16eb6c6b21a5e86dc3e5241e07e2ed7ec5e56fb41c0a"
+    },
+    {
+      "exit": 0,
+      "log": "canaries.log",
+      "name": "canaries",
+      "sha256": "133485074d25868a0e13b6e2c588afce426f8d3b7d540a03acb58116f42c3f18"
+    },
+    {
+      "exit": 0,
+      "log": "check.log",
+      "name": "check",
+      "sha256": "92efee7d6d6ed86fd1bf095c042c38ae99d8049ef91f348d2e0cfaa171c7c70f"
+    },
+    {
+      "exit": 0,
+      "log": "clippy.log",
+      "name": "clippy",
+      "sha256": "fdf22f616eebb7981b9eb2bd260088e96cefca42ed739124d13539e0a36087cd"
+    },
+    {
+      "exit": 0,
+      "log": "protected-source.log",
+      "name": "protected-source",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "failure": null,
+  "product": false,
+  "runtime_candidate_implemented": false,
+  "source": "fe5ebda429d9ef1f3a9ccd059600d264936cc283",
+  "server": false,
+  "original_owner_profiles": 0,
+  "raw_old_python_controls_rerun": false
+}

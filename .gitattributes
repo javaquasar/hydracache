@@ -610,3 +610,6 @@ docs/testing/performance/0.74/local-runs/authority-history-view-20261022/**/*.lo
 
 docs/testing/performance/0.74/local-runs/authority-storage-source-20261022/** -text whitespace=cr-at-eol
 docs/testing/performance/0.74/local-runs/authority-storage-source-20261022/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-rust-history-20261022/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/authority-rust-history-20261022/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
