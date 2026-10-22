@@ -1971,3 +1971,28 @@ retained launcher addressing, original manager delivery, all-writer cessation
 and server readiness are independent gates. No installation or service start is
 enabled by accepting this metadata.
 <!-- END HELD ACTIVATION INGRESS V1 -->
+
+<!-- BEGIN BOOTSTRAP ENROLLMENT V1 -->
+## Independent protected bootstrap selection v1
+
+diagnostic-bootstrap-enrollment-074-v1 is canonical newline JSON, at most 2048
+bytes, read only from /etc/hydracache-perf/held-bootstrap-enrollment-074.json
+under the same retained root/ancestor safety checks as HeldTrustInput. Fields
+are schema_version, repository_id, bootstrap_builder_key_hex,
+bootstrap_policy_sha256, bootstrap_sha256, held_policy_sha256 and policy_epoch.
+The repository is 1217101761; hashes and keys are lowercase. Bootstrap key must
+be nonweak and distinct from controller, worker builder/issuer and held builder.
+Digests are nonzero; held policy and nonzero epoch match the original protected
+held source. Missing/duplicate/unknown/noncanonical/future input refuses.
+
+Fresh held-source validation brackets protected snapshot comparison; unsafe
+ownership/mode/link count, changed bytes or inode/ancestors cause sticky refusal
+of both borrows. No path/key override, default pin, writer or key generation.
+There is no migration, fallback or alteration of the held runtime trust v1.
+
+This is independent protected selection, not a bootstrap build receipt, installed
+executable, actual manager/process/FD or original-owner admission. No configuration
+is installed or generated. Purpose-bound policy/receipt, original consuming join,
+bootstrap execveat, writer cessation and server enrollment remain separate gates.
+No start/send/release/retry/completion/unlock capability is exported.
+<!-- END BOOTSTRAP ENROLLMENT V1 -->

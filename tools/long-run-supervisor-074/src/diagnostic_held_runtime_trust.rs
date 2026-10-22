@@ -7,6 +7,9 @@ use crate::diagnostic_builder::held_build::{self as held, role_binding};
 #[path = "diagnostic_held_late_trust.rs"]
 pub(crate) mod late_join;
 
+#[path = "diagnostic_bootstrap_enrollment.rs"]
+pub mod bootstrap_enrollment;
+
 pub const TRUST_SCHEMA: &str = "diagnostic-held-runtime-trust-074-v1";
 pub const FIXED_TRUST_PATH: &str = "/etc/hydracache-perf/held-runtime-trust-074.json";
 const TRUST_FILE: &str = "held-runtime-trust-074.json";
