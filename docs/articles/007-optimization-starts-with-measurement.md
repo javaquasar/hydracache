@@ -17896,3 +17896,34 @@ the activation environment without removing the launcher's empty-environment
 guard. The synthetic systemd helper's LISTEN_* variables make that mismatch
 visible. No timing gain, writer-cessation proof or server readiness follows from
 a value-only map; those require their own complete execution path and fault gate.
+
+### Complete role identity without creating a delivery capability
+
+The [next closed census](../testing/performance/0.74/held-complete-role-census-20261022.md)
+binds the three remaining inherited roles from the original owners themselves:
+the retained worker image and the ordered Armed guardian pidfds. Neither provider
+returns a file or descriptor. Instead, it contributes directly to a private
+value collector, whose complete result is compared inside the same material
+inventory and original validation brackets. No process or manager message is
+created by completing the map.
+
+The first kernel component result exposed a useful mistake. The new constructor
+assumed distinct tasks must have distinct pidfd inodes. Here two real owned-child
+pidfds had different FD numbers and fdinfo PIDs but the same inode. Requiring
+inode inequality rejected the healthy fixture before its live checks. Removing
+that unsupported new assumption does not remove task identity: exact ordered
+PIDs, original descriptors and expected metadata, fresh procfs fdinfo, poll and
+closing stamps still have to agree. The first failed candidate remains recorded;
+the corrected component tests are not a retry of an original admission attempt.
+
+All eleven role numbers now join 23 specified descriptor entries. That number
+does not mean every writer has been enumerated or stopped. It also says nothing
+about how the held executable is addressed or whether the manager's activation
+environment satisfies the unchanged empty-environment guard. These are the next
+delivery prerequisites. A complete layout must not become an implicit permission
+to send, renew an expired context, publish completion or release a fence.
+
+Local model/kernel tests cover refusal and retained identity, not speed. There
+is no new timing or allocation claim. Preserving the old full-frame observations
+and deadlines while adding the census keeps the remaining original-send,
+all-writer cessation and fault-matrix gates explicit.

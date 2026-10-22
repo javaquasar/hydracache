@@ -2016,3 +2016,21 @@ accommodate LISTEN_* observed in the synthetic helper. No new full original-owne
 attempt is run or old outcome relabeled. Keep authenticated one-shot delivery,
 watchdog/all-writer cessation, SIGKILL/lost-ACK, completion/cells 2–4, reconnect,
 trust/enrollment and server rehearsal gated independently.
+
+### Complete original role census stays separate from delivery
+
+The [eleven-role census](held-complete-role-census-20261022.md) now joins the
+original retained worker and the same ordered consumed Armed guardian pair,
+without exposing descriptors or constructing another owner. Two private
+inventory observations include their metadata/flags/PID/liveness stamps before
+the existing closing owner/deadline observation. The 23 enumerated entries must
+have distinct nonnegative FD numbers. All prior live predicates, frame order,
+retirement and absolute 300/60/10 origins/windows remain exact.
+
+Original held executable addressing and activation environment are the next
+prerequisites, not new transport authority from a complete value map. Keep the
+empty-environment launcher guard, original retained manager/full frame and
+durable one-shot uncertainty before send. All-writer revocation/EOF/drain,
+completion/cells 2–4, joined SIGKILL/lost-ACK, reconnect, production enrollment
+and server rehearsal remain open. Component tests do not promote the earlier
+failed original/transport controls; no service, clock, product or server action.

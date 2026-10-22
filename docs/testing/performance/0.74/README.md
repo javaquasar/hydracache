@@ -6130,3 +6130,18 @@ shape/identity/count/flag substitutions and sticky refusal. This is not a full
 original-owner success, all-writer cessation, SIGKILL/lost-ACK or server gate.
 Executable addressing and the manager activation environment remain explicit
 prerequisites before constructing or sending an actual held-unit request.
+
+### All inherited roles now bind original retained objects
+
+The [complete closed census](held-complete-role-census-20261022.md) adds the
+original worker image and two consumed Armed guardian pidfds to the same private
+inventory. Fixed providers return no files or FD getters. Fresh stamps, ordered
+PID/fdinfo/liveness and a 23-entry uniqueness check complete the eleven-role map;
+existing full frames, retirement and absolute windows remain unchanged.
+
+The first component failure exposed shared pidfd inodes on the local kernel;
+its development record remains separate from corrected component results. Task
+identity still requires distinct ordered PIDs, original FDs and fresh checks.
+This closes the role-value binding, not executable addressing, activation
+environment, original send, all-writer cessation or any server gate. No original
+attempt, measurement cohort, clock/service mutation or server operation occurs.
