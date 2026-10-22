@@ -1,0 +1,87 @@
+{
+  "steps": [
+    {
+      "name": "format",
+      "exit": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "log": "format.log"
+    },
+    {
+      "name": "workspace-format",
+      "exit": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "log": "workspace-format.log"
+    },
+    {
+      "name": "review-controls",
+      "exit": 0,
+      "sha256": "2a679cc94088722dd94d08950f617b375f3b012c42d0ab03b013410b27fc743d",
+      "log": "review-controls.log"
+    },
+    {
+      "name": "prior-audit-controls",
+      "exit": 0,
+      "sha256": "afef095ceabf5e06470a4877b3cbe1e1ec8eabb63e08b40ab0237507a7045c1f",
+      "log": "prior-audit-controls.log"
+    },
+    {
+      "name": "prior-inline-controls",
+      "exit": 0,
+      "sha256": "81421d95532c88f3e1634fe797497f121a44dea6dccac7678ab3f68de890b1f3",
+      "log": "prior-inline-controls.log"
+    },
+    {
+      "name": "prior-boot-controls",
+      "exit": 0,
+      "sha256": "2f8055ea55b8ba97638289eb2cc32c600ffd32d5415385a241d3ddc720158b23",
+      "log": "prior-boot-controls.log"
+    },
+    {
+      "name": "prior-proc-controls",
+      "exit": 0,
+      "sha256": "cf00a306b7c02b6dce297b51c4c331fdb7cf259939372de742bc068f456482f0",
+      "log": "prior-proc-controls.log"
+    },
+    {
+      "name": "prior-reconciliation-controls",
+      "exit": 0,
+      "sha256": "11d590aac359c0cc203bed9ecbeca73ae4666ef9ad18d328abd7db6865220ab0",
+      "log": "prior-reconciliation-controls.log"
+    },
+    {
+      "name": "derived-facts",
+      "exit": 0,
+      "sha256": "a84c3502da53487c89180c53e0a8a0b056b1c4da65e3246803b7b7cf5201e8e0",
+      "log": "derived-facts.log"
+    },
+    {
+      "name": "docs",
+      "exit": 0,
+      "sha256": "1dfba5aad25f45ee4c2506bb3407d3cc526485bc4852fc55e6bc953f6643dded",
+      "log": "docs.log"
+    },
+    {
+      "name": "registry",
+      "exit": 0,
+      "sha256": "2d93449ffc24d5e1295b9c387a96aca448552b7268e4f0d99bb47ed8807a1e5e",
+      "log": "registry.log"
+    },
+    {
+      "name": "performance",
+      "exit": 0,
+      "sha256": "56f52182eea751b4c2c54c59105cf5e499e637ec899da4bdaa0cab93a03b70af",
+      "log": "performance.log"
+    },
+    {
+      "name": "protected-source",
+      "exit": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "log": "protected-source.log"
+    }
+  ],
+  "product": false,
+  "original_owner_profiles": 0,
+  "failure": null,
+  "runtime_candidate_implemented": false,
+  "server": false
+}

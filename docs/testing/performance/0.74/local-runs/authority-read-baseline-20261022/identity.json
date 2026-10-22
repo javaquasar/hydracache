@@ -1,0 +1,13 @@
+{
+  "schema": "pure-authority-read-identity-074-v1",
+  "starting_tree": "94114c62",
+  "preregistration_source": "b7bcaebf",
+  "probe_and_reviewer_source": "ffe37214a3ed1c3cdc767d4e5ea9d722e14b3603",
+  "platform": "windows-msvc",
+  "model_only": true,
+  "runtime_candidate_implemented": false,
+  "measured_selection_retries": 0,
+  "original_owner_profiles": 0,
+  "server": false,
+  "product": false
+}
