@@ -1,0 +1,18 @@
+{
+  "admission_allowed": false,
+  "bootstrap_executed": false,
+  "checked_commit": "d53da397c73b6320f6af535fd3ebc5729607eead",
+  "clock_changes": false,
+  "consumed_owner_wiring_compiled": true,
+  "original_delivery": false,
+  "original_live_join": false,
+  "owner_fault_models": true,
+  "product": false,
+  "protected_source_unit_checks": true,
+  "qualification_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "server": false,
+  "server_enrollment": false,
+  "service_changes": false,
+  "signed_policy_receipt": true,
+  "writers_cessation": false
+}

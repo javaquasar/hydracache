@@ -1,0 +1,8 @@
+test_commands_do_not_dispatch_original_or_privileged_controls (test_controls.Controls.test_commands_do_not_dispatch_original_or_privileged_controls) ... ok
+test_existing_packet_refuses_before_commands (test_controls.Controls.test_existing_packet_refuses_before_commands) ... ok
+test_failed_or_changed_lane_cannot_be_promoted (test_controls.Controls.test_failed_or_changed_lane_cannot_be_promoted) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.027s
+
+OK

@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "python",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tools/bootstrap-build-owner-074",
+    "-v"
+  ],
+  "elapsed_ns": 675636400,
+  "exit": 0,
+  "stderr_sha256": "9cb4e2fba4604cdea07739b7a6a9dabe531ac07801d9d8e97dec9dceefae1070",
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

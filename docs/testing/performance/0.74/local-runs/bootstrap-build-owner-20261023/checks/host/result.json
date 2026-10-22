@@ -1,0 +1,10 @@
+{
+  "failure": "RuntimeError: canaries refused; first result retained",
+  "lane": "host",
+  "original_attempt": false,
+  "product": false,
+  "server": false,
+  "steps": [
+    "canaries"
+  ]
+}

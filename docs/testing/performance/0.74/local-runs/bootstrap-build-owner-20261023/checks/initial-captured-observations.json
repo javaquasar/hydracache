@@ -1,0 +1,33 @@
+{
+  "schema_version": "captured-tool-observations-not-process-receipts-v1",
+  "raw_process_receipt": false,
+  "original_attempt": false,
+  "server": false,
+  "product": false,
+  "observations": [
+    {
+      "command": "cargo test --offline --locked -p xtask --test bootstrap_build_owner_074",
+      "reported_tool_exit": 1,
+      "result": "0 passed; 2 failed",
+      "cause": "Both new source files did not yet exist; integration red baseline before implementation"
+    },
+    {
+      "command": "cargo test --offline --locked -p hydracache-long-run-supervisor-074 --lib bootstrap_build -- --nocapture",
+      "reported_tool_exit": 0,
+      "result": "5 passed; 0 failed",
+      "warning": "New VerifiedBuild.policy unused on Windows; subsequently made Linux-only, not suppressed"
+    },
+    {
+      "command": "cargo test --offline --locked -p xtask --test bootstrap_build_owner_074 --test bootstrap_enrollment_074 --test held_bind_alias_refusal_074 --test held_activation_ingress_074 --test held_complete_role_census_074 --test held_material_roles_074 --test held_material_074 --test held_unit_projection_074",
+      "reported_tool_exit": 1,
+      "result": "New source target: 3 passed; 1 failed; subsequent targets not reached",
+      "cause": "Exact self.owner.owner.owner.context() substring was split by rustfmt; normalized whitespace in that source assertion"
+    },
+    {
+      "command": "wsl.exe -d Ubuntu -u artur -- env RUSTUP_AUTO_INSTALL=0 CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test --offline --locked --release -p hydracache-long-run-supervisor-074 --all-features --lib diagnostic_builder::bootstrap_build::tests -- --nocapture --test-threads=1",
+      "reported_tool_exit": 0,
+      "result": "6 passed; 0 failed",
+      "scope": "Static signatures and synthetic sealed image; not original owner admission"
+    }
+  ]
+}
