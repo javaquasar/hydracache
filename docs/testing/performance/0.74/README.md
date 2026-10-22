@@ -6013,3 +6013,20 @@ Publication keeps its durable work; cycle timing includes terminal cleanup.
 The result is mixed local evidence, not proof of no cost or a practical speedup.
 The allocation reduction and higher retained memory remain separate facts.
 No runtime, live check/window/refusal, qualification or server gate changes.
+
+### Offline CPU variability requires a separately balanced cohort
+
+The [saved-data analysis](authority-runtime-variance-20261022.md) preserves all
+28 processes and 336 rows, with both original primary dispositions unchanged.
+Warm thread CPU itself varies: within-role depth-127 maximum/minimum is
+1.329–1.769, so elapsed-only waiting cannot explain the whole spread. Warm
+ratios are sensitive to role order and pair ordinal; the 1.88 baseline-first/
+installed-first medians are 1.163/0.716. These are post hoc diagnostic groups,
+not new performance estimates or reasons to exclude a pair.
+
+Signed elapsed residuals and phase covariance identities keep CPU, publication
+and correlated variation separate without inventing a scheduler/fsync cause.
+The [future local protocol](authority-runtime-variance-method-v2-20261022.md) fixes
+balanced BIIB/IBBI blocks and per-process context. It is prepared only; no new
+profiles, live/WSL/server actions, clocks or services run. All original checks,
+windows, first refusals and qualification bytes remain fixed.

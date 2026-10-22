@@ -1,0 +1,31 @@
+test_all_pairs_strata_and_extremes_preserved (__main__.Controls.test_all_pairs_strata_and_extremes_preserved) ... ok
+test_membership_nonfinite_bool_and_invalid_costs_refuse (__main__.Controls.test_membership_nonfinite_bool_and_invalid_costs_refuse) ... ok
+test_only_exact_git_checkout_line_endings_accepted (__main__.Controls.test_only_exact_git_checkout_line_endings_accepted) ... ok
+test_original_corpus_and_order_guards_retained (__main__.Controls.test_original_corpus_and_order_guards_retained) ... ok
+test_original_inference_and_membership_remain_exact (__main__.Controls.test_original_inference_and_membership_remain_exact) ... ERROR
+test_phase_covariance_uses_full_batch_not_cycle (__main__.Controls.test_phase_covariance_uses_full_batch_not_cycle) ... ok
+test_pinned_inventory_tamper_refuses_before_reader (__main__.Controls.test_pinned_inventory_tamper_refuses_before_reader) ... ok
+test_signed_residual_is_not_clamped_or_overhead_subtracted (__main__.Controls.test_signed_residual_is_not_clamped_or_overhead_subtracted) ... ok
+test_variance_zero_and_ties (__main__.Controls.test_variance_zero_and_ties) ... ok
+
+======================================================================
+ERROR: test_original_inference_and_membership_remain_exact (__main__.Controls.test_original_inference_and_membership_remain_exact)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\authority-runtime-variance-074\test_analysis.py", line 78, in test_original_inference_and_membership_remain_exact
+    result = a.derive(); old = a.guard()
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\authority-runtime-variance-074\analyze.py", line 122, in derive
+    frozen = guard()
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\authority-runtime-variance-074\analyze.py", line 113, in guard
+    need(same_checkout_source((CPU_TOOLS / name).read_bytes(), saved.read_bytes()),
+    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+         'Frozen CPU reader/method changed: ' + name)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\authority-runtime-allocation-074\run.py", line 41, in need
+    raise ValueError(message)
+ValueError: Frozen CPU reader/method changed: review.py
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.009s
+
+FAILED (errors=1)

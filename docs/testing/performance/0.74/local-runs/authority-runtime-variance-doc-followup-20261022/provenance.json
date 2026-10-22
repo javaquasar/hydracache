@@ -1,0 +1,30 @@
+{
+  "analysis_evidence": "44e7a7e8",
+  "analysis_packet_sha256": "14347e695e151ccdf88866f4d3b7014c648df649f67fe827c05b4d00f4c8aa4d",
+  "analysis_source": "e6e7126a",
+  "documents": [
+    {
+      "path": "docs/testing/performance/0.74/authority-runtime-variance-20261022.md",
+      "sha256": "4947791fa18bd8ee4356136dd4c8744913e28bf491ceab8dcae735dfe9ce6325"
+    },
+    {
+      "path": "docs/testing/performance/0.74/authority-runtime-variance-method-v2-20261022.md",
+      "sha256": "c25815a93fc704542d6730710188aff06bb225fdb679bf0e17b4cda7ecd959ea"
+    },
+    {
+      "path": "docs/testing/performance/0.74/README.md",
+      "sha256": "d52fca525bcd4eb2df126af6a9c19a4e8ed7725bda49959a62667762309d80e1"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-server-readiness-intermediate-plan-20261012.md",
+      "sha256": "d23d6e53332bff0c5959b856a3714937859ba3919aad61c8648f436d33290cae"
+    },
+    {
+      "path": "docs/articles/007-optimization-starts-with-measurement.md",
+      "sha256": "49d13d59422ed540d9fedf96c23ba41d71d971c38c6acd89038e749145138daa"
+    }
+  ],
+  "measurement_executed": false,
+  "protocol": "v2",
+  "runtime_and_original_evidence_git_diff": "empty since 7bf9b66f"
+}

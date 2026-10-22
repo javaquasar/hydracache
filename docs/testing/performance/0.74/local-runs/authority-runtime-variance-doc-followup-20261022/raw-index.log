@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    import hashlib,json,pathlib,subprocess; root=pathlib.Path('docs/testing/performance/0.74/local-runs/authority-runtime-variance-20261022'); paths=sorted(p for p in root.rglob('*') if p.is_file()); rows=[{'path':p.as_posix(),'same':subprocess.check_output(['git','show',':'+p.as_posix()])==p.read_bytes()} for p in paths]; assert len(rows)==14 and all(r['same'] for r in rows); print(json.dumps({'raw_index_members':len(rows),'all_bytes_match':True,'inventory_sha256':hashlib.sha256((root/'inventory.json').read_bytes()).hexdigest()},sort_keys=True))
+                                                                                                                                                                                                                                                                                                                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

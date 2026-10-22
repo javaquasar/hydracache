@@ -17657,3 +17657,47 @@ back from these observations. Another timing study needs its own frozen method;
 original checks, windows, first refusals and qualification identities stay fixed.
 No live preparation, clock/service change, server, installation, supervisor or
 product workload occurred, and the production delivery/recovery gates remain.
+
+### Saved timing variability separates observations from causes
+
+The [offline follow-up](../testing/performance/0.74/authority-runtime-variance-20261022.md)
+uses the same sealed 28 processes and 336 rows, not another measurement cohort.
+It keeps every pair and reproduces both mixed primary conclusions. Within each
+role, depth-127 warm thread CPU maximum/minimum ranges from 1.329 to 1.769. The
+spread is therefore not only an elapsed-time wait added to stable CPU work.
+That observation still cannot distinguish frequency, kernel/cache effects,
+virtualization accounting or a particular runtime cause.
+
+Order sensitivity is another warning against trusting a point estimate. On Rust
+1.88 the four baseline-first warm ratios have median 1.163; the three installed-
+first ratios have median 0.716. On 1.94 the first three pairs have median 0.817,
+the last three 1.245. These are small post hoc diagnostic groups, not alternative
+acceptance cohorts. Selecting the favorable group would turn an inconclusive
+comparison into a misleading improvement claim. The full lifecycle does not
+show the same uniform order pattern, so order is a design concern, not a proven
+single explanation for both endpoints.
+
+The elapsed-minus-thread-CPU residual is kept signed. Sequential clock reads and
+current-thread scope make it different from pure scheduler or storage waiting.
+For the lifecycle, CPU and residual variance can partially cancel: Rust 1.88
+baseline has normalized variance terms 1.095 for CPU, 1.431 for residual and
+-1.525 for twice their covariance; the unrounded terms sum to one. Treating them
+as independent causal percentages would be wrong. Switch/block counters remain
+descriptive; a large publication residual does not identify fsync latency or
+permit removing a durability operation.
+
+Even within the phased fixture, the largest CPU phase is not always the largest
+variance contributor. The 32-inspection batch has median CPU shares of roughly
+81–86%, but installed 1.94 has warm/publication covariance contributions of
+0.430/0.455 to the measured phase-sum variance. This sum excludes untimed gaps
+and is not the independently measured continuous lifecycle. Keeping that
+distinction avoids explaining one occurrence with another fixture's medians.
+
+The [next local protocol](../testing/performance/0.74/authority-runtime-variance-method-v2-20261022.md)
+is prepared, not run: fixed balanced BIIB/IBBI blocks, interleaved compiler order,
+unchanged probe/checks/corpus and a finite stopping rule without replacement
+samples. Read-only context is timestamped around each child instead of inferred
+from file mtimes. Any inner cycle profiling remains a separate instrumented
+study with an untouched control. Existing evidence is not retried, reweighted
+or promoted; the allocation/retention tradeoff remains confirmed while practical
+CPU/end-to-end value and the separate production gates remain unresolved.

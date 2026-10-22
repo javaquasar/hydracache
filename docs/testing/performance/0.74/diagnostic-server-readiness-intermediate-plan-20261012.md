@@ -1901,3 +1901,20 @@ plan, not retries, changed deadlines or fewer checks. Original delivery,
 all-writer cessation, durable later cells, SIGKILL/lost-ACK, reconnect, real trust
 and server integration remain their own gates. No live/server attempt, clock or
 service action, installation, supervisor change or product load occurred.
+
+### Saved CPU variability does not change server admission
+
+The [offline variability audit](authority-runtime-variance-20261022.md) preserves
+all first CPU observations and both mixed primary conclusions. It separates
+within-role thread CPU spread, signed elapsed residuals, phase covariance and
+order/ordinal associations, without attributing them to a proven host cause or
+dropping unfavorable pairs. Eleven offline controls and immutable input checks
+pass. No measured runtime/live/WSL profile or server action is repeated.
+
+A [separate finite local protocol](authority-runtime-variance-method-v2-20261022.md)
+is prepared, not implemented or executed. Implementing/running it is a later
+explicit step, not an automatic retry or readiness requirement satisfied here.
+Original delivery, all-writer termination, durable completion/later cells,
+SIGKILL/lost-ACK, reconnect and trust/server integration gates remain open on
+their own terms. All live checks, original windows, first refusals, qualification,
+clocks, services, installation, supervisor and product boundaries stay fixed.

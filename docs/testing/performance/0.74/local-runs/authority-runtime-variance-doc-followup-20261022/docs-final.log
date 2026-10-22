@@ -1,0 +1,3 @@
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.61s
+     Running `target\debug\xtask.exe doc-check`
+doc-check: OK (releases.toml is consistent)
