@@ -17369,3 +17369,30 @@ owner, while the actual engine first revalidates and returns Refused. Covered
 logical state examples do not prove that error priority. This remains an explicit
 integration gap; the storage result does not authorize copying those helpers into
 the runtime or changing original refusal order.
+
+### Preserve refusal priority and report the test scope that actually ran
+
+The [operator order candidate](../testing/performance/0.74/authority-operator-order-20261022.md)
+addresses the model's control-flow gap without editing runtime or old source
+pins. The legacy-only test exposes six outcome-priority and eight round-count
+mismatches across sixteen prechecked state/epoch cases. The correction validates
+before transition evaluation, then brackets logical publication with entry/exit
+validation. Failed owners refuse without IO; earlier read errors cannot turn
+into transition errors. Temporary caches clear without discarding original bytes.
+
+The new correctness cases observe 80 state combinations, 3072 leaf masks, 96
+bracket faults, 24 logical publication cuts and 24 direct external latches. Those
+outcomes match the restricted oracle, but test isolation remains red: a scalar
+PowerShell string splat passed each filter character separately, selecting all
+twelve compiled tests instead of only the three intended ones. Old allocation
+controls executed unexpectedly. Their values are retained raw and excluded from
+new claims, not promoted into a second performance result.
+
+A typed shared selector and native argv-only test repair the command boundary
+without rerunning a model. The independent reader requires the actual broad
+membership and preserves target-isolation REFUSED, even though local correctness
+assertions passed. Fifty-eight source guards, eighty-nine offline controls and
+21 older seals/1183 members protect that distinction. Next obtain a separately
+identified candidate-only correctness cohort; actual-engine storage integration,
+publication/fault and server admission remain gated. No old evidence, original
+window, refusal or qualification threshold is changed to make this outcome green.

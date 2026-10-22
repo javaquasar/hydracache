@@ -1758,3 +1758,18 @@ server/install/supervisor or product action occurs.
 Include the source-identified model operator error-priority gap: actual change
 must revalidate/refuse a failed owner before evaluating an operator transition.
 Logical state tests do not close that gate; no runtime refusal order may change.
+
+### Operator schedule correction still needs clean targeted execution
+
+The [separate operator candidate](authority-operator-order-20261022.md) puts
+revalidate before transition, preserving modeled error priority and publication
+rounds. Direct external-latch checks deny subsequent IO. Its first command ran
+all twelve tests due to PowerShell string splatting; target-isolation is REFUSED.
+Retain that broad first evidence and exclude unexpected allocation values.
+
+The shared selector's native argv-only repair is verified without a model rerun.
+Next run a separately identified candidate-only correctness cohort with old
+controls filtered, then audit actual-engine integration and historical observer/
+source-snapshot boundaries. No runtime, clock/service, WSL/server, supervisor or
+product action; original windows/refusals and all real publication/all-writer/
+full-fault/lost-ACK/reconnect/server admission gates remain unchanged.

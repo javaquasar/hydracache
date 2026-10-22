@@ -5872,3 +5872,19 @@ original windows/refusals and qualification remain unchanged.
 Source review additionally leaves model operator-helper error priority distinct
 from actual change/revalidate ordering; this is an explicit integration gate,
 not a runtime fix or an executed real-fault result.
+
+### Operator order candidate with refused test isolation
+
+The [operator candidate](authority-operator-order-20261022.md) validates before
+transition and publication, preserving scoped error priority and sticky no-IO
+refusal. Legacy-only controls retain six outcome/eight schedule counterexamples.
+The new state/fault/cut/latch assertions match their restricted oracle, but a
+PowerShell string-splat defect selected all twelve tests. Target-isolation stays
+REFUSED; unexpected allocation rows are retained but excluded from new claims.
+
+Native argv-only controls verify the typed selector repair without rerunning a
+model. Fifty-eight source guards, eighty-nine offline controls and 21 prior
+seals/1183 members preserve original first results. Next run one separately
+identified candidate-only correctness cohort, then audit actual-engine storage
+integration. Runtime, original windows/refusals, qualification and real fault/
+reconnect/server gates are unchanged.
