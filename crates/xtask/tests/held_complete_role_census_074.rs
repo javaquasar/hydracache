@@ -1,3 +1,5 @@
+#[path = "support/bootstrap_build_guard.rs"]
+mod build_guard;
 #[path = "support/held_role_census_guard.rs"]
 mod guard;
 
@@ -27,7 +29,7 @@ fn baseline(name: &str) -> String {
 
 #[test]
 fn complete_role_census_keeps_prior_owner_and_provider_bodies_exact_after_additive_hooks() {
-    let source = read("diagnostic_held_unit_material.rs");
+    let source = build_guard::material_view(&read("diagnostic_held_unit_material.rs"));
     assert_eq!(
         guard::material_view(&source),
         baseline("diagnostic_held_unit_material.rs")

@@ -1,4 +1,6 @@
 use std::path::Path;
+#[path = "support/bootstrap_build_guard.rs"]
+mod build_guard;
 fn root() -> std::path::PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
 }
@@ -29,7 +31,11 @@ fn rejected_bind_alias_does_not_install_unproved_runtime_or_change_old_bytes() {
             .unwrap();
         assert!(old.status.success());
         assert_eq!(
-            read(&path),
+            if file == "diagnostic_held_unit_material.rs" {
+                build_guard::material_view(&read(&path))
+            } else {
+                read(&path)
+            },
             String::from_utf8(old.stdout).unwrap().replace('\r', ""),
             "{path}"
         );

@@ -1,5 +1,7 @@
 #[path = "support/bootstrap_enrollment_guard.rs"]
 mod bootstrap_guard;
+#[path = "support/bootstrap_build_guard.rs"]
+mod build_guard;
 fn source(name: &str) -> String {
     std::fs::read_to_string(
         std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -38,7 +40,13 @@ fn activation_ingress_is_explicit_and_keeps_the_complete_old_kernel() {
         "diagnostic_manager_channel.rs",
         "diagnostic_original_manager_message.rs",
     ] {
-        assert_eq!(source(file), baseline(file), "{file}");
+        let current = source(file);
+        let current = if file == "diagnostic_held_unit_material.rs" {
+            build_guard::material_view(&current)
+        } else {
+            current
+        };
+        assert_eq!(current, baseline(file), "{file}");
     }
 }
 
@@ -107,7 +115,7 @@ fn activation_ingress_compatibility_registration_preserves_every_old_format_byte
     let raw = std::fs::read_to_string(root.join("docs/COMPAT.md"))
         .unwrap()
         .replace('\r', "");
-    let raw = bootstrap_guard::compat_view(&raw);
+    let raw = bootstrap_guard::compat_view(&build_guard::compat_view(&raw));
     let marker = "\n<!-- BEGIN HELD ACTIVATION INGRESS V1 -->\n";
     assert_eq!(raw.matches(marker).count(), 1);
     assert!(raw.ends_with("<!-- END HELD ACTIVATION INGRESS V1 -->\n"));

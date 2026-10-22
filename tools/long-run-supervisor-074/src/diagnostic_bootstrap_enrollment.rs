@@ -125,3 +125,6 @@ impl BootstrapEnrollment<'_> {
 #[cfg(test)]
 #[path = "diagnostic_bootstrap_enrollment_tests.rs"]
 mod tests;
+
+#[path = "diagnostic_bootstrap_selected_build.rs"]
+pub(crate) mod selected_build;

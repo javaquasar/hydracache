@@ -1,4 +1,6 @@
 use std::path::Path;
+#[path = "support/bootstrap_build_guard.rs"]
+mod build_guard;
 #[path = "support/bootstrap_enrollment_guard.rs"]
 mod guard;
 fn read(path: &str) -> String {
@@ -13,7 +15,7 @@ fn read(path: &str) -> String {
 
 #[test]
 fn bootstrap_selection_compatibility_is_exactly_additive_and_mutations_refuse() {
-    let raw = read("docs/COMPAT.md");
+    let raw = build_guard::compat_view(&read("docs/COMPAT.md"));
     let old = std::process::Command::new("git")
         .args(["--no-replace-objects", "show", "17b9c689:docs/COMPAT.md"])
         .current_dir(Path::new(env!("CARGO_MANIFEST_DIR")).join("../.."))

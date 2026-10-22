@@ -224,3 +224,6 @@ mod tests;
 #[cfg(test)]
 #[path = "../tests/support/held_material_live_api.rs"]
 mod live_api;
+
+#[path = "diagnostic_bootstrap_owner.rs"]
+mod bootstrap_owner;
