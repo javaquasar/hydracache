@@ -45,3 +45,11 @@ The [v2 correction](../../docs/testing/performance/0.74/held-manager-compat-plan
 requires busctl call's exact single-argument arrays and adds the captured reply
 regression. It retains the same checks and budgets; the fresh v2 control is not
 a retry of a failed mutation or a new original admission.
+
+V2 then stopped on a read-only property-interface typo, also before mutation.
+The [v3 correction](../../docs/testing/performance/0.74/held-manager-compat-plan-v3-20261022.md)
+retains its red exact-argv regression and all earlier sources. Eleven final
+offline controls pass per platform. The [actual result](../../docs/testing/performance/0.74/held-manager-compat-20261022.md)
+has exactly one StartTransientUnit, the expected unsupported-property rejection
+and proved absence of its unique unit afterward. Original delivery and all-writer
+cessation remain false; do not rerun this lane or substitute a transport.

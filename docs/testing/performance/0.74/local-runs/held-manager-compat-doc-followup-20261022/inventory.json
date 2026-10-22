@@ -1,0 +1,80 @@
+{
+  "files": [
+    {
+      "bytes": 1229,
+      "path": "check-driver.py",
+      "sha256": "89cbe0270262e1efb34aaf7e848e601ac57faf6eb97cb7e0adbd2e6ab67531b7"
+    },
+    {
+      "bytes": 988,
+      "path": "context.json",
+      "sha256": "088d49035d9f8ad04da37f44f0dc2910de6e7ed1c07871a829ee9160619d88c9"
+    },
+    {
+      "bytes": 308,
+      "path": "docs.json",
+      "sha256": "dcdaef89603a21e3f561c6861c0eaf11c1ade0659122b5ddb397d57ba81fcc62"
+    },
+    {
+      "bytes": 120,
+      "path": "docs.stderr.log",
+      "sha256": "74de6ab5d622184515c98a7c8ab2831df238b9e4b2aad927f0a89f20800bcedc"
+    },
+    {
+      "bytes": 44,
+      "path": "docs.stdout.log",
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    {
+      "bytes": 318,
+      "path": "format.json",
+      "sha256": "4c0f67909857beb08c4842abac0c2f00c14f046cb492a2823e2e204b57f87a10"
+    },
+    {
+      "bytes": 0,
+      "path": "format.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 0,
+      "path": "format.stdout.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 356,
+      "path": "performance.json",
+      "sha256": "dfdc019ffea5ec429169940907d0559278de6626955d588ba38c225d1fbaaf2a"
+    },
+    {
+      "bytes": 152,
+      "path": "performance.stderr.log",
+      "sha256": "7dd3050e5f39e350d0378973cfdf32608067a29a7228dc5bf94a87512e70c808"
+    },
+    {
+      "bytes": 60,
+      "path": "performance.stdout.log",
+      "sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+    },
+    {
+      "bytes": 315,
+      "path": "registry.json",
+      "sha256": "4264da9893555db702e54ccede47243fade30ce39ffb881511786bb8d76bb604"
+    },
+    {
+      "bytes": 127,
+      "path": "registry.stderr.log",
+      "sha256": "14b4b533d223229b099be5f481cb6a40485788fed2f85a158dd958a18030cbb7"
+    },
+    {
+      "bytes": 60,
+      "path": "registry.stdout.log",
+      "sha256": "2e85f23f9ee08f2b63842845a81a4d823692f8fc5c5805656eed4b42aca93d01"
+    },
+    {
+      "bytes": 2879,
+      "path": "retain-docs.py",
+      "sha256": "ae09974e221f0a17a1aaf78fc5e00b9ca26b46e03eb8f5685f62a3dfd3d20aa4"
+    }
+  ],
+  "schema": "held-manager-compat-doc-inventory-074-v1"
+}

@@ -6081,3 +6081,20 @@ collector-schema refusals without changing measured cells. All live checks,
 original windows, first Causal refusals and qualification stay exact. Production
 delivery, all-writer cessation, later cells, SIGKILL/lost-ACK, reconnect and trust
 remain distinct server-admission gates; no server/clock/service action follows.
+
+### Real local manager transport precondition refuses
+
+The [local compatibility control](held-manager-compat-20261022.md) checks the
+actual systemd 255 PID 1/UID 0 manager after permission for private local WSL
+units. Its sole StartTransientUnit rejects ExtraFileDescriptors, with the
+random private service name absent before and after. It transfers no writer FD,
+creates no slice and starts no held launcher or product workload. Existing
+services/systemd and clocks remain unchanged; no server is contacted.
+
+Eleven final offline controls pass per platform. Both earlier read-only tooling
+failures and the red regression baseline remain, with zero mutation calls in
+those prefixes. The negative result blocks the native extra-FD bridge on this
+host, not every possible transport design. Choose a separately approved test
+environment or review a 255-compatible FD-handoff protocol before proceeding.
+Original delivery, all-writer cessation and the joined fault matrix remain closed;
+no live check, original window, first refusal or qualification is weakened.

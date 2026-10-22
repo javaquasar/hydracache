@@ -1963,3 +1963,20 @@ production enrollment or server integration gates. Do not repeat the cohort
 to obtain a favorable result or weaken admission checks. Keep original windows,
 first Causal refusals and qualification fixed. No new live preparation,
 clock/service change, installation, supervisor action, server or product load.
+
+### Local native descriptor transport is blocked by the observed manager
+
+The [real WSL manager precondition](held-manager-compat-20261022.md) retains a
+single ExtraFileDescriptors StartTransientUnit rejection from systemd 255, after
+pinning its unique owner with PID 1/UID 0. The private random unit is absent
+before and after; there is no descriptor handoff, active writer or temporary
+slice. Existing services, clocks, supervisor and server remain untouched.
+
+Eleven offline controls pass on each platform; two preceding read-only tooling
+refusals and the regression baseline remain separately retained. This does not
+close original delivery, all-writer cessation or the full joined fault gate.
+The current native extra-FD option needs a supported separate environment; a
+255-compatible bootstrap/FD receiver would instead require its own architecture,
+original-context validation and external-writer accounting. Do not silently
+upgrade this manager, add a fallback, renew a deadline or label the rejection a
+successful launch. Original checks/windows/first refusals/qualification stay exact.

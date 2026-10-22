@@ -1,0 +1,15 @@
+{
+  "checkout_documents_sha256": {
+    "docs/articles/007-optimization-starts-with-measurement.md": "0ac7b2d062809819572f9393d6f0b3cf319525542d32390e0e76478aae0f9396",
+    "docs/testing/performance/0.74/README.md": "8f5a587ad78f8fe9b0aac387972343eb5a2d579b7c593f9318bbfae201b261c6",
+    "docs/testing/performance/0.74/diagnostic-server-readiness-intermediate-plan-20261012.md": "15d4bde8a81fa2d6a4c12e6e36319e0720c5afc19873b217429383e102dc5171",
+    "docs/testing/performance/0.74/held-manager-compat-20261022.md": "38caeab7b1d52160f2153d596c8b977ee7356497ed1a6d19dc53cb5d1e751742",
+    "tools/held-manager-compat-074/README.md": "7104769ef42566f94aff77dafe1f911a2b531a6cc78d746a347eaba7e56c3968"
+  },
+  "evidence_commit": "a770c361f76c3919a374a572d334ecdb63841985",
+  "evidence_inventory_sha256": "de30658692b85efa826e5af7af320abdda3768fe7f22453f1bb9f2efd9f6c4b8",
+  "new_native_calls": false,
+  "original_delivery": false,
+  "server": false,
+  "writers_cessation": false
+}

@@ -17799,3 +17799,36 @@ Causal refusals and qualification remain unchanged. No time/service mutation,
 server action or product workload occurs. Production original delivery,
 all-writer cessation and recovery still need their separate integration gates;
 a complete local performance experiment cannot substitute for them.
+
+### Test the real descriptor transport before claiming an execution gate
+
+The next [local manager control](../testing/performance/0.74/held-manager-compat-20261022.md)
+finds a compatibility blocker rather than a performance problem. The held owner
+already retains release, worker/config, pidfds, alarm and bootstrap roles, but
+those objects are not automatically a systemd launch specification. The actual
+WSL systemd 255 manager rejects the native ExtraFileDescriptors property. A
+single uniquely named transient-unit request confirms the rejection; its unit
+is absent before and after. No writer rights or product worker are delivered.
+
+Allowing private temporary services removes a permission boundary, not an API
+limitation. Treating a private bus model, version string or empty descriptor
+probe as authenticated original delivery would skip the very process/stream/
+cgroup binding being tested. The negative control therefore leaves original
+delivery and all-writer cessation false and stops before the joined fault matrix.
+Existing services/systemd, clocks, original deadlines and live checks stay intact.
+
+The tooling itself exposed two earlier mistakes: scalar-versus-argument-array
+JSON decoding and a wrong fixed property interface. Both stopped on read-only
+queries, before any unit submission. Their raw failures and sources remain;
+captured-response and exact-argv regressions accompany the fixes. Eleven final
+offline controls pass per platform, while the one real mutation still ends in
+the manager's refusal. These are not retries of a failed launch or evidence of
+successful execution.
+
+A separate compatible environment could preserve the native transport design.
+A new FD bootstrap receiver could instead support an older manager, but adds
+another authenticated peer and extra descriptor copies outside the attempt
+cgroup. Its identity, lifetime, deadlines and closure must join the same full
+frame and all-writer proof; it is an architectural choice, not a silent fallback.
+Neither option by itself supplies durable one-shot delivery, active collection,
+safe completion or recovery. Those gates remain explicit.
