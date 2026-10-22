@@ -1,0 +1,5 @@
+{
+  "failure": "ValueError: Required package absent: python3-minimal",
+  "imported": false,
+  "original_sha256": "5ec7dc68216e75d1d4d4761474e99d8461a98d316537110314b137122a879e0f"
+}

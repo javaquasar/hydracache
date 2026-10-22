@@ -1,0 +1,11 @@
+{
+  "argv": [
+    "cargo",
+    "fmt",
+    "-p",
+    "hydracache-long-run-supervisor-074",
+    "--",
+    "--check"
+  ],
+  "exit": 0
+}

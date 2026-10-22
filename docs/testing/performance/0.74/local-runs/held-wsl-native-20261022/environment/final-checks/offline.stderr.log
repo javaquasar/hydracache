@@ -1,0 +1,23 @@
+test_boot_requires_successful_import_and_unchanged_existing_registry (test_host.Controls.test_boot_requires_successful_import_and_unchanged_existing_registry) ... ok
+test_exact_import_argv_and_no_global_or_existing_distro_mutation (test_host.Controls.test_exact_import_argv_and_no_global_or_existing_distro_mutation) ... ok
+test_only_exact_new_environment_is_permitted_and_old_context_preserved (test_host.Controls.test_only_exact_new_environment_is_permitted_and_old_context_preserved) ... ok
+test_preexisting_stage_or_path_or_name_never_submits_import (test_host.Controls.test_preexisting_stage_or_path_or_name_never_submits_import) ... ok
+test_timeout_receipt_keeps_partial_output_and_never_resubmits (test_host.Controls.test_timeout_receipt_keeps_partial_output_and_never_resubmits) ... ok
+test_argv_has_only_the_owned_distro_and_fixed_script (test_native_fd.Controls.test_argv_has_only_the_owned_distro_and_fixed_script) ... ok
+test_busctl_payload_has_an_option_terminator_before_helper_arguments (test_native_fd.Controls.test_busctl_payload_has_an_option_terminator_before_helper_arguments) ... ok
+test_control_group_property_belongs_to_service_interface (test_native_fd.Controls.test_control_group_property_belongs_to_service_interface) ... ok
+test_existing_outcome_never_opens_host_or_resubmits (test_native_fd.Controls.test_existing_outcome_never_opens_host_or_resubmits) ... ok
+test_fixed_shell_semantics_never_look_like_original_transport (test_native_fd.Controls.test_fixed_shell_semantics_never_look_like_original_transport) ... ok
+test_download_requires_space_before_network_or_directory_creation (test_prepare.Controls.test_download_requires_space_before_network_or_directory_creation) ... ok
+test_first_outputs_cannot_be_overwritten (test_prepare.Controls.test_first_outputs_cannot_be_overwritten) ... ok
+test_masks_exist_before_boot_and_unrelated_contents_and_metadata_survive (test_prepare.Controls.test_masks_exist_before_boot_and_unrelated_contents_and_metadata_survive) ... ok
+test_python_is_reported_optional_for_environment_not_assumed_for_harness (test_prepare.Controls.test_python_is_reported_optional_for_environment_not_assumed_for_harness) ... ok
+test_unsafe_or_duplicate_names_refuse_without_launch (test_prepare.Controls.test_unsafe_or_duplicate_names_refuse_without_launch) ... ok
+test_wrong_distribution_version_packages_or_manager_never_pass (test_prepare.Controls.test_wrong_distribution_version_packages_or_manager_never_pass) ... ok
+test_identity_is_from_exact_retained_receipts_not_version_or_success_flags (test_seal.Controls.test_identity_is_from_exact_retained_receipts_not_version_or_success_flags) ... ok
+test_missing_receipts_cannot_supply_identity (test_seal.Controls.test_missing_receipts_cannot_supply_identity) ... ok
+
+----------------------------------------------------------------------
+Ran 18 tests in 0.448s
+
+OK

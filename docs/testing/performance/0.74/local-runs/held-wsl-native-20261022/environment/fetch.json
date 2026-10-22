@@ -1,0 +1,11 @@
+{
+  "distro": "HydraCache074Native",
+  "downloaded_sha256": "5ec7dc68216e75d1d4d4761474e99d8461a98d316537110314b137122a879e0f",
+  "existing_services_changed": false,
+  "expected_bytes": 89228801,
+  "expected_sha256": "5ec7dc68216e75d1d4d4761474e99d8461a98d316537110314b137122a879e0f",
+  "failure": null,
+  "imported": false,
+  "install": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074-wsl-native",
+  "source_url": "https://salsa.debian.org/debian/WSL/-/jobs/9606244/artifacts/raw/Debian_WSL_AMD64_v1.26.0.0.wsl"
+}

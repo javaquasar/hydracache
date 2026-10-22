@@ -1,0 +1,1 @@
+busctl --system --auto-start=no --allow-interactive-authorization=no --timeout=250ms get-property :1.0 /org/freedesktop/systemd1/unit/hc074_2dnativefd_2d4ec2fba2f5930526b5e453d4ae430fdb_2eservice org.freedesktop.systemd1.Unit Description 

@@ -1,0 +1,1 @@
+busctl --system --auto-start=no --allow-interactive-authorization=no --timeout=250ms call org.freedesktop.DBus /org/freedesktop/DBus org.freedesktop.DBus GetConnectionUnixProcessID s :1.0 

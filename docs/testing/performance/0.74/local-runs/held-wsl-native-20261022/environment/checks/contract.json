@@ -1,0 +1,14 @@
+{
+  "argv": [
+    "cargo",
+    "run",
+    "-p",
+    "xtask",
+    "--locked",
+    "--",
+    "performance-contract-check",
+    "--release",
+    "0.74"
+  ],
+  "exit": 0
+}

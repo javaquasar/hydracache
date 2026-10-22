@@ -1,0 +1,19 @@
+{
+  "actual_start_ack_count": 1,
+  "admission_allowed": false,
+  "environment_prepared": true,
+  "exact_stop_count": 1,
+  "first_cli_refusal_retained": true,
+  "first_prepared_tar_sha256": "253025e7599908f372199e8515ba0a1574b7dc25b0b1104f16ba5587a926a2d9",
+  "first_property_refusal_retained": true,
+  "native_control_overall_pass": false,
+  "native_fd_helper_observed": true,
+  "original_delivery": false,
+  "original_rootfs_sha256": "5ec7dc68216e75d1d4d4761474e99d8461a98d316537110314b137122a879e0f",
+  "prepared_rootfs_sha256": "253025e7599908f372199e8515ba0a1574b7dc25b0b1104f16ba5587a926a2d9",
+  "qualification_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "sealer_commit": "6c30567fc28b24a28925bd1302af235a02ad04ab",
+  "server_operations": 0,
+  "service_inactive_observed": true,
+  "writers_cessation": false
+}

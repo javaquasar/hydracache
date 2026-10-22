@@ -1,0 +1,21 @@
+{
+  "argv": [
+    "wsl.exe",
+    "-d",
+    "HydraCache074Native",
+    "-u",
+    "root",
+    "--cd",
+    "/",
+    "--exec",
+    "/bin/bash",
+    "-n",
+    "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/held-wsl-native-074/first_boot.sh"
+  ],
+  "elapsed_ns": 5483177300,
+  "exit": 0,
+  "failure": null,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "timeout_seconds": 30
+}

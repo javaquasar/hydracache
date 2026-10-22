@@ -1,0 +1,8 @@
+native-fd-mapping-ok
+listen=242:2:role:empty
+role=2096:172:81ed
+empty=5:4:21b6
+stdout=67:7036874420056841:81ff
+stderr=67:9570149210452848:81ff
+executable=/usr/bin/bash
+0::/system.slice/system-hc074nativefd7859a8fb6cb63aa021080a584288e952.slice/hc074-nativefd-7859a8fb6cb63aa021080a584288e952.service

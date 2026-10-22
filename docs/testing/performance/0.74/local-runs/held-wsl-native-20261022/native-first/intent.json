@@ -1,0 +1,32 @@
+{
+  "admission_allowed": false,
+  "argv": [
+    "wsl.exe",
+    "-d",
+    "HydraCache074Native",
+    "-u",
+    "root",
+    "--cd",
+    "/",
+    "--exec",
+    "/bin/bash",
+    "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/held-wsl-native-074/native_fd.sh",
+    "4ec2fba2f5930526b5e453d4ae430fdb"
+  ],
+  "nonce": "4ec2fba2f5930526b5e453d4ae430fdb",
+  "original_delivery": false,
+  "source_commit": "4befa3652e8689a1cd2671a6e7126022526287d3",
+  "source_sha256": {
+    "README.md": "b085c9613f16d703b0608151bad524bf18b3bd5395e0ea64c2ba73d27207cce5",
+    "check.py": "95a4a06c67ab4bb58d4b7f8cdf301f910c7c6ec85f299f7c7c6e64bce11f1e4e",
+    "first_boot.sh": "04ce04fa9f2c1294106715fb9b1690897a7d36ed7b294d2462001292b9525a7f",
+    "host.py": "892b3790e3d9942def0cef11edd402141a503c72992a6f00922e95a20ad94239",
+    "native_fd.py": "31ec7d0718976e8854d897820d72121708b2576f92eda8c171bce189a41be3ce",
+    "native_fd.sh": "cac41f7f6364d2bb08af2520d4a17f35cc2c1299cfee8fb14832275f402b3ceb",
+    "prepare.py": "b3015630f456c0f4ddc01dabe078bf6910c9dc88d436b157678a1d945c5ae874",
+    "test_host.py": "484712059dbd15b6fd01afcd7a6bed4c440ed0201374c8d5d63e482ae45cd34b",
+    "test_native_fd.py": "3761c4cda94612e30004be9de17da750c17b0d0614862cf03902828385faad48",
+    "test_prepare.py": "82256fb036c9e36a403fbc1173d6190859b0ddf166de172116ae8073d84e06a0"
+  },
+  "writers_cessation": false
+}

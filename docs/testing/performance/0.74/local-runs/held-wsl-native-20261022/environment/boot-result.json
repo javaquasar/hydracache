@@ -1,0 +1,10 @@
+{
+  "admission_allowed": false,
+  "default_preserved": true,
+  "existing_registry_preserved": true,
+  "global_config_preserved": true,
+  "original_delivery": false,
+  "server_operations": 0,
+  "success": true,
+  "writers_cessation": false
+}

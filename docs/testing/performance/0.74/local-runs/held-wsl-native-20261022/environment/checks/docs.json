@@ -1,0 +1,12 @@
+{
+  "argv": [
+    "cargo",
+    "run",
+    "-p",
+    "xtask",
+    "--locked",
+    "--",
+    "doc-check"
+  ],
+  "exit": 0
+}

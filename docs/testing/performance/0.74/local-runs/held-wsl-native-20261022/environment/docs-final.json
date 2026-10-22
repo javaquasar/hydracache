@@ -1,0 +1,17 @@
+{
+  "argv": [
+    "cargo",
+    "run",
+    "-p",
+    "xtask",
+    "--locked",
+    "--",
+    "doc-check"
+  ],
+  "elapsed_ns": 13722489600,
+  "exit": 0,
+  "failure": null,
+  "stderr_sha256": "4486677e41f118af82f6a2cffe278e93a1ed74851a531289eee7e65ed0068034",
+  "stdout_sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396",
+  "timeout_seconds": 180
+}

@@ -1,0 +1,17 @@
+{
+  "argv": [
+    "wsl.exe",
+    "--import",
+    "HydraCache074Native",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074-wsl-native",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\held-wsl-native-environment-20261022\\debian-prepared-v2.tar",
+    "--version",
+    "2"
+  ],
+  "elapsed_ns": 6228816700,
+  "exit": 0,
+  "failure": null,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stdout_sha256": "8142c88d677422c8bd8eace714d36efe1f981de931960c2e99ee38717f810ede",
+  "timeout_seconds": 180
+}

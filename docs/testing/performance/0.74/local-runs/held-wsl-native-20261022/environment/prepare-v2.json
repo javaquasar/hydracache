@@ -1,0 +1,44 @@
+{
+  "copied_members": 10589,
+  "debian_version": "13.5",
+  "excluded_vendor_oobe": true,
+  "failure": null,
+  "imported": false,
+  "masks": [
+    "etc/systemd/system/systemd-timesyncd.service",
+    "etc/systemd/system/systemd-timedated.service",
+    "etc/systemd/system/systemd-time-wait-sync.service",
+    "etc/systemd/system/chrony.service",
+    "etc/systemd/system/chronyd.service",
+    "etc/systemd/system/ntp.service",
+    "etc/systemd/system/ntpd.service",
+    "etc/systemd/system/ntpsec.service",
+    "etc/systemd/system/openntpd.service",
+    "etc/systemd/system/apt-daily.timer",
+    "etc/systemd/system/apt-daily-upgrade.timer",
+    "etc/systemd/system/fstrim.timer",
+    "etc/systemd/system/man-db.timer",
+    "etc/systemd/system/e2scrub_all.timer",
+    "etc/systemd/system/logrotate.timer"
+  ],
+  "original_payload_bytes": 230348163,
+  "original_sha256": "5ec7dc68216e75d1d4d4761474e99d8461a98d316537110314b137122a879e0f",
+  "packages": {
+    "dbus": {
+      "status": "install ok installed",
+      "version": "1.16.2-2"
+    },
+    "systemd": {
+      "status": "install ok installed",
+      "version": "257.13-1~deb13u1"
+    },
+    "systemd-sysv": {
+      "status": "install ok installed",
+      "version": "257.13-1~deb13u1"
+    }
+  },
+  "prepared_bytes": 238008320,
+  "prepared_sha256": "253025e7599908f372199e8515ba0a1574b7dc25b0b1104f16ba5587a926a2d9",
+  "python_harness_dependency_available": false,
+  "wsl_conf_sha256": "540de51241c0c8ef07dd90030da2f2036b933a2d729a6bca0a392d7fa4c8ea3f"
+}

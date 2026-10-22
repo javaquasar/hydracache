@@ -1,0 +1,72 @@
+distribution
+PRETTY_NAME="Debian GNU/Linux 13 (trixie)"
+NAME="Debian GNU/Linux"
+VERSION_ID="13"
+VERSION="13 (trixie)"
+VERSION_CODENAME=trixie
+DEBIAN_VERSION_FULL=13.5
+ID=debian
+HOME_URL="https://www.debian.org/"
+SUPPORT_URL="https://www.debian.org/support"
+BUG_REPORT_URL="https://bugs.debian.org/"
+systemd
+systemd 257 (257.13-1~deb13u1)
++PAM +AUDIT +SELINUX +APPARMOR +IMA +IPE +SMACK +SECCOMP +GCRYPT -GNUTLS +OPENSSL +ACL +BLKID +CURL +ELFUTILS +FIDO2 +IDN2 -IDN +IPTC +KMOD +LIBCRYPTSETUP +LIBCRYPTSETUP_PLUGINS +LIBFDISK +PCRE2 +PWQUALITY +P11KIT +QRENCODE +TPM2 +BZIP2 +LZ4 +XZ +ZLIB +ZSTD +BPF_FRAMEWORK +BTF -XKBCOMMON -UTMP +SYSVINIT +LIBARCHIVE
+packages
+dbus	1.16.2-2
+systemd	257.13-1~deb13u1
+systemd-sysv	257.13-1~deb13u1
+private-config
+[boot]
+systemd=true
+[network]
+hostname=hc074-native
+[interop]
+appendWindowsPath=false
+[user]
+default=root
+clock-masks
+systemd-timesyncd.service=/dev/null
+systemd-timedated.service=/dev/null
+systemd-time-wait-sync.service=/dev/null
+chrony.service=/dev/null
+chronyd.service=/dev/null
+ntp.service=/dev/null
+ntpd.service=/dev/null
+ntpsec.service=/dev/null
+openntpd.service=/dev/null
+apt-daily.timer=/dev/null
+apt-daily-upgrade.timer=/dev/null
+fstrim.timer=/dev/null
+man-db.timer=/dev/null
+e2scrub_all.timer=/dev/null
+logrotate.timer=/dev/null
+active-services
+  console-getty.service    loaded active running Console Getty
+  cron.service             loaded active running Regular background program processing daemon
+  dbus.service             loaded active running D-Bus System Message Bus
+  getty@tty1.service       loaded active running Getty on tty1
+  systemd-journald.service loaded active running Journal Service
+  systemd-logind.service   loaded active running User Login Management
+  systemd-udevd.service    loaded active running Rule-based Manager for Device Events and Files
+manager-identity
+s ":1.0"
+s "257.13-1~deb13u1"
+kernel-context
+Linux hc074-native 6.6.87.2-microsoft-standard-WSL2 #1 SMP PREEMPT_DYNAMIC Thu Jun  5 18:30:46 UTC 2025 x86_64 GNU/Linux
+/usr/lib/systemd/systemd
+mnt:[4026532219]
+pid:[4026532221]
+user:[4026531837]
+0::/init.scope
+read-only-clock-samples
+sample=1 realtime=1792685994619701259
+uptime=13.86 94.66
+boot=f48fb83f-b034-4a9a-9631-2c35e142911b
+sample=2 realtime=1792685995625186148
+uptime=14.87 102.05
+boot=f48fb83f-b034-4a9a-9631-2c35e142911b
+sample=3 realtime=1792685996643255093
+uptime=15.90 110.21
+boot=f48fb83f-b034-4a9a-9631-2c35e142911b
+finished-read-only-no-units-submitted

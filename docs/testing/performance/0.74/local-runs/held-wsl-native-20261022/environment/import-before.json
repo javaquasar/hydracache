@@ -1,0 +1,91 @@
+{
+  "default": "{648690f8-6c7c-4f7d-aa62-921d8b5cdbbf}",
+  "distros": {
+    "{648690f8-6c7c-4f7d-aa62-921d8b5cdbbf}": {
+      "BasePath": {
+        "kind": 1,
+        "value": "C:\\Users\\ArturBuzov\\AppData\\Local\\Packages\\CanonicalGroupLimited.Ubuntu_79rhkp1fndgsc\\LocalState"
+      },
+      "DefaultUid": {
+        "kind": 4,
+        "value": 1000
+      },
+      "DistributionName": {
+        "kind": 1,
+        "value": "Ubuntu"
+      },
+      "Flags": {
+        "kind": 4,
+        "value": 15
+      },
+      "Flavor": {
+        "kind": 1,
+        "value": "ubuntu"
+      },
+      "OsVersion": {
+        "kind": 1,
+        "value": "24.04"
+      },
+      "PackageFamilyName": {
+        "kind": 1,
+        "value": "CanonicalGroupLimited.Ubuntu_79rhkp1fndgsc"
+      },
+      "RunOOBE": {
+        "kind": 4,
+        "value": 0
+      },
+      "State": {
+        "kind": 4,
+        "value": 1
+      },
+      "Version": {
+        "kind": 4,
+        "value": 2
+      },
+      "VhdFileName": {
+        "kind": 1,
+        "value": "ext4.vhdx"
+      }
+    },
+    "{9ca14436-3d43-4c20-97bc-356f4d142023}": {
+      "BasePath": {
+        "kind": 1,
+        "value": "\\\\?\\C:\\Users\\ArturBuzov\\AppData\\Local\\Docker\\wsl\\main"
+      },
+      "DefaultUid": {
+        "kind": 4,
+        "value": 0
+      },
+      "DistributionName": {
+        "kind": 1,
+        "value": "docker-desktop"
+      },
+      "Flags": {
+        "kind": 4,
+        "value": 15
+      },
+      "Modern": {
+        "kind": 4,
+        "value": 1
+      },
+      "RunOOBE": {
+        "kind": 4,
+        "value": 0
+      },
+      "State": {
+        "kind": 4,
+        "value": 1
+      },
+      "Version": {
+        "kind": 4,
+        "value": 2
+      },
+      "VhdFileName": {
+        "kind": 1,
+        "value": "ext4.vhdx"
+      }
+    }
+  },
+  "free_bytes": 38524162048,
+  "global_config_sha256": null
+}

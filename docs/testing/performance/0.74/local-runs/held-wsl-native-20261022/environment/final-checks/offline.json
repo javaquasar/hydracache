@@ -1,0 +1,13 @@
+{
+  "argv": [
+    "C:\\Python313\\python.exe",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tools/held-wsl-native-074",
+    "-v"
+  ],
+  "exit": 0
+}
