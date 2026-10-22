@@ -1,0 +1,15 @@
+{
+  "argv": [
+    "/home/artur/.cache/hydracache-074-runtime-allocation-20261022/fifth/target-194/release/deps/hydracache_long_run_supervisor_074-5138eed558b3af90",
+    "diagnostic_worker_policy::authority_registry::fixture::tests::runtime_allocation::meter::counter_realloc_releases_old_layout_and_reconciles_drop",
+    "--exact",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "cwd": "/home/artur/.cache/hydracache-074-runtime-allocation-20261022/fifth/baseline",
+  "exit": 0,
+  "name": "194-baseline-control-0",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stdout_sha256": "38d7313d98fc6c61685fe1c144975a97ae590b35295d0d6bdd389f5d4c21b4f5",
+  "timeout": false
+}

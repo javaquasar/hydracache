@@ -1,0 +1,12 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+   Compiling proc-macro2 v1.0.106
+   Compiling serde_core v1.0.228
+error: failed to run custom build command for `proc-macro2 v1.0.106`
+
+Caused by:
+  could not execute process `/home/artur/.cache/hydracache-074-runtime-allocation-20261022/sixth/target-188-baseline/release/build/proc-macro2-814e53160e59f897/build-script-build` (never executed)
+
+Caused by:
+  Permission denied (os error 13)
+warning: build failed, waiting for other jobs to finish...

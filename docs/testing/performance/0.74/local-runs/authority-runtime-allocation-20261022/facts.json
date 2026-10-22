@@ -1,0 +1,2864 @@
+{
+  "images": {
+    "188": {
+      "baseline": {
+        "compiler": "1.88.0",
+        "path": "/home/artur/.cache/hydracache-074-runtime-allocation-20261022/seventh/target-188-baseline/release/deps/hydracache_long_run_supervisor_074-19566b75c882a260",
+        "sha256": "2ae524d08c81333832b3397df2bc958d85b905e635bee23717fb28428904e302"
+      },
+      "installed": {
+        "compiler": "1.88.0",
+        "path": "/home/artur/.cache/hydracache-074-runtime-allocation-20261022/seventh/target-188-installed/release/deps/hydracache_long_run_supervisor_074-19566b75c882a260",
+        "sha256": "9bbdba05f2d1e082db72b1b54602e52fee9507dad17c0009430b590bac2692a1"
+      }
+    },
+    "194": {
+      "baseline": {
+        "compiler": "1.94.0",
+        "path": "/home/artur/.cache/hydracache-074-runtime-allocation-20261022/seventh/target-194-baseline/release/deps/hydracache_long_run_supervisor_074-5138eed558b3af90",
+        "sha256": "78eee586aabb96acf7a5437b31bb2f22c1b00613f175ee7d00eb902eaa3ec121"
+      },
+      "installed": {
+        "compiler": "1.94.0",
+        "path": "/home/artur/.cache/hydracache-074-runtime-allocation-20261022/seventh/target-194-installed/release/deps/hydracache_long_run_supervisor_074-5138eed558b3af90",
+        "sha256": "d00a6cac2e1c40ee88872075c33877a728ecb0962370ba80442192649fe7fa8f"
+      }
+    }
+  },
+  "lanes": {
+    "188": [
+      {
+        "allocation_counts_repeatable": true,
+        "depth": 1,
+        "fault": "external",
+        "metrics": {
+          "live_requested_after_open": {
+            "baseline": [
+              2263,
+              2263
+            ],
+            "installed": [
+              3075,
+              3075
+            ],
+            "paired_delta_installed_minus_baseline": [
+              812,
+              812
+            ]
+          },
+          "live_requested_after_refusal": {
+            "baseline": [
+              2263,
+              2263
+            ],
+            "installed": [
+              2455,
+              2455
+            ],
+            "paired_delta_installed_minus_baseline": [
+              192,
+              192
+            ]
+          },
+          "live_requested_after_warm": {
+            "baseline": [
+              2263,
+              2263
+            ],
+            "installed": [
+              3075,
+              3075
+            ],
+            "paired_delta_installed_minus_baseline": [
+              812,
+              812
+            ]
+          },
+          "open_allocations": {
+            "baseline": [
+              78,
+              78
+            ],
+            "installed": [
+              78,
+              78
+            ],
+            "paired_delta_installed_minus_baseline": [
+              0,
+              0
+            ]
+          },
+          "open_requested_bytes": {
+            "baseline": [
+              10878,
+              10878
+            ],
+            "installed": [
+              11070,
+              11070
+            ],
+            "paired_delta_installed_minus_baseline": [
+              192,
+              192
+            ]
+          },
+          "rss_after_drop": {
+            "baseline": [
+              9162752,
+              9424896
+            ],
+            "installed": [
+              9166848,
+              9433088
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -126976,
+              139264
+            ]
+          },
+          "rss_after_warm": {
+            "baseline": [
+              9031680,
+              9166848
+            ],
+            "installed": [
+              9035776,
+              9302016
+            ],
+            "paired_delta_installed_minus_baseline": [
+              0,
+              139264
+            ]
+          },
+          "scratch_after_warm": {
+            "baseline": [
+              0,
+              0
+            ],
+            "installed": [
+              620,
+              620
+            ],
+            "paired_delta_installed_minus_baseline": [
+              620,
+              620
+            ]
+          },
+          "scratch_released_at_refusal": {
+            "baseline": [
+              0,
+              0
+            ],
+            "installed": [
+              620,
+              620
+            ],
+            "paired_delta_installed_minus_baseline": [
+              620,
+              620
+            ]
+          },
+          "warm_allocations_per_inspect": {
+            "baseline": [
+              19.0,
+              19.0
+            ],
+            "installed": [
+              17.0,
+              17.0
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -2.0,
+              -2.0
+            ]
+          },
+          "warm_reallocations_per_inspect": {
+            "baseline": [
+              0.0,
+              0.0
+            ],
+            "installed": [
+              0.0,
+              0.0
+            ],
+            "paired_delta_installed_minus_baseline": [
+              0.0,
+              0.0
+            ]
+          },
+          "warm_requested_bytes_per_inspect": {
+            "baseline": [
+              1606.0,
+              1606.0
+            ],
+            "installed": [
+              986.0,
+              986.0
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -620.0,
+              -620.0
+            ]
+          }
+        },
+        "pairs": 5
+      },
+      {
+        "allocation_counts_repeatable": true,
+        "depth": 7,
+        "fault": "external",
+        "metrics": {
+          "live_requested_after_open": {
+            "baseline": [
+              11017,
+              11017
+            ],
+            "installed": [
+              16135,
+              16135
+            ],
+            "paired_delta_installed_minus_baseline": [
+              5118,
+              5118
+            ]
+          },
+          "live_requested_after_refusal": {
+            "baseline": [
+              11017,
+              11017
+            ],
+            "installed": [
+              11401,
+              11401
+            ],
+            "paired_delta_installed_minus_baseline": [
+              384,
+              384
+            ]
+          },
+          "live_requested_after_warm": {
+            "baseline": [
+              11017,
+              11017
+            ],
+            "installed": [
+              16135,
+              16135
+            ],
+            "paired_delta_installed_minus_baseline": [
+              5118,
+              5118
+            ]
+          },
+          "open_allocations": {
+            "baseline": [
+              583,
+              583
+            ],
+            "installed": [
+              583,
+              583
+            ],
+            "paired_delta_installed_minus_baseline": [
+              0,
+              0
+            ]
+          },
+          "open_requested_bytes": {
+            "baseline": [
+              86786,
+              86786
+            ],
+            "installed": [
+              87362,
+              87362
+            ],
+            "paired_delta_installed_minus_baseline": [
+              576,
+              576
+            ]
+          },
+          "rss_after_drop": {
+            "baseline": [
+              9293824,
+              9424896
+            ],
+            "installed": [
+              9297920,
+              9564160
+            ],
+            "paired_delta_installed_minus_baseline": [
+              0,
+              139264
+            ]
+          },
+          "rss_after_warm": {
+            "baseline": [
+              9293824,
+              9424896
+            ],
+            "installed": [
+              9297920,
+              9564160
+            ],
+            "paired_delta_installed_minus_baseline": [
+              0,
+              139264
+            ]
+          },
+          "scratch_after_warm": {
+            "baseline": [
+              0,
+              0
+            ],
+            "installed": [
+              4734,
+              4734
+            ],
+            "paired_delta_installed_minus_baseline": [
+              4734,
+              4734
+            ]
+          },
+          "scratch_released_at_refusal": {
+            "baseline": [
+              0,
+              0
+            ],
+            "installed": [
+              4734,
+              4734
+            ],
+            "paired_delta_installed_minus_baseline": [
+              4734,
+              4734
+            ]
+          },
+          "warm_allocations_per_inspect": {
+            "baseline": [
+              83.0,
+              83.0
+            ],
+            "installed": [
+              69.0,
+              69.0
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -14.0,
+              -14.0
+            ]
+          },
+          "warm_reallocations_per_inspect": {
+            "baseline": [
+              0.0,
+              0.0
+            ],
+            "installed": [
+              0.0,
+              0.0
+            ],
+            "paired_delta_installed_minus_baseline": [
+              0.0,
+              0.0
+            ]
+          },
+          "warm_requested_bytes_per_inspect": {
+            "baseline": [
+              8112.0,
+              8112.0
+            ],
+            "installed": [
+              3378.0,
+              3378.0
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -4734.0,
+              -4734.0
+            ]
+          }
+        },
+        "pairs": 5
+      },
+      {
+        "allocation_counts_repeatable": true,
+        "depth": 31,
+        "fault": "external",
+        "metrics": {
+          "live_requested_after_open": {
+            "baseline": [
+              48251,
+              48251
+            ],
+            "installed": [
+              71019,
+              71019
+            ],
+            "paired_delta_installed_minus_baseline": [
+              22768,
+              22768
+            ]
+          },
+          "live_requested_after_refusal": {
+            "baseline": [
+              48251,
+              48251
+            ],
+            "installed": [
+              49787,
+              49787
+            ],
+            "paired_delta_installed_minus_baseline": [
+              1536,
+              1536
+            ]
+          },
+          "live_requested_after_warm": {
+            "baseline": [
+              48251,
+              48251
+            ],
+            "installed": [
+              71019,
+              71019
+            ],
+            "paired_delta_installed_minus_baseline": [
+              22768,
+              22768
+            ]
+          },
+          "open_allocations": {
+            "baseline": [
+              2605,
+              2605
+            ],
+            "installed": [
+              2605,
+              2605
+            ],
+            "paired_delta_installed_minus_baseline": [
+              0,
+              0
+            ]
+          },
+          "open_requested_bytes": {
+            "baseline": [
+              392576,
+              392576
+            ],
+            "installed": [
+              395456,
+              395456
+            ],
+            "paired_delta_installed_minus_baseline": [
+              2880,
+              2880
+            ]
+          },
+          "rss_after_drop": {
+            "baseline": [
+              9424896,
+              9555968
+            ],
+            "installed": [
+              9428992,
+              9695232
+            ],
+            "paired_delta_installed_minus_baseline": [
+              0,
+              139264
+            ]
+          },
+          "rss_after_warm": {
+            "baseline": [
+              9424896,
+              9555968
+            ],
+            "installed": [
+              9428992,
+              9695232
+            ],
+            "paired_delta_installed_minus_baseline": [
+              0,
+              139264
+            ]
+          },
+          "scratch_after_warm": {
+            "baseline": [
+              0,
+              0
+            ],
+            "installed": [
+              21232,
+              21232
+            ],
+            "paired_delta_installed_minus_baseline": [
+              21232,
+              21232
+            ]
+          },
+          "scratch_released_at_refusal": {
+            "baseline": [
+              0,
+              0
+            ],
+            "installed": [
+              21232,
+              21232
+            ],
+            "paired_delta_installed_minus_baseline": [
+              21232,
+              21232
+            ]
+          },
+          "warm_allocations_per_inspect": {
+            "baseline": [
+              335.0,
+              335.0
+            ],
+            "installed": [
+              273.0,
+              273.0
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -62.0,
+              -62.0
+            ]
+          },
+          "warm_reallocations_per_inspect": {
+            "baseline": [
+              0.0,
+              0.0
+            ],
+            "installed": [
+              0.0,
+              0.0
+            ],
+            "paired_delta_installed_minus_baseline": [
+              0.0,
+              0.0
+            ]
+          },
+          "warm_requested_bytes_per_inspect": {
+            "baseline": [
+              32290.0,
+              32290.0
+            ],
+            "installed": [
+              11058.0,
+              11058.0
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -21232.0,
+              -21232.0
+            ]
+          }
+        },
+        "pairs": 5
+      },
+      {
+        "allocation_counts_repeatable": true,
+        "depth": 127,
+        "fault": "external",
+        "metrics": {
+          "live_requested_after_open": {
+            "baseline": [
+              197223,
+              197223
+            ],
+            "installed": [
+              290627,
+              290627
+            ],
+            "paired_delta_installed_minus_baseline": [
+              93404,
+              93404
+            ]
+          },
+          "live_requested_after_refusal": {
+            "baseline": [
+              227739,
+              227739
+            ],
+            "installed": [
+              233883,
+              233883
+            ],
+            "paired_delta_installed_minus_baseline": [
+              6144,
+              6144
+            ]
+          },
+          "live_requested_after_warm": {
+            "baseline": [
+              197223,
+              197223
+            ],
+            "installed": [
+              290627,
+              290627
+            ],
+            "paired_delta_installed_minus_baseline": [
+              93404,
+              93404
+            ]
+          },
+          "open_allocations": {
+            "baseline": [
+              10708,
+              10708
+            ],
+            "installed": [
+              10708,
+              10708
+            ],
+            "paired_delta_installed_minus_baseline": [
+              0,
+              0
+            ]
+          },
+          "open_requested_bytes": {
+            "baseline": [
+              1621196,
+              1621196
+            ],
+            "installed": [
+              1633292,
+              1633292
+            ],
+            "paired_delta_installed_minus_baseline": [
+              12096,
+              12096
+            ]
+          },
+          "rss_after_drop": {
+            "baseline": [
+              9818112,
+              9953280
+            ],
+            "installed": [
+              9822208,
+              10088448
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -126976,
+              270336
+            ]
+          },
+          "rss_after_warm": {
+            "baseline": [
+              9818112,
+              9953280
+            ],
+            "installed": [
+              9822208,
+              10088448
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -126976,
+              270336
+            ]
+          },
+          "scratch_after_warm": {
+            "baseline": [
+              0,
+              0
+            ],
+            "installed": [
+              87260,
+              87260
+            ],
+            "paired_delta_installed_minus_baseline": [
+              87260,
+              87260
+            ]
+          },
+          "scratch_released_at_refusal": {
+            "baseline": [
+              0,
+              0
+            ],
+            "installed": [
+              87952,
+              87952
+            ],
+            "paired_delta_installed_minus_baseline": [
+              87952,
+              87952
+            ]
+          },
+          "warm_allocations_per_inspect": {
+            "baseline": [
+              1353.0,
+              1353.0
+            ],
+            "installed": [
+              1099.0,
+              1099.0
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -254.0,
+              -254.0
+            ]
+          },
+          "warm_reallocations_per_inspect": {
+            "baseline": [
+              0.0,
+              0.0
+            ],
+            "installed": [
+              0.0,
+              0.0
+            ],
+            "paired_delta_installed_minus_baseline": [
+              0.0,
+              0.0
+            ]
+          },
+          "warm_requested_bytes_per_inspect": {
+            "baseline": [
+              132606.0,
+              132606.0
+            ],
+            "installed": [
+              45346.0,
+              45346.0
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -87260.0,
+              -87260.0
+            ]
+          }
+        },
+        "pairs": 5
+      },
+      {
+        "allocation_counts_repeatable": true,
+        "depth": 7,
+        "fault": "validation",
+        "metrics": {
+          "live_requested_after_open": {
+            "baseline": [
+              11017,
+              11017
+            ],
+            "installed": [
+              16135,
+              16135
+            ],
+            "paired_delta_installed_minus_baseline": [
+              5118,
+              5118
+            ]
+          },
+          "live_requested_after_refusal": {
+            "baseline": [
+              11017,
+              11017
+            ],
+            "installed": [
+              11401,
+              11401
+            ],
+            "paired_delta_installed_minus_baseline": [
+              384,
+              384
+            ]
+          },
+          "live_requested_after_warm": {
+            "baseline": [
+              11017,
+              11017
+            ],
+            "installed": [
+              16135,
+              16135
+            ],
+            "paired_delta_installed_minus_baseline": [
+              5118,
+              5118
+            ]
+          },
+          "open_allocations": {
+            "baseline": [
+              583,
+              583
+            ],
+            "installed": [
+              583,
+              583
+            ],
+            "paired_delta_installed_minus_baseline": [
+              0,
+              0
+            ]
+          },
+          "open_requested_bytes": {
+            "baseline": [
+              86786,
+              86786
+            ],
+            "installed": [
+              87362,
+              87362
+            ],
+            "paired_delta_installed_minus_baseline": [
+              576,
+              576
+            ]
+          },
+          "rss_after_drop": {
+            "baseline": [
+              9818112,
+              9953280
+            ],
+            "installed": [
+              9822208,
+              10088448
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -126976,
+              270336
+            ]
+          },
+          "rss_after_warm": {
+            "baseline": [
+              9818112,
+              9953280
+            ],
+            "installed": [
+              9822208,
+              10088448
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -126976,
+              270336
+            ]
+          },
+          "scratch_after_warm": {
+            "baseline": [
+              0,
+              0
+            ],
+            "installed": [
+              4734,
+              4734
+            ],
+            "paired_delta_installed_minus_baseline": [
+              4734,
+              4734
+            ]
+          },
+          "scratch_released_at_refusal": {
+            "baseline": [
+              0,
+              0
+            ],
+            "installed": [
+              4734,
+              4734
+            ],
+            "paired_delta_installed_minus_baseline": [
+              4734,
+              4734
+            ]
+          },
+          "warm_allocations_per_inspect": {
+            "baseline": [
+              83.0,
+              83.0
+            ],
+            "installed": [
+              69.0,
+              69.0
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -14.0,
+              -14.0
+            ]
+          },
+          "warm_reallocations_per_inspect": {
+            "baseline": [
+              0.0,
+              0.0
+            ],
+            "installed": [
+              0.0,
+              0.0
+            ],
+            "paired_delta_installed_minus_baseline": [
+              0.0,
+              0.0
+            ]
+          },
+          "warm_requested_bytes_per_inspect": {
+            "baseline": [
+              8112.0,
+              8112.0
+            ],
+            "installed": [
+              3378.0,
+              3378.0
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -4734.0,
+              -4734.0
+            ]
+          }
+        },
+        "pairs": 5
+      },
+      {
+        "allocation_counts_repeatable": true,
+        "depth": 7,
+        "fault": "binding",
+        "metrics": {
+          "live_requested_after_open": {
+            "baseline": [
+              11017,
+              11017
+            ],
+            "installed": [
+              16135,
+              16135
+            ],
+            "paired_delta_installed_minus_baseline": [
+              5118,
+              5118
+            ]
+          },
+          "live_requested_after_refusal": {
+            "baseline": [
+              11017,
+              11017
+            ],
+            "installed": [
+              11401,
+              11401
+            ],
+            "paired_delta_installed_minus_baseline": [
+              384,
+              384
+            ]
+          },
+          "live_requested_after_warm": {
+            "baseline": [
+              11017,
+              11017
+            ],
+            "installed": [
+              16135,
+              16135
+            ],
+            "paired_delta_installed_minus_baseline": [
+              5118,
+              5118
+            ]
+          },
+          "open_allocations": {
+            "baseline": [
+              583,
+              583
+            ],
+            "installed": [
+              583,
+              583
+            ],
+            "paired_delta_installed_minus_baseline": [
+              0,
+              0
+            ]
+          },
+          "open_requested_bytes": {
+            "baseline": [
+              86786,
+              86786
+            ],
+            "installed": [
+              87362,
+              87362
+            ],
+            "paired_delta_installed_minus_baseline": [
+              576,
+              576
+            ]
+          },
+          "rss_after_drop": {
+            "baseline": [
+              9818112,
+              9953280
+            ],
+            "installed": [
+              9822208,
+              10088448
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -126976,
+              270336
+            ]
+          },
+          "rss_after_warm": {
+            "baseline": [
+              9818112,
+              9953280
+            ],
+            "installed": [
+              9822208,
+              10088448
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -126976,
+              270336
+            ]
+          },
+          "scratch_after_warm": {
+            "baseline": [
+              0,
+              0
+            ],
+            "installed": [
+              4734,
+              4734
+            ],
+            "paired_delta_installed_minus_baseline": [
+              4734,
+              4734
+            ]
+          },
+          "scratch_released_at_refusal": {
+            "baseline": [
+              0,
+              0
+            ],
+            "installed": [
+              4734,
+              4734
+            ],
+            "paired_delta_installed_minus_baseline": [
+              4734,
+              4734
+            ]
+          },
+          "warm_allocations_per_inspect": {
+            "baseline": [
+              83.0,
+              83.0
+            ],
+            "installed": [
+              69.0,
+              69.0
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -14.0,
+              -14.0
+            ]
+          },
+          "warm_reallocations_per_inspect": {
+            "baseline": [
+              0.0,
+              0.0
+            ],
+            "installed": [
+              0.0,
+              0.0
+            ],
+            "paired_delta_installed_minus_baseline": [
+              0.0,
+              0.0
+            ]
+          },
+          "warm_requested_bytes_per_inspect": {
+            "baseline": [
+              8112.0,
+              8112.0
+            ],
+            "installed": [
+              3378.0,
+              3378.0
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -4734.0,
+              -4734.0
+            ]
+          }
+        },
+        "pairs": 5
+      },
+      {
+        "allocation_counts_repeatable": true,
+        "depth": 7,
+        "fault": "transition",
+        "metrics": {
+          "live_requested_after_open": {
+            "baseline": [
+              11017,
+              11017
+            ],
+            "installed": [
+              16135,
+              16135
+            ],
+            "paired_delta_installed_minus_baseline": [
+              5118,
+              5118
+            ]
+          },
+          "live_requested_after_refusal": {
+            "baseline": [
+              11017,
+              11017
+            ],
+            "installed": [
+              11401,
+              11401
+            ],
+            "paired_delta_installed_minus_baseline": [
+              384,
+              384
+            ]
+          },
+          "live_requested_after_warm": {
+            "baseline": [
+              11017,
+              11017
+            ],
+            "installed": [
+              16135,
+              16135
+            ],
+            "paired_delta_installed_minus_baseline": [
+              5118,
+              5118
+            ]
+          },
+          "open_allocations": {
+            "baseline": [
+              583,
+              583
+            ],
+            "installed": [
+              583,
+              583
+            ],
+            "paired_delta_installed_minus_baseline": [
+              0,
+              0
+            ]
+          },
+          "open_requested_bytes": {
+            "baseline": [
+              86786,
+              86786
+            ],
+            "installed": [
+              87362,
+              87362
+            ],
+            "paired_delta_installed_minus_baseline": [
+              576,
+              576
+            ]
+          },
+          "rss_after_drop": {
+            "baseline": [
+              9818112,
+              9953280
+            ],
+            "installed": [
+              9822208,
+              10088448
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -126976,
+              270336
+            ]
+          },
+          "rss_after_warm": {
+            "baseline": [
+              9818112,
+              9953280
+            ],
+            "installed": [
+              9822208,
+              10088448
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -126976,
+              270336
+            ]
+          },
+          "scratch_after_warm": {
+            "baseline": [
+              0,
+              0
+            ],
+            "installed": [
+              4734,
+              4734
+            ],
+            "paired_delta_installed_minus_baseline": [
+              4734,
+              4734
+            ]
+          },
+          "scratch_released_at_refusal": {
+            "baseline": [
+              0,
+              0
+            ],
+            "installed": [
+              4734,
+              4734
+            ],
+            "paired_delta_installed_minus_baseline": [
+              4734,
+              4734
+            ]
+          },
+          "warm_allocations_per_inspect": {
+            "baseline": [
+              83.0,
+              83.0
+            ],
+            "installed": [
+              69.0,
+              69.0
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -14.0,
+              -14.0
+            ]
+          },
+          "warm_reallocations_per_inspect": {
+            "baseline": [
+              0.0,
+              0.0
+            ],
+            "installed": [
+              0.0,
+              0.0
+            ],
+            "paired_delta_installed_minus_baseline": [
+              0.0,
+              0.0
+            ]
+          },
+          "warm_requested_bytes_per_inspect": {
+            "baseline": [
+              8112.0,
+              8112.0
+            ],
+            "installed": [
+              3378.0,
+              3378.0
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -4734.0,
+              -4734.0
+            ]
+          }
+        },
+        "pairs": 5
+      },
+      {
+        "allocation_counts_repeatable": true,
+        "depth": 7,
+        "fault": "publication",
+        "metrics": {
+          "live_requested_after_open": {
+            "baseline": [
+              11017,
+              11017
+            ],
+            "installed": [
+              16135,
+              16135
+            ],
+            "paired_delta_installed_minus_baseline": [
+              5118,
+              5118
+            ]
+          },
+          "live_requested_after_refusal": {
+            "baseline": [
+              11017,
+              11017
+            ],
+            "installed": [
+              11401,
+              11401
+            ],
+            "paired_delta_installed_minus_baseline": [
+              384,
+              384
+            ]
+          },
+          "live_requested_after_warm": {
+            "baseline": [
+              11017,
+              11017
+            ],
+            "installed": [
+              16135,
+              16135
+            ],
+            "paired_delta_installed_minus_baseline": [
+              5118,
+              5118
+            ]
+          },
+          "open_allocations": {
+            "baseline": [
+              583,
+              583
+            ],
+            "installed": [
+              583,
+              583
+            ],
+            "paired_delta_installed_minus_baseline": [
+              0,
+              0
+            ]
+          },
+          "open_requested_bytes": {
+            "baseline": [
+              86786,
+              86786
+            ],
+            "installed": [
+              87362,
+              87362
+            ],
+            "paired_delta_installed_minus_baseline": [
+              576,
+              576
+            ]
+          },
+          "rss_after_drop": {
+            "baseline": [
+              9818112,
+              9953280
+            ],
+            "installed": [
+              9822208,
+              10088448
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -126976,
+              270336
+            ]
+          },
+          "rss_after_warm": {
+            "baseline": [
+              9818112,
+              9953280
+            ],
+            "installed": [
+              9822208,
+              10088448
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -126976,
+              270336
+            ]
+          },
+          "scratch_after_warm": {
+            "baseline": [
+              0,
+              0
+            ],
+            "installed": [
+              4734,
+              4734
+            ],
+            "paired_delta_installed_minus_baseline": [
+              4734,
+              4734
+            ]
+          },
+          "scratch_released_at_refusal": {
+            "baseline": [
+              0,
+              0
+            ],
+            "installed": [
+              4734,
+              4734
+            ],
+            "paired_delta_installed_minus_baseline": [
+              4734,
+              4734
+            ]
+          },
+          "warm_allocations_per_inspect": {
+            "baseline": [
+              83.0,
+              83.0
+            ],
+            "installed": [
+              69.0,
+              69.0
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -14.0,
+              -14.0
+            ]
+          },
+          "warm_reallocations_per_inspect": {
+            "baseline": [
+              0.0,
+              0.0
+            ],
+            "installed": [
+              0.0,
+              0.0
+            ],
+            "paired_delta_installed_minus_baseline": [
+              0.0,
+              0.0
+            ]
+          },
+          "warm_requested_bytes_per_inspect": {
+            "baseline": [
+              8112.0,
+              8112.0
+            ],
+            "installed": [
+              3378.0,
+              3378.0
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -4734.0,
+              -4734.0
+            ]
+          }
+        },
+        "pairs": 5
+      }
+    ],
+    "194": [
+      {
+        "allocation_counts_repeatable": true,
+        "depth": 1,
+        "fault": "external",
+        "metrics": {
+          "live_requested_after_open": {
+            "baseline": [
+              2263,
+              2263
+            ],
+            "installed": [
+              3075,
+              3075
+            ],
+            "paired_delta_installed_minus_baseline": [
+              812,
+              812
+            ]
+          },
+          "live_requested_after_refusal": {
+            "baseline": [
+              2263,
+              2263
+            ],
+            "installed": [
+              2455,
+              2455
+            ],
+            "paired_delta_installed_minus_baseline": [
+              192,
+              192
+            ]
+          },
+          "live_requested_after_warm": {
+            "baseline": [
+              2263,
+              2263
+            ],
+            "installed": [
+              3075,
+              3075
+            ],
+            "paired_delta_installed_minus_baseline": [
+              812,
+              812
+            ]
+          },
+          "open_allocations": {
+            "baseline": [
+              78,
+              78
+            ],
+            "installed": [
+              78,
+              78
+            ],
+            "paired_delta_installed_minus_baseline": [
+              0,
+              0
+            ]
+          },
+          "open_requested_bytes": {
+            "baseline": [
+              10878,
+              10878
+            ],
+            "installed": [
+              11070,
+              11070
+            ],
+            "paired_delta_installed_minus_baseline": [
+              192,
+              192
+            ]
+          },
+          "rss_after_drop": {
+            "baseline": [
+              8572928,
+              8708096
+            ],
+            "installed": [
+              8314880,
+              8450048
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -262144,
+              -258048
+            ]
+          },
+          "rss_after_warm": {
+            "baseline": [
+              8572928,
+              8708096
+            ],
+            "installed": [
+              8183808,
+              8450048
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -389120,
+              -258048
+            ]
+          },
+          "scratch_after_warm": {
+            "baseline": [
+              0,
+              0
+            ],
+            "installed": [
+              620,
+              620
+            ],
+            "paired_delta_installed_minus_baseline": [
+              620,
+              620
+            ]
+          },
+          "scratch_released_at_refusal": {
+            "baseline": [
+              0,
+              0
+            ],
+            "installed": [
+              620,
+              620
+            ],
+            "paired_delta_installed_minus_baseline": [
+              620,
+              620
+            ]
+          },
+          "warm_allocations_per_inspect": {
+            "baseline": [
+              19.0,
+              19.0
+            ],
+            "installed": [
+              17.0,
+              17.0
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -2.0,
+              -2.0
+            ]
+          },
+          "warm_reallocations_per_inspect": {
+            "baseline": [
+              0.0,
+              0.0
+            ],
+            "installed": [
+              0.0,
+              0.0
+            ],
+            "paired_delta_installed_minus_baseline": [
+              0.0,
+              0.0
+            ]
+          },
+          "warm_requested_bytes_per_inspect": {
+            "baseline": [
+              1606.0,
+              1606.0
+            ],
+            "installed": [
+              986.0,
+              986.0
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -620.0,
+              -620.0
+            ]
+          }
+        },
+        "pairs": 5
+      },
+      {
+        "allocation_counts_repeatable": true,
+        "depth": 7,
+        "fault": "external",
+        "metrics": {
+          "live_requested_after_open": {
+            "baseline": [
+              11017,
+              11017
+            ],
+            "installed": [
+              16135,
+              16135
+            ],
+            "paired_delta_installed_minus_baseline": [
+              5118,
+              5118
+            ]
+          },
+          "live_requested_after_refusal": {
+            "baseline": [
+              11017,
+              11017
+            ],
+            "installed": [
+              11401,
+              11401
+            ],
+            "paired_delta_installed_minus_baseline": [
+              384,
+              384
+            ]
+          },
+          "live_requested_after_warm": {
+            "baseline": [
+              11017,
+              11017
+            ],
+            "installed": [
+              16135,
+              16135
+            ],
+            "paired_delta_installed_minus_baseline": [
+              5118,
+              5118
+            ]
+          },
+          "open_allocations": {
+            "baseline": [
+              583,
+              583
+            ],
+            "installed": [
+              583,
+              583
+            ],
+            "paired_delta_installed_minus_baseline": [
+              0,
+              0
+            ]
+          },
+          "open_requested_bytes": {
+            "baseline": [
+              86786,
+              86786
+            ],
+            "installed": [
+              87362,
+              87362
+            ],
+            "paired_delta_installed_minus_baseline": [
+              576,
+              576
+            ]
+          },
+          "rss_after_drop": {
+            "baseline": [
+              8704000,
+              8839168
+            ],
+            "installed": [
+              8445952,
+              8581120
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -262144,
+              -258048
+            ]
+          },
+          "rss_after_warm": {
+            "baseline": [
+              8704000,
+              8839168
+            ],
+            "installed": [
+              8445952,
+              8581120
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -262144,
+              -258048
+            ]
+          },
+          "scratch_after_warm": {
+            "baseline": [
+              0,
+              0
+            ],
+            "installed": [
+              4734,
+              4734
+            ],
+            "paired_delta_installed_minus_baseline": [
+              4734,
+              4734
+            ]
+          },
+          "scratch_released_at_refusal": {
+            "baseline": [
+              0,
+              0
+            ],
+            "installed": [
+              4734,
+              4734
+            ],
+            "paired_delta_installed_minus_baseline": [
+              4734,
+              4734
+            ]
+          },
+          "warm_allocations_per_inspect": {
+            "baseline": [
+              83.0,
+              83.0
+            ],
+            "installed": [
+              69.0,
+              69.0
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -14.0,
+              -14.0
+            ]
+          },
+          "warm_reallocations_per_inspect": {
+            "baseline": [
+              0.0,
+              0.0
+            ],
+            "installed": [
+              0.0,
+              0.0
+            ],
+            "paired_delta_installed_minus_baseline": [
+              0.0,
+              0.0
+            ]
+          },
+          "warm_requested_bytes_per_inspect": {
+            "baseline": [
+              8112.0,
+              8112.0
+            ],
+            "installed": [
+              3378.0,
+              3378.0
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -4734.0,
+              -4734.0
+            ]
+          }
+        },
+        "pairs": 5
+      },
+      {
+        "allocation_counts_repeatable": true,
+        "depth": 31,
+        "fault": "external",
+        "metrics": {
+          "live_requested_after_open": {
+            "baseline": [
+              48251,
+              48251
+            ],
+            "installed": [
+              71019,
+              71019
+            ],
+            "paired_delta_installed_minus_baseline": [
+              22768,
+              22768
+            ]
+          },
+          "live_requested_after_refusal": {
+            "baseline": [
+              48251,
+              48251
+            ],
+            "installed": [
+              49787,
+              49787
+            ],
+            "paired_delta_installed_minus_baseline": [
+              1536,
+              1536
+            ]
+          },
+          "live_requested_after_warm": {
+            "baseline": [
+              48251,
+              48251
+            ],
+            "installed": [
+              71019,
+              71019
+            ],
+            "paired_delta_installed_minus_baseline": [
+              22768,
+              22768
+            ]
+          },
+          "open_allocations": {
+            "baseline": [
+              2605,
+              2605
+            ],
+            "installed": [
+              2605,
+              2605
+            ],
+            "paired_delta_installed_minus_baseline": [
+              0,
+              0
+            ]
+          },
+          "open_requested_bytes": {
+            "baseline": [
+              392576,
+              392576
+            ],
+            "installed": [
+              395456,
+              395456
+            ],
+            "paired_delta_installed_minus_baseline": [
+              2880,
+              2880
+            ]
+          },
+          "rss_after_drop": {
+            "baseline": [
+              8835072,
+              8970240
+            ],
+            "installed": [
+              8577024,
+              8712192
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -262144,
+              -258048
+            ]
+          },
+          "rss_after_warm": {
+            "baseline": [
+              8835072,
+              8970240
+            ],
+            "installed": [
+              8577024,
+              8712192
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -262144,
+              -258048
+            ]
+          },
+          "scratch_after_warm": {
+            "baseline": [
+              0,
+              0
+            ],
+            "installed": [
+              21232,
+              21232
+            ],
+            "paired_delta_installed_minus_baseline": [
+              21232,
+              21232
+            ]
+          },
+          "scratch_released_at_refusal": {
+            "baseline": [
+              0,
+              0
+            ],
+            "installed": [
+              21232,
+              21232
+            ],
+            "paired_delta_installed_minus_baseline": [
+              21232,
+              21232
+            ]
+          },
+          "warm_allocations_per_inspect": {
+            "baseline": [
+              335.0,
+              335.0
+            ],
+            "installed": [
+              273.0,
+              273.0
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -62.0,
+              -62.0
+            ]
+          },
+          "warm_reallocations_per_inspect": {
+            "baseline": [
+              0.0,
+              0.0
+            ],
+            "installed": [
+              0.0,
+              0.0
+            ],
+            "paired_delta_installed_minus_baseline": [
+              0.0,
+              0.0
+            ]
+          },
+          "warm_requested_bytes_per_inspect": {
+            "baseline": [
+              32290.0,
+              32290.0
+            ],
+            "installed": [
+              11058.0,
+              11058.0
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -21232.0,
+              -21232.0
+            ]
+          }
+        },
+        "pairs": 5
+      },
+      {
+        "allocation_counts_repeatable": true,
+        "depth": 127,
+        "fault": "external",
+        "metrics": {
+          "live_requested_after_open": {
+            "baseline": [
+              197223,
+              197223
+            ],
+            "installed": [
+              290627,
+              290627
+            ],
+            "paired_delta_installed_minus_baseline": [
+              93404,
+              93404
+            ]
+          },
+          "live_requested_after_refusal": {
+            "baseline": [
+              227739,
+              227739
+            ],
+            "installed": [
+              233883,
+              233883
+            ],
+            "paired_delta_installed_minus_baseline": [
+              6144,
+              6144
+            ]
+          },
+          "live_requested_after_warm": {
+            "baseline": [
+              197223,
+              197223
+            ],
+            "installed": [
+              290627,
+              290627
+            ],
+            "paired_delta_installed_minus_baseline": [
+              93404,
+              93404
+            ]
+          },
+          "open_allocations": {
+            "baseline": [
+              10708,
+              10708
+            ],
+            "installed": [
+              10708,
+              10708
+            ],
+            "paired_delta_installed_minus_baseline": [
+              0,
+              0
+            ]
+          },
+          "open_requested_bytes": {
+            "baseline": [
+              1621196,
+              1621196
+            ],
+            "installed": [
+              1633292,
+              1633292
+            ],
+            "paired_delta_installed_minus_baseline": [
+              12096,
+              12096
+            ]
+          },
+          "rss_after_drop": {
+            "baseline": [
+              9232384,
+              9494528
+            ],
+            "installed": [
+              8970240,
+              9236480
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -262144,
+              -126976
+            ]
+          },
+          "rss_after_warm": {
+            "baseline": [
+              9232384,
+              9494528
+            ],
+            "installed": [
+              8970240,
+              9236480
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -262144,
+              -126976
+            ]
+          },
+          "scratch_after_warm": {
+            "baseline": [
+              0,
+              0
+            ],
+            "installed": [
+              87260,
+              87260
+            ],
+            "paired_delta_installed_minus_baseline": [
+              87260,
+              87260
+            ]
+          },
+          "scratch_released_at_refusal": {
+            "baseline": [
+              0,
+              0
+            ],
+            "installed": [
+              87952,
+              87952
+            ],
+            "paired_delta_installed_minus_baseline": [
+              87952,
+              87952
+            ]
+          },
+          "warm_allocations_per_inspect": {
+            "baseline": [
+              1353.0,
+              1353.0
+            ],
+            "installed": [
+              1099.0,
+              1099.0
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -254.0,
+              -254.0
+            ]
+          },
+          "warm_reallocations_per_inspect": {
+            "baseline": [
+              0.0,
+              0.0
+            ],
+            "installed": [
+              0.0,
+              0.0
+            ],
+            "paired_delta_installed_minus_baseline": [
+              0.0,
+              0.0
+            ]
+          },
+          "warm_requested_bytes_per_inspect": {
+            "baseline": [
+              132606.0,
+              132606.0
+            ],
+            "installed": [
+              45346.0,
+              45346.0
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -87260.0,
+              -87260.0
+            ]
+          }
+        },
+        "pairs": 5
+      },
+      {
+        "allocation_counts_repeatable": true,
+        "depth": 7,
+        "fault": "validation",
+        "metrics": {
+          "live_requested_after_open": {
+            "baseline": [
+              11017,
+              11017
+            ],
+            "installed": [
+              16135,
+              16135
+            ],
+            "paired_delta_installed_minus_baseline": [
+              5118,
+              5118
+            ]
+          },
+          "live_requested_after_refusal": {
+            "baseline": [
+              11017,
+              11017
+            ],
+            "installed": [
+              11401,
+              11401
+            ],
+            "paired_delta_installed_minus_baseline": [
+              384,
+              384
+            ]
+          },
+          "live_requested_after_warm": {
+            "baseline": [
+              11017,
+              11017
+            ],
+            "installed": [
+              16135,
+              16135
+            ],
+            "paired_delta_installed_minus_baseline": [
+              5118,
+              5118
+            ]
+          },
+          "open_allocations": {
+            "baseline": [
+              583,
+              583
+            ],
+            "installed": [
+              583,
+              583
+            ],
+            "paired_delta_installed_minus_baseline": [
+              0,
+              0
+            ]
+          },
+          "open_requested_bytes": {
+            "baseline": [
+              86786,
+              86786
+            ],
+            "installed": [
+              87362,
+              87362
+            ],
+            "paired_delta_installed_minus_baseline": [
+              576,
+              576
+            ]
+          },
+          "rss_after_drop": {
+            "baseline": [
+              9232384,
+              9494528
+            ],
+            "installed": [
+              8970240,
+              9236480
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -262144,
+              -126976
+            ]
+          },
+          "rss_after_warm": {
+            "baseline": [
+              9232384,
+              9494528
+            ],
+            "installed": [
+              8970240,
+              9236480
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -262144,
+              -126976
+            ]
+          },
+          "scratch_after_warm": {
+            "baseline": [
+              0,
+              0
+            ],
+            "installed": [
+              4734,
+              4734
+            ],
+            "paired_delta_installed_minus_baseline": [
+              4734,
+              4734
+            ]
+          },
+          "scratch_released_at_refusal": {
+            "baseline": [
+              0,
+              0
+            ],
+            "installed": [
+              4734,
+              4734
+            ],
+            "paired_delta_installed_minus_baseline": [
+              4734,
+              4734
+            ]
+          },
+          "warm_allocations_per_inspect": {
+            "baseline": [
+              83.0,
+              83.0
+            ],
+            "installed": [
+              69.0,
+              69.0
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -14.0,
+              -14.0
+            ]
+          },
+          "warm_reallocations_per_inspect": {
+            "baseline": [
+              0.0,
+              0.0
+            ],
+            "installed": [
+              0.0,
+              0.0
+            ],
+            "paired_delta_installed_minus_baseline": [
+              0.0,
+              0.0
+            ]
+          },
+          "warm_requested_bytes_per_inspect": {
+            "baseline": [
+              8112.0,
+              8112.0
+            ],
+            "installed": [
+              3378.0,
+              3378.0
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -4734.0,
+              -4734.0
+            ]
+          }
+        },
+        "pairs": 5
+      },
+      {
+        "allocation_counts_repeatable": true,
+        "depth": 7,
+        "fault": "binding",
+        "metrics": {
+          "live_requested_after_open": {
+            "baseline": [
+              11017,
+              11017
+            ],
+            "installed": [
+              16135,
+              16135
+            ],
+            "paired_delta_installed_minus_baseline": [
+              5118,
+              5118
+            ]
+          },
+          "live_requested_after_refusal": {
+            "baseline": [
+              11017,
+              11017
+            ],
+            "installed": [
+              11401,
+              11401
+            ],
+            "paired_delta_installed_minus_baseline": [
+              384,
+              384
+            ]
+          },
+          "live_requested_after_warm": {
+            "baseline": [
+              11017,
+              11017
+            ],
+            "installed": [
+              16135,
+              16135
+            ],
+            "paired_delta_installed_minus_baseline": [
+              5118,
+              5118
+            ]
+          },
+          "open_allocations": {
+            "baseline": [
+              583,
+              583
+            ],
+            "installed": [
+              583,
+              583
+            ],
+            "paired_delta_installed_minus_baseline": [
+              0,
+              0
+            ]
+          },
+          "open_requested_bytes": {
+            "baseline": [
+              86786,
+              86786
+            ],
+            "installed": [
+              87362,
+              87362
+            ],
+            "paired_delta_installed_minus_baseline": [
+              576,
+              576
+            ]
+          },
+          "rss_after_drop": {
+            "baseline": [
+              9232384,
+              9494528
+            ],
+            "installed": [
+              8970240,
+              9236480
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -262144,
+              -126976
+            ]
+          },
+          "rss_after_warm": {
+            "baseline": [
+              9232384,
+              9494528
+            ],
+            "installed": [
+              8970240,
+              9236480
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -262144,
+              -126976
+            ]
+          },
+          "scratch_after_warm": {
+            "baseline": [
+              0,
+              0
+            ],
+            "installed": [
+              4734,
+              4734
+            ],
+            "paired_delta_installed_minus_baseline": [
+              4734,
+              4734
+            ]
+          },
+          "scratch_released_at_refusal": {
+            "baseline": [
+              0,
+              0
+            ],
+            "installed": [
+              4734,
+              4734
+            ],
+            "paired_delta_installed_minus_baseline": [
+              4734,
+              4734
+            ]
+          },
+          "warm_allocations_per_inspect": {
+            "baseline": [
+              83.0,
+              83.0
+            ],
+            "installed": [
+              69.0,
+              69.0
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -14.0,
+              -14.0
+            ]
+          },
+          "warm_reallocations_per_inspect": {
+            "baseline": [
+              0.0,
+              0.0
+            ],
+            "installed": [
+              0.0,
+              0.0
+            ],
+            "paired_delta_installed_minus_baseline": [
+              0.0,
+              0.0
+            ]
+          },
+          "warm_requested_bytes_per_inspect": {
+            "baseline": [
+              8112.0,
+              8112.0
+            ],
+            "installed": [
+              3378.0,
+              3378.0
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -4734.0,
+              -4734.0
+            ]
+          }
+        },
+        "pairs": 5
+      },
+      {
+        "allocation_counts_repeatable": true,
+        "depth": 7,
+        "fault": "transition",
+        "metrics": {
+          "live_requested_after_open": {
+            "baseline": [
+              11017,
+              11017
+            ],
+            "installed": [
+              16135,
+              16135
+            ],
+            "paired_delta_installed_minus_baseline": [
+              5118,
+              5118
+            ]
+          },
+          "live_requested_after_refusal": {
+            "baseline": [
+              11017,
+              11017
+            ],
+            "installed": [
+              11401,
+              11401
+            ],
+            "paired_delta_installed_minus_baseline": [
+              384,
+              384
+            ]
+          },
+          "live_requested_after_warm": {
+            "baseline": [
+              11017,
+              11017
+            ],
+            "installed": [
+              16135,
+              16135
+            ],
+            "paired_delta_installed_minus_baseline": [
+              5118,
+              5118
+            ]
+          },
+          "open_allocations": {
+            "baseline": [
+              583,
+              583
+            ],
+            "installed": [
+              583,
+              583
+            ],
+            "paired_delta_installed_minus_baseline": [
+              0,
+              0
+            ]
+          },
+          "open_requested_bytes": {
+            "baseline": [
+              86786,
+              86786
+            ],
+            "installed": [
+              87362,
+              87362
+            ],
+            "paired_delta_installed_minus_baseline": [
+              576,
+              576
+            ]
+          },
+          "rss_after_drop": {
+            "baseline": [
+              9232384,
+              9494528
+            ],
+            "installed": [
+              8970240,
+              9236480
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -262144,
+              -126976
+            ]
+          },
+          "rss_after_warm": {
+            "baseline": [
+              9232384,
+              9494528
+            ],
+            "installed": [
+              8970240,
+              9236480
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -262144,
+              -126976
+            ]
+          },
+          "scratch_after_warm": {
+            "baseline": [
+              0,
+              0
+            ],
+            "installed": [
+              4734,
+              4734
+            ],
+            "paired_delta_installed_minus_baseline": [
+              4734,
+              4734
+            ]
+          },
+          "scratch_released_at_refusal": {
+            "baseline": [
+              0,
+              0
+            ],
+            "installed": [
+              4734,
+              4734
+            ],
+            "paired_delta_installed_minus_baseline": [
+              4734,
+              4734
+            ]
+          },
+          "warm_allocations_per_inspect": {
+            "baseline": [
+              83.0,
+              83.0
+            ],
+            "installed": [
+              69.0,
+              69.0
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -14.0,
+              -14.0
+            ]
+          },
+          "warm_reallocations_per_inspect": {
+            "baseline": [
+              0.0,
+              0.0
+            ],
+            "installed": [
+              0.0,
+              0.0
+            ],
+            "paired_delta_installed_minus_baseline": [
+              0.0,
+              0.0
+            ]
+          },
+          "warm_requested_bytes_per_inspect": {
+            "baseline": [
+              8112.0,
+              8112.0
+            ],
+            "installed": [
+              3378.0,
+              3378.0
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -4734.0,
+              -4734.0
+            ]
+          }
+        },
+        "pairs": 5
+      },
+      {
+        "allocation_counts_repeatable": true,
+        "depth": 7,
+        "fault": "publication",
+        "metrics": {
+          "live_requested_after_open": {
+            "baseline": [
+              11017,
+              11017
+            ],
+            "installed": [
+              16135,
+              16135
+            ],
+            "paired_delta_installed_minus_baseline": [
+              5118,
+              5118
+            ]
+          },
+          "live_requested_after_refusal": {
+            "baseline": [
+              11017,
+              11017
+            ],
+            "installed": [
+              11401,
+              11401
+            ],
+            "paired_delta_installed_minus_baseline": [
+              384,
+              384
+            ]
+          },
+          "live_requested_after_warm": {
+            "baseline": [
+              11017,
+              11017
+            ],
+            "installed": [
+              16135,
+              16135
+            ],
+            "paired_delta_installed_minus_baseline": [
+              5118,
+              5118
+            ]
+          },
+          "open_allocations": {
+            "baseline": [
+              583,
+              583
+            ],
+            "installed": [
+              583,
+              583
+            ],
+            "paired_delta_installed_minus_baseline": [
+              0,
+              0
+            ]
+          },
+          "open_requested_bytes": {
+            "baseline": [
+              86786,
+              86786
+            ],
+            "installed": [
+              87362,
+              87362
+            ],
+            "paired_delta_installed_minus_baseline": [
+              576,
+              576
+            ]
+          },
+          "rss_after_drop": {
+            "baseline": [
+              9232384,
+              9494528
+            ],
+            "installed": [
+              8970240,
+              9236480
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -262144,
+              -126976
+            ]
+          },
+          "rss_after_warm": {
+            "baseline": [
+              9232384,
+              9494528
+            ],
+            "installed": [
+              8970240,
+              9236480
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -262144,
+              -126976
+            ]
+          },
+          "scratch_after_warm": {
+            "baseline": [
+              0,
+              0
+            ],
+            "installed": [
+              4734,
+              4734
+            ],
+            "paired_delta_installed_minus_baseline": [
+              4734,
+              4734
+            ]
+          },
+          "scratch_released_at_refusal": {
+            "baseline": [
+              0,
+              0
+            ],
+            "installed": [
+              4734,
+              4734
+            ],
+            "paired_delta_installed_minus_baseline": [
+              4734,
+              4734
+            ]
+          },
+          "warm_allocations_per_inspect": {
+            "baseline": [
+              83.0,
+              83.0
+            ],
+            "installed": [
+              69.0,
+              69.0
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -14.0,
+              -14.0
+            ]
+          },
+          "warm_reallocations_per_inspect": {
+            "baseline": [
+              0.0,
+              0.0
+            ],
+            "installed": [
+              0.0,
+              0.0
+            ],
+            "paired_delta_installed_minus_baseline": [
+              0.0,
+              0.0
+            ]
+          },
+          "warm_requested_bytes_per_inspect": {
+            "baseline": [
+              8112.0,
+              8112.0
+            ],
+            "installed": [
+              3378.0,
+              3378.0
+            ],
+            "paired_delta_installed_minus_baseline": [
+              -4734.0,
+              -4734.0
+            ]
+          }
+        },
+        "pairs": 5
+      }
+    ]
+  },
+  "method": "12d7196e26830f6110214cf73d79d373efcdf44d",
+  "operations_per_warm_cell": 32,
+  "pairs_per_compiler": 5,
+  "product_claim": false,
+  "rss_supplemental": true,
+  "runtime_sources": {
+    "baseline": "33c54b0cda8c330b115009cdf092ad002077cedf",
+    "installed": "66d5f371680d085a24de8f2558e1f049c71b9e7b"
+  },
+  "rust_layout_requests_only": true,
+  "schema": "authority-runtime-allocation-facts-074-v1",
+  "server_admitted": false,
+  "source_overlay": true,
+  "timing_claim": false
+}

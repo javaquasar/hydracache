@@ -1,0 +1,12 @@
+test_archive_refuses_paths_and_links (__main__.Controls.test_archive_refuses_paths_and_links) ... ok
+test_exact_test_result_and_single_release_image (__main__.Controls.test_exact_test_result_and_single_release_image) ... ok
+test_inventory_tracks_raw_bytes_and_excludes_only_root_seal (__main__.Controls.test_inventory_tracks_raw_bytes_and_excludes_only_root_seal) ... ok
+test_lifetime_counter_negative_controls (__main__.Controls.test_lifetime_counter_negative_controls) ... ok
+test_original_static_includes_must_exist_inside_overlay (__main__.Controls.test_original_static_includes_must_exist_inside_overlay) ... ok
+test_overlay_whole_file_and_membership_are_exact (__main__.Controls.test_overlay_whole_file_and_membership_are_exact) ... ok
+test_pair_drift_and_missing_pair_refuse_without_win_threshold (__main__.Controls.test_pair_drift_and_missing_pair_refuse_without_win_threshold) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.260s
+
+OK

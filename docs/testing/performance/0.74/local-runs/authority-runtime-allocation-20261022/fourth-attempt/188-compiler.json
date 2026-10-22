@@ -1,0 +1,13 @@
+{
+  "argv": [
+    "/home/artur/.cargo/bin/rustc",
+    "+1.88.0",
+    "--version"
+  ],
+  "cwd": "/mnt/c/Workspace/prj/jq/cashe/hydracache-074",
+  "exit": 0,
+  "name": "188-compiler",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stdout_sha256": "1ac65f1cd11fa83e9530348b787fa3e5bdd85b0f3727099df8bcdf3e24274138",
+  "timeout": false
+}

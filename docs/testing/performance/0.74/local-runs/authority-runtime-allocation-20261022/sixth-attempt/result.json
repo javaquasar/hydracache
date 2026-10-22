@@ -1,0 +1,41 @@
+{
+  "archive_sha256": "3892b3bef3aa3f3bd1993e46468a169dc161cf3d8f9d9330eba4f70b400d38e9",
+  "attempt": "sixth",
+  "build_before": {
+    "boot": "df4b2a6b-63e9-4339-8fbc-f1ee9f964986",
+    "configs": {
+      "/etc/systemd/timesyncd.conf": "e6734751f8aaf19fddfff891ad246387f5f59bd9ff1a5f0cac2c34bc81941c62",
+      "/etc/wsl.conf": "ca76852426d685301ce8b4461d2bc40d1901c93aea8c0b4b684707c94e4cf507",
+      "/mnt/c/Users/ArturBuzov/.wslconfig": null
+    },
+    "dirty": "A  tools/authority-runtime-allocation-074/README.md\nAM tools/authority-runtime-allocation-074/collect.ps1\nA  tools/authority-runtime-allocation-074/counter.rs\nAM tools/authority-runtime-allocation-074/development.txt\nA  tools/authority-runtime-allocation-074/probe.rs\nA  tools/authority-runtime-allocation-074/review.py\nAM tools/authority-runtime-allocation-074/run.py\nA  tools/authority-runtime-allocation-074/seal.py\nAM tools/authority-runtime-allocation-074/test_method.py\n",
+    "gid": 1000,
+    "head": "b12e72ec6c89a1f6c1f24cfc540c4b4abff8d4b4",
+    "kernel": "6.6.87.2-microsoft-standard-WSL2",
+    "qualification": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+    "uid": 1000
+  },
+  "build_environment": {
+    "CARGO_BUILD_JOBS": "2",
+    "CARGO_NET_OFFLINE": "true",
+    "RUSTFLAGS": "-Dwarnings"
+  },
+  "clocks_changed": false,
+  "failure": "ValueError: Local step refused: 194-baseline-build",
+  "live": false,
+  "output": "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/target/authority-runtime-allocation-sixth",
+  "owned_root": "/home/artur/.cache/hydracache-074-runtime-allocation-20261022/sixth",
+  "product": false,
+  "runtime_sources": {
+    "baseline": "33c54b0cda8c330b115009cdf092ad002077cedf",
+    "installed": "66d5f371680d085a24de8f2558e1f049c71b9e7b"
+  },
+  "schema": "authority-runtime-allocation-attempt-074-v1",
+  "server": false,
+  "services_changed": false,
+  "tool_hashes": {
+    "counter.rs": "7311134f005af18506f88c1e6d850ec773b753907a3259f6be0fd3fcb97061a2",
+    "probe.rs": "8ae2314d48511bdcefef37a52f08711069591f1aa4c9e3b906b14a85e7e22e0f",
+    "run.py": "b3a0372ba7a3de69c664d6ddd44eb0ee8ded4b3ed82d0584478f6b950bccc1d2"
+  }
+}

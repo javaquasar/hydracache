@@ -1,0 +1,67 @@
+{
+  "archive_sha256": "3892b3bef3aa3f3bd1993e46468a169dc161cf3d8f9d9330eba4f70b400d38e9",
+  "attempt": "fifth",
+  "build_before": {
+    "boot": "df4b2a6b-63e9-4339-8fbc-f1ee9f964986",
+    "configs": {
+      "/etc/systemd/timesyncd.conf": "e6734751f8aaf19fddfff891ad246387f5f59bd9ff1a5f0cac2c34bc81941c62",
+      "/etc/wsl.conf": "ca76852426d685301ce8b4461d2bc40d1901c93aea8c0b4b684707c94e4cf507",
+      "/mnt/c/Users/ArturBuzov/.wslconfig": null
+    },
+    "dirty": "A  tools/authority-runtime-allocation-074/README.md\nAM tools/authority-runtime-allocation-074/collect.ps1\nA  tools/authority-runtime-allocation-074/counter.rs\nAM tools/authority-runtime-allocation-074/development.txt\nA  tools/authority-runtime-allocation-074/probe.rs\nA  tools/authority-runtime-allocation-074/review.py\nAM tools/authority-runtime-allocation-074/run.py\nA  tools/authority-runtime-allocation-074/seal.py\nAM tools/authority-runtime-allocation-074/test_method.py\n",
+    "gid": 1000,
+    "head": "0651d0e0605a975a61541c1d080c24fe405cea5d",
+    "kernel": "6.6.87.2-microsoft-standard-WSL2",
+    "qualification": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+    "uid": 1000
+  },
+  "build_environment": {
+    "CARGO_BUILD_JOBS": "2",
+    "CARGO_NET_OFFLINE": "true",
+    "RUSTFLAGS": "-Dwarnings"
+  },
+  "clocks_changed": false,
+  "failure": "ValueError: Method freeze signal absent; no measurement executed",
+  "images": {
+    "188": {
+      "baseline": {
+        "compiler": "1.88.0",
+        "path": "/home/artur/.cache/hydracache-074-runtime-allocation-20261022/fifth/target-188/release/deps/hydracache_long_run_supervisor_074-19566b75c882a260",
+        "sha256": "2ae524d08c81333832b3397df2bc958d85b905e635bee23717fb28428904e302"
+      },
+      "installed": {
+        "compiler": "1.88.0",
+        "path": "/home/artur/.cache/hydracache-074-runtime-allocation-20261022/fifth/target-188/release/deps/hydracache_long_run_supervisor_074-19566b75c882a260",
+        "sha256": "2ae524d08c81333832b3397df2bc958d85b905e635bee23717fb28428904e302"
+      }
+    },
+    "194": {
+      "baseline": {
+        "compiler": "1.94.0",
+        "path": "/home/artur/.cache/hydracache-074-runtime-allocation-20261022/fifth/target-194/release/deps/hydracache_long_run_supervisor_074-5138eed558b3af90",
+        "sha256": "78eee586aabb96acf7a5437b31bb2f22c1b00613f175ee7d00eb902eaa3ec121"
+      },
+      "installed": {
+        "compiler": "1.94.0",
+        "path": "/home/artur/.cache/hydracache-074-runtime-allocation-20261022/fifth/target-194/release/deps/hydracache_long_run_supervisor_074-5138eed558b3af90",
+        "sha256": "78eee586aabb96acf7a5437b31bb2f22c1b00613f175ee7d00eb902eaa3ec121"
+      }
+    }
+  },
+  "live": false,
+  "output": "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/target/authority-runtime-allocation-fifth",
+  "owned_root": "/home/artur/.cache/hydracache-074-runtime-allocation-20261022/fifth",
+  "product": false,
+  "runtime_sources": {
+    "baseline": "33c54b0cda8c330b115009cdf092ad002077cedf",
+    "installed": "66d5f371680d085a24de8f2558e1f049c71b9e7b"
+  },
+  "schema": "authority-runtime-allocation-attempt-074-v1",
+  "server": false,
+  "services_changed": false,
+  "tool_hashes": {
+    "counter.rs": "7311134f005af18506f88c1e6d850ec773b753907a3259f6be0fd3fcb97061a2",
+    "probe.rs": "8ae2314d48511bdcefef37a52f08711069591f1aa4c9e3b906b14a85e7e22e0f",
+    "run.py": "1c31ac8443bf7b0304ba6f8ce7343c84d3bf7109ff808c66cd0f191c8f1e43cd"
+  }
+}

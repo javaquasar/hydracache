@@ -1,0 +1,64 @@
+The first standalone counter compile refused pub(super) at crate root, before
+any counter test or measurement executed. Initial diagnostic is in chat. Use
+crate visibility for the two harness-only declarations; the same counter can
+then compile both as a standalone test and as a nested overlay test module.
+No allocator forwarding, accounting assertion or runtime source changed.
+
+The first two native compiler lanes stopped at Cargo workspace loading: the
+source archive omitted tests/post-publish-consumer, a declared workspace member.
+Both raw failures and source manifests remain under attempt first. No Rust
+probe or measurement executed. Include the original tests tree in the archive;
+do not edit the workspace manifest or fabricate a placeholder member. The next
+attempt has a separate source, target and receipt directory.
+
+The second attempt reached Rust compilation in both lanes and refused an old
+default-feature dead-code warning for name_capacity_controls::Reading::Reference
+under -Dwarnings. No probe/control/measurement image executed. The old variant
+is normally used by the disabled legacy allocation feature. Add a real shared
+semantic control comparing its formatter with actual names; do not enable the
+old profiler, change the original helper or add a lint allowance. The third
+attempt has new source/target/receipt directories; first two remain untouched.
+
+The third attempt compiled both baseline libtest images, then strict clippy
+refused a missing original public issuer fixture in the archive and two
+constant assertions in the new probe. Include that exact original fixture;
+make the feature refusals compile-time assertions instead of waiving lint.
+Neither measured cells nor controls executed. Preserve all third-attempt logs.
+
+A separate bounded output control confirms libtest --nocapture prints its
+test-name prefix before the first emitted row and the final ok on its own line.
+Accept only that exact optional prefix and the one-test/zero-ignored success
+summary; retain negative controls for unrelated prefixes and FAILED outcomes.
+This parser correction precedes any measurement. No runtime checks changed.
+
+An unattached-template rustfmt --check without skip_children=true refused the
+generated child filenames, which intentionally exist only in source overlays.
+Use the documented skip_children check for templates; native builds and clippy
+still resolve and validate the actual generated modules without exclusions.
+
+The fourth attempt compiled both baseline images but strict integration-test
+clippy found two more omitted public signer include fixtures. Both lanes refuse
+before controls/measurements. Preserve fourth receipts. Include both exact
+committed files and check all supervisor static literal include paths before
+starting any fifth compilation; missing/escaping paths have offline negative
+controls. Do not weaken integration-test lint or edit the original fixtures.
+
+The fifth attempt reached all sixteen passing controls but offline ready-receipt
+inspection found equal baseline/installed executable paths and SHA-256. Cargo
+reported installed as fresh in a shared target despite separate source roots.
+Do not freeze/signal that attempt: its finite method wait will refuse without
+executing a measurement. Preserve its first ready and timeout receipts.
+Sixth requires per-role target directories, fresh:false selected artifacts and
+distinct role image paths/digests before ready. Dependency bytes only may be
+copied from the completed fifth build to new targets, excluding all supervisor
+package/fingerprint paths; no hardlinks or original-cache writes. Verify source
+and destination hashes and retain seed inventories. The actual selected image
+must be rebuilt for every role. This is pre-measure provenance repair, not a
+retry or replacement of any measured cell.
+
+Sixth failed immediately when copied dependency build scripts lost executable
+permissions under copyfile. Preserve both Permission denied failures. Copy2
+preserves ordinary file metadata/permissions (not system clocks), verify modes
+and non-aliasing, and add a local Windows/Linux negative copy control before
+the seventh attempt. Package artifacts are still excluded and selected images
+still require fresh compilation. No measurement or runtime test failed here.

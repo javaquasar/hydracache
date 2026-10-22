@@ -1,0 +1,6 @@
+
+running 1 test
+test diagnostic_worker_policy::authority_registry::fixture::tests::runtime_allocation::meter::counter_unwind_restores_inactive_state_and_does_not_count_other_threads ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1443 filtered out; finished in 0.00s
+

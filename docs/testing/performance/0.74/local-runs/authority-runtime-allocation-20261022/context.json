@@ -1,0 +1,13 @@
+{
+  "no_runtime_edits": true,
+  "method": "12d7196e26830f6110214cf73d79d373efcdf44d",
+  "schema": "authority-runtime-allocation-context-074-v1",
+  "predecessor": "fafe2b63fde717f1f34d3ad62b06a50014c9653916a8a8b79577fd9f91568375",
+  "product": false,
+  "live": false,
+  "server": false,
+  "runtime_sources": {
+    "baseline": "33c54b0cda8c330b115009cdf092ad002077cedf",
+    "installed": "66d5f371680d085a24de8f2558e1f049c71b9e7b"
+  }
+}

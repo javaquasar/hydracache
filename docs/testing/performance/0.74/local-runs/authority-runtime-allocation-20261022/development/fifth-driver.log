@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/authority-runtime-allocation-074/run.py", line 266, in <module>
+    time.sleep(0.25)
+^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/authority-runtime-allocation-074/run.py", line 260, in run
+    images = dict(pool.map(lambda lane: build_lane(lane, folders, output, own, env), ('194', '188')))
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/authority-runtime-allocation-074/run.py", line 40, in need
+    if not value:
+        ^^^^^^^^^^
+ValueError: ValueError: Method freeze signal absent; no measurement executed

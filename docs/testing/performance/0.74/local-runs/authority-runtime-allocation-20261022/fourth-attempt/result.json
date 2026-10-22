@@ -1,0 +1,41 @@
+{
+  "archive_sha256": "ec38e57b911605123af5f38b2c73f5c315de4237c613bec4b89a46d1b2854542",
+  "attempt": "fourth",
+  "build_before": {
+    "boot": "df4b2a6b-63e9-4339-8fbc-f1ee9f964986",
+    "configs": {
+      "/etc/systemd/timesyncd.conf": "e6734751f8aaf19fddfff891ad246387f5f59bd9ff1a5f0cac2c34bc81941c62",
+      "/etc/wsl.conf": "ca76852426d685301ce8b4461d2bc40d1901c93aea8c0b4b684707c94e4cf507",
+      "/mnt/c/Users/ArturBuzov/.wslconfig": null
+    },
+    "dirty": "",
+    "gid": 1000,
+    "head": "0651d0e0605a975a61541c1d080c24fe405cea5d",
+    "kernel": "6.6.87.2-microsoft-standard-WSL2",
+    "qualification": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+    "uid": 1000
+  },
+  "build_environment": {
+    "CARGO_BUILD_JOBS": "2",
+    "CARGO_NET_OFFLINE": "true",
+    "RUSTFLAGS": "-Dwarnings"
+  },
+  "clocks_changed": false,
+  "failure": "ValueError: Local step refused: 194-baseline-clippy",
+  "live": false,
+  "output": "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/target/authority-runtime-allocation-fourth",
+  "owned_root": "/home/artur/.cache/hydracache-074-runtime-allocation-20261022/fourth",
+  "product": false,
+  "runtime_sources": {
+    "baseline": "33c54b0cda8c330b115009cdf092ad002077cedf",
+    "installed": "66d5f371680d085a24de8f2558e1f049c71b9e7b"
+  },
+  "schema": "authority-runtime-allocation-attempt-074-v1",
+  "server": false,
+  "services_changed": false,
+  "tool_hashes": {
+    "counter.rs": "7311134f005af18506f88c1e6d850ec773b753907a3259f6be0fd3fcb97061a2",
+    "probe.rs": "8ae2314d48511bdcefef37a52f08711069591f1aa4c9e3b906b14a85e7e22e0f",
+    "run.py": "b7a4d932d3289688ec4218f03114150a8fe7a3a16746b86b9e72a50db1b2bde1"
+  }
+}

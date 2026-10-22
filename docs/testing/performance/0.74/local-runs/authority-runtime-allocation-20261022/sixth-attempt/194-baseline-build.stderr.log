@@ -1,0 +1,19 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+   Compiling proc-macro2 v1.0.106
+   Compiling libc v0.2.186
+error: failed to run custom build command for `proc-macro2 v1.0.106`
+
+Caused by:
+  could not execute process `/home/artur/.cache/hydracache-074-runtime-allocation-20261022/sixth/target-194-baseline/release/build/proc-macro2-844b705dfeb6b484/build-script-build` (never executed)
+
+Caused by:
+  Permission denied (os error 13)
+warning: build failed, waiting for other jobs to finish...
+error: failed to run custom build command for `libc v0.2.186`
+
+Caused by:
+  could not execute process `/home/artur/.cache/hydracache-074-runtime-allocation-20261022/sixth/target-194-baseline/release/build/libc-fb4d7101d082ecfa/build-script-build` (never executed)
+
+Caused by:
+  Permission denied (os error 13)

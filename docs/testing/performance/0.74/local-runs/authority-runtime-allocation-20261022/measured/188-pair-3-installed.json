@@ -1,0 +1,15 @@
+{
+  "argv": [
+    "/home/artur/.cache/hydracache-074-runtime-allocation-20261022/seventh/target-188-installed/release/deps/hydracache_long_run_supervisor_074-19566b75c882a260",
+    "diagnostic_worker_policy::authority_registry::fixture::tests::runtime_allocation::runtime_allocation_measurement",
+    "--exact",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "cwd": "/home/artur/.cache/hydracache-074-runtime-allocation-20261022/seventh/installed",
+  "exit": 0,
+  "name": "188-pair-3-installed",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stdout_sha256": "974bb9623a03fbab131679c2bee0d48410f99604af4ed4b68cce1089c0e49a92",
+  "timeout": false
+}

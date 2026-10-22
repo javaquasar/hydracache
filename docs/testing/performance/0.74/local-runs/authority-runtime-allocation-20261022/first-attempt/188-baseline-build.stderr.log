@@ -1,0 +1,8 @@
+error: failed to load manifest for workspace member `/home/artur/.cache/hydracache-074-runtime-allocation-20261022/first/baseline/tests/post-publish-consumer`
+referenced by workspace at `/home/artur/.cache/hydracache-074-runtime-allocation-20261022/first/baseline/Cargo.toml`
+
+Caused by:
+  failed to read `/home/artur/.cache/hydracache-074-runtime-allocation-20261022/first/baseline/tests/post-publish-consumer/Cargo.toml`
+
+Caused by:
+  No such file or directory (os error 2)

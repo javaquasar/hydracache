@@ -1,0 +1,13 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2m 04s
+     Running tests\authority_runtime_074.rs (target\debug\deps\authority_runtime_074-6a74f7ff88f53ea9.exe)
+
+running 5 tests
+test legacy_adapters_preserve_complete_prior_test_bodies_and_assertions ... ok
+test installed_runtime_is_the_exact_candidate_and_explicit_compatibility_set ... ok
+test baseline_partial_install_and_unrelated_effects_refuse_before_restoration ... ok
+test full_contract_adapters_change_only_one_preservation_reader_per_module ... ok
+test approved_predecessor_views_do_not_replace_current_runtime_validation ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 53.71s
+

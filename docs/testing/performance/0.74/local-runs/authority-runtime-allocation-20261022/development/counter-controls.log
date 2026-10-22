@@ -1,0 +1,8 @@
+
+running 3 tests
+test counter_cross_capture_lifetime_and_zeroed_forwarding ... ok
+test counter_realloc_releases_old_layout_and_reconciles_drop ... ok
+test counter_unwind_restores_inactive_state_and_does_not_count_other_threads ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
