@@ -1,0 +1,10 @@
+{
+  "argv": [
+    "C:\\Python313\\python.exe",
+    "-B",
+    "tools/authority-runtime-074/test_review.py"
+  ],
+  "exit": 0,
+  "stderr_sha256": "211323ae38ae34f7a7ea585b4c00146cf2586ebd2412285959d2bd8053a698f3",
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

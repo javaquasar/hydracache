@@ -1,0 +1,10 @@
+{
+  "argv": [
+    "C:\\Python313\\python.exe",
+    "-B",
+    "tools/authority-runtime-variance-074/test_analysis.py"
+  ],
+  "exit": 0,
+  "stderr_sha256": "2ecad9840929eddbdb33699d7ef3f432aa0856d7afa6ccbd7e56fc9de06dcf29",
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

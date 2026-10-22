@@ -66,5 +66,18 @@ The [limited native result](../../docs/testing/performance/0.74/authority-runtim
 now verifies four Linux builds/checks/lints, unchanged historical dependency seeds
 and timeout cleanup of an owned synthetic group. It also fixes cross-platform
 inventory ordering without changing sealed bytes or any receipt/workload check.
-Compiled-image clock/semantic controls and measured process timing remain later
-separately authorized steps. Native group cleanup is not all-writer/cgroup proof.
+At that subset boundary compiled-image clock/semantic controls and measured
+process timing remained separately authorized steps. Native group cleanup is
+not all-writer/cgroup proof.
+
+## Complete first authorized cohort
+
+The [first balanced native cohort](../../docs/testing/performance/0.74/authority-runtime-balanced-20261022.md)
+now passes all eight clock/semantic controls, 22 preliminary commands and all
+64 first measured children under clean method 9bfb1552. All 768 rows, raw context
+and first operator/retention refusals are retained; no control or measured child
+was retried. Neither primary endpoint clears the fixed practical boundary.
+The original 13 method inputs, including this README before this follow-up,
+remain copied byte-exactly in the sealed packet. No runtime, old evidence,
+deadline, estimator or live check changes. The finite stopping rule is reached;
+do not run another cohort without a separately reviewed method and authorization.

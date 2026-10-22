@@ -1,0 +1,10 @@
+{
+  "argv": [
+    "C:\\Python313\\python.exe",
+    "-B",
+    "tools/authority-runtime-balanced-074/test_runner.py"
+  ],
+  "exit": 0,
+  "stderr_sha256": "50958759a5694820789668bc3348d403da1c48423a0b68e3fe44c20c5c0290bc",
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

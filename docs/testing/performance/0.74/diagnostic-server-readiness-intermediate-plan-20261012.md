@@ -1946,3 +1946,20 @@ Normal inherited-group cleanup does not close all-writer/cgroup revocation or
 original delivery, durable later cells, SIGKILL/lost-ACK, reconnect, production
 enrollment or server integration. Keep those gates and all original deadlines /
 first refusals unchanged; no clock/service/server or supervisor action follows.
+
+### Complete balanced timing does not admit production delivery
+
+The [separately authorized local cohort](authority-runtime-balanced-20261022.md)
+now passes eight native clock/semantic controls, all 22 preliminary commands
+and 64 first measured processes on four fresh Rust 1.94/MSRV 1.88 images.
+Every fixed schedule position, source/image/boot/namespace guard and original
+workload remains checked. Both primary CPU/elapsed endpoints still have block
+ranges crossing 1; neither a practical speed benefit nor equivalence follows.
+All observations and first non-measurement refusals are retained without retries.
+
+This closes the finite local timing experiment, not the independent original
+delivery/all-writer revocation, durable later-cell, SIGKILL/lost-ACK, reconnect,
+production enrollment or server integration gates. Do not repeat the cohort
+to obtain a favorable result or weaken admission checks. Keep original windows,
+first Causal refusals and qualification fixed. No new live preparation,
+clock/service change, installation, supervisor action, server or product load.

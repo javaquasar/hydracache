@@ -1,0 +1,10 @@
+{
+  "argv": [
+    "C:\\Python313\\python.exe",
+    "-B",
+    "tools/authority-runtime-native-074/test_validate.py"
+  ],
+  "exit": 0,
+  "stderr_sha256": "ddcb73a669f9629b3cea31c4779fe504c64fe0b8bba52d29b853ad1425ac6acb",
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

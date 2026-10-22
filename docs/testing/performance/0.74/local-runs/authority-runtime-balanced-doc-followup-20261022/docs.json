@@ -1,0 +1,14 @@
+{
+  "argv": [
+    "cargo",
+    "run",
+    "-p",
+    "xtask",
+    "--locked",
+    "--",
+    "doc-check"
+  ],
+  "exit": 0,
+  "stderr_sha256": "5527a3b139a239684d8ad9823a850ae7ec6a01ed277de74f2228dd0fb8b2528b",
+  "stdout_sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+}

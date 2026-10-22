@@ -1,0 +1,28 @@
+{
+  "clocks_changed": false,
+  "cohort_inventory_sha256": "d2b3a73324efd7171736c7e2a389550b479baf2d3883f14ee5866051598ee999",
+  "document_sha256": {
+    "docs/articles/007-optimization-starts-with-measurement.md": "3d641b0663c9b59cc182b3b54cc2d5b954c302b9bd26ff7e103526c87acb2680",
+    "docs/testing/performance/0.74/README.md": "f1031b32dadce3ca948f6fe0d1b5e799bb7bd174361897db76644ae535e68868",
+    "docs/testing/performance/0.74/authority-runtime-balanced-20261022.md": "5b97ad46f0f785c94141fcc1b0af780c03a561ef80d5fd9951883340bd53ac27",
+    "docs/testing/performance/0.74/diagnostic-server-readiness-intermediate-plan-20261012.md": "8de2f3a39b41825fa77a7bf50e004e801a87d5a8892c160cf80ebeece9b59401",
+    "tools/authority-runtime-balanced-074/README.md": "1deb07e784e98fe3a8159628250d94c4e1d811a3172597cbbf87ecc7d04db487"
+  },
+  "evidence_commit": "f74019470346a6784a2072da5a93bb6cb9038b8f",
+  "first_documentation_collection": {
+    "correction": "Select exact nine current command receipts/logs, not fifteen unrelated pre-existing development logs. First collection remains untouched; no command or measurement rerun.",
+    "inventory_sha256": "95bc07e8c95d1582df8cb1f485ed0b22f8298a34ded5ea6e37b92b71c448d490",
+    "retained_at": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\authority-runtime-balanced-doc-followup-first-20261022"
+  },
+  "measurement_method": "9bfb155285f08b52b7c5eb7225b70a6828a13d41",
+  "new_measurements": false,
+  "offline_controls": {
+    "balanced-offline": 21,
+    "cpu-offline": 7,
+    "native-offline": 4,
+    "runtime-review-offline": 4,
+    "variance-offline": 11
+  },
+  "server": false,
+  "services_changed": false
+}

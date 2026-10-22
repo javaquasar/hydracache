@@ -1,0 +1,10 @@
+{
+  "argv": [
+    "C:\\Python313\\python.exe",
+    "-B",
+    "tools/authority-runtime-cpu-074/test_method.py"
+  ],
+  "exit": 0,
+  "stderr_sha256": "cb6dbd1521a869854d14b73ad322ad9c901b403d8f6ca756000d619bcf72f8c8",
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

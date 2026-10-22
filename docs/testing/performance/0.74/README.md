@@ -6059,3 +6059,25 @@ with all 183 member bytes intact. A versioned portable guard preserves every
 source/member/facts/receipt/predecessor/qualification check and the original seal;
 the first refusal remains. No compiled image or 64-process cohort runs. Clock/
 semantic controls, timing benefit and production/server admission remain separate.
+
+### Complete balanced timing retains the inconclusive speed result
+
+The [authorized v2 cohort](authority-runtime-balanced-20261022.md) passes eight
+native clock/semantic controls and all 64 first measured processes, with 768
+rows and unchanged source/workload/checks. Four fresh release builds, strict
+clippy and check pass on Rust 1.94 and MSRV 1.88. The serial cohort takes
+382.54 seconds; no control or measurement is retried.
+
+Depth-127 warm CPU block medians are 0.855/0.976 installed/baseline for Rust
+1.94/1.88, with ranges 0.656–1.214/0.678–1.055. Continuous lifecycle elapsed
+medians are 1.016/0.937, with ranges 0.722–1.313/0.731–1.345. Neither clears the
+unchanged practical boundary, and no equivalence or release non-regression is
+established. Cold/publication/refusal/drop costs and all raw counters remain
+visible; the earlier allocation reduction and larger retained layout stand
+separately. The fixed stopping rule is reached, not a reason to retry.
+
+The sealed packet preserves the first Windows freeze-invocation and offline
+collector-schema refusals without changing measured cells. All live checks,
+original windows, first Causal refusals and qualification stay exact. Production
+delivery, all-writer cessation, later cells, SIGKILL/lost-ACK, reconnect and trust
+remain distinct server-admission gates; no server/clock/service action follows.

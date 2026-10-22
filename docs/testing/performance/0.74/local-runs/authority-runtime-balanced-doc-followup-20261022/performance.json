@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "cargo",
+    "run",
+    "-p",
+    "xtask",
+    "--locked",
+    "--",
+    "performance-contract-check",
+    "--release",
+    "0.74"
+  ],
+  "exit": 0,
+  "stderr_sha256": "d8ab42b3cce06e779d1f775dafc6cad9fa071aca83995b067761551161edb2d1",
+  "stdout_sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+}

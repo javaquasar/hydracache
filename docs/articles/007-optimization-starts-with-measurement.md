@@ -17748,3 +17748,54 @@ The native subset now passes, while compiled-image clock/semantic controls and
 the actual balanced cohort remain separate authorizations. Compile receipts,
 seed integrity and an ordinary process cleanup proof should not be described as
 a performance result or a green production/server release gate.
+
+### A complete balanced cohort can still leave the speed hypothesis unresolved
+
+The [authorized 64-process experiment](../testing/performance/0.74/authority-runtime-balanced-20261022.md)
+tests whether the installed scratch reuse has practical CPU and lifecycle value
+after balancing role position and interleaving compiler blocks. It changes
+neither runtime nor probe: the same full inspections, signed corpus, publication
+and refusal semantics remain. Four fresh independent release images pass strict
+clippy/check and all eight clock/semantic controls before measurement. Every
+scheduled child passes on its first execution; all 768 cell rows are retained.
+
+The result does not turn the known allocation reduction into a speed claim.
+Depth-127 warm thread CPU has median installed/baseline block ratios of
+0.855 on Rust 1.94 and 0.976 on MSRV 1.88, but ranges of 0.656–1.214 and
+0.678–1.055. Continuous lifecycle elapsed ratios are 1.016 and 0.937 with
+ranges 0.722–1.313 and 0.731–1.345. Each interval crosses 1. The unchanged rule
+requires every block below 0.95 on both compilers for practical benefit, or
+every block above 1.05 for cost. Neither primary endpoint meets either rule;
+this is also not proof of equivalence or a green release non-regression gate.
+
+The balanced design addresses one concern from the first timing study, not all
+sources of variation on a shared WSL machine. Before/after load, PSI and cgroup
+samples describe the surroundings; they do not prove a causal scheduler,
+frequency or virtualization explanation and cannot justify discarding a block.
+The finite experiment therefore ends as planned after one complete cohort.
+Collecting more until the median or interval looks favorable would change the
+question after seeing its answer. The older cohort stays separate and unchanged.
+
+Cold open, durable publication and terminal work remain part of the assessment.
+Refusal clears the scratch and has marginal CPU medians near six microseconds
+installed versus roughly one microsecond baseline. That is visible cleanup,
+not free work; tiny ratios are also sensitive to clock observation. Lifecycle
+timing includes refusal and drop instead of hiding them after the bracket.
+The confirmed mechanism remains fewer warm allocation requests at a larger
+retained owner-layout cost. Its practical CPU/elapsed value is still unconfirmed
+by this method, so neither automatic acceptance nor rollback follows.
+
+Preserving first failures applies to experiment operations too. The operator's
+first freeze validation used Windows Python with a WSL-only Git helper and
+stopped before publishing a method. Running that same step in the required WSL
+context within its original deadline launched the sole cohort. A later offline
+collector expected a size field absent from seed manifests; its first source
+and refusal are kept with the corrected collector. No build, semantic control
+or measured child was retried, and neither mistake rewrote observations.
+
+The packet preserves raw receipts, context, calibration and source inventories;
+355 files match their staged Git bytes. Original live checks, deadlines, first
+Causal refusals and qualification remain unchanged. No time/service mutation,
+server action or product workload occurs. Production original delivery,
+all-writer cessation and recovery still need their separate integration gates;
+a complete local performance experiment cannot substitute for them.
