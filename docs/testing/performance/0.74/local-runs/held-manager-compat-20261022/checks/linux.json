@@ -1,0 +1,18 @@
+{
+  "argv": [
+    "wsl.exe",
+    "--distribution",
+    "Ubuntu",
+    "--user",
+    "artur",
+    "--cd",
+    "/mnt/c/Workspace/prj/jq/cashe/hydracache-074",
+    "--exec",
+    "/usr/bin/python3",
+    "-B",
+    "tools/held-manager-compat-074/test_probe.py"
+  ],
+  "exit": 0,
+  "stderr_sha256": "b20e42fe0c9b40ab3445682f32fd577f3cc6167752cd637a72a6fd82ff7d1d8c",
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

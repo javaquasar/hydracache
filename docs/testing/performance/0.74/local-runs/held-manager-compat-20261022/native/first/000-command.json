@@ -1,0 +1,19 @@
+{
+  "argv": [
+    "/usr/bin/busctl",
+    "--json=short",
+    "--timeout=250ms",
+    "--auto-start=no",
+    "call",
+    "org.freedesktop.DBus",
+    "/org/freedesktop/DBus",
+    "org.freedesktop.DBus",
+    "GetNameOwner",
+    "s",
+    "org.freedesktop.systemd1"
+  ],
+  "exit": 0,
+  "failure": null,
+  "stderr": "",
+  "stdout": "{\"type\":\"s\",\"data\":[\":1.2\"]}\n"
+}

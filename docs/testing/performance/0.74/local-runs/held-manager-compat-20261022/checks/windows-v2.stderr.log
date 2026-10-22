@@ -1,0 +1,15 @@
+test_existing_attempt_is_not_resumed_and_unsafe_attempt_has_no_context_access (__main__.Controls.test_existing_attempt_is_not_resumed_and_unsafe_attempt_has_no_context_access) ... ok
+test_first_actual_readonly_reply_uses_a_single_argument_array (__main__.Controls.test_first_actual_readonly_reply_uses_a_single_argument_array) ... ok
+test_manager_churn_refuses_after_the_single_attempt (__main__.Controls.test_manager_churn_refuses_after_the_single_attempt) ... ok
+test_negative_refusal_has_no_original_admission_and_only_one_start (__main__.Controls.test_negative_refusal_has_no_original_admission_and_only_one_start) ... ok
+test_no_failure_or_ack_may_be_retried_into_a_compatibility_pass (__main__.Controls.test_no_failure_or_ack_may_be_retried_into_a_compatibility_pass) ... ok
+test_owner_or_version_or_collision_refuses_before_any_start (__main__.Controls.test_owner_or_version_or_collision_refuses_before_any_start) ... ok
+test_receipts_and_timeout_are_retained_without_second_subprocess (__main__.Controls.test_receipts_and_timeout_are_retained_without_second_subprocess) ... ok
+test_strict_reply_schema_and_version_never_supply_authority (__main__.Controls.test_strict_reply_schema_and_version_never_supply_authority) ... ok
+test_uncertain_unit_is_not_blindly_stopped_or_reset (__main__.Controls.test_uncertain_unit_is_not_blindly_stopped_or_reset) ... ok
+test_unsafe_unit_never_queries_or_mutates (__main__.Controls.test_unsafe_unit_never_queries_or_mutates) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.027s
+
+OK

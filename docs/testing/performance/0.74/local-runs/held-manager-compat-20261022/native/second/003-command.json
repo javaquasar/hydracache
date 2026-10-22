@@ -1,0 +1,20 @@
+{
+  "argv": [
+    "/usr/bin/busctl",
+    "--json=short",
+    "--timeout=250ms",
+    "--auto-start=no",
+    "call",
+    ":1.2",
+    "/org/freedesktop/systemd1",
+    "org.freedesktop.DBus.Properties",
+    "Get",
+    "ss",
+    "org.freedesktop.systemd1",
+    "Version"
+  ],
+  "exit": 1,
+  "failure": null,
+  "stderr": "Call failed: Unknown interface org.freedesktop.systemd1 or property Version.\n",
+  "stdout": ""
+}

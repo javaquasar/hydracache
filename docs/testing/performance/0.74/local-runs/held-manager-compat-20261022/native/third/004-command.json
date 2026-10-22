@@ -1,0 +1,19 @@
+{
+  "argv": [
+    "/usr/bin/busctl",
+    "--json=short",
+    "--timeout=250ms",
+    "--auto-start=no",
+    "call",
+    ":1.2",
+    "/org/freedesktop/systemd1",
+    "org.freedesktop.systemd1.Manager",
+    "GetUnit",
+    "s",
+    "hc074-fdcompat-f16cffa4263cb63e12f95d1c730b09e6.service"
+  ],
+  "exit": 1,
+  "failure": null,
+  "stderr": "Call failed: Unit hc074-fdcompat-f16cffa4263cb63e12f95d1c730b09e6.service not loaded.\n",
+  "stdout": ""
+}

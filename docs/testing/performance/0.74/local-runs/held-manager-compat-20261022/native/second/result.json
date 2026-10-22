@@ -1,0 +1,34 @@
+{
+  "admission_allowed": false,
+  "before": {
+    "boot": "5b0642d5-1412-4620-9daa-2bf089c93fff\n",
+    "busctl_sha256": "55de316380235403dee2a22a24d1cd6106b461d967b857c9d25ffb80f41f2dc2",
+    "gid": 0,
+    "kernel": "6.6.87.2-microsoft-standard-WSL2",
+    "namespaces": {
+      "cgroup": "cgroup:[4026531835]",
+      "mnt": "mnt:[4026532219]",
+      "pid": "pid:[4026532221]",
+      "time": "time:[4026531834]",
+      "user": "user:[4026531837]"
+    },
+    "qualification": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+    "source": "88dbabf6a52ca0e42521f7543568b02e3509c70c",
+    "source_sha256": {
+      "docs/testing/performance/0.74/held-manager-compat-plan-20261022.md": "6228636e7923d7a29af9df225127bf1a9e000f0aea7922b2587c84db3ea6342a",
+      "docs/testing/performance/0.74/held-manager-compat-plan-v2-20261022.md": "e6e45ecc69b2914af6162a844ab3105f57825991183001d77789c5d3a88a1c9f",
+      "tools/held-manager-compat-074/README.md": "7f1d00b935cd2106d2ba287697f81a3cdc76351de2e07a157e2066fa42ddb33b",
+      "tools/held-manager-compat-074/probe.py": "ceae7e05d073a419e9f3b4e81e4071456d2abce5d62399389482da6d58024c58",
+      "tools/held-manager-compat-074/test_probe.py": "28b3cb38d8fc83e395fae68f5f8a5f98af343691ce49f272c558c959c57ddc3e"
+    },
+    "uid": 0
+  },
+  "clocks_changed": false,
+  "existing_services_changed": false,
+  "failure": "ValueError: Manager version query failed",
+  "original_delivery": false,
+  "product": false,
+  "schema": "held-manager-compatibility-074-v2",
+  "server": false,
+  "writers_cessation": false
+}

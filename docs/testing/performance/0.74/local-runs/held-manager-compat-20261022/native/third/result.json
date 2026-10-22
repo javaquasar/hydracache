@@ -1,0 +1,74 @@
+{
+  "admission_allowed": false,
+  "after": {
+    "boot": "5b0642d5-1412-4620-9daa-2bf089c93fff\n",
+    "busctl_sha256": "55de316380235403dee2a22a24d1cd6106b461d967b857c9d25ffb80f41f2dc2",
+    "gid": 0,
+    "kernel": "6.6.87.2-microsoft-standard-WSL2",
+    "namespaces": {
+      "cgroup": "cgroup:[4026531835]",
+      "mnt": "mnt:[4026532220]",
+      "pid": "pid:[4026532223]",
+      "time": "time:[4026531834]",
+      "user": "user:[4026531837]"
+    },
+    "qualification": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+    "source": "13dcce838ecd92102f514e29148291f938cbef27",
+    "source_sha256": {
+      "docs/testing/performance/0.74/held-manager-compat-plan-20261022.md": "6228636e7923d7a29af9df225127bf1a9e000f0aea7922b2587c84db3ea6342a",
+      "docs/testing/performance/0.74/held-manager-compat-plan-v2-20261022.md": "e6e45ecc69b2914af6162a844ab3105f57825991183001d77789c5d3a88a1c9f",
+      "docs/testing/performance/0.74/held-manager-compat-plan-v3-20261022.md": "93ede5057035cff5645d90d0e3a1faed4f415ad9993523fd96b1621536fa74fd",
+      "tools/held-manager-compat-074/README.md": "7f1d00b935cd2106d2ba287697f81a3cdc76351de2e07a157e2066fa42ddb33b",
+      "tools/held-manager-compat-074/probe.py": "ce51efec9f64bf684d912c818feab2d2edc9dac07da4cb64d6334e3ad23a02be",
+      "tools/held-manager-compat-074/test_probe.py": "7004317e6f16ece8a68cc6450278fb0adda63f4b9f06b0c0ebbd7294291b9e4d"
+    },
+    "uid": 0
+  },
+  "before": {
+    "boot": "5b0642d5-1412-4620-9daa-2bf089c93fff\n",
+    "busctl_sha256": "55de316380235403dee2a22a24d1cd6106b461d967b857c9d25ffb80f41f2dc2",
+    "gid": 0,
+    "kernel": "6.6.87.2-microsoft-standard-WSL2",
+    "namespaces": {
+      "cgroup": "cgroup:[4026531835]",
+      "mnt": "mnt:[4026532220]",
+      "pid": "pid:[4026532223]",
+      "time": "time:[4026531834]",
+      "user": "user:[4026531837]"
+    },
+    "qualification": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+    "source": "13dcce838ecd92102f514e29148291f938cbef27",
+    "source_sha256": {
+      "docs/testing/performance/0.74/held-manager-compat-plan-20261022.md": "6228636e7923d7a29af9df225127bf1a9e000f0aea7922b2587c84db3ea6342a",
+      "docs/testing/performance/0.74/held-manager-compat-plan-v2-20261022.md": "e6e45ecc69b2914af6162a844ab3105f57825991183001d77789c5d3a88a1c9f",
+      "docs/testing/performance/0.74/held-manager-compat-plan-v3-20261022.md": "93ede5057035cff5645d90d0e3a1faed4f415ad9993523fd96b1621536fa74fd",
+      "tools/held-manager-compat-074/README.md": "7f1d00b935cd2106d2ba287697f81a3cdc76351de2e07a157e2066fa42ddb33b",
+      "tools/held-manager-compat-074/probe.py": "ce51efec9f64bf684d912c818feab2d2edc9dac07da4cb64d6334e3ad23a02be",
+      "tools/held-manager-compat-074/test_probe.py": "7004317e6f16ece8a68cc6450278fb0adda63f4b9f06b0c0ebbd7294291b9e4d"
+    },
+    "uid": 0
+  },
+  "clocks_changed": false,
+  "existing_services_changed": false,
+  "failure": null,
+  "observation": {
+    "actual_descriptor_mapping_verified": false,
+    "admission_allowed": false,
+    "disposition": "blocked-unsupported-manager-fd-api",
+    "fallback": false,
+    "manager": ":1.2",
+    "original_delivery": false,
+    "sent_descriptor_count": 0,
+    "unit": "hc074-fdcompat-f16cffa4263cb63e12f95d1c730b09e6.service",
+    "unit_absent_after": true,
+    "unit_absent_before": true,
+    "unsupported_property": "ExtraFileDescriptors",
+    "version": "255.4-1ubuntu8.18",
+    "writers_cessation": false
+  },
+  "original_delivery": false,
+  "product": false,
+  "schema": "held-manager-compatibility-074-v3",
+  "server": false,
+  "writers_cessation": false
+}

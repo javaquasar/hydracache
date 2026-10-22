@@ -1,0 +1,20 @@
+{
+  "admission_allowed": false,
+  "clocks_changed": false,
+  "command_receipts": 15,
+  "disposition": "blocked-unsupported-manager-fd-api",
+  "early_zero_mutation_refusals": 2,
+  "existing_services_changed": false,
+  "final_context_unchanged": true,
+  "final_controls_per_platform": 11,
+  "original_delivery": false,
+  "product": false,
+  "schema": "held-manager-compat-audit-074-v1",
+  "server": false,
+  "source": "13dcce838ecd92102f514e29148291f938cbef27",
+  "start_transient_unit_calls": 1,
+  "unit": "hc074-fdcompat-f16cffa4263cb63e12f95d1c730b09e6.service",
+  "unit_absent_before_and_after": true,
+  "version": "255.4-1ubuntu8.18",
+  "writers_cessation": false
+}

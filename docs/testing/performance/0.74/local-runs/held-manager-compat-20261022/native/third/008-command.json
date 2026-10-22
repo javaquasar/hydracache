@@ -1,0 +1,19 @@
+{
+  "argv": [
+    "/usr/bin/busctl",
+    "--json=short",
+    "--timeout=250ms",
+    "--auto-start=no",
+    "call",
+    "org.freedesktop.DBus",
+    "/org/freedesktop/DBus",
+    "org.freedesktop.DBus",
+    "GetConnectionUnixProcessID",
+    "s",
+    ":1.2"
+  ],
+  "exit": 0,
+  "failure": null,
+  "stderr": "",
+  "stdout": "{\"type\":\"u\",\"data\":[1]}\n"
+}

@@ -1,0 +1,315 @@
+{
+  "files": [
+    {
+      "bytes": 687,
+      "path": "audit.json",
+      "sha256": "56b5f108fa0072dd5efbeed1131216f4825168612d94a2723889f6d9aa925ccd"
+    },
+    {
+      "bytes": 103,
+      "path": "checks/fixed-interface-baseline.json",
+      "sha256": "e31f385b41ef046a54c3dc5d2fc9e3f97dfebabc9d21192b162843c93b9fa8f1"
+    },
+    {
+      "bytes": 3130,
+      "path": "checks/fixed-interface-baseline.stderr.log",
+      "sha256": "be0afd4a001271253aebf5dcb64c449d887b5a6b49ee068c2768aa99fbf56570"
+    },
+    {
+      "bytes": 0,
+      "path": "checks/fixed-interface-baseline.stdout.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 463,
+      "path": "checks/linux-final.json",
+      "sha256": "dae6880772aad3ade552e7959b842bb08fed4736b88547aefa227e59eb13a605"
+    },
+    {
+      "bytes": 1421,
+      "path": "checks/linux-final.stderr.log",
+      "sha256": "53165cdcb36436af403d35a82754b7d0fca656a733025f8868e1cf443c693718"
+    },
+    {
+      "bytes": 0,
+      "path": "checks/linux-final.stdout.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 463,
+      "path": "checks/linux-v2.json",
+      "sha256": "83711c514590cfbeb6caf165de7b45ef87fd71f9f7a0f7323b1cdaecdc7fa325"
+    },
+    {
+      "bytes": 1573,
+      "path": "checks/linux-v2.stderr.log",
+      "sha256": "f6a7b71c5f8e68f429f0679dd5de5c6675bd24a9c21c2b22c39d4ef0d184bec0"
+    },
+    {
+      "bytes": 0,
+      "path": "checks/linux-v2.stdout.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 463,
+      "path": "checks/linux-v3.json",
+      "sha256": "969a2b830f88c7d56320a60b28380368e349c2b148ec17367f05324c0bb22b6a"
+    },
+    {
+      "bytes": 1732,
+      "path": "checks/linux-v3.stderr.log",
+      "sha256": "98033726d153d8bf83b17ad17c4e7b75cb3c3b575ff5ab996494d84755c15ac9"
+    },
+    {
+      "bytes": 0,
+      "path": "checks/linux-v3.stdout.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 463,
+      "path": "checks/linux.json",
+      "sha256": "910d44c55a44b787a86e90b0783a8216c905b34a0491c2b61c795558a01c4e73"
+    },
+    {
+      "bytes": 1421,
+      "path": "checks/linux.stderr.log",
+      "sha256": "b20e42fe0c9b40ab3445682f32fd577f3cc6167752cd637a72a6fd82ff7d1d8c"
+    },
+    {
+      "bytes": 0,
+      "path": "checks/linux.stdout.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 6312,
+      "path": "checks/retain.py",
+      "sha256": "e73b552a2fa1b75016a81b9ec39bb6cd1aa8ff7acc1cf14ed040c191cd9c956e"
+    },
+    {
+      "bytes": 308,
+      "path": "checks/windows-v2.json",
+      "sha256": "6be27b0c09b98904454fccf3e16acd721424cd5cf19078840dcfd4416e4dc46f"
+    },
+    {
+      "bytes": 1588,
+      "path": "checks/windows-v2.stderr.log",
+      "sha256": "51f292c94f68b0f06024dc07f0dcfefaede8b34c58c02f662956cea1dbeb4522"
+    },
+    {
+      "bytes": 0,
+      "path": "checks/windows-v2.stdout.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 308,
+      "path": "checks/windows-v3.json",
+      "sha256": "39b7989aa04a351ff835737b4008b099d02f81a8d405f5efecd628ada4ca7473"
+    },
+    {
+      "bytes": 1748,
+      "path": "checks/windows-v3.stderr.log",
+      "sha256": "f7214e9a1c8dfb4d103e081d2288556b9304df61c2743defdbc5436ff2c24624"
+    },
+    {
+      "bytes": 0,
+      "path": "checks/windows-v3.stdout.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 308,
+      "path": "checks/windows.json",
+      "sha256": "03b1ccdde8f5a4cc0bf42632fbcb69fc7abedf3b8627d900a0f38405703b60cb"
+    },
+    {
+      "bytes": 1435,
+      "path": "checks/windows.stderr.log",
+      "sha256": "493aa09d1a547d92725cf269b6c73c1d30327cf5a30803e9dd91a973ba1631f8"
+    },
+    {
+      "bytes": 0,
+      "path": "checks/windows.stdout.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 368,
+      "path": "native/first/000-command.json",
+      "sha256": "b6f873cbfbf70c015b1c67c3199128476a388799819970549390d9da6ca278cb"
+    },
+    {
+      "bytes": 143,
+      "path": "native/first/intent.json",
+      "sha256": "51c59b204cb218fc9a15c5175cd7922486e7ad255c806be94c71d681c130d131"
+    },
+    {
+      "bytes": 1415,
+      "path": "native/first/result.json",
+      "sha256": "3d4ffe6c7f6a140329cb7aafaccc075f81fdb6b513607fb15369e5556cbaf808"
+    },
+    {
+      "bytes": 368,
+      "path": "native/second/000-command.json",
+      "sha256": "b6f873cbfbf70c015b1c67c3199128476a388799819970549390d9da6ca278cb"
+    },
+    {
+      "bytes": 355,
+      "path": "native/second/001-command.json",
+      "sha256": "7ffdd7e4e4e597e230d47261867eae1ba195163ae3703c795ed7d2438cfee207"
+    },
+    {
+      "bytes": 350,
+      "path": "native/second/002-command.json",
+      "sha256": "8a28a6e5dec7a15292f8af9a3389acab485e969c3ab8f9e18167d423710c9bb3"
+    },
+    {
+      "bytes": 414,
+      "path": "native/second/003-command.json",
+      "sha256": "d8df3f14590a864b42a81426e2915bdcb0ab09f8460e32a4cd28d29099ef950e"
+    },
+    {
+      "bytes": 143,
+      "path": "native/second/intent.json",
+      "sha256": "fed66818e485ddcd5dad2e56e2a5e657d4b378568d3e34505d05c630ad81ec2c"
+    },
+    {
+      "bytes": 1564,
+      "path": "native/second/result.json",
+      "sha256": "c04ae992fcd1ae853ade22f88112d9bc5325f8ff7cfd2580dacabd5d20744baf"
+    },
+    {
+      "bytes": 368,
+      "path": "native/third/000-command.json",
+      "sha256": "b6f873cbfbf70c015b1c67c3199128476a388799819970549390d9da6ca278cb"
+    },
+    {
+      "bytes": 355,
+      "path": "native/third/001-command.json",
+      "sha256": "7ffdd7e4e4e597e230d47261867eae1ba195163ae3703c795ed7d2438cfee207"
+    },
+    {
+      "bytes": 350,
+      "path": "native/third/002-command.json",
+      "sha256": "8a28a6e5dec7a15292f8af9a3389acab485e969c3ab8f9e18167d423710c9bb3"
+    },
+    {
+      "bytes": 421,
+      "path": "native/third/003-command.json",
+      "sha256": "07eaed20daa668dd3e501cbf0b1aae294ebbc7f2b70738b714811ae9fed381c5"
+    },
+    {
+      "bytes": 443,
+      "path": "native/third/004-command.json",
+      "sha256": "8b5afb8fba3e6f87540e4d3677a2fc9f9c37d537021add7556ef9e7d2620e7f2"
+    },
+    {
+      "bytes": 843,
+      "path": "native/third/005-command.json",
+      "sha256": "a20e825af77b484f13abe418b5fa7dc7b4a4cdcba68e203eb81f23e22eb4ee29"
+    },
+    {
+      "bytes": 443,
+      "path": "native/third/006-command.json",
+      "sha256": "8b5afb8fba3e6f87540e4d3677a2fc9f9c37d537021add7556ef9e7d2620e7f2"
+    },
+    {
+      "bytes": 368,
+      "path": "native/third/007-command.json",
+      "sha256": "b6f873cbfbf70c015b1c67c3199128476a388799819970549390d9da6ca278cb"
+    },
+    {
+      "bytes": 355,
+      "path": "native/third/008-command.json",
+      "sha256": "7ffdd7e4e4e597e230d47261867eae1ba195163ae3703c795ed7d2438cfee207"
+    },
+    {
+      "bytes": 350,
+      "path": "native/third/009-command.json",
+      "sha256": "8a28a6e5dec7a15292f8af9a3389acab485e969c3ab8f9e18167d423710c9bb3"
+    },
+    {
+      "bytes": 143,
+      "path": "native/third/intent.json",
+      "sha256": "8772ff782f1245c157f368e8972e6bd3dedc9ff0494d60a3b4eaca9e7e565f41"
+    },
+    {
+      "bytes": 3605,
+      "path": "native/third/result.json",
+      "sha256": "c8061f1509d9dfaa2487ac2689ff370ad52f7d04ce031a64a46f23a5962997bc"
+    },
+    {
+      "bytes": 3849,
+      "path": "source/first/docs/testing/performance/0.74/held-manager-compat-plan-20261022.md",
+      "sha256": "6228636e7923d7a29af9df225127bf1a9e000f0aea7922b2587c84db3ea6342a"
+    },
+    {
+      "bytes": 2409,
+      "path": "source/first/tools/held-manager-compat-074/README.md",
+      "sha256": "4eb7fe7d2c646ab7f20301dc145ca11d076c2c0b1abb723610348bec2b1a4c43"
+    },
+    {
+      "bytes": 9736,
+      "path": "source/first/tools/held-manager-compat-074/probe.py",
+      "sha256": "05f2853e4c97d09d3d46bc52b6372d66f3785bd007d02575200f3eb0fae882b5"
+    },
+    {
+      "bytes": 6309,
+      "path": "source/first/tools/held-manager-compat-074/test_probe.py",
+      "sha256": "d2801f72b5a89ecfb22215f8d66761ec138518b42a4cfd9ec331d5bc606903c7"
+    },
+    {
+      "bytes": 3849,
+      "path": "source/second/docs/testing/performance/0.74/held-manager-compat-plan-20261022.md",
+      "sha256": "6228636e7923d7a29af9df225127bf1a9e000f0aea7922b2587c84db3ea6342a"
+    },
+    {
+      "bytes": 1639,
+      "path": "source/second/docs/testing/performance/0.74/held-manager-compat-plan-v2-20261022.md",
+      "sha256": "e6e45ecc69b2914af6162a844ab3105f57825991183001d77789c5d3a88a1c9f"
+    },
+    {
+      "bytes": 2879,
+      "path": "source/second/tools/held-manager-compat-074/README.md",
+      "sha256": "7f1d00b935cd2106d2ba287697f81a3cdc76351de2e07a157e2066fa42ddb33b"
+    },
+    {
+      "bytes": 9950,
+      "path": "source/second/tools/held-manager-compat-074/probe.py",
+      "sha256": "ceae7e05d073a419e9f3b4e81e4071456d2abce5d62399389482da6d58024c58"
+    },
+    {
+      "bytes": 6764,
+      "path": "source/second/tools/held-manager-compat-074/test_probe.py",
+      "sha256": "28b3cb38d8fc83e395fae68f5f8a5f98af343691ce49f272c558c959c57ddc3e"
+    },
+    {
+      "bytes": 3849,
+      "path": "source/third/docs/testing/performance/0.74/held-manager-compat-plan-20261022.md",
+      "sha256": "6228636e7923d7a29af9df225127bf1a9e000f0aea7922b2587c84db3ea6342a"
+    },
+    {
+      "bytes": 1639,
+      "path": "source/third/docs/testing/performance/0.74/held-manager-compat-plan-v2-20261022.md",
+      "sha256": "e6e45ecc69b2914af6162a844ab3105f57825991183001d77789c5d3a88a1c9f"
+    },
+    {
+      "bytes": 1235,
+      "path": "source/third/docs/testing/performance/0.74/held-manager-compat-plan-v3-20261022.md",
+      "sha256": "93ede5057035cff5645d90d0e3a1faed4f415ad9993523fd96b1621536fa74fd"
+    },
+    {
+      "bytes": 2879,
+      "path": "source/third/tools/held-manager-compat-074/README.md",
+      "sha256": "7f1d00b935cd2106d2ba287697f81a3cdc76351de2e07a157e2066fa42ddb33b"
+    },
+    {
+      "bytes": 10055,
+      "path": "source/third/tools/held-manager-compat-074/probe.py",
+      "sha256": "ce51efec9f64bf684d912c818feab2d2edc9dac07da4cb64d6334e3ad23a02be"
+    },
+    {
+      "bytes": 7066,
+      "path": "source/third/tools/held-manager-compat-074/test_probe.py",
+      "sha256": "7004317e6f16ece8a68cc6450278fb0adda63f4b9f06b0c0ebbd7294291b9e4d"
+    }
+  ],
+  "schema": "held-manager-compat-inventory-074-v1"
+}

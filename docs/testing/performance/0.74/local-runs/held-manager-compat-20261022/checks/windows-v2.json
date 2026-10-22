@@ -1,0 +1,10 @@
+{
+  "argv": [
+    "C:\\Python313\\python.exe",
+    "-B",
+    "tools/held-manager-compat-074/test_probe.py"
+  ],
+  "exit": 0,
+  "stderr_sha256": "51f292c94f68b0f06024dc07f0dcfefaede8b34c58c02f662956cea1dbeb4522",
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}
