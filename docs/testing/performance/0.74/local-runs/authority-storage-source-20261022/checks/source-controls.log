@@ -1,0 +1,15 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.69s
+     Running tests\authority_storage_source_074.rs (target\debug\deps\authority_storage_source_074-1fc8e4bd43d0fde9.exe)
+
+running 8 tests
+test observer_complete_bodies_restore_candidate_and_exact_hook_order ... ok
+test patch_generator_refuses_changed_or_duplicated_anchor_shapes ... ok
+test storage_only_body_restoration_preserves_fresh_io_and_comparisons ... ok
+test original_read_reopen_publication_and_validation_order_remain_intact ... ok
+test every_refusal_site_is_independently_guarded ... ok
+test exact_unapplied_files_match_pinned_patch_and_unchanged_runtime ... ok
+test observer_mutations_and_extra_effects_refuse ... ok
+test storage_validation_and_effect_mutations_refuse ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.79s
+

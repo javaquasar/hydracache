@@ -1,0 +1,13 @@
+test_cold_main_and_separate_drop_mutations_refuse (__main__.ScratchReviewTests.test_cold_main_and_separate_drop_mutations_refuse) ... ok
+test_exact_test_selection_and_missing_duplicate_unknown_rows_refuse (__main__.ScratchReviewTests.test_exact_test_selection_and_missing_duplicate_unknown_rows_refuse) ... ok
+test_old_refusals_and_closed_live_gates_preserved (__main__.ScratchReviewTests.test_old_refusals_and_closed_live_gates_preserved) ... ok
+test_paired_cost_protocol_and_duration_types_refuse (__main__.ScratchReviewTests.test_paired_cost_protocol_and_duration_types_refuse) ... ok
+test_schedule_and_drift_membership_and_bounds_refuse (__main__.ScratchReviewTests.test_schedule_and_drift_membership_and_bounds_refuse) ... ok
+test_seals_counts_and_unpromoted_decision (__main__.ScratchReviewTests.test_seals_counts_and_unpromoted_decision) ... ok
+test_source_receipts_and_exclusive_output_guards (__main__.ScratchReviewTests.test_source_receipts_and_exclusive_output_guards) ... ok
+test_warm_fault_eviction_first_error_and_owner_lifetime_refuse_drift (__main__.ScratchReviewTests.test_warm_fault_eviction_first_error_and_owner_lifetime_refuse_drift) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 3.330s
+
+OK

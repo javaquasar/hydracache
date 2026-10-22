@@ -1,0 +1,17 @@
+test_all_eleven_seals_and_491_members (__main__.ReconciliationTests.test_all_eleven_seals_and_491_members) ... ok
+test_cohort_source_count_lane_windows_refusals_promotions_refuse (__main__.ReconciliationTests.test_cohort_source_count_lane_windows_refusals_promotions_refuse) ... ok
+test_exact_separate_corpora_not_a_combined_workload (__main__.ReconciliationTests.test_exact_separate_corpora_not_a_combined_workload) ... ok
+test_first_refusals_and_original_nested_wall_preserved (__main__.ReconciliationTests.test_first_refusals_and_original_nested_wall_preserved) ... ok
+test_five_retained_leaves_and_eight_distinct_unresolved_owners (__main__.ReconciliationTests.test_five_retained_leaves_and_eight_distinct_unresolved_owners) ... ok
+test_linked_input_refuses_before_read (__main__.ReconciliationTests.test_linked_input_refuses_before_read) ... ok
+test_missing_duplicate_current_witnesses_refuse (__main__.ReconciliationTests.test_missing_duplicate_current_witnesses_refuse) ... ok
+test_no_output_into_old_packet_or_runtime (__main__.ReconciliationTests.test_no_output_into_old_packet_or_runtime) ... ok
+test_old_reader_method_drift_refuses (__main__.ReconciliationTests.test_old_reader_method_drift_refuses) ... ok
+test_raw_inventory_member_extra_and_bool_size_refuse (__main__.ReconciliationTests.test_raw_inventory_member_extra_and_bool_size_refuse) ... ok
+test_source_hash_drift_refuses_except_line_endings (__main__.ReconciliationTests.test_source_hash_drift_refuses_except_line_endings) ... ok
+test_unsafe_duplicate_member_paths_refuse (__main__.ReconciliationTests.test_unsafe_duplicate_member_paths_refuse) ... ok
+
+----------------------------------------------------------------------
+Ran 12 tests in 0.420s
+
+OK
