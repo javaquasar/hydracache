@@ -17998,3 +17998,21 @@ Unit signatures, actual retained-file checks and deterministic owner fault model
 establish different properties. None is a real original-start or all-writer
 cessation observation. The bootstrap executable, child credentials/FD protocol,
 expanded inventory and one-shot execveat remain the next execution boundary.
+
+### Close image descriptor roles before defining a child protocol
+
+The [bootstrap image census](../testing/performance/0.74/bootstrap-image-census-20261023.md)
+closes a concrete gap in the preceding ownership join. A verified image and a
+retained File were not enough to show that host, launcher and bootstrap occupied
+distinct roles relative to the entire old descriptor set. The extension now
+binds all 26 descriptors and fourteen semantic roles under the same observation.
+It checks descriptor collisions, inode aliases, exact seals and readonly/CLOEXEC
+state, including metadata and offset drift, without exporting an FD array.
+
+The original full frames still authenticate the old prefix and close the new
+value checks. No extra hash round or clock query is needed; the existing check
+count/order and admission origins remain. Actual private memfd tests exercise
+the added kernel properties, while modeled old-prefix/provider inputs exercise
+mapping and sticky refusal. Neither becomes an original child-start observation.
+The next step remains sealed entry materialization and an authenticated fixed
+child protocol before any one-shot execveat or all-writer completion claim.

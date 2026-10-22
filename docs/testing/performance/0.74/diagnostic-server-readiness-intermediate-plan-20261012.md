@@ -2080,3 +2080,14 @@ is not the original live gate. No bootstrap child, manager send or execveat is
 enabled; expanded descriptor inventory and authenticated fixed child entry remain
 required before delivery. Existing retirement is invoked on refusal, not newly
 proved sufficient for every writer. All original windows and first refusals stay.
+
+### Bootstrap image roles join the closed original inventory
+
+The [closed image census](bootstrap-image-census-20261023.md) implements the
+26-descriptor/14-semantic-role extension under the existing bootstrap observation.
+Original role providers contribute only opaque values, retaining all files.
+Old full-frame count/order, refusal, source checks and absolute windows remain.
+The next task is the sealed child-entry binding and fixed authenticated bootstrap
+executable, not dispatch from a caller-built FD array. No child, service, server
+or product workload is started by this component. Original live entry, all-writer
+closure, completion/later cells and reconnect still have separate gates.

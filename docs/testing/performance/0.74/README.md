@@ -6186,3 +6186,14 @@ hashing. Refusal retires the same owner; old predicates and deadlines remain.
 Static/filesystem tests and owner models do not establish original live entry,
 actual bootstrap execution, delivery or all-writer cessation. The executable,
 child protocol and expanded transport inventory remain next. No server is run.
+
+### Closed bootstrap image census precedes child entry
+
+The [image census component](bootstrap-image-census-20261023.md) now joins the
+original host/launcher and selected bootstrap images into a 26-FD/14-role value
+inventory under the same bootstrap owner. Existing old-prefix roles remain exact;
+new checks reject descriptor collisions, inode aliases and seal/flag/offset drift
+inside the same old validation frames. It exports no descriptors and adds no
+clock or hash round. Child-entry materialization/executable/transport remains
+next; static/model/private-image units do not establish original delivery,
+writer cessation or server admission.
