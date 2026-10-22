@@ -1,0 +1,18 @@
+{
+  "schema": "authority-history-view-source-074-v1",
+  "starting_tree": "33c54b0cda8c330b115009cdf092ad002077cedf",
+  "plan_commit": "a19b702e",
+  "text_image_preregistration": "a73d472e",
+  "text_image_attribution_correction": "b4368821",
+  "method_source": "632cccb5a48224f070ee5104086c35ee675e30c9",
+  "initial_manifest_sha256": "06d27984f53d0a4d02d1cdeb76412e2e7e1dd3b9eb953f739fc9d2e9dc769c01",
+  "final_manifest_sha256": "8959f5c799bab4aef03e5b90cec48fbff461cf4f032bf5dce724f69794091d60",
+  "initial_unit_setup_refused": true,
+  "formal_first_replay_passed": true,
+  "runtime_candidate_implemented": false,
+  "runtime_candidate_guard_implemented": false,
+  "model_images_executed": 0,
+  "original_owner_profiles": 0,
+  "server": false,
+  "product": false
+}

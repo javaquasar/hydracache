@@ -1,0 +1,26 @@
+{
+  "runtime_candidate_implemented": false,
+  "server": false,
+  "model_images_executed": 0,
+  "steps": [
+    {
+      "sha256": "1fbedf0ba07775054b596d9d52dcae85e4ee10a53edce33c03cadd842beea480",
+      "name": "doc-check",
+      "exit": 0,
+      "log": "doc-check.log"
+    },
+    {
+      "sha256": "2d93449ffc24d5e1295b9c387a96aca448552b7268e4f0d99bb47ed8807a1e5e",
+      "name": "gated-test-check",
+      "exit": 0,
+      "log": "gated-test-check.log"
+    },
+    {
+      "sha256": "7c3c73fe5f2ffd4f6a2f5e5590dfa625020a040ae79dc15c8e06e150ccb415af",
+      "name": "performance-contract-check",
+      "exit": 0,
+      "log": "performance-contract-check.log"
+    }
+  ],
+  "product": false
+}

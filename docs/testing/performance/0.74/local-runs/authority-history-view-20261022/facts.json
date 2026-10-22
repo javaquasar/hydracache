@@ -1,0 +1,81 @@
+{
+  "archived_facts_equal": true,
+  "clocks_changed": false,
+  "current_fixture_baseline_at_first_run": true,
+  "current_runtime_admitted": false,
+  "first_refusals": [
+    {
+      "age_ns": 10042390247,
+      "diagnostic_reason": "expired",
+      "issued_boot": "6a709ad1-c736-45a2-bd6a-351e07f6b8f3",
+      "issued_ns": 463631383166,
+      "now_boot": "6a709ad1-c736-45a2-bd6a-351e07f6b8f3",
+      "now_ns": 473673773413,
+      "site": "window"
+    },
+    {
+      "age_ns": 10010835739,
+      "diagnostic_reason": "expired",
+      "issued_boot": "6a709ad1-c736-45a2-bd6a-351e07f6b8f3",
+      "issued_ns": 476668137622,
+      "now_boot": "6a709ad1-c736-45a2-bd6a-351e07f6b8f3",
+      "now_ns": 486678973361,
+      "site": "window"
+    }
+  ],
+  "full_sigkill_matrix": false,
+  "historical_replay_passed": true,
+  "history_source": "33c54b0cda8c330b115009cdf092ad002077cedf",
+  "input_members_verified": 1423,
+  "input_packets": {
+    "authority-integration-audit-20261022": "6f64406d00d59a0d55fd4a00994af3ae9a2aebcbeb2c2eaf5ed05e1df283cfea",
+    "authority-operator-order-20261022": "e596bab55acdaa07a77410b41a7fe6e4633dedd76a167e06db6de4db0d8148f4",
+    "authority-operator-targeted-20261022": "bd81081959409bf27b188871aa7493f0a42e50cdea658800f45db7c35229d475",
+    "authority-owned-journal-20261022": "ccadbe4fe15fe336049851019da4cef913401c09f55d0c875c9af5b257ac60f7",
+    "authority-read-audit-20261022": "1c5176e4e53eb56d21e66c061a9b580529b4930d32682e4397db4b5d3e0f6591",
+    "authority-read-baseline-20261022": "ed0d1199cbd8e105b3b1143173d67911719cf140d797f7c1dd192b20bf76ccc1",
+    "authority-scratch-owner-audit-20261022": "ea7ec7a0e1cb7d15c1032b519efdbbccd5ed28fb412f9137d4d615ec5b0db1d6",
+    "authority-scratch-reuse-20261022": "b5a90f56551c11378422879ae861a05c8fa3c9bb6448e9dc8c1f255ee3f20159",
+    "collector-peer-baseline-20261021": "cc19972e68a264b7b84ac48400f43e1b981d5a0e762ad7a9aee1a67548bf2452",
+    "collector-peer-capacity-20261022": "846b5e7d6d07a47bd03c64be0a207b24b197b39ceddb25e4fc3b06cd049b05ae",
+    "context-document-baseline-20261021": "8db3e4df5579ec7a471886505191825609b5c839732670bece6702ae101afcb6",
+    "context-document-stack-20261021": "7a65d50c19622754bda58fd389ef03d3f07254465d96f1e16b586cdec94f71f0",
+    "custody-preparation-cost-20261020": "3194244cb4e45c6f4f611b946afaa6a6a8b3aaf83179457c260d0a9e25f93864",
+    "held-material-live-20261021": "0c385fbfe209fad1903aa2c0e620817c458f413eec8bd36fa32be5c01fbb4109",
+    "held-material-round-attribution-20261021": "84c2d0a10e1d2d66b4dc76e1c041b9920d90d85621461bc3e83102569a6e1a2f",
+    "pidfd-info-path-20261021": "dc7af6cd78dfc1b69c7443078a8c6e2edc4504e294f74d30df93e085f8471daa",
+    "proc-document-baseline-20261022": "dbaa727197cf3c08b5206b40050bef4424f8a1e1793191ca661ba5540a81c306",
+    "projection-groups-20261021": "ae7db79c3e579b7ad9f1939d2571aab27452b62f81c89b46b98340381f4b91c6",
+    "reserved-leaf-audit-20261021": "d66631eec23dc969f372d73c2bb83519058214383023564ec269ec542f854c4e",
+    "reserved-reconciliation-20261022": "d3aa773d6254d5297d303cfc8ba7a397e06ae8a2d4978e39e29c496062b3fb72",
+    "sample-boot-baseline-20261022": "fd07cd7911ab50d51e5a471de9ae5b427ec4076636396fe12861c46433ac6b10",
+    "sample-boot-inline-20261022": "6bee3c2c239d2e38f9ad06a9098e756edc8dc248b6c48eb51f425b61b36b4ebf",
+    "trust-component-baseline-20261021": "7eacd69041a722fc3d6153ef8be43eff87bf945a8fb6ccdd456acadff1bfcc9d",
+    "trust-component-stack-20261021": "e588fd8ae6b06a6e808446328b819240c4bb0e35955309e843ddb1078668fd85"
+  },
+  "manifest_sha256": "8959f5c799bab4aef03e5b90cec48fbff461cf4f032bf5dce724f69794091d60",
+  "model_images_executed": 0,
+  "old_measurements_reexecuted": false,
+  "original_owner_profiles": 0,
+  "original_windows_seconds": [
+    300,
+    60,
+    10
+  ],
+  "product": false,
+  "qualification_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "reconnect_proven": false,
+  "runtime_candidate_guard_implemented": false,
+  "runtime_candidate_implemented": false,
+  "schema": "authority-history-view-review-074-v1",
+  "server": false,
+  "services_changed": false,
+  "tooling_source": "632cccb5a48224f070ee5104086c35ee675e30c9",
+  "tree": {
+    "files": 1576,
+    "fingerprint": "47ce9ebf224070c7a1a679f81e8cedfe053c64a3ea4c7ea86823d523552dca34",
+    "packet_members": 1423,
+    "packets": 24,
+    "sources": 129
+  }
+}

@@ -1,0 +1,13 @@
+test_cold_candidate_and_trace_correlation_refuse_mutations (__main__.OwnedReviewTests.test_cold_candidate_and_trace_correlation_refuse_mutations) ... ok
+test_fault_priority_whole_cache_eviction_and_gate_coverage_refuse (__main__.OwnedReviewTests.test_fault_priority_whole_cache_eviction_and_gate_coverage_refuse) ... ok
+test_first_red_reference_receipt_is_preserved_not_relabelled_green (__main__.OwnedReviewTests.test_first_red_reference_receipt_is_preserved_not_relabelled_green) ... ok
+test_history_compilers_and_separate_healthy_eviction_counts (__main__.OwnedReviewTests.test_history_compilers_and_separate_healthy_eviction_counts) ... ok
+test_layout_logical_reopen_and_no_new_measurement_claims (__main__.OwnedReviewTests.test_layout_logical_reopen_and_no_new_measurement_claims) ... ok
+test_reference_first_cohort_bounds_and_counts_refuse_mutations (__main__.OwnedReviewTests.test_reference_first_cohort_bounds_and_counts_refuse_mutations) ... ok
+test_source_pins_separate_output_and_no_clobber (__main__.OwnedReviewTests.test_source_pins_separate_output_and_no_clobber) ... ok
+test_unknown_missing_duplicate_and_wrong_test_selection_refuse (__main__.OwnedReviewTests.test_unknown_missing_duplicate_and_wrong_test_selection_refuse) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 4.040s
+
+OK

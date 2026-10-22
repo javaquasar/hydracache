@@ -1,0 +1,15 @@
+test_all_five_original_refusal_sites_and_external_routes_remain (__main__.ScratchOwnerAuditTests.test_all_five_original_refusal_sites_and_external_routes_remain) ... ok
+test_budget_types_bounds_and_altered_constants_refuse (__main__.ScratchOwnerAuditTests.test_budget_types_bounds_and_altered_constants_refuse) ... ok
+test_model_borrow_cache_eviction_and_successful_capacity_guard_remain (__main__.ScratchOwnerAuditTests.test_model_borrow_cache_eviction_and_successful_capacity_guard_remain) ... ok
+test_no_measurement_or_admission_follows_static_budget (__main__.ScratchOwnerAuditTests.test_no_measurement_or_admission_follows_static_budget) ... ok
+test_original_observation_brackets_and_iteration_refuse_drift (__main__.ScratchOwnerAuditTests.test_original_observation_brackets_and_iteration_refuse_drift) ... ok
+test_outer_borrowed_owners_are_not_independent_registries (__main__.ScratchOwnerAuditTests.test_outer_borrowed_owners_are_not_independent_registries) ... ok
+test_reopen_append_history_limit_and_retention_remain (__main__.ScratchOwnerAuditTests.test_reopen_append_history_limit_and_retention_remain) ... ok
+test_retained_bytes_entries_and_original_thread_fields_refuse_drift (__main__.ScratchOwnerAuditTests.test_retained_bytes_entries_and_original_thread_fields_refuse_drift) ... ok
+test_sealed_history_and_each_generation_budget (__main__.ScratchOwnerAuditTests.test_sealed_history_and_each_generation_budget) ... ok
+test_source_and_exclusive_separate_output_guards (__main__.ScratchOwnerAuditTests.test_source_and_exclusive_separate_output_guards) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 3.249s
+
+OK

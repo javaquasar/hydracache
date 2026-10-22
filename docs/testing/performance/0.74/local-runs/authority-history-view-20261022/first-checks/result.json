@@ -1,0 +1,160 @@
+{
+  "original_owner_profiles": 0,
+  "product": false,
+  "server": false,
+  "runtime_candidate_implemented": false,
+  "failure": null,
+  "source": "632cccb5a48224f070ee5104086c35ee675e30c9",
+  "steps": [
+    {
+      "log": "format.log",
+      "exit": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "name": "format"
+    },
+    {
+      "log": "workspace-format.log",
+      "exit": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "name": "workspace-format"
+    },
+    {
+      "log": "history-controls.log",
+      "exit": 0,
+      "sha256": "a03d4b6e569244e958fc462c7ab77325067093d11441e8b62f7aa8897dd9cdda",
+      "name": "history-controls"
+    },
+    {
+      "log": "history-receipt-controls.log",
+      "exit": 0,
+      "sha256": "9e4c24d61bdac9221cdac20dd5ece13de246a53f603959df659f31d592966df9",
+      "name": "history-receipt-controls"
+    },
+    {
+      "log": "current-baseline.log",
+      "exit": 0,
+      "sha256": "20ef62ca9618189053401ba3f29dc65501350af52d00204bd6e6159a47c17389",
+      "name": "current-baseline"
+    },
+    {
+      "log": "integration-controls.log",
+      "exit": 0,
+      "sha256": "a00018fa8df91d5074fa69eb3626a673f10f0e162a7f223b77be9a5931954c55",
+      "name": "integration-controls"
+    },
+    {
+      "log": "targeted-controls.log",
+      "exit": 0,
+      "sha256": "bd285b8827e165fdf3321cff68dfe91d3a99f86c5b49a5ad46d2c82cffabe278",
+      "name": "targeted-controls"
+    },
+    {
+      "log": "operator-controls.log",
+      "exit": 0,
+      "sha256": "b5f8a25392c17eabc1867ab1cb04d6a269f6d928ff91b12ff6290af663b9997c",
+      "name": "operator-controls"
+    },
+    {
+      "log": "owned-controls.log",
+      "exit": 0,
+      "sha256": "687f2ed800c7cb10156b24249ddb2e5412eb7acfb17b5bd6afb659f874a857fa",
+      "name": "owned-controls"
+    },
+    {
+      "log": "owner-controls.log",
+      "exit": 0,
+      "sha256": "3f82ad2a47ea152ef4b3fad0d1117de4bfb98674971c34e858dc889c184b8de1",
+      "name": "owner-controls"
+    },
+    {
+      "log": "prior-scratch-controls.log",
+      "exit": 0,
+      "sha256": "8c8956deb7add6a885bd258b5ae0e2fb848497e0a24357591a8cb2f6813921a7",
+      "name": "prior-scratch-controls"
+    },
+    {
+      "log": "prior-read-controls.log",
+      "exit": 0,
+      "sha256": "16ef07b6eb44911dfbaddb9a4ad9e4491169bec644b14f2e8744707365ef1c98",
+      "name": "prior-read-controls"
+    },
+    {
+      "log": "prior-audit-controls.log",
+      "exit": 0,
+      "sha256": "6504f06546a05f2ceb8374a948606148793a4ef7e4cd6a59cf084fad9584a8cd",
+      "name": "prior-audit-controls"
+    },
+    {
+      "log": "prior-inline-controls.log",
+      "exit": 0,
+      "sha256": "cc00a1c1c5aa31dc6e3be75781c1c29738cc20460089a3f40310263bd2e11549",
+      "name": "prior-inline-controls"
+    },
+    {
+      "log": "prior-boot-controls.log",
+      "exit": 0,
+      "sha256": "0d7d5855b90319f9365628d2482073d92d9d1d884c2d85776cf32a91d0d774a9",
+      "name": "prior-boot-controls"
+    },
+    {
+      "log": "prior-proc-controls.log",
+      "exit": 0,
+      "sha256": "b5c8252ebd39c81cb5cc9c8f24822f32058814cee69fed188f1391b612e9223e",
+      "name": "prior-proc-controls"
+    },
+    {
+      "log": "prior-reconciliation-controls.log",
+      "exit": 0,
+      "sha256": "4c4dabbf9100ac148a69fe8587a6d2aa414a3442a578ec9b45ad7226f4762cb7",
+      "name": "prior-reconciliation-controls"
+    },
+    {
+      "log": "derived-facts.log",
+      "exit": 0,
+      "sha256": "4c6160d8eb7ebd1293a5e0a69c1f5858bdba445e566667877341f8e1a6f6d7b6",
+      "name": "derived-facts"
+    },
+    {
+      "log": "docs.log",
+      "exit": 0,
+      "sha256": "0bb8c19b2ab0afdae694980b92491e04b8589870fffb52aa07023db7d7850b1b",
+      "name": "docs"
+    },
+    {
+      "log": "registry.log",
+      "exit": 0,
+      "sha256": "795ec274f6d8bf35c01d057d7eb984d5f6c2a39b14f7a57223b13c58c3df3549",
+      "name": "registry"
+    },
+    {
+      "log": "performance.log",
+      "exit": 0,
+      "sha256": "7c3c73fe5f2ffd4f6a2f5e5590dfa625020a040ae79dc15c8e06e150ccb415af",
+      "name": "performance"
+    },
+    {
+      "log": "canaries.log",
+      "exit": 0,
+      "sha256": "d722fc6ce39a620837069615603bc8f16c6c017bcc55a0a537f140008bd816f9",
+      "name": "canaries"
+    },
+    {
+      "log": "check.log",
+      "exit": 0,
+      "sha256": "c476bc9086a2dfbf2a19e00da90ee051128a8f91b2684188c5dd2e4ffad1c8dc",
+      "name": "check"
+    },
+    {
+      "log": "clippy.log",
+      "exit": 0,
+      "sha256": "85a09568fd379a55866aecd55b83e4ac44642f41c39667f1ae26c65fdf019f25",
+      "name": "clippy"
+    },
+    {
+      "log": "protected-source.log",
+      "exit": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "name": "protected-source"
+    }
+  ]
+}
