@@ -1,0 +1,45 @@
+{
+  "schema": "authority-runtime-doc-inventory-074-v1",
+  "files": [
+    {
+      "sha256": "fd6d28e569c61e4f698943b3bb0d5dae7ce75401e6ff679f182d94bb82c39ac1",
+      "bytes": 251,
+      "path": "docs-final.log"
+    },
+    {
+      "sha256": "16693d41e17c980b37c0896dd082dd30821acf49c433a8a6b03056550e40af1f",
+      "bytes": 252,
+      "path": "docs.log"
+    },
+    {
+      "sha256": "6a6c016886764d3bdd6586c066a0dcefdb66bc2f058b77147541c7589ed08cee",
+      "bytes": 963,
+      "path": "packet-review.log"
+    },
+    {
+      "sha256": "1d9b1e6e835f4df6555d654baecfa020a72fa974d7d8bcaa454971ca00570613",
+      "bytes": 299,
+      "path": "performance.log"
+    },
+    {
+      "sha256": "f3f7389f5b8f5d781606ff8aec521b1ecb5b57db3ac066d9c333d4487c8595e2",
+      "bytes": 190,
+      "path": "registry.log"
+    },
+    {
+      "sha256": "716dc63a402543e3360e0b6904008d976e3660da564ef5f000cfc000d4a6ef32",
+      "bytes": 1579,
+      "path": "result.json"
+    },
+    {
+      "sha256": "f00f03891594150eb48ab156389a02d497fabd8b012680cb450e554ec7521139",
+      "bytes": 2686,
+      "path": "source-controls-serial.log"
+    },
+    {
+      "sha256": "3d99b77cbedbac23c00954c17432d1af7b4352ccb6b6aba6889151be1b839616",
+      "bytes": 228,
+      "path": "source-controls.log"
+    }
+  ]
+}

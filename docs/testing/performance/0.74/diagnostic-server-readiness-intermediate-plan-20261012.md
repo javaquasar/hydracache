@@ -1849,3 +1849,24 @@ owned-storage patch, then Linux-typecheck mutable call sites and test actual
 filesystem/refusal/reopen/publication behavior. Do not infer that behavior from
 historical success. No WSL, server, service/clock, supervisor or product action
 is opened here; original windows/refusals and real lifecycle admission remain.
+
+### Owned storage integration has actual Linux filesystem results
+
+The [exact runtime integration](authority-runtime-20261022.md) is complete at
+the local compile/filesystem boundary. Linux Rust 1.94 and 1.88 each pass 33
+selected tests, all-target/all-feature check and strict clippy. Seven new tests
+cover scratch bounds/eviction, retained originals, successful transitions,
+publication cuts and reopen. Final source is 37db65f6; all 321 contract tests
+and the independent current/historical source controls pass. Fifty exact reader
+adapters preserve historical assertions, not a blanket runtime waiver.
+
+The sealed packet retains early refusals and separates development from final
+cohorts, including different development/final WSL boot identities. Qualification,
+original windows/checks and first Causal refusals stay fixed. No new live or
+server attempt, installation, supervisor, product, clock or service action ran.
+
+Next measure the installed candidate's allocation/retention tradeoff only under
+a separately pinned current-runtime attribution plan. This gate alone does not
+admit original start, termination of all writers, durable later-cell completion,
+real SIGKILL/lost-ACK, reconnect or production trust/enrollment. Keep the final
+server integration gate and installation/supervisor approval separate.

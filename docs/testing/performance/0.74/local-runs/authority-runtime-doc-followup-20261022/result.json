@@ -1,0 +1,55 @@
+{
+  "services_changed": false,
+  "native_cohorts_rerun": false,
+  "source_controls": [
+    5,
+    10,
+    8
+  ],
+  "clocks_changed": false,
+  "schema": "authority-runtime-doc-followup-074-v1",
+  "serial_source_controls_green": true,
+  "code_changed_for_repair": false,
+  "source_head": "08f0437623739fbcee4d42e476d90c444999c124",
+  "first_source_compile_refused_before_tests": true,
+  "server": false,
+  "live": false,
+  "steps": [
+    {
+      "sha256": "fd6d28e569c61e4f698943b3bb0d5dae7ce75401e6ff679f182d94bb82c39ac1",
+      "exit": 0,
+      "log": "docs-final.log"
+    },
+    {
+      "sha256": "16693d41e17c980b37c0896dd082dd30821acf49c433a8a6b03056550e40af1f",
+      "exit": 0,
+      "log": "docs.log"
+    },
+    {
+      "sha256": "6a6c016886764d3bdd6586c066a0dcefdb66bc2f058b77147541c7589ed08cee",
+      "exit": 0,
+      "log": "packet-review.log"
+    },
+    {
+      "sha256": "1d9b1e6e835f4df6555d654baecfa020a72fa974d7d8bcaa454971ca00570613",
+      "exit": 0,
+      "log": "performance.log"
+    },
+    {
+      "sha256": "f3f7389f5b8f5d781606ff8aec521b1ecb5b57db3ac066d9c333d4487c8595e2",
+      "exit": 0,
+      "log": "registry.log"
+    },
+    {
+      "sha256": "f00f03891594150eb48ab156389a02d497fabd8b012680cb450e554ec7521139",
+      "exit": 0,
+      "log": "source-controls-serial.log"
+    },
+    {
+      "sha256": "3d99b77cbedbac23c00954c17432d1af7b4352ccb6b6aba6889151be1b839616",
+      "exit": 101,
+      "log": "source-controls.log"
+    }
+  ],
+  "runtime_method": "37db65f68e67ed7c0ee0f1cc84fed1c30bf9822a"
+}

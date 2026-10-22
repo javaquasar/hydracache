@@ -5958,3 +5958,23 @@ Old Python audit pins stay frozen; use their historical reader view rather than
 raw audits against the adapted checkout. Next explicitly version current-runtime
 candidate admission, integrate the minimal patch and Linux-typecheck/test real
 filesystem behavior. This step adds no performance or server-readiness claim.
+
+### Owned storage runtime passes native filesystem integration
+
+The [installed runtime result](authority-runtime-20261022.md) closes that local
+integration step. Fixture and mutable observer match the frozen candidate;
+five helper compatibility edits and an independent raw-current gate preserve
+the checks. Fifty historical contract readers receive exact verified predecessor
+views without changing their assertions; all 321 contract tests pass.
+
+Linux Rust 1.94 and MSRV 1.88 each pass all-target/all-feature check, strict
+clippy and 33 exact filesystem tests, including seven new cache/refusal/reopen/
+publication controls. The nineteen-step Windows cohort, 79 historical canaries
+and all source/receipt controls pass. Early adapter refusals remain separate
+from the frozen final results in the sealed packet.
+
+Scratch retention may reduce allocation churn at a live-memory cost; correctness
+tests do not measure that tradeoff. Next separately pin current-runtime
+attribution before a performance claim. Original checks, windows, first refusals
+and qualification remain unchanged. No live preparation, full SIGKILL/lost-ACK,
+server, installation, supervisor, product, clock or service action follows.

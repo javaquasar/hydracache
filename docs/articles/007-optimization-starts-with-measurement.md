@@ -17510,3 +17510,48 @@ and visitor refusals remain distinct from the complete passing source cohort.
 The next task is the actual-engine integration with its own current-runtime
 gate and Linux filesystem tests. No allocator, timing or memory result follows
 from this migration, and no original validation window or server gate changes.
+
+### Exercise the installed storage candidate on the real filesystem
+
+The [runtime integration](../testing/performance/0.74/authority-runtime-20261022.md)
+now installs the exact guarded fixture and mutable observer rather than only
+parsing a proposed patch. Each Leaf owns optional scratch, but still opens and
+reads the named file freshly and checks original metadata, stamp and bytes.
+Reuse changes storage selection, not the truth source. All five refusal
+boundaries evict every retained slot while preserving original authority objects
+and history; publication order and fsync boundaries remain intact.
+
+Native correctness matters separately from source equivalence. Rust 1.94 and
+MSRV 1.88 each compile/check/lint the actual engine and pass 33 exact filesystem
+tests. Seven new tests exercise poisoned storage, bounded retention, ten leaf
+refusals, whole-journal cleanup, successful transitions, reopen and publication
+cuts. Reopen inherits no buffer, while its unchanged final validation may warm
+a new one. Logical publication cuts establish no real process-loss or lost-ACK
+proof by themselves.
+
+Integration exposed more source-test coupling than the first guard list showed.
+The complete development cohort first passed 290 with 31 failures; adapting
+those readers exposed fifteen older consumers of the changed root/support
+sources. A focused cohort then found the remaining custody dependency chain.
+The final boundary covers fifty exact single reader edits and root imports.
+Every complete approved current file is verified before a pinned predecessor
+reaches the old assertions; independent raw-current checks still validate the
+installed candidate. No assertion is weakened or failed test removed. The
+frozen final cohort passes all 321 contract tests, with the earlier negative
+results retained under their original phases.
+
+This step also makes the memory tradeoff explicit. Retaining a successful read
+may remove later allocation churn, but it keeps additional storage alive per
+Leaf. Capacity bounds and eviction are correctness properties, not evidence of
+lower RSS or faster preparation. A fresh current-runtime attribution must
+measure both sides before claiming a gain; old synthetic model timings cannot
+be attached to the newly installed engine.
+
+The evidence identifies committed source, exact test selection, executable
+hashes, raw logs and stable per-cohort metadata. Development and final WSL boots
+differ, while both final compiler lanes share one boot; they are not described
+as a single timing session. The nineteen-step Windows gate, 79 historical
+canaries and native results close local integration only. Original live checks,
+deadlines, first refusals and qualification remain fixed. Full SIGKILL/lost-ACK,
+all-writer revocation, reconnect and server enrollment remain distinct gates;
+no server, service/clock, supervisor or product action occurred.
