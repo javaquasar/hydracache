@@ -95,7 +95,7 @@ fn scratch_only_substitutes_storage_not_fresh_validation() {
         .replace("self.owner", "self")
         .replace(", &mut self.buffer", "");
     assert_eq!(
-        tokens(&adjusted).replace(&tokens(retain), ""),
+        tokens(&tokens(&adjusted).replace(&tokens(retain), "")),
         tokens(expected)
     );
     assert!(tokens(&candidate).contains(&tokens("if result.is_err() { self.buffer = None; }")));

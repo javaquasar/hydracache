@@ -4,7 +4,7 @@ param([Parameter(Mandatory)][ValidateSet('host','194','188')][string]$Lane,
 $ErrorActionPreference='Stop'
 $taskRepo=(Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
 Set-Location $taskRepo
-$taskOutput=Join-Path $taskRepo 'target/authority-scratch-reuse-checks/$Phase/first'
+$taskOutput=Join-Path $taskRepo "target/authority-scratch-reuse-checks/$Phase/first"
 if(-not(Test-Path -LiteralPath $taskOutput)){New-Item -ItemType Directory -Path $taskOutput -Force|Out-Null}
 if(Test-Path -LiteralPath (Join-Path $taskOutput "$Lane-result.json")){throw 'Never replace first baseline receipt'}
 $taskSelection=if($Phase -ceq 'reference'){@('model::cost::reference_only_preflight','--exact')}else{@('--skip','model::cost::reference_only_preflight')}
