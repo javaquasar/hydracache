@@ -17252,3 +17252,44 @@ matching metadata/EOF/lifetime behavior and its own copy/size/full-path cost
 gate. Forty-nine source canaries, fifty-five offline controls and seventeen
 older seals/955 members retain the original deadlines/refusals and closed live,
 fault, reconnect and server admission. No runtime storage change is made here.
+
+### Reuse fresh-read storage without reusing the observation
+
+The [owner-bound scratch experiment](../testing/performance/0.74/authority-scratch-reuse-20261022.md)
+answers the temporary-storage hypothesis in a separate image, not in the runtime.
+Its scratch borrows one original Leaf; the original expected bytes/File/stamp
+are untouched. Every call still reads held metadata, independently opens the
+name, checks before/parent/regular/budget, reads through bounded EOF, checks the
+whole after stamp and compares fresh content. Exact-capacity storage can survive
+a successful call; an error evicts it. Reusing bytes as evidence is not permitted.
+
+A new full-revalidate reference was committed and measured before the prototype.
+Across nine cold-owner cases and 2304 calls per arm, both first MSVC compilers
+observe 2048 allocations/1222656 requested bytes for reference versus eight/4776
+for scratch. The first nonempty call still allocates. Cache drop is a separate
+cohort: eight releases/4776 bytes. Fragmented, binary and Interrupted reading
+therefore amortizes allocation without skipping the observations that caused
+fresh content to be compared in the first place.
+
+The tradeoff is explicit: an additional successful body allocation remains live
+between calls, alongside the independent expected bytes. The wrapper is 32 bytes
+on these targets; actual record capacities can reach 2048 bytes per owner. Neither
+layout nor requested bytes measures RSS, allocator page release or physical copy
+traffic. The same bytes are freshly delivered and compared; lower allocation is
+not evidence of fewer copies or faster kernel authority validation.
+
+Seven first paired wall intervals per case retain every slower pair and outlier.
+The predefined median rejection rule is not triggered, but compiler/host activity
+was concurrent and the intervals are short: timing remains preliminary. The
+result is an unpromoted prototype, not a runtime/full-path performance claim.
+Before integration, audit real owner lifetimes and aggregate retained-capacity
+budgets offline; a GNU/full-path cohort is still a separate missing gate.
+
+Semantic evidence includes 64 warm-cache first-error masks, 1512 IO schedules,
+28 metadata cases and 256 seeded content changes. Paired outcomes and complete
+synthetic receiver traces agree. Fifty-two source canaries and sixty-three offline
+controls preserve the source/error/evidence boundary. The original no-clobber
+runner and whitespace-canary failures, plus an offline test-fixture repair, remain
+explicit; measurements were not rerun. Eighteen older seals/1000 members retain
+all first refusals and deadlines. No live material, SIGKILL/lost-ACK, reconnect,
+all-writer termination or server admission is inferred from storage-only tests.

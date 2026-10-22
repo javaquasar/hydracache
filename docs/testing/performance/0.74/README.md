@@ -5817,3 +5817,21 @@ fifty-five offline controls and seventeen prior seals/955 members preserve the
 boundary. A transient-storage prototype requires its own preregistration and
 cost/semantic gate; no runtime optimization or full-path gain follows. Original
 windows/refusals and closed material/fault/reconnect/server gates remain.
+
+### Owner-bound temporary authority scratch prototype
+
+The [separate scratch experiment](authority-scratch-reuse-20261022.md) retains
+all fresh read/metadata/EOF/error observations while reusing successful temporary
+Vec capacity under one borrowed owner. Both first MSVC lanes agree: 2304 full
+revalidations per arm make 2048 allocations/1222656 requested bytes for reference
+and eight/4776 for cold scratch. Cache drop is separate; additional retained
+capacity and a 32-byte wrapper are costs, not measured RSS or copy savings.
+
+Fifteen pure tests per compiler include the old nine controls, 64 fault masks,
+1512 IO schedules, metadata/content drift and lifetime checks. Fifty-two source
+canaries, sixty-three offline controls and eighteen prior seals/1000 members
+preserve the boundary. First tooling failures/repair are retained; measurements
+were not retried. Concurrent-host wall intervals are preliminary. Decision:
+retain an unpromoted prototype; next audit real owner lifetimes/aggregate memory
+offline, not integrate directly. Runtime, original windows/refusals, qualification
+and closed material/fault/reconnect/server gates are unchanged.

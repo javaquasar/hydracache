@@ -1704,3 +1704,19 @@ controls; do not integrate from this allocation baseline alone. Runtime, origina
 300/60/10 windows, first refusals and qualification remain unchanged. Material,
 all-writer, full fault/lost-ACK, reconnect and server gates remain closed; no WSL,
 clocks/services, installation, supervisor or server/product run occurs.
+
+### Owner-bound scratch is not original-owner admission
+
+The [temporary storage prototype](authority-scratch-reuse-20261022.md) confirms
+allocation amortization only in synthetic full-revalidate controls. It preserves
+every original fresh observation and evicts storage on refusal, but adds retained
+capacity and an owner wrapper. Paired wall intervals are preliminary; no runtime
+integration, Linux/full-path, copy/RSS or all-writer proof follows. First tooling
+refusals/repairs and eighteen prior seals/1000 members remain.
+
+Next audit real Leaf/registry owner lifetimes and aggregate retained-memory
+budgets offline before considering any integration candidate. Keep original
+300/60/10 windows, first refusals and qualification unchanged. Material/cleanup,
+authenticated delivery/all-writer termination, full SIGKILL/lost-ACK, reconnect
+and server admission remain closed. No WSL, clocks/services, installation,
+supervisor or server/product execution is authorized by this prototype.
