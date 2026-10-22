@@ -17613,3 +17613,47 @@ SIGKILL/lost-ACK recovery or server admission. No runtime was changed in respons
 to these results, no old timing claim was carried forward, and all original
 windows, live predicates, first refusals and qualification identities remain.
 No clock/service change, server, installation, supervisor or product load ran.
+
+### Allocation reuse does not yet establish a CPU or elapsed benefit
+
+The [next actual-runtime experiment](../testing/performance/0.74/authority-runtime-cpu-20261022.md)
+removes the allocation-counter wrapper and measures fresh release images with
+thread CPU and monotonic raw elapsed clocks. Seven counterbalanced pairs on each
+of Rust 1.94 and 1.88 retain the exact synthetic signed corpus and full inspections.
+Phases separate reopen, 32 inspections, publication, refusal, sticky refusal and
+drop. A second cell family times that owner lifecycle continuously, without inner
+timers or reporting, so final cleanup cannot disappear from the comparison.
+It is a local authority-registry lifecycle, not complete production preparation.
+
+The point estimates are tempting but insufficient. At history depth 127, median
+paired warm CPU ratios are 0.888 and 0.733 installed/baseline. Their fixed intervals
+are 0.764–1.458 and 0.530–1.193. The complete-cycle elapsed ratios are 1.053 and 0.925,
+with intervals 0.554–1.375 and 0.520–1.677. The same data allow both improvements
+and costs. Neither primary clears the five-percent descriptive boundary fixed
+before measurements; this is not a narrower equivalence or no-regression result.
+
+Phase attribution also preserves the work that buffer reuse cannot remove.
+Depth 127 reopen CPU medians (baseline/installed) are 2.783/3.961 ms on 1.94 and
+2.643/2.423 ms on 1.88. Publication elapsed medians are 19.488/23.500 ms and
+12.967/17.634 ms, larger than
+their thread CPU medians, with the original durable work still present. Scratch
+eviction costs CPU at terminal refusal, and drop remains inside the continuous
+cycle. These observations explain why fewer malloc calls cannot be multiplied
+into an assumed whole-path percentage; phase medians are not additive estimates
+of the separate cycle's median.
+
+Fixed child affinity did not eliminate paired variability. Empty timer brackets
+are retained without subtraction, all seven pairs and both compilers remain,
+and before/after load/pressure context is descriptive rather than a filter.
+The min/max interval has 98.4375% nominal median coverage for seven IID pairs;
+a shared WSL host may violate that assumption. A favorable median is not a
+license to discard slow pairs or switch to another depth after seeing the data.
+
+All 28 first measured processes, eight native clock/semantic controls and 23
+source controls pass. The result leaves a useful distinction: allocation reuse
+and increased live layouts are confirmed mechanisms, while practical CPU and
+elapsed value remain unconfirmed here. Runtime is neither optimized nor rolled
+back from these observations. Another timing study needs its own frozen method;
+original checks, windows, first refusals and qualification identities stay fixed.
+No live preparation, clock/service change, server, installation, supervisor or
+product workload occurred, and the production delivery/recovery gates remain.

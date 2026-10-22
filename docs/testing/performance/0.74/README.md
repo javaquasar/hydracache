@@ -5998,3 +5998,18 @@ This closes local allocation/retention attribution, not CPU/end-to-end benefit,
 original delivery/all-writer/lifecycle/fault/reconnect or server admission.
 Original checks, windows, first refusals and qualification remain unchanged;
 no new live, clock/service, supervisor, installation, server or product action.
+
+### CPU and complete local lifecycle benefit remain unconfirmed
+
+The [actual-runtime CPU cohort](authority-runtime-cpu-20261022.md) measures seven
+fresh pairs on each compiler, without an allocation wrapper. All 28 processes
+pass, but neither depth 127 primary clears its preregistered five-percent
+descriptive boundary. Warm CPU paired medians are 0.888/0.733 installed/baseline
+on Rust 1.94/1.88, with intervals 0.764–1.458/0.530–1.193. Complete local lifecycle
+elapsed ratios are 1.053/0.925, with intervals 0.554–1.375/0.520–1.677.
+
+Cold/publication/cleanup phases and every unfavorable pair stay visible.
+Publication keeps its durable work; cycle timing includes terminal cleanup.
+The result is mixed local evidence, not proof of no cost or a practical speedup.
+The allocation reduction and higher retained memory remain separate facts.
+No runtime, live check/window/refusal, qualification or server gate changes.

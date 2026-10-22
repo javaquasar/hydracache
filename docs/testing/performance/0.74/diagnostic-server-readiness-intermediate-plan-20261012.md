@@ -1886,3 +1886,18 @@ change follows. Next separately establish CPU/end-to-end value if pursued;
 original delivery, all-writer revocation, later completion cells, real SIGKILL/
 lost-ACK, reconnect and trust/enrollment still require their own gates. No live
 or server attempt, clock/service action, installation, supervisor or product load.
+
+### CPU attribution does not admit a faster or production execution path
+
+The [first complete CPU/elapsed cohort](authority-runtime-cpu-20261022.md) passes
+all 28 processes and semantic/source controls without changing runtime. Seven
+pairs per compiler retain broad intervals crossing 1 for both depth 127 primary
+signals; no clear practical five-percent benefit or cost is established. Complete
+cycle elapsed point estimates even differ in direction between compilers.
+
+Keep the confirmed allocation/retention tradeoff distinct from this inconclusive
+speed result. Further discrimination needs a separate frozen local measurement
+plan, not retries, changed deadlines or fewer checks. Original delivery,
+all-writer cessation, durable later cells, SIGKILL/lost-ACK, reconnect, real trust
+and server integration remain their own gates. No live/server attempt, clock or
+service action, installation, supervisor change or product load occurred.
