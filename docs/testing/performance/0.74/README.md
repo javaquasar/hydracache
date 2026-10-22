@@ -5786,3 +5786,18 @@ frame/ownership contract. The first newline-only source-guard failure and its
 separate repair remain in the packet; measurements were not rerun. Fifteen older
 seals/856 members, original windows/refusals and closed live/fault/reconnect/server
 gates remain. Next audit remaining allocation leaves offline, not a live retry.
+
+### Fresh authority read ownership audit
+
+The [offline authority read audit](authority-read-audit-20261022.md) separates
+retained Leaf.raw evidence from the temporary bytes of an independent fresh
+revalidation read. Original File/stamp/byte lifetimes, bounded EOF observation,
+metadata predicates and shared-registry sticky refusal remain unchanged. Sixteen
+older seals and 928 members are verified; no new allocation or elapsed result is
+inferred from the Vec constructor.
+
+Eleven new source/reader mutation tests join the previous thirty-six offline
+controls and forty-six Windows source canaries. The next hypothesis is transient
+revalidation storage, pending its own bounded-read baseline; cached bytes and
+read_exact of the old length are not equivalent replacements. Runtime, original
+windows/refusals and material/fault/reconnect/server gates remain unchanged.

@@ -17184,3 +17184,35 @@ repair, whose first refusal is retained separately. No measurements were rerun
 or filtered. Fifteen prior seals and 856 members, original deadlines and first
 Causal refusals are unchanged. The result closes this representation hypothesis,
 not the material, all-writer, full fault, reconnect or server readiness gates.
+
+### Separate retained evidence from temporary fresh read storage
+
+The [fresh authority read audit](../testing/performance/0.74/authority-read-audit-20261022.md)
+finds two distinct byte owners behind one Vec constructor. Initial Leaf::open
+retains raw bytes with an original File/stamp for future comparisons. A later
+revalidation independently opens the name, reads fresh bytes and keeps that
+second File alive until both its stamp and content have been compared. The
+temporary Vec is a storage hypothesis; the retained expected bytes are not
+disposable scratch.
+
+The surrounding read protocol constrains that hypothesis. Before metadata must
+establish exact ownership/mode/link/type and budget; fresh parent device must
+match. Reading continues to EOF or budget plus one, followed by a whole-stamp
+check and the exact original byte length. Reading only the old length or
+overwriting expected bytes would change what is observed, even if it reduced
+requests. Caller-level sticky refusal and directory/inventory brackets also
+remain outside the buffer expression's responsibility.
+
+One explicit Vec::with_capacity is not a measured total allocation count.
+Read::take/read_to_end, growth and EOF probing, partial/errors, ownership return
+and drop need their own baseline. Pure generic-reader measurements cannot stand
+in for Linux File/syscall behavior. The audit therefore selects only the next
+question: can temporary fresh-read storage be cheaper while retaining every
+observation and lifetime? It adopts no storage change and claims no cost saving.
+
+Eleven offline mutation controls enforce the source boundary; a development
+mutation also improved the auditor by separating stamp declarations from their
+constructor fields. Sixteen earlier seals and 928 members preserve the rejected
+inline-boot result and original Causal refusals. Runtime and original deadlines
+remain unchanged; the next bounded-read baseline does not reopen live material,
+all-writer, fault, reconnect or server admission.

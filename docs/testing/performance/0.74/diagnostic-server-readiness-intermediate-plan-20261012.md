@@ -1672,3 +1672,19 @@ cleanup/EOF/fence, authenticated delivery/all-writer retirement, full SIGKILL/
 lost-ACK, reconnect or server gates. Original 300/60/10 windows, first refusals
 and qualification are unchanged. No WSL, clocks/services, installation, supervisor
 or server operation is included.
+
+### Fresh authority read storage requires its own reference baseline
+
+The [offline authority ownership audit](authority-read-audit-20261022.md)
+retains original Leaf.raw bytes/File/stamp and distinguishes temporary bytes
+from an independently opened fresh read. Any storage proposal must retain the
+new descriptor through both comparisons, bounded EOF/growth detection, all
+metadata predicates and shared-registry sticky refusal. Sixteen prior seals/
+928 members are verified; no new request counts or timing are claimed.
+
+Next prepare the separate bounded-read baseline before any transient-storage
+candidate. Do not substitute cached/overwritten expected bytes or read_exact of
+the old length. Runtime, original 300/60/10 windows, first refusals and
+qualification remain unchanged. Material/cleanup, delivery/all-writer, full
+SIGKILL/lost-ACK, reconnect and server admission remain closed; no WSL, clocks/
+services, installation, supervisor or server/product run occurs.
