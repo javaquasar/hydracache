@@ -5944,3 +5944,17 @@ constructed slots. Source acceptance is not Linux compilation or actual memory/
 filesystem evidence. Next separate historical Rust guards from current candidate
 validation, then integrate and exercise actual filesystem semantics. No live or
 server action, new performance claim, window or qualification change follows.
+
+### Historical Rust IO with an independent current source gate
+
+The [Rust IO separation](authority-rust-history-20261022.md) migrates thirty source
+canary binaries to the exact historical source for both reads and Git differences.
+Complete-file comparisons retain all 79 tests; an independent gate rejects
+unapproved current source changes and new runtime files. The valid unapplied
+storage candidate still refuses as an installed runtime change.
+
+The prior candidate-source guard and raw qualification identity remain independent.
+Old Python audit pins stay frozen; use their historical reader view rather than
+raw audits against the adapted checkout. Next explicitly version current-runtime
+candidate admission, integrate the minimal patch and Linux-typecheck/test real
+filesystem behavior. This step adds no performance or server-readiness claim.

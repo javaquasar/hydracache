@@ -17483,3 +17483,30 @@ add no allocation, latency, layout or retained-memory measurement. Historical
 Rust guard separation, actual-engine integration and real filesystem tests remain
 next; runtime, original windows/refusals, qualification and server admission do
 not change merely because source checks pass.
+
+### Separate historical IO without losing checks on current code
+
+The [Rust guard migration](../testing/performance/0.74/authority-rust-history-20261022.md)
+revealed another coupling: some canaries read the authority fixture directly,
+while others compare the entire src/tests tree. Redirecting only file reads
+would not separate those two decisions. Thirty historical source binaries now
+use a fixed source commit for reads and the right-hand side of Git differences.
+Original flags, path sets, test bodies and assertions remain; full-file checks
+permit only the IO substitutions and one module declaration.
+
+A separate current-tree gate is essential. It rejects unapproved changes to
+existing sources and new runtime files, retains the prior candidate guard and
+checks qualification's raw digest. Presenting even the valid storage artifact
+as installed runtime still refuses at this stage, despite successful historical
+reads. Archived evidence is not current admission, and a source IO adapter is
+not a sandbox or an execution proof.
+
+One negative result also improved the verification code: a default syn visitor
+missed a real Git call inside an assert_eq block because macro arguments remain
+tokens. Parsing expression arguments made the call count accurate without
+interpreting string literals or changing the assertion. Earlier module-placement
+and visitor refusals remain distinct from the complete passing source cohort.
+
+The next task is the actual-engine integration with its own current-runtime
+gate and Linux filesystem tests. No allocator, timing or memory result follows
+from this migration, and no original validation window or server gate changes.

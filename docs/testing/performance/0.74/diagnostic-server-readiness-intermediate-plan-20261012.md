@@ -1834,3 +1834,18 @@ filesystem/cache/refusal behavior. The current artifacts are syntax/source check
 only, not compiled supervisor modules. Runtime, original windows/refusals and
 qualification remain unchanged; full publication/all-writer/fault/lost-ACK/
 reconnect/server gates are not opened by this source result.
+
+### Historical Rust source routing is separated from runtime admission
+
+The [historical Rust IO adapter](authority-rust-history-20261022.md) now covers
+both direct source reads and whole src/tests Git differences across thirty
+binaries. Complete-file guards preserve their original tests and assertions;
+the independent current-tree gate permits only those IO substitutions and still
+rejects the unapplied storage artifact as a runtime change. The previous current
+candidate guard and qualification raw digest are not relaxed.
+
+Next version the exact current-runtime admission gate and integrate the minimal
+owned-storage patch, then Linux-typecheck mutable call sites and test actual
+filesystem/refusal/reopen/publication behavior. Do not infer that behavior from
+historical success. No WSL, server, service/clock, supervisor or product action
+is opened here; original windows/refusals and real lifecycle admission remain.
