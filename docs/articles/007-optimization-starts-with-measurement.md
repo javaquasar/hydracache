@@ -17396,3 +17396,20 @@ assertions passed. Fifty-eight source guards, eighty-nine offline controls and
 identified candidate-only correctness cohort; actual-engine storage integration,
 publication/fault and server admission remain gated. No old evidence, original
 window, refusal or qualification threshold is changed to make this outcome green.
+
+### Verify isolated correctness before integrating owned storage
+
+The [separate targeted cohort](../testing/performance/0.74/authority-operator-targeted-20261022.md)
+checks the repaired command boundary before running tests: a native argv echo
+requires one candidate filter, then a listing requires exactly the three intended
+names. Both first MSVC lanes, Rust 1.94 and 1.88, run those three tests with nine
+others filtered. Neither clean log contains legacy or allocation-control output.
+The old broad-run isolation refusal remains a separate negative result.
+
+All 3296 synthetic cases per compiler match the frozen semantic oracle, including
+validation rounds, logical state and trace checksums. This confirms the model's
+error-priority correction under isolated selection, not a new performance gain.
+No allocation/timing values are remeasured or inferred. The next boundary is the
+actual engine: audit construction, publication, reopen, failed-owner latches and
+observer adapters before integrating storage. Logical append does not prove
+filesystem/fsync, all-writer termination, real process loss or server readiness.

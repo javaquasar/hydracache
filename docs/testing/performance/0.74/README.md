@@ -5888,3 +5888,16 @@ seals/1183 members preserve original first results. Next run one separately
 identified candidate-only correctness cohort, then audit actual-engine storage
 integration. Runtime, original windows/refusals, qualification and real fault/
 reconnect/server gates are unchanged.
+
+### Isolated operator correctness cohort
+
+The [clean targeted cohort](authority-operator-targeted-20261022.md) passes native
+argv/listing gates and runs exactly three tests with nine filtered on each first
+MSVC 1.94/1.88 lane. All 3296 cases per compiler match the sealed model oracle;
+old controls do not execute. The prior broad cohort remains isolation REFUSED.
+Twenty-two prior seals/1282 members retain its raw first evidence separately.
+
+No new performance measurement or runtime change follows. Next audit actual
+engine owned-storage integration and historical source/observer boundaries.
+Original windows/refusals, qualification and real publication/all-writer/full-
+fault/reconnect/server admission gates remain unchanged.

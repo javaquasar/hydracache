@@ -1773,3 +1773,18 @@ controls filtered, then audit actual-engine integration and historical observer/
 source-snapshot boundaries. No runtime, clock/service, WSL/server, supervisor or
 product action; original windows/refusals and all real publication/all-writer/
 full-fault/lost-ACK/reconnect/server admission gates remain unchanged.
+
+### Isolated model gate precedes runtime integration
+
+The [new targeted cohort](authority-operator-targeted-20261022.md) observes exactly
+three candidate tests and nine filtered on both MSVC compilers after native argv
+and listing preflight. Its 3296 cases per compiler match the frozen oracle; the
+older broad-run isolation refusal and all original first results remain intact.
+
+Next audit the exact actual-engine owned-storage patch, construction/publish/
+reopen/drop, all failed-owner latches and observer adapters. Keep historical
+source pins on frozen snapshots; do not rewrite old evidence to tolerate runtime
+drift. No runtime mutation, live profile, WSL/server, clocks/services, installation,
+supervisor or product action occurs in this correctness step. Original windows,
+first refusals and publication/all-writer/full-fault/lost-ACK/reconnect/server
+gates remain unchanged.
