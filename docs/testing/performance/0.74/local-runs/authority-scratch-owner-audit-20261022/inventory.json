@@ -1,0 +1,181 @@
+{
+  "schema": "offline-authority-scratch-owner-inventory-074-v1",
+  "auditor_source": "de0a079defecebaa368d86946d93b9a22b164d78",
+  "files": [
+    {
+      "sha256": "d1e94e0139b075291e5ecc8f20d367459fce9400656502fb23540fa317c7ce01",
+      "bytes": 8808,
+      "path": "checks/canaries.log"
+    },
+    {
+      "sha256": "87b2556a753d902e0a7e8f6d49a6b1bf192351009f047240475e5c30bb801373",
+      "bytes": 73,
+      "path": "checks/check.log"
+    },
+    {
+      "sha256": "2e85c1345965bc8ff43c14c75d6f34b2edb6532d52f9d4585470c43462e729d1",
+      "bytes": 73,
+      "path": "checks/clippy.log"
+    },
+    {
+      "sha256": "cd80cecbb81437ffbac3877e2020b4296e5110148dd37378ce3bd4a6965af7aa",
+      "bytes": 95,
+      "path": "checks/derived-facts.log"
+    },
+    {
+      "sha256": "ccd82e6f1fe280178a181262b219c5fbbd96c199cb4e6e176f66e556cf29afdd",
+      "bytes": 167,
+      "path": "checks/docs.log"
+    },
+    {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "path": "checks/format.log"
+    },
+    {
+      "sha256": "b71ca9efb87a4a365ddddef8d897d3010cdfd042cae9bee2c718d5f55da3713b",
+      "bytes": 1686,
+      "path": "checks/owner-controls.log"
+    },
+    {
+      "sha256": "7c3c73fe5f2ffd4f6a2f5e5590dfa625020a040ae79dc15c8e06e150ccb415af",
+      "bytes": 215,
+      "path": "checks/performance.log"
+    },
+    {
+      "sha256": "50c1540e6e484120ab6a1f2092407ceb4113e64852dd7291aa07783ee7bf4fac",
+      "bytes": 2083,
+      "path": "checks/prior-audit-controls.log"
+    },
+    {
+      "sha256": "ea8e0a9aff46da9f83271e710e229ca6e056d75341633cbe50569e4fc8b26557",
+      "bytes": 1283,
+      "path": "checks/prior-boot-controls.log"
+    },
+    {
+      "sha256": "14e8d2ec3470e066174bc8b72dbd5acf1482ee3caf06f7f039b08d7db81db2a8",
+      "bytes": 111,
+      "path": "checks/prior-inline-controls.log"
+    },
+    {
+      "sha256": "b598d59ee7e26237e04dc63c16b25933a041eec7ddd95a5bfcb4c7f82ab1a002",
+      "bytes": 1137,
+      "path": "checks/prior-proc-controls.log"
+    },
+    {
+      "sha256": "4dbb533b6b543e8b625ac453763d7a664f6511a505b86fab8c8713e44995b496",
+      "bytes": 1449,
+      "path": "checks/prior-read-controls.log"
+    },
+    {
+      "sha256": "02dd82d961a7659f7effa02a8cb4a12704e7b4f4a51ecc565c2fffe8bbd85614",
+      "bytes": 1740,
+      "path": "checks/prior-reconciliation-controls.log"
+    },
+    {
+      "sha256": "433c3e32df73f85ac11a1a3924a970094cd0b08a3179fc3934538efd28feb8ef",
+      "bytes": 1273,
+      "path": "checks/prior-scratch-controls.log"
+    },
+    {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "path": "checks/protected-source.log"
+    },
+    {
+      "sha256": "795ec274f6d8bf35c01d057d7eb984d5f6c2a39b14f7a57223b13c58c3df3549",
+      "bytes": 190,
+      "path": "checks/registry.log"
+    },
+    {
+      "sha256": "4265a1b79fe6af8f851a2360e7b59676b2d7b3e60223525bcbd2471219dcc15c",
+      "bytes": 3517,
+      "path": "checks/result.json"
+    },
+    {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "path": "checks/workspace-format.log"
+    },
+    {
+      "sha256": "ed3932b952d717a2df30a48cda976f524b0fc0a9fae808ad7ca65b88fbe491b3",
+      "bytes": 732,
+      "path": "development-note.md"
+    },
+    {
+      "sha256": "ea9f6a3abc2ce396113d9191aab961cf9822a005372b1119680faa33554c09a1",
+      "bytes": 36868,
+      "path": "facts.json"
+    },
+    {
+      "sha256": "8cfd39b71789925bd3844eae531b9a96f616b87b416be0c7930ae4ed3940c410",
+      "bytes": 371,
+      "path": "identity.json"
+    },
+    {
+      "sha256": "03c4e584e861c63783830deb83eb96dc1e40ce3d22864cfba4970cfc051a5128",
+      "bytes": 2211,
+      "path": "method/docs/testing/performance/0.74/authority-scratch-owner-audit-plan-20261022.md"
+    },
+    {
+      "sha256": "6c5040023b9e54e30bde21114b3033721dade6d5eff2c7f5c01fe0fea89aa590",
+      "bytes": 2661,
+      "path": "method/tools/authority-scratch-reuse-074/candidate.rs"
+    },
+    {
+      "sha256": "04a086ba1a2f70637b7f23c34d1d5e47d8ca08c0f3cfc72fc0fa8296e431a690",
+      "bytes": 6810,
+      "path": "method/tools/long-run-supervisor-074/src/diagnostic_authority_fixed.rs"
+    },
+    {
+      "sha256": "437b66c3f3c6138fb46d7e36dbe4d0e74559b0ebac5ea9bfc5c8e060f3fc7232",
+      "bytes": 22308,
+      "path": "method/tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs"
+    },
+    {
+      "sha256": "fe7f6455ff27e3f476802d2594d39ae43547ab714396da2203f2567f9674a229",
+      "bytes": 9932,
+      "path": "method/tools/long-run-supervisor-074/src/diagnostic_authority_registry.rs"
+    },
+    {
+      "sha256": "19979be54dcfc6bac2eb89c66c7c002fda0099d53588a77814848a7db5621f4c",
+      "bytes": 14256,
+      "path": "method/tools/long-run-supervisor-074/src/diagnostic_signed_authority.rs"
+    },
+    {
+      "sha256": "fc32df04715eba5894ac8444374c4e9872eeada087cb5a34db0e156a98d2f8e4",
+      "bytes": 9370,
+      "path": "method/tools/long-run-supervisor-074/src/diagnostic_worker_kernel_binding.rs"
+    },
+    {
+      "sha256": "e8cc9c33a55c3a1c876ebfea1bffaf81f08bc1db92a919c9e863eaa815abddbf",
+      "bytes": 16964,
+      "path": "method/tools/long-run-supervisor-074/src/diagnostic_worker_trust_input.rs"
+    },
+    {
+      "sha256": "c6c6c7e7aa8158959fb70a37b3443c1ecd7649d10aab9e2da0778b7da0770b14",
+      "bytes": 16787,
+      "path": "method/tools/long-run-supervisor-074/tests/support/authority_owners_controls.rs"
+    },
+    {
+      "sha256": "680bfeb53f51f2bf440f536f75e95f652c96b56090e902d281587a4d88b6e7a0",
+      "bytes": 14957,
+      "path": "method/tools/offline-authority-scratch-owner-audit-074/audit_owners.py"
+    },
+    {
+      "sha256": "cb55690b3bd2febcbf18dfa65caab808c3185fd6b9022e3f5f6d7d6fee043c20",
+      "bytes": 3812,
+      "path": "method/tools/offline-authority-scratch-owner-audit-074/check.ps1"
+    },
+    {
+      "sha256": "4246ccf16e007e211b3e99a88d7f7e11db1d587ecb738c548e1e8178353b9717",
+      "bytes": 7140,
+      "path": "method/tools/offline-authority-scratch-owner-audit-074/test_audit_owners.py"
+    },
+    {
+      "sha256": "1cc41267d824812416bfb489e9a97a09c8ea40f0c3266b9d557e1965577a54d2",
+      "bytes": 1000,
+      "path": "summary.md"
+    }
+  ]
+}

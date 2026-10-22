@@ -1,0 +1,13 @@
+test_changed_case_counts_capacity_flags_seed_and_error_contract_refuse (__main__.ReviewBootTests.test_changed_case_counts_capacity_flags_seed_and_error_contract_refuse) ... ok
+test_exact_first_windows_cohort_and_fourteen_old_seals (__main__.ReviewBootTests.test_exact_first_windows_cohort_and_fourteen_old_seals) ... ok
+test_exclusive_publication_does_not_replace_a_first_outcome (__main__.ReviewBootTests.test_exclusive_publication_does_not_replace_a_first_outcome) ... ok
+test_missing_duplicate_unknown_and_reordered_rows_refuse (__main__.ReviewBootTests.test_missing_duplicate_unknown_and_reordered_rows_refuse) ... ok
+test_original_windows_refusals_and_gates_preserved (__main__.ReviewBootTests.test_original_windows_refusals_and_gates_preserved) ... ok
+test_probe_source_drift_refuses_except_line_endings (__main__.ReviewBootTests.test_probe_source_drift_refuses_except_line_endings) ... ok
+test_same_corpus_totals_and_fixed_shape_subset_not_new_operations (__main__.ReviewBootTests.test_same_corpus_totals_and_fixed_shape_subset_not_new_operations) ... ok
+test_separate_output_and_links_refuse (__main__.ReviewBootTests.test_separate_output_and_links_refuse) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 1.082s
+
+OK

@@ -1,0 +1,1164 @@
+{
+  "audit": {
+    "alternatives": [
+      {
+        "disposition": "model-only; cannot embed self borrow or outlive append",
+        "placement": "borrowed-sidecar"
+      },
+      {
+        "disposition": "next isolated model candidate; measure layout and clear all caches on journal refusal",
+        "placement": "owned-per-leaf"
+      },
+      {
+        "disposition": "new allocations each round; does not inherit cross-round savings",
+        "placement": "per-round"
+      },
+      {
+        "disposition": "different ownership/capacity hypothesis; not validated by this prototype",
+        "placement": "shared-rebound"
+      }
+    ],
+    "budget_rows": [
+      {
+        "cache_plus_standalone_wrappers": 0,
+        "generations": 0,
+        "leaves": 0,
+        "standalone_wrapper_bytes": 0,
+        "successful_cache_capacity_bound": 0
+      },
+      {
+        "cache_plus_standalone_wrappers": 2177,
+        "generations": 1,
+        "leaves": 2,
+        "standalone_wrapper_bytes": 64,
+        "successful_cache_capacity_bound": 2113
+      },
+      {
+        "cache_plus_standalone_wrappers": 4354,
+        "generations": 2,
+        "leaves": 4,
+        "standalone_wrapper_bytes": 128,
+        "successful_cache_capacity_bound": 4226
+      },
+      {
+        "cache_plus_standalone_wrappers": 6531,
+        "generations": 3,
+        "leaves": 6,
+        "standalone_wrapper_bytes": 192,
+        "successful_cache_capacity_bound": 6339
+      },
+      {
+        "cache_plus_standalone_wrappers": 8708,
+        "generations": 4,
+        "leaves": 8,
+        "standalone_wrapper_bytes": 256,
+        "successful_cache_capacity_bound": 8452
+      },
+      {
+        "cache_plus_standalone_wrappers": 10885,
+        "generations": 5,
+        "leaves": 10,
+        "standalone_wrapper_bytes": 320,
+        "successful_cache_capacity_bound": 10565
+      },
+      {
+        "cache_plus_standalone_wrappers": 13062,
+        "generations": 6,
+        "leaves": 12,
+        "standalone_wrapper_bytes": 384,
+        "successful_cache_capacity_bound": 12678
+      },
+      {
+        "cache_plus_standalone_wrappers": 15239,
+        "generations": 7,
+        "leaves": 14,
+        "standalone_wrapper_bytes": 448,
+        "successful_cache_capacity_bound": 14791
+      },
+      {
+        "cache_plus_standalone_wrappers": 17416,
+        "generations": 8,
+        "leaves": 16,
+        "standalone_wrapper_bytes": 512,
+        "successful_cache_capacity_bound": 16904
+      },
+      {
+        "cache_plus_standalone_wrappers": 19593,
+        "generations": 9,
+        "leaves": 18,
+        "standalone_wrapper_bytes": 576,
+        "successful_cache_capacity_bound": 19017
+      },
+      {
+        "cache_plus_standalone_wrappers": 21770,
+        "generations": 10,
+        "leaves": 20,
+        "standalone_wrapper_bytes": 640,
+        "successful_cache_capacity_bound": 21130
+      },
+      {
+        "cache_plus_standalone_wrappers": 23947,
+        "generations": 11,
+        "leaves": 22,
+        "standalone_wrapper_bytes": 704,
+        "successful_cache_capacity_bound": 23243
+      },
+      {
+        "cache_plus_standalone_wrappers": 26124,
+        "generations": 12,
+        "leaves": 24,
+        "standalone_wrapper_bytes": 768,
+        "successful_cache_capacity_bound": 25356
+      },
+      {
+        "cache_plus_standalone_wrappers": 28301,
+        "generations": 13,
+        "leaves": 26,
+        "standalone_wrapper_bytes": 832,
+        "successful_cache_capacity_bound": 27469
+      },
+      {
+        "cache_plus_standalone_wrappers": 30478,
+        "generations": 14,
+        "leaves": 28,
+        "standalone_wrapper_bytes": 896,
+        "successful_cache_capacity_bound": 29582
+      },
+      {
+        "cache_plus_standalone_wrappers": 32655,
+        "generations": 15,
+        "leaves": 30,
+        "standalone_wrapper_bytes": 960,
+        "successful_cache_capacity_bound": 31695
+      },
+      {
+        "cache_plus_standalone_wrappers": 34832,
+        "generations": 16,
+        "leaves": 32,
+        "standalone_wrapper_bytes": 1024,
+        "successful_cache_capacity_bound": 33808
+      },
+      {
+        "cache_plus_standalone_wrappers": 37009,
+        "generations": 17,
+        "leaves": 34,
+        "standalone_wrapper_bytes": 1088,
+        "successful_cache_capacity_bound": 35921
+      },
+      {
+        "cache_plus_standalone_wrappers": 39186,
+        "generations": 18,
+        "leaves": 36,
+        "standalone_wrapper_bytes": 1152,
+        "successful_cache_capacity_bound": 38034
+      },
+      {
+        "cache_plus_standalone_wrappers": 41363,
+        "generations": 19,
+        "leaves": 38,
+        "standalone_wrapper_bytes": 1216,
+        "successful_cache_capacity_bound": 40147
+      },
+      {
+        "cache_plus_standalone_wrappers": 43540,
+        "generations": 20,
+        "leaves": 40,
+        "standalone_wrapper_bytes": 1280,
+        "successful_cache_capacity_bound": 42260
+      },
+      {
+        "cache_plus_standalone_wrappers": 45717,
+        "generations": 21,
+        "leaves": 42,
+        "standalone_wrapper_bytes": 1344,
+        "successful_cache_capacity_bound": 44373
+      },
+      {
+        "cache_plus_standalone_wrappers": 47894,
+        "generations": 22,
+        "leaves": 44,
+        "standalone_wrapper_bytes": 1408,
+        "successful_cache_capacity_bound": 46486
+      },
+      {
+        "cache_plus_standalone_wrappers": 50071,
+        "generations": 23,
+        "leaves": 46,
+        "standalone_wrapper_bytes": 1472,
+        "successful_cache_capacity_bound": 48599
+      },
+      {
+        "cache_plus_standalone_wrappers": 52248,
+        "generations": 24,
+        "leaves": 48,
+        "standalone_wrapper_bytes": 1536,
+        "successful_cache_capacity_bound": 50712
+      },
+      {
+        "cache_plus_standalone_wrappers": 54425,
+        "generations": 25,
+        "leaves": 50,
+        "standalone_wrapper_bytes": 1600,
+        "successful_cache_capacity_bound": 52825
+      },
+      {
+        "cache_plus_standalone_wrappers": 56602,
+        "generations": 26,
+        "leaves": 52,
+        "standalone_wrapper_bytes": 1664,
+        "successful_cache_capacity_bound": 54938
+      },
+      {
+        "cache_plus_standalone_wrappers": 58779,
+        "generations": 27,
+        "leaves": 54,
+        "standalone_wrapper_bytes": 1728,
+        "successful_cache_capacity_bound": 57051
+      },
+      {
+        "cache_plus_standalone_wrappers": 60956,
+        "generations": 28,
+        "leaves": 56,
+        "standalone_wrapper_bytes": 1792,
+        "successful_cache_capacity_bound": 59164
+      },
+      {
+        "cache_plus_standalone_wrappers": 63133,
+        "generations": 29,
+        "leaves": 58,
+        "standalone_wrapper_bytes": 1856,
+        "successful_cache_capacity_bound": 61277
+      },
+      {
+        "cache_plus_standalone_wrappers": 65310,
+        "generations": 30,
+        "leaves": 60,
+        "standalone_wrapper_bytes": 1920,
+        "successful_cache_capacity_bound": 63390
+      },
+      {
+        "cache_plus_standalone_wrappers": 67487,
+        "generations": 31,
+        "leaves": 62,
+        "standalone_wrapper_bytes": 1984,
+        "successful_cache_capacity_bound": 65503
+      },
+      {
+        "cache_plus_standalone_wrappers": 69664,
+        "generations": 32,
+        "leaves": 64,
+        "standalone_wrapper_bytes": 2048,
+        "successful_cache_capacity_bound": 67616
+      },
+      {
+        "cache_plus_standalone_wrappers": 71841,
+        "generations": 33,
+        "leaves": 66,
+        "standalone_wrapper_bytes": 2112,
+        "successful_cache_capacity_bound": 69729
+      },
+      {
+        "cache_plus_standalone_wrappers": 74018,
+        "generations": 34,
+        "leaves": 68,
+        "standalone_wrapper_bytes": 2176,
+        "successful_cache_capacity_bound": 71842
+      },
+      {
+        "cache_plus_standalone_wrappers": 76195,
+        "generations": 35,
+        "leaves": 70,
+        "standalone_wrapper_bytes": 2240,
+        "successful_cache_capacity_bound": 73955
+      },
+      {
+        "cache_plus_standalone_wrappers": 78372,
+        "generations": 36,
+        "leaves": 72,
+        "standalone_wrapper_bytes": 2304,
+        "successful_cache_capacity_bound": 76068
+      },
+      {
+        "cache_plus_standalone_wrappers": 80549,
+        "generations": 37,
+        "leaves": 74,
+        "standalone_wrapper_bytes": 2368,
+        "successful_cache_capacity_bound": 78181
+      },
+      {
+        "cache_plus_standalone_wrappers": 82726,
+        "generations": 38,
+        "leaves": 76,
+        "standalone_wrapper_bytes": 2432,
+        "successful_cache_capacity_bound": 80294
+      },
+      {
+        "cache_plus_standalone_wrappers": 84903,
+        "generations": 39,
+        "leaves": 78,
+        "standalone_wrapper_bytes": 2496,
+        "successful_cache_capacity_bound": 82407
+      },
+      {
+        "cache_plus_standalone_wrappers": 87080,
+        "generations": 40,
+        "leaves": 80,
+        "standalone_wrapper_bytes": 2560,
+        "successful_cache_capacity_bound": 84520
+      },
+      {
+        "cache_plus_standalone_wrappers": 89257,
+        "generations": 41,
+        "leaves": 82,
+        "standalone_wrapper_bytes": 2624,
+        "successful_cache_capacity_bound": 86633
+      },
+      {
+        "cache_plus_standalone_wrappers": 91434,
+        "generations": 42,
+        "leaves": 84,
+        "standalone_wrapper_bytes": 2688,
+        "successful_cache_capacity_bound": 88746
+      },
+      {
+        "cache_plus_standalone_wrappers": 93611,
+        "generations": 43,
+        "leaves": 86,
+        "standalone_wrapper_bytes": 2752,
+        "successful_cache_capacity_bound": 90859
+      },
+      {
+        "cache_plus_standalone_wrappers": 95788,
+        "generations": 44,
+        "leaves": 88,
+        "standalone_wrapper_bytes": 2816,
+        "successful_cache_capacity_bound": 92972
+      },
+      {
+        "cache_plus_standalone_wrappers": 97965,
+        "generations": 45,
+        "leaves": 90,
+        "standalone_wrapper_bytes": 2880,
+        "successful_cache_capacity_bound": 95085
+      },
+      {
+        "cache_plus_standalone_wrappers": 100142,
+        "generations": 46,
+        "leaves": 92,
+        "standalone_wrapper_bytes": 2944,
+        "successful_cache_capacity_bound": 97198
+      },
+      {
+        "cache_plus_standalone_wrappers": 102319,
+        "generations": 47,
+        "leaves": 94,
+        "standalone_wrapper_bytes": 3008,
+        "successful_cache_capacity_bound": 99311
+      },
+      {
+        "cache_plus_standalone_wrappers": 104496,
+        "generations": 48,
+        "leaves": 96,
+        "standalone_wrapper_bytes": 3072,
+        "successful_cache_capacity_bound": 101424
+      },
+      {
+        "cache_plus_standalone_wrappers": 106673,
+        "generations": 49,
+        "leaves": 98,
+        "standalone_wrapper_bytes": 3136,
+        "successful_cache_capacity_bound": 103537
+      },
+      {
+        "cache_plus_standalone_wrappers": 108850,
+        "generations": 50,
+        "leaves": 100,
+        "standalone_wrapper_bytes": 3200,
+        "successful_cache_capacity_bound": 105650
+      },
+      {
+        "cache_plus_standalone_wrappers": 111027,
+        "generations": 51,
+        "leaves": 102,
+        "standalone_wrapper_bytes": 3264,
+        "successful_cache_capacity_bound": 107763
+      },
+      {
+        "cache_plus_standalone_wrappers": 113204,
+        "generations": 52,
+        "leaves": 104,
+        "standalone_wrapper_bytes": 3328,
+        "successful_cache_capacity_bound": 109876
+      },
+      {
+        "cache_plus_standalone_wrappers": 115381,
+        "generations": 53,
+        "leaves": 106,
+        "standalone_wrapper_bytes": 3392,
+        "successful_cache_capacity_bound": 111989
+      },
+      {
+        "cache_plus_standalone_wrappers": 117558,
+        "generations": 54,
+        "leaves": 108,
+        "standalone_wrapper_bytes": 3456,
+        "successful_cache_capacity_bound": 114102
+      },
+      {
+        "cache_plus_standalone_wrappers": 119735,
+        "generations": 55,
+        "leaves": 110,
+        "standalone_wrapper_bytes": 3520,
+        "successful_cache_capacity_bound": 116215
+      },
+      {
+        "cache_plus_standalone_wrappers": 121912,
+        "generations": 56,
+        "leaves": 112,
+        "standalone_wrapper_bytes": 3584,
+        "successful_cache_capacity_bound": 118328
+      },
+      {
+        "cache_plus_standalone_wrappers": 124089,
+        "generations": 57,
+        "leaves": 114,
+        "standalone_wrapper_bytes": 3648,
+        "successful_cache_capacity_bound": 120441
+      },
+      {
+        "cache_plus_standalone_wrappers": 126266,
+        "generations": 58,
+        "leaves": 116,
+        "standalone_wrapper_bytes": 3712,
+        "successful_cache_capacity_bound": 122554
+      },
+      {
+        "cache_plus_standalone_wrappers": 128443,
+        "generations": 59,
+        "leaves": 118,
+        "standalone_wrapper_bytes": 3776,
+        "successful_cache_capacity_bound": 124667
+      },
+      {
+        "cache_plus_standalone_wrappers": 130620,
+        "generations": 60,
+        "leaves": 120,
+        "standalone_wrapper_bytes": 3840,
+        "successful_cache_capacity_bound": 126780
+      },
+      {
+        "cache_plus_standalone_wrappers": 132797,
+        "generations": 61,
+        "leaves": 122,
+        "standalone_wrapper_bytes": 3904,
+        "successful_cache_capacity_bound": 128893
+      },
+      {
+        "cache_plus_standalone_wrappers": 134974,
+        "generations": 62,
+        "leaves": 124,
+        "standalone_wrapper_bytes": 3968,
+        "successful_cache_capacity_bound": 131006
+      },
+      {
+        "cache_plus_standalone_wrappers": 137151,
+        "generations": 63,
+        "leaves": 126,
+        "standalone_wrapper_bytes": 4032,
+        "successful_cache_capacity_bound": 133119
+      },
+      {
+        "cache_plus_standalone_wrappers": 139328,
+        "generations": 64,
+        "leaves": 128,
+        "standalone_wrapper_bytes": 4096,
+        "successful_cache_capacity_bound": 135232
+      },
+      {
+        "cache_plus_standalone_wrappers": 141505,
+        "generations": 65,
+        "leaves": 130,
+        "standalone_wrapper_bytes": 4160,
+        "successful_cache_capacity_bound": 137345
+      },
+      {
+        "cache_plus_standalone_wrappers": 143682,
+        "generations": 66,
+        "leaves": 132,
+        "standalone_wrapper_bytes": 4224,
+        "successful_cache_capacity_bound": 139458
+      },
+      {
+        "cache_plus_standalone_wrappers": 145859,
+        "generations": 67,
+        "leaves": 134,
+        "standalone_wrapper_bytes": 4288,
+        "successful_cache_capacity_bound": 141571
+      },
+      {
+        "cache_plus_standalone_wrappers": 148036,
+        "generations": 68,
+        "leaves": 136,
+        "standalone_wrapper_bytes": 4352,
+        "successful_cache_capacity_bound": 143684
+      },
+      {
+        "cache_plus_standalone_wrappers": 150213,
+        "generations": 69,
+        "leaves": 138,
+        "standalone_wrapper_bytes": 4416,
+        "successful_cache_capacity_bound": 145797
+      },
+      {
+        "cache_plus_standalone_wrappers": 152390,
+        "generations": 70,
+        "leaves": 140,
+        "standalone_wrapper_bytes": 4480,
+        "successful_cache_capacity_bound": 147910
+      },
+      {
+        "cache_plus_standalone_wrappers": 154567,
+        "generations": 71,
+        "leaves": 142,
+        "standalone_wrapper_bytes": 4544,
+        "successful_cache_capacity_bound": 150023
+      },
+      {
+        "cache_plus_standalone_wrappers": 156744,
+        "generations": 72,
+        "leaves": 144,
+        "standalone_wrapper_bytes": 4608,
+        "successful_cache_capacity_bound": 152136
+      },
+      {
+        "cache_plus_standalone_wrappers": 158921,
+        "generations": 73,
+        "leaves": 146,
+        "standalone_wrapper_bytes": 4672,
+        "successful_cache_capacity_bound": 154249
+      },
+      {
+        "cache_plus_standalone_wrappers": 161098,
+        "generations": 74,
+        "leaves": 148,
+        "standalone_wrapper_bytes": 4736,
+        "successful_cache_capacity_bound": 156362
+      },
+      {
+        "cache_plus_standalone_wrappers": 163275,
+        "generations": 75,
+        "leaves": 150,
+        "standalone_wrapper_bytes": 4800,
+        "successful_cache_capacity_bound": 158475
+      },
+      {
+        "cache_plus_standalone_wrappers": 165452,
+        "generations": 76,
+        "leaves": 152,
+        "standalone_wrapper_bytes": 4864,
+        "successful_cache_capacity_bound": 160588
+      },
+      {
+        "cache_plus_standalone_wrappers": 167629,
+        "generations": 77,
+        "leaves": 154,
+        "standalone_wrapper_bytes": 4928,
+        "successful_cache_capacity_bound": 162701
+      },
+      {
+        "cache_plus_standalone_wrappers": 169806,
+        "generations": 78,
+        "leaves": 156,
+        "standalone_wrapper_bytes": 4992,
+        "successful_cache_capacity_bound": 164814
+      },
+      {
+        "cache_plus_standalone_wrappers": 171983,
+        "generations": 79,
+        "leaves": 158,
+        "standalone_wrapper_bytes": 5056,
+        "successful_cache_capacity_bound": 166927
+      },
+      {
+        "cache_plus_standalone_wrappers": 174160,
+        "generations": 80,
+        "leaves": 160,
+        "standalone_wrapper_bytes": 5120,
+        "successful_cache_capacity_bound": 169040
+      },
+      {
+        "cache_plus_standalone_wrappers": 176337,
+        "generations": 81,
+        "leaves": 162,
+        "standalone_wrapper_bytes": 5184,
+        "successful_cache_capacity_bound": 171153
+      },
+      {
+        "cache_plus_standalone_wrappers": 178514,
+        "generations": 82,
+        "leaves": 164,
+        "standalone_wrapper_bytes": 5248,
+        "successful_cache_capacity_bound": 173266
+      },
+      {
+        "cache_plus_standalone_wrappers": 180691,
+        "generations": 83,
+        "leaves": 166,
+        "standalone_wrapper_bytes": 5312,
+        "successful_cache_capacity_bound": 175379
+      },
+      {
+        "cache_plus_standalone_wrappers": 182868,
+        "generations": 84,
+        "leaves": 168,
+        "standalone_wrapper_bytes": 5376,
+        "successful_cache_capacity_bound": 177492
+      },
+      {
+        "cache_plus_standalone_wrappers": 185045,
+        "generations": 85,
+        "leaves": 170,
+        "standalone_wrapper_bytes": 5440,
+        "successful_cache_capacity_bound": 179605
+      },
+      {
+        "cache_plus_standalone_wrappers": 187222,
+        "generations": 86,
+        "leaves": 172,
+        "standalone_wrapper_bytes": 5504,
+        "successful_cache_capacity_bound": 181718
+      },
+      {
+        "cache_plus_standalone_wrappers": 189399,
+        "generations": 87,
+        "leaves": 174,
+        "standalone_wrapper_bytes": 5568,
+        "successful_cache_capacity_bound": 183831
+      },
+      {
+        "cache_plus_standalone_wrappers": 191576,
+        "generations": 88,
+        "leaves": 176,
+        "standalone_wrapper_bytes": 5632,
+        "successful_cache_capacity_bound": 185944
+      },
+      {
+        "cache_plus_standalone_wrappers": 193753,
+        "generations": 89,
+        "leaves": 178,
+        "standalone_wrapper_bytes": 5696,
+        "successful_cache_capacity_bound": 188057
+      },
+      {
+        "cache_plus_standalone_wrappers": 195930,
+        "generations": 90,
+        "leaves": 180,
+        "standalone_wrapper_bytes": 5760,
+        "successful_cache_capacity_bound": 190170
+      },
+      {
+        "cache_plus_standalone_wrappers": 198107,
+        "generations": 91,
+        "leaves": 182,
+        "standalone_wrapper_bytes": 5824,
+        "successful_cache_capacity_bound": 192283
+      },
+      {
+        "cache_plus_standalone_wrappers": 200284,
+        "generations": 92,
+        "leaves": 184,
+        "standalone_wrapper_bytes": 5888,
+        "successful_cache_capacity_bound": 194396
+      },
+      {
+        "cache_plus_standalone_wrappers": 202461,
+        "generations": 93,
+        "leaves": 186,
+        "standalone_wrapper_bytes": 5952,
+        "successful_cache_capacity_bound": 196509
+      },
+      {
+        "cache_plus_standalone_wrappers": 204638,
+        "generations": 94,
+        "leaves": 188,
+        "standalone_wrapper_bytes": 6016,
+        "successful_cache_capacity_bound": 198622
+      },
+      {
+        "cache_plus_standalone_wrappers": 206815,
+        "generations": 95,
+        "leaves": 190,
+        "standalone_wrapper_bytes": 6080,
+        "successful_cache_capacity_bound": 200735
+      },
+      {
+        "cache_plus_standalone_wrappers": 208992,
+        "generations": 96,
+        "leaves": 192,
+        "standalone_wrapper_bytes": 6144,
+        "successful_cache_capacity_bound": 202848
+      },
+      {
+        "cache_plus_standalone_wrappers": 211169,
+        "generations": 97,
+        "leaves": 194,
+        "standalone_wrapper_bytes": 6208,
+        "successful_cache_capacity_bound": 204961
+      },
+      {
+        "cache_plus_standalone_wrappers": 213346,
+        "generations": 98,
+        "leaves": 196,
+        "standalone_wrapper_bytes": 6272,
+        "successful_cache_capacity_bound": 207074
+      },
+      {
+        "cache_plus_standalone_wrappers": 215523,
+        "generations": 99,
+        "leaves": 198,
+        "standalone_wrapper_bytes": 6336,
+        "successful_cache_capacity_bound": 209187
+      },
+      {
+        "cache_plus_standalone_wrappers": 217700,
+        "generations": 100,
+        "leaves": 200,
+        "standalone_wrapper_bytes": 6400,
+        "successful_cache_capacity_bound": 211300
+      },
+      {
+        "cache_plus_standalone_wrappers": 219877,
+        "generations": 101,
+        "leaves": 202,
+        "standalone_wrapper_bytes": 6464,
+        "successful_cache_capacity_bound": 213413
+      },
+      {
+        "cache_plus_standalone_wrappers": 222054,
+        "generations": 102,
+        "leaves": 204,
+        "standalone_wrapper_bytes": 6528,
+        "successful_cache_capacity_bound": 215526
+      },
+      {
+        "cache_plus_standalone_wrappers": 224231,
+        "generations": 103,
+        "leaves": 206,
+        "standalone_wrapper_bytes": 6592,
+        "successful_cache_capacity_bound": 217639
+      },
+      {
+        "cache_plus_standalone_wrappers": 226408,
+        "generations": 104,
+        "leaves": 208,
+        "standalone_wrapper_bytes": 6656,
+        "successful_cache_capacity_bound": 219752
+      },
+      {
+        "cache_plus_standalone_wrappers": 228585,
+        "generations": 105,
+        "leaves": 210,
+        "standalone_wrapper_bytes": 6720,
+        "successful_cache_capacity_bound": 221865
+      },
+      {
+        "cache_plus_standalone_wrappers": 230762,
+        "generations": 106,
+        "leaves": 212,
+        "standalone_wrapper_bytes": 6784,
+        "successful_cache_capacity_bound": 223978
+      },
+      {
+        "cache_plus_standalone_wrappers": 232939,
+        "generations": 107,
+        "leaves": 214,
+        "standalone_wrapper_bytes": 6848,
+        "successful_cache_capacity_bound": 226091
+      },
+      {
+        "cache_plus_standalone_wrappers": 235116,
+        "generations": 108,
+        "leaves": 216,
+        "standalone_wrapper_bytes": 6912,
+        "successful_cache_capacity_bound": 228204
+      },
+      {
+        "cache_plus_standalone_wrappers": 237293,
+        "generations": 109,
+        "leaves": 218,
+        "standalone_wrapper_bytes": 6976,
+        "successful_cache_capacity_bound": 230317
+      },
+      {
+        "cache_plus_standalone_wrappers": 239470,
+        "generations": 110,
+        "leaves": 220,
+        "standalone_wrapper_bytes": 7040,
+        "successful_cache_capacity_bound": 232430
+      },
+      {
+        "cache_plus_standalone_wrappers": 241647,
+        "generations": 111,
+        "leaves": 222,
+        "standalone_wrapper_bytes": 7104,
+        "successful_cache_capacity_bound": 234543
+      },
+      {
+        "cache_plus_standalone_wrappers": 243824,
+        "generations": 112,
+        "leaves": 224,
+        "standalone_wrapper_bytes": 7168,
+        "successful_cache_capacity_bound": 236656
+      },
+      {
+        "cache_plus_standalone_wrappers": 246001,
+        "generations": 113,
+        "leaves": 226,
+        "standalone_wrapper_bytes": 7232,
+        "successful_cache_capacity_bound": 238769
+      },
+      {
+        "cache_plus_standalone_wrappers": 248178,
+        "generations": 114,
+        "leaves": 228,
+        "standalone_wrapper_bytes": 7296,
+        "successful_cache_capacity_bound": 240882
+      },
+      {
+        "cache_plus_standalone_wrappers": 250355,
+        "generations": 115,
+        "leaves": 230,
+        "standalone_wrapper_bytes": 7360,
+        "successful_cache_capacity_bound": 242995
+      },
+      {
+        "cache_plus_standalone_wrappers": 252532,
+        "generations": 116,
+        "leaves": 232,
+        "standalone_wrapper_bytes": 7424,
+        "successful_cache_capacity_bound": 245108
+      },
+      {
+        "cache_plus_standalone_wrappers": 254709,
+        "generations": 117,
+        "leaves": 234,
+        "standalone_wrapper_bytes": 7488,
+        "successful_cache_capacity_bound": 247221
+      },
+      {
+        "cache_plus_standalone_wrappers": 256886,
+        "generations": 118,
+        "leaves": 236,
+        "standalone_wrapper_bytes": 7552,
+        "successful_cache_capacity_bound": 249334
+      },
+      {
+        "cache_plus_standalone_wrappers": 259063,
+        "generations": 119,
+        "leaves": 238,
+        "standalone_wrapper_bytes": 7616,
+        "successful_cache_capacity_bound": 251447
+      },
+      {
+        "cache_plus_standalone_wrappers": 261240,
+        "generations": 120,
+        "leaves": 240,
+        "standalone_wrapper_bytes": 7680,
+        "successful_cache_capacity_bound": 253560
+      },
+      {
+        "cache_plus_standalone_wrappers": 263417,
+        "generations": 121,
+        "leaves": 242,
+        "standalone_wrapper_bytes": 7744,
+        "successful_cache_capacity_bound": 255673
+      },
+      {
+        "cache_plus_standalone_wrappers": 265594,
+        "generations": 122,
+        "leaves": 244,
+        "standalone_wrapper_bytes": 7808,
+        "successful_cache_capacity_bound": 257786
+      },
+      {
+        "cache_plus_standalone_wrappers": 267771,
+        "generations": 123,
+        "leaves": 246,
+        "standalone_wrapper_bytes": 7872,
+        "successful_cache_capacity_bound": 259899
+      },
+      {
+        "cache_plus_standalone_wrappers": 269948,
+        "generations": 124,
+        "leaves": 248,
+        "standalone_wrapper_bytes": 7936,
+        "successful_cache_capacity_bound": 262012
+      },
+      {
+        "cache_plus_standalone_wrappers": 272125,
+        "generations": 125,
+        "leaves": 250,
+        "standalone_wrapper_bytes": 8000,
+        "successful_cache_capacity_bound": 264125
+      },
+      {
+        "cache_plus_standalone_wrappers": 274302,
+        "generations": 126,
+        "leaves": 252,
+        "standalone_wrapper_bytes": 8064,
+        "successful_cache_capacity_bound": 266238
+      },
+      {
+        "cache_plus_standalone_wrappers": 276479,
+        "generations": 127,
+        "leaves": 254,
+        "standalone_wrapper_bytes": 8128,
+        "successful_cache_capacity_bound": 268351
+      },
+      {
+        "cache_plus_standalone_wrappers": 278656,
+        "generations": 128,
+        "leaves": 256,
+        "standalone_wrapper_bytes": 8192,
+        "successful_cache_capacity_bound": 270464
+      }
+    ],
+    "budget_scope": "proposed successful cached capacity plus measured standalone wrappers per journal, not actual runtime memory or transient peak",
+    "cardinality": {
+      "entries_per_journal_max": 128,
+      "exclusive_borrow_not_process_cardinality": true,
+      "leaves_per_entry": 2,
+      "leaves_per_journal_max": 256,
+      "process_wide_registry_limit": null
+    },
+    "fixed_budgets": {
+      "generations": 128,
+      "marker": 65,
+      "record": 2048
+    },
+    "lifecycle": {
+      "append_retains_previous_entries": true,
+      "directory_brackets": 2,
+      "fixed_wraps_shared_engine": true,
+      "higher_layers_borrow_original_journal": true,
+      "inventory_brackets": 2,
+      "journal_failed_assignment_sites": 5,
+      "open_rebuilds_all_entries": true,
+      "original_thread_affinity": true,
+      "refusal_retains_original_entries": true
+    },
+    "mutable_integration": "owned storage would require a separate mutable-receiver/split-borrow candidate, not interior-mutability by default",
+    "original_expected_bytes_files_stamps": "keep independently owned; no replacement or eviction",
+    "refusal_gaps": [
+      "directory-or-inventory-before-first-leaf",
+      "record-before-marker",
+      "marker-after-record",
+      "directory-or-inventory-after-last-leaf",
+      "inspect-binding",
+      "change-transition",
+      "publish-error",
+      "external-latch"
+    ],
+    "self_borrowing_sidecar": "not directly embeddable in its own Leaf; append/Vec relocation forbids retaining unpinned borrowed sidecars",
+    "witnesses": [
+      {
+        "expression": "    entries: Vec<Entry>,",
+        "line": 292,
+        "path": "tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs"
+      },
+      {
+        "expression": "            for entry in &self.entries {",
+        "line": 389,
+        "path": "tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs"
+      },
+      {
+        "expression": "            self.entries.push(entry);",
+        "line": 511,
+        "path": "tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs"
+      },
+      {
+        "expression": "    pub(crate) fn latch_refusal(&mut self) {",
+        "line": 368,
+        "path": "tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs"
+      },
+      {
+        "expression": "pub struct FixedAuthorityRegistry {\n    journal: FixtureAuthorityRegistry,",
+        "line": 125,
+        "path": "tools/long-run-supervisor-074/src/diagnostic_authority_fixed.rs"
+      },
+      {
+        "expression": "\n    authority: &'a mut FixedAuthorityRegistry,",
+        "line": 423,
+        "path": "tools/long-run-supervisor-074/src/diagnostic_worker_trust_input.rs"
+      },
+      {
+        "expression": "enum Journal<'authority> {",
+        "line": 60,
+        "path": "tools/long-run-supervisor-074/src/diagnostic_signed_authority.rs"
+      },
+      {
+        "expression": "        authority: &'a mut FixedAuthorityRegistry,",
+        "line": 32,
+        "path": "tools/long-run-supervisor-074/src/diagnostic_worker_kernel_binding.rs"
+      },
+      {
+        "expression": "    owner: &'a Leaf,",
+        "line": 5,
+        "path": "tools/authority-scratch-reuse-074/candidate.rs"
+      },
+      {
+        "expression": "            self.buffer = None;",
+        "line": 30,
+        "path": "tools/authority-scratch-reuse-074/candidate.rs"
+      }
+    ]
+  },
+  "clocks_changed": false,
+  "decision": "do-not-integrate-borrowed-prototype; preregister owned-storage journal model with whole-journal eviction",
+  "first_refusals": [
+    {
+      "age_ns": 10042390247,
+      "diagnostic_reason": "expired",
+      "issued_boot": "6a709ad1-c736-45a2-bd6a-351e07f6b8f3",
+      "issued_ns": 463631383166,
+      "now_boot": "6a709ad1-c736-45a2-bd6a-351e07f6b8f3",
+      "now_ns": 473673773413,
+      "site": "window"
+    },
+    {
+      "age_ns": 10010835739,
+      "diagnostic_reason": "expired",
+      "issued_boot": "6a709ad1-c736-45a2-bd6a-351e07f6b8f3",
+      "issued_ns": 476668137622,
+      "now_boot": "6a709ad1-c736-45a2-bd6a-351e07f6b8f3",
+      "now_ns": 486678973361,
+      "site": "window"
+    }
+  ],
+  "full_sigkill_matrix": false,
+  "input_members_verified": 1076,
+  "input_packets": [
+    {
+      "inventory_sha256": "0c385fbfe209fad1903aa2c0e620817c458f413eec8bd36fa32be5c01fbb4109",
+      "members": 65,
+      "packet": "held-material-live-20261021"
+    },
+    {
+      "inventory_sha256": "84c2d0a10e1d2d66b4dc76e1c041b9920d90d85621461bc3e83102569a6e1a2f",
+      "members": 18,
+      "packet": "held-material-round-attribution-20261021"
+    },
+    {
+      "inventory_sha256": "dc7af6cd78dfc1b69c7443078a8c6e2edc4504e294f74d30df93e085f8471daa",
+      "members": 51,
+      "packet": "pidfd-info-path-20261021"
+    },
+    {
+      "inventory_sha256": "ae7db79c3e579b7ad9f1939d2571aab27452b62f81c89b46b98340381f4b91c6",
+      "members": 52,
+      "packet": "projection-groups-20261021"
+    },
+    {
+      "inventory_sha256": "d66631eec23dc969f372d73c2bb83519058214383023564ec269ec542f854c4e",
+      "members": 23,
+      "packet": "reserved-leaf-audit-20261021"
+    },
+    {
+      "inventory_sha256": "8db3e4df5579ec7a471886505191825609b5c839732670bece6702ae101afcb6",
+      "members": 40,
+      "packet": "context-document-baseline-20261021"
+    },
+    {
+      "inventory_sha256": "7a65d50c19622754bda58fd389ef03d3f07254465d96f1e16b586cdec94f71f0",
+      "members": 54,
+      "packet": "context-document-stack-20261021"
+    },
+    {
+      "inventory_sha256": "7eacd69041a722fc3d6153ef8be43eff87bf945a8fb6ccdd456acadff1bfcc9d",
+      "members": 45,
+      "packet": "trust-component-baseline-20261021"
+    },
+    {
+      "inventory_sha256": "e588fd8ae6b06a6e808446328b819240c4bb0e35955309e843ddb1078668fd85",
+      "members": 53,
+      "packet": "trust-component-stack-20261021"
+    },
+    {
+      "inventory_sha256": "cc19972e68a264b7b84ac48400f43e1b981d5a0e762ad7a9aee1a67548bf2452",
+      "members": 41,
+      "packet": "collector-peer-baseline-20261021"
+    },
+    {
+      "inventory_sha256": "846b5e7d6d07a47bd03c64be0a207b24b197b39ceddb25e4fc3b06cd049b05ae",
+      "members": 49,
+      "packet": "collector-peer-capacity-20261022"
+    },
+    {
+      "inventory_sha256": "d3aa773d6254d5297d303cfc8ba7a397e06ae8a2d4978e39e29c496062b3fb72",
+      "members": 42,
+      "packet": "reserved-reconciliation-20261022"
+    },
+    {
+      "inventory_sha256": "3194244cb4e45c6f4f611b946afaa6a6a8b3aaf83179457c260d0a9e25f93864",
+      "members": 237,
+      "packet": "custody-preparation-cost-20261020"
+    },
+    {
+      "inventory_sha256": "dbaa727197cf3c08b5206b40050bef4424f8a1e1793191ca661ba5540a81c306",
+      "members": 43,
+      "packet": "proc-document-baseline-20261022"
+    },
+    {
+      "inventory_sha256": "fd07cd7911ab50d51e5a471de9ae5b427ec4076636396fe12861c46433ac6b10",
+      "members": 43,
+      "packet": "sample-boot-baseline-20261022"
+    },
+    {
+      "inventory_sha256": "6bee3c2c239d2e38f9ad06a9098e756edc8dc248b6c48eb51f425b61b36b4ebf",
+      "members": 72,
+      "packet": "sample-boot-inline-20261022"
+    },
+    {
+      "inventory_sha256": "1c5176e4e53eb56d21e66c061a9b580529b4930d32682e4397db4b5d3e0f6591",
+      "members": 27,
+      "packet": "authority-read-audit-20261022"
+    },
+    {
+      "inventory_sha256": "ed0d1199cbd8e105b3b1143173d67911719cf140d797f7c1dd192b20bf76ccc1",
+      "members": 45,
+      "packet": "authority-read-baseline-20261022"
+    },
+    {
+      "inventory_sha256": "b5a90f56551c11378422879ae861a05c8fa3c9bb6448e9dc8c1f255ee3f20159",
+      "members": 76,
+      "packet": "authority-scratch-reuse-20261022"
+    }
+  ],
+  "new_measurements": 0,
+  "original_material_gate_passed": false,
+  "original_owner_profiles": 0,
+  "original_windows_seconds": [
+    300,
+    60,
+    10
+  ],
+  "product": false,
+  "qualification_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "reconnect_proven": false,
+  "runtime_candidate_implemented": false,
+  "schema": "offline-authority-scratch-owner-audit-074-v1",
+  "server": false,
+  "services_changed": false,
+  "source_pins": {
+    "docs/testing/performance/0.74/authority-scratch-owner-audit-plan-20261022.md": "67bf0371be91dd6240663a677906a23d067e7d6a1ef792f0c25fb4b7df629fdd",
+    "tools/authority-scratch-reuse-074/candidate.rs": "858f79d15f14bec48ba5c00fb3f7e959931aa1b9f739a71585b09ec438d47b8f",
+    "tools/long-run-supervisor-074/src/diagnostic_authority_fixed.rs": "fd1e10a038ae046888c8ff3c76303e36e5ed49a46aef2025391f8aa009d554a1",
+    "tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs": "3b3c75f41dbd8a8db1f73d61af3b0c701a666c3ebeed326ae49012ed0c01fb6c",
+    "tools/long-run-supervisor-074/src/diagnostic_authority_registry.rs": "1e936fe855eedad6d0e5dacbd76d534a45cc8df11cd30f06f8e2ed77258bc53e",
+    "tools/long-run-supervisor-074/src/diagnostic_signed_authority.rs": "9fa67be28d71c843f5c10e0de50cc0307dffc8c7e58b69a4b24ca1dc15311990",
+    "tools/long-run-supervisor-074/src/diagnostic_worker_kernel_binding.rs": "153a71dc617694e2b275fecfa1dc09faafb85a57920794a3e7005858bfb732c0",
+    "tools/long-run-supervisor-074/src/diagnostic_worker_trust_input.rs": "891fa2ec885cf3193f575afe4e4b2f4f70a885868d9868b1843a49753d6f8807",
+    "tools/long-run-supervisor-074/tests/support/authority_owners_controls.rs": "c4f04ccb7b3d7bd17e13241b1cefc6657661e5560d1b1ce51f3445e71d5202ce"
+  },
+  "starting_tree": "fa9edb88"
+}

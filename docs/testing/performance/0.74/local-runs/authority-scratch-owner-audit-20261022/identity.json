@@ -1,0 +1,11 @@
+{
+  "schema": "offline-authority-scratch-owner-audit-source-074-v1",
+  "starting_tree": "fa9edb88",
+  "plan_commit": "0098839148d7c03e6e02e861728036f3c9898827",
+  "auditor_source_commit": "de0a079defecebaa368d86946d93b9a22b164d78",
+  "new_measurements": 0,
+  "original_owner_profiles": 0,
+  "runtime_candidate_implemented": false,
+  "server": false,
+  "product": false
+}
