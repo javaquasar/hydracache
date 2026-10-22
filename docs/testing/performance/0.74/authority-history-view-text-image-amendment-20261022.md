@@ -1,7 +1,7 @@
 # Historical source text representation amendment
 
-The first unit setup refused with Qualification drift before running its twelve
-tests. Raw comparison establishes that the Git blob and working qualification
+The first unit setup refused with Qualification drift before running its
+controls. Raw comparison establishes that the Git blob and working qualification
 file are 2979 LF bytes, while git archive emitted 3068 CRLF bytes. The unchanged
 reader requires the original raw LF qualification SHA-256
 11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc.
