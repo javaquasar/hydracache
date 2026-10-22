@@ -1,0 +1,64 @@
+{
+  "failure": null,
+  "representation_changed": false,
+  "product": false,
+  "runtime_candidate_implemented": false,
+  "server": false,
+  "steps": [
+    {
+      "log": "format.log",
+      "exit": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "name": "format"
+    },
+    {
+      "log": "review-controls.log",
+      "exit": 0,
+      "sha256": "e172b42d9204dffce30f2b8a6d4c843693b33e48512a9ae054dcb63552de040e",
+      "name": "review-controls"
+    },
+    {
+      "log": "prior-proc-controls.log",
+      "exit": 0,
+      "sha256": "d1d31caba7c269b65060cff274c079c3cdc99cd0feeb2035d5b8037ba0d965d8",
+      "name": "prior-proc-controls"
+    },
+    {
+      "log": "prior-reconciliation-controls.log",
+      "exit": 0,
+      "sha256": "d4a95f25805eb239af4d4ee18b7fc11e290310f1d05f7d98cfc3b5e5aac93fca",
+      "name": "prior-reconciliation-controls"
+    },
+    {
+      "log": "derived-facts.log",
+      "exit": 0,
+      "sha256": "2884a30239a3190826a2920c8ba0566968f4c7323f59e59a4796486f6fa9af77",
+      "name": "derived-facts"
+    },
+    {
+      "log": "docs.log",
+      "exit": 0,
+      "sha256": "1a9efa2a28128488d3696348a6481b8202089852826ce1a5b647456413172601",
+      "name": "docs"
+    },
+    {
+      "log": "registry.log",
+      "exit": 0,
+      "sha256": "5a3f55a0007829ac72db1b26da615f62c6b14bcc658ffd18d2666437f9d1627d",
+      "name": "registry"
+    },
+    {
+      "log": "performance.log",
+      "exit": 0,
+      "sha256": "4696a33dd2a594e75adfdb1b345b12113edf3c7cd3a6e24d178825bde922b985",
+      "name": "performance"
+    },
+    {
+      "log": "protected-source.log",
+      "exit": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "name": "protected-source"
+    }
+  ],
+  "original_owner_profiles": 0
+}

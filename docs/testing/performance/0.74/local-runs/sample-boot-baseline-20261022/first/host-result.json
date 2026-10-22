@@ -1,0 +1,32 @@
+{
+  "original_owner_profiles": 0,
+  "runtime_candidate_implemented": false,
+  "model_only": true,
+  "ignored_tests_run": false,
+  "cohort": "first",
+  "steps": [
+    {
+      "sha256": "d66ed9b8133c517e55e9842708be38b8e6b1f568a126a926a90738d0815e29c7",
+      "name": "canaries",
+      "log": "host-canaries.log",
+      "exit": 0
+    },
+    {
+      "sha256": "965274871b8bbd116a99d125957868fb21ea31790db9ecae06cf903ceaa613e5",
+      "name": "check",
+      "log": "host-check.log",
+      "exit": 0
+    },
+    {
+      "sha256": "4710b10568a36b3fb54fcfe4dffec1226336437cb1551e356907b528d2c1e1dc",
+      "name": "clippy",
+      "log": "host-clippy.log",
+      "exit": 0
+    }
+  ],
+  "lane": "host",
+  "product": false,
+  "platform": "windows-msvc",
+  "failure": null,
+  "server": false
+}
