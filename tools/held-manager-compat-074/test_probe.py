@@ -10,7 +10,7 @@ UNIT = p.PREFIX + '74' * 16 + '.service'
 
 
 def reply(kind, value):
-    return dict(exit=0, stdout=json.dumps(dict(type=kind, data=value)), stderr='')
+    return dict(exit=0, stdout=json.dumps(dict(type=kind, data=value if kind == 'v' else [value])), stderr='')
 
 
 def missing():
@@ -31,6 +31,13 @@ class Bus:
 
 
 class Controls(unittest.TestCase):
+    def test_first_actual_readonly_reply_uses_a_single_argument_array(self):
+        captured = dict(exit=0, stdout='{"type":"s","data":[":1.2"]}\n', stderr='')
+        self.assertEqual(p.scalar(captured, 's'), ':1.2')
+        for data in (':1.2', [], [':1.2', ':1.3'], [74]):
+            with self.assertRaises(ValueError):
+                p.scalar(dict(exit=0, stdout=json.dumps(dict(type='s', data=data)), stderr=''), 's')
+
     def test_negative_refusal_has_no_original_admission_and_only_one_start(self):
         bus = Bus()
         result = p.check(bus, UNIT)

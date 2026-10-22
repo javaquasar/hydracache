@@ -38,3 +38,10 @@ accepts the extra FD property; [v255](https://github.com/systemd/systemd/blob/v2
 does not. This does not prove that updating systemd alone completes held launch.
 Keep current services/systemd untouched. A new FD bootstrap/broker protocol or
 another approved test environment is a separate architectural/operator decision.
+
+The first v1 tool invocation stopped on a read-only GetNameOwner JSON decoder
+error, before any StartTransientUnit. Its source/receipt remains immutable.
+The [v2 correction](../../docs/testing/performance/0.74/held-manager-compat-plan-v2-20261022.md)
+requires busctl call's exact single-argument arrays and adds the captured reply
+regression. It retains the same checks and budgets; the fresh v2 control is not
+a retry of a failed mutation or a new original admission.

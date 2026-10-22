@@ -16,7 +16,7 @@ MANAGER = 'org.freedesktop.systemd1'
 BUS = 'org.freedesktop.DBus'
 PREFIX = 'hc074-fdcompat-'
 QUALIFICATION = '11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc'
-SCHEMA = 'held-manager-compatibility-074-v1'
+SCHEMA = 'held-manager-compatibility-074-v2'
 
 
 def need(value, reason):
@@ -36,8 +36,9 @@ def scalar(receipt, kind):
     need(receipt['exit'] == 0, 'Manager query failed')
     value = json.loads(receipt['stdout'])
     need(set(value) == {'type', 'data'} and value['type'] == kind, 'Unexpected bus reply shape')
-    need(type(value['data']) is (str if kind in ('s', 'o') else int), 'Unexpected bus reply value')
-    return value['data']
+    need(isinstance(value['data'], list) and len(value['data']) == 1, 'Exactly one method reply argument required')
+    need(type(value['data'][0]) is (str if kind in ('s', 'o') else int), 'Unexpected bus reply value')
+    return value['data'][0]
 
 
 def unique(name):
@@ -75,6 +76,7 @@ def context():
     need(re.fullmatch(r'[0-9a-f]{40}', head) and not dirty, 'Committed clean compatibility method required')
     sources = ['tools/held-manager-compat-074/' + name for name in ('probe.py', 'test_probe.py', 'README.md')]
     sources.append('docs/testing/performance/0.74/held-manager-compat-plan-20261022.md')
+    sources.append('docs/testing/performance/0.74/held-manager-compat-plan-v2-20261022.md')
     return dict(boot=Path('/proc/sys/kernel/random/boot_id').read_text(), kernel=os.uname().release,
                 uid=os.getuid(), gid=os.getgid(), qualification=qualification, source=head,
                 source_sha256={name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest() for name in sources},
