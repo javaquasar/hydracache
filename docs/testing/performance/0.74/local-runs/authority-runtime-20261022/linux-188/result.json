@@ -1,0 +1,594 @@
+{
+  "after": {
+    "boot": "86da81ea-17c5-4ccf-ba96-0ff1f074c08f",
+    "configs": {
+      "/etc/systemd/timesyncd.conf": "e6734751f8aaf19fddfff891ad246387f5f59bd9ff1a5f0cac2c34bc81941c62",
+      "/etc/wsl.conf": "ca76852426d685301ce8b4461d2bc40d1901c93aea8c0b4b684707c94e4cf507",
+      "/mnt/c/Users/ArturBuzov/.wslconfig": null
+    },
+    "driver": "2e0c226db4088416ec109b0a91323172b2ae832a3de637c6e1f17b7a3c408505",
+    "gid": 1000,
+    "kernel": "6.6.87.2-microsoft-standard-WSL2",
+    "qualification": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+    "selection": "a24bebffa8bbd0431d584f11fe222d94b3d2b9d1d0f156365e9150322f9fba01",
+    "source": "37db65f68e67ed7c0ee0f1cc84fed1c30bf9822a",
+    "tracked_dirty": "",
+    "uid": 1000
+  },
+  "before": {
+    "boot": "86da81ea-17c5-4ccf-ba96-0ff1f074c08f",
+    "configs": {
+      "/etc/systemd/timesyncd.conf": "e6734751f8aaf19fddfff891ad246387f5f59bd9ff1a5f0cac2c34bc81941c62",
+      "/etc/wsl.conf": "ca76852426d685301ce8b4461d2bc40d1901c93aea8c0b4b684707c94e4cf507",
+      "/mnt/c/Users/ArturBuzov/.wslconfig": null
+    },
+    "driver": "2e0c226db4088416ec109b0a91323172b2ae832a3de637c6e1f17b7a3c408505",
+    "gid": 1000,
+    "kernel": "6.6.87.2-microsoft-standard-WSL2",
+    "qualification": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+    "selection": "a24bebffa8bbd0431d584f11fe222d94b3d2b9d1d0f156365e9150322f9fba01",
+    "source": "37db65f68e67ed7c0ee0f1cc84fed1c30bf9822a",
+    "tracked_dirty": "",
+    "uid": 1000
+  },
+  "clocks_changed": false,
+  "failure": null,
+  "ignored_measurements": false,
+  "image": "/home/artur/.cache/hydracache-074-runtime-20261022-188/debug/deps/hydracache_long_run_supervisor_074-c2cd11d7fa9c9b52",
+  "image_sha256": "c6fa8b7939659ce0f00a5164eb1d033c6216da38b6b88c7bf49278754cddcb10",
+  "lane": "188",
+  "live_profiles": 0,
+  "phase": "final",
+  "product": false,
+  "schema": "authority-runtime-local-linux-074-v1",
+  "server": false,
+  "services_changed": false,
+  "steps": [
+    {
+      "argv": [
+        "/home/artur/.cargo/bin/rustc",
+        "+1.88.0",
+        "--version"
+      ],
+      "exit": 0,
+      "name": "compiler",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "1ac65f1cd11fa83e9530348b787fa3e5bdd85b0f3727099df8bcdf3e24274138",
+      "timeout": false
+    },
+    {
+      "argv": [
+        "/home/artur/.cargo/bin/cargo",
+        "+1.88.0",
+        "check",
+        "--offline",
+        "--locked",
+        "-p",
+        "hydracache-long-run-supervisor-074",
+        "--all-features",
+        "--all-targets"
+      ],
+      "exit": 0,
+      "name": "check",
+      "stderr_sha256": "6aadf871cd27428db32941628f10d7995c6ee2785fcc97c55638180d12cafa51",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "timeout": false
+    },
+    {
+      "argv": [
+        "/home/artur/.cargo/bin/cargo",
+        "+1.88.0",
+        "clippy",
+        "--offline",
+        "--locked",
+        "-p",
+        "hydracache-long-run-supervisor-074",
+        "--all-features",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "name": "clippy",
+      "stderr_sha256": "f58289f3dfbcefea6c55c31c6336c213e6b8aa84c0e5396a4f1a0bd0a92450aa",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "timeout": false
+    },
+    {
+      "argv": [
+        "/home/artur/.cargo/bin/cargo",
+        "+1.88.0",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "hydracache-long-run-supervisor-074",
+        "--all-features",
+        "--lib",
+        "--no-run",
+        "--message-format=json"
+      ],
+      "exit": 0,
+      "name": "build",
+      "stderr_sha256": "7490db9a3a6f4cadd6e1e0b22717b42410389b271aba386d33643628f9f19409",
+      "stdout_sha256": "635eaac46ecef136b4396edcaa772c566a5841c3d4560607d7b479e9f5588701",
+      "timeout": false
+    },
+    {
+      "argv": [
+        "/home/artur/.cache/hydracache-074-runtime-20261022-188/debug/deps/hydracache_long_run_supervisor_074-c2cd11d7fa9c9b52",
+        "--list",
+        "--format",
+        "terse"
+      ],
+      "exit": 0,
+      "name": "list",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "065f9f6efbea6537056205ef3e84a90fb8c1a3144acf11b34be7daf378555e1e",
+      "timeout": false
+    },
+    {
+      "argv": [
+        "/home/artur/.cache/hydracache-074-runtime-20261022-188/debug/deps/hydracache_long_run_supervisor_074-c2cd11d7fa9c9b52",
+        "diagnostic_worker_policy::authority_registry::fixture::breakdown_controls::authority_breakdown_actual_phases_are_healthy_and_stale_expected_is_not_admission",
+        "--exact",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit": 0,
+      "name": "test-000",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "01c7a56b54b8eaf1199725c5fed82e447546f043c552192232e09f0c897bb59a",
+      "timeout": false
+    },
+    {
+      "argv": [
+        "/home/artur/.cache/hydracache-074-runtime-20261022-188/debug/deps/hydracache_long_run_supervisor_074-c2cd11d7fa9c9b52",
+        "diagnostic_worker_policy::authority_registry::fixture::fixed::tests::authority_fixed_every_original_ancestor_and_root_drift_latches_without_new_record",
+        "--exact",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit": 0,
+      "name": "test-001",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "f14df3b7279ee1bad6e88c9434b501e46ac7a873578f3f787e6ee8738b38cb4a",
+      "timeout": false
+    },
+    {
+      "argv": [
+        "/home/artur/.cache/hydracache-074-runtime-20261022-188/debug/deps/hydracache_long_run_supervisor_074-c2cd11d7fa9c9b52",
+        "diagnostic_worker_policy::authority_registry::fixture::fixed::tests::authority_fixed_guard_is_not_send_sync_or_fixture_conversion",
+        "--exact",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit": 0,
+      "name": "test-002",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "723f758430fbc129bb31a616594fcc5a909c37e491b4c20c8fa7cd8c1ae0df48",
+      "timeout": false
+    },
+    {
+      "argv": [
+        "/home/artur/.cache/hydracache-074-runtime-20261022-188/debug/deps/hydracache_long_run_supervisor_074-c2cd11d7fa9c9b52",
+        "diagnostic_worker_policy::authority_registry::fixture::fixed::tests::authority_fixed_leaf_and_parent_alias_drift_latch_but_benign_parent_entries_do_not",
+        "--exact",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit": 0,
+      "name": "test-003",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "88b2632f87fd32f075e7679ce17205f477833c3b6c6b6bb273b970fafe37edf8",
+      "timeout": false
+    },
+    {
+      "argv": [
+        "/home/artur/.cache/hydracache-074-runtime-20261022-188/debug/deps/hydracache_long_run_supervisor_074-c2cd11d7fa9c9b52",
+        "diagnostic_worker_policy::authority_registry::fixture::fixed::tests::authority_fixed_metadata_requires_root_owner_safe_ancestors_and_private_leaf",
+        "--exact",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit": 0,
+      "name": "test-004",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "74408f0f26ce95feed8d926956528b94b85f7b4c7bf9e44bd9d96c4b7a40e3a0",
+      "timeout": false
+    },
+    {
+      "argv": [
+        "/home/artur/.cache/hydracache-074-runtime-20261022-188/debug/deps/hydracache_long_run_supervisor_074-c2cd11d7fa9c9b52",
+        "diagnostic_worker_policy::authority_registry::fixture::fixed::tests::authority_fixed_modeled_publication_faults_do_not_repair_partial_tail",
+        "--exact",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit": 0,
+      "name": "test-005",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "a1237ca5bbd5354df242fb43a1d0c1e258d75aa46376d11f633be8a62cabb254",
+      "timeout": false
+    },
+    {
+      "argv": [
+        "/home/artur/.cache/hydracache-074-runtime-20261022-188/debug/deps/hydracache_long_run_supervisor_074-c2cd11d7fa9c9b52",
+        "diagnostic_worker_policy::authority_registry::fixture::fixed::tests::authority_fixed_modeled_writer_persists_and_exclusively_locks_shared_engine",
+        "--exact",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit": 0,
+      "name": "test-006",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "d5d74bd4ee68fb4e1a44a8ea546d0654aceb83e9356906eab7ebe7b26bac4c64",
+      "timeout": false
+    },
+    {
+      "argv": [
+        "/home/artur/.cache/hydracache-074-runtime-20261022-188/debug/deps/hydracache_long_run_supervisor_074-c2cd11d7fa9c9b52",
+        "diagnostic_worker_policy::authority_registry::fixture::fixed::tests::authority_fixed_named_ancestor_replacement_is_not_adopted",
+        "--exact",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit": 0,
+      "name": "test-007",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "ff2928b6bc2b7a586ddb292c00f42e420d83d8084a216add60ef97dae4b3b761",
+      "timeout": false
+    },
+    {
+      "argv": [
+        "/home/artur/.cache/hydracache-074-runtime-20261022-188/debug/deps/hydracache_long_run_supervisor_074-c2cd11d7fa9c9b52",
+        "diagnostic_worker_policy::authority_registry::fixture::fixed::tests::authority_fixed_named_root_replacement_is_not_hidden_by_original_descriptor",
+        "--exact",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit": 0,
+      "name": "test-008",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "2c843cddd57c491e9cbdcd2e79aa9ba6335fb816d8fdd9611e44c28d7fe7e593",
+      "timeout": false
+    },
+    {
+      "argv": [
+        "/home/artur/.cache/hydracache-074-runtime-20261022-188/debug/deps/hydracache_long_run_supervisor_074-c2cd11d7fa9c9b52",
+        "diagnostic_worker_policy::authority_registry::fixture::fixed::tests::authority_fixed_parent_group_policy_matches_nonwritable_provisioning",
+        "--exact",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit": 0,
+      "name": "test-009",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "6d9cc3dcb1532038c6d731c908392f9aa018c61d25846571faeb8c541b237133",
+      "timeout": false
+    },
+    {
+      "argv": [
+        "/home/artur/.cache/hydracache-074-runtime-20261022-188/debug/deps/hydracache_long_run_supervisor_074-c2cd11d7fa9c9b52",
+        "diagnostic_worker_policy::authority_registry::fixture::fixed::tests::authority_fixed_walker_rejects_symlinks_missing_unsafe_and_wrong_owner_components",
+        "--exact",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit": 0,
+      "name": "test-010",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "9dd4fb57c3ca1380a45f1bb5653f59a28c2c2229b3ec9cb1ae03186782c967b4",
+      "timeout": false
+    },
+    {
+      "argv": [
+        "/home/artur/.cache/hydracache-074-runtime-20261022-188/debug/deps/hydracache_long_run_supervisor_074-c2cd11d7fa9c9b52",
+        "diagnostic_worker_policy::authority_registry::fixture::leaf_name_controls::authority_leaf_name_fault_classes_and_original_metadata_short_circuit_match",
+        "--exact",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit": 0,
+      "name": "test-011",
+      "stderr_sha256": "7fb2c92a26fc359169a822627aead88a4828ead98020e7d7bdf3f157f380327a",
+      "stdout_sha256": "959e1657aca2949e2f064c0620f120fdf3accf235265b55219c4744e5e5761d1",
+      "timeout": false
+    },
+    {
+      "argv": [
+        "/home/artur/.cache/hydracache-074-runtime-20261022-188/debug/deps/hydracache_long_run_supervisor_074-c2cd11d7fa9c9b52",
+        "diagnostic_worker_policy::authority_registry::fixture::leaf_name_controls::authority_leaf_name_seeded_names_payloads_and_open_results_match_frozen_reference",
+        "--exact",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit": 0,
+      "name": "test-012",
+      "stderr_sha256": "73f2d5c14fa4c79245a180a77a108d44086b8b5fdca9d5e300c4e3778e466910",
+      "stdout_sha256": "2532bf8e40608d70e5c935f4d8affa2e6695342e4e8929d701763ac314904272",
+      "timeout": false
+    },
+    {
+      "argv": [
+        "/home/artur/.cache/hydracache-074-runtime-20261022-188/debug/deps/hydracache_long_run_supervisor_074-c2cd11d7fa9c9b52",
+        "diagnostic_worker_policy::authority_registry::fixture::owners_controls::authority_owners_inventory_matches_actual_scan_and_fresh_refusals",
+        "--exact",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit": 0,
+      "name": "test-013",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "072ce5c95fec51ce462b594465fed8ed63df213c8e482b61f4d73016f9524265",
+      "timeout": false
+    },
+    {
+      "argv": [
+        "/home/artur/.cache/hydracache-074-runtime-20261022-188/debug/deps/hydracache_long_run_supervisor_074-c2cd11d7fa9c9b52",
+        "diagnostic_worker_policy::authority_registry::fixture::owners_controls::authority_owners_leaf_read_and_revalidate_match_bytes_stamps_and_refusals",
+        "--exact",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit": 0,
+      "name": "test-014",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "df935c10eb7f69024acad614599dfb2a026969d85bfbc8d925abd107b5d000cb",
+      "timeout": false
+    },
+    {
+      "argv": [
+        "/home/artur/.cache/hydracache-074-runtime-20261022-188/debug/deps/hydracache_long_run_supervisor_074-c2cd11d7fa9c9b52",
+        "diagnostic_worker_policy::authority_registry::fixture::tests::authority_fixture_bounded_inventory_and_invalid_transition_make_no_new_generation",
+        "--exact",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit": 0,
+      "name": "test-015",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "758652eab7cb54ffebaa034ba804aea9c56e14ea8f55dcbedb528bd3589f19a7",
+      "timeout": false
+    },
+    {
+      "argv": [
+        "/home/artur/.cache/hydracache-074-runtime-20261022-188/debug/deps/hydracache_long_run_supervisor_074-c2cd11d7fa9c9b52",
+        "diagnostic_worker_policy::authority_registry::fixture::tests::authority_fixture_close_reopen_refusal_and_explicit_higher_epoch_are_persistent",
+        "--exact",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit": 0,
+      "name": "test-016",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "8ec7d0a310f0adb8039a7ae5a57e6687dac12d770d49070c62a15cc72a591fb3",
+      "timeout": false
+    },
+    {
+      "argv": [
+        "/home/artur/.cache/hydracache-074-runtime-20261022-188/debug/deps/hydracache_long_run_supervisor_074-c2cd11d7fa9c9b52",
+        "diagnostic_worker_policy::authority_registry::fixture::tests::authority_fixture_exclusive_writer_and_thread_local_origin_cannot_be_duplicated",
+        "--exact",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit": 0,
+      "name": "test-017",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "f339b51f16eb583e05eb74190ba941c8d5072edadf98a677301108b5001d892a",
+      "timeout": false
+    },
+    {
+      "argv": [
+        "/home/artur/.cache/hydracache-074-runtime-20261022-188/debug/deps/hydracache_long_run_supervisor_074-c2cd11d7fa9c9b52",
+        "diagnostic_worker_policy::authority_registry::fixture::tests::authority_fixture_logical_faults_retain_partial_tail_or_committed_refusal_without_replay",
+        "--exact",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit": 0,
+      "name": "test-018",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "79536fba6b819ee820ba0f6a59434b6254751f0b4d81c58e7ade0592a4c678fb",
+      "timeout": false
+    },
+    {
+      "argv": [
+        "/home/artur/.cache/hydracache-074-runtime-20261022-188/debug/deps/hydracache_long_run_supervisor_074-c2cd11d7fa9c9b52",
+        "diagnostic_worker_policy::authority_registry::fixture::tests::authority_fixture_original_path_file_and_descriptor_drift_latch_without_refresh",
+        "--exact",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit": 0,
+      "name": "test-019",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "ce5821c1681c76fc33552b563d945668acfa6a234152a5e03e8ecf161257f5ea",
+      "timeout": false
+    },
+    {
+      "argv": [
+        "/home/artur/.cache/hydracache-074-runtime-20261022-188/debug/deps/hydracache_long_run_supervisor_074-c2cd11d7fa9c9b52",
+        "diagnostic_worker_policy::authority_registry::fixture::tests::authority_fixture_owner_drop_unlocks_with_inherited_description_still_open",
+        "--exact",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit": 0,
+      "name": "test-020",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "8a5252edbef9a228539e37924d5e6c8d63505d303c8326a235b89eed0727b76c",
+      "timeout": false
+    },
+    {
+      "argv": [
+        "/home/artur/.cache/hydracache-074-runtime-20261022-188/debug/deps/hydracache_long_run_supervisor_074-c2cd11d7fa9c9b52",
+        "diagnostic_worker_policy::authority_registry::fixture::tests::authority_fixture_partial_write_errors_preserve_bytes_and_do_not_complete_a_marker",
+        "--exact",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit": 0,
+      "name": "test-021",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "1c8d70aceebf564312e8bdadf0619854e99ccef6a9059fe458bbbafa5fbb0c63",
+      "timeout": false
+    },
+    {
+      "argv": [
+        "/home/artur/.cache/hydracache-074-runtime-20261022-188/debug/deps/hydracache_long_run_supervisor_074-c2cd11d7fa9c9b52",
+        "diagnostic_worker_policy::authority_registry::fixture::tests::authority_fixture_unsafe_linked_special_and_oversized_records_refuse",
+        "--exact",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit": 0,
+      "name": "test-022",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "ec291d749775cf9477a9ecc5b7d7101e5d6b1d7a0f8967a21f02a912510e3ae7",
+      "timeout": false
+    },
+    {
+      "argv": [
+        "/home/artur/.cache/hydracache-074-runtime-20261022-188/debug/deps/hydracache_long_run_supervisor_074-c2cd11d7fa9c9b52",
+        "diagnostic_worker_policy::authority_registry::fixture::tests::authority_fixture_wrong_owner_path_and_external_pins_never_choose_authority",
+        "--exact",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit": 0,
+      "name": "test-023",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e33e5e3027dd932ef2983ef7d91b6d88ab133fae25d22f1f63ece51682c61aa3",
+      "timeout": false
+    },
+    {
+      "argv": [
+        "/home/artur/.cache/hydracache-074-runtime-20261022-188/debug/deps/hydracache_long_run_supervisor_074-c2cd11d7fa9c9b52",
+        "diagnostic_worker_policy::authority_registry::fixture::tests::authority_publication_checkpoint_order_matches_original_refusal_protocol",
+        "--exact",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit": 0,
+      "name": "test-024",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "09e47e91a88c5975e789b28875df40519c8ef02d7e7825406b9032df87a1d4d2",
+      "timeout": false
+    },
+    {
+      "argv": [
+        "/home/artur/.cache/hydracache-074-runtime-20261022-188/debug/deps/hydracache_long_run_supervisor_074-c2cd11d7fa9c9b52",
+        "diagnostic_worker_policy::authority_registry::fixture::tests::authority_publication_checkpoint_preserves_fault_and_scope",
+        "--exact",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit": 0,
+      "name": "test-025",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "8b037a1a63153e0baa20490153930b8723838114bf01f38bab43fa70b3dd7549",
+      "timeout": false
+    },
+    {
+      "argv": [
+        "/home/artur/.cache/hydracache-074-runtime-20261022-188/debug/deps/hydracache_long_run_supervisor_074-c2cd11d7fa9c9b52",
+        "diagnostic_worker_policy::authority_registry::fixture::tests::authority_runtime_all_five_journal_refusals_evict_every_leaf",
+        "--exact",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit": 0,
+      "name": "test-026",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "3e9370c6d464671cf8168bb64c612039fa5a52cca865872a6abad4d7ef31d83f",
+      "timeout": false
+    },
+    {
+      "argv": [
+        "/home/artur/.cache/hydracache-074-runtime-20261022-188/debug/deps/hydracache_long_run_supervisor_074-c2cd11d7fa9c9b52",
+        "diagnostic_worker_policy::authority_registry::fixture::tests::authority_runtime_closing_publication_refusal_evicts_new_and_old_entries",
+        "--exact",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit": 0,
+      "name": "test-027",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "f68db2bf1b6fe53faafe64de57380813886abd4e8742c492c7dbbf2f08fe389d",
+      "timeout": false
+    },
+    {
+      "argv": [
+        "/home/artur/.cache/hydracache-074-runtime-20261022-188/debug/deps/hydracache_long_run_supervisor_074-c2cd11d7fa9c9b52",
+        "diagnostic_worker_policy::authority_registry::fixture::tests::authority_runtime_leaf_cold_fresh_storage_and_bounds",
+        "--exact",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit": 0,
+      "name": "test-028",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "6683acaae1af10621de7d6afbcf71b07abbf7efc8153915e5f13f802298051c3",
+      "timeout": false
+    },
+    {
+      "argv": [
+        "/home/artur/.cache/hydracache-074-runtime-20261022-188/debug/deps/hydracache_long_run_supervisor_074-c2cd11d7fa9c9b52",
+        "diagnostic_worker_policy::authority_registry::fixture::tests::authority_runtime_leaf_refusals_evict_and_retain_original_objects",
+        "--exact",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit": 0,
+      "name": "test-029",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "103447fde57aab412f370765fb96b122ff1aa5ac70cc6b7c96f6f39b83d2ea62",
+      "timeout": false
+    },
+    {
+      "argv": [
+        "/home/artur/.cache/hydracache-074-runtime-20261022-188/debug/deps/hydracache_long_run_supervisor_074-c2cd11d7fa9c9b52",
+        "diagnostic_worker_policy::authority_registry::fixture::tests::authority_runtime_publication_cuts_clear_cache_and_never_repair_tail",
+        "--exact",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit": 0,
+      "name": "test-030",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "6d9daa2620218fb0e30c303fac62afca2fb9218d72a2c5c05585cc6cb2636e0c",
+      "timeout": false
+    },
+    {
+      "argv": [
+        "/home/artur/.cache/hydracache-074-runtime-20261022-188/debug/deps/hydracache_long_run_supervisor_074-c2cd11d7fa9c9b52",
+        "diagnostic_worker_policy::authority_registry::fixture::tests::authority_runtime_reopen_does_not_transfer_scratch",
+        "--exact",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit": 0,
+      "name": "test-031",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "abba2a608de7161d687ee9d0e83d056ae2448a32e31e7f31c527151b5a1eb58f",
+      "timeout": false
+    },
+    {
+      "argv": [
+        "/home/artur/.cache/hydracache-074-runtime-20261022-188/debug/deps/hydracache_long_run_supervisor_074-c2cd11d7fa9c9b52",
+        "diagnostic_worker_policy::authority_registry::fixture::tests::authority_runtime_successful_epoch_transitions_keep_bounded_original_history",
+        "--exact",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit": 0,
+      "name": "test-032",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "d93ff4a1d0198905ca679c9baf31e8db2c63b63c777b392316e6b5734a88de6e",
+      "timeout": false
+    }
+  ]
+}

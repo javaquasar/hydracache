@@ -1,0 +1,6 @@
+
+running 1 test
+test diagnostic_worker_policy::authority_registry::fixture::tests::authority_publication_checkpoint_order_matches_original_refusal_protocol ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1516 filtered out; finished in 0.03s
+

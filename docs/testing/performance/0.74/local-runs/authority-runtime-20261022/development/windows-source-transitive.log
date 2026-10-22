@@ -1,0 +1,43 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.41s
+     Running tests\authority_runtime_074.rs (target\debug\deps\authority_runtime_074-6a74f7ff88f53ea9.exe)
+
+running 5 tests
+test legacy_adapters_preserve_complete_prior_test_bodies_and_assertions ... ok
+test installed_runtime_is_the_exact_candidate_and_explicit_compatibility_set ... ok
+test baseline_partial_install_and_unrelated_effects_refuse_before_restoration ... ok
+test full_contract_adapters_change_only_one_preservation_reader_per_module ... ok
+test approved_predecessor_views_do_not_replace_current_runtime_validation ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 31.07s
+
+     Running tests\authority_rust_history_074.rs (target\debug\deps\authority_rust_history_074-9c7000c250482bf2.exe)
+
+running 10 tests
+test diff_translation_adds_only_fixed_rhs_and_retains_all_paths_and_flags ... ok
+test unsafe_names_outside_paths_and_missing_inputs_do_not_open_current_files ... ok
+test unsupported_commands_revisions_scopes_and_cwd_refuse_before_execution ... ok
+test historical_reads_are_fixed_and_never_fall_back_to_current_artifacts ... ok
+test qualification_raw_identity_and_previous_candidate_guard_remain_independent ... ok
+test archived_success_does_not_admit_a_current_candidate_or_unrelated_mutation ... ok
+test every_allowed_replacement_is_an_actual_io_call_not_a_literal_or_assertion ... ok
+test all_thirty_guards_preserve_complete_assertions_under_exact_io_substitutions ... ok
+test guard_assertion_test_and_io_mutations_cannot_hide_behind_history ... ok
+test independent_current_tree_gate_refuses_unapproved_source_and_runtime_drift ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 29.08s
+
+     Running tests\authority_storage_source_074.rs (target\debug\deps\authority_storage_source_074-1fc8e4bd43d0fde9.exe)
+
+running 8 tests
+test observer_complete_bodies_restore_candidate_and_exact_hook_order ... ok
+test patch_generator_refuses_changed_or_duplicated_anchor_shapes ... ok
+test original_read_reopen_publication_and_validation_order_remain_intact ... ok
+test storage_only_body_restoration_preserves_fresh_io_and_comparisons ... ok
+test every_refusal_site_is_independently_guarded ... ok
+test observer_mutations_and_extra_effects_refuse ... ok
+test exact_unapplied_files_match_pinned_patch_and_unchanged_runtime ... ok
+test storage_validation_and_effect_mutations_refuse ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.03s
+

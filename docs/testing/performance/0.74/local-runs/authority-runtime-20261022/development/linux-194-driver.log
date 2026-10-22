@@ -1,0 +1,9 @@
+Traceback (most recent call last):
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/authority-runtime-074/linux.py", line 117, in <module>
+    run(args.output,args.lane,args.phase)
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/authority-runtime-074/linux.py", line 110, in run
+    need(failure is None,failure)
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/authority-runtime-074/linux.py", line 16, in need
+    if not value:raise ValueError(message)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: FileNotFoundError: [Errno 2] No such file or directory: 'rustc'

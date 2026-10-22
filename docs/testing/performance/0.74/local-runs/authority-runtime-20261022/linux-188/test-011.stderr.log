@@ -1,0 +1,4 @@
+
+thread 'diagnostic_worker_policy::authority_registry::fixture::leaf_name_controls::authority_leaf_name_fault_classes_and_original_metadata_short_circuit_match' panicked at tools/long-run-supervisor-074/src/../tests/support/authority_leaf_name_controls.rs:150:18:
+unknown bounded leaf name case
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

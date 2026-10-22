@@ -1,0 +1,6 @@
+
+running 1 test
+test diagnostic_worker_policy::authority_registry::fixture::fixed::tests::authority_fixed_every_original_ancestor_and_root_drift_latches_without_new_record ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1516 filtered out; finished in 0.21s
+

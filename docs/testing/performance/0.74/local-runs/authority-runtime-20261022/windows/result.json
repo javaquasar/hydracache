@@ -1,0 +1,128 @@
+{
+  "raw_old_python_controls_rerun": false,
+  "failure": null,
+  "server": false,
+  "runtime_candidate_implemented": true,
+  "server_admitted": false,
+  "source": "37db65f68e67ed7c0ee0f1cc84fed1c30bf9822a",
+  "product": false,
+  "current_exact_storage_patch_installed": true,
+  "steps": [
+    {
+      "exit": 0,
+      "log": "format.log",
+      "name": "format",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "exit": 0,
+      "log": "source-format.log",
+      "name": "source-format",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "exit": 0,
+      "log": "source-controls.log",
+      "name": "source-controls",
+      "sha256": "84c1370a14913fb7cc1a3a7f5a37561025b1a8e5cb78f92c5083ac0ff6b97b7f"
+    },
+    {
+      "exit": 0,
+      "log": "selector-controls.log",
+      "name": "selector-controls",
+      "sha256": "b4878bf892c62ca550f79786f774949ecf0f7c204c189a99459c8529935c75c6"
+    },
+    {
+      "exit": 0,
+      "log": "packet-controls.log",
+      "name": "packet-controls",
+      "sha256": "9b63e0f1bf36b6dd7d711d5f5f804e00334ecf212af3e74b12f98c4b0907af20"
+    },
+    {
+      "exit": 0,
+      "log": "supervisor-format.log",
+      "name": "supervisor-format",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "exit": 0,
+      "log": "supervisor-check.log",
+      "name": "supervisor-check",
+      "sha256": "0159225e88a6aed6ee63486777067099cdf755015da5445914325eff00866d3a"
+    },
+    {
+      "exit": 0,
+      "log": "supervisor-clippy.log",
+      "name": "supervisor-clippy",
+      "sha256": "a3b9009039e87a50abf181c005990465d3005fbbf98cdee39ad4663d8c5a8bcc"
+    },
+    {
+      "exit": 0,
+      "log": "workspace-format.log",
+      "name": "workspace-format",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "exit": 0,
+      "log": "history-controls.log",
+      "name": "history-controls",
+      "sha256": "cb4e0ebb59e842ad95d5d9b48a4d464656bb8568e5cea79af9d0869b6613a498"
+    },
+    {
+      "exit": 0,
+      "log": "history-receipt-controls.log",
+      "name": "history-receipt-controls",
+      "sha256": "df52ba86050c8a030930c0e15e441b7b50aa33f9dca02a060c3529f5aa0f8d4c"
+    },
+    {
+      "exit": 0,
+      "log": "derived-facts.log",
+      "name": "derived-facts",
+      "sha256": "4c6160d8eb7ebd1293a5e0a69c1f5858bdba445e566667877341f8e1a6f6d7b6"
+    },
+    {
+      "exit": 0,
+      "log": "docs.log",
+      "name": "docs",
+      "sha256": "8a4429bed6d352e8f644887ec125ca250d8877c1da0fb95225f8a0490ffe2f5d"
+    },
+    {
+      "exit": 0,
+      "log": "registry.log",
+      "name": "registry",
+      "sha256": "2938a5b8ef7a4bf653659b3738619ed2041124ad1501e901e5c1e5cd6f874857"
+    },
+    {
+      "exit": 0,
+      "log": "performance.log",
+      "name": "performance",
+      "sha256": "d098abd9c9e3e8c7138ad17a113e2a4a5736ec769b7722f3ee3d20116a6b0ea6"
+    },
+    {
+      "exit": 0,
+      "log": "canaries.log",
+      "name": "canaries",
+      "sha256": "db4c9e250be2974ef28480af6144071b69b2a3f85e827e3a8ddcb7ac37669001"
+    },
+    {
+      "exit": 0,
+      "log": "current-performance-contracts.log",
+      "name": "current-performance-contracts",
+      "sha256": "b9029e59deafe2b577f541deb9c1eabe7d1ae5e03aa3452df6d598b083c95741"
+    },
+    {
+      "exit": 0,
+      "log": "check.log",
+      "name": "check",
+      "sha256": "e632f345cc98d9a6c9fe32f972f84ba27095b3462b66577f88b433ee39bdcf5f"
+    },
+    {
+      "exit": 0,
+      "log": "clippy.log",
+      "name": "clippy",
+      "sha256": "0da4e0d2947890e658dbca2127052387a6940497a88ced96e3da50386898fbed"
+    }
+  ],
+  "original_owner_profiles": 0,
+  "historical_io_migrated": true
+}

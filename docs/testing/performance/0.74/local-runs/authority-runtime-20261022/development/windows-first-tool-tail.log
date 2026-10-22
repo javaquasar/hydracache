@@ -1,0 +1,29 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 32.63s
+     Running tests\authority_runtime_074.rs (target\debug\deps\authority_runtime_074-6a74f7ff88f53ea9.exe)
+
+running 4 tests
+test legacy_adapters_preserve_complete_prior_test_bodies_and_assertions ... ok
+test installed_runtime_is_the_exact_candidate_and_explicit_compatibility_set ... FAILED
+test approved_predecessor_views_do_not_replace_current_runtime_validation ... FAILED
+test baseline_partial_install_and_unrelated_effects_refuse_before_restoration ... ok
+
+failures:
+
+---- installed_runtime_is_the_exact_candidate_and_explicit_compatibility_set stdout ----
+
+thread 'installed_runtime_is_the_exact_candidate_and_explicit_compatibility_set' (44836) panicked at crates\xtask\tests\authority_runtime_074.rs:29:9:
+exact installed file tools/long-run-supervisor-074/src/diagnostic_authority_fixture_tests.rs
+
+---- approved_predecessor_views_do_not_replace_current_runtime_validation stdout ----
+
+thread 'approved_predecessor_views_do_not_replace_current_runtime_validation' (38396) panicked at crates\xtask\tests\..\..\..\tools\authority-runtime-074\gate.rs:150:5:
+current runtime file refused before historical view: tools/long-run-supervisor-074/src/diagnostic_authority_fixture_tests.rs
+
+
+failures:
+    approved_predecessor_views_do_not_replace_current_runtime_validation
+    installed_runtime_is_the_exact_candidate_and_explicit_compatibility_set
+
+test result: FAILED. 2 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.33s
+
+error: test failed, to rerun pass `-p xtask --test authority_runtime_074`

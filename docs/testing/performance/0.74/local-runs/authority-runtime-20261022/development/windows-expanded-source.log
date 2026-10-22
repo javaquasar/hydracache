@@ -1,0 +1,31 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.78s
+     Running tests\authority_runtime_074.rs (target\debug\deps\authority_runtime_074-6a74f7ff88f53ea9.exe)
+
+running 5 tests
+test legacy_adapters_preserve_complete_prior_test_bodies_and_assertions ... ok
+test installed_runtime_is_the_exact_candidate_and_explicit_compatibility_set ... FAILED
+test approved_predecessor_views_do_not_replace_current_runtime_validation ... FAILED
+test baseline_partial_install_and_unrelated_effects_refuse_before_restoration ... ok
+test full_contract_adapters_change_only_one_preservation_reader_per_module ... ok
+
+failures:
+
+---- installed_runtime_is_the_exact_candidate_and_explicit_compatibility_set stdout ----
+
+thread 'installed_runtime_is_the_exact_candidate_and_explicit_compatibility_set' (38576) panicked at crates\xtask\tests\authority_runtime_074.rs:38:9:
+exact installed file crates/xtask/tests/performance_contract_074.rs
+
+---- approved_predecessor_views_do_not_replace_current_runtime_validation stdout ----
+
+thread 'approved_predecessor_views_do_not_replace_current_runtime_validation' (32008) panicked at crates\xtask\tests\..\..\..\tools\authority-runtime-074\gate.rs:162:5:
+current runtime file refused before historical view: crates/xtask/tests/performance_contract_074.rs
+
+
+failures:
+    approved_predecessor_views_do_not_replace_current_runtime_validation
+    installed_runtime_is_the_exact_candidate_and_explicit_compatibility_set
+
+test result: FAILED. 3 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 17.50s
+
+error: test failed, to rerun pass `-p xtask --test authority_runtime_074`

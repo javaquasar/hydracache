@@ -1,0 +1,32 @@
+{
+  "after": null,
+  "before": {
+    "boot": "8375129d-e620-410a-8253-4b6193274154",
+    "configs": {
+      "/etc/systemd/timesyncd.conf": "e6734751f8aaf19fddfff891ad246387f5f59bd9ff1a5f0cac2c34bc81941c62",
+      "/etc/wsl.conf": "ca76852426d685301ce8b4461d2bc40d1901c93aea8c0b4b684707c94e4cf507",
+      "/mnt/c/Users/ArturBuzov/.wslconfig": null
+    },
+    "driver": "3a60ff5606e3fc10f648572871fa6fcad53737cbff1f320fa63aac9f56c3412b",
+    "gid": 1000,
+    "kernel": "6.6.87.2-microsoft-standard-WSL2",
+    "qualification": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+    "selection": "a24bebffa8bbd0431d584f11fe222d94b3d2b9d1d0f156365e9150322f9fba01",
+    "source": "acd44d86daa6d55490a2565c9d0209f5775922a4",
+    "tracked_dirty": "M crates/xtask/tests/authority_rust_history_074.rs\n M crates/xtask/tests/authority_storage_source_074.rs\n M tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs\n M tools/long-run-supervisor-074/src/diagnostic_authority_fixture_tests.rs\n M tools/long-run-supervisor-074/tests/support/authority_breakdown_controls.rs\n M tools/long-run-supervisor-074/tests/support/authority_leaf_name_alloc.rs\n M tools/long-run-supervisor-074/tests/support/authority_leaf_name_controls.rs\n M tools/long-run-supervisor-074/tests/support/authority_open_name_alloc.rs\n M tools/long-run-supervisor-074/tests/support/authority_open_name_controls.rs\n M tools/long-run-supervisor-074/tests/support/authority_owners_controls.rs",
+    "uid": 1000
+  },
+  "clocks_changed": false,
+  "failure": "FileNotFoundError: [Errno 2] No such file or directory: 'rustc'",
+  "ignored_measurements": false,
+  "image": null,
+  "image_sha256": null,
+  "lane": "194",
+  "live_profiles": 0,
+  "phase": "development",
+  "product": false,
+  "schema": "authority-runtime-local-linux-074-v1",
+  "server": false,
+  "services_changed": false,
+  "steps": []
+}

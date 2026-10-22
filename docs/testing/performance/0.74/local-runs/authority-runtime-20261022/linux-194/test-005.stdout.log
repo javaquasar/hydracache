@@ -1,0 +1,6 @@
+
+running 1 test
+test diagnostic_worker_policy::authority_registry::fixture::fixed::tests::authority_fixed_modeled_publication_faults_do_not_repair_partial_tail ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1516 filtered out; finished in 0.32s
+

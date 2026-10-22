@@ -1,0 +1,9 @@
+test_build_requires_exactly_one_lib_test_image (__main__.Controls.test_build_requires_exactly_one_lib_test_image) ... ok
+test_exact_frozen_membership_and_no_measurement_names (__main__.Controls.test_exact_frozen_membership_and_no_measurement_names) ... ok
+test_one_test_and_zero_ignored_are_mandatory (__main__.Controls.test_one_test_and_zero_ignored_are_mandatory) ... ok
+test_schema_membership_and_new_test_count_refuse (__main__.Controls.test_schema_membership_and_new_test_count_refuse) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.006s
+
+OK

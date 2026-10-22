@@ -1,0 +1,34 @@
+{
+  "current_contracts": 321,
+  "full_sigkill": false,
+  "historical_canaries": 79,
+  "history_receipt_controls": 20,
+  "linux": {
+    "188": {
+      "boot": "86da81ea-17c5-4ccf-ba96-0ff1f074c08f",
+      "image_sha256": "c6fa8b7939659ce0f00a5164eb1d033c6216da38b6b88c7bf49278754cddcb10",
+      "kernel": "6.6.87.2-microsoft-standard-WSL2",
+      "new_tests": 7,
+      "source": "37db65f68e67ed7c0ee0f1cc84fed1c30bf9822a",
+      "steps": 38,
+      "tests": 33
+    },
+    "194": {
+      "boot": "86da81ea-17c5-4ccf-ba96-0ff1f074c08f",
+      "image_sha256": "0f941071b683fc78724ec8d329352243b3a2da0ab45e4c2e3f4bb435cf40cee6",
+      "kernel": "6.6.87.2-microsoft-standard-WSL2",
+      "new_tests": 7,
+      "source": "37db65f68e67ed7c0ee0f1cc84fed1c30bf9822a",
+      "steps": 38,
+      "tests": 33
+    }
+  },
+  "performance_claim": false,
+  "prior_source_controls": 18,
+  "runtime_source_controls": 5,
+  "schema": "authority-runtime-correctness-facts-074-v1",
+  "selector_receipt_controls": 8,
+  "server_admitted": false,
+  "source": "37db65f68e67ed7c0ee0f1cc84fed1c30bf9822a",
+  "windows_steps": 19
+}

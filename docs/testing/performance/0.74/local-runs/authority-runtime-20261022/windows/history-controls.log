@@ -1,0 +1,17 @@
+test_actual_frozen_replay_uses_separate_modules_and_equal_facts (__main__.HistoryViewTests.test_actual_frozen_replay_uses_separate_modules_and_equal_facts) ... ok
+test_archive_exact_membership_hashes_and_case_refuse (__main__.HistoryViewTests.test_archive_exact_membership_hashes_and_case_refuse) ... ok
+test_archive_links_traversal_and_size_refuse (__main__.HistoryViewTests.test_archive_links_traversal_and_size_refuse) ... ok
+test_duplicate_json_and_nonfinite_values_refuse (__main__.HistoryViewTests.test_duplicate_json_and_nonfinite_values_refuse) ... ok
+test_history_success_does_not_admit_changed_current_copy (__main__.HistoryViewTests.test_history_success_does_not_admit_changed_current_copy) ... ok
+test_inventory_digest_and_member_shape_refuse (__main__.HistoryViewTests.test_inventory_digest_and_member_shape_refuse) ... ok
+test_manifest_source_membership_modules_and_bounds_are_fixed (__main__.HistoryViewTests.test_manifest_source_membership_modules_and_bounds_are_fixed) ... ok
+test_output_no_clobber_deadlines_and_closed_real_gates (__main__.HistoryViewTests.test_output_no_clobber_deadlines_and_closed_real_gates) ... ok
+test_path_traversal_aliases_and_devices_refuse (__main__.HistoryViewTests.test_path_traversal_aliases_and_devices_refuse) ... ok
+test_postflight_tree_refuses_content_extra_files_and_directories (__main__.HistoryViewTests.test_postflight_tree_refuses_content_extra_files_and_directories) ... ok
+test_read_scope_denies_outside_and_writes_and_restores_method (__main__.HistoryViewTests.test_read_scope_denies_outside_and_writes_and_restores_method) ... ok
+test_text_image_adapter_preserves_qualification_raw_bytes (__main__.HistoryViewTests.test_text_image_adapter_preserves_qualification_raw_bytes) ... ok
+
+----------------------------------------------------------------------
+Ran 12 tests in 91.834s
+
+OK

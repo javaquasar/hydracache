@@ -1,0 +1,9 @@
+test_duplicate_members_refuse (__main__.Controls.test_duplicate_members_refuse) ... ok
+test_exact_inventory_then_byte_and_membership_mutations (__main__.Controls.test_exact_inventory_then_byte_and_membership_mutations) ... ok
+test_invalid_digest_and_size_refuse (__main__.Controls.test_invalid_digest_and_size_refuse) ... ok
+test_unsafe_paths_refuse (__main__.Controls.test_unsafe_paths_refuse) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.043s
+
+OK
