@@ -678,6 +678,10 @@ tools/held-wsl-native-074/*.sh text eol=lf
 
 tools/held-wsl-native-074/README.md text eol=lf
 
+tools/held-material-roles-074/*.py text eol=lf
+
+tools/held-material-roles-074/README.md text eol=lf
+
 docs/testing/performance/0.74/local-runs/held-manager-compat-20261022/** -text whitespace=cr-at-eol
 
 docs/testing/performance/0.74/local-runs/held-manager-compat-20261022/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
@@ -689,3 +693,5 @@ docs/testing/performance/0.74/local-runs/held-manager-compat-doc-followup-202610
 docs/testing/performance/0.74/local-runs/held-wsl-native-20261022/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
 
 docs/testing/performance/0.74/local-runs/held-wsl-native-20261022/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/held-material-role-binding-20261022/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
