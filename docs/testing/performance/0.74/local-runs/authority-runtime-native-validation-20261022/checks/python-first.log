@@ -1,0 +1,9 @@
+test_build_only_never_executes_selected_image (__main__.Controls.test_build_only_never_executes_selected_image) ... ok
+test_native_validator_has_no_cohort_or_measurement_dispatch (__main__.Controls.test_native_validator_has_no_cohort_or_measurement_dispatch) ... ok
+test_synthetic_script_requires_exact_fixed_arguments (__main__.Controls.test_synthetic_script_requires_exact_fixed_arguments) ... ok
+test_unsafe_attempt_refuses_before_environment (__main__.Controls.test_unsafe_attempt_refuses_before_environment) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.096s
+
+OK

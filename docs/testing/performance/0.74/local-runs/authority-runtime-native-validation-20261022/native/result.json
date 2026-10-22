@@ -1,0 +1,173 @@
+{
+  "after": {
+    "affinity": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "boot": "da364dec-68f1-4c3d-a6df-a4dd948f08c4",
+    "configs": {
+      "/etc/systemd/timesyncd.conf": "e6734751f8aaf19fddfff891ad246387f5f59bd9ff1a5f0cac2c34bc81941c62",
+      "/etc/wsl.conf": "ca76852426d685301ce8b4461d2bc40d1901c93aea8c0b4b684707c94e4cf507",
+      "/mnt/c/Users/ArturBuzov/.wslconfig": null
+    },
+    "cpuinfo_identity_sha256": "12632a8ae9f939faa7b38b36dbfd96dc1f1542a3dc1cc87f9bf7d96b4c660377",
+    "dirty": "",
+    "gid": 1000,
+    "head": "fdd8793bdb044c8ce7bc0b463e30a7ea96c06e14",
+    "kernel": "6.6.87.2-microsoft-standard-WSL2",
+    "namespaces": {
+      "cgroup": "cgroup:[4026531835]",
+      "ipc": "ipc:[4026532208]",
+      "mnt": "mnt:[4026532220]",
+      "net": "net:[4026531840]",
+      "pid": "pid:[4026532223]",
+      "time": "time:[4026531834]",
+      "user": "user:[4026531837]",
+      "uts": "uts:[4026532222]"
+    },
+    "qualification": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+    "taskset_sha256": "a431738fadddc2e2326c8ab81843e72f4011658379381aef1502a6ddb1c1115b",
+    "uid": 1000
+  },
+  "archive_sha256": "3892b3bef3aa3f3bd1993e46468a169dc161cf3d8f9d9330eba4f70b400d38e9",
+  "attempt": "second",
+  "before": {
+    "affinity": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "boot": "da364dec-68f1-4c3d-a6df-a4dd948f08c4",
+    "configs": {
+      "/etc/systemd/timesyncd.conf": "e6734751f8aaf19fddfff891ad246387f5f59bd9ff1a5f0cac2c34bc81941c62",
+      "/etc/wsl.conf": "ca76852426d685301ce8b4461d2bc40d1901c93aea8c0b4b684707c94e4cf507",
+      "/mnt/c/Users/ArturBuzov/.wslconfig": null
+    },
+    "cpuinfo_identity_sha256": "12632a8ae9f939faa7b38b36dbfd96dc1f1542a3dc1cc87f9bf7d96b4c660377",
+    "dirty": "",
+    "gid": 1000,
+    "head": "fdd8793bdb044c8ce7bc0b463e30a7ea96c06e14",
+    "kernel": "6.6.87.2-microsoft-standard-WSL2",
+    "namespaces": {
+      "cgroup": "cgroup:[4026531835]",
+      "ipc": "ipc:[4026532208]",
+      "mnt": "mnt:[4026532220]",
+      "net": "net:[4026531840]",
+      "pid": "pid:[4026532223]",
+      "time": "time:[4026531834]",
+      "user": "user:[4026531837]",
+      "uts": "uts:[4026532222]"
+    },
+    "qualification": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+    "taskset_sha256": "a431738fadddc2e2326c8ab81843e72f4011658379381aef1502a6ddb1c1115b",
+    "uid": 1000
+  },
+  "build_environment": {
+    "CARGO_BUILD_JOBS": "2",
+    "CARGO_NET_OFFLINE": "true",
+    "RUSTFLAGS": "-Dwarnings"
+  },
+  "cleanup": {
+    "expected_timeout_seconds": 5,
+    "first_refusal": "First measured child refused: 000-profile",
+    "measurement_executed": false,
+    "passed": true,
+    "pidfds_observed_exited": 2,
+    "product": false,
+    "ready": {
+      "child": {
+        "pgrp": 385,
+        "pid": 386,
+        "ppid": 385,
+        "session": 385,
+        "start_ticks": 12120,
+        "state": "S"
+      },
+      "leader": {
+        "pgrp": 385,
+        "pid": 385,
+        "ppid": 258,
+        "session": 385,
+        "start_ticks": 12117,
+        "state": "R"
+      },
+      "measurement": false,
+      "product": false,
+      "schema": "authority-native-synthetic-timeout-v1",
+      "uid": 1000
+    },
+    "schema": "authority-native-cleanup-control-v1"
+  },
+  "clocks_changed": false,
+  "failure": null,
+  "images": {
+    "188": {
+      "baseline": {
+        "compiler": "1.88.0",
+        "path": "/home/artur/.cache/hydracache-074-runtime-native-validation/second/target-188-baseline/release/deps/hydracache_long_run_supervisor_074-19566b75c882a260",
+        "sha256": "10f8fb86bb8cd270f1cb3a9f0e7bc83b56b0f03a210f43f8a15c30f4613d81f8"
+      },
+      "installed": {
+        "compiler": "1.88.0",
+        "path": "/home/artur/.cache/hydracache-074-runtime-native-validation/second/target-188-installed/release/deps/hydracache_long_run_supervisor_074-19566b75c882a260",
+        "sha256": "565d791869a93d11dd3fbe3525d4a990e9b02bc0cfdb49bca181e3301132dffe"
+      }
+    },
+    "194": {
+      "baseline": {
+        "compiler": "1.94.0",
+        "path": "/home/artur/.cache/hydracache-074-runtime-native-validation/second/target-194-baseline/release/deps/hydracache_long_run_supervisor_074-5138eed558b3af90",
+        "sha256": "888f003241b0b32def742982ca6a7ce33fed5dc8ea919d491d3dd941b00e0ae3"
+      },
+      "installed": {
+        "compiler": "1.94.0",
+        "path": "/home/artur/.cache/hydracache-074-runtime-native-validation/second/target-194-installed/release/deps/hydracache_long_run_supervisor_074-5138eed558b3af90",
+        "sha256": "2474e51115a299e8c78281f745b5da786f15b34fe4902729033e6ec92fead176"
+      }
+    }
+  },
+  "input_hashes": {
+    "docs/testing/performance/0.74/authority-runtime-variance-method-20261022.md": "f8a4d385cf44282eb8906c1768a2d3aacd8f77e7c4e04c66199d48592131adab",
+    "docs/testing/performance/0.74/authority-runtime-variance-method-v2-20261022.md": "c25815a93fc704542d6730710188aff06bb225fdb679bf0e17b4cda7ecd959ea",
+    "tools/authority-runtime-allocation-074/run.py": "1d238388466a4a8421698ac0bf6a9313a8bdead69e25dbf6e79549c4b35a840e",
+    "tools/authority-runtime-balanced-074/README.md": "e7da14017058d15ff3cae97d5ee02df2cdb4cc513f6b7f6904cc1337739e08bd",
+    "tools/authority-runtime-balanced-074/balanced.py": "435b721433b939ab6aec3065d51e036a27261bf5e65b146d6aba2a12c248dfa8",
+    "tools/authority-runtime-balanced-074/evaluate.py": "a685fb62bd04eaf0ac1ea86cda5aeff1098384890111dd42bda8911c15ae2473",
+    "tools/authority-runtime-balanced-074/runner.py": "5bf1c03c87f08c9d525fc058e5be56b2abcdabc6a32ef8ced9501f2c6005a9d4",
+    "tools/authority-runtime-balanced-074/test_runner.py": "76429edd6f93d42cd9e5da8f4573c02f90101f6a7fcd2d7c7e3f8dc1d15838c9",
+    "tools/authority-runtime-cpu-074/probe.rs": "9289a292727545fc90dcef37dac1be57aa1d10a8c158b1e7521723e7666bf513",
+    "tools/authority-runtime-cpu-074/review.py": "d6c9b3be8bceeb38e29b7c169bbb89eb2448fdd7ffbe8dae90f0bdce25db40c5",
+    "tools/authority-runtime-cpu-074/run.py": "f1d047a1b707d06de7a118f7b5ff093d24ad0ed7c5a75a381622046ad4cd3364",
+    "tools/authority-runtime-cpu-074/seal.py": "def02a4ce2ba476c81a1f159ceeefb4f75ada82681813a25f3999ff0acc0633f",
+    "tools/authority-runtime-native-074/README.md": "2897cbf7438c7bfac91ad13de0ab0afa6a0adde50487fadf4f8f0077145d3a7f",
+    "tools/authority-runtime-native-074/cleanup_child.py": "fda07d918f29dce8c45fc820a0320ec96cd4660b41ba63cdff2d2baaf0cbdb26",
+    "tools/authority-runtime-native-074/test_validate.py": "a8adb3a06055396108e3f41c4c2a7fa89d3f4ef2e36a11df9ee394f521bcc5db",
+    "tools/authority-runtime-native-074/validate.py": "377341a083162491cd934d2254354143e2e47d933b764ba24243bb102f69de9d",
+    "tools/authority-runtime-variance-074/analyze.py": "93b44aec435ac959a00d1d71af1d63850deb08ffd70b0a81edf6cd6f5f21c388"
+  },
+  "measurement_executed": false,
+  "owned_root": "/home/artur/.cache/hydracache-074-runtime-native-validation/second",
+  "phases": [
+    "cleanup",
+    "seed-audit",
+    "build-only",
+    "postflight"
+  ],
+  "product": false,
+  "runtime_images_executed": false,
+  "schema": "authority-runtime-native-validation-074-v1",
+  "server": false,
+  "services_changed": false,
+  "source": "fdd8793bdb044c8ce7bc0b463e30a7ea96c06e14"
+}

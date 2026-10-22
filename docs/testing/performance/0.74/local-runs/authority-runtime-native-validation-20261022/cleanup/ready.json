@@ -1,0 +1,1 @@
+{"schema": "authority-native-synthetic-timeout-v1", "uid": 1000, "leader": {"pid": 385, "state": "R", "ppid": 258, "pgrp": 385, "session": 385, "start_ticks": 12117}, "child": {"pid": 386, "state": "S", "ppid": 385, "pgrp": 385, "session": 385, "start_ticks": 12120}, "product": false, "measurement": false}

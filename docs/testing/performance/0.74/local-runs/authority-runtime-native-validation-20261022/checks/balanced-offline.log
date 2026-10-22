@@ -1,0 +1,25 @@
+test_all_64_synthetic_positions_complete_serially (__main__.Controls.test_all_64_synthetic_positions_complete_serially) ... ok
+test_complete_reader_and_tamper_refusals_use_fabricated_transcripts_only (__main__.Controls.test_complete_reader_and_tamper_refusals_use_fabricated_transcripts_only) ... ok
+test_environment_and_unsafe_attempt_refuse_before_preparation (__main__.Controls.test_environment_and_unsafe_attempt_refuse_before_preparation) ... ok
+test_exact_schedule_digest_positions_and_counts (__main__.Controls.test_exact_schedule_digest_positions_and_counts) ... ok
+test_existing_partial_cohort_never_resumes (__main__.Controls.test_existing_partial_cohort_never_resumes) ... ok
+test_first_refusals_keep_prefix_without_retry (__main__.Controls.test_first_refusals_keep_prefix_without_retry) ... ok
+test_freeze_exact_source_and_original_deadline (__main__.Controls.test_freeze_exact_source_and_original_deadline) ... ok
+test_freeze_timeout_and_wrong_digest_never_launch (__main__.Controls.test_freeze_timeout_and_wrong_digest_never_launch) ... ok
+test_frozen_probe_overlay_and_fresh_build_guards_stay_original (__main__.Controls.test_frozen_probe_overlay_and_fresh_build_guards_stay_original) ... ok
+test_full_execute_orchestration_is_mocked_without_builds_or_profiles (__main__.Controls.test_full_execute_orchestration_is_mocked_without_builds_or_profiles) ... ok
+test_geometric_block_estimator_and_zero_counters (__main__.Controls.test_geometric_block_estimator_and_zero_counters) ... ok
+test_image_role_compiler_and_hash_reuse_refuse (__main__.Controls.test_image_role_compiler_and_hash_reuse_refuse) ... ok
+test_native_adapter_success_is_mocked_and_retains_parent_receipt (__main__.Controls.test_native_adapter_success_is_mocked_and_retains_parent_receipt) ... ok
+test_native_spawn_failure_keeps_first_error_without_kill_or_retry (__main__.Controls.test_native_spawn_failure_keeps_first_error_without_kill_or_retry) ... ok
+test_native_timeout_and_interrupt_kill_only_owned_group_in_mock (__main__.Controls.test_native_timeout_and_interrupt_kill_only_owned_group_in_mock) ... ok
+test_optional_context_missing_is_explicit_not_a_filter (__main__.Controls.test_optional_context_missing_is_explicit_not_a_filter) ... ok
+test_plan_cli_has_no_native_or_build_route (__main__.Controls.test_plan_cli_has_no_native_or_build_route) ... ok
+test_remaining_budget_caps_child_and_stops_without_extension (__main__.Controls.test_remaining_budget_caps_child_and_stops_without_extension) ... ok
+test_strict_native_build_check_command_receipts (__main__.Controls.test_strict_native_build_check_command_receipts) ... ok
+test_summarizer_requires_every_block_and_canonical_workload (__main__.Controls.test_summarizer_requires_every_block_and_canonical_workload) ... ok
+
+----------------------------------------------------------------------
+Ran 20 tests in 8.486s
+
+OK

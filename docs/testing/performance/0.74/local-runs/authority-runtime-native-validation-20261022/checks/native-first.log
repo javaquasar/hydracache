@@ -1,0 +1,16 @@
+Traceback (most recent call last):
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/authority-runtime-native-074/validate.py", line 178, in <module>
+    run(parser.parse_args().attempt)
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/authority-runtime-native-074/validate.py", line 130, in run
+    r.environment_guard(); m.reference()
+                           ^^^^^^^^^^^^^
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/authority-runtime-balanced-074/balanced.py", line 65, in reference
+    history.guard()
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/authority-runtime-variance-074/analyze.py", line 116, in guard
+    value = predecessor.verify(PACKET)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/authority-runtime-cpu-074/seal.py", line 32, in verify
+    method.common.need(rows == inventory(folder), 'CPU packet membership/bytes changed')
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/authority-runtime-allocation-074/run.py", line 41, in need
+    raise ValueError(message)
+ValueError: CPU packet membership/bytes changed

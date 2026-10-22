@@ -1,0 +1,23 @@
+{
+  "argv": [
+    "/home/artur/.cargo/bin/cargo",
+    "+1.94.0",
+    "clippy",
+    "--release",
+    "--offline",
+    "--locked",
+    "-p",
+    "hydracache-long-run-supervisor-074",
+    "--lib",
+    "--tests",
+    "--",
+    "-D",
+    "warnings"
+  ],
+  "cwd": "/home/artur/.cache/hydracache-074-runtime-native-validation/second/installed",
+  "exit": 0,
+  "name": "194-installed-clippy",
+  "stderr_sha256": "820bca56544c147c51728ad9eacfad765f13f54ebcc94fc6c45f53299c104fa3",
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "timeout": false
+}

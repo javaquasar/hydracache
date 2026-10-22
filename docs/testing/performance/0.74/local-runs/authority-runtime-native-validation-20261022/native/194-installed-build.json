@@ -1,0 +1,21 @@
+{
+  "argv": [
+    "/home/artur/.cargo/bin/cargo",
+    "+1.94.0",
+    "test",
+    "--release",
+    "--offline",
+    "--locked",
+    "-p",
+    "hydracache-long-run-supervisor-074",
+    "--lib",
+    "--no-run",
+    "--message-format=json"
+  ],
+  "cwd": "/home/artur/.cache/hydracache-074-runtime-native-validation/second/installed",
+  "exit": 0,
+  "name": "194-installed-build",
+  "stderr_sha256": "b43a068426d64d3ef3307f6b20439a9ff25597696d9b6b534e3efdd77c1e203d",
+  "stdout_sha256": "7284275247ea4e157a25a5cc5d9c04047261d504edee874d806ff9ede87b2d6c",
+  "timeout": false
+}

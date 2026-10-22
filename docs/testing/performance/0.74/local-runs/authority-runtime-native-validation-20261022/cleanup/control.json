@@ -1,0 +1,31 @@
+{
+  "expected_timeout_seconds": 5,
+  "first_refusal": "First measured child refused: 000-profile",
+  "measurement_executed": false,
+  "passed": true,
+  "pidfds_observed_exited": 2,
+  "product": false,
+  "ready": {
+    "child": {
+      "pgrp": 385,
+      "pid": 386,
+      "ppid": 385,
+      "session": 385,
+      "start_ticks": 12120,
+      "state": "S"
+    },
+    "leader": {
+      "pgrp": 385,
+      "pid": 385,
+      "ppid": 258,
+      "session": 385,
+      "start_ticks": 12117,
+      "state": "R"
+    },
+    "measurement": false,
+    "product": false,
+    "schema": "authority-native-synthetic-timeout-v1",
+    "uid": 1000
+  },
+  "schema": "authority-native-cleanup-control-v1"
+}

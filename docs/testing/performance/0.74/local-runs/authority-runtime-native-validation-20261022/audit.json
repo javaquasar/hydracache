@@ -1,0 +1,45 @@
+{
+  "cleanup_pidfds_exited": 2,
+  "first_preflight_refusal": "checks/native-first.log",
+  "images": [
+    {
+      "compiler": "188",
+      "elf64_x86_64": true,
+      "executed": false,
+      "role": "baseline",
+      "sha256": "10f8fb86bb8cd270f1cb3a9f0e7bc83b56b0f03a210f43f8a15c30f4613d81f8"
+    },
+    {
+      "compiler": "188",
+      "elf64_x86_64": true,
+      "executed": false,
+      "role": "installed",
+      "sha256": "565d791869a93d11dd3fbe3525d4a990e9b02bc0cfdb49bca181e3301132dffe"
+    },
+    {
+      "compiler": "194",
+      "elf64_x86_64": true,
+      "executed": false,
+      "role": "baseline",
+      "sha256": "888f003241b0b32def742982ca6a7ce33fed5dc8ea919d491d3dd941b00e0ae3"
+    },
+    {
+      "compiler": "194",
+      "elf64_x86_64": true,
+      "executed": false,
+      "role": "installed",
+      "sha256": "2474e51115a299e8c78281f745b5da786f15b34fe4902729033e6ec92fead176"
+    }
+  ],
+  "measurement_executed": false,
+  "native_runtime_images_executed": false,
+  "portable_inventory_order": "case-sensitive POSIX member strings",
+  "schema": "authority-runtime-native-audit-074-v1",
+  "seed_members_per_compiler": {
+    "188": 1869,
+    "194": 1869
+  },
+  "source": "fdd8793bdb044c8ce7bc0b463e30a7ea96c06e14",
+  "successful_build_commands": 14,
+  "unchanged_metadata": true
+}

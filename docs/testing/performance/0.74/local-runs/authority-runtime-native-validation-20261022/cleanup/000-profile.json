@@ -1,0 +1,23 @@
+{
+  "argv": [
+    "/usr/bin/taskset",
+    "--cpu-list",
+    "0",
+    "/home/artur/.cache/hydracache-074-runtime-native-validation/second/cleanup/synthetic-timeout",
+    "diagnostic_worker_policy::authority_registry::fixture::tests::runtime_cpu::runtime_cpu_measurement",
+    "--exact",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "cwd": "/home/artur/.cache/hydracache-074-runtime-native-validation/second/cleanup",
+  "error": null,
+  "exit": -9,
+  "exit_raw_ns": 126165186223,
+  "name": "000-profile",
+  "pid": 385,
+  "spawned_raw_ns": 121128773472,
+  "start_raw_ns": 121128378900,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stdout_sha256": "5cb4e802b29d183235c97e827ce9ebbddf99ce92a89cb39856b1b256625c7933",
+  "timeout": true
+}
