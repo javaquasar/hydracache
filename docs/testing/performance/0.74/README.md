@@ -5916,3 +5916,17 @@ minimal owned-scratch runtime patch and real filesystem semantic controls. The
 audit applies no runtime patch, runs no model/live image and adds no measurement.
 Twenty-three prior seals/1363 members retain both clean and refused cohorts;
 original windows/refusals, qualification and real fault/server gates stay closed.
+
+### Isolated historical authority reader view
+
+The [historical view](authority-history-view-20261022.md) replays unchanged readers
+against 129 source files and 24 sealed packets from a fixed Git commit. Facts
+match archived results; an altered current-source copy fails the independent
+baseline byte guard. A source-only LF reconstruction preserves qualification's
+exact raw digest without touching sealed packet bytes. The first unit refusal
+and its newline-attribution correction are retained separately.
+
+This closes only offline Python reader replay. The current owned-storage semantic
+guard, observer and historical Rust guard wiring remain before runtime mutation.
+No old measurement image, live/WSL/server action or new performance claim follows;
+original windows/refusals, qualification and real admission gates are unchanged.

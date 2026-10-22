@@ -17436,3 +17436,22 @@ but leave the candidate unchecked. The next patch needs immutable historical
 replay alongside a separately guarded current observer and complete cleanup
 paths. This audit changes no runtime or measured result and does not establish
 filesystem/crash behavior or server readiness.
+
+### Keep a historical replay separate from current candidate proof
+
+The [isolated historical view](../testing/performance/0.74/authority-history-view-20261022.md)
+materializes 129 pinned sources and 24 sealed packets from a fixed Git commit,
+then runs unchanged offline readers in a fresh Python process. Their facts match
+the archive. A mutated temporary current-source copy still fails the independent
+baseline byte guard: historical success cannot authorize changed runtime.
+
+The first unit setup caught a representation mismatch. The qualification blob
+and worktree contain LF, while Git archive emitted CRLF. The repair reconstructs
+only the explicitly pinned LF source images and verifies their raw hashes; packet
+bytes and qualification's expected digest remain unchanged. The initial refusal
+and the corrected byte attribution remain distinct from later passing controls.
+
+This implements the offline reader-view boundary, not the owned-storage patch.
+Current candidate bodies, mutable observer equivalence, whole-journal cleanup and
+historical Rust guard wiring still need their own checks. No measurement image,
+live attempt or server workload runs, and no new performance gain is inferred.

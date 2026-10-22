@@ -1804,3 +1804,18 @@ exercise actual temporary-filesystem semantics before any original-owner/live
 attempt. Do not rerun old measurement images or edit first evidence. Original
 windows/refusals, qualification and delivery/all-writer/full-fault/lost-ACK/
 reconnect/server gates remain unchanged; no WSL or server action is opened here.
+
+### Offline historical reader view no longer depends on current runtime bytes
+
+The [isolated source view](authority-history-view-20261022.md) reproduces the old
+authority audit with unchanged Python readers and separately pinned Git sources/
+sealed packets. Historical success and current baseline byte identity are separate
+decisions; a changed temporary current-source copy refuses. The source text adapter
+preserves the original LF qualification bytes and retains the initial unit refusal.
+
+Next implement current owned-storage exact-body guards and a versioned mutable
+observer, then explicitly wire historical Rust checks without disabling current
+candidate validation. This view alone does not complete that migration or admit
+a runtime patch. Keep all five cleanup paths, real Record/publication semantics,
+live checks, original windows/refusals and qualification unchanged. No WSL, real
+fault/original-owner attempt, clock/service change or server action is opened.
