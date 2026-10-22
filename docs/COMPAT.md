@@ -1945,3 +1945,29 @@ receive, durable intent, root/process/Armed proof, production enrollment or serv
 admission. No migration/fallback or changes to old signed formats, live checks,
 46 brackets or original 300/60/10 origins/deadlines are introduced.
 <!-- END HELD RUNTIME TRUST V1 -->
+
+<!-- BEGIN HELD ACTIVATION INGRESS V1 -->
+## Explicit held activation environment ingress v1
+
+The diagnostic_held_launcher argument --systemd-activation-v1 selects only a
+metadata adapter. It requires exactly LISTEN_PID equal to its canonical decimal
+current PID, LISTEN_FDS equal to 8 and LISTEN_FDNAMES equal to
+release:worker:config:creator:root-a:root-b:alarm:bootstrap. The eight extra
+descriptors correspond to inherited slots 3 through 10; stdio is separate.
+Missing, duplicate, unknown, non-UTF8 or noncanonical fields/values and future
+arguments refuse with exit 2; no legacy-entry retry or automatic detection.
+
+The fresh single-threaded adapter removes only these three validated variables,
+checks that the environment is empty and enters the unchanged HCHL0741 core.
+The no-argument entry still rejects any environment. All original privilege,
+content, FD, creator/guardian, alarm/deadline, peer and release checks remain;
+no role descriptor is opened, duplicated, remapped or sent by metadata adaptation.
+This adds no timer, renewed deadline or migration of HCHL0741/HCLR0741 bytes.
+
+LISTEN metadata is not manager authentication, executable addressing or original
+owner proof. Manager defaults must be suppressed by a separately admitted unit,
+not silently cleared by this adapter. Complete pre-exec environment admission,
+retained launcher addressing, original manager delivery, all-writer cessation
+and server readiness are independent gates. No installation or service start is
+enabled by accepting this metadata.
+<!-- END HELD ACTIVATION INGRESS V1 -->

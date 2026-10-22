@@ -3,9 +3,19 @@
 #[path = "../diagnostic_held_launcher_kernel.rs"]
 mod kernel;
 
+#[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+#[path = "../diagnostic_held_activation_ingress.rs"]
+mod activation;
+
 fn main() {
     #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
-    if std::env::args_os().len() == 1 {
+    if std::env::args_os().len() == 1 || activation::requested() {
+        if activation::requested() {
+            if let Err(error) = activation::prepare() {
+                eprintln!("Held activation refused: {error}; never retry through legacy entry.");
+                std::process::exit(2);
+            }
+        }
         if let Err(error) = kernel::run() {
             eprintln!("Held launcher refused: {error}; outcome uncertain, never resend.");
         }
