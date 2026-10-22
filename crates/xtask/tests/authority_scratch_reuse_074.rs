@@ -1,14 +1,16 @@
+#[path = "support/authority_history_io.rs"]
+mod history;
 const REFERENCE: &str = "187ac5c7";
 fn root() -> std::path::PathBuf {
     std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
 }
 fn read(path: &str) -> String {
-    std::fs::read_to_string(root().join(path))
+    history::read_to_string(root().join(path))
         .unwrap()
         .replace('\r', "")
 }
 fn old(revision: &str, path: &str) -> String {
-    let output = std::process::Command::new("git")
+    let output = history::command()
         .args(["show", &format!("{revision}:{path}")])
         .current_dir(root())
         .output()
@@ -148,7 +150,7 @@ fn scratch_image_has_no_os_transport_launch_or_admission_clock() {
             assert!(!names.iter().any(|n| n == "Instant"));
         }
     }
-    let output = std::process::Command::new("git")
+    let output = history::command()
         .args([
             "diff",
             "--exit-code",

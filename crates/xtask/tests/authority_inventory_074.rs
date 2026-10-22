@@ -1,7 +1,9 @@
 #[path = "support/document_scratch_guard.rs"]
 mod guard;
+#[path = "support/authority_history_io.rs"]
+mod history;
 fn read(path: &str) -> String {
-    let raw = std::fs::read_to_string(
+    let raw = history::read_to_string(
         std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("../..")
             .join(path),
@@ -26,7 +28,7 @@ fn authority_inventory_exact_view_restores_baseline_and_rejects_unknown_or_dupli
             "test = \"authority_inventory_allocation_attribution\""
         };
         assert_eq!(raw.matches(marker).count(), 1);
-        let output = std::process::Command::new("git")
+        let output = history::command()
             .args([
                 "show",
                 &format!("85cec4a666e777c57a6cf05bfa4b4ec2641c9b39:{path}"),

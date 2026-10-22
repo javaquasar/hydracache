@@ -1,7 +1,9 @@
 #[path = "support/document_scratch_guard.rs"]
 mod guard;
+#[path = "support/authority_history_io.rs"]
+mod history;
 fn read(path: &str) -> String {
-    std::fs::read_to_string(
+    history::read_to_string(
         std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("../..")
             .join(path),
@@ -17,7 +19,7 @@ fn authority_fd_path_exact_view_preserves_baseline_and_refuses_drift() {
         "docs/testing/gated-test-registry.toml",
     ] {
         let raw = read(path);
-        let output = std::process::Command::new("git")
+        let output = history::command()
             .args([
                 "show",
                 &format!("d90228c71288a4e45076fb12785cec1ba91ab089:{path}"),

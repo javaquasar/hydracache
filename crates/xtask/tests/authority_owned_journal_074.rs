@@ -1,14 +1,16 @@
+#[path = "support/authority_history_io.rs"]
+mod history;
 const BASE: &str = "227f1559";
 fn root() -> std::path::PathBuf {
     std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
 }
 fn read(path: &str) -> String {
-    std::fs::read_to_string(root().join(path))
+    history::read_to_string(root().join(path))
         .unwrap()
         .replace('\r', "")
 }
 fn old(path: &str) -> String {
-    let out = std::process::Command::new("git")
+    let out = history::command()
         .args(["show", &format!("{BASE}:{path}")])
         .current_dir(root())
         .output()
@@ -111,7 +113,7 @@ fn owned_model_has_no_os_clock_transport_or_launch_path() {
             assert!(!names.iter().any(|n| n == "RefCell" || n == "Clone"));
         }
     }
-    let out = std::process::Command::new("git")
+    let out = history::command()
         .args([
             "diff",
             "--exit-code",

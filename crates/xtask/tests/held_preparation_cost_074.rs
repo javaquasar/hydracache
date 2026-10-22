@@ -1,4 +1,6 @@
 //! Historical bytes reconstructed only through exact observer/prefix changes.
+#[path = "support/authority_history_io.rs"]
+mod history;
 #[path = "support/projection_prefix_guard.rs"]
 mod prefix;
 const BASE: &str = "b41a7fb652f0687fbe5bad3222b5fa82f5e09443";
@@ -7,13 +9,13 @@ fn root() -> std::path::PathBuf {
     std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..")
 }
 fn read(path: &str) -> String {
-    let raw = std::fs::read_to_string(root().join(path))
+    let raw = history::read_to_string(root().join(path))
         .unwrap()
         .replace('\r', "");
     prefix::fresh_status::pid_path::custody_cost::document_scratch::normalize(path, &raw)
 }
 fn git(args: &[&str]) -> String {
-    let out = std::process::Command::new("git")
+    let out = history::command()
         .args(args)
         .current_dir(root())
         .output()

@@ -1,16 +1,18 @@
 #[path = "support/pidfd_info_path_guard.rs"]
 mod guard;
+#[path = "support/authority_history_io.rs"]
+mod history;
 
 fn root() -> std::path::PathBuf {
     std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
 }
 fn read(path: &str) -> String {
-    std::fs::read_to_string(root().join(path))
+    history::read_to_string(root().join(path))
         .unwrap()
         .replace('\r', "")
 }
 fn git(args: &[&str]) -> String {
-    let result = std::process::Command::new("git")
+    let result = history::command()
         .args(args)
         .current_dir(root())
         .output()
@@ -146,10 +148,10 @@ fn pidfd_info_path_helper_is_private_pure_owned_bytes_without_cache_or_new_kerne
 fn pidfd_info_path_only_exact_allocation_hook_is_added_at_baseline() {
     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
     let path = "tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs";
-    let raw = std::fs::read_to_string(root.join(path))
+    let raw = history::read_to_string(root.join(path))
         .unwrap()
         .replace('\r', "");
-    let prior = std::process::Command::new("git")
+    let prior = history::command()
         .args(["show", &format!("f9e7cada:{path}")])
         .current_dir(&root)
         .output()

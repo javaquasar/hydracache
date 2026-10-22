@@ -1,8 +1,10 @@
 #[path = "support/document_scratch_guard.rs"]
 mod guard;
+#[path = "support/authority_history_io.rs"]
+mod history;
 use proc_macro2::{Delimiter, Group, Ident, Punct, Spacing, TokenStream, TokenTree};
 fn read(path: &str) -> String {
-    std::fs::read_to_string(
+    history::read_to_string(
         std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("../..")
             .join(path),
@@ -204,7 +206,7 @@ fn authority_owners_only_adds_exact_hooks_and_preserves_every_runtime_byte() {
         "docs/testing/gated-test-registry.toml",
     ] {
         let raw = read(path);
-        let output = std::process::Command::new("git")
+        let output = history::command()
             .args([
                 "show",
                 &format!("578fd6409eaf393f3d658bf209b439fcc42e6110:{path}"),

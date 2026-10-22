@@ -1,7 +1,9 @@
 #[path = "support/boot_operations_guard.rs"]
 mod guard;
+#[path = "support/authority_history_io.rs"]
+mod history;
 fn read(path: &str) -> String {
-    std::fs::read_to_string(
+    history::read_to_string(
         std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("../..")
             .join(path),
@@ -10,7 +12,7 @@ fn read(path: &str) -> String {
     .replace('\r', "")
 }
 fn old(path: &str) -> String {
-    let result = std::process::Command::new("git")
+    let result = history::command()
         .args(["show", &format!("c80a3fb8:{path}")])
         .output()
         .unwrap();

@@ -1,8 +1,10 @@
 #[path = "support/document_scratch_guard.rs"]
 mod guard;
+#[path = "support/authority_history_io.rs"]
+mod history;
 
 fn read(path: &str) -> String {
-    std::fs::read_to_string(
+    history::read_to_string(
         std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("../..")
             .join(path),
@@ -11,7 +13,7 @@ fn read(path: &str) -> String {
     .replace('\r', "")
 }
 fn baseline(path: &str) -> String {
-    let output = std::process::Command::new("git")
+    let output = history::command()
         .args(["show", &format!("6eeb4b63:{path}")])
         .output()
         .unwrap();

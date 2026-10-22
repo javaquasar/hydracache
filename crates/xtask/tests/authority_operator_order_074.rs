@@ -1,14 +1,16 @@
+#[path = "support/authority_history_io.rs"]
+mod history;
 const BASE: &str = "49f10265";
 fn root() -> std::path::PathBuf {
     std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
 }
 fn read(path: &str) -> String {
-    std::fs::read_to_string(root().join(path))
+    history::read_to_string(root().join(path))
         .unwrap()
         .replace('\r', "")
 }
 fn old(revision: &str, path: &str) -> String {
-    let out = std::process::Command::new("git")
+    let out = history::command()
         .args(["show", &format!("{revision}:{path}")])
         .current_dir(root())
         .output()
@@ -164,7 +166,7 @@ fn operator_image_has_no_clock_os_or_transport_capability() {
             assert!(!names.iter().any(|n| n == forbidden), "{file}/{forbidden}");
         }
     }
-    let out = std::process::Command::new("git")
+    let out = history::command()
         .args([
             "diff",
             "--exit-code",

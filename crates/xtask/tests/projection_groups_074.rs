@@ -1,16 +1,18 @@
 #[path = "support/projection_groups_guard.rs"]
 mod guard;
+#[path = "support/authority_history_io.rs"]
+mod history;
 
 fn root() -> std::path::PathBuf {
     std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
 }
 fn read(path: &str) -> String {
-    std::fs::read_to_string(root().join(path))
+    history::read_to_string(root().join(path))
         .unwrap()
         .replace('\r', "")
 }
 fn git(args: &[&str]) -> String {
-    let result = std::process::Command::new("git")
+    let result = history::command()
         .args(args)
         .current_dir(root())
         .output()

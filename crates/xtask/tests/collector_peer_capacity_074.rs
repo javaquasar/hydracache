@@ -1,15 +1,17 @@
 #[path = "support/collector_peer_capacity_guard.rs"]
 mod guard;
+#[path = "support/authority_history_io.rs"]
+mod history;
 fn root() -> std::path::PathBuf {
     std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
 }
 fn read(path: &str) -> String {
-    std::fs::read_to_string(root().join(path))
+    history::read_to_string(root().join(path))
         .unwrap()
         .replace('\r', "")
 }
 fn git(args: &[&str]) -> String {
-    let value = std::process::Command::new("git")
+    let value = history::command()
         .args(args)
         .current_dir(root())
         .output()

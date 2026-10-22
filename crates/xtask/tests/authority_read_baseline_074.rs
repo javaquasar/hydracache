@@ -1,14 +1,16 @@
+#[path = "support/authority_history_io.rs"]
+mod history;
 const BASE: &str = "94114c62";
 fn root() -> std::path::PathBuf {
     std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
 }
 fn read(path: &str) -> String {
-    std::fs::read_to_string(root().join(path))
+    history::read_to_string(root().join(path))
         .unwrap()
         .replace('\r', "")
 }
 fn old(path: &str) -> String {
-    let output = std::process::Command::new("git")
+    let output = history::command()
         .args(["show", &format!("{BASE}:{path}")])
         .current_dir(root())
         .output()
@@ -51,7 +53,7 @@ fn authority_read_baseline_copies_complete_bodies_and_leaves_runtime_unchanged()
         read("tools/proc-document-baseline-074/counter.rs"),
         old("tools/proc-document-baseline-074/counter.rs")
     );
-    let output = std::process::Command::new("git")
+    let output = history::command()
         .args([
             "diff",
             "--exit-code",

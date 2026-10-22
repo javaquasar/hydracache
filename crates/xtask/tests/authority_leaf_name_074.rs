@@ -1,7 +1,9 @@
 #[path = "support/document_scratch_guard.rs"]
 mod guard;
+#[path = "support/authority_history_io.rs"]
+mod history;
 fn read(path: &str) -> String {
-    std::fs::read_to_string(
+    history::read_to_string(
         std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("../..")
             .join(path),
@@ -25,7 +27,7 @@ fn authority_leaf_name_restores_previous_sources_and_refuses_unknown_implementat
             "test = \"authority_leaf_name_allocation_attribution\""
         };
         assert_eq!(raw.matches(marker).count(), 1);
-        let output = std::process::Command::new("git")
+        let output = history::command()
             .args([
                 "show",
                 &format!("8a605558e8e773df2c0e6f09bfa23364ada158f1:{path}"),

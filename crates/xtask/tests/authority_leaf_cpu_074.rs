@@ -1,5 +1,7 @@
 #[path = "support/document_scratch_guard.rs"]
 mod guard;
+#[path = "support/authority_history_io.rs"]
+mod history;
 
 #[test]
 fn authority_leaf_cpu_only_adds_exact_test_hooks_and_preserves_runtime() {
@@ -8,14 +10,14 @@ fn authority_leaf_cpu_only_adds_exact_test_hooks_and_preserves_runtime() {
         "tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs",
         "docs/testing/gated-test-registry.toml",
     ] {
-        let raw = std::fs::read_to_string(
+        let raw = history::read_to_string(
             std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
                 .join("../..")
                 .join(path),
         )
         .unwrap()
         .replace('\r', "");
-        let output = std::process::Command::new("git")
+        let output = history::command()
             .args(["show", &format!("b6f84539:{path}")])
             .output()
             .unwrap();
@@ -54,7 +56,7 @@ fn authority_leaf_cpu_only_adds_exact_test_hooks_and_preserves_runtime() {
 fn authority_leaf_cpu_reuses_frozen_traces_and_exact_clock_bodies() {
     use proc_macro2::{Delimiter, TokenStream, TokenTree};
     fn read(path: &str) -> String {
-        std::fs::read_to_string(
+        history::read_to_string(
             std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
                 .join("../..")
                 .join(path),
@@ -94,7 +96,7 @@ fn authority_leaf_cpu_reuses_frozen_traces_and_exact_clock_bodies() {
         "tools/long-run-supervisor-074/tests/support/authority_cpu.rs",
         "tools/long-run-supervisor-074/tests/support/validation_leaf_requests.rs",
     ] {
-        let output = std::process::Command::new("git")
+        let output = history::command()
             .args(["show", &format!("b6f84539:{path}")])
             .output()
             .unwrap();

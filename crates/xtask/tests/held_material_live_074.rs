@@ -1,5 +1,7 @@
 #[path = "support/held_material_live_guard.rs"]
 mod guard;
+#[path = "support/authority_history_io.rs"]
+mod history;
 
 #[test]
 fn held_material_live_adapter_restores_exact_previous_bodies_and_rejects_hook_drift() {
@@ -8,10 +10,10 @@ fn held_material_live_adapter_restores_exact_previous_bodies_and_rejects_hook_dr
         "tools/long-run-supervisor-074/src/diagnostic_held_unit_material.rs",
         "tools/long-run-supervisor-074/tests/support/consuming_held_live.rs",
     ] {
-        let raw = std::fs::read_to_string(root.join(path))
+        let raw = history::read_to_string(root.join(path))
             .unwrap()
             .replace('\r', "");
-        let prior = std::process::Command::new("git")
+        let prior = history::command()
             .args(["show", &format!("215626cb:{path}")])
             .current_dir(&root)
             .output()

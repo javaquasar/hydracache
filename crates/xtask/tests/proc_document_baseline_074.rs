@@ -1,14 +1,16 @@
+#[path = "support/authority_history_io.rs"]
+mod history;
 const BASE: &str = "5310113d3a104b97f09325b4ac7f89c7f85263c4";
 fn root() -> std::path::PathBuf {
     std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
 }
 fn read(path: &str) -> String {
-    std::fs::read_to_string(root().join(path))
+    history::read_to_string(root().join(path))
         .unwrap()
         .replace('\r', "")
 }
 fn old(path: &str) -> String {
-    let output = std::process::Command::new("git")
+    let output = history::command()
         .args(["show", &format!("{BASE}:{path}")])
         .current_dir(root())
         .output()
@@ -82,7 +84,7 @@ fn proc_document_baseline_core_is_complete_except_the_exact_file_adapter() {
 
 #[test]
 fn proc_document_baseline_changes_no_runtime_source_or_sender_schedule() {
-    let output = std::process::Command::new("git")
+    let output = history::command()
         .args([
             "diff",
             "--exit-code",

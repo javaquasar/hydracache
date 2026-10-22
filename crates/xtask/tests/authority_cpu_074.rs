@@ -1,5 +1,7 @@
 #[path = "support/document_scratch_guard.rs"]
 mod guard;
+#[path = "support/authority_history_io.rs"]
+mod history;
 
 #[test]
 fn authority_cpu_only_adds_exact_test_hooks_and_preserves_runtime() {
@@ -8,14 +10,14 @@ fn authority_cpu_only_adds_exact_test_hooks_and_preserves_runtime() {
         "tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs",
         "docs/testing/gated-test-registry.toml",
     ] {
-        let raw = std::fs::read_to_string(
+        let raw = history::read_to_string(
             std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
                 .join("../..")
                 .join(path),
         )
         .unwrap()
         .replace('\r', "");
-        let output = std::process::Command::new("git")
+        let output = history::command()
             .args([
                 "show",
                 &format!("3d227add18d68bea62686ea85f5c225c51ba3f1b:{path}"),

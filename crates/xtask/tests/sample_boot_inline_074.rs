@@ -1,14 +1,16 @@
+#[path = "support/authority_history_io.rs"]
+mod history;
 const BASE: &str = "a6f95e4e1245b52334956ab835bdea4b1f6f2332";
 fn root() -> std::path::PathBuf {
     std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
 }
 fn read(path: &str) -> String {
-    std::fs::read_to_string(root().join(path))
+    history::read_to_string(root().join(path))
         .unwrap()
         .replace('\r', "")
 }
 fn old(path: &str) -> String {
-    let value = std::process::Command::new("git")
+    let value = history::command()
         .args(["show", &format!("{BASE}:{path}")])
         .current_dir(root())
         .output()
@@ -40,7 +42,7 @@ fn inline_boot_reference_restores_the_complete_frozen_receiver_and_model() {
         "#[path = \"controls.rs\"]",
     );
     assert_eq!(restored, old("tools/sample-boot-baseline-074/model.rs"));
-    let value = std::process::Command::new("git")
+    let value = history::command()
         .args([
             "diff",
             "--exit-code",
@@ -98,7 +100,7 @@ fn inline_boot_reference_cost_protocol_is_bounded_and_separate() {
         section(&controls, "fn cases()", "\n}\n")
     );
     assert_eq!(read("tools/sample-boot-inline-074/cost.rs"), {
-        let value = std::process::Command::new("git")
+        let value = history::command()
             .args(["show", "4ec3b04d:tools/sample-boot-inline-074/cost.rs"])
             .current_dir(root())
             .output()

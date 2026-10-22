@@ -1,3 +1,5 @@
+#[path = "support/authority_history_io.rs"]
+mod history;
 const BASE: &str = "79dcf64bee22d801dc983ef62b4c2fefa44a0988";
 const ORIGIN: &str = "tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs";
 const MODEL: &str = "tools/sample-boot-baseline-074/model.rs";
@@ -5,12 +7,12 @@ fn root() -> std::path::PathBuf {
     std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
 }
 fn read(path: &str) -> String {
-    std::fs::read_to_string(root().join(path))
+    history::read_to_string(root().join(path))
         .unwrap()
         .replace('\r', "")
 }
 fn old(path: &str) -> String {
-    let output = std::process::Command::new("git")
+    let output = history::command()
         .args(["show", &format!("{BASE}:{path}")])
         .current_dir(root())
         .output()
@@ -121,7 +123,7 @@ fn sample_boot_baseline_matches_complete_point_sample_decoder_and_prelude() {
 
 #[test]
 fn sample_boot_baseline_preserves_runtime_and_reuses_the_exact_counter() {
-    let output = std::process::Command::new("git")
+    let output = history::command()
         .args([
             "diff",
             "--exit-code",

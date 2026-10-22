@@ -1,5 +1,7 @@
 #[path = "support/held_material_guard.rs"]
 mod guard;
+#[path = "support/authority_history_io.rs"]
+mod history;
 
 #[test]
 fn held_material_inventory_requires_fresh_original_owner_and_deadline_after_census() {
@@ -7,7 +9,7 @@ fn held_material_inventory_requires_fresh_original_owner_and_deadline_after_cens
     assert!(source.contains("let descriptors = fds.into_iter().map(stamp).collect::<io::Result<_>>()?;\n        owner(b)?;\n        Ok(descriptors)"));
 }
 fn read(path: &str) -> String {
-    std::fs::read_to_string(
+    history::read_to_string(
         std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("../..")
             .join(path),
@@ -16,7 +18,7 @@ fn read(path: &str) -> String {
     .replace('\r', "")
 }
 fn old(path: &str) -> String {
-    let out = std::process::Command::new("git")
+    let out = history::command()
         .args(["show", &format!("c9cc5a2e:{path}")])
         .output()
         .unwrap();
