@@ -1,0 +1,19 @@
+{
+  "Cargo.lock": "d2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c",
+  "crates/xtask/tests/held_activation_ingress_074.rs": "858525c8612133a835455845d9021f4f6b1eff66b8be896d9b96df433f00cb17",
+  "docs/COMPAT.md": "7c5fb8d2fd843a1becaaa7a1abb43a2409f75c15be06825de097b2ac7ff198f4",
+  "docs/testing/gated-test-registry.toml": "f804574332d89bc1c73cecb7d8d6f0b228a747748f0ca5b1de8d4d0bd9ae1dc2",
+  "docs/testing/performance/0.74/qualification-manifest.toml": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "tools/held-complete-census-074/check.py": "c46a22d079e5d4577f2ceb27c2ff950b7d11aca01765aa11b94d5784855c4a78",
+  "tools/long-run-supervisor-074/src/bin/diagnostic_held_launcher.rs": "852852e434605be2b503fe6279c315d4d416957308a768a62a36a0096dcbf700",
+  "tools/long-run-supervisor-074/src/diagnostic_consuming_held_join.rs": "d4703a21669a88e1c6d7040e73cc386a604c2bfadd989920ea192b36cfc58b33",
+  "tools/long-run-supervisor-074/src/diagnostic_held_activation_ingress.rs": "c2bb75d950d4702c4f32e72cf30dd95d79e1742d3ae1ed907f3daf9cb5267cb8",
+  "tools/long-run-supervisor-074/src/diagnostic_held_launcher_kernel.rs": "cbe302e3978ebb4e96775206ce41a4bc423c3d1ab483b44882a00af82f867735",
+  "tools/long-run-supervisor-074/src/diagnostic_held_role_census.rs": "c1e57d5efaae7764b3449cafd91650038cfdcdedd18adf48d1d2a4cde1ee3cfa",
+  "tools/long-run-supervisor-074/src/diagnostic_held_unit_material.rs": "600a7c1154fe574cea5b8f76b6087691fa5f52ee53b551661e4260b89f47426f",
+  "tools/long-run-supervisor-074/src/diagnostic_held_unit_projection.rs": "f2bc04d719101b2bc5e23044f80f49db9a32e1ecc3c9f334a79e959ad5cf0cbd",
+  "tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": "ffb8302f2351ee07605e367c42c472a960fca808a5ac8c2d48c13b10097f4a07",
+  "tools/long-run-supervisor-074/src/diagnostic_original_manager_message.rs": "95ba07f143ead7683c2c3d20b178560f6d086d2643f09f030f690b45fd9b17da",
+  "tools/long-run-supervisor-074/tests/held_launcher.rs": "70ca8141f1664f6e59664bbf02bf0695ddb48f69109d5e5551883c60e2048f81",
+  "tools/long-run-supervisor-074/tests/support/held_activation_process.rs": "bfe2d0f9a45967d7a554ed3d95814e59bf480f6d69c63d2976c3796f0ca89ae5"
+}

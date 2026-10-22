@@ -1,0 +1,18 @@
+
+running 1 test
+test activation_ingress_is_explicit_and_keeps_the_complete_old_kernel ... FAILED
+
+failures:
+
+---- activation_ingress_is_explicit_and_keeps_the_complete_old_kernel stdout ----
+
+thread 'activation_ingress_is_explicit_and_keeps_the_complete_old_kernel' (18028) panicked at crates\xtask\tests\held_activation_ingress_074.rs:15:5:
+assertion failed: main.contains("activation::prepare()")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    activation_ingress_is_explicit_and_keeps_the_complete_old_kernel
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

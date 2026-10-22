@@ -1,0 +1,7 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.92s
+     Running tests\held_activation_ingress_074.rs (target\debug\deps\held_activation_ingress_074-e068fc63abc9019e.exe)
+     Running tests\held_complete_role_census_074.rs (target\debug\deps\held_complete_role_census_074-7aa2e7ed5f54637f.exe)
+     Running tests\held_material_074.rs (target\debug\deps\held_material_074-65c16a24996a862b.exe)
+     Running tests\held_material_roles_074.rs (target\debug\deps\held_material_roles_074-14ba25f2c9c68fd0.exe)
+     Running tests\held_unit_projection_074.rs (target\debug\deps\held_unit_projection_074-a20498d8f0d85ed3.exe)

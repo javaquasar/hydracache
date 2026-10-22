@@ -1,0 +1,15 @@
+{
+  "admission_allowed": false,
+  "clock_changes": false,
+  "executable_addressing": false,
+  "original_attempt": false,
+  "original_delivery": false,
+  "product": false,
+  "qualification_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "runtime_commit": "795f77df2bde4fa0e11f05341e4635c7b380603a",
+  "server": false,
+  "service_changes": false,
+  "strict_ingress_component_pass": true,
+  "unchanged_original_deadlines": true,
+  "writers_cessation": false
+}

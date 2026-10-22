@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "python",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tools/held-activation-ingress-074",
+    "-v"
+  ],
+  "elapsed_ns": 588721200,
+  "exit": 0,
+  "stderr_sha256": "2dbd487533a360a4a1ab1f0d046703ff0073950f95da77c2297be12a3fbdeeec",
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

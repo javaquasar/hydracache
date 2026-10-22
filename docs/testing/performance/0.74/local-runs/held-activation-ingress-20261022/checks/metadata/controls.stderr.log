@@ -1,0 +1,10 @@
+test_commands_source_and_output_are_passed_to_the_unchanged_logger (test_check.Controls.test_commands_source_and_output_are_passed_to_the_unchanged_logger) ... ok
+test_existing_lane_refuses_without_subprocess_or_resume (test_check.Controls.test_existing_lane_refuses_without_subprocess_or_resume) ... ok
+test_fixed_lanes_never_select_the_ignored_matrix_or_a_unit (test_check.Controls.test_fixed_lanes_never_select_the_ignored_matrix_or_a_unit) ... ok
+test_exact_lane_changed_sources_commands_logs_and_scope (test_retain.Retention.test_exact_lane_changed_sources_commands_logs_and_scope) ... ok
+test_existing_packet_refuses_before_external_command (test_retain.Retention.test_existing_packet_refuses_before_external_command) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.061s
+
+OK

@@ -1,0 +1,4 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 14.46s
+     Running tests\held_activation_ingress_074.rs (target\debug\deps\held_activation_ingress_074-e068fc63abc9019e.exe)
+error: test failed, to rerun pass `-p xtask --test held_activation_ingress_074`

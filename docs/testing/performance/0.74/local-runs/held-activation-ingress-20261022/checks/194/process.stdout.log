@@ -1,0 +1,6 @@
+
+running 1 test
+test held_activation_environment_ingress_reaches_only_unchanged_core_refusal ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.06s
+
