@@ -17725,3 +17725,26 @@ injector was corrected without removing those checks. The final twenty new
 controls pass, but mocked process cleanup is not kernel process-cleanup proof.
 Actual native validation and the later measured cohort remain separate steps;
 neither the old inconclusive timing result nor server readiness is upgraded.
+
+### Native validation can reveal a portability defect without a benchmark
+
+The [next limited gate](../testing/performance/0.74/authority-runtime-native-validation-20261022.md)
+builds, lints and checks four fresh Linux images on Rust 1.94 and MSRV 1.88,
+but executes none of them. Both 1,869-file dependency seeds retain their sealed
+membership/bytes. A separate synthetic leader and descendant exercise the real
+timeout adapter; both original pidfds report exit after the owned group is
+killed. This validates that ordinary cleanup case, not production all-writer or
+cgroup revocation, and supplies no new timing benefit.
+
+The first preflight failed for a different reason: a Windows-sealed inventory
+and a Linux Path enumeration ordered README.md and collect.ps1 differently.
+All 183 names, lengths and hashes matched. Rewriting the seal would erase the
+boundary failure. Instead, the versioned reader explicitly uses the historical
+inventory order while preserving safe membership, byte/source/facts checks,
+all raw receipts, predecessor and qualification checks. The first refusal stays
+visible; no measured observation is reordered or discarded.
+
+The native subset now passes, while compiled-image clock/semantic controls and
+the actual balanced cohort remain separate authorizations. Compile receipts,
+seed integrity and an ordinary process cleanup proof should not be described as
+a performance result or a green production/server release gate.

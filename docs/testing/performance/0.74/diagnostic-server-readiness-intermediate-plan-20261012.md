@@ -1932,3 +1932,17 @@ No WSL/server launch, clock/service change, installation, supervisor or product
 workload occurred. Original delivery, all-writer cessation, durable later cells,
 real SIGKILL/lost-ACK, reconnect and production enrollment/integration gates
 remain independent; successful synthetic runner tests do not admit them.
+
+### Native runner subset is validated without opening product execution
+
+The [local native subset](authority-runtime-native-validation-20261022.md) now
+passes four fresh builds/checks/lints, immutable dependency seeds and actual
+timeout cleanup of its owned two-process synthetic group. The first portable
+inventory refusal is preserved; its fix changes only filesystem inventory order,
+not packet bytes, observed workload order, validation checks or qualification.
+
+No compiled runtime image, clock/semantic control or measurement cohort runs.
+Normal inherited-group cleanup does not close all-writer/cgroup revocation or
+original delivery, durable later cells, SIGKILL/lost-ACK, reconnect, production
+enrollment or server integration. Keep those gates and all original deadlines /
+first refusals unchanged; no clock/service/server or supervisor action follows.

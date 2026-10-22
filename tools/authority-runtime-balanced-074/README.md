@@ -62,6 +62,9 @@ boundary tie; displayed ratios still use the specified exp/mean/log estimator.
 Primary intervals and the five-percent descriptive boundary are unchanged; no
 pooling, release admission or production end-to-end claim follows.
 
-Actual Linux builds, optional context availability, fresh dependency seeds,
-native timeout cleanup and measured process timing still need their own later
-validation. Offline mocks prove runner control flow and refusal behavior only.
+The [limited native result](../../docs/testing/performance/0.74/authority-runtime-native-validation-20261022.md)
+now verifies four Linux builds/checks/lints, unchanged historical dependency seeds
+and timeout cleanup of an owned synthetic group. It also fixes cross-platform
+inventory ordering without changing sealed bytes or any receipt/workload check.
+Compiled-image clock/semantic controls and measured process timing remain later
+separately authorized steps. Native group cleanup is not all-writer/cgroup proof.

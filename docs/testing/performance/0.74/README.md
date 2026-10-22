@@ -6045,3 +6045,17 @@ and raw receipt. Exact arithmetic preserves strict boundary ties without moving
 0.95/1.05 thresholds. Offline correctness is not native process/timeout proof or
 a new performance result. Next separately validate the native runner before a
 separately authorized measured cohort; no automatic retries or server admission.
+
+### Native build and owned timeout validation passes without measurements
+
+The [limited WSL gate](authority-runtime-native-validation-20261022.md) passes
+four fresh distinct Rust 1.94/MSRV 1.88 release builds, strict clippy and check.
+Each compiler's 1,869-file seed matches its sealed historical manifest before
+and after. The real adapter times out only a synthetic owned group; original
+pidfds prove both leader and stream-inheriting descendant exited.
+
+The first native preflight exposed Windows/Linux inventory sort differences,
+with all 183 member bytes intact. A versioned portable guard preserves every
+source/member/facts/receipt/predecessor/qualification check and the original seal;
+the first refusal remains. No compiled image or 64-process cohort runs. Clock/
+semantic controls, timing benefit and production/server admission remain separate.
