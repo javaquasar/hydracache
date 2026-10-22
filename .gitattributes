@@ -685,3 +685,7 @@ docs/testing/performance/0.74/local-runs/held-manager-compat-20261022/**/*.log w
 docs/testing/performance/0.74/local-runs/held-manager-compat-doc-followup-20261022/** -text whitespace=cr-at-eol
 
 docs/testing/performance/0.74/local-runs/held-manager-compat-doc-followup-20261022/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/held-wsl-native-20261022/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+
+docs/testing/performance/0.74/local-runs/held-wsl-native-20261022/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
