@@ -16,7 +16,7 @@ MANAGER = 'org.freedesktop.systemd1'
 BUS = 'org.freedesktop.DBus'
 PREFIX = 'hc074-fdcompat-'
 QUALIFICATION = '11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc'
-SCHEMA = 'held-manager-compatibility-074-v2'
+SCHEMA = 'held-manager-compatibility-074-v3'
 
 
 def need(value, reason):
@@ -77,6 +77,7 @@ def context():
     sources = ['tools/held-manager-compat-074/' + name for name in ('probe.py', 'test_probe.py', 'README.md')]
     sources.append('docs/testing/performance/0.74/held-manager-compat-plan-20261022.md')
     sources.append('docs/testing/performance/0.74/held-manager-compat-plan-v2-20261022.md')
+    sources.append('docs/testing/performance/0.74/held-manager-compat-plan-v3-20261022.md')
     return dict(boot=Path('/proc/sys/kernel/random/boot_id').read_text(), kernel=os.uname().release,
                 uid=os.getuid(), gid=os.getgid(), qualification=qualification, source=head,
                 source_sha256={name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest() for name in sources},
@@ -133,7 +134,7 @@ def manager_version(receipt):
 def check(bus, unit):
     need(re.fullmatch(PREFIX + r'[0-9a-f]{32}\.service', unit), 'Unsafe private unit')
     manager = owner(bus)
-    value = manager_version(bus.call(manager, MANAGER_PATH, 'org.freedesktop.DBus.Properties', 'Get', 'ss', MANAGER, 'Version'))
+    value = manager_version(bus.call(manager, MANAGER_PATH, 'org.freedesktop.DBus.Properties', 'Get', 'ss', MANAGER + '.Manager', 'Version'))
     # This one negative experiment is preregistered for the observed 255 host.
     # A newer/unknown manager requires actual descriptor controls, never a green
     # result based solely on a version string or an empty descriptor array.

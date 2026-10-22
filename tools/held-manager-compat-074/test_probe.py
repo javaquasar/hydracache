@@ -38,6 +38,12 @@ class Controls(unittest.TestCase):
             with self.assertRaises(ValueError):
                 p.scalar(dict(exit=0, stdout=json.dumps(dict(type='s', data=data)), stderr=''), 's')
 
+    def test_fixed_version_interface_matches_the_manager_not_its_bus_name(self):
+        bus = Bus()
+        p.check(bus, UNIT)
+        self.assertEqual(bus.calls[3], (':1.74', p.MANAGER_PATH, 'org.freedesktop.DBus.Properties',
+            'Get', 'ss', 'org.freedesktop.systemd1.Manager', 'Version'))
+
     def test_negative_refusal_has_no_original_admission_and_only_one_start(self):
         bus = Bus()
         result = p.check(bus, UNIT)
