@@ -17951,3 +17951,28 @@ the tempting FD-path shortcut. A stable alias for the retained sealed image or
 a separately enrolled bootstrap therefore needs its own lifecycle/trust design.
 The implementation keeps that decision explicit instead of enabling an unproved
 path. No performance gain, original launch or server readiness is claimed.
+
+### Reject an address design when its original object cannot be mounted
+
+The [sealed launcher bind experiment](../testing/performance/0.74/held-bind-bootstrap-20261023.md)
+overturned the earlier recommendation on the actual local kernel. Its first
+open_tree refused the original sealed memfd before any publication. A regular
+file would be easier to mount, but substituting one would answer a different
+identity question. The incomplete prototype is retained as rejected source text,
+not installed runtime, and the original bind gate remains red.
+
+The distinct regular-file control also illustrates why partial observations must
+not replace a whole result. It observed the same readonly inode after source FD
+closure and real creator SIGKILL while an external process retained the namespace.
+Its cleanup then failed because ismount did not recognize a same-filesystem bind
+mount. The whole control therefore failed. An offline regression corrects that
+cleanup assumption without repeating the experiment or turning an unsealed file
+into evidence about the original launcher.
+
+The user approved a separately trusted bootstrap instead. Its first implementation
+adds independently protected key, policy and image selectors, bound to the same
+held policy and epoch. Fresh retained-file validation and shared sticky refusal
+prevent an input from repairing itself after failure. These selectors are not a
+completed enrollment or execution proof: purpose-bound build evidence, original
+owner/frame admission and the child's one-shot execveat still have to join.
+No file copy, relaxed seal, refreshed deadline or silent fallback bridges that gap.

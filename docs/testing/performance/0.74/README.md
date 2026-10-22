@@ -6159,3 +6159,18 @@ opens the image before assigning the final activation FD layout. Do not replace
 that with an unproved `/proc/self/fd/11` or creator-PID pathname. A retained
 read-only mount alias is proposed separately; no mount, unit, service, clock or
 server action is enabled by metadata acceptance.
+
+### Sealed memfd bind refuses and bootstrap selection remains nonexecuting
+
+The [first bind precondition](held-bind-bootstrap-20261023.md) returned EINVAL
+before mount publication on the local kernel. The unfinished candidate is removed
+from runtime. An ordinary unsealed-file control observed mount survival after
+actual creator SIGKILL, but its whole result failed cleanup; neither result is
+promoted to original launch or writer retirement. First outcomes remain separate.
+
+The user approved a separately enrolled bootstrap. Its first protected-source
+guard selects an independent key/policy/binary digest under the same held policy
+and epoch, with shared sticky refusal and no key/FD/execution export. It creates
+no configuration or executable. Purpose-bound receipt/policy, the original
+consuming join and actual bootstrap execveat remain next; no clocks, services,
+new privileged controls, server or product workloads follow these observations.

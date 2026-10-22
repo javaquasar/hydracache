@@ -2050,3 +2050,21 @@ the trusted role/enrollment set. That architecture selection remains pending.
 Do not dispatch until the chosen address, complete pre-exec environment and
 original retained channel/full frame are admitted. No new original/measurement
 attempt, unit, mount, clock/service mutation or server run occurs here.
+
+### Bind precondition rejects the candidate and bootstrap selectors do not grant start
+
+The approved bind hypothesis is now [rejected for the current sealed source and
+local kernel](held-bind-bootstrap-20261023.md): first open_tree returned EINVAL
+before publication. Its prototype remains rejected text, with no runtime hook.
+The distinct ordinary-file SIGKILL observation is partial and its whole control
+failed cleanup. The read-only postflight found no fixture directory; offline
+cleanup regression does not rerun either diagnostic or admit a retirement gate.
+
+The user selected a separately trusted bootstrap. Its new fixed protected selector
+file and borrowing guard enforce independent key/pin selection, the same held
+policy/epoch and shared refusal without altering old trust predicates or windows.
+No configuration is installed and no execution capability is exported. Next
+bind its purpose-specific build receipt/policy to the actual original owner and
+fixed executable; then authenticate the child's exact FDs and one execveat.
+All-writer closure, completion, later cells, reconnect and server admission remain
+independent gates. No additional privileged mount or original attempt follows.
