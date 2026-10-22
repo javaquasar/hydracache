@@ -107,7 +107,7 @@ test "$sub" = 's "exited"'
 test "$(bus get-property "$owner" "$unit_path" org.freedesktop.systemd1.Service Result)" = 's "success"'
 test "$(bus get-property "$owner" "$unit_path" org.freedesktop.systemd1.Service ExecMainStatus)" = 'i 0'
 test "$(bus get-property "$owner" "$unit_path" org.freedesktop.systemd1.Service MainPID)" = 'u 0'
-bus get-property "$owner" "$unit_path" org.freedesktop.systemd1.Unit ControlGroup
+bus get-property "$owner" "$unit_path" org.freedesktop.systemd1.Service ControlGroup
 grep -Fx native-fd-mapping-ok "$output/helper.stdout"
 while IFS= read -r identity; do grep -Fx "$identity" "$output/helper.stdout"; done < "$output/stream-identities.txt"
 grep -Fx 'executable=/usr/bin/bash' "$output/helper.stdout"

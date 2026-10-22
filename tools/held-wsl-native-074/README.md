@@ -43,3 +43,11 @@ collisions and never submit a second command after timeout/failure. First boot
 uses the read-only `first_boot.sh` and submits no temporary unit. A compatible
 version is not a native FD transfer test. `check.py` records offline controls,
 syntax, diff and documentation/registry/local-contract checks without WSL.
+
+`native_fd.py` is a separate, single-submission **synthetic mechanics** control.
+Its first version refused a CLI option before sending. Revision 2 sent once:
+the helper reports correct FD mapping, but the whole lane failed on a wrong
+ControlGroup property interface. That exact service was stopped and inactive.
+The property query is now corrected offline; the revision 2 outcome remains
+failed and is not rerun. Existing evidence blocks invocation. No original-owner
+delivery, hidden-writer closure, lost-ACK or production readiness claim follows.

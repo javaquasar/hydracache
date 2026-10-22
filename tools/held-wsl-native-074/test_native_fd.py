@@ -11,6 +11,11 @@ class Controls(unittest.TestCase):
         source = Path(n.__file__).with_suffix('.sh').read_text()
         self.assertIn('250ms -- "$@"', source)
 
+    def test_control_group_property_belongs_to_service_interface(self):
+        source = Path(n.__file__).with_suffix('.sh').read_text()
+        self.assertIn('"$unit_path" org.freedesktop.systemd1.Service ControlGroup', source)
+        self.assertNotIn('org.freedesktop.systemd1.Unit ControlGroup', source)
+
     def test_argv_has_only_the_owned_distro_and_fixed_script(self):
         nonce = '74' * 16
         self.assertEqual(n.argv(nonce), ['wsl.exe', '-d', 'HydraCache074Native', '-u', 'root',
