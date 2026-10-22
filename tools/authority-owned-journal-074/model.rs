@@ -118,3 +118,8 @@ fn regular(m: &Metadata, uid: u32, gid: u32, mode: u32) -> Result<(), AuthorityE
 mod controls;
 #[path = "journal.rs"]
 mod journal;
+
+#[path = "owned.rs"]
+mod owned;
+#[path = "owned_controls.rs"]
+mod owned_controls;

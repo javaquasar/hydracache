@@ -12,6 +12,9 @@ pub(super) trait Storage: Sized {
     fn evict(&mut self);
     fn capacity(&self) -> usize;
 }
+
+#[path = "lifecycle.rs"]
+mod lifecycle;
 impl Storage for Leaf {
     fn new(original: Leaf) -> Self {
         original
@@ -28,7 +31,7 @@ impl Storage for Leaf {
     }
 }
 pub(super) fn normal(slot: usize) -> Scenario {
-    let length = if slot % 2 == 0 { 2048 } else { 65 };
+    let length = if slot.is_multiple_of(2) { 2048 } else { 65 };
     let mut s = Scenario::new(length, length);
     s.seed = SEED ^ (slot as u64).wrapping_mul(0x9e3779b97f4a7c15);
     for m in [&mut s.before, &mut s.after, &mut s.held] {
