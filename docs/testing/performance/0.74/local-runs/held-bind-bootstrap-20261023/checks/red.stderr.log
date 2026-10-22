@@ -1,0 +1,4 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 31.52s
+     Running tests\held_bind_alias_074.rs (target\debug\deps\held_bind_alias_074-81507a36d62c7ea4.exe)
+error: test failed, to rerun pass `-p xtask --test held_bind_alias_074`

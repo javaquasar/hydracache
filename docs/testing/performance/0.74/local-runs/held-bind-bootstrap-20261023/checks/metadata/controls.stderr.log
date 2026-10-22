@@ -1,0 +1,12 @@
+test_check_lanes_cannot_repeat_the_mount_or_original_controls (test_controls.Controls.test_check_lanes_cannot_repeat_the_mount_or_original_controls) ... ok
+test_cleanup_does_not_depend_on_ismount_and_uses_exact_leaf (test_controls.Controls.test_cleanup_does_not_depend_on_ismount_and_uses_exact_leaf) ... ok
+test_cleanup_errno_and_foreign_targets_refuse (test_controls.Controls.test_cleanup_errno_and_foreign_targets_refuse) ... ok
+test_errno_from_failed_syscall_is_not_a_success_or_fallback (test_controls.Controls.test_errno_from_failed_syscall_is_not_a_success_or_fallback) ... ok
+test_existing_packet_refuses_before_commands (test_retention.Retention.test_existing_packet_refuses_before_commands) ... ok
+test_lane_changed_sources_commands_and_scope_refuse (test_retention.Retention.test_lane_changed_sources_commands_and_scope_refuse) ... ok
+test_success_status_cannot_replace_a_sealed_source_refusal (test_retention.Retention.test_success_status_cannot_replace_a_sealed_source_refusal) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.177s
+
+OK

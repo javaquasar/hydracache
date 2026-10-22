@@ -1,0 +1,18 @@
+
+running 1 test
+test launcher_bind_alias_is_an_additive_private_consuming_boundary ... FAILED
+
+failures:
+
+---- launcher_bind_alias_is_an_additive_private_consuming_boundary stdout ----
+
+thread 'launcher_bind_alias_is_an_additive_private_consuming_boundary' (2728) panicked at crates\xtask\tests\held_bind_alias_074.rs:8:5:
+assertion failed: material.contains("mod exec_alias;")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    launcher_bind_alias_is_an_additive_private_consuming_boundary
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

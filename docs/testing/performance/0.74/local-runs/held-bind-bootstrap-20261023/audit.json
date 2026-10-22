@@ -1,0 +1,18 @@
+{
+  "admission_allowed": false,
+  "bootstrap_execution": false,
+  "bootstrap_protected_selector_checks": true,
+  "checked_commit": "c244473c9f878fe89920ec4c76c2bcd3b071a8e7",
+  "clock_changes": false,
+  "original_attempt": false,
+  "original_delivery": false,
+  "product": false,
+  "qualification_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "regular_file_partial_observation": true,
+  "regular_file_whole_gate": false,
+  "sealed_memfd_bind_gate": false,
+  "server": false,
+  "server_enrollment": false,
+  "service_changes": false,
+  "writers_cessation": false
+}

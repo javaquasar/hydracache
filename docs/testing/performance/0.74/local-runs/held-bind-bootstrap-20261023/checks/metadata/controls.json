@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "python",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tools/held-bind-alias-074",
+    "-v"
+  ],
+  "elapsed_ns": 1433173400,
+  "exit": 0,
+  "stderr_sha256": "b21eb795f36d1d264a970320a8868a33ea04f7b5c0c86db3266a78250f0b3eac",
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

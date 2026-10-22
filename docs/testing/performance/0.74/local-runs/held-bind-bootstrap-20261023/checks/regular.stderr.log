@@ -1,0 +1,19 @@
+Traceback (most recent call last):
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/held-bind-alias-074/regular_control.py", line 76, in <module>
+    if __name__ == '__main__': main()
+                               ^^^^^^
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/held-bind-alias-074/regular_control.py", line 15, in main
+    with tempfile.TemporaryDirectory(prefix='hc074-bind-regular-control-') as tmp:
+  File "/usr/lib/python3.12/tempfile.py", line 1085, in __exit__
+    self.cleanup()
+  File "/usr/lib/python3.12/tempfile.py", line 1089, in cleanup
+    self._rmtree(self.name, ignore_errors=self._ignore_cleanup_errors)
+  File "/usr/lib/python3.12/tempfile.py", line 1069, in _rmtree
+    _rmtree(name, onexc=onexc)
+  File "/usr/lib/python3.12/shutil.py", line 785, in rmtree
+    _rmtree_safe_fd(fd, path, onexc)
+  File "/usr/lib/python3.12/shutil.py", line 717, in _rmtree_safe_fd
+    onexc(os.unlink, fullname, err)
+  File "/usr/lib/python3.12/shutil.py", line 715, in _rmtree_safe_fd
+    os.unlink(entry.name, dir_fd=topfd)
+OSError: [Errno 16] Device or resource busy: 'launcher'

@@ -1,0 +1,20 @@
+
+running 1 test
+test independent_bootstrap_selection_has_only_one_additive_parent_hook ... FAILED
+
+failures:
+
+---- independent_bootstrap_selection_has_only_one_additive_parent_hook stdout ----
+
+thread 'independent_bootstrap_selection_has_only_one_additive_parent_hook' (47148) panicked at crates\xtask\tests\bootstrap_enrollment_074.rs:9:5:
+assertion `left == right` failed
+  left: 0
+ right: 1
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    independent_bootstrap_selection_has_only_one_additive_parent_hook
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

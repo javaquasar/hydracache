@@ -1,0 +1,1 @@
+{"argv": ["cargo", "test", "--offline", "--locked", "-p", "xtask", "--test", "bootstrap_enrollment_074"], "exit": 101}

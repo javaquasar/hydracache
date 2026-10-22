@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/held-bind-alias-074/probe.py", line 58, in <module>
+    if __name__ == '__main__': main()
+                               ^^^^^^
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/held-bind-alias-074/probe.py", line 35, in main
+    tree = syscall(428, ctypes.c_int(readonly), ctypes.c_char_p(b''), ctypes.c_uint(1 | os.O_CLOEXEC | 0x1000))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/held-bind-alias-074/probe.py", line 14, in syscall
+    if result < 0: raise OSError(ctypes.get_errno(), os.strerror(ctypes.get_errno()))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+OSError: [Errno 22] Invalid argument
