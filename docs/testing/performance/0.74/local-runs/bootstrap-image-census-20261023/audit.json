@@ -1,0 +1,22 @@
+{
+  "actual_private_image_fd_checks": true,
+  "admission_allowed": false,
+  "bootstrap_executed": false,
+  "census_units": true,
+  "checked_commit": "f3c25cdbbca993265d06245b8e9e8da2a7aa6a6f",
+  "child_entry": false,
+  "clock_changes": false,
+  "descriptors": 26,
+  "fd_transfer": false,
+  "modeled_old_prefix": true,
+  "original_delivery": false,
+  "original_live_join": false,
+  "performance_measurement": false,
+  "product": false,
+  "qualification_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "remapping": false,
+  "semantic_roles": 14,
+  "server": false,
+  "service_changes": false,
+  "writers_cessation": false
+}

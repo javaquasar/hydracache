@@ -1,0 +1,32 @@
+{
+  "argv": [
+    "cargo",
+    "test",
+    "--offline",
+    "--locked",
+    "-p",
+    "xtask",
+    "--test",
+    "bootstrap_build_owner_074",
+    "--test",
+    "bootstrap_enrollment_074",
+    "--test",
+    "held_bind_alias_refusal_074",
+    "--test",
+    "held_activation_ingress_074",
+    "--test",
+    "held_complete_role_census_074",
+    "--test",
+    "held_material_roles_074",
+    "--test",
+    "held_material_074",
+    "--test",
+    "held_unit_projection_074",
+    "--test",
+    "bootstrap_image_census_074"
+  ],
+  "elapsed_ns": 19684673700,
+  "exit": 0,
+  "stderr_sha256": "455630b5a07f52d48f101fe23cd5f6b24de24a9a73c5e02ae978cd90d0910be5",
+  "stdout_sha256": "aba60b238ca4df8eaf00aa537ce6e7ab6899b5955f721a02cfd293b48f8c88cd"
+}

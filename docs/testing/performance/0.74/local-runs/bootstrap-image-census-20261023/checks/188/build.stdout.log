@@ -1,0 +1,11 @@
+
+running 6 tests
+test diagnostic_builder::bootstrap_build::tests::bootstrap_build_canonical_shape_and_budgets_refuse ... ok
+test diagnostic_builder::bootstrap_build::tests::bootstrap_build_cargo_log_rejects_wrong_targets_features_duplicates_and_completion ... ok
+test diagnostic_builder::bootstrap_build::tests::bootstrap_build_policy_signatures_domains_keys_pins_and_claims_refuse ... ok
+test diagnostic_builder::bootstrap_build::tests::bootstrap_build_roundtrip_is_static_and_content_bound ... ok
+test diagnostic_builder::bootstrap_build::tests::bootstrap_build_sealed_image_requires_exact_original_object_and_metadata ... ok
+test diagnostic_builder::bootstrap_build::tests::bootstrap_build_valid_signatures_cannot_hide_false_observations_or_bounds ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 1552 filtered out; finished in 0.01s
+

@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "python",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tools/bootstrap-image-census-074",
+    "-v"
+  ],
+  "elapsed_ns": 544376100,
+  "exit": 0,
+  "stderr_sha256": "9c3c5a2434573a73f326e8b249d05841135cbb5a00980bf538e6719bcf0c7eee",
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}
