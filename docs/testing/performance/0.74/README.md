@@ -5930,3 +5930,17 @@ This closes only offline Python reader replay. The current owned-storage semanti
 guard, observer and historical Rust guard wiring remain before runtime mutation.
 No old measurement image, live/WSL/server action or new performance claim follows;
 original windows/refusals, qualification and real admission gates are unchanged.
+
+### Unapplied owned storage source and mutable observer
+
+The [source candidate](authority-storage-source-20261022.md) adds per-Leaf scratch
+and whole-journal eviction through all five refusal boundaries. Eight source
+controls check the complete allowed patch, restore fresh-read/validation bodies
+and reject missing checks, cleanup or observation hooks. The versioned mutable
+observer remains separate from the unchanged runtime and historical observer.
+
+Reopen transfers no old cache; its original final validation may warm newly
+constructed slots. Source acceptance is not Linux compilation or actual memory/
+filesystem evidence. Next separate historical Rust guards from current candidate
+validation, then integrate and exercise actual filesystem semantics. No live or
+server action, new performance claim, window or qualification change follows.

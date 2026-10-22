@@ -17455,3 +17455,31 @@ This implements the offline reader-view boundary, not the owned-storage patch.
 Current candidate bodies, mutable observer equivalence, whole-journal cleanup and
 historical Rust guard wiring still need their own checks. No measurement image,
 live attempt or server workload runs, and no new performance gain is inferred.
+
+### Guard the complete storage patch before integrating it
+
+The [unapplied owned-storage candidate](../testing/performance/0.74/authority-storage-source-20261022.md)
+turns the integration audit into a concrete fixture patch and versioned mutable
+observer. Each Leaf owns its scratch; fresh opens, metadata, bounded EOF reads
+and stamp/byte comparisons stay in their original order. A matching-capacity
+buffer is cleared before use and retained only after successful comparisons
+within the original budget. All five journal refusal boundaries clear every
+scratch slot while retaining original authority objects and history.
+
+Whole-file allowlists reject unrelated code changes. Independent restoration
+removes only the storage substitution and exact observer hooks, then compares
+complete bodies with the pinned source or candidate. Eight controls cover these
+rules and negative mutations, including each refusal site. Early compiler and
+test-harness refusals remain separately recorded; the final captured cohort is
+identified by its committed method rather than relabelled as the first attempt.
+
+Ownership semantics need precise wording. Reopen transfers no buffer from an old
+owner, but its mandatory final validation can warm a newly constructed cache.
+Removing that validation to make an empty-cache assertion true would change the
+schedule. The candidate preserves the validation and narrows the assertion.
+
+These artifacts are parsed source, not Linux-compiled supervisor modules. They
+add no allocation, latency, layout or retained-memory measurement. Historical
+Rust guard separation, actual-engine integration and real filesystem tests remain
+next; runtime, original windows/refusals, qualification and server admission do
+not change merely because source checks pass.

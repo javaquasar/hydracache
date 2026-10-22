@@ -1819,3 +1819,18 @@ candidate validation. This view alone does not complete that migration or admit
 a runtime patch. Keep all five cleanup paths, real Record/publication semantics,
 live checks, original windows/refusals and qualification unchanged. No WSL, real
 fault/original-owner attempt, clock/service change or server action is opened.
+
+### Owned storage candidate has separate source acceptance
+
+The [unapplied source candidate](authority-storage-source-20261022.md) and versioned
+mutable observer now have whole-file patch allowlists and independent complete
+body restoration. All five registry refusal boundaries evict scratch; original
+File/stamp/raw/history and fresh checks remain retained. New owners do not inherit
+scratch, but the existing closing reopen validation may warm their new buffers.
+
+Next wire historical Rust checks explicitly without weakening current-candidate
+validation, then integrate and Linux-typecheck the minimal patch and test actual
+filesystem/cache/refusal behavior. The current artifacts are syntax/source checks
+only, not compiled supervisor modules. Runtime, original windows/refusals and
+qualification remain unchanged; full publication/all-writer/fault/lost-ACK/
+reconnect/server gates are not opened by this source result.
