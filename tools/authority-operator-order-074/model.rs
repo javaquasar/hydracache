@@ -126,3 +126,6 @@ mod owned_controls;
 
 #[path = "operator_controls.rs"]
 mod operator_controls;
+
+#[path = "candidate_controls.rs"]
+mod candidate_controls;

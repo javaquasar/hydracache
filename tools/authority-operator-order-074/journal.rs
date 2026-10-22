@@ -13,6 +13,9 @@ pub(super) trait Storage: Sized {
     fn capacity(&self) -> usize;
 }
 
+#[path = "operator.rs"]
+pub(super) mod operator;
+
 #[path = "../authority-owned-journal-074/lifecycle.rs"]
 mod lifecycle;
 impl Storage for Leaf {
