@@ -1,0 +1,441 @@
+{
+  "clocks_changed": false,
+  "first_test_refusal_retained": "checks/python-first.log",
+  "input_hashes": {
+    "docs/testing/performance/0.74/authority-runtime-variance-method-20261022.md": "f8a4d385cf44282eb8906c1768a2d3aacd8f77e7c4e04c66199d48592131adab",
+    "docs/testing/performance/0.74/authority-runtime-variance-method-v2-20261022.md": "c25815a93fc704542d6730710188aff06bb225fdb679bf0e17b4cda7ecd959ea",
+    "tools/authority-runtime-allocation-074/run.py": "1d238388466a4a8421698ac0bf6a9313a8bdead69e25dbf6e79549c4b35a840e",
+    "tools/authority-runtime-balanced-074/README.md": "e7da14017058d15ff3cae97d5ee02df2cdb4cc513f6b7f6904cc1337739e08bd",
+    "tools/authority-runtime-balanced-074/balanced.py": "ec2fd1973ddd7c1ac7f8cf605f150b9cafd339e6e4d44fbe16fdfca0fc8a4929",
+    "tools/authority-runtime-balanced-074/evaluate.py": "a685fb62bd04eaf0ac1ea86cda5aeff1098384890111dd42bda8911c15ae2473",
+    "tools/authority-runtime-balanced-074/runner.py": "5bf1c03c87f08c9d525fc058e5be56b2abcdabc6a32ef8ced9501f2c6005a9d4",
+    "tools/authority-runtime-balanced-074/test_runner.py": "4adbfd9ee852742824f0e6acc2a74b568ab7e099afcc8912153dfa790ceeee2e",
+    "tools/authority-runtime-cpu-074/probe.rs": "9289a292727545fc90dcef37dac1be57aa1d10a8c158b1e7521723e7666bf513",
+    "tools/authority-runtime-cpu-074/review.py": "d6c9b3be8bceeb38e29b7c169bbb89eb2448fdd7ffbe8dae90f0bdce25db40c5",
+    "tools/authority-runtime-cpu-074/run.py": "f1d047a1b707d06de7a118f7b5ff093d24ad0ed7c5a75a381622046ad4cd3364",
+    "tools/authority-runtime-cpu-074/seal.py": "def02a4ce2ba476c81a1f159ceeefb4f75ada82681813a25f3999ff0acc0633f",
+    "tools/authority-runtime-variance-074/analyze.py": "93b44aec435ac959a00d1d71af1d63850deb08ffd70b0a81edf6cd6f5f21c388"
+  },
+  "measurement_executed": false,
+  "mode": "offline-controls",
+  "native_runtime_images_built": false,
+  "native_runtime_images_executed": false,
+  "offline_test_counts": {
+    "balanced": 20,
+    "historical_cpu": 7,
+    "historical_variability": 11
+  },
+  "plan": {
+    "block_ratios_per_compiler": 8,
+    "cohort_seconds": 3600,
+    "freeze_seconds": 600,
+    "measurement_executed": false,
+    "observations_per_role_per_compiler": 16,
+    "process_seconds": 300,
+    "processes": 64,
+    "qualification": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+    "rows": 768,
+    "runtime_sources": {
+      "baseline": "33c54b0cda8c330b115009cdf092ad002077cedf",
+      "installed": "66d5f371680d085a24de8f2558e1f049c71b9e7b"
+    },
+    "schedule": [
+      {
+        "block": 0,
+        "compiler": "194",
+        "position": 0,
+        "role": "B"
+      },
+      {
+        "block": 0,
+        "compiler": "194",
+        "position": 1,
+        "role": "I"
+      },
+      {
+        "block": 0,
+        "compiler": "194",
+        "position": 2,
+        "role": "I"
+      },
+      {
+        "block": 0,
+        "compiler": "194",
+        "position": 3,
+        "role": "B"
+      },
+      {
+        "block": 0,
+        "compiler": "188",
+        "position": 0,
+        "role": "B"
+      },
+      {
+        "block": 0,
+        "compiler": "188",
+        "position": 1,
+        "role": "I"
+      },
+      {
+        "block": 0,
+        "compiler": "188",
+        "position": 2,
+        "role": "I"
+      },
+      {
+        "block": 0,
+        "compiler": "188",
+        "position": 3,
+        "role": "B"
+      },
+      {
+        "block": 1,
+        "compiler": "188",
+        "position": 0,
+        "role": "I"
+      },
+      {
+        "block": 1,
+        "compiler": "188",
+        "position": 1,
+        "role": "B"
+      },
+      {
+        "block": 1,
+        "compiler": "188",
+        "position": 2,
+        "role": "B"
+      },
+      {
+        "block": 1,
+        "compiler": "188",
+        "position": 3,
+        "role": "I"
+      },
+      {
+        "block": 1,
+        "compiler": "194",
+        "position": 0,
+        "role": "I"
+      },
+      {
+        "block": 1,
+        "compiler": "194",
+        "position": 1,
+        "role": "B"
+      },
+      {
+        "block": 1,
+        "compiler": "194",
+        "position": 2,
+        "role": "B"
+      },
+      {
+        "block": 1,
+        "compiler": "194",
+        "position": 3,
+        "role": "I"
+      },
+      {
+        "block": 2,
+        "compiler": "194",
+        "position": 0,
+        "role": "I"
+      },
+      {
+        "block": 2,
+        "compiler": "194",
+        "position": 1,
+        "role": "B"
+      },
+      {
+        "block": 2,
+        "compiler": "194",
+        "position": 2,
+        "role": "B"
+      },
+      {
+        "block": 2,
+        "compiler": "194",
+        "position": 3,
+        "role": "I"
+      },
+      {
+        "block": 2,
+        "compiler": "188",
+        "position": 0,
+        "role": "I"
+      },
+      {
+        "block": 2,
+        "compiler": "188",
+        "position": 1,
+        "role": "B"
+      },
+      {
+        "block": 2,
+        "compiler": "188",
+        "position": 2,
+        "role": "B"
+      },
+      {
+        "block": 2,
+        "compiler": "188",
+        "position": 3,
+        "role": "I"
+      },
+      {
+        "block": 3,
+        "compiler": "188",
+        "position": 0,
+        "role": "B"
+      },
+      {
+        "block": 3,
+        "compiler": "188",
+        "position": 1,
+        "role": "I"
+      },
+      {
+        "block": 3,
+        "compiler": "188",
+        "position": 2,
+        "role": "I"
+      },
+      {
+        "block": 3,
+        "compiler": "188",
+        "position": 3,
+        "role": "B"
+      },
+      {
+        "block": 3,
+        "compiler": "194",
+        "position": 0,
+        "role": "B"
+      },
+      {
+        "block": 3,
+        "compiler": "194",
+        "position": 1,
+        "role": "I"
+      },
+      {
+        "block": 3,
+        "compiler": "194",
+        "position": 2,
+        "role": "I"
+      },
+      {
+        "block": 3,
+        "compiler": "194",
+        "position": 3,
+        "role": "B"
+      },
+      {
+        "block": 4,
+        "compiler": "194",
+        "position": 0,
+        "role": "I"
+      },
+      {
+        "block": 4,
+        "compiler": "194",
+        "position": 1,
+        "role": "B"
+      },
+      {
+        "block": 4,
+        "compiler": "194",
+        "position": 2,
+        "role": "B"
+      },
+      {
+        "block": 4,
+        "compiler": "194",
+        "position": 3,
+        "role": "I"
+      },
+      {
+        "block": 4,
+        "compiler": "188",
+        "position": 0,
+        "role": "I"
+      },
+      {
+        "block": 4,
+        "compiler": "188",
+        "position": 1,
+        "role": "B"
+      },
+      {
+        "block": 4,
+        "compiler": "188",
+        "position": 2,
+        "role": "B"
+      },
+      {
+        "block": 4,
+        "compiler": "188",
+        "position": 3,
+        "role": "I"
+      },
+      {
+        "block": 5,
+        "compiler": "188",
+        "position": 0,
+        "role": "B"
+      },
+      {
+        "block": 5,
+        "compiler": "188",
+        "position": 1,
+        "role": "I"
+      },
+      {
+        "block": 5,
+        "compiler": "188",
+        "position": 2,
+        "role": "I"
+      },
+      {
+        "block": 5,
+        "compiler": "188",
+        "position": 3,
+        "role": "B"
+      },
+      {
+        "block": 5,
+        "compiler": "194",
+        "position": 0,
+        "role": "B"
+      },
+      {
+        "block": 5,
+        "compiler": "194",
+        "position": 1,
+        "role": "I"
+      },
+      {
+        "block": 5,
+        "compiler": "194",
+        "position": 2,
+        "role": "I"
+      },
+      {
+        "block": 5,
+        "compiler": "194",
+        "position": 3,
+        "role": "B"
+      },
+      {
+        "block": 6,
+        "compiler": "194",
+        "position": 0,
+        "role": "B"
+      },
+      {
+        "block": 6,
+        "compiler": "194",
+        "position": 1,
+        "role": "I"
+      },
+      {
+        "block": 6,
+        "compiler": "194",
+        "position": 2,
+        "role": "I"
+      },
+      {
+        "block": 6,
+        "compiler": "194",
+        "position": 3,
+        "role": "B"
+      },
+      {
+        "block": 6,
+        "compiler": "188",
+        "position": 0,
+        "role": "B"
+      },
+      {
+        "block": 6,
+        "compiler": "188",
+        "position": 1,
+        "role": "I"
+      },
+      {
+        "block": 6,
+        "compiler": "188",
+        "position": 2,
+        "role": "I"
+      },
+      {
+        "block": 6,
+        "compiler": "188",
+        "position": 3,
+        "role": "B"
+      },
+      {
+        "block": 7,
+        "compiler": "188",
+        "position": 0,
+        "role": "I"
+      },
+      {
+        "block": 7,
+        "compiler": "188",
+        "position": 1,
+        "role": "B"
+      },
+      {
+        "block": 7,
+        "compiler": "188",
+        "position": 2,
+        "role": "B"
+      },
+      {
+        "block": 7,
+        "compiler": "188",
+        "position": 3,
+        "role": "I"
+      },
+      {
+        "block": 7,
+        "compiler": "194",
+        "position": 0,
+        "role": "I"
+      },
+      {
+        "block": 7,
+        "compiler": "194",
+        "position": 1,
+        "role": "B"
+      },
+      {
+        "block": 7,
+        "compiler": "194",
+        "position": 2,
+        "role": "B"
+      },
+      {
+        "block": 7,
+        "compiler": "194",
+        "position": 3,
+        "role": "I"
+      }
+    ],
+    "schedule_sha256": "1566ab8cbfa4cbdea2897737be07ddf533142ede5a6c6dbbc4f5bf36f6f638c1",
+    "schema": "authority-runtime-balanced-plan-074-v2",
+    "timed_warm_inspections": 24576
+  },
+  "product": false,
+  "protected_diff_since_f90e785d": "",
+  "qualification_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "schema": "authority-runtime-balanced-runner-offline-074-v2",
+  "server": false,
+  "services_changed": false,
+  "source": "db0ab08f4f152d5710996d4de60f286ac759cc6c",
+  "synthetic_receipts_retained_as_native_evidence": false,
+  "wsl_commands": false
+}
