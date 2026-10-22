@@ -5753,3 +5753,20 @@ members remain intact. Runtime and original windows/refusals are unchanged;
 there is no new storage candidate, WSL/live profile or server operation. Next
 isolate sample boot ownership before any representation change. Material,
 cleanup/delivery/all-writer, full fault/reconnect and server gates remain closed.
+
+### Pure sample boot ownership and frame baseline
+
+The [sample baseline](sample-boot-baseline-20261022.md) binds the owned boot clone
+to both original revalidations and clock calls. Both first Windows compiler lanes
+pass seven pure tests; a valid 36-byte boot requests one 36-byte allocation after
+the closing check. All fifteen refused masks of the four fallible calls stop
+before that clone. Generic/seeded ownership, point getters/clones and the full
+unchanged decoder are checked without actual kernel or clock observations.
+
+Forty-three source canaries, twenty-eight offline controls, format, check/strict
+lint and structural gates pass. Fourteen prior seals and 813 members remain.
+Different stage/subset operations are not added to the main corpus, and counts
+do not establish current timing or admission headroom. An owned inline/fallback
+candidate needs its own cost/ownership gate; no representation changes here.
+Original windows/refusals and material/fault/reconnect/server gates remain, with
+no WSL/live profile, clock/service change or server action.

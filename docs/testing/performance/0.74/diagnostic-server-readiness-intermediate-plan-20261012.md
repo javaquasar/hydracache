@@ -1640,3 +1640,19 @@ Next isolate sample boot ownership with the full original surrounding frame
 preserved. All live checks, 300/60/10-second windows, first Causal refusals and
 material/cleanup/delivery/all-writer/fault/reconnect/server gates remain. No WSL,
 service/clock change, installation or server action occurs.
+
+### Sample boot ownership baseline retains the complete original frame
+
+The [separate pure baseline](sample-boot-baseline-20261022.md) confirms the
+remaining owned String request after both revalidations and both clock calls.
+All fifteen refused synthetic masks return before the clone; seeded ownership,
+getter/point-clone and exact decoder controls preserve the model contract.
+Two first Windows compiler selections and fourteen prior raw seals do not
+substitute for a real original-owner or fault/reconnect gate.
+
+An owned inline/fallback representation is a separate candidate decision,
+requiring matched allocation and getter/copy/value-size review before adoption.
+Current runtime/storage, live checks, original 300/60/10 windows, first Causal
+refusals and qualification stay unchanged. Material/cleanup/delivery/all-writer,
+full SIGKILL/lost-ACK, reconnect and server gates remain closed. No WSL, service/
+clock change, installation, supervisor operation or server action occurs.

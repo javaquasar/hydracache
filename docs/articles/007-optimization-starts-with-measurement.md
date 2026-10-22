@@ -17113,3 +17113,34 @@ are verified without another live or WSL run. The next narrow ownership baseline
 is the boot clone in Origin::sample; changes to representation or its surrounding
 fresh checks remain separate work. Original windows, Causal refusals and all
 material/fault/reconnect/server gates remain unchanged.
+
+### Place the boot clone after its complete validation frame
+
+The [sample boot baseline](../testing/performance/0.74/sample-boot-baseline-20261022.md)
+copies the complete sample body rather than measuring an unbound String clone
+alone. Synthetic receivers retain revalidate, boot clock, real clock and closing
+revalidate before constructing the owned point. All fifteen refused masks of
+those four calls stop before the clone. This demonstrates model first-error
+and allocation placement, not the cost or liveness of actual kernel checks.
+
+Both installed Windows MSVC compilers agree: a valid 36-byte boot requires one
+36-byte request. Across nine fixed synthetic cases and 256 sample calls each,
+2304 calls make 2048 allocations and request 324864 bytes; the empty-string case
+accounts for the allocation-free calls. The two valid UUID/spare-capacity cases
+are a subset, not extra operations or a production frequency estimate. A String
+with input capacity 256 still clones the 36 used bytes into capacity 36 here.
+
+Separate per-case stages attribute the synthetic frame's requests to the clone,
+not its validation prelude. The current point/getters/Clone derive and decoder
+remain source-matched, and seeded controls retain ownership after Origin drop
+and after independently cloning/mutating a point. Generic String cases do not
+expand the decoder's accepted boot language. The real clock, procfs and namespace
+code is unchanged and unexecuted by this pure test image.
+
+An owned inline representation could remove this request, but its getter,
+copying, value-size and point-clone costs need a separate candidate comparison.
+The baseline does not justify replacing ownership with a borrowed/shared value
+or extrapolating old trace counts into current headroom. Fourteen preceding
+seals and 813 members remain intact. All original checks/windows/refusals and
+material/fault/reconnect/server gates remain; there is no runtime candidate or
+new live attempt in this baseline.
