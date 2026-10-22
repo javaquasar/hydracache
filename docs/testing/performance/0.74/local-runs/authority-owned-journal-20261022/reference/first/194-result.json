@@ -1,0 +1,39 @@
+{
+  "lane": "194",
+  "phase": "reference",
+  "product": false,
+  "platform": "windows-msvc",
+  "ignored_tests_run": false,
+  "steps": [
+    {
+      "sha256": "9f94407d1cf3d9e6f021626e30d5aa183e8f6cd21fd097f4441a6ba67aaf900a",
+      "name": "compiler",
+      "exit": 0,
+      "log": "194-compiler.log"
+    },
+    {
+      "sha256": "fe5fb1c41fb6926c65ca60d72ace9b06a3a7bea801844c9d1c95f52f81be18f1",
+      "name": "controls",
+      "exit": 0,
+      "log": "194-controls.log"
+    },
+    {
+      "sha256": "6b809a04e2f9c63f49f8e6b244ea4f9679aa249dadb5316eac4af959f1927865",
+      "name": "check",
+      "exit": 0,
+      "log": "194-check.log"
+    },
+    {
+      "sha256": "1ce6e49717e9ede5640a161146e1b9889dcdc72fa6f39939405cbb4944f08158",
+      "name": "clippy",
+      "exit": 101,
+      "log": "194-clippy.log"
+    }
+  ],
+  "server": false,
+  "runtime_candidate_implemented": false,
+  "cohort": "first",
+  "original_owner_profiles": 0,
+  "failure": "Baseline check refused: 194/clippy (101)",
+  "model_only": true
+}

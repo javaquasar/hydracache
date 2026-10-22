@@ -1,0 +1,11 @@
+[package]
+name = "hc074-authority-owned-journal"
+version = "0.0.0"
+edition = "2021"
+rust-version = "1.88"
+publish = false
+
+[lib]
+path = "probe.rs"
+
+[workspace]

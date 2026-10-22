@@ -1,0 +1,15 @@
+{
+  "schema": "owned-authority-journal-source-074-v1",
+  "starting_tree": "72c28a25",
+  "plan_commit": "8648022f1e83e0fe8420bac21cd97f93ab21b4bd",
+  "reference_source_commit": "227f155917cfaf2c1694bcb342453d394a9d119f",
+  "candidate_source_commit": "ddadb3a5355bdc47d16f21d997b3d5a02c79fc40",
+  "method_source_commit": "44b62c82efbf741bf5d157851e6baba504539746",
+  "first_reference_194_lint_refusal_retained": true,
+  "measurement_retries": 0,
+  "model_only": true,
+  "runtime_candidate_implemented": false,
+  "original_owner_profiles": 0,
+  "server": false,
+  "product": false
+}

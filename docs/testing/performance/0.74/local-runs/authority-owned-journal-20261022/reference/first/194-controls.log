@@ -1,0 +1,14 @@
+   Compiling hc074-authority-owned-journal v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\authority-owned-journal-074)
+    Finished `release` profile [optimized] target(s) in 1.77s
+     Running unittests probe.rs (target\authority-owned-journal-194\release\deps\hc074_authority_owned_journal-6fc37c9372ac7ae0.exe)
+
+running 1 test
+test model::controls::reference_only ... HC074-OWNED-REFERENCE {"generations":1,"rounds":16,"counts":{"allocations":32,"zeroed":0,"reallocations":0,"requested_bytes":33808,"deallocations":32,"deallocated_bytes":33808},"trace":{"hash":"471976ad2161a574","events":20,"reads":4,"bytes":2113,"held":2,"fresh":0,"first_error":"none"}}
+HC074-OWNED-REFERENCE {"generations":2,"rounds":16,"counts":{"allocations":64,"zeroed":0,"reallocations":0,"requested_bytes":67616,"deallocations":64,"deallocated_bytes":67616},"trace":{"hash":"ec396792fc369744","events":36,"reads":8,"bytes":4226,"held":4,"fresh":0,"first_error":"none"}}
+HC074-OWNED-REFERENCE {"generations":16,"rounds":16,"counts":{"allocations":512,"zeroed":0,"reallocations":0,"requested_bytes":540928,"deallocations":512,"deallocated_bytes":540928},"trace":{"hash":"156b554a67927d7f","events":260,"reads":64,"bytes":33808,"held":32,"fresh":0,"first_error":"none"}}
+HC074-OWNED-REFERENCE {"generations":64,"rounds":16,"counts":{"allocations":2048,"zeroed":0,"reallocations":0,"requested_bytes":2163712,"deallocations":2048,"deallocated_bytes":2163712},"trace":{"hash":"4e631efe3a5ad967","events":1028,"reads":256,"bytes":135232,"held":128,"fresh":0,"first_error":"none"}}
+HC074-OWNED-REFERENCE {"generations":128,"rounds":16,"counts":{"allocations":4096,"zeroed":0,"reallocations":0,"requested_bytes":4327424,"deallocations":4096,"deallocated_bytes":4327424},"trace":{"hash":"b4b010d909b70f4b","events":2052,"reads":512,"bytes":270464,"held":256,"fresh":0,"first_error":"none"}}
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.01s
+
