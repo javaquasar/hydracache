@@ -1,0 +1,31 @@
+First focused development command, before formal method freeze:
+cargo test --offline --locked -p xtask --test authority_storage_source_074
+Exit 1, no tests executed. rustfmt completed before compilation.
+
+Compiler E0277 at authority_storage_source_074.rs:216:
+the trait bound `Array<...>: LowerHex` is not satisfied
+for format!("{:x}", Sha256::digest(baseline.as_bytes())).
+
+The complete raw terminal output remains in the chat tool record; this file is
+a contemporaneous transcription, not a redirected raw first log. Repair formats
+individual digest bytes; no pinned input or acceptance predicate is changed.
+
+Second focused development command: same cargo invocation, exit 1.
+Seven controls ran: four passed, three failed.
+observer_complete_bodies_restore_candidate_and_exact_hook_order: rustfmt added
+an optional trailing argument comma to the longer observed read_reusing call.
+original_read_reopen_publication_and_validation_order_remain_intact: the baseline
+has two FixtureAuthorityRegistry impl blocks (one cfg(test)); extractor expected
+one. exact_unapplied_files_match_pinned_patch_and_unchanged_runtime: the same
+observer comma differed from generated expected tokens.
+
+Repair explicitly spells that comma in the expected observer patch, strips only
+an optional trailing argument comma from recognized calls during independent
+hook restoration, and collects the known two registry blocks before requiring
+a unique selected method. Full-file acceptance still rejects extra blocks.
+This transcript is not a raw redirected log; the original output is in chat.
+
+Third focused development command: compile-only refusal E0596, no tests ran.
+The comma repair marked the hook-argument binding mutable instead of the later
+helper-call binding; compiler also reported unused_mut on the first binding.
+Move mut to the helper-call arguments. No source acceptance change.
