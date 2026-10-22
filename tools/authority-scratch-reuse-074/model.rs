@@ -119,3 +119,8 @@ mod controls;
 
 #[path = "cost.rs"]
 mod cost;
+
+#[path = "candidate.rs"]
+mod candidate;
+#[path = "comparisons.rs"]
+mod comparisons;
