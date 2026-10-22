@@ -1,0 +1,26 @@
+    Blocking waiting for file lock on package cache
+   Compiling hc074-authority-operator-order v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\authority-operator-order-074)
+    Finished `release` profile [optimized] target(s) in 1.64s
+     Running unittests probe.rs (target\authority-operator-order-194\release\deps\hc074_authority_operator_order-33441c34788df6ac.exe)
+
+running 1 test
+test model::operator_controls::legacy_counterexamples ... HC074-OP-LEGACY {"failed":false,"data_refused":false,"operation":"refuse","raw":"ok","normalized":"ok","expected":"ok","walks":2,"expected_walks":3,"outcome_mismatch":false,"walk_mismatch":true}
+HC074-OP-LEGACY {"failed":false,"data_refused":false,"operation":"advance-less","raw":"invalid","normalized":"transition","expected":"transition","walks":0,"expected_walks":1,"outcome_mismatch":false,"walk_mismatch":true}
+HC074-OP-LEGACY {"failed":false,"data_refused":false,"operation":"advance-equal","raw":"invalid","normalized":"transition","expected":"transition","walks":0,"expected_walks":1,"outcome_mismatch":false,"walk_mismatch":true}
+HC074-OP-LEGACY {"failed":false,"data_refused":false,"operation":"advance-greater","raw":"invalid","normalized":"transition","expected":"transition","walks":0,"expected_walks":1,"outcome_mismatch":false,"walk_mismatch":true}
+HC074-OP-LEGACY {"failed":false,"data_refused":true,"operation":"refuse","raw":"invalid","normalized":"transition","expected":"transition","walks":0,"expected_walks":1,"outcome_mismatch":false,"walk_mismatch":true}
+HC074-OP-LEGACY {"failed":false,"data_refused":true,"operation":"advance-less","raw":"invalid","normalized":"transition","expected":"transition","walks":0,"expected_walks":1,"outcome_mismatch":false,"walk_mismatch":true}
+HC074-OP-LEGACY {"failed":false,"data_refused":true,"operation":"advance-equal","raw":"invalid","normalized":"transition","expected":"transition","walks":0,"expected_walks":1,"outcome_mismatch":false,"walk_mismatch":true}
+HC074-OP-LEGACY {"failed":false,"data_refused":true,"operation":"advance-greater","raw":"ok","normalized":"ok","expected":"ok","walks":2,"expected_walks":3,"outcome_mismatch":false,"walk_mismatch":true}
+HC074-OP-LEGACY {"failed":true,"data_refused":false,"operation":"refuse","raw":"refused","normalized":"refused","expected":"refused","walks":0,"expected_walks":0,"outcome_mismatch":false,"walk_mismatch":false}
+HC074-OP-LEGACY {"failed":true,"data_refused":false,"operation":"advance-less","raw":"invalid","normalized":"transition","expected":"refused","walks":0,"expected_walks":0,"outcome_mismatch":true,"walk_mismatch":false}
+HC074-OP-LEGACY {"failed":true,"data_refused":false,"operation":"advance-equal","raw":"invalid","normalized":"transition","expected":"refused","walks":0,"expected_walks":0,"outcome_mismatch":true,"walk_mismatch":false}
+HC074-OP-LEGACY {"failed":true,"data_refused":false,"operation":"advance-greater","raw":"invalid","normalized":"transition","expected":"refused","walks":0,"expected_walks":0,"outcome_mismatch":true,"walk_mismatch":false}
+HC074-OP-LEGACY {"failed":true,"data_refused":true,"operation":"refuse","raw":"invalid","normalized":"transition","expected":"refused","walks":0,"expected_walks":0,"outcome_mismatch":true,"walk_mismatch":false}
+HC074-OP-LEGACY {"failed":true,"data_refused":true,"operation":"advance-less","raw":"invalid","normalized":"transition","expected":"refused","walks":0,"expected_walks":0,"outcome_mismatch":true,"walk_mismatch":false}
+HC074-OP-LEGACY {"failed":true,"data_refused":true,"operation":"advance-equal","raw":"invalid","normalized":"transition","expected":"refused","walks":0,"expected_walks":0,"outcome_mismatch":true,"walk_mismatch":false}
+HC074-OP-LEGACY {"failed":true,"data_refused":true,"operation":"advance-greater","raw":"refused","normalized":"refused","expected":"refused","walks":0,"expected_walks":0,"outcome_mismatch":false,"walk_mismatch":false}
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.00s
+

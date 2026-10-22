@@ -1,0 +1,4 @@
+"--nocapture"
+"--test-threads=1"
+"model::operator_controls::legacy_counterexamples"
+"--exact"

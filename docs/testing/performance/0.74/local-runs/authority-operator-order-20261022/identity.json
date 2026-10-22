@@ -1,0 +1,16 @@
+{
+  "schema": "authority-operator-order-source-074-v1",
+  "starting_tree": "bf53c84a",
+  "plan_commit": "19f6c71d0149032a88e6d03bd4e3e1bf15e44811",
+  "legacy_source_commit": "49f10265efa85c30c84e1b8399409b2b9db8f0d4",
+  "broad_first_source_commit": "e7304785911c8f3e58d018335ecfb8d9df52d085",
+  "argv_repair_commit": "302505d720cf9e1b8e202ac71c3b7dbd7cd0efd5",
+  "method_source_commit": "d418561677d1eccceafa02458b35a3ae4b59ea2b",
+  "targeted_isolation_gate_passed": false,
+  "unexpected_old_controls_executed": true,
+  "unexpected_allocation_values_excluded": true,
+  "model_rerun_after_argv_repair": false,
+  "runtime_candidate_implemented": false,
+  "server": false,
+  "product": false
+}

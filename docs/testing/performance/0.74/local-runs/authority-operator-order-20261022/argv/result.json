@@ -1,0 +1,34 @@
+{
+  "model_image_executed": false,
+  "server": false,
+  "native_argv_only": true,
+  "failure": null,
+  "old_controls_executed": false,
+  "product": false,
+  "steps": [
+    {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "log": "compile.log",
+      "exit": 0,
+      "name": "compile"
+    },
+    {
+      "sha256": "7f7989081d6a5692f6f8cae6003c58fd4ba0c8ae1ef7e5b199eaf95179337cd8",
+      "log": "broken-candidate.log",
+      "exit": 0,
+      "name": "broken-candidate"
+    },
+    {
+      "sha256": "7fed8e32c2cf27af82da0f8406e131f16a6a4a4e51553fdfa12d1bc167445a29",
+      "log": "fixed-reference.log",
+      "exit": 0,
+      "name": "fixed-reference"
+    },
+    {
+      "sha256": "b6aa8cbf5ada2c9cbee6dce85542cdbd7b7c3ff1d314497784444d686cd7cfd8",
+      "log": "fixed-candidate.log",
+      "exit": 0,
+      "name": "fixed-candidate"
+    }
+  ]
+}
