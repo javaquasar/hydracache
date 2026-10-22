@@ -633,3 +633,11 @@ docs/testing/performance/0.74/local-runs/authority-runtime-cpu-20261022/**/*.log
 
 docs/testing/performance/0.74/local-runs/authority-runtime-cpu-doc-followup-20261022/** -text whitespace=cr-at-eol
 docs/testing/performance/0.74/local-runs/authority-runtime-cpu-doc-followup-20261022/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-runtime-variance-20261022/** -text whitespace=cr-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-runtime-variance-20261022/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-runtime-variance-doc-followup-20261022/** -text whitespace=cr-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-runtime-variance-doc-followup-20261022/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol

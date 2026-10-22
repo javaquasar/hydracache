@@ -1,0 +1,70 @@
+{
+  "files": [
+    {
+      "bytes": 266,
+      "path": "checks/cpu-input.log",
+      "sha256": "361d50ca6f4670485d3ff390cc4cbbbc4312e96d75852b05b97962645e432b1a"
+    },
+    {
+      "bytes": 167,
+      "path": "checks/docs-plan.log",
+      "sha256": "1bffe19c0a479fed532dc8d72a84aa603a4657e35102a3f6b1ad6796c4eb9208"
+    },
+    {
+      "bytes": 171,
+      "path": "checks/predecessor-chain.log",
+      "sha256": "cb99feeb3ef161bbdf2db521c58d4fc93a93cf32d1715386076ecd611611a7ce"
+    },
+    {
+      "bytes": 1500,
+      "path": "checks/python-final.log",
+      "sha256": "bcedeabd2fbdd97c0da686db58945d9313239ce33924b74196e365d8e58ff893"
+    },
+    {
+      "bytes": 2291,
+      "path": "checks/python-first.log",
+      "sha256": "b6ac8ef57601f4c93c4c0d1b2bb46e50eb368d07f755568dadf1f0f6cf869642"
+    },
+    {
+      "bytes": 2517,
+      "path": "checks/python-second.log",
+      "sha256": "e7eb770c3efd808f7ce972a5ef99b817e59ea4feb8682fc0d1200cdde0df1613"
+    },
+    {
+      "bytes": 1229,
+      "path": "checks/python-third.log",
+      "sha256": "5f40628776dac6816b43be956081c6427bcfcd60b76b0f84d6432632e3ce35e5"
+    },
+    {
+      "bytes": 1189072,
+      "path": "facts.json",
+      "sha256": "96948ca5f56dc642a7d7b3bd5ca9c3c762a18673a26fe6d3419c2cf2686d5dcd"
+    },
+    {
+      "bytes": 11521,
+      "path": "source/analyze.py",
+      "sha256": "93b44aec435ac959a00d1d71af1d63850deb08ffd70b0a81edf6cd6f5f21c388"
+    },
+    {
+      "bytes": 3998,
+      "path": "source/authority-runtime-variance-analysis-plan-20261022.md",
+      "sha256": "711ca558870978a7b635f486e242cd9a0df6c07d1a1f9ce727789d768680e770"
+    },
+    {
+      "bytes": 6679,
+      "path": "source/authority-runtime-variance-method-20261022.md",
+      "sha256": "f8a4d385cf44282eb8906c1768a2d3aacd8f77e7c4e04c66199d48592131adab"
+    },
+    {
+      "bytes": 2072,
+      "path": "source/README.md",
+      "sha256": "197de1c724b09b43b966213f45cfbc3e4b0433a05a256d336d133d220e68351a"
+    },
+    {
+      "bytes": 5929,
+      "path": "source/test_analysis.py",
+      "sha256": "57c9e5bb5ed8b3bf3e48b67c4efb98cb865d24d141bec8c1c74f7eda236c469e"
+    }
+  ],
+  "schema": "authority-runtime-variance-inventory-074-v1"
+}
