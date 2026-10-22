@@ -1,0 +1,22 @@
+[
+  {
+    "lane": "194",
+    "role": "baseline",
+    "maximum_repeats": 5
+  },
+  {
+    "lane": "194",
+    "role": "installed",
+    "maximum_repeats": 5
+  },
+  {
+    "lane": "188",
+    "role": "baseline",
+    "maximum_repeats": 5
+  },
+  {
+    "lane": "188",
+    "role": "installed",
+    "maximum_repeats": 5
+  }
+]

@@ -1870,3 +1870,19 @@ a separately pinned current-runtime attribution plan. This gate alone does not
 admit original start, termination of all writers, durable later-cell completion,
 real SIGKILL/lost-ACK, reconnect or production trust/enrollment. Keep the final
 server integration gate and installation/supervisor approval separate.
+
+### Installed allocation reuse is measured, not a server-readiness shortcut
+
+The [paired actual-runtime experiment](authority-runtime-allocation-20261022.md)
+now confirms the tradeoff on Rust 1.94 and 1.88, five pairs each. Depth-127 warm
+inspect changes 1,353 to 1,099 allocations and 132,606 to 45,346 requested bytes,
+while live owner layouts increase 197,223 to 290,627 bytes. Cold reopen has equal
+allocation counts and higher requested bytes. All five scratch cleanup paths
+and zero owner-layout balance after drop pass; RSS has no stable win.
+
+First harness/provenance refusals remain separate from the frozen twenty-process
+cohort. No runtime, live check/order, original window/refusal or qualification
+change follows. Next separately establish CPU/end-to-end value if pursued;
+original delivery, all-writer revocation, later completion cells, real SIGKILL/
+lost-ACK, reconnect and trust/enrollment still require their own gates. No live
+or server attempt, clock/service action, installation, supervisor or product load.

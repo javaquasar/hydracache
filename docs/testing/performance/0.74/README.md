@@ -5978,3 +5978,23 @@ tests do not measure that tradeoff. Next separately pin current-runtime
 attribution before a performance claim. Original checks, windows, first refusals
 and qualification remain unchanged. No live preparation, full SIGKILL/lost-ACK,
 server, installation, supervisor, product, clock or service action follows.
+
+### Installed storage allocation benefit has an explicit retention price
+
+The [actual-engine allocation comparison](authority-runtime-allocation-20261022.md)
+uses five frozen fresh-process pairs on each of Rust 1.94 and 1.88. Both lanes
+repeat the same counts: at history depth 127, warm inspect allocations fall
+1,353 to 1,099 and requested bytes 132,606 to 45,346. Owner live requested layouts
+rise 197,223 to 290,627 bytes: 87,260 scratch bytes plus 6,144 structural bytes.
+Cold reopen does not reduce allocation counts and requests more vector bytes.
+
+All five refusal paths evict scratch; every owner's measured layout lifetime
+reconciles to zero after drop. Whole-process RSS does not show a stable direction
+across compiler lanes and supports no memory-win claim. The packet retains all
+first build/provenance refusals, distinct fresh image guards and all twenty
+successful measurement processes. No old model timing is reused.
+
+This closes local allocation/retention attribution, not CPU/end-to-end benefit,
+original delivery/all-writer/lifecycle/fault/reconnect or server admission.
+Original checks, windows, first refusals and qualification remain unchanged;
+no new live, clock/service, supervisor, installation, server or product action.

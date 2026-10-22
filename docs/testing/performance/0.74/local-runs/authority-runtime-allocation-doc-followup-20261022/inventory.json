@@ -1,0 +1,56 @@
+{
+  "evidence_source": "980bb651e0e0b7f0d18e882cd4ca8a85e77b55fa",
+  "schema": "authority-runtime-allocation-doc-followup-074-v1",
+  "all_checks_passed": true,
+  "server": false,
+  "product": false,
+  "measurement_rerun": false,
+  "files": [
+    {
+      "sha256": "878ccbc861cbd3222dc9b62b42df9213dd91311dd8b6560b369dae99e99694b8",
+      "path": "docs-final.log",
+      "bytes": 167
+    },
+    {
+      "sha256": "5d32e00223267df329395b50f3dca78501a2b706a4b7ea7c49ac0f581de8e554",
+      "path": "docs.log",
+      "bytes": 252
+    },
+    {
+      "sha256": "5ddbdec791c495020291bc0ae2121a904dff9c222af2a0fec143aa0b2ad544af",
+      "path": "maximum-repeatability.json",
+      "bytes": 335
+    },
+    {
+      "sha256": "e04321540b344c38ab7e5389df43d4a8b7a7c2a0c20041de29d2e525ff01a3f6",
+      "path": "performance.log",
+      "bytes": 215
+    },
+    {
+      "sha256": "69f8444d4b84267ba0993bb32865dd23abb2c04e6f1ae1a54ab01e3a9d6040fc",
+      "path": "python-controls.log",
+      "bytes": 1159
+    },
+    {
+      "sha256": "e66ce4057e9a634b70aaf5410a1555842329edd00ef6752dd9057bbd4ee48706",
+      "path": "raw-index.json",
+      "bytes": 148
+    },
+    {
+      "sha256": "fc4bbaa03516d6eb17c6990aa75d67c4c042bed774c80814b2b8b8f4cf621eb3",
+      "path": "registry.log",
+      "bytes": 190
+    },
+    {
+      "sha256": "cb99feeb3ef161bbdf2db521c58d4fc93a93cf32d1715386076ecd611611a7ce",
+      "path": "seal-final.log",
+      "bytes": 171
+    },
+    {
+      "sha256": "cb99feeb3ef161bbdf2db521c58d4fc93a93cf32d1715386076ecd611611a7ce",
+      "path": "seal.log",
+      "bytes": 171
+    }
+  ],
+  "runtime_changed": false
+}

@@ -17555,3 +17555,61 @@ canaries and native results close local integration only. Original live checks,
 deadlines, first refusals and qualification remain fixed. Full SIGKILL/lost-ACK,
 all-writer revocation, reconnect and server enrollment remain distinct gates;
 no server, service/clock, supervisor or product action occurred.
+
+### Fewer allocations can mean more live memory
+
+The [installed-engine experiment](../testing/performance/0.74/authority-runtime-allocation-20261022.md)
+measures the actual owned-storage implementation against its exact pre-install
+engine, not the old model. Five fresh-process pairs per compiler, Rust 1.94 and
+MSRV 1.88, use the same signed synthetic corpus, seed, filesystem history and
+32 full inspections per cell. Reopen, warm checks, refusal, sticky refusal,
+maximum publication and owner drop are separate accounting phases. Existing
+runtime/test bodies and all live checks stay intact; common instrumentation
+is added only to isolated source overlays.
+
+Both compiler lanes repeat the same allocation and layout counts in every pair.
+At depth 127 a warm inspect changes from 1,353 to 1,099 allocations and from
+132,606 to 45,346 requested bytes. The count reduction is exactly two buffers
+per generation, one per record/commit Leaf. Fresh files, metadata, stamps,
+content comparison, inventory and parsing still execute; the remaining 1,099
+allocations are not hidden or classified as free. This is evidence of storage
+reuse, not evidence that validation became proportionally faster.
+
+The price is measurable. Live owner requested layouts rise from 197,223 to
+290,627 bytes at that depth: 87,260 retained scratch bytes and 6,144 additional
+bytes in the entry vector. Leaf grows 136 to 160 bytes and Entry 272 to 320;
+spare vector capacity costs memory too. Cold reopen has the same 10,708
+alloc/alloc_zeroed calls in both roles and increases cumulative requested bytes
+from 1,621,196 to 1,633,292. Its original closing validation already warms the
+new scratch slots. The mechanism helps subsequent checks; it does not make a
+new owner cheaper to construct or reduce its live memory.
+
+Accounting realloc correctly is essential: a successful realloc requests a
+new layout and releases its old one. Across open, warm, publication, refusal,
+sticky inspection and final drop, every measured owner balances to zero.
+All five refusal boundaries clear scratch, including binding/transition and
+partial publication errors. This supports cleanup of requested layouts, not
+the stronger claim that malloc returns every freed page to the OS.
+
+RSS tells a different, weaker story. At depth 127 the Rust 1.94 paired RSS
+differences are negative, while Rust 1.88 spans both signs. Executable/runtime
+pages, fixture production, reporting and allocator residency belong to those
+whole-process samples. Their unstable direction cannot overturn the directly
+measured increase in owner retention, and it supports no lower-RSS claim.
+Keep allocation requests, retained layouts and process residency distinct.
+
+The harness itself needed provenance review. Cargo initially treated installed
+as fresh in a shared target and returned the baseline executable. Passing
+semantic controls alone did not make that a valid comparison. The attempt
+was blocked before measurement; independent role targets, fresh compilation
+and different image paths/digests now guard the cohort. Earlier missing fixture,
+lint, output-format and cache-copy failures remain visible instead of being
+folded into a successful measurement. All twenty first measured processes pass.
+
+The result justifies a narrow statement: repeated full checks allocate less,
+at a known retention and cold-construction cost. It does not settle CPU or
+end-to-end preparation value, original-start/all-writer revocation, real
+SIGKILL/lost-ACK recovery or server admission. No runtime was changed in response
+to these results, no old timing claim was carried forward, and all original
+windows, live predicates, first refusals and qualification identities remain.
+No clock/service change, server, installation, supervisor or product load ran.
