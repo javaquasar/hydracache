@@ -1,0 +1,11 @@
+// The intended feature gate remains RED. This is its preserved first source,
+// not an active passing gate or a completed implementation.
+use std::path::Path;
+fn read(name: &str) -> String {
+    std::fs::read_to_string(Path::new(env!("CARGO_MANIFEST_DIR")).join("../..").join(name)).unwrap().replace('\r', "")
+}
+#[test]
+fn launcher_bind_alias_is_an_additive_private_consuming_boundary() {
+    let material = read("tools/long-run-supervisor-074/src/diagnostic_held_unit_material.rs");
+    assert!(material.contains("mod exec_alias;"));
+}

@@ -1,0 +1,79 @@
+//! REJECTED UNFINISHED CANDIDATE, NOT COMPILED OR INSTALLED.
+//! Fixed safe ancestors and namespace retention; no mkdir of installation paths.
+use super::*;
+pub(super) const ROOT: &str = "/run/hydracache-perf/held-exec-074";
+fn id(file: &File) -> io::Result<[u64; 5]> {
+    let m = file.metadata()?;
+    need(m.is_dir() && m.uid() == 0 && m.gid() == 0 && m.mode() & 0o022 == 0)?;
+    Ok([m.dev(), m.ino(), m.uid() as _, m.gid() as _, m.mode() as _])
+}
+fn namespace(path: &str) -> io::Result<File> {
+    let file = std::fs::OpenOptions::new().read(true)
+        .custom_flags(libc::O_CLOEXEC).open(path)?;
+    need(unsafe { libc::ioctl(file.as_raw_fd(), 0xb703) } == libc::CLONE_NEWNS)?;
+    Ok(file)
+}
+fn ns_id(file: &File) -> io::Result<[u64; 2]> {
+    let m = file.metadata()?;
+    Ok([m.dev(), m.ino()])
+}
+pub(super) struct Root {
+    pins: Vec<File>,
+    stamps: Vec<[u64; 5]>,
+    namespace: File,
+    ns_id: [u64; 2],
+    origin: [i64; 6],
+    #[cfg(test)]
+    fixture: Option<std::path::PathBuf>,
+}
+fn origin() -> [i64; 6] {
+    unsafe { [libc::getpid() as _, libc::syscall(libc::SYS_gettid), libc::getuid() as _,
+        libc::getgid() as _, libc::geteuid() as _, libc::getegid() as _] }
+}
+fn fixed_pins() -> io::Result<Vec<File>> {
+    let mut pins = vec![open_at(libc::AT_FDCWD, c"/", libc::O_PATH | libc::O_DIRECTORY)?];
+    for name in [c"run", c"hydracache-perf", c"held-exec-074"] {
+        pins.push(open_at(pins.last().unwrap().as_raw_fd(), name, libc::O_PATH | libc::O_DIRECTORY)?);
+    }
+    for file in &pins { need(file.metadata()?.mode() & 1 != 0)?; }
+    Ok(pins)
+}
+impl Root {
+    pub(super) fn fixed() -> io::Result<Self> {
+        let namespace = namespace("/proc/thread-self/ns/mnt")?;
+        let ns_id = ns_id(&namespace)?;
+        need(ns_id == ns_id_of_manager()?)?;
+        let pins = fixed_pins()?;
+        let stamps = pins.iter().map(id).collect::<io::Result<_>>()?;
+        let value = Self { pins, stamps, namespace, ns_id, origin: origin(),
+            #[cfg(test)] fixture: None };
+        value.observe()?;
+        Ok(value)
+    }
+    pub(super) fn observe(&self) -> io::Result<()> {
+        need(self.origin == origin() && self.origin[2..] == [0; 4]
+            && ns_id(&self.namespace)? == self.ns_id
+            && ns_id(&namespace("/proc/thread-self/ns/mnt")?)? == self.ns_id)?;
+        #[cfg(test)]
+        if let Some(path) = &self.fixture {
+            need(self.stamps == vec![id(&File::open(path)?)?])?;
+            return Ok(());
+        }
+        need(ns_id_of_manager()? == self.ns_id)?;
+        let fresh = fixed_pins()?;
+        need(fresh.iter().map(id).collect::<io::Result<Vec<_>>>()? == self.stamps
+            && self.pins.iter().map(id).collect::<io::Result<Vec<_>>>()? == self.stamps)
+    }
+    pub(super) fn fd(&self) -> i32 { self.pins.last().unwrap().as_raw_fd() }
+    #[cfg(test)]
+    pub(super) fn fixture(path: &std::path::Path) -> io::Result<Self> {
+        let namespace = namespace("/proc/thread-self/ns/mnt")?;
+        let ns_id = ns_id(&namespace)?;
+        let file = File::open(path)?;
+        let stamps = vec![id(&file)?];
+        let value = Self { pins: vec![file], stamps, namespace, ns_id, origin: origin(), fixture: Some(path.into()) };
+        value.observe()?;
+        Ok(value)
+    }
+}
+fn ns_id_of_manager() -> io::Result<[u64; 2]> { ns_id(&namespace("/proc/1/ns/mnt")?) }

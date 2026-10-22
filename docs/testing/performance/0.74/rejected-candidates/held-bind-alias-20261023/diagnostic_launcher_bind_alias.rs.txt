@@ -1,0 +1,130 @@
+//! REJECTED UNFINISHED CANDIDATE, NOT COMPILED OR INSTALLED.
+//! First memfd open_tree precondition refused EINVAL; downstream code untested.
+//! One publication of the same sealed inode. No cleanup, send or execution API.
+use super::*;
+use std::ffi::{CStr, CString};
+use std::os::fd::FromRawFd;
+use std::os::unix::fs::OpenOptionsExt;
+#[path = "diagnostic_launcher_alias_path.rs"]
+mod path;
+
+fn need(ok: bool) -> io::Result<()> {
+    if ok { Ok(()) } else { Err(io::Error::new(io::ErrorKind::PermissionDenied, "sealed launcher alias")) }
+}
+fn owned(fd: i64) -> io::Result<File> {
+    if fd < 0 { return Err(io::Error::last_os_error()); }
+    Ok(unsafe { File::from_raw_fd(fd as i32) })
+}
+fn open_at(parent: i32, name: &CStr, flags: i32) -> io::Result<File> {
+    owned(unsafe { libc::openat(parent, name.as_ptr(), flags | libc::O_NOFOLLOW | libc::O_CLOEXEC) } as _)
+}
+fn image(file: &File) -> io::Result<Stamp> {
+    let m = file.metadata()?;
+    let flags = unsafe { libc::fcntl(file.as_raw_fd(), libc::F_GETFL) };
+    need(m.is_file() && m.uid() == 0 && m.gid() == 0 && m.mode() & 0o6022 == 0 && m.mode() & 1 != 0
+        && m.len() >= 64 && m.len() <= MAX_BINARY_BYTES
+        && flags >= 0 && flags & (libc::O_ACCMODE | libc::O_PATH) == libc::O_RDONLY
+        && unsafe { libc::fcntl(file.as_raw_fd(), libc::F_GETFD) } == libc::FD_CLOEXEC
+        && unsafe { libc::fcntl(file.as_raw_fd(), libc::F_GET_SEALS) } == SEALS)?;
+    Ok(Stamp::from(m))
+}
+fn mount_id(file: &File) -> io::Result<u64> {
+    let mut s: libc::statx = unsafe { std::mem::zeroed() };
+    need(unsafe { libc::statx(file.as_raw_fd(), c"".as_ptr(), libc::AT_EMPTY_PATH,
+        libc::STATX_MNT_ID, &mut s) } == 0 && s.stx_mask & libc::STATX_MNT_ID != 0 && s.stx_mnt_id != 0)?;
+    Ok(s.stx_mnt_id)
+}
+fn attrs(file: &File) -> io::Result<()> {
+    let mut s: libc::statvfs = unsafe { std::mem::zeroed() };
+    need(unsafe { libc::fstatvfs(file.as_raw_fd(), &mut s) } == 0 && s.f_flag & 15 == 7)
+}
+#[repr(C)]
+struct MountAttr { set: u64, clear: u64, propagation: u64, userns: u64 }
+#[derive(PartialEq, Eq)]
+pub(crate) struct Observation {
+    // Private values only: no path/FD getter or executable command export.
+    address: String,
+    image: Stamp,
+    mount: u64,
+}
+pub(crate) struct LauncherAlias {
+    root: path::Root,
+    name: CString,
+    directory: File,
+    dir_id: [u64; 2],
+    tree: File,
+    stamp: Stamp,
+    mount: u64,
+    refused: bool,
+}
+impl LauncherAlias {
+    fn create(root: path::Root, file: &File, attempt: [u8; 32]) -> io::Result<Self> {
+        need(attempt.iter().any(|v| *v != 0))?;
+        let stamp = image(file)?;
+        root.observe()?;
+        let tree = owned(unsafe { libc::syscall(libc::SYS_open_tree, file.as_raw_fd(), c"".as_ptr(),
+            1u32 | libc::O_CLOEXEC as u32 | libc::AT_EMPTY_PATH as u32) })?;
+        #[cfg(test)] tests::cut(1);
+        let attr = MountAttr { set: 7, clear: 0, propagation: 0, userns: 0 };
+        need(unsafe { libc::syscall(libc::SYS_mount_setattr, tree.as_raw_fd(), c"".as_ptr(),
+            libc::AT_EMPTY_PATH as u32, &attr, std::mem::size_of::<MountAttr>()) } == 0)?;
+        attrs(&tree)?;
+        #[cfg(test)] tests::cut(2);
+        let name = CString::new(crate::sha256_hex(&attempt)).unwrap();
+        // SHA-256 of the fixed attempt bytes is a bounded lowercase component.
+        need(unsafe { libc::mkdirat(root.fd(), name.as_ptr(), 0o755) } == 0)?;
+        let directory = open_at(root.fd(), &name, libc::O_PATH | libc::O_DIRECTORY)?;
+        let m = directory.metadata()?;
+        need(m.uid() == 0 && m.gid() == 0 && m.mode() & 0o7777 == 0o755)?;
+        let dir_id = [m.dev(), m.ino()];
+        let leaf = owned(unsafe { libc::openat(directory.as_raw_fd(), c"launcher".as_ptr(),
+            libc::O_CREAT | libc::O_EXCL | libc::O_NOFOLLOW | libc::O_CLOEXEC | libc::O_RDONLY, 0o444) } as _)?;
+        need(leaf.metadata()?.is_file())?;
+        #[cfg(test)] tests::cut(3);
+        root.observe()?;
+        need(image(file)? == stamp)?;
+        #[cfg(test)] tests::cut(4);
+        // One publication only. Never unmount in an error path, Drop or refusal.
+        need(unsafe { libc::syscall(libc::SYS_move_mount, tree.as_raw_fd(), c"".as_ptr(),
+            directory.as_raw_fd(), c"launcher".as_ptr(), 4u32) } == 0)?;
+        #[cfg(test)] tests::cut(5);
+        let mount = mount_id(&tree)?;
+        let mut value = Self { root, name, directory, dir_id, tree, stamp, mount, refused: false };
+        value.observe(attempt)?;
+        #[cfg(test)] tests::cut(6);
+        Ok(value)
+    }
+    pub(crate) fn observe(&mut self, attempt: [u8; 32]) -> io::Result<Observation> {
+        let result = (|| {
+            need(!self.refused && self.name.to_bytes() == crate::sha256_hex(&attempt).as_bytes())?;
+            self.root.observe()?;
+            let directory = open_at(self.root.fd(), &self.name, libc::O_PATH | libc::O_DIRECTORY)?;
+            for file in [&directory, &self.directory] {
+                let m = file.metadata()?;
+                need([m.dev(), m.ino()] == self.dir_id && m.uid() == 0 && m.gid() == 0 && m.mode() & 0o7777 == 0o755)?;
+            }
+            let file = open_at(directory.as_raw_fd(), c"launcher", libc::O_RDONLY)?;
+            need(image(&file)? == self.stamp && mount_id(&file)? == self.mount && mount_id(&self.tree)? == self.mount)?;
+            attrs(&file)?; attrs(&self.tree)?;
+            self.root.observe()?;
+            Ok(Observation { address: format!("{}/{}/launcher", path::ROOT, self.name.to_str().unwrap()),
+                image: image(&file)?, mount: self.mount })
+        })();
+        if result.is_err() { self.refused = true; }
+        result
+    }
+}
+impl PinnedRoles {
+    pub(crate) fn create_launcher_alias(&self, attempt: [u8; 32], identity: [u64; 3], digest: &str) -> Result<LauncherAlias, ArtifactError> {
+        if self.refused || identity != [self.launcher.stamp.identity[0], self.launcher.stamp.identity[1], self.launcher.stamp.length]
+            || digest != self.build.statement.images.held_launcher.sha256 || image(&self.launcher.file)? != self.launcher.stamp {
+            return Err(ArtifactError::Contents);
+        }
+        Ok(LauncherAlias::create(path::Root::fixed()?, &self.launcher.file, attempt)?)
+    }
+}
+// Deliberately no Drop cleanup or unmount API. Mounted references survive File
+// closure in the manager namespace; existing original guardians retain the fence.
+#[cfg(test)]
+#[path = "diagnostic_launcher_bind_alias_tests.rs"]
+mod tests;
