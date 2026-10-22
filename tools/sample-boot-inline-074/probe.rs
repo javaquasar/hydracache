@@ -108,3 +108,24 @@ impl model::Origin {
         }
     }
 }
+
+mod prototype;
+impl prototype::Origin {
+    fn revalidate(&self) -> Result<(), KernelError> {
+        let mut script = SCRIPT.get();
+        script.validations += 1;
+        assert!(script.validations <= 2);
+        let (mask, value) = if script.validations == 1 {
+            (1, Event::Before)
+        } else {
+            (8, Event::After)
+        };
+        SCRIPT.set(script);
+        event(value);
+        if script.faults & mask != 0 {
+            Err(KernelError::Fault(mask))
+        } else {
+            Ok(())
+        }
+    }
+}

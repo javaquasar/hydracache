@@ -1,9 +1,11 @@
 #requires -Version 7.2
-param([Parameter(Mandatory)][ValidateSet('reference','candidate')][string]$Phase,[Parameter(Mandatory)][ValidateSet('host','194','188')][string]$Lane)
+param([Parameter(Mandatory)][ValidateSet('reference','candidate')][string]$Phase,[Parameter(Mandatory)][ValidateSet('host','194','188')][string]$Lane,[ValidateSet('first','canary-repair')][string]$Cohort='first')
 $ErrorActionPreference='Stop'
 $taskRepo=(Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
 Set-Location $taskRepo
-$taskOutput=Join-Path $taskRepo "target/sample-boot-inline-checks/$Phase"
+if($Cohort -cne 'first' -and ($Phase -cne 'candidate' -or $Lane -cne 'host')){throw 'Only source canary repair is authorized; never repeat measurements'}
+$taskDirectory=if($Cohort -ceq 'first'){$Phase}else{"$Phase-$Cohort"}
+$taskOutput=Join-Path $taskRepo "target/sample-boot-inline-checks/$taskDirectory"
 if(-not(Test-Path -LiteralPath $taskOutput)){New-Item -ItemType Directory -Path $taskOutput -Force|Out-Null}
 if(Test-Path -LiteralPath (Join-Path $taskOutput "$Lane-result.json")){throw 'Never replace first receipt'}
 $taskSteps=@();$taskFailure=$null
@@ -33,5 +35,5 @@ try{
         Record 'clippy' { & cargo $taskCompiler clippy --manifest-path tools/sample-boot-inline-074/Cargo.toml --offline --locked --all-targets --all-features --target-dir $taskTarget -- -D warnings }
     }
 }catch{$taskFailure=$_.Exception.Message}
-@{phase=$Phase;cohort='first';lane=$Lane;steps=$taskSteps;failure=$taskFailure;platform='windows-msvc';model_only=$true;prototype_only=$true;runtime_candidate_implemented=$false;original_owner_profiles=0;ignored_tests_run=$false;server=$false;product=$false}|ConvertTo-Json -Depth 8|Out-File (Join-Path $taskOutput "$Lane-result.json") -Encoding utf8 -NoClobber
+@{phase=$Phase;cohort=$Cohort;lane=$Lane;steps=$taskSteps;failure=$taskFailure;platform='windows-msvc';model_only=$true;prototype_only=$true;runtime_candidate_implemented=$false;original_owner_profiles=0;ignored_tests_run=$false;server=$false;product=$false}|ConvertTo-Json -Depth 8|Out-File (Join-Path $taskOutput "$Lane-result.json") -Encoding utf8 -NoClobber
 if($taskFailure){throw $taskFailure}

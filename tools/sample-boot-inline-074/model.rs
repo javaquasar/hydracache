@@ -89,3 +89,6 @@ mod controls;
 
 #[path = "cost.rs"]
 mod cost;
+
+#[path = "compare.rs"]
+mod comparisons;
