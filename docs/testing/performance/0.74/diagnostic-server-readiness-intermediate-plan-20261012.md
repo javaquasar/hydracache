@@ -1688,3 +1688,19 @@ the old length. Runtime, original 300/60/10 windows, first refusals and
 qualification remain unchanged. Material/cleanup, delivery/all-writer, full
 SIGKILL/lost-ACK, reconnect and server admission remain closed; no WSL, clocks/
 services, installation, supervisor or server/product run occurs.
+
+### Pure bounded read baseline precedes transient storage changes
+
+The [fresh-read reference baseline](authority-read-baseline-20261022.md)
+retains complete copied read/revalidate bodies, owned expected bytes, first-error
+prefixes and bounded EOF behavior. Two first Windows lanes agree on constructor
+requests with no additional generic-read requests in the fixed healthy corpus.
+Synthetic token ownership is not real descriptor or kernel fault evidence.
+
+Forty-nine source canaries, fifty-five offline controls and seventeen preceding
+seals/955 members pass the focused step gate. Next preregister a separate
+transient-storage prototype with its own read/EOF/ownership and copy/size/cost
+controls; do not integrate from this allocation baseline alone. Runtime, original
+300/60/10 windows, first refusals and qualification remain unchanged. Material,
+all-writer, full fault/lost-ACK, reconnect and server gates remain closed; no WSL,
+clocks/services, installation, supervisor or server/product run occurs.

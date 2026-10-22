@@ -5801,3 +5801,19 @@ controls and forty-six Windows source canaries. The next hypothesis is transient
 revalidation storage, pending its own bounded-read baseline; cached bytes and
 read_exact of the old length are not equivalent replacements. Runtime, original
 windows/refusals and material/fault/reconnect/server gates remain unchanged.
+
+### Pure fresh authority bounded read baseline
+
+The [separate bounded-read baseline](authority-read-baseline-20261022.md) copies
+the complete Leaf read/revalidate and relevant metadata bodies with synthetic
+receivers. Both first Windows compiler lanes pass nine pure tests: 2304 healthy
+reads make 2048 allocations/1222656 requested bytes, with no reallocations.
+Separate stages attribute requests to construction, not generic reading on this
+corpus. Fault/stage/seeded cases are not pooled into main counts.
+
+All first-error masks, EOF/partial/Interrupted behavior and token ownership are
+checked without real File/FD or kernel observations. Forty-nine source canaries,
+fifty-five offline controls and seventeen prior seals/955 members preserve the
+boundary. A transient-storage prototype requires its own preregistration and
+cost/semantic gate; no runtime optimization or full-path gain follows. Original
+windows/refusals and closed material/fault/reconnect/server gates remain.

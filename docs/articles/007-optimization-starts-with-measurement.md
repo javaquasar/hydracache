@@ -17216,3 +17216,39 @@ constructor fields. Sixteen earlier seals and 928 members preserve the rejected
 inline-boot result and original Causal refusals. Runtime and original deadlines
 remain unchanged; the next bounded-read baseline does not reopen live material,
 all-writer, fault, reconnect or server admission.
+
+### Measure bounded read allocation without replacing fresh observations
+
+The [pure authority read baseline](../testing/performance/0.74/authority-read-baseline-20261022.md)
+isolates the storage question before changing it. Complete Leaf/open/read/
+revalidate and relevant metadata bodies use synthetic receivers, while generic
+std Read::take/read_to_end remains real library code. There is no filesystem,
+descriptor or clock observation in this image, so these results are not Linux
+File allocation or syscall evidence.
+
+Both first Windows MSVC compiler lanes agree on nine fixed byte cases and 256
+healthy reads each: 2048 allocations and 1222656 requested bytes across 2304
+calls, with no reallocations. The empty case requests nothing. Separate stages
+show one constructor request per nonempty case and no additional read requests
+on this corpus, including fragmented and Interrupted cases. Main deallocation
+layouts match; this is not proof that pages were released to the OS.
+
+Conservation makes the attribution useful: constructor plus read equals whole
+return, independent drops agree, and each per-case sum times 256 equals its main
+row. Stage calls do not become extra main operations. A one-byte-fragmented
+marker makes more synthetic Read callbacks than an unfragmented marker while
+retaining the same allocation count; that distinction prevents turning request
+counts into a CPU or syscall claim.
+
+Failure placement also matters. Early masks refuse before allocation, but read
+and after-metadata failures already own temporary bytes. The 32/64 mask families,
+all stamp fields, growth/EOF/partial errors and seeded owned-return/content drift
+remain separate controls. Standard-library Interrupted handling is preserved;
+there is no application retry or repeated measured selection.
+
+The baseline supports testing a separate transient-storage hypothesis, not
+borrowing or overwriting retained expected bytes. Any candidate still needs
+matching metadata/EOF/lifetime behavior and its own copy/size/full-path cost
+gate. Forty-nine source canaries, fifty-five offline controls and seventeen
+older seals/955 members retain the original deadlines/refusals and closed live,
+fault, reconnect and server admission. No runtime storage change is made here.
