@@ -1,13 +1,20 @@
 use std::path::Path;
 #[path = "support/bootstrap_build_guard.rs"]
 mod build_guard;
+#[path = "support/bootstrap_image_guard.rs"]
+mod image_guard;
 fn root() -> std::path::PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
 }
 fn read(path: &str) -> String {
-    std::fs::read_to_string(root().join(path))
+    let raw = std::fs::read_to_string(root().join(path))
         .unwrap()
-        .replace('\r', "")
+        .replace('\r', "");
+    if let Some(name) = path.strip_prefix("tools/long-run-supervisor-074/src/") {
+        image_guard::provider_view(name, &raw)
+    } else {
+        raw
+    }
 }
 #[test]
 fn rejected_bind_alias_does_not_install_unproved_runtime_or_change_old_bytes() {

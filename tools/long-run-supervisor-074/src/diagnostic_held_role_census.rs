@@ -260,3 +260,6 @@ impl CompleteBindings {
         self.extra[0].stat[1] += 1;
     }
 }
+
+#[path = "diagnostic_bootstrap_image_census.rs"]
+pub(crate) mod bootstrap_images;

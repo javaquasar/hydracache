@@ -2,14 +2,17 @@
 mod bootstrap_guard;
 #[path = "support/bootstrap_build_guard.rs"]
 mod build_guard;
+#[path = "support/bootstrap_image_guard.rs"]
+mod image_guard;
 fn source(name: &str) -> String {
-    std::fs::read_to_string(
+    let raw = std::fs::read_to_string(
         std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("../../tools/long-run-supervisor-074/src")
             .join(name),
     )
     .unwrap()
-    .replace('\r', "")
+    .replace('\r', "");
+    image_guard::provider_view(name, &raw)
 }
 fn baseline(name: &str) -> String {
     let output = std::process::Command::new("git")

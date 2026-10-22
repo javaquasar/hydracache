@@ -173,3 +173,6 @@ impl PinnedRoles {
         result
     }
 }
+
+#[path = "diagnostic_bootstrap_image_provider.rs"]
+mod bootstrap_images;

@@ -4,6 +4,7 @@ use crate::diagnostic_builder::{bootstrap_build, MAX_POLICY_BYTES};
 use crate::diagnostic_artifacts::{ArtifactError, MAX_RECEIPT_BYTES};
 use crate::diagnostic_worker_policy::trusted_input::controller_input::held_runtime::bootstrap_enrollment::selected_build::SelectionReceipt;
 use std::fs::File;
+use crate::diagnostic_artifacts::linux::held_role_census::bootstrap_images::BootstrapImageBindings;
 
 #[derive(Debug, thiserror::Error)]
 pub(crate) enum BootstrapError {
@@ -50,6 +51,7 @@ fn validate<C: Checks>(owner: &mut C) -> Result<C::Observation, BootstrapError> 
 struct Observation {
     context: Context,
     image: bootstrap_build::sealed::Stamp,
+    census: BootstrapImageBindings,
 }
 pub(crate) struct BootstrapOwnedUnit<'root, 'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p> {
     // Explicit retirement and field order both keep the original before new FD close.
@@ -113,8 +115,30 @@ impl Checks for BootstrapOwnedUnit<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
             self.selection.as_ref(),
         )?;
         let image = bootstrap_build::sealed::inspect(&self.image, &selected.build)?;
+        let original = self
+            .owner
+            .inventory
+            .as_ref()
+            .ok_or(BootstrapError::Binding)?;
+        let contribution = kernel::bootstrap_inputs::capture(&original.descriptors)
+            .map_err(ArtifactError::from)?;
+        let metadata = self.image.metadata().map_err(ArtifactError::from)?;
+        let census = self.owner.owner.owner.roles.bootstrap_image_census(
+            &original.retained_roles,
+            contribution,
+            &self.image,
+            [
+                context.host.identity,
+                context.launcher.identity,
+                [metadata.dev(), metadata.ino(), metadata.len()],
+            ],
+        )?;
         self.selection = Some(selected);
-        Ok(Observation { context, image })
+        Ok(Observation {
+            context,
+            image,
+            census,
+        })
     }
     fn retained(&self) -> Option<&Observation> {
         self.retained.as_ref()
