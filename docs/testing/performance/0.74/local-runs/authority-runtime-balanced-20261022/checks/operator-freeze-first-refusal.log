@@ -1,0 +1,16 @@
+First operator freeze invocation: Windows python -B -c, after all 22 build/control commands passed.
+No method.json or measured child was created by this invocation.
+Traceback (most recent call last):
+  File "<string>", line 31, in <module>
+    head = m.common.git('rev-parse', 'HEAD').decode().strip()
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\authority-runtime-allocation-074\run.py", line 59, in git
+    result = subprocess.run(['/mnt/c/Program Files/Git/cmd/git.exe', '--no-replace-objects', '--no-optional-locks',
+        '-C', 'C:/Workspace/prj/jq/cashe/hydracache-074', *args], capture_output=True, timeout=180)
+  File "C:\Python313\Lib\subprocess.py", line 554, in run
+    with Popen(*popenargs, **kwargs) as process:
+  File "C:\Python313\Lib\subprocess.py", line 1039, in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+  File "C:\Python313\Lib\subprocess.py", line 1554, in _execute_child
+    hp, ht, pid, tid = _winapi.CreateProcess(executable, args,
+FileNotFoundError: [WinError 2] The system cannot find the file specified
+Disposition: invoke the same freeze validation in the required WSL environment, within the original 600-second deadline. No build/control/cohort retry, input change, or budget extension.

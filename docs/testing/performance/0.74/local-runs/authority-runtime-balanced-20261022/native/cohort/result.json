@@ -1,0 +1,11 @@
+{
+  "attempted": 64,
+  "completed": 64,
+  "deadline_monotonic": 4788.264124254,
+  "failure": null,
+  "finished_monotonic": 1570.800651028,
+  "mode": "native",
+  "schedule_sha256": "1566ab8cbfa4cbdea2897737be07ddf533142ede5a6c6dbbc4f5bf36f6f638c1",
+  "schema": "authority-runtime-balanced-cohort-074-v2",
+  "started_monotonic": 1188.264124254
+}

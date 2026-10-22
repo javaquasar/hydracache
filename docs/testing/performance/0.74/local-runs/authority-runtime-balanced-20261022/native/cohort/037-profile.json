@@ -1,0 +1,23 @@
+{
+  "argv": [
+    "/usr/bin/taskset",
+    "--cpu-list",
+    "0",
+    "/home/artur/.cache/hydracache-074-runtime-balanced-v2/first/target-188-baseline/release/deps/hydracache_long_run_supervisor_074-19566b75c882a260",
+    "diagnostic_worker_policy::authority_registry::fixture::tests::runtime_cpu::runtime_cpu_measurement",
+    "--exact",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "cwd": "/home/artur/.cache/hydracache-074-runtime-balanced-v2/first/baseline",
+  "error": null,
+  "exit": 0,
+  "exit_raw_ns": 1540445738144,
+  "name": "037-profile",
+  "pid": 6051,
+  "spawned_raw_ns": 1534475902554,
+  "start_raw_ns": 1534475205481,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stdout_sha256": "73d38d1ce2a61f85f27e4a64ba328e6010e7d33a34b1b443ee1fb4ed3ad8bc87",
+  "timeout": false
+}

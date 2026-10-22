@@ -1,0 +1,266 @@
+{
+  "boot": "3b39841c-03d0-4595-9443-746cc7192ce3",
+  "calibration": {
+    "188": {
+      "brackets": 256,
+      "ranges": {
+        "cpu_ns": [
+          369,
+          35848
+        ],
+        "wall_ns": [
+          370,
+          35992
+        ]
+      },
+      "resolution_pairs": [
+        [
+          1,
+          1
+        ]
+      ]
+    },
+    "194": {
+      "brackets": 256,
+      "ranges": {
+        "cpu_ns": [
+          379,
+          16811
+        ],
+        "wall_ns": [
+          377,
+          23879
+        ]
+      },
+      "resolution_pairs": [
+        [
+          1,
+          1
+        ]
+      ]
+    }
+  },
+  "clock_semantic_controls": 8,
+  "clocks_changed": false,
+  "cohort_seconds": 382.53652677399987,
+  "control_retries": 0,
+  "cpu": 0,
+  "first_operator_refusal": "checks/operator-freeze-first-refusal.log",
+  "images": [
+    {
+      "compiler": "188",
+      "elf64_x86_64": true,
+      "role": "baseline",
+      "sha256": "10f8fb86bb8cd270f1cb3a9f0e7bc83b56b0f03a210f43f8a15c30f4613d81f8"
+    },
+    {
+      "compiler": "188",
+      "elf64_x86_64": true,
+      "role": "installed",
+      "sha256": "565d791869a93d11dd3fbe3525d4a990e9b02bc0cfdb49bca181e3301132dffe"
+    },
+    {
+      "compiler": "194",
+      "elf64_x86_64": true,
+      "role": "baseline",
+      "sha256": "888f003241b0b32def742982ca6a7ce33fed5dc8ea919d491d3dd941b00e0ae3"
+    },
+    {
+      "compiler": "194",
+      "elf64_x86_64": true,
+      "role": "installed",
+      "sha256": "2474e51115a299e8c78281f745b5da786f15b34fe4902729033e6ec92fead176"
+    }
+  ],
+  "inventory_order": "case-sensitive POSIX member string",
+  "live": false,
+  "measured_processes": 64,
+  "measured_retries": 0,
+  "method": "9bfb155285f08b52b7c5eb7225b70a6828a13d41",
+  "primary_dispositions": {
+    "cycle_elapsed": "no-clear-practical-effect-or-mixed",
+    "warm_cpu": "no-clear-practical-effect-or-mixed"
+  },
+  "product": false,
+  "qualification": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "rows": 768,
+  "runtime_sources": {
+    "baseline": "33c54b0cda8c330b115009cdf092ad002077cedf",
+    "installed": "66d5f371680d085a24de8f2558e1f049c71b9e7b"
+  },
+  "schema": "authority-runtime-balanced-audit-074-v1",
+  "seed_members_per_compiler": {
+    "188": 1869,
+    "194": 1869
+  },
+  "server": false,
+  "services_changed": false,
+  "successful_preliminary_commands": 22,
+  "support": {
+    "188": [
+      {
+        "baseline_marginal_median": 2747865.5,
+        "block_median": 1.0526336786720725,
+        "block_range": [
+          0.8863597936556213,
+          2.271589855976303
+        ],
+        "installed_marginal_median": 2795079.0,
+        "metric": "open_cpu_ns"
+      },
+      {
+        "baseline_marginal_median": 5774622.5,
+        "block_median": 0.8872956139854946,
+        "block_range": [
+          0.5656859904724806,
+          1.5850590915149034
+        ],
+        "installed_marginal_median": 5521534.0,
+        "metric": "publication_cpu_ns"
+      },
+      {
+        "baseline_marginal_median": 19902771.0,
+        "block_median": 0.858267521649998,
+        "block_range": [
+          0.5394235548841438,
+          1.567425728086712
+        ],
+        "installed_marginal_median": 14848427.5,
+        "metric": "publication_wall_ns"
+      },
+      {
+        "baseline_marginal_median": 1052.0,
+        "block_median": 5.382958888558429,
+        "block_range": [
+          1.456997231763476,
+          9.454250794117984
+        ],
+        "installed_marginal_median": 6004.5,
+        "metric": "refusal_cpu_ns"
+      },
+      {
+        "baseline_marginal_median": 151701.0,
+        "block_median": 0.9126106102643146,
+        "block_range": [
+          0.4759823961630122,
+          2.668519077528994
+        ],
+        "installed_marginal_median": 148449.5,
+        "metric": "drop_cpu_ns"
+      },
+      {
+        "baseline_marginal_median": 64072190.5,
+        "block_median": 0.9108286984197382,
+        "block_range": [
+          0.8123563624481749,
+          1.2372510775737038
+        ],
+        "installed_marginal_median": 58311237.0,
+        "metric": "cycle_cpu_ns"
+      },
+      {
+        "baseline_marginal_median": 1454014.3125,
+        "block_median": 0.9759824187409539,
+        "block_range": [
+          0.6776023288516705,
+          1.0547538371954694
+        ],
+        "installed_marginal_median": 1336781.984375,
+        "metric": "warm_cpu_ns_per_inspect"
+      },
+      {
+        "baseline_marginal_median": 75997819.0,
+        "block_median": 0.9373315325560233,
+        "block_range": [
+          0.7313873888515984,
+          1.345428980149816
+        ],
+        "installed_marginal_median": 70640482.0,
+        "metric": "cycle_wall_ns"
+      }
+    ],
+    "194": [
+      {
+        "baseline_marginal_median": 2828956.0,
+        "block_median": 1.0252041417179192,
+        "block_range": [
+          0.6898697366549263,
+          1.5497665093532624
+        ],
+        "installed_marginal_median": 2835656.5,
+        "metric": "open_cpu_ns"
+      },
+      {
+        "baseline_marginal_median": 5250006.5,
+        "block_median": 1.009372075754301,
+        "block_range": [
+          0.8316792403908663,
+          1.3256931942341807
+        ],
+        "installed_marginal_median": 5353701.5,
+        "metric": "publication_cpu_ns"
+      },
+      {
+        "baseline_marginal_median": 16963023.0,
+        "block_median": 1.04409717258623,
+        "block_range": [
+          0.4825733930460895,
+          1.8373293179910917
+        ],
+        "installed_marginal_median": 16389296.5,
+        "metric": "publication_wall_ns"
+      },
+      {
+        "baseline_marginal_median": 1346.0,
+        "block_median": 5.145456664688189,
+        "block_range": [
+          2.6480871283829823,
+          6.7053841889761365
+        ],
+        "installed_marginal_median": 5983.0,
+        "metric": "refusal_cpu_ns"
+      },
+      {
+        "baseline_marginal_median": 149152.5,
+        "block_median": 0.9179735421734994,
+        "block_range": [
+          0.6632769015808437,
+          2.3245947988813342
+        ],
+        "installed_marginal_median": 140290.0,
+        "metric": "drop_cpu_ns"
+      },
+      {
+        "baseline_marginal_median": 51554119.0,
+        "block_median": 0.9891333087123869,
+        "block_range": [
+          0.7328567569058353,
+          1.1514237507484861
+        ],
+        "installed_marginal_median": 53208529.5,
+        "metric": "cycle_cpu_ns"
+      },
+      {
+        "baseline_marginal_median": 1530485.046875,
+        "block_median": 0.8549788498642462,
+        "block_range": [
+          0.6560376583213091,
+          1.2144917836637872
+        ],
+        "installed_marginal_median": 1311881.8125,
+        "metric": "warm_cpu_ns_per_inspect"
+      },
+      {
+        "baseline_marginal_median": 69204560.0,
+        "block_median": 1.0156103608213762,
+        "block_range": [
+          0.7220985572000446,
+          1.3129792927921264
+        ],
+        "installed_marginal_median": 69537087.0,
+        "metric": "cycle_wall_ns"
+      }
+    ]
+  },
+  "timed_warm_inspections": 24576
+}

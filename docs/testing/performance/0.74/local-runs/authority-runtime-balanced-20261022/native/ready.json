@@ -1,0 +1,448 @@
+{
+  "cpu": 0,
+  "images": {
+    "188": {
+      "baseline": {
+        "compiler": "1.88.0",
+        "path": "/home/artur/.cache/hydracache-074-runtime-balanced-v2/first/target-188-baseline/release/deps/hydracache_long_run_supervisor_074-19566b75c882a260",
+        "sha256": "10f8fb86bb8cd270f1cb3a9f0e7bc83b56b0f03a210f43f8a15c30f4613d81f8"
+      },
+      "installed": {
+        "compiler": "1.88.0",
+        "path": "/home/artur/.cache/hydracache-074-runtime-balanced-v2/first/target-188-installed/release/deps/hydracache_long_run_supervisor_074-19566b75c882a260",
+        "sha256": "565d791869a93d11dd3fbe3525d4a990e9b02bc0cfdb49bca181e3301132dffe"
+      }
+    },
+    "194": {
+      "baseline": {
+        "compiler": "1.94.0",
+        "path": "/home/artur/.cache/hydracache-074-runtime-balanced-v2/first/target-194-baseline/release/deps/hydracache_long_run_supervisor_074-5138eed558b3af90",
+        "sha256": "888f003241b0b32def742982ca6a7ce33fed5dc8ea919d491d3dd941b00e0ae3"
+      },
+      "installed": {
+        "compiler": "1.94.0",
+        "path": "/home/artur/.cache/hydracache-074-runtime-balanced-v2/first/target-194-installed/release/deps/hydracache_long_run_supervisor_074-5138eed558b3af90",
+        "sha256": "2474e51115a299e8c78281f745b5da786f15b34fe4902729033e6ec92fead176"
+      }
+    }
+  },
+  "plan": {
+    "block_ratios_per_compiler": 8,
+    "cohort_seconds": 3600,
+    "freeze_seconds": 600,
+    "measurement_executed": false,
+    "observations_per_role_per_compiler": 16,
+    "process_seconds": 300,
+    "processes": 64,
+    "qualification": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+    "rows": 768,
+    "runtime_sources": {
+      "baseline": "33c54b0cda8c330b115009cdf092ad002077cedf",
+      "installed": "66d5f371680d085a24de8f2558e1f049c71b9e7b"
+    },
+    "schedule": [
+      {
+        "block": 0,
+        "compiler": "194",
+        "position": 0,
+        "role": "B"
+      },
+      {
+        "block": 0,
+        "compiler": "194",
+        "position": 1,
+        "role": "I"
+      },
+      {
+        "block": 0,
+        "compiler": "194",
+        "position": 2,
+        "role": "I"
+      },
+      {
+        "block": 0,
+        "compiler": "194",
+        "position": 3,
+        "role": "B"
+      },
+      {
+        "block": 0,
+        "compiler": "188",
+        "position": 0,
+        "role": "B"
+      },
+      {
+        "block": 0,
+        "compiler": "188",
+        "position": 1,
+        "role": "I"
+      },
+      {
+        "block": 0,
+        "compiler": "188",
+        "position": 2,
+        "role": "I"
+      },
+      {
+        "block": 0,
+        "compiler": "188",
+        "position": 3,
+        "role": "B"
+      },
+      {
+        "block": 1,
+        "compiler": "188",
+        "position": 0,
+        "role": "I"
+      },
+      {
+        "block": 1,
+        "compiler": "188",
+        "position": 1,
+        "role": "B"
+      },
+      {
+        "block": 1,
+        "compiler": "188",
+        "position": 2,
+        "role": "B"
+      },
+      {
+        "block": 1,
+        "compiler": "188",
+        "position": 3,
+        "role": "I"
+      },
+      {
+        "block": 1,
+        "compiler": "194",
+        "position": 0,
+        "role": "I"
+      },
+      {
+        "block": 1,
+        "compiler": "194",
+        "position": 1,
+        "role": "B"
+      },
+      {
+        "block": 1,
+        "compiler": "194",
+        "position": 2,
+        "role": "B"
+      },
+      {
+        "block": 1,
+        "compiler": "194",
+        "position": 3,
+        "role": "I"
+      },
+      {
+        "block": 2,
+        "compiler": "194",
+        "position": 0,
+        "role": "I"
+      },
+      {
+        "block": 2,
+        "compiler": "194",
+        "position": 1,
+        "role": "B"
+      },
+      {
+        "block": 2,
+        "compiler": "194",
+        "position": 2,
+        "role": "B"
+      },
+      {
+        "block": 2,
+        "compiler": "194",
+        "position": 3,
+        "role": "I"
+      },
+      {
+        "block": 2,
+        "compiler": "188",
+        "position": 0,
+        "role": "I"
+      },
+      {
+        "block": 2,
+        "compiler": "188",
+        "position": 1,
+        "role": "B"
+      },
+      {
+        "block": 2,
+        "compiler": "188",
+        "position": 2,
+        "role": "B"
+      },
+      {
+        "block": 2,
+        "compiler": "188",
+        "position": 3,
+        "role": "I"
+      },
+      {
+        "block": 3,
+        "compiler": "188",
+        "position": 0,
+        "role": "B"
+      },
+      {
+        "block": 3,
+        "compiler": "188",
+        "position": 1,
+        "role": "I"
+      },
+      {
+        "block": 3,
+        "compiler": "188",
+        "position": 2,
+        "role": "I"
+      },
+      {
+        "block": 3,
+        "compiler": "188",
+        "position": 3,
+        "role": "B"
+      },
+      {
+        "block": 3,
+        "compiler": "194",
+        "position": 0,
+        "role": "B"
+      },
+      {
+        "block": 3,
+        "compiler": "194",
+        "position": 1,
+        "role": "I"
+      },
+      {
+        "block": 3,
+        "compiler": "194",
+        "position": 2,
+        "role": "I"
+      },
+      {
+        "block": 3,
+        "compiler": "194",
+        "position": 3,
+        "role": "B"
+      },
+      {
+        "block": 4,
+        "compiler": "194",
+        "position": 0,
+        "role": "I"
+      },
+      {
+        "block": 4,
+        "compiler": "194",
+        "position": 1,
+        "role": "B"
+      },
+      {
+        "block": 4,
+        "compiler": "194",
+        "position": 2,
+        "role": "B"
+      },
+      {
+        "block": 4,
+        "compiler": "194",
+        "position": 3,
+        "role": "I"
+      },
+      {
+        "block": 4,
+        "compiler": "188",
+        "position": 0,
+        "role": "I"
+      },
+      {
+        "block": 4,
+        "compiler": "188",
+        "position": 1,
+        "role": "B"
+      },
+      {
+        "block": 4,
+        "compiler": "188",
+        "position": 2,
+        "role": "B"
+      },
+      {
+        "block": 4,
+        "compiler": "188",
+        "position": 3,
+        "role": "I"
+      },
+      {
+        "block": 5,
+        "compiler": "188",
+        "position": 0,
+        "role": "B"
+      },
+      {
+        "block": 5,
+        "compiler": "188",
+        "position": 1,
+        "role": "I"
+      },
+      {
+        "block": 5,
+        "compiler": "188",
+        "position": 2,
+        "role": "I"
+      },
+      {
+        "block": 5,
+        "compiler": "188",
+        "position": 3,
+        "role": "B"
+      },
+      {
+        "block": 5,
+        "compiler": "194",
+        "position": 0,
+        "role": "B"
+      },
+      {
+        "block": 5,
+        "compiler": "194",
+        "position": 1,
+        "role": "I"
+      },
+      {
+        "block": 5,
+        "compiler": "194",
+        "position": 2,
+        "role": "I"
+      },
+      {
+        "block": 5,
+        "compiler": "194",
+        "position": 3,
+        "role": "B"
+      },
+      {
+        "block": 6,
+        "compiler": "194",
+        "position": 0,
+        "role": "B"
+      },
+      {
+        "block": 6,
+        "compiler": "194",
+        "position": 1,
+        "role": "I"
+      },
+      {
+        "block": 6,
+        "compiler": "194",
+        "position": 2,
+        "role": "I"
+      },
+      {
+        "block": 6,
+        "compiler": "194",
+        "position": 3,
+        "role": "B"
+      },
+      {
+        "block": 6,
+        "compiler": "188",
+        "position": 0,
+        "role": "B"
+      },
+      {
+        "block": 6,
+        "compiler": "188",
+        "position": 1,
+        "role": "I"
+      },
+      {
+        "block": 6,
+        "compiler": "188",
+        "position": 2,
+        "role": "I"
+      },
+      {
+        "block": 6,
+        "compiler": "188",
+        "position": 3,
+        "role": "B"
+      },
+      {
+        "block": 7,
+        "compiler": "188",
+        "position": 0,
+        "role": "I"
+      },
+      {
+        "block": 7,
+        "compiler": "188",
+        "position": 1,
+        "role": "B"
+      },
+      {
+        "block": 7,
+        "compiler": "188",
+        "position": 2,
+        "role": "B"
+      },
+      {
+        "block": 7,
+        "compiler": "188",
+        "position": 3,
+        "role": "I"
+      },
+      {
+        "block": 7,
+        "compiler": "194",
+        "position": 0,
+        "role": "I"
+      },
+      {
+        "block": 7,
+        "compiler": "194",
+        "position": 1,
+        "role": "B"
+      },
+      {
+        "block": 7,
+        "compiler": "194",
+        "position": 2,
+        "role": "B"
+      },
+      {
+        "block": 7,
+        "compiler": "194",
+        "position": 3,
+        "role": "I"
+      }
+    ],
+    "schedule_sha256": "1566ab8cbfa4cbdea2897737be07ddf533142ede5a6c6dbbc4f5bf36f6f638c1",
+    "schema": "authority-runtime-balanced-plan-074-v2",
+    "timed_warm_inspections": 24576
+  },
+  "tool_hashes": {
+    "docs/testing/performance/0.74/authority-runtime-variance-method-20261022.md": "f8a4d385cf44282eb8906c1768a2d3aacd8f77e7c4e04c66199d48592131adab",
+    "docs/testing/performance/0.74/authority-runtime-variance-method-v2-20261022.md": "c25815a93fc704542d6730710188aff06bb225fdb679bf0e17b4cda7ecd959ea",
+    "tools/authority-runtime-allocation-074/run.py": "1d238388466a4a8421698ac0bf6a9313a8bdead69e25dbf6e79549c4b35a840e",
+    "tools/authority-runtime-balanced-074/README.md": "ca9278d9407e8cb1f780f9e3ab0a7e8b3e18dd0f23d7bb7573c80a4a2755abfa",
+    "tools/authority-runtime-balanced-074/balanced.py": "435b721433b939ab6aec3065d51e036a27261bf5e65b146d6aba2a12c248dfa8",
+    "tools/authority-runtime-balanced-074/evaluate.py": "a685fb62bd04eaf0ac1ea86cda5aeff1098384890111dd42bda8911c15ae2473",
+    "tools/authority-runtime-balanced-074/runner.py": "5bf1c03c87f08c9d525fc058e5be56b2abcdabc6a32ef8ced9501f2c6005a9d4",
+    "tools/authority-runtime-balanced-074/test_runner.py": "76429edd6f93d42cd9e5da8f4573c02f90101f6a7fcd2d7c7e3f8dc1d15838c9",
+    "tools/authority-runtime-cpu-074/probe.rs": "9289a292727545fc90dcef37dac1be57aa1d10a8c158b1e7521723e7666bf513",
+    "tools/authority-runtime-cpu-074/review.py": "d6c9b3be8bceeb38e29b7c169bbb89eb2448fdd7ffbe8dae90f0bdce25db40c5",
+    "tools/authority-runtime-cpu-074/run.py": "f1d047a1b707d06de7a118f7b5ff093d24ad0ed7c5a75a381622046ad4cd3364",
+    "tools/authority-runtime-cpu-074/seal.py": "def02a4ce2ba476c81a1f159ceeefb4f75ada82681813a25f3999ff0acc0633f",
+    "tools/authority-runtime-variance-074/analyze.py": "93b44aec435ac959a00d1d71af1d63850deb08ffd70b0a81edf6cd6f5f21c388"
+  }
+}

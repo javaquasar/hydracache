@@ -1,0 +1,404 @@
+{
+  "block_ratios_per_compiler": 8,
+  "cohort_seconds": 3600,
+  "freeze_seconds": 600,
+  "measurement_executed": false,
+  "observations_per_role_per_compiler": 16,
+  "process_seconds": 300,
+  "processes": 64,
+  "qualification": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "rows": 768,
+  "runtime_sources": {
+    "baseline": "33c54b0cda8c330b115009cdf092ad002077cedf",
+    "installed": "66d5f371680d085a24de8f2558e1f049c71b9e7b"
+  },
+  "schedule": [
+    {
+      "block": 0,
+      "compiler": "194",
+      "position": 0,
+      "role": "B"
+    },
+    {
+      "block": 0,
+      "compiler": "194",
+      "position": 1,
+      "role": "I"
+    },
+    {
+      "block": 0,
+      "compiler": "194",
+      "position": 2,
+      "role": "I"
+    },
+    {
+      "block": 0,
+      "compiler": "194",
+      "position": 3,
+      "role": "B"
+    },
+    {
+      "block": 0,
+      "compiler": "188",
+      "position": 0,
+      "role": "B"
+    },
+    {
+      "block": 0,
+      "compiler": "188",
+      "position": 1,
+      "role": "I"
+    },
+    {
+      "block": 0,
+      "compiler": "188",
+      "position": 2,
+      "role": "I"
+    },
+    {
+      "block": 0,
+      "compiler": "188",
+      "position": 3,
+      "role": "B"
+    },
+    {
+      "block": 1,
+      "compiler": "188",
+      "position": 0,
+      "role": "I"
+    },
+    {
+      "block": 1,
+      "compiler": "188",
+      "position": 1,
+      "role": "B"
+    },
+    {
+      "block": 1,
+      "compiler": "188",
+      "position": 2,
+      "role": "B"
+    },
+    {
+      "block": 1,
+      "compiler": "188",
+      "position": 3,
+      "role": "I"
+    },
+    {
+      "block": 1,
+      "compiler": "194",
+      "position": 0,
+      "role": "I"
+    },
+    {
+      "block": 1,
+      "compiler": "194",
+      "position": 1,
+      "role": "B"
+    },
+    {
+      "block": 1,
+      "compiler": "194",
+      "position": 2,
+      "role": "B"
+    },
+    {
+      "block": 1,
+      "compiler": "194",
+      "position": 3,
+      "role": "I"
+    },
+    {
+      "block": 2,
+      "compiler": "194",
+      "position": 0,
+      "role": "I"
+    },
+    {
+      "block": 2,
+      "compiler": "194",
+      "position": 1,
+      "role": "B"
+    },
+    {
+      "block": 2,
+      "compiler": "194",
+      "position": 2,
+      "role": "B"
+    },
+    {
+      "block": 2,
+      "compiler": "194",
+      "position": 3,
+      "role": "I"
+    },
+    {
+      "block": 2,
+      "compiler": "188",
+      "position": 0,
+      "role": "I"
+    },
+    {
+      "block": 2,
+      "compiler": "188",
+      "position": 1,
+      "role": "B"
+    },
+    {
+      "block": 2,
+      "compiler": "188",
+      "position": 2,
+      "role": "B"
+    },
+    {
+      "block": 2,
+      "compiler": "188",
+      "position": 3,
+      "role": "I"
+    },
+    {
+      "block": 3,
+      "compiler": "188",
+      "position": 0,
+      "role": "B"
+    },
+    {
+      "block": 3,
+      "compiler": "188",
+      "position": 1,
+      "role": "I"
+    },
+    {
+      "block": 3,
+      "compiler": "188",
+      "position": 2,
+      "role": "I"
+    },
+    {
+      "block": 3,
+      "compiler": "188",
+      "position": 3,
+      "role": "B"
+    },
+    {
+      "block": 3,
+      "compiler": "194",
+      "position": 0,
+      "role": "B"
+    },
+    {
+      "block": 3,
+      "compiler": "194",
+      "position": 1,
+      "role": "I"
+    },
+    {
+      "block": 3,
+      "compiler": "194",
+      "position": 2,
+      "role": "I"
+    },
+    {
+      "block": 3,
+      "compiler": "194",
+      "position": 3,
+      "role": "B"
+    },
+    {
+      "block": 4,
+      "compiler": "194",
+      "position": 0,
+      "role": "I"
+    },
+    {
+      "block": 4,
+      "compiler": "194",
+      "position": 1,
+      "role": "B"
+    },
+    {
+      "block": 4,
+      "compiler": "194",
+      "position": 2,
+      "role": "B"
+    },
+    {
+      "block": 4,
+      "compiler": "194",
+      "position": 3,
+      "role": "I"
+    },
+    {
+      "block": 4,
+      "compiler": "188",
+      "position": 0,
+      "role": "I"
+    },
+    {
+      "block": 4,
+      "compiler": "188",
+      "position": 1,
+      "role": "B"
+    },
+    {
+      "block": 4,
+      "compiler": "188",
+      "position": 2,
+      "role": "B"
+    },
+    {
+      "block": 4,
+      "compiler": "188",
+      "position": 3,
+      "role": "I"
+    },
+    {
+      "block": 5,
+      "compiler": "188",
+      "position": 0,
+      "role": "B"
+    },
+    {
+      "block": 5,
+      "compiler": "188",
+      "position": 1,
+      "role": "I"
+    },
+    {
+      "block": 5,
+      "compiler": "188",
+      "position": 2,
+      "role": "I"
+    },
+    {
+      "block": 5,
+      "compiler": "188",
+      "position": 3,
+      "role": "B"
+    },
+    {
+      "block": 5,
+      "compiler": "194",
+      "position": 0,
+      "role": "B"
+    },
+    {
+      "block": 5,
+      "compiler": "194",
+      "position": 1,
+      "role": "I"
+    },
+    {
+      "block": 5,
+      "compiler": "194",
+      "position": 2,
+      "role": "I"
+    },
+    {
+      "block": 5,
+      "compiler": "194",
+      "position": 3,
+      "role": "B"
+    },
+    {
+      "block": 6,
+      "compiler": "194",
+      "position": 0,
+      "role": "B"
+    },
+    {
+      "block": 6,
+      "compiler": "194",
+      "position": 1,
+      "role": "I"
+    },
+    {
+      "block": 6,
+      "compiler": "194",
+      "position": 2,
+      "role": "I"
+    },
+    {
+      "block": 6,
+      "compiler": "194",
+      "position": 3,
+      "role": "B"
+    },
+    {
+      "block": 6,
+      "compiler": "188",
+      "position": 0,
+      "role": "B"
+    },
+    {
+      "block": 6,
+      "compiler": "188",
+      "position": 1,
+      "role": "I"
+    },
+    {
+      "block": 6,
+      "compiler": "188",
+      "position": 2,
+      "role": "I"
+    },
+    {
+      "block": 6,
+      "compiler": "188",
+      "position": 3,
+      "role": "B"
+    },
+    {
+      "block": 7,
+      "compiler": "188",
+      "position": 0,
+      "role": "I"
+    },
+    {
+      "block": 7,
+      "compiler": "188",
+      "position": 1,
+      "role": "B"
+    },
+    {
+      "block": 7,
+      "compiler": "188",
+      "position": 2,
+      "role": "B"
+    },
+    {
+      "block": 7,
+      "compiler": "188",
+      "position": 3,
+      "role": "I"
+    },
+    {
+      "block": 7,
+      "compiler": "194",
+      "position": 0,
+      "role": "I"
+    },
+    {
+      "block": 7,
+      "compiler": "194",
+      "position": 1,
+      "role": "B"
+    },
+    {
+      "block": 7,
+      "compiler": "194",
+      "position": 2,
+      "role": "B"
+    },
+    {
+      "block": 7,
+      "compiler": "194",
+      "position": 3,
+      "role": "I"
+    }
+  ],
+  "schedule_sha256": "1566ab8cbfa4cbdea2897737be07ddf533142ede5a6c6dbbc4f5bf36f6f638c1",
+  "schema": "authority-runtime-balanced-plan-074-v2",
+  "timed_warm_inspections": 24576
+}

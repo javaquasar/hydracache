@@ -1,0 +1,8 @@
+First offline retention collector, after successful native cohort and independent reader:
+Traceback (most recent call last):
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/target/authority-runtime-balanced-collect.py", line 39, in <module>
+    assert (origin / row['path']).stat().st_size == row['bytes']
+                                                    ~~~^^^^^^^^^
+KeyError: 'bytes'
+No packet directory was created and no input or measured observation changed.
+The seed receipt has exactly path/sha256 rows and a distinct target per role. Correct only that collector schema expectation; compare normalized seed origin/files/exclusion fields, not the intentionally different target paths. Retain this first source and refusal. No build/control/cohort retry.
