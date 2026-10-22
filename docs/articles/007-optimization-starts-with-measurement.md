@@ -17327,3 +17327,45 @@ The offline audit and ten mutation tests retain nineteen prior seals/1076 member
 and all first scratch observations without rerunning the measurement image.
 Next test owned storage and whole-journal eviction in isolation; the runtime is
 unchanged, and no full-path or server admission follows from capacity arithmetic.
+
+### Own temporary storage and clean it at the journal boundary
+
+The [owned journal model](../testing/performance/0.74/authority-owned-journal-20261022.md)
+removes the self-reference of the first scratch prototype. Owned storage contains
+an original Leaf by value and a separate optional Vec. Entries can move during
+Vec growth without leaving pointers into the old allocation. Expected bytes,
+metadata and original tokens remain independent; fresh checks retain the same
+complete reference bodies and generic bounded read protocol.
+
+Five cold cohorts span 1/2/16/64/128 generations with sixteen rounds each. Both
+first MSVC compilers observe 6752 allocations/7133488 requested bytes for
+reference versus 422/445843 for owned storage across 6752 Leaf calls. Explicit
+cache eviction releases 422 allocations/445843 bytes separately. At maximum
+history, the saving retains 270464 bytes of fresh-read buffers between rounds.
+Synthetic per-Leaf layout grows by 24 bytes, not the borrowed wrapper's 32; this
+is not a measurement of the real Linux type, RSS or physical copying.
+
+Whole-journal cleanup matters as much as reuse. The 1152 leaf masks and 32 modeled
+outer gates compare full paired traces and verify that unvisited/previously
+successful caches are evicted while original evidence survives. Sticky refusal
+then produces no further IO. Another 582 cases cover metadata and byte drift,
+EOF/growth and partial/Interrupted reads. Logical append exercises six Vec growths
+up to 128 entries; reopen is cold with new tokens, and operator epoch transition
+remains distinct from a failed owner. These are ownership/state models, not
+filesystem publication, fsync, process-loss or enrollment proofs.
+
+Both first reference images passed, but 1.94's subsequent clippy step rejected a
+manual parity expression. Its red receipt remains; equivalent lint repair and
+candidate source are separate, with no measured-image retry. Fifty-five source
+guards, eighty-one offline controls and twenty prior seals/1111 members preserve
+that distinction. Terminal healthy traces and every fault target are checked;
+there is no new timing claim. Next audit the actual engine patch and historical
+source-guard boundary before runtime mutation. Original deadlines and all live,
+all-writer, full-fault/reconnect/server admission gates remain unchanged.
+
+Final source review exposes one reason that boundary matters: model operator
+helpers can return Invalid for a transition before reporting an already-failed
+owner, while the actual engine first revalidates and returns Refused. Covered
+logical state examples do not prove that error priority. This remains an explicit
+integration gap; the storage result does not authorize copying those helpers into
+the runtime or changing original refusal order.

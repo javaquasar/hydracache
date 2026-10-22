@@ -1736,3 +1736,25 @@ versus failed-owner semantics. Nineteen prior seals/1076 members and all first
 observations remain; no measurement image or live attempt is rerun. Runtime,
 300/60/10 windows, qualification and material/all-writer/full-fault/reconnect/server
 gates are unchanged. No WSL, clocks/services or server/product actions occur.
+
+### Owned scratch model precedes actual journal integration
+
+The [multi-entry owned model](authority-owned-journal-20261022.md) demonstrates
+safe ownership through Vec growth and full modeled journal cache eviction while
+retaining original bytes/tokens and validation order. Allocation saving retains
+additional capacity; synthetic layout/counters do not establish Linux/RSS or
+full-path benefit. All first measurements and the first reference lint refusal
+remain under twenty prior seals/1111 members without measured-image retries.
+
+Next audit an exact actual-engine patch, five failed assignments/external latches,
+constructor/publish/reopen/drop and observer adapters. Preserve historical source
+pins through frozen snapshots rather than editing old evidence to accept drift.
+Runtime integration needs its own candidate/semantic gate; modeled slot routing,
+logical append and synthetic outer gates are not publication or real faults.
+Original 300/60/10 windows, first refusals, qualification and material/all-writer/
+full SIGKILL/lost-ACK/reconnect/server gates stay unchanged. No WSL, clock/service,
+server/install/supervisor or product action occurs.
+
+Include the source-identified model operator error-priority gap: actual change
+must revalidate/refuse a failed owner before evaluating an operator transition.
+Logical state tests do not close that gate; no runtime refusal order may change.

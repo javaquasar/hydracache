@@ -5850,3 +5850,25 @@ publication and external refusal paths. Ten new offline mutation tests and
 nineteen prior seals/1076 members preserve the boundary. Next preregister an
 owned-storage multi-entry journal model, not a runtime patch. No measurement
 image/live profile, WSL or server operation is run; original gates stay closed.
+
+### Owned scratch multi-entry journal model
+
+The [owned journal model](authority-owned-journal-20261022.md) holds original Leaf
+by value plus temporary storage, avoiding self-reference and surviving entries
+Vec growth. Both first MSVC lanes agree on 6752 Leaf calls: reference 6752
+allocations/7133488 requested bytes versus owned 422/445843. Cache eviction is
+separate; 270464 capacity bytes remain at maximum history. Synthetic layout
+increases 24 bytes per Leaf, not measured real Linux layout or RSS.
+
+Seven tests per candidate lane cover 1152 leaf masks, 32 modeled outer gates,
+582 drift/IO cases, growth/reopen/operator states and complete cache cleanup.
+The first 1.94 reference clippy refusal remains red; candidate lint repair did
+not rerun measurements. Fifty-five source guards, eighty-one offline controls
+and twenty prior seals/1111 members pass the focused evidence review. No timing,
+actual filesystem/publication, live or server admission follows. Next audit the
+actual-engine integration patch and historical guard/snapshot handling; runtime,
+original windows/refusals and qualification remain unchanged.
+
+Source review additionally leaves model operator-helper error priority distinct
+from actual change/revalidate ordering; this is an explicit integration gate,
+not a runtime fix or an executed real-fault result.
