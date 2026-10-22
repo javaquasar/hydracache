@@ -6145,3 +6145,17 @@ identity still requires distinct ordered PIDs, original FDs and fresh checks.
 This closes the role-value binding, not executable addressing, activation
 environment, original send, all-writer cessation or any server gate. No original
 attempt, measurement cohort, clock/service mutation or server operation occurs.
+
+### Explicit activation ingress preserves the empty environment core
+
+The [strict activation ingress](held-activation-ingress-20261022.md) consumes only
+three exact LISTEN fields in an explicit versioned entry. Unknown metadata
+refuses; the unchanged core still requires an empty environment and all original
+FD/content/creator/guardian/deadline/release checks. Local synthetic processes
+reach only its expected missing-descriptor refusal, not a healthy held launch.
+
+Initial executable addressing needs an explicit architecture choice: systemd 257
+opens the image before assigning the final activation FD layout. Do not replace
+that with an unproved `/proc/self/fd/11` or creator-PID pathname. A retained
+read-only mount alias is proposed separately; no mount, unit, service, clock or
+server action is enabled by metadata acceptance.

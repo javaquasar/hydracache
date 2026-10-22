@@ -17927,3 +17927,27 @@ Local model/kernel tests cover refusal and retained identity, not speed. There
 is no new timing or allocation claim. Preserving the old full-frame observations
 and deadlines while adding the census keeps the remaining original-send,
 all-writer cessation and fault-matrix gates explicit.
+
+### Validate activation metadata without weakening the launcher
+
+The [explicit activation entry](../testing/performance/0.74/held-activation-ingress-20261022.md)
+separates metadata consumption from the held launcher's security contract. It
+accepts only the exact current PID, descriptor count and ordered names, refuses
+unknown or malformed environment fields, then removes only the three validated
+LISTEN variables. The original launcher still sees an empty environment and
+runs every old privilege, content, peer, guardian, release and deadline check.
+The legacy entry does not silently learn to accept activation metadata.
+
+Local synthetic processes prove this boundary without executing a worker: valid
+metadata reaches the old core's expected missing-descriptor refusal, while bad
+metadata stops before that core. This is useful evidence of adaptation, not
+authenticated systemd delivery. Likewise, post-exec validation cannot prove
+what a dynamic loader saw before the program started. Complete pre-exec
+environment admission belongs in the future unit boundary.
+
+Executable lookup also cannot be inferred from a completed descriptor map.
+The upstream manager orders lookup and descriptor placement differently from
+the tempting FD-path shortcut. A stable alias for the retained sealed image or
+a separately enrolled bootstrap therefore needs its own lifecycle/trust design.
+The implementation keeps that decision explicit instead of enabling an unproved
+path. No performance gain, original launch or server readiness is claimed.

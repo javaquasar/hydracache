@@ -2034,3 +2034,19 @@ durable one-shot uncertainty before send. All-writer revocation/EOF/drain,
 completion/cells 2–4, joined SIGKILL/lost-ACK, reconnect, production enrollment
 and server rehearsal remain open. Component tests do not promote the earlier
 failed original/transport controls; no service, clock, product or server action.
+
+### Activation metadata is separated from initial executable addressing
+
+The [explicit ingress](held-activation-ingress-20261022.md) now validates the
+exact current-PID/eight-FD/name contract before consuming only its three LISTEN
+fields. The complete old core, empty-environment check, original frames and
+300/60/10 origins/windows remain unchanged. Synthetic component success stops
+at the core's expected missing-descriptor refusal; it is not manager delivery.
+
+Initial lookup occurs before the manager's final FD layout, so a raw activation
+FD pathname is not an executable address. A retained read-only alias of the
+sealed launcher would extend mount/lifecycle policy; a bootstrap would extend
+the trusted role/enrollment set. That architecture selection remains pending.
+Do not dispatch until the chosen address, complete pre-exec environment and
+original retained channel/full frame are admitted. No new original/measurement
+attempt, unit, mount, clock/service mutation or server run occurs here.
