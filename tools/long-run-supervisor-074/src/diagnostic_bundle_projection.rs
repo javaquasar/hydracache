@@ -4,6 +4,9 @@ use super::*;
 #[path = "diagnostic_bundle_material.rs"]
 mod material;
 
+#[path = "diagnostic_bundle_role_census.rs"]
+mod role_census;
+
 impl BundleSnapshot {
     pub(crate) fn projection_contents(
         &self,

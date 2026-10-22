@@ -30,6 +30,9 @@ const FILES: [&str; 9] = [
 #[path = "diagnostic_bundle_projection.rs"]
 mod projection;
 
+#[path = "diagnostic_held_role_census.rs"]
+pub(crate) mod held_role_census;
+
 #[derive(Clone, PartialEq, Eq)]
 struct Stamp {
     dev: u64,

@@ -1,6 +1,9 @@
 //! Snapshot of the SAME armed guardians, never pidfds or an Armed permit.
 use super::*;
 
+#[path = "diagnostic_guardian_role_census.rs"]
+mod role_census;
+
 impl BoundGuardians<'_> {
     pub(crate) fn projection_guardians(&self) -> io::Result<[(i32, [u64; 2]); 2]> {
         identities(

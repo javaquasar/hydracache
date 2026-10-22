@@ -504,3 +504,12 @@ impl Resources {
 #[cfg(test)]
 #[path = "diagnostic_held_unit_material_kernel_tests.rs"]
 mod tests;
+
+pub(super) fn complete_roles(
+    partial: &RoleBindings,
+    inventory: &[Stamp],
+    census: crate::diagnostic_artifacts::linux::held_role_census::Census,
+) -> io::Result<crate::diagnostic_artifacts::linux::held_role_census::CompleteBindings> {
+    need(inventory.len() == 20)?;
+    census.complete(partial.0, std::array::from_fn(|i| inventory[i].fd))
+}

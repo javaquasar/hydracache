@@ -10,6 +10,7 @@ fn inventory() -> Inventory {
     Inventory {
         descriptors: vec![],
         roles: kernel::RoleBindings([(0, 0); 8]),
+        retained_roles: role_census::CompleteBindings::model_for_test(),
         context: Context {
             state: DiagnosticState {
                 identity: DiagnosticIdentity {
@@ -64,6 +65,7 @@ struct Probe {
     retained: Option<Inventory>,
     drift: usize,
     role_drift: bool,
+    complete_drift: bool,
 }
 impl Probe {
     fn new() -> Self {
@@ -75,6 +77,7 @@ impl Probe {
             retained: None,
             drift: 0,
             role_drift: false,
+            complete_drift: false,
         }
     }
     fn call(&self, name: &'static str) -> Result<(), MaterialError> {
@@ -101,7 +104,9 @@ impl MaterialOwner for Probe {
         self.call("expanded-inventory")?;
         let mut got = inventory();
         if self.calls.get() == self.drift {
-            if self.role_drift {
+            if self.complete_drift {
+                got.retained_roles.tamper_for_test();
+            } else if self.role_drift {
                 got.roles.0[0].1 += 1;
             } else {
                 got.context.origins[0] += 1;
@@ -159,7 +164,7 @@ fn held_material_join_closing_and_retained_original_substitutions_refuse() {
     p.drift = 5;
     assert!(validate_material(&mut p).is_err());
     assert!(p.refused);
-    for at in 0..13 {
+    for at in 0..14 {
         let mut p = Probe::new();
         let mut old = inventory();
         match at {
@@ -175,7 +180,8 @@ fn held_material_join_closing_and_retained_original_substitutions_refuse() {
             9 => old.context.names.0.push('0'),
             10 => old.context.names.1.push('0'),
             11 => old.context.serial = NonZeroU32::new(75).unwrap(),
-            _ => old.roles.0[0].1 += 1,
+            12 => old.roles.0[0].1 += 1,
+            _ => old.retained_roles.tamper_for_test(),
         }
         p.retained = Some(old);
         assert!(validate_material(&mut p).is_err());
@@ -212,4 +218,20 @@ fn held_material_join_api_consumes_projected_owner_without_transport_or_recovery
         }
     }
     let _contract = signature;
+}
+
+#[test]
+fn held_complete_census_closing_snapshot_drift_retires_same_owner_and_cannot_heal() {
+    let mut p = Probe::new();
+    p.drift = 5;
+    p.complete_drift = true;
+    assert!(validate_material(&mut p).is_err());
+    assert!(p.refused);
+    let calls = p.calls.get();
+    p.drift = 0;
+    assert!(matches!(
+        validate_material(&mut p),
+        Err(MaterialError::Refused)
+    ));
+    assert_eq!(p.calls.get(), calls);
 }

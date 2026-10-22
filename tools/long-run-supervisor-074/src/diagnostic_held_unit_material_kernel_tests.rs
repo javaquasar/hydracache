@@ -1,5 +1,24 @@
 use super::*;
 
+#[test]
+fn held_complete_census_kernel_bridge_joins_three_original_roles_to_material_inventory() {
+    use crate::diagnostic_artifacts::linux::held_role_census::tests::Fixture;
+    let fixture = Fixture::new();
+    let (mut b, _initial, files) = role_fixture();
+    b.worker = (id(&fixture.worker).unwrap(), crate::sha256_hex(b"worker"));
+    b.guardians = fixture.claims();
+    let resources = Resources::create(&b, b"config\n").unwrap();
+    let fds = files.each_ref().map(AsRawFd::as_raw_fd);
+    let census = fixture.ready();
+    let inventory = resources.inspect(&b, fds).unwrap();
+    let partial = bind_roles(&b, &inventory).unwrap();
+    let a = complete_roles(&partial, &inventory, census).unwrap();
+    let census = fixture.ready();
+    let inventory = resources.inspect(&b, fds).unwrap();
+    let b = complete_roles(&partial, &inventory, census).unwrap();
+    assert!(a == b);
+}
+
 fn role_fixture() -> (Bindings, Resources, [File; 14]) {
     let mut b = bindings();
     let mut files = original();

@@ -4,6 +4,9 @@ use super::*;
 mod kernel;
 use kernel::{Bindings, Resources, Stamp};
 
+#[path = "diagnostic_material_role_census.rs"]
+mod role_census;
+
 #[derive(Debug, thiserror::Error)]
 pub(crate) enum MaterialError {
     #[error("original held projection refused: {0}")]
@@ -30,6 +33,7 @@ struct Inventory {
     context: Context,
     descriptors: Vec<Stamp>,
     roles: kernel::RoleBindings,
+    retained_roles: role_census::CompleteBindings,
 }
 trait MaterialOwner {
     fn refused(&self) -> bool;
@@ -139,6 +143,7 @@ impl MaterialOwner for MaterializedHeldUnit<'_, '_, '_, '_, '_, '_, '_, '_, '_, 
             10..=11 => context.addressed[i - 10],
             _ => context.custody[i - 12],
         });
+        let retained_roles = role_census::capture(self, &context)?;
         let descriptors = self
             .resources
             .as_ref()
@@ -147,10 +152,12 @@ impl MaterialOwner for MaterializedHeldUnit<'_, '_, '_, '_, '_, '_, '_, '_, '_, 
         // Pure binding of the SAME fresh census. No new FD, bus/time read or
         // authority is introduced; the context pins the original channel names.
         let roles = kernel::bind_roles(&bindings(&context), &descriptors)?;
+        let retained_roles = kernel::complete_roles(&roles, &descriptors, retained_roles)?;
         Ok(Inventory {
             context,
             descriptors,
             roles,
+            retained_roles,
         })
     }
     fn retained(&self) -> Option<&Inventory> {

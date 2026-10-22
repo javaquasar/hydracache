@@ -1,3 +1,6 @@
+#[path = "support/held_role_census_guard.rs"]
+mod census_guard;
+
 fn read(name: &str) -> String {
     std::fs::read_to_string(
         std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -33,7 +36,7 @@ fn baseline(name: &str) -> String {
 
 #[test]
 fn held_material_roles_only_add_values_and_leave_complete_frame_and_retirement_unchanged() {
-    let source = read("diagnostic_held_unit_material.rs");
+    let source = census_guard::material_view(&read("diagnostic_held_unit_material.rs"));
     let hook = "        // Pure binding of the SAME fresh census. No new FD, bus/time read or\n        // authority is introduced; the context pins the original channel names.\n        let roles = kernel::bind_roles(&bindings(&context), &descriptors)?;\n";
     assert_eq!(source.matches(hook).count(), 1);
     let restored = source
