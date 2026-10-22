@@ -17413,3 +17413,26 @@ No allocation/timing values are remeasured or inferred. The next boundary is the
 actual engine: audit construction, publication, reopen, failed-owner latches and
 observer adapters before integrating storage. Logical append does not prove
 filesystem/fsync, all-writer termination, real process loss or server readiness.
+
+### Audit actual ownership before moving a model into the engine
+
+The [actual journal integration audit](../testing/performance/0.74/authority-integration-audit-20261022.md)
+identifies five failure boundaries that must evict every temporary read buffer:
+external latch, journal validation, policy binding, operator transition and
+publication. Original descriptors, stamps and expected bytes must survive.
+A Leaf-local optimization alone would leave other caches retained after refusal.
+
+The real publication path also contains work absent from logical append: three
+directory sync sites, two write/seal/file-sync sequences and four fault checkpoints
+before a newly opened entry becomes retained history. Actual Record transitions
+check machine/issuer/policy digest and the canonical chain in addition to epoch
+and state. The model's prechecked context cannot replace those predicates.
+
+Source guards are another integration boundary. The old observer uses immutable
+Leaf receivers and reconstructs the allocating read body. Fourteen named guard
+files are pinned; some compare current runtime bytes with history, others restore
+exact observer tokens. Moving every check to a snapshot would preserve history
+but leave the candidate unchecked. The next patch needs immutable historical
+replay alongside a separately guarded current observer and complete cleanup
+paths. This audit changes no runtime or measured result and does not establish
+filesystem/crash behavior or server readiness.

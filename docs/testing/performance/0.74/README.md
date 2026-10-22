@@ -5901,3 +5901,18 @@ No new performance measurement or runtime change follows. Next audit actual
 engine owned-storage integration and historical source/observer boundaries.
 Original windows/refusals, qualification and real publication/all-writer/full-
 fault/reconnect/server admission gates remain unchanged.
+
+### Actual journal owned storage integration audit
+
+The [read-only integration audit](authority-integration-audit-20261022.md) maps
+five journal failure sites, original ownership/reopen, real transition predicates,
+publication sync/checkpoint order and fourteen named source-guard files. All
+scratch must be evicted on any journal refusal, including external paths; original
+File/stamp/raw/history remain retained. The old immutable observer does not yet
+prove a mutable storage candidate.
+
+Next implement separate historical replay/current-candidate guards, then one
+minimal owned-scratch runtime patch and real filesystem semantic controls. The
+audit applies no runtime patch, runs no model/live image and adds no measurement.
+Twenty-three prior seals/1363 members retain both clean and refused cohorts;
+original windows/refusals, qualification and real fault/server gates stay closed.

@@ -1788,3 +1788,19 @@ drift. No runtime mutation, live profile, WSL/server, clocks/services, installat
 supervisor or product action occurs in this correctness step. Original windows,
 first refusals and publication/all-writer/full-fault/lost-ACK/reconnect/server
 gates remain unchanged.
+
+### Actual storage patch needs candidate specific source validation
+
+The [integration audit](authority-integration-audit-20261022.md) attributes all
+five journal failed assignments and verifies real reopen, change ordering,
+Record prerequisites and publication sync/checkpoint boundaries. It pins fourteen
+named guard files and identifies the old immutable observer as a migration
+boundary, not a current candidate proof.
+
+Next implement immutable historical replay separately from exact current-candidate
+guards and a versioned observer. Then prepare one owned-per-Leaf scratch patch
+with mutable iteration and whole-journal eviction on every refusal. Compile and
+exercise actual temporary-filesystem semantics before any original-owner/live
+attempt. Do not rerun old measurement images or edit first evidence. Original
+windows/refusals, qualification and delivery/all-writer/full-fault/lost-ACK/
+reconnect/server gates remain unchanged; no WSL or server action is opened here.
