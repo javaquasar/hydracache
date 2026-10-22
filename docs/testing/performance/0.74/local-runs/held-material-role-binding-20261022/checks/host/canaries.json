@@ -1,0 +1,20 @@
+{
+  "argv": [
+    "cargo",
+    "test",
+    "--offline",
+    "--locked",
+    "-p",
+    "xtask",
+    "--test",
+    "held_material_roles_074",
+    "--test",
+    "held_material_074",
+    "--test",
+    "held_unit_projection_074"
+  ],
+  "elapsed_ns": 13108727900,
+  "exit": 0,
+  "stderr_sha256": "ca974a18feab98d30b17da6475ef8283b6bebd9dfd7073012618e419824b9027",
+  "stdout_sha256": "8e576e3aeab107767efbe7f5b935e509ef88dc9a798c812cd4a4ecbd3879a47d"
+}

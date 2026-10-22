@@ -1,0 +1,14 @@
+{
+  "admission_allowed": false,
+  "component_pass": true,
+  "inherited_roles_resolved": 8,
+  "inherited_roles_total": 11,
+  "no_original_deadline_changes": true,
+  "original_attempt": false,
+  "original_delivery": false,
+  "product": false,
+  "qualification_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "runtime_commit": "4e1d38cc55f59e89e1f0191a2950bc96162f8121",
+  "server": false,
+  "writers_cessation": false
+}

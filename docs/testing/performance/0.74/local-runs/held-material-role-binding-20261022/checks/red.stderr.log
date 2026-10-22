@@ -1,0 +1,44 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+warning: function `revision` is never used
+  --> crates\xtask\tests\support\authority_history_io.rs:58:4
+   |
+58 | fn revision(value: &str) -> bool {
+   |    ^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `translated` is never used
+  --> crates\xtask\tests\support\authority_history_io.rs:61:8
+   |
+61 | pub fn translated(args: &[String]) -> io::Result<Vec<String>> {
+   |        ^^^^^^^^^^
+
+warning: field `args` is never read
+   --> crates\xtask\tests\support\authority_history_io.rs:121:5
+    |
+120 | pub struct HistoricalCommand {
+    |            ----------------- field in this struct
+121 |     args: Vec<OsString>,
+    |     ^^^^
+
+warning: function `command` is never used
+   --> crates\xtask\tests\support\authority_history_io.rs:124:8
+    |
+124 | pub fn command() -> HistoricalCommand {
+    |        ^^^^^^^
+
+warning: methods `args` and `output` are never used
+   --> crates\xtask\tests\support\authority_history_io.rs:131:12
+    |
+130 | impl HistoricalCommand {
+    | ---------------------- methods in this implementation
+131 |     pub fn args<I, S>(&mut self, args: I) -> &mut Self
+    |            ^^^^
+...
+146 |     pub fn output(&mut self) -> io::Result<Output> {
+    |            ^^^^^^
+
+warning: `xtask` (test "held_material_roles_074") generated 5 warnings
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 56.84s
+     Running tests\held_material_roles_074.rs (target\debug\deps\held_material_roles_074-14ba25f2c9c68fd0.exe)
+error: test failed, to rerun pass `-p xtask --test held_material_roles_074`

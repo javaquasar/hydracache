@@ -1,0 +1,18 @@
+
+running 1 test
+test held_material_roles_are_private_and_share_the_full_frame_inventory ... FAILED
+
+failures:
+
+---- held_material_roles_are_private_and_share_the_full_frame_inventory stdout ----
+
+thread 'held_material_roles_are_private_and_share_the_full_frame_inventory' (5504) panicked at crates\xtask\tests\held_material_roles_074.rs:13:5:
+assertion failed: material.contains("roles: kernel::RoleBindings")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    held_material_roles_are_private_and_share_the_full_frame_inventory
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+

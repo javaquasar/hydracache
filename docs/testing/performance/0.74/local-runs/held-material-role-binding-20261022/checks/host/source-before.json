@@ -1,0 +1,9 @@
+{
+  "Cargo.lock": "d2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c",
+  "crates/xtask/tests/held_material_roles_074.rs": "2c06235698788163c76e2e1dcb877360803aa9201e3d1b1786781c81f506f268",
+  "docs/testing/performance/0.74/qualification-manifest.toml": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "tools/long-run-supervisor-074/src/diagnostic_held_unit_material.rs": "3ef9b8eb7755114e1768d9a4122a05aa4fde4a4d2f8e4d97fe3bf1392aabbcf4",
+  "tools/long-run-supervisor-074/src/diagnostic_held_unit_material_kernel.rs": "f30a6acf236f9ad21ccb9801a417697a6bbeb68b71df6d24bc4095491a3df0ff",
+  "tools/long-run-supervisor-074/src/diagnostic_held_unit_material_kernel_tests.rs": "e746b9e9a9166aeaa205c7a07d845470caff3f68fdd8649b3f72acdf01d14478",
+  "tools/long-run-supervisor-074/src/diagnostic_held_unit_material_tests.rs": "62ff994b6f68f272db5b3a8622dec6bbfec8c3368c7fabcff375b5846726383f"
+}

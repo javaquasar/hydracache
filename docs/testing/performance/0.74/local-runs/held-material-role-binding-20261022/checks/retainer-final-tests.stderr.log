@@ -1,0 +1,11 @@
+test_host_only_fixed_offline_tests_compile_lint_and_format (test_check.Controls.test_host_only_fixed_offline_tests_compile_lint_and_format) ... ok
+test_linux_uses_the_selected_compiler_without_ignored_or_full_live_gate (test_check.Controls.test_linux_uses_the_selected_compiler_without_ignored_or_full_live_gate) ... ok
+test_receipts_are_exclusive (test_check.Controls.test_receipts_are_exclusive) ... ok
+test_source_drift_refuses_without_modifying_original_receipts (test_check.Controls.test_source_drift_refuses_without_modifying_original_receipts) ... ok
+test_timeout_or_failure_stops_before_another_command_and_retains_no_resume (test_check.Controls.test_timeout_or_failure_stops_before_another_command_and_retains_no_resume) ... ok
+test_complete_lane_requires_exact_source_scope_steps_and_every_log (test_retain.Controls.test_complete_lane_requires_exact_source_scope_steps_and_every_log) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.546s
+
+OK
