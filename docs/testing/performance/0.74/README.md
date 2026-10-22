@@ -6174,3 +6174,15 @@ and epoch, with shared sticky refusal and no key/FD/execution export. It creates
 no configuration or executable. Purpose-bound receipt/policy, the original
 consuming join and actual bootstrap execveat remain next; no clocks, services,
 new privileged controls, server or product workloads follow these observations.
+
+### Signed bootstrap provenance and consumed original ownership
+
+The [bootstrap build and owner component](bootstrap-build-owner-20261023.md)
+adds separately signed, independently pinned policy/receipt verification and a
+nonextractable wrapper consuming MaterializedHeldUnit. The protected source,
+same sealed bootstrap image and original held policy/receipt/role digests are
+checked between complete old material frames, including a closing frame after
+hashing. Refusal retires the same owner; old predicates and deadlines remain.
+Static/filesystem tests and owner models do not establish original live entry,
+actual bootstrap execution, delivery or all-writer cessation. The executable,
+child protocol and expanded transport inventory remain next. No server is run.

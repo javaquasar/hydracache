@@ -2068,3 +2068,15 @@ bind its purpose-specific build receipt/policy to the actual original owner and
 fixed executable; then authenticate the child's exact FDs and one execveat.
 All-writer closure, completion, later cells, reconnect and server admission remain
 independent gates. No additional privileged mount or original attempt follows.
+
+### Bootstrap signed provenance reaches a nonexecuting owner join
+
+The [new component](bootstrap-build-owner-20261023.md) implements separate signed
+bootstrap policy/receipt formats under protected key/policy/image pins. Its
+consuming wrapper binds those assertions and the same sealed image to the old
+material owner, preserves the protected-file identity across rounds and closes
+new hashing with the unchanged full frame. Static/model/filesystem verification
+is not the original live gate. No bootstrap child, manager send or execveat is
+enabled; expanded descriptor inventory and authenticated fixed child entry remain
+required before delivery. Existing retirement is invoked on refusal, not newly
+proved sufficient for every writer. All original windows and first refusals stay.

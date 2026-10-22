@@ -17976,3 +17976,25 @@ prevent an input from repairing itself after failure. These selectors are not a
 completed enrollment or execution proof: purpose-bound build evidence, original
 owner/frame admission and the child's one-shot execveat still have to join.
 No file copy, relaxed seal, refreshed deadline or silent fallback bridges that gap.
+
+### Bind build assertions to ownership before enabling execution
+
+The [bootstrap provenance join](../testing/performance/0.74/bootstrap-build-owner-20261023.md)
+now makes the next distinction executable in code. A protected selector chooses
+the complete signed policy and independent key. Separate signature domains bind
+the policy and build receipt without allowing either to masquerade as the other.
+The receipt states exact source/toolchain/profile/content observations; a valid
+signature authenticates that assertion, not an independently witnessed compiler.
+
+Static provenance alone still cannot select an attempt. The new wrapper consumes
+the already materialized original owner and compares policy/receipt/host/launcher
+digests from that owner's actual context. It retains both the protected source
+identity and the same sealed bootstrap image. Complete existing frames bracket
+new checks and close after positional hashing, so the additional work does not
+refresh an admission deadline. Any refusal retires that owner rather than
+returning a reusable execution handle.
+
+Unit signatures, actual retained-file checks and deterministic owner fault models
+establish different properties. None is a real original-start or all-writer
+cessation observation. The bootstrap executable, child credentials/FD protocol,
+expanded inventory and one-shot execveat remain the next execution boundary.
