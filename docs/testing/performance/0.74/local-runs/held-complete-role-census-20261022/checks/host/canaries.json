@@ -1,0 +1,22 @@
+{
+  "argv": [
+    "cargo",
+    "test",
+    "--offline",
+    "--locked",
+    "-p",
+    "xtask",
+    "--test",
+    "held_complete_role_census_074",
+    "--test",
+    "held_material_roles_074",
+    "--test",
+    "held_material_074",
+    "--test",
+    "held_unit_projection_074"
+  ],
+  "elapsed_ns": 16586321300,
+  "exit": 0,
+  "stderr_sha256": "40ab6fa2a2a8b4ace2347bafd86569548288ea0cd6fd744373bcedaf7c7046da",
+  "stdout_sha256": "82e97c5d4de95a78bdcef6d62f5aab60abf6ae487ad7d64c2459470025ee0e80"
+}

@@ -1,0 +1,33 @@
+
+running 3 tests
+test complete_role_census_is_inside_the_same_original_material_inventory ... ok
+test complete_role_census_uses_owned_contributions_before_the_existing_closing_owner_check ... ok
+test complete_role_census_keeps_prior_owner_and_provider_bodies_exact_after_additive_hooks ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.45s
+
+
+running 4 tests
+test held_material_inventory_requires_fresh_original_owner_and_deadline_after_census ... ok
+test held_material_closed_api_contains_no_transport_mapping_fork_exec_or_serialization ... ok
+test held_material_only_two_exact_hooks_restore_complete_projected_owner_and_bundle_bodies ... ok
+test held_material_keeps_original_frames_retirement_launcher_format_and_qualification_frozen ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.85s
+
+
+running 3 tests
+test held_material_roles_leaf_has_no_new_live_query_effect_or_transport ... ok
+test held_material_roles_are_private_and_share_the_full_frame_inventory ... ok
+test held_material_roles_only_add_values_and_leave_complete_frame_and_retirement_unchanged ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.00s
+
+
+running 3 tests
+test held_unit_projection_has_no_runnable_spec_transport_or_descriptor_export ... ok
+test held_unit_projection_only_four_exact_additive_hooks_restore_prior_sources ... ok
+test held_unit_projection_preserves_all_other_admission_transport_and_fixture_bytes ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.79s
+

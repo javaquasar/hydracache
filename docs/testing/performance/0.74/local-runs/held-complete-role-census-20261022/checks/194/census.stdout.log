@@ -1,0 +1,14 @@
+
+running 9 tests
+test diagnostic_artifacts::linux::held_role_census::tests::held_complete_census_invalid_claims_and_worker_shape_cannot_enter_inventory ... ok
+test diagnostic_artifacts::linux::held_role_census::tests::held_complete_census_missing_duplicate_wrong_order_and_repair_after_failure_refuse ... ok
+test diagnostic_artifacts::linux::held_role_census::tests::held_complete_census_real_owned_child_exit_and_descriptor_flag_change_refuse ... ok
+test diagnostic_artifacts::linux::held_role_census::tests::held_complete_census_records_same_worker_and_live_pidfds_without_copy_or_position_change ... ok
+test diagnostic_artifacts::linux::held_role_census::tests::held_complete_census_refuses_aliases_bad_partial_slots_and_wrong_pidfd_identity ... ok
+test diagnostic_artifacts::linux::projection::role_census::held_complete_census_bundle_provider_uses_only_original_worker_and_poisoned_failures_stay_refused ... ok
+test diagnostic_two_phase_launch::root_enrollment::kernel::guardian::original::projection::role_census::held_complete_census_guardian_provider_requires_consumed_armed_unrefused_pair ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::unit_projection::material::kernel::tests::held_complete_census_kernel_bridge_joins_three_original_roles_to_material_inventory ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::unit_projection::material::tests::held_complete_census_closing_snapshot_drift_retires_same_owner_and_cannot_heal ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 1522 filtered out; finished in 0.02s
+

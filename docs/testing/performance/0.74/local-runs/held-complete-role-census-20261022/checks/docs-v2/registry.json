@@ -1,0 +1,11 @@
+{
+  "argv": [
+    "cargo",
+    "xtask",
+    "gated-test-check"
+  ],
+  "elapsed_ns": 42491750100,
+  "exit": 0,
+  "stderr_sha256": "2f1a0866a261e62004f65a9b8694e5e759e271d0c42900b608da0781f92d63a5",
+  "stdout_sha256": "2e85f23f9ee08f2b63842845a81a4d823692f8fc5c5805656eed4b42aca93d01"
+}

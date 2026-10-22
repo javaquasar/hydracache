@@ -1,0 +1,12 @@
+test_docs_v2_selects_registered_xtask_and_preserves_the_failed_driver (test_check.Controls.test_docs_v2_selects_registered_xtask_and_preserves_the_failed_driver) ... ok
+test_exclusive_receipts_cannot_overwrite_a_first_outcome (test_check.Controls.test_exclusive_receipts_cannot_overwrite_a_first_outcome) ... ok
+test_existing_lane_refuses_before_subprocess (test_check.Controls.test_existing_lane_refuses_before_subprocess) ... ok
+test_fixed_lanes_do_not_dispatch_or_start_live_attempts (test_check.Controls.test_fixed_lanes_do_not_dispatch_or_start_live_attempts) ... ok
+test_success_failure_timeout_and_source_drift_are_retained_once (test_check.Controls.test_success_failure_timeout_and_source_drift_are_retained_once) ... ok
+test_existing_packet_refuses_before_any_git_call (test_retain.Retention.test_existing_packet_refuses_before_any_git_call) ... ok
+test_incomplete_changed_log_source_scope_and_command_refuse (test_retain.Retention.test_incomplete_changed_log_source_scope_and_command_refuse) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.156s
+
+OK

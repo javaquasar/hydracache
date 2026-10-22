@@ -1,0 +1,15 @@
+{
+  "admission_allowed": false,
+  "component_pass": true,
+  "enumerated_fds": 23,
+  "first_component_failure": "development summary, not raw process log",
+  "inherited_roles": 11,
+  "original_attempt": false,
+  "original_delivery": false,
+  "product": false,
+  "qualification_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "runtime_commit": "7e0a99b4704192ddb3a19d3de795dc9de95e9ed8",
+  "server": false,
+  "unchanged_original_deadlines": true,
+  "writers_cessation": false
+}

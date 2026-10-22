@@ -1,0 +1,4 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 12.68s
+     Running tests\held_complete_role_census_074.rs (target\debug\deps\held_complete_role_census_074-7aa2e7ed5f54637f.exe)
+error: test failed, to rerun pass `-p xtask --test held_complete_role_census_074`

@@ -1,0 +1,13 @@
+{
+  "failure": null,
+  "lane": "docs-v2",
+  "original_attempt": false,
+  "product": false,
+  "server": false,
+  "steps": [
+    "docs",
+    "registry",
+    "contract",
+    "diff"
+  ]
+}

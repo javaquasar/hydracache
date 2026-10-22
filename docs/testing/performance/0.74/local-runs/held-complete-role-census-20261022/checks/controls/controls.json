@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "python",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tools/held-complete-census-074",
+    "-v"
+  ],
+  "elapsed_ns": 1529878100,
+  "exit": 0,
+  "stderr_sha256": "1e62da2524389137654dd12424111df6b8c8cbd04e25cc1bb32c93a0ad859bba",
+  "stdout_sha256": "11e2f0ae2190d6d3401efe043e27e5036d4908750fa8c5578863b5749c99dc60"
+}

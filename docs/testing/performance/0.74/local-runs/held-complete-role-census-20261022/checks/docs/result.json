@@ -1,0 +1,11 @@
+{
+  "failure": "RuntimeError: registry refused; first result retained",
+  "lane": "docs",
+  "original_attempt": false,
+  "product": false,
+  "server": false,
+  "steps": [
+    "docs",
+    "registry"
+  ]
+}

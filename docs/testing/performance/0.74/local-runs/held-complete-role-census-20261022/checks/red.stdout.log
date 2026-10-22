@@ -1,0 +1,18 @@
+
+running 1 test
+test complete_role_census_is_inside_the_same_original_material_inventory ... FAILED
+
+failures:
+
+---- complete_role_census_is_inside_the_same_original_material_inventory stdout ----
+
+thread 'complete_role_census_is_inside_the_same_original_material_inventory' (50800) panicked at crates\xtask\tests\held_complete_role_census_074.rs:10:5:
+assertion failed: source.contains("retained_roles: role_census::CompleteBindings")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    complete_role_census_is_inside_the_same_original_material_inventory
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
