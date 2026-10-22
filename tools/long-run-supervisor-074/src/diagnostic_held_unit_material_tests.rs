@@ -9,6 +9,7 @@ fn inventory() -> Inventory {
     };
     Inventory {
         descriptors: vec![],
+        roles: kernel::RoleBindings([(0, 0); 8]),
         context: Context {
             state: DiagnosticState {
                 identity: DiagnosticIdentity {
@@ -62,6 +63,7 @@ struct Probe {
     refused: bool,
     retained: Option<Inventory>,
     drift: usize,
+    role_drift: bool,
 }
 impl Probe {
     fn new() -> Self {
@@ -72,6 +74,7 @@ impl Probe {
             refused: false,
             retained: None,
             drift: 0,
+            role_drift: false,
         }
     }
     fn call(&self, name: &'static str) -> Result<(), MaterialError> {
@@ -98,7 +101,11 @@ impl MaterialOwner for Probe {
         self.call("expanded-inventory")?;
         let mut got = inventory();
         if self.calls.get() == self.drift {
-            got.context.origins[0] += 1;
+            if self.role_drift {
+                got.roles.0[0].1 += 1;
+            } else {
+                got.context.origins[0] += 1;
+            }
         }
         Ok(got)
     }
@@ -152,7 +159,7 @@ fn held_material_join_closing_and_retained_original_substitutions_refuse() {
     p.drift = 5;
     assert!(validate_material(&mut p).is_err());
     assert!(p.refused);
-    for at in 0..9 {
+    for at in 0..13 {
         let mut p = Probe::new();
         let mut old = inventory();
         match at {
@@ -164,13 +171,32 @@ fn held_material_join_closing_and_retained_original_substitutions_refuse() {
             5 => old.context.guardians[0].0 += 1,
             6 => old.context.documents_sha256[0].push('x'),
             7 => old.context.state.identity.boot_id.push('x'),
-            _ => old.context.config.identity[1] += 1,
+            8 => old.context.config.identity[1] += 1,
+            9 => old.context.names.0.push('0'),
+            10 => old.context.names.1.push('0'),
+            11 => old.context.serial = NonZeroU32::new(75).unwrap(),
+            _ => old.roles.0[0].1 += 1,
         }
         p.retained = Some(old);
         assert!(validate_material(&mut p).is_err());
         assert!(p.refused);
         assert_eq!(p.calls.get(), 3);
     }
+}
+#[test]
+fn held_material_roles_closing_substitution_retires_the_same_owner_without_retry() {
+    let mut p = Probe::new();
+    p.drift = 5;
+    p.role_drift = true;
+    assert!(validate_material(&mut p).is_err());
+    assert!(p.refused);
+    assert_eq!(p.calls.get(), 5);
+    p.drift = 0;
+    assert!(matches!(
+        validate_material(&mut p),
+        Err(MaterialError::Refused)
+    ));
+    assert_eq!(p.calls.get(), 5);
 }
 #[test]
 fn held_material_join_api_consumes_projected_owner_without_transport_or_recovery() {

@@ -296,6 +296,56 @@ pub(super) struct Stamp {
     status: i32,
     position: Option<i64>,
 }
+
+// Values only, private to materialization. No AsRawFd, extraction, borrow or
+// remapping API. Worker and Armed guardian FDs are deliberately unresolved.
+#[derive(Debug, PartialEq, Eq)]
+pub(super) struct RoleBindings(pub(super) [(u8, RawFd); 8]);
+const MATERIAL_ROLES: [(u8, usize); 8] = [
+    (0, 14),
+    (1, 6),
+    (2, 7),
+    (3, 16),
+    (5, 17),
+    (6, 19),
+    (9, 1),
+    (10, 18),
+];
+pub(super) fn bind_roles(b: &Bindings, inventory: &[Stamp]) -> io::Result<RoleBindings> {
+    need(inventory.len() == 20)?;
+    for (i, s) in inventory.iter().enumerate() {
+        need(
+            s.fd >= 0
+                && s.descriptor == libc::FD_CLOEXEC
+                && !inventory[..i].iter().any(|old| old.fd == s.fd),
+        )?;
+    }
+    for (at, expected) in [(6, b.streams[0]), (7, b.streams[1])] {
+        let s = &inventory[at];
+        need(
+            s.stat[..2] == expected
+                && s.stat[4] as u32 & libc::S_IFMT == libc::S_IFIFO
+                && s.status & (libc::O_ACCMODE | libc::O_PATH) == libc::O_WRONLY,
+        )?;
+    }
+    need(b.streams[0] != b.streams[1])?;
+    for (at, kind, access) in [
+        (14, libc::S_IFIFO, libc::O_RDONLY),
+        (16, libc::S_IFSOCK, libc::O_RDWR),
+        (17, libc::S_IFREG, libc::O_RDONLY),
+        (18, libc::S_IFREG, libc::O_RDONLY),
+    ] {
+        let s = &inventory[at];
+        need(
+            s.stat[4] as u32 & libc::S_IFMT == kind
+                && s.status & (libc::O_ACCMODE | libc::O_PATH) == access,
+        )?;
+    }
+    need(inventory[17].stat[6] == b.config.0[2] && inventory[18].stat[6] == BOOT_BYTES as u64)?;
+    Ok(RoleBindings(
+        MATERIAL_ROLES.map(|(role, at)| (role, inventory[at].fd)),
+    ))
+}
 fn stamp(fd: RawFd) -> io::Result<Stamp> {
     let mut m: libc::stat = unsafe { std::mem::zeroed() };
     need(unsafe { libc::fstat(fd, &mut m) } == 0)?;

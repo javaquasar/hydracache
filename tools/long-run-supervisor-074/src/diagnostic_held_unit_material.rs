@@ -29,6 +29,7 @@ fn bindings(c: &Context) -> Bindings {
 struct Inventory {
     context: Context,
     descriptors: Vec<Stamp>,
+    roles: kernel::RoleBindings,
 }
 trait MaterialOwner {
     fn refused(&self) -> bool;
@@ -143,9 +144,13 @@ impl MaterialOwner for MaterializedHeldUnit<'_, '_, '_, '_, '_, '_, '_, '_, '_, 
             .as_ref()
             .ok_or(MaterialError::Binding)?
             .inspect(&bindings(&context), original)?;
+        // Pure binding of the SAME fresh census. No new FD, bus/time read or
+        // authority is introduced; the context pins the original channel names.
+        let roles = kernel::bind_roles(&bindings(&context), &descriptors)?;
         Ok(Inventory {
             context,
             descriptors,
+            roles,
         })
     }
     fn retained(&self) -> Option<&Inventory> {

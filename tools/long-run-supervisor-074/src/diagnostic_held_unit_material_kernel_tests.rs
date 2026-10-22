@@ -1,5 +1,106 @@
 use super::*;
 
+fn role_fixture() -> (Bindings, Resources, [File; 14]) {
+    let mut b = bindings();
+    let mut files = original();
+    for i in 0..2 {
+        let mut fds = [-1; 2];
+        assert_eq!(unsafe { libc::pipe2(fds.as_mut_ptr(), libc::O_CLOEXEC) }, 0);
+        files[2 + i] = owned(fds[0]).unwrap();
+        files[6 + i] = owned(fds[1]).unwrap();
+        b.streams[i] = pair_id(&files[6 + i]).unwrap();
+    }
+    let resources = Resources::create(&b, b"config\n").unwrap();
+    (b, resources, files)
+}
+
+#[test]
+fn held_material_roles_bind_exact_eight_objects_without_descriptor_copies_or_offset_changes() {
+    let (b, resources, files) = role_fixture();
+    let fds = files.each_ref().map(AsRawFd::as_raw_fd);
+    let inventory = resources.inspect(&b, fds).unwrap();
+    let before = resources.inspect(&b, fds).unwrap();
+    let roles = bind_roles(&b, &inventory).unwrap();
+    let source = [14, 6, 7, 16, 17, 19, 1, 18];
+    assert_eq!(roles.0.map(|v| v.0), [0, 1, 2, 3, 5, 6, 9, 10]);
+    assert_eq!(roles.0.map(|v| v.1), source.map(|i| inventory[i].fd));
+    for i in [0, 2, 3, 4, 5, 8, 9, 10, 11, 12, 13, 15] {
+        assert!(roles.0.iter().all(|v| v.1 != inventory[i].fd));
+    }
+    assert_eq!(roles, bind_roles(&b, &inventory).unwrap());
+    assert_eq!(resources.inspect(&b, fds).unwrap(), before);
+}
+
+#[test]
+fn held_material_roles_refuse_each_negative_duplicate_and_non_cloexec_census_entry() {
+    let (b, resources, files) = role_fixture();
+    let fds = files.each_ref().map(AsRawFd::as_raw_fd);
+    for i in 0..20 {
+        for fault in 0..3 {
+            let mut inventory = resources.inspect(&b, fds).unwrap();
+            match fault {
+                0 => inventory[i].fd = -1,
+                1 => inventory[i].fd = inventory[(i + 1) % 20].fd,
+                _ => inventory[i].descriptor = 0,
+            }
+            assert!(bind_roles(&b, &inventory).is_err(), "{i}/{fault}");
+        }
+    }
+    let inventory = resources.inspect(&b, fds).unwrap();
+    for count in 0..20 {
+        assert!(bind_roles(&b, &inventory[..count]).is_err());
+    }
+    let mut extra = resources.inspect(&b, fds).unwrap();
+    extra.push(stamp(fds[0]).unwrap());
+    assert!(bind_roles(&b, &extra).is_err());
+}
+
+#[test]
+fn held_material_roles_refuse_wrong_stream_resource_shapes_and_exchanged_objects() {
+    let (b, resources, files) = role_fixture();
+    let fds = files.each_ref().map(AsRawFd::as_raw_fd);
+    for fault in 0..12 {
+        let mut inventory = resources.inspect(&b, fds).unwrap();
+        match fault {
+            0 => inventory[6].stat[1] += 1,
+            1 => inventory[7].stat[0] += 1,
+            2 => inventory[6].status = libc::O_RDONLY,
+            3 => inventory[7].stat[4] = libc::S_IFREG as u64,
+            4 => inventory.swap(6, 7),
+            5 => inventory[14].stat[4] = libc::S_IFREG as u64,
+            6 => inventory[16].stat[4] = libc::S_IFIFO as u64,
+            7 => inventory[17].status |= libc::O_PATH,
+            8 => inventory[18].stat[4] = libc::S_IFSOCK as u64,
+            9 => inventory[17].stat[6] += 1,
+            10 => inventory[18].stat[6] += 1,
+            _ => inventory[16].status = libc::O_RDONLY,
+        }
+        assert!(bind_roles(&b, &inventory).is_err(), "{fault}");
+    }
+}
+
+#[test]
+fn held_material_roles_fixed_seed_census_preserves_exact_source_and_slot_order() {
+    let (b, resources, files) = role_fixture();
+    let fds = files.each_ref().map(AsRawFd::as_raw_fd);
+    let mut seed = 0x0740_fd82u32;
+    for _ in 0..256 {
+        let mut inventory = resources.inspect(&b, fds).unwrap();
+        seed ^= seed << 13;
+        seed ^= seed >> 17;
+        seed ^= seed << 5;
+        let base = 1000 + (seed % 10000) as i32;
+        for (i, s) in inventory.iter_mut().enumerate() {
+            s.fd = base + i as i32;
+        }
+        let roles = bind_roles(&b, &inventory).unwrap();
+        assert_eq!(
+            roles.0,
+            MATERIAL_ROLES.map(|(slot, at)| (slot, base + at as i32))
+        );
+    }
+}
+
 fn bindings() -> Bindings {
     Bindings {
         owner: current_owner(),
