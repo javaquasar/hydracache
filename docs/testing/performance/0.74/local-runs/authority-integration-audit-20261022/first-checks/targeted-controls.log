@@ -1,0 +1,13 @@
+test_independent_clean_gate_preserves_red_history (__main__.TargetedReviewTests.test_independent_clean_gate_preserves_red_history) ... ok
+test_listing_and_native_filter_are_exact (__main__.TargetedReviewTests.test_listing_and_native_filter_are_exact) ... ok
+test_missing_duplicate_unknown_rows_refuse (__main__.TargetedReviewTests.test_missing_duplicate_unknown_rows_refuse) ... ok
+test_old_controls_and_wrong_completed_membership_refuse (__main__.TargetedReviewTests.test_old_controls_and_wrong_completed_membership_refuse) ... ok
+test_original_windows_refusals_and_admission_unchanged (__main__.TargetedReviewTests.test_original_windows_refusals_and_admission_unchanged) ... ok
+test_receipt_hash_source_order_and_scope_refuse (__main__.TargetedReviewTests.test_receipt_hash_source_order_and_scope_refuse) ... ok
+test_source_and_output_isolation_refuse (__main__.TargetedReviewTests.test_source_and_output_isolation_refuse) ... ok
+test_state_trace_round_and_type_mutations_refuse (__main__.TargetedReviewTests.test_state_trace_round_and_type_mutations_refuse) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 5.208s
+
+OK

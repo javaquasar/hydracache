@@ -1,0 +1,365 @@
+{
+  "audit": {
+    "blockers": [
+      "exact runtime patch not yet implemented or compiled",
+      "historical replay/current candidate guard separation not implemented",
+      "real filesystem cache eviction and publication fault semantics not yet exercised on candidate",
+      "prechecked model does not cover real Record policy/key/host/chain validation"
+    ],
+    "failure_sites": [
+      {
+        "line": 369,
+        "path": "tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs",
+        "required_candidate_action": "latch owner and evict every record/marker scratch; retain original entries",
+        "site": "external"
+      },
+      {
+        "line": 410,
+        "path": "tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs",
+        "required_candidate_action": "latch owner and evict every record/marker scratch; retain original entries",
+        "site": "validation"
+      },
+      {
+        "line": 430,
+        "path": "tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs",
+        "required_candidate_action": "latch owner and evict every record/marker scratch; retain original entries",
+        "site": "binding"
+      },
+      {
+        "line": 455,
+        "path": "tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs",
+        "required_candidate_action": "latch owner and evict every record/marker scratch; retain original entries",
+        "site": "transition"
+      },
+      {
+        "line": 517,
+        "path": "tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs",
+        "required_candidate_action": "latch owner and evict every record/marker scratch; retain original entries",
+        "site": "publication"
+      }
+    ],
+    "guard_boundaries": [
+      {
+        "kind": "historical-normalization-chain",
+        "path": "crates/xtask/tests/authority_breakdown_074.rs",
+        "sha256": "5293953c992b8cf7760c4f9fc25b57d9e6f4de7310eb28bfca81e382fe8d855a"
+      },
+      {
+        "kind": "historical-normalization-chain",
+        "path": "crates/xtask/tests/authority_cpu_074.rs",
+        "sha256": "1e8e28624175d25dd08939a9b821e64130749dd221ebef6d8a7d95cf6a8c92b7"
+      },
+      {
+        "kind": "historical-normalization-chain",
+        "path": "crates/xtask/tests/authority_expected_name_074.rs",
+        "sha256": "f7d483f3607316d5b4e01d4773d4093ef0a07ed39a7e7e04bc35237015221b4f"
+      },
+      {
+        "kind": "historical-normalization-chain",
+        "path": "crates/xtask/tests/authority_fd_path_074.rs",
+        "sha256": "8eec87b856ced811211db39a0b0c3b7b321d645e7877d862466395c7f7b198ff"
+      },
+      {
+        "kind": "historical-normalization-chain",
+        "path": "crates/xtask/tests/authority_inventory_074.rs",
+        "sha256": "5e3059b971b0a445a9bc3c39a1c9bf65f06a392b47c8c54ef8f36628cedc9b7a"
+      },
+      {
+        "kind": "historical-normalization-chain",
+        "path": "crates/xtask/tests/authority_leaf_cpu_074.rs",
+        "sha256": "d4d6f4aa339e24bd43b1776929b8661ea03dd4a0bf49c22691d85b26ed049f41"
+      },
+      {
+        "kind": "historical-normalization-chain",
+        "path": "crates/xtask/tests/authority_leaf_name_074.rs",
+        "sha256": "3ad157fd1dd31b63e1ce797321ba4fc71d56fed536508ff21ed8c95ec91ecadf"
+      },
+      {
+        "kind": "historical-normalization-chain",
+        "path": "crates/xtask/tests/authority_name_capacity_074.rs",
+        "sha256": "4419ec9993fda528563e237c5f2688f9c53488a2753d3b210b15400b2e6f3180"
+      },
+      {
+        "kind": "historical-normalization-chain",
+        "path": "crates/xtask/tests/authority_open_name_074.rs",
+        "sha256": "de8949147040b65c3495062a71257c20fa718a67239a4e8230da613de510673b"
+      },
+      {
+        "kind": "current-runtime-frozen-identity",
+        "path": "crates/xtask/tests/authority_read_baseline_074.rs",
+        "sha256": "060a59d39bb545cbcc99bd1ea5de3f35b329ceb0c7723b468b0ba5dc2b73d258"
+      },
+      {
+        "kind": "current-runtime-frozen-identity",
+        "path": "crates/xtask/tests/authority_scratch_reuse_074.rs",
+        "sha256": "1500f6ae469047ffef3905bce1174cb4a29627a6ef1587558f3cb78b51a06798"
+      },
+      {
+        "kind": "current-runtime-frozen-identity",
+        "path": "crates/xtask/tests/authority_owned_journal_074.rs",
+        "sha256": "6f289745d058a479dd15d1007826c22949b6f0b664a196181864636f8cf83c46"
+      },
+      {
+        "kind": "current-runtime-frozen-identity",
+        "path": "crates/xtask/tests/authority_operator_order_074.rs",
+        "sha256": "96a035e001afad881c19b24e246871553ce934675f6115c544e1aedb2438249a"
+      },
+      {
+        "kind": "historical-observer-and-current-token-comparison",
+        "path": "crates/xtask/tests/authority_owners_074.rs",
+        "sha256": "e74849596ae04f15c155d06ff16a60b36d0ad9678268730fcbcb85b1b8e085a8"
+      }
+    ],
+    "lifecycle": {
+      "append_retains_previous_entries": true,
+      "directory_brackets": 2,
+      "fixed_wraps_shared_engine": true,
+      "higher_layers_borrow_original_journal": true,
+      "inventory_brackets": 2,
+      "journal_failed_assignment_sites": 5,
+      "open_rebuilds_all_entries": true,
+      "original_thread_affinity": true,
+      "refusal_retains_original_entries": true
+    },
+    "observer": {
+      "current_candidate_equivalence": false,
+      "entry_loop": "immutable",
+      "path": "tools/long-run-supervisor-074/tests/support/authority_owners_controls.rs",
+      "receiver": "&Leaf"
+    },
+    "patch_scope": [
+      "Leaf optional owned scratch and cold constructor; no self borrow or interior mutability",
+      "fresh bounded read storage substitution only; retain original File/stamp/raw and fresh File lifetime",
+      "explicit mutable entry iteration with record-before-marker and unchanged outer brackets",
+      "centralize five failure paths and evict all temporary buffers, including external latches",
+      "keep actual Record transitions and publication IO/sync/checkpoint order unchanged",
+      "version observer separately and distinguish frozen historical replay from current candidate guards"
+    ],
+    "publication": {
+      "checkpoints": [
+        "RecordCreated",
+        "RecordSynced",
+        "MarkerCreated",
+        "DurableCommit"
+      ],
+      "directory_sync_sites": 3,
+      "entry_after_durable_commit": true,
+      "seal_calls": 2,
+      "seal_order": [
+        "write_all",
+        "permissions_0400",
+        "file_sync_all"
+      ]
+    },
+    "source_witnesses": [
+      {
+        "expression": "        self.failed = true;\n    }",
+        "line": 369,
+        "path": "tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs"
+      },
+      {
+        "expression": "            fail(fault, PublicationStage::DurableCommit)?;",
+        "line": 501,
+        "path": "tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs"
+      },
+      {
+        "expression": "            || next.issuer_key_hex != self.issuer_key_hex",
+        "line": 195,
+        "path": "tools/long-run-supervisor-074/src/diagnostic_authority_registry.rs"
+      },
+      {
+        "expression": "    leaf: &Leaf,",
+        "line": 121,
+        "path": "tools/long-run-supervisor-074/tests/support/authority_owners_controls.rs"
+      }
+    ]
+  },
+  "clocks_changed": false,
+  "decision": "prepare exact owned-storage patch with separate historical and current guards; no runtime admission",
+  "first_refusals": [
+    {
+      "age_ns": 10042390247,
+      "diagnostic_reason": "expired",
+      "issued_boot": "6a709ad1-c736-45a2-bd6a-351e07f6b8f3",
+      "issued_ns": 463631383166,
+      "now_boot": "6a709ad1-c736-45a2-bd6a-351e07f6b8f3",
+      "now_ns": 473673773413,
+      "site": "window"
+    },
+    {
+      "age_ns": 10010835739,
+      "diagnostic_reason": "expired",
+      "issued_boot": "6a709ad1-c736-45a2-bd6a-351e07f6b8f3",
+      "issued_ns": 476668137622,
+      "now_boot": "6a709ad1-c736-45a2-bd6a-351e07f6b8f3",
+      "now_ns": 486678973361,
+      "site": "window"
+    }
+  ],
+  "full_sigkill_matrix": false,
+  "input_members_verified": 1363,
+  "input_packets": [
+    {
+      "inventory_sha256": "0c385fbfe209fad1903aa2c0e620817c458f413eec8bd36fa32be5c01fbb4109",
+      "members": 65,
+      "packet": "held-material-live-20261021"
+    },
+    {
+      "inventory_sha256": "84c2d0a10e1d2d66b4dc76e1c041b9920d90d85621461bc3e83102569a6e1a2f",
+      "members": 18,
+      "packet": "held-material-round-attribution-20261021"
+    },
+    {
+      "inventory_sha256": "dc7af6cd78dfc1b69c7443078a8c6e2edc4504e294f74d30df93e085f8471daa",
+      "members": 51,
+      "packet": "pidfd-info-path-20261021"
+    },
+    {
+      "inventory_sha256": "ae7db79c3e579b7ad9f1939d2571aab27452b62f81c89b46b98340381f4b91c6",
+      "members": 52,
+      "packet": "projection-groups-20261021"
+    },
+    {
+      "inventory_sha256": "d66631eec23dc969f372d73c2bb83519058214383023564ec269ec542f854c4e",
+      "members": 23,
+      "packet": "reserved-leaf-audit-20261021"
+    },
+    {
+      "inventory_sha256": "8db3e4df5579ec7a471886505191825609b5c839732670bece6702ae101afcb6",
+      "members": 40,
+      "packet": "context-document-baseline-20261021"
+    },
+    {
+      "inventory_sha256": "7a65d50c19622754bda58fd389ef03d3f07254465d96f1e16b586cdec94f71f0",
+      "members": 54,
+      "packet": "context-document-stack-20261021"
+    },
+    {
+      "inventory_sha256": "7eacd69041a722fc3d6153ef8be43eff87bf945a8fb6ccdd456acadff1bfcc9d",
+      "members": 45,
+      "packet": "trust-component-baseline-20261021"
+    },
+    {
+      "inventory_sha256": "e588fd8ae6b06a6e808446328b819240c4bb0e35955309e843ddb1078668fd85",
+      "members": 53,
+      "packet": "trust-component-stack-20261021"
+    },
+    {
+      "inventory_sha256": "cc19972e68a264b7b84ac48400f43e1b981d5a0e762ad7a9aee1a67548bf2452",
+      "members": 41,
+      "packet": "collector-peer-baseline-20261021"
+    },
+    {
+      "inventory_sha256": "846b5e7d6d07a47bd03c64be0a207b24b197b39ceddb25e4fc3b06cd049b05ae",
+      "members": 49,
+      "packet": "collector-peer-capacity-20261022"
+    },
+    {
+      "inventory_sha256": "d3aa773d6254d5297d303cfc8ba7a397e06ae8a2d4978e39e29c496062b3fb72",
+      "members": 42,
+      "packet": "reserved-reconciliation-20261022"
+    },
+    {
+      "inventory_sha256": "3194244cb4e45c6f4f611b946afaa6a6a8b3aaf83179457c260d0a9e25f93864",
+      "members": 237,
+      "packet": "custody-preparation-cost-20261020"
+    },
+    {
+      "inventory_sha256": "dbaa727197cf3c08b5206b40050bef4424f8a1e1793191ca661ba5540a81c306",
+      "members": 43,
+      "packet": "proc-document-baseline-20261022"
+    },
+    {
+      "inventory_sha256": "fd07cd7911ab50d51e5a471de9ae5b427ec4076636396fe12861c46433ac6b10",
+      "members": 43,
+      "packet": "sample-boot-baseline-20261022"
+    },
+    {
+      "inventory_sha256": "6bee3c2c239d2e38f9ad06a9098e756edc8dc248b6c48eb51f425b61b36b4ebf",
+      "members": 72,
+      "packet": "sample-boot-inline-20261022"
+    },
+    {
+      "inventory_sha256": "1c5176e4e53eb56d21e66c061a9b580529b4930d32682e4397db4b5d3e0f6591",
+      "members": 27,
+      "packet": "authority-read-audit-20261022"
+    },
+    {
+      "inventory_sha256": "ed0d1199cbd8e105b3b1143173d67911719cf140d797f7c1dd192b20bf76ccc1",
+      "members": 45,
+      "packet": "authority-read-baseline-20261022"
+    },
+    {
+      "inventory_sha256": "b5a90f56551c11378422879ae861a05c8fa3c9bb6448e9dc8c1f255ee3f20159",
+      "members": 76,
+      "packet": "authority-scratch-reuse-20261022"
+    },
+    {
+      "inventory_sha256": "ea7ec7a0e1cb7d15c1032b519efdbbccd5ed28fb412f9137d4d615ec5b0db1d6",
+      "members": 35,
+      "packet": "authority-scratch-owner-audit-20261022"
+    },
+    {
+      "inventory_sha256": "ccadbe4fe15fe336049851019da4cef913401c09f55d0c875c9af5b257ac60f7",
+      "members": 72,
+      "packet": "authority-owned-journal-20261022"
+    },
+    {
+      "inventory_sha256": "e596bab55acdaa07a77410b41a7fe6e4633dedd76a167e06db6de4db0d8148f4",
+      "members": 99,
+      "packet": "authority-operator-order-20261022"
+    },
+    {
+      "inventory_sha256": "bd81081959409bf27b188871aa7493f0a42e50cdea658800f45db7c35229d475",
+      "members": 81,
+      "packet": "authority-operator-targeted-20261022"
+    }
+  ],
+  "model_images_executed": 0,
+  "new_measurements": 0,
+  "original_material_gate_passed": false,
+  "original_owner_profiles": 0,
+  "original_windows_seconds": [
+    300,
+    60,
+    10
+  ],
+  "prior_broad_isolation_gate": false,
+  "product": false,
+  "qualification_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "reconnect_proven": false,
+  "runtime_candidate_implemented": false,
+  "schema": "offline-authority-integration-audit-074-v1",
+  "server": false,
+  "services_changed": false,
+  "source_pins": {
+    "crates/xtask/tests/authority_breakdown_074.rs": "5293953c992b8cf7760c4f9fc25b57d9e6f4de7310eb28bfca81e382fe8d855a",
+    "crates/xtask/tests/authority_cpu_074.rs": "1e8e28624175d25dd08939a9b821e64130749dd221ebef6d8a7d95cf6a8c92b7",
+    "crates/xtask/tests/authority_expected_name_074.rs": "f7d483f3607316d5b4e01d4773d4093ef0a07ed39a7e7e04bc35237015221b4f",
+    "crates/xtask/tests/authority_fd_path_074.rs": "8eec87b856ced811211db39a0b0c3b7b321d645e7877d862466395c7f7b198ff",
+    "crates/xtask/tests/authority_inventory_074.rs": "5e3059b971b0a445a9bc3c39a1c9bf65f06a392b47c8c54ef8f36628cedc9b7a",
+    "crates/xtask/tests/authority_leaf_cpu_074.rs": "d4d6f4aa339e24bd43b1776929b8661ea03dd4a0bf49c22691d85b26ed049f41",
+    "crates/xtask/tests/authority_leaf_name_074.rs": "3ad157fd1dd31b63e1ce797321ba4fc71d56fed536508ff21ed8c95ec91ecadf",
+    "crates/xtask/tests/authority_name_capacity_074.rs": "4419ec9993fda528563e237c5f2688f9c53488a2753d3b210b15400b2e6f3180",
+    "crates/xtask/tests/authority_open_name_074.rs": "de8949147040b65c3495062a71257c20fa718a67239a4e8230da613de510673b",
+    "crates/xtask/tests/authority_operator_order_074.rs": "96a035e001afad881c19b24e246871553ce934675f6115c544e1aedb2438249a",
+    "crates/xtask/tests/authority_owned_journal_074.rs": "6f289745d058a479dd15d1007826c22949b6f0b664a196181864636f8cf83c46",
+    "crates/xtask/tests/authority_owners_074.rs": "e74849596ae04f15c155d06ff16a60b36d0ad9678268730fcbcb85b1b8e085a8",
+    "crates/xtask/tests/authority_read_baseline_074.rs": "060a59d39bb545cbcc99bd1ea5de3f35b329ceb0c7723b468b0ba5dc2b73d258",
+    "crates/xtask/tests/authority_scratch_reuse_074.rs": "1500f6ae469047ffef3905bce1174cb4a29627a6ef1587558f3cb78b51a06798",
+    "docs/testing/performance/0.74/authority-integration-audit-plan-20261022.md": "f19e7beeb409e8e5f01a38a2e79d71f53d75cd29e42e5426833a0be9f39adbee",
+    "docs/testing/performance/0.74/authority-scratch-owner-audit-plan-20261022.md": "67bf0371be91dd6240663a677906a23d067e7d6a1ef792f0c25fb4b7df629fdd",
+    "tools/authority-scratch-reuse-074/candidate.rs": "858f79d15f14bec48ba5c00fb3f7e959931aa1b9f739a71585b09ec438d47b8f",
+    "tools/long-run-supervisor-074/src/diagnostic_authority_fixed.rs": "fd1e10a038ae046888c8ff3c76303e36e5ed49a46aef2025391f8aa009d554a1",
+    "tools/long-run-supervisor-074/src/diagnostic_authority_fixed_tests.rs": "848a31bc3ff546d66a22ae4920ebd894e192061b9dda11b5482b858c68bf9354",
+    "tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs": "3b3c75f41dbd8a8db1f73d61af3b0c701a666c3ebeed326ae49012ed0c01fb6c",
+    "tools/long-run-supervisor-074/src/diagnostic_authority_fixture_tests.rs": "09af700f81af7c1647ca76dfedf14ce51a18434723c49b9cdf441f7a019a6b4f",
+    "tools/long-run-supervisor-074/src/diagnostic_authority_registry.rs": "1e936fe855eedad6d0e5dacbd76d534a45cc8df11cd30f06f8e2ed77258bc53e",
+    "tools/long-run-supervisor-074/src/diagnostic_signed_authority.rs": "9fa67be28d71c843f5c10e0de50cc0307dffc8c7e58b69a4b24ca1dc15311990",
+    "tools/long-run-supervisor-074/src/diagnostic_worker_kernel_binding.rs": "153a71dc617694e2b275fecfa1dc09faafb85a57920794a3e7005858bfb732c0",
+    "tools/long-run-supervisor-074/src/diagnostic_worker_trust_input.rs": "891fa2ec885cf3193f575afe4e4b2f4f70a885868d9868b1843a49753d6f8807",
+    "tools/long-run-supervisor-074/tests/support/authority_owners_controls.rs": "c4f04ccb7b3d7bd17e13241b1cefc6657661e5560d1b1ce51f3445e71d5202ce"
+  },
+  "starting_tree": "405fd026",
+  "targeted_model_gate": true
+}

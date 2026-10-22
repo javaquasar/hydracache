@@ -1,0 +1,17 @@
+test_actual_advance_requires_more_than_prechecked_model (__main__.IntegrationAuditTests.test_actual_advance_requires_more_than_prechecked_model) ... ok
+test_all_failure_assignments_are_attributed (__main__.IntegrationAuditTests.test_all_failure_assignments_are_attributed) ... ok
+test_change_priority_is_not_inherited_from_legacy_model (__main__.IntegrationAuditTests.test_change_priority_is_not_inherited_from_legacy_model) ... ok
+test_constructor_originals_and_drop_are_independent (__main__.IntegrationAuditTests.test_constructor_originals_and_drop_are_independent) ... ok
+test_deadlines_first_refusals_and_real_gates_do_not_move (__main__.IntegrationAuditTests.test_deadlines_first_refusals_and_real_gates_do_not_move) ... ok
+test_external_fixed_signed_and_trust_routes_cannot_disappear (__main__.IntegrationAuditTests.test_external_fixed_signed_and_trust_routes_cannot_disappear) ... ok
+test_fresh_read_and_outer_rounds_remain_complete (__main__.IntegrationAuditTests.test_fresh_read_and_outer_rounds_remain_complete) ... ok
+test_observer_and_current_guard_boundaries_are_explicit (__main__.IntegrationAuditTests.test_observer_and_current_guard_boundaries_are_explicit) ... ok
+test_publication_sync_and_checkpoint_order_refuse_shortcuts (__main__.IntegrationAuditTests.test_publication_sync_and_checkpoint_order_refuse_shortcuts) ... ok
+test_reopen_and_append_cannot_adopt_or_skip_history (__main__.IntegrationAuditTests.test_reopen_and_append_cannot_adopt_or_skip_history) ... ok
+test_scope_and_sealed_history_are_distinct (__main__.IntegrationAuditTests.test_scope_and_sealed_history_are_distinct) ... ok
+test_source_output_and_no_clobber_guards (__main__.IntegrationAuditTests.test_source_output_and_no_clobber_guards) ... ok
+
+----------------------------------------------------------------------
+Ran 12 tests in 5.893s
+
+OK

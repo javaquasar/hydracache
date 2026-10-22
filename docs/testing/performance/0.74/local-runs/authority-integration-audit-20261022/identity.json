@@ -1,0 +1,14 @@
+{
+  "schema": "authority-integration-audit-source-074-v1",
+  "starting_tree": "405fd026",
+  "plan_commit": "f1e5f69e",
+  "method_source_commit": "196920c4e091c5e1ad0fd25667e6b672d5d9a6fb",
+  "targeted_model_gate": true,
+  "prior_broad_isolation_gate": false,
+  "runtime_candidate_implemented": false,
+  "new_measurements": 0,
+  "model_images_executed": 0,
+  "original_owner_profiles": 0,
+  "server": false,
+  "product": false
+}

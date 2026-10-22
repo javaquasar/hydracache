@@ -601,3 +601,6 @@ docs/testing/performance/0.74/local-runs/authority-operator-order-20261022/**/*.
 
 docs/testing/performance/0.74/local-runs/authority-operator-targeted-20261022/** -text whitespace=cr-at-eol
 docs/testing/performance/0.74/local-runs/authority-operator-targeted-20261022/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-integration-audit-20261022/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/authority-integration-audit-20261022/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
