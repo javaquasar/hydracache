@@ -1,0 +1,3 @@
+"--nocapture"
+"--test-threads=1"
+"model::candidate_controls::candidate_"

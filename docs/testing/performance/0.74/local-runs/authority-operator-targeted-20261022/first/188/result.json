@@ -1,0 +1,80 @@
+{
+  "control_args": [
+    "--nocapture",
+    "--test-threads=1",
+    "model::candidate_controls::candidate_"
+  ],
+  "server": false,
+  "steps": [
+    {
+      "sha256": "220e39acf207c30321661751011500541abb9d3eae20f66c59d9874975465517",
+      "log": "compiler.log",
+      "exit": 0,
+      "name": "compiler"
+    },
+    {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "log": "argv-compile.log",
+      "exit": 0,
+      "name": "argv-compile"
+    },
+    {
+      "sha256": "a34b557b4d5a45bca49123d663323631c08e0bc06e0565204cdd2a333337a699",
+      "log": "argv-list.log",
+      "exit": 0,
+      "name": "argv-list"
+    },
+    {
+      "sha256": "b6aa8cbf5ada2c9cbee6dce85542cdbd7b7c3ff1d314497784444d686cd7cfd8",
+      "log": "argv-controls.log",
+      "exit": 0,
+      "name": "argv-controls"
+    },
+    {
+      "sha256": "9df412166090966025d22af2a29c3137eaff588f1102b8b55bb80b86a44130f2",
+      "log": "listing.log",
+      "exit": 0,
+      "name": "listing"
+    },
+    {
+      "sha256": "bf19d70617daaf32dd231977b1cb9a807322d7e305e5608706ff4ee056b90899",
+      "log": "controls.log",
+      "exit": 0,
+      "name": "controls"
+    },
+    {
+      "sha256": "4811e9d4ac39eb100ffaaeafc918febdb025d6c8a3c98355b6c5b4e1cfa95d85",
+      "log": "check.log",
+      "exit": 0,
+      "name": "check"
+    },
+    {
+      "sha256": "307724583387fa24e7017387f1adbb40121c2b2866628bd1eea5f5fa5c5ba558",
+      "log": "clippy.log",
+      "exit": 0,
+      "name": "clippy"
+    }
+  ],
+  "old_controls_executed": false,
+  "listing_args": [
+    "--list",
+    "model::candidate_controls::candidate_"
+  ],
+  "model_tests_started": true,
+  "lane": "188",
+  "original_owner_profiles": 0,
+  "runtime_candidate_implemented": false,
+  "model_only": true,
+  "product": false,
+  "schema": "authority-operator-targeted-first-v1",
+  "failure": null,
+  "expected_tests": [
+    "model::candidate_controls::candidate_initial_fault_priority",
+    "model::candidate_controls::candidate_publication_and_external_latch",
+    "model::candidate_controls::candidate_state_priority"
+  ],
+  "source": "90f36fb7d794617ec3db3c4a0d0715fca7e380c8",
+  "selection": [
+    "model::candidate_controls::candidate_"
+  ]
+}

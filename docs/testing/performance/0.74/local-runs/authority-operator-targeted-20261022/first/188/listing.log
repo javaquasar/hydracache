@@ -1,0 +1,10 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+   Compiling hc074-authority-operator-order v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\authority-operator-order-074)
+    Finished `release` profile [optimized] target(s) in 2.09s
+     Running unittests probe.rs (target\authority-operator-targeted-188\release\deps\hc074_authority_operator_order-6414382df3ab278d.exe)
+model::candidate_controls::candidate_initial_fault_priority: test
+model::candidate_controls::candidate_publication_and_external_latch: test
+model::candidate_controls::candidate_state_priority: test
+
+3 tests, 0 benchmarks

@@ -1,0 +1,135 @@
+{
+  "server": false,
+  "failure": null,
+  "product": false,
+  "steps": [
+    {
+      "log": "format.log",
+      "name": "format",
+      "exit": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "log": "workspace-format.log",
+      "name": "workspace-format",
+      "exit": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "log": "targeted-controls.log",
+      "name": "targeted-controls",
+      "exit": 0,
+      "sha256": "a37c74f82f54e6147fb4f7495c78448685d09ea9f7129b5ed35094acd0b9618d"
+    },
+    {
+      "log": "operator-controls.log",
+      "name": "operator-controls",
+      "exit": 0,
+      "sha256": "1a29a6e0d4a0af549927f3df370a743f870e20d8943b7a9d41e33786b565f817"
+    },
+    {
+      "log": "owned-controls.log",
+      "name": "owned-controls",
+      "exit": 0,
+      "sha256": "f09f2acb475a911c88657210b64fb8550486f57e98b5d17efc0808b4ac633fc2"
+    },
+    {
+      "log": "owner-controls.log",
+      "name": "owner-controls",
+      "exit": 0,
+      "sha256": "5cbd187b07d252fc10a169fb204353b621c7e306868dbeaa69a8c4b1bb4e5893"
+    },
+    {
+      "log": "prior-scratch-controls.log",
+      "name": "prior-scratch-controls",
+      "exit": 0,
+      "sha256": "d5f9b1de4d7752cfd33d69f9b22d661a7625cd56febe49896f82b51352ad340d"
+    },
+    {
+      "log": "prior-read-controls.log",
+      "name": "prior-read-controls",
+      "exit": 0,
+      "sha256": "f3ccc1c0ddf620bc3e00618460c8e56f879b36ea95e5bfeb75f0711a767542df"
+    },
+    {
+      "log": "prior-audit-controls.log",
+      "name": "prior-audit-controls",
+      "exit": 0,
+      "sha256": "ca0249d1675462152d8d35f465d68a675eb1ab5adbcc7c9ae6082b473f53298b"
+    },
+    {
+      "log": "prior-inline-controls.log",
+      "name": "prior-inline-controls",
+      "exit": 0,
+      "sha256": "673c4bbd46104ed918f471f425800d52689c34be990e03347879b4afa815fac1"
+    },
+    {
+      "log": "prior-boot-controls.log",
+      "name": "prior-boot-controls",
+      "exit": 0,
+      "sha256": "bbe55df222fe54f02720d66a06999ce177f85b6c3d1073dff62741871b7fa1ee"
+    },
+    {
+      "log": "prior-proc-controls.log",
+      "name": "prior-proc-controls",
+      "exit": 0,
+      "sha256": "2d11d53991184a94645727621342c39eb6c03eca9583cb0bd4b15007061a7d53"
+    },
+    {
+      "log": "prior-reconciliation-controls.log",
+      "name": "prior-reconciliation-controls",
+      "exit": 0,
+      "sha256": "fd9818839f9b69931cb1bdd1da2f8e05e339741ebd7302776af9a6f6c99a3bf0"
+    },
+    {
+      "log": "derived-facts.log",
+      "name": "derived-facts",
+      "exit": 0,
+      "sha256": "cf6c6dc4996f76ae8305a2f916ae339def0e9bdf7c61b0672b70bcff20afe901"
+    },
+    {
+      "log": "docs.log",
+      "name": "docs",
+      "exit": 0,
+      "sha256": "d394fd2a08702b0d42a54387d78d23447a2a6ba84bb2dc6dd38e0cb35508f69f"
+    },
+    {
+      "log": "registry.log",
+      "name": "registry",
+      "exit": 0,
+      "sha256": "0f3634f903674c38783524f15533b7b7ab894e0358b1e10ef5eae2016c4269c2"
+    },
+    {
+      "log": "performance.log",
+      "name": "performance",
+      "exit": 0,
+      "sha256": "7c3c73fe5f2ffd4f6a2f5e5590dfa625020a040ae79dc15c8e06e150ccb415af"
+    },
+    {
+      "log": "canaries.log",
+      "name": "canaries",
+      "exit": 0,
+      "sha256": "89719e0a0287d054198b0c9e5f9a0fd2f6fa9fd2aa952c34c813db33a08b172c"
+    },
+    {
+      "log": "check.log",
+      "name": "check",
+      "exit": 0,
+      "sha256": "f4c09ee8ee64975c51e0af215aa29e584b1b69c09aad651c85ef59446a51352c"
+    },
+    {
+      "log": "clippy.log",
+      "name": "clippy",
+      "exit": 0,
+      "sha256": "1d54fa60589a5ba69d50af4affe32f7b86886565156291d63b66727ecf063481"
+    },
+    {
+      "log": "protected-source.log",
+      "name": "protected-source",
+      "exit": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "runtime_candidate_implemented": false,
+  "original_owner_profiles": 0
+}

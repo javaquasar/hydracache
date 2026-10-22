@@ -1,0 +1,15 @@
+{
+  "schema": "authority-operator-targeted-source-074-v1",
+  "starting_tree": "5cf0f7f0",
+  "plan_commit": "fdf3e85b",
+  "first_source_commit": "90f36fb7d794617ec3db3c4a0d0715fca7e380c8",
+  "method_source_commit": "cd6257f1425461bf2907f5d512289d5aa071346b",
+  "targeted_isolation_gate_passed": true,
+  "prior_targeted_isolation_gate_passed": false,
+  "old_controls_executed": false,
+  "performance_claim": false,
+  "runtime_candidate_implemented": false,
+  "original_owner_profiles": 0,
+  "server": false,
+  "product": false
+}

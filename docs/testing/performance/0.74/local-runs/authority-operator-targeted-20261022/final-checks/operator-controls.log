@@ -1,0 +1,13 @@
+test_broad_run_cannot_be_relabelled_or_missing_rows_hidden (__main__.OperatorReviewTests.test_broad_run_cannot_be_relabelled_or_missing_rows_hidden) ... ok
+test_failed_state_transition_and_walk_order_mutations_refuse (__main__.OperatorReviewTests.test_failed_state_transition_and_walk_order_mutations_refuse) ... ok
+test_history_and_scope_refusal_are_explicit (__main__.OperatorReviewTests.test_history_and_scope_refusal_are_explicit) ... ok
+test_initial_fault_precedence_and_publication_cut_state_refuse_drift (__main__.OperatorReviewTests.test_initial_fault_precedence_and_publication_cut_state_refuse_drift) ... ok
+test_legacy_priority_and_validation_counterexamples_remain (__main__.OperatorReviewTests.test_legacy_priority_and_validation_counterexamples_remain) ... ok
+test_native_argv_receipts_and_single_argument_fix_refuse_mutations (__main__.OperatorReviewTests.test_native_argv_receipts_and_single_argument_fix_refuse_mutations) ... ok
+test_original_windows_refusals_and_closed_admission_remain (__main__.OperatorReviewTests.test_original_windows_refusals_and_closed_admission_remain) ... ok
+test_source_output_and_no_clobber_guards (__main__.OperatorReviewTests.test_source_output_and_no_clobber_guards) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 4.822s
+
+OK

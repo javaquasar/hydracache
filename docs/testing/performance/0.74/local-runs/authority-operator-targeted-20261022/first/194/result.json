@@ -1,0 +1,80 @@
+{
+  "control_args": [
+    "--nocapture",
+    "--test-threads=1",
+    "model::candidate_controls::candidate_"
+  ],
+  "selection": [
+    "model::candidate_controls::candidate_"
+  ],
+  "server": false,
+  "schema": "authority-operator-targeted-first-v1",
+  "model_tests_started": true,
+  "failure": null,
+  "listing_args": [
+    "--list",
+    "model::candidate_controls::candidate_"
+  ],
+  "model_only": true,
+  "original_owner_profiles": 0,
+  "old_controls_executed": false,
+  "product": false,
+  "lane": "194",
+  "source": "90f36fb7d794617ec3db3c4a0d0715fca7e380c8",
+  "steps": [
+    {
+      "log": "compiler.log",
+      "name": "compiler",
+      "exit": 0,
+      "sha256": "9f94407d1cf3d9e6f021626e30d5aa183e8f6cd21fd097f4441a6ba67aaf900a"
+    },
+    {
+      "log": "argv-compile.log",
+      "name": "argv-compile",
+      "exit": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "log": "argv-list.log",
+      "name": "argv-list",
+      "exit": 0,
+      "sha256": "a34b557b4d5a45bca49123d663323631c08e0bc06e0565204cdd2a333337a699"
+    },
+    {
+      "log": "argv-controls.log",
+      "name": "argv-controls",
+      "exit": 0,
+      "sha256": "b6aa8cbf5ada2c9cbee6dce85542cdbd7b7c3ff1d314497784444d686cd7cfd8"
+    },
+    {
+      "log": "listing.log",
+      "name": "listing",
+      "exit": 0,
+      "sha256": "401f244b7311cb4ca3fcf3f59a0feafaa302b66dd77cf27c99b8a2776eda44cb"
+    },
+    {
+      "log": "controls.log",
+      "name": "controls",
+      "exit": 0,
+      "sha256": "31e28a0da76d5964020d13142763e785c476eb5931abf2373e3986fa68011f14"
+    },
+    {
+      "log": "check.log",
+      "name": "check",
+      "exit": 0,
+      "sha256": "37055be174aef9b101e4a0b109c107f468cdddacd24467c9e753225a2b104b94"
+    },
+    {
+      "log": "clippy.log",
+      "name": "clippy",
+      "exit": 0,
+      "sha256": "307724583387fa24e7017387f1adbb40121c2b2866628bd1eea5f5fa5c5ba558"
+    }
+  ],
+  "runtime_candidate_implemented": false,
+  "expected_tests": [
+    "model::candidate_controls::candidate_initial_fault_priority",
+    "model::candidate_controls::candidate_publication_and_external_latch",
+    "model::candidate_controls::candidate_state_priority"
+  ]
+}
