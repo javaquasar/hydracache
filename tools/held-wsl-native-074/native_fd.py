@@ -6,7 +6,7 @@ import subprocess
 import prepare as p
 import host
 
-OUTPUT = p.ROOT / 'target/held-native-fd-20261022'
+OUTPUT = p.ROOT / 'target/held-native-fd-v2-20261022'
 SCRIPT = '/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/held-wsl-native-074/native_fd.sh'
 
 

@@ -7,6 +7,10 @@ import native_fd as n
 
 
 class Controls(unittest.TestCase):
+    def test_busctl_payload_has_an_option_terminator_before_helper_arguments(self):
+        source = Path(n.__file__).with_suffix('.sh').read_text()
+        self.assertIn('250ms -- "$@"', source)
+
     def test_argv_has_only_the_owned_distro_and_fixed_script(self):
         nonce = '74' * 16
         self.assertEqual(n.argv(nonce), ['wsl.exe', '-d', 'HydraCache074Native', '-u', 'root',

@@ -26,7 +26,7 @@ nonce=${1:-}
 unit="hc074-nativefd-$nonce.service"
 slice="system-hc074nativefd$nonce.slice"
 description="HydraCache074 synthetic FD control $nonce"
-output="/mnt/c/Workspace/prj/jq/cashe/hydracache-074/target/held-native-fd-20261022"
+output="/mnt/c/Workspace/prj/jq/cashe/hydracache-074/target/held-native-fd-v2-20261022"
 test -f "$output/intent.json"
 mkdir "$output/calls"
 bus() {
@@ -34,9 +34,9 @@ bus() {
     index=$(find "$output/calls" -maxdepth 1 -name '*.argv' -printf x | wc -c)
     printf -v prefix '%s/calls/%03d' "$output" "$index"
     test ! -e "$prefix.argv"
-    printf '%q ' busctl --system --auto-start=no --allow-interactive-authorization=no --timeout=250ms "$@" > "$prefix.argv"
+    printf '%q ' busctl --system --auto-start=no --allow-interactive-authorization=no --timeout=250ms -- "$@" > "$prefix.argv"
     printf '\n' >> "$prefix.argv"
-    if busctl --system --auto-start=no --allow-interactive-authorization=no --timeout=250ms "$@" > "$prefix.stdout" 2> "$prefix.stderr"; then rc=0; else rc=$?; fi
+    if busctl --system --auto-start=no --allow-interactive-authorization=no --timeout=250ms -- "$@" > "$prefix.stdout" 2> "$prefix.stderr"; then rc=0; else rc=$?; fi
     printf '%s\n' "$rc" > "$prefix.exit"
     cat "$prefix.stdout"
     return "$rc"
