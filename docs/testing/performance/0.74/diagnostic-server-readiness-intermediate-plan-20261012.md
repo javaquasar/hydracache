@@ -1980,3 +1980,22 @@ The current native extra-FD option needs a supported separate environment; a
 original-context validation and external-writer accounting. Do not silently
 upgrade this manager, add a fallback, renew a deadline or label the rejection a
 successful launch. Original checks/windows/first refusals/qualification stay exact.
+
+### Supported separate local environment does not replace the original frame
+
+The authorized [separate Debian WSL environment](held-wsl-native-20261022.md)
+now provides systemd 257.13 without changing current Ubuntu/default/global config.
+Time agents are masked offline before boot; no package update or server action.
+One real native descriptor transfer reaches the fixed synthetic helper with
+correct slots/names, file/stream identities and private cgroup. The full control
+still fails on its first incorrect manager property interface. Its exact service
+is stopped/inactive; the query is corrected only offline and not resent.
+
+This removes the observed old-manager API limitation from the new local test
+environment, not from Ubuntu, and does not close original delivery or all-writer
+cessation. Next join the held unit to the consumed owner, retained manager
+connection/full frame and durable one-shot uncertainty; prove the actual held
+process/barrier and every writer alias. No synthetic ACK, report, exited state
+or cgroup result may release a fence or publish original completion. Preserve
+all live checks, original 300/60/10 windows, first refusals and qualification;
+full SIGKILL/lost-ACK/reconnect, later cells, enrollment and server gate remain.

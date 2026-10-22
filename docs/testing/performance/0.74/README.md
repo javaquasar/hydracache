@@ -6098,3 +6098,19 @@ host, not every possible transport design. Choose a separately approved test
 environment or review a 255-compatible FD-handoff protocol before proceeding.
 Original delivery, all-writer cessation and the joined fault matrix remain closed;
 no live check, original window, first refusal or qualification is weakened.
+
+### Separate native-FD environment reaches the synthetic helper
+
+The [new local WSL environment and mechanics observation](held-wsl-native-20261022.md)
+leave the current Ubuntu/default/global configuration unchanged. Debian 13.5
+runs systemd 257.13, with clock-agent masks prepared before boot and no package
+upgrade. First preparation's absent Python refusal remains separately retained.
+
+One actual native extra-FD delivery reaches the fixed nonproduct helper: slots,
+names, role hash, stream identities and private service cgroup are observed.
+The whole control remains failed on its first wrong-interface ControlGroup
+query; the exact service is stopped/inactive. Offline regressions fix CLI option
+termination and that property query, without repeating the dispatched attempt.
+This is not original-owner delivery, all-writer cessation, SIGKILL/lost-ACK or
+server admission. Keep the consumed-owner/retained-channel integration and its
+full frame/deadlines as the next independent gate; no product/server workload.

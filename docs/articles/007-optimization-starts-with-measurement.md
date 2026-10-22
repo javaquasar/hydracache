@@ -17832,3 +17832,34 @@ cgroup. Its identity, lifetime, deadlines and closure must join the same full
 frame and all-writer proof; it is an architectural choice, not a silent fallback.
 Neither option by itself supplies durable one-shot delivery, active collection,
 safe completion or recovery. Those gates remain explicit.
+
+### Separate transport observations from whole-gate success
+
+The authorized [separate local environment](../testing/performance/0.74/held-wsl-native-20261022.md)
+keeps the current Ubuntu/systemd, default WSL and global configuration intact.
+A pinned Debian rootfs supplies systemd 257.13; time-agent masks are applied
+before its first boot, rather than booting an unreviewed time service and
+stopping it afterward. The first preparation rejects an absent Python package.
+That is retained as a tooling prerequisite error; a versioned preparation then
+separates systemd environment needs from a future Python harness dependency.
+No package upgrade or new bootstrap receiver is hidden in this step.
+
+The synthetic descriptor control shows why a binary pass/fail alone is not
+enough to explain an experiment, while still keeping release gates boolean.
+The first CLI invocation rejects a helper argument as its own option before
+delivery. An offline failing regression and explicit option terminator fix that
+mistake. The next version makes one real native FD transfer: a fixed nonproduct
+helper confirms slot/name/hash, stream identities and its private service cgroup.
+It exits successfully. But the harness then reads ControlGroup on the wrong
+interface, so the **whole control fails**. Its exact service is stopped and
+observed inactive. The query fix is offline only; there is no fresh delivery to
+turn the same observation into a favorable result.
+
+The helper's retained output is useful partial evidence that the native API
+transfers these synthetic descriptors. It is not evidence of the unobserved
+property, nor of a consumed original owner, same retained manager connection,
+held executable, release barrier or autonomous all-writer closure. A partial
+observation may guide the next implementation without silently promoting a red
+gate. No numeric performance gain is measured or claimed here. Original checks,
+deadlines and first failures stay fixed; server admission and the complete
+SIGKILL/lost-ACK matrix still depend on their actual end-to-end runtime path.
