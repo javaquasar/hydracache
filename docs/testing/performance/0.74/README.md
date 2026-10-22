@@ -6114,3 +6114,19 @@ termination and that property query, without repeating the dispatched attempt.
 This is not original-owner delivery, all-writer cessation, SIGKILL/lost-ACK or
 server admission. Keep the consumed-owner/retained-channel integration and its
 full frame/deadlines as the next independent gate; no product/server workload.
+
+### Material roles now join the same original context snapshot
+
+The [private partial binding](held-material-role-binding-20261022.md) joins eight
+concrete inherited roles to the same twenty-entry inventory and original owner /
+manager correlation. It adds no descriptor copy, kernel/time/bus query, send or
+new execution capability. Complete frame order, live predicates and 300/60/10
+windows remain unchanged; retained and closing substitutions retire the same
+owner. Worker and Armed guardian descriptors remain unresolved transport roles.
+
+Current-checkout canaries distinguish this runtime candidate from historical
+test views. Real local component and deterministic model controls cover mapping,
+shape/identity/count/flag substitutions and sticky refusal. This is not a full
+original-owner success, all-writer cessation, SIGKILL/lost-ACK or server gate.
+Executable addressing and the manager activation environment remain explicit
+prerequisites before constructing or sending an actual held-unit request.

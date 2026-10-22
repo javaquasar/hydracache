@@ -1999,3 +1999,20 @@ process/barrier and every writer alias. No synthetic ACK, report, exited state
 or cgroup result may release a fence or publish original completion. Preserve
 all live checks, original 300/60/10 windows, first refusals and qualification;
 full SIGKILL/lost-ACK/reconnect, later cells, enrollment and server gate remain.
+
+### Bind concrete material roles without exposing transport
+
+The [partial eight-role binding](held-material-role-binding-20261022.md) is now
+part of both fresh extended inventory observations under the consumed owner.
+The full validation/retirement bodies and original channel/origins/bounds stay
+unchanged. A role, manager/client, serial or closing snapshot substitution cannot
+create a new owner or retry; it causes sticky refusal. No descriptor copies,
+processes or manager messages are added by the pure binding.
+
+Remaining concrete worker/Armed guardian FD joins, retained executable addressing
+and exact activation environment are prerequisites to the complete held-unit
+message. The current empty-environment launcher check must not be removed to
+accommodate LISTEN_* observed in the synthetic helper. No new full original-owner
+attempt is run or old outcome relabeled. Keep authenticated one-shot delivery,
+watchdog/all-writer cessation, SIGKILL/lost-ACK, completion/cells 2–4, reconnect,
+trust/enrollment and server rehearsal gated independently.

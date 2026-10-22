@@ -17863,3 +17863,36 @@ observation may guide the next implementation without silently promoting a red
 gate. No numeric performance gain is measured or claimed here. Original checks,
 deadlines and first failures stay fixed; server admission and the complete
 SIGKILL/lost-ACK matrix still depend on their actual end-to-end runtime path.
+
+### Bind descriptor roles to the owner before enabling transport
+
+A descriptor inventory and a launch layout answer different questions. The
+inventory records which objects are still owned and unchanged; the layout says
+which original object would occupy each inherited role. The next
+[partial runtime join](../testing/performance/0.74/held-material-role-binding-20261022.md)
+binds eight concrete material roles inside the existing inventory snapshot.
+It deliberately leaves worker and Armed guardian transport descriptors unresolved
+rather than substituting newly opened objects or exposing raw-FD getters.
+
+The complete original context remains beside those bindings: manager/client
+names and serial, root identity, signed documents, origins and absolute bounds.
+Both inventory observations still execute between the same full validation
+rounds. The new leaf computes only values from the fresh census; it makes no
+new kernel or bus observation and transfers no descriptor. Retained or closing
+role drift therefore refuses under the same owner instead of producing a
+reconstructed capability or refreshed deadline.
+
+Tests must inspect the intended candidate too. The first new source canary
+accidentally used a historical reader, so it continued to reject the missing
+hook in old frozen source after the implementation was present. Correcting only
+that canary to read current files separates historical compatibility checks
+from actual runtime admission. The first red result remains; current-source
+checks reconstruct the unchanged prior full-frame and retirement bodies.
+
+Real local kernel component tests and deterministic model substitutions verify
+this partial binding, not original delivery. The next boundary is still concrete:
+join the remaining original FDs, prove retained executable addressing and handle
+the activation environment without removing the launcher's empty-environment
+guard. The synthetic systemd helper's LISTEN_* variables make that mismatch
+visible. No timing gain, writer-cessation proof or server readiness follows from
+a value-only map; those require their own complete execution path and fault gate.
