@@ -6030,3 +6030,18 @@ The [future local protocol](authority-runtime-variance-method-v2-20261022.md) fi
 balanced BIIB/IBBI blocks and per-process context. It is prepared only; no new
 profiles, live/WSL/server actions, clocks or services run. All original checks,
 windows, first refusals and qualification bytes remain fixed.
+
+### Balanced timing runner is checked offline without a measured cohort
+
+The [v2 runner implementation](authority-runtime-balanced-runner-20261022.md)
+fixes all 64 serial positions, independent source/image targets, method freeze,
+per-child context/timeline and a stop-on-first-error journal. The original CPU
+probe and live checks remain unchanged. Twenty synthetic/mocked runner controls,
+seven original CPU controls and eleven variability controls pass; no runtime
+image, Linux build or measurement is executed for these tests.
+
+The reader rejects synthetic/partial/refused cohorts and validates every block
+and raw receipt. Exact arithmetic preserves strict boundary ties without moving
+0.95/1.05 thresholds. Offline correctness is not native process/timeout proof or
+a new performance result. Next separately validate the native runner before a
+separately authorized measured cohort; no automatic retries or server admission.

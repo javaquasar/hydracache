@@ -17701,3 +17701,27 @@ from file mtimes. Any inner cycle profiling remains a separate instrumented
 study with an untouched control. Existing evidence is not retried, reweighted
 or promoted; the allocation/retention tradeoff remains confirmed while practical
 CPU/end-to-end value and the separate production gates remain unresolved.
+
+### A measurement runner needs refusal tests before measurements
+
+The [balanced runner](../testing/performance/0.74/authority-runtime-balanced-runner-20261022.md)
+implements the revised 64-process design without collecting another timing
+cohort. A complete synthetic schedule checks all positions; mocked preparation,
+subprocess and reader tests exercise the surrounding control path. The old probe
+and source guards remain unchanged, so improving experiment organization does
+not silently reduce the work being compared.
+
+The controls verify that a bad corpus, changed image or context, timeout,
+interruption or budget overrun stops the cohort and retains its prefix. A partial
+attempt cannot be resumed into a favorable complete result. Reader tests reject
+synthetic mode and incomplete/mutated receipts. Boundary ties are compared with
+exact squared geometric products, avoiding a floating-point promotion at the
+unchanged five-percent boundary. No new performance claim follows from these
+control-flow and arithmetic checks.
+
+Even the tests needed boundary review: an initial image/deadline injector fired
+on the preceding child's closing guard. The first failures remain retained; the
+injector was corrected without removing those checks. The final twenty new
+controls pass, but mocked process cleanup is not kernel process-cleanup proof.
+Actual native validation and the later measured cohort remain separate steps;
+neither the old inconclusive timing result nor server readiness is upgraded.

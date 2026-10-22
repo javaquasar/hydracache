@@ -1918,3 +1918,17 @@ Original delivery, all-writer termination, durable completion/later cells,
 SIGKILL/lost-ACK, reconnect and trust/server integration gates remain open on
 their own terms. All live checks, original windows, first refusals, qualification,
 clocks, services, installation, supervisor and product boundaries stay fixed.
+
+### Timing runner implementation does not reopen a live attempt
+
+The [v2 64-process runner](authority-runtime-balanced-runner-20261022.md) now has
+offline schedule, control-flow, journal, budget, source/image, reader and refusal
+tests. Twenty new controls pass without measured processes; the original probe,
+checks, windows, first refusals and qualification remain exact. The next timing
+boundary is native runner validation, then a separately authorized measured
+cohort, not another original-owner preparation or a retry of the old CPU cohort.
+
+No WSL/server launch, clock/service change, installation, supervisor or product
+workload occurred. Original delivery, all-writer cessation, durable later cells,
+real SIGKILL/lost-ACK, reconnect and production enrollment/integration gates
+remain independent; successful synthetic runner tests do not admit them.
