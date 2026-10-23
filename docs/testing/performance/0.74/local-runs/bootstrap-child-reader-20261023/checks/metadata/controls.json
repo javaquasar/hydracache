@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "python",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tools/bootstrap-child-reader-074",
+    "-v"
+  ],
+  "elapsed_ns": 560659800,
+  "exit": 0,
+  "stderr_sha256": "37d58f503a0fb69f4670d178316888edc2648fd6957e669e45ac1a1c9effdbd7",
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

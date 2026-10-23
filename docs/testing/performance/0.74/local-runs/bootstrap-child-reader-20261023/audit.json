@@ -1,0 +1,21 @@
+{
+  "actual_private_entry_fd_checks": true,
+  "admission_allowed": false,
+  "authenticated_child_entry": false,
+  "bootstrap_reader_compiled": true,
+  "checked_commit": "860c4edd6da54a8d2650e9662cf7687d8cbf4b29",
+  "clock_changes": false,
+  "original_delivery": false,
+  "original_fd_transfer": false,
+  "original_live_join": false,
+  "original_remapping": false,
+  "performance_measurement": false,
+  "product": false,
+  "qualification_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "server": false,
+  "service_changes": false,
+  "signed_actual_build_enrolled": false,
+  "synthetic_canonical_child_refuses": true,
+  "unsigned_selected_build": true,
+  "writers_cessation": false
+}

@@ -1,0 +1,12 @@
+
+running 7 tests
+test ingress::tests::bootstrap_ingress_bad_argument_pid_unknown_duplicate_and_noncanonical_values_refuse ... ok
+test ingress::tests::bootstrap_ingress_every_activation_name_byte_refuses_mutation ... ok
+test ingress::tests::bootstrap_ingress_exact_metadata_permutations_are_only_assertions ... ok
+test reader::tests::bootstrap_reader_inode_descriptor_and_metadata_substitution_cannot_revalidate ... ok
+test reader::tests::bootstrap_reader_roundtrip_and_revalidate_are_only_assertions_and_preserve_offset ... ok
+test reader::tests::bootstrap_reader_missing_seals_cloexec_length_padding_and_offset_refuse_without_repair ... ok
+test reader::tests::bootstrap_reader_wrong_access_and_nonregular_objects_refuse ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
