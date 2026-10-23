@@ -6438,3 +6438,18 @@ The earlier failure and all deadlines remain unchanged. No services or clocks
 were modified, no original-owner lane repeated and no server invoked. Separate
 exact evidence retains the Windows status-query error as well as the complete
 clock series. Caller/rate attribution and healthy original delivery remain open.
+
+## WSL discipline and correction attribution
+
+The [read-only correlation](wsl-clock-causality-20261023.md) explains the observed
+MONOTONIC/RAW rate with tick=9167 and the small frequency adjustment. Its model
+falls inside the RAW-bracketed observed range. Positive NTP offsets correlate
+with a forward clock correction; a separate backward correction adds STA_UNSYNC
+without an NTP packet change. No caller trace exists for that opposing event or
+the historical tick setting, so neither is uniquely attributed.
+
+The first metadata permission refusal is retained independently. A separate
+root-metadata/unprivileged-query lane completed 81 rows without removing context
+checks or changing clocks, services, deadlines or original-owner state. Both new
+archives and the old first refusal remain non-admitting. Exact setter attribution
+requires a separately authorized observation capability, not retry-to-pass.

@@ -18459,3 +18459,29 @@ first anomaly and failed Windows time-status query are retained separately from
 the original admission refusal. No clocks, services, predicates or deadlines
 changed, and original-owner was not repeated. This is progress in attribution,
 not a successful delivery gate or a preparation-speed improvement.
+
+### A synchronized status can hide an abnormal kernel tick
+
+The next [read-only attribution](../testing/performance/0.74/wsl-clock-causality-20261023.md)
+found a concrete explanation for the MONOTONIC/RAW disagreement. All 81 kernel
+queries returned tick=9167 microseconds instead of the nominal 10000, alongside
+a much smaller frequency adjustment. Their combined rate prediction falls
+inside the observed RAW-bracketed range. Looking only at the frequency field or
+a synchronized status would miss the coarse adjustment that dominates this
+series. RAW is a comparison clock here, not a certified UTC reference.
+
+The same series separates correction paths. New NTP responses reported positive
+offsets near 8.786 seconds; one forward clock residual closely matched its
+response offset. A different interval moved REALTIME backwards without a new
+NTP packet, temporarily adding STA_UNSYNC. The enabled Hyper-V path is a plausible
+opposing setter, but neither that bit nor a configured driver uniquely identifies
+the caller. Existing audit and trace records were empty, so the historical writer
+of tick and exact backward setter remain unresolved.
+
+These findings matter operationally: a time-service state is not a complete
+clock-state measurement, and explaining a rate does not identify who configured
+it. The first metadata permission failure was retained, then a separate collector
+read the complete root context while every modes=0 query remained unprivileged.
+No clock, service, runtime predicate or admission window changed. There is no
+reason to turn an environmental timing finding into a weaker original-owner
+guard or a successful server gate.

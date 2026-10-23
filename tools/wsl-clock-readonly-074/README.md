@@ -52,3 +52,19 @@ The fixed lane is now consumed. Its first series reproduced two backward
 REALTIME intervals through both read paths. Use only verify for the retained
 [result](../../docs/testing/performance/0.74/wsl-clock-readonly-20261023.md);
 do not repeat build or observe from the historical command sequence above.
+
+## Separate discipline and NTP correlation
+
+causality.py and discipline.c are a separate read-only lane, not an extension
+or rerun of the old observer. The [plan](../../docs/testing/performance/0.74/wsl-clock-causality-plan-20261023.md)
+and [result](../../docs/testing/performance/0.74/wsl-clock-causality-20261023.md)
+retain the first PID1 namespace permission refusal and the separate corrected
+root-context collection. Query helpers remain artur, modes=0; root only reads
+metadata. No service, tracing or clock configuration is modified.
+
+Both collection paths are consumed. Only offline verification is appropriate:
+
+    python -B tools/wsl-clock-readonly-074/causality.py verify
+
+The old 601-row archive stays unchanged. The newer rate model explains the
+observed tick/frequency effect, not historical caller identity or admission.
