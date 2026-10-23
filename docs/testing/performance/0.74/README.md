@@ -6714,3 +6714,13 @@ all old assertions and requires exact current input checks before predecessor
 views. Reversible incremental-cache compression saves about 10.7 GiB without
 removing source, evidence or pinned images. No new live attempt or installation
 is opened by the leaf result.
+
+The subsequent [source-guard repair and ordinary regressions](source-guard-and-ordinary-entry-result-20261024.md)
+restore all 321 source-contract tests without filtering or deleting assertions;
+focused current/historical gates, check and strict Clippy also pass. The complete
+ordinary Linux library retains 16 first failures, and the first MSRV entry lane
+retains three `Text file busy` fixture failures. GNU passes all eleven selected
+entry/API targets. These remain separate from original-start, retirement and
+release admission. Two owned FD counterexamples support a narrowly isolated
+oracle repair, not a recovered pass. Additional reversible PDB compression leaves
+about 30 GiB free while preserving files and pinned images.

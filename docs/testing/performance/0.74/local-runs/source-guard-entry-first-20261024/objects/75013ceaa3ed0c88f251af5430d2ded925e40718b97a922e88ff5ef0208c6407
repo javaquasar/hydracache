@@ -1,0 +1,181 @@
+{
+  "admission": false,
+  "all_writer_retirement": false,
+  "cleanup": {
+    "DeletedFiles": 0,
+    "Exit": 0,
+    "FreeAfter": 32928849920,
+    "FreeBefore": 15892279296
+  },
+  "clocks_changed": false,
+  "entry_lanes": {
+    "188": {
+      "exit": 101,
+      "failed_names": [
+        "installed_controls::held_controls::held_entry_context_entry_invocation_deadline_reserved_and_pid_faults_refuse",
+        "installed_controls::installed_child_filesystem_inode_matches_but_forged_context_still_refuses_authentication",
+        "installed_controls::installed_child_extra_missing_offset_hash_and_embedded_old_record_refuse"
+      ],
+      "selected_targets": [
+        "held_launcher",
+        "held_build",
+        "bootstrap_child_reader",
+        "bootstrap_child_census",
+        "bootstrap_current_image",
+        "diagnostic_original_start_material",
+        "diagnostic_original_pipe_transport",
+        "diagnostic_original_output_join",
+        "diagnostic_original_collector_pipes",
+        "diagnostic_original_fence",
+        "diagnostic_manager"
+      ],
+      "source_unchanged": true,
+      "target_results": [
+        [
+          3,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          14,
+          3,
+          0,
+          0,
+          0
+        ]
+      ]
+    },
+    "194": {
+      "exit": 0,
+      "failed_names": [],
+      "selected_targets": [
+        "held_launcher",
+        "held_build",
+        "bootstrap_child_reader",
+        "bootstrap_child_census",
+        "bootstrap_current_image",
+        "diagnostic_original_start_material",
+        "diagnostic_original_pipe_transport",
+        "diagnostic_original_output_join",
+        "diagnostic_original_collector_pipes",
+        "diagnostic_original_fence",
+        "diagnostic_manager"
+      ],
+      "source_unchanged": true,
+      "target_results": [
+        [
+          3,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          17,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          5,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          38,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          1,
+          0,
+          0
+        ]
+      ]
+    }
+  },
+  "ignored_manual_gates": false,
+  "no_retry": true,
+  "ordinary_complete_lib_gate_still_red": true,
+  "original_owner_manual_run": false,
+  "original_windows_seconds": [
+    300,
+    60,
+    10
+  ],
+  "product_measurement": false,
+  "qualification_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "release_ready": false,
+  "runtime_commit": "81f4add2",
+  "server": false,
+  "services_changed": false,
+  "source_gate": {
+    "failed": 0,
+    "filtered": 0,
+    "final_focused_check_clippy_passed": true,
+    "first_clippy_duplicate_module_refusal": true,
+    "first_repair_failed": 6,
+    "first_repair_passed": 315,
+    "ignored": 0,
+    "passed": 321,
+    "repair_commit": "11ad3be9"
+  }
+}

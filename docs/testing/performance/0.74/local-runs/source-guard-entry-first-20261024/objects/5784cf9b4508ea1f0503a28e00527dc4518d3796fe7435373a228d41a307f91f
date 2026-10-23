@@ -1,0 +1,6 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `release` profile [optimized] target(s) in 2m 50s
+     Running tests/bootstrap_child_census.rs (/home/artur/.cache/hydracache-074-188-check/release/deps/bootstrap_child_census-918e2d49ca29ea95)
+     Running tests/bootstrap_child_reader.rs (/home/artur/.cache/hydracache-074-188-check/release/deps/bootstrap_child_reader-a58fefd5ff628aab)
+     Running tests/bootstrap_current_image.rs (/home/artur/.cache/hydracache-074-188-check/release/deps/bootstrap_current_image-711fd5542ed29992)
+error: test failed, to rerun pass `-p hydracache-long-run-supervisor-074 --test bootstrap_current_image`

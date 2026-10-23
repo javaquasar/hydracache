@@ -18873,3 +18873,26 @@ version; it cannot be a permissive exclusion of inconvenient code. The new parse
 has its own raw-current mutation guard, while the still-red integrated source
 gate is repaired separately. Neither a fast leaf nor a clean local build opens
 original delivery, writer retirement or production enrollment by itself.
+
+### Repair source views, then distinguish test interference from runtime faults
+
+The [complete source-contract repair](../testing/performance/0.74/source-guard-and-ordinary-entry-result-20261024.md)
+now passes all 321 selected assertions without filtering. Exact current versions
+are checked before historical bodies are supplied, and normalization order is
+corrected; no runtime predicate or observation frequency changes. A first six-case
+repair failure and a duplicate-module Clippy refusal remain in the archive.
+
+The broader ordinary regression is independently red: 1465 passes, sixteen
+failures and 141 ignored cases. Six fixtures sign an old lock digest while
+supplying the current lock. Two descriptor oracles assume an otherwise idle
+process, although tests run beside unrelated opens and forks. Owned controls
+show why a CLOEXEC writer can still delay EOF after fork and why a thread's
+procfs FD directory includes other threads' files. These explain possible
+interference, not the identity of an unobserved historical competitor.
+
+GNU entry/API controls pass, while the first MSRV current-image cohort retains
+three ETXTBSY refusals. Repeating or serializing until green would not resolve
+the oracle's scope. The next candidate must isolate only the FD-sensitive case,
+preserve its actual assertions and deadlines, and prove exact child selection,
+bounded owned cleanup and no retry. Kernel/time failures remain separately open;
+a test-harness correction must not be presented as production writer retirement.

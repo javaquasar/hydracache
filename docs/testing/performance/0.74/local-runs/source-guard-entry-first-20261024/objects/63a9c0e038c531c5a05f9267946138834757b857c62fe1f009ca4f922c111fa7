@@ -1,0 +1,41 @@
+"""Bounded ordinary entry/API regression, excluding every manual gate."""
+from pathlib import Path
+import hashlib
+import json
+import subprocess
+import sys
+
+ROOT = Path(__file__).resolve().parents[2]
+version = {'194': '1.94.0', '188': '1.88.0'}[sys.argv[1]]
+lane = sys.argv[1]
+OUT = Path(__file__).parent / ('entry-integration-' + lane + '-first')
+OUT.mkdir()
+def snapshot():
+    paths = [ROOT / 'Cargo.toml', ROOT / 'Cargo.lock']
+    paths += sorted(p for p in (ROOT / 'tools/long-run-supervisor-074').rglob('*') if p.is_file())
+    return {p.relative_to(ROOT).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest() for p in paths}
+before = snapshot()
+targets = ['held_launcher', 'held_build', 'bootstrap_child_reader', 'bootstrap_child_census',
+           'bootstrap_current_image', 'diagnostic_original_start_material',
+           'diagnostic_original_pipe_transport', 'diagnostic_original_output_join',
+           'diagnostic_original_collector_pipes', 'diagnostic_original_fence', 'diagnostic_manager']
+argv = ['wsl.exe', '-d', 'Ubuntu', '-u', 'artur', '--exec', '/usr/bin/timeout',
+        '--signal=TERM', '--kill-after=5s', '1200s', '/usr/bin/env',
+        'RUSTUP_AUTO_INSTALL=0', 'CARGO_INCREMENTAL=0',
+        'CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-' + lane + '-check',
+        '/home/artur/.cargo/bin/cargo', '+' + version, 'test', '--offline', '--locked',
+        '-p', 'hydracache-long-run-supervisor-074', '--release', '--all-features']
+for target in targets:
+    argv += ['--test', target]
+argv += ['--', '--test-threads=4']
+(OUT / 'intent.json').write_text(json.dumps(dict(argv=argv, source=before,
+    targets=targets, server=False, ignored_manual_gates=False, original_owner_manual_run=False,
+    services=False, clock_mutation=False, retry=False), indent=2), encoding='utf-8')
+with (OUT / 'stdout.log').open('xb') as stdout, (OUT / 'stderr.log').open('xb') as stderr:
+    result = subprocess.run(argv, cwd=ROOT, stdout=stdout, stderr=stderr, check=False)
+after = snapshot()
+receipt = dict(exit=result.returncode, source_unchanged=after == before,
+               source_after=after, admission=False, product_measurement=False)
+(OUT / 'result.json').write_text(json.dumps(receipt, indent=2), encoding='utf-8')
+print(json.dumps({k: v for k, v in receipt.items() if k != 'source_after'}), flush=True)
+raise SystemExit(result.returncode or int(after != before))
