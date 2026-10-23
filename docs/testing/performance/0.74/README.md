@@ -6352,3 +6352,25 @@ labelled development outcomes. A positive original-manager sandbox integration,
 complete loaded-unit settings, child authentication and original-delivery proof
 remain unverified. The resulting object is read-only, not a release capability.
 No services, clocks, namespaces or server workloads were changed or created.
+
+### Original held delivery candidate separates job and child acknowledgement
+
+The [held-delivery component](bootstrap-held-delivery-20261023.md) consumes the
+original installed-entry owner, retains an eighteen-FD request and uses its exact
+manager connection without re-encoding or retransmission. The separate readiness
+socket preserves all old release-queue emptiness checks. One-shot challenge and
+ACK mechanics bind context and original bounds to kernel credentials/pidfd;
+job acknowledgement, readiness and execution permission remain distinct.
+
+The new child argument is reserved but not activated in the installed bootstrap.
+This local component does not establish a positive original-manager delivery,
+the complete child role/environment gate, writer cessation or server admission.
+The report distinguishes compiled parent composition and real owned-helper
+exchange controls from that remaining integration work.
+
+Reviewed gates pass one selected 163-file snapshot: Windows 68 source contracts
+and 24 controls; GNU/MSRV 128 selected controls each, check and strict lint;
+format/docs, six Python controls, 188 registered gates and the local contract.
+The packet preserves the first compiler and lint refusals and was audited as
+1,823 exact Git blobs. These are correctness controls, not a throughput result
+or proof of fitting the original admission windows.

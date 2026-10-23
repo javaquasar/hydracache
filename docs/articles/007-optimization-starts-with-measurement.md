@@ -18288,3 +18288,50 @@ pre-existing unit is not proof that this owner delivered its creation request;
 complete loaded-unit settings, authenticated child enrollment and original
 delivery still precede release, writer cessation and completion. Additional
 validation cost remains unmeasured, not an implied preparation improvement.
+
+### Delivery and readiness have separate irreversible boundaries
+
+The [held-delivery candidate](../testing/performance/0.74/bootstrap-held-delivery-20261023.md)
+now retains a newly addressed message under the consumed installed-entry owner.
+It does not reinterpret the historical two-output-FD worker request. The held
+message preserves the original serial and projected hardening, chooses only the
+fixed installed bootstrap and adds a distinct readiness endpoint to the seventeen
+original roles. Its FD aliases remain owned through uncertainty or refusal.
+This wire construction is separate from successful installation or service start.
+
+The extra endpoint follows from an existing invariant, not a convenience. Every
+old full material frame requires the release socket to be empty. Sending a
+handshake over it would either fail those checks or tempt an implementation to
+skip them. Readiness traffic therefore uses a separate socket, while all old
+release checks remain intact. Parent operations retain the full owner frame and
+manager/process observation; challenge and job correlation retain the original
+absolute bound rather than starting a new allowance.
+
+Both send windows become uncertain before their first possible send. A missing
+job reply does not prove that the manager did nothing. Likewise a missing child
+acknowledgement does not authorize a repeated challenge. Readiness binds a fresh
+nonce to the installed-entry digest, original context, unique manager/client,
+invocation, creator, selected child and absolute deadline. The checksum is not a
+signature: message authentication comes from kernel-delivered credentials and
+an atomically received live pidfd, combined with the original parent's checks.
+A socket's creation-time peer credentials cannot substitute for the sender of
+each later message.
+
+Local owned-helper controls exercise this exchange without a service or product
+workload. They remain narrower than original delivery through systemd. The new
+eighteen-role child entry and activation environment are not connected yet;
+existing installed modes still refuse. A manager job observation and readiness
+are deliberately not a worker-release capability, durable completion or proof
+that every writer has stopped. No preparation speedup or fit within the original
+windows is inferred from these correctness controls.
+
+The first retained GNU check passed the new component controls but hit a rustc
+diagnostic-rendering ICE while reporting intentionally unconnected child code.
+The next GNU/MSRV checks reached strict lint, which rejected a large owner enum,
+a large error return and the deliberate second compilation of the frozen private
+ancillary leaf. The correction boxes the large owner/error values and explicitly
+labels that parser reuse; the original parser remains byte-for-byte unchanged.
+Both copies now run their malformed-record and FD-cleanup controls. Reviewed
+local gates pass, while all earlier refused lanes remain separate evidence.
+None of these compiler/layout corrections establishes an allocation improvement
+or changes an admission threshold.
