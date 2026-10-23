@@ -1,0 +1,7 @@
+test_cloexec_writer_survives_fork_until_exact_owned_child_exits (__main__.DescriptorOracleControls.test_cloexec_writer_survives_fork_until_exact_owned_child_exits) ... ok
+test_same_thread_fd_directory_counts_other_threads_unrelated_resources (__main__.DescriptorOracleControls.test_same_thread_fd_directory_counts_other_threads_unrelated_resources) ... ok
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.009s
+
+OK

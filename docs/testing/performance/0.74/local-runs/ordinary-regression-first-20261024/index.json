@@ -1,0 +1,107 @@
+{
+  "facts": {
+    "admission": false,
+    "clock_changes": false,
+    "descriptor_counterexamples": {
+      "all_writer_retirement_proved": false,
+      "passed": 2,
+      "saved_failure_root_cause_proved": false
+    },
+    "ignored_manual_gates_run": false,
+    "no_retry": true,
+    "old_windows_seconds": [
+      300,
+      60,
+      10
+    ],
+    "ordinary": {
+      "exit": 101,
+      "failed": 16,
+      "failed_names": [
+        "diagnostic_artifacts::linux::io_binding_tests::checked_material_io_binding_is_fixture_explicit_and_refuses_state_or_process_drift",
+        "diagnostic_artifacts::linux::io_binding_tests::fixture_execution_entry_refuses_before_manager_and_latches_all_original_inputs",
+        "diagnostic_artifacts::linux::io_binding_tests::fixture_named_binding_propagates_material_refusal_without_new_capability",
+        "diagnostic_artifacts::linux::io_binding_tests::fixture_named_binding_refuses_state_mismatch_and_process_exit",
+        "diagnostic_artifacts::linux::io_binding_tests::synthetic_material_origin_and_exact_execution_state_cannot_drift",
+        "diagnostic_artifacts::linux::io_binding_tests::fixture_named_process_binding_refuses_replaced_path_while_inode_only_accepts",
+        "diagnostic_two_phase_launch::root_enrollment::kernel::transport::tests::cgroup_root_transport_every_bound_byte_refuses_and_closes_rights",
+        "diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::unit_projection::material::kernel::tests::held_material_kernel_drop_closes_all_six_resources_and_partial_creation_is_raii",
+        "diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::collector_reserved_acknowledged_object_and_source_drift_are_sticky",
+        "diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::observed_reservation_late_source_and_storage_drift_cannot_heal",
+        "diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::collector_progress_retains_both_owners_without_mutation_and_cross_refuses",
+        "diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::collector_reserved_seeded_all_logical_boundaries_retain_failure_and_lock",
+        "diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::original_guard_reobserves_real_kernel_controller_and_active_authority",
+        "diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::original_guard_poison_propagates_from_configuration_to_original_chain",
+        "diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::consuming_held_bridge::consuming_held_existing_mismatch_assertion_preserves_first_kernel_refusal",
+        "diagnostic_worker_policy::trusted_input::controller_input::build_input::tests::controller_build_seeded_signature_mutations_refuse_even_with_new_signed_hash"
+      ],
+      "filtered": 0,
+      "ignored": 141,
+      "passed": 1465,
+      "selected": 1622,
+      "source_unchanged": true,
+      "test_threads": 4
+    },
+    "original_owner_manual_run": false,
+    "product_load": false,
+    "runtime_commit": "81f4add2",
+    "runtime_head": "5526944558208a85b9811047da648d111b841701",
+    "server": false,
+    "services": false
+  },
+  "files": {
+    "analysis/facts.json": {
+      "bytes": 4050,
+      "sha256": "0a6c835a121a08b935070ff084e5b2237664ac18aa95f903d35deac534597254"
+    },
+    "coordinator/retain-normal-first-20261024.py": {
+      "bytes": 4147,
+      "sha256": "e1f8d02a783fd55a3cd2be1cecf672c797de66cc1c5fbf305a8dd8a5547f07f6"
+    },
+    "observation/fd-oracle-first/intent.json": {
+      "bytes": 214,
+      "sha256": "8029150f90382a575a6e9cf8d0443a09cb242378dd624fc98198d18158edf565"
+    },
+    "observation/fd-oracle-first/result.json": {
+      "bytes": 19,
+      "sha256": "8c9a47f205a270c2580c3469146774744b8b10946bc88008172a112f2fc03601"
+    },
+    "observation/fd-oracle-first/stderr.log": {
+      "bytes": 461,
+      "sha256": "2d44be708d85f62a2e775ea07c0fb803f367329457f29b34d1c71521046ac98d"
+    },
+    "observation/fd-oracle-first/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/normal-lib-194-first/intent.json": {
+      "bytes": 103133,
+      "sha256": "49dee5c812ee60c92a0e9cf77597e8e02a5bf61fd4a86f6479b31a9daa565932"
+    },
+    "observation/normal-lib-194-first/result.json": {
+      "bytes": 102502,
+      "sha256": "0e278856ce96244416df9cedcd5172eda2c908133b9fe7e6eac4c9d73679f9b9"
+    },
+    "observation/normal-lib-194-first/stderr.log": {
+      "bytes": 8348,
+      "sha256": "883666f7ce5cee9b61ea41617c67ba7a2027dcc5018cfb3ea0aa3b78d4c200b3"
+    },
+    "observation/normal-lib-194-first/stdout.log": {
+      "bytes": 372259,
+      "sha256": "cf0933925bfbf0bb420d1d2fea6330df991a8810a9d786da762f75273ee42ba4"
+    },
+    "source/docs/testing/performance/0.74/normal-regression-repair-plan-20261024.md": {
+      "bytes": 3060,
+      "sha256": "5ce4d62c316ce1dce19ab6b74ff8005ce35839d2a5df70f12893558f9d9b0713"
+    },
+    "source/target/status-field-scan-20261024/run-normal-lib-once.py": {
+      "bytes": 1969,
+      "sha256": "f8daa6df27a0d1d49527d608f78644a7950b15532f5d085d50cb66dd81114a9e"
+    },
+    "source/tools/fd-oracle-control-074/test_controls.py": {
+      "bytes": 3900,
+      "sha256": "a2aef282c5bc42f5ad194eb8e8629f9d356733306b1e263cef2da8f9c3b36f47"
+    }
+  },
+  "schema": "hc074-ordinary-regression-first-v1"
+}

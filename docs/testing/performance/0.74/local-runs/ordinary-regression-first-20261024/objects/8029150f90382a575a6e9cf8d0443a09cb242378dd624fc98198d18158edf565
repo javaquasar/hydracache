@@ -1,0 +1,7 @@
+{
+  "Command": "timeout --signal=TERM --kill-after=2s 30s python3 -B tools/fd-oracle-control-074/test_controls.py",
+  "OriginalOwner": false,
+  "ClockChange": false,
+  "Server": false,
+  "Services": false
+}
