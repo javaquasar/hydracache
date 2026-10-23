@@ -18254,3 +18254,37 @@ source snapshot. These are correctness observations, not faster preparation or
 evidence of fitting the original admission windows. Actual sandbox admission
 under the same manager, original delivery and cessation of every writer remain
 the next integration boundary before completion or server execution can open.
+
+### Bind observations through the original owner rather than caller snapshots
+
+The [sandbox observer composition](../testing/performance/0.74/bootstrap-sandbox-owner-20261023.md)
+now takes only the consumed original installed-entry owner. It derives the unit,
+attempt cgroup, installed image, streams, worker credentials and original bounds
+from that same authenticated context. Fixed queries use its retained manager
+connection and unique manager name; there is no PID argument, alternate manager
+snapshot or independently supplied namespace number to promote into trust.
+
+The selected MainPID is pinned with proc generation documents and a pidfd. The
+new reader keeps the sandbox mount namespace distinct from the original host
+policy mount namespace, while user/PID/time namespaces must share the enrolled
+observer's context. Actual executable, pipe objects and exclusive cgroup
+population must agree under repeated observations. The old same-host namespace
+API remains unchanged. The wrapper uses three complete original validations
+around two manager/kernel observations; no timestamp or deadline is renewed.
+
+Credential review illustrates why stronger-looking code is not automatically a
+faithful implementation. The existing contract requires zero active capability
+sets and NoNewPrivs, and pins the first observed bounding set against drift. It
+does not require an empty bounding set, and the unchanged unit does not clear it.
+The new observer's initial zero-bounding condition was corrected to that existing
+rule before fixed checks. This changes no old guard or acceptance threshold.
+
+The local gate covers ownership/order/fault models, manager reply and value
+rules, bounded parsing and a real owned helper that cannot substitute its foreign
+cgroup or ordinary namespace for the sandbox. GNU/MSRV checks and strict lint
+passed; a positive original-manager sandbox was not run under the no-service
+scope. The object deliberately grants observation only. Seeing a matching
+pre-existing unit is not proof that this owner delivered its creation request;
+complete loaded-unit settings, authenticated child enrollment and original
+delivery still precede release, writer cessation and completion. Additional
+validation cost remains unmeasured, not an implied preparation improvement.

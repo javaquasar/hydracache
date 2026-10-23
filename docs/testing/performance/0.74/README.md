@@ -6334,3 +6334,21 @@ both source/format refusals. It does not claim that a deterministic busy-inode
 control establishes the cause of the first failure. Real manager/sandbox
 enrollment, original FD delivery and all-writer cessation remain required; no
 server, service, clock or performance action follows this component.
+
+### Same-owner sandbox observation does not prove original delivery
+
+The [sandbox observer composition](bootstrap-sandbox-owner-20261023.md) consumes
+InstalledEntryUnit and accepts no caller PID, manager or credential claims. It
+derives expectations from that same authenticated owner, queries its original
+fixed manager connection and pins the selected process, namespaces, installed
+executable, original pipes and exclusive attempt-cgroup population. Three
+unchanged full validations bracket two fresh observations; errors retain and
+refuse the original owner, with no replacement pin or renewed window.
+
+Local checks passed: Windows 66 source contracts and 24 controls; GNU/MSRV each
+112 selected controls, check and strict lint; format/docs, 188 gates and the
+local contract. The evidence retains the absent-component baseline and explicitly
+labelled development outcomes. A positive original-manager sandbox integration,
+complete loaded-unit settings, child authentication and original-delivery proof
+remain unverified. The resulting object is read-only, not a release capability.
+No services, clocks, namespaces or server workloads were changed or created.
