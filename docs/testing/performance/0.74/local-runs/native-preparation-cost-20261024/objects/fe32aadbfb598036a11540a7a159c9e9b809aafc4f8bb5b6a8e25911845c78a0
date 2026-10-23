@@ -1,0 +1,17 @@
+{
+  "argv": [
+    "scp",
+    "-o",
+    "BatchMode=yes",
+    "-o",
+    "StrictHostKeyChecking=yes",
+    "-o",
+    "ConnectTimeout=15",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\native-preparation-cost-20261024\\profile-session.sh",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\bootstrap-original-getunit-20261023\\native-once\\libtest",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\native-preparation-cost-20261024\\inputs.sha256",
+    "hydracache-ax42:/tmp/hc074-native-cost-upload-20261024.NWzd9l/"
+  ],
+  "timeout_seconds": 90,
+  "retry": false
+}

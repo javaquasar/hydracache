@@ -1,0 +1,105 @@
+"""One separately preregistered cost-only holder session; no retry or product."""
+from pathlib import Path
+import hashlib
+import json
+import re
+import subprocess
+import sys
+
+ROOT = Path(r'C:\Workspace\prj\jq\cashe\hydracache-074')
+OUT = ROOT / 'target/native-preparation-cost-20261024'
+sys.path.insert(0, str(ROOT / 'tools/native-server-control-074'))
+import profile_session
+SSH = ['ssh', '-T', '-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=yes', '-o', 'ConnectTimeout=15', 'hydracache-ax42']
+SCP = ['scp', '-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=yes', '-o', 'ConnectTimeout=15']
+
+
+def digest(path):
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def put(path, value):
+    with path.open('x', encoding='utf-8', newline='\n') as stream:
+        json.dump(value, stream, indent=2)
+        stream.write('\n')
+
+
+def call(label, argv, timeout, data=None):
+    put(OUT / (label + '-intent.json'), {'argv': argv, 'timeout_seconds': timeout, 'retry': False})
+    with (OUT / (label + '.stdout.log')).open('xb') as stdout, (OUT / (label + '.stderr.log')).open('xb') as stderr:
+        try:
+            rc = subprocess.run(argv, input=data, stdout=stdout, stderr=stderr, cwd=ROOT, timeout=timeout, check=False).returncode
+        except subprocess.TimeoutExpired:
+            rc = 124
+    put(OUT / (label + '-result.json'), {'exit': rc, 'retry': False, 'server': True, 'admission': False, 'product': False})
+    if rc:
+        raise RuntimeError(f'{label}: first exit {rc}; inspect same attempt, never resubmit')
+
+
+if subprocess.check_output(['git', 'status', '--porcelain'], cwd=ROOT).strip():
+    raise ValueError('Uncommitted source')
+proof = json.loads((ROOT / 'target/bootstrap-original-getunit-20261023/build-proof.json').read_bytes())
+for name, sha in proof['checked_sources'].items():
+    if digest(ROOT / name) != sha:
+        raise ValueError('Build input drift: ' + name)
+image = ROOT / 'target/bootstrap-original-getunit-20261023/native-once/libtest'
+if digest(image) != 'ca5484aa951414b80aefd0148c7d8f5185a8fdf73bb197cf98a790de59b8cff1':
+    raise ValueError('Image drift')
+OUT.mkdir()  # Exclusive consumed-attempt latch, before any remote action.
+runner = OUT / 'profile-session.sh'
+runner.write_bytes(profile_session.render((ROOT / 'tools/native-server-control-074/holder-session.sh').read_bytes()))
+names = ('timing-controls-074', 'build-receipt-v1.json', 'build-log.jsonl', 'Cargo.lock.root', 'Cargo.lock.observer',
+         'embedded.json', 'direct.json', 'resp2.json', 'resp3.json')
+bundle = ROOT / 'target/diagnostic-start-material-bundle-20261017'
+sources = {'profile-session.sh': runner, 'libtest': image}
+sources |= {'bundle/' + name: bundle / name for name in names}
+manifest = OUT / 'inputs.sha256'
+with manifest.open('x', encoding='ascii', newline='\n') as stream:
+    for name, path in sorted(sources.items()):
+        stream.write(digest(path) + '  ' + name + '\n')
+put(OUT / 'session-intent.json', {'git': subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip(),
+    'input_hashes': {name: digest(path) for name, path in sources.items()}, 'checked_build_sources': len(proof['checked_sources']),
+    'case': 'healthy', 'instrumented': True, 'qualification': False, 'admission': False, 'server': True, 'retry': False,
+    'product': False, 'original_send': False, 'service_change': False, 'clock_change': False,
+    'original_windows_seconds': [300, 60, 10], 'external_bound_seconds': 1200})
+call('preflight', SSH + ['sh', '-s'], 45, (ROOT / 'tools/native-server-control-074/preflight.sh').read_bytes())
+call('create-upload', SSH + ['sh', '-s'], 30, b'umask 077\nmktemp -d /tmp/hc074-native-cost-upload-20261024.XXXXXX\n')
+upload = (OUT / 'create-upload.stdout.log').read_text().strip()
+if not re.fullmatch(r'/tmp/hc074-native-cost-upload-20261024\.[A-Za-z0-9]{6}', upload):
+    raise ValueError('Unexpected upload path')
+call('transfer-main', SCP + [str(runner), str(image), str(manifest), 'hydracache-ax42:' + upload + '/'], 90)
+call('transfer-bundle', SCP + ['-r', str(bundle), 'hydracache-ax42:' + upload + '/bundle'], 90)
+script = f'''set -eu
+[ "$(id -u):$(id -g)" = 0:0 ]
+umask 077
+upload={upload}
+[ "$(stat -c '%a:%u:%g' "$upload")" = 700:1000:1000 ]
+[ ! -L "$upload" ]
+root=$(mktemp -d /tmp/hc074-native-cost-root-20261024.XXXXXX)
+mkdir -m 700 "$root/bundle"
+for file in profile-session.sh libtest inputs.sha256; do
+ [ -f "$upload/$file" ] && [ ! -L "$upload/$file" ]
+ install -m 500 "$upload/$file" "$root/$file"
+done
+for file in {' '.join(names)}; do
+ [ -f "$upload/bundle/$file" ] && [ ! -L "$upload/bundle/$file" ]
+ install -m 400 "$upload/bundle/$file" "$root/bundle/$file"
+done
+chmod 500 "$root/bundle"
+cd "$root"
+printf '%s\\n' '{digest(runner)}  profile-session.sh' '{digest(manifest)}  inputs.sha256' | sha256sum --check
+sha256sum --check inputs.sha256
+/bin/sh -n profile-session.sh
+printf 'ROOT=%s\\n' "$root"
+nohup /usr/bin/env -i PATH=/usr/sbin:/usr/bin:/sbin:/bin /bin/sh "$root/profile-session.sh" >wrapper.log 2>&1 </dev/null &
+printf 'WRAPPER_PID=%s\\n' "$!"
+'''.encode()
+with (OUT / 'stage-input.sh').open('xb') as stream:
+    stream.write(script)
+call('stage', SSH + ['sudo', '-n', 'sh', '-s'], 60, script)
+stdout = (OUT / 'stage.stdout.log').read_text()
+matches = re.findall(r'^ROOT=(/tmp/hc074-native-cost-root-20261024\.[A-Za-z0-9]{6})$', stdout, re.M)
+if len(matches) != 1:
+    raise ValueError('Inspect stage receipt; never repeat dispatch')
+put(OUT / 'remote.json', {'root': matches[0], 'upload': upload, 'retry': False})
+print(stdout)

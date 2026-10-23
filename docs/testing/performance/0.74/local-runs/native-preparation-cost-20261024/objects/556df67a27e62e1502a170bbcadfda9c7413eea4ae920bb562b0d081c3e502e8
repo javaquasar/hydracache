@@ -1,0 +1,59 @@
+"""Exclusive content-addressed retention of the completed cost session."""
+from pathlib import Path
+import hashlib
+import json
+import sys
+
+ROOT = Path(r'C:\Workspace\prj\jq\cashe\hydracache-074')
+sys.path.insert(0, str(ROOT / 'tools/native-server-control-074'))
+import profile_review
+SOURCE = ROOT / 'target/native-preparation-cost-20261024'
+DEST = ROOT / 'docs/testing/performance/0.74/local-runs/native-preparation-cost-20261024'
+download = SOURCE / 'download'
+facts = profile_review.review((download / 'matrix.log').read_bytes(),
+    *[int((download / name).read_text()) for name in ('matrix.exit', 'wrapper.exit', 'postflight.exit')])
+if facts['matrix_exit'] != 101 or facts['first_original_refusal']['age_ns'] != 10_042_265_429 or not facts['postflight_passed']:
+    raise ValueError('Unexpected first outcome')
+if (download / 'mountinfo-before.log').read_bytes() != (download / 'mountinfo-after.log').read_bytes():
+    raise ValueError('Mount state changed')
+for name in ('preflight', 'create-upload', 'transfer-main', 'transfer-bundle', 'stage', 'export'):
+    if json.loads((SOURCE / (name + '-result.json')).read_bytes())['exit'] != 0:
+        raise ValueError('Failed transport stage')
+DEST.mkdir()
+(DEST / 'objects').mkdir()
+files = {}
+
+
+def retain(name, raw):
+    sha = hashlib.sha256(raw).hexdigest()
+    path = DEST / 'objects' / sha
+    if not path.exists():
+        with path.open('xb') as stream:
+            stream.write(raw)
+    elif path.read_bytes() != raw:
+        raise ValueError('Hash collision')
+    files[name] = dict(bytes=len(raw), sha256=sha)
+
+
+for path in sorted(SOURCE.rglob('*')):
+    if path.is_file():
+        retain('observation/' + path.relative_to(SOURCE).as_posix(), path.read_bytes())
+for name in ('run-native-cost-once-20261024.py', 'read-native-cost-20261024.py', 'retain-native-cost-20261024.py'):
+    retain('coordinator/' + name, (ROOT / 'target' / name).read_bytes())
+for name in ('holder-session.sh', 'preflight.sh', 'profile_session.py', 'test_profile_session.py',
+             'profile_review.py', 'test_profile_review.py'):
+    retain('source/' + name, (ROOT / 'tools/native-server-control-074' / name).read_bytes())
+retain('input/build-proof.json', (ROOT / 'target/bootstrap-original-getunit-20261023/build-proof.json').read_bytes())
+retain('analysis/profile.json', (json.dumps(facts, indent=2, sort_keys=True) + '\n').encode())
+index = dict(schema='hc074-native-preparation-cost-evidence-v1', files=files, server=True,
+    product=False, admission=False, original_send=False, release_install=False, service_change=False,
+    clock_change=False, retry=False, original_windows_seconds=[300, 60, 10],
+    source_commit='db79fe40', image_sha256='ca5484aa951414b80aefd0148c7d8f5185a8fdf73bb197cf98a790de59b8cff1',
+    diagnostic_complete=False, first_refusal_age_ns=10_042_265_429, postflight_passed=True)
+with (DEST / 'index.json').open('x', encoding='utf-8', newline='\n') as stream:
+    json.dump(index, stream, indent=2, sort_keys=True)
+    stream.write('\n')
+with (DEST / '.gitattributes').open('x', encoding='ascii', newline='\n') as stream:
+    stream.write('index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n')
+print(dict(files=len(files), objects=len(list((DEST / 'objects').iterdir())),
+           index_sha256=hashlib.sha256((DEST / 'index.json').read_bytes()).hexdigest()))

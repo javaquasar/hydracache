@@ -6691,3 +6691,14 @@ Local gates and 10 observer/five outcome controls pass, not the holder matrix.
 No release, clock, service, production enrollment or product workload changed.
 Next attribute preparation cost without treating native Linux as automatic
 admission. The host's systemd 255 original-delivery compatibility is separate.
+
+The [separate native preparation profile](native-preparation-attribution-result-20261024.md)
+now attributes the same unchanged image's next diagnostic failure without
+promoting either failed attempt. Outputs consumes 7,155,028,000 ns wall and
+7,076,617,593 ns process CPU; its 46 ReservedLive steps consume 6,048,669,207 ns.
+Overlapping kernel spans identify fresh observations as a cost owner, not an I/O
+or product performance claim. The original window still expires during owned-root
+preparation. The 51-file packet retains first failure, unchanged supervisor/install
+and clean postflight. Next test a separate status-field scan hypothesis with the
+same read/check count, refusal order and original deadlines; delivery, retirement,
+completion/later cells, reconnect and enrollment remain open.

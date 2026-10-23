@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "scp",
+    "-o",
+    "BatchMode=yes",
+    "-o",
+    "StrictHostKeyChecking=yes",
+    "-o",
+    "ConnectTimeout=15",
+    "-r",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\diagnostic-start-material-bundle-20261017",
+    "hydracache-ax42:/tmp/hc074-native-cost-upload-20261024.NWzd9l/bundle"
+  ],
+  "timeout_seconds": 90,
+  "retry": false
+}

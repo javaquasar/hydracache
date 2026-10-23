@@ -1,0 +1,15 @@
+profile-session.sh: OK
+inputs.sha256: OK
+bundle/Cargo.lock.observer: OK
+bundle/Cargo.lock.root: OK
+bundle/build-log.jsonl: OK
+bundle/build-receipt-v1.json: OK
+bundle/direct.json: OK
+bundle/embedded.json: OK
+bundle/resp2.json: OK
+bundle/resp3.json: OK
+bundle/timing-controls-074: OK
+libtest: OK
+profile-session.sh: OK
+ROOT=/tmp/hc074-native-cost-root-20261024.7PkS2E
+WRAPPER_PID=299050

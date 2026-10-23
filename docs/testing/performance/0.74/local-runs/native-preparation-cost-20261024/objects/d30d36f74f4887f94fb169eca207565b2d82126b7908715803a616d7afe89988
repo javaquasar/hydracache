@@ -1,0 +1,7 @@
+{
+  "exit": 0,
+  "retry": false,
+  "server": true,
+  "admission": false,
+  "product": false
+}

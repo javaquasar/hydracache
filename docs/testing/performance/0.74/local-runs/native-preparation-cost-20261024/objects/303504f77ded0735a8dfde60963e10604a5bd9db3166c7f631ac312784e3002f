@@ -1,0 +1,63 @@
+"""Export the existing profile only; no launch, cleanup or replacement."""
+import base64
+import hashlib
+import json
+from pathlib import Path
+import re
+import subprocess
+
+ROOT = Path(r'C:\Workspace\prj\jq\cashe\hydracache-074')
+OUT = ROOT / 'target/native-preparation-cost-20261024'
+remote = json.loads((OUT / 'remote.json').read_bytes())['root']
+if not re.fullmatch(r'/tmp/hc074-native-cost-root-20261024\.[A-Za-z0-9]{6}', remote):
+    raise ValueError('Unexpected protected path')
+names = ['preflight.log', 'postflight.log', 'matrix.log', 'matrix.exit', 'wrapper.exit', 'postflight.exit',
+         'mountinfo-before.log', 'mountinfo-after.log', 'inputs.sha256', 'profile-session.sh', 'wrapper.log']
+code = f'''import base64,hashlib,json,pathlib,re,stat
+root=pathlib.Path({remote!r})
+s=root.lstat()
+if not stat.S_ISDIR(s.st_mode) or s.st_uid!=0 or stat.S_IMODE(s.st_mode)!=0o700:
+ raise ValueError('Protected directory drift')
+log=(root/'wrapper.log').read_text()
+footer=re.search(r'^HC074_NATIVE_PROFILE exit=([0-9]+) postflight_exit=([0-9]+) server=true product=false$',log,re.M)
+files={{}}
+if footer:
+ for name in {names!r}:
+  path=root/name
+  s=path.lstat()
+  if not stat.S_ISREG(s.st_mode) or s.st_size>32*1024*1024: raise ValueError('Unexpected member')
+  raw=path.read_bytes()
+  files[name]={{'bytes':len(raw),'sha256':hashlib.sha256(raw).hexdigest(),'base64':base64.b64encode(raw).decode()}}
+print(json.dumps({{'complete':bool(footer),'files':files,'server':True,'product':False,'admission':False}}))
+'''.encode()
+with (OUT / 'export-intent.json').open('x') as stream:
+    json.dump({'script_sha256': hashlib.sha256(code).hexdigest(), 'read_only': True}, stream)
+argv = ['ssh', '-T', '-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=yes', '-o', 'ConnectTimeout=15',
+        'hydracache-ax42', 'sudo', '-n', 'python3', '-']
+with (OUT / 'export.stdout.log').open('xb') as stdout, (OUT / 'export.stderr.log').open('xb') as stderr:
+    rc = subprocess.run(argv, input=code, stdout=stdout, stderr=stderr, timeout=60, check=False).returncode
+with (OUT / 'export-result.json').open('x') as stream:
+    json.dump({'exit': rc, 'read_only': True}, stream)
+if rc:
+    raise SystemExit(rc)
+response = json.loads((OUT / 'export.stdout.log').read_bytes())
+if not response['complete']:
+    raise ValueError('Session still running; do not resubmit')
+destination = OUT / 'download'
+destination.mkdir()
+if set(response['files']) != set(names):
+    raise ValueError('Incomplete export')
+for name, entry in response['files'].items():
+    raw = base64.b64decode(entry['base64'], validate=True)
+    if hashlib.sha256(raw).hexdigest() != entry['sha256'] or len(raw) != entry['bytes']:
+        raise ValueError('Changed export bytes')
+    with (destination / name).open('xb') as stream:
+        stream.write(raw)
+print({name: (destination / name).read_text().strip() for name in ('matrix.exit', 'wrapper.exit', 'postflight.exit')})
+for line in (destination / 'matrix.log').read_text().splitlines():
+    if line.startswith('HC074-HELD-PHASE '):
+        phase = json.loads(line.split(' ', 1)[1])
+        print(json.dumps({k: phase[k] for k in ('phase', 'wall_ns', 'process_cpu_ns', 'returned', 'authentication_calls')}))
+        print('kernel=', phase['kernel'])
+        print('live=', phase['live'])
+print((destination / 'matrix.log').read_text()[-2500:])

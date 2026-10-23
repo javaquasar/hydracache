@@ -18822,3 +18822,26 @@ Those successful safety checks are retained beside the failed matrix; they do
 not turn it into all-writer or original-delivery proof. The next optimization
 must preserve both facts: the environment control passed, and preparation still
 did not fit the original admission window.
+
+### Validation rather than waiting dominates output preparation
+
+A [separate instrumented native case](../testing/performance/0.74/native-preparation-attribution-result-20261024.md)
+kept the same image, source inputs, live predicates and original windows. Output
+preparation took 7.155 seconds wall and 7.077 seconds CPU in the current process.
+Its 46 ReservedLive steps accounted for 6.049 seconds wall. This is one diagnostic
+observation, not a repeated improvement estimate or a measurement of child CPU.
+
+The nested kernel-context span was 4.016 seconds. Its Origin children include
+153,088 Boot observations and 306,176 Namespace observations. These spans
+overlap: adding them would count the same work several times. Nor can the small
+wall-minus-process-CPU difference be labelled I/O wait without a separate trace.
+The result supports targeting work inside fresh validation, while keeping every
+required observation. It does not justify deleting a check because it is costly.
+
+One bounded hypothesis is indexing the five relevant status fields in a single
+pass over each newly read document. The candidate must preserve duplicate-field
+refusals and the old parsing order, and cannot cache status bytes between reads.
+Leaf timing and differential tests must decide whether that mechanism helps;
+they cannot establish the full preparation margin by extrapolation. The profile
+itself still expired during owned-root preparation. Its clean postflight and
+unchanged supervisor are safety evidence, not a successful execution gate.
