@@ -107,3 +107,6 @@ mod tests;
 
 #[path = "diagnostic_bootstrap_child_roles.rs"]
 pub(super) mod roles;
+
+#[path = "diagnostic_bootstrap_current_image.rs"]
+pub(super) mod current_image;

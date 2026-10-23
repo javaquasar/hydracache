@@ -1,4 +1,6 @@
 #![allow(dead_code)] // Shared exact compatibility/source views, not snapshots.
+#[path = "bootstrap_current_image_guard.rs"]
+mod current_image;
 pub const BLOCK: &str = r#"
 <!-- BEGIN BOOTSTRAP CHILD CENSUS V1 -->
 ## Bootstrap complete role assertions v1 with authentication closed
@@ -66,12 +68,14 @@ platform = "linux"
 # END BOOTSTRAP CHILD CENSUS GATE
 "#;
 pub fn registry_view(raw: &str) -> String {
-    remove(raw, GATE)
+    remove(&current_image::registry_view(raw), GATE)
 }
 pub fn compat_view(raw: &str) -> String {
-    remove(raw, BLOCK)
+    remove(&current_image::compat_view(raw), BLOCK)
 }
 pub fn source_view(name: &str, raw: &str) -> String {
+    let raw = current_image::source_view(name, raw);
+    let raw = raw.as_str();
     match name {
         "bin/diagnostic_held_bootstrap.rs" => {
             let raw=remove(raw,"\n#[cfg(all(test, target_os = \"linux\", target_arch = \"x86_64\"))]\n#[path = \"../../tests/support/bootstrap_child_material.rs\"]\nmod bootstrap_child_material;\n");

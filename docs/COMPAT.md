@@ -2120,3 +2120,22 @@ authentication-closed; all mismatches also exit 2 without an execution handle.
 Unsupported targets refuse. No installation, default activation, migration,
 original owner transfer, writer-cessation or server admission follows this mode.
 <!-- END BOOTSTRAP CHILD CENSUS V1 -->
+
+<!-- BEGIN BOOTSTRAP CURRENT IMAGE V1 -->
+## Bootstrap current executable consistency v1
+
+--systemd-bootstrap-image-v1 is a separate opt-in refusal-only bootstrap mode.
+Older binaries reject it. Entry-only/census-only modes, HCBT0741/HCHL0741 bytes,
+activation assertions and role names remain unchanged. The new mode repeats
+the complete census, with two current executable observations around its old
+revalidation. Fixed procfs thread-self/exe lookup must identify the same sealed
+readonly regular inode as bootstrap FD13 and its asserted device/inode/size.
+Metadata, seals, flags and zero offsets are checked without reading executable
+content again. Owned inspection FDs close before the next closed-set census.
+
+This sequential image consistency does not enroll procfs namespaces, credentials,
+signed build/policy or original manager/root/guardians. A matching forged context
+still exits 2 with authentication closed; mismatches also exit 2. No send/start,
+launcher handoff, role repair, default activation, installation, migration,
+writer cessation or server admission is enabled. Old absolute windows remain.
+<!-- END BOOTSTRAP CURRENT IMAGE V1 -->
