@@ -80,10 +80,15 @@ fn bootstrap_entry_compat_is_exact_additive_and_qualification_stays_frozen() {
         "docs/testing/gated-test-registry.toml",
         "docs/testing/performance/0.74/qualification-manifest.toml",
     ] {
+        let raw = std::fs::read_to_string(root.join(name))
+            .unwrap()
+            .replace('\r', "");
         assert_eq!(
-            std::fs::read_to_string(root.join(name))
-                .unwrap()
-                .replace('\r', ""),
+            if name == "docs/testing/gated-test-registry.toml" {
+                guard::registry_view(&raw)
+            } else {
+                raw
+            },
             baseline(name)
         );
     }

@@ -2091,3 +2091,32 @@ inherited role, signed build enrollment and original owner connection remain
 required before delivery/execution or server admission. Reader success is not
 an authenticated entry, handoff receipt, completion or all-writer cessation.
 <!-- END BOOTSTRAP CHILD READER V1 -->
+
+<!-- BEGIN BOOTSTRAP CHILD CENSUS V1 -->
+## Bootstrap complete role assertions v1 with authentication closed
+
+--systemd-bootstrap-census-v1 is a separate opt-in mode of the same bootstrap.
+It uses the unchanged three activation assertions and twelve role names, not
+entry-mode fallback or retry. The earlier --systemd-bootstrap-entry-v1 behavior
+and HCBT0741/HCHL0741 bytes remain unchanged; older binaries reject the new mode.
+
+The census checks all slots 0..14, with inherited flags zero: EOF empty stdin,
+distinct nonblocking output pipes, empty AF_UNIX/SOCK_SEQPACKET release with
+SO_PASSCRED and matching SO_PEERCRED, image/config/legacy identity and bounded
+content hashes, live creator/guardian pidfds using fixed procfs fdinfo, and the
+same absolute BOOTTIME alarm. Regular material inodes must be distinct; pidfd
+inodes may alias on older kernels. Host/launcher/bootstrap/config/legacy/entry
+require exact seals; original worker also permits root-owned nonwritable ELF.
+Entry revalidation brackets two complete role observations. The procfs FD set
+must contain exactly 0..14 plus the enumerator itself; extra descriptors refuse.
+Enumeration, fdinfo and content reads have fixed bounds and never repair inputs,
+consume queued traffic, create a runtime timer, send, start or exec.
+
+Matching claims is not original provenance: current executable/credentials,
+initial namespace, manager/root/cgroup/privileged guardian and signed actual
+build/policy enrollment remain unauthenticated. The parent fingerprint is opaque,
+not a child remapping map. Even a complete canonical forged role set exits 2 at
+authentication-closed; all mismatches also exit 2 without an execution handle.
+Unsupported targets refuse. No installation, default activation, migration,
+original owner transfer, writer-cessation or server admission follows this mode.
+<!-- END BOOTSTRAP CHILD CENSUS V1 -->

@@ -1,6 +1,9 @@
 #![allow(dead_code)] // Exact additive views reused by current-source contracts.
 #[path = "bootstrap_child_guard.rs"]
 mod child_guard;
+pub fn registry_view(raw: &str) -> String {
+    child_guard::registry_view(raw)
+}
 pub const BLOCK: &str = r#"
 <!-- BEGIN BOOTSTRAP ENTRY V1 -->
 ## Bootstrap child-entry assertions v1 (not enabled for delivery)

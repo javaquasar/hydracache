@@ -5,7 +5,20 @@ mod ingress;
 #[path = "../diagnostic_bootstrap_child_reader.rs"]
 mod reader;
 
+#[path = "../diagnostic_bootstrap_census_entry.rs"]
+mod census_entry;
+
+#[cfg(all(test, target_os = "linux", target_arch = "x86_64"))]
+#[path = "../../tests/support/bootstrap_child_material.rs"]
+mod bootstrap_child_material;
+
 fn main() {
+    if census_entry::requested() {
+        if let Err(error) = census_entry::run() {
+            eprintln!("Bootstrap refused: {error}; no start, send or executable handoff.");
+        }
+        std::process::exit(2);
+    }
     let result = (|| -> std::io::Result<()> {
         ingress::inspect(
             &std::env::args_os().skip(1).take(2).collect::<Vec<_>>(),

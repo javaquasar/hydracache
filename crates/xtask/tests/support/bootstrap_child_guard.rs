@@ -1,4 +1,12 @@
 #![allow(dead_code)] // Exact compatibility view shared by current-source contracts.
+#[path = "bootstrap_roles_guard.rs"]
+mod roles_guard;
+pub fn source_view(name: &str, raw: &str) -> String {
+    roles_guard::source_view(name, raw)
+}
+pub fn registry_view(raw: &str) -> String {
+    roles_guard::registry_view(raw)
+}
 pub const BLOCK: &str = r#"
 <!-- BEGIN BOOTSTRAP CHILD READER V1 -->
 ## Bootstrap entry reader v1 with authentication closed
@@ -29,6 +37,7 @@ an authenticated entry, handoff receipt, completion or all-writer cessation.
 <!-- END BOOTSTRAP CHILD READER V1 -->
 "#;
 pub fn compat_view(raw: &str) -> String {
+    let raw = roles_guard::compat_view(raw);
     assert_eq!(raw.matches(BLOCK).count(), 1);
     raw.replacen(BLOCK, "", 1)
 }

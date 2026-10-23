@@ -4,13 +4,18 @@ mod entry_guard;
 #[path = "support/bootstrap_build_guard.rs"]
 mod guard;
 fn read(name: &str) -> String {
-    std::fs::read_to_string(
+    let raw = std::fs::read_to_string(
         Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("../..")
             .join(name),
     )
     .unwrap()
-    .replace('\r', "")
+    .replace('\r', "");
+    if name == "docs/testing/gated-test-registry.toml" {
+        entry_guard::registry_view(&raw)
+    } else {
+        raw
+    }
 }
 #[test]
 fn bootstrap_build_has_separate_policy_and_receipt_domains_without_execution() {

@@ -11,13 +11,14 @@ fn bootstrap_child_executable_exists_before_any_original_start() {
 #[path = "support/bootstrap_child_guard.rs"]
 mod guard;
 fn source(name: &str) -> String {
-    std::fs::read_to_string(
+    let raw = std::fs::read_to_string(
         std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("../../tools/long-run-supervisor-074/src")
             .join(name),
     )
     .unwrap()
-    .replace('\r', "")
+    .replace('\r', "");
+    guard::source_view(name, &raw)
 }
 fn baseline(path: &str) -> String {
     let out = std::process::Command::new("git")
@@ -61,10 +62,15 @@ fn bootstrap_child_keeps_entire_original_runtime_and_qualification_bytes() {
         "docs/testing/gated-test-registry.toml",
         "docs/testing/performance/0.74/qualification-manifest.toml",
     ] {
+        let raw = std::fs::read_to_string(root.join(name))
+            .unwrap()
+            .replace('\r', "");
         assert_eq!(
-            std::fs::read_to_string(root.join(name))
-                .unwrap()
-                .replace('\r', ""),
+            if name == "docs/testing/gated-test-registry.toml" {
+                guard::registry_view(&raw)
+            } else {
+                raw
+            },
             baseline(name)
         );
     }

@@ -13191,3 +13191,34 @@ cwd = "."
 platform = "linux"
 [gate.command.env]
 # END BOOT OPERATIONS GATE
+
+# BEGIN BOOTSTRAP CHILD CENSUS GATE
+[[gate]]
+id = "cfg.hydracache-long-run-supervisor-074.bootstrap-child-census"
+kind = "cfg_test_target"
+source = "tools/long-run-supervisor-074/tests/bootstrap_child_census.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "bootstrap_child_census"
+test = ""
+cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
+env = ""
+reason = "local synthetic inherited role census refusal controls; no original authentication or admission"
+tier = "fast"
+required_features = []
+required_env = []
+required_tools = ["cargo","/bin/sh","/bin/sleep"]
+timeout_seconds = 180
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+[gate.command]
+program = "cargo"
+args = ["test","--locked","-p","hydracache-long-run-supervisor-074","--test","bootstrap_child_census"]
+cwd = "."
+platform = "linux"
+[gate.command.env]
+# END BOOTSTRAP CHILD CENSUS GATE

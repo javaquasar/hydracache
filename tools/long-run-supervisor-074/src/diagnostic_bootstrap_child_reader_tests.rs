@@ -1,7 +1,6 @@
 use super::*;
+use crate::bootstrap_child_material as material;
 use std::os::fd::AsRawFd;
-#[path = "../tests/support/bootstrap_child_material.rs"]
-mod material;
 
 #[test]
 fn bootstrap_reader_roundtrip_and_revalidate_are_only_assertions_and_preserve_offset() {

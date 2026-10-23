@@ -104,3 +104,6 @@ pub(super) fn revalidate(fd: i32, old: &ObservedAssertions) -> io::Result<()> {
 #[cfg(test)]
 #[path = "diagnostic_bootstrap_child_reader_tests.rs"]
 mod tests;
+
+#[path = "diagnostic_bootstrap_child_roles.rs"]
+pub(super) mod roles;

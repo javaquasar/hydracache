@@ -138,6 +138,8 @@ fn bootstrap_image_census_exports_no_fd_mapping_transport_or_new_clock() {
             .replace('\r', "");
         let raw = if name == "docs/COMPAT.md" {
             entry_guard::compat_view(&raw)
+        } else if name == "docs/testing/gated-test-registry.toml" {
+            entry_guard::registry_view(&raw)
         } else {
             raw
         };
