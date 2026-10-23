@@ -18114,3 +18114,26 @@ signed build selection and original manager/root/guardian provenance still need
 their independent join before launcher handoff. No timing or throughput cohort
 was run: added kernel queries have not been shown to fit original admission
 windows merely because synthetic correctness controls pass.
+
+### The parent and sandbox child do not share one trust context
+
+The [production child boundary audit](../testing/performance/0.74/bootstrap-child-boundary-audit-20261023.md)
+found why the next step cannot be another equality check against the creator's
+claims. Existing fixed trust openers require root, while the projected unit
+selects the unprivileged hydracache-perf account and preserves filesystem
+namespacing hardening. A same-host mount-namespace reader cannot enroll the
+resulting child sandbox by assuming it shares the parent's namespace.
+
+Executable origin is a separate prerequisite. Executing a private sealed
+diagnostic copy proves that the image-consistency leaf works; it does not give
+systemd an address for that inode. A normally installed bootstrap with identical
+bytes is a different object, already rejected by the earlier control. Production
+must explicitly distinguish its independently enrolled executable origin from
+the sealed reference copy, or supply a reviewed FD-native addressing mechanism.
+
+The proposed next contract keeps root-only selection and all sandbox properties,
+then binds the particular held child's generation, namespaces, credentials,
+image and streams under the original owner before release. It needs a versioned
+inventory/authentication/replay design, not a fallback or a fresh admission
+window. That amendment awaits approval. This audit adds source guards only;
+no production child, launcher handoff or performance improvement is claimed.

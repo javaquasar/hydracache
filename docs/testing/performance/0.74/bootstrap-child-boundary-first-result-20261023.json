@@ -1,0 +1,11 @@
+{
+  "kind": "captured-tool summary, not raw fixed-runner receipt",
+  "command": "python -B tools/bootstrap-child-boundary-074/retain.py --checked-commit unused",
+  "tool_exit": 1,
+  "result": "ValueError: Count drift before commit lookup or packet creation",
+  "cause": "projection selector selected 10 tests: seven unit-projection tests plus three earlier role-view tests; retainer expected seven",
+  "correction": "expect all ten selected tests; no selector, runtime predicate, deadline or performance threshold changed; preserve first source/logs and use separate final correctness lanes",
+  "original_live_attempt": false,
+  "performance_measurement": false,
+  "server": false
+}

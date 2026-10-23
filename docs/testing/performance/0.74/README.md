@@ -6253,3 +6253,14 @@ A synthetic child running from the matching sealed diagnostic image still exits
 1.94/MSRV 1.88 each 64 selected controls, strict lint and the 188-gate registry
 passed locally. This is neither trusted namespace/build/credential enrollment
 nor original delivery or writer cessation, and supplies no performance claim.
+
+### Child enrollment requires an explicit production boundary
+
+The [child boundary audit](bootstrap-child-boundary-audit-20261023.md) identifies
+two prerequisites before reusing the child image check in production: an
+executable origin systemd can address, distinct from a sealed reference copy,
+and admission of the particular non-root sandbox child by the original owner.
+Existing root-only trust openers and same-host mount-namespace observers are
+not child enrollment. No root check, sandbox property, inode requirement or
+deadline was weakened. A versioned production amendment is proposed for user
+approval; four source guards preserve the audited boundary in the meantime.
