@@ -69,6 +69,8 @@ class Causality(unittest.TestCase):
                 self.assertIn('--auto-start=no', line)
                 self.assertNotIn(' call ', line)
         self.assertIn('test "$i" -lt 81', shell)
+        self.assertIn('runuser -u artur -- "$out/discipline-correlation"', shell)
+        self.assertIn('root-context-20261023', shell)
 
 
 if __name__ == '__main__':

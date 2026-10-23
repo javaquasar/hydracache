@@ -2,7 +2,7 @@
 # Read-only queries in existing Ubuntu; no bus activation and no trace writes.
 set -eu
 test "$#" -eq 1
-test "$1" = /mnt/c/Workspace/prj/jq/cashe/hydracache-074/target/wsl-clock-causality-20261023
+test "$1" = /mnt/c/Workspace/prj/jq/cashe/hydracache-074/target/wsl-clock-causality-root-context-20261023
 out=$1
 identity() {
     cat /proc/sys/kernel/random/boot_id /proc/1/stat
@@ -32,7 +32,7 @@ identity > "$out/identity-before.txt"
 context > "$out/context-before.txt" 2>&1
 i=0
 while test "$i" -lt 81; do
-    "$out/discipline-correlation" >> "$out/kernel.jsonl"
+    runuser -u artur -- "$out/discipline-correlation" >> "$out/kernel.jsonl"
     printf '%s ' "$i" >> "$out/ntp.txt"
     busctl --system --auto-start=no get-property org.freedesktop.timesync1 /org/freedesktop/timesync1 org.freedesktop.timesync1.Manager NTPMessage >> "$out/ntp.txt"
     i=$((i + 1))

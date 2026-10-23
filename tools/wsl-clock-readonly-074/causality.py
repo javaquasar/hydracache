@@ -7,8 +7,10 @@ import subprocess
 import sys
 import diagnose as base
 
-OUT = base.ROOT / 'target/wsl-clock-causality-20261023'
-ARCHIVE = base.ROOT / 'docs/testing/performance/0.74/local-runs/wsl-clock-causality-20261023'
+OUT = base.ROOT / 'target/wsl-clock-causality-root-context-20261023'
+ARCHIVE = base.ROOT / 'docs/testing/performance/0.74/local-runs/wsl-clock-causality-root-context-20261023'
+FIRST = base.ROOT / 'docs/testing/performance/0.74/local-runs/wsl-clock-causality-20261023/index.json'
+FIRST_SHA = '6a7d11e8e8dc830262b8191bacdce03b1a0b822261d246dbaae0991da0694298'
 PREVIOUS = base.ARCHIVE / 'index.json'
 PREVIOUS_SHA = 'edec06e2ac4fa97126ce14ac5c0e4d1aff9cae7bd39f96bb91391102f3d606e3'
 FILES = [base.HERE / p for p in ('discipline.c', 'causality-session.sh', 'causality.py', 'test_causality.py')]
@@ -73,7 +75,7 @@ def analyze(rows, messages):
 
 
 def sources():
-    if base.sha(PREVIOUS) != PREVIOUS_SHA:
+    if base.sha(PREVIOUS) != PREVIOUS_SHA or base.sha(FIRST) != FIRST_SHA:
         raise ValueError('Previous first clock series changed')
     return base.frozen() | {p.relative_to(base.ROOT).as_posix(): base.sha(p) for p in FILES}
 
@@ -81,9 +83,7 @@ def sources():
 def collect():
     base.OUT = OUT
     before = sources()
-    # The parent contains the exploratory read-only query binary. Never overwrite it.
-    if (OUT / 'intent.json').exists() or (OUT / 'kernel.jsonl').exists():
-        raise FileExistsError('Consumed lane: no retry')
+    OUT.mkdir(parents=True, exist_ok=False)
     base.command('controls', [sys.executable, '-B', '-m', 'unittest', 'discover', '-s', str(base.HERE), '-v'])
     base.command('compile-correlation', ['wsl.exe', '-d', 'Ubuntu', '-u', 'artur', '--exec',
         'cc', '-std=c11', '-O2', '-Wall', '-Wextra', '-Werror',
@@ -94,10 +94,11 @@ def collect():
         raise ValueError('Build/source drift')
     base.put(OUT / 'intent.json', {'sources': before, 'binary_sha256': base.sha(OUT / 'discipline-correlation'),
         'git': subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=base.ROOT, text=True).strip(),
-        'rows': 81, 'sleep_seconds': 1, 'distro': 'Ubuntu', 'user': 'artur',
+        'rows': 81, 'sleep_seconds': 1, 'distro': 'Ubuntu', 'query_user': 'artur',
+        'metadata_user': 'root', 'first_metadata_refusal_index_sha256': FIRST_SHA,
         'retry': False, 'original_owner_run': False, 'server': False, 'service_change': False,
         'clock_change': False, 'admission': False, 'previous_index_sha256': PREVIOUS_SHA})
-    base.command('session', ['wsl.exe', '-d', 'Ubuntu', '-u', 'artur', '--exec',
+    base.command('session', ['wsl.exe', '-d', 'Ubuntu', '-u', 'root', '--exec',
         'timeout', '--signal=TERM', '--kill-after=2s', '110s', '/bin/sh',
         base.linux(base.HERE / 'causality-session.sh'), base.linux(OUT)], 130)
     before_id = base.identity((OUT / 'identity-before.txt').read_text())
@@ -117,7 +118,7 @@ def retain():
     base.OUT = OUT
     base.ARCHIVE = ARCHIVE
     # Keep base.frozen's qualification/first-refusal anchors in its final slots.
-    base.FILES = FILES + [PREVIOUS] + base.FILES
+    base.FILES = FILES + [PREVIOUS, FIRST] + base.FILES
     base.retain()
 
 

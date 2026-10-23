@@ -39,3 +39,17 @@ the original-owner index is
 9f2fd0f457ec6d48f4e87e7bfc2bd1262bbf191cf51b760fe744eb369394b9f6.
 Only workspace helper binaries/logs/evidence may be created. A result that
 cannot name an exact historical setter must remain explicitly unresolved.
+
+## Metadata permission correction before any clock rows
+
+The first lane exited 1 while artur was reading PID1 namespace symlinks, before
+context completion or any kernel/NTP sample. Its exclusive path is consumed and
+retained with zero rows, index
+6a7d11e8e8dc830262b8191bacdce03b1a0b822261d246dbaae0991da0694298.
+It is not a clock-order pass or a failed original-owner repetition.
+
+The separate root-context lane keeps all the same rows, bounds, context checks
+and source guards. Only the metadata collector runs as root; runuser executes
+the unchanged modes=0 query helper as artur for every row. No namespace check
+is removed to accommodate the permission refusal. The old lane is not reused;
+both first outcomes must be retained. No service or account action is added.
