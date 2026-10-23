@@ -1,4 +1,6 @@
 #![allow(dead_code)] // Exact additive views for distinct historical source guards.
+#[path = "bootstrap_installed_entry_guard.rs"]
+pub mod installed_entry;
 pub const BLOCK: &str = r#"
 <!-- BEGIN BOOTSTRAP INSTALLED ORIGIN V1 -->
 ## Parent retained installed bootstrap origin v1
@@ -28,9 +30,11 @@ fn remove(raw: &str, addition: &str) -> String {
     raw.replacen(addition, "", 1)
 }
 pub fn compat_view(raw: &str) -> String {
-    remove(raw, BLOCK)
+    remove(&installed_entry::compat_view(raw), BLOCK)
 }
 pub fn source_view(name: &str, raw: &str) -> String {
+    let raw = installed_entry::source_view(name, raw);
+    let raw = raw.as_str();
     let hook = match name {
         "diagnostic_bootstrap_build.rs" => "\n#[cfg(target_os = \"linux\")]\n#[path = \"diagnostic_bootstrap_installed_source.rs\"]\npub(crate) mod installed;\n",
         "diagnostic_bootstrap_owner.rs" => "\n#[path = \"diagnostic_bootstrap_installed_owner.rs\"]\nmod installed_origin;\n",

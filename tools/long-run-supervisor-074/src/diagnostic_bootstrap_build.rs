@@ -453,3 +453,6 @@ pub(crate) mod installed;
 
 #[path = "diagnostic_bootstrap_entry_format.rs"]
 pub mod entry_format;
+
+#[path = "diagnostic_bootstrap_installed_entry_format.rs"]
+pub mod installed_entry_format;
