@@ -18693,7 +18693,23 @@ Native fake-payload controls immediately found a distinct launcher defect:
 Windows PowerShell returned two interpreter matches, producing an invalid
 Process.Start filename. The first failed controls and their exact sources remain
 sealed; the correction selects one PATH result without fallback or retry. This
-finding explains that fixture failure, not the lost operator output. All 32
-offline controls now pass, but no real replacement launch was performed or
-authorized. Logging preparation improves diagnosability; it supplies no evidence
+finding explains that fixture failure, not the lost operator output. At the end
+of preparation all 32 offline controls passed, but no real replacement launch
+was performed or authorized. Logging preparation improves diagnosability; it supplies no evidence
 of healthy original delivery, clock-policy suitability or a throughput gain.
+
+### A retained access refusal is not a successful root lookup
+
+The [single authorized journaled invocation](../testing/performance/0.74/wsl-clock-root-namespace-logged-attempt-20261023.md)
+then supplied the missing diagnostic boundary in a real process. Python started
+and the preserved Administrator check refused before git preflight or WSL.
+The outer journal retained the exact exit 1, failure phase and full traceback;
+there was no retry or elevation workaround. This confirms capture of that early
+failure, not root access, clock health or authenticated writer identity.
+
+The earlier operator attempt still has an unknown exit code because its console
+output was lost. The new, known access refusal cannot fill that historical gap.
+The two outcomes remain separately pinned. Original checks and windows stayed
+unchanged, and no clock, service or server action followed. Further diagnosis
+needs a real elevated execution context and a separately scoped fresh attempt,
+not weakening the guard or silently reusing the journal.

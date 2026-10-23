@@ -1,0 +1,12 @@
+{
+  "argv": [
+    "C:/Windows/System32/WindowsPowerShell/v1.0/powershell.exe",
+    "-NoProfile",
+    "-ExecutionPolicy",
+    "Bypass",
+    "-File",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\wsl-clock-trace-074\\root_namespace_logged.ps1"
+  ],
+  "exit": 1,
+  "timeout_seconds": null
+}

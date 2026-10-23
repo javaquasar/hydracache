@@ -1,6 +1,11 @@
 # Journal first root namespace diagnostic preparation
 
-Preparation only. The user explicitly withheld a new live launch. The agent did
+Historical preparation method. After subsequent explicit authorization, the
+[single launcher invocation](wsl-clock-root-namespace-logged-attempt-20261023.md)
+exited 1 at the preserved Administrator check, before WSL. That journal is now
+consumed and must not be cleared or repeated; no further launch is authorized.
+
+During preparation the user explicitly withheld a new live launch. The agent did
 not invoke either real entry while preparing this candidate. Validation uses
 temporary fake payloads, mocked original preflights and a read-only Windows
 interpreter-resolution lookup. No WSL command, service, clock, original-owner or
@@ -107,8 +112,9 @@ command-resolution evidence and local gate output are retained there. All 12
 new and 20 unchanged offline controls pass, as do doc-check, the local
 non-promotable performance contract and both earlier archive verifiers.
 
-Both real output directories remain absent. No new real launch is authorized
-or recorded. The next gate requires separate approval for a single elevated
-read-only run through the new PowerShell launcher, followed by offline sealing;
-it must not be inferred from these fake-payload controls. Kernel writer identity,
-debug-shell stdin compatibility and the clock policy remain unresolved.
+At the end of preparation both real output directories were absent and no real
+launch was authorized or recorded. The subsequently approved invocation is
+retained separately as an Administrator refusal, not a successful root lookup.
+Any further attempt requires a new exclusive lane and separate approval from an
+actually elevated context. Kernel writer identity, debug-shell stdin compatibility
+and the clock policy remain unresolved.

@@ -6603,6 +6603,22 @@ defect without explaining the lost operator output.
 
 Twelve new controls and twenty existing offline controls pass; local gates and
 the prior evidence verifiers pass. A separate 47-file archive preserves the
-first failures and exact snapshots. Both real attempt directories are absent.
-This is code and test preparation only: the user has not authorized a new live
-launch, and no WSL, clock/service action, original-owner or server run occurred.
+first failures and exact snapshots. At that preparation stage both real attempt
+directories were absent and no new launch was authorized. No WSL, clock/service
+action, original-owner or server run occurred in those controls.
+
+## Single logged launcher invocation refuses before WSL
+
+The subsequently authorized [single invocation](wsl-clock-root-namespace-logged-attempt-20261023.md)
+at `99f49fc3` exited 1 at the unchanged Windows Administrator check. Its outer
+journal retained the Python start/exit receipts, exact failure phase and complete
+581-byte stderr traceback. The collector reached neither git preflight nor WSL.
+The 29-file exact archive retains the first result and unchanged source/input
+pins; the earlier operator outcome remains independently unconfirmed.
+
+Local gates and prior archive verifiers pass; no source checks, original windows
+or client limits changed. No tests or launcher were repeated, no elevation
+bypass was attempted, and no clock/service, product or server action ran.
+The real journal is consumed. Root metadata remains uncollected; further work
+requires an actually elevated Windows context and a separately approved distinct
+attempt, not reuse of this directory or reinterpretation of the older unknown.

@@ -1,0 +1,25 @@
+{
+  "admission": false,
+  "authorization": "User explicitly authorized one read-only invocation through the new launcher, without repeats, clock/service changes or server runs",
+  "clock_change": false,
+  "original_owner_run": false,
+  "original_windows": [
+    300,
+    60,
+    10
+  ],
+  "product": false,
+  "repeat": false,
+  "schema": "hc074-single-logged-launch-invocation-v1",
+  "self_elevation": false,
+  "server": false,
+  "service_change": false,
+  "source_commit": "99f49fc33176f43f682aa017f7d12b3797079194",
+  "sources": {
+    "docs/testing/performance/0.74/root-namespace-first-unconfirmed-20261023.json": "70a405fcf3a65394b83d3e6a500b3a4ad454ce649436c80af2a098e25ba3006c",
+    "tools/wsl-clock-trace-074/root_namespace.py": "99e140b530e2200d475e7b97c31ece6681563d1ea89bf3c49e589717a62687e5",
+    "tools/wsl-clock-trace-074/root_namespace_logged.ps1": "0b7183f23434729f0f3b9b46709517ae03ab0347686a17b7d97ea69154c03de9",
+    "tools/wsl-clock-trace-074/root_namespace_logged.py": "9a2dd2701bbbe718b63a3b5989c0f23c786e213a27f2d33a07c8657484e5829c"
+  },
+  "tracing_state_changed": false
+}

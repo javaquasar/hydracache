@@ -1,0 +1,6 @@
+{
+    "child_exit":  1,
+    "admission":  false,
+    "retry":  false,
+    "stage":  "child-exited"
+}

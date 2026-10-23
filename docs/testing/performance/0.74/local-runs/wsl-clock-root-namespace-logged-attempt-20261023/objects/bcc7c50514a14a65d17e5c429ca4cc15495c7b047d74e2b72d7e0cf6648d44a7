@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\wsl-clock-trace-074\root_namespace_logged.py", line 92, in execute
+    original.collect()  # Exact original checks, order, script and 15/30-second client limits.
+    ~~~~~~~~~~~~~~~~^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\wsl-clock-trace-074\root_namespace.py", line 84, in collect
+    raise RuntimeError('Requires an already elevated Windows PowerShell; no WSL command was run')
+RuntimeError: Requires an already elevated Windows PowerShell; no WSL command was run

@@ -1,0 +1,5 @@
+{
+    "arguments":  "-B -u \"C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\wsl-clock-trace-074\\root_namespace_logged.py\" \"C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\wsl-clock-root-namespace-logged-20261023\"",
+    "self_elevation":  false,
+    "executable":  "C:\\Python313\\python.exe"
+}

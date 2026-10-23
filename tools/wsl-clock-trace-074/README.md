@@ -83,3 +83,10 @@ opens outer logs before Python and all original preflights. The future entry is
 `root_namespace_logged.ps1`, never either Python payload directly. No new live
 launch is authorized yet. `test_root_namespace_logged.py` uses mocked preflights
 and temporary fake PowerShell/Python payloads only, not the real entry or WSL.
+
+After later explicit authorization the new launcher was invoked once and
+[refused at Administrator preflight](../../docs/testing/performance/0.74/wsl-clock-root-namespace-logged-attempt-20261023.md)
+with exit 1 before WSL. That journal is now consumed: do not clear or reuse it,
+invoke this launcher again, or infer a known result for the older operator
+attempt. Further execution needs a distinct approved lane and an actually
+elevated Windows context. No source correction or bypass accompanied the refusal.
