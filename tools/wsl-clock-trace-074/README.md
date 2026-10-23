@@ -61,3 +61,11 @@ is consumed. See the [setter report](../../docs/testing/performance/0.74/wsl-clo
 arithmetic without writing via `attribution.summarize` on the pinned input, or run
 `python -B -m unittest discover -s tools/wsl-clock-trace-074 -p test_attribution.py -v`.
 Do not invoke any consumed collect/session entry point again.
+
+`identity.py` only analyzes and seals already collected read-only namespace
+metadata. It has no WSL dispatch or capture mode. Its current-process join
+requires matching start ticks, namespace links, executable digest, credentials,
+cgroup and the nested NSpid chain; it never authenticates a historical trace PID.
+Use `python -B tools/wsl-clock-trace-074/identity.py verify` for the separate
+writer-identity archive. Retention is exclusive, not a metadata recollection.
+The eight `test_identity.py` controls use synthetic metadata and temporary files.
