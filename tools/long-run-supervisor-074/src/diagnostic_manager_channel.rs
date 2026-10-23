@@ -248,3 +248,6 @@ mod tests;
 
 #[path = "diagnostic_original_manager_join.rs"]
 mod original_join;
+
+#[path = "diagnostic_manager_sandbox_query.rs"]
+mod sandbox_query;

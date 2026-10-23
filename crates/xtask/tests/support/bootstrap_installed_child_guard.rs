@@ -1,4 +1,6 @@
 #![allow(dead_code)] // Exact additive views for preceding contracts.
+#[path = "bootstrap_sandbox_guard.rs"]
+pub mod sandbox;
 pub const BLOCK: &str = r#"
 <!-- BEGIN BOOTSTRAP INSTALLED CHILD V1 -->
 ## Installed child executable consistency v1
@@ -48,6 +50,8 @@ fn remove(raw: &str, addition: &str) -> String {
     raw.replacen(addition, "", 1)
 }
 pub fn source_view(name: &str, raw: &str) -> String {
+    let raw = sandbox::source_view(name, raw);
+    let raw = raw.as_str();
     let value = match hook(name) {
         Some(hook) => remove(raw, hook),
         None => raw.into(),

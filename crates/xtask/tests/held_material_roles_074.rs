@@ -60,7 +60,11 @@ fn held_material_roles_only_add_values_and_leave_complete_frame_and_retirement_u
         "diagnostic_held_launcher_kernel.rs",
         "diagnostic_root_guardian.rs",
     ] {
-        assert_eq!(read(name), baseline(name), "{name}");
+        assert_eq!(
+            entry_guard::source_view(name, &read(name)),
+            baseline(name),
+            "{name}"
+        );
     }
 }
 

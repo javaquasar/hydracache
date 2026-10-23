@@ -10,6 +10,15 @@ fn installed_origin_exists_before_systemd_or_child_admission() {
 
 use guard::installed_entry as entry_guard;
 #[test]
+fn bootstrap_sandbox_owner_component_precedes_admission() {
+    assert!(
+        root()
+            .join("tools/long-run-supervisor-074/src/diagnostic_bootstrap_sandbox_owner.rs")
+            .is_file(),
+        "original owner sandbox observation binding is absent"
+    );
+}
+#[test]
 fn bootstrap_installed_child_component_precedes_delivery() {
     assert!(
         root()
@@ -394,7 +403,7 @@ fn bootstrap_installed_child_exact_hooks_preserve_every_old_mode_and_frame() {
         "diagnostic_held_unit_projection.rs",
     ] {
         assert_eq!(
-            source(name),
+            entry_guard::material::child::sandbox::source_view(name, &source(name)),
             child_baseline(&format!("tools/long-run-supervisor-074/src/{name}"))
         );
     }
@@ -460,4 +469,72 @@ fn bootstrap_installed_child_is_separate_consistency_not_authority_or_transport(
     assert!(child.contains("let record = record(16)?"));
     assert!(source("diagnostic_bootstrap_installed_executable.rs")
         .contains(".open(\"/proc/thread-self\")?"));
+}
+
+#[test]
+fn bootstrap_sandbox_only_four_exact_additions_preserve_old_frames_and_deadlines() {
+    for name in [
+        "diagnostic_bootstrap_installed_entry_owner.rs",
+        "diagnostic_manager_channel.rs",
+        "diagnostic_process.rs",
+        "diagnostic_bootstrap_installed_entry_census.rs",
+    ] {
+        let path = format!("tools/long-run-supervisor-074/src/{name}");
+        let output = std::process::Command::new("git")
+            .current_dir(root())
+            .args(["show", &format!("27b47622:{path}")])
+            .output()
+            .unwrap();
+        assert!(output.status.success());
+        let old = String::from_utf8(output.stdout).unwrap().replace('\r', "");
+        let raw = source(name);
+        let view = entry_guard::material::child::sandbox::source_view;
+        assert_eq!(view(name, &raw), old);
+        let hook = entry_guard::material::child::sandbox::hook(name).unwrap();
+        for bad in [raw.replace(hook, ""), format!("{raw}{hook}")] {
+            assert!(std::panic::catch_unwind(|| view(name, &bad)).is_err());
+        }
+        assert_ne!(view(name, &format!("{raw}\n// drift\n")), old);
+    }
+}
+#[test]
+fn bootstrap_sandbox_takes_no_caller_pid_or_manager_and_cannot_start_or_release() {
+    for name in [
+        "diagnostic_bootstrap_sandbox_owner.rs",
+        "diagnostic_manager_sandbox_query.rs",
+        "diagnostic_sandbox_process.rs",
+    ] {
+        let raw = source(name);
+        let code = raw.split("#[cfg(test)]").next().unwrap();
+        for forbidden in [
+            "execve",
+            "sendmsg",
+            "Command::",
+            "setns",
+            "unshare",
+            "F_SETFD",
+            "F_SETFL",
+            "StartTransientUnit",
+            "SystemTime",
+            "Instant",
+            "Serialize",
+            "Deserialize",
+        ] {
+            assert!(!code.contains(forbidden), "{name}/{forbidden}");
+        }
+    }
+    let raw = source("diagnostic_bootstrap_sandbox_owner.rs");
+    let compact: String = raw.chars().filter(|c| !c.is_whitespace()).collect();
+    assert!(
+        compact.contains("fnobserve_managed_sandbox(self,)")
+            || compact.contains("fnobserve_managed_sandbox(self)")
+    );
+    assert!(raw.contains("self.owner.revalidate()?"));
+    assert!(raw.contains("self.owner.refuse()"));
+    assert!(compact.contains("channel.observe_sandbox(&source.unit,&source.group)"));
+    assert!(raw.contains("self.kernel_pinned"));
+    assert_eq!(
+        read("docs/testing/performance/0.74/qualification-manifest.toml"),
+        child_baseline("docs/testing/performance/0.74/qualification-manifest.toml")
+    );
 }

@@ -46,6 +46,10 @@ pub use mount_namespace::{pin_same_mount_namespace, MountNamespaceError, SameMou
 mod worker_tasks;
 pub use worker_tasks::{pin_asserted_worker_tasks, TaskError, WorkerTasksRead};
 
+#[cfg(target_arch = "x86_64")]
+#[path = "diagnostic_sandbox_process.rs"]
+pub(crate) mod sandbox;
+
 #[derive(Debug, Error)]
 pub enum ProcessError {
     #[error("diagnostic process scope or proc document is invalid")]

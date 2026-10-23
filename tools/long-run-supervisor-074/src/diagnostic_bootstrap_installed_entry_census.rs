@@ -87,3 +87,13 @@ impl InstalledBindings {
 #[cfg(test)]
 #[path = "diagnostic_bootstrap_installed_entry_census_tests.rs"]
 pub(crate) mod tests;
+
+impl InstalledBindings {
+    pub(crate) fn sandbox_image_identity(&self) -> [u64; 3] {
+        [
+            self.installed.stat[0],
+            self.installed.stat[1],
+            self.installed.stat[6],
+        ]
+    }
+}

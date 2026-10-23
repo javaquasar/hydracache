@@ -76,7 +76,11 @@ fn complete_role_census_keeps_prior_owner_and_provider_bodies_exact_after_additi
         "diagnostic_root_guardian_original_kernel.rs",
         "diagnostic_held_launcher_kernel.rs",
     ] {
-        assert_eq!(read(file), baseline(file), "{file}");
+        assert_eq!(
+            entry_guard::source_view(file, &read(file)),
+            baseline(file),
+            "{file}"
+        );
     }
 }
 
