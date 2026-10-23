@@ -1,0 +1,22 @@
+{
+  "admission_allowed": false,
+  "checked_commit": "344bf09f660acd4dcae574ca32fe7ee9324a41d7",
+  "child_namespace_enrollment": false,
+  "child_wire_v2": false,
+  "clock_changes": false,
+  "credentials_manager_guardians_authenticated": false,
+  "installed_source_private_filesystem_controls": true,
+  "original_delivery": false,
+  "original_live_join": false,
+  "original_owner_wiring_compiled": true,
+  "owner_fault_models": true,
+  "parent_descriptors": 32,
+  "parent_roles": 16,
+  "performance_measurement": false,
+  "product": false,
+  "production_fixed_path_installed": false,
+  "qualification_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "server": false,
+  "service_changes": false,
+  "writer_cessation": false
+}

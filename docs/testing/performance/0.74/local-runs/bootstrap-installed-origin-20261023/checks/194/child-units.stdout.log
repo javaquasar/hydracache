@@ -1,0 +1,24 @@
+
+running 19 tests
+test image_entry::tests::image_mode_requires_explicit_argument_and_unmodified_activation_assertions ... ok
+test census_entry::tests::census_ingress_only_explicit_new_mode_with_unchanged_metadata ... ok
+test image_entry::tests::image_mode_cannot_refresh_pid_or_ignore_additional_environment ... ok
+test census_entry::tests::census_ingress_cannot_repair_unknown_pid_or_environment ... ok
+test ingress::tests::bootstrap_ingress_bad_argument_pid_unknown_duplicate_and_noncanonical_values_refuse ... ok
+test ingress::tests::bootstrap_ingress_every_activation_name_byte_refuses_mutation ... ok
+test ingress::tests::bootstrap_ingress_exact_metadata_permutations_are_only_assertions ... ok
+test reader::current_image::tests::current_image_stamp_rejects_invalid_unsealed_and_wrong_flags_without_repair ... ok
+test reader::roles::kernel::inventory::tests::bootstrap_inventory_parser_exact_bounded_set_and_own_descriptor ... ok
+test reader::roles::kernel::inventory::tests::bootstrap_inventory_parser_short_duplicate_oversize_and_unknown_names_refuse ... ok
+test reader::current_image::tests::identical_bytes_at_another_inode_do_not_identify_the_same_image ... ok
+test reader::tests::bootstrap_reader_inode_descriptor_and_metadata_substitution_cannot_revalidate ... ok
+test reader::tests::bootstrap_reader_roundtrip_and_revalidate_are_only_assertions_and_preserve_offset ... ok
+test reader::tests::bootstrap_reader_missing_seals_cloexec_length_padding_and_offset_refuse_without_repair ... ok
+test reader::tests::bootstrap_reader_wrong_access_and_nonregular_objects_refuse ... ok
+test reader::roles::tests::bootstrap_roles_all_fifteen_actual_resources_match_only_asserted_context ... ok
+test reader::roles::tests::bootstrap_roles_dead_guardian_and_same_bytes_replacement_cannot_revalidate ... ok
+test reader::roles::tests::bootstrap_roles_collision_swap_flags_and_each_image_identity_digest_refuse ... ok
+test reader::roles::tests::bootstrap_roles_wrong_pidfd_peer_pending_input_and_wrong_alarm_refuse ... ok
+
+test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+

@@ -1,0 +1,18 @@
+{
+  "argv": [
+    "cargo",
+    "test",
+    "--offline",
+    "--locked",
+    "-p",
+    "hydracache-long-run-supervisor-074",
+    "--lib",
+    "bootstrap_entry_format",
+    "--",
+    "--nocapture"
+  ],
+  "elapsed_ns": 7470056600,
+  "exit": 0,
+  "stderr_sha256": "e098ab5c8b58fca2349bf5da58850747f5af4e9d906b0690132436fd407b9b00",
+  "stdout_sha256": "1ca0fd2724a1db0cdd75109f0b50cf1e4b6d4985251944fd74898dad34f42a28"
+}

@@ -1,0 +1,8 @@
+test_existing_packet_never_reexecutes_or_overwrites (test_controls.Controls.test_existing_packet_never_reexecutes_or_overwrites) ... ok
+test_failed_lane_cannot_be_accepted (test_controls.Controls.test_failed_lane_cannot_be_accepted) ... ok
+test_fixed_local_scopes_never_use_infrastructure_or_old_live_fixtures (test_controls.Controls.test_fixed_local_scopes_never_use_infrastructure_or_old_live_fixtures) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.023s
+
+OK

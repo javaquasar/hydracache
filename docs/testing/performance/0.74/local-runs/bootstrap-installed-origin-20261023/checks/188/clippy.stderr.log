@@ -1,0 +1,19 @@
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error: the loop variable `at` is used to index `DIRECTORIES`
+   --> tools/long-run-supervisor-074/src/diagnostic_bootstrap_installed_source.rs:174:19
+    |
+174 |         for at in 0..4 {
+    |                   ^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#needless_range_loop
+    = note: `-D clippy::needless-range-loop` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::needless_range_loop)]`
+help: consider using an iterator and enumerate()
+    |
+174 -         for at in 0..4 {
+174 +         for (at, <item>) in DIRECTORIES.iter().enumerate() {
+    |
+
+error: could not compile `hydracache-long-run-supervisor-074` (lib) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 1 previous error

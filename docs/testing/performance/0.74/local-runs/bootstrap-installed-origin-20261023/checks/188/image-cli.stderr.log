@@ -1,0 +1,3 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `release` profile [optimized] target(s) in 1m 52s
+     Running tests/bootstrap_current_image.rs (/home/artur/.cache/hydracache-074-188-check/release/deps/bootstrap_current_image-fe4e6ac05ded2195)
