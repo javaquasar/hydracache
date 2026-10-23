@@ -18169,3 +18169,25 @@ corrected final checks. Nine new filesystem/census/owner controls and the select
 preceding Linux controls passed on GNU 1.94 and MSRV 1.88; these observations remain
 separate from real root-host enrollment, current-child authentication and the
 actual systemd execution gate.
+
+### Entry consistency cannot replace original owner authentication
+
+The separate [installed-entry schema](../testing/performance/0.74/bootstrap-installed-entry-20261023.md)
+expresses the new origin without changing the old sealed-reference record. Its
+1280-byte envelope embeds the original 1024 bytes and separately describes the
+installed device/inode/size, content hash, fixed pathname and asserted parent
+inventory fingerprint. Matching content must coexist with different image
+identities; equal hash is not permission to reinterpret the old inode check.
+
+The codec tests corruption and canonical representation, not throughput. Every
+single-bit mutation must either refuse or produce a different value that
+re-encodes exactly. Cross-image mismatches and malformed embedded records refuse
+even when their unkeyed checksums are recomputed. Such checksums catch inconsistent
+assertions; they cannot prove who supplied a fully consistent forged record.
+
+That distinction is explicit in a positive parsing control with invented owner,
+documents, origins and inventory. The next integration must not treat successful
+decoding as authenticated custody. Production must derive and retain
+the record under the same original owner, then observe/admit the actual sandbox
+child before release. This component adds no fresh live query, transport or
+execution and makes no preparation-cost or original-deadline-fit claim.

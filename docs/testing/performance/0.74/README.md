@@ -6283,3 +6283,18 @@ format/docs, 188 registered gates and the nonpromotable local contract. The repo
 links exact-byte-audited evidence, including first strict lint refusals. Neither
 private fixture ownership nor the unsigned selected build is a real installed
 origin or child-authentication proof.
+
+### Installed entry assertions keep the two image origins separate
+
+The [installed-entry schema](bootstrap-installed-entry-20261023.md) embeds old
+HCBT0741 bytes unchanged inside HCBI0741 and separately asserts installed image
+identity, equal size/content, fixed pathname and parent inventory fingerprint.
+It rejects aliases, noncanonical fields and old/new reader reinterpretation.
+The parent counts are not inherited child slots. A canonical forged record can
+still parse: the codec establishes consistency, not custody or authentication.
+
+Record materialization under the same installed owner and a separately versioned
+child executable/inventory reader remain next. No launch, service/clock change,
+server action, fresh original live attempt or numerical claim follows this
+schema. Its local report retains first refusals and the exact compatibility
+boundary rather than promoting assertion parsing into original delivery.
