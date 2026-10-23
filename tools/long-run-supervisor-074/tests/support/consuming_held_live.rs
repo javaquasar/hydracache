@@ -1,4 +1,6 @@
 //! Actual holder in a private local cgroup mount, no manager send or product.
+#[path = "held_original_service_live.rs"]
+mod original_service;
 use super::*;
 use crate::diagnostic_two_phase_launch::held_placement as wire;
 use crate::diagnostic_worker_policy::trusted_input;

@@ -43,6 +43,10 @@ fn remove(raw: &str, addition: &str) -> String {
     raw.replacen(addition, "", 1)
 }
 pub fn source_view(name: &str, raw: &str) -> String {
+    if name == "gated-test-registry.toml" && raw.contains("# BEGIN ORIGINAL MANAGER SERVICE GATE") {
+        let gate = include_str!("original_service_gate.txt").replace('\r', "");
+        return remove(raw, &gate);
+    }
     match name {
         "bin/diagnostic_held_bootstrap.rs" => remove(&remove(raw, MODE), DISPATCH),
         "diagnostic_bootstrap_installed_child.rs" => remove(raw, CHILD),

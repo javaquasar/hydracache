@@ -9,6 +9,86 @@ fn installed_origin_exists_before_systemd_or_child_admission() {
 }
 
 #[test]
+fn bootstrap_original_service_fixture_precedes_live_admission() {
+    assert!(
+        root()
+            .join("tools/long-run-supervisor-074/tests/support/held_original_service_live.rs")
+            .is_file(),
+        "original service fixture is absent"
+    );
+}
+
+fn pre_original_service_input(path: &str) -> String {
+    let raw = read(path);
+    if path != "docs/testing/gated-test-registry.toml" {
+        return raw;
+    }
+    let gate = include_str!("support/original_service_gate.txt").replace('\r', "");
+    assert_eq!(raw.matches(gate.as_str()).count(), 1);
+    raw.replacen(gate.as_str(), "", 1)
+}
+
+#[test]
+fn bootstrap_original_service_keeps_old_fixture_and_production_frames_exact() {
+    for (path, hook) in [
+        (
+            "tests/support/consuming_held_live.rs",
+            "#[path = \"held_original_service_live.rs\"]\nmod original_service;\n",
+        ),
+        (
+            "tests/support/consuming_held_live_documents.rs",
+            "#[path = \"held_original_service_documents.rs\"]\nmod original_service;\n",
+        ),
+        ("src/diagnostic_original_held_delivery.rs", ""),
+        ("src/diagnostic_bootstrap_sandbox_owner.rs", ""),
+        ("src/diagnostic_manager_held_delivery.rs", ""),
+        ("src/diagnostic_manager_channel.rs", ""),
+        ("src/diagnostic_root_guardian_original_kernel.rs", ""),
+    ] {
+        let path = format!("tools/long-run-supervisor-074/{path}");
+        let raw = read(&path);
+        let prior = std::process::Command::new("git")
+            .current_dir(root())
+            .args(["--no-replace-objects", "show", &format!("d94217a1:{path}")])
+            .output()
+            .unwrap();
+        assert!(prior.status.success());
+        let old = String::from_utf8(prior.stdout).unwrap().replace('\r', "");
+        if hook.is_empty() {
+            assert_eq!(raw, old);
+        } else {
+            assert_eq!(raw.matches(hook).count(), 1);
+            assert_eq!(raw.replacen(hook, "", 1), old);
+            assert_ne!(format!("{raw}\n// drift\n").replacen(hook, "", 1), old);
+        }
+    }
+    let fixture = read("tools/long-run-supervisor-074/tests/support/held_original_service_live.rs");
+    for method in [
+        "project_held_unit()",
+        "materialize_held_unit()",
+        "join_bootstrap(image,",
+        "bind_installed_origin()",
+        "materialize_installed_entry()",
+        "prepare_original_held_delivery()",
+        "deliver_once()",
+        "challenge_child_once()",
+    ] {
+        assert_eq!(fixture.matches(method).count(), 1, "{method}");
+    }
+    assert!(!fixture.contains("namespace::Private"));
+    assert!(!fixture.contains("namespace::attempt"));
+    assert!(!fixture.contains("release_worker"));
+    assert!(fixture.contains("[300000000000, 60000000000, 10000000000]"));
+    let scope = read("tools/long-run-supervisor-074/tests/support/held_original_service_scope.rs");
+    assert!(
+        scope.find("scope.owned = true").unwrap()
+            > scope.find("never reuse an existing unit").unwrap()
+    );
+    assert!(scope.contains("if !self.owned"));
+    assert!(!scope.contains("remove_dir_all"));
+}
+
+#[test]
 fn bootstrap_held_entry_component_precedes_activation() {
     assert!(
         root()
@@ -260,7 +340,7 @@ fn installed_origin_compat_is_additive_and_qualification_inputs_stay_frozen() {
         "docs/testing/gated-test-registry.toml",
         "docs/testing/performance/0.74/qualification-manifest.toml",
     ] {
-        assert_eq!(read(name), baseline(name));
+        assert_eq!(pre_original_service_input(name), baseline(name));
     }
 }
 #[test]
@@ -401,7 +481,7 @@ fn bootstrap_installed_entry_compat_is_exact_and_does_not_change_old_records() {
         "docs/testing/gated-test-registry.toml",
         "docs/testing/performance/0.74/qualification-manifest.toml",
     ] {
-        assert_eq!(read(path), installed_baseline(path));
+        assert_eq!(pre_original_service_input(path), installed_baseline(path));
     }
 }
 
@@ -570,7 +650,7 @@ fn bootstrap_installed_child_is_separate_consistency_not_authority_or_transport(
         "docs/testing/gated-test-registry.toml",
         "docs/testing/performance/0.74/qualification-manifest.toml",
     ] {
-        assert_eq!(read(name), child_baseline(name));
+        assert_eq!(pre_original_service_input(name), child_baseline(name));
     }
     for name in [
         "diagnostic_bootstrap_installed_mode.rs",

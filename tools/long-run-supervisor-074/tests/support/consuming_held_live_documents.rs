@@ -1,4 +1,6 @@
 //! Synthetic trust/build documents and actual sealed role FDs, test builds only.
+#[path = "held_original_service_documents.rs"]
+mod original_service;
 use super::super::*;
 use crate::diagnostic_two_phase_launch::{held_placement as wire, LaunchArtifacts};
 use ed25519_dalek::{Signer, SigningKey};

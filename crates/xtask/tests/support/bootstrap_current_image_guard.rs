@@ -61,7 +61,13 @@ pub fn compat_view(raw: &str) -> String {
     remove(&installed::compat_view(raw), BLOCK)
 }
 pub fn registry_view(raw: &str) -> String {
-    remove(raw, GATE)
+    let gate = include_str!("original_service_gate.txt").replace('\r', "");
+    let raw = if raw.contains("# BEGIN ORIGINAL MANAGER SERVICE GATE") {
+        remove(raw, &gate)
+    } else {
+        raw.into()
+    };
+    remove(&raw, GATE)
 }
 pub fn source_view(name: &str, raw: &str) -> String {
     let raw = installed::source_view(name, raw);
