@@ -1,0 +1,260 @@
+{
+  "admission_allowed": false,
+  "authenticated_original_start": false,
+  "checked_commit": "530e197ed2e56a7db1c01916b9ed40beed25217e",
+  "clock_changes": false,
+  "completion": false,
+  "final_lanes": [
+    "host-lost-ack",
+    "194-lost-ack",
+    "188-lost-ack",
+    "metadata-lost-ack"
+  ],
+  "integrated_readiness_entry": true,
+  "loaded_unit_hardening_proof": false,
+  "local_owned_child_fault_controls": true,
+  "namespace_changes": false,
+  "new_path_full_sigkill_matrix": false,
+  "old_modes_unchanged": true,
+  "original_attempt": false,
+  "performance_measurement": false,
+  "positive_original_manager_delivery": false,
+  "prior_lanes": [
+    {
+      "failure": null,
+      "lane": "188",
+      "steps": [
+        "held-entry",
+        "held",
+        "parser",
+        "sandbox",
+        "installed",
+        "image-cli",
+        "census-cli",
+        "child-units",
+        "child-cli",
+        "entry",
+        "images",
+        "build",
+        "selection",
+        "owner",
+        "enrollment",
+        "old-source",
+        "old-replacement",
+        "old-keys",
+        "check",
+        "clippy"
+      ]
+    },
+    {
+      "failure": null,
+      "lane": "188-lost-ack",
+      "steps": [
+        "held-entry",
+        "held",
+        "parser",
+        "sandbox",
+        "installed",
+        "image-cli",
+        "census-cli",
+        "child-units",
+        "child-cli",
+        "entry",
+        "images",
+        "build",
+        "selection",
+        "owner",
+        "enrollment",
+        "old-source",
+        "old-replacement",
+        "old-keys",
+        "check",
+        "clippy"
+      ]
+    },
+    {
+      "failure": "RuntimeError: image-cli refused; first result retained",
+      "lane": "188-reviewed",
+      "steps": [
+        "held-entry",
+        "held",
+        "parser",
+        "sandbox",
+        "installed",
+        "image-cli"
+      ]
+    },
+    {
+      "failure": "RuntimeError: image-cli refused; first result retained",
+      "lane": "194",
+      "steps": [
+        "held-entry",
+        "held",
+        "parser",
+        "sandbox",
+        "installed",
+        "image-cli"
+      ]
+    },
+    {
+      "failure": null,
+      "lane": "194-final",
+      "steps": [
+        "held-entry",
+        "held",
+        "parser",
+        "sandbox",
+        "installed",
+        "image-cli",
+        "census-cli",
+        "child-units",
+        "child-cli",
+        "entry",
+        "images",
+        "build",
+        "selection",
+        "owner",
+        "enrollment",
+        "old-source",
+        "old-replacement",
+        "old-keys",
+        "check",
+        "clippy",
+        "selected-build",
+        "image-sha",
+        "image-size"
+      ]
+    },
+    {
+      "failure": null,
+      "lane": "194-lost-ack",
+      "steps": [
+        "held-entry",
+        "held",
+        "parser",
+        "sandbox",
+        "installed",
+        "image-cli",
+        "census-cli",
+        "child-units",
+        "child-cli",
+        "entry",
+        "images",
+        "build",
+        "selection",
+        "owner",
+        "enrollment",
+        "old-source",
+        "old-replacement",
+        "old-keys",
+        "check",
+        "clippy",
+        "selected-build",
+        "image-sha",
+        "image-size"
+      ]
+    },
+    {
+      "failure": "RuntimeError: image-cli refused; first result retained",
+      "lane": "194-reviewed",
+      "steps": [
+        "held-entry",
+        "held",
+        "parser",
+        "sandbox",
+        "installed",
+        "image-cli"
+      ]
+    },
+    {
+      "failure": "RuntimeError: missing refused; first result retained",
+      "lane": "baseline",
+      "steps": [
+        "missing"
+      ]
+    },
+    {
+      "failure": "RuntimeError: canaries refused; first result retained",
+      "lane": "host",
+      "steps": [
+        "codec",
+        "child-units",
+        "child-cli",
+        "canaries"
+      ]
+    },
+    {
+      "failure": null,
+      "lane": "host-final",
+      "steps": [
+        "codec",
+        "child-units",
+        "child-cli",
+        "canaries",
+        "entry",
+        "build",
+        "check",
+        "clippy",
+        "format"
+      ]
+    },
+    {
+      "failure": null,
+      "lane": "host-lost-ack",
+      "steps": [
+        "codec",
+        "child-units",
+        "child-cli",
+        "canaries",
+        "entry",
+        "build",
+        "check",
+        "clippy",
+        "format"
+      ]
+    },
+    {
+      "failure": null,
+      "lane": "host-reviewed",
+      "steps": [
+        "codec",
+        "child-units",
+        "child-cli",
+        "canaries",
+        "entry",
+        "build",
+        "check",
+        "clippy",
+        "format"
+      ]
+    },
+    {
+      "failure": null,
+      "lane": "metadata",
+      "steps": [
+        "controls",
+        "docs",
+        "registry",
+        "contract",
+        "diff"
+      ]
+    },
+    {
+      "failure": null,
+      "lane": "metadata-lost-ack",
+      "steps": [
+        "controls",
+        "docs",
+        "registry",
+        "contract",
+        "diff"
+      ]
+    }
+  ],
+  "product": false,
+  "qualification_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "server": false,
+  "service_changes": false,
+  "source_count": 173,
+  "writer_cessation": false
+}

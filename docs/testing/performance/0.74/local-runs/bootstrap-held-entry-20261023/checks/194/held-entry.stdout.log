@@ -1,0 +1,8 @@
+
+running 3 tests
+test held_mode::activation::tests::held_entry_activation_exact_and_permutation ... ok
+test held_mode::activation::tests::held_entry_activation_missing_duplicate_foreign_and_noncanonical_refuse ... ok
+test reader::roles::installed::held::inventory::tests::held_entry_inventory_exact_unknown_duplicate_and_short ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 35 filtered out; finished in 0.00s
+

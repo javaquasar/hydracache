@@ -1,0 +1,7 @@
+{
+  "Cargo.lock": "d2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c",
+  "crates/xtask/tests/bootstrap_installed_origin_074.rs": "772210a91f1ffecfb51428332e9a58f3df49b2548de6943bdf98897b500a62aa",
+  "docs/testing/performance/0.74/bootstrap-held-entry-plan-20261023.md": "1e28a88e48229302b0e398384b2859482b47d0834c18b2d754dc9af9b883eba5",
+  "docs/testing/performance/0.74/qualification-manifest.toml": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "tools/bootstrap-held-entry-074/check.py": "a246f79187e149f2fc127fe67e4705e3a4a530276d38bc96eb911288ca760cd7"
+}

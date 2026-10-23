@@ -1,0 +1,28 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `release` profile [optimized] target(s) in 10.83s
+     Running tests/bootstrap_current_image.rs (/home/artur/.cache/hydracache-074-194-check/release/deps/bootstrap_current_image-62d9b1f633932fe1)
+
+thread 'installed_controls::held_controls::held_entry_guardian_loss_and_peer_disconnect_stop_nonexecuting_hold' (1031) panicked at tools/long-run-supervisor-074/tests/support/bootstrap_held_entry_controls.rs:99:5:
+assertion `left == right` failed: Held bootstrap stopped: held readiness exchange refused; no worker release or executable handoff.
+
+  left: 0
+ right: 1
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'installed_controls::held_controls::held_entry_original_alarm_expires_without_rearming' (1035) panicked at tools/long-run-supervisor-074/tests/support/bootstrap_held_entry_controls.rs:99:5:
+assertion `left == right` failed: Held bootstrap stopped: held readiness exchange refused; no worker release or executable handoff.
+
+  left: 0
+ right: 1
+
+thread 'installed_controls::held_controls::held_entry_sigkill_before_and_after_unconsumed_ack_is_not_reexecution' (1039) panicked at tools/long-run-supervisor-074/tests/support/bootstrap_held_entry_controls.rs:151:13:
+assertion `left == right` failed: first lost-ACK observation
+  left: 0
+ right: 1
+
+thread 'installed_controls::held_controls::held_entry_valid_readiness_then_duplicate_refuses_without_worker' (1046) panicked at tools/long-run-supervisor-074/tests/support/bootstrap_held_entry_controls.rs:99:5:
+assertion `left == right` failed: Held bootstrap stopped: held readiness exchange refused; no worker release or executable handoff.
+
+  left: 0
+ right: 1
+error: test failed, to rerun pass `-p hydracache-long-run-supervisor-074 --test bootstrap_current_image`

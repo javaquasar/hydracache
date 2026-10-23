@@ -1,0 +1,16 @@
+{
+  "scope": "local read-only same-owner sandbox observation; no original delivery or admission",
+  "baseline": {"exit": 101, "reason": "original owner sandbox observation binding is absent", "retention": "exclusive raw baseline command, logs and source snapshot"},
+  "development_check": {"exit": 101, "reason": "two E0282 comparisons used an ambiguous as _ cast for filesystem magic", "correction": "explicit libc::c_long casts", "retention": "tool-output summary, not raw evidence lane"},
+  "development_gnu_tests": {"exit": 0, "selected": 9, "scope": "models, value parsing and owned-helper foreign-cgroup refusal; no original manager positive", "retention": "tool-output summary, not raw evidence lane"},
+  "development_source_guard": {"exit": 101, "reason": "new signature assertion expected single-line formatting; rustfmt wraps self onto a separate line", "correction": "compare the exact no-argument signature and manager expression after removing only whitespace", "retention": "tool-output summary, not raw evidence lane"},
+  "credential_review": "the old signed task guard pins CapBnd but does not require zero; the unchanged unit does not clear the bounding set. Corrected the unpublished new observer's zero-bounding overconstraint to retain and compare the first bounding value, exactly preserving old active-capability and NoNewPrivs semantics; no original guard or threshold changed",
+  "second_development_source_guard": "whitespace normalization also needed to retain rustfmt's trailing argument comma; accept exactly self with or without that comma, never another argument",
+  "development_format": "cargo fmt requested multiline formatting of only the new census identity accessor; adjusted its exact additive hook, not any old census body",
+  "original_attempt": false,
+  "performance_measurement": false,
+  "clock_changes": false,
+  "service_changes": false,
+  "server": false,
+  "product": false
+}

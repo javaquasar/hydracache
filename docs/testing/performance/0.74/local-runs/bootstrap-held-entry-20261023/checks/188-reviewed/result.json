@@ -1,0 +1,15 @@
+{
+  "failure": "RuntimeError: image-cli refused; first result retained",
+  "lane": "188-reviewed",
+  "original_attempt": false,
+  "product": false,
+  "server": false,
+  "steps": [
+    "held-entry",
+    "held",
+    "parser",
+    "sandbox",
+    "installed",
+    "image-cli"
+  ]
+}

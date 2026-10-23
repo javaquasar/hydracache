@@ -1,0 +1,7 @@
+
+running 2 tests
+test bootstrap_child_forged_but_canonical_sealed_record_reaches_only_closed_authentication ... ok
+test bootstrap_child_no_argument_future_mode_and_unknown_environment_never_start ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+

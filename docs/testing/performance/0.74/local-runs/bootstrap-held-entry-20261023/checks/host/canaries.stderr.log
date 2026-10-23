@@ -1,0 +1,4 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 10.97s
+     Running tests\bootstrap_build_owner_074.rs (target\debug\deps\bootstrap_build_owner_074-b6e39b58cb8661bc.exe)
+error: test failed, to rerun pass `-p xtask --test bootstrap_build_owner_074`

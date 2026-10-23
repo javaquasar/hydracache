@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "wsl.exe",
+    "-d",
+    "Ubuntu",
+    "-u",
+    "artur",
+    "--",
+    "/usr/bin/sha256sum",
+    "/home/artur/.cache/hydracache-074-194-check/x86_64-unknown-linux-gnu/release/diagnostic_held_bootstrap"
+  ],
+  "elapsed_ns": 146085800,
+  "exit": 0,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stdout_sha256": "248bcc2e32ca304cfc8cb59ebaa986b301cfd9336cf6f0389995ea267f1e1ee4"
+}

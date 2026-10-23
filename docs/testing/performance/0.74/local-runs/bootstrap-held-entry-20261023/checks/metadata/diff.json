@@ -1,0 +1,11 @@
+{
+  "argv": [
+    "git",
+    "diff",
+    "--check"
+  ],
+  "elapsed_ns": 264364900,
+  "exit": 0,
+  "stderr_sha256": "0c520d794898f4f597fea9ee9c39460bf52223c6ab3ca92caffe13a9b5db2a01",
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

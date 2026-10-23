@@ -1,0 +1,95 @@
+
+running 17 tests
+test current_image_extra_descriptor_and_wrong_assertion_cannot_bypass_old_census ... ok
+test current_image_identical_bytes_at_different_inode_refuse_before_authority_boundary ... ok
+test current_image_matching_sealed_inode_still_cannot_authenticate_forged_context ... ok
+test installed_controls::held_controls::ancillary::tests::kernel_ancillary_bounded_malformed_headers_refuse_without_panic ... ok
+test installed_controls::held_controls::ancillary::tests::kernel_ancillary_model_rejects_unknown_flags_and_duplicate_tags_without_fd_leaks ... ok
+test installed_controls::held_controls::held_entry_activation_and_census_faults_refuse_without_ack ... held-entry first fault: foreign-env
+held-entry child stderr: Held bootstrap stopped: held activation environment; no worker release or executable handoff.
+
+held-entry first fault: missing-env
+held-entry child stderr: Held bootstrap stopped: held activation environment; no worker release or executable handoff.
+
+held-entry first fault: pid
+held-entry child stderr: Held bootstrap stopped: held activation environment; no worker release or executable handoff.
+
+held-entry first fault: count
+held-entry child stderr: Held bootstrap stopped: held activation environment; no worker release or executable handoff.
+
+held-entry first fault: names
+held-entry child stderr: Held bootstrap stopped: held activation environment; no worker release or executable handoff.
+
+held-entry first fault: invocation-env
+held-entry child stderr: Held bootstrap stopped: held activation environment; no worker release or executable handoff.
+
+held-entry first fault: arg
+held-entry child stderr: Bootstrap refused: bootstrap activation assertions; no start, send or executable handoff.
+
+held-entry first fault: extra
+held-entry child stderr: Held bootstrap stopped: installed bootstrap consistency assertions; no worker release or executable handoff.
+
+held-entry first fault: missing
+held-entry child stderr: Held bootstrap stopped: installed bootstrap consistency assertions; no worker release or executable handoff.
+
+held-entry first fault: swap
+held-entry child stderr: Held bootstrap stopped: installed bootstrap consistency assertions; no worker release or executable handoff.
+
+held-entry first fault: offset
+held-entry child stderr: Held bootstrap stopped: bootstrap complete role assertions; no worker release or executable handoff.
+
+held-entry first fault: inode
+held-entry child stderr: Held bootstrap stopped: installed bootstrap consistency assertions; no worker release or executable handoff.
+
+ok
+test installed_controls::held_controls::held_entry_context_entry_invocation_deadline_reserved_and_pid_faults_refuse ... held-entry child stderr: Held bootstrap stopped: held readiness exchange refused; no worker release or executable handoff.
+
+held-entry child stderr: Held bootstrap stopped: held readiness exchange refused; no worker release or executable handoff.
+
+held-entry child stderr: Held bootstrap stopped: held readiness exchange refused; no worker release or executable handoff.
+
+held-entry child stderr: Held bootstrap stopped: held readiness exchange refused; no worker release or executable handoff.
+
+held-entry child stderr: Held bootstrap stopped: held readiness exchange refused; no worker release or executable handoff.
+
+held-entry child stderr: Held bootstrap stopped: held readiness exchange refused; no worker release or executable handoff.
+
+held-entry child stderr: Held bootstrap stopped: held readiness exchange refused; no worker release or executable handoff.
+
+held-entry child stderr: Held bootstrap stopped: held readiness exchange refused; no worker release or executable handoff.
+
+ok
+test installed_controls::held_controls::held_entry_guardian_loss_and_peer_disconnect_stop_nonexecuting_hold ... held-entry before ACK stderr: 
+held-entry child stderr: Held bootstrap stopped: bootstrap complete role assertions; no worker release or executable handoff.
+
+held-entry before ACK stderr: 
+held-entry child stderr: Held bootstrap stopped: held readiness stopped without release; no worker release or executable handoff.
+
+ok
+test installed_controls::held_controls::held_entry_old_equal_name_assertions_refuse_without_weakening_exchange ... held-entry child stderr: Held bootstrap stopped: held readiness exchange refused; no worker release or executable handoff.
+
+ok
+test installed_controls::held_controls::held_entry_original_alarm_expires_without_rearming ... held-entry before ACK stderr: 
+held-entry child stderr: Held bootstrap stopped: held readiness stopped without release; no worker release or executable handoff.
+
+ok
+test installed_controls::held_controls::held_entry_sigkill_before_and_after_unconsumed_ack_is_not_reexecution ... held-entry child stderr: 
+held-entry lost-ACK stderr: 
+held-entry child stderr: 
+ok
+test installed_controls::held_controls::held_entry_valid_readiness_then_duplicate_refuses_without_worker ... held-entry before ACK stderr: 
+held-entry child stderr: Held bootstrap stopped: held readiness stopped without release; no worker release or executable handoff.
+
+ok
+test installed_controls::held_controls::held_entry_wrong_kernel_sender_and_malformed_packet_refuse ... held-entry child stderr: Held bootstrap stopped: held readiness exchange refused; no worker release or executable handoff.
+
+held-entry child stderr: Held bootstrap stopped: held readiness exchange refused; no worker release or executable handoff.
+
+ok
+test installed_controls::installed_child_busy_inode_is_shell_refusal_not_reader_evidence ... ok
+test installed_controls::installed_child_extra_missing_offset_hash_and_embedded_old_record_refuse ... ok
+test installed_controls::installed_child_filesystem_inode_matches_but_forged_context_still_refuses_authentication ... ok
+test installed_controls::installed_child_same_bytes_other_executable_inode_cannot_authenticate ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 10.71s
+

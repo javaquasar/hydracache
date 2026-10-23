@@ -1,0 +1,17 @@
+
+running 12 tests
+test diagnostic_artifacts::linux::held_role_census::bootstrap_images::entry::installed::entry_material::held_wire::child_exchange::tests::held_delivery_child_codec_binding_and_reserved_bytes ... ok
+test diagnostic_artifacts::linux::held_role_census::bootstrap_images::entry::installed::entry_material::held_wire::child_exchange::tests::held_delivery_child_helper ... ok
+test diagnostic_artifacts::linux::held_role_census::bootstrap_images::entry::installed::entry_material::held_wire::child_exchange::tests::held_delivery_child_real_credentials_pidfd_one_shot_and_lost_ack ... ok
+test diagnostic_artifacts::linux::held_role_census::bootstrap_images::entry::installed::entry_material::held_wire::child_exchange::tests::held_delivery_child_send_error_never_reopens_window ... ok
+test diagnostic_artifacts::linux::held_role_census::bootstrap_images::entry::installed::entry_material::held_wire::child_exchange::tests::held_delivery_child_wrong_kernel_peer_and_expired_bound_refuse ... ok
+test diagnostic_artifacts::linux::held_role_census::bootstrap_images::entry::installed::entry_material::held_wire::tests::held_delivery_wire_absolute_bound_cannot_be_renewed_after_arm_or_reply ... ok
+test diagnostic_artifacts::linux::held_role_census::bootstrap_images::entry::installed::entry_material::held_wire::tests::held_delivery_wire_exact_eighteen_aliases_names_and_fixed_command ... ok
+test diagnostic_artifacts::linux::held_role_census::bootstrap_images::entry::installed::entry_material::held_wire::tests::held_delivery_wire_legacy_properties_duplicate_names_and_aliases_refuse ... ok
+test diagnostic_artifacts::linux::held_role_census::bootstrap_images::entry::installed::entry_material::held_wire::tests::held_delivery_wire_lost_ack_and_every_malformed_reply_never_rearm ... ok
+test diagnostic_artifacts::linux::held_role_census::bootstrap_images::entry::installed::entry_material::held_wire::tests::held_delivery_wire_mutated_alias_or_original_flags_refuse ... ok
+test diagnostic_artifacts::linux::held_role_census::bootstrap_images::entry::installed::entry_material::held_wire::tests::held_delivery_wire_one_shot_job_is_not_child_ack ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::unit_projection::material::bootstrap_owner::installed_origin::entry_material::sandbox_owner::held_delivery::tests::held_delivery_original_constructor_consumes_and_exports_no_owner_or_fd ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 1605 filtered out; finished in 0.07s
+

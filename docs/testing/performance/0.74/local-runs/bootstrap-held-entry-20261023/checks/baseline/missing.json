@@ -1,0 +1,17 @@
+{
+  "argv": [
+    "cargo",
+    "test",
+    "--offline",
+    "--locked",
+    "-p",
+    "xtask",
+    "--test",
+    "bootstrap_installed_origin_074",
+    "bootstrap_held_entry_component_precedes_activation"
+  ],
+  "elapsed_ns": 13151579500,
+  "exit": 101,
+  "stderr_sha256": "71271ed214c6d9939ce704673dd142a537a1a06b2c8ba23002dc237fa8923100",
+  "stdout_sha256": "56cce845bb918b6be59dd27ca5b977cc222a084a3cff242f2934d5d09f40ccbc"
+}

@@ -1,0 +1,9 @@
+warning: in the working copy of 'crates/xtask/tests/bootstrap_installed_origin_074.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'crates/xtask/tests/support/bootstrap_held_delivery_guard.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tools/long-run-supervisor-074/src/bin/diagnostic_held_bootstrap.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tools/long-run-supervisor-074/src/diagnostic_bootstrap_installed_child.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tools/long-run-supervisor-074/src/diagnostic_held_child_exchange.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tools/long-run-supervisor-074/src/diagnostic_held_child_exchange_tests.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tools/long-run-supervisor-074/src/diagnostic_held_delivery_wire.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tools/long-run-supervisor-074/src/diagnostic_held_delivery_wire_tests.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tools/long-run-supervisor-074/tests/support/bootstrap_installed_controls.rs', LF will be replaced by CRLF the next time Git touches it
