@@ -9,6 +9,70 @@ fn installed_origin_exists_before_systemd_or_child_admission() {
 }
 
 #[test]
+fn bootstrap_held_entry_component_precedes_activation() {
+    assert!(
+        root()
+            .join("tools/long-run-supervisor-074/src/diagnostic_bootstrap_held_mode.rs")
+            .is_file(),
+        "eighteen-role child entry is absent"
+    );
+}
+
+#[test]
+fn bootstrap_held_entry_additions_preserve_exact_old_modes_and_role_checks() {
+    let view = entry_guard::material::child::sandbox::held::entry::source_view;
+    for (name, path) in [
+        (
+            "bin/diagnostic_held_bootstrap.rs",
+            "tools/long-run-supervisor-074/src/bin/diagnostic_held_bootstrap.rs",
+        ),
+        (
+            "diagnostic_bootstrap_installed_child.rs",
+            "tools/long-run-supervisor-074/src/diagnostic_bootstrap_installed_child.rs",
+        ),
+        (
+            "bootstrap_installed_controls.rs",
+            "tools/long-run-supervisor-074/tests/support/bootstrap_installed_controls.rs",
+        ),
+    ] {
+        let old = std::process::Command::new("git")
+            .current_dir(root())
+            .args(["--no-replace-objects", "show", &format!("55c69519:{path}")])
+            .output()
+            .unwrap();
+        assert!(old.status.success());
+        let old = String::from_utf8(old.stdout).unwrap().replace('\r', "");
+        let raw = read(path);
+        assert_eq!(view(name, &raw), old);
+        assert!(std::panic::catch_unwind(|| view(name, &old)).is_err());
+        assert_ne!(view(name, &format!("{raw}\n// drift\n")), old);
+    }
+    let held = source("diagnostic_bootstrap_held_child.rs");
+    assert!(held.contains("let roles = capture("));
+    assert!(held.contains("old_revalidate(14"));
+    assert!(held.contains("observed") || held.contains("observe(libc::FD_CLOEXEC)"));
+    let wire = source("diagnostic_held_child_exchange.rs");
+    let method = wire
+        .split("pub(crate) fn answer_framed_once")
+        .nth(1)
+        .unwrap()
+        .split("pub(crate) fn from_owned")
+        .next()
+        .unwrap();
+    assert_eq!(method.matches("frame()?").count(), 3);
+    assert!(method.contains("self.phase = Phase::Uncertain;"));
+    for name in [
+        "diagnostic_bootstrap_held_mode.rs",
+        "diagnostic_bootstrap_held_transport.rs",
+        "diagnostic_bootstrap_held_child.rs",
+    ] {
+        let raw = source(name);
+        assert!(!raw.contains("execve"));
+        assert!(!raw.contains("release_worker"));
+    }
+}
+
+#[test]
 fn bootstrap_held_delivery_components_precede_execution_admission() {
     for name in [
         "diagnostic_held_delivery_wire.rs",

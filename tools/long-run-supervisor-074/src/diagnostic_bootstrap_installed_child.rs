@@ -111,3 +111,6 @@ pub(crate) fn revalidate(prior: &ObservedInstalled) -> io::Result<()> {
 #[cfg(test)]
 #[path = "diagnostic_bootstrap_installed_child_tests.rs"]
 mod tests;
+
+#[path = "diagnostic_bootstrap_held_child.rs"]
+pub(crate) mod held;

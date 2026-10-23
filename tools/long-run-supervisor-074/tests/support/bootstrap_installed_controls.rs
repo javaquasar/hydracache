@@ -1,5 +1,8 @@
 //! Owned synthetic filesystem executable, never installation or original transport.
 use super::*;
+
+#[path = "bootstrap_held_entry_controls.rs"]
+mod held_controls;
 use hydracache_long_run_supervisor_074::diagnostic_builder::bootstrap_build::installed_entry_format::AssertedInstalledEntry;
 use std::os::unix::fs::PermissionsExt;
 const ARG: &str = "--systemd-bootstrap-installed-v1";

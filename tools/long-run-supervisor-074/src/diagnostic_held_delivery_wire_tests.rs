@@ -41,10 +41,14 @@ fn held_delivery_wire_exact_eighteen_aliases_names_and_fixed_command() {
     assert_eq!(unit, "hydracache-diagnostic-074-fixture-1.service");
     assert_eq!(mode, "fail");
     assert!(aux.is_empty());
-    assert_eq!(props.len(), 6);
+    assert_eq!(props.len(), 8);
     assert_eq!(props[0].0, "NoNewPrivileges");
     assert_eq!(props[5].0, "ExtraFileDescriptors");
     assert_eq!(props[5].1.value_signature().to_string(), "a(hs)");
+    assert_eq!(props[6].0, "SetLoginEnvironment");
+    assert!(!bool::try_from(&props[6].1).unwrap());
+    assert_eq!(props[7].0, "UnsetEnvironment");
+    assert_eq!(props[7].1.value_signature().to_string(), "as");
     assert!(r.body.windows(ARG.len()).any(|v| v == ARG.as_bytes()));
     assert!(r.body.windows(IMAGE.len()).any(|v| v == IMAGE.as_bytes()));
     assert!(!r.names_match("org.freedesktop.systemd1", ":1.3"));
@@ -101,6 +105,8 @@ fn held_delivery_wire_legacy_properties_duplicate_names_and_aliases_refuse() {
     let fds = std::array::from_fn(|i| files[i].as_raw_fd());
     for key in [
         "ExecStart",
+        "SetLoginEnvironment",
+        "UnsetEnvironment",
         "ExtraFileDescriptors",
         "StandardInput",
         "StandardOutputFileToAppend",

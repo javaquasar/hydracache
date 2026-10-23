@@ -1,6 +1,5 @@
 //! Private readiness mechanics. Kernel peer proof is not execution admission.
-use crate::diagnostic_kernel_admission::KernelError;
-use crate::protocol::MAX_PACKET_BYTES;
+use super::exchange_imports::{KernelError, MAX_PACKET_BYTES};
 use sha2::{Digest, Sha256};
 use std::{
     fs::File,
@@ -301,6 +300,43 @@ pub(crate) struct Child {
 }
 #[cfg_attr(not(test), allow(dead_code))]
 impl Child {
+    /// Readiness only: learn the nonce from the authenticated packet, not argv.
+    /// Full fresh role checks bracket receive and the only possible ACK.
+    pub(crate) fn answer_framed_once(
+        &mut self,
+        expected: &Challenge,
+        mut frame: impl FnMut() -> io::Result<()>,
+    ) -> io::Result<()> {
+        let result = (|| {
+            need(self.phase == Phase::Fresh)?;
+            self.phase = Phase::Uncertain;
+            frame()?;
+            need(
+                expected.nonce == [0; 32]
+                    && expected.child == std::process::id()
+                    && clock()? < expected.deadline,
+            )?;
+            let raw = self
+                .endpoint
+                .receive(expected.creator)?
+                .ok_or_else(denied)?;
+            let received = Challenge::decode(&raw)?;
+            let mut bound = expected.clone();
+            bound.nonce = received.nonce;
+            need(received == bound)?;
+            frame()?;
+            need(clock()? < expected.deadline)?;
+            self.endpoint.send(&received.ack()?)?;
+            frame()?;
+            need(clock()? < expected.deadline)?;
+            self.phase = Phase::Ready;
+            Ok(())
+        })();
+        if result.is_err() {
+            self.phase = Phase::Refused;
+        }
+        result
+    }
     pub(crate) fn from_owned(fd: OwnedFd) -> io::Result<Self> {
         Ok(Self {
             endpoint: Endpoint::new(fd)?,

@@ -1,4 +1,6 @@
 #![allow(dead_code)]
+#[path = "bootstrap_held_entry_guard.rs"]
+pub mod entry;
 pub const BLOCK: &str = r#"
 <!-- BEGIN HELD READINESS EXCHANGE V1 -->
 ## Held delivery readiness candidate v1
@@ -36,6 +38,8 @@ modes, qualification inputs and absolute windows remain unchanged.
 <!-- END HELD READINESS EXCHANGE V1 -->
 "#;
 pub fn compat_view(raw: &str) -> String {
+    let raw = entry::compat_view(raw);
+    let raw = raw.as_str();
     assert_eq!(raw.matches(BLOCK).count(), 1);
     raw.replacen(BLOCK, "", 1)
 }
@@ -54,6 +58,8 @@ pub fn hook(name: &str) -> Option<&'static str> {
     }
 }
 pub fn source_view(name: &str, raw: &str) -> String {
+    let raw = entry::source_view(name, raw);
+    let raw = raw.as_str();
     if let Some(hook) = hook(name) {
         assert_eq!(raw.matches(hook).count(), 1);
         raw.replacen(hook, "", 1)

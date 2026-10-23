@@ -187,3 +187,28 @@ fn held_delivery_child_send_error_never_reopens_window() {
     assert!(pair.begin(challenge).is_err());
     assert_eq!(pair.phase, Phase::Refused);
 }
+
+#[test]
+fn held_entry_failed_full_frame_latches_before_receive_and_never_reenters() {
+    let pair = Pair::create().unwrap();
+    let mut child = Child::from_owned(pair.child.fd.try_clone().unwrap()).unwrap();
+    let mut expected = c(std::process::id(), clock().unwrap() + 5_000_000_000);
+    expected.nonce = [0; 32];
+    let mut calls = 0;
+    assert!(child
+        .answer_framed_once(&expected, || {
+            calls += 1;
+            Err(denied())
+        })
+        .is_err());
+    assert_eq!(calls, 1);
+    assert_eq!(child.phase, Phase::Refused);
+    assert!(child
+        .answer_framed_once(&expected, || {
+            calls += 1;
+            Ok(())
+        })
+        .is_err());
+    assert_eq!(calls, 1);
+    assert!(pair.parent.receive(expected.creator).unwrap().is_none());
+}

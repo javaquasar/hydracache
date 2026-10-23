@@ -14,11 +14,20 @@ mod image_entry;
 #[path = "../diagnostic_bootstrap_installed_mode.rs"]
 mod installed_mode;
 
+#[path = "../diagnostic_bootstrap_held_mode.rs"]
+mod held_mode;
+
 #[cfg(all(test, target_os = "linux", target_arch = "x86_64"))]
 #[path = "../../tests/support/bootstrap_child_material.rs"]
 mod bootstrap_child_material;
 
 fn main() {
+    if held_mode::requested() {
+        if let Err(error) = held_mode::run() {
+            eprintln!("Held bootstrap stopped: {error}; no worker release or executable handoff.");
+        }
+        std::process::exit(2);
+    }
     if installed_mode::requested() {
         if let Err(error) = installed_mode::run() {
             eprintln!("Bootstrap refused: {error}; no start, send or executable handoff.");

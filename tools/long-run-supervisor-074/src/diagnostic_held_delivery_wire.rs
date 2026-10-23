@@ -10,9 +10,15 @@ use zbus::{
     message::{Message, Type},
     zvariant::{Fd, OwnedObjectPath, Value},
 };
+mod exchange_imports {
+    pub(super) use crate::diagnostic_kernel_admission::KernelError;
+    pub(super) use crate::protocol::MAX_PACKET_BYTES;
+}
+#[path = "diagnostic_held_activation.rs"]
+mod activation;
 #[path = "diagnostic_held_child_exchange.rs"]
 pub(crate) mod child_exchange;
-pub(crate) const ARG: &str = "--systemd-bootstrap-held-readiness-v1";
+pub(crate) const ARG: &str = activation::ARG;
 const IMAGE: &str = "/opt/hydracache-perf/bin/diagnostic-held-bootstrap-074";
 const NAMES: [&str; 15] = [
     "release",
@@ -251,6 +257,7 @@ fn build(
         deadline,
     } = address;
     check(deadline > 0 && deadline <= i64::MAX as u64)?;
+    check(NAMES.join(":") == activation::NAMES)?;
     check(
         name(manager)
             && name(client)
@@ -273,6 +280,8 @@ fn build(
         matches!(
             *k,
             "ExecStart"
+                | "SetLoginEnvironment"
+                | "UnsetEnvironment"
                 | "ExtraFileDescriptors"
                 | "StandardInput"
                 | "StandardInputFileDescriptor"
@@ -324,6 +333,8 @@ fn build(
                 .collect::<Vec<_>>(),
         ),
     ));
+    props.push(("SetLoginEnvironment", Value::from(false)));
+    props.push(("UnsetEnvironment", Value::from(activation::UNSET.to_vec())));
     let body: Body<'_> = (unit, "fail", props, vec![]);
     let message = Message::method_call(PATH, "StartTransientUnit")
         .and_then(|b| b.destination(manager))
