@@ -1,4 +1,6 @@
 #![allow(dead_code)] // Exact additive views reused by current-source contracts.
+#[path = "bootstrap_child_guard.rs"]
+mod child_guard;
 pub const BLOCK: &str = r#"
 <!-- BEGIN BOOTSTRAP ENTRY V1 -->
 ## Bootstrap child-entry assertions v1 (not enabled for delivery)
@@ -36,7 +38,7 @@ fn remove(raw: &str, addition: &str) -> String {
     raw.replacen(addition, "", 1)
 }
 pub fn compat_view(raw: &str) -> String {
-    remove(raw, BLOCK)
+    remove(&child_guard::compat_view(raw), BLOCK)
 }
 pub fn source_view(name: &str, raw: &str) -> String {
     match name {
