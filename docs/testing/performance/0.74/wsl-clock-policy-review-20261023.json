@@ -1,0 +1,87 @@
+{
+  "admission": false,
+  "baseline_commit": "38ede54c",
+  "clock_change": false,
+  "environment_selected_in_admission_state": false,
+  "evidence_method": "Pinned index SHA-256, every raw object size/SHA-256, frozen runtime/input guard",
+  "existing_vm_or_capacity_verified": false,
+  "first_unknown_outcome_sha256": "70a405fcf3a65394b83d3e6a500b3a4ad454ce649436c80af2a098e25ba3006c",
+  "frozen_runtime_guard_passed": true,
+  "host_feature_change": false,
+  "new_clock_observation": false,
+  "original_owner_run": false,
+  "original_windows": [
+    300,
+    60,
+    10
+  ],
+  "product": false,
+  "production_policy_change": false,
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "recommended_environment": "separate local Linux VM, subject to feasibility and explicit provisioning approval",
+  "reference_urls": [
+    "https://learn.microsoft.com/en-us/windows/wsl/compare-versions",
+    "https://man7.org/linux/man-pages/man7/time_namespaces.7.html",
+    "https://man7.org/linux/man-pages/man3/clock_gettime.3.html",
+    "https://man7.org/linux/man-pages/man2/adjtimex.2.html"
+  ],
+  "retry": false,
+  "reviewed_runtime_sources": {
+    "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs": "5f77f86c3c29a42156d63ffa913583f8a8c6419562f6c2bea5c34e75937260fa",
+    "tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs": "4e18523c71b6b5bdf3a74d75e58df096f25c6f773067d013a07db2a8cfde5214"
+  },
+  "schema": "hc074-offline-clock-policy-decision-review-v1",
+  "server": false,
+  "service_change": false,
+  "status": "proposal_only",
+  "uac_requested": false,
+  "verified_inputs": {
+    "bootstrap-original-getunit-20261023": {
+      "all_object_sizes_and_hashes_verified": true,
+      "index_sha256": "9f2fd0f457ec6d48f4e87e7bfc2bd1262bbf191cf51b760fe744eb369394b9f6",
+      "logical_files": 242
+    },
+    "wsl-clock-causality-root-context-20261023": {
+      "all_object_sizes_and_hashes_verified": true,
+      "index_sha256": "798b204c4b14865f482d64cdc4176aec7c1c3c4126b87bf635e8d9c2ba140082",
+      "logical_files": 46
+    },
+    "wsl-clock-readonly-20261023": {
+      "all_object_sizes_and_hashes_verified": true,
+      "index_sha256": "edec06e2ac4fa97126ce14ac5c0e4d1aff9cae7bd39f96bb91391102f3d606e3",
+      "logical_files": 56
+    },
+    "wsl-clock-root-namespace-logged-attempt-20261023": {
+      "all_object_sizes_and_hashes_verified": true,
+      "index_sha256": "9169b0e30dc42349293137b0609ab77af653acc349f05e71dcfe41768a224c86",
+      "logical_files": 29
+    },
+    "wsl-clock-root-namespace-uac-attempt-20261023": {
+      "all_object_sizes_and_hashes_verified": true,
+      "index_sha256": "792b54905fe6a1ebdeddc7f9eaf7963c2bb3b93c488610fe6737eb41f9e2a0d0",
+      "logical_files": 103
+    },
+    "wsl-clock-setter-20261023": {
+      "all_object_sizes_and_hashes_verified": true,
+      "index_sha256": "6b54d38f0ce7b4ceacdeb0ce879a7aee6570e53501cfc12206b39c78eaef051d",
+      "logical_files": 54
+    },
+    "wsl-clock-setter-offline-20261023": {
+      "all_object_sizes_and_hashes_verified": true,
+      "index_sha256": "8fd6a9410913cd24f1134bd7af5f49d16a36c0114761b191fae3c1bd5c635443",
+      "logical_files": 17
+    },
+    "wsl-clock-writer-identity-20261023": {
+      "all_object_sizes_and_hashes_verified": true,
+      "index_sha256": "4d2c26ffc6219eab7664de0e77d1b072392cf4e96434a6d8343cb1a0ce76fb7c",
+      "logical_files": 76
+    },
+    "wsl-debug-transport-audit-20261023": {
+      "all_object_sizes_and_hashes_verified": true,
+      "index_sha256": "6e3f61836b0940c39b39d277b29188871c961a21442fac384ad318badf567a4f",
+      "logical_files": 47
+    }
+  },
+  "vm_creation": false,
+  "wsl_dispatch": false
+}

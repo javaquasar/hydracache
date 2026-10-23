@@ -18770,3 +18770,27 @@ current investigation. The next independent decision is clock policy for the
 shared time namespace, not another wrapper around debug-shell. Correcting the
 measurement interface does not correct the clock writers or open original
 delivery, fault qualification or a server run.
+
+### Isolate the test clock domain before changing shared services
+
+The [clock-policy proposal](../testing/performance/0.74/wsl-clock-policy-options-20261023.md)
+compares leaving WSL unchanged, pausing one visible daemon, coordinating the
+whole WSL time domain and moving functional fault tests to an independent Linux
+kernel. The recorded writers and root metadata do not justify treating Ubuntu
+timesyncd as the only control. The already applied kernel discipline also cannot
+be assumed to disappear when a daemon stops.
+
+The recommendation is to leave shared WSL time untouched and first evaluate a
+separate local Linux VM. This is a risk/isolation choice, not evidence that a VM
+automatically has good clocks: its time service and host integration still need
+review and admission. A different WSL distro or ordinary container does not
+provide the proposed boundary; Linux time namespaces do not virtualize
+CLOCK_REALTIME. [Linux time namespace semantics](https://man7.org/linux/man-pages/man7/time_namespaces.7.html)
+
+The next permission boundary is only a read-only feasibility inventory. Creating
+the environment, observing its clocks and running original-owner/fault cells
+are distinct later approvals. The original live checks and 300/60/10-second
+windows remain unchanged, and old WSL context pins cannot be transplanted to a
+new kernel. Functional fault coverage on a VM would not supply bare-metal
+performance or continuous-retention qualification. This separates infrastructure
+readiness from product readiness without making the first refusals disappear.

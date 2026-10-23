@@ -6658,3 +6658,19 @@ first wrapper receipt-name collision without repeating the fetch. Local gates
 and frozen inputs pass. No WSL, clock/service, original-owner, product or server
 operation ran. Root metadata need not be recollected. The shared clock-policy
 decision and a properly admitted original-delivery/fault path remain separate.
+
+## Proposed clock policy and environment choice
+
+The [clock-policy options](wsl-clock-policy-options-20261023.md) recommend leaving
+the shared WSL clocks untouched and planning an independently owned Linux kernel
+for the remaining functional fault work. A local VM is the local-only preference,
+subject to a read-only resource/capability inventory and separate provisioning
+approval; an explicitly approved native server fixture is the alternative.
+
+Stopping only Ubuntu timesyncd does not account for the other observed writers
+or kernel discipline. A container/time namespace is not wall-clock isolation.
+The proposal names affected components, original live checks/windows, fresh
+context enrollment, first-result preservation and staged permissions. It does
+not create an environment, change policy/enrollment, run another clock control
+or open original-owner/server/product execution. VM functional results would
+not replace release performance qualification.
