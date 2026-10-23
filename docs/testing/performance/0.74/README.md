@@ -6453,3 +6453,13 @@ root-metadata/unprivileged-query lane completed 81 rows without removing context
 checks or changing clocks, services, deadlines or original-owner state. Both new
 archives and the old first refusal remain non-admitting. Exact setter attribution
 requires a separately authorized observation capability, not retry-to-pass.
+
+## Offline audit of NTP publication order
+
+The [publication-order audit](wsl-clock-offline-join-20261023.md) reproduces the
+pinned 81-row result and accounts for the getter following its clock read.
+Wider surrounding windows still contain large negative remainders for packets
+308 and 310 if their recorded NTP steps were applied. This strengthens the
+conditional opposing-correction model, not exact setter attribution. There
+were zero new live observations and no tracing-state changes. Twenty-two
+offline controls cover the analysis and its refusal cases.

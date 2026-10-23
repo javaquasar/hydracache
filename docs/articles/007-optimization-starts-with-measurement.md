@@ -18485,3 +18485,20 @@ read the complete root context while every modes=0 query remained unprivileged.
 No clock, service, runtime predicate or admission window changed. There is no
 reason to turn an environmental timing finding into a weaker original-owner
 guard or a successful server gate.
+
+### Publication order limits a clock correlation
+
+An [offline audit of the retained series](../testing/performance/0.74/wsl-clock-offline-join-20261023.md)
+made the acquisition geometry explicit: each clock read preceded its NTP getter.
+A response first seen in one row may have been applied after that row's clock
+read. Comparing only adjacent same-row values can therefore attach too much
+precision to an apparent event match.
+
+Extending each comparison through the following clock sample preserves the
+large opposing remainders for two packets, conditional on successful NTP step
+application. It does not turn an arithmetic remainder into an observed syscall
+or certify nanosecond clock accuracy. The audit reproduces the original analysis
+without replacing it and uses no new live observations. The next attribution
+boundary is explicit: enabling a bounded trace needs separate authorization,
+and even a successful future trace cannot recover a historical tick writer
+that does not write again.

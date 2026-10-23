@@ -68,3 +68,13 @@ Both collection paths are consumed. Only offline verification is appropriate:
 
 The old 601-row archive stays unchanged. The newer rate model explains the
 observed tick/frequency effect, not historical caller identity or admission.
+
+## Offline publication order audit
+
+offline_join.py reads the pinned archive without entering WSL. It reproduces
+the original analysis and expands each new packet's clock comparison through
+the following clock sample, since the getter follows its same-row clock read.
+The [audit](../../docs/testing/performance/0.74/wsl-clock-offline-join-20261023.md)
+keeps negative remainders conditional on successful upstream step application;
+it never turns correlation into a caller identity or clock-accuracy claim.
+The exclusive analysis output is consumed. No trace is enabled by this tool.
