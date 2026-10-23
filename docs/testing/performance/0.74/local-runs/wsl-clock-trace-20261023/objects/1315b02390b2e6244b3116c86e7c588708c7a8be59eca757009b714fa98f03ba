@@ -1,0 +1,16 @@
+{
+  "admission": false,
+  "clock_samples": 0,
+  "completed": false,
+  "exact_clock_setting_caller": null,
+  "exact_failing_operation": null,
+  "first_error": "OSError(22, 'Invalid argument')",
+  "guardian_cleanup": true,
+  "historical_tick_setter": null,
+  "method": "hc074-bounded-clock-trace-first-refusal-v1",
+  "no_redispatch": true,
+  "owner_cleanup": true,
+  "raw_trace_retained": false,
+  "root_controls_equal": true,
+  "session_exit": 1
+}

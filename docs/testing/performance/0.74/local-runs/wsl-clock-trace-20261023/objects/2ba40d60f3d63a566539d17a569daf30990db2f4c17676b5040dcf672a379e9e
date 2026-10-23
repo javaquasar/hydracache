@@ -1,0 +1,15 @@
+{
+  "argv": [
+    "wsl.exe",
+    "-d",
+    "Ubuntu",
+    "-u",
+    "root",
+    "--exec",
+    "python3",
+    "-B",
+    "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/wsl-clock-trace-074/capture.py"
+  ],
+  "exit": 1,
+  "timeout_seconds": 180
+}

@@ -6463,3 +6463,19 @@ Wider surrounding windows still contain large negative remainders for packets
 conditional opposing-correction model, not exact setter attribution. There
 were zero new live observations and no tracing-state changes. Twenty-two
 offline controls cover the analysis and its refusal cases.
+
+## Bounded WSL tracing: first configuration refusal
+
+The explicitly approved [private trace attempt](wsl-clock-trace-20261023.md)
+failed with EINVAL during configuration, before trace text or clock samples.
+Both cleanup owners confirmed removal of the owned instance/probes; global
+tracing controls, boot, PID1 start ticks and time namespace compare unchanged.
+The exclusive lane was not retried. Its 25-file exact archive preserves the
+first failure and the original collector source.
+
+A separate source-only correction now retains the control-file path and full
+traceback. Seventeen unit/owned-process controls pass without enabling probes;
+the first attempt's 16 pre-dispatch controls remain archived independently.
+The backward setter and historical tick writer are still unknown. Another
+bounded diagnostic candidate needs separate approval; no original-owner,
+runtime/deadline changes, service action or server execution was performed.

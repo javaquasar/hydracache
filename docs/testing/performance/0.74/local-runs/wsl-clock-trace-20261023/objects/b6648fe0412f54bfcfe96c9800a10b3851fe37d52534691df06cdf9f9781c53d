@@ -1,0 +1,29 @@
+{
+  "boot": "cf222c07-5476-4f70-9a32-455e99204d0a",
+  "btf_sha256": "7a56bbf53f875fcf5c09d907b178bf15e6ee77748289532a85435e74222fa00a",
+  "layouts": {
+    "__kernel_timex": {
+      "freq": 16,
+      "modes": 0,
+      "tick": 88,
+      "time": 72
+    },
+    "timespec64": {
+      "tv_nsec": 8,
+      "tv_sec": 0
+    }
+  },
+  "pid1_stat": "1 (systemd) S 0 1 1 0 -1 4194560 8871 179943 96 1911 161 190 558 526 20 0 1 0 10939 22482944 3023 18446744073709551615 96548871368704 96548871412577 140723243762928 0 0 0 671173123 4096 1260 1 0 0 17 5 0 0 0 0 0 96548871442384 96548871446544 96548877864960 140723243769751 140723243769762 140723243769762 140723243769837 0\n",
+  "root": {
+    "current_tracer": "nop\n",
+    "dynamic_events": "",
+    "events/enable": "0\n",
+    "instances": [],
+    "kprobe_events": "",
+    "set_event": "",
+    "trace_clock": "[local] global counter uptime perf mono mono_raw boot tai x86-tsc\n",
+    "trace_options": "print-parent\nnosym-offset\nnosym-addr\nnoverbose\nnoraw\nnohex\nnobin\nnoblock\nnofields\ntrace_printk\nannotate\nnouserstacktrace\nnosym-userobj\nnoprintk-msg-only\ncontext-info\nnolatency-format\nrecord-cmd\nnorecord-tgid\noverwrite\nnodisable_on_free\nirq-info\nmarkers\nnoevent-fork\nnopause-on-trace\nhash-ptr\nfunction-trace\nnofunction-fork\nnodisplay-graph\nnostacktrace\nnotest_nop_accept\nnotest_nop_refuse\n",
+    "tracing_on": "1\n"
+  },
+  "time_namespace": "time:[4026531834]"
+}

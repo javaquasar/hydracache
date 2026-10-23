@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "wsl.exe",
+    "-d",
+    "Ubuntu",
+    "-u",
+    "root",
+    "--exec",
+    "python3",
+    "-B",
+    "-c",
+    "from pathlib import Path; import json; r=Path('/sys/kernel/tracing'); print(json.dumps({n:(r/n).read_text() for n in ['error_log','kprobe_events','dynamic_events','events/enable','tracing_on']})); print('instances', [p.name for p in (r/'instances').iterdir()])"
+  ],
+  "exit": 0,
+  "timeout_seconds": 45
+}

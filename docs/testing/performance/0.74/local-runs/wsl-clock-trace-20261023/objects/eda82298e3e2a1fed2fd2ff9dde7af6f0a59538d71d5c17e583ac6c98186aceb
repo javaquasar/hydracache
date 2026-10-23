@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/wsl-clock-trace-074/capture.py", line 269, in <module>
+    collect()
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/wsl-clock-trace-074/capture.py", line 265, in collect
+    raise RuntimeError('First trace outcome or cleanup refused; no retry')
+RuntimeError: First trace outcome or cleanup refused; no retry

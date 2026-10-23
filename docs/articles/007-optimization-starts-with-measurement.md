@@ -18502,3 +18502,27 @@ without replacing it and uses no new live observations. The next attribution
 boundary is explicit: enabling a bounded trace needs separate authorization,
 and even a successful future trace cannot recover a historical tick writer
 that does not write again.
+
+### A failed trace must not become a successful attribution
+
+An explicitly approved [bounded WSL trace](../testing/performance/0.74/wsl-clock-trace-20261023.md)
+attempted to distinguish clock-setting paths using private-instance events,
+typed kernel arguments, return values and stacks. The hypothesis was that
+actual setter calls could separate the opposing correction from the NTP
+service correlation. That hypothesis was not tested successfully: configuration
+returned EINVAL before a usable trace or query series existed.
+
+The useful confirmed result is narrower. A guardian armed before instrumentation
+and the normal cleanup path both reported removal of the owned instance/probes;
+global tracing controls and session identities stayed unchanged. The attempt
+was sealed as a failure, without a second live dispatch or an original-owner
+retry. No performance improvement, absent writer or healthy delivery is claimed.
+
+The refusal also exposed a collector defect: retaining only the exception text
+discarded the failing operation's location. A separate source-only correction
+now retains the exact control path and traceback, with negative tests for both
+buffered write and close failures. It was not used to rewrite the old result or
+silently repeat the observation. Instrumentation needs failure diagnostics and
+its own cleanup tests; product guards and admission windows must not absorb the
+cost of making an experiment appear successful. Setter attribution remains
+open, and another bounded capture is a separate authorization boundary.

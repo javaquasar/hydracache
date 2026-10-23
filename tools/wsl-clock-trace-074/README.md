@@ -29,3 +29,8 @@ Analysis is offline, pairs returns, checks loss, distinguishes filtered query
 returns and preserves unknown historical writers. Kernel PIDs are not treated
 as authenticated distro process identities. It makes no performance or admission
 claim and changes no runtime predicates or deadlines.
+
+The 2026-10-23 lane is already consumed: configuration failed with EINVAL and
+cleanup succeeded. See the [first-result report](../../docs/testing/performance/0.74/wsl-clock-trace-20261023.md).
+Do not invoke collect again or delete its output. The later path/traceback
+diagnostic correction has only offline/mock validation, not a second trace.

@@ -1,0 +1,134 @@
+{
+  "admission": false,
+  "clock_change": false,
+  "files": {
+    "observation/analysis.json": {
+      "bytes": 447,
+      "sha256": "1315b02390b2e6244b3116c86e7c588708c7a8be59eca757009b714fa98f03ba"
+    },
+    "observation/cleanup-owner.json": {
+      "bytes": 94,
+      "sha256": "1fd317e5fa6b4210a4443e9d3f3ef9b4ce2a0b01e876af7f9019afa06e2e072f"
+    },
+    "observation/cleanup-readback.json": {
+      "bytes": 435,
+      "sha256": "75e93fe4f60fde769e8303c928faa7635c27d0b998a662c02c38b9989edfd2a7"
+    },
+    "observation/cleanup-readback.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/cleanup-readback.stdout.log": {
+      "bytes": 119,
+      "sha256": "322e02fae3c08d7cac28b42d56c86082b03953582ebe6f9d2fa494036fe24b5b"
+    },
+    "observation/cleanup.lock": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/controls.json": {
+      "bytes": 298,
+      "sha256": "444efb6818415573cc356acf4df417694ce2f6eb22fd303c11f29ac78f85758b"
+    },
+    "observation/controls.stderr.log": {
+      "bytes": 2073,
+      "sha256": "caf1e1e012fcd4d1ea4c633e5668e0961b07835a4e59e2681a6d70331e4f10c5"
+    },
+    "observation/controls.stdout.log": {
+      "bytes": 194,
+      "sha256": "bc85499bb4a45c385570cf48b17f10cf54ac38432da68c94bdba77172e2903d4"
+    },
+    "observation/first-failure.json": {
+      "bytes": 49,
+      "sha256": "7034e188fb6d94aa09e38ec7c5521490daacf571d7079c28cb533798dbbfc3f7"
+    },
+    "observation/guardian.json": {
+      "bytes": 127,
+      "sha256": "f63c3bafadae71fe1677135be64a5d4fd4760e56b4ff9a75a92e439c94e16a74"
+    },
+    "observation/intent.json": {
+      "bytes": 2075,
+      "sha256": "6ba74e9f9366adeb04c6d59812cbea132fdf2312390e6050304af82448177354"
+    },
+    "observation/postflight.json": {
+      "bytes": 908,
+      "sha256": "e19ee51b338c9fb9f7bae7c67dda037ed869fd5773bde001ebe600a4b025457d"
+    },
+    "observation/preflight.json": {
+      "bytes": 1434,
+      "sha256": "b6648fe0412f54bfcfe96c9800a10b3851fe37d52534691df06cdf9f9781c53d"
+    },
+    "observation/session.json": {
+      "bytes": 247,
+      "sha256": "2ba40d60f3d63a566539d17a569daf30990db2f4c17676b5040dcf672a379e9e"
+    },
+    "observation/session.stderr.log": {
+      "bytes": 414,
+      "sha256": "eda82298e3e2a1fed2fd2ff9dde7af6f0a59538d71d5c17e583ac6c98186aceb"
+    },
+    "observation/session.stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/trace-intent.json": {
+      "bytes": 1607,
+      "sha256": "bf26dbc37bdd94ca0d477a3e2c974798861a48ee3d655bc93a16c8075964cefd"
+    },
+    "source/docs/testing/performance/0.74/wsl-clock-trace-plan-20261023.md": {
+      "bytes": 4025,
+      "sha256": "57dfa6723d52d0f8cbf76e21f53d636094bdcf3f057d1a064288555fbe7e666e"
+    },
+    "source/tools/wsl-clock-trace-074/README.md": {
+      "bytes": 1470,
+      "sha256": "2638670b3e613991167d3becb1e8bdbbca03cf5eb3705d9e3ddd833a49d7aa56"
+    },
+    "source/tools/wsl-clock-trace-074/analyze.py": {
+      "bytes": 7112,
+      "sha256": "aba6a613d26172c4c15eed1ce1779c70f469259e16ef474da4f869bd02f86621"
+    },
+    "source/tools/wsl-clock-trace-074/btf.py": {
+      "bytes": 4055,
+      "sha256": "33f9999268f587fa591c79037aea3e5a4c33712ac0294b17cd0ecad9f0cb1c5c"
+    },
+    "source/tools/wsl-clock-trace-074/capture.py": {
+      "bytes": 12350,
+      "sha256": "d6f7994392dd6cb4097ff08118b3794c74844474c081147204185349fe838da1"
+    },
+    "source/tools/wsl-clock-trace-074/run.py": {
+      "bytes": 6907,
+      "sha256": "c2e8e9b3c727e54e16403050daa20bb7aac0a93b2bfcc1f32e7637fde93bd6f6"
+    },
+    "source/tools/wsl-clock-trace-074/test_trace.py": {
+      "bytes": 11588,
+      "sha256": "de5f59e8efefedb4bc8afd5c271e9b2c02f6b0fb1f5508905eee3a56ed8f4bbb"
+    }
+  },
+  "frozen_inputs": {
+    "local-runs/bootstrap-original-getunit-20261023/index.json": "9f2fd0f457ec6d48f4e87e7bfc2bd1262bbf191cf51b760fe744eb369394b9f6",
+    "local-runs/wsl-clock-causality-20261023/index.json": "6a7d11e8e8dc830262b8191bacdce03b1a0b822261d246dbaae0991da0694298",
+    "local-runs/wsl-clock-causality-root-context-20261023/index.json": "798b204c4b14865f482d64cdc4176aec7c1c3c4126b87bf635e8d9c2ba140082",
+    "local-runs/wsl-clock-offline-join-20261023/index.json": "56250b03ab2aab0efb3cd1d5e559fcae6f5e0e64314f75693297d7ef4bff8aff",
+    "local-runs/wsl-clock-readonly-20261023/index.json": "edec06e2ac4fa97126ce14ac5c0e4d1aff9cae7bd39f96bb91391102f3d606e3",
+    "qualification-manifest.toml": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+  },
+  "original_owner_run": false,
+  "original_windows": [
+    300,
+    60,
+    10
+  ],
+  "product": false,
+  "schema": "hc074-bounded-clock-trace-evidence-v1",
+  "server": false,
+  "service_change": false,
+  "sources": {
+    "docs/testing/performance/0.74/wsl-clock-trace-plan-20261023.md": "57dfa6723d52d0f8cbf76e21f53d636094bdcf3f057d1a064288555fbe7e666e",
+    "tools/wsl-clock-trace-074/README.md": "2638670b3e613991167d3becb1e8bdbbca03cf5eb3705d9e3ddd833a49d7aa56",
+    "tools/wsl-clock-trace-074/analyze.py": "aba6a613d26172c4c15eed1ce1779c70f469259e16ef474da4f869bd02f86621",
+    "tools/wsl-clock-trace-074/btf.py": "33f9999268f587fa591c79037aea3e5a4c33712ac0294b17cd0ecad9f0cb1c5c",
+    "tools/wsl-clock-trace-074/capture.py": "d6f7994392dd6cb4097ff08118b3794c74844474c081147204185349fe838da1",
+    "tools/wsl-clock-trace-074/run.py": "c2e8e9b3c727e54e16403050daa20bb7aac0a93b2bfcc1f32e7637fde93bd6f6",
+    "tools/wsl-clock-trace-074/test_trace.py": "de5f59e8efefedb4bc8afd5c271e9b2c02f6b0fb1f5508905eee3a56ed8f4bbb"
+  },
+  "tracing_state_changed": true
+}
