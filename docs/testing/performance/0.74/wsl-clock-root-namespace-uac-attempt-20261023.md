@@ -119,3 +119,7 @@ product workload, release installation or server operation was performed by this
 attempt. Existing background clock writers were not controlled. Root metadata
 narrows the diagnosis; it does not admit clock policy, original delivery,
 full SIGKILL/lost-ACK testing or server execution.
+
+The subsequent [offline transport audit](wsl-debug-transport-audit-20261023.md)
+identifies the console/process-completion mismatch without another WSL command.
+It leaves this first timeout and the guest-retirement boundary unchanged.

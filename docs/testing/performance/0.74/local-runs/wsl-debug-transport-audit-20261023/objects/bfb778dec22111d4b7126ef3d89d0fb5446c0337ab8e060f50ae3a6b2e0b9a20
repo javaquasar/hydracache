@@ -1,0 +1,39 @@
+{
+  "admission": false,
+  "comment_body_sha256": "38c5d91a2836fb0e686ceefcb95ccab29c20d1b607a193ceb9a67f02c5453f3d",
+  "comment_created_at": "2023-01-25T19:52:08Z",
+  "findings": [
+    "The debug console opens a named pipe and relays its bytes.",
+    "This path has no command-specific guest exit status.",
+    "Root logout and Windows relay termination are separate events."
+  ],
+  "function_sha256": "45c3f0f535da59a3b880680b3f013d55ffaf0a1fe560ceadeffebb1cb94fc5e1",
+  "maintainer_association": "COLLABORATOR",
+  "maintainer_comment_url": "https://github.com/microsoft/WSL/issues/9535#issuecomment-1404148600",
+  "maintainer_login": "OneBlue",
+  "new_wsl_dispatches": 0,
+  "original_owner_run": false,
+  "product": false,
+  "release_ref": {
+    "node_id": "MDM6UmVmNTU2MjY5MzU6cmVmcy90YWdzLzIuNS4xMA==",
+    "object": {
+      "sha": "642331364dda7a3d88bf64acb87e7056918a5fc9",
+      "type": "commit",
+      "url": "https://api.github.com/repos/microsoft/WSL/git/commits/642331364dda7a3d88bf64acb87e7056918a5fc9"
+    },
+    "ref": "refs/tags/2.5.10",
+    "url": "https://api.github.com/repos/microsoft/WSL/git/refs/tags/2.5.10"
+  },
+  "release_ref_url": "https://api.github.com/repos/microsoft/WSL/git/ref/tags/2.5.10",
+  "reviewed_function": "RunDebugShell",
+  "server": false,
+  "source_sha256": "751bf52ee671e58dd6a096059b831b87ca8a819e6abf085133ca9d3ba116632f",
+  "source_structure_tokens_present": [
+    "CreateFileW(",
+    "RelayStandardInput(",
+    "InterruptableRelay(",
+    "THROW_HR(HCS_E_CONNECTION_CLOSED)"
+  ],
+  "source_url": "https://raw.githubusercontent.com/microsoft/WSL/642331364dda7a3d88bf64acb87e7056918a5fc9/src/windows/common/WslClient.cpp",
+  "upstream_source_is_not_installed_binary_attestation": true
+}

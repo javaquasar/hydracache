@@ -104,3 +104,17 @@ the `1157 → 193 → 176` timesyncd chain and root chronyd PID 210. Offline par
 does not turn that timeout into success, authenticate historical writers or
 prove guest-process retirement. Do not rerun either the controller or launcher,
 clear any of the three output lanes, or change clocks/services to pass a gate.
+
+The [offline transport audit](../../docs/testing/performance/0.74/wsl-debug-transport-audit-20261023.md)
+identifies the console/process-completion contract mismatch. The following
+command reads only the pinned saved archive; it never requests UAC or calls WSL:
+
+```powershell
+python -B tools/wsl-clock-trace-074/debug_transport.py
+```
+
+Its framing/client/guest outcomes are separate. The isolated preflight API
+refuses process-completion use of the debug console and unreviewed alternatives;
+it is not integrated into a new executor. Eight `test_debug_transport.py`
+controls use only saved bytes and synthetic temporary files. All live entries
+remain consumed; a finite process-tracked root exchange requires separate review.

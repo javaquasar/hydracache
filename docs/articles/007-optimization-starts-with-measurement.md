@@ -18748,3 +18748,25 @@ separate boundary, as do a clock-policy decision and healthy original delivery.
 The useful outcome is a narrower diagnosis with an intact first refusal, not a
 product-performance improvement or permission to change services. No original
 window was widened and no clock, service or server intervention followed.
+
+### Match the completion contract before adding another timeout workaround
+
+The [offline transport review](../testing/performance/0.74/wsl-debug-transport-audit-20261023.md)
+found a methodological mismatch. In the [reviewed WSL release source](https://github.com/microsoft/WSL/blob/642331364dda7a3d88bf64acb87e7056918a5fc9/src/windows/common/WslClient.cpp#L1367-L1413),
+debug-shell is a named-pipe console relay, not a command-specific guest exit
+interface. The retained logout therefore did not justify a longer process
+timeout; guest completion must remain unknown. The exact native waiting
+instruction was not captured, so source review is not a native stack diagnosis.
+
+The isolated offline correction keeps framing, client result and guest status
+separate. Its preflight refuses process-completion use of that console and any
+unreviewed fallback. Eight focused controls and 25 existing orchestration
+controls pass without executing WSL. No replacement executor was activated, no
+marker was promoted into retirement proof and the original timeout stayed
+intact. A future finite exchange needs its own process-lifetime contract.
+
+The root metadata already exists, so repeating the lookup would not advance the
+current investigation. The next independent decision is clock policy for the
+shared time namespace, not another wrapper around debug-shell. Correcting the
+measurement interface does not correct the clock writers or open original
+delivery, fault qualification or a server run.

@@ -1,0 +1,9 @@
+test_adapter_calls_same_core_once_and_restores_placement (test_root_namespace_uac.PlacementTests.test_adapter_calls_same_core_once_and_restores_placement) ... ok
+test_changed_core_refuses_before_original_checks (test_root_namespace_uac.PlacementTests.test_changed_core_refuses_before_original_checks) ... ok
+test_fake_child_receives_only_new_directory_and_cannot_reuse_it (test_root_namespace_uac.PlacementTests.test_fake_child_receives_only_new_directory_and_cannot_reuse_it) ... ok
+test_launcher_only_changes_two_fixed_placement_tokens (test_root_namespace_uac.PlacementTests.test_launcher_only_changes_two_fixed_placement_tokens) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 4.155s
+
+OK

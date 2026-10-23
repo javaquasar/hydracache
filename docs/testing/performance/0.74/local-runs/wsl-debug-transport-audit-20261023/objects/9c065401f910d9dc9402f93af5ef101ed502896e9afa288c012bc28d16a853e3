@@ -1,0 +1,57 @@
+"""Read public upstream metadata/source; never execute WSL or source contents."""
+import hashlib
+import json
+from pathlib import Path
+import sys
+import urllib.request
+
+ROOT = Path(r'C:\Workspace\prj\jq\cashe\hydracache-074')
+sys.path.insert(0, str(ROOT / 'tools/wsl-clock-trace-074'))
+import run as b
+
+OUT = ROOT / 'target/wsl-debug-transport-audit-20261023'
+COMMIT = '642331364dda7a3d88bf64acb87e7056918a5fc9'
+
+
+def get(url):
+    request = urllib.request.Request(url, headers={'User-Agent': 'HydraCache-074-offline-audit',
+                                                   'Accept': 'application/vnd.github+json'})
+    with urllib.request.urlopen(request, timeout=20) as response:
+        return response.read()
+
+
+ref_url = 'https://api.github.com/repos/microsoft/WSL/git/ref/tags/2.5.10'
+ref_raw = get(ref_url)
+ref = json.loads(ref_raw)
+if ref['object'] != {'sha': COMMIT, 'type': 'commit',
+                      'url': 'https://api.github.com/repos/microsoft/WSL/git/commits/' + COMMIT}:
+    raise ValueError('Changed upstream release tag')
+url = 'https://raw.githubusercontent.com/microsoft/WSL/' + COMMIT + '/src/windows/common/WslClient.cpp'
+raw = get(url)
+source = raw.decode('utf-8')
+body = source[source.index('int RunDebugShell()'):source.index('int WslMain(')]
+tokens = ('CreateFileW(', 'RelayStandardInput(', 'InterruptableRelay(', 'THROW_HR(HCS_E_CONNECTION_CLOSED)')
+if not all(token in body for token in tokens):
+    raise ValueError('Different reviewed source structure')
+comments_url = 'https://api.github.com/repos/microsoft/WSL/issues/9535/comments'
+comments_raw = get(comments_url)
+matches = [x for x in json.loads(comments_raw) if x['user']['login'] == 'OneBlue'
+           and 'named pipe channel' in x['body'] and 'lifetimes' in x['body']]
+if len(matches) != 1:
+    raise ValueError('Maintainer explanation unavailable or ambiguous')
+comment = matches[0]
+b.put(OUT / 'upstream-review.json', {
+    'release_ref_url': ref_url, 'release_ref': ref, 'source_url': url,
+    'source_sha256': hashlib.sha256(raw).hexdigest(),
+    'reviewed_function': 'RunDebugShell', 'function_sha256': hashlib.sha256(body.encode()).hexdigest(),
+    'source_structure_tokens_present': list(tokens),
+    'findings': ['The debug console opens a named pipe and relays its bytes.',
+                 'This path has no command-specific guest exit status.',
+                 'Root logout and Windows relay termination are separate events.'],
+    'maintainer_comment_url': comment['html_url'], 'maintainer_login': comment['user']['login'],
+    'maintainer_association': comment['author_association'], 'comment_created_at': comment['created_at'],
+    'comment_body_sha256': hashlib.sha256(comment['body'].encode()).hexdigest(),
+    'upstream_source_is_not_installed_binary_attestation': True,
+    'new_wsl_dispatches': 0, 'admission': False, 'server': False, 'product': False,
+    'original_owner_run': False})
+print('Pinned release source and maintainer explanation reviewed; no WSL dispatch')

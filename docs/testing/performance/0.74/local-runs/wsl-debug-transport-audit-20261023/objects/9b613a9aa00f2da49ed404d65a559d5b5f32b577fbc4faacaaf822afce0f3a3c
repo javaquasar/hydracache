@@ -1,0 +1,53 @@
+"""Seal saved bytes and offline controls only; no network or WSL dispatch."""
+import json
+from pathlib import Path
+import sys
+
+ROOT = Path(r'C:\Workspace\prj\jq\cashe\hydracache-074')
+sys.path.insert(0, str(ROOT / 'tools/wsl-clock-trace-074'))
+import debug_transport as d
+import run as b
+
+OUT = ROOT / 'target/wsl-debug-transport-audit-20261023'
+DEST = ROOT / 'docs/testing/performance/0.74/local-runs/wsl-debug-transport-audit-20261023'
+observed = d.audit(d.load())
+if observed != json.loads((OUT / 'offline-audit.stdout.log').read_bytes()):
+    raise ValueError('Offline result does not reproduce')
+b.sources()
+proof = json.loads((OUT / 'upstream-review.json').read_bytes())
+if proof['release_ref']['object']['sha'] != '642331364dda7a3d88bf64acb87e7056918a5fc9':
+    raise ValueError('Different reviewed release')
+inputs = {'observation/' + p.name: p.read_bytes() for p in sorted(OUT.iterdir()) if p.is_file()}
+inputs |= {'source/' + p.name: p.read_bytes() for p in [
+    b.HERE / 'debug_transport.py', b.HERE / 'test_debug_transport.py',
+    b.HERE / 'root_namespace.py', b.HERE / 'root_namespace_logged.py',
+    b.HERE / 'root_namespace_logged.ps1', b.HERE / 'root_namespace_uac.py',
+    b.HERE / 'root_namespace_uac.ps1', ROOT / 'target/review-debug-transport-20261023.py', Path(__file__)]}
+inputs['input/root-uac-index.json'] = (d.ARCHIVE / 'index.json').read_bytes()
+old = ROOT / 'docs/testing/performance/0.74/local-runs/wsl-clock-readonly-20261023'
+raw = (old / 'index.json').read_bytes()
+if d.digest(raw) != 'edec06e2ac4fa97126ce14ac5c0e4d1aff9cae7bd39f96bb91391102f3d606e3':
+    raise ValueError('Changed saved version input')
+inputs['input/clock-readonly-index.json'] = raw
+entry = json.loads(raw)['files']['observation/wsl-version.stdout.log']
+version = (old / 'objects' / entry['sha256']).read_bytes()
+if d.digest(version) != entry['sha256'] or len(version) != entry['bytes']:
+    raise ValueError('Changed saved version output')
+if 'WSL version: 2.5.10.0' not in version.decode('utf-16le'):
+    raise ValueError('Different saved WSL version')
+inputs['input/wsl-version.stdout.log'] = version
+DEST.mkdir(exist_ok=False)
+objects = DEST / 'objects'
+objects.mkdir()
+files = {}
+for name, content in sorted(inputs.items()):
+    sha = d.digest(content)
+    if not (objects / sha).exists():
+        with (objects / sha).open('xb') as stream:
+            stream.write(content)
+    files[name] = {'sha256': sha, 'bytes': len(content)}
+b.put(DEST / 'index.json', {'schema': 'hc074-offline-debug-transport-evidence-v1',
+    'files': files, 'input_uac_index_sha256': d.INDEX_SHA,
+    'original_windows': d.WINDOWS, 'new_wsl_dispatches': 0, **dict.fromkeys(d.FALSE_FLAGS, False)})
+print(json.dumps({'files': len(files), 'objects': len(list(objects.iterdir())),
+                   'index_sha256': d.digest((DEST / 'index.json').read_bytes())}))

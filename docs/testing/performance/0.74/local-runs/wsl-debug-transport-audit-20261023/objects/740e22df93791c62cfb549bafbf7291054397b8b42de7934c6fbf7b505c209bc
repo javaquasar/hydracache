@@ -1,0 +1,13 @@
+{
+  "classification": "post_command_receipt_name_collision",
+  "outer_python_exit": 1,
+  "exception": "FileExistsError",
+  "path": "target/wsl-debug-transport-audit-20261023/upstream-review.json",
+  "explanation": "The review child created upstream-review.json; run.command then refused its own exclusive receipt at the same name. The child output and review JSON remain intact. No second fetch was performed.",
+  "child_exit_receipt_available": false,
+  "stdout_bytes": 76,
+  "stderr_bytes": 0,
+  "new_wsl_dispatches": 0,
+  "retry": false,
+  "admission": false
+}

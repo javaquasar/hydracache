@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "C:\\Python313\\python.exe",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tools/wsl-clock-trace-074",
+    "-p",
+    "test_root_namespace_uac.py",
+    "-v"
+  ],
+  "exit": 0,
+  "timeout_seconds": 60
+}

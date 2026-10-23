@@ -1,0 +1,33 @@
+{
+  "admission": false,
+  "clock_change": false,
+  "input_index_sha256": "792b54905fe6a1ebdeddc7f9eaf7963c2bb3b93c488610fe6737eb41f9e2a0d0",
+  "new_wsl_dispatches": 0,
+  "observed": {
+    "client_exchange_success": false,
+    "client_exit": 124,
+    "client_timed_out": true,
+    "dispatch_allowed": false,
+    "framing_is_not_metadata_or_identity_validation": true,
+    "guest_exit_code": null,
+    "guest_retirement_confirmed": null,
+    "process_completion_contract_supported": false,
+    "standalone_framing_complete": true,
+    "stdout_bytes": 18864
+  },
+  "original_owner_run": false,
+  "original_windows": [
+    300,
+    60,
+    10
+  ],
+  "product": false,
+  "retry": false,
+  "schema": "hc074-offline-debug-transport-audit-v1",
+  "server": false,
+  "service_change": false,
+  "tracing_state_changed": false,
+  "upstream_release_tag": "2.5.10",
+  "upstream_source": "https://github.com/microsoft/WSL/blob/642331364dda7a3d88bf64acb87e7056918a5fc9/src/windows/common/WslClient.cpp#L1367-L1413",
+  "upstream_source_is_not_installed_binary_attestation": true
+}

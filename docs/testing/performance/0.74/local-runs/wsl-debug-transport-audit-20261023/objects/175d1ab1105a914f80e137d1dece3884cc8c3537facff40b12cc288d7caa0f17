@@ -1,0 +1,13 @@
+test_changed_index_or_object_refuses (test_debug_transport.DebugTransportTests.test_changed_index_or_object_refuses) ... ok
+test_changed_original_collector_refuses (test_debug_transport.DebugTransportTests.test_changed_original_collector_refuses) ... ok
+test_echo_missing_duplicate_reversed_and_decorated_markers_are_not_complete (test_debug_transport.DebugTransportTests.test_echo_missing_duplicate_reversed_and_decorated_markers_are_not_complete) ... ok
+test_invalid_or_relabelled_client_receipt_refuses (test_debug_transport.DebugTransportTests.test_invalid_or_relabelled_client_receipt_refuses) ... ok
+test_markers_exit_zero_eof_or_logout_never_prove_guest_retirement (test_debug_transport.DebugTransportTests.test_markers_exit_zero_eof_or_logout_never_prove_guest_retirement) ... ok
+test_preflight_refuses_debug_console_and_unknown_fallbacks (test_debug_transport.DebugTransportTests.test_preflight_refuses_debug_console_and_unknown_fallbacks) ... ok
+test_saved_timeout_and_complete_framing_stay_separate (test_debug_transport.DebugTransportTests.test_saved_timeout_and_complete_framing_stay_separate) ... ok
+test_widened_timeout_or_original_windows_refuses (test_debug_transport.DebugTransportTests.test_widened_timeout_or_original_windows_refuses) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.069s
+
+OK

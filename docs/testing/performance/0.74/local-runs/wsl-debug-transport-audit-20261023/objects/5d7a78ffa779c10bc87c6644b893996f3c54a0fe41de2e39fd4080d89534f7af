@@ -1,0 +1,9 @@
+{
+  "argv": [
+    "C:\\Python313\\python.exe",
+    "-B",
+    "tools/wsl-clock-trace-074/debug_transport.py"
+  ],
+  "exit": 0,
+  "timeout_seconds": 30
+}

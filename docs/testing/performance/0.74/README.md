@@ -6643,3 +6643,18 @@ outcome controls. Local gates and earlier archive verifiers pass; frozen runtime
 qualification digest, live checks and original windows remain unchanged. All
 root-lookup lanes are consumed. No repeat, clock/service change, original-owner,
 product or server run was performed; another live diagnostic needs fresh scope.
+
+## Offline review rejects debug console as a completion channel
+
+The [transport audit](wsl-debug-transport-audit-20261023.md) identifies a mismatch
+between a console relay and the collector's process-completion requirement.
+The isolated `debug_transport.py` candidate distinguishes framing, Windows
+client status and unknown guest retirement; it rejects this transport and
+unreviewed fallbacks for process-completion use. It has no live executor.
+
+Eight new byte-only tests and 25 existing mocked/fake-child orchestration
+controls pass. A 47-file archive retains their outputs, source review and the
+first wrapper receipt-name collision without repeating the fetch. Local gates
+and frozen inputs pass. No WSL, clock/service, original-owner, product or server
+operation ran. Root metadata need not be recollected. The shared clock-policy
+decision and a properly admitted original-delivery/fault path remain separate.
