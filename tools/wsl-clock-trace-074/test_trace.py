@@ -9,7 +9,7 @@ import struct
 import tempfile
 import time
 import unittest
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 import btf
 import capture as cap
@@ -20,6 +20,17 @@ GROUP = 'hc074clock_' + 'a' * 32
 
 
 class Plan(unittest.TestCase):
+    def test_buffered_write_and_close_errors_keep_exact_path(self):
+        for method in ('write', '__exit__'):
+            stream = MagicMock()
+            stream.__enter__.return_value = stream
+            getattr(stream, method).side_effect = OSError(22, 'Invalid argument')
+            path = Path('/own/fake/control')
+            with patch.object(Path, 'open', return_value=stream), self.assertRaises(OSError) as caught:
+                cap.write(path, '1')
+            self.assertEqual(caught.exception.errno, 22)
+            self.assertEqual(caught.exception.filename, str(path))
+
     def test_pid_stat_comm_with_spaces_and_parentheses(self):
         self.assertEqual(cap.pid1_start('1 (a ) comm) S ' + '0 ' * 18 + '10939 0'), 10939)
 

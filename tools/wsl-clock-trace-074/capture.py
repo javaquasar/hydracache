@@ -7,8 +7,8 @@ import os
 from pathlib import Path
 import select
 import subprocess
-import sys
 import time
+import traceback
 import uuid
 
 import btf
@@ -65,8 +65,12 @@ def snapshot(root=TRACE):
 
 def write(path, value, append=False):
     # Never truncate kprobe_events: append registration/deletion commands only.
-    with path.open('a' if append else 'w', encoding='ascii') as stream:
-        stream.write(value + '\n')
+    try:
+        with path.open('a' if append else 'w', encoding='ascii') as stream:
+            stream.write(value + '\n')
+    except OSError as error:
+        # Buffered write/close errors often omit filename. Retain the exact path.
+        raise OSError(error.errno, error.strerror, str(path)) from error
 
 
 def cleanup(group, planned, root=TRACE):
@@ -242,7 +246,7 @@ def collect():
                 'ended_raw_ns': raw_ns(), 'trace_bytes': len(text)})
     except BaseException as error:
         failure = repr(error)
-        publish(OUT / 'first-failure.json', {'error': failure})
+        publish(OUT / 'first-failure.json', {'error': failure, 'traceback': traceback.format_exc()})
     finally:
         with serialized():
             own = cleanup(group, planned)
