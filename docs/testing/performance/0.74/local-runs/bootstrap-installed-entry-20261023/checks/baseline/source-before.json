@@ -1,0 +1,8 @@
+{
+  "crates/xtask/tests/bootstrap_installed_origin_074.rs": "328ebddfd09b95f06db8c8c83754306ccddad40d45ee203d9400505452995918",
+  "crates/xtask/tests/support/bootstrap_installed_guard.rs": "0e7a9963536720348d7d6abd36f3eb07431d80f64ca8a21ecaa0cfdef85b0c87",
+  "docs/testing/performance/0.74/bootstrap-installed-entry-plan-20261023.md": "eea65e8663dc84e614c2a735c3872ede4c95fac3899ddcad6fcea43b5ba650d9",
+  "tools/bootstrap-installed-entry-074/check.py": "650151eb6287940db8535c42776046121f363f3148c563efa361ece7d0a8d28c",
+  "tools/long-run-supervisor-074/src/diagnostic_bootstrap_build.rs": "a3a86c59f5ef5db322786552a6fce2e091204ab252af1d7c87b0fd2a866a9864",
+  "tools/long-run-supervisor-074/src/diagnostic_bootstrap_entry_format.rs": "e8fadd09e524480b329bfd9f966cc05a89f47f9ddf1f11a3b3c8ae7971edd61f"
+}

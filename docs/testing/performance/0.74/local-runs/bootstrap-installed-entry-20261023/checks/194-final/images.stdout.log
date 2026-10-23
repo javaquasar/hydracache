@@ -1,0 +1,14 @@
+
+running 9 tests
+test diagnostic_artifacts::linux::held_role_census::bootstrap_images::tests::bootstrap_image_census_all_descriptor_collisions_and_original_role_mutations_refuse ... ok
+test diagnostic_artifacts::linux::held_role_census::bootstrap_images::tests::bootstrap_image_census_closed_mapping_keeps_old_prefix_and_all_offsets ... ok
+test diagnostic_artifacts::linux::held_role_census::bootstrap_images::tests::bootstrap_image_census_each_missing_or_extra_seal_and_bad_access_refuses ... ok
+test diagnostic_artifacts::linux::held_role_census::bootstrap_images::tests::bootstrap_image_census_offset_mode_and_same_bytes_inode_drift_change_observation ... ok
+test diagnostic_artifacts::linux::held_role_census::bootstrap_images::tests::bootstrap_image_census_same_inode_alias_and_reused_descriptor_refuse ... ok
+test diagnostic_artifacts::linux::held_role_census::bootstrap_images::tests::bootstrap_image_census_swapped_wrong_zero_and_over_budget_identity_refuses ... ok
+test diagnostic_builder::held_build::role_files::bootstrap_images::tests::bootstrap_image_provider_model_retains_original_roles_without_descriptor_export ... ok
+test diagnostic_builder::held_build::role_files::bootstrap_images::tests::bootstrap_image_provider_model_wrong_identity_and_original_mode_are_sticky ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::unit_projection::material::kernel::bootstrap_inputs::tests::bootstrap_image_original_inventory_requires_all_exact_flags_and_twenty_entries ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 1572 filtered out; finished in 0.01s
+

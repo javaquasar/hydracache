@@ -1,0 +1,18 @@
+
+running 1 test
+test bootstrap_installed_entry_component_precedes_runtime ... FAILED
+
+failures:
+
+---- bootstrap_installed_entry_component_precedes_runtime stdout ----
+
+thread 'bootstrap_installed_entry_component_precedes_runtime' (9316) panicked at crates\xtask\tests\bootstrap_installed_origin_074.rs:15:5:
+separate installed entry assertion codec is absent
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    bootstrap_installed_entry_component_precedes_runtime
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.00s
+

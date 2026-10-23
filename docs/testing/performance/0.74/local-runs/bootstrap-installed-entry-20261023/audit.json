@@ -1,0 +1,25 @@
+{
+  "admission_allowed": false,
+  "assertion_bits_mutated": 10240,
+  "canonical_codec": true,
+  "checked_commit": "ce7931bc36c846c1097e669398b56920c7400fb6",
+  "child_authentication": false,
+  "child_inventory_remapped": false,
+  "clock_changes": false,
+  "original_attempt": false,
+  "original_bytes_preserved": 1024,
+  "original_delivery": false,
+  "original_owner_bound": false,
+  "parent_counts_asserted_only": [
+    32,
+    16
+  ],
+  "performance_measurement": false,
+  "product": false,
+  "qualification_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "record_bytes": 1280,
+  "record_materialized": false,
+  "server": false,
+  "service_changes": false,
+  "writer_cessation": false
+}

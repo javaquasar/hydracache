@@ -1,0 +1,9 @@
+test_existing_packet_never_overwrites_or_executes_checks (test_controls.Controls.test_existing_packet_never_overwrites_or_executes_checks) ... ok
+test_failed_lane_cannot_be_accepted (test_controls.Controls.test_failed_lane_cannot_be_accepted) ... ok
+test_fixed_local_commands_refuse_infrastructure_and_unknown_lanes (test_controls.Controls.test_fixed_local_commands_refuse_infrastructure_and_unknown_lanes) ... ok
+test_historical_baseline_cannot_be_reexecuted (test_controls.Controls.test_historical_baseline_cannot_be_reexecuted) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.020s
+
+OK

@@ -1,0 +1,17 @@
+{
+  "failure": "RuntimeError: clippy refused; first result retained",
+  "lane": "host",
+  "original_attempt": false,
+  "product": false,
+  "server": false,
+  "steps": [
+    "codec",
+    "child-units",
+    "child-cli",
+    "canaries",
+    "entry",
+    "build",
+    "check",
+    "clippy"
+  ]
+}
