@@ -6220,3 +6220,22 @@ entry is inspected, not the complete role census. Even canonical forged input
 exits 2 with original authentication closed. Parent original-owner transport,
 signed actual build enrollment, manager/root/guardian/credential authentication,
 launcher execveat and all-writer cessation remain required before server admission.
+
+### Complete child roles still do not authenticate their origin
+
+The [complete child census](bootstrap-child-census-20261023.md) adds an explicit
+opt-in mode checking all fifteen roles and rejecting extra inherited FDs. Image
+hashes, streams, release credentials, live pidfds, legacy fields and the same
+absolute alarm must agree with entry assertions under repeated observations.
+The older entry-only mode and all original parent frames remain unchanged.
+A complete forged private fixture still exits 2 at authentication-closed:
+actual executable/credential/namespace, manager/root/privileged guardian and
+signed clean-build provenance, original transfer and all-writer cessation remain
+before server admission. No clock/service change or server workload follows.
+
+Final local controls passed: Windows 42 source contracts and 13 bootstrap controls;
+GNU 1.94 and MSRV 1.88 each 57 selected controls, check and strict Clippy; metadata
+includes 187 registered gates. The report links an exact-byte-audited packet with
+initial refusals as well as final results. The selected unsigned image is only a
+build observation, not enrolled provenance. No added runtime cost was measured
+and no original live or server execution was opened.

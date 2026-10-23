@@ -18060,3 +18060,32 @@ the still-required original credentials, manager/root/guardians and complete FD
 authentication. Compiling the selected bootstrap is similarly distinct from
 enrolling its exact signed build. Neither result permits launcher execution,
 writer completion or a server rehearsal.
+
+### A complete descriptor census is not proof of original ownership
+
+The [complete bootstrap census](../testing/performance/0.74/bootstrap-child-census-20261023.md)
+now checks all fifteen named roles against the entry and rejects additional
+inherited descriptors. Inspecting only the expected slots would leave a hidden
+writer outside the apparent inventory. The bounded procfs enumeration therefore
+matters independently of image hashes, stream identities, release credentials,
+pidfd liveness and the existing absolute alarm.
+
+The negative control also becomes stronger: a fresh child receives a complete,
+consistent set of private kernel resources rather than an entry file alone.
+Those resources can agree with invented claims, so passing their consistency
+checks still ends at authentication-closed. Ordinary owned helper pidfds do not
+become privileged guardians, and a closed FD set in one process does not revoke
+copies elsewhere. Original manager/root and actual credential/build provenance
+remain necessary before launcher execution or writer completion.
+
+The old entry-only mode and parent frames remain exact; new checks never refresh
+the original deadline. Their added hashing/procfs/clock-query cost is unmeasured.
+These correctness controls cannot supply a throughput claim or prove full
+original admission fits its window.
+
+Final local correctness controls passed on Windows, GNU 1.94 and GNU MSRV 1.88;
+the component report links exact source snapshots and logs, including the first
+lint, registry and Windows executable-lock failures. Their later corrections
+are not evidence of faster preparation: there was no measurement cohort or
+original live retry. Even the successfully compiled unsigned bootstrap needs a
+clean-source signed build and independent enrollment before it can be trusted.

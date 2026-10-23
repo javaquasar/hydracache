@@ -5,6 +5,8 @@
   "development_compile": {"compiler": "GNU 1.94.0", "target": "bootstrap_child_census", "exit": 101, "result": "compiler ICE in annotate_snippets StyledBuffer::replace while emitting check_mod_deathness warning in material; slice index starts at 5 but ends at 4"},
   "diagnostic_check": {"command": "cargo +1.94.0 check --offline --locked -p hydracache-long-run-supervisor-074 --test bootstrap_child_census --message-format=short", "exit": 0, "warning": "bootstrap_census_material.rs:266:12 method fds is never used"},
   "correction": "Use the fixture's actual fds() array for harness scratch duplication; no warning suppression, runtime predicate or deadline change",
+  "development_source_guard": {"result": "3 passed; 1 failed; exact old reader-test body reconstruction put the module before the std import after rustfmt reordered the replacement use", "correction": "restore the old module at its exact std-import anchor; assertions and runtime unchanged"},
+  "docs_postflight_workspace_format": {"command": "cargo fmt --all -- --check", "exit": 1, "result": "The filename or extension is too long. (os error 206)", "scope": "extra Windows whole-workspace formatting invocation after packet retention; captured-tool summary, not part of the fixed packet", "next": "use the same two-package scoped format check already passed in the fixed lane; do not claim whole-workspace formatting success"},
   "original_live_join": false,
   "performance_measurement": false
 }
