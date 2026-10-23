@@ -1,0 +1,11 @@
+test_checks_cannot_launch_ignored_or_privileged_tests (test_controls.Controls.test_checks_cannot_launch_ignored_or_privileged_tests) ... ok
+test_durable_json_uses_writable_exclusive_handle (test_controls.Controls.test_durable_json_uses_writable_exclusive_handle) ... ok
+test_first_result_exclusive (test_controls.Controls.test_first_result_exclusive) ... ok
+test_native_requires_fixed_workspace_and_immutable_first_lane (test_controls.Controls.test_native_requires_fixed_workspace_and_immutable_first_lane) ... ok
+test_shell_has_no_broad_cleanup_or_existing_service_actions (test_controls.Controls.test_shell_has_no_broad_cleanup_or_existing_service_actions) ... ok
+test_unknown_lane (test_controls.Controls.test_unknown_lane) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.034s
+
+OK

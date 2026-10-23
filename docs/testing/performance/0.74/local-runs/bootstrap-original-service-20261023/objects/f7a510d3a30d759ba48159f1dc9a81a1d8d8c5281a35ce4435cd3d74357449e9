@@ -1,0 +1,5 @@
+warning: in the working copy of 'docs/articles/007-optimization-starts-with-measurement.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/performance/0.74/README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tools/bootstrap-original-service-074/check.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tools/bootstrap-original-service-074/test_controls.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tools/long-run-supervisor-074/tests/support/held_original_service_scope.rs', LF will be replaced by CRLF the next time Git touches it

@@ -1,0 +1,7 @@
+warning: in the working copy of 'crates/xtask/tests/bootstrap_installed_origin_074.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'crates/xtask/tests/support/bootstrap_current_image_guard.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'crates/xtask/tests/support/bootstrap_held_entry_guard.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'crates/xtask/tests/support/held_material_live_guard.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/performance/0.74/bootstrap-original-service-plan-20261023.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tools/long-run-supervisor-074/tests/support/consuming_held_live.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tools/long-run-supervisor-074/tests/support/consuming_held_live_documents.rs', LF will be replaced by CRLF the next time Git touches it

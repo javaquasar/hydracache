@@ -1,0 +1,5 @@
+{
+  "crates/xtask/tests/bootstrap_installed_origin_074.rs": "8ba47948cb47cda4d7e10b31f0868f972d29ce9e80022eb4cb1254c95073410c",
+  "docs/testing/performance/0.74/bootstrap-original-service-plan-20261023.md": "81262aa55739a8fa16fbd516fbecdf2d446849b6dfdf2d569f4fde1ff6cf77d4",
+  "tools/bootstrap-original-service-074/check.py": "565e13bbaf71a8d7b1c8dd194e0f632a6bb2de0f91806b2d0cc36abc6b58fcd4"
+}

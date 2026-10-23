@@ -1,0 +1,12 @@
+{
+  "failure": null,
+  "lane": "188-lookup-candidate",
+  "original_attempt": false,
+  "product": false,
+  "server": false,
+  "steps": [
+    "original-units",
+    "check",
+    "clippy"
+  ]
+}

@@ -1,0 +1,10 @@
+
+running 5 tests
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::bootstrap_enrollment::tests::bootstrap_enrollment_actual_file_drift_poison_is_shared_and_cannot_heal ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::bootstrap_enrollment::tests::bootstrap_enrollment_independent_key_and_original_pins_epoch_cannot_be_substituted ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::bootstrap_enrollment::tests::bootstrap_enrollment_missing_hardlinked_and_original_ancestor_drift_refuse ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::bootstrap_enrollment::tests::bootstrap_enrollment_retains_independent_file_without_export_or_mutation ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::bootstrap_enrollment::tests::bootstrap_enrollment_strict_shape_future_noncanonical_and_budget_refuse ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 1614 filtered out; finished in 0.02s
+

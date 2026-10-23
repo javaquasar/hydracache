@@ -1,0 +1,6 @@
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::cgroup::held_live::original_service::scope::original_service_nonowner_drop_never_contacts_manager ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1618 filtered out; finished in 0.02s
+

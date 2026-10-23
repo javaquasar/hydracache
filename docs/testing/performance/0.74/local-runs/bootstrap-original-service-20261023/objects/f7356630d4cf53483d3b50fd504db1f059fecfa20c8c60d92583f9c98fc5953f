@@ -1,0 +1,11 @@
+{
+  "failure": null,
+  "lane": "seal-controls",
+  "original_attempt": false,
+  "product": false,
+  "server": false,
+  "steps": [
+    "controls",
+    "diff"
+  ]
+}

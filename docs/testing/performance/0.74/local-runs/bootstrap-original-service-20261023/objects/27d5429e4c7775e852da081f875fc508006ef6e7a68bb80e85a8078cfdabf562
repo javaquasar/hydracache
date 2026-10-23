@@ -1,0 +1,18 @@
+
+running 1 test
+test bootstrap_original_service_fixture_precedes_live_admission ... FAILED
+
+failures:
+
+---- bootstrap_original_service_fixture_precedes_live_admission stdout ----
+
+thread 'bootstrap_original_service_fixture_precedes_live_admission' (22676) panicked at crates\xtask\tests\bootstrap_installed_origin_074.rs:13:5:
+original service fixture is absent
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    bootstrap_original_service_fixture_precedes_live_admission
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 20 filtered out; finished in 0.00s
+

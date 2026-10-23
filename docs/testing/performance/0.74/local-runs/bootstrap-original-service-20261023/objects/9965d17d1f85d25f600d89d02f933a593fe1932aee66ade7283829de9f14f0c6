@@ -1,0 +1,5 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 7.69s
+     Running tests\bootstrap_build_owner_074.rs (target\debug\deps\bootstrap_build_owner_074-b6e39b58cb8661bc.exe)
+     Running tests\bootstrap_child_boundary_074.rs (target\debug\deps\bootstrap_child_boundary_074-94efdaf9f91809c6.exe)
+error: test failed, to rerun pass `-p xtask --test bootstrap_child_boundary_074`

@@ -1,0 +1,12 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 7.36s
+     Running tests\bootstrap_build_owner_074.rs (target\debug\deps\bootstrap_build_owner_074-b6e39b58cb8661bc.exe)
+     Running tests\bootstrap_child_boundary_074.rs (target\debug\deps\bootstrap_child_boundary_074-94efdaf9f91809c6.exe)
+     Running tests\bootstrap_child_census_074.rs (target\debug\deps\bootstrap_child_census_074-8a7f079c624ae995.exe)
+     Running tests\bootstrap_child_reader_074.rs (target\debug\deps\bootstrap_child_reader_074-86a38873e09fd0b6.exe)
+     Running tests\bootstrap_current_image_074.rs (target\debug\deps\bootstrap_current_image_074-6d4dc954adc87b8c.exe)
+     Running tests\bootstrap_enrollment_074.rs (target\debug\deps\bootstrap_enrollment_074-9f8588b5f95cce09.exe)
+     Running tests\bootstrap_entry_binding_074.rs (target\debug\deps\bootstrap_entry_binding_074-ada2fe17bd469873.exe)
+     Running tests\bootstrap_image_census_074.rs (target\debug\deps\bootstrap_image_census_074-672084539a2ab3cc.exe)
+     Running tests\bootstrap_installed_origin_074.rs (target\debug\deps\bootstrap_installed_origin_074-2fb1221f97ae80bc.exe)
+error: test failed, to rerun pass `-p xtask --test bootstrap_installed_origin_074`

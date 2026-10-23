@@ -1,0 +1,9 @@
+
+running 4 tests
+test diagnostic_artifacts::linux::held_role_census::bootstrap_images::entry::installed::entry_material::held_wire::child_exchange::ancillary::tests::kernel_ancillary_bounded_malformed_headers_refuse_without_panic ... ok
+test diagnostic_artifacts::linux::held_role_census::bootstrap_images::entry::installed::entry_material::held_wire::child_exchange::ancillary::tests::kernel_ancillary_model_rejects_unknown_flags_and_duplicate_tags_without_fd_leaks ... ok
+test diagnostic_kernel_admission::ancillary::tests::kernel_ancillary_bounded_malformed_headers_refuse_without_panic ... ok
+test diagnostic_kernel_admission::ancillary::tests::kernel_ancillary_model_rejects_unknown_flags_and_duplicate_tags_without_fd_leaks ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 1614 filtered out; finished in 0.00s
+

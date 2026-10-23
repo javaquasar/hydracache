@@ -1,0 +1,9 @@
+
+running 4 tests
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::bootstrap_enrollment::selected_build::tests::bootstrap_selected_build_each_original_digest_mismatch_poison_is_shared ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::bootstrap_enrollment::selected_build::tests::bootstrap_selected_build_retains_source_and_original_binding_without_authority_export ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::bootstrap_enrollment::selected_build::tests::bootstrap_selected_build_same_bytes_replacement_cannot_reopen_retained_selection ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::bootstrap_enrollment::selected_build::tests::bootstrap_selected_build_signature_document_or_budget_failure_poison_is_shared ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 1615 filtered out; finished in 0.01s
+

@@ -1,0 +1,17 @@
+{
+  "distro": "HydraCache074Native",
+  "bootstrap": "4750a12568c4293ad8db6ce356abb272e36ea2eb81d6c1639c55f1a74947dfce",
+  "libtest": "c7785f859cfc085ebfc9e8ba9dce93d5f036b46338f9adc7d5ebccda213946c0",
+  "qualification": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "original_windows": [
+    300,
+    60,
+    10
+  ],
+  "server": false,
+  "product": false,
+  "release_install": false,
+  "existing_services_changed": false,
+  "retry": false,
+  "git": "25af3c71caeecd55b2d1e6449ad2eb1dc945d343"
+}

@@ -1,0 +1,22 @@
+"""Offline checks and first-result retention for one local original-service fixture."""
+import argparse
+import importlib.util
+from pathlib import Path
+ROOT=Path(__file__).resolve().parents[2]
+spec=importlib.util.spec_from_file_location('entry_checks',ROOT/'tools/bootstrap-held-entry-074/check.py')
+previous=importlib.util.module_from_spec(spec)
+spec.loader.exec_module(previous)
+snapshot,sha,publish=previous.snapshot,previous.sha,previous.publish
+OUTPUT=ROOT/'target/bootstrap-original-service-20261023'
+BASE=['crates/xtask/tests/bootstrap_installed_origin_074.rs','docs/testing/performance/0.74/bootstrap-original-service-plan-20261023.md','tools/bootstrap-original-service-074/check.py']
+def baseline():
+    if (ROOT/'tools/long-run-supervisor-074/tests/support/held_original_service_live.rs').exists():
+        raise ValueError('Never rerun the historical absence baseline')
+    snapshot.OUTPUT,snapshot.FILES=OUTPUT,BASE
+    snapshot.commands=lambda _: [('missing',['cargo','test','--offline','--locked','-p','xtask','--test','bootstrap_installed_origin_074','bootstrap_original_service_fixture_precedes_live_admission'])]
+    snapshot.run('baseline')
+if __name__=='__main__':
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('lane',choices=['baseline'])
+    parser.parse_args()
+    baseline()

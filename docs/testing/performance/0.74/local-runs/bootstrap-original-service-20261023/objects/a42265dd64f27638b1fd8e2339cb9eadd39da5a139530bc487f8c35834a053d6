@@ -1,0 +1,8 @@
+{
+  "returncode": 74,
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stderr_sha256": "ec366f84287dc3e59498da481d46d75c6c5dbae627736c75cf3bf9f5630b41c9",
+  "retry": false,
+  "original_send_observed": false,
+  "readiness_observed": false
+}

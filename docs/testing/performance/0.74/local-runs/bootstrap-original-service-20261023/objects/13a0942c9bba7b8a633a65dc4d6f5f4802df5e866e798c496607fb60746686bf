@@ -1,0 +1,16 @@
+
+running 11 tests
+test census_entry::tests::census_ingress_cannot_repair_unknown_pid_or_environment ... ok
+test image_entry::tests::image_mode_cannot_refresh_pid_or_ignore_additional_environment ... ok
+test held_mode::activation::tests::held_entry_activation_exact_and_permutation ... ok
+test held_mode::activation::tests::held_entry_activation_missing_duplicate_foreign_and_noncanonical_refuse ... ok
+test ingress::tests::bootstrap_ingress_every_activation_name_byte_refuses_mutation ... ok
+test image_entry::tests::image_mode_requires_explicit_argument_and_unmodified_activation_assertions ... ok
+test ingress::tests::bootstrap_ingress_bad_argument_pid_unknown_duplicate_and_noncanonical_values_refuse ... ok
+test census_entry::tests::census_ingress_only_explicit_new_mode_with_unchanged_metadata ... ok
+test ingress::tests::bootstrap_ingress_exact_metadata_permutations_are_only_assertions ... ok
+test installed_mode::tests::bootstrap_installed_mode_exact_activation_and_old_name_prefix ... ok
+test installed_mode::tests::bootstrap_installed_mode_refuses_pid_count_names_duplicate_and_foreign_environment ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

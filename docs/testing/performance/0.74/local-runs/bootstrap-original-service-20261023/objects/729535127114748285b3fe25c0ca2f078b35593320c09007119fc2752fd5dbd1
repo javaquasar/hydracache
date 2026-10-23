@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "python",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tools/bootstrap-original-service-074",
+    "-v"
+  ],
+  "elapsed_ns": 301258000,
+  "exit": 0,
+  "stderr_sha256": "e4da00ba47e5e0fb876bd93de7133a25b370fe146022fd1db0a4741e40d0c036",
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}
