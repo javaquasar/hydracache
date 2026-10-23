@@ -18216,3 +18216,41 @@ through the error; explicit retirement precedes descriptor closure. Internal
 construction temporaries retain their existing cleanup, and a sealed memory
 record is not durable lifecycle completion. This local owner composition still
 does not prove live child enrollment, original delivery or writer cessation.
+
+### The current executable and its reference have different jobs
+
+The [installed-child consistency reader](../testing/performance/0.74/bootstrap-installed-child-20261023.md)
+now checks the installed inode separately from its sealed content reference.
+An explicit versioned mode requires the original fifteen roles plus the
+installed image and sealed installed-entry assertion. A new bounded closed-set
+checker accepts precisely those child slots; the original fifteen-role capture
+and its predicates are reused unchanged, rather than relaxing the old checker.
+
+The installed entry must embed the separately observed old entry bytes exactly.
+The installed file's full hash agrees with the sealed reference, while fixed
+procfs executable lookup must identify the installed file's actual inode and
+complete metadata. The complete observation repeats. Equal bytes at a different
+current inode refuse before the authentication boundary, but matching all of
+these assertions does not establish who supplied them or which host namespace
+gave them meaning. A matching forged owned executable still exits with original
+authentication closed. Root selection remains in the unchanged original parent;
+this leaf is not independent root/policy or sandbox enrollment.
+
+The process controls also exposed an evidence-quality gap. The first MSRV fault
+control saw shell exit 126, but its exit assertion preceded stderr collection.
+Its exact inner fault and errno are consequently unknown and remain recorded as
+unknown. The corrected helper captures bounded stderr first and labels the fault.
+Serialized filesystem fixture controls avoid overlapping executable writers and
+forks; a deliberately held writer separately demonstrates Text file busy and
+shell exit 126 without entering the reader. That control explains a possible
+failure class, not the unsaved cause of the first failure.
+
+The source contracts caught two smaller integration mistakes: module ordering
+rejected by formatting, then added whitespace left after removing the new hook.
+Both first refusals stay in the packet. Only new integration text changed; exact
+views still restore complete old bodies. Windows source contracts and selected
+GNU/MSRV component controls, strict lint and local metadata gates now pass on one
+source snapshot. These are correctness observations, not faster preparation or
+evidence of fitting the original admission windows. Actual sandbox admission
+under the same manager, original delivery and cessation of every writer remain
+the next integration boundary before completion or server execution can open.

@@ -6295,7 +6295,8 @@ still parse: the codec establishes consistency, not custody or authentication.
 
 Record materialization under the same installed owner is addressed by the
 [retained material component](bootstrap-installed-material-20261023.md); the
-separately versioned child executable/inventory reader remains next. No launch,
+separately versioned [child executable/inventory reader](bootstrap-installed-child-20261023.md)
+now checks consistency without granting authority. No launch,
 service/clock change, server action, fresh original live attempt or numerical claim follows this
 schema. Its local report retains first refusals and the exact compatibility
 boundary rather than promoting assertion parsing into original delivery.
@@ -6314,3 +6315,22 @@ reconstruction. Errors keep the refused original owner and published resource;
 retirement precedes their closure. Private kernel controls and owner models
 remain distinct from a positive live original join or child authentication.
 No delivery, all-writer cessation, lifecycle completion or server gate opens.
+
+### Installed child observation is still not sandbox enrollment
+
+The [installed-child reader](bootstrap-installed-child-20261023.md) adds an
+explicit refusal-only mode with seventeen child slots. It keeps the old sealed
+reference distinct from the installed executable, binds the embedded old entry
+to its separately observed FD, rejects extra descriptors and compares fixed
+procfs current-executable metadata with the installed inode. Old predicates,
+mode bodies and absolute windows stay unchanged. A consistent forged owned
+filesystem executable still exits 2 with authentication closed.
+
+Final local checks passed: Windows 63 source contracts and 24 controls; GNU
+1.94/MSRV 1.88 each 103 selected controls, check and strict lint; format/docs,
+188 gates and the local nonpromotable contract. The exact-byte-audited evidence
+retains the first shell-126 failure with its missing diagnostic limitation and
+both source/format refusals. It does not claim that a deterministic busy-inode
+control establishes the cause of the first failure. Real manager/sandbox
+enrollment, original FD delivery and all-writer cessation remain required; no
+server, service, clock or performance action follows this component.
