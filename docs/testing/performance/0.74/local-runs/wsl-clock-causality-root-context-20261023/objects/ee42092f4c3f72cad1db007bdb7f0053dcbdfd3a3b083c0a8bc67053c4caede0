@@ -1,0 +1,12 @@
+{
+  "argv": [
+    "powershell.exe",
+    "-NoProfile",
+    "-NonInteractive",
+    "-Command",
+    "Get-WinEvent -FilterHashtable @{LogName=\"System\";ProviderName=\"Microsoft-Windows-Kernel-General\";Id=1} -MaxEvents 8 -ErrorAction Stop | Select-Object RecordId,TimeCreated,Message | ConvertTo-Json -Depth 4"
+  ],
+  "exit": 0,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stdout_sha256": "5c7fd945aa1c15ea6463324186532fe7d31b8f6d7de71146d874e327fe59c8ae"
+}

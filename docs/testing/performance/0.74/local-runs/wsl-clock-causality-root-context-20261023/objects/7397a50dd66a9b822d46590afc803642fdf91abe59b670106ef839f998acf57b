@@ -1,0 +1,31 @@
+{
+  "admission": false,
+  "binary_sha256": "f3e81c0e8080969e00ead542269566b6e079e3eacc586e771236a65f413180dc",
+  "clock_change": false,
+  "distro": "Ubuntu",
+  "first_metadata_refusal_index_sha256": "6a7d11e8e8dc830262b8191bacdce03b1a0b822261d246dbaae0991da0694298",
+  "git": "1658ec9caa3ac41cb222b4ab0164bb5802a3bab7",
+  "metadata_user": "root",
+  "original_owner_run": false,
+  "previous_index_sha256": "edec06e2ac4fa97126ce14ac5c0e4d1aff9cae7bd39f96bb91391102f3d606e3",
+  "query_user": "artur",
+  "retry": false,
+  "rows": 81,
+  "server": false,
+  "service_change": false,
+  "sleep_seconds": 1,
+  "sources": {
+    "docs/testing/performance/0.74/local-runs/bootstrap-original-getunit-20261023/index.json": "9f2fd0f457ec6d48f4e87e7bfc2bd1262bbf191cf51b760fe744eb369394b9f6",
+    "docs/testing/performance/0.74/qualification-manifest.toml": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+    "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs": "5f77f86c3c29a42156d63ffa913583f8a8c6419562f6c2bea5c34e75937260fa",
+    "tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs": "4e18523c71b6b5bdf3a74d75e58df096f25c6f773067d013a07db2a8cfde5214",
+    "tools/wsl-clock-readonly-074/causality-session.sh": "99832d0f119698edd3ec61db7d092dcb2d471913d2dd6e62b2c028afb8674017",
+    "tools/wsl-clock-readonly-074/causality.py": "3c224669c85554919376746603713018f2b53ec763ea73cb23bcb4d98fe96fbc",
+    "tools/wsl-clock-readonly-074/diagnose.py": "ec232cf6c5e55f18e7b6c6216d3cedf64b68f1eae2b81d613203c372d6431ee2",
+    "tools/wsl-clock-readonly-074/discipline.c": "8f5320677f32e29241890ed8849fe6f7cbf176f954cc7263b7af290925af12a9",
+    "tools/wsl-clock-readonly-074/sample.rs": "226631943935fd32c1fc0a059b517174eb045de0b86b0a8e7790f9e765826797",
+    "tools/wsl-clock-readonly-074/session.sh": "6c9851d584a6004c811a82d096c3bedafbf75f5e1483096593fb7c9356e73b12",
+    "tools/wsl-clock-readonly-074/test_causality.py": "b25c2eabcdf6ed0f1e48a7fd9653776812a3c7f4f2cce1bb288f4c8f97d83ffd",
+    "tools/wsl-clock-readonly-074/test_diagnose.py": "7e7685896d223bbad1b5b7540b67cbd58c437a91a09875f06a8feeed1f6f8e3f"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "wsl.exe",
+    "-d",
+    "Ubuntu",
+    "-u",
+    "artur",
+    "--exec",
+    "/bin/sh",
+    "-c",
+    "dpkg-query -W systemd systemd-timesyncd; cat /usr/lib/systemd/system/systemd-timesyncd.service.d/wsl.conf; objdump -d --start-address=0x7af0 --stop-address=0x7ce0 /usr/lib/systemd/systemd-timesyncd; cat /etc/wsl.conf"
+  ],
+  "exit": 0,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stdout_sha256": "3ea7de9a620cfa7bbbe1c382fff48c3e0ac6afc5b64bba9fcdd9fd4b7da6915e"
+}

@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "wsl.exe",
+    "-d",
+    "Ubuntu",
+    "-u",
+    "root",
+    "--exec",
+    "/bin/sh",
+    "-c",
+    "printf \"audit journal\\n\"; journalctl -b --no-pager -n 50 _TRANSPORT=audit; printf \"trace state\\n\"; cat /sys/kernel/tracing/tracing_on /sys/kernel/tracing/current_tracer /sys/kernel/tracing/set_event /sys/kernel/tracing/dynamic_events; head -n 15 /sys/kernel/tracing/trace; printf \"audit log presence\\n\"; ls -l /var/log/audit/audit.log; printf \"time correction kernel messages\\n\"; dmesg --color=never | grep -Ei \"timesync|audit.*(time|ntp|tick)|Time jumped\" | tail -n 40"
+  ],
+  "exit": 0,
+  "stderr_sha256": "bbbf320583d251f77813d3aa1091ada79a3b33d5914b6dce6e4b22c96b7689ce",
+  "stdout_sha256": "9e79a390daa4f6a87aa2815cf29def8a3fac58eedaf9ee1a11a01548bdc50ce8"
+}

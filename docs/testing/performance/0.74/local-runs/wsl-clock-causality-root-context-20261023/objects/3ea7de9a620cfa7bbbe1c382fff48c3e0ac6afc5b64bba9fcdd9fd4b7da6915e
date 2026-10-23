@@ -1,0 +1,130 @@
+systemd	255.4-1ubuntu8.18
+systemd-timesyncd	255.4-1ubuntu8.18
+# Enable timesyncd on WSL machines
+# so WSL clock is synced on resume from suspend of the host.
+
+[Unit]
+ConditionVirtualization=
+ConditionVirtualization=|!container
+ConditionVirtualization=|wsl
+
+/usr/lib/systemd/systemd-timesyncd:     file format elf64-x86-64
+
+
+Disassembly of section .text:
+
+0000000000007af0 <.text+0x3c50>:
+    7af0:	85 5a fd             	test   %ebx,-0x3(%rdx)
+    7af3:	ff                   	(bad)
+    7af4:	ff 50 f2             	call   *-0xe(%rax)
+    7af7:	0f 10 bd 60 fd ff ff 	movups -0x2a0(%rbp),%xmm7
+    7afe:	b8 08 00 00 00       	mov    $0x8,%eax
+    7b03:	f2 0f 10 b5 68 fd ff 	movsd  -0x298(%rbp),%xmm6
+    7b0a:	ff 
+    7b0b:	f2 0f 10 ad 20 fd ff 	movsd  -0x2e0(%rbp),%xmm5
+    7b12:	ff 
+    7b13:	f2 0f 10 a5 10 fd ff 	movsd  -0x2f0(%rbp),%xmm4
+    7b1a:	ff 
+    7b1b:	f2 0f 10 9d 08 fd ff 	movsd  -0x2f8(%rbp),%xmm3
+    7b22:	ff 
+    7b23:	f2 0f 10 95 00 fd ff 	movsd  -0x300(%rbp),%xmm2
+    7b2a:	ff 
+    7b2b:	f2 0f 10 8d 40 fd ff 	movsd  -0x2c0(%rbp),%xmm1
+    7b32:	ff 
+    7b33:	e8 78 bf ff ff       	call   3ab0 <log_internal@plt>
+    7b38:	48 83 c4 50          	add    $0x50,%rsp
+    7b3c:	e9 bb fc ff ff       	jmp    77fc <log_oom_internal@plt+0x396c>
+    7b41:	f2 0f 10 85 68 fd ff 	movsd  -0x298(%rbp),%xmm0
+    7b48:	ff 
+    7b49:	66 0f 54 c1          	andpd  %xmm1,%xmm0
+    7b4d:	66 0f 2f 05 3b 48 00 	comisd 0x483b(%rip),%xmm0        # c390 <log_oom_internal@plt+0x8500>
+    7b54:	00 
+    7b55:	0f 87 cb 03 00 00    	ja     7f26 <log_oom_internal@plt+0x4096>
+    7b5b:	f2 0f 10 15 4d 48 00 	movsd  0x484d(%rip),%xmm2        # c3b0 <log_oom_internal@plt+0x8520>
+    7b62:	00 
+    7b63:	66 0f 2f d0          	comisd %xmm0,%xmm2
+    7b67:	0f 87 60 03 00 00    	ja     7ecd <log_oom_internal@plt+0x403d>
+    7b6d:	66 0f 2f 05 23 48 00 	comisd 0x4823(%rip),%xmm0        # c398 <log_oom_internal@plt+0x8508>
+    7b74:	00 
+    7b75:	0f 87 10 05 00 00    	ja     808b <log_oom_internal@plt+0x41fb>
+    7b7b:	0f 29 8d 10 fd ff ff 	movaps %xmm1,-0x2f0(%rbp)
+    7b82:	e8 d9 bd ff ff       	call   3960 <log_get_max_level@plt>
+    7b87:	83 f8 06             	cmp    $0x6,%eax
+    7b8a:	0f 8f ea 04 00 00    	jg     807a <log_oom_internal@plt+0x41ea>
+    7b90:	66 0f 28 8d 10 fd ff 	movapd -0x2f0(%rbp),%xmm1
+    7b97:	ff 
+    7b98:	48 8d bd 90 fd ff ff 	lea    -0x270(%rbp),%rdi
+    7b9f:	0f 29 8d 40 fd ff ff 	movaps %xmm1,-0x2c0(%rbp)
+    7ba6:	e8 85 c1 ff ff       	call   3d30 <triple_timestamp_now@plt>
+    7bab:	66 0f 28 8d 40 fd ff 	movapd -0x2c0(%rbp),%xmm1
+    7bb2:	ff 
+    7bb3:	48 8b 85 90 fd ff ff 	mov    -0x270(%rbp),%rax
+    7bba:	48 85 c0             	test   %rax,%rax
+    7bbd:	0f 88 99 04 00 00    	js     805c <log_oom_internal@plt+0x41cc>
+    7bc3:	66 0f ef c0          	pxor   %xmm0,%xmm0
+    7bc7:	f2 48 0f 2a c0       	cvtsi2sd %rax,%xmm0
+    7bcc:	f2 0f 10 15 74 47 00 	movsd  0x4774(%rip),%xmm2        # c348 <log_oom_internal@plt+0x84b8>
+    7bd3:	00 
+    7bd4:	f2 0f 59 95 68 fd ff 	mulsd  -0x298(%rbp),%xmm2
+    7bdb:	ff 
+    7bdc:	f2 0f 58 c2          	addsd  %xmm2,%xmm0
+    7be0:	f2 0f 10 15 68 47 00 	movsd  0x4768(%rip),%xmm2        # c350 <log_oom_internal@plt+0x84c0>
+    7be7:	00 
+    7be8:	66 0f 2f c2          	comisd %xmm2,%xmm0
+    7bec:	0f 83 4c 04 00 00    	jae    803e <log_oom_internal@plt+0x41ae>
+    7bf2:	f2 48 0f 2c c0       	cvttsd2si %xmm0,%rax
+    7bf7:	48 89 85 90 fd ff ff 	mov    %rax,-0x270(%rbp)
+    7bfe:	f2 0f 10 bd 68 fd ff 	movsd  -0x298(%rbp),%xmm7
+    7c05:	ff 
+    7c06:	f2 0f 10 05 92 47 00 	movsd  0x4792(%rip),%xmm0        # c3a0 <log_oom_internal@plt+0x8510>
+    7c0d:	00 
+    7c0e:	4c 8d bd f0 fd ff ff 	lea    -0x210(%rbp),%r15
+    7c15:	66 0f 54 cf          	andpd  %xmm7,%xmm1
+    7c19:	66 0f 2f c1          	comisd %xmm1,%xmm0
+    7c1d:	0f 86 a8 04 00 00    	jbe    80cb <log_oom_internal@plt+0x423b>
+    7c23:	48 8b 83 00 01 00 00 	mov    0x100(%rbx),%rax
+    7c2a:	b9 40 42 0f 00       	mov    $0xf4240,%ecx
+    7c2f:	31 d2                	xor    %edx,%edx
+    7c31:	f2 0f 10 35 6f 47 00 	movsd  0x476f(%rip),%xmm6        # c3a8 <log_oom_internal@plt+0x8518>
+    7c38:	00 
+    7c39:	48 f7 f1             	div    %rcx
+    7c3c:	f2 0f 11 b5 40 fd ff 	movsd  %xmm6,-0x2c0(%rbp)
+    7c43:	ff 
+    7c44:	f2 0f 59 fe          	mulsd  %xmm6,%xmm7
+    7c48:	f2 48 0f 2c f7       	cvttsd2si %xmm7,%rsi
+    7c4d:	83 f8 01             	cmp    $0x1,%eax
+    7c50:	76 04                	jbe    7c56 <log_oom_internal@plt+0x3dc6>
+    7c52:	44 0f bd e8          	bsr    %eax,%r13d
+    7c56:	31 c0                	xor    %eax,%eax
+    7c58:	48 8d bd f4 fd ff ff 	lea    -0x20c(%rbp),%rdi
+    7c5f:	b9 33 00 00 00       	mov    $0x33,%ecx
+    7c64:	f3 ab                	rep stos %eax,%es:(%rdi)
+    7c66:	41 8d 45 fc          	lea    -0x4(%r13),%eax
+    7c6a:	48 89 b5 f8 fd ff ff 	mov    %rsi,-0x208(%rbp)
+    7c71:	c7 85 f0 fd ff ff 3d 	movl   $0x203d,-0x210(%rbp)
+    7c78:	20 00 00 
+    7c7b:	c7 85 18 fe ff ff 01 	movl   $0x1,-0x1e8(%rbp)
+    7c82:	00 00 00 
+    7c85:	48 89 85 20 fe ff ff 	mov    %rax,-0x1e0(%rbp)
+    7c8c:	e8 cf bc ff ff       	call   3960 <log_get_max_level@plt>
+    7c91:	83 f8 06             	cmp    $0x6,%eax
+    7c94:	0f 8f f9 03 00 00    	jg     8093 <log_oom_internal@plt+0x4203>
+    7c9a:	80 bb d8 01 00 00 00 	cmpb   $0x0,0x1d8(%rbx)
+    7ca1:	74 07                	je     7caa <log_oom_internal@plt+0x3e1a>
+    7ca3:	83 8d 18 fe ff ff 40 	orl    $0x40,-0x1e8(%rbp)
+    7caa:	8b 85 5c fd ff ff    	mov    -0x2a4(%rbp),%eax
+    7cb0:	83 f8 ff             	cmp    $0xffffffff,%eax
+    7cb3:	0f 84 c0 04 00 00    	je     8179 <log_oom_internal@plt+0x42e9>
+    7cb9:	83 e8 01             	sub    $0x1,%eax
+    7cbc:	75 07                	jne    7cc5 <log_oom_internal@plt+0x3e35>
+    7cbe:	83 8d 18 fe ff ff 10 	orl    $0x10,-0x1e8(%rbp)
+    7cc5:	31 ff                	xor    %edi,%edi
+    7cc7:	4c 89 fe             	mov    %r15,%rsi
+    7cca:	e8 11 be ff ff       	call   3ae0 <clock_adjtime@plt>
+    7ccf:	85 c0                	test   %eax,%eax
+    7cd1:	0f 88 a7 01 00 00    	js     7e7e <log_oom_internal@plt+0x3fee>
+    7cd7:	4c 8b ad 00 fe ff ff 	mov    -0x200(%rbp),%r13
+    7cde:	4c                   	rex.WR
+    7cdf:	89                   	.byte 0x89
+[boot]
+systemd=true

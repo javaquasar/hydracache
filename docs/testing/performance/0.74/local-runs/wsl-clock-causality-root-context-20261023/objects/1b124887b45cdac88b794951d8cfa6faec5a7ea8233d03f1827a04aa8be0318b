@@ -1,0 +1,22 @@
+{
+  "argv": [
+    "wsl.exe",
+    "-d",
+    "Ubuntu",
+    "-u",
+    "artur",
+    "--exec",
+    "cc",
+    "-std=c11",
+    "-O2",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/wsl-clock-readonly-074/discipline.c",
+    "-o",
+    "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/target/wsl-clock-causality-root-context-20261023/discipline-correlation"
+  ],
+  "exit": 0,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

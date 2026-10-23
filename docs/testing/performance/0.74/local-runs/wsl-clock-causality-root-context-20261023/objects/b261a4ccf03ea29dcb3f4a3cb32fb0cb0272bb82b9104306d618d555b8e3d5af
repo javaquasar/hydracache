@@ -1,0 +1,801 @@
+{
+  "admission": false,
+  "backwards_realtime": [
+    {
+      "monotonic_delta_ns": 1048628761,
+      "packet_after": 308,
+      "packet_before": 308,
+      "realtime_delta_ns": -5008782244,
+      "residual_ns": -6057411005,
+      "row": 39
+    }
+  ],
+  "events": [
+    {
+      "monotonic_delta_ns": 1054535187,
+      "packet_after": 307,
+      "packet_before": 307,
+      "realtime_delta_ns": 1054535189,
+      "residual_ns": 2,
+      "row": 1
+    },
+    {
+      "monotonic_delta_ns": 1045709309,
+      "packet_after": 307,
+      "packet_before": 307,
+      "realtime_delta_ns": 1045709307,
+      "residual_ns": -2,
+      "row": 2
+    },
+    {
+      "monotonic_delta_ns": 1077251217,
+      "packet_after": 307,
+      "packet_before": 307,
+      "realtime_delta_ns": 1077251214,
+      "residual_ns": -3,
+      "row": 3
+    },
+    {
+      "monotonic_delta_ns": 1063252336,
+      "packet_after": 307,
+      "packet_before": 307,
+      "realtime_delta_ns": 1063252339,
+      "residual_ns": 3,
+      "row": 4
+    },
+    {
+      "monotonic_delta_ns": 1060836003,
+      "packet_after": 307,
+      "packet_before": 307,
+      "realtime_delta_ns": 1060836004,
+      "residual_ns": 1,
+      "row": 5
+    },
+    {
+      "monotonic_delta_ns": 1039580433,
+      "packet_after": 307,
+      "packet_before": 307,
+      "realtime_delta_ns": 1039580434,
+      "residual_ns": 1,
+      "row": 6
+    },
+    {
+      "monotonic_delta_ns": 1057090700,
+      "packet_after": 307,
+      "packet_before": 307,
+      "realtime_delta_ns": 1057090699,
+      "residual_ns": -1,
+      "row": 7
+    },
+    {
+      "monotonic_delta_ns": 1066778877,
+      "packet_after": 307,
+      "packet_before": 307,
+      "realtime_delta_ns": 1066778866,
+      "residual_ns": -11,
+      "row": 8
+    },
+    {
+      "monotonic_delta_ns": 1041623114,
+      "packet_after": 307,
+      "packet_before": 307,
+      "realtime_delta_ns": 1041623125,
+      "residual_ns": 11,
+      "row": 9
+    },
+    {
+      "monotonic_delta_ns": 1035507255,
+      "packet_after": 307,
+      "packet_before": 307,
+      "realtime_delta_ns": 1035507254,
+      "residual_ns": -1,
+      "row": 10
+    },
+    {
+      "monotonic_delta_ns": 1058306147,
+      "packet_after": 308,
+      "packet_before": 307,
+      "realtime_delta_ns": 3789263272,
+      "residual_ns": 2730957125,
+      "row": 11
+    },
+    {
+      "monotonic_delta_ns": 1046250191,
+      "packet_after": 308,
+      "packet_before": 308,
+      "realtime_delta_ns": 1046250197,
+      "residual_ns": 6,
+      "row": 12
+    },
+    {
+      "monotonic_delta_ns": 1055423215,
+      "packet_after": 308,
+      "packet_before": 308,
+      "realtime_delta_ns": 1055423215,
+      "residual_ns": 0,
+      "row": 13
+    },
+    {
+      "monotonic_delta_ns": 1050839925,
+      "packet_after": 308,
+      "packet_before": 308,
+      "realtime_delta_ns": 1050839924,
+      "residual_ns": -1,
+      "row": 14
+    },
+    {
+      "monotonic_delta_ns": 1052542051,
+      "packet_after": 308,
+      "packet_before": 308,
+      "realtime_delta_ns": 1052542051,
+      "residual_ns": 0,
+      "row": 15
+    },
+    {
+      "monotonic_delta_ns": 1050780671,
+      "packet_after": 308,
+      "packet_before": 308,
+      "realtime_delta_ns": 1050780671,
+      "residual_ns": 0,
+      "row": 16
+    },
+    {
+      "monotonic_delta_ns": 1040204927,
+      "packet_after": 308,
+      "packet_before": 308,
+      "realtime_delta_ns": 1040204927,
+      "residual_ns": 0,
+      "row": 17
+    },
+    {
+      "monotonic_delta_ns": 1071429680,
+      "packet_after": 308,
+      "packet_before": 308,
+      "realtime_delta_ns": 1071429680,
+      "residual_ns": 0,
+      "row": 18
+    },
+    {
+      "monotonic_delta_ns": 1066295889,
+      "packet_after": 308,
+      "packet_before": 308,
+      "realtime_delta_ns": 1066295889,
+      "residual_ns": 0,
+      "row": 19
+    },
+    {
+      "monotonic_delta_ns": 1053704149,
+      "packet_after": 308,
+      "packet_before": 308,
+      "realtime_delta_ns": 1053704148,
+      "residual_ns": -1,
+      "row": 20
+    },
+    {
+      "monotonic_delta_ns": 1063774508,
+      "packet_after": 308,
+      "packet_before": 308,
+      "realtime_delta_ns": 1063774508,
+      "residual_ns": 0,
+      "row": 21
+    },
+    {
+      "monotonic_delta_ns": 1035804042,
+      "packet_after": 308,
+      "packet_before": 308,
+      "realtime_delta_ns": 1035804041,
+      "residual_ns": -1,
+      "row": 22
+    },
+    {
+      "monotonic_delta_ns": 1044415746,
+      "packet_after": 308,
+      "packet_before": 308,
+      "realtime_delta_ns": 1044415746,
+      "residual_ns": 0,
+      "row": 23
+    },
+    {
+      "monotonic_delta_ns": 1043962343,
+      "packet_after": 308,
+      "packet_before": 308,
+      "realtime_delta_ns": 1043962336,
+      "residual_ns": -7,
+      "row": 24
+    },
+    {
+      "monotonic_delta_ns": 1046849286,
+      "packet_after": 308,
+      "packet_before": 308,
+      "realtime_delta_ns": 1046849294,
+      "residual_ns": 8,
+      "row": 25
+    },
+    {
+      "monotonic_delta_ns": 1059007750,
+      "packet_after": 308,
+      "packet_before": 308,
+      "realtime_delta_ns": 1059007751,
+      "residual_ns": 1,
+      "row": 26
+    },
+    {
+      "monotonic_delta_ns": 1055003340,
+      "packet_after": 308,
+      "packet_before": 308,
+      "realtime_delta_ns": 1055003337,
+      "residual_ns": -3,
+      "row": 27
+    },
+    {
+      "monotonic_delta_ns": 1059535089,
+      "packet_after": 308,
+      "packet_before": 308,
+      "realtime_delta_ns": 1059535091,
+      "residual_ns": 2,
+      "row": 28
+    },
+    {
+      "monotonic_delta_ns": 1053971998,
+      "packet_after": 308,
+      "packet_before": 308,
+      "realtime_delta_ns": 1053972000,
+      "residual_ns": 2,
+      "row": 29
+    },
+    {
+      "monotonic_delta_ns": 1049294366,
+      "packet_after": 308,
+      "packet_before": 308,
+      "realtime_delta_ns": 1049294362,
+      "residual_ns": -4,
+      "row": 30
+    },
+    {
+      "monotonic_delta_ns": 1049658461,
+      "packet_after": 308,
+      "packet_before": 308,
+      "realtime_delta_ns": 1049658457,
+      "residual_ns": -4,
+      "row": 31
+    },
+    {
+      "monotonic_delta_ns": 1041144629,
+      "packet_after": 308,
+      "packet_before": 308,
+      "realtime_delta_ns": 1041144630,
+      "residual_ns": 1,
+      "row": 32
+    },
+    {
+      "monotonic_delta_ns": 1043431951,
+      "packet_after": 308,
+      "packet_before": 308,
+      "realtime_delta_ns": 1043431956,
+      "residual_ns": 5,
+      "row": 33
+    },
+    {
+      "monotonic_delta_ns": 1035405669,
+      "packet_after": 308,
+      "packet_before": 308,
+      "realtime_delta_ns": 1035405669,
+      "residual_ns": 0,
+      "row": 34
+    },
+    {
+      "monotonic_delta_ns": 1039368566,
+      "packet_after": 308,
+      "packet_before": 308,
+      "realtime_delta_ns": 1039368564,
+      "residual_ns": -2,
+      "row": 35
+    },
+    {
+      "monotonic_delta_ns": 1062812060,
+      "packet_after": 308,
+      "packet_before": 308,
+      "realtime_delta_ns": 1062812061,
+      "residual_ns": 1,
+      "row": 36
+    },
+    {
+      "monotonic_delta_ns": 1046718223,
+      "packet_after": 308,
+      "packet_before": 308,
+      "realtime_delta_ns": 1046718213,
+      "residual_ns": -10,
+      "row": 37
+    },
+    {
+      "monotonic_delta_ns": 1046022461,
+      "packet_after": 308,
+      "packet_before": 308,
+      "realtime_delta_ns": 1046022473,
+      "residual_ns": 12,
+      "row": 38
+    },
+    {
+      "monotonic_delta_ns": 1048628761,
+      "packet_after": 308,
+      "packet_before": 308,
+      "realtime_delta_ns": -5008782244,
+      "residual_ns": -6057411005,
+      "row": 39
+    },
+    {
+      "monotonic_delta_ns": 1044319961,
+      "packet_after": 309,
+      "packet_before": 308,
+      "realtime_delta_ns": 9830609408,
+      "residual_ns": 8786289447,
+      "row": 40
+    },
+    {
+      "monotonic_delta_ns": 1041544709,
+      "packet_after": 309,
+      "packet_before": 309,
+      "realtime_delta_ns": 1041544715,
+      "residual_ns": 6,
+      "row": 41
+    },
+    {
+      "monotonic_delta_ns": 1043605421,
+      "packet_after": 309,
+      "packet_before": 309,
+      "realtime_delta_ns": 1043605422,
+      "residual_ns": 1,
+      "row": 42
+    },
+    {
+      "monotonic_delta_ns": 1050451117,
+      "packet_after": 309,
+      "packet_before": 309,
+      "realtime_delta_ns": 1050451070,
+      "residual_ns": -47,
+      "row": 43
+    },
+    {
+      "monotonic_delta_ns": 1047723444,
+      "packet_after": 309,
+      "packet_before": 309,
+      "realtime_delta_ns": 1047723490,
+      "residual_ns": 46,
+      "row": 44
+    },
+    {
+      "monotonic_delta_ns": 1049669901,
+      "packet_after": 309,
+      "packet_before": 309,
+      "realtime_delta_ns": 1049669901,
+      "residual_ns": 0,
+      "row": 45
+    },
+    {
+      "monotonic_delta_ns": 1044893556,
+      "packet_after": 309,
+      "packet_before": 309,
+      "realtime_delta_ns": 1044893557,
+      "residual_ns": 1,
+      "row": 46
+    },
+    {
+      "monotonic_delta_ns": 1034048249,
+      "packet_after": 309,
+      "packet_before": 309,
+      "realtime_delta_ns": 1034048242,
+      "residual_ns": -7,
+      "row": 47
+    },
+    {
+      "monotonic_delta_ns": 1068930803,
+      "packet_after": 309,
+      "packet_before": 309,
+      "realtime_delta_ns": 1068930810,
+      "residual_ns": 7,
+      "row": 48
+    },
+    {
+      "monotonic_delta_ns": 1062949958,
+      "packet_after": 309,
+      "packet_before": 309,
+      "realtime_delta_ns": 1062949956,
+      "residual_ns": -2,
+      "row": 49
+    },
+    {
+      "monotonic_delta_ns": 1048978257,
+      "packet_after": 309,
+      "packet_before": 309,
+      "realtime_delta_ns": 1048978255,
+      "residual_ns": -2,
+      "row": 50
+    },
+    {
+      "monotonic_delta_ns": 1039986338,
+      "packet_after": 309,
+      "packet_before": 309,
+      "realtime_delta_ns": 1039986342,
+      "residual_ns": 4,
+      "row": 51
+    },
+    {
+      "monotonic_delta_ns": 1040489429,
+      "packet_after": 309,
+      "packet_before": 309,
+      "realtime_delta_ns": 1040489427,
+      "residual_ns": -2,
+      "row": 52
+    },
+    {
+      "monotonic_delta_ns": 1039208564,
+      "packet_after": 309,
+      "packet_before": 309,
+      "realtime_delta_ns": 1039208564,
+      "residual_ns": 0,
+      "row": 53
+    },
+    {
+      "monotonic_delta_ns": 1041043322,
+      "packet_after": 309,
+      "packet_before": 309,
+      "realtime_delta_ns": 1041043324,
+      "residual_ns": 2,
+      "row": 54
+    },
+    {
+      "monotonic_delta_ns": 1057804128,
+      "packet_after": 309,
+      "packet_before": 309,
+      "realtime_delta_ns": 1057804126,
+      "residual_ns": -2,
+      "row": 55
+    },
+    {
+      "monotonic_delta_ns": 1057329581,
+      "packet_after": 309,
+      "packet_before": 309,
+      "realtime_delta_ns": 1057329581,
+      "residual_ns": 0,
+      "row": 56
+    },
+    {
+      "monotonic_delta_ns": 1038855046,
+      "packet_after": 309,
+      "packet_before": 309,
+      "realtime_delta_ns": 1038855045,
+      "residual_ns": -1,
+      "row": 57
+    },
+    {
+      "monotonic_delta_ns": 1040294222,
+      "packet_after": 309,
+      "packet_before": 309,
+      "realtime_delta_ns": 1040294216,
+      "residual_ns": -6,
+      "row": 58
+    },
+    {
+      "monotonic_delta_ns": 1036293165,
+      "packet_after": 309,
+      "packet_before": 309,
+      "realtime_delta_ns": 1036293166,
+      "residual_ns": 1,
+      "row": 59
+    },
+    {
+      "monotonic_delta_ns": 1054965401,
+      "packet_after": 309,
+      "packet_before": 309,
+      "realtime_delta_ns": 1054965408,
+      "residual_ns": 7,
+      "row": 60
+    },
+    {
+      "monotonic_delta_ns": 1042564711,
+      "packet_after": 309,
+      "packet_before": 309,
+      "realtime_delta_ns": 1042564702,
+      "residual_ns": -9,
+      "row": 61
+    },
+    {
+      "monotonic_delta_ns": 1056546518,
+      "packet_after": 309,
+      "packet_before": 309,
+      "realtime_delta_ns": 1056546524,
+      "residual_ns": 6,
+      "row": 62
+    },
+    {
+      "monotonic_delta_ns": 1036185836,
+      "packet_after": 309,
+      "packet_before": 309,
+      "realtime_delta_ns": 1036185841,
+      "residual_ns": 5,
+      "row": 63
+    },
+    {
+      "monotonic_delta_ns": 1044052107,
+      "packet_after": 309,
+      "packet_before": 309,
+      "realtime_delta_ns": 1044052105,
+      "residual_ns": -2,
+      "row": 64
+    },
+    {
+      "monotonic_delta_ns": 1045785408,
+      "packet_after": 309,
+      "packet_before": 309,
+      "realtime_delta_ns": 1045785409,
+      "residual_ns": 1,
+      "row": 65
+    },
+    {
+      "monotonic_delta_ns": 1077319061,
+      "packet_after": 309,
+      "packet_before": 309,
+      "realtime_delta_ns": 1077319057,
+      "residual_ns": -4,
+      "row": 66
+    },
+    {
+      "monotonic_delta_ns": 1036657025,
+      "packet_after": 309,
+      "packet_before": 309,
+      "realtime_delta_ns": 1036657022,
+      "residual_ns": -3,
+      "row": 67
+    },
+    {
+      "monotonic_delta_ns": 1062934612,
+      "packet_after": 310,
+      "packet_before": 309,
+      "realtime_delta_ns": 3790589591,
+      "residual_ns": 2727654979,
+      "row": 68
+    },
+    {
+      "monotonic_delta_ns": 1063495977,
+      "packet_after": 310,
+      "packet_before": 310,
+      "realtime_delta_ns": 1063495978,
+      "residual_ns": 1,
+      "row": 69
+    },
+    {
+      "monotonic_delta_ns": 1042534170,
+      "packet_after": 310,
+      "packet_before": 310,
+      "realtime_delta_ns": 1042534172,
+      "residual_ns": 2,
+      "row": 70
+    },
+    {
+      "monotonic_delta_ns": 1043340550,
+      "packet_after": 310,
+      "packet_before": 310,
+      "realtime_delta_ns": 1043340537,
+      "residual_ns": -13,
+      "row": 71
+    },
+    {
+      "monotonic_delta_ns": 1036535692,
+      "packet_after": 310,
+      "packet_before": 310,
+      "realtime_delta_ns": 1036535704,
+      "residual_ns": 12,
+      "row": 72
+    },
+    {
+      "monotonic_delta_ns": 1046982657,
+      "packet_after": 310,
+      "packet_before": 310,
+      "realtime_delta_ns": 1046982657,
+      "residual_ns": 0,
+      "row": 73
+    },
+    {
+      "monotonic_delta_ns": 1035647637,
+      "packet_after": 310,
+      "packet_before": 310,
+      "realtime_delta_ns": 1035647636,
+      "residual_ns": -1,
+      "row": 74
+    },
+    {
+      "monotonic_delta_ns": 1042955989,
+      "packet_after": 310,
+      "packet_before": 310,
+      "realtime_delta_ns": 1042955982,
+      "residual_ns": -7,
+      "row": 75
+    },
+    {
+      "monotonic_delta_ns": 1056253567,
+      "packet_after": 310,
+      "packet_before": 310,
+      "realtime_delta_ns": 1056253574,
+      "residual_ns": 7,
+      "row": 76
+    },
+    {
+      "monotonic_delta_ns": 1041190735,
+      "packet_after": 310,
+      "packet_before": 310,
+      "realtime_delta_ns": 1041190736,
+      "residual_ns": 1,
+      "row": 77
+    },
+    {
+      "monotonic_delta_ns": 1064968442,
+      "packet_after": 310,
+      "packet_before": 310,
+      "realtime_delta_ns": 1064968432,
+      "residual_ns": -10,
+      "row": 78
+    },
+    {
+      "monotonic_delta_ns": 1074917946,
+      "packet_after": 310,
+      "packet_before": 310,
+      "realtime_delta_ns": 1074917955,
+      "residual_ns": 9,
+      "row": 79
+    },
+    {
+      "monotonic_delta_ns": 1045008768,
+      "packet_after": 310,
+      "packet_before": 310,
+      "realtime_delta_ns": 1045008760,
+      "residual_ns": -8,
+      "row": 80
+    }
+  ],
+  "exact_clock_setting_caller": null,
+  "frequencies_scaled_ppm": [
+    -2279760
+  ],
+  "historical_tick_setter": null,
+  "identity": {
+    "boot_id": "cf222c07-5476-4f70-9a32-455e99204d0a",
+    "namespaces_and_time_offsets": [
+      "1/user=user:[4026531837]",
+      "1/mnt=mnt:[4026532239]",
+      "1/pid=pid:[4026532241]",
+      "1/time=time:[4026531834]",
+      "self/user=user:[4026531837]",
+      "self/mnt=mnt:[4026532239]",
+      "self/pid=pid:[4026532241]",
+      "self/time=time:[4026531834]",
+      "monotonic           0         0",
+      "boottime            0         0"
+    ],
+    "pid1_start_ticks": 10939
+  },
+  "largest_residuals": [
+    {
+      "monotonic_delta_ns": 1044319961,
+      "packet_after": 309,
+      "packet_before": 308,
+      "realtime_delta_ns": 9830609408,
+      "residual_ns": 8786289447,
+      "row": 40
+    },
+    {
+      "monotonic_delta_ns": 1048628761,
+      "packet_after": 308,
+      "packet_before": 308,
+      "realtime_delta_ns": -5008782244,
+      "residual_ns": -6057411005,
+      "row": 39
+    },
+    {
+      "monotonic_delta_ns": 1058306147,
+      "packet_after": 308,
+      "packet_before": 307,
+      "realtime_delta_ns": 3789263272,
+      "residual_ns": 2730957125,
+      "row": 11
+    },
+    {
+      "monotonic_delta_ns": 1062934612,
+      "packet_after": 310,
+      "packet_before": 309,
+      "realtime_delta_ns": 3790589591,
+      "residual_ns": 2727654979,
+      "row": 68
+    },
+    {
+      "monotonic_delta_ns": 1050451117,
+      "packet_after": 309,
+      "packet_before": 309,
+      "realtime_delta_ns": 1050451070,
+      "residual_ns": -47,
+      "row": 43
+    },
+    {
+      "monotonic_delta_ns": 1047723444,
+      "packet_after": 309,
+      "packet_before": 309,
+      "realtime_delta_ns": 1047723490,
+      "residual_ns": 46,
+      "row": 44
+    },
+    {
+      "monotonic_delta_ns": 1043340550,
+      "packet_after": 310,
+      "packet_before": 310,
+      "realtime_delta_ns": 1043340537,
+      "residual_ns": -13,
+      "row": 71
+    },
+    {
+      "monotonic_delta_ns": 1046022461,
+      "packet_after": 308,
+      "packet_before": 308,
+      "realtime_delta_ns": 1046022473,
+      "residual_ns": 12,
+      "row": 38
+    }
+  ],
+  "method": "hc074-clock-discipline-ntp-readonly-v1",
+  "ntp_updates": [
+    {
+      "delay_us": 116101,
+      "offset_us": 8785012.5,
+      "packet": 308,
+      "row": 11,
+      "spike": false,
+      "timestamps_us": [
+        1792757666224655,
+        1792757675067718,
+        1792757675072722,
+        1792757666345760
+      ]
+    },
+    {
+      "delay_us": 112587,
+      "offset_us": 8786289.5,
+      "packet": 309,
+      "row": 40,
+      "spike": false,
+      "timestamps_us": [
+        1792757698953319,
+        1792757707795902,
+        1792757707801177,
+        1792757699071181
+      ]
+    },
+    {
+      "delay_us": 113294,
+      "offset_us": 8786406.0,
+      "packet": 310,
+      "row": 68,
+      "spike": false,
+      "timestamps_us": [
+        1792757731684069,
+        1792757740527122,
+        1792757740531089,
+        1792757731801330
+      ]
+    }
+  ],
+  "observed_monotonic_per_raw_enclosure": [
+    0.9166651831421702,
+    0.9166652385255675
+  ],
+  "rows": 81,
+  "same_session": true,
+  "statuses": [
+    8192,
+    8256
+  ],
+  "tick_plus_frequency_rate_range": [
+    0.9166652136230469,
+    0.9166652136230469
+  ],
+  "ticks_us": [
+    9167
+  ]
+}

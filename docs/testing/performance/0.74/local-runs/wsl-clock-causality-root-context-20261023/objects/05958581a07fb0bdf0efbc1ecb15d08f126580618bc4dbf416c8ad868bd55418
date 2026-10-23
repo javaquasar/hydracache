@@ -1,0 +1,55 @@
+Linux LT-TCH-12 6.6.87.2-microsoft-standard-WSL2 #1 SMP PREEMPT_DYNAMIC Thu Jun  5 18:30:46 UTC 2025 x86_64 x86_64 x86_64 GNU/Linux
+initrd=\initrd.img WSL_ROOT_INIT=1 panic=-1 nr_cpus=8 hv_utils.timesync_implicit=1 console=hvc0 debug pty.legacy_count=0 WSL_ENABLE_CRASH_DUMP=1
+Y
+tsc
+MainPID=176
+ActiveState=active
+DropInPaths=/usr/lib/systemd/system/systemd-timesyncd.service.d/wsl.conf
+ActiveEnterTimestampMonotonic=113500250
+PID=176
+PPID=1
+TTY=n/a
+UID=996
+EUID=996
+SUID=996
+FSUID=996
+GID=996
+EGID=996
+SGID=996
+FSGID=996
+SupplementaryGIDs=996
+Comm=systemd-timesyn
+Exe=/usr/lib/systemd/systemd-timesyncd
+CommandLine=/usr/lib/systemd/systemd-timesyncd
+Label=kernel
+CGroup=/system.slice/systemd-timesyncd.service
+Unit=systemd-timesyncd.service
+Slice=system.slice
+UserUnit=n/a
+UserSlice=n/a
+Session=n/a
+AuditLoginUID=n/a
+AuditSessionID=n/a
+UniqueName=:1.1
+EffectiveCapabilities=cap_sys_time
+PermittedCapabilities=cap_sys_time
+InheritableCapabilities=cap_sys_time
+BoundingCapabilities=cap_sys_time
+x -2279760
+s "ntp.ubuntu.com"
+(iay) 2 4 91 189 91 157
+t 32000000
+5e87427803daf1dbe974cc62fba335c96ff24e37892f67d9095d6703d2c32009  /usr/lib/systemd/systemd-timesyncd
+# Enable timesyncd on WSL machines
+# so WSL clock is synced on resume from suspend of the host.
+
+[Unit]
+ConditionVirtualization=
+ConditionVirtualization=|!container
+ConditionVirtualization=|wsl
+systemd-timesyncd	255.4-1ubuntu8.18
+Oct 23 11:25:25 LT-TCH-12 systemd[1]: Starting systemd-timesyncd.service - Network Time Synchronization...
+Oct 23 11:25:25 LT-TCH-12 systemd[1]: Started systemd-timesyncd.service - Network Time Synchronization.
+Oct 23 11:25:35 LT-TCH-12 systemd-timesyncd[176]: Timed out waiting for reply from 185.125.190.57:123 (ntp.ubuntu.com).
+Oct 23 11:25:44 LT-TCH-12 systemd-timesyncd[176]: Contacted time server 91.189.91.157:123 (ntp.ubuntu.com).
+Oct 23 11:25:44 LT-TCH-12 systemd-timesyncd[176]: Initial clock synchronization to Fri 2026-10-23 11:25:44.176407 CEST.

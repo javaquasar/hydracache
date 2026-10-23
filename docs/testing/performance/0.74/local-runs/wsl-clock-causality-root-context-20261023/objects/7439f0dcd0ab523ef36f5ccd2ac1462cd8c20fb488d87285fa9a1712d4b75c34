@@ -1,0 +1,11 @@
+{
+  "argv": [
+    "C:\\Python313\\python.exe",
+    "-B",
+    "-c",
+    "import json,pathlib; p=pathlib.Path(\"target/wsl-clock-causality-root-context-20261023\"); r=[json.loads(s) for s in (p/\"kernel.jsonl\").read_text().splitlines()]; print(json.dumps([{\"row\":i,\"status_before\":a[\"status\"],\"status_after\":b[\"status\"],\"residual_ns\":(b[\"realtime_ns\"]-a[\"realtime_ns\"])-(b[\"monotonic_ns\"]-a[\"monotonic_ns\"])} for i,(a,b) in enumerate(zip(r,r[1:]),1) if a[\"status\"]!=b[\"status\"]],indent=2))"
+  ],
+  "exit": 0,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stdout_sha256": "1da6dddbe77d25cb07984de49e34c42e0ad9e3278b6c6a4754ff1df36fbe7b88"
+}

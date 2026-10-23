@@ -1,0 +1,43 @@
+audit journal
+-- No entries --
+trace state
+1
+nop
+# tracer: nop
+#
+# entries-in-buffer/entries-written: 0/0   #P:8
+#
+#                                _-----=> irqs-off/BH-disabled
+#                               / _----=> need-resched
+#                              | / _---=> hardirq/softirq
+#                              || / _--=> preempt-depth
+#                              ||| / _-=> migrate-disable
+#                              |||| /     delay
+#           TASK-PID     CPU#  |||||  TIMESTAMP  FUNCTION
+#              | |         |   |||||     |         |
+audit log presence
+time correction kernel messages
+[    0.000000] Command line: initrd=\initrd.img WSL_ROOT_INIT=1 panic=-1 nr_cpus=8 hv_utils.timesync_implicit=1 console=hvc0 debug pty.legacy_count=0 WSL_ENABLE_CRASH_DUMP=1
+[    0.018405] Kernel command line: initrd=\initrd.img WSL_ROOT_INIT=1 panic=-1 nr_cpus=8 hv_utils.timesync_implicit=1 console=hvc0 debug pty.legacy_count=0 WSL_ENABLE_CRASH_DUMP=1
+[    0.208149] hv_utils: TimeSync IC version 4.0
+[  500.267268] systemd-journald[61]: Time jumped backwards, rotating.
+[  532.996951] systemd-journald[61]: Time jumped backwards, rotating.
+[ 1547.774860] systemd-journald[61]: Time jumped backwards, rotating.
+[ 2227.224607] systemd-journald[61]: Time jumped backwards, rotating.
+[ 2227.226463] systemd-journald[39]: Time jumped backwards, rotating.
+[ 2325.304918] systemd-journald[61]: Time jumped backwards, rotating.
+[ 2325.307134] systemd-journald[36]: Time jumped backwards, rotating.
+[ 2456.224859] systemd-journald[61]: Time jumped backwards, rotating.
+[ 2456.229382] systemd-journald[36]: Time jumped backwards, rotating.
+[ 2488.955524] systemd-journald[61]: Time jumped backwards, rotating.
+[ 2619.878440] systemd-journald[61]: Time jumped backwards, rotating.
+[ 3209.127292] systemd-journald[61]: Time jumped backwards, rotating.
+[ 4186.486074] systemd-journald[61]: Time jumped backwards, rotating.
+[ 5097.691954] systemd-journald[61]: Time jumped backwards, rotating.
+[ 5163.152253] systemd-journald[61]: Time jumped backwards, rotating.
+[ 5163.156608] systemd-journald[36]: Time jumped backwards, rotating.
+[ 8237.294370] systemd-journald[61]: Time jumped backwards, rotating.
+[ 8826.449312] systemd-journald[61]: Time jumped backwards, rotating.
+[ 8891.908881] systemd-journald[61]: Time jumped backwards, rotating.
+[ 8953.046267] systemd-journald[61]: Time jumped backwards, rotating.
+[10254.616778] systemd-journald[61]: Time jumped backwards, rotating.

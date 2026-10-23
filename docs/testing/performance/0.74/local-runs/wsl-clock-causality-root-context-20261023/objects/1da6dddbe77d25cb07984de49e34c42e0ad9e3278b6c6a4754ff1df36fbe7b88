@@ -1,0 +1,14 @@
+[
+  {
+    "row": 39,
+    "status_before": 8192,
+    "status_after": 8256,
+    "residual_ns": -6057411005
+  },
+  {
+    "row": 40,
+    "status_before": 8256,
+    "status_after": 8192,
+    "residual_ns": 8786289447
+  }
+]
