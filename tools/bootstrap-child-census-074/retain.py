@@ -16,6 +16,7 @@ need, read = previous.need, previous.read
 
 def verify(folder, lane, sources):
     previous.verify(folder, lane, sources)
+    lane = lane.removesuffix('-final')
     if lane in ('host', '194', '188'):
         counts = [('child-units', 5 if lane == 'host' else 15), ('child-cli', 1 if lane == 'host' else 2), ('entry', 2 if lane == 'host' else 7)]
         if lane != 'host': counts += [('census-cli', 3), ('images', 9)]
@@ -35,7 +36,19 @@ def run(commit):
     need(not PACKET.exists(), 'Never overwrite/reseal')
     sources = {n: c.sha(c.ROOT / n) for n in c.FILES}
     need(sources['docs/testing/performance/0.74/qualification-manifest.toml'] == previous.QUALIFICATION, 'Qualification changed')
-    for lane in ('host', '194', '188', 'metadata'): verify(c.OUTPUT / lane, lane, sources)
+    for lane in ('host-final', '194-final', '188-final', 'metadata-final'): verify(c.OUTPUT / lane, lane, sources)
+    initial = read(c.OUTPUT / 'host/source-before.json')
+    need(all(c.sha(c.OUTPUT / 'initial-source' / name) == digest for name, digest in initial.items()), 'Initial source changed')
+    for lane in ('host', '194', '188', 'metadata'):
+        folder = c.OUTPUT / lane
+        need(read(folder / 'source-before.json') == initial, 'Initial source mismatch')
+        for step in read(folder / 'result.json')['steps']:
+            row = read(folder / (step + '.json'))
+            for suffix in ('stdout', 'stderr'):
+                need(c.sha(folder / (step + '.' + suffix + '.log')) == row[suffix + '_sha256'], 'Initial output changed')
+    for lane in ('194', '188'):
+        need(read(c.OUTPUT / lane / 'result.json')['failure'] is not None and 'duplicate_mod' in (c.OUTPUT / lane / 'clippy.stderr.log').read_text(), 'Initial lint refusal missing')
+    need(read(c.OUTPUT / 'metadata/result.json')['failure'] is not None and 'unregistered cfg-gated target' in (c.OUTPUT / 'metadata/registry.stderr.log').read_text(), 'Initial registry refusal missing')
     for name in c.FILES:
         raw = c.logger.subprocess.run(['git', '--no-replace-objects', 'show', commit + ':' + name], cwd=c.ROOT, capture_output=True, check=True).stdout
         need(raw.replace(b'\r\n', b'\n') == (c.ROOT / name).read_bytes().replace(b'\r\n', b'\n'), 'Commit drift')

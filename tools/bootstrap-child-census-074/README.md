@@ -1,7 +1,9 @@
 # Complete bootstrap role consistency controls
 
-Run python -B tools/bootstrap-child-census-074/check.py with a fixed host, 194,
-188 or metadata lane. Existing results cannot be overwritten. Linux selects
+Run python -B tools/bootstrap-child-census-074/check.py with a fixed host-final,
+194-final, 188-final or metadata-final lane. Existing results cannot be overwritten.
+Unsuffixed lanes and capture_initial.py retain the first duplicate-helper lint
+and missing registry refusals with exact initial source. Linux selects
 15 bootstrap units and three complete-role process controls, preserving the
 preceding entry-only controls and lib regressions. Every process exits 2.
 Private fixture resources and owned sleeper pidfds are not original guardians.
