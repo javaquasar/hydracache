@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/wsl-clock-trace-074/einval.py", line 185, in <module>
+    {'collect': collect, 'session': session}[mode]()
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/wsl-clock-trace-074/einval.py", line 135, in session
+    raise RuntimeError('First configuration refusal retained; no retry')
+RuntimeError: First configuration refusal retained; no retry

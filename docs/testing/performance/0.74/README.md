@@ -6479,3 +6479,19 @@ the first attempt's 16 pre-dispatch controls remain archived independently.
 The backward setter and historical tick writer are still unknown. Another
 bounded diagnostic candidate needs separate approval; no original-owner,
 runtime/deadline changes, service action or server execution was performed.
+
+## WSL EINVAL localized to append stream construction
+
+The separately approved [configuration-only diagnostic](wsl-clock-einval-20261023.md)
+completed five setup operations, then failed while opening kprobe_events in
+Python append mode, before writing the first probe. Its journal preserves the
+exact operation and traceback. The source-level explanation is append mode's
+implicit SEEK_END against the registry's seq_lseek interface, which rejects
+that seek with EINVAL. No actual lseek syscall trace was collected.
+
+No probes were registered or trace buffer activated; no clock queries ran.
+Both cleanup owners and the full context comparison passed. The original trace
+archive is unchanged. Twenty-one controls pass, and the new 27-file exact
+archive retains the failure separately. A non-seeking, non-truncating command
+writer is the next isolated correction, not a reason to use destructive `w`
+mode or repeat a consumed lane. Clock-setter and server gates remain open.

@@ -1,0 +1,23 @@
+{
+  "admission": false,
+  "cleanup_context_confirmed": true,
+  "clock_queries": 0,
+  "completed_operations": 5,
+  "configuration_only": true,
+  "failed_operations": [
+    {
+      "errno": 22,
+      "error": "OSError(22, 'Invalid argument')",
+      "operation": "append",
+      "path": "/sys/kernel/tracing/kprobe_events",
+      "phase": "failed",
+      "sequence": 6,
+      "traceback": "Traceback (most recent call last):\n  File \"/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/wsl-clock-trace-074/capture.py\", line 69, in write\n    with path.open('a' if append else 'w', encoding='ascii') as stream:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/pathlib.py\", line 1015, in open\n    return io.open(self, mode, buffering, encoding, errors, newline)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nOSError: [Errno 22] Invalid argument\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/wsl-clock-trace-074/einval.py\", line 35, in perform\n    result = effect()\n             ^^^^^^^^\n  File \"/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/wsl-clock-trace-074/einval.py\", line 51, in <lambda>\n    lambda: cap.write(path, value, append=append))\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/wsl-clock-trace-074/capture.py\", line 73, in write\n    raise OSError(error.errno, error.strerror, str(path)) from error\nOSError: [Errno 22] Invalid argument: '/sys/kernel/tracing/kprobe_events'\n",
+      "value": "p:hc074clock_b60de8972a364c0fb5a06be87c71c6be/adjust do_adjtimex modes=+0(%di):u32 freq=+16(%di):s64 tick=+88(%di):s64 sec=+72(%di):s64 ns=+80(%di):s64"
+    }
+  ],
+  "method": "hc074-clock-configuration-localization-v1",
+  "original_owner_run": false,
+  "server": false,
+  "trace_activation": false
+}

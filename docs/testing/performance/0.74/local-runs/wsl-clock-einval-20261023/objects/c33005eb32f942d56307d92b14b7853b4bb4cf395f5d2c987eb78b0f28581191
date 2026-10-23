@@ -1,0 +1,26 @@
+test_configuration_order_and_no_buffer_activation (test_einval.Configuration.test_configuration_order_and_no_buffer_activation) ... ok
+test_durable_before_record_must_precede_effect (test_einval.Configuration.test_durable_before_record_must_precede_effect) ... ok
+test_first_failure_path_traceback_and_no_later_operation (test_einval.Configuration.test_first_failure_path_traceback_and_no_later_operation) ... ok
+test_read_failure_is_recorded_and_not_retried (test_einval.Configuration.test_read_failure_is_recorded_and_not_retried) ... ok
+test_changed_definition_is_not_deleted (test_trace.Cleanup.test_changed_definition_is_not_deleted) ... ok
+test_partial_and_repeated_cleanup_never_remove_foreign_probe (test_trace.Cleanup.test_partial_and_repeated_cleanup_never_remove_foreign_probe) ... ok
+test_hard_deadline_without_controller (test_trace.Guardian.test_hard_deadline_without_controller) ... ok
+test_normal_completion (test_trace.Guardian.test_normal_completion) ... ok
+test_owner_sigkill_with_external_harness (test_trace.Guardian.test_owner_sigkill_with_external_harness) ... ok
+test_archive_exact_bytes_and_tampering_refusal (test_trace.Offline.test_archive_exact_bytes_and_tampering_refusal) ... ok
+test_command_first_timeout_exclusive_logs_no_retry (test_trace.Offline.test_command_first_timeout_exclusive_logs_no_retry) ... ok
+test_entries_returns_stack_and_no_false_query_write (test_trace.Offline.test_entries_returns_stack_and_no_false_query_write) ... ok
+test_incomplete_entry_and_wrong_pid_never_imply_success (test_trace.Offline.test_incomplete_entry_and_wrong_pid_never_imply_success) ... ok
+test_loss_missing_counter_and_kprobe_misses_refuse (test_trace.Offline.test_loss_missing_counter_and_kprobe_misses_refuse) ... ok
+test_missing_argument_and_unknown_event_refuse (test_trace.Offline.test_missing_argument_and_unknown_event_refuse) ... ok
+test_btf_malformed_and_truncated_refuse (test_trace.Plan.test_btf_malformed_and_truncated_refuse) ... ok
+test_btf_real_layout_and_corrupt_member_or_prototype_refuse (test_trace.Plan.test_btf_real_layout_and_corrupt_member_or_prototype_refuse) ... ok
+test_buffered_write_and_close_errors_keep_exact_path (test_trace.Plan.test_buffered_write_and_close_errors_keep_exact_path) ... ok
+test_no_truncate_of_global_probe_registry_or_root_control_writes (test_trace.Plan.test_no_truncate_of_global_probe_registry_or_root_control_writes) ... ok
+test_only_the_owned_group_and_expected_write_paths (test_trace.Plan.test_only_the_owned_group_and_expected_write_paths) ... ok
+test_pid_stat_comm_with_spaces_and_parentheses (test_trace.Plan.test_pid_stat_comm_with_spaces_and_parentheses) ... ok
+
+----------------------------------------------------------------------
+Ran 21 tests in 2.524s
+
+OK

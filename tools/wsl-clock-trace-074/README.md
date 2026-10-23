@@ -34,3 +34,10 @@ The 2026-10-23 lane is already consumed: configuration failed with EINVAL and
 cleanup succeeded. See the [first-result report](../../docs/testing/performance/0.74/wsl-clock-trace-20261023.md).
 Do not invoke collect again or delete its output. The later path/traceback
 diagnostic correction has only offline/mock validation, not a second trace.
+
+The separate configuration-only localization lane is also consumed. It
+identified an open-time EINVAL on kprobe_events in append mode; no command was
+written and no trace buffer activated. See the
+[configuration report](../../docs/testing/performance/0.74/wsl-clock-einval-20261023.md).
+Verify its exact archive with `python -B tools/wsl-clock-trace-074/einval.py verify`.
+Do not invoke its collect/session modes again or delete either output lane.

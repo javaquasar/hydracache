@@ -18526,3 +18526,27 @@ silently repeat the observation. Instrumentation needs failure diagnostics and
 its own cleanup tests; product guards and admission windows must not absorb the
 cost of making an experiment appear successful. Setter attribution remains
 open, and another bounded capture is a separate authorization boundary.
+
+### Append streams can fail before a virtual file receives a command
+
+The separately approved [configuration diagnostic](../testing/performance/0.74/wsl-clock-einval-20261023.md)
+localized the failure without another clock series. A durable before/after
+journal showed that instance creation, buffer size, trace clock and stacktrace
+setup worked. Opening the probe registry as a Python append stream then failed
+before the first definition was written. A parser or function-address change
+would therefore target a stage this attempt never reached.
+
+The source-level explanation is a mismatch between regular-file append
+semantics and a virtual control interface. CPython seeks to the end during
+append-stream construction; this registry uses seq_lseek, which rejects that
+seek with EINVAL. The exact open failure was observed; the intervening syscall
+was explained from the pinned implementations, not recorded in a syscall trace.
+
+A future command writer must avoid implicit seeks without adding O_TRUNC.
+Changing the mode to `w` would be unsafe because opening this registry with
+truncation releases probe definitions. The correct boundary is an isolated
+non-seeking, non-truncating writer with full-command and short-write checks,
+followed by separately scoped live validation. The diagnostic stopped on its
+first failure, cleaned its private instance, preserved the earlier archive and
+left clocks, services, runtime checks and admission windows unchanged. It fixes
+the direction of the next experiment, not the unobserved clock-setting cause.
