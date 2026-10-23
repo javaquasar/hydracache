@@ -36,6 +36,9 @@ class Controls(unittest.TestCase):
         self.assertLess(raw.index('getent $entry'),raw.index('groupadd --gid'))
         self.assertLess(raw.index('pgrep -u 986'),raw.index('userdel hydracache-perf'))
         self.assertIn('cmp -s "/etc/$name" "$temporary/$name.original"',raw)
+        self.assertNotIn('-K CREATE_MAIL_SPOOL',raw)
+        self.assertIn('useradd --system --no-create-home',raw)
+        self.assertIn('mktemp -d /var/tmp/hc074-original-service-',raw)
         self.assertEqual(raw.count('privileged_original_manager_service_once --ignored'),1)
     def test_native_requires_fixed_workspace_and_immutable_first_lane(self):
         spec=importlib.util.spec_from_file_location('native',c.ROOT/'tools/bootstrap-original-service-074/native_fixture.py')
@@ -45,5 +48,6 @@ class Controls(unittest.TestCase):
         self.assertIn('exist_ok=False',source)
         self.assertNotIn('ssh',source)
         self.assertIn('raise SystemExit(result.returncode)',source)
+        self.assertIn("(first/'live.stdout.log').exists()",source)
 
 if __name__=='__main__': unittest.main()

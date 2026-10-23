@@ -32,7 +32,12 @@ def run(binary):
         raise ValueError('Qualification manifest changed')
     if not binary.is_file() or binary.parent != BOOTSTRAP.parents[2]/'release/deps':
         raise ValueError('Only the freshly selected GNU libtest path is admitted')
-    lane=OUT/'native-first'
+    # Initial setup failed before libtest/admission (Debian -K incompatibility).
+    # Retain that result; this candidate permits only the first actual attempt.
+    first=OUT/'native-first'
+    if (first/'live.stdout.log').exists() or 'CREATE_MAIL_SPOOL' not in (first/'session.stderr.log').read_text():
+        raise ValueError('No pre-admission account-only refusal to repair')
+    lane=OUT/'native-account-compatible-once'
     lane.mkdir(parents=True,exist_ok=False)  # No retry-to-pass or first-result overwrite.
     bundle=ROOT/'target/diagnostic-start-material-bundle-20261017'
     if not (bundle/'timing-controls-074').is_file(): raise ValueError('Missing original bundle')

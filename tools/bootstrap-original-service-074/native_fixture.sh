@@ -8,7 +8,7 @@ libtest_sha=$4
 test "$(id -u)" = 0
 test "$(cat /etc/hostname)" = hc074-native
 test "$(systemctl --version | head -n 1 | cut -d ' ' -f 2)" = 257
-case "$lane" in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/target/bootstrap-original-service-20261023/native-first) ;; *) exit 74;; esac
+case "$lane" in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/target/bootstrap-original-service-20261023/native-account-compatible-once) ;; *) exit 74;; esac
 test "$(sha256sum "$lane/bootstrap" | cut -d ' ' -f 1)" = "$bootstrap_sha"
 test "$(sha256sum "$lane/libtest" | cut -d ' ' -f 1)" = "$libtest_sha"
 fixed=/opt/hydracache-perf/bin/diagnostic-held-bootstrap-074
@@ -26,7 +26,9 @@ test -d /sys/fs/cgroup/system.slice
 for path in /var/lib/hydracache-perf/campaigns/active /var/lib/hydracache-perf/active-campaign.json /run/hydracache-perf/active-campaign; do
     test ! -e "$path" && test ! -L "$path"
 done
-temporary=$(mktemp -d /tmp/hc074-original-service-XXXXXX)
+# WSL may remount tmpfs /tmp on a later distro init without changing VM boot_id.
+# Recovery copies must therefore outlive that session (still root-only).
+temporary=$(mktemp -d /var/tmp/hc074-original-service-XXXXXX)
 chmod 700 "$temporary"
 root_group=0
 extra_group=0
@@ -78,12 +80,13 @@ cleanup() {
         else cleanup_rc=74; fi
     fi
     # Never remove the account while a writer (or descriptor holder) survives.
-    if test "$account" = 1; then
+    if test "$account" = 1 && getent passwd hydracache-perf >/dev/null; then
         test "$(id -u hydracache-perf)" = 986 && test "$(id -g hydracache-perf)" = 986 || cleanup_rc=74
         if pgrep -u 986 >/dev/null; then cleanup_rc=74; else
             test "$cleanup_rc" = 0 && userdel hydracache-perf || cleanup_rc=74
         fi
     fi
+    if getent passwd 986 >/dev/null; then cleanup_rc=74; fi
     if test "$cleanup_rc" = 0; then
         if test "$extra_group" = 1 && getent group hc074-fixture-extra >/dev/null; then
             test "$(getent group hc074-fixture-extra | cut -d : -f 3)" = 987 && groupdel hc074-fixture-extra || cleanup_rc=74
@@ -123,7 +126,7 @@ cleanup() {
 trap cleanup EXIT HUP INT TERM
 root_group=1; groupadd --gid 986 hydracache-perf
 extra_group=1; groupadd --gid 987 hc074-fixture-extra
-account=1; useradd --no-create-home --home-dir /nonexistent --shell /usr/sbin/nologin --uid 986 --gid 986 --groups 987 --no-user-group --no-log-init -K CREATE_MAIL_SPOOL=no --password '!' hydracache-perf
+account=1; useradd --system --no-create-home --home-dir /nonexistent --shell /usr/sbin/nologin --uid 986 --gid 986 --groups 987 --no-user-group --no-log-init --password '!' hydracache-perf
 test "$(id -G hydracache-perf)" = '986 987'
 parents=1; mkdir /opt/hydracache-perf /opt/hydracache-perf/bin
 chmod 755 /opt/hydracache-perf /opt/hydracache-perf/bin
