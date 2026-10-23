@@ -8,6 +8,14 @@ installation is authorized. The user separately permits temporary diagnostic
 bootstrap and test-only protected enrollment, with absence checks and exact
 owned cleanup. Production keys/pins remain untouched.
 
+The user also approved one temporary password-locked, no-home hydracache-perf
+account (UID/GID 986, supplementary GID 987) in this distro only. Guard all names
+and numeric IDs for absence first. Retain account database originals privately,
+remove the account only after owned writers stop, verify original entries and
+restore only account-tool backups. Do not substitute credentials to pass a test.
+The test enrollment belongs to the same private protected trust root as the
+consumed fixture input; no unused production /etc enrollment is installed.
+
 The old private-cgroup-mount consuming fixture is not a real manager placement.
 Keep it unchanged. Add a separate opt-in fixture using one previously absent
 attempt slice under the actual system.slice. Only its own marked service/slice
