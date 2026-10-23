@@ -1,0 +1,23 @@
+{
+  "actual_private_kernel_controls": true,
+  "actual_process_layout_controls": true,
+  "admission_allowed": false,
+  "checked_commit": "f3098487ba930ca101f2209dad211f4214aa218c",
+  "clock_changes": false,
+  "complete_forged_role_set_refuses": true,
+  "credentials_manager_root_authenticated": false,
+  "current_executable_authenticated": false,
+  "extra_descriptor_refuses": true,
+  "original_delivery": false,
+  "original_live_join": false,
+  "original_owner_fd_transfer": false,
+  "performance_measurement": false,
+  "product": false,
+  "qualification_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "semantic_roles": 15,
+  "server": false,
+  "service_changes": false,
+  "signed_actual_build_enrolled": false,
+  "unit_child_context_modeled": true,
+  "writers_cessation": false
+}

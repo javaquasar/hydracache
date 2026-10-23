@@ -1,0 +1,12 @@
+warning: in the working copy of 'crates/xtask/tests/bootstrap_build_owner_074.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'crates/xtask/tests/bootstrap_child_reader_074.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'crates/xtask/tests/bootstrap_entry_binding_074.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'crates/xtask/tests/bootstrap_image_census_074.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'crates/xtask/tests/support/bootstrap_child_guard.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'crates/xtask/tests/support/bootstrap_entry_guard.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/articles/007-optimization-starts-with-measurement.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/performance/0.74/README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/performance/0.74/bootstrap-child-census-first-result-20261023.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tools/long-run-supervisor-074/src/bin/diagnostic_held_bootstrap.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tools/long-run-supervisor-074/src/diagnostic_bootstrap_child_reader.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tools/long-run-supervisor-074/src/diagnostic_bootstrap_child_reader_tests.rs', LF will be replaced by CRLF the next time Git touches it

@@ -1,0 +1,23 @@
+{
+  "failure": null,
+  "lane": "188-final-v2",
+  "original_attempt": false,
+  "product": false,
+  "server": false,
+  "steps": [
+    "census-cli",
+    "child-units",
+    "child-cli",
+    "entry",
+    "images",
+    "build",
+    "selection",
+    "owner",
+    "enrollment",
+    "old-source",
+    "old-replacement",
+    "old-keys",
+    "check",
+    "clippy"
+  ]
+}

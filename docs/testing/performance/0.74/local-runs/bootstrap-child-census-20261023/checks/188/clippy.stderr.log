@@ -1,0 +1,26 @@
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error: file is loaded as a module multiple times: `tools/long-run-supervisor-074/src/bin/../../tests/support/bootstrap_child_material.rs`
+  --> tools/long-run-supervisor-074/src/bin/../diagnostic_bootstrap_child_reader_tests.rs:3:1
+   |
+1  |  | use super::*;
+   |  |______________^first loaded here
+2  |    use std::os::fd::AsRawFd;
+3  |  / #[path = "../tests/support/bootstrap_child_material.rs"]
+   |
+  ::: tools/long-run-supervisor-074/src/bin/../../tests/support/bootstrap_child_material.rs:1:1
+   |
+1  | /  //! Synthetic sealed assertions only; no original owner, credentials or permit.
+2  | |  use hydracache_long_run_supervisor_074::diagnostic_builder::bootstrap_build::entry_format::AssertedEntry;
+3  | |  use std::fs::{File, OpenOptions};
+4  | |  use std::io::Write;
+...  |
+12 | |      AssertedEntry {
+13 | |          owner: [74, 75, 1000, 1000, 1000, 1000],
+   | |____________________^ loaded again here
+   |
+   = help: replace all but one `mod` item with `use` items
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#duplicate_mod
+   = note: `-D clippy::duplicate-mod` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::duplicate_mod)]`
+
+error: could not compile `hydracache-long-run-supervisor-074` (bin "diagnostic_held_bootstrap" test) due to 1 previous error

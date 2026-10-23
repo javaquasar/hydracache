@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "python",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tools/bootstrap-child-census-074",
+    "-v"
+  ],
+  "elapsed_ns": 700486200,
+  "exit": 0,
+  "stderr_sha256": "e0c8af69c5bc49daa551657aca4ec06645989e1a26c118f3d344033c602ead4b",
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}
