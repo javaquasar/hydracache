@@ -1,0 +1,20 @@
+{
+  "argv": [
+    "wsl.exe",
+    "-d",
+    "Ubuntu",
+    "-u",
+    "artur",
+    "--exec",
+    "python3",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tools/wsl-clock-trace-074",
+    "-v"
+  ],
+  "exit": 0,
+  "timeout_seconds": 45
+}

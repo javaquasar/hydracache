@@ -1,0 +1,24 @@
+{
+  "buffer_kb_per_cpu": 256,
+  "capture_seconds_raw": 90,
+  "clock_change": false,
+  "definitions": [
+    "p:hc074clock_5e2867f1d4b841788f16f7c83971f189/adjust do_adjtimex modes=+0(%di):u32 freq=+16(%di):s64 tick=+88(%di):s64 sec=+72(%di):s64 ns=+80(%di):s64",
+    "r64:hc074clock_5e2867f1d4b841788f16f7c83971f189/adjust_return do_adjtimex retval=$retval:s64",
+    "p:hc074clock_5e2867f1d4b841788f16f7c83971f189/settime do_settimeofday64 sec=+0(%di):s64 ns=+8(%di):s64",
+    "r64:hc074clock_5e2867f1d4b841788f16f7c83971f189/settime_return do_settimeofday64 retval=$retval:s64",
+    "p:hc074clock_5e2867f1d4b841788f16f7c83971f189/offset timekeeping_inject_offset sec=+0(%di):s64 ns=+8(%di):s64",
+    "r64:hc074clock_5e2867f1d4b841788f16f7c83971f189/offset_return timekeeping_inject_offset retval=$retval:s64",
+    "p:hc074clock_5e2867f1d4b841788f16f7c83971f189/host hv_set_host_time"
+  ],
+  "group": "hc074clock_5e2867f1d4b841788f16f7c83971f189",
+  "guardian_deadline_seconds_raw": 120,
+  "maximum_trace_text_bytes": 16777216,
+  "original_owner_run": false,
+  "owner_pid": 9984,
+  "owner_start_stat": "9984 (python3) R 9983 9984 9984 34820 9984 4194560 22859 0 0 0 33 11 0 0 20 0 1 0 1455545 34009088 6658 18446744073709551615 4325376 7352253 140725344814048 0 0 0 0 16781312 2 0 0 0 17 3 0 0 0 0 0 10653128 12216448 635355136 140725344817684 140725344817785 140725344817785 140725344821227 0\n",
+  "read_only_helper_sha256": "f3e81c0e8080969e00ead542269566b6e079e3eacc586e771236a65f413180dc",
+  "root_global_controls_will_not_be_restored_by_overwrite": true,
+  "server": false,
+  "service_change": false
+}

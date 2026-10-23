@@ -1,0 +1,88 @@
+{
+  "admission": false,
+  "analysis_git": "cf8f73b4",
+  "clock_change": false,
+  "files": {
+    "observation/all-local-controls.json": {
+      "bytes": 253,
+      "sha256": "90b2234f2d8c6748918b96f5ac6e5fa22cecee32674df6001dd90a0e3a1df1f6"
+    },
+    "observation/all-local-controls.stderr.log": {
+      "bytes": 5304,
+      "sha256": "869881c09fb061570f4bbd994ed2c89e49912b52b001c30f4463a843ce6f14bc"
+    },
+    "observation/all-local-controls.stdout.log": {
+      "bytes": 194,
+      "sha256": "bc85499bb4a45c385570cf48b17f10cf54ac38432da68c94bdba77172e2903d4"
+    },
+    "observation/capture-verify.json": {
+      "bytes": 158,
+      "sha256": "ca289337fa2881e4690218f61879dafa14622ed1bb70d39c74558bb988c5298e"
+    },
+    "observation/capture-verify.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/capture-verify.stdout.log": {
+      "bytes": 99,
+      "sha256": "b2db98a028f36abb67b45b3e135c3c75fb540895fb92bcfbadc39ff6f6a5328a"
+    },
+    "observation/doc-check.json": {
+      "bytes": 153,
+      "sha256": "71d7138217ca02e7d459b74a2cce6b815014aa952372a12401594f4420ee4ab4"
+    },
+    "observation/doc-check.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/doc-check.stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "observation/performance-contract.json": {
+      "bytes": 199,
+      "sha256": "b171aebd0718e9dbb4678666d3ef7eeea83b1292948403ff1c5ae01d08b6e90b"
+    },
+    "observation/performance-contract.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/performance-contract.stdout.log": {
+      "bytes": 60,
+      "sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+    },
+    "observation/summary.json": {
+      "bytes": 2663,
+      "sha256": "e3c9b1d872aca2056f930b435fbc7f5ead471c591b0e01b5ba82c577c262a886"
+    },
+    "source/tools/wsl-clock-readonly-074/offline_join.py": {
+      "bytes": 4750,
+      "sha256": "b5424a267320b267b090783d18a8e97e98d5e5463edd7f9c81cd035f92f65838"
+    },
+    "source/tools/wsl-clock-trace-074/analyze.py": {
+      "bytes": 7112,
+      "sha256": "aba6a613d26172c4c15eed1ce1779c70f469259e16ef474da4f869bd02f86621"
+    },
+    "source/tools/wsl-clock-trace-074/attribution.py": {
+      "bytes": 4908,
+      "sha256": "5d022a9ccae29e799b2222c594f69116e5f67a03d3ae416871b409e2fe87fb1e"
+    },
+    "source/tools/wsl-clock-trace-074/test_attribution.py": {
+      "bytes": 2483,
+      "sha256": "fc23b046c69e225294056b8a7fc2558d61aa7b5c089dc4ec5641b23e99c14af0"
+    }
+  },
+  "input_index_sha256": "6b54d38f0ce7b4ceacdeb0ce879a7aee6570e53501cfc12206b39c78eaef051d",
+  "new_live_captures": 0,
+  "original_owner_run": false,
+  "original_windows": [
+    300,
+    60,
+    10
+  ],
+  "product": false,
+  "schema": "hc074-sealed-clock-setter-offline-v1",
+  "server": false,
+  "service_change": false,
+  "tracing_state_changed": false
+}

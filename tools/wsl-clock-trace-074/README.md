@@ -53,3 +53,11 @@ activation or clock queries. See the
 [real configuration report](../../docs/testing/performance/0.74/wsl-clock-registration-20261023.md).
 Verify it with `python -B tools/wsl-clock-trace-074/registration.py verify`.
 Do not rerun its collect/session modes. A clock capture remains a separate gate.
+
+The separately authorized bounded setter capture has now completed; its lane
+is consumed. See the [setter report](../../docs/testing/performance/0.74/wsl-clock-setter-20261023.md).
+`python -B tools/wsl-clock-trace-074/observe.py verify` checks the raw archive.
+`attribution.py` is offline only and its output lane is also exclusive; reproduce
+arithmetic without writing via `attribution.summarize` on the pinned input, or run
+`python -B -m unittest discover -s tools/wsl-clock-trace-074 -p test_attribution.py -v`.
+Do not invoke any consumed collect/session entry point again.

@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "wsl.exe",
+    "-d",
+    "Ubuntu",
+    "-u",
+    "root",
+    "--exec",
+    "python3",
+    "-B",
+    "-c",
+    "import json,os\nfrom pathlib import Path\nout={}\nfor pid in [1,210,1157]:\n p=Path('/proc')/str(pid)\n entry={}\n for name in ['comm','status','cgroup','stat']:\n  try:\n   raw=(p/name).read_text()\n   entry[name]=[s for s in raw.splitlines() if s.split(':',1)[0] in ['Name','Pid','PPid','NSpid','Uid','Gid']] if name=='status' else raw\n  except OSError as e:entry[name]={'error':repr(e)}\n for name in ['exe','ns/pid','ns/time']:\n  try:entry[name]=os.readlink(p/name)\n  except OSError as e:entry[name]={'error':repr(e)}\n out[str(pid)]=entry\nprint(json.dumps({'scope':'postcapture visible-proc metadata, not a historical pidfd identity proof','processes':out},indent=2))\n"
+  ],
+  "exit": 0,
+  "timeout_seconds": 30
+}

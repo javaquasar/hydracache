@@ -1,0 +1,10 @@
+{
+  "cpu0": "entries: 16\noverrun: 0\ncommit overrun: 0\nbytes: 888\noldest event ts: 15834.786410\nnow ts: 15914.969611\ndropped events: 0\nread events: 0\n",
+  "cpu1": "entries: 36\noverrun: 0\ncommit overrun: 0\nbytes: 2008\noldest event ts: 15836.467739\nnow ts: 15914.969594\ndropped events: 0\nread events: 0\n",
+  "cpu2": "entries: 136\noverrun: 0\ncommit overrun: 0\nbytes: 7672\noldest event ts: 15830.306765\nnow ts: 15914.969578\ndropped events: 0\nread events: 0\n",
+  "cpu3": "entries: 36\noverrun: 0\ncommit overrun: 0\nbytes: 2008\noldest event ts: 15829.164592\nnow ts: 15914.969560\ndropped events: 0\nread events: 0\n",
+  "cpu4": "entries: 122\noverrun: 0\ncommit overrun: 0\nbytes: 6984\noldest event ts: 15824.943129\nnow ts: 15914.969542\ndropped events: 0\nread events: 0\n",
+  "cpu5": "entries: 42\noverrun: 0\ncommit overrun: 0\nbytes: 2344\noldest event ts: 15825.203510\nnow ts: 15914.969524\ndropped events: 0\nread events: 0\n",
+  "cpu6": "entries: 58\noverrun: 0\ncommit overrun: 0\nbytes: 3228\noldest event ts: 15828.605927\nnow ts: 15914.969503\ndropped events: 0\nread events: 0\n",
+  "cpu7": "entries: 56\noverrun: 0\ncommit overrun: 0\nbytes: 3128\noldest event ts: 15824.624290\nnow ts: 15914.969468\ndropped events: 0\nread events: 0\n"
+}

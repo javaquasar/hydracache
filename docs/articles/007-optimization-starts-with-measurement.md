@@ -18591,3 +18591,32 @@ collected. Separating configuration from observation makes the next question
 precise: can one bounded capture identify the opposing setter while retaining
 complete loss and cleanup evidence? A configuration pass is neither that
 capture nor permission to reopen an original-owner or server gate.
+
+### Increasing samples can hide opposing clock setters
+
+The [bounded setter capture](../testing/performance/0.74/wsl-clock-setter-20261023.md)
+finally observed actual call paths: chronyd tick/frequency adjustments, absolute
+settime calls from tasks named init, and positive timesyn offset injections.
+Paired returns and kernel stacks distinguish these from mere entry requests.
+Zero loss counters and kprobe misses support this finite capture, not a claim
+that every possible clock-setting path was instrumented.
+
+The 161 helper samples were all increasing in REALTIME. Nevertheless, three
+successful absolute targets were earlier than their preceding sample, followed
+quickly by roughly +8.82-second offset injections in the same intervals. The
+resulting helper residuals were positive, around +2.74 seconds. Sampling alone
+would therefore hide the opposing activity. Offline arithmetic reproduces the
+windows on the first sealed bytes; it is not a measurement of each isolated
+step with nanosecond accuracy.
+
+The trace also observed the current coarse tick writer instead of inferring it
+from the resulting rate. That does not identify the writer of an older value:
+the new tick/frequency pair differs from the previous read-only series. Nor is
+a kernel PID an authenticated service identity. A visible Ubuntu lookup of 210
+was agetty, not the trace's chronyd task, so assigning a distribution or service
+from the numeric PID would be unsound. The next decision needs namespace-aware
+identity evidence and an agreed clock policy, not a wider admission window.
+
+All probes and the private instance were retired, original tracing controls and
+session identities matched, and the earlier failures remained intact. No
+clock/service change or product/server execution followed this observation.

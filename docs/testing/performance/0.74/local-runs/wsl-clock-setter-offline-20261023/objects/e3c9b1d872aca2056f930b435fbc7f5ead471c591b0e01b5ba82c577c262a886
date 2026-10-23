@@ -1,0 +1,101 @@
+{
+  "admission": false,
+  "authenticated_executable_identity": false,
+  "call_counts": [
+    {
+      "comm": "chronyd",
+      "count": 18,
+      "event": "adjust",
+      "modes": 28
+    },
+    {
+      "comm": "chronyd",
+      "count": 18,
+      "event": "adjust",
+      "modes": 16386
+    },
+    {
+      "comm": "init",
+      "count": 3,
+      "event": "settime",
+      "modes": null
+    },
+    {
+      "comm": "systemd-timesyn",
+      "count": 3,
+      "event": "adjust",
+      "modes": 8476
+    },
+    {
+      "comm": "systemd-timesyn",
+      "count": 3,
+      "event": "offset",
+      "modes": null
+    }
+  ],
+  "historical_tick_setter": null,
+  "input_index_sha256": "6b54d38f0ce7b4ceacdeb0ce879a7aee6570e53501cfc12206b39c78eaef051d",
+  "method": "hc074-sealed-setter-attribution-v1",
+  "new_live_observations": 0,
+  "observed_monotonic_per_raw_enclosure": [
+    0.9163897225774433,
+    0.9164046606112193
+  ],
+  "product": false,
+  "rows": 161,
+  "scope": "Kernel comm/PID/stack attribution; arithmetic windows are not direct measurements of each isolated step or UTC accuracy",
+  "server": false,
+  "step_windows": [
+    {
+      "enclosing_realtime_minus_monotonic_delta_ns": 2731817818,
+      "net_minus_offset_ns": -6085369252,
+      "offset_comm": "systemd-timesyn",
+      "offset_kernel_pid": 1157,
+      "query_raw_bracket_ns": [
+        15843756985663,
+        15844318659776
+      ],
+      "settime_comm": "init",
+      "settime_kernel_pid": 1126,
+      "successful_offset_request_ns": 8817187070,
+      "target_minus_prior_realtime_ns": -5943287220
+    },
+    {
+      "enclosing_realtime_minus_monotonic_delta_ns": 2745036646,
+      "net_minus_offset_ns": -6080632642,
+      "offset_comm": "systemd-timesyn",
+      "offset_kernel_pid": 1157,
+      "query_raw_bracket_ns": [
+        15876287196958,
+        15876846938452
+      ],
+      "settime_comm": "init",
+      "settime_kernel_pid": 1112,
+      "successful_offset_request_ns": 8825669288,
+      "target_minus_prior_realtime_ns": -5745048545
+    },
+    {
+      "enclosing_realtime_minus_monotonic_delta_ns": 2736645975,
+      "net_minus_offset_ns": -6087516031,
+      "offset_comm": "systemd-timesyn",
+      "offset_kernel_pid": 1157,
+      "query_raw_bracket_ns": [
+        15909326410281,
+        15909883673039
+      ],
+      "settime_comm": "init",
+      "settime_kernel_pid": 920,
+      "successful_offset_request_ns": 8824162006,
+      "target_minus_prior_realtime_ns": -6026449324
+    }
+  ],
+  "successful_calls": 45,
+  "tick_plus_frequency_rate_range": [
+    0.9163899864196777,
+    0.9163899864196777
+  ],
+  "tick_setters_observed": [
+    "chronyd"
+  ],
+  "tick_setting_requests": 18
+}

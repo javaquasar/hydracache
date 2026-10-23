@@ -1,0 +1,3133 @@
+{
+  "admission": false,
+  "backwards_realtime_intervals": 0,
+  "calls": [
+    {
+      "enclosing_query_residual_ns": -6,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust",
+        "fields": {
+          "freq": 100250280012784,
+          "modes": 28,
+          "ns": 4491327626504183505,
+          "sec": 4085834461448427008,
+          "tick": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15824943129000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15824624933880,
+        15825203501954
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15824943195000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": -6,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust",
+        "fields": {
+          "freq": 5897350,
+          "modes": 16386,
+          "ns": 1792763244,
+          "sec": 290314605,
+          "tick": 9163
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15824943201000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15824624933880,
+        15825203501954
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15824943203000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": -6,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust",
+        "fields": {
+          "freq": 5897350,
+          "modes": 16386,
+          "ns": 0,
+          "sec": 9163,
+          "tick": 9163
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15824943204000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15824624933880,
+        15825203501954
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15824943205000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": -6,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust",
+        "fields": {
+          "freq": 100250275489312,
+          "modes": 28,
+          "ns": 4611141969123747863,
+          "sec": 4085834461448427008,
+          "tick": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15824943264000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15824624933880,
+        15825203501954
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15824943265000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": -4,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 2,
+        "event": "adjust",
+        "fields": {
+          "freq": 100250280012784,
+          "modes": 28,
+          "ns": 4491327626504183505,
+          "sec": 4085834461448427008,
+          "tick": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15833682372000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15833666903042,
+        15834227954984
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 2,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15833682389000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": -4,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 2,
+        "event": "adjust",
+        "fields": {
+          "freq": 5897350,
+          "modes": 16386,
+          "ns": 1792763252,
+          "sec": 298862449,
+          "tick": 9163
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15833682398000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15833666903042,
+        15834227954984
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 2,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15833682400000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": -4,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 2,
+        "event": "adjust",
+        "fields": {
+          "freq": 5897350,
+          "modes": 16386,
+          "ns": 0,
+          "sec": 9163,
+          "tick": 9163
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15833682401000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15833666903042,
+        15834227954984
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 2,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15833682402000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": -4,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 2,
+        "event": "adjust",
+        "fields": {
+          "freq": 100250275489312,
+          "modes": 28,
+          "ns": 4604600351504438778,
+          "sec": 4085834461448427008,
+          "tick": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15833682407000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15833666903042,
+        15834227954984
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 2,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15833682407000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": 1,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust",
+        "fields": {
+          "freq": 100250280012784,
+          "modes": 28,
+          "ns": 4491327626504183505,
+          "sec": 4085834461448427008,
+          "tick": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15842421933000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15842082840502,
+        15842641460554
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15842421948000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": 1,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust",
+        "fields": {
+          "freq": 5897350,
+          "modes": 16386,
+          "ns": 1792763260,
+          "sec": 307711426,
+          "tick": 9163
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15842421959000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15842082840502,
+        15842641460554
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15842421965000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": 1,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust",
+        "fields": {
+          "freq": 5897350,
+          "modes": 16386,
+          "ns": 0,
+          "sec": 9163,
+          "tick": 9163
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15842421968000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15842082840502,
+        15842641460554
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15842421971000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": 1,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust",
+        "fields": {
+          "freq": 100250275489312,
+          "modes": 28,
+          "ns": 4601256471234102299,
+          "sec": 4085834461448427008,
+          "tick": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15842421977000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15842082840502,
+        15842641460554
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15842421979000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": 2731817818,
+      "entry": {
+        "comm": "init",
+        "cpu": 6,
+        "event": "settime",
+        "fields": {
+          "ns": 587863000,
+          "sec": 1792763255
+        },
+        "kernel_pid": 1126,
+        "raw_ns": 15843912010000,
+        "stack": [
+          "do_settimeofday64",
+          "__x64_sys_settimeofday",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15843756985663,
+        15844318659776
+      ],
+      "return": {
+        "comm": "init",
+        "cpu": 6,
+        "event": "settime_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 1126,
+        "raw_ns": 15843912067000,
+        "stack": [
+          "do_sys_settimeofday64",
+          "__x64_sys_settimeofday",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": 2731817818,
+      "entry": {
+        "comm": "systemd-timesyn",
+        "cpu": 4,
+        "event": "offset",
+        "fields": {
+          "ns": 817187070,
+          "sec": 8
+        },
+        "kernel_pid": 1157,
+        "raw_ns": 15844061120000,
+        "stack": [
+          "timekeeping_inject_offset",
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15843756985663,
+        15844318659776
+      ],
+      "return": {
+        "comm": "systemd-timesyn",
+        "cpu": 4,
+        "event": "offset_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 1157,
+        "raw_ns": 15844061142000,
+        "stack": [
+          "do_adjtimex",
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": 2731817818,
+      "entry": {
+        "comm": "systemd-timesyn",
+        "cpu": 4,
+        "event": "adjust",
+        "fields": {
+          "freq": 0,
+          "modes": 8476,
+          "ns": 817187070,
+          "sec": 8,
+          "tick": 0
+        },
+        "kernel_pid": 1157,
+        "raw_ns": 15844061109000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15843756985663,
+        15844318659776
+      ],
+      "return": {
+        "comm": "systemd-timesyn",
+        "cpu": 4,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 1157,
+        "raw_ns": 15844061144000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": 2,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust",
+        "fields": {
+          "freq": 100250280012784,
+          "modes": 28,
+          "ns": 4491327626504183505,
+          "sec": 4085834461448427008,
+          "tick": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15857806677000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15857738125668,
+        15858298214614
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15857806688000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": 2,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust",
+        "fields": {
+          "freq": 5897350,
+          "modes": 16386,
+          "ns": 1792763277,
+          "sec": 137962424,
+          "tick": 9163
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15857806693000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15857738125668,
+        15858298214614
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15857806694000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": 2,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust",
+        "fields": {
+          "freq": 5897350,
+          "modes": 16386,
+          "ns": 0,
+          "sec": 9163,
+          "tick": 9163
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15857806695000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15857738125668,
+        15858298214614
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15857806696000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": 2,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust",
+        "fields": {
+          "freq": 100250275489312,
+          "modes": 28,
+          "ns": 4611171018703421570,
+          "sec": 4085834461448427008,
+          "tick": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15857806749000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15857738125668,
+        15858298214614
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15857806750000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": 2,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust",
+        "fields": {
+          "freq": 100250280012784,
+          "modes": 28,
+          "ns": 4491327626504183505,
+          "sec": 4085834461448427008,
+          "tick": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15866546971000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15866156639677,
+        15866715138870
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15866546989000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": 2,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust",
+        "fields": {
+          "freq": 5897350,
+          "modes": 16386,
+          "ns": 1792763285,
+          "sec": 147468118,
+          "tick": 9163
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15866546997000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15866156639677,
+        15866715138870
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15866547000000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": 2,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust",
+        "fields": {
+          "freq": 5897350,
+          "modes": 16386,
+          "ns": 0,
+          "sec": 9163,
+          "tick": 9163
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15866547001000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15866156639677,
+        15866715138870
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15866547002000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": 2,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust",
+        "fields": {
+          "freq": 100250275489312,
+          "modes": 28,
+          "ns": 4604496856775620996,
+          "sec": 4085834461448427008,
+          "tick": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15866547005000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15866156639677,
+        15866715138870
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15866547006000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": -3,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 2,
+        "event": "adjust",
+        "fields": {
+          "freq": 100250280012784,
+          "modes": 28,
+          "ns": 4491327626504183505,
+          "sec": 4085834461448427008,
+          "tick": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15875286212000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15875168295936,
+        15875724287610
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 2,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15875286224000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": -3,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 2,
+        "event": "adjust",
+        "fields": {
+          "freq": 5897350,
+          "modes": 16386,
+          "ns": 1792763293,
+          "sec": 156032165,
+          "tick": 9163
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15875286229000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15875168295936,
+        15875724287610
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 2,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15875286233000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": -3,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 2,
+        "event": "adjust",
+        "fields": {
+          "freq": 5897350,
+          "modes": 16386,
+          "ns": 0,
+          "sec": 9163,
+          "tick": 9163
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15875286234000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15875168295936,
+        15875724287610
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 2,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15875286235000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": -3,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 2,
+        "event": "adjust",
+        "fields": {
+          "freq": 100250275489312,
+          "modes": 28,
+          "ns": 4601188075780840268,
+          "sec": 4085834461448427008,
+          "tick": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15875286237000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15875168295936,
+        15875724287610
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 2,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15875286238000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": 2745036646,
+      "entry": {
+        "comm": "init",
+        "cpu": 2,
+        "event": "settime",
+        "fields": {
+          "ns": 328278000,
+          "sec": 1792763288
+        },
+        "kernel_pid": 1112,
+        "raw_ns": 15876653372000,
+        "stack": [
+          "do_settimeofday64",
+          "__x64_sys_settimeofday",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15876287196958,
+        15876846938452
+      ],
+      "return": {
+        "comm": "init",
+        "cpu": 2,
+        "event": "settime_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 1112,
+        "raw_ns": 15876653425000,
+        "stack": [
+          "do_sys_settimeofday64",
+          "__x64_sys_settimeofday",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": 2745036646,
+      "entry": {
+        "comm": "systemd-timesyn",
+        "cpu": 4,
+        "event": "offset",
+        "fields": {
+          "ns": 825669288,
+          "sec": 8
+        },
+        "kernel_pid": 1157,
+        "raw_ns": 15876784938000,
+        "stack": [
+          "timekeeping_inject_offset",
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15876287196958,
+        15876846938452
+      ],
+      "return": {
+        "comm": "systemd-timesyn",
+        "cpu": 4,
+        "event": "offset_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 1157,
+        "raw_ns": 15876784978000,
+        "stack": [
+          "do_adjtimex",
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": 2745036646,
+      "entry": {
+        "comm": "systemd-timesyn",
+        "cpu": 4,
+        "event": "adjust",
+        "fields": {
+          "freq": 0,
+          "modes": 8476,
+          "ns": 825669288,
+          "sec": 8,
+          "tick": 0
+        },
+        "kernel_pid": 1157,
+        "raw_ns": 15876784922000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15876287196958,
+        15876846938452
+      ],
+      "return": {
+        "comm": "systemd-timesyn",
+        "cpu": 4,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 1157,
+        "raw_ns": 15876784981000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": -2,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 2,
+        "event": "adjust",
+        "fields": {
+          "freq": 100250280012784,
+          "modes": 28,
+          "ns": 4491327626504183505,
+          "sec": 4085834461448427008,
+          "tick": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15884025513000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15883557866202,
+        15884115363141
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 2,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15884025526000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": -2,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 2,
+        "event": "adjust",
+        "fields": {
+          "freq": 5897350,
+          "modes": 16386,
+          "ns": 1792763303,
+          "sec": 909673776,
+          "tick": 9163
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15884025533000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15883557866202,
+        15884115363141
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 2,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15884025536000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": -2,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 2,
+        "event": "adjust",
+        "fields": {
+          "freq": 5897350,
+          "modes": 16386,
+          "ns": 0,
+          "sec": 9163,
+          "tick": 9163
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15884025538000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15883557866202,
+        15884115363141
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 2,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15884025539000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": -2,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 2,
+        "event": "adjust",
+        "fields": {
+          "freq": 100250275489312,
+          "modes": 28,
+          "ns": 4609644075816150541,
+          "sec": 4085834461448427008,
+          "tick": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15884025606000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15883557866202,
+        15884115363141
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 2,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15884025608000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": -3,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust",
+        "fields": {
+          "freq": 100250280012784,
+          "modes": 28,
+          "ns": 4491327626504183505,
+          "sec": 4085834461448427008,
+          "tick": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15892767862000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15892527353718,
+        15893083928996
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15892767872000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": -3,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust",
+        "fields": {
+          "freq": 5897350,
+          "modes": 16386,
+          "ns": 1792763311,
+          "sec": 921078992,
+          "tick": 9163
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15892767877000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15892527353718,
+        15893083928996
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15892767879000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": -3,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust",
+        "fields": {
+          "freq": 5897350,
+          "modes": 16386,
+          "ns": 0,
+          "sec": 9163,
+          "tick": 9163
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15892767880000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15892527353718,
+        15893083928996
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15892767881000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": -3,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust",
+        "fields": {
+          "freq": 100250275489312,
+          "modes": 28,
+          "ns": 4605819007228061758,
+          "sec": 4085834461448427008,
+          "tick": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15892767883000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15892527353718,
+        15893083928996
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15892767884000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": -2,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 2,
+        "event": "adjust",
+        "fields": {
+          "freq": 100250280012784,
+          "modes": 28,
+          "ns": 4491327626504183505,
+          "sec": 4085834461448427008,
+          "tick": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15901507140000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15901493686488,
+        15902048521696
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 2,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15901507150000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": -2,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 2,
+        "event": "adjust",
+        "fields": {
+          "freq": 5897350,
+          "modes": 16386,
+          "ns": 1792763319,
+          "sec": 929664674,
+          "tick": 9163
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15901507155000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15901493686488,
+        15902048521696
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 2,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15901507156000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": -2,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 2,
+        "event": "adjust",
+        "fields": {
+          "freq": 5897350,
+          "modes": 16386,
+          "ns": 0,
+          "sec": 9163,
+          "tick": 9163
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15901507157000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15901493686488,
+        15902048521696
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 2,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15901507158000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": -2,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 2,
+        "event": "adjust",
+        "fields": {
+          "freq": 100250275489312,
+          "modes": 28,
+          "ns": 4602843107472860760,
+          "sec": 4085834461448427008,
+          "tick": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15901507160000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15901493686488,
+        15902048521696
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 2,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15901507161000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": 2736645975,
+      "entry": {
+        "comm": "init",
+        "cpu": 2,
+        "event": "settime",
+        "fields": {
+          "ns": 68719000,
+          "sec": 1792763321
+        },
+        "kernel_pid": 920,
+        "raw_ns": 15909393028000,
+        "stack": [
+          "do_settimeofday64",
+          "__x64_sys_settimeofday",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15909326410281,
+        15909883673039
+      ],
+      "return": {
+        "comm": "init",
+        "cpu": 2,
+        "event": "settime_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 920,
+        "raw_ns": 15909393068000,
+        "stack": [
+          "do_sys_settimeofday64",
+          "__x64_sys_settimeofday",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": 2736645975,
+      "entry": {
+        "comm": "systemd-timesyn",
+        "cpu": 6,
+        "event": "offset",
+        "fields": {
+          "ns": 824162006,
+          "sec": 8
+        },
+        "kernel_pid": 1157,
+        "raw_ns": 15909527065000,
+        "stack": [
+          "timekeeping_inject_offset",
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15909326410281,
+        15909883673039
+      ],
+      "return": {
+        "comm": "systemd-timesyn",
+        "cpu": 6,
+        "event": "offset_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 1157,
+        "raw_ns": 15909527089000,
+        "stack": [
+          "do_adjtimex",
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": 2736645975,
+      "entry": {
+        "comm": "systemd-timesyn",
+        "cpu": 6,
+        "event": "adjust",
+        "fields": {
+          "freq": 0,
+          "modes": 8476,
+          "ns": 824162006,
+          "sec": 8,
+          "tick": 0
+        },
+        "kernel_pid": 1157,
+        "raw_ns": 15909527055000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15909326410281,
+        15909883673039
+      ],
+      "return": {
+        "comm": "systemd-timesyn",
+        "cpu": 6,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 1157,
+        "raw_ns": 15909527091000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    }
+  ],
+  "event_counts": {
+    "adjust": 39,
+    "adjust_return": 200,
+    "offset": 3,
+    "offset_return": 3,
+    "settime": 3,
+    "settime_return": 3
+  },
+  "historical_tick_setter": null,
+  "host_entries": [],
+  "incomplete_entries_not_counted_as_success": [],
+  "loss_checked": true,
+  "method": "hc074-bounded-clock-trace-analysis-v1",
+  "original_owner_run": false,
+  "probe_profiles": {
+    "adjust": {
+      "hits": 200,
+      "misses": 0
+    },
+    "adjust_return": {
+      "hits": 200,
+      "misses": 0
+    },
+    "host": {
+      "hits": 0,
+      "misses": 0
+    },
+    "offset": {
+      "hits": 3,
+      "misses": 0
+    },
+    "offset_return": {
+      "hits": 3,
+      "misses": 0
+    },
+    "settime": {
+      "hits": 3,
+      "misses": 0
+    },
+    "settime_return": {
+      "hits": 3,
+      "misses": 0
+    }
+  },
+  "product": false,
+  "query_frequencies_scaled_ppm": [
+    5897350
+  ],
+  "query_ticks_us": [
+    9163
+  ],
+  "rows": 161,
+  "server": false,
+  "tick_setting_requests": [
+    {
+      "enclosing_query_residual_ns": -6,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust",
+        "fields": {
+          "freq": 5897350,
+          "modes": 16386,
+          "ns": 1792763244,
+          "sec": 290314605,
+          "tick": 9163
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15824943201000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15824624933880,
+        15825203501954
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15824943203000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": -6,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust",
+        "fields": {
+          "freq": 5897350,
+          "modes": 16386,
+          "ns": 0,
+          "sec": 9163,
+          "tick": 9163
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15824943204000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15824624933880,
+        15825203501954
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15824943205000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": -4,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 2,
+        "event": "adjust",
+        "fields": {
+          "freq": 5897350,
+          "modes": 16386,
+          "ns": 1792763252,
+          "sec": 298862449,
+          "tick": 9163
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15833682398000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15833666903042,
+        15834227954984
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 2,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15833682400000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": -4,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 2,
+        "event": "adjust",
+        "fields": {
+          "freq": 5897350,
+          "modes": 16386,
+          "ns": 0,
+          "sec": 9163,
+          "tick": 9163
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15833682401000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15833666903042,
+        15834227954984
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 2,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15833682402000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": 1,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust",
+        "fields": {
+          "freq": 5897350,
+          "modes": 16386,
+          "ns": 1792763260,
+          "sec": 307711426,
+          "tick": 9163
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15842421959000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15842082840502,
+        15842641460554
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15842421965000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": 1,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust",
+        "fields": {
+          "freq": 5897350,
+          "modes": 16386,
+          "ns": 0,
+          "sec": 9163,
+          "tick": 9163
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15842421968000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15842082840502,
+        15842641460554
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15842421971000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": 2,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust",
+        "fields": {
+          "freq": 5897350,
+          "modes": 16386,
+          "ns": 1792763277,
+          "sec": 137962424,
+          "tick": 9163
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15857806693000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15857738125668,
+        15858298214614
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15857806694000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": 2,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust",
+        "fields": {
+          "freq": 5897350,
+          "modes": 16386,
+          "ns": 0,
+          "sec": 9163,
+          "tick": 9163
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15857806695000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15857738125668,
+        15858298214614
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15857806696000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": 2,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust",
+        "fields": {
+          "freq": 5897350,
+          "modes": 16386,
+          "ns": 1792763285,
+          "sec": 147468118,
+          "tick": 9163
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15866546997000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15866156639677,
+        15866715138870
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15866547000000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": 2,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust",
+        "fields": {
+          "freq": 5897350,
+          "modes": 16386,
+          "ns": 0,
+          "sec": 9163,
+          "tick": 9163
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15866547001000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15866156639677,
+        15866715138870
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15866547002000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": -3,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 2,
+        "event": "adjust",
+        "fields": {
+          "freq": 5897350,
+          "modes": 16386,
+          "ns": 1792763293,
+          "sec": 156032165,
+          "tick": 9163
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15875286229000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15875168295936,
+        15875724287610
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 2,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15875286233000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": -3,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 2,
+        "event": "adjust",
+        "fields": {
+          "freq": 5897350,
+          "modes": 16386,
+          "ns": 0,
+          "sec": 9163,
+          "tick": 9163
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15875286234000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15875168295936,
+        15875724287610
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 2,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15875286235000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": -2,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 2,
+        "event": "adjust",
+        "fields": {
+          "freq": 5897350,
+          "modes": 16386,
+          "ns": 1792763303,
+          "sec": 909673776,
+          "tick": 9163
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15884025533000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15883557866202,
+        15884115363141
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 2,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15884025536000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": -2,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 2,
+        "event": "adjust",
+        "fields": {
+          "freq": 5897350,
+          "modes": 16386,
+          "ns": 0,
+          "sec": 9163,
+          "tick": 9163
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15884025538000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15883557866202,
+        15884115363141
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 2,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15884025539000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": -3,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust",
+        "fields": {
+          "freq": 5897350,
+          "modes": 16386,
+          "ns": 1792763311,
+          "sec": 921078992,
+          "tick": 9163
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15892767877000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15892527353718,
+        15893083928996
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15892767879000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": -3,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust",
+        "fields": {
+          "freq": 5897350,
+          "modes": 16386,
+          "ns": 0,
+          "sec": 9163,
+          "tick": 9163
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15892767880000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15892527353718,
+        15893083928996
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 4,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15892767881000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": -2,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 2,
+        "event": "adjust",
+        "fields": {
+          "freq": 5897350,
+          "modes": 16386,
+          "ns": 1792763319,
+          "sec": 929664674,
+          "tick": 9163
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15901507155000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15901493686488,
+        15902048521696
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 2,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15901507156000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    },
+    {
+      "enclosing_query_residual_ns": -2,
+      "entry": {
+        "comm": "chronyd",
+        "cpu": 2,
+        "event": "adjust",
+        "fields": {
+          "freq": 5897350,
+          "modes": 16386,
+          "ns": 0,
+          "sec": 9163,
+          "tick": 9163
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15901507157000,
+        "stack": [
+          "do_adjtimex",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "hyperv_settime_stack": false,
+      "query_bracket_raw_ns": [
+        15901493686488,
+        15902048521696
+      ],
+      "return": {
+        "comm": "chronyd",
+        "cpu": 2,
+        "event": "adjust_return",
+        "fields": {
+          "retval": 0
+        },
+        "kernel_pid": 210,
+        "raw_ns": 15901507158000,
+        "stack": [
+          "posix_clock_realtime_adj",
+          "__do_sys_clock_adjtime",
+          "__x64_sys_clock_adjtime",
+          "x64_sys_call",
+          "do_syscall_64",
+          "entry_SYSCALL_64_after_hwframe"
+        ]
+      },
+      "successful": true
+    }
+  ],
+  "unmatched_returns_not_counted_as_writes": {
+    "adjust": 161
+  }
+}

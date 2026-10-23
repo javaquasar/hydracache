@@ -6527,3 +6527,23 @@ session guards and original deadlines were reused without changes. Actual
 event/stack/loss analysis and setter attribution still need a separately scoped
 clock observation; this configuration success does not admit original-owner,
 product workload or server execution.
+
+## Bounded trace identifies current setter paths
+
+The [first bounded capture with the corrected writer](wsl-clock-setter-20261023.md)
+completed with 161 helper samples, 502/502 buffer records, zero per-CPU loss and
+zero kprobe misses. It captured 18 successful tick/frequency requests from
+chronyd, three absolute settime calls from init tasks and three positive
+timesyn offset injections. These are kernel comm/PID/stack observations, not
+authenticated executable or service identities. Visible Ubuntu procfs numbers
+do not join directly to the trace's kernel PIDs.
+
+The opposing operations fell inside the same helper intervals, so no sampled
+REALTIME value went backwards despite the earlier absolute targets and positive
+offsets. The current tick/frequency rate also explains this capture's
+MONOTONIC/RAW ratio. Two separate exact archives retain the first capture and
+offline arithmetic; earlier failures remain unchanged. Thirty-five controls
+passed before dispatch, and all 38 pass after the offline attribution controls.
+Cleanup/context and local gates pass. Namespace-aware writer identification and
+a separately agreed clock policy remain next; no service, clock, original-owner,
+product or server action was taken.

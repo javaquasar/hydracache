@@ -1,0 +1,2020 @@
+# tracer: nop
+#
+# entries-in-buffer/entries-written: 502/502   #P:8
+#
+#                                _-----=> irqs-off/BH-disabled
+#                               / _----=> need-resched
+#                              | / _---=> hardirq/softirq
+#                              || / _--=> preempt-depth
+#                              ||| / _-=> migrate-disable
+#                              |||| /     delay
+#           TASK-PID     CPU#  |||||  TIMESTAMP  FUNCTION
+#              | |         |   |||||     |         |
+ discipline-corr-19510   [007] ..... 15824.624290: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19510   [007] ..... 15824.624931: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [004] ..... 15824.943129: adjust: (do_adjtimex+0x4/0x340) modes=28 freq=100250280012784 tick=0 sec=4085834461448427008 ns=4491327626504183505
+         chronyd-210     [004] ..... 15824.943190: <stack trace>
+ => do_adjtimex
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [004] ..... 15824.943195: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+         chronyd-210     [004] ..... 15824.943196: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [004] ..... 15824.943201: adjust: (do_adjtimex+0x4/0x340) modes=16386 freq=5897350 tick=9163 sec=290314605 ns=1792763244
+         chronyd-210     [004] ..... 15824.943202: <stack trace>
+ => do_adjtimex
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [004] ..... 15824.943203: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+         chronyd-210     [004] ..... 15824.943204: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [004] ..... 15824.943204: adjust: (do_adjtimex+0x4/0x340) modes=16386 freq=5897350 tick=9163 sec=9163 ns=0
+         chronyd-210     [004] ..... 15824.943204: <stack trace>
+ => do_adjtimex
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [004] ..... 15824.943205: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+         chronyd-210     [004] ..... 15824.943205: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [004] ..... 15824.943264: adjust: (do_adjtimex+0x4/0x340) modes=28 freq=100250275489312 tick=0 sec=4085834461448427008 ns=4611141969123747863
+         chronyd-210     [004] ..... 15824.943264: <stack trace>
+ => do_adjtimex
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [004] ..... 15824.943265: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+         chronyd-210     [004] ..... 15824.943265: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19512   [005] ..... 15825.203510: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19512   [005] ..... 15825.203540: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19514   [007] ..... 15825.765047: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19514   [007] ..... 15825.765052: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19516   [005] ..... 15826.326614: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19516   [005] ..... 15826.326619: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19518   [007] ..... 15826.893630: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19518   [007] ..... 15826.893635: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19520   [007] ..... 15827.484017: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19520   [007] ..... 15827.484022: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19522   [007] ..... 15828.045854: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19522   [007] ..... 15828.045859: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19524   [006] ..... 15828.605927: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19524   [006] ..... 15828.605972: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19526   [003] ..... 15829.164592: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19526   [003] ..... 15829.164625: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19528   [005] ..... 15829.727711: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19528   [005] ..... 15829.727716: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19530   [002] ..... 15830.306765: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19530   [002] ..... 15830.306792: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19532   [005] ..... 15830.866009: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19532   [005] ..... 15830.866016: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19535   [005] ..... 15831.422640: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19535   [005] ..... 15831.422646: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19537   [007] ..... 15831.979766: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19537   [007] ..... 15831.979772: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19543   [004] ..... 15832.543917: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19543   [004] ..... 15832.543922: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19545   [002] ..... 15833.104738: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19545   [002] ..... 15833.104744: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19547   [002] ..... 15833.666896: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19547   [002] ..... 15833.666903: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [002] ..... 15833.682372: adjust: (do_adjtimex+0x4/0x340) modes=28 freq=100250280012784 tick=0 sec=4085834461448427008 ns=4491327626504183505
+         chronyd-210     [002] ..... 15833.682381: <stack trace>
+ => do_adjtimex
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [002] ..... 15833.682389: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+         chronyd-210     [002] ..... 15833.682390: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [002] ..... 15833.682398: adjust: (do_adjtimex+0x4/0x340) modes=16386 freq=5897350 tick=9163 sec=298862449 ns=1792763252
+         chronyd-210     [002] ..... 15833.682398: <stack trace>
+ => do_adjtimex
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [002] ..... 15833.682400: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+         chronyd-210     [002] ..... 15833.682400: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [002] ..... 15833.682401: adjust: (do_adjtimex+0x4/0x340) modes=16386 freq=5897350 tick=9163 sec=9163 ns=0
+         chronyd-210     [002] ..... 15833.682401: <stack trace>
+ => do_adjtimex
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [002] ..... 15833.682402: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+         chronyd-210     [002] ..... 15833.682402: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [002] ..... 15833.682407: adjust: (do_adjtimex+0x4/0x340) modes=28 freq=100250275489312 tick=0 sec=4085834461448427008 ns=4604600351504438778
+         chronyd-210     [002] ..... 15833.682407: <stack trace>
+ => do_adjtimex
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [002] ..... 15833.682407: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+         chronyd-210     [002] ..... 15833.682408: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19549   [004] ..... 15834.227964: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19549   [004] ..... 15834.227968: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19551   [000] ..... 15834.786410: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19551   [000] ..... 15834.786433: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19553   [002] ..... 15835.349968: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19553   [002] ..... 15835.349978: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19555   [003] ..... 15835.911230: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19555   [003] ..... 15835.911235: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19557   [001] ..... 15836.467739: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19557   [001] ..... 15836.467768: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19559   [002] ..... 15837.028881: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19559   [002] ..... 15837.028887: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19561   [007] ..... 15837.590259: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19561   [007] ..... 15837.590264: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19563   [005] ..... 15838.147289: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19563   [005] ..... 15838.147294: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19565   [006] ..... 15838.706177: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19565   [006] ..... 15838.706182: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19567   [006] ..... 15839.265692: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19567   [006] ..... 15839.265697: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19569   [001] ..... 15839.825334: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19569   [001] ..... 15839.825339: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19571   [004] ..... 15840.405732: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19571   [004] ..... 15840.405738: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19573   [007] ..... 15840.965352: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19573   [007] ..... 15840.965358: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19575   [007] ..... 15841.524622: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19575   [007] ..... 15841.524627: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19577   [004] ..... 15842.082834: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19577   [004] ..... 15842.082840: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [004] ..... 15842.421933: adjust: (do_adjtimex+0x4/0x340) modes=28 freq=100250280012784 tick=0 sec=4085834461448427008 ns=4491327626504183505
+         chronyd-210     [004] ..... 15842.421941: <stack trace>
+ => do_adjtimex
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [004] ..... 15842.421948: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+         chronyd-210     [004] ..... 15842.421949: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [004] ..... 15842.421959: adjust: (do_adjtimex+0x4/0x340) modes=16386 freq=5897350 tick=9163 sec=307711426 ns=1792763260
+         chronyd-210     [004] ..... 15842.421959: <stack trace>
+ => do_adjtimex
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [004] ..... 15842.421965: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+         chronyd-210     [004] ..... 15842.421966: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [004] ..... 15842.421968: adjust: (do_adjtimex+0x4/0x340) modes=16386 freq=5897350 tick=9163 sec=9163 ns=0
+         chronyd-210     [004] ..... 15842.421968: <stack trace>
+ => do_adjtimex
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [004] ..... 15842.421971: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+         chronyd-210     [004] ..... 15842.421971: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [004] ..... 15842.421977: adjust: (do_adjtimex+0x4/0x340) modes=28 freq=100250275489312 tick=0 sec=4085834461448427008 ns=4601256471234102299
+         chronyd-210     [004] ..... 15842.421977: <stack trace>
+ => do_adjtimex
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [004] ..... 15842.421979: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+         chronyd-210     [004] ..... 15842.421979: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19579   [003] ..... 15842.641469: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19579   [003] ..... 15842.641473: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19581   [005] ..... 15843.200323: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19581   [005] ..... 15843.200328: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19583   [005] ..... 15843.756980: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19583   [005] ..... 15843.756985: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+            init-1126    [006] ..... 15843.912010: settime: (do_settimeofday64+0x4/0x1d0) sec=1792763255 ns=587863000
+            init-1126    [006] ..... 15843.912017: <stack trace>
+ => do_settimeofday64
+ => __x64_sys_settimeofday
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+            init-1126    [006] ..... 15843.912067: settime_return: (do_sys_settimeofday64+0x9e/0xe0 <- do_settimeofday64) retval=0
+            init-1126    [006] ..... 15843.912067: <stack trace>
+ => do_sys_settimeofday64
+ => __x64_sys_settimeofday
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ systemd-timesyn-1157    [004] ..... 15844.061109: adjust: (do_adjtimex+0x4/0x340) modes=8476 freq=0 tick=0 sec=8 ns=817187070
+ systemd-timesyn-1157    [004] ..... 15844.061114: <stack trace>
+ => do_adjtimex
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ systemd-timesyn-1157    [004] ..... 15844.061120: offset: (timekeeping_inject_offset+0x0/0x200) sec=8 ns=817187070
+ systemd-timesyn-1157    [004] ..... 15844.061120: <stack trace>
+ => timekeeping_inject_offset
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ systemd-timesyn-1157    [004] ..... 15844.061142: offset_return: (do_adjtimex+0xf6/0x340 <- timekeeping_inject_offset) retval=0
+ systemd-timesyn-1157    [004] ..... 15844.061143: <stack trace>
+ => do_adjtimex
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ systemd-timesyn-1157    [004] ..... 15844.061144: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ systemd-timesyn-1157    [004] ..... 15844.061144: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19587   [007] ..... 15844.318668: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19587   [007] ..... 15844.318673: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19589   [007] ..... 15844.886100: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19589   [007] ..... 15844.886105: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19591   [001] ..... 15845.442373: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19591   [001] ..... 15845.442378: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19593   [006] ..... 15845.999241: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19593   [006] ..... 15845.999246: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19595   [002] ..... 15846.554661: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19595   [002] ..... 15846.554667: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19597   [002] ..... 15847.113680: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19597   [002] ..... 15847.113685: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19599   [007] ..... 15847.670921: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19599   [007] ..... 15847.670926: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19601   [006] ..... 15848.233370: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19601   [006] ..... 15848.233375: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19603   [007] ..... 15848.792332: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19603   [007] ..... 15848.792337: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19605   [007] ..... 15849.350382: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19605   [007] ..... 15849.350388: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19607   [005] ..... 15849.906797: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19607   [005] ..... 15849.906802: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19609   [002] ..... 15850.466925: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19609   [002] ..... 15850.466934: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19611   [001] ..... 15851.026318: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19611   [001] ..... 15851.026323: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19613   [002] ..... 15851.582905: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19613   [002] ..... 15851.582910: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19615   [007] ..... 15852.137636: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19615   [007] ..... 15852.137641: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19617   [002] ..... 15852.693359: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19617   [002] ..... 15852.693364: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19619   [005] ..... 15853.262202: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19619   [005] ..... 15853.262208: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19621   [004] ..... 15853.828343: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19621   [004] ..... 15853.828348: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19623   [006] ..... 15854.383445: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19623   [006] ..... 15854.383450: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19625   [005] ..... 15854.940726: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19625   [005] ..... 15854.940731: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19627   [006] ..... 15855.495317: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19627   [006] ..... 15855.495323: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19629   [006] ..... 15856.055177: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19629   [006] ..... 15856.055183: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19631   [003] ..... 15856.612200: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19631   [003] ..... 15856.612205: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19633   [005] ..... 15857.175458: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19633   [005] ..... 15857.175465: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19635   [002] ..... 15857.738120: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19635   [002] ..... 15857.738125: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [004] ..... 15857.806677: adjust: (do_adjtimex+0x4/0x340) modes=28 freq=100250280012784 tick=0 sec=4085834461448427008 ns=4491327626504183505
+         chronyd-210     [004] ..... 15857.806683: <stack trace>
+ => do_adjtimex
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [004] ..... 15857.806688: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+         chronyd-210     [004] ..... 15857.806688: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [004] ..... 15857.806693: adjust: (do_adjtimex+0x4/0x340) modes=16386 freq=5897350 tick=9163 sec=137962424 ns=1792763277
+         chronyd-210     [004] ..... 15857.806693: <stack trace>
+ => do_adjtimex
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [004] ..... 15857.806694: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+         chronyd-210     [004] ..... 15857.806695: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [004] ..... 15857.806695: adjust: (do_adjtimex+0x4/0x340) modes=16386 freq=5897350 tick=9163 sec=9163 ns=0
+         chronyd-210     [004] ..... 15857.806695: <stack trace>
+ => do_adjtimex
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [004] ..... 15857.806696: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+         chronyd-210     [004] ..... 15857.806696: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [004] ..... 15857.806749: adjust: (do_adjtimex+0x4/0x340) modes=28 freq=100250275489312 tick=0 sec=4085834461448427008 ns=4611171018703421570
+         chronyd-210     [004] ..... 15857.806750: <stack trace>
+ => do_adjtimex
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [004] ..... 15857.806750: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+         chronyd-210     [004] ..... 15857.806750: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19637   [002] ..... 15858.298224: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19637   [002] ..... 15858.298229: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19639   [005] ..... 15858.857249: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19639   [005] ..... 15858.857255: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19641   [003] ..... 15859.413391: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19641   [003] ..... 15859.413396: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19643   [002] ..... 15859.987801: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19643   [002] ..... 15859.987806: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19645   [007] ..... 15860.548068: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19645   [007] ..... 15860.548073: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19647   [007] ..... 15861.108737: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19647   [007] ..... 15861.108742: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19649   [005] ..... 15861.671798: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19649   [005] ..... 15861.671803: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19651   [002] ..... 15862.235328: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19651   [002] ..... 15862.235334: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19653   [003] ..... 15862.800368: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19653   [003] ..... 15862.800378: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19655   [003] ..... 15863.360918: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19655   [003] ..... 15863.360924: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19657   [005] ..... 15863.925478: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19657   [005] ..... 15863.925484: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19659   [003] ..... 15864.483156: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19659   [003] ..... 15864.483161: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19661   [003] ..... 15865.038042: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19661   [003] ..... 15865.038048: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19663   [002] ..... 15865.595956: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19663   [002] ..... 15865.595961: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19665   [003] ..... 15866.156634: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19665   [003] ..... 15866.156639: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [004] ..... 15866.546971: adjust: (do_adjtimex+0x4/0x340) modes=28 freq=100250280012784 tick=0 sec=4085834461448427008 ns=4491327626504183505
+         chronyd-210     [004] ..... 15866.546980: <stack trace>
+ => do_adjtimex
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [004] ..... 15866.546989: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+         chronyd-210     [004] ..... 15866.546989: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [004] ..... 15866.546997: adjust: (do_adjtimex+0x4/0x340) modes=16386 freq=5897350 tick=9163 sec=147468118 ns=1792763285
+         chronyd-210     [004] ..... 15866.546998: <stack trace>
+ => do_adjtimex
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [004] ..... 15866.547000: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+         chronyd-210     [004] ..... 15866.547000: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [004] ..... 15866.547001: adjust: (do_adjtimex+0x4/0x340) modes=16386 freq=5897350 tick=9163 sec=9163 ns=0
+         chronyd-210     [004] ..... 15866.547001: <stack trace>
+ => do_adjtimex
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [004] ..... 15866.547002: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+         chronyd-210     [004] ..... 15866.547002: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [004] ..... 15866.547005: adjust: (do_adjtimex+0x4/0x340) modes=28 freq=100250275489312 tick=0 sec=4085834461448427008 ns=4604496856775620996
+         chronyd-210     [004] ..... 15866.547006: <stack trace>
+ => do_adjtimex
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [004] ..... 15866.547006: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+         chronyd-210     [004] ..... 15866.547006: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19667   [000] ..... 15866.715147: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19667   [000] ..... 15866.715152: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19669   [000] ..... 15867.276009: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19669   [000] ..... 15867.276014: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19671   [001] ..... 15867.835003: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19671   [001] ..... 15867.835012: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19673   [006] ..... 15868.395673: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19673   [006] ..... 15868.395678: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19675   [002] ..... 15868.956326: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19675   [002] ..... 15868.956332: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19677   [000] ..... 15869.527586: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19677   [000] ..... 15869.527591: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19679   [002] ..... 15870.097250: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19679   [002] ..... 15870.097255: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19681   [002] ..... 15870.658452: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19681   [002] ..... 15870.658458: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19683   [001] ..... 15871.235154: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19683   [001] ..... 15871.235159: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19685   [003] ..... 15871.795507: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19685   [003] ..... 15871.795512: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19687   [001] ..... 15872.351772: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19687   [001] ..... 15872.351777: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19689   [005] ..... 15872.940203: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19689   [005] ..... 15872.940208: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19691   [000] ..... 15873.497342: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19691   [000] ..... 15873.497347: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19693   [002] ..... 15874.055068: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19693   [002] ..... 15874.055073: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19695   [000] ..... 15874.610310: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19695   [000] ..... 15874.610314: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19697   [004] ..... 15875.168291: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19697   [004] ..... 15875.168296: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [002] ..... 15875.286212: adjust: (do_adjtimex+0x4/0x340) modes=28 freq=100250280012784 tick=0 sec=4085834461448427008 ns=4491327626504183505
+         chronyd-210     [002] ..... 15875.286219: <stack trace>
+ => do_adjtimex
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [002] ..... 15875.286224: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+         chronyd-210     [002] ..... 15875.286224: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [002] ..... 15875.286229: adjust: (do_adjtimex+0x4/0x340) modes=16386 freq=5897350 tick=9163 sec=156032165 ns=1792763293
+         chronyd-210     [002] ..... 15875.286229: <stack trace>
+ => do_adjtimex
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [002] ..... 15875.286233: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+         chronyd-210     [002] ..... 15875.286233: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [002] ..... 15875.286234: adjust: (do_adjtimex+0x4/0x340) modes=16386 freq=5897350 tick=9163 sec=9163 ns=0
+         chronyd-210     [002] ..... 15875.286234: <stack trace>
+ => do_adjtimex
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [002] ..... 15875.286235: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+         chronyd-210     [002] ..... 15875.286235: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [002] ..... 15875.286237: adjust: (do_adjtimex+0x4/0x340) modes=28 freq=100250275489312 tick=0 sec=4085834461448427008 ns=4601188075780840268
+         chronyd-210     [002] ..... 15875.286238: <stack trace>
+ => do_adjtimex
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [002] ..... 15875.286238: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+         chronyd-210     [002] ..... 15875.286238: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19699   [005] ..... 15875.724297: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19699   [005] ..... 15875.724302: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19701   [006] ..... 15876.287191: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19701   [006] ..... 15876.287197: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+            init-1112    [002] ..... 15876.653372: settime: (do_settimeofday64+0x4/0x1d0) sec=1792763288 ns=328278000
+            init-1112    [002] ..... 15876.653384: <stack trace>
+ => do_settimeofday64
+ => __x64_sys_settimeofday
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+            init-1112    [002] ..... 15876.653425: settime_return: (do_sys_settimeofday64+0x9e/0xe0 <- do_settimeofday64) retval=0
+            init-1112    [002] ..... 15876.653426: <stack trace>
+ => do_sys_settimeofday64
+ => __x64_sys_settimeofday
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ systemd-timesyn-1157    [004] ..... 15876.784922: adjust: (do_adjtimex+0x4/0x340) modes=8476 freq=0 tick=0 sec=8 ns=825669288
+ systemd-timesyn-1157    [004] ..... 15876.784930: <stack trace>
+ => do_adjtimex
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ systemd-timesyn-1157    [004] ..... 15876.784938: offset: (timekeeping_inject_offset+0x0/0x200) sec=8 ns=825669288
+ systemd-timesyn-1157    [004] ..... 15876.784940: <stack trace>
+ => timekeeping_inject_offset
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ systemd-timesyn-1157    [004] ..... 15876.784978: offset_return: (do_adjtimex+0xf6/0x340 <- timekeeping_inject_offset) retval=0
+ systemd-timesyn-1157    [004] ..... 15876.784979: <stack trace>
+ => do_adjtimex
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ systemd-timesyn-1157    [004] ..... 15876.784981: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ systemd-timesyn-1157    [004] ..... 15876.784981: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19705   [002] ..... 15876.846947: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19705   [002] ..... 15876.846951: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19707   [004] ..... 15877.412905: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19707   [004] ..... 15877.412910: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19709   [004] ..... 15877.968781: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19709   [004] ..... 15877.968786: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19711   [004] ..... 15878.526915: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19711   [004] ..... 15878.526920: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19713   [004] ..... 15879.088932: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19713   [004] ..... 15879.088937: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19715   [002] ..... 15879.645846: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19715   [002] ..... 15879.645851: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19717   [002] ..... 15880.204894: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19717   [002] ..... 15880.204899: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19719   [006] ..... 15880.762652: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19719   [006] ..... 15880.762658: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19721   [002] ..... 15881.323214: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19721   [002] ..... 15881.323219: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19723   [005] ..... 15881.879848: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19723   [005] ..... 15881.879854: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19725   [007] ..... 15882.437152: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19725   [007] ..... 15882.437157: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19727   [002] ..... 15882.996964: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19727   [002] ..... 15882.996969: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19729   [006] ..... 15883.557861: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19729   [006] ..... 15883.557866: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [002] ..... 15884.025513: adjust: (do_adjtimex+0x4/0x340) modes=28 freq=100250280012784 tick=0 sec=4085834461448427008 ns=4491327626504183505
+         chronyd-210     [002] ..... 15884.025520: <stack trace>
+ => do_adjtimex
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [002] ..... 15884.025526: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+         chronyd-210     [002] ..... 15884.025527: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [002] ..... 15884.025533: adjust: (do_adjtimex+0x4/0x340) modes=16386 freq=5897350 tick=9163 sec=909673776 ns=1792763303
+         chronyd-210     [002] ..... 15884.025534: <stack trace>
+ => do_adjtimex
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [002] ..... 15884.025536: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+         chronyd-210     [002] ..... 15884.025537: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [002] ..... 15884.025538: adjust: (do_adjtimex+0x4/0x340) modes=16386 freq=5897350 tick=9163 sec=9163 ns=0
+         chronyd-210     [002] ..... 15884.025538: <stack trace>
+ => do_adjtimex
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [002] ..... 15884.025539: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+         chronyd-210     [002] ..... 15884.025539: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [002] ..... 15884.025606: adjust: (do_adjtimex+0x4/0x340) modes=28 freq=100250275489312 tick=0 sec=4085834461448427008 ns=4609644075816150541
+         chronyd-210     [002] ..... 15884.025607: <stack trace>
+ => do_adjtimex
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [002] ..... 15884.025608: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+         chronyd-210     [002] ..... 15884.025608: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19731   [005] ..... 15884.115371: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19731   [005] ..... 15884.115376: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19733   [007] ..... 15884.673982: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19733   [007] ..... 15884.673987: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19735   [007] ..... 15885.235120: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19735   [007] ..... 15885.235126: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19737   [007] ..... 15885.796775: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19737   [007] ..... 15885.796782: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19739   [001] ..... 15886.364412: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19739   [001] ..... 15886.364419: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19741   [002] ..... 15886.928342: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19741   [002] ..... 15886.928351: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19743   [006] ..... 15887.484366: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19743   [006] ..... 15887.484371: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19745   [006] ..... 15888.041461: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19745   [006] ..... 15888.041466: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19747   [006] ..... 15888.597415: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19747   [006] ..... 15888.597420: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19749   [001] ..... 15889.156230: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19749   [001] ..... 15889.156235: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19751   [001] ..... 15889.714261: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19751   [001] ..... 15889.714266: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19753   [007] ..... 15890.272347: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19753   [007] ..... 15890.272352: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19755   [001] ..... 15890.829921: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19755   [001] ..... 15890.829926: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19757   [001] ..... 15891.401809: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19757   [001] ..... 15891.401814: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19760   [003] ..... 15891.965547: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19760   [003] ..... 15891.965552: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19762   [004] ..... 15892.527348: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19762   [004] ..... 15892.527353: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [004] ..... 15892.767862: adjust: (do_adjtimex+0x4/0x340) modes=28 freq=100250280012784 tick=0 sec=4085834461448427008 ns=4491327626504183505
+         chronyd-210     [004] ..... 15892.767867: <stack trace>
+ => do_adjtimex
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [004] ..... 15892.767872: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+         chronyd-210     [004] ..... 15892.767872: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [004] ..... 15892.767877: adjust: (do_adjtimex+0x4/0x340) modes=16386 freq=5897350 tick=9163 sec=921078992 ns=1792763311
+         chronyd-210     [004] ..... 15892.767877: <stack trace>
+ => do_adjtimex
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [004] ..... 15892.767879: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+         chronyd-210     [004] ..... 15892.767879: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [004] ..... 15892.767880: adjust: (do_adjtimex+0x4/0x340) modes=16386 freq=5897350 tick=9163 sec=9163 ns=0
+         chronyd-210     [004] ..... 15892.767880: <stack trace>
+ => do_adjtimex
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [004] ..... 15892.767881: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+         chronyd-210     [004] ..... 15892.767881: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [004] ..... 15892.767883: adjust: (do_adjtimex+0x4/0x340) modes=28 freq=100250275489312 tick=0 sec=4085834461448427008 ns=4605819007228061758
+         chronyd-210     [004] ..... 15892.767883: <stack trace>
+ => do_adjtimex
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [004] ..... 15892.767884: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+         chronyd-210     [004] ..... 15892.767884: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19765   [002] ..... 15893.083938: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19765   [002] ..... 15893.083943: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19767   [007] ..... 15893.647516: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19767   [007] ..... 15893.647525: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19769   [001] ..... 15894.203331: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19769   [001] ..... 15894.203355: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19771   [006] ..... 15894.777410: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19771   [006] ..... 15894.777428: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19773   [004] ..... 15895.332646: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19773   [004] ..... 15895.332650: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19775   [001] ..... 15895.897239: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19775   [001] ..... 15895.897244: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19777   [002] ..... 15896.456070: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19777   [002] ..... 15896.456075: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19779   [001] ..... 15897.026012: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19779   [001] ..... 15897.026017: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19781   [003] ..... 15897.581776: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19781   [003] ..... 15897.581781: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19783   [007] ..... 15898.138708: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19783   [007] ..... 15898.138713: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19785   [005] ..... 15898.701313: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19785   [005] ..... 15898.701323: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19787   [005] ..... 15899.261908: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19787   [005] ..... 15899.261913: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19789   [003] ..... 15899.826978: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19789   [003] ..... 15899.826983: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19791   [006] ..... 15900.381666: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19791   [006] ..... 15900.381671: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19793   [006] ..... 15900.938712: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19793   [006] ..... 15900.938718: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19795   [004] ..... 15901.493681: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19795   [004] ..... 15901.493686: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [002] ..... 15901.507140: adjust: (do_adjtimex+0x4/0x340) modes=28 freq=100250280012784 tick=0 sec=4085834461448427008 ns=4491327626504183505
+         chronyd-210     [002] ..... 15901.507145: <stack trace>
+ => do_adjtimex
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [002] ..... 15901.507150: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+         chronyd-210     [002] ..... 15901.507150: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [002] ..... 15901.507155: adjust: (do_adjtimex+0x4/0x340) modes=16386 freq=5897350 tick=9163 sec=929664674 ns=1792763319
+         chronyd-210     [002] ..... 15901.507155: <stack trace>
+ => do_adjtimex
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [002] ..... 15901.507156: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+         chronyd-210     [002] ..... 15901.507156: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [002] ..... 15901.507157: adjust: (do_adjtimex+0x4/0x340) modes=16386 freq=5897350 tick=9163 sec=9163 ns=0
+         chronyd-210     [002] ..... 15901.507157: <stack trace>
+ => do_adjtimex
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [002] ..... 15901.507158: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+         chronyd-210     [002] ..... 15901.507158: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [002] ..... 15901.507160: adjust: (do_adjtimex+0x4/0x340) modes=28 freq=100250275489312 tick=0 sec=4085834461448427008 ns=4602843107472860760
+         chronyd-210     [002] ..... 15901.507160: <stack trace>
+ => do_adjtimex
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+         chronyd-210     [002] ..... 15901.507161: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+         chronyd-210     [002] ..... 15901.507161: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19797   [006] ..... 15902.048530: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19797   [006] ..... 15902.048535: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19799   [007] ..... 15902.604735: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19799   [007] ..... 15902.604740: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19801   [007] ..... 15903.161300: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19801   [007] ..... 15903.161304: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19803   [001] ..... 15903.720443: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19803   [001] ..... 15903.720450: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19805   [001] ..... 15904.279389: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19805   [001] ..... 15904.279395: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19807   [006] ..... 15904.836422: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19807   [006] ..... 15904.836427: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19809   [003] ..... 15905.398608: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19809   [003] ..... 15905.398619: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19811   [007] ..... 15905.957341: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19811   [007] ..... 15905.957347: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19813   [006] ..... 15906.531109: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19813   [006] ..... 15906.531114: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19815   [006] ..... 15907.088119: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19815   [006] ..... 15907.088124: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19817   [001] ..... 15907.648282: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19817   [001] ..... 15907.648287: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19819   [002] ..... 15908.208346: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19819   [002] ..... 15908.208351: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19821   [000] ..... 15908.766486: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19821   [000] ..... 15908.766492: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19823   [006] ..... 15909.326405: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19823   [006] ..... 15909.326410: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+            init-920     [002] ..... 15909.393028: settime: (do_settimeofday64+0x4/0x1d0) sec=1792763321 ns=68719000
+            init-920     [002] ..... 15909.393034: <stack trace>
+ => do_settimeofday64
+ => __x64_sys_settimeofday
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+            init-920     [002] ..... 15909.393068: settime_return: (do_sys_settimeofday64+0x9e/0xe0 <- do_settimeofday64) retval=0
+            init-920     [002] ..... 15909.393068: <stack trace>
+ => do_sys_settimeofday64
+ => __x64_sys_settimeofday
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ systemd-timesyn-1157    [006] ..... 15909.527055: adjust: (do_adjtimex+0x4/0x340) modes=8476 freq=0 tick=0 sec=8 ns=824162006
+ systemd-timesyn-1157    [006] ..... 15909.527061: <stack trace>
+ => do_adjtimex
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ systemd-timesyn-1157    [006] ..... 15909.527065: offset: (timekeeping_inject_offset+0x0/0x200) sec=8 ns=824162006
+ systemd-timesyn-1157    [006] ..... 15909.527066: <stack trace>
+ => timekeeping_inject_offset
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ systemd-timesyn-1157    [006] ..... 15909.527089: offset_return: (do_adjtimex+0xf6/0x340 <- timekeeping_inject_offset) retval=0
+ systemd-timesyn-1157    [006] ..... 15909.527090: <stack trace>
+ => do_adjtimex
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ systemd-timesyn-1157    [006] ..... 15909.527091: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ systemd-timesyn-1157    [006] ..... 15909.527092: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19827   [000] ..... 15909.883682: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19827   [000] ..... 15909.883687: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19829   [007] ..... 15910.441956: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19829   [007] ..... 15910.441961: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19831   [002] ..... 15910.996613: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19831   [002] ..... 15910.996618: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19833   [002] ..... 15911.554045: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19833   [002] ..... 15911.554050: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19835   [003] ..... 15912.128285: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19835   [003] ..... 15912.128290: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19837   [003] ..... 15912.687691: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19837   [003] ..... 15912.687696: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19839   [002] ..... 15913.249195: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19839   [002] ..... 15913.249201: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19841   [002] ..... 15913.807558: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19841   [002] ..... 15913.807563: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe
+ discipline-corr-19843   [003] ..... 15914.367139: adjust_return: (posix_clock_realtime_adj+0x15/0x20 <- do_adjtimex) retval=0
+ discipline-corr-19843   [003] ..... 15914.367149: <stack trace>
+ => posix_clock_realtime_adj
+ => __do_sys_clock_adjtime
+ => __x64_sys_clock_adjtime
+ => x64_sys_call
+ => do_syscall_64
+ => entry_SYSCALL_64_after_hwframe

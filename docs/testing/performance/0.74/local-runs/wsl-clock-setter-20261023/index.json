@@ -1,0 +1,262 @@
+{
+  "admission": false,
+  "clock_change": false,
+  "files": {
+    "observation/analysis.json": {
+      "bytes": 76815,
+      "sha256": "9063b7fecd45986b2df9638aba83d2dcf5d70619ff0d37231dfca9819d751d1a"
+    },
+    "observation/capture.json": {
+      "bytes": 228,
+      "sha256": "d62d633e302e762ee504368d0704f6ca375cb12ea93f076ff9b476a69754e44f"
+    },
+    "observation/checks.json": {
+      "bytes": 3179,
+      "sha256": "d171a0f2989cac8f8590d0ac2cd43e3fa0902366cf037a6079b0958ef21510dc"
+    },
+    "observation/cleanup-owner.json": {
+      "bytes": 94,
+      "sha256": "1fd317e5fa6b4210a4443e9d3f3ef9b4ce2a0b01e876af7f9019afa06e2e072f"
+    },
+    "observation/cleanup.lock": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/controls.json": {
+      "bytes": 298,
+      "sha256": "444efb6818415573cc356acf4df417694ce2f6eb22fd303c11f29ac78f85758b"
+    },
+    "observation/controls.stderr.log": {
+      "bytes": 4886,
+      "sha256": "92b522617b5e076760884b209fddc567b7a1549e5b2b2ad1ca210010584f4bff"
+    },
+    "observation/controls.stdout.log": {
+      "bytes": 194,
+      "sha256": "bc85499bb4a45c385570cf48b17f10cf54ac38432da68c94bdba77172e2903d4"
+    },
+    "observation/doc-check.json": {
+      "bytes": 153,
+      "sha256": "71d7138217ca02e7d459b74a2cce6b815014aa952372a12401594f4420ee4ab4"
+    },
+    "observation/doc-check.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/doc-check.stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "observation/first-trace-verify.json": {
+      "bytes": 154,
+      "sha256": "ec6ed8a8f17957e13390c5a46300dd068dab4b771c65ebde020de6c67cfa4613"
+    },
+    "observation/first-trace-verify.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/first-trace-verify.stdout.log": {
+      "bytes": 99,
+      "sha256": "b999696f910b1d219ff9e13939c4513dbd7b85c3d4a2d983df50ed81d89e30b9"
+    },
+    "observation/guardian.json": {
+      "bytes": 127,
+      "sha256": "f63c3bafadae71fe1677135be64a5d4fd4760e56b4ff9a75a92e439c94e16a74"
+    },
+    "observation/intent.json": {
+      "bytes": 3524,
+      "sha256": "9a2fd135d563eda34d05e2d86819d61a34240f051abef42ab6da440fcb2d6a03"
+    },
+    "observation/kprobe-profile.txt": {
+      "bytes": 553,
+      "sha256": "f4a62ee8b2bc44838d6b30a0f1bcbb8d1ee4372a902c8a2d975f601dfbdbd5d5"
+    },
+    "observation/loss.json": {
+      "bytes": 1276,
+      "sha256": "ad76cedd703f99d03e151801245046f83682f399880c94d3fd5e93d85264f42d"
+    },
+    "observation/performance-contract.json": {
+      "bytes": 199,
+      "sha256": "b171aebd0718e9dbb4678666d3ef7eeea83b1292948403ff1c5ae01d08b6e90b"
+    },
+    "observation/performance-contract.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/performance-contract.stdout.log": {
+      "bytes": 60,
+      "sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+    },
+    "observation/postcapture-visible-proc.json": {
+      "bytes": 853,
+      "sha256": "b9666fcb230cd607ec3d82c81f8856deb9d03895ab892d2bdd3bb22fd9bf688b"
+    },
+    "observation/postcapture-visible-proc.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/postcapture-visible-proc.stdout.log": {
+      "bytes": 2204,
+      "sha256": "e2d6744b5db9570a146c22873a489c5fe091f735c3c1ea39fdf37c91c0c283f8"
+    },
+    "observation/postflight.json": {
+      "bytes": 908,
+      "sha256": "e19ee51b338c9fb9f7bae7c67dda037ed869fd5773bde001ebe600a4b025457d"
+    },
+    "observation/preflight.json": {
+      "bytes": 1434,
+      "sha256": "232248b1e578feed6a70e58ae4dd25ff7d7f30c67d435ce9d9d2deca8c4c2dd8"
+    },
+    "observation/prior-einval-verify.json": {
+      "bytes": 157,
+      "sha256": "d6dc354dedea14c166df6533e65177ca78226326c7550ee770b0fe3917c75536"
+    },
+    "observation/prior-einval-verify.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/prior-einval-verify.stdout.log": {
+      "bytes": 99,
+      "sha256": "cedc0ac0521815636706d7c636065749d4b21a62308e27599949756cce046cc9"
+    },
+    "observation/prior-registration-verify.json": {
+      "bytes": 163,
+      "sha256": "a5cf2f0bccaf16d9f0c6ed48b055d1ace57c004881c0ca49f7cfea3589cbc322"
+    },
+    "observation/prior-registration-verify.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/prior-registration-verify.stdout.log": {
+      "bytes": 99,
+      "sha256": "80489f53f0db85f64bd2e368ea2d7baccdae49258736797a62a290ceebbb8a18"
+    },
+    "observation/probe-formats.json": {
+      "bytes": 4489,
+      "sha256": "70efeae40a80064bccd1fefc6d43f1c28a73aae80ef99bc34b776593b027f849"
+    },
+    "observation/samples.jsonl": {
+      "bytes": 76482,
+      "sha256": "85948371b371d708c0c9cbf1ff7b001cb32f2b898554127fdf4143515f0d02a9"
+    },
+    "observation/session.json": {
+      "bytes": 262,
+      "sha256": "f155d90a8651f9e4f16d6d7d03a97bfc19ce4285476ce83f825bddacf608b562"
+    },
+    "observation/session.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/session.stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/trace-intent.json": {
+      "bytes": 1607,
+      "sha256": "037952652d61fc92884ce131d8c8cf248557e167677d583579d8d877a82cf7d4"
+    },
+    "observation/trace.txt": {
+      "bytes": 87691,
+      "sha256": "8a8e1dd570eeeb3dc2348e13eb9d440da18ea1c42c8096a9998fd90c20ea108b"
+    },
+    "source/docs/testing/performance/0.74/wsl-clock-setter-plan-20261023.md": {
+      "bytes": 1992,
+      "sha256": "0a8a419020c7e18f6a2091a38e81057e207c2951fa96675b3683f8eebc1190a4"
+    },
+    "source/tools/wsl-clock-trace-074/.gitattributes": {
+      "bytes": 39,
+      "sha256": "14d5f7ae570e4e30bd506ee098d5087da6c80a968910d3a86601585a17e3a216"
+    },
+    "source/tools/wsl-clock-trace-074/README.md": {
+      "bytes": 3051,
+      "sha256": "f1bec91179db6691e792799c28822ba63930e3d2c4c714b7418de002553d5efd"
+    },
+    "source/tools/wsl-clock-trace-074/analyze.py": {
+      "bytes": 7112,
+      "sha256": "aba6a613d26172c4c15eed1ce1779c70f469259e16ef474da4f869bd02f86621"
+    },
+    "source/tools/wsl-clock-trace-074/btf.py": {
+      "bytes": 4055,
+      "sha256": "33f9999268f587fa591c79037aea3e5a4c33712ac0294b17cd0ecad9f0cb1c5c"
+    },
+    "source/tools/wsl-clock-trace-074/capture.py": {
+      "bytes": 13419,
+      "sha256": "d69b56530c06273c6ca45774161d401ab3534526a7ddfd752508e58b43a28449"
+    },
+    "source/tools/wsl-clock-trace-074/einval.py": {
+      "bytes": 9109,
+      "sha256": "7462df961bfbca6f5231574d8650bb59bb4a1a5f9b5e0b8cc17614d944f381d1"
+    },
+    "source/tools/wsl-clock-trace-074/observe.py": {
+      "bytes": 2856,
+      "sha256": "927f521eb9364ec2e5176339b2c9e245d7d2df72e290546d4eb819ccaf3e91e4"
+    },
+    "source/tools/wsl-clock-trace-074/registration.py": {
+      "bytes": 4651,
+      "sha256": "5cb3167fcba31dd3132f1843137e951b7245d2a907b0ef03e71c0dc857c39a30"
+    },
+    "source/tools/wsl-clock-trace-074/run.py": {
+      "bytes": 6907,
+      "sha256": "c2e8e9b3c727e54e16403050daa20bb7aac0a93b2bfcc1f32e7637fde93bd6f6"
+    },
+    "source/tools/wsl-clock-trace-074/test_einval.py": {
+      "bytes": 4565,
+      "sha256": "d98fb6f3a212163fb99fcb7691ffbbb76b9de3bb1e4fc03303037eb615b28ef3"
+    },
+    "source/tools/wsl-clock-trace-074/test_observe.py": {
+      "bytes": 2658,
+      "sha256": "d70af73c0fe1f58bafc959d035d21a125b19bb5bbd93be55caee0a243dc01715"
+    },
+    "source/tools/wsl-clock-trace-074/test_registration.py": {
+      "bytes": 3113,
+      "sha256": "064826e6a49fd00446e3da58a81d10406791be11d6a3ee0d7a2ed915b674df95"
+    },
+    "source/tools/wsl-clock-trace-074/test_registry_writer.py": {
+      "bytes": 6483,
+      "sha256": "2e93d1aab2e7c1e858d53d4dabb01060d31954a9eb2f1e38320a3d7140157512"
+    },
+    "source/tools/wsl-clock-trace-074/test_trace.py": {
+      "bytes": 13658,
+      "sha256": "31442a31411102f2ee9cc40a9e6fd29c50bb47b7623e7c08c54b747694188477"
+    }
+  },
+  "frozen_inputs": {
+    "local-runs/bootstrap-original-getunit-20261023/index.json": "9f2fd0f457ec6d48f4e87e7bfc2bd1262bbf191cf51b760fe744eb369394b9f6",
+    "local-runs/wsl-clock-causality-20261023/index.json": "6a7d11e8e8dc830262b8191bacdce03b1a0b822261d246dbaae0991da0694298",
+    "local-runs/wsl-clock-causality-root-context-20261023/index.json": "798b204c4b14865f482d64cdc4176aec7c1c3c4126b87bf635e8d9c2ba140082",
+    "local-runs/wsl-clock-einval-20261023/index.json": "99c84217cbe5d99e3aef1899e94178bc20bf03c5728dabf954bf135ad5c7f758",
+    "local-runs/wsl-clock-offline-join-20261023/index.json": "56250b03ab2aab0efb3cd1d5e559fcae6f5e0e64314f75693297d7ef4bff8aff",
+    "local-runs/wsl-clock-readonly-20261023/index.json": "edec06e2ac4fa97126ce14ac5c0e4d1aff9cae7bd39f96bb91391102f3d606e3",
+    "local-runs/wsl-clock-registration-20261023/index.json": "39a658169264764197f24cf849309373d7002c2c9d9520e6eedc3b8ef767c501",
+    "local-runs/wsl-clock-trace-20261023/index.json": "89912e476413847377bed1f22d1e52c799d2ded988fd3f861ecfedc56960da03",
+    "local-runs/wsl-clock-writer-20261023/index.json": "de758b208afe099e48da3f2fc176382a25b26fa9887c46b9a4ed4daa4aebec07",
+    "qualification-manifest.toml": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+  },
+  "original_owner_run": false,
+  "original_windows": [
+    300,
+    60,
+    10
+  ],
+  "product": false,
+  "schema": "hc074-bounded-clock-trace-evidence-v1",
+  "server": false,
+  "service_change": false,
+  "sources": {
+    "docs/testing/performance/0.74/wsl-clock-setter-plan-20261023.md": "0a8a419020c7e18f6a2091a38e81057e207c2951fa96675b3683f8eebc1190a4",
+    "tools/wsl-clock-trace-074/.gitattributes": "14d5f7ae570e4e30bd506ee098d5087da6c80a968910d3a86601585a17e3a216",
+    "tools/wsl-clock-trace-074/README.md": "f1bec91179db6691e792799c28822ba63930e3d2c4c714b7418de002553d5efd",
+    "tools/wsl-clock-trace-074/analyze.py": "aba6a613d26172c4c15eed1ce1779c70f469259e16ef474da4f869bd02f86621",
+    "tools/wsl-clock-trace-074/btf.py": "33f9999268f587fa591c79037aea3e5a4c33712ac0294b17cd0ecad9f0cb1c5c",
+    "tools/wsl-clock-trace-074/capture.py": "d69b56530c06273c6ca45774161d401ab3534526a7ddfd752508e58b43a28449",
+    "tools/wsl-clock-trace-074/einval.py": "7462df961bfbca6f5231574d8650bb59bb4a1a5f9b5e0b8cc17614d944f381d1",
+    "tools/wsl-clock-trace-074/observe.py": "927f521eb9364ec2e5176339b2c9e245d7d2df72e290546d4eb819ccaf3e91e4",
+    "tools/wsl-clock-trace-074/registration.py": "5cb3167fcba31dd3132f1843137e951b7245d2a907b0ef03e71c0dc857c39a30",
+    "tools/wsl-clock-trace-074/run.py": "c2e8e9b3c727e54e16403050daa20bb7aac0a93b2bfcc1f32e7637fde93bd6f6",
+    "tools/wsl-clock-trace-074/test_einval.py": "d98fb6f3a212163fb99fcb7691ffbbb76b9de3bb1e4fc03303037eb615b28ef3",
+    "tools/wsl-clock-trace-074/test_observe.py": "d70af73c0fe1f58bafc959d035d21a125b19bb5bbd93be55caee0a243dc01715",
+    "tools/wsl-clock-trace-074/test_registration.py": "064826e6a49fd00446e3da58a81d10406791be11d6a3ee0d7a2ed915b674df95",
+    "tools/wsl-clock-trace-074/test_registry_writer.py": "2e93d1aab2e7c1e858d53d4dabb01060d31954a9eb2f1e38320a3d7140157512",
+    "tools/wsl-clock-trace-074/test_trace.py": "31442a31411102f2ee9cc40a9e6fd29c50bb47b7623e7c08c54b747694188477"
+  },
+  "tracing_state_changed": true
+}

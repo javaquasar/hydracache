@@ -1,0 +1,7 @@
+  adjust                                                   200               0
+  adjust_return                                            200               0
+  settime                                                    3               0
+  settime_return                                             3               0
+  offset                                                     3               0
+  offset_return                                              3               0
+  host                                                       0               0

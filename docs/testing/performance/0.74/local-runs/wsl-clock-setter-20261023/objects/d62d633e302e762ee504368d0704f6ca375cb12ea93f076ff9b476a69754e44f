@@ -1,0 +1,9 @@
+{
+  "completed": true,
+  "deadline_changed": false,
+  "ended_raw_ns": 15915006914459,
+  "group": "hc074clock_5e2867f1d4b841788f16f7c83971f189",
+  "sample_count": 161,
+  "started_raw_ns": 15824590390083,
+  "trace_bytes": 87691
+}
