@@ -1,0 +1,10 @@
+{
+  "kind": "captured-tool summary, not raw fixed-runner receipt",
+  "baseline": "c506d0cc",
+  "command": "cargo test --offline --locked -p xtask --test bootstrap_installed_origin_074 -- --nocapture",
+  "tool_exit": 1,
+  "result": "0 passed; 1 failed; installed origin owner binding is absent",
+  "original_live_attempt": false,
+  "performance_measurement": false,
+  "server": false
+}
