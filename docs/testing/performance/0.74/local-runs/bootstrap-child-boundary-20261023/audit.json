@@ -1,0 +1,18 @@
+{
+  "admission_allowed": false,
+  "checked_commit": "29b24b90d619cb58f25286663f1b209e9ef2e68b",
+  "child_authentication": false,
+  "child_namespace_enrollment": false,
+  "clock_changes": false,
+  "existing_projection_and_build_models": true,
+  "original_delivery": false,
+  "performance_measurement": false,
+  "product": false,
+  "production_bootstrap_address": false,
+  "qualification_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "runtime_changes": false,
+  "server": false,
+  "service_changes": false,
+  "source_contracts": true,
+  "writer_cessation": false
+}

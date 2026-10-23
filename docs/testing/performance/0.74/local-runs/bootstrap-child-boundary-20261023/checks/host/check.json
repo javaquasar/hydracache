@@ -1,0 +1,15 @@
+{
+  "argv": [
+    "cargo",
+    "check",
+    "--offline",
+    "--locked",
+    "-p",
+    "xtask",
+    "--all-targets"
+  ],
+  "elapsed_ns": 3387221300,
+  "exit": 0,
+  "stderr_sha256": "dbadaf0b2548659186293e10cab3c7fa0f795d9a58733fc043a8da366d83dd96",
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

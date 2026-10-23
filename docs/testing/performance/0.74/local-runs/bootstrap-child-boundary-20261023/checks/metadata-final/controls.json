@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "python",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tools/bootstrap-child-boundary-074",
+    "-v"
+  ],
+  "elapsed_ns": 531032100,
+  "exit": 0,
+  "stderr_sha256": "ff3a6c44f389c13d82e14caaa73324172e13d26d3a176ff9452aaa127a73ba86",
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

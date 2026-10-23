@@ -1,0 +1,23 @@
+{
+  "Cargo.lock": "d2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c",
+  "crates/xtask/tests/bootstrap_child_boundary_074.rs": "e8853627ad50a60573023fa76aa4eb6cf5b39f97b8cbca88f92c0678c5dc67e0",
+  "docs/COMPAT.md": "de9178388c7edc9dbbc583a78e70ee063abc1206471212666fd55a866dc25d9f",
+  "docs/testing/gated-test-registry.toml": "963454fb429ad5a56c4305e92daa831a2433c536d7200bd7bfc695a3b04e22f9",
+  "docs/testing/performance/0.74/qualification-manifest.toml": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "tools/bootstrap-child-boundary-074/check.py": "926a1b495667c5432e211283ee6573771a970c37fdb204999304011ec95c96bf",
+  "tools/bootstrap-child-boundary-074/retain.py": "ec1a3f869338b0ab53947cf8acd8df8d6edef9e344954758fe0bcf5e1acfc5a6",
+  "tools/bootstrap-child-boundary-074/test_controls.py": "95b1d18ddd719259c4211bfa28840a164b351f1b957f04a872d8adeb0f8bf759",
+  "tools/bootstrap-current-image-074/check.py": "9f9e4b9f312e04ce38b79bf754a44eb8347fdbd2f8d32ac1c78f981f2dc0a934",
+  "tools/long-run-supervisor-074/src/diagnostic_bootstrap_current_image.rs": "993752e570b8c05b8313b27fc029b2eb10192add432dc254d4acf3577e114ee7",
+  "tools/long-run-supervisor-074/src/diagnostic_bootstrap_entry_binding.rs": "2212c0efaedc7c7a62c01ab41b946fe51e7570d2aee65af1ef2dc70ddc809247",
+  "tools/long-run-supervisor-074/src/diagnostic_bootstrap_image_entry.rs": "316f7122c91f369d26c77bc10547cda7d422e0a673faf118a4f746d50fba8f53",
+  "tools/long-run-supervisor-074/src/diagnostic_bootstrap_owner.rs": "6f9504044b38d5e04e02cd0e776c9e3d0c0df696f7ec5234e0abee4059659d68",
+  "tools/long-run-supervisor-074/src/diagnostic_bootstrap_sealed.rs": "f697fdd353b58be19df185d7a91a5984f66499d0728f3b928973c918e499c8c1",
+  "tools/long-run-supervisor-074/src/diagnostic_held_runtime_trust.rs": "5a1adaad3738e8d0b03c4482c51ec49e8b624384b3b8716c362bca172db375ae",
+  "tools/long-run-supervisor-074/src/diagnostic_held_unit_projection.rs": "f2bc04d719101b2bc5e23044f80f49db9a32e1ecc3c9f334a79e959ad5cf0cbd",
+  "tools/long-run-supervisor-074/src/diagnostic_held_unit_projection_tests.rs": "5301c3425e770be6e04ae58e50adaf9d49109147631c8900b5d672af5b67b384",
+  "tools/long-run-supervisor-074/src/diagnostic_mount_namespace.rs": "48e788f2e7af9b646207e54801d259e782af2b6a167fa82ced53706f0695ab0d",
+  "tools/long-run-supervisor-074/src/diagnostic_unit.rs": "a017f9d22b60ca59ab5e2fc4a7b0a542c82a0a64549b780b9779d91131e0c3fd",
+  "tools/long-run-supervisor-074/src/diagnostic_worker_policy.rs": "769c3de1224225b790d7e32b34f59b34e9263bdf292afa2b89ba3fdc718b68f8",
+  "tools/long-run-supervisor-074/src/diagnostic_worker_trust_input.rs": "891fa2ec885cf3193f575afe4e4b2f4f70a885868d9868b1843a49753d6f8807"
+}

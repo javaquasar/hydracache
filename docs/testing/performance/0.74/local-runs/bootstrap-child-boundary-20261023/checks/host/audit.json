@@ -1,0 +1,18 @@
+{
+  "argv": [
+    "cargo",
+    "test",
+    "--offline",
+    "--locked",
+    "-p",
+    "xtask",
+    "--test",
+    "bootstrap_child_boundary_074",
+    "--",
+    "--nocapture"
+  ],
+  "elapsed_ns": 3874222000,
+  "exit": 0,
+  "stderr_sha256": "b457aec1fc5eae812c99441e242744cb6b8691c6c6cc7d9ef537c4a18e16efc2",
+  "stdout_sha256": "2666f25f023bdecf44ade2104f8e63daf4f4aee7cb760e36e530048e7ae17c35"
+}

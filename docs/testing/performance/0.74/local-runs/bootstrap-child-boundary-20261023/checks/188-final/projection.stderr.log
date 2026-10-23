@@ -1,0 +1,5 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Finished `release` profile [optimized] target(s) in 6.84s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-188-check/release/deps/hydracache_long_run_supervisor_074-1dbb29096ebc6338)
+held unit projection seed=0x074051a7 cases=256

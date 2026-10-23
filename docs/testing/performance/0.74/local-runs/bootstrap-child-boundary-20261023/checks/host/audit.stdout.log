@@ -1,0 +1,9 @@
+
+running 4 tests
+test sandbox_hardening_is_not_a_host_mount_namespace_enrollment ... ok
+test executable_consistency_does_not_supply_a_systemd_address_for_a_sealed_copy ... ok
+test child_cannot_borrow_root_only_worker_or_held_trust_by_weakening_the_opener ... ok
+test boundary_audit_preserves_entire_runtime_and_frozen_qualification ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.68s
+

@@ -1,0 +1,8 @@
+test_existing_packet_is_never_overwritten_or_executed (test_controls.Controls.test_existing_packet_is_never_overwritten_or_executed) ... ok
+test_explicit_failures_are_not_boolean_passes (test_controls.Controls.test_explicit_failures_are_not_boolean_passes) ... ok
+test_only_fixed_static_models_and_no_infrastructure (test_controls.Controls.test_only_fixed_static_models_and_no_infrastructure) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.008s
+
+OK

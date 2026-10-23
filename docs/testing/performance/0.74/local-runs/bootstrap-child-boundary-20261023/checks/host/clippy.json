@@ -1,0 +1,19 @@
+{
+  "argv": [
+    "cargo",
+    "clippy",
+    "--offline",
+    "--locked",
+    "-p",
+    "xtask",
+    "--all-targets",
+    "--all-features",
+    "--",
+    "-D",
+    "warnings"
+  ],
+  "elapsed_ns": 35642327600,
+  "exit": 0,
+  "stderr_sha256": "d33a2782f45dd48d0ded956d4b319ac790f21e1beedea2fbbe90c1db88575bfd",
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}
