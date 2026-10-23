@@ -121,16 +121,20 @@ class Cleanup(unittest.TestCase):
 
 @unittest.skipUnless(hasattr(os, 'fork') and hasattr(os, 'pidfd_open'), 'Linux owned-process controls')
 class Guardian(unittest.TestCase):
-    def wait_file(self, path):
-        deadline = time.monotonic() + 4
-        while time.monotonic() < deadline and not path.exists():
-            time.sleep(0.01)
-        self.assertTrue(path.exists(), 'Bounded guardian receipt missing')
+    def wait_file(self, path, complete):
+        try:
+            self.assertTrue(select.select([complete], [], [], 4)[0], 'Bounded guardian receipt missing')
+            self.assertEqual(os.read(complete, 1), b'D', 'Receipt publication did not complete')
+        finally:
+            os.close(complete)
+        self.assertTrue(path.exists(), 'Completed guardian receipt missing')
         return json.loads(path.read_text())
 
     def start(self, folder, mode):
+        done_r, done_w = os.pipe()
         pid = os.fork()
         if pid == 0:
+            os.close(done_r)
             cap.OUT = Path(folder)
             owner = os.pidfd_open(os.getpid())
             r, w = os.pipe()
@@ -138,10 +142,16 @@ class Guardian(unittest.TestCase):
             child = os.fork()
             if child == 0:
                 os.close(w); os.close(rr)
-                with patch.object(cap, 'cleanup', return_value={'ok': True, 'instance_absent': True}):
+                publish = cap.publish
+                def complete(path, value):
+                    publish(path, value)  # Signal only after the real write/flush/fsync.
+                    os.write(done_w, b'D')
+                with patch.object(cap, 'cleanup', return_value={'ok': True, 'instance_absent': True}), \
+                     patch.object(cap, 'publish', side_effect=complete):
                     cap.guardian(owner, r, rw, GROUP, cap.definitions(GROUP),
                                  cap.raw_ns() + (50_000_000 if mode == 'deadline' else 3_000_000_000))
             os.close(r); os.close(rw)
+            os.close(done_w)
             if not select.select([rr], [], [], 2)[0] or os.read(rr, 1) != b'R':
                 os._exit(3)
             if mode == 'normal':
@@ -150,25 +160,45 @@ class Guardian(unittest.TestCase):
                 os.kill(os.getpid(), signal.SIGKILL)
             os.waitpid(child, 0)
             os._exit(0)
-        return pid
+        os.close(done_w)
+        return pid, done_r
 
     def test_normal_completion(self):
         with tempfile.TemporaryDirectory() as folder:
-            owner = self.start(folder, 'normal')
+            owner, complete = self.start(folder, 'normal')
             self.assertEqual(os.waitpid(owner, 0)[1], 0)
-            self.assertEqual(self.wait_file(Path(folder) / 'guardian.json')['reason'], 'normal_completion')
+            self.assertEqual(self.wait_file(Path(folder) / 'guardian.json', complete)['reason'], 'normal_completion')
 
     def test_owner_sigkill_with_external_harness(self):
         with tempfile.TemporaryDirectory() as folder:
-            owner = self.start(folder, 'owner-kill')
+            owner, complete = self.start(folder, 'owner-kill')
             self.assertTrue(os.WIFSIGNALED(os.waitpid(owner, 0)[1]))
-            self.assertEqual(self.wait_file(Path(folder) / 'guardian.json')['reason'], 'owner_exit_or_control_close')
+            self.assertEqual(self.wait_file(Path(folder) / 'guardian.json', complete)['reason'], 'owner_exit_or_control_close')
 
     def test_hard_deadline_without_controller(self):
         with tempfile.TemporaryDirectory() as folder:
-            owner = self.start(folder, 'deadline')
+            owner, complete = self.start(folder, 'deadline')
             self.assertEqual(os.waitpid(owner, 0)[1], 0)
-            self.assertEqual(self.wait_file(Path(folder) / 'guardian.json')['reason'], 'hard_deadline')
+            self.assertEqual(self.wait_file(Path(folder) / 'guardian.json', complete)['reason'], 'hard_deadline')
+
+    def test_visible_empty_receipt_is_not_read_before_completion(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / 'guardian.json'
+            path.write_text('')  # File visibility alone is deliberately not completion.
+            done_r, done_w = os.pipe()
+            child = os.fork()
+            if child == 0:
+                os.close(done_r)
+                time.sleep(0.02)
+                cap.publish(path.with_name('complete.json'), {'complete': True})
+                os.replace(path.with_name('complete.json'), path)
+                os.write(done_w, b'D')
+                os._exit(0)
+            os.close(done_w)
+            try:
+                self.assertEqual(self.wait_file(path, done_r), {'complete': True})
+            finally:
+                self.assertEqual(os.waitpid(child, 0)[1], 0)
 
 
 class Offline(unittest.TestCase):
