@@ -1,0 +1,11 @@
+test_existing_lane_cannot_overwrite_first_results (test_controls.Controls.test_existing_lane_cannot_overwrite_first_results) ... ok
+test_local_scope (test_controls.Controls.test_local_scope) ... ok
+test_unknown_lane (test_controls.Controls.test_unknown_lane) ... ok
+test_exact_commit_and_four_distinct_kinds_required (test_retain.Retention.test_exact_commit_and_four_distinct_kinds_required) ... ok
+test_existing_packet_cannot_be_resealed (test_retain.Retention.test_existing_packet_cannot_be_resealed) ... ok
+test_failed_lane_cannot_be_promoted (test_retain.Retention.test_failed_lane_cannot_be_promoted) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.038s
+
+OK

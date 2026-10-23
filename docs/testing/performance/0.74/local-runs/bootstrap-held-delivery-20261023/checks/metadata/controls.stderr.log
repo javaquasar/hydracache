@@ -1,0 +1,8 @@
+test_existing_lane_cannot_overwrite_first_results (test_controls.Controls.test_existing_lane_cannot_overwrite_first_results) ... ok
+test_local_scope (test_controls.Controls.test_local_scope) ... ok
+test_unknown_lane (test_controls.Controls.test_unknown_lane) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.015s
+
+OK

@@ -1,0 +1,39 @@
+{
+  "scope": "local diagnostic consistency; not original live delivery or performance",
+  "baseline": {
+    "exit": 101,
+    "reason": "installed child consistency reader is absent",
+    "retention": "fixed baseline source snapshot, raw logs and command receipt"
+  },
+  "development_linux_check": {
+    "toolchain": "1.94.0",
+    "exit": 0,
+    "warning": "unused variable current owned inspection File",
+    "retention": "captured-tool-output summary, not raw lane evidence",
+    "correction": "perform metadata queries through current.as_raw_fd(); retain the owned inspection handle explicitly without lint suppression"
+  },
+  "fixture_review": "installed metadata unit fixtures use ordinary private filesystem files, not anonymous memfd, to exercise the single-link condition",
+  "first_fixed_host": {
+    "failure": "format exit 1: rustfmt requires new integration module after bootstrap_child_material",
+    "correction": "move only additive module hook; exact source view still restores whole previous file",
+    "retention": "host raw logs and complete source snapshot"
+  },
+  "first_fixed_msrv": {
+    "failure": "image-cli exit 101: five passed, new combined fault control failed with shell 126 instead of reader 2",
+    "limits": "assert preceded bounded stderr collection; exact inner fault and errno were not retained, so the cause is not established",
+    "correction": "collect bounded stderr before exit assertion, label fault; serialize filesystem image controls and add deterministic held-writer shell refusal control",
+    "retention": "188 raw logs and complete source snapshot; never overwrite"
+  },
+  "first_fixed_gnu": "all six image controls and 28 child unit controls passed with original source; final source is separately checked",
+  "second_fixed_host": {
+    "failure": "host-final source contract exit 101: additive integration hook removal left one newly added blank line after crate cfg",
+    "correction": "remove only that added blank line; preserve the exact full previous integration file under hook removal",
+    "retention": "host-final raw logs and source snapshot; reviewed lanes use the corrected exact snapshot"
+  },
+  "original_attempt": false,
+  "performance_measurement": false,
+  "clock_changes": false,
+  "service_changes": false,
+  "server": false,
+  "product": false
+}

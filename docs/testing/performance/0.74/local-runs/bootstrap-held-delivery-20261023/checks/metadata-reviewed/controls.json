@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "python",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tools/bootstrap-held-delivery-074",
+    "-v"
+  ],
+  "elapsed_ns": 908415500,
+  "exit": 0,
+  "stderr_sha256": "7896adba71ca79bb846a354a1de823b13007afaf985b81dbf9d1b3c89c0fdf96",
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

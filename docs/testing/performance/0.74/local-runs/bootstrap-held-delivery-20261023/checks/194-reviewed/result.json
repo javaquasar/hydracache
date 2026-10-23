@@ -1,0 +1,31 @@
+{
+  "failure": null,
+  "lane": "194-reviewed",
+  "original_attempt": false,
+  "product": false,
+  "server": false,
+  "steps": [
+    "held",
+    "parser",
+    "sandbox",
+    "installed",
+    "image-cli",
+    "census-cli",
+    "child-units",
+    "child-cli",
+    "entry",
+    "images",
+    "build",
+    "selection",
+    "owner",
+    "enrollment",
+    "old-source",
+    "old-replacement",
+    "old-keys",
+    "check",
+    "clippy",
+    "selected-build",
+    "image-sha",
+    "image-size"
+  ]
+}

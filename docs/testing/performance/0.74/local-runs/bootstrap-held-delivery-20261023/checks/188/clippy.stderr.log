@@ -1,0 +1,79 @@
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error: file is loaded as a module multiple times: `tools/long-run-supervisor-074/src/diagnostic_kernel_ancillary.rs`
+  --> tools/long-run-supervisor-074/src/diagnostic_held_child_exchange.rs:12:1
+   |
+12 | / #[path = "diagnostic_kernel_ancillary.rs"]
+13 | | mod ancillary;
+   | |______________^ first loaded here
+   |
+  ::: tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs:39:1
+   |
+39 | / #[path = "diagnostic_kernel_ancillary.rs"]
+40 | | mod ancillary;
+   | |______________^ loaded again here
+   |
+   = help: replace all but one `mod` item with `use` items
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#duplicate_mod
+   = note: `-D clippy::duplicate-mod` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::duplicate_mod)]`
+
+error: large size difference between variants
+  --> tools/long-run-supervisor-074/src/diagnostic_original_held_delivery.rs:16:1
+   |
+16 | / enum Owner<'root, 'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p> {
+17 | |     Entry(InstalledEntryUnit<'root, 'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>),
+   | |     --------------------------------------------------------------------------------- the second-largest variant contains at least 16880 bytes
+18 | |     Sandbox(SandboxObservedUnit<'root, 'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>),
+   | |     ------------------------------------------------------------------------------------ the largest variant contains at least 18776 bytes
+19 | |     Failed(SandboxFailure<'root, 'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>),
+20 | | }
+   | |_^ the entire enum is at least 18776 bytes
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#large_enum_variant
+   = note: `-D clippy::large-enum-variant` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::large_enum_variant)]`
+help: consider boxing the large fields to reduce the total size of the enum
+   |
+18 -     Sandbox(SandboxObservedUnit<'root, 'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>),
+18 +     Sandbox(Box<SandboxObservedUnit<'root, 'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>>),
+   |
+
+error: the `Err`-variant returned from this function is very large
+   --> tools/long-run-supervisor-074/src/diagnostic_original_held_delivery.rs:289:10
+    |
+289 |       ) -> Result<
+    |  __________^
+290 | |         HeldDelivery<'root, 'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
+291 | |         DeliveryFailure<'root, 'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
+292 | |     > {
+    | |_____^ the `Err`-variant is at least 136 bytes
+    |
+    = help: try reducing the size of `diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::unit_projection::material::bootstrap_owner::installed_origin::entry_material::sandbox_owner::held_delivery::DeliveryFailure<'root, 'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>`, for example by boxing large elements or replacing it with `Box<diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::unit_projection::material::bootstrap_owner::installed_origin::entry_material::sandbox_owner::held_delivery::DeliveryFailure<'root, 'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>>`
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#result_large_err
+    = note: `-D clippy::result-large-err` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::result_large_err)]`
+
+error: could not compile `hydracache-long-run-supervisor-074` (lib) due to 3 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: large size difference between variants
+  --> tools/long-run-supervisor-074/src/diagnostic_original_held_delivery.rs:16:1
+   |
+16 | / enum Owner<'root, 'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p> {
+17 | |     Entry(InstalledEntryUnit<'root, 'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>),
+   | |     --------------------------------------------------------------------------------- the second-largest variant contains at least 16888 bytes
+18 | |     Sandbox(SandboxObservedUnit<'root, 'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>),
+   | |     ------------------------------------------------------------------------------------ the largest variant contains at least 18784 bytes
+19 | |     Failed(SandboxFailure<'root, 'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>),
+20 | | }
+   | |_^ the entire enum is at least 18784 bytes
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#large_enum_variant
+   = note: `-D clippy::large-enum-variant` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::large_enum_variant)]`
+help: consider boxing the large fields to reduce the total size of the enum
+   |
+18 -     Sandbox(SandboxObservedUnit<'root, 'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>),
+18 +     Sandbox(Box<SandboxObservedUnit<'root, 'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>>),
+   |
+
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 3 previous errors

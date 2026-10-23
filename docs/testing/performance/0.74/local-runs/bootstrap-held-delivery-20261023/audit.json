@@ -1,0 +1,197 @@
+{
+  "admission_allowed": false,
+  "authenticated_original_start": false,
+  "checked_commit": "e36f5dff528b062a1bef5c257ccfdacca7e42431",
+  "clock_changes": false,
+  "completion": false,
+  "exact_manager_transport_compiled": true,
+  "final_lanes": [
+    "host-reviewed",
+    "194-reviewed",
+    "188-reviewed",
+    "metadata-reviewed"
+  ],
+  "initial_lifetime_diagnostic_raw_saved": false,
+  "integrated_child_entry": false,
+  "loaded_unit_hardening_proof": false,
+  "local_kernel_peer_exchange_control": true,
+  "namespace_changes": false,
+  "new_path_sigkill_matrix": false,
+  "one_shot_refusal_controls": true,
+  "original_attempt": false,
+  "owner_derived_constructor_compiled": true,
+  "performance_measurement": false,
+  "positive_original_manager_delivery": false,
+  "prior_lanes": [
+    {
+      "failure": "RuntimeError: clippy refused; first result retained",
+      "lane": "188",
+      "steps": [
+        "held",
+        "sandbox",
+        "installed",
+        "image-cli",
+        "census-cli",
+        "child-units",
+        "child-cli",
+        "entry",
+        "images",
+        "build",
+        "selection",
+        "owner",
+        "enrollment",
+        "old-source",
+        "old-replacement",
+        "old-keys",
+        "check",
+        "clippy"
+      ]
+    },
+    {
+      "failure": null,
+      "lane": "188-reviewed",
+      "steps": [
+        "held",
+        "parser",
+        "sandbox",
+        "installed",
+        "image-cli",
+        "census-cli",
+        "child-units",
+        "child-cli",
+        "entry",
+        "images",
+        "build",
+        "selection",
+        "owner",
+        "enrollment",
+        "old-source",
+        "old-replacement",
+        "old-keys",
+        "check",
+        "clippy"
+      ]
+    },
+    {
+      "failure": "RuntimeError: image-cli refused; first result retained",
+      "lane": "194",
+      "steps": [
+        "held",
+        "sandbox",
+        "installed",
+        "image-cli"
+      ]
+    },
+    {
+      "failure": "RuntimeError: clippy refused; first result retained",
+      "lane": "194-final",
+      "steps": [
+        "held",
+        "sandbox",
+        "installed",
+        "image-cli",
+        "census-cli",
+        "child-units",
+        "child-cli",
+        "entry",
+        "images",
+        "build",
+        "selection",
+        "owner",
+        "enrollment",
+        "old-source",
+        "old-replacement",
+        "old-keys",
+        "check",
+        "clippy"
+      ]
+    },
+    {
+      "failure": null,
+      "lane": "194-reviewed",
+      "steps": [
+        "held",
+        "parser",
+        "sandbox",
+        "installed",
+        "image-cli",
+        "census-cli",
+        "child-units",
+        "child-cli",
+        "entry",
+        "images",
+        "build",
+        "selection",
+        "owner",
+        "enrollment",
+        "old-source",
+        "old-replacement",
+        "old-keys",
+        "check",
+        "clippy",
+        "selected-build",
+        "image-sha",
+        "image-size"
+      ]
+    },
+    {
+      "failure": null,
+      "lane": "host",
+      "steps": [
+        "codec",
+        "child-units",
+        "child-cli",
+        "canaries",
+        "entry",
+        "build",
+        "check",
+        "clippy",
+        "format"
+      ]
+    },
+    {
+      "failure": null,
+      "lane": "host-reviewed",
+      "steps": [
+        "codec",
+        "child-units",
+        "child-cli",
+        "canaries",
+        "entry",
+        "build",
+        "check",
+        "clippy",
+        "format"
+      ]
+    },
+    {
+      "failure": null,
+      "lane": "metadata",
+      "steps": [
+        "controls",
+        "docs",
+        "registry",
+        "contract",
+        "diff"
+      ]
+    },
+    {
+      "failure": null,
+      "lane": "metadata-reviewed",
+      "steps": [
+        "controls",
+        "docs",
+        "registry",
+        "contract",
+        "diff"
+      ]
+    }
+  ],
+  "product": false,
+  "qualification_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "raw_absence_baseline_saved": false,
+  "server": false,
+  "service_changes": false,
+  "source_count": 163,
+  "writer_cessation": false
+}
