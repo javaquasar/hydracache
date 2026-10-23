@@ -1,0 +1,10 @@
+{
+  "kind": "captured-tool-summary-not-raw-receipt",
+  "baseline": "851763a0",
+  "source_prerequisite": {"command": "cargo test --offline --locked -p xtask --test bootstrap_child_census_074", "exit": 1, "result": "complete child role census absent; 0 passed; 1 failed"},
+  "development_compile": {"compiler": "GNU 1.94.0", "target": "bootstrap_child_census", "exit": 101, "result": "compiler ICE in annotate_snippets StyledBuffer::replace while emitting check_mod_deathness warning in material; slice index starts at 5 but ends at 4"},
+  "diagnostic_check": {"command": "cargo +1.94.0 check --offline --locked -p hydracache-long-run-supervisor-074 --test bootstrap_child_census --message-format=short", "exit": 0, "warning": "bootstrap_census_material.rs:266:12 method fds is never used"},
+  "correction": "Use the fixture's actual fds() array for harness scratch duplication; no warning suppression, runtime predicate or deadline change",
+  "original_live_join": false,
+  "performance_measurement": false
+}
