@@ -1,0 +1,38 @@
+{
+  "lane": "baseline",
+  "argv": [
+    "wsl.exe",
+    "-d",
+    "Ubuntu",
+    "-u",
+    "artur",
+    "--cd",
+    "/",
+    "--exec",
+    "/usr/bin/env",
+    "RUSTUP_AUTO_INSTALL=0",
+    "/home/artur/.cargo/bin/rustc",
+    "+1.94.0",
+    "--edition=2021",
+    "-C",
+    "opt-level=3",
+    "-C",
+    "codegen-units=1",
+    "-D",
+    "warnings",
+    "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/target/status-field-scan-20261024/baseline/main.rs",
+    "-o",
+    "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/target/status-field-scan-20261024/baseline/parser"
+  ],
+  "source_sha256": "5f77f86c3c29a42156d63ffa913583f8a8c6419562f6c2bea5c34e75937260fa",
+  "inputs": {
+    "main.rs": "4b2f1fd5e737492e56f984c1b6bb2771f25ee1047c4c543b436b9c17f8dd2f9f",
+    "projection.rs": "fb77cd5dae690c838652f358e7520d7d454ba202b8526bfd1678ca0315d20b97",
+    "projection_groups.rs": "d6d46a710c664d9eb1a8a9a9ef09a515522aa5d47b4a4d7752d1e02825ff620a"
+  },
+  "runtime": false,
+  "live": false,
+  "server": false,
+  "admission": false,
+  "retry": false
+}
