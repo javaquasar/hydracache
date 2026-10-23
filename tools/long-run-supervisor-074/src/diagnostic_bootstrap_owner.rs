@@ -242,3 +242,6 @@ impl<'root, 'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>
 #[cfg(test)]
 #[path = "diagnostic_bootstrap_owner_tests.rs"]
 mod tests;
+
+#[path = "diagnostic_bootstrap_installed_owner.rs"]
+mod installed_origin;

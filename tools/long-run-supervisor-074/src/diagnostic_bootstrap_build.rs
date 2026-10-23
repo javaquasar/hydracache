@@ -447,5 +447,9 @@ pub(crate) mod sealed;
 #[path = "diagnostic_bootstrap_build_tests.rs"]
 pub(crate) mod tests;
 
+#[cfg(target_os = "linux")]
+#[path = "diagnostic_bootstrap_installed_source.rs"]
+pub(crate) mod installed;
+
 #[path = "diagnostic_bootstrap_entry_format.rs"]
 pub mod entry_format;

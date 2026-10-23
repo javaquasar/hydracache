@@ -44,6 +44,8 @@ pub fn compat_view(raw: &str) -> String {
     remove(&child_guard::compat_view(raw), BLOCK)
 }
 pub fn source_view(name: &str, raw: &str) -> String {
+    let raw = child_guard::source_view(name, raw);
+    let raw = raw.as_str();
     match name {
         "diagnostic_bootstrap_build.rs" => remove(raw,"\n#[path = \"diagnostic_bootstrap_entry_format.rs\"]\npub mod entry_format;\n"),
         "diagnostic_bootstrap_image_census.rs" => remove(raw,"\n#[path = \"diagnostic_bootstrap_entry_census.rs\"]\npub(crate) mod entry;\n"),

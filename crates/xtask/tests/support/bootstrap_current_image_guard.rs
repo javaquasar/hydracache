@@ -1,4 +1,6 @@
 #![allow(dead_code)] // Exact additive views shared by preceding source guards.
+#[path = "bootstrap_installed_guard.rs"]
+mod installed;
 pub const BLOCK: &str = r#"
 <!-- BEGIN BOOTSTRAP CURRENT IMAGE V1 -->
 ## Bootstrap current executable consistency v1
@@ -56,12 +58,14 @@ fn remove(raw: &str, addition: &str) -> String {
     raw.replacen(addition, "", 1)
 }
 pub fn compat_view(raw: &str) -> String {
-    remove(raw, BLOCK)
+    remove(&installed::compat_view(raw), BLOCK)
 }
 pub fn registry_view(raw: &str) -> String {
     remove(raw, GATE)
 }
 pub fn source_view(name: &str, raw: &str) -> String {
+    let raw = installed::source_view(name, raw);
+    let raw = raw.as_str();
     match name {
         "bin/diagnostic_held_bootstrap.rs" => {
             let raw = remove(raw, "\n#[path = \"../diagnostic_bootstrap_image_entry.rs\"]\nmod image_entry;\n");

@@ -51,6 +51,9 @@ impl BootstrapImageBindings {
     }
 }
 
+#[path = "diagnostic_bootstrap_installed_census.rs"]
+pub(crate) mod installed;
+
 #[cfg(test)]
 mod tests {
     use super::super::tests::Fixture;

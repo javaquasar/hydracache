@@ -1,5 +1,7 @@
 //! Audit guards only: no new child authentication, IPC or execution path.
 use std::path::{Path, PathBuf};
+#[path = "support/bootstrap_installed_guard.rs"]
+mod installed;
 fn root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
 }
@@ -119,12 +121,14 @@ fn boundary_audit_preserves_entire_runtime_and_frozen_qualification() {
             .unwrap();
         assert!(out.status.success(), "{path}");
         let original = String::from_utf8(out.stdout).unwrap().replace('\r', "");
-        assert_eq!(
-            std::fs::read_to_string(root().join(&path))
-                .unwrap()
-                .replace('\r', ""),
-            original,
-            "{path}"
-        );
+        let raw = std::fs::read_to_string(root().join(&path))
+            .unwrap()
+            .replace('\r', "");
+        let viewed = if path == "docs/COMPAT.md" {
+            installed::compat_view(&raw)
+        } else {
+            installed::source_view(path.rsplit('/').next().unwrap(), &raw)
+        };
+        assert_eq!(viewed, original, "{path}");
     }
 }
