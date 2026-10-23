@@ -1,0 +1,9 @@
+{
+  "kind": "captured-tool-summary-not-raw-receipt",
+  "baseline": "c9654c84",
+  "argv": ["cargo", "test", "--offline", "--locked", "-p", "xtask", "--test", "bootstrap_child_reader_074"],
+  "exit_code": 1,
+  "result": "0 passed; 1 failed; bootstrap executable absent",
+  "original_live_join": false,
+  "measurement": false
+}
