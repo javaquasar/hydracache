@@ -2,8 +2,9 @@
   "kind": "captured-tool summary, not raw runner receipt",
   "baseline": "c3dd8469",
   "command": "cargo test --offline --locked -p xtask --test bootstrap_current_image_074 -- --nocapture",
-  "exit": 101,
+  "tool_exit": 1,
   "result": "0 passed; 1 failed; current executable inode consistency is absent",
+  "development_compile": {"tool_exit": 1, "result": "GNU 1.94 E0603: observe/revalidate were private to reader instead of bootstrap root", "correction": "restrict visibility to the existing bootstrap binary root, like the preceding roles observer; no public library API or extraction"},
   "original_live_attempt": false,
   "performance_measurement": false,
   "server": false

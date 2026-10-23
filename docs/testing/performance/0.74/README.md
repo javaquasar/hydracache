@@ -6239,3 +6239,17 @@ includes 187 registered gates. The report links an exact-byte-audited packet wit
 initial refusals as well as final results. The selected unsigned image is only a
 build observation, not enrolled provenance. No added runtime cost was measured
 and no original live or server execution was opened.
+
+### Current executable consistency still leaves provenance closed
+
+The [current-image component](bootstrap-current-image-20261023.md) adds a separate
+opt-in refusal-only mode. It compares the inherited sealed bootstrap image with
+fixed procfs executable lookup, then repeats that observation after the complete
+census revalidation. Owned inspection FDs close before the closed-set census.
+Older entry/census modes and original frames/deadlines remain exact.
+
+A synthetic child running from the matching sealed diagnostic image still exits
+2 with authentication closed. Windows 46 source contracts and 15 controls, GNU
+1.94/MSRV 1.88 each 64 selected controls, strict lint and the 188-gate registry
+passed locally. This is neither trusted namespace/build/credential enrollment
+nor original delivery or writer cessation, and supplies no performance claim.

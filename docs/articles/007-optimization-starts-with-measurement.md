@@ -18089,3 +18089,28 @@ lint, registry and Windows executable-lock failures. Their later corrections
 are not evidence of faster preparation: there was no measurement cohort or
 original live retry. Even the successfully compiled unsigned bootstrap needs a
 clean-source signed build and independent enrollment before it can be trusted.
+
+### Identical executable bytes do not identify the original image
+
+The next [current executable check](../testing/performance/0.74/bootstrap-current-image-20261023.md)
+addresses a gap left by a complete descriptor census: the supplied bootstrap
+image may agree with its entry while another inode executes. The new opt-in
+mode compares readonly sealed FD13 with fixed procfs executable lookup, including
+the entire metadata stamp and zero offsets. It repeats this fresh observation
+around the unchanged census revalidation; temporary inspection FDs close before
+the census so they cannot become unexplained inherited resources.
+
+Two sealed files with identical contents remain distinct in the unit control.
+Process controls distinguish a matching sealed diagnostic image from the same
+bytes supplied alongside an on-disk executable; that latter image also lacks
+memfd seals, so the process case alone cannot isolate inode equality. Crucially,
+even the matching sealed image with a complete forged context reaches only the
+explicit authentication-closed boundary. Content and inode consistency cannot
+select the policy that should trust them.
+
+Windows, GNU 1.94 and MSRV 1.88 correctness gates passed with original live frames
+and admission origins unchanged. Procfs namespace enrollment, actual credentials,
+signed build selection and original manager/root/guardian provenance still need
+their independent join before launcher handoff. No timing or throughput cohort
+was run: added kernel queries have not been shown to fit original admission
+windows merely because synthetic correctness controls pass.
