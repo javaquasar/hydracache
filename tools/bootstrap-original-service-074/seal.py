@@ -60,7 +60,7 @@ def run():
     (OUTPUT/'objects').mkdir()
     # Raw logs/source bytes remain unchanged in Git on every checkout.
     with (OUTPUT/'.gitattributes').open('xb') as stream:
-        stream.write(b'objects/* -text whitespace=cr-at-eol,-blank-at-eof\nindex.json text eol=lf\n')
+        stream.write(b'objects/* -text -diff -whitespace\nindex.json text eol=lf\n')
     files={}
     for lane in LANES+NATIVE:
         for source in sorted((INPUT/lane).rglob('*')):
