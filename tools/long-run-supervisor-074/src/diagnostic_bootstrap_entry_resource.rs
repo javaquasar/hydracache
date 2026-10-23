@@ -39,6 +39,9 @@ pub(in super::super) struct EntryResource {
     file: File,
     retained: Stamp,
 }
+
+#[path = "diagnostic_bootstrap_installed_entry_resource.rs"]
+pub(in super::super) mod installed_material;
 impl EntryResource {
     pub(in super::super) fn create(raw: &[u8; 1024]) -> io::Result<Self> {
         let file = sealed(raw)?;

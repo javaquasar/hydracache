@@ -1,4 +1,6 @@
 #![allow(dead_code)] // Exact additive view for the historical source/compat guards.
+#[path = "bootstrap_installed_material_guard.rs"]
+pub mod material;
 pub const BLOCK: &str = r#"
 <!-- BEGIN BOOTSTRAP INSTALLED ENTRY V1 -->
 ## Installed bootstrap entry assertions v1
@@ -33,9 +35,11 @@ fn remove(raw: &str, addition: &str) -> String {
     raw.replacen(addition, "", 1)
 }
 pub fn compat_view(raw: &str) -> String {
-    remove(raw, BLOCK)
+    remove(&material::compat_view(raw), BLOCK)
 }
 pub fn source_view(name: &str, raw: &str) -> String {
+    let raw = material::source_view(name, raw);
+    let raw = raw.as_str();
     if name == "diagnostic_bootstrap_build.rs" {
         remove(raw, HOOK)
     } else {

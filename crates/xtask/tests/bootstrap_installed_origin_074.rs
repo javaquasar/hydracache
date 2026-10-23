@@ -9,6 +9,15 @@ fn installed_origin_exists_before_systemd_or_child_admission() {
 }
 
 use guard::installed_entry as entry_guard;
+#[test]
+fn bootstrap_installed_material_component_precedes_delivery() {
+    assert!(
+        root()
+            .join("tools/long-run-supervisor-074/src/diagnostic_bootstrap_installed_entry_owner.rs")
+            .is_file(),
+        "consuming installed entry materialization owner is absent"
+    );
+}
 #[path = "support/bootstrap_installed_guard.rs"]
 mod guard;
 #[test]
@@ -194,7 +203,7 @@ fn bootstrap_installed_entry_only_one_codec_hook_no_owner_or_child_activation() 
         "diagnostic_held_unit_projection.rs",
     ] {
         assert_eq!(
-            source(name),
+            entry_guard::source_view(name, &source(name)),
             installed_baseline(&format!("tools/long-run-supervisor-074/src/{name}"))
         );
     }
@@ -236,4 +245,93 @@ fn bootstrap_installed_entry_compat_is_exact_and_does_not_change_old_records() {
     ] {
         assert_eq!(read(path), installed_baseline(path));
     }
+}
+
+#[test]
+fn bootstrap_installed_material_only_three_hooks_keep_whole_old_owner_and_kernel() {
+    let view = entry_guard::material::source_view;
+    for name in [
+        "diagnostic_bootstrap_installed_owner.rs",
+        "diagnostic_bootstrap_installed_census.rs",
+        "diagnostic_bootstrap_entry_resource.rs",
+    ] {
+        let path = format!("tools/long-run-supervisor-074/src/{name}");
+        let output = std::process::Command::new("git")
+            .current_dir(root())
+            .args(["--no-replace-objects", "show", &format!("5f8467b0:{path}")])
+            .output()
+            .unwrap();
+        assert!(output.status.success());
+        let old = String::from_utf8(output.stdout).unwrap().replace('\r', "");
+        let raw = source(name);
+        assert_eq!(view(name, &raw), old);
+        let hook = entry_guard::material::hook(name).unwrap();
+        for bad in [raw.replace(hook, ""), format!("{raw}{hook}")] {
+            assert!(std::panic::catch_unwind(|| view(name, &bad)).is_err());
+        }
+        assert_ne!(view(name, &format!("{raw}\n// unrelated drift\n")), old);
+    }
+    for name in [
+        "diagnostic_bootstrap_installed_entry_owner.rs",
+        "diagnostic_bootstrap_installed_entry_resource.rs",
+        "diagnostic_bootstrap_installed_entry_census.rs",
+    ] {
+        let raw = source(name);
+        let code = raw.split("#[cfg(test)]").next().unwrap();
+        for token in [
+            "execve",
+            "sendmsg",
+            "Command::",
+            "clock_gettime",
+            "SystemTime",
+            "Instant",
+            "IntoRawFd",
+            "try_clone",
+            "F_SETFD",
+            "F_SETFL",
+            "Deref",
+            "pub fn",
+            "pub struct",
+        ] {
+            assert!(!code.contains(token), "{name}/{token}");
+        }
+    }
+    let owner = source("diagnostic_bootstrap_installed_entry_owner.rs");
+    assert!(owner.contains("self.owner.revalidate()"));
+    assert!(owner.contains("if self.resource.is_none()"));
+    assert!(owner.contains("if self.retained.is_some()"));
+    assert!(owner.contains("self.owner.refuse();"));
+    assert!(
+        owner.find("owner: InstalledBootstrapUnit").unwrap()
+            < owner
+                .find("resource: Option<InstalledEntryResource>")
+                .unwrap()
+    );
+    let census = source("diagnostic_bootstrap_installed_entry_census.rs");
+    assert!(census.contains("fds[..32].copy_from_slice(&self.fds)"));
+    assert!(census.contains("roles[..16].copy_from_slice(&self.roles)"));
+}
+
+#[test]
+fn bootstrap_installed_material_additive_compat_keeps_schema_and_qualification() {
+    let raw = read("docs/COMPAT.md");
+    let old = std::process::Command::new("git")
+        .current_dir(root())
+        .args(["--no-replace-objects", "show", "5f8467b0:docs/COMPAT.md"])
+        .output()
+        .unwrap();
+    assert!(old.status.success());
+    assert_eq!(
+        entry_guard::material::compat_view(&raw),
+        String::from_utf8(old.stdout).unwrap().replace('\r', "")
+    );
+    for bad in [
+        raw.replace(entry_guard::material::BLOCK, ""),
+        format!("{raw}{}", entry_guard::material::BLOCK),
+        raw.replace("33/17", "34/18"),
+    ] {
+        assert!(std::panic::catch_unwind(|| entry_guard::material::compat_view(&bad)).is_err());
+    }
+    assert_eq!(source("diagnostic_bootstrap_installed_entry_format.rs"),
+        String::from_utf8(std::process::Command::new("git").current_dir(root()).args(["show", "5f8467b0:tools/long-run-supervisor-074/src/diagnostic_bootstrap_installed_entry_format.rs"]).output().unwrap().stdout).unwrap().replace('\r', ""));
 }

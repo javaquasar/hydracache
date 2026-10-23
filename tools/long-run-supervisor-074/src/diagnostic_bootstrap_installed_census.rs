@@ -61,3 +61,6 @@ impl EntryBindings {
 #[cfg(test)]
 #[path = "diagnostic_bootstrap_installed_census_tests.rs"]
 mod tests;
+
+#[path = "diagnostic_bootstrap_installed_entry_census.rs"]
+pub(crate) mod entry_material;
