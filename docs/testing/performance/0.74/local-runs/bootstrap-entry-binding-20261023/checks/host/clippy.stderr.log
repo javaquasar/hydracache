@@ -1,0 +1,12 @@
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+    Checking xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+error: file is loaded as a module multiple times: `crates\xtask\tests\support\bootstrap_entry_guard.rs`
+  |
+  = help: replace all but one `mod` item with `use` items
+  = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#duplicate_mod
+  = note: `-D clippy::duplicate-mod` implied by `-D warnings`
+  = help: to override `-D warnings` add `#[allow(clippy::duplicate_mod)]`
+
+error: could not compile `xtask` (test "bootstrap_image_census_074") due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `xtask` (test "held_bind_alias_refusal_074") due to 1 previous error

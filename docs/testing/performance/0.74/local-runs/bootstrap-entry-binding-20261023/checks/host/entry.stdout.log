@@ -1,0 +1,7 @@
+
+running 2 tests
+test diagnostic_builder::bootstrap_build::entry_format::tests::bootstrap_entry_format_refuses_length_padding_version_and_deadline_reset ... ok
+test diagnostic_builder::bootstrap_build::entry_format::tests::bootstrap_entry_format_roundtrip_and_every_byte_is_canonical_not_authenticated ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 65 filtered out; finished in 0.01s
+

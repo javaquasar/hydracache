@@ -1,0 +1,84 @@
+
+running 4 tests
+test bootstrap_original_wrapper_consumes_material_and_keeps_closing_frames ... ok
+test bootstrap_build_has_separate_policy_and_receipt_domains_without_execution ... ok
+test bootstrap_hooks_restore_entire_old_bodies_and_compatibility_bytes ... ok
+test bootstrap_owner_adds_no_execution_or_clock_capability_and_keeps_exact_original_context ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.84s
+
+
+running 3 tests
+test bootstrap_selector_keeps_original_checks_without_key_fd_or_execution_exports ... ok
+test independent_bootstrap_selection_has_only_one_additive_parent_hook ... ok
+test bootstrap_selection_compatibility_is_exactly_additive_and_mutations_refuse ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+
+
+running 4 tests
+test bootstrap_entry_binding_exists_before_child_delivery ... ok
+test bootstrap_entry_uses_original_sealed_config_and_no_transport_or_new_time ... ok
+test bootstrap_entry_compat_is_exact_additive_and_qualification_stays_frozen ... ok
+test bootstrap_entry_exact_additions_restore_whole_old_frames_and_kernel_bodies ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.75s
+
+
+running 4 tests
+test bootstrap_image_census_has_closed_twenty_six_descriptors_and_fourteen_roles ... ok
+test bootstrap_image_census_is_inside_the_same_existing_validation_observation ... ok
+test bootstrap_image_census_exact_hooks_preserve_whole_old_owner_and_all_old_queries ... ok
+test bootstrap_image_census_exports_no_fd_mapping_transport_or_new_clock ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.87s
+
+
+running 4 tests
+test activation_ingress_has_no_clock_descriptor_manager_or_unknown_environment_cleanup ... ok
+test activation_ingress_compatibility_registration_preserves_every_old_format_byte ... ok
+test activation_ingress_only_two_exact_hooks_change_the_binary_entry ... ok
+test activation_ingress_is_explicit_and_keeps_the_complete_old_kernel ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.77s
+
+
+running 2 tests
+test memfd_probe_has_no_retry_copy_fallback_or_automatic_promotion ... ok
+test rejected_bind_alias_does_not_install_unproved_runtime_or_change_old_bytes ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.10s
+
+
+running 3 tests
+test complete_role_census_is_inside_the_same_original_material_inventory ... ok
+test complete_role_census_uses_owned_contributions_before_the_existing_closing_owner_check ... ok
+test complete_role_census_keeps_prior_owner_and_provider_bodies_exact_after_additive_hooks ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.38s
+
+
+running 4 tests
+test held_material_inventory_requires_fresh_original_owner_and_deadline_after_census ... ok
+test held_material_closed_api_contains_no_transport_mapping_fork_exec_or_serialization ... ok
+test held_material_only_two_exact_hooks_restore_complete_projected_owner_and_bundle_bodies ... ok
+test held_material_keeps_original_frames_retirement_launcher_format_and_qualification_frozen ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.20s
+
+
+running 3 tests
+test held_material_roles_are_private_and_share_the_full_frame_inventory ... ok
+test held_material_roles_leaf_has_no_new_live_query_effect_or_transport ... ok
+test held_material_roles_only_add_values_and_leave_complete_frame_and_retirement_unchanged ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.83s
+
+
+running 3 tests
+test held_unit_projection_has_no_runnable_spec_transport_or_descriptor_export ... ok
+test held_unit_projection_only_four_exact_additive_hooks_restore_prior_sources ... ok
+test held_unit_projection_preserves_all_other_admission_transport_and_fixture_bytes ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.44s
+

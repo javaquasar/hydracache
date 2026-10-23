@@ -1,0 +1,20 @@
+{
+  "failure": null,
+  "lane": "194-final",
+  "original_attempt": false,
+  "product": false,
+  "server": false,
+  "steps": [
+    "entry",
+    "images",
+    "build",
+    "selection",
+    "owner",
+    "enrollment",
+    "old-source",
+    "old-replacement",
+    "old-keys",
+    "check",
+    "clippy"
+  ]
+}

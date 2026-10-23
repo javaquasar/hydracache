@@ -1,0 +1,8 @@
+test_existing_packet_never_reexecutes (test_controls.Controls.test_existing_packet_never_reexecutes) ... ok
+test_failed_lane_cannot_be_promoted (test_controls.Controls.test_failed_lane_cannot_be_promoted) ... ok
+test_only_fixed_nonexecuting_tests_are_selected (test_controls.Controls.test_only_fixed_nonexecuting_tests_are_selected) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.011s
+
+OK
