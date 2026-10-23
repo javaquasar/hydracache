@@ -1,7 +1,10 @@
 # Nonexecuting bootstrap entry checks
 
-Run python -B tools/bootstrap-entry-binding-074/check.py with a fixed host, 194,
-188 or metadata lane. Existing results cannot be overwritten. Linux selects
+Run python -B tools/bootstrap-entry-binding-074/check.py with a fixed host-final,
+194-final, 188-final or metadata-final lane. Existing results cannot be overwritten.
+The earlier unsuffixed lanes and capture_initial.py preserve the first helper
+lint refusal and its exact sources; do not repeat or promote that initial lane.
+Linux selects
 seven entry codec/factory/private-FD tests and the prior 30 tests; none calls
 an original live fixture or launches a bootstrap executable. Modeled context,
 old-prefix and creator inputs do not prove original authentication.

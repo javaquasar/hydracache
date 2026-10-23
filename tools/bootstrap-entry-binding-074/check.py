@@ -16,11 +16,12 @@ FILES = previous.FILES + ['tools/long-run-supervisor-074/src/' + name for name i
 FILES += ['crates/xtask/tests/bootstrap_entry_binding_074.rs', 'crates/xtask/tests/support/bootstrap_entry_guard.rs',
           'tools/bootstrap-image-census-074/check.py', 'tools/bootstrap-image-census-074/retain.py',
           'crates/xtask/tests/support/bootstrap_enrollment_guard.rs']
-FILES += ['tools/bootstrap-entry-binding-074/' + name for name in ('check.py', 'retain.py', 'test_controls.py', 'README.md')]
+FILES += ['tools/bootstrap-entry-binding-074/' + name for name in ('check.py', 'retain.py', 'test_controls.py', 'capture_initial.py', 'README.md')]
 FILES = list(dict.fromkeys(FILES))
 
 
 def commands(lane):
+    lane = lane.removesuffix('-final')
     steps = previous.commands(lane)
     if lane == 'host':
         steps[0][1].extend(['--test', 'bootstrap_entry_binding_074'])
@@ -45,5 +46,5 @@ def run(lane):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('lane', choices=('host', '194', '188', 'metadata'))
+    parser.add_argument('lane', choices=('host', '194', '188', 'metadata', 'host-final', '194-final', '188-final', 'metadata-final'))
     run(parser.parse_args().lane)

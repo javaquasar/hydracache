@@ -16,6 +16,7 @@ need, read = previous.need, previous.read
 
 def verify(folder, lane, sources):
     previous.verify(folder, lane, sources)
+    lane = lane.removesuffix('-final')
     count = 2 if lane == 'host' else 7
     if lane in ('host', '194', '188'):
         need(f'{count} passed; 0 failed; 0 ignored;' in (folder / 'entry.stdout.log').read_text(), 'Missing entry tests')
@@ -27,7 +28,19 @@ def run(commit):
     need(not PACKET.exists(), 'Never overwrite/reseal')
     sources = {n: c.sha(c.ROOT / n) for n in c.FILES}
     need(sources['docs/testing/performance/0.74/qualification-manifest.toml'] == previous.QUALIFICATION, 'Qualification changed')
-    for lane in ('host', '194', '188', 'metadata'): verify(c.OUTPUT / lane, lane, sources)
+    for lane in ('host-final', '194-final', '188-final', 'metadata-final'): verify(c.OUTPUT / lane, lane, sources)
+    first = c.OUTPUT / 'host'
+    need(read(first / 'result.json')['failure'] is not None, 'First host refusal missing')
+    need('duplicate_mod' in (first / 'clippy.stderr.log').read_text(), 'First lint refusal missing')
+    original = read(first / 'source-before.json')
+    need(all(c.sha(c.OUTPUT / 'initial-source' / name) == digest for name, digest in original.items()), 'First source snapshot changed')
+    for lane in ('host', '194', '188', 'metadata'):
+        folder = c.OUTPUT / lane
+        need(read(folder / 'source-before.json') == original, 'Initial source mismatch')
+        for step in read(folder / 'result.json')['steps']:
+            row = read(folder / (step + '.json'))
+            for suffix in ('stdout', 'stderr'):
+                need(c.sha(folder / (step + '.' + suffix + '.log')) == row[suffix + '_sha256'], 'First output changed')
     for name in c.FILES:
         raw = c.logger.subprocess.run(['git', '--no-replace-objects', 'show', commit + ':' + name], cwd=c.ROOT, capture_output=True, check=True).stdout
         need(raw.replace(b'\r\n', b'\n') == (c.ROOT / name).read_bytes().replace(b'\r\n', b'\n'), 'Commit drift')
