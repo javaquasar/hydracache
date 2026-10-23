@@ -1,5 +1,6 @@
 """One bounded local WSL trace. Only uniquely owned tracing state is modified."""
 import contextlib
+import errno
 import fcntl
 import hashlib
 import json
@@ -63,11 +64,34 @@ def snapshot(root=TRACE):
         'instances': sorted(p.name for p in (root / 'instances').iterdir())}
 
 
+def append_command(path, value):
+    """One control command, no implicit seek, creation, truncation or resubmit."""
+    if not value or '\n' in value or '\r' in value:
+        raise ValueError('Expected exactly one nonempty registry command')
+    raw = (value + '\n').encode('ascii')
+    fd = os.open(path, os.O_WRONLY | os.O_APPEND | os.O_CLOEXEC)
+    try:
+        written = os.write(fd, raw)
+        if written != len(raw):
+            raise OSError(errno.EIO, f'Short registry command write: {written}/{len(raw)} bytes')
+    except BaseException as first:
+        try:
+            os.close(fd)
+        except OSError as closing:
+            first.add_note(f'Registry close also failed: {closing!r}')
+        raise
+    else:
+        os.close(fd)
+
+
 def write(path, value, append=False):
     # Never truncate kprobe_events: append registration/deletion commands only.
     try:
-        with path.open('a' if append else 'w', encoding='ascii') as stream:
-            stream.write(value + '\n')
+        if append:
+            append_command(path, value)
+        else:
+            with path.open('w', encoding='ascii') as stream:
+                stream.write(value + '\n')
     except OSError as error:
         # Buffered write/close errors often omit filename. Retain the exact path.
         raise OSError(error.errno, error.strerror, str(path)) from error
