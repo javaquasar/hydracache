@@ -1,0 +1,16 @@
+
+running 6 tests
+test current_image_identical_bytes_at_different_inode_refuse_before_authority_boundary ... ok
+test installed_controls::installed_child_filesystem_inode_matches_but_forged_context_still_refuses_authentication ... ok
+test installed_controls::installed_child_extra_missing_offset_hash_and_embedded_old_record_refuse ... FAILED
+test installed_controls::installed_child_same_bytes_other_executable_inode_cannot_authenticate ... ok
+test current_image_matching_sealed_inode_still_cannot_authenticate_forged_context ... ok
+test current_image_extra_descriptor_and_wrong_assertion_cannot_bypass_old_census ... ok
+
+failures:
+
+failures:
+    installed_controls::installed_child_extra_missing_offset_hash_and_embedded_old_record_refuse
+
+test result: FAILED. 5 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+

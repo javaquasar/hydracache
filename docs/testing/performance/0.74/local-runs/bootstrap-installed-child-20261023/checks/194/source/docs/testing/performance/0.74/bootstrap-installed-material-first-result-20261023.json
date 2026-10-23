@@ -1,0 +1,24 @@
+{
+  "scope": "local sealed materialization correctness, not original live or performance attempts",
+  "baseline": {
+    "exit": 101,
+    "reason": "consuming installed entry materialization owner is absent",
+    "retention": "fixed baseline source snapshot, command receipt and raw logs"
+  },
+  "first_linux_lanes": {
+    "toolchains": ["1.94.0", "1.88.0"],
+    "selected_controls_passed_each": 90,
+    "all_target_check_passed": true,
+    "strict_clippy_exit": 101,
+    "strict_clippy_reason": "clippy::almost_swapped in a test-only restore and redundant re-read of the original FD slot",
+    "correction": "reuse the first saved slot across both injections; no runtime predicate or lint suppression changes",
+    "retention": "separate first Linux source snapshots, receipts and raw logs"
+  },
+  "additional_final_test_coverage": "same census test explicitly rejects malformed old record padding/magic and zero or mismatched installed size",
+  "original_attempt": false,
+  "performance_measurement": false,
+  "clock_changes": false,
+  "service_changes": false,
+  "server": false,
+  "product": false
+}

@@ -1,0 +1,23 @@
+{
+  "activation_descriptors": 14,
+  "admission_allowed": false,
+  "checked_commit": "b16069261cac324d1274bcf953086ae57cc83455",
+  "child_descriptors": 17,
+  "clock_changes": false,
+  "closed_entries": 20,
+  "completion": false,
+  "fd_export": false,
+  "installed_consistency_reader": true,
+  "maximum_closed_reads": 21,
+  "original_attempt": false,
+  "original_delivery": false,
+  "original_owner_child_join": false,
+  "performance_measurement": false,
+  "product": false,
+  "qualification_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "server": false,
+  "service_changes": false,
+  "synthetic_owned_executable_controls": true,
+  "trusted_root_namespace_enrollment": false,
+  "writer_cessation": false
+}

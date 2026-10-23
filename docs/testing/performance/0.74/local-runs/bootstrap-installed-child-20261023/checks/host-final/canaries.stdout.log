@@ -1,0 +1,123 @@
+
+running 4 tests
+test bootstrap_build_has_separate_policy_and_receipt_domains_without_execution ... ok
+test bootstrap_original_wrapper_consumes_material_and_keeps_closing_frames ... ok
+test bootstrap_hooks_restore_entire_old_bodies_and_compatibility_bytes ... ok
+test bootstrap_owner_adds_no_execution_or_clock_capability_and_keeps_exact_original_context ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.94s
+
+
+running 4 tests
+test executable_consistency_does_not_supply_a_systemd_address_for_a_sealed_copy ... ok
+test child_cannot_borrow_root_only_worker_or_held_trust_by_weakening_the_opener ... ok
+test sandbox_hardening_is_not_a_host_mount_namespace_enrollment ... ok
+test boundary_audit_preserves_entire_runtime_and_frozen_qualification ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.71s
+
+
+running 4 tests
+test bootstrap_child_complete_census_exists_before_authentication ... ok
+test bootstrap_roles_add_no_execution_repair_or_authority_and_close_extra_fds ... ok
+test bootstrap_roles_additive_compat_and_qualification_are_exact ... ok
+test bootstrap_roles_exact_hooks_keep_whole_old_entry_mode_and_original_frames ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.28s
+
+
+running 4 tests
+test bootstrap_child_executable_exists_before_any_original_start ... ok
+test bootstrap_child_has_no_authority_transport_mutation_fallback_or_new_clock ... ok
+test bootstrap_child_compares_exact_additive_compatibility_and_refuses_mutation ... ok
+test bootstrap_child_keeps_entire_original_runtime_and_qualification_bytes ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.78s
+
+
+running 4 tests
+test bootstrap_current_executable_component_is_present_before_admission ... ok
+test current_image_queries_cannot_repair_roles_send_or_execute ... ok
+test current_image_compat_registry_and_qualification_remain_exact ... ok
+test current_image_only_adds_exact_hooks_and_keeps_old_modes_frames_and_deadlines ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.74s
+
+
+running 3 tests
+test bootstrap_selector_keeps_original_checks_without_key_fd_or_execution_exports ... ok
+test independent_bootstrap_selection_has_only_one_additive_parent_hook ... ok
+test bootstrap_selection_compatibility_is_exactly_additive_and_mutations_refuse ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
+
+running 4 tests
+test bootstrap_entry_binding_exists_before_child_delivery ... ok
+test bootstrap_entry_uses_original_sealed_config_and_no_transport_or_new_time ... ok
+test bootstrap_entry_compat_is_exact_additive_and_qualification_stays_frozen ... ok
+test bootstrap_entry_exact_additions_restore_whole_old_frames_and_kernel_bodies ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.06s
+
+
+running 4 tests
+test bootstrap_image_census_has_closed_twenty_six_descriptors_and_fourteen_roles ... ok
+test bootstrap_image_census_is_inside_the_same_existing_validation_observation ... ok
+test bootstrap_image_census_exact_hooks_preserve_whole_old_owner_and_all_old_queries ... ok
+test bootstrap_image_census_exports_no_fd_mapping_transport_or_new_clock ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.28s
+
+
+running 13 tests
+test bootstrap_installed_entry_component_precedes_runtime ... ok
+test bootstrap_installed_material_component_precedes_delivery ... ok
+test bootstrap_installed_child_component_precedes_delivery ... ok
+test installed_origin_consumes_same_owner_and_cannot_recreate_retained_source_or_export_execution ... ok
+test installed_origin_exists_before_systemd_or_child_admission ... ok
+test bootstrap_installed_material_additive_compat_keeps_schema_and_qualification ... ok
+test bootstrap_installed_child_exact_hooks_preserve_every_old_mode_and_frame ... FAILED
+test bootstrap_installed_material_only_three_hooks_keep_whole_old_owner_and_kernel ... ok
+test bootstrap_installed_child_is_separate_consistency_not_authority_or_transport ... ok
+test installed_origin_compat_is_additive_and_qualification_inputs_stay_frozen ... ok
+test bootstrap_installed_entry_compat_is_exact_and_does_not_change_old_records ... ok
+test bootstrap_installed_entry_only_one_codec_hook_no_owner_or_child_activation ... ok
+test installed_origin_only_three_additive_hooks_preserve_old_live_frames_and_child_modes ... ok
+
+failures:
+
+---- bootstrap_installed_child_exact_hooks_preserve_every_old_mode_and_frame stdout ----
+
+thread 'bootstrap_installed_child_exact_hooks_preserve_every_old_mode_and_frame' (35348) panicked at crates\xtask\tests\support\bootstrap_installed_child_guard.rs:47:5:
+assertion `left == right` failed
+  left: 0
+ right: 1
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'bootstrap_installed_child_exact_hooks_preserve_every_old_mode_and_frame' (35348) panicked at crates\xtask\tests\support\bootstrap_installed_child_guard.rs:47:5:
+assertion `left == right` failed
+  left: 2
+ right: 1
+
+thread 'bootstrap_installed_child_exact_hooks_preserve_every_old_mode_and_frame' (35348) panicked at crates\xtask\tests\support\bootstrap_installed_child_guard.rs:47:5:
+assertion `left == right` failed
+  left: 0
+ right: 1
+
+thread 'bootstrap_installed_child_exact_hooks_preserve_every_old_mode_and_frame' (35348) panicked at crates\xtask\tests\support\bootstrap_installed_child_guard.rs:47:5:
+assertion `left == right` failed
+  left: 2
+ right: 1
+
+thread 'bootstrap_installed_child_exact_hooks_preserve_every_old_mode_and_frame' (35348) panicked at crates\xtask\tests\bootstrap_installed_origin_074.rs:377:9:
+assertion `left == right` failed
+  left: "#![cfg(all(target_os = \"linux\", target_arch = \"x86_64\"))]\n\n#[path = \"support/bootstrap_child_material.rs\"]\nmod bootstrap_child_material;\n#[path = \"support/bootstrap_census_material.rs\"]\nmod material;\nuse sha2::{Digest, Sha256};\nuse std::{\n    fs::File,\n    io::Read,\n    os::{\n        fd::{AsRawFd, FromRawFd},\n        unix::process::CommandExt,\n    },\n    process::{Command, Stdio},\n    time::{Duration, Instant},\n};\nconst BINARY: &str = env!(\"CARGO_BIN_EXE_diagnostic_held_bootstrap\");\nfn fixture(raw: &[u8]) -> material::Fixture {\n    let mut f = material::Fixture::new();\n    f.files[13] = material::sealed(raw);\n    assert_eq!(unsafe { libc::fchmod(f.files[13].as_raw_fd(), 0o500) }, 0);\n    f.entry.identities[2] = material::identity(&f.files[13]);\n    f.entry.image_hashes[2] = Sha256::digest(raw).into();\n    f.replace_entry();\n    f\n}\nfn attempt(f: &material::Fixture, matching: bool, extra: bool) -> String {\n    // Private synthetic child only. This is not original-owner FD transport.\n    let scratch: Vec<File> = f\n        .fds()\n        .into_iter()\n        .map(|fd| {\n            let n = unsafe { libc::fcntl(fd, libc::F_DUPFD_CLOEXEC, 64) };\n            assert!(n >= 64);\n            unsafe { File::from_raw_fd(n) }\n        })\n        .collect();\n    let numbers: Vec<_> = scratch.iter().map(AsRawFd::as_raw_fd).collect();\n    let mut c = Command::new(\"/bin/sh\");\n    c.env_clear().args([\"-c\", \"unset PWD; LISTEN_PID=$$; export LISTEN_PID; exec \\\"$@\\\"\", \"bootstrap-image-control\"])\n        .arg(if matching { \"/proc/self/fd/13\" } else { BINARY }).arg(\"--systemd-bootstrap-image-v1\")\n        .env(\"LISTEN_FDS\", \"12\").env(\"LISTEN_FDNAMES\", \"release:worker:config:creator:root-a:root-b:alarm:bootstrap:host:launcher:bootstrap-image:entry\")\n        .stdin(Stdio::null()).stdout(Stdio::null()).stderr(Stdio::null());\n    unsafe {\n        c.pre_exec(move || {\n            for (i, fd) in numbers.iter().enumerate() {\n                if libc::dup2(*fd, i as i32) < 0 {\n                    return Err(std::io::Error::last_os_error());\n                }\n            }\n            if extra && libc::dup2(numbers[4], 20) < 0 {\n                return Err(std::io::Error::last_os_error());\n            }\n            if libc::syscall(\n                libc::SYS_close_range,\n                15u32,\n                u32::MAX,\n                libc::CLOSE_RANGE_CLOEXEC,\n            ) != 0\n            {\n                return Err(std::io::Error::last_os_error());\n            }\n            if extra && libc::fcntl(20, libc::F_SETFD, 0) != 0 {\n                return Err(std::io::Error::last_os_error());\n            }\n            Ok(())\n        });\n    }\n    let mut child = c.spawn().unwrap();\n    let until = Instant::now() + Duration::from_secs(5);\n    while child.try_wait().unwrap().is_none() {\n        if Instant::now() >= until {\n            let _ = child.kill();\n            let _ = child.wait();\n            panic!(\"current-image child timeout; no retry\");\n        }\n        std::thread::sleep(Duration::from_millis(10));\n    }\n    assert_eq!(child.wait().unwrap().code(), Some(2));\n    let mut raw = Vec::new();\n    let mut file = &f.retained[2];\n    let mut buffer = [0; 1024];\n    loop {\n        match file.read(&mut buffer) {\n            Ok(0) => break,\n            Ok(n) => {\n                raw.extend_from_slice(&buffer[..n]);\n                assert!(raw.len() <= 8192);\n            }\n            Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => break,\n            Err(e) => panic!(\"{e}\"),\n        }\n    }\n    let text = String::from_utf8(raw).unwrap();\n    assert!(\n        text.contains(\"no start, send or executable handoff\"),\n        \"{text}\"\n    );\n    text\n}\n#[test]\nfn current_image_matching_sealed_inode_still_cannot_authenticate_forged_context() {\n    let raw = std::fs::read(BINARY).unwrap();\n    let f = fixture(&raw);\n    let text = attempt(&f, true, false);\n    assert!(\n        text.contains(\"original bootstrap authentication is closed\"),\n        \"{text}\"\n    );\n}\n#[test]\nfn current_image_identical_bytes_at_different_inode_refuse_before_authority_boundary() {\n    let raw = std::fs::read(BINARY).unwrap();\n    let f = fixture(&raw);\n    let text = attempt(&f, false, false);\n    assert!(\n        text.contains(\"bootstrap current executable consistency\"),\n        \"{text}\"\n    );\n    assert!(!text.contains(\"authentication is closed\"), \"{text}\");\n}\n#[test]\nfn current_image_extra_descriptor_and_wrong_assertion_cannot_bypass_old_census() {\n    let raw = std::fs::read(BINARY).unwrap();\n    let f = fixture(&raw);\n    let text = attempt(&f, true, true);\n    assert!(!text.contains(\"authentication is closed\"), \"{text}\");\n    let mut f = fixture(&raw);\n    f.entry.image_hashes[2][0] ^= 1;\n    f.replace_entry();\n    let text = attempt(&f, true, false);\n    assert!(!text.contains(\"authentication is closed\"), \"{text}\");\n}\n"
+ right: "#![cfg(all(target_os = \"linux\", target_arch = \"x86_64\"))]\n#[path = \"support/bootstrap_child_material.rs\"]\nmod bootstrap_child_material;\n#[path = \"support/bootstrap_census_material.rs\"]\nmod material;\nuse sha2::{Digest, Sha256};\nuse std::{\n    fs::File,\n    io::Read,\n    os::{\n        fd::{AsRawFd, FromRawFd},\n        unix::process::CommandExt,\n    },\n    process::{Command, Stdio},\n    time::{Duration, Instant},\n};\nconst BINARY: &str = env!(\"CARGO_BIN_EXE_diagnostic_held_bootstrap\");\nfn fixture(raw: &[u8]) -> material::Fixture {\n    let mut f = material::Fixture::new();\n    f.files[13] = material::sealed(raw);\n    assert_eq!(unsafe { libc::fchmod(f.files[13].as_raw_fd(), 0o500) }, 0);\n    f.entry.identities[2] = material::identity(&f.files[13]);\n    f.entry.image_hashes[2] = Sha256::digest(raw).into();\n    f.replace_entry();\n    f\n}\nfn attempt(f: &material::Fixture, matching: bool, extra: bool) -> String {\n    // Private synthetic child only. This is not original-owner FD transport.\n    let scratch: Vec<File> = f\n        .fds()\n        .into_iter()\n        .map(|fd| {\n            let n = unsafe { libc::fcntl(fd, libc::F_DUPFD_CLOEXEC, 64) };\n            assert!(n >= 64);\n            unsafe { File::from_raw_fd(n) }\n        })\n        .collect();\n    let numbers: Vec<_> = scratch.iter().map(AsRawFd::as_raw_fd).collect();\n    let mut c = Command::new(\"/bin/sh\");\n    c.env_clear().args([\"-c\", \"unset PWD; LISTEN_PID=$$; export LISTEN_PID; exec \\\"$@\\\"\", \"bootstrap-image-control\"])\n        .arg(if matching { \"/proc/self/fd/13\" } else { BINARY }).arg(\"--systemd-bootstrap-image-v1\")\n        .env(\"LISTEN_FDS\", \"12\").env(\"LISTEN_FDNAMES\", \"release:worker:config:creator:root-a:root-b:alarm:bootstrap:host:launcher:bootstrap-image:entry\")\n        .stdin(Stdio::null()).stdout(Stdio::null()).stderr(Stdio::null());\n    unsafe {\n        c.pre_exec(move || {\n            for (i, fd) in numbers.iter().enumerate() {\n                if libc::dup2(*fd, i as i32) < 0 {\n                    return Err(std::io::Error::last_os_error());\n                }\n            }\n            if extra && libc::dup2(numbers[4], 20) < 0 {\n                return Err(std::io::Error::last_os_error());\n            }\n            if libc::syscall(\n                libc::SYS_close_range,\n                15u32,\n                u32::MAX,\n                libc::CLOSE_RANGE_CLOEXEC,\n            ) != 0\n            {\n                return Err(std::io::Error::last_os_error());\n            }\n            if extra && libc::fcntl(20, libc::F_SETFD, 0) != 0 {\n                return Err(std::io::Error::last_os_error());\n            }\n            Ok(())\n        });\n    }\n    let mut child = c.spawn().unwrap();\n    let until = Instant::now() + Duration::from_secs(5);\n    while child.try_wait().unwrap().is_none() {\n        if Instant::now() >= until {\n            let _ = child.kill();\n            let _ = child.wait();\n            panic!(\"current-image child timeout; no retry\");\n        }\n        std::thread::sleep(Duration::from_millis(10));\n    }\n    assert_eq!(child.wait().unwrap().code(), Some(2));\n    let mut raw = Vec::new();\n    let mut file = &f.retained[2];\n    let mut buffer = [0; 1024];\n    loop {\n        match file.read(&mut buffer) {\n            Ok(0) => break,\n            Ok(n) => {\n                raw.extend_from_slice(&buffer[..n]);\n                assert!(raw.len() <= 8192);\n            }\n            Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => break,\n            Err(e) => panic!(\"{e}\"),\n        }\n    }\n    let text = String::from_utf8(raw).unwrap();\n    assert!(\n        text.contains(\"no start, send or executable handoff\"),\n        \"{text}\"\n    );\n    text\n}\n#[test]\nfn current_image_matching_sealed_inode_still_cannot_authenticate_forged_context() {\n    let raw = std::fs::read(BINARY).unwrap();\n    let f = fixture(&raw);\n    let text = attempt(&f, true, false);\n    assert!(\n        text.contains(\"original bootstrap authentication is closed\"),\n        \"{text}\"\n    );\n}\n#[test]\nfn current_image_identical_bytes_at_different_inode_refuse_before_authority_boundary() {\n    let raw = std::fs::read(BINARY).unwrap();\n    let f = fixture(&raw);\n    let text = attempt(&f, false, false);\n    assert!(\n        text.contains(\"bootstrap current executable consistency\"),\n        \"{text}\"\n    );\n    assert!(!text.contains(\"authentication is closed\"), \"{text}\");\n}\n#[test]\nfn current_image_extra_descriptor_and_wrong_assertion_cannot_bypass_old_census() {\n    let raw = std::fs::read(BINARY).unwrap();\n    let f = fixture(&raw);\n    let text = attempt(&f, true, true);\n    assert!(!text.contains(\"authentication is closed\"), \"{text}\");\n    let mut f = fixture(&raw);\n    f.entry.image_hashes[2][0] ^= 1;\n    f.replace_entry();\n    let text = attempt(&f, true, false);\n    assert!(!text.contains(\"authentication is closed\"), \"{text}\");\n}\n"
+
+
+failures:
+    bootstrap_installed_child_exact_hooks_preserve_every_old_mode_and_frame
+
+test result: FAILED. 12 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.69s
+

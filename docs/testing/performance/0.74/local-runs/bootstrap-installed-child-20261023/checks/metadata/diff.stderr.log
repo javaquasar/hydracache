@@ -1,0 +1,6 @@
+warning: in the working copy of '.gitattributes', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'crates/xtask/tests/bootstrap_installed_origin_074.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'crates/xtask/tests/support/bootstrap_installed_material_guard.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tools/long-run-supervisor-074/src/bin/diagnostic_held_bootstrap.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tools/long-run-supervisor-074/src/diagnostic_bootstrap_child_roles.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tools/long-run-supervisor-074/tests/bootstrap_current_image.rs', LF will be replaced by CRLF the next time Git touches it

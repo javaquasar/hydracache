@@ -1,0 +1,8 @@
+
+running 3 tests
+test bootstrap_census_complete_forged_roles_reach_only_closed_authentication ... ok
+test bootstrap_census_dead_guardian_refuses_without_replacing_attempt ... ok
+test bootstrap_census_extra_descriptor_and_wrong_image_refuse_before_authentication_boundary ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+

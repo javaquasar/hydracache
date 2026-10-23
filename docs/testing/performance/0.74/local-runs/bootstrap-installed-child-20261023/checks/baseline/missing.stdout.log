@@ -1,0 +1,18 @@
+
+running 1 test
+test bootstrap_installed_child_component_precedes_delivery ... FAILED
+
+failures:
+
+---- bootstrap_installed_child_component_precedes_delivery stdout ----
+
+thread 'bootstrap_installed_child_component_precedes_delivery' (18104) panicked at crates\xtask\tests\bootstrap_installed_origin_074.rs:14:5:
+installed child consistency reader is absent
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    bootstrap_installed_child_component_precedes_delivery
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 10 filtered out; finished in 0.00s
+

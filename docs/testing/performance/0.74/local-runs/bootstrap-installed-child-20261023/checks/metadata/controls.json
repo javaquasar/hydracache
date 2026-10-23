@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "python",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tools/bootstrap-installed-child-074",
+    "-v"
+  ],
+  "elapsed_ns": 491024200,
+  "exit": 0,
+  "stderr_sha256": "a2dc0e2d4bc51f33493903aae0620364d63b7380bea52375d2193bb41ac94648",
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

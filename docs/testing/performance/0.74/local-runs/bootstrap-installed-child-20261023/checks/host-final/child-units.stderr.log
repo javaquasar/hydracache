@@ -1,0 +1,2 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.50s
+     Running unittests src\bin\diagnostic_held_bootstrap.rs (target\debug\deps\diagnostic_held_bootstrap-d4acb87f2d567601.exe)

@@ -1,0 +1,12 @@
+
+running 7 tests
+test diagnostic_builder::bootstrap_build::installed_entry_format::tests::bootstrap_installed_entry_canonical_forgery_is_not_authenticated ... ok
+test diagnostic_builder::bootstrap_build::installed_entry_format::tests::bootstrap_installed_entry_exact_layout_embeds_old_bytes_and_origins ... ok
+test diagnostic_builder::bootstrap_build::installed_entry_format::tests::bootstrap_installed_entry_no_old_reader_fallback_or_magic_reinterpretation ... ok
+test diagnostic_builder::bootstrap_build::installed_entry_format::tests::bootstrap_installed_entry_preserves_embedded_shape_and_deadline_refusals ... ok
+test diagnostic_builder::bootstrap_build::installed_entry_format::tests::bootstrap_installed_entry_refuses_alias_size_content_and_zero_identity ... ok
+test diagnostic_builder::bootstrap_build::installed_entry_format::tests::bootstrap_installed_entry_refuses_lengths_versions_padding_fixed_counts_and_hashes ... ok
+test diagnostic_builder::bootstrap_build::installed_entry_format::tests::bootstrap_installed_entry_every_single_bit_change_is_canonical_or_refused ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 67 filtered out; finished in 0.29s
+

@@ -1,0 +1,5 @@
+{
+  "crates/xtask/tests/bootstrap_installed_origin_074.rs": "52392157069eda88a277d460fda2dc82e6abf6a6761f91449ff30269f0398047",
+  "docs/testing/performance/0.74/bootstrap-installed-child-plan-20261023.md": "0cdb97a3abc1ed591abae251603292024325f6e70fe021733564665b73c7e07b",
+  "tools/bootstrap-installed-child-074/check.py": "08e52a57fc12b135f23939476559e5eb7c3c4051588fc47723e921b59107f740"
+}
