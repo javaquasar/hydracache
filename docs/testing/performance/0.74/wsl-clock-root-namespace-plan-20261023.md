@@ -1,5 +1,12 @@
 # Read only WSL root namespace lookup
 
+Historical handoff only: the operator later reported completion but its console
+output was lost and the expected directory remained absent. Execution is
+[unconfirmed](root-namespace-first-unconfirmed-20261023.json), not a pass or a
+known failure. Do not execute the old command below. A separate
+[journal-first preparation](wsl-clock-root-namespace-journal-plan-20261023.md)
+preserves this unknown result; its live launch is not yet authorized.
+
 The next metadata lookup is prepared but has not run. The current Windows
 process is not an Administrator. The [previous namespace audit](wsl-clock-writer-identity-20261023.md)
 and its debug-shell access refusal remain unchanged. Nine offline runner controls

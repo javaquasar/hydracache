@@ -76,3 +76,10 @@ elevated Windows PowerShell and a clean committed worktree; it never self-elevat
 It makes one fixed read-only lookup and preserves the first output in a separate
 exclusive lane. Do not use it to repeat the old refused command from this agent
 context. `test_root_namespace.py` uses offline mocks only; no WSL is dispatched.
+
+That original operator handoff now has an unconfirmed/lost-output outcome. Do
+not execute it again. The separate [journal-first preparation](../../docs/testing/performance/0.74/wsl-clock-root-namespace-journal-plan-20261023.md)
+opens outer logs before Python and all original preflights. The future entry is
+`root_namespace_logged.ps1`, never either Python payload directly. No new live
+launch is authorized yet. `test_root_namespace_logged.py` uses mocked preflights
+and temporary fake PowerShell/Python payloads only, not the real entry or WSL.
