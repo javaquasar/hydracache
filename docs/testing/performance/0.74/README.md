@@ -6702,3 +6702,15 @@ preparation. The 51-file packet retains first failure, unchanged supervisor/inst
 and clean postflight. Next test a separate status-field scan hypothesis with the
 same read/check count, refusal order and original deadlines; delivery, retirement,
 completion/later cells, reconnect and enrollment remain open.
+
+The [fresh status field index](status-field-scan-result-20261024.md), candidate
+`81f4add2`, passes its separately preregistered five-pair pure-parser CPU gate
+and current/MSRV correctness checks. Upper 95-percent CPU C/B bounds are
+0.2805/0.3180/0.2358 for the three synthetic target shapes; no full preparation,
+native-host or product gain is inferred. Every fresh read and original window
+remains. First wrapper/source failures and the still-red 57-case integration
+gate are retained in a 207-file packet. The separate source-guard repair preserves
+all old assertions and requires exact current input checks before predecessor
+views. Reversible incremental-cache compression saves about 10.7 GiB without
+removing source, evidence or pinned images. No new live attempt or installation
+is opened by the leaf result.

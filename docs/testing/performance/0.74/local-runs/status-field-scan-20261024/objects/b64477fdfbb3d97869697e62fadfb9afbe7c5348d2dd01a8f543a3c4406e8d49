@@ -1,0 +1,26 @@
+{
+  "lane": "194-pathfix",
+  "steps": [
+    {
+      "name": "check",
+      "exit": 0
+    },
+    {
+      "name": "clippy",
+      "exit": 0
+    },
+    {
+      "name": "status_field_scan_",
+      "exit": 0
+    },
+    {
+      "name": "diagnostic_kernel_admission__",
+      "exit": 101
+    }
+  ],
+  "failure": "First local check failure retained",
+  "source_unchanged": true,
+  "server": false,
+  "product": false,
+  "original_owner_run": false
+}

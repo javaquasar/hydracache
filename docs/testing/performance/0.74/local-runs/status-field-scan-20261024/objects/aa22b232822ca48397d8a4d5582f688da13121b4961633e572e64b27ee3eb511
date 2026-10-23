@@ -1,0 +1,15 @@
+#![allow(macro_expanded_macro_exports_accessed_by_absolute_paths)]
+// include! alone introduces macro expansion for otherwise unchanged source.
+// This control-only lint allowance changes no baseline assertion or predicate.
+// Temporary local control only: unchanged baseline modules and baseline worktree.
+// Cargo dependencies are reused; all source/registry reads and git commands use
+// the independent detached baseline, never a modified current-source fallback.
+macro_rules! env {
+    ("CARGO_MANIFEST_DIR") => {
+        "C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask"
+    };
+    ($other:expr) => {
+        std::env!($other)
+    };
+}
+include!("C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests/performance_contract_074.rs");

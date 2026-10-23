@@ -1,0 +1,5 @@
+{
+  "Exit": 101,
+  "EarlierFailure": "E0277 LowerHex for sha2 digest; no tests executed",
+  "FirstFailureRetained": true
+}

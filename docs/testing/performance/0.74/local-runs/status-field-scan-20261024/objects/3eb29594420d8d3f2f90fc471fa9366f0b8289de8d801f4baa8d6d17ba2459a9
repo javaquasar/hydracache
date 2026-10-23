@@ -1,0 +1,3 @@
+{"shape":512,"iterations":20000,"cpu_ns":6523398,"wall_ns":5875316,"workload_witness":"2356e6f208541c51","seed":121658529,"admission":false,"product":false}
+{"shape":2048,"iterations":20000,"cpu_ns":16084510,"wall_ns":14512225,"workload_witness":"38e0e3ccf588d0af","seed":121658529,"admission":false,"product":false}
+{"shape":8192,"iterations":20000,"cpu_ns":57200716,"wall_ns":51484073,"workload_witness":"187822c9397b5e2f","seed":121658529,"admission":false,"product":false}

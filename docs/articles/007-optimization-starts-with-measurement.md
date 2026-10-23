@@ -18845,3 +18845,31 @@ Leaf timing and differential tests must decide whether that mechanism helps;
 they cannot establish the full preparation margin by extrapolation. The profile
 itself still expired during owned-root preparation. Its clean postflight and
 unchanged supervisor are safety evidence, not a successful execution gate.
+
+### Indexing fresh status fields reduces parser CPU without caching observations
+
+The [isolated status-parser candidate](../testing/performance/0.74/status-field-scan-result-20261024.md)
+replaces five text scans with one short-lived field index. It still validates
+the same newly read bytes, parses fields in the old order and rejects duplicates
+at the same logical point. Nothing is cached between reads. Seeded differential
+tests include multiple simultaneous errors, because a parser can reject the
+same invalid input while accidentally changing which failure is observed first.
+
+Five matched GNU 1.94 pairs pass the fixed pure-parser CPU gate. The upper
+95-percent candidate/baseline bounds are 0.2805, 0.3180 and 0.2358 for three
+synthetic document shapes. These ratios belong to the extracted parser control,
+not the whole native validation round or product throughput. The native profile
+also contains filesystem, namespace, authority and other work; multiplying its
+old spans by the new leaf ratios would manufacture an unmeasured total gain.
+Current/MSRV kernel and filesystem controls pass without changing read counts
+or the original admission windows. A full preparation margin is still unproved.
+
+Expanded checks uncovered a separate integration problem: historical source
+preservation tests were comparing later bootstrap additions with older snapshots.
+The independent baseline also fails. Keeping those first failures matters as
+much as keeping a negative timing result. A historical predecessor view is valid
+only after checking the complete current input against an explicit reviewed
+version; it cannot be a permissive exclusion of inconvenient code. The new parser
+has its own raw-current mutation guard, while the still-red integrated source
+gate is repaired separately. Neither a fast leaf nor a clean local build opens
+original delivery, writer retirement or production enrollment by itself.

@@ -1,0 +1,113 @@
+"""Seal the consumed leaf cohort and all first validation refusals; no execution."""
+from pathlib import Path, PurePosixPath
+import hashlib
+import json
+import re
+import subprocess
+import sys
+
+ROOT = Path(r'C:\Workspace\prj\jq\cashe\hydracache-074')
+SOURCE = ROOT / 'target/status-field-scan-20261024'
+DEST = ROOT / 'docs/testing/performance/0.74/local-runs/status-field-scan-20261024'
+sys.path.insert(0, str(ROOT / 'tools/status-field-scan-074'))
+import run
+
+
+def sha(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+
+def read(path):
+    return json.loads(path.read_bytes())
+
+
+paired = read(SOURCE / 'paired/summary.json')
+if not paired['passed'] or paired['results'] != run.estimate(paired['pairs']):
+    raise ValueError('Incomplete or changed leaf estimator')
+for lane in ('194', '188'):
+    folder = SOURCE / ('checks-' + lane + '-final')
+    result = read(folder / 'result.json')
+    if result['failure'] is not None or not result['source_unchanged'] or len(result['steps']) != 8 or any(row['exit'] for row in result['steps']):
+        raise ValueError('Native final lane not green')
+    before = read(folder / 'source-before.json')
+    if before != read(folder / 'source-after.json'):
+        raise ValueError('Native source changed')
+    for name, digest in before.items():
+        part = PurePosixPath(name)
+        if part.is_absolute() or '..' in part.parts or '\\' in name or ':' in name:
+            raise ValueError('Unsafe source proof member')
+        if sha((ROOT / name).read_bytes()) != digest:
+            raise ValueError('Checked native input changed: ' + name)
+for name in ('xtask-check', 'xtask-clippy'):
+    if read(SOURCE / (name + '-result.json'))['Exit']:
+        raise ValueError('Host compile/lint failed')
+if subprocess.check_output(['git', 'diff', '8fb0fb5a', '--', 'Cargo.lock', 'docs/COMPAT.md',
+        'docs/testing/performance/0.74/qualification-manifest.toml', 'crates/hydracache',
+        'crates/hydracache-redis-compat', 'crates/hydracache-client-transport-axum'], cwd=ROOT):
+    raise ValueError('Unrelated product, wire or qualification input changed')
+
+def failed(path):
+    return set(re.findall(r'^test ([^ ]+) \.\.\. FAILED$', path.read_text(errors='strict'), re.M))
+
+baseline = failed(SOURCE / 'host-contract-independent-baseline-include-fix.log')
+current = failed(SOURCE / 'host-contract-compatible.log')
+if len(baseline) != 68 or len(current) != 57 or not current.issubset(baseline):
+    raise ValueError('Source-contract baseline classification changed')
+facts = dict(candidate_commit=subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip(),
+    isolated_leaf_passed=True, results=paired['results'], semantic_sha256=paired['semantic_sha256'],
+    native_lanes=['194-final', '188-final'], native_selected_groups_overlap=True,
+    integrated_source_gate_passed=False, current_source_failures=sorted(current), baseline_source_failures=sorted(baseline),
+    source_gate_counts=dict(current_passed=264, current_failed=57, baseline_passed=253, baseline_failed=68, selected=321),
+    earlier_host_compile_failure=dict(exit=101, code='E0277', reason='LowerHex missing for sha2 digest Array',
+        retained_in='chat tool output', raw_stdout_stderr_file_saved=False),
+    cleanup=read(SOURCE / 'incremental-compression-result.json'),
+    note='Pure parser CPU only; not whole-runtime improvement, original delivery, all-writer or release qualification',
+    original_windows_seconds=[300, 60, 10], first_results_retained=True, server=False, product=False, admission=False,
+    clocks_changed=False, services_changed=False, measurement_retry=False)
+DEST.mkdir()
+(DEST / 'objects').mkdir()
+files = {}
+
+
+def retain(name, raw):
+    digest = sha(raw)
+    destination = DEST / 'objects' / digest
+    if not destination.exists():
+        with destination.open('xb') as stream:
+            stream.write(raw)
+    elif destination.read_bytes() != raw:
+        raise ValueError('Hash collision')
+    files[name] = dict(bytes=len(raw), sha256=digest)
+
+
+for path in sorted(SOURCE.rglob('*')):
+    if not path.is_file() or path.name == 'parser' or ('runtime-images' in path.parts and path.name != 'receipt.json'):
+        continue
+    retain('observation/' + path.relative_to(SOURCE).as_posix(), path.read_bytes())
+for scope in ('tools/status-field-scan-074', 'tools/status-field-gate-074'):
+    for path in sorted((ROOT / scope).rglob('*')):
+        if path.is_file() and '__pycache__' not in path.parts:
+            retain('source/' + path.relative_to(ROOT).as_posix(), path.read_bytes())
+for name in ('tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs',
+        'tools/long-run-supervisor-074/src/diagnostic_projection_fields.rs',
+        'tools/long-run-supervisor-074/src/diagnostic_projection_fields_tests.rs',
+        'tools/long-run-supervisor-074/tests/support/projection_cost.rs',
+        'tools/authority-runtime-074/gate.rs', 'tools/authority-runtime-074/performance.rs',
+        'crates/xtask/tests/status_field_scan_074.rs', 'crates/xtask/tests/authority_runtime_074.rs',
+        'crates/xtask/tests/support/performance_contract_074_collector_progress.rs',
+        'crates/xtask/tests/support/performance_contract_074_kernel_refusal.rs',
+        'docs/testing/performance/0.74/status-field-scan-plan-20261024.md'):
+    retain('source/' + name, (ROOT / name).read_bytes())
+retain('coordinator/retain-status-candidate-20261024.py', Path(__file__).read_bytes())
+retain('analysis/facts.json', (json.dumps(facts, indent=2, sort_keys=True) + '\n').encode())
+index = dict(schema='hc074-status-field-scan-evidence-v1', files=files,
+    candidate_commit=facts['candidate_commit'], isolated_leaf_passed=True, integrated_source_gate_passed=False,
+    server=False, product=False, admission=False, original_delivery=False, all_writers_retired=False,
+    full_sigkill_matrix=False, original_windows_seconds=[300, 60, 10], measurement_retry=False)
+with (DEST / 'index.json').open('x', encoding='utf-8', newline='\n') as stream:
+    json.dump(index, stream, indent=2, sort_keys=True)
+    stream.write('\n')
+with (DEST / '.gitattributes').open('x', encoding='ascii', newline='\n') as stream:
+    stream.write('index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n')
+print(dict(files=len(files), objects=len(list((DEST / 'objects').iterdir())),
+           index_sha256=sha((DEST / 'index.json').read_bytes())))

@@ -1,0 +1,18 @@
+[
+  {
+    "sha256": "ae77d1bb99f339fc259e4cc6c9a664edc3e713c7da19c5475f582a16c7d26365",
+    "server_admission": false,
+    "source": "\\\\wsl.localhost\\Ubuntu\\home\\artur\\.cache\\hydracache-074-194-check\\release\\deps\\hydracache_long_run_supervisor_074-c3c253bf49d23fef",
+    "lane": "gnu194",
+    "release_bundle": false,
+    "bytes": 27145440
+  },
+  {
+    "sha256": "ae33035a42392fe3f7fe7776c399e40a33198587786337643e7c6031a220d225",
+    "server_admission": false,
+    "source": "\\\\wsl.localhost\\Ubuntu\\home\\artur\\.cache\\hydracache-074-188-check\\release\\deps\\hydracache_long_run_supervisor_074-1dbb29096ebc6338",
+    "lane": "msrv188",
+    "release_bundle": false,
+    "bytes": 26633432
+  }
+]

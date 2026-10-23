@@ -1,0 +1,795 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+error: macro-expanded `macro_export` macros from the current crate cannot be referred to by absolute paths
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\performance_contract_074_kernel_walk.rs:77:5
+   |
+77 |     crate::hc074_document_scratch_view!(path, &raw)
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+   = note: for more information, see issue #52234 <https://github.com/rust-lang/rust/issues/52234>
+note: the macro is defined here
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\document_scratch_guard.rs:5:1
+   |
+ 5 | / macro_rules! hc074_document_scratch_view {
+ 6 | |     (@items) => {
+ 7 | |         pub(crate) const SOURCE: &str = "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs";
+ 8 | |         pub(crate) const HOOK: &str = "use origin::{alive_read, DocumentBuffer, Origin, TimePoint};";
+...  |
+59 | |     }};
+60 | | }
+   | |_^
+   = note: `#[deny(macro_expanded_macro_exports_accessed_by_absolute_paths)]` (part of `#[deny(future_incompatible)]`) on by default
+
+error: macro-expanded `macro_export` macros from the current crate cannot be referred to by absolute paths
+   --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\performance_contract_074_boot_comparison.rs:150:5
+    |
+150 |     crate::hc074_document_scratch_view!(path, &raw)
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+    = note: for more information, see issue #52234 <https://github.com/rust-lang/rust/issues/52234>
+note: the macro is defined here
+   --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\document_scratch_guard.rs:5:1
+    |
+  5 | / macro_rules! hc074_document_scratch_view {
+  6 | |     (@items) => {
+  7 | |         pub(crate) const SOURCE: &str = "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs";
+  8 | |         pub(crate) const HOOK: &str = "use origin::{alive_read, DocumentBuffer, Origin, TimePoint};";
+...   |
+ 59 | |     }};
+ 60 | | }
+    | |_^
+
+error: macro-expanded `macro_export` macros from the current crate cannot be referred to by absolute paths
+   --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\document_scratch_guard.rs:24:27
+    |
+ 24 |             let mut raw = $crate::hc074_remaining_preparation_view!(path, source);
+    |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+ 61 | hc074_document_scratch_view!(@items);
+    | ------------------------------------ in this macro invocation
+    |
+    = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+    = note: for more information, see issue #52234 <https://github.com/rust-lang/rust/issues/52234>
+note: the macro is defined here
+   --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\remaining_preparation_guard.rs:82:1
+    |
+ 82 | / macro_rules! hc074_remaining_preparation_view {
+ 83 | |     ($path:expr, $source:expr) => {{
+ 84 | |         let path: &str = $path;
+ 85 | |         let mut raw: String = $crate::hc074_starting_effects_view!(path, $source);
+...   |
+130 | |     }};
+131 | | }
+    | |_^
+    = note: this error originates in the macro `hc074_document_scratch_view` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: macro-expanded `macro_export` macros from the current crate cannot be referred to by absolute paths
+   --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\document_scratch_guard.rs:57:9
+    |
+ 57 |         $crate::hc074_document_scratch_view!(@items);
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+   ::: C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\performance_contract_074_boot_comparison.rs:150:5
+    |
+150 |     crate::hc074_document_scratch_view!(path, &raw)
+    |     ----------------------------------------------- in this macro invocation
+    |
+    = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+    = note: for more information, see issue #52234 <https://github.com/rust-lang/rust/issues/52234>
+note: the macro is defined here
+   --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\document_scratch_guard.rs:5:1
+    |
+  5 | / macro_rules! hc074_document_scratch_view {
+  6 | |     (@items) => {
+  7 | |         pub(crate) const SOURCE: &str = "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs";
+  8 | |         pub(crate) const HOOK: &str = "use origin::{alive_read, DocumentBuffer, Origin, TimePoint};";
+...   |
+ 59 | |     }};
+ 60 | | }
+    | |_^
+    = note: this error originates in the macro `crate::hc074_document_scratch_view` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: macro-expanded `macro_export` macros from the current crate cannot be referred to by absolute paths
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\remaining_preparation_guard.rs:8:31
+   |
+ 8 |         let mut raw: String = $crate::hc074_authority_hex_view!(path, $source);
+   |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+  ::: C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\document_scratch_guard.rs:61:1
+   |
+61 | hc074_document_scratch_view!(@items);
+   | ------------------------------------ in this macro invocation
+   |
+   = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+   = note: for more information, see issue #52234 <https://github.com/rust-lang/rust/issues/52234>
+note: the macro is defined here
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\authority_hex_guard.rs:5:1
+   |
+ 5 | / macro_rules! hc074_authority_hex_view {
+ 6 | |     ($path:expr, $source:expr) => {{
+ 7 | |         let path: &str = $path;
+ 8 | |         let mut raw: String = $crate::hc074_authority_context_view!(path, $source);
+...  |
+27 | |     }};
+28 | | }
+   | |_^
+   = note: this error originates in the macro `$crate::hc074_leaf_requests_view` which comes from the expansion of the macro `hc074_document_scratch_view` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: macro-expanded `macro_export` macros from the current crate cannot be referred to by absolute paths
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\remaining_preparation_guard.rs:27:31
+   |
+27 |         let mut raw: String = $crate::hc074_leaf_requests_view!(path, $source);
+   |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+  ::: C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\document_scratch_guard.rs:61:1
+   |
+61 | hc074_document_scratch_view!(@items);
+   | ------------------------------------ in this macro invocation
+   |
+   = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+   = note: for more information, see issue #52234 <https://github.com/rust-lang/rust/issues/52234>
+note: the macro is defined here
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\remaining_preparation_guard.rs:5:1
+   |
+ 5 | / macro_rules! hc074_leaf_requests_view {
+ 6 | |     ($path:expr, $source:expr) => {{
+ 7 | |         let path: &str = $path;
+ 8 | |         let mut raw: String = $crate::hc074_authority_hex_view!(path, $source);
+...  |
+21 | |     }};
+22 | | }
+   | |_^
+   = note: this error originates in the macro `$crate::hc074_round_cost_view` which comes from the expansion of the macro `hc074_document_scratch_view` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: macro-expanded `macro_export` macros from the current crate cannot be referred to by absolute paths
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\remaining_preparation_guard.rs:63:31
+   |
+63 |         let mut raw: String = $crate::hc074_round_cost_view!(path, $source);
+   |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+  ::: C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\document_scratch_guard.rs:61:1
+   |
+61 | hc074_document_scratch_view!(@items);
+   | ------------------------------------ in this macro invocation
+   |
+   = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+   = note: for more information, see issue #52234 <https://github.com/rust-lang/rust/issues/52234>
+note: the macro is defined here
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\remaining_preparation_guard.rs:24:1
+   |
+24 | / macro_rules! hc074_round_cost_view {
+25 | |     ($path:expr, $source:expr) => {{
+26 | |         let path: &str = $path;
+27 | |         let mut raw: String = $crate::hc074_leaf_requests_view!(path, $source);
+...  |
+57 | |     }};
+58 | | }
+   | |_^
+   = note: this error originates in the macro `$crate::hc074_starting_effects_view` which comes from the expansion of the macro `hc074_document_scratch_view` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: macro-expanded `macro_export` macros from the current crate cannot be referred to by absolute paths
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\remaining_preparation_guard.rs:85:31
+   |
+85 |         let mut raw: String = $crate::hc074_starting_effects_view!(path, $source);
+   |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+  ::: C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\document_scratch_guard.rs:61:1
+   |
+61 | hc074_document_scratch_view!(@items);
+   | ------------------------------------ in this macro invocation
+   |
+   = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+   = note: for more information, see issue #52234 <https://github.com/rust-lang/rust/issues/52234>
+note: the macro is defined here
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\remaining_preparation_guard.rs:60:1
+   |
+60 | / macro_rules! hc074_starting_effects_view {
+61 | |     ($path:expr, $source:expr) => {{
+62 | |         let path: &str = $path;
+63 | |         let mut raw: String = $crate::hc074_round_cost_view!(path, $source);
+...  |
+79 | |     }};
+80 | | }
+   | |_^
+   = note: this error originates in the macro `$crate::hc074_remaining_preparation_view` which comes from the expansion of the macro `hc074_document_scratch_view` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: macro-expanded `macro_export` macros from the current crate cannot be referred to by absolute paths
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\authority_hex_guard.rs:8:31
+   |
+ 8 |         let mut raw: String = $crate::hc074_authority_context_view!(path, $source);
+   |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+  ::: C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\document_scratch_guard.rs:61:1
+   |
+61 | hc074_document_scratch_view!(@items);
+   | ------------------------------------ in this macro invocation
+   |
+   = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+   = note: for more information, see issue #52234 <https://github.com/rust-lang/rust/issues/52234>
+note: the macro is defined here
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\authority_context_guard.rs:5:1
+   |
+ 5 | / macro_rules! hc074_authority_context_view {
+ 6 | |     ($path:expr, $source:expr) => {{
+ 7 | |         let path: &str = $path;
+ 8 | |         let mut raw: String = $crate::hc074_authority_leaf_name_view!(path, $source);
+...  |
+27 | |     }};
+28 | | }
+   | |_^
+   = note: this error originates in the macro `$crate::hc074_authority_hex_view` which comes from the expansion of the macro `hc074_document_scratch_view` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: macro-expanded `macro_export` macros from the current crate cannot be referred to by absolute paths
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\authority_context_guard.rs:8:31
+   |
+ 8 |         let mut raw: String = $crate::hc074_authority_leaf_name_view!(path, $source);
+   |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+  ::: C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\document_scratch_guard.rs:61:1
+   |
+61 | hc074_document_scratch_view!(@items);
+   | ------------------------------------ in this macro invocation
+   |
+   = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+   = note: for more information, see issue #52234 <https://github.com/rust-lang/rust/issues/52234>
+note: the macro is defined here
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\authority_leaf_name_guard.rs:5:1
+   |
+ 5 | / macro_rules! hc074_authority_leaf_name_view {
+ 6 | |     ($path:expr, $source:expr) => {{
+ 7 | |         let path: &str = $path;
+ 8 | |         let mut raw: String = $crate::hc074_authority_inventory_view!(path, $source);
+...  |
+29 | |     }};
+30 | | }
+   | |_^
+   = note: this error originates in the macro `$crate::hc074_authority_context_view` which comes from the expansion of the macro `hc074_document_scratch_view` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: macro-expanded `macro_export` macros from the current crate cannot be referred to by absolute paths
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\authority_leaf_name_guard.rs:8:31
+   |
+ 8 |         let mut raw: String = $crate::hc074_authority_inventory_view!(path, $source);
+   |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+  ::: C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\document_scratch_guard.rs:61:1
+   |
+61 | hc074_document_scratch_view!(@items);
+   | ------------------------------------ in this macro invocation
+   |
+   = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+   = note: for more information, see issue #52234 <https://github.com/rust-lang/rust/issues/52234>
+note: the macro is defined here
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\authority_inventory_guard.rs:5:1
+   |
+ 5 | / macro_rules! hc074_authority_inventory_view {
+ 6 | |     ($path:expr, $source:expr) => {{
+ 7 | |         let path: &str = $path;
+ 8 | |         let mut raw: String = $crate::hc074_authority_name_capacity_view!(path, $source);
+...  |
+29 | |     }};
+30 | | }
+   | |_^
+   = note: this error originates in the macro `$crate::hc074_authority_leaf_name_view` which comes from the expansion of the macro `hc074_document_scratch_view` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: macro-expanded `macro_export` macros from the current crate cannot be referred to by absolute paths
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\authority_inventory_guard.rs:8:31
+   |
+ 8 |         let mut raw: String = $crate::hc074_authority_name_capacity_view!(path, $source);
+   |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+  ::: C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\document_scratch_guard.rs:61:1
+   |
+61 | hc074_document_scratch_view!(@items);
+   | ------------------------------------ in this macro invocation
+   |
+   = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+   = note: for more information, see issue #52234 <https://github.com/rust-lang/rust/issues/52234>
+note: the macro is defined here
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\authority_name_capacity_guard.rs:5:1
+   |
+ 5 | / macro_rules! hc074_authority_name_capacity_view {
+ 6 | |     ($path:expr, $source:expr) => {{
+ 7 | |         let path: &str = $path;
+ 8 | |         let mut raw: String = $crate::hc074_authority_expected_name_view!(path, $source);
+...  |
+38 | |     }};
+39 | | }
+   | |_^
+   = note: this error originates in the macro `$crate::hc074_authority_inventory_view` which comes from the expansion of the macro `hc074_document_scratch_view` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: macro-expanded `macro_export` macros from the current crate cannot be referred to by absolute paths
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\authority_name_capacity_guard.rs:8:31
+   |
+ 8 |         let mut raw: String = $crate::hc074_authority_expected_name_view!(path, $source);
+   |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+  ::: C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\document_scratch_guard.rs:61:1
+   |
+61 | hc074_document_scratch_view!(@items);
+   | ------------------------------------ in this macro invocation
+   |
+   = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+   = note: for more information, see issue #52234 <https://github.com/rust-lang/rust/issues/52234>
+note: the macro is defined here
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\authority_expected_name_guard.rs:5:1
+   |
+ 5 | / macro_rules! hc074_authority_expected_name_view {
+ 6 | |     ($path:expr, $source:expr) => {{
+ 7 | |         let path: &str = $path;
+ 8 | |         let mut raw: String = $crate::hc074_authority_breakdown_view!(path, $source);
+...  |
+32 | |     }};
+33 | | }
+   | |_^
+   = note: this error originates in the macro `$crate::hc074_authority_name_capacity_view` which comes from the expansion of the macro `hc074_document_scratch_view` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: macro-expanded `macro_export` macros from the current crate cannot be referred to by absolute paths
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\authority_expected_name_guard.rs:8:31
+   |
+ 8 |         let mut raw: String = $crate::hc074_authority_breakdown_view!(path, $source);
+   |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+  ::: C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\document_scratch_guard.rs:61:1
+   |
+61 | hc074_document_scratch_view!(@items);
+   | ------------------------------------ in this macro invocation
+   |
+   = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+   = note: for more information, see issue #52234 <https://github.com/rust-lang/rust/issues/52234>
+note: the macro is defined here
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\authority_breakdown_guard.rs:5:1
+   |
+ 5 | / macro_rules! hc074_authority_breakdown_view {
+ 6 | |     ($path:expr, $source:expr) => {{
+ 7 | |         let path: &str = $path;
+ 8 | |         let mut raw: String = $crate::hc074_authority_fd_path_view!(path, $source);
+...  |
+21 | |     }};
+22 | | }
+   | |_^
+   = note: this error originates in the macro `$crate::hc074_authority_expected_name_view` which comes from the expansion of the macro `hc074_document_scratch_view` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: macro-expanded `macro_export` macros from the current crate cannot be referred to by absolute paths
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\authority_breakdown_guard.rs:8:31
+   |
+ 8 |         let mut raw: String = $crate::hc074_authority_fd_path_view!(path, $source);
+   |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+  ::: C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\document_scratch_guard.rs:61:1
+   |
+61 | hc074_document_scratch_view!(@items);
+   | ------------------------------------ in this macro invocation
+   |
+   = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+   = note: for more information, see issue #52234 <https://github.com/rust-lang/rust/issues/52234>
+note: the macro is defined here
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\authority_fd_path_guard.rs:5:1
+   |
+ 5 | / macro_rules! hc074_authority_fd_path_view {
+ 6 | |     ($path:expr, $source:expr) => {{
+ 7 | |         let path: &str = $path;
+ 8 | |         let mut raw: String = $crate::hc074_authority_owners_view!(path, $source);
+...  |
+29 | |     }};
+30 | | }
+   | |_^
+   = note: this error originates in the macro `$crate::hc074_authority_breakdown_view` which comes from the expansion of the macro `hc074_document_scratch_view` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: macro-expanded `macro_export` macros from the current crate cannot be referred to by absolute paths
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\authority_fd_path_guard.rs:8:31
+   |
+ 8 |         let mut raw: String = $crate::hc074_authority_owners_view!(path, $source);
+   |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+  ::: C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\document_scratch_guard.rs:61:1
+   |
+61 | hc074_document_scratch_view!(@items);
+   | ------------------------------------ in this macro invocation
+   |
+   = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+   = note: for more information, see issue #52234 <https://github.com/rust-lang/rust/issues/52234>
+note: the macro is defined here
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\authority_owners_guard.rs:5:1
+   |
+ 5 | / macro_rules! hc074_authority_owners_view {
+ 6 | |     ($path:expr, $source:expr) => {{
+ 7 | |         let path: &str = $path;
+ 8 | |         let mut raw: String = $crate::hc074_authority_cpu_view!(path, $source);
+...  |
+21 | |     }};
+22 | | }
+   | |_^
+   = note: this error originates in the macro `$crate::hc074_authority_fd_path_view` which comes from the expansion of the macro `hc074_document_scratch_view` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: macro-expanded `macro_export` macros from the current crate cannot be referred to by absolute paths
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\authority_owners_guard.rs:8:31
+   |
+ 8 |         let mut raw: String = $crate::hc074_authority_cpu_view!(path, $source);
+   |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+  ::: C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\document_scratch_guard.rs:61:1
+   |
+61 | hc074_document_scratch_view!(@items);
+   | ------------------------------------ in this macro invocation
+   |
+   = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+   = note: for more information, see issue #52234 <https://github.com/rust-lang/rust/issues/52234>
+note: the macro is defined here
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\authority_cpu_guard.rs:5:1
+   |
+ 5 | / macro_rules! hc074_authority_cpu_view {
+ 6 | |     ($path:expr, $source:expr) => {{
+ 7 | |         let path: &str = $path;
+ 8 | |         let mut raw: String = $crate::hc074_authority_leaf_cpu_view!(path, $source);
+...  |
+32 | |     }};
+33 | | }
+   | |_^
+   = note: this error originates in the macro `$crate::hc074_authority_owners_view` which comes from the expansion of the macro `hc074_document_scratch_view` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: macro-expanded `macro_export` macros from the current crate cannot be referred to by absolute paths
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\authority_cpu_guard.rs:8:31
+   |
+ 8 |         let mut raw: String = $crate::hc074_authority_leaf_cpu_view!(path, $source);
+   |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+  ::: C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\document_scratch_guard.rs:61:1
+   |
+61 | hc074_document_scratch_view!(@items);
+   | ------------------------------------ in this macro invocation
+   |
+   = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+   = note: for more information, see issue #52234 <https://github.com/rust-lang/rust/issues/52234>
+note: the macro is defined here
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\authority_leaf_cpu_guard.rs:5:1
+   |
+ 5 | / macro_rules! hc074_authority_leaf_cpu_view {
+ 6 | |     ($path:expr, $source:expr) => {{
+ 7 | |         let path: &str = $path;
+ 8 | |         let mut raw: String = $crate::hc074_authority_open_name_view!(path, $source);
+...  |
+32 | |     }};
+33 | | }
+   | |_^
+   = note: this error originates in the macro `$crate::hc074_authority_cpu_view` which comes from the expansion of the macro `hc074_document_scratch_view` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: macro-expanded `macro_export` macros from the current crate cannot be referred to by absolute paths
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\authority_leaf_cpu_guard.rs:8:31
+   |
+ 8 |         let mut raw: String = $crate::hc074_authority_open_name_view!(path, $source);
+   |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+  ::: C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\document_scratch_guard.rs:61:1
+   |
+61 | hc074_document_scratch_view!(@items);
+   | ------------------------------------ in this macro invocation
+   |
+   = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+   = note: for more information, see issue #52234 <https://github.com/rust-lang/rust/issues/52234>
+note: the macro is defined here
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\authority_open_name_guard.rs:5:1
+   |
+ 5 | / macro_rules! hc074_authority_open_name_view {
+ 6 | |     ($path:expr, $source:expr) => {{
+ 7 | |         let path: &str = $path;
+ 8 | |         let mut raw: String = $crate::hc074_boot_operations_view!(path, $source);
+...  |
+28 | |     }};
+29 | | }
+   | |_^
+   = note: this error originates in the macro `$crate::hc074_authority_leaf_cpu_view` which comes from the expansion of the macro `hc074_document_scratch_view` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: macro-expanded `macro_export` macros from the current crate cannot be referred to by absolute paths
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\authority_open_name_guard.rs:8:31
+   |
+ 8 |         let mut raw: String = $crate::hc074_boot_operations_view!(path, $source);
+   |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+  ::: C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\document_scratch_guard.rs:61:1
+   |
+61 | hc074_document_scratch_view!(@items);
+   | ------------------------------------ in this macro invocation
+   |
+   = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+   = note: for more information, see issue #52234 <https://github.com/rust-lang/rust/issues/52234>
+note: the macro is defined here
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\boot_operations_guard.rs:5:1
+   |
+ 5 | / macro_rules! hc074_boot_operations_view {
+ 6 | |     ($path:expr, $source:expr) => {{
+ 7 | |         let path: &str = $path;
+ 8 | |         let mut raw: String = $crate::hc074_held_unit_projection_view!(path, $source);
+...  |
+46 | |     }};
+47 | | }
+   | |_^
+   = note: this error originates in the macro `$crate::hc074_authority_open_name_view` which comes from the expansion of the macro `hc074_document_scratch_view` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: macro-expanded `macro_export` macros from the current crate cannot be referred to by absolute paths
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\boot_operations_guard.rs:8:31
+   |
+ 8 |         let mut raw: String = $crate::hc074_held_unit_projection_view!(path, $source);
+   |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+  ::: C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\document_scratch_guard.rs:61:1
+   |
+61 | hc074_document_scratch_view!(@items);
+   | ------------------------------------ in this macro invocation
+   |
+   = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+   = note: for more information, see issue #52234 <https://github.com/rust-lang/rust/issues/52234>
+note: the macro is defined here
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\held_unit_projection_guard.rs:5:1
+   |
+ 5 | / macro_rules! hc074_held_unit_projection_view {
+ 6 | |     ($path:expr, $source:expr) => {{
+ 7 | |         let path: &str = $path;
+ 8 | |         let mut raw: String = $crate::hc074_held_material_view!(path, $source);
+...  |
+43 | |     }};
+44 | | }
+   | |_^
+   = note: this error originates in the macro `$crate::hc074_boot_operations_view` which comes from the expansion of the macro `hc074_document_scratch_view` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: macro-expanded `macro_export` macros from the current crate cannot be referred to by absolute paths
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\held_unit_projection_guard.rs:8:31
+   |
+ 8 |         let mut raw: String = $crate::hc074_held_material_view!(path, $source);
+   |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+  ::: C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\document_scratch_guard.rs:61:1
+   |
+61 | hc074_document_scratch_view!(@items);
+   | ------------------------------------ in this macro invocation
+   |
+   = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+   = note: for more information, see issue #52234 <https://github.com/rust-lang/rust/issues/52234>
+note: the macro is defined here
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\held_material_guard.rs:5:1
+   |
+ 5 | / macro_rules! hc074_held_material_view {
+ 6 | |     ($path:expr,$source:expr) => {{
+ 7 | |         let path: &str = $path;
+ 8 | |         let mut raw: String = $crate::hc074_held_material_live_view!(path, $source);
+...  |
+30 | |     }};
+31 | | }
+   | |_^
+   = note: this error originates in the macro `$crate::hc074_held_unit_projection_view` which comes from the expansion of the macro `hc074_document_scratch_view` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: macro-expanded `macro_export` macros from the current crate cannot be referred to by absolute paths
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\held_material_guard.rs:8:31
+   |
+ 8 |         let mut raw: String = $crate::hc074_held_material_live_view!(path, $source);
+   |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+  ::: C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\document_scratch_guard.rs:61:1
+   |
+61 | hc074_document_scratch_view!(@items);
+   | ------------------------------------ in this macro invocation
+   |
+   = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+   = note: for more information, see issue #52234 <https://github.com/rust-lang/rust/issues/52234>
+note: the macro is defined here
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\held_material_live_guard.rs:5:1
+   |
+ 5 | / macro_rules! hc074_held_material_live_view {
+ 6 | |     ($path:expr,$source:expr) => {{
+ 7 | |         let path: &str = $path;
+ 8 | |         let mut raw: String = $crate::hc074_pidfd_info_path_view!(path, $source);
+...  |
+38 | |     }};
+39 | | }
+   | |_^
+   = note: this error originates in the macro `$crate::hc074_held_material_view` which comes from the expansion of the macro `hc074_document_scratch_view` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: macro-expanded `macro_export` macros from the current crate cannot be referred to by absolute paths
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\held_material_live_guard.rs:8:31
+   |
+ 8 |         let mut raw: String = $crate::hc074_pidfd_info_path_view!(path, $source);
+   |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+  ::: C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\document_scratch_guard.rs:61:1
+   |
+61 | hc074_document_scratch_view!(@items);
+   | ------------------------------------ in this macro invocation
+   |
+   = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+   = note: for more information, see issue #52234 <https://github.com/rust-lang/rust/issues/52234>
+note: the macro is defined here
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\pidfd_info_path_guard.rs:5:1
+   |
+ 5 | / macro_rules! hc074_pidfd_info_path_view {
+ 6 | |     ($path:expr,$source:expr) => {{
+ 7 | |         let path: &str = $path;
+ 8 | |         let mut raw: String = $crate::hc074_projection_groups_view!(path, $source);
+...  |
+31 | |     }};
+32 | | }
+   | |_^
+   = note: this error originates in the macro `$crate::hc074_held_material_live_view` which comes from the expansion of the macro `hc074_document_scratch_view` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: macro-expanded `macro_export` macros from the current crate cannot be referred to by absolute paths
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\pidfd_info_path_guard.rs:8:31
+   |
+ 8 |         let mut raw: String = $crate::hc074_projection_groups_view!(path, $source);
+   |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+  ::: C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\document_scratch_guard.rs:61:1
+   |
+61 | hc074_document_scratch_view!(@items);
+   | ------------------------------------ in this macro invocation
+   |
+   = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+   = note: for more information, see issue #52234 <https://github.com/rust-lang/rust/issues/52234>
+note: the macro is defined here
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\projection_groups_guard.rs:5:1
+   |
+ 5 | / macro_rules! hc074_projection_groups_view {
+ 6 | |     ($path:expr,$source:expr) => {{
+ 7 | |         let path: &str = $path;
+ 8 | |         let mut raw: String = $crate::hc074_context_document_baseline_view!(path,$source);
+...  |
+26 | |     }};
+27 | | }
+   | |_^
+   = note: this error originates in the macro `$crate::hc074_pidfd_info_path_view` which comes from the expansion of the macro `hc074_document_scratch_view` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: macro-expanded `macro_export` macros from the current crate cannot be referred to by absolute paths
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\projection_groups_guard.rs:8:31
+   |
+ 8 |         let mut raw: String = $crate::hc074_context_document_baseline_view!(path,$source);
+   |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+  ::: C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\document_scratch_guard.rs:61:1
+   |
+61 | hc074_document_scratch_view!(@items);
+   | ------------------------------------ in this macro invocation
+   |
+   = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+   = note: for more information, see issue #52234 <https://github.com/rust-lang/rust/issues/52234>
+note: the macro is defined here
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\context_document_baseline_guard.rs:5:1
+   |
+ 5 | / macro_rules! hc074_context_document_baseline_view {
+ 6 | |     ($path:expr,$source:expr) => {{
+ 7 | |         let path: &str = $path;
+ 8 | |         let mut raw: String = $crate::hc074_context_document_stack_view!(path,$source);
+...  |
+17 | |     }};
+18 | | }
+   | |_^
+   = note: this error originates in the macro `$crate::hc074_projection_groups_view` which comes from the expansion of the macro `hc074_document_scratch_view` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: macro-expanded `macro_export` macros from the current crate cannot be referred to by absolute paths
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\context_document_baseline_guard.rs:8:31
+   |
+ 8 |         let mut raw: String = $crate::hc074_context_document_stack_view!(path,$source);
+   |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+  ::: C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\document_scratch_guard.rs:61:1
+   |
+61 | hc074_document_scratch_view!(@items);
+   | ------------------------------------ in this macro invocation
+   |
+   = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+   = note: for more information, see issue #52234 <https://github.com/rust-lang/rust/issues/52234>
+note: the macro is defined here
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\context_document_stack_guard.rs:5:1
+   |
+ 5 | / macro_rules! hc074_context_document_stack_view {
+ 6 | |     ($path:expr,$source:expr) => {{
+ 7 | |         let path: &str = $path;
+ 8 | |         let mut raw: String = $crate::hc074_trust_component_baseline_view!(path,$source);
+...  |
+26 | |     }};
+27 | | }
+   | |_^
+   = note: this error originates in the macro `$crate::hc074_context_document_baseline_view` which comes from the expansion of the macro `hc074_document_scratch_view` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: macro-expanded `macro_export` macros from the current crate cannot be referred to by absolute paths
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\context_document_stack_guard.rs:8:31
+   |
+ 8 |         let mut raw: String = $crate::hc074_trust_component_baseline_view!(path,$source);
+   |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+  ::: C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\document_scratch_guard.rs:61:1
+   |
+61 | hc074_document_scratch_view!(@items);
+   | ------------------------------------ in this macro invocation
+   |
+   = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+   = note: for more information, see issue #52234 <https://github.com/rust-lang/rust/issues/52234>
+note: the macro is defined here
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\trust_component_baseline_guard.rs:5:1
+   |
+ 5 | / macro_rules! hc074_trust_component_baseline_view {
+ 6 | |     ($path:expr,$source:expr) => {{
+ 7 | |         let path: &str = $path;
+ 8 | |         let mut raw: String = $crate::hc074_trust_component_stack_view!(path,$source);
+...  |
+17 | |     }};
+18 | | }
+   | |_^
+   = note: this error originates in the macro `$crate::hc074_context_document_stack_view` which comes from the expansion of the macro `hc074_document_scratch_view` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: macro-expanded `macro_export` macros from the current crate cannot be referred to by absolute paths
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\trust_component_baseline_guard.rs:8:31
+   |
+ 8 |         let mut raw: String = $crate::hc074_trust_component_stack_view!(path,$source);
+   |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+  ::: C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\document_scratch_guard.rs:61:1
+   |
+61 | hc074_document_scratch_view!(@items);
+   | ------------------------------------ in this macro invocation
+   |
+   = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+   = note: for more information, see issue #52234 <https://github.com/rust-lang/rust/issues/52234>
+note: the macro is defined here
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\trust_component_stack_guard.rs:5:1
+   |
+ 5 | / macro_rules! hc074_trust_component_stack_view {
+ 6 | |     ($path:expr,$source:expr) => {{
+ 7 | |         let path: &str=$path;
+ 8 | |         let mut raw:String=$crate::hc074_collector_peer_baseline_view!(path,$source);
+...  |
+28 | |     }};
+29 | | }
+   | |_^
+   = note: this error originates in the macro `$crate::hc074_trust_component_baseline_view` which comes from the expansion of the macro `hc074_document_scratch_view` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: macro-expanded `macro_export` macros from the current crate cannot be referred to by absolute paths
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\trust_component_stack_guard.rs:8:28
+   |
+ 8 |         let mut raw:String=$crate::hc074_collector_peer_baseline_view!(path,$source);
+   |                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+  ::: C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\document_scratch_guard.rs:61:1
+   |
+61 | hc074_document_scratch_view!(@items);
+   | ------------------------------------ in this macro invocation
+   |
+   = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+   = note: for more information, see issue #52234 <https://github.com/rust-lang/rust/issues/52234>
+note: the macro is defined here
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\collector_peer_baseline_guard.rs:5:1
+   |
+ 5 | / macro_rules! hc074_collector_peer_baseline_view {
+ 6 | |     ($path:expr,$source:expr) => {{
+ 7 | |         let path:&str=$path;let mut raw:String=$crate::hc074_collector_peer_capacity_view!(path,$source);
+ 8 | |         if path=="tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs" && raw.contains("mod collector_peer_base...
+...  |
+13 | |     }};
+14 | | }
+   | |_^
+   = note: this error originates in the macro `$crate::hc074_trust_component_stack_view` which comes from the expansion of the macro `hc074_document_scratch_view` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: macro-expanded `macro_export` macros from the current crate cannot be referred to by absolute paths
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\collector_peer_baseline_guard.rs:7:48
+   |
+ 7 |         let path:&str=$path;let mut raw:String=$crate::hc074_collector_peer_capacity_view!(path,$source);
+   |                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+  ::: C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\document_scratch_guard.rs:61:1
+   |
+61 | hc074_document_scratch_view!(@items);
+   | ------------------------------------ in this macro invocation
+   |
+   = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+   = note: for more information, see issue #52234 <https://github.com/rust-lang/rust/issues/52234>
+note: the macro is defined here
+  --> C:/Workspace/prj/jq/cashe/hc074-contract-base-20261024/crates/xtask/tests\support\collector_peer_capacity_guard.rs:3:1
+   |
+ 3 | / macro_rules! hc074_collector_peer_capacity_view {
+ 4 | |     ($path:expr,$source:expr) => {{
+ 5 | |         let path:&str=$path;let mut raw:String=$source.to_owned();
+ 6 | |         if path=="tools/long-run-supervisor-074/src/diagnostic_kernel_collector_inputs.rs" && (raw.contains("capacity_controls") |...
+...  |
+17 | |     }};
+18 | | }
+   | |_^
+   = note: this error originates in the macro `$crate::hc074_collector_peer_baseline_view` which comes from the expansion of the macro `hc074_document_scratch_view` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: could not compile `xtask` (test "__hc074_contract_baseline_control") due to 62 previous errors

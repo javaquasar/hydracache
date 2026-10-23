@@ -1,0 +1,152 @@
+
+running 147 tests
+test diagnostic_kernel_admission::ancillary::tests::kernel_ancillary_bounded_malformed_headers_refuse_without_panic ... ok
+test diagnostic_kernel_admission::ancillary::tests::kernel_ancillary_model_rejects_unknown_flags_and_duplicate_tags_without_fd_leaks ... ok
+test diagnostic_kernel_admission::collector_inputs::progress::tests::collector_progress_exclusive_age_and_strict_receive_order ... ok
+test diagnostic_kernel_admission::collector_inputs::progress::tests::collector_progress_real_kernel_origin_signature_order_and_sticky_refusal ... ok
+test diagnostic_kernel_admission::collector_inputs::progress::tests::collector_progress_real_packet_expires_without_receive_time_renewal ... ok
+test diagnostic_kernel_admission::collector_inputs::start_consent::tests::original_start_consent_exclusive_age_and_principal_time_boundaries ... ok
+test diagnostic_kernel_admission::collector_inputs::start_consent::tests::original_start_consent_real_kernel_origin_peer_signature_order_and_refusal ... ok
+test diagnostic_kernel_admission::collector_inputs::tests::original_collector_peer_uses_canonical_primary_group_union_without_truncation ... ok
+test diagnostic_kernel_admission::origin::boot_buffer_tests::boot_buffer_canonical_empty_short_and_overlength_differential ... ok
+test diagnostic_kernel_admission::origin::boot_buffer_tests::boot_buffer_empty_site_and_document_trace_are_preserved ... ok
+test diagnostic_kernel_admission::origin::boot_buffer_tests::boot_buffer_every_single_byte_mutation_matches_old_decoder ... ok
+test diagnostic_kernel_admission::origin::boot_buffer_tests::boot_buffer_io_faults_are_preserved_without_retry ... ok
+test diagnostic_kernel_admission::origin::boot_buffer_tests::boot_buffer_real_positional_reads_match_without_changing_cursor ... ok
+test diagnostic_kernel_admission::origin::boot_buffer_tests::boot_buffer_seeded_documents_match_old_decoder ... ok
+test diagnostic_kernel_admission::origin::boot_buffer_tests::boot_buffer_short_read_is_not_retried_and_does_not_claim_eof ... ok
+test diagnostic_kernel_admission::origin::boot_comparison_tests::boot_comparison_byte_mutations_lengths_and_original_failure_sites ... ok
+test diagnostic_kernel_admission::origin::boot_comparison_tests::boot_comparison_fresh_trace_counts_and_original_sticky_drift ... ok
+test diagnostic_kernel_admission::origin::boot_comparison_tests::boot_comparison_real_proc_and_filesystem_failures_match ... ok
+test diagnostic_kernel_admission::origin::boot_comparison_tests::boot_comparison_seeded_documents_and_single_read_faults ... ok
+test diagnostic_kernel_admission::origin::document_scratch_tests::document_scratch_single_read_seeded_short_poison_error_and_budget ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_breakdown_alloc::authority_breakdown_allocation_attribution ... ignored, manual local request decomposition; not timing or admission
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_breakdown_alloc::authority_breakdown_io_parser_refuses_missing_duplicate_overflow_and_bad_text ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_breakdown_alloc::authority_breakdown_retained_io_reader_observes_reads_without_writes ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_context_alloc::authority_context_allocation_attribution ... ignored, manual nonroot context ownership and prefix request attribution; no timing or admission
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_cpu::authority_cpu_actual_phase_attribution ... ignored, manual local thread CPU attribution; no product or admission
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_cpu::authority_cpu_readings_refuse_syscall_errors_invalid_times_overflow_and_reversal ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_cpu::authority_cpu_rotation_covers_every_position_in_both_directions ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_expected_name_alloc::authority_expected_name_allocation_attribution ... ignored, manual local expected inventory requests; not timing or admission
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_fd_path_alloc::authority_fd_path_allocation_attribution ... ignored, manual local fd-path requests; not timing or admission
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_hex_alloc::authority_hex_allocation_attribution ... ignored, manual local nonroot authority key formatting requests; not admission or timing
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_inventory_alloc::authority_inventory_allocation_attribution ... ignored, manual local expected inventory requests; not timing or admission
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_leaf_cpu::authority_leaf_cpu_clock_and_case_schedule_refuse_invalid_inputs ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_leaf_cpu::authority_leaf_cpu_selected_attribution ... ignored, manual local selected fresh leaf CPU; no runtime or admission
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_leaf_cpu::authority_leaf_cpu_selected_observer_preserves_values_errors_and_owner_lifetime ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_leaf_name_alloc::authority_leaf_name_allocation_attribution ... ignored, manual nonroot three-arm leaf name requests and refusal controls; not timing or admission
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_name_capacity_alloc::authority_name_capacity_allocation_attribution ... ignored, manual local three-arm name capacity requests; not timing or admission
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_open_name_alloc::authority_open_name_allocation_cpu_attribution ... ignored, manual local short open-name pairs and cold/warm requests; no admission
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_open_name_alloc::authority_open_name_clock_and_pair_order_are_checked ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_owners_alloc::authority_owners_allocation_attribution ... ignored, manual local expression allocation owners; not timing or admission
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_owners_alloc::authority_owners_expression_counter_retains_values_and_partitions_requests ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_owners_alloc::authority_owners_io_parser_refuses_missing_duplicate_overflow_and_bad_text ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_owners_alloc::authority_owners_retained_io_reader_observes_reads_without_writes ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::boot_comparison::boot_comparison_allocation_attribution ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::boot_operations::boot_operations_clock_schedule_and_returned_owner_lifetime_are_checked ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::boot_operations::boot_operations_selected_cpu_attribution ... ignored, manual local Boot operation CPU attribution; no authority or admission
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::boot_operations::boot_operations_values_fresh_errors_flags_and_trace_counts_match_actual ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::collector_peer_baseline::collector_peer_baseline_boundary_union_and_owned_outputs_without_truncation ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::collector_peer_baseline::collector_peer_baseline_complete_operation_requests ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::collector_peer_baseline::collector_peer_baseline_seeded_canonical_union_and_unmodified_inputs ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::collector_peer_baseline::collector_peer_baseline_stage_requests_match_one_complete_construction ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::collector_peer_baseline::collector_peer_baseline_wrapper_first_errors_latch_and_reentry_schedule ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::collector_peer_capacity::collector_peer_capacity_boundary_union_and_owned_outputs_without_truncation ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::collector_peer_capacity::collector_peer_capacity_complete_operation_requests ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::collector_peer_capacity::collector_peer_capacity_seeded_canonical_union_and_unmodified_inputs ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::collector_peer_capacity::collector_peer_capacity_stage_requests_match_one_complete_construction ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::collector_peer_capacity::collector_peer_capacity_wrapper_first_errors_latch_and_reentry_schedule ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::context_document_buffer_baseline::context_document_buffer_baseline_exact_zeroed_slice_and_seeded_success ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::context_document_buffer_baseline::context_document_buffer_baseline_metadata_error_order_and_no_read_after_first_refusal ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::context_document_buffer_baseline::context_document_buffer_baseline_read_errors_do_not_retry_or_reach_closing_metadata ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::context_document_buffer_baseline::context_document_buffer_baseline_reference_requests ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::context_document_buffer_baseline::context_document_buffer_baseline_short_overrun_content_and_zero_shapes_refuse ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::context_document_stack::context_document_stack_boundary_owned_storage_and_healthy_models ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::context_document_stack::context_document_stack_candidate_requests ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::context_document_stack::context_document_stack_explicit_first_refusals_and_no_arithmetic_before_metadata ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::context_document_stack::context_document_stack_seeded_body_error_and_schedule_differential ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::document_scratch::document_scratch_allocation_attribution ... ignored, manual nonroot per-invocation document buffer allocation control
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::fixed_leaf_alloc_counter_restores_nested_unwind_and_thread_state ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::fixed_leaf_alloc_counter_zeroed_reallocation_and_inactive_forwarding ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::fixed_leaf_path_allocation_attribution ... ignored, manual opt-in allocation requests through actual kernel leaf calls; not timing or admission
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::fresh_status::fresh_status_opener_allocation_attribution ... ignored, manual local nonroot fresh status allocation control; not product timing
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::pid_path::pid_path_allocation_attribution ... ignored, manual local nonroot uncached PID pathname control; no execution or admission
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::pidfd_info_path::pidfd_info_path_candidate_requests ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::pidfd_info_path::pidfd_info_path_reference_requests ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::projection_fields::projection_fields_allocation_attribution ... ignored, manual local nonroot complete Sender bounded projection allocation control
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::projection_groups::projection_groups_candidate_requests ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::projection_groups::projection_groups_reference_requests ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::projection_prefix::projection_prefix_allocation_and_timing_attribution ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::trust_component_baseline::trust_component_baseline_explicit_flags_first_errors_and_generic_inputs ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::trust_component_baseline::trust_component_baseline_names_remain_independent_owned_values ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::trust_component_baseline::trust_component_baseline_nul_requests_preserve_error_bytes_and_position ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::trust_component_baseline::trust_component_baseline_seeded_complete_child_schedule ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::trust_component_baseline::trust_component_baseline_valid_requests ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::trust_component_stack::trust_component_stack_explicit_first_errors_and_long_nul_fallback ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::trust_component_stack::trust_component_stack_nul_requests ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::trust_component_stack::trust_component_stack_owned_values_pointer_and_boundary_bytes ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::trust_component_stack::trust_component_stack_seeded_complete_child_differential ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::trust_component_stack::trust_component_stack_valid_requests ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::validation_leaf_requests::validation_leaf_requests_attribution ... ignored, manual local nonroot allocation and proc I/O request controls; not admission or timing
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::validation_leaf_requests::validation_leaf_requests_authority_drift_is_sticky_and_never_reinitializes ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::validation_leaf_requests::validation_leaf_requests_io_parser_refuses_missing_duplicate_overflow_and_bad_text ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::validation_leaf_requests::validation_leaf_requests_retained_io_reader_observes_reads_without_writes ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::fixed_leaf_path_cost_abba ... ignored, manual local paired fixed path leaf costs; no admission or product workload
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::fixed_leaf_path_differential_identity_flags_and_unknown_names ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::fixed_leaf_path_preserves_original_trace_counts_and_sticky_drift ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::fixed_leaf_path_single_cost ... ignored, manual actual leaf in one image; external crossover only, no admission or product
+test diagnostic_kernel_admission::origin::fresh_kernel_cost::fresh_kernel_observation_attribution ... ignored, manual local nonroot fresh kernel observation attribution; no start authority
+test diagnostic_kernel_admission::origin::fresh_kernel_cost::fresh_status_observation_does_not_reuse_previous_bytes ... ok
+test diagnostic_kernel_admission::origin::fresh_kernel_cost::fresh_status_openers_preserve_identity_flags_and_refusals ... ok
+test diagnostic_kernel_admission::origin::fresh_kernel_cost::fresh_status_runtime_uses_the_measured_fixed_openers ... ok
+test diagnostic_kernel_admission::origin::manager_binding::tests::manager_receiver_binding_cannot_mint_from_refused_or_wrong_original_clock ... ok
+test diagnostic_kernel_admission::origin::manager_binding::tests::manager_receiver_binding_retains_actual_origin_without_packet_or_claim_adoption ... ok
+test diagnostic_kernel_admission::origin::manager_binding::tests::manager_receiver_binding_wrong_boot_type_object_and_descriptor_latch ... ok
+test diagnostic_kernel_admission::origin::pid_path::pid_path_open_differential_preserves_identity_flags_and_refusals ... ok
+test diagnostic_kernel_admission::origin::pid_path::pid_path_runtime_sites_use_fresh_numeric_key_without_string_allocation ... ok
+test diagnostic_kernel_admission::origin::pid_path::pid_path_signed_edges_and_seeded_values_match_complete_decimal ... ok
+test diagnostic_kernel_admission::origin::pidfd_info_path::tests::pidfd_info_path_changed_document_and_pid_fields_refuse_without_reusing_success ... ok
+test diagnostic_kernel_admission::origin::pidfd_info_path::tests::pidfd_info_path_each_actual_read_keeps_alive_document_trace_and_original_pid ... ok
+test diagnostic_kernel_admission::origin::pidfd_info_path::tests::pidfd_info_path_fresh_open_identity_flags_and_missing_name_match_reference ... ok
+test diagnostic_kernel_admission::origin::pidfd_info_path::tests::pidfd_info_path_non_pidfd_poll_refuses_before_read ... ok
+test diagnostic_kernel_admission::origin::pidfd_info_path::tests::pidfd_info_path_read_errors_propagate_once_without_retry ... ok
+test diagnostic_kernel_admission::origin::pidfd_info_path::tests::pidfd_info_path_signed_boundaries_seed_and_owned_lifetime ... ok
+test diagnostic_kernel_admission::origin::tests::kernel_refusal_capture_seeded_clock_and_namespace_classification ... ok
+test diagnostic_kernel_admission::origin::tests::kernel_time_original_proc_boot_and_namespace_drift_refuse ... ok
+test diagnostic_kernel_admission::origin::tests::kernel_time_packet_hold_has_exclusive_boottime_boundary ... ok
+test diagnostic_kernel_admission::origin::tests::kernel_time_timespec_and_ordering_edges_refuse ... ok
+test diagnostic_kernel_admission::origin::tests::kernel_worker_context_namespace_type_and_object_are_independent_checks ... ok
+test diagnostic_kernel_admission::origin::tests::kernel_worker_context_original_typed_namespaces_and_drift_refuse ... ok
+test diagnostic_kernel_admission::projection_fields_tests::status_field_scan_differential_first_refusal_seeded_order_duplicates_and_shapes ... ok
+test diagnostic_kernel_admission::projection_fields_tests::status_field_scan_keeps_token_caps_credentials_unknown_lines_and_live_trace_count ... ok
+test diagnostic_kernel_admission::projection_groups::tests::projection_groups_documents_keep_first_refusal_and_projection_trace ... ok
+test diagnostic_kernel_admission::projection_groups::tests::projection_groups_result_short_circuit_keeps_first_error_and_visit_order ... ok
+test diagnostic_kernel_admission::projection_groups::tests::projection_groups_seeded_values_and_owned_vec_match_reference ... ok
+test diagnostic_kernel_admission::refusal_trace::tests::kernel_refusal_capture_first_event_and_phase_are_not_overwritten ... ok
+test diagnostic_kernel_admission::refusal_trace::tests::kernel_refusal_capture_nested_and_unwind_restore_original_scope ... ok
+test diagnostic_kernel_admission::refusal_trace::tests::kernel_refusal_capture_threads_are_independent ... ok
+test diagnostic_kernel_admission::tests::document_scratch::document_scratch_actual_documents_exclude_previous_bytes_and_preserve_errors ... ok
+test diagnostic_kernel_admission::tests::document_scratch::document_scratch_runtime_binding_requires_one_call_owned_buffer ... ok
+test diagnostic_kernel_admission::tests::document_scratch::document_scratch_sender_preserves_fresh_counts_and_original_refusals ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_actual_sender_and_nonblocking_empty_receive ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_authentication_has_no_caller_peer_or_time ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_empty_disconnect_and_socket_option_drift_refuse ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_exact_budget_and_oversized_packet_refuse ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_inherited_socket_identifies_child_and_refuses_after_sigkill ... ignored, manual nonroot Linux/python3 inherited sender and original message pidfd; no live service
+test diagnostic_kernel_admission::tests::kernel_admission_packet_projection_drift_latches_refusal ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_received_rights_close_all_copies_on_refusal ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_reviewed_controller_refuses_fixture_trust_and_fallback ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_seeded_status_mutations_refuse_wrong_credentials ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_signature_principal_and_clock_refusals_are_sticky ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_wrong_socket_type_refuses_without_fallback ... ok
+test diagnostic_kernel_admission::tests::kernel_oidc_original_clock_sampler_preserves_context_and_prior_refusal ... ok
+test diagnostic_kernel_admission::tests::kernel_refusal_capture_healthy_has_no_event ... ok
+test diagnostic_kernel_admission::tests::kernel_refusal_capture_projection_is_lazy_and_redacted ... ok
+test diagnostic_kernel_admission::tests::kernel_worker_context_packet_sender_clock_and_prior_refusal_are_sticky ... ok
+test diagnostic_kernel_admission::tests::projection_cost::projection_fields_complete_sender_preserves_reads_counts_and_original_refusals ... ok
+test diagnostic_kernel_admission::tests::projection_cost::projection_fields_differential_seeded_boundaries_duplicates_and_error_order ... ok
+test diagnostic_kernel_admission::tests::projection_cost::projection_fields_runtime_binding_is_exact_frozen_candidate ... ok
+test diagnostic_kernel_admission::tests::projection_prefix::projection_prefix_differential_seeded_bytes_and_first_refusal ... ok
+
+test result: ok. 124 passed; 0 failed; 23 ignored; 0 measured; 1475 filtered out; finished in 11.00s
+

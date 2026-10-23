@@ -1,0 +1,389 @@
+{
+  "admission": false,
+  "live": false,
+  "pairs": [
+    {
+      "baseline": [
+        {
+          "admission": false,
+          "cpu_ns": 30500141,
+          "iterations": 20000,
+          "product": false,
+          "seed": 121658529,
+          "shape": 512,
+          "wall_ns": 27453807,
+          "workload_witness": "2356e6f208541c51"
+        },
+        {
+          "admission": false,
+          "cpu_ns": 89838072,
+          "iterations": 20000,
+          "product": false,
+          "seed": 121658529,
+          "shape": 2048,
+          "wall_ns": 80857794,
+          "workload_witness": "38e0e3ccf588d0af"
+        },
+        {
+          "admission": false,
+          "cpu_ns": 342686154,
+          "iterations": 20000,
+          "product": false,
+          "seed": 121658529,
+          "shape": 8192,
+          "wall_ns": 308420602,
+          "workload_witness": "187822c9397b5e2f"
+        }
+      ],
+      "candidate": [
+        {
+          "admission": false,
+          "cpu_ns": 6768343,
+          "iterations": 20000,
+          "product": false,
+          "seed": 121658529,
+          "shape": 512,
+          "wall_ns": 6094559,
+          "workload_witness": "2356e6f208541c51"
+        },
+        {
+          "admission": false,
+          "cpu_ns": 17428902,
+          "iterations": 20000,
+          "product": false,
+          "seed": 121658529,
+          "shape": 2048,
+          "wall_ns": 15688087,
+          "workload_witness": "38e0e3ccf588d0af"
+        },
+        {
+          "admission": false,
+          "cpu_ns": 60403191,
+          "iterations": 20000,
+          "product": false,
+          "seed": 121658529,
+          "shape": 8192,
+          "wall_ns": 54364189,
+          "workload_witness": "187822c9397b5e2f"
+        }
+      ]
+    },
+    {
+      "baseline": [
+        {
+          "admission": false,
+          "cpu_ns": 26868728,
+          "iterations": 20000,
+          "product": false,
+          "seed": 121658529,
+          "shape": 512,
+          "wall_ns": 24201188,
+          "workload_witness": "2356e6f208541c51"
+        },
+        {
+          "admission": false,
+          "cpu_ns": 72606449,
+          "iterations": 20000,
+          "product": false,
+          "seed": 121658529,
+          "shape": 2048,
+          "wall_ns": 65346977,
+          "workload_witness": "38e0e3ccf588d0af"
+        },
+        {
+          "admission": false,
+          "cpu_ns": 267732483,
+          "iterations": 20000,
+          "product": false,
+          "seed": 121658529,
+          "shape": 8192,
+          "wall_ns": 240973215,
+          "workload_witness": "187822c9397b5e2f"
+        }
+      ],
+      "candidate": [
+        {
+          "admission": false,
+          "cpu_ns": 6618052,
+          "iterations": 20000,
+          "product": false,
+          "seed": 121658529,
+          "shape": 512,
+          "wall_ns": 5958286,
+          "workload_witness": "2356e6f208541c51"
+        },
+        {
+          "admission": false,
+          "cpu_ns": 22501949,
+          "iterations": 20000,
+          "product": false,
+          "seed": 121658529,
+          "shape": 2048,
+          "wall_ns": 20252939,
+          "workload_witness": "38e0e3ccf588d0af"
+        },
+        {
+          "admission": false,
+          "cpu_ns": 58048769,
+          "iterations": 20000,
+          "product": false,
+          "seed": 121658529,
+          "shape": 8192,
+          "wall_ns": 52245057,
+          "workload_witness": "187822c9397b5e2f"
+        }
+      ]
+    },
+    {
+      "baseline": [
+        {
+          "admission": false,
+          "cpu_ns": 25051056,
+          "iterations": 20000,
+          "product": false,
+          "seed": 121658529,
+          "shape": 512,
+          "wall_ns": 22626285,
+          "workload_witness": "2356e6f208541c51"
+        },
+        {
+          "admission": false,
+          "cpu_ns": 82839611,
+          "iterations": 20000,
+          "product": false,
+          "seed": 121658529,
+          "shape": 2048,
+          "wall_ns": 74557748,
+          "workload_witness": "38e0e3ccf588d0af"
+        },
+        {
+          "admission": false,
+          "cpu_ns": 310449396,
+          "iterations": 20000,
+          "product": false,
+          "seed": 121658529,
+          "shape": 8192,
+          "wall_ns": 279416349,
+          "workload_witness": "187822c9397b5e2f"
+        }
+      ],
+      "candidate": [
+        {
+          "admission": false,
+          "cpu_ns": 6523398,
+          "iterations": 20000,
+          "product": false,
+          "seed": 121658529,
+          "shape": 512,
+          "wall_ns": 5875316,
+          "workload_witness": "2356e6f208541c51"
+        },
+        {
+          "admission": false,
+          "cpu_ns": 16084510,
+          "iterations": 20000,
+          "product": false,
+          "seed": 121658529,
+          "shape": 2048,
+          "wall_ns": 14512225,
+          "workload_witness": "38e0e3ccf588d0af"
+        },
+        {
+          "admission": false,
+          "cpu_ns": 57200716,
+          "iterations": 20000,
+          "product": false,
+          "seed": 121658529,
+          "shape": 8192,
+          "wall_ns": 51484073,
+          "workload_witness": "187822c9397b5e2f"
+        }
+      ]
+    },
+    {
+      "baseline": [
+        {
+          "admission": false,
+          "cpu_ns": 23888858,
+          "iterations": 20000,
+          "product": false,
+          "seed": 121658529,
+          "shape": 512,
+          "wall_ns": 21502721,
+          "workload_witness": "2356e6f208541c51"
+        },
+        {
+          "admission": false,
+          "cpu_ns": 70588708,
+          "iterations": 20000,
+          "product": false,
+          "seed": 121658529,
+          "shape": 2048,
+          "wall_ns": 63537026,
+          "workload_witness": "38e0e3ccf588d0af"
+        },
+        {
+          "admission": false,
+          "cpu_ns": 269545124,
+          "iterations": 20000,
+          "product": false,
+          "seed": 121658529,
+          "shape": 8192,
+          "wall_ns": 242595126,
+          "workload_witness": "187822c9397b5e2f"
+        }
+      ],
+      "candidate": [
+        {
+          "admission": false,
+          "cpu_ns": 6670259,
+          "iterations": 20000,
+          "product": false,
+          "seed": 121658529,
+          "shape": 512,
+          "wall_ns": 6006162,
+          "workload_witness": "2356e6f208541c51"
+        },
+        {
+          "admission": false,
+          "cpu_ns": 17521617,
+          "iterations": 20000,
+          "product": false,
+          "seed": 121658529,
+          "shape": 2048,
+          "wall_ns": 15771630,
+          "workload_witness": "38e0e3ccf588d0af"
+        },
+        {
+          "admission": false,
+          "cpu_ns": 52779675,
+          "iterations": 20000,
+          "product": false,
+          "seed": 121658529,
+          "shape": 8192,
+          "wall_ns": 47510529,
+          "workload_witness": "187822c9397b5e2f"
+        }
+      ]
+    },
+    {
+      "baseline": [
+        {
+          "admission": false,
+          "cpu_ns": 26059838,
+          "iterations": 20000,
+          "product": false,
+          "seed": 121658529,
+          "shape": 512,
+          "wall_ns": 23462082,
+          "workload_witness": "2356e6f208541c51"
+        },
+        {
+          "admission": false,
+          "cpu_ns": 74673512,
+          "iterations": 20000,
+          "product": false,
+          "seed": 121658529,
+          "shape": 2048,
+          "wall_ns": 67208462,
+          "workload_witness": "38e0e3ccf588d0af"
+        },
+        {
+          "admission": false,
+          "cpu_ns": 257583586,
+          "iterations": 20000,
+          "product": false,
+          "seed": 121658529,
+          "shape": 8192,
+          "wall_ns": 231830186,
+          "workload_witness": "187822c9397b5e2f"
+        }
+      ],
+      "candidate": [
+        {
+          "admission": false,
+          "cpu_ns": 6719723,
+          "iterations": 20000,
+          "product": false,
+          "seed": 121658529,
+          "shape": 512,
+          "wall_ns": 6050963,
+          "workload_witness": "2356e6f208541c51"
+        },
+        {
+          "admission": false,
+          "cpu_ns": 21594921,
+          "iterations": 20000,
+          "product": false,
+          "seed": 121658529,
+          "shape": 2048,
+          "wall_ns": 19436877,
+          "workload_witness": "38e0e3ccf588d0af"
+        },
+        {
+          "admission": false,
+          "cpu_ns": 62064752,
+          "iterations": 20000,
+          "product": false,
+          "seed": 121658529,
+          "shape": 8192,
+          "wall_ns": 55860350,
+          "workload_witness": "187822c9397b5e2f"
+        }
+      ]
+    }
+  ],
+  "passed": true,
+  "product": false,
+  "results": [
+    {
+      "floor": 0.85,
+      "geometric_mean": 0.2524222754720809,
+      "lower_95": 0.22718061803453016,
+      "paired_cpu_ratios": [
+        0.22191185935828953,
+        0.24631058083583265,
+        0.26040411230568483,
+        0.27922050522465325,
+        0.2578574356448417
+      ],
+      "passed": true,
+      "shape": 512,
+      "upper_95": 0.2804684911316619
+    },
+    {
+      "floor": 0.85,
+      "geometric_mean": 0.2424653390834986,
+      "lower_95": 0.18485791766584425,
+      "paired_cpu_ratios": [
+        0.194003517795885,
+        0.3099166714515952,
+        0.19416448008187773,
+        0.248221245245061,
+        0.28919117933009497
+      ],
+      "passed": true,
+      "shape": 2048,
+      "upper_95": 0.3180250075257573
+    },
+    {
+      "floor": 0.85,
+      "geometric_mean": 0.20150489383526948,
+      "lower_95": 0.1722021058821132,
+      "paired_cpu_ratios": [
+        0.17626387963139006,
+        0.21681630988347425,
+        0.1842513360857046,
+        0.1958101642380294,
+        0.24094994934964528
+      ],
+      "passed": true,
+      "shape": 8192,
+      "upper_95": 0.23579399352618968
+    }
+  ],
+  "retry": false,
+  "semantic_sha256": "8214afd58fcf57c3f57ab1de3469063f8e783f5fdf1b601c8e06cd5373abee1e",
+  "server": false,
+  "whole_runtime_gain_proven": false
+}

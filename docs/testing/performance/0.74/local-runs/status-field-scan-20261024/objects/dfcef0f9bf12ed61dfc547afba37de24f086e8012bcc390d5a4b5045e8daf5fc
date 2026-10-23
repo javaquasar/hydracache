@@ -1,0 +1,23 @@
+{
+  "argv": [
+    "wsl.exe",
+    "-d",
+    "Ubuntu",
+    "-u",
+    "artur",
+    "--cd",
+    "/",
+    "--exec",
+    "/usr/bin/env",
+    "-i",
+    "PATH=/usr/bin:/bin",
+    "/usr/bin/timeout",
+    "--signal=TERM",
+    "--kill-after=2s",
+    "20s",
+    "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/target/status-field-scan-20261024/candidate/parser",
+    "check"
+  ],
+  "image_sha256": "b23c9228a71198da939778c5c6476a5fbbae0645e749cea5fffbacaef047dbc2",
+  "retry": false
+}

@@ -1,0 +1,7 @@
+
+running 2 tests
+test diagnostic_kernel_admission::projection_fields_tests::status_field_scan_differential_first_refusal_seeded_order_duplicates_and_shapes ... ok
+test diagnostic_kernel_admission::projection_fields_tests::status_field_scan_keeps_token_caps_credentials_unknown_lines_and_live_trace_count ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 1620 filtered out; finished in 0.02s
+

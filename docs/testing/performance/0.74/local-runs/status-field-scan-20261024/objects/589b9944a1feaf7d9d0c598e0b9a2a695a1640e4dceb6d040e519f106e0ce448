@@ -1,0 +1,47 @@
+
+running 42 tests
+test diagnostic_artifacts::linux::projection::held_unit_projection_bundle_views_are_fixed_surface_and_retained_content_only ... ok
+test diagnostic_builder::held_build::role_files::projection::held_unit_projection_role_views_keep_order_and_refuse_poisoned_owner ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::projection_fields::projection_fields_allocation_attribution ... ignored, manual local nonroot complete Sender bounded projection allocation control
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::projection_groups::projection_groups_candidate_requests ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::projection_groups::projection_groups_reference_requests ... ok
+test diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::projection_prefix::projection_prefix_allocation_and_timing_attribution ... ok
+test diagnostic_kernel_admission::projection_fields_tests::status_field_scan_differential_first_refusal_seeded_order_duplicates_and_shapes ... ok
+test diagnostic_kernel_admission::projection_fields_tests::status_field_scan_keeps_token_caps_credentials_unknown_lines_and_live_trace_count ... ok
+test diagnostic_kernel_admission::projection_groups::tests::projection_groups_documents_keep_first_refusal_and_projection_trace ... ok
+test diagnostic_kernel_admission::projection_groups::tests::projection_groups_result_short_circuit_keeps_first_error_and_visit_order ... ok
+test diagnostic_kernel_admission::projection_groups::tests::projection_groups_seeded_values_and_owned_vec_match_reference ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_packet_projection_drift_latches_refusal ... ok
+test diagnostic_kernel_admission::tests::kernel_refusal_capture_projection_is_lazy_and_redacted ... ok
+test diagnostic_kernel_admission::tests::projection_cost::projection_fields_complete_sender_preserves_reads_counts_and_original_refusals ... ok
+test diagnostic_kernel_admission::tests::projection_cost::projection_fields_differential_seeded_boundaries_duplicates_and_error_order ... ok
+test diagnostic_kernel_admission::tests::projection_cost::projection_fields_runtime_binding_is_exact_frozen_candidate ... ok
+test diagnostic_kernel_admission::tests::projection_prefix::projection_prefix_differential_seeded_bytes_and_first_refusal ... ok
+test diagnostic_loaded::tests::loaded_dbus_projection_requires_exact_types_and_ignores_only_command_status ... ok
+test diagnostic_loaded::tests::loaded_projection_distinguishes_setter_names_and_extended_exec_flags ... ok
+test diagnostic_output_preparation::intent_journal::tests::signed_history_current_projection_and_missing_prefix_refuse ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_policy_matching_requires_original_projection_and_both_guards ... ok
+test diagnostic_process::credentials::namespace_checked::tests::signed_status_private_opener_defers_projection_until_revalidation ... ok
+test diagnostic_process::credentials::tests::status_projection_ignores_nonutf8_name_but_checks_all_credentials ... ok
+test diagnostic_process::credentials::tests::status_projection_refuses_missing_duplicate_and_malformed_fields ... ok
+test diagnostic_receipts::tests::pinned_hdr_projection_checks_bucket_edges_and_ceil_rank ... ok
+test diagnostic_receipts::tests::seeded_hdr_projection_preserves_rank_bounds_and_overflow_accounting ... ok
+test diagnostic_two_phase_launch::root_enrollment::kernel::guardian::original::projection::held_unit_projection_guardian_views_require_armed_original_and_keep_order ... ok
+test diagnostic_worker_policy::intent_projection::tests::typed_projection_preserves_all_variants_and_array_order ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::tests::authority_intent_storage_becomes_unsafe_before_publication_keeps_projection_error ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::tests::starting_intent_tests::starting_intent_clock_boot_and_cell_projection_edges_refuse ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::tests::signed_opening_post_open_account_failure_precedes_first_projection_stage ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::tests::signed_opening_unhardened_process_refuses_only_at_projection_read ... ok
+test diagnostic_worker_policy::proof_reuse_tests::worker_proof_reuse_reference_matches_every_retained_projection_field ... ok
+test diagnostic_worker_policy::proof_reuse_tests::worker_proof_reuse_verifies_once_and_retains_projection_integrity ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::unit_projection::tests::held_unit_projection_brackets_with_two_unchanged_validations_and_stable_origins ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::unit_projection::tests::held_unit_projection_closing_drift_and_retained_body_tamper_refuse ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::unit_projection::tests::held_unit_projection_every_full_validation_cut_is_sticky_and_has_no_retry ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::unit_projection::tests::held_unit_projection_exact_slots_command_placement_and_hardening ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::unit_projection::tests::held_unit_projection_production_api_consumes_owner_and_returns_no_spec ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::unit_projection::tests::held_unit_projection_refuses_aliases_bad_guardians_and_renewed_bounds ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::unit_projection::tests::held_unit_projection_seeded_original_context_substitutions_are_not_rebound ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::retained_projection_drift_refuses_instead_of_repairing_itself ... ok
+
+test result: ok. 41 passed; 0 failed; 1 ignored; 0 measured; 1580 filtered out; finished in 0.31s
+

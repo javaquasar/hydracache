@@ -1,0 +1,42 @@
+{
+  "lane": "188-final",
+  "steps": [
+    {
+      "name": "check",
+      "exit": 0
+    },
+    {
+      "name": "clippy",
+      "exit": 0
+    },
+    {
+      "name": "status_field_scan_",
+      "exit": 0
+    },
+    {
+      "name": "diagnostic_kernel_admission__",
+      "exit": 0
+    },
+    {
+      "name": "projection_",
+      "exit": 0
+    },
+    {
+      "name": "fresh_status_",
+      "exit": 0
+    },
+    {
+      "name": "fixed_leaf_path_",
+      "exit": 0
+    },
+    {
+      "name": "authority_",
+      "exit": 0
+    }
+  ],
+  "failure": null,
+  "source_unchanged": true,
+  "server": false,
+  "product": false,
+  "original_owner_run": false
+}

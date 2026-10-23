@@ -1,0 +1,9 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.36s
+     Running tests\status_field_scan_074.rs (target\debug\deps\status_field_scan_074-cbd6d40f5f9defea.exe)
+
+running 2 tests
+test status_field_scan_exact_current_source_precedes_any_historical_view ... ok
+test status_field_scan_refuses_removed_guards_reads_order_and_helper_drift ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.62s
+

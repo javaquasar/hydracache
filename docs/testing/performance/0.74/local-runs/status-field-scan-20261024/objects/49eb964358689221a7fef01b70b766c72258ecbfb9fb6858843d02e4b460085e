@@ -1,0 +1,40 @@
+{
+  "admission": false,
+  "live": false,
+  "product": false,
+  "retry": false,
+  "rows": [
+    {
+      "admission": false,
+      "cpu_ns": 37503573,
+      "iterations": 20000,
+      "product": false,
+      "seed": 121658529,
+      "shape": 512,
+      "wall_ns": 35030403,
+      "workload_witness": "2356e6f208541c51"
+    },
+    {
+      "admission": false,
+      "cpu_ns": 107068058,
+      "iterations": 20000,
+      "product": false,
+      "seed": 121658529,
+      "shape": 2048,
+      "wall_ns": 96364793,
+      "workload_witness": "38e0e3ccf588d0af"
+    },
+    {
+      "admission": false,
+      "cpu_ns": 415691955,
+      "iterations": 20000,
+      "product": false,
+      "seed": 121658529,
+      "shape": 8192,
+      "wall_ns": 374125066,
+      "workload_witness": "187822c9397b5e2f"
+    }
+  ],
+  "semantic_sha256": "8214afd58fcf57c3f57ab1de3469063f8e783f5fdf1b601c8e06cd5373abee1e",
+  "server": false
+}
