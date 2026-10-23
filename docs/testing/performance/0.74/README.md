@@ -6197,3 +6197,15 @@ inside the same old validation frames. It exports no descriptors and adds no
 clock or hash round. Child-entry materialization/executable/transport remains
 next; static/model/private-image units do not establish original delivery,
 writer cessation or server admission.
+
+### Sealed bootstrap entry remains a parent-owned assertion
+
+The [entry binding component](bootstrap-entry-binding-20261023.md) materializes
+1024 fixed bytes from the same original owner, actual sealed config, legacy
+record and closed census. Exact expected bytes, inode/flags/seals/offset and
+collision checks extend the observation to 27 descriptors / 15 semantic roles
+inside the unchanged complete frames and deadlines. A missing retained entry
+refuses instead of being recreated. The new COMPAT format is additive; decoding
+or sealing it is not authentication. Child-reader/executable, inherited FD
+protocol, authenticated original delivery and all-writer cessation remain open.
+No live retry, server, service/clock change or product workload is enabled.

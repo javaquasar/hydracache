@@ -5,5 +5,12 @@
   "exit_code": 1,
   "result": "0 passed; 1 failed; missing sealed child-entry format",
   "original_live_join": false,
-  "retry_to_pass": false
+  "retry_to_pass": false,
+  "later_development_compile_failure": {
+    "kind": "captured-tool-summary-not-raw-receipt",
+    "compiler": "GNU 1.94.0 release all-features",
+    "test_filter": "bootstrap_entry_",
+    "error": "E0283 in diagnostic_bootstrap_entry_binding_tests.rs:124; ambiguous digest .into() target inside assert_eq",
+    "correction": "explicit [u8;32] conversion in test only; no live predicate or deadline changed"
+  }
 }

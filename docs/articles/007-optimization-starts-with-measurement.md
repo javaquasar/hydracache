@@ -18016,3 +18016,28 @@ the added kernel properties, while modeled old-prefix/provider inputs exercise
 mapping and sticky refusal. Neither becomes an original child-start observation.
 The next step remains sealed entry materialization and an authenticated fixed
 child protocol before any one-shot execveat or all-writer completion claim.
+
+### Immutable entry bytes are assertions, not authenticated authority
+
+The next [entry binding component](../testing/performance/0.74/bootstrap-entry-binding-20261023.md)
+addresses a different question: which exact attempt would a future child entry
+describe? The parent builds a fixed 1024-byte record from its own original
+context, signed-document digests, actual images, streams, guardians and closed
+census. In particular, the config identity names its sealed runtime copy, not
+the source inode. The existing legacy record is compared against its original
+private token/bindings; the new record receives its digest, not an exported token.
+
+Seals prevent content changes but do not prove that truthful content was sealed.
+The portable decoder therefore returns assertions, never a permit. It can accept
+a shape-valid mutation; the parent's exact expected-byte comparison must reject
+that mutation. Private memfd tests exercise bytes/inode/offset/seals, while
+modeled original contexts exercise field mapping. Neither proves child identity
+or execution, and no child is started by these checks.
+
+The new retained role sits inside the same old full frames, without changing
+their count/order or the absolute admission windows. Losing a retained record
+refuses rather than silently manufacturing a replacement. Additional hashing
+and metadata work is bounded but unmeasured: passing unit tests does not show
+that full original preparation fits its deadline. A separately authenticated
+child-reader/executable, actual original delivery and writer-death proof remain
+the next execution gates; an immutable assertion is only a prerequisite.
