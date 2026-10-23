@@ -251,3 +251,6 @@ mod original_join;
 
 #[path = "diagnostic_manager_sandbox_query.rs"]
 mod sandbox_query;
+
+#[path = "diagnostic_manager_held_delivery.rs"]
+mod held_delivery;

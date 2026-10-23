@@ -63,5 +63,5 @@ pub fn source_view(name: &str, raw: &str) -> String {
     }
 }
 pub fn compat_view(raw: &str) -> String {
-    remove(raw, BLOCK)
+    remove(&sandbox::held::compat_view(raw), BLOCK)
 }

@@ -8,7 +8,11 @@ pub fn hook(name: &str) -> Option<&'static str> {
         _=>None,
     }
 }
-pub fn source_view(name: &str, raw: &str) -> String {
+#[path = "bootstrap_held_delivery_guard.rs"]
+pub mod held;
+pub fn source_view(name: &str, input: &str) -> String {
+    let newer = held::source_view(name, input);
+    let raw = newer.as_str();
     if let Some(hook) = hook(name) {
         assert_eq!(raw.matches(hook).count(), 1);
         raw.replacen(hook, "", 1)

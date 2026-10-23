@@ -97,3 +97,6 @@ impl InstalledBindings {
         ]
     }
 }
+
+#[path = "diagnostic_held_delivery_wire.rs"]
+pub(crate) mod held_wire;

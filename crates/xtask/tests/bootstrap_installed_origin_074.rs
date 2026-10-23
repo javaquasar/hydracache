@@ -8,6 +8,82 @@ fn installed_origin_exists_before_systemd_or_child_admission() {
     );
 }
 
+#[test]
+fn bootstrap_held_delivery_components_precede_execution_admission() {
+    for name in [
+        "diagnostic_held_delivery_wire.rs",
+        "diagnostic_held_child_exchange.rs",
+        "diagnostic_original_held_delivery.rs",
+    ] {
+        assert!(
+            root()
+                .join("tools/long-run-supervisor-074/src")
+                .join(name)
+                .is_file(),
+            "held delivery component absent: {name}"
+        );
+    }
+}
+
+#[test]
+fn bootstrap_held_delivery_exact_additions_leave_old_frames_and_cli_closed() {
+    let view = entry_guard::material::child::sandbox::held::source_view;
+    for name in [
+        "diagnostic_bootstrap_installed_entry_census.rs",
+        "diagnostic_bootstrap_sandbox_owner.rs",
+        "diagnostic_manager_channel.rs",
+    ] {
+        let path = format!("tools/long-run-supervisor-074/src/{name}");
+        let old = std::process::Command::new("git")
+            .current_dir(root())
+            .args(["--no-replace-objects", "show", &format!("ba690541:{path}")])
+            .output()
+            .unwrap();
+        assert!(old.status.success());
+        let old = String::from_utf8(old.stdout).unwrap().replace('\r', "");
+        let raw = source(name);
+        assert_eq!(view(name, &raw), old);
+        let hook = entry_guard::material::child::sandbox::held::hook(name).unwrap();
+        for bad in [raw.replace(hook, ""), format!("{raw}{hook}")] {
+            assert!(std::panic::catch_unwind(|| view(name, &bad)).is_err());
+        }
+        assert_ne!(view(name, &format!("{raw}\n// drift\n")), old);
+    }
+    let raw = read("docs/COMPAT.md");
+    let block = entry_guard::material::child::sandbox::held::BLOCK;
+    assert!(
+        entry_guard::material::child::sandbox::held::compat_view(&raw)
+            .ends_with("<!-- END BOOTSTRAP INSTALLED CHILD V1 -->\n")
+    );
+    for bad in [raw.replace(block, ""), format!("{raw}{block}")] {
+        assert!(std::panic::catch_unwind(|| {
+            entry_guard::material::child::sandbox::held::compat_view(&bad)
+        })
+        .is_err());
+    }
+    let cli = source("bin/diagnostic_held_bootstrap.rs");
+    assert!(!cli.contains("held-readiness"));
+    assert!(source("diagnostic_bootstrap_installed_mode.rs")
+        .contains("original bootstrap authentication is closed"));
+    let original = source("diagnostic_original_held_delivery.rs");
+    assert!(original.contains("self.stage = Stage::Uncertain;"));
+    assert!(original.contains("original.observe_managed_sandbox()"));
+    assert!(original.contains("deadline: context.bounds[3]"));
+    assert!(!original.contains("execve"));
+    assert!(!original.contains("release_worker"));
+    let parser_path = "tools/long-run-supervisor-074/src/diagnostic_kernel_ancillary.rs";
+    let old = std::process::Command::new("git")
+        .current_dir(root())
+        .args(["show", &format!("ba690541:{parser_path}")])
+        .output()
+        .unwrap();
+    assert!(old.status.success());
+    assert_eq!(
+        read(parser_path),
+        String::from_utf8(old.stdout).unwrap().replace('\r', "")
+    );
+}
+
 use guard::installed_entry as entry_guard;
 #[test]
 fn bootstrap_sandbox_owner_component_precedes_admission() {

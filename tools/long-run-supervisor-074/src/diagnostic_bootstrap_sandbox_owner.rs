@@ -2,6 +2,9 @@
 use super::*;
 use crate::diagnostic_process::sandbox::{Expected, SandboxRead};
 use crate::diagnostic_worker_policy::{SignedWorkerPolicy, WorkerPolicy};
+
+#[path = "diagnostic_original_held_delivery.rs"]
+mod held_delivery;
 type Managed = (u32, [u8; 16], String);
 #[derive(Debug, thiserror::Error)]
 pub(crate) enum SandboxError {
