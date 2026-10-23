@@ -67,7 +67,7 @@ fn collector_intent_keeps_legacy_bytes_and_execution_boundary_closed() {
         "docs/testing/performance/0.74/qualification-manifest.toml",
         "Cargo.lock",
     ] {
-        let mut current = std::fs::read_to_string(super::root().join(path))
+        let mut current = crate::runtime_io::read_to_string(super::root().join(path))
             .unwrap()
             .replace('\r', "");
         current = super::original_start_consent::normalize(path, &current);

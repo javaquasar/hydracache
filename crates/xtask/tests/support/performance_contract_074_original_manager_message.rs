@@ -149,7 +149,7 @@ fn root() -> std::path::PathBuf {
     std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..")
 }
 fn read(name: &str) -> String {
-    let raw = std::fs::read_to_string(root().join(name))
+    let raw = crate::runtime_io::read_to_string(root().join(name))
         .unwrap()
         .replace('\r', "");
     crate::live_walk::normalize(name, &raw)

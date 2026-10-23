@@ -82,7 +82,24 @@ macro_rules! hc074_starting_effects_view {
 macro_rules! hc074_remaining_preparation_view {
     ($path:expr, $source:expr) => {{
         let path: &str = $path;
-        let mut raw: String = $crate::hc074_starting_effects_view!(path, $source);
+        let mut raw: String = $source.to_owned();
+        // The inner prefix view expects the pre-scalar parser. Undo only the
+        // exact accepted group/scalar leaves before entering that older view.
+        // Other paths and every match-count/whole-body assertion stay intact.
+        if path == "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs" {
+            raw = $crate::hc074_projection_groups_view!(path, &raw);
+            if raw.contains("    let scalar = |prefix:") {
+                let before = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../tools/long-run-supervisor-074/tests/support/projection_reference.rs")).replace('\r', "");
+                let after = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../tools/long-run-supervisor-074/tests/support/projection_candidate.rs")).replace('\r', "");
+                let function = |text: &str| format!("fn projection(bytes: &[u8], credentials: &libc::ucred) -> Result<Projection, KernelError> {{{}", text.split_once(") -> Result<Projection, KernelError> {").unwrap().1.trim_end());
+                let after = function(&after);
+                assert_eq!(raw.matches(&after).count(), 1, "exact bounded projection parser");
+                let old_body = before.split_once(") -> Result<Projection, KernelError> {").unwrap().1;
+                let before = format!("fn projection(bytes: &[u8], credentials: &libc::ucred) -> Result<Projection, KernelError> {{{}", old_body.trim_end());
+                raw = raw.replacen(&after, &before, 1);
+            }
+        }
+        let mut raw: String = $crate::hc074_starting_effects_view!(path, &raw);
         for (file, hook) in [
             ("tools/long-run-supervisor-074/src/diagnostic_kernel_admission_tests.rs", "#[path = \"../tests/support/projection_cost.rs\"]\npub(super) mod projection_cost;\n\n"),
             ("tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs", "\n#[path = \"../tests/support/projection_alloc.rs\"]\nmod projection_fields;\n"),
@@ -91,18 +108,6 @@ macro_rules! hc074_remaining_preparation_view {
                 assert_eq!(raw.matches(hook).count(), 1, "exact projection test hook");
                 raw = raw.replacen(hook, "", 1);
             }
-        }
-        if path == "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs"
-            && raw.contains("    let scalar = |prefix:")
-        {
-            let before = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../tools/long-run-supervisor-074/tests/support/projection_reference.rs")).replace('\r', "");
-            let after = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../tools/long-run-supervisor-074/tests/support/projection_candidate.rs")).replace('\r', "");
-            let function = |text: &str| format!("fn projection(bytes: &[u8], credentials: &libc::ucred) -> Result<Projection, KernelError> {{{}", text.split_once(") -> Result<Projection, KernelError> {").unwrap().1.trim_end());
-            let after = function(&after);
-            assert_eq!(raw.matches(&after).count(), 1, "exact bounded projection parser");
-            let old_body = before.split_once(") -> Result<Projection, KernelError> {").unwrap().1;
-            let before = format!("fn projection(bytes: &[u8], credentials: &libc::ucred) -> Result<Projection, KernelError> {{{}", old_body.trim_end());
-            raw = raw.replacen(&after, &before, 1);
         }
         let has_marks = raw.contains("::mark(\"outputs-") || raw.contains("::mark(\"owned-");
         for (file, indent, names) in [

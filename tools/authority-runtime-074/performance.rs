@@ -1,7 +1,13 @@
 //! Exact IO-only adapters for the historical preservation checks in the current contract binary.
 pub const MAIN: &str = "crates/xtask/tests/performance_contract_074.rs";
 pub const IMPORTS: &str = "#[path = \"../../../tools/authority-runtime-074/gate.rs\"]\nmod runtime;\n#[path = \"../../../tools/authority-runtime-074/io.rs\"]\nmod runtime_io;\n#[path = \"../../../tools/authority-storage-source-074/contract.rs\"]\nmod storage_contract;\n";
-pub const READERS: [(&str, &str); 52] = [
+pub const READERS: [(&str, &str); 58] = [
+    ("crates/xtask/tests/support/performance_contract_074_collector_causal.rs", "std::fs::read_to_string(super::root().join(p))"),
+    ("crates/xtask/tests/support/performance_contract_074_collector_intent.rs", "let mut current = std::fs::read_to_string(super::root().join(path))"),
+    ("crates/xtask/tests/support/performance_contract_074_collector_reserved.rs", "std::fs::read_to_string(super::root().join(p))"),
+    ("crates/xtask/tests/support/performance_contract_074_validation_cost.rs", "std::fs::read_to_string(super::root().join(p))"),
+    ("crates/xtask/tests/support/performance_contract_074_original_manager_join.rs", "std::fs::read_to_string(root().join(path))"),
+    ("crates/xtask/tests/support/performance_contract_074_original_manager_message.rs", "std::fs::read_to_string(root().join(name))"),
     ("crates/xtask/tests/support/performance_contract_074_collector_progress.rs", "std::fs::read_to_string("),
     ("crates/xtask/tests/support/performance_contract_074_kernel_refusal.rs", "std::fs::read_to_string(super::root().join(&path))"),
     ("crates/xtask/tests/support/performance_contract_074_boot_buffer.rs", "std::fs::read_to_string(root().join(path))"),

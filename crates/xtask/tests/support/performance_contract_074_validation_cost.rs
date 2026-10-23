@@ -116,7 +116,7 @@ pub(super) fn without_registry_addition(raw: &str) -> String {
 #[test]
 fn validation_cost_exact_test_only_hooks_preserve_all_original_predicates() {
     let read = |p: &str| {
-        let raw = std::fs::read_to_string(super::root().join(p))
+        let raw = crate::runtime_io::read_to_string(super::root().join(p))
             .unwrap()
             .replace('\r', "");
         super::start_consent::normalize(p, &raw)

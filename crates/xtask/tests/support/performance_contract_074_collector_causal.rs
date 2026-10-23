@@ -74,7 +74,7 @@ fn collector_causal_requires_original_post_ack_challenge_and_no_admission_renewa
         assert_eq!(c[key].as_integer(), Some(value), "{key}");
     }
     let read = |p: &str| {
-        let raw = std::fs::read_to_string(super::root().join(p))
+        let raw = crate::runtime_io::read_to_string(super::root().join(p))
             .unwrap()
             .replace('\r', "");
         super::start_consent::normalize(p, &raw)

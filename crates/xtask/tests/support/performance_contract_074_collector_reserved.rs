@@ -76,7 +76,7 @@ fn collector_reserved_requires_original_owned_publication_not_recovered_start() 
         assert_eq!(c[field].as_bool(), Some(false), "{field}");
     }
     let read = |p: &str| {
-        let raw = std::fs::read_to_string(super::root().join(p))
+        let raw = crate::runtime_io::read_to_string(super::root().join(p))
             .unwrap()
             .replace('\r', "");
         super::original_start_consent::normalize(p, &raw)
