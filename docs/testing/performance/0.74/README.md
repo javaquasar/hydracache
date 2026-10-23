@@ -6495,3 +6495,19 @@ archive is unchanged. Twenty-one controls pass, and the new 27-file exact
 archive retains the failure separately. A non-seeking, non-truncating command
 writer is the next isolated correction, not a reason to use destructive `w`
 mode or repeat a consumed lane. Clock-setter and server gates remain open.
+
+## Nonseeking registry writer candidate
+
+The [isolated writer correction](wsl-clock-writer-20261023.md) replaces the
+high-level append stream with a non-seeking, non-truncating command write and
+checks its full byte count. Nine new writer controls pass without live tracefs.
+The old writer's regression refusal and the first full-suite failure are both
+retained. The latter exposed a test-harness race reading a visible but unfinished
+guardian receipt; a separate completion-pipe correction keeps the original
+four-second limit and one JSON parse. All 31 current controls pass.
+
+The 37-file exact archive includes both failures, the corrected result and
+passing local gates. Preflight, guardian, cleanup ownership, runtime checks,
+qualification and original deadlines are unchanged. No new live configuration,
+clock observation, service or server action occurred. Real registration with
+the new writer still needs its separately scoped gate.

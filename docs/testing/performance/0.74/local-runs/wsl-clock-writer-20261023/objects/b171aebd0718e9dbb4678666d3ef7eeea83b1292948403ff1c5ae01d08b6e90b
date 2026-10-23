@@ -1,0 +1,10 @@
+{
+  "argv": [
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\xtask.exe",
+    "performance-contract-check",
+    "--release",
+    "0.74"
+  ],
+  "exit": 0,
+  "timeout_seconds": 30
+}

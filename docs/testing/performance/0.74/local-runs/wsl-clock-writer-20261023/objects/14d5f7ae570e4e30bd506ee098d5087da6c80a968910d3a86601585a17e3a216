@@ -1,0 +1,2 @@
+*.py text eol=lf
+README.md text eol=lf

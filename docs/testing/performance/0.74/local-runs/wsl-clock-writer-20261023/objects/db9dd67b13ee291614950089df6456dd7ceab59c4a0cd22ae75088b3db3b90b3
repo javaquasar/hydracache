@@ -1,0 +1,26 @@
+{
+  "argv": [
+    "wsl.exe",
+    "-d",
+    "Ubuntu",
+    "-u",
+    "artur",
+    "--exec",
+    "python3",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tools/wsl-clock-trace-074",
+    "-v"
+  ],
+  "exit": 1,
+  "tracefs_writes": 0,
+  "owned_regular_file_controls": true,
+  "mocked_syscall_controls": true,
+  "clock_change": false,
+  "service_change": false,
+  "original_owner_run": false,
+  "server": false
+}

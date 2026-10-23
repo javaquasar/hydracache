@@ -1,0 +1,27 @@
+{
+  "argv": [
+    "wsl.exe",
+    "-d",
+    "Ubuntu",
+    "-u",
+    "artur",
+    "--exec",
+    "python3",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tools/wsl-clock-trace-074",
+    "-p",
+    "test_registry_writer.py",
+    "-k",
+    "test_complete_command_uses_no_seek_create_or_truncate",
+    "-v"
+  ],
+  "exit": 1,
+  "expected_exit": 1,
+  "expected_reason": "High-level append stream is forbidden",
+  "git": "76425b27202814cde0da4aab82d18e90cf5ed109",
+  "tracefs_writes": 0
+}

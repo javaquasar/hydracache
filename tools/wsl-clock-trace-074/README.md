@@ -41,3 +41,8 @@ written and no trace buffer activated. See the
 [configuration report](../../docs/testing/performance/0.74/wsl-clock-einval-20261023.md).
 Verify its exact archive with `python -B tools/wsl-clock-trace-074/einval.py verify`.
 Do not invoke its collect/session modes again or delete either output lane.
+
+The nonseeking registry writer is now implemented with mock/owned-regular-file
+controls only. See the [writer report](../../docs/testing/performance/0.74/wsl-clock-writer-20261023.md).
+Both consumed lanes remain consumed; neither is an entry point for validating
+the corrected writer. A fresh live configuration requires separate scope.

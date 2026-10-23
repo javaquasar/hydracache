@@ -1,0 +1,22 @@
+{
+  "argv": [
+    "wsl.exe",
+    "-d",
+    "Ubuntu",
+    "-u",
+    "artur",
+    "--exec",
+    "python3",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tools/wsl-clock-trace-074",
+    "-v"
+  ],
+  "exit": 0,
+  "method_change": "test-only completion pipe after real publish/fsync; original four-second limit; JSON parsed once",
+  "tracefs_writes": 0,
+  "retry_of_unchanged_source": false
+}

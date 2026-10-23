@@ -1,0 +1,25 @@
+test_complete_command_uses_no_seek_create_or_truncate (test_registry_writer.RegistryWriter.test_complete_command_uses_no_seek_create_or_truncate) ... FAIL
+
+======================================================================
+FAIL: test_complete_command_uses_no_seek_create_or_truncate (test_registry_writer.RegistryWriter.test_complete_command_uses_no_seek_create_or_truncate)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/wsl-clock-trace-074/test_registry_writer.py", line 33, in test_complete_command_uses_no_seek_create_or_truncate
+    cap.write(PATH, command, append=True)
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/wsl-clock-trace-074/capture.py", line 69, in write
+    with path.open('a' if append else 'w', encoding='ascii') as stream:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/unittest/mock.py", line 1134, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/unittest/mock.py", line 1138, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/unittest/mock.py", line 1193, in _execute_mock_call
+    raise effect
+AssertionError: High-level append stream is forbidden
+
+----------------------------------------------------------------------
+Ran 1 test in 0.011s
+
+FAILED (failures=1)

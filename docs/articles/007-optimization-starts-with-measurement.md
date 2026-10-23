@@ -18550,3 +18550,27 @@ followed by separately scoped live validation. The diagnostic stopped on its
 first failure, cleaned its private instance, preserved the earlier archive and
 left clocks, services, runtime checks and admission windows unchanged. It fixes
 the direction of the next experiment, not the unobserved clock-setting cause.
+
+### A command writer and a receipt reader need different completion proofs
+
+The [isolated collector correction](../testing/performance/0.74/wsl-clock-writer-20261023.md)
+now sends one registry command without a high-level append stream. Exact flags
+exclude creation and truncation, no seek occurs, and a short write refuses
+without resubmitting a possibly applied command. Mock syscall checks and owned
+regular-file controls cover both registration and deletion payloads. They do
+not prove that the pinned kernel accepts those registrations.
+
+The first complete local suite exposed a different completion mistake in an
+existing SIGKILL test. File creation made the guardian receipt visible before
+its JSON write had finished, so the reader sometimes parsed an empty file.
+The production collector already waits for its guardian child; the failing
+orphan-process test instead waited only for file existence. A separate
+test-harness fix signals after the real write/flush/fsync and reads once, with
+the same four-second limit. A deterministic empty-file control covers the race.
+
+Both the old writer's regression refusal and the first suite error remain
+archived. The corrected 31-control result belongs to the explicit source/method
+change, not to repeated unchanged trials. No live probes or clock series ran.
+The common lesson is concrete: a submitted command needs a checked completion
+boundary, and a visible receipt needs a proven publication boundary. Neither
+justifies weakening product guards or declaring a later server gate successful.
