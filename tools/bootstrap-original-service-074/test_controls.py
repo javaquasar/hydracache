@@ -39,6 +39,8 @@ class Controls(unittest.TestCase):
         self.assertNotIn('-K CREATE_MAIL_SPOOL',raw)
         self.assertIn('useradd --system --no-create-home',raw)
         self.assertIn('mktemp -d /var/tmp/hc074-original-service-',raw)
+        self.assertIn('state=$(lookup_state "$service")',raw)
+        self.assertNotIn('systemctl show --value --property=LoadState "$slice"',raw)
         self.assertEqual(raw.count('privileged_original_manager_service_once --ignored'),1)
     def test_native_requires_fixed_workspace_and_immutable_first_lane(self):
         spec=importlib.util.spec_from_file_location('native',c.ROOT/'tools/bootstrap-original-service-074/native_fixture.py')

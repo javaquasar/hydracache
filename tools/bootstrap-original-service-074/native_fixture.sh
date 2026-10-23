@@ -50,6 +50,16 @@ snapshot() {
     done
 }
 snapshot > "$lane/preflight.txt"
+lookup_state() {
+    if answer=$(LC_ALL=C busctl --system --timeout=5 call org.freedesktop.systemd1 /org/freedesktop/systemd1 org.freedesktop.systemd1.Manager GetUnit s "$1" 2>&1); then
+        printf loaded
+    elif test "$?" = 1 && test "$answer" = "Call failed: Unit $1 not loaded."; then
+        printf absent
+    else
+        printf 'uncertain lookup: %s\n' "$answer" >&2
+        printf uncertain
+    fi
+}
 cleanup() {
     original_rc=$?
     trap - EXIT HUP INT TERM
@@ -62,15 +72,19 @@ cleanup() {
         slice=$(printf '%s\n' "$intent" | sed -n 's/^slice=\([^ ]*\) service=.*/\1/p')
         service=$(printf '%s\n' "$intent" | sed -n 's/^slice=[^ ]* service=\([^ ]*\) marker=.*/\1/p')
         if printf '%s\n' "$slice" | grep -Eq '^system-hc074[0-9a-f]{64}\.slice$' && printf '%s\n' "$service" | grep -Eq '^hydracache-diagnostic-074-[0-9a-f]{64}-1\.service$'; then
-            if test "$(systemctl show --value --property=LoadState "$service")" != not-found; then
+            state=$(lookup_state "$service")
+            if test "$state" = uncertain; then cleanup_rc=74; fi
+            if test "$state" = loaded; then
                 test "$(systemctl show --value --property=Transient "$service")" = yes &&
                 test "$(systemctl show --value --property=Description "$service")" = 'HydraCache held diagnostic projection; no transport' &&
                 test "$(systemctl show --value --property=Slice "$service")" = "$slice" &&
                 systemctl stop "$service" && systemctl reset-failed "$service"
                 # reset-failed may report an already unloaded transient unit.
-                test "$(systemctl show --value --property=LoadState "$service")" = not-found || cleanup_rc=74
+                test "$(lookup_state "$service")" = absent || cleanup_rc=74
             fi
-            if test "$(systemctl show --value --property=LoadState "$slice")" != not-found; then
+            state=$(lookup_state "$slice")
+            if test "$state" = uncertain; then cleanup_rc=74; fi
+            if test "$state" = loaded; then
                 digest=${slice#system-hc074}; digest=${digest%.slice}
                 test "$(systemctl show --value --property=Transient "$slice")" = yes &&
                 test "$(systemctl show --value --property=Description "$slice")" = "HC074 isolated original service $digest" &&

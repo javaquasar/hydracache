@@ -36,7 +36,42 @@ fn show(unit: &str, property: &str) -> String {
     String::from_utf8(output.stdout).unwrap().trim().to_owned()
 }
 fn absent(unit: &str) -> bool {
-    show(unit, "LoadState") == "not-found"
+    // systemctl show may synthesize/load a slice definition. GetUnit does not.
+    let output = Command::new("/usr/bin/busctl")
+        .env("LC_ALL", "C")
+        .args([
+            "--system",
+            "--timeout=5",
+            "call",
+            "org.freedesktop.systemd1",
+            "/org/freedesktop/systemd1",
+            "org.freedesktop.systemd1.Manager",
+            "GetUnit",
+            "s",
+            unit,
+        ])
+        .output()
+        .unwrap();
+    lookup_absent(unit, output.status.code(), &output.stdout, &output.stderr).unwrap()
+}
+fn lookup_absent(
+    unit: &str,
+    code: Option<i32>,
+    stdout: &[u8],
+    stderr: &[u8],
+) -> std::io::Result<bool> {
+    if code == Some(0) {
+        return Ok(false);
+    } // Loaded/unknown positive result never admits creation.
+    if code == Some(1)
+        && stdout.is_empty()
+        && stderr == format!("Call failed: Unit {unit} not loaded.\n").as_bytes()
+    {
+        return Ok(true);
+    }
+    Err(std::io::Error::other(
+        "manager lookup is uncertain; refuse without load or start",
+    ))
 }
 fn action(verb: &str, unit: &str) {
     let output = Command::new("/usr/bin/systemctl")
@@ -212,4 +247,28 @@ fn original_service_nonowner_drop_never_contacts_manager() {
         marker: "not-owned".into(),
         owned: false,
     });
+}
+
+#[test]
+fn original_service_lookup_requires_exact_missing_unit_and_refuses_uncertainty() {
+    let unit = "system-hc074-test.slice";
+    let missing = format!("Call failed: Unit {unit} not loaded.\n");
+    assert!(lookup_absent(unit, Some(1), b"", missing.as_bytes()).unwrap());
+    assert!(!lookup_absent(
+        unit,
+        Some(0),
+        b"o \"/org/freedesktop/systemd1/unit/test\"\n",
+        b""
+    )
+    .unwrap());
+    for (code, stdout, stderr) in [
+        (None, b"".as_slice(), missing.as_bytes()),
+        (Some(2), b"", missing.as_bytes()),
+        (Some(1), b"unexpected", missing.as_bytes()),
+        (Some(1), b"", b"Call failed: Access denied.\n"),
+        (Some(1), b"", b"Call failed: Unit other.slice not loaded.\n"),
+        (Some(1), b"", b"Call failed: Connection refused.\n"),
+    ] {
+        assert!(lookup_absent(unit, code, stdout, stderr).is_err());
+    }
 }
