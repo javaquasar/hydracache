@@ -18191,3 +18191,28 @@ decoding as authenticated custody. Production must derive and retain
 the record under the same original owner, then observe/admit the actual sandbox
 child before release. This component adds no fresh live query, transport or
 execution and makes no preparation-cost or original-deadline-fit claim.
+
+### Materialization must retain the original owner and exclude self reference
+
+The [installed-entry materialization](../testing/performance/0.74/bootstrap-installed-material-20261023.md)
+now consumes the original installed owner instead of accepting a canonical record
+from a caller. The factory reads its retained old sealed entry under stamp and
+census brackets, combines it with the same installed inventory, and retains a
+new readonly/CLOEXEC/four-sealed memfd. The old complete validator still brackets
+two inspections with three installed-owner frames. More work may affect deadline
+fit; synthetic correctness test elapsed time cannot establish that fit.
+
+The input inventory and resulting inventory differ deliberately. HCBI0741 asserts
+the existing 32-descriptor/sixteen-role prefix. Retaining the new record adds one
+descriptor and role, making the resulting parent inventory 33/17. Hashing that
+result back into its own record would create a circular dependency. A separately
+labelled fingerprint therefore covers the input values and stamps only; it is
+not a child slot map or authenticated message.
+
+The wrapper cannot reconstruct missing retained material after successful
+construction. An observation failure remains a refusal even after restoring an
+inode, flags or offset. The same refused owner and published record stay held
+through the error; explicit retirement precedes descriptor closure. Internal
+construction temporaries retain their existing cleanup, and a sealed memory
+record is not durable lifecycle completion. This local owner composition still
+does not prove live child enrollment, original delivery or writer cessation.

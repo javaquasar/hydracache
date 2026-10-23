@@ -6293,8 +6293,24 @@ It rejects aliases, noncanonical fields and old/new reader reinterpretation.
 The parent counts are not inherited child slots. A canonical forged record can
 still parse: the codec establishes consistency, not custody or authentication.
 
-Record materialization under the same installed owner and a separately versioned
-child executable/inventory reader remain next. No launch, service/clock change,
-server action, fresh original live attempt or numerical claim follows this
+Record materialization under the same installed owner is addressed by the
+[retained material component](bootstrap-installed-material-20261023.md); the
+separately versioned child executable/inventory reader remains next. No launch,
+service/clock change, server action, fresh original live attempt or numerical claim follows this
 schema. Its local report retains first refusals and the exact compatibility
 boundary rather than promoting assertion parsing into original delivery.
+
+### Installed entry materialization retains the same owner
+
+The [consuming material factory](bootstrap-installed-material-20261023.md) reads
+the original retained HCBT0741 rather than accepting caller bytes. It derives
+HCBI0741 using the same installed census and retains a readonly/CLOEXEC/four-sealed
+record. Parent inventory extends the exact 32/16 prefix to 33/17; the record still
+describes its input prefix, without self-reference. Three old installed full
+frames bracket two new inspections, with no removed checks or reset windows.
+
+Missing retained resources, drift and same-byte replacement refuse without
+reconstruction. Errors keep the refused original owner and published resource;
+retirement precedes their closure. Private kernel controls and owner models
+remain distinct from a positive live original join or child authentication.
+No delivery, all-writer cessation, lifecycle completion or server gate opens.
