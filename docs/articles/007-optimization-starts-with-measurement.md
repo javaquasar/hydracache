@@ -18671,3 +18671,29 @@ prove local orchestration behavior, not that the real root debug shell accepts
 the stdin exchange. That compatibility and the process identity interpretation
 remain the next live metadata gate. No clock, service or product intervention
 is hidden inside the handoff, and no original admission window has changed.
+
+### Preflight failures need a journal outside the preflight process
+
+The original operator handoff produced no retained console output or output
+directory. Its [outcome](../testing/performance/0.74/root-namespace-first-unconfirmed-20261023.json)
+therefore remains unknown: absence of a receipt cannot identify an exit code,
+prove that no command ran, or establish which prerequisite failed. A later
+working candidate must not replace that missing first observation.
+
+The [separate journal-first preparation](../testing/performance/0.74/wsl-clock-root-namespace-journal-plan-20261023.md)
+moves capture outside Python. PowerShell reserves an exclusive directory and
+opens stdout, stderr and launcher-error files before looking up the interpreter.
+Concurrent pipe drains avoid blocking on one full stream while waiting for the
+other, and write-through files retain received bytes before final child-exit
+processing. Python startup/import failures are visible even if the collector
+never imports; captured git output and chained subprocess errors are saved
+without changing the original calls, checks or deadlines.
+
+Native fake-payload controls immediately found a distinct launcher defect:
+Windows PowerShell returned two interpreter matches, producing an invalid
+Process.Start filename. The first failed controls and their exact sources remain
+sealed; the correction selects one PATH result without fallback or retry. This
+finding explains that fixture failure, not the lost operator output. All 32
+offline controls now pass, but no real replacement launch was performed or
+authorized. Logging preparation improves diagnosability; it supplies no evidence
+of healthy original delivery, clock-policy suitability or a throughput gain.

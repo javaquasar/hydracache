@@ -1,0 +1,87 @@
+"""Payload for the journal-first launcher; original live collector stays unchanged."""
+import hashlib
+import json
+import os
+from pathlib import Path
+import sys
+import traceback
+
+ROOT = Path(__file__).resolve().parents[2]
+JOURNAL = ROOT / 'target/wsl-clock-root-namespace-logged-20261023'
+ORIGINAL_SHA = '99e140b530e2200d475e7b97c31ece6681563d1ea89bf3c49e589717a62687e5'
+FIRST = ROOT / 'docs/testing/performance/0.74/root-namespace-first-unconfirmed-20261023.json'
+FIRST_SHA = '70a405fcf3a65394b83d3e6a500b3a4ad454ce649436c80af2a098e25ba3006c'
+
+
+def put(path, value):
+    with path.open('x', encoding='utf-8', newline='\n') as stream:
+        json.dump(value, stream, indent=2, sort_keys=True)
+        stream.write('\n')
+        stream.flush()
+        os.fsync(stream.fileno())
+
+
+def execute(journal):
+    phase = 'journal-context'
+    try:
+        if journal.resolve() != JOURNAL.resolve():
+            raise ValueError('Not the exact new journal directory')
+        intent = json.loads((journal / 'launcher-intent.json').read_bytes())
+        if intent['schema'] != 'hc074-preflight-journal-intent-v1' or intent['retry'] is not False:
+            raise ValueError('Missing journal-first launcher intent')
+        for name in ('stdout.log', 'stderr.log', 'launcher-errors.log'):
+            if not (journal / name).is_file():
+                raise ValueError('Logs must already exist before preflight')
+        phase = 'original-source-and-first-outcome'
+        if hashlib.sha256((Path(__file__).with_name('root_namespace.py')).read_bytes()).hexdigest() != ORIGINAL_SHA:
+            raise ValueError('Original collector changed')
+        raw_first = FIRST.read_bytes()
+        if hashlib.sha256(raw_first).hexdigest() != FIRST_SHA:
+            raise ValueError('First unconfirmed outcome bytes changed')
+        first = json.loads(raw_first)
+        if (first['classification'] != 'output_lost_execution_unconfirmed'
+                or any(first[key] is not None for key in ('execution_confirmed', 'root_dispatch_confirmed', 'exit_code', 'failure_cause'))):
+            raise ValueError('First unconfirmed outcome changed')
+        phase = 'import-original-collector'
+        import root_namespace as original
+        if original.OUT.exists():
+            raise ValueError('Original attempt artifacts appeared; analyze them without dispatch')
+        phase = 'original-preflight-and-lookup'
+        old_out, old_base_out = original.OUT, original.base.OUT
+        try:
+            original.OUT = journal / 'lookup'
+            original.base.OUT = original.OUT
+            original.collect()  # Exact original checks, order, script and 15/30-second client limits.
+        finally:
+            original.OUT, original.base.OUT = old_out, old_base_out
+        put(journal / 'payload-result.json', {'exit': 0, 'original_windows': [300, 60, 10],
+                                            'admission': False, 'retry': False})
+        return 0
+    except BaseException as error:
+        traceback.print_exc()
+        details = {'phase': phase, 'error': repr(error), 'traceback': traceback.format_exc(),
+                   'admission': False, 'retry': False}
+        # CalledProcessError may hide captured git output in exception attributes.
+        current, seen, captured = error, set(), []
+        while current is not None and id(current) not in seen:
+            seen.add(id(current))
+            for name in ('stdout', 'stderr'):
+                value = getattr(current, name, None)
+                if value is not None:
+                    raw = value.encode('utf-8') if isinstance(value, str) else value
+                    filename = f'exception-{len(seen) - 1:02}-{name}.bin'
+                    with (journal / filename).open('xb') as stream:
+                        stream.write(raw)
+                        stream.flush()
+                        os.fsync(stream.fileno())
+                    captured.append({'file': filename, 'exception': type(current).__name__})
+            current = current.__cause__ or current.__context__
+        details['captured_outputs'] = captured
+        put(journal / 'payload-failure.json', details)
+        return 1
+
+
+if __name__ == '__main__':
+    if len(sys.argv) != 2:
+        raise SystemExit('Use only the journal-first PowerShell launcher after separate approval')
+    raise SystemExit(execute(Path(sys.argv[1])))

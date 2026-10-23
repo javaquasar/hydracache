@@ -6584,3 +6584,25 @@ non-admin refusal. There was no new WSL dispatch, clock series, service action,
 original-owner or server run. Actual debug-shell exchange compatibility and
 root-namespace writer identification remain unvalidated until the operator
 executes the single documented command from an elevated Windows context.
+
+## First operator outcome is unknown and the new journal is preparation only
+
+The operator reported completing the handoff but its console was closed and
+the expected output directory was absent. The [immutable outcome record](root-namespace-first-unconfirmed-20261023.json)
+keeps execution, root dispatch, exit code and cause unknown. Do not rerun the
+old entry or interpret missing logs as a healthy or failed metadata lookup.
+
+The separate [journal-first preparation](wsl-clock-root-namespace-journal-plan-20261023.md)
+opens outer stdout/stderr/error files before Python and all original preflights.
+It retains startup/import errors and hidden captured subprocess output while
+delegating the unchanged original collector to a distinct output lane. It keeps
+all checks, original input script and timeouts, and refuses to reuse an attempt.
+The first two native fixture failures exposed a multi-result interpreter lookup
+in Windows PowerShell; selecting one PATH result fixed that isolated launcher
+defect without explaining the lost operator output.
+
+Twelve new controls and twenty existing offline controls pass; local gates and
+the prior evidence verifiers pass. A separate 47-file archive preserves the
+first failures and exact snapshots. Both real attempt directories are absent.
+This is code and test preparation only: the user has not authorized a new live
+launch, and no WSL, clock/service action, original-owner or server run occurred.

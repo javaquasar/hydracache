@@ -1,0 +1,49 @@
+test_both_pipes_large_utf8_and_exclusive_first_result (test_root_namespace_logged.LauncherTests.test_both_pipes_large_utf8_and_exclusive_first_result) ... FAIL
+test_interpreter_resolution_failure_has_logs_before_any_python (test_root_namespace_logged.LauncherTests.test_interpreter_resolution_failure_has_logs_before_any_python) ... ok
+test_python_import_failure_stderr_survives_closed_child (test_root_namespace_logged.LauncherTests.test_python_import_failure_stderr_survives_closed_child) ... FAIL
+test_actual_nonadmin_preflight_is_logged_without_dispatch (test_root_namespace_logged.PayloadTests.test_actual_nonadmin_preflight_is_logged_without_dispatch) ... ok
+test_captured_subprocess_bytes_in_exception_chain_are_retained (test_root_namespace_logged.PayloadTests.test_captured_subprocess_bytes_in_exception_chain_are_retained) ... ok
+test_missing_logs_changed_pin_and_appeared_first_artifacts_refuse (test_root_namespace_logged.PayloadTests.test_missing_logs_changed_pin_and_appeared_first_artifacts_refuse) ... ok
+test_original_source_and_unknown_record_stay_pinned (test_root_namespace_logged.PayloadTests.test_original_source_and_unknown_record_stay_pinned) ... ok
+test_success_uses_new_payload_lane_and_restores_original_globals (test_root_namespace_logged.PayloadTests.test_success_uses_new_payload_lane_and_restores_original_globals) ... ok
+
+======================================================================
+FAIL: test_both_pipes_large_utf8_and_exclusive_first_result (test_root_namespace_logged.LauncherTests.test_both_pipes_large_utf8_and_exclusive_first_result)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\wsl-clock-trace-074\test_root_namespace_logged.py", line 129, in test_both_pipes_large_utf8_and_exclusive_first_result
+    self.assertEqual(result.returncode, 7, result.stderr.decode(errors='replace'))
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 1 != 7 : Exception calling "Start" with "0" argument(s): "The system cannot find the file specified"
+At C:\Users\ArturBuzov\AppData\Local\Temp\tmp8p6y24eh\workspace with 
+spaces\tools\wsl-clock-trace-074\root_namespace_logged.ps1:50 char:9
++     if (-not $process.Start()) { throw 'Python process did not start' ...
++         ~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:) [], MethodInvocationException
+    + FullyQualifiedErrorId : Win32Exception
+ 
+
+System.Management.Automation.MethodInvocationException: Exception calling "Start" with "0" argument(s): "The system cannot find the file specified" ---> System.ComponentModel.Win32Exception: The system cannot find the file specified
+   at System.Diagnostics.Process.StartWithCreateProcess(ProcessStartInfo startInfo)
+   at CallSite.Target(Closure , CallSite , Object )
+   --- End of inner exception stack trace ---
+   at System.Management.Automation.ExceptionHandlingOps.CheckActionPreference(FunctionContext funcContext, Exception exception)
+   at System.Management.Automation.Interpreter.ActionCallInstruction`2.Run(InterpretedFrame frame)
+   at System.Management.Automation.Interpreter.EnterTryCatchFinallyInstruction.Run(InterpretedFrame frame)
+   at System.Management.Automation.Interpreter.EnterTryCatchFinallyInstruction.Run(InterpretedFrame frame)
+at <ScriptBlock>, C:\Users\ArturBuzov\AppData\Local\Temp\tmp8p6y24eh\workspace with spaces\tools\wsl-clock-trace-074\root_namespace_logged.ps1: line 50
+
+
+======================================================================
+FAIL: test_python_import_failure_stderr_survives_closed_child (test_root_namespace_logged.LauncherTests.test_python_import_failure_stderr_survives_closed_child)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\wsl-clock-trace-074\test_root_namespace_logged.py", line 151, in test_python_import_failure_stderr_survives_closed_child
+    self.assertIn(b'ModuleNotFoundError', (journal / 'stderr.log').read_bytes())
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: b'ModuleNotFoundError' not found in b''
+
+----------------------------------------------------------------------
+Ran 8 tests in 10.791s
+
+FAILED (failures=2)

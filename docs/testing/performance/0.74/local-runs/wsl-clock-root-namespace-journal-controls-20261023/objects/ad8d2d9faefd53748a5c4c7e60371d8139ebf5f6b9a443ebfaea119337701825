@@ -1,0 +1,30 @@
+{
+  "admission": false,
+  "attribution_controls": 3,
+  "clock_change": false,
+  "correction": "Select only first PATH result, no fallback or second Start",
+  "debug_client_timeout": 30,
+  "first_fixture_cause": "Windows PowerShell Application resolution returned two python.exe entries; Process.Start received a combined filename",
+  "first_fixture_suite_failures": 2,
+  "first_operator_exit": null,
+  "first_operator_outcome": "output_lost_execution_unconfirmed",
+  "fixture_only": true,
+  "identity_controls": 8,
+  "inventory_timeout": 15,
+  "new_attempt_directory_absent": true,
+  "new_controls": 12,
+  "old_attempt_directory_absent": true,
+  "original_owner_run": false,
+  "original_windows": [
+    300,
+    60,
+    10
+  ],
+  "product": false,
+  "real_launcher_run": false,
+  "server": false,
+  "service_change": false,
+  "source_commit": "dc47e31a5ae29c0d40f5f1ccb95aef271e9e7940",
+  "unchanged_root_controls": 9,
+  "wsl_dispatch": false
+}

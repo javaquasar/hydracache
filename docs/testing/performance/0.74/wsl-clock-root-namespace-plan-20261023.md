@@ -7,8 +7,9 @@ known failure. Do not execute the old command below. A separate
 [journal-first preparation](wsl-clock-root-namespace-journal-plan-20261023.md)
 preserves this unknown result; its live launch is not yet authorized.
 
-The next metadata lookup is prepared but has not run. The current Windows
-process is not an Administrator. The [previous namespace audit](wsl-clock-writer-identity-20261023.md)
+The original metadata lookup was prepared; its execution is now unconfirmed.
+At preparation the agent's Windows process was not an Administrator. The
+[previous namespace audit](wsl-clock-writer-identity-20261023.md)
 and its debug-shell access refusal remain unchanged. Nine offline runner controls
 pass; these are not a successful live debug-shell exchange or writer identity.
 

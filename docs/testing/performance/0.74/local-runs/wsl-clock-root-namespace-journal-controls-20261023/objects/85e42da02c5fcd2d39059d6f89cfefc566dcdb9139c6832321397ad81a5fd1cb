@@ -1,0 +1,8 @@
+{
+  "argv": [
+    "target/debug/xtask.exe",
+    "doc-check"
+  ],
+  "exit": 0,
+  "timeout_seconds": 45
+}

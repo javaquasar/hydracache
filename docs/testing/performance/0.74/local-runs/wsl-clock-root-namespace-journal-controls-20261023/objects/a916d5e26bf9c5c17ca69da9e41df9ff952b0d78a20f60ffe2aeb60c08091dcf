@@ -1,0 +1,10 @@
+{
+  "argv": [
+    "C:/Windows/System32/WindowsPowerShell/v1.0/powershell.exe",
+    "-NoProfile",
+    "-Command",
+    "$commands = Get-Command python.exe -CommandType Application; $commands | Select-Object Source,Path,Definition,Name | ConvertTo-Json; $commands.GetType().FullName"
+  ],
+  "exit": 0,
+  "timeout_seconds": 20
+}

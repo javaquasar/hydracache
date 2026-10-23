@@ -1,0 +1,17 @@
+test_both_pipes_large_utf8_and_exclusive_first_result (test_root_namespace_logged.LauncherTests.test_both_pipes_large_utf8_and_exclusive_first_result) ... ok
+test_interpreter_resolution_failure_has_logs_before_any_python (test_root_namespace_logged.LauncherTests.test_interpreter_resolution_failure_has_logs_before_any_python) ... ok
+test_python_import_failure_stderr_survives_closed_child (test_root_namespace_logged.LauncherTests.test_python_import_failure_stderr_survives_closed_child) ... ok
+test_actual_nonadmin_preflight_is_logged_without_dispatch (test_root_namespace_logged.PayloadTests.test_actual_nonadmin_preflight_is_logged_without_dispatch) ... ok
+test_captured_subprocess_bytes_in_exception_chain_are_retained (test_root_namespace_logged.PayloadTests.test_captured_subprocess_bytes_in_exception_chain_are_retained) ... ok
+test_child_tee_keeps_success_bytes_args_timeouts_and_order (test_root_namespace_logged.PayloadTests.test_child_tee_keeps_success_bytes_args_timeouts_and_order) ... ok
+test_child_tee_timeout_is_not_retried_or_reported_as_completed (test_root_namespace_logged.PayloadTests.test_child_tee_timeout_is_not_retried_or_reported_as_completed) ... ok
+test_missing_logs_changed_pin_and_appeared_first_artifacts_refuse (test_root_namespace_logged.PayloadTests.test_missing_logs_changed_pin_and_appeared_first_artifacts_refuse) ... ok
+test_original_source_and_unknown_record_stay_pinned (test_root_namespace_logged.PayloadTests.test_original_source_and_unknown_record_stay_pinned) ... ok
+test_real_dirty_git_check_captured_output_is_preserved_once (test_root_namespace_logged.PayloadTests.test_real_dirty_git_check_captured_output_is_preserved_once) ... ok
+test_success_uses_new_payload_lane_and_restores_original_globals (test_root_namespace_logged.PayloadTests.test_success_uses_new_payload_lane_and_restores_original_globals) ... ok
+test_wrong_journal_argument_does_not_write_elsewhere (test_root_namespace_logged.PayloadTests.test_wrong_journal_argument_does_not_write_elsewhere) ... ok
+
+----------------------------------------------------------------------
+Ran 12 tests in 12.232s
+
+OK

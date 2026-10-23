@@ -1,0 +1,8 @@
+test_exact_counts_windows_and_rate_enclosure (test_attribution.Attribution.test_exact_counts_windows_and_rate_enclosure) ... ok
+test_failed_tick_request_does_not_identify_a_successful_writer (test_attribution.Attribution.test_failed_tick_request_does_not_identify_a_successful_writer) ... ok
+test_loss_context_and_missing_window_refuse (test_attribution.Attribution.test_loss_context_and_missing_window_refuse) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.572s
+
+OK

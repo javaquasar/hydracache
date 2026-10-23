@@ -1,0 +1,15 @@
+[
+    {
+        "Source":  "C:\\Python313\\python.exe",
+        "Path":  "C:\\Python313\\python.exe",
+        "Definition":  "C:\\Python313\\python.exe",
+        "Name":  "python.exe"
+    },
+    {
+        "Source":  "C:\\Users\\ArturBuzov\\AppData\\Local\\Microsoft\\WindowsApps\\python.exe",
+        "Path":  "C:\\Users\\ArturBuzov\\AppData\\Local\\Microsoft\\WindowsApps\\python.exe",
+        "Definition":  "C:\\Users\\ArturBuzov\\AppData\\Local\\Microsoft\\WindowsApps\\python.exe",
+        "Name":  "python.exe"
+    }
+]
+System.Object[]

@@ -1,9 +1,10 @@
 # Journal first root namespace diagnostic preparation
 
-Preparation only. The user explicitly withheld a new live launch. Neither the
-old root-lookup command nor the new real launcher was executed in this work.
-All process controls use temporary fake payloads or mocked original preflights;
-no WSL command, service, clock, original-owner or server workload was invoked.
+Preparation only. The user explicitly withheld a new live launch. The agent did
+not invoke either real entry while preparing this candidate. Validation uses
+temporary fake payloads, mocked original preflights and a read-only Windows
+interpreter-resolution lookup. No WSL command, service, clock, original-owner or
+server workload was invoked.
 
 ## Preserve the first unknown result
 
@@ -55,7 +56,8 @@ timeouts once, returns the same result or rethrows the same exception. Hidden
 output in chained CalledProcessError/TimeoutExpired exceptions is retained as
 separate byte files. Tracebacks and the current failure phase reach both the
 outer stderr log and an exclusive structured failure record where possible.
-Module globals are restored after the attempt.
+Byte-valued captures stay unchanged; text already decoded by the original
+subprocess call is saved as UTF-8. Module globals are restored after the attempt.
 
 ## Limits and operator boundary
 
@@ -93,3 +95,20 @@ them into an invalid Process.Start filename. The isolated correction selects
 exactly the first PATH result, without fallback or a second start. The first
 logs and exact initial sources remain separate from corrected controls. This
 explains the new fixture failure, not the cause of the lost operator output.
+
+## Evidence and remaining gate
+
+The first unknown outcome is committed as `9e904af1`; executable logging code and
+tests as `dc47e31a`. The [47-file controls archive](local-runs/wsl-clock-root-namespace-journal-controls-20261023/index.json)
+has index SHA-256
+`2085ef152e98dfd486e946fa68a1d32178f84a6261bdb6a8d383272c8d26145b`.
+Exact initial/corrected sources, method snapshots, first failed fixtures,
+command-resolution evidence and local gate output are retained there. All 12
+new and 20 unchanged offline controls pass, as do doc-check, the local
+non-promotable performance contract and both earlier archive verifiers.
+
+Both real output directories remain absent. No new real launch is authorized
+or recorded. The next gate requires separate approval for a single elevated
+read-only run through the new PowerShell launcher, followed by offline sealing;
+it must not be inferred from these fake-payload controls. Kernel writer identity,
+debug-shell stdin compatibility and the clock policy remain unresolved.
