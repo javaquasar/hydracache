@@ -6362,11 +6362,11 @@ socket preserves all old release-queue emptiness checks. One-shot challenge and
 ACK mechanics bind context and original bounds to kernel credentials/pidfd;
 job acknowledgement, readiness and execution permission remain distinct.
 
-The new child argument is reserved but not activated in the installed bootstrap.
-This local component does not establish a positive original-manager delivery,
-the complete child role/environment gate, writer cessation or server admission.
-The report distinguishes compiled parent composition and real owned-helper
-exchange controls from that remaining integration work.
+At that component boundary the child argument remained reserved and unactivated.
+The following child-entry gate adds readiness only. Neither component establishes
+positive original-manager delivery, writer cessation or server admission. The
+held-delivery report distinguishes compiled parent composition and real owned-helper
+exchange controls from the separate integration work.
 
 Reviewed gates pass one selected 163-file snapshot: Windows 68 source contracts
 and 24 controls; GNU/MSRV 128 selected controls each, check and strict lint;
@@ -6374,3 +6374,20 @@ format/docs, six Python controls, 188 registered gates and the local contract.
 The packet preserves the first compiler and lint refusals and was audited as
 1,823 exact Git blobs. These are correctness controls, not a throughput result
 or proof of fitting the original admission windows.
+
+### Eighteen role readiness is checked without worker execution
+
+The [child-entry gate](bootstrap-held-entry-20261023.md) connects the separate
+readiness argument to a strict five-variable activation contract and closed
+eighteen-role reader. All old FD0..16 predicates and old modes are preserved.
+Full fresh role frames bracket the authenticated one-shot ACK, followed only by
+a nonexecuting hold under the original pidfds, alarm and channel. No worker is
+released or executed.
+
+GNU 1.94 and MSRV 1.88 each pass 153 selected test invocations, including seventeen
+integration controls; Windows passes 70 source contracts and 26 controls. Check,
+strict lint, format/docs, six harness controls, 188 gates and the local contract
+pass. The exact-byte-audited packet retains fourteen lanes, including the first
+fixture, compatibility and late-ACK-oracle refusals. A queued ACK is not recovered
+readiness after child death. Original manager delivery, all-writer cessation,
+completion and server admission remain separate, unclosed gates.

@@ -18318,9 +18318,10 @@ A socket's creation-time peer credentials cannot substitute for the sender of
 each later message.
 
 Local owned-helper controls exercise this exchange without a service or product
-workload. They remain narrower than original delivery through systemd. The new
-eighteen-role child entry and activation environment are not connected yet;
-existing installed modes still refuse. A manager job observation and readiness
+workload. They remain narrower than original delivery through systemd. At that
+stage the eighteen-role child entry and activation environment were not connected;
+the following gate adds readiness only, while old installed modes still refuse.
+A manager job observation and readiness
 are deliberately not a worker-release capability, durable completion or proof
 that every writer has stopped. No preparation speedup or fit within the original
 windows is inferred from these correctness controls.
@@ -18335,3 +18336,48 @@ Both copies now run their malformed-record and FD-cleanup controls. Reviewed
 local gates pass, while all earlier refused lanes remain separate evidence.
 None of these compiler/layout corrections establishes an allocation improvement
 or changes an admission threshold.
+
+### Child readiness does not authorize execution
+
+The [eighteen-role entry](../testing/performance/0.74/bootstrap-held-entry-20261023.md)
+now checks the inherited role set before answering its separate readiness
+challenge. The old seventeen-role mode stays intact. Its new activation contract
+accepts only the current canonical PID fields, fifteen exact names, descriptor
+count and invocation identifier; these values describe activation, not authority.
+The parent suppresses a finite list of manager defaults, and the child refuses
+unknown environment rather than silently making an unexpected launch look valid.
+
+The reader retains every old role predicate and observation order. Only the new
+readiness endpoint changes to CLOEXEC before ownership. Full fresh role frames
+run before receiving the challenge, after receipt and after the sole possible
+ACK. After that ACK the process only waits under its original creator/guardian
+pidfds, alarm and channel. Expiry, disconnect or duplicate data stops readiness;
+there is no release-channel write or worker exec. This preserves the distinction
+between proving readiness and gaining permission to do work.
+
+The first integration failure was informative about the fixtures. Older
+consistency-only records used identical manager and client hashes. Such a record
+can be structurally valid, but the readiness protocol correctly rejects it. The
+new fixture supplies distinct endpoints and reseals its matching assertions;
+neither the runtime predicate nor its deadline changed. A separate negative
+control retains the old equal-name refusal. A passing parser fixture therefore
+does not automatically become a passing authentication fixture.
+
+The lost-ACK check found another important boundary. A packet can remain queued
+after its sender dies without remaining an authenticated live-sender observation.
+An attempted late receive after SIGKILL/reap returned Invalid on the local WSL
+kernel. Both GNU and MSRV first failures remain in evidence. The corrected oracle
+peeks at the exact queued ACK while the child is alive, leaves it unconsumed,
+kills and reaps that same child, verifies its held pidfd is dead and requires the
+late refusal. It does not relax the ancillary parser to recover permission from
+old bytes. The alarm control likewise checks the original timerfd without rearming
+it. All original admission windows remain unchanged.
+
+The local matrix now covers valid readiness, malformed activation and roles,
+context or sender substitution, duplicate challenge, guardian loss, disconnect,
+expiry and owned-child SIGKILL. Source contracts also restore entire old bodies
+to their Git baseline. These correctness results are not preparation-speed or
+throughput measurements. Original delivery through the real manager, complete
+unit hardening, authenticated worker start and all-writer cessation before fence
+release still require their own integration gates. No service, clock or server
+action was needed for this readiness-only gate.
