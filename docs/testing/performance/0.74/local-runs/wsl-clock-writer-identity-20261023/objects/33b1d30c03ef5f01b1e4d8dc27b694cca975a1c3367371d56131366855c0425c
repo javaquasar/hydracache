@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "wsl.exe",
+    "-d",
+    "docker-desktop",
+    "-u",
+    "root",
+    "--exec",
+    "readlink",
+    "/proc/210/exe",
+    "/proc/210/ns/pid",
+    "/proc/210/ns/time"
+  ],
+  "exit": 1,
+  "timeout_seconds": 30
+}

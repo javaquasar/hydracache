@@ -1,0 +1,15 @@
+{
+  "argv": [
+    "wsl.exe",
+    "-d",
+    "docker-desktop",
+    "-u",
+    "root",
+    "--exec",
+    "cat",
+    "/proc/sys/kernel/random/boot_id",
+    "/proc/1/status"
+  ],
+  "exit": 0,
+  "timeout_seconds": 30
+}

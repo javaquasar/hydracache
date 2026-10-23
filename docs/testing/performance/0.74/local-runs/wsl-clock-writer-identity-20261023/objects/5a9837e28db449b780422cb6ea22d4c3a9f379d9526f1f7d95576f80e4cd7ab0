@@ -1,0 +1,14 @@
+{
+  "argv": [
+    "wsl.exe",
+    "--system",
+    "--user",
+    "root",
+    "--exec",
+    "/bin/sh",
+    "-c",
+    "for tool in python3 sha256sum readlink; do command -v \"$tool\" || printf \"%s unavailable\n\" \"$tool\"; done"
+  ],
+  "exit": 0,
+  "timeout_seconds": 30
+}

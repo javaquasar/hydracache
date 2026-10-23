@@ -1,0 +1,8 @@
+{
+  "native_not_started": true,
+  "root_controls_equal_to_capture": true,
+  "running_distro_inventory_equal": true,
+  "same_boot": true,
+  "same_pid1_start": true,
+  "same_timens": true
+}

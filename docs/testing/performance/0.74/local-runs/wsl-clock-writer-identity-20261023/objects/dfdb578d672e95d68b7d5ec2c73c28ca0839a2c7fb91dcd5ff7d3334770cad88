@@ -1,0 +1,9 @@
+{
+  "argv": [
+    "wsl.exe",
+    "--debug-shell"
+  ],
+  "exit": 1,
+  "stdin_utf8": "printf \"HC074_ROOT_BEGIN\\n\"\nid\ncat /proc/sys/kernel/random/boot_id\nreadlink /proc/self/ns/pid\nreadlink /proc/self/ns/time\ncat /proc/1/comm\nprintf \"HC074_ROOT_END\\n\"\nexit\n",
+  "timeout_seconds": 25
+}

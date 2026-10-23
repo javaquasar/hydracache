@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "wsl.exe",
+    "-d",
+    "Ubuntu",
+    "-u",
+    "root",
+    "--exec",
+    "python3",
+    "-B",
+    "-c",
+    "import sys,json,pathlib\nsys.path.insert(0,'/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/wsl-clock-trace-074')\nimport capture\nprint(json.dumps({'root_controls':capture.snapshot(),'boot':pathlib.Path('/proc/sys/kernel/random/boot_id').read_text().strip(),'pid1_start':capture.pid1_start(pathlib.Path('/proc/1/stat').read_text()),'timens':str(pathlib.Path('/proc/self/ns/time').readlink())},sort_keys=True))\n"
+  ],
+  "exit": 0,
+  "timeout_seconds": 30
+}

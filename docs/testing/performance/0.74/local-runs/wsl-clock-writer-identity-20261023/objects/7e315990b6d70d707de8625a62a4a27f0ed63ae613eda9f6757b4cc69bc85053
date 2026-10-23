@@ -1,0 +1,265 @@
+
+FIELD boot
+cf222c07-5476-4f70-9a32-455e99204d0a
+
+RESULT 0
+
+FIELD uid
+uid=0(root) gid=0(root) groups=0(root)
+
+RESULT 0
+
+FIELD observer-pidns
+pid:[4026532229]
+
+RESULT 0
+
+FIELD observer-timens
+time:[4026531834]
+
+RESULT 0
+
+PROCESS 1 init()
+
+FIELD stat-before
+1 (init()) S 0 0 0 0 -1 4194560 210 2182 0 7 0 4 3 11 20 0 2 0 10903 3133440 544 18446744073709551615 2879024 4755861 140733495231488 0 0 0 65536 2147024638 0 0 0 0 17 6 0 0 0 0 0 4830720 4832576 510976000 140733495238105 140733495238111 140733495238111 140733495238642 0
+
+RESULT 0
+
+FIELD status
+Name:	init()
+Umask:	0000
+State:	S (sleeping)
+Tgid:	1
+Ngid:	0
+Pid:	1
+PPid:	0
+TracerPid:	0
+Uid:	0	0	0	0
+Gid:	0	0	0	0
+FDSize:	128
+Groups:	 
+NStgid:	1
+NSpid:	1
+NSpgid:	0
+NSsid:	0
+Kthread:	0
+VmPeak:	    3060 kB
+VmSize:	    3060 kB
+VmLck:	       0 kB
+VmPin:	       0 kB
+VmHWM:	    2176 kB
+VmRSS:	    2176 kB
+RssAnon:	     128 kB
+RssFile:	       0 kB
+RssShmem:	    2048 kB
+VmData:	     292 kB
+VmStk:	     132 kB
+VmExe:	    1840 kB
+VmLib:	       8 kB
+VmPTE:	      44 kB
+VmSwap:	       0 kB
+HugetlbPages:	       0 kB
+CoreDumping:	0
+THP_enabled:	1
+untag_mask:	0xffffffffffffffff
+Threads:	2
+SigQ:	1/62569
+SigPnd:	0000000000000000
+ShdPnd:	0000000000000000
+SigBlk:	0000000000010000
+SigIgn:	fffffffc7ff8fefe
+SigCgt:	0000000000000000
+CapInh:	0000000000000000
+CapPrm:	000001ffffffffff
+CapEff:	000001ffffffffff
+CapBnd:	000001ffffffffff
+CapAmb:	0000000000000000
+NoNewPrivs:	0
+Seccomp:	0
+Seccomp_filters:	0
+Speculation_Store_Bypass:	thread vulnerable
+SpeculationIndirectBranch:	conditional enabled
+Cpus_allowed:	ff
+Cpus_allowed_list:	0-7
+Mems_allowed:	00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000001
+Mems_allowed_list:	0
+voluntary_ctxt_switches:	72
+nonvoluntary_ctxt_switches:	0
+
+RESULT 0
+
+FIELD cgroup
+0::/
+
+RESULT 0
+
+FIELD exe
+/init
+
+RESULT 0
+
+FIELD ns/pid
+pid:[4026532229]
+
+RESULT 0
+
+FIELD ns/time
+time:[4026531834]
+
+RESULT 0
+
+FIELD ns/mnt
+mnt:[4026532226]
+
+RESULT 0
+
+FIELD executable-digest
+d3b26895f03f698110046054987d873f3cf22ce5953c35ea9789e4cc2df83880  /proc/1/exe
+
+RESULT 0
+
+FIELD root-os-release
+NAME="Common Base Linux Mariner"
+VERSION="2.0.20240829"
+ID=mariner
+VERSION_ID="2.0"
+PRETTY_NAME="CBL-Mariner/Linux"
+ANSI_COLOR="1;34"
+HOME_URL="https://aka.ms/cbl-mariner"
+BUG_REPORT_URL="https://aka.ms/cbl-mariner"
+SUPPORT_URL="https://aka.ms/cbl-mariner"
+
+RESULT 0
+
+FIELD stat-after
+1 (init()) S 0 0 0 0 -1 4194560 210 2182 0 7 0 4 3 11 20 0 2 0 10903 3133440 544 18446744073709551615 2879024 4755861 140733495231488 0 0 0 65536 2147024638 0 0 0 0 17 6 0 0 0 0 0 4830720 4832576 510976000 140733495238105 140733495238111 140733495238111 140733495238642 0
+
+RESULT 0
+
+PROCESS 193 systemd-timesyn
+
+FIELD stat-before
+193 (systemd-timesyn) S 2 193 193 0 -1 4194560 1029 0 5 0 14 39 0 0 20 0 2 0 11340 93220864 1920 18446744073709551615 100020057776128 100020057804105 140720585431312 0 0 0 16386 4096 0 0 0 0 17 7 0 0 0 0 0 100020057817392 100020057821192 100020198985728 140720585432463 140720585432498 140720585432498 140720585433045 0
+
+RESULT 0
+
+FIELD status
+Name:	systemd-timesyn
+Umask:	0022
+State:	S (sleeping)
+Tgid:	193
+Ngid:	0
+Pid:	193
+PPid:	2
+TracerPid:	0
+Uid:	996	996	996	996
+Gid:	996	996	996	996
+FDSize:	128
+Groups:	996 
+NStgid:	193	176
+NSpid:	193	176
+NSpgid:	193	176
+NSsid:	193	176
+Kthread:	0
+VmPeak:	  156572 kB
+VmSize:	   91036 kB
+VmLck:	       0 kB
+VmPin:	       0 kB
+VmHWM:	    7680 kB
+VmRSS:	    7680 kB
+RssAnon:	     896 kB
+RssFile:	    6784 kB
+RssShmem:	       0 kB
+VmData:	    8800 kB
+VmStk:	     132 kB
+VmExe:	      28 kB
+VmLib:	   11100 kB
+VmPTE:	      80 kB
+VmSwap:	       0 kB
+HugetlbPages:	       0 kB
+CoreDumping:	0
+THP_enabled:	1
+untag_mask:	0xffffffffffffffff
+Threads:	2
+SigQ:	0/62569
+SigPnd:	0000000000000000
+ShdPnd:	0000000000000000
+SigBlk:	0008000000004002
+SigIgn:	0000000000001000
+SigCgt:	0000000100000000
+CapInh:	0000000002000000
+CapPrm:	0000000002000000
+CapEff:	0000000002000000
+CapBnd:	0000000002000000
+CapAmb:	0000000002000000
+NoNewPrivs:	1
+Seccomp:	2
+Seccomp_filters:	28
+Speculation_Store_Bypass:	thread vulnerable
+SpeculationIndirectBranch:	conditional enabled
+Cpus_allowed:	ff
+Cpus_allowed_list:	0-7
+Mems_allowed:	00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000001
+Mems_allowed_list:	0
+voluntary_ctxt_switches:	1216
+nonvoluntary_ctxt_switches:	25
+
+RESULT 0
+
+FIELD cgroup
+0::/system.slice/systemd-timesyncd.service
+
+RESULT 0
+
+FIELD exe
+/usr/lib/systemd/systemd-timesyncd
+
+RESULT 0
+
+FIELD ns/pid
+pid:[4026532241]
+
+RESULT 0
+
+FIELD ns/time
+time:[4026531834]
+
+RESULT 0
+
+FIELD ns/mnt
+mnt:[4026532373]
+
+RESULT 0
+
+FIELD executable-digest
+5e87427803daf1dbe974cc62fba335c96ff24e37892f67d9095d6703d2c32009  /proc/193/exe
+
+RESULT 0
+
+FIELD root-os-release
+PRETTY_NAME="Ubuntu 24.04.1 LTS"
+NAME="Ubuntu"
+VERSION_ID="24.04"
+VERSION="24.04.1 LTS (Noble Numbat)"
+VERSION_CODENAME=noble
+ID=ubuntu
+ID_LIKE=debian
+HOME_URL="https://www.ubuntu.com/"
+SUPPORT_URL="https://help.ubuntu.com/"
+BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
+PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+UBUNTU_CODENAME=noble
+LOGO=ubuntu-logo
+
+RESULT 0
+
+FIELD stat-after
+193 (systemd-timesyn) S 2 193 193 0 -1 4194560 1029 0 5 0 14 39 0 0 20 0 2 0 11340 93220864 1920 18446744073709551615 100020057776128 100020057804105 140720585431312 0 0 0 16386 4096 0 0 0 0 17 7 0 0 0 0 0 100020057817392 100020057821192 100020198985728 140720585432463 140720585432498 140720585432498 140720585433045 0
+
+RESULT 0
+
+FIELD boot-after
+cf222c07-5476-4f70-9a32-455e99204d0a
+
+RESULT 0

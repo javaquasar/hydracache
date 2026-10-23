@@ -6547,3 +6547,21 @@ passed before dispatch, and all 38 pass after the offline attribution controls.
 Cleanup/context and local gates pass. Namespace-aware writer identification and
 a separately agreed clock policy remain next; no service, clock, original-owner,
 product or server action was taken.
+
+## Read only writer identification across WSL namespaces
+
+The [namespace audit](wsl-clock-writer-identity-20261023.md) joins the current
+system-distro PID 193 and Ubuntu PID 176 to the same systemd-timesyncd identity
+using start ticks, NSpid, credentials, executable digest, namespaces and cgroup.
+It does not join either to kernel PID 1157 in the earlier trace. Current numeric
+lookups in Ubuntu and Docker instead demonstrate unrelated agetty/loki tasks.
+Chronyd's current executable remains unidentified in the accessible views.
+
+The root debug shell refused without Windows Administrator privileges; that
+result, the earlier lookup/tooling failures and a first CRLF decoder-control
+failure remain in a separate 76-file archive. The corrected eight identity
+controls and all 46 Linux controls pass, as do local gates. Boot, time namespace,
+PID1, tracing controls and the running-distro inventory match their recorded
+inputs. No clocks, services, stopped distro, original-owner or server were
+changed or launched. Read-only root-namespace access and a separately agreed
+clock policy remain the next boundaries; no admission window was widened.

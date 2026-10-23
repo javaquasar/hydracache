@@ -1,0 +1,9 @@
+BusyBox v1.36.1 (2024-05-21 13:38:37 UTC) multi-call binary.
+
+Usage: readlink [-fnv] FILE
+
+Display the value of a symlink
+
+	-f	Canonicalize by following all symlinks
+	-n	Don't add newline
+	-v	Verbose

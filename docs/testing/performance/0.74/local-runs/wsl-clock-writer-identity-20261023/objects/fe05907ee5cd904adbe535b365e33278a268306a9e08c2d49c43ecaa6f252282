@@ -1,0 +1,10 @@
+{
+  "argv": [
+    "target/debug/xtask.exe",
+    "performance-contract-check",
+    "--release",
+    "0.74"
+  ],
+  "exit": 0,
+  "timeout_seconds": 45
+}

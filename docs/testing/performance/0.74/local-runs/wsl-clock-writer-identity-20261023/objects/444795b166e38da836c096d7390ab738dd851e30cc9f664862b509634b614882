@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "wsl.exe",
+    "-d",
+    "docker-desktop",
+    "-u",
+    "root",
+    "--exec",
+    "cat",
+    "/proc/1157/status",
+    "/proc/1157/cgroup",
+    "/proc/1157/stat"
+  ],
+  "exit": 0,
+  "timeout_seconds": 30
+}

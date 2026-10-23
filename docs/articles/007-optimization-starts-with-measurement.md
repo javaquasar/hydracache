@@ -18620,3 +18620,36 @@ identity evidence and an agreed clock policy, not a wider admission window.
 All probes and the private instance were retired, original tracing controls and
 session identities matched, and the earlier failures remained intact. No
 clock/service change or product/server execution followed this observation.
+
+### PID numbers need a namespace and an observation boundary
+
+The following [read-only namespace audit](../testing/performance/0.74/wsl-clock-writer-identity-20261023.md)
+identified the currently visible Ubuntu timesyncd executable without changing
+its service. System-distro PID 193 and Ubuntu PID 176 share start ticks, the
+executable digest, credentials, cgroup and target namespaces. The NSpid chain
+`193 176` explains how the same current process appears in both procfs views.
+This is stronger than matching a comm string, but still weaker than binding the
+process to the earlier trace: kernel PID 1157's original start ticks and
+executable were not captured.
+
+Numeric lookups demonstrate the danger. Ubuntu PID 210 is agetty, whereas the
+trace's kernel PID 210 issued chronyd adjustments. Docker PID 1157 is a loki
+thread, not the trace's timesyn identity. Neither collision says that a writer
+changed executable. They say that a bare PID from one namespace cannot be
+looked up in another as though the identity were global. A later executable
+digest also cannot retroactively authenticate the writer of an older value.
+
+Root-namespace access is the remaining concrete metadata boundary. Microsoft's
+documented debug shell refused because the Windows caller was not elevated;
+the refusal remains evidence rather than triggering an elevation workaround or
+a new capture. Current chronyd ownership therefore remains unresolved. Disabling
+only the visible Ubuntu service would choose a policy before accounting for
+all observed writers sharing the time namespace.
+
+The metadata archive also caught a smaller portability defect: exact-byte
+verification parsed CRLF fixture bytes differently from a text-mode read. The
+first failed control stays sealed, and an isolated in-memory line-ending
+correction has its own regression test. All 46 Linux controls now pass; runtime
+checks and original windows remain unchanged. Better attribution narrows the
+next intervention. It does not turn an infrastructure diagnosis into a product
+performance improvement or permission to reopen original delivery.

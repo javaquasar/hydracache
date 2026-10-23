@@ -1,0 +1,135 @@
+
+FIELD boot
+cf222c07-5476-4f70-9a32-455e99204d0a
+
+RESULT 0
+
+FIELD uid
+uid=0(root) gid=0(root) groups=0(root),0(root),1(bin),2(daemon),3(sys),4(adm),6(disk),10(wheel),11(floppy),20(dialout),26(tape),27(video)
+
+RESULT 0
+
+FIELD observer-pidns
+pid:[4026532222]
+
+RESULT 0
+
+FIELD observer-timens
+time:[4026531834]
+
+RESULT 0
+
+PROCESS 1 init(docker-des
+
+FIELD stat-before
+1 (init(docker-des) S 0 0 0 0 -1 4194560 220 131 0 19 0 6 0 0 20 0 2 0 10508 3133440 480 18446744073709551615 2879024 4755861 140724297615376 0 0 0 0 2147090174 0 0 0 0 17 1 0 0 0 0 0 4830720 4832576 240824320 140724297616998 140724297617004 140724297617004 140724297617394 0
+
+RESULT 0
+
+FIELD status
+Name:	init(docker-des
+Umask:	0022
+State:	S (sleeping)
+Tgid:	1
+Ngid:	0
+Pid:	1
+PPid:	0
+TracerPid:	0
+Uid:	0	0	0	0
+Gid:	0	0	0	0
+FDSize:	128
+Groups:	 
+NStgid:	1
+NSpid:	1
+NSpgid:	0
+NSsid:	0
+Kthread:	0
+VmPeak:	    3060 kB
+VmSize:	    3060 kB
+VmLck:	       0 kB
+VmPin:	       0 kB
+VmHWM:	    1920 kB
+VmRSS:	    1920 kB
+RssAnon:	       0 kB
+RssFile:	       0 kB
+RssShmem:	    1920 kB
+VmData:	     292 kB
+VmStk:	     132 kB
+VmExe:	    1840 kB
+VmLib:	       8 kB
+VmPTE:	      44 kB
+VmSwap:	       0 kB
+HugetlbPages:	       0 kB
+CoreDumping:	0
+THP_enabled:	1
+untag_mask:	0xffffffffffffffff
+Threads:	2
+SigQ:	1/62569
+SigPnd:	0000000000000000
+ShdPnd:	0000000000000000
+SigBlk:	0000000000000000
+SigIgn:	fffffffc7ff9fefe
+SigCgt:	0000000000000000
+CapInh:	0000000000000000
+CapPrm:	000001ffffffffff
+CapEff:	000001ffffffffff
+CapBnd:	000001ffffffffff
+CapAmb:	0000000000000000
+NoNewPrivs:	0
+Seccomp:	0
+Seccomp_filters:	0
+Speculation_Store_Bypass:	thread vulnerable
+SpeculationIndirectBranch:	conditional enabled
+Cpus_allowed:	ff
+Cpus_allowed_list:	0-7
+Mems_allowed:	00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000001
+Mems_allowed_list:	0
+voluntary_ctxt_switches:	33
+nonvoluntary_ctxt_switches:	1
+
+RESULT 0
+
+FIELD cgroup
+0::/
+
+RESULT 0
+
+FIELD exe
+/init
+
+RESULT 0
+
+FIELD ns/pid
+pid:[4026532222]
+
+RESULT 0
+
+FIELD ns/time
+time:[4026531834]
+
+RESULT 0
+
+FIELD ns/mnt
+mnt:[4026532220]
+
+RESULT 0
+
+FIELD executable-digest
+d3b26895f03f698110046054987d873f3cf22ce5953c35ea9789e4cc2df83880  /proc/1/exe
+
+RESULT 0
+
+FIELD root-os-release
+PRETTY_NAME="Docker Desktop"
+
+RESULT 0
+
+FIELD stat-after
+1 (init(docker-des) S 0 0 0 0 -1 4194560 220 131 0 19 0 6 0 0 20 0 2 0 10508 3133440 480 18446744073709551615 2879024 4755861 140724297615376 0 0 0 0 2147090174 0 0 0 0 17 1 0 0 0 0 0 4830720 4832576 240824320 140724297616998 140724297617004 140724297617004 140724297617394 0
+
+RESULT 0
+
+FIELD boot-after
+cf222c07-5476-4f70-9a32-455e99204d0a
+
+RESULT 0

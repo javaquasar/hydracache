@@ -1,0 +1,186 @@
+{
+  "admission": false,
+  "boot": "cf222c07-5476-4f70-9a32-455e99204d0a",
+  "clock_change": false,
+  "contexts": {
+    "docker": {
+      "observer_pidns": "pid:[4026532222]",
+      "observer_timens": "time:[4026531834]",
+      "processes": [
+        {
+          "cgroup": "0::/",
+          "comm": "init(docker-des",
+          "exe": "/init",
+          "mntns": "mnt:[4026532220]",
+          "nspid": [
+            1
+          ],
+          "pid": 1,
+          "pidns": "pid:[4026532222]",
+          "sha256": "d3b26895f03f698110046054987d873f3cf22ce5953c35ea9789e4cc2df83880",
+          "start_ticks": 10508,
+          "timens": "time:[4026531834]",
+          "uid": [
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    "system": {
+      "observer_pidns": "pid:[4026532229]",
+      "observer_timens": "time:[4026531834]",
+      "processes": [
+        {
+          "cgroup": "0::/",
+          "comm": "init()",
+          "exe": "/init",
+          "mntns": "mnt:[4026532226]",
+          "nspid": [
+            1
+          ],
+          "pid": 1,
+          "pidns": "pid:[4026532229]",
+          "sha256": "d3b26895f03f698110046054987d873f3cf22ce5953c35ea9789e4cc2df83880",
+          "start_ticks": 10903,
+          "timens": "time:[4026531834]",
+          "uid": [
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "cgroup": "0::/system.slice/systemd-timesyncd.service",
+          "comm": "systemd-timesyn",
+          "exe": "/usr/lib/systemd/systemd-timesyncd",
+          "mntns": "mnt:[4026532373]",
+          "nspid": [
+            193,
+            176
+          ],
+          "pid": 193,
+          "pidns": "pid:[4026532241]",
+          "sha256": "5e87427803daf1dbe974cc62fba335c96ff24e37892f67d9095d6703d2c32009",
+          "start_ticks": 11340,
+          "timens": "time:[4026531834]",
+          "uid": [
+            996,
+            996,
+            996,
+            996
+          ]
+        }
+      ]
+    },
+    "ubuntu": {
+      "observer_pidns": "pid:[4026532241]",
+      "observer_timens": "time:[4026531834]",
+      "processes": [
+        {
+          "cgroup": "0::/system.slice/systemd-timesyncd.service",
+          "comm": "systemd-timesyn",
+          "exe": "/usr/lib/systemd/systemd-timesyncd",
+          "mntns": "mnt:[4026532373]",
+          "nspid": [
+            176
+          ],
+          "pid": 176,
+          "pidns": "pid:[4026532241]",
+          "sha256": "5e87427803daf1dbe974cc62fba335c96ff24e37892f67d9095d6703d2c32009",
+          "start_ticks": 11340,
+          "timens": "time:[4026531834]",
+          "uid": [
+            996,
+            996,
+            996,
+            996
+          ]
+        },
+        {
+          "cgroup": "0::/system.slice/console-getty.service",
+          "comm": "agetty",
+          "exe": "/usr/sbin/agetty",
+          "mntns": "mnt:[4026532239]",
+          "nspid": [
+            210
+          ],
+          "pid": 210,
+          "pidns": "pid:[4026532241]",
+          "sha256": "c7b8077dd50fa07cb24339eed6dbd85b627500c15e956d0051ffcfba20e83214",
+          "start_ticks": 11419,
+          "timens": "time:[4026531834]",
+          "uid": [
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      ]
+    }
+  },
+  "current_timesyn": [
+    {
+      "cgroup": "0::/system.slice/systemd-timesyncd.service",
+      "comm": "systemd-timesyn",
+      "exe": "/usr/lib/systemd/systemd-timesyncd",
+      "mntns": "mnt:[4026532373]",
+      "nspid": [
+        193,
+        176
+      ],
+      "pid": 193,
+      "pidns": "pid:[4026532241]",
+      "sha256": "5e87427803daf1dbe974cc62fba335c96ff24e37892f67d9095d6703d2c32009",
+      "start_ticks": 11340,
+      "timens": "time:[4026531834]",
+      "uid": [
+        996,
+        996,
+        996,
+        996
+      ]
+    },
+    {
+      "cgroup": "0::/system.slice/systemd-timesyncd.service",
+      "comm": "systemd-timesyn",
+      "exe": "/usr/lib/systemd/systemd-timesyncd",
+      "mntns": "mnt:[4026532373]",
+      "nspid": [
+        176
+      ],
+      "pid": 176,
+      "pidns": "pid:[4026532241]",
+      "sha256": "5e87427803daf1dbe974cc62fba335c96ff24e37892f67d9095d6703d2c32009",
+      "start_ticks": 11340,
+      "timens": "time:[4026531834]",
+      "uid": [
+        996,
+        996,
+        996,
+        996
+      ]
+    }
+  ],
+  "current_timesyn_views_join": true,
+  "historical_tick_setter": null,
+  "method": "hc074-post-capture-current-namespace-join-v1",
+  "original_owner_run": false,
+  "original_windows": [
+    300,
+    60,
+    10
+  ],
+  "product": false,
+  "root_debug_shell": "refused: Windows Administrator required",
+  "server": false,
+  "service_change": false,
+  "source_capture_sha256": "6b54d38f0ce7b4ceacdeb0ce879a7aee6570e53501cfc12206b39c78eaef051d",
+  "trace_capture": false,
+  "trace_pid_to_executable_authenticated": false,
+  "tracing_state_changed": false
+}

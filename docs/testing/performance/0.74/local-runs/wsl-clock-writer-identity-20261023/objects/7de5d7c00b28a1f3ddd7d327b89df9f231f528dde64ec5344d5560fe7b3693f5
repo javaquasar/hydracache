@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "wsl.exe",
+    "--system",
+    "--user",
+    "root",
+    "--exec",
+    "readlink",
+    "/proc/self/ns/pid",
+    "/proc/self/ns/time",
+    "/proc/1/exe",
+    "/proc/1/ns/pid"
+  ],
+  "exit": 0,
+  "timeout_seconds": 30
+}

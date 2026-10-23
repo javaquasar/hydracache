@@ -1,0 +1,51 @@
+test_exact_counts_windows_and_rate_enclosure (test_attribution.Attribution.test_exact_counts_windows_and_rate_enclosure) ... ok
+test_failed_tick_request_does_not_identify_a_successful_writer (test_attribution.Attribution.test_failed_tick_request_does_not_identify_a_successful_writer) ... ok
+test_loss_context_and_missing_window_refuse (test_attribution.Attribution.test_loss_context_and_missing_window_refuse) ... ok
+test_configuration_order_and_no_buffer_activation (test_einval.Configuration.test_configuration_order_and_no_buffer_activation) ... ok
+test_durable_before_record_must_precede_effect (test_einval.Configuration.test_durable_before_record_must_precede_effect) ... ok
+test_first_failure_path_traceback_and_no_later_operation (test_einval.Configuration.test_first_failure_path_traceback_and_no_later_operation) ... ok
+test_read_failure_is_recorded_and_not_retried (test_einval.Configuration.test_read_failure_is_recorded_and_not_retried) ... ok
+test_comm_parentheses (test_identity.IdentityTests.test_comm_parentheses) ... ok
+test_crlf_decodes_without_changing_meaning (test_identity.IdentityTests.test_crlf_decodes_without_changing_meaning) ... ok
+test_current_join_is_not_a_historical_trace_join (test_identity.IdentityTests.test_current_join_is_not_a_historical_trace_join) ... ok
+test_exclusive_retention_and_exact_verification (test_identity.IdentityTests.test_exclusive_retention_and_exact_verification) ... ok
+test_failed_duplicate_and_mislabeled_metadata_refuse (test_identity.IdentityTests.test_failed_duplicate_and_mislabeled_metadata_refuse) ... ok
+test_identity_drift_refuses (test_identity.IdentityTests.test_identity_drift_refuses) ... ok
+test_scope_and_unsafe_digest_refuse (test_identity.IdentityTests.test_scope_and_unsafe_digest_refuse) ... ok
+test_stat_change_refuses (test_identity.IdentityTests.test_stat_change_refuses) ... ok
+test_first_decoder_refusal_preserved_without_live_retry (test_observe.Orchestration.test_first_decoder_refusal_preserved_without_live_retry) ... ok
+test_success_uses_one_dispatch_and_fixed_limits (test_observe.Orchestration.test_success_uses_one_dispatch_and_fixed_limits) ... ok
+test_changed_definition_context_deadline_or_activation_refuse (test_registration.Outcome.test_changed_definition_context_deadline_or_activation_refuse) ... ok
+test_complete_configuration_and_refusal_are_distinct (test_registration.Outcome.test_complete_configuration_and_refusal_are_distinct) ... ok
+test_all_exact_registration_and_deletion_commands (test_registry_writer.RegistryWriter.test_all_exact_registration_and_deletion_commands) ... ok
+test_close_refusal_has_exact_path_and_never_retries_close (test_registry_writer.RegistryWriter.test_close_refusal_has_exact_path_and_never_retries_close) ... ok
+test_complete_command_uses_no_seek_create_or_truncate (test_registry_writer.RegistryWriter.test_complete_command_uses_no_seek_create_or_truncate) ... ok
+test_first_write_error_is_not_replaced_by_close_error (test_registry_writer.RegistryWriter.test_first_write_error_is_not_replaced_by_close_error) ... ok
+test_invalid_or_multiple_commands_refuse_before_open (test_registry_writer.RegistryWriter.test_invalid_or_multiple_commands_refuse_before_open) ... ok
+test_open_refusal_never_writes_or_closes_unowned_fd (test_registry_writer.RegistryWriter.test_open_refusal_never_writes_or_closes_unowned_fd) ... ok
+test_owned_regular_file_preserves_existing_bytes_and_missing_file_refuses (test_registry_writer.RegistryWriter.test_owned_regular_file_preserves_existing_bytes_and_missing_file_refuses) ... ok
+test_short_and_zero_write_refuse_without_resubmission (test_registry_writer.RegistryWriter.test_short_and_zero_write_refuse_without_resubmission) ... ok
+test_write_refusal_or_interrupt_closes_once_without_retry (test_registry_writer.RegistryWriter.test_write_refusal_or_interrupt_closes_once_without_retry) ... ok
+test_changed_definition_is_not_deleted (test_trace.Cleanup.test_changed_definition_is_not_deleted) ... ok
+test_partial_and_repeated_cleanup_never_remove_foreign_probe (test_trace.Cleanup.test_partial_and_repeated_cleanup_never_remove_foreign_probe) ... ok
+test_hard_deadline_without_controller (test_trace.Guardian.test_hard_deadline_without_controller) ... ok
+test_normal_completion (test_trace.Guardian.test_normal_completion) ... ok
+test_owner_sigkill_with_external_harness (test_trace.Guardian.test_owner_sigkill_with_external_harness) ... ok
+test_visible_empty_receipt_is_not_read_before_completion (test_trace.Guardian.test_visible_empty_receipt_is_not_read_before_completion) ... ok
+test_archive_exact_bytes_and_tampering_refusal (test_trace.Offline.test_archive_exact_bytes_and_tampering_refusal) ... ok
+test_command_first_timeout_exclusive_logs_no_retry (test_trace.Offline.test_command_first_timeout_exclusive_logs_no_retry) ... ok
+test_entries_returns_stack_and_no_false_query_write (test_trace.Offline.test_entries_returns_stack_and_no_false_query_write) ... ok
+test_incomplete_entry_and_wrong_pid_never_imply_success (test_trace.Offline.test_incomplete_entry_and_wrong_pid_never_imply_success) ... ok
+test_loss_missing_counter_and_kprobe_misses_refuse (test_trace.Offline.test_loss_missing_counter_and_kprobe_misses_refuse) ... ok
+test_missing_argument_and_unknown_event_refuse (test_trace.Offline.test_missing_argument_and_unknown_event_refuse) ... ok
+test_btf_malformed_and_truncated_refuse (test_trace.Plan.test_btf_malformed_and_truncated_refuse) ... ok
+test_btf_real_layout_and_corrupt_member_or_prototype_refuse (test_trace.Plan.test_btf_real_layout_and_corrupt_member_or_prototype_refuse) ... ok
+test_buffered_write_and_close_errors_keep_exact_path (test_trace.Plan.test_buffered_write_and_close_errors_keep_exact_path) ... ok
+test_no_truncate_of_global_probe_registry_or_root_control_writes (test_trace.Plan.test_no_truncate_of_global_probe_registry_or_root_control_writes) ... ok
+test_only_the_owned_group_and_expected_write_paths (test_trace.Plan.test_only_the_owned_group_and_expected_write_paths) ... ok
+test_pid_stat_comm_with_spaces_and_parentheses (test_trace.Plan.test_pid_stat_comm_with_spaces_and_parentheses) ... ok
+
+----------------------------------------------------------------------
+Ran 46 tests in 4.193s
+
+OK

@@ -1,0 +1,14 @@
+{
+  "argv": [
+    "wsl.exe",
+    "--system",
+    "--user",
+    "root",
+    "--exec",
+    "/bin/sh",
+    "-c",
+    "emit() {\n printf '\\nFIELD %s\\n' \"$1\"\n shift\n \"$@\"\n rc=$?\n printf '\\nRESULT %s\\n' \"$rc\"\n}\nemit boot cat /proc/sys/kernel/random/boot_id\nemit uid id\nemit observer-pidns readlink /proc/self/ns/pid\nemit observer-timens readlink /proc/self/ns/time\nfor d in /proc/[0-9]*; do\n comm=$(cat \"$d/comm\" 2>/dev/null) || continue\n pid=${d#/proc/}\n case \"$comm:$pid\" in\n chronyd:*|systemd-timesyn:*|init\\(\\):*|init\\(Ubuntu\\):*|init\\(docker-des:*|*:210|*:1157)\n printf '\\nPROCESS %s %s\\n' \"$pid\" \"$comm\"\n emit stat-before cat \"$d/stat\"\n emit status cat \"$d/status\"\n emit cgroup cat \"$d/cgroup\"\n for leaf in exe ns/pid ns/time ns/mnt; do emit \"$leaf\" readlink \"$d/$leaf\"; done\n emit executable-digest sha256sum \"$d/exe\"\n emit root-os-release cat \"$d/root/etc/os-release\"\n emit stat-after cat \"$d/stat\"\n ;;\n esac\ndone\nemit boot-after cat /proc/sys/kernel/random/boot_id\n"
+  ],
+  "exit": 0,
+  "timeout_seconds": 40
+}
