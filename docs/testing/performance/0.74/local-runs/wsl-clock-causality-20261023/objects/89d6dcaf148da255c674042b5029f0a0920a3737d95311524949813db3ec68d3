@@ -1,0 +1,9 @@
+{
+  "admission": false,
+  "completed": false,
+  "first_exit": 1,
+  "method": "hc074-clock-discipline-ntp-readonly-v1",
+  "original_owner_run": false,
+  "refusal": "artur cannot read PID1 namespace symlink; identity preflight incomplete",
+  "rows": 0
+}

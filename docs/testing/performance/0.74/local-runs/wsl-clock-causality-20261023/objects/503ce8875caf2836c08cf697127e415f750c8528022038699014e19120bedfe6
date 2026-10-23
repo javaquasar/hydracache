@@ -1,0 +1,20 @@
+{
+  "argv": [
+    "wsl.exe",
+    "-d",
+    "Ubuntu",
+    "-u",
+    "artur",
+    "--exec",
+    "timeout",
+    "--signal=TERM",
+    "--kill-after=2s",
+    "110s",
+    "/bin/sh",
+    "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/wsl-clock-readonly-074/causality-session.sh",
+    "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/target/wsl-clock-causality-20261023"
+  ],
+  "exit": 1,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

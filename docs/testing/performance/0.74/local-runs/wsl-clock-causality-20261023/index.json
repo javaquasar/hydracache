@@ -1,0 +1,123 @@
+{
+  "admission": false,
+  "files": {
+    "observation/analysis.json": {
+      "bytes": 252,
+      "sha256": "89d6dcaf148da255c674042b5029f0a0920a3737d95311524949813db3ec68d3"
+    },
+    "observation/compile-correlation.json": {
+      "bytes": 577,
+      "sha256": "c521fc022ab9de9a7f8c1b5ad61f05f62fb9929bfba23640cf1d28f6c399701a"
+    },
+    "observation/compile-correlation.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/compile-correlation.stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/controls.json": {
+      "bytes": 395,
+      "sha256": "8ab96ccdbd24f28b543a13d9fbb1b0fb6cb5ffc065d97ff1a387e3e547cc98cf"
+    },
+    "observation/controls.stderr.log": {
+      "bytes": 1991,
+      "sha256": "79afd4fa568852fceb5e59663b85dd33d967bf962de0f2ad596bdf4972045467"
+    },
+    "observation/controls.stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/identity-before.txt": {
+      "bytes": 232,
+      "sha256": "be7596e6e8032d99329f749104189a046b4f2de295c924eb945b242d372dc5a3"
+    },
+    "observation/intent.json": {
+      "bytes": 1996,
+      "sha256": "e4c63527746a6ccbe797367bc2f68db3c6f147124a829328581b1c69454e5fc2"
+    },
+    "observation/session.json": {
+      "bytes": 558,
+      "sha256": "503ce8875caf2836c08cf697127e415f750c8528022038699014e19120bedfe6"
+    },
+    "observation/session.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/session.stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/shell-syntax.json": {
+      "bytes": 409,
+      "sha256": "5c32463cd3f10dd264230d33af2027a783f4d554b5a46eb64315c06912ecafc7"
+    },
+    "observation/shell-syntax.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/shell-syntax.stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "source/docs/testing/performance/0.74/local-runs/bootstrap-original-getunit-20261023/index.json": {
+      "bytes": 46015,
+      "sha256": "9f2fd0f457ec6d48f4e87e7bfc2bd1262bbf191cf51b760fe744eb369394b9f6"
+    },
+    "source/docs/testing/performance/0.74/local-runs/wsl-clock-readonly-20261023/index.json": {
+      "bytes": 9143,
+      "sha256": "edec06e2ac4fa97126ce14ac5c0e4d1aff9cae7bd39f96bb91391102f3d606e3"
+    },
+    "source/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "source/tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs": {
+      "bytes": 15567,
+      "sha256": "5f77f86c3c29a42156d63ffa913583f8a8c6419562f6c2bea5c34e75937260fa"
+    },
+    "source/tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs": {
+      "bytes": 22126,
+      "sha256": "4e18523c71b6b5bdf3a74d75e58df096f25c6f773067d013a07db2a8cfde5214"
+    },
+    "source/tools/wsl-clock-readonly-074/causality-session.sh": {
+      "bytes": 1797,
+      "sha256": "59d24dc3511a102be294bafb51ed8e80c10d54af57d77f2b22ac63b626172bae"
+    },
+    "source/tools/wsl-clock-readonly-074/causality.py": {
+      "bytes": 6964,
+      "sha256": "6347bc8f9030f8c3f7eef38496661b0d19eb2dd15171fe65f3e99089d35b64c2"
+    },
+    "source/tools/wsl-clock-readonly-074/diagnose.py": {
+      "bytes": 11620,
+      "sha256": "ec232cf6c5e55f18e7b6c6216d3cedf64b68f1eae2b81d613203c372d6431ee2"
+    },
+    "source/tools/wsl-clock-readonly-074/discipline.c": {
+      "bytes": 1968,
+      "sha256": "8f5320677f32e29241890ed8849fe6f7cbf176f954cc7263b7af290925af12a9"
+    },
+    "source/tools/wsl-clock-readonly-074/sample.rs": {
+      "bytes": 3024,
+      "sha256": "226631943935fd32c1fc0a059b517174eb045de0b86b0a8e7790f9e765826797"
+    },
+    "source/tools/wsl-clock-readonly-074/session.sh": {
+      "bytes": 2047,
+      "sha256": "6c9851d584a6004c811a82d096c3bedafbf75f5e1483096593fb7c9356e73b12"
+    },
+    "source/tools/wsl-clock-readonly-074/test_causality.py": {
+      "bytes": 3499,
+      "sha256": "1bee978bef798c9a180ced51ff380e83ae15d632874ff60b04d7d9c87db2196e"
+    },
+    "source/tools/wsl-clock-readonly-074/test_diagnose.py": {
+      "bytes": 5929,
+      "sha256": "7e7685896d223bbad1b5b7540b67cbd58c437a91a09875f06a8feeed1f6f8e3f"
+    }
+  },
+  "first_refusal_index_sha256": "9f2fd0f457ec6d48f4e87e7bfc2bd1262bbf191cf51b760fe744eb369394b9f6",
+  "original_owner_run": false,
+  "product": false,
+  "qualification_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "schema": "hc074-clock-readonly-evidence-v1",
+  "server": false
+}
