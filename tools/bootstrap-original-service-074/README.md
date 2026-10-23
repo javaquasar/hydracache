@@ -32,3 +32,17 @@ the fixed check/native lanes. seal.py verify validates its objects without
 contacting a manager, starting a service or changing any host state. The packet
 is intentionally non-admitting and retains both preparation and original-test
 first refusals. It excludes binary copies and private account recovery contents.
+
+## Separate GetUnit attempt
+
+The separately authorized getunit_once.py lane is also consumed. It froze the
+Rust runtime/fixture at 8fb0fb5a, required clean committed sources and a matching
+fresh GNU build proof, and invoked the old shell once through a second exact path.
+The slice preflight passed; the first kernel clock-order refusal remains exit 101
+with no send/readiness. Do not remove its output directory or refresh an origin.
+
+See the [GetUnit report](../../docs/testing/performance/0.74/bootstrap-original-getunit-20261023.md).
+getunit_seal.py verify checks this separate archive without rerunning the fixture.
+Its offline analysis distinguishes backward REALTIME observations from budget
+expiry and does not attribute the cause to a specific service. No existing
+service, clock, server, worker execution or qualification route is enabled.

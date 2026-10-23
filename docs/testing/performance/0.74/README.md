@@ -6402,8 +6402,23 @@ absence preflight, before admission or manager send. No positive delivery or
 server permission is inferred. The temporary identity and diagnostic image were
 removed; existing services and clocks were not changed.
 
-The isolated non-loading GetUnit correction passes GNU/MSRV refusal controls but
-has not repeated the original live attempt. A fresh, separately recorded bounded
-candidate is the next gate. Deduplicated exact evidence retains first refusals;
-the current native output cannot be reused to retry. Original 300/60/10 windows,
-all production frames and the frozen qualification digest remain unchanged.
+The isolated non-loading GetUnit correction passes GNU/MSRV refusal controls.
+That first live refusal was not retried; the separately authorized follow-up is
+recorded below under its own consumed lane. Deduplicated exact evidence retains
+first refusals. Original 300/60/10 windows, all production frames and the frozen
+qualification digest remain unchanged.
+
+## Separate GetUnit original owner attempt
+
+The [separate GetUnit attempt](bootstrap-original-getunit-20261023.md) exercised
+the corrected absence check and created its own transient slice. Its sole first
+run refused at issue_progress_challenge after Reserved with clock-order: BOOTTIME advanced
+1,450,720,029 ns while the saved REALTIME observation decreased 4,572,444,734 ns
+under the same boot. The original hold limit and 300/60/10 windows are unchanged.
+This is an ordering refusal, not a preparation-speed measurement or timeout pass.
+
+There was no manager delivery or readiness. Cleanup succeeded, both exact fixture
+units and temporary identity/image are absent, and existing services/clocks were
+not changed. The new archive keeps the old evidence untouched. Positive original
+delivery and all-writer retirement still need their own gates; read-only time
+consistency attribution is the next step, not a retry of the consumed lane.

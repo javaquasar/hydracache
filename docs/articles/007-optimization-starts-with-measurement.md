@@ -18411,3 +18411,26 @@ in /var/tmp, and compares the account entries and diagnostic inode it actually
 owns. Cleanup succeeded for the original-test candidate, but cleanup does not
 prove the untouched all-writer retirement protocol. Real delivery, readiness,
 retirement, completion and server admission still need separate positive gates.
+
+### A clock ordering refusal is not a preparation timeout
+
+The separately authorized [GetUnit original-owner attempt](../testing/performance/0.74/bootstrap-original-getunit-20261023.md)
+passed the corrected absence check and created its own transient slice. That
+progress did not establish delivery: the same unchanged runtime then refused at
+live kernel revalidation before causal/consent frames or a service request. Its
+first failure and successful owned cleanup are retained independently from the
+earlier absence failure; no repeat was used to turn the result green.
+
+The saved samples explain the immediate predicate. With the same boot identifier,
+BOOTTIME advanced 1.450720029 seconds, while the later REALTIME observation was
+4.572444734 seconds earlier. The unchanged ordering check rejects that pair before
+the unchanged sixty-second hold budget could admit it. Making preparation faster
+or enlarging a timeout would not demonstrate that these time observations are
+consistent. The trace alone does not identify a particular service, WSL mechanism
+or vDSO/CPU behavior as the underlying cause.
+
+This experiment therefore confirms a narrower result: the non-loading preflight
+works on the actual manager, and the live clock guard remains fail-closed. It
+does not confirm original delivery, readiness or all-writer cessation. Clock
+consistency needs read-only attribution before another recorded live candidate;
+the first refusal, original origins and every existing predicate remain intact.
