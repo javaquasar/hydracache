@@ -18,6 +18,8 @@ FILES=list(dict.fromkeys(previous.FILES + BASE + [
     'tools/bootstrap-original-service-074/native_fixture.py',
     'tools/bootstrap-original-service-074/native_fixture.sh',
     'tools/bootstrap-original-service-074/test_controls.py',
+    'tools/bootstrap-original-service-074/seal.py',
+    'tools/bootstrap-original-service-074/test_seal.py',
 ] + ['tools/long-run-supervisor-074/tests/support/' + name for name in (
     'consuming_held_live.rs','consuming_held_live_documents.rs',
     'held_original_service_live.rs','held_original_service_documents.rs','held_original_service_scope.rs')]))
