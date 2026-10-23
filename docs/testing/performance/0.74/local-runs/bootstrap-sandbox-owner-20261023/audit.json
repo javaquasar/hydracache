@@ -1,0 +1,22 @@
+{
+  "admission_allowed": false,
+  "authenticated_child_exchange": false,
+  "checked_commit": "7958182ce35e557ca1ecd49a9d5f990903784000",
+  "clock_changes": false,
+  "complete_loaded_unit_settings": false,
+  "completion": false,
+  "deterministic_controls": true,
+  "fixed_channel_queries_compiled": true,
+  "kernel_reader_compiled": true,
+  "original_attempt": false,
+  "original_delivery": false,
+  "owned_helper_refusal": true,
+  "owner_derived_constructor_compiled": true,
+  "performance_measurement": false,
+  "positive_original_manager_sandbox": false,
+  "product": false,
+  "qualification_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "server": false,
+  "service_changes": false,
+  "writer_cessation": false
+}

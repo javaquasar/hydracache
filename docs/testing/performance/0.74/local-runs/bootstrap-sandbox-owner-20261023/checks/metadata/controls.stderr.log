@@ -1,0 +1,9 @@
+test_existing_packet_refuses_without_execution (test_controls.Controls.test_existing_packet_refuses_without_execution) ... ok
+test_failed_lane_is_not_promoted (test_controls.Controls.test_failed_lane_is_not_promoted) ... ok
+test_fixed_local_scope_and_unknown_lane (test_controls.Controls.test_fixed_local_scope_and_unknown_lane) ... ok
+test_historical_baseline_refuses (test_controls.Controls.test_historical_baseline_refuses) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.080s
+
+OK

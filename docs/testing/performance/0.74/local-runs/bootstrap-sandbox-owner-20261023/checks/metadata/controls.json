@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "python",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tools/bootstrap-sandbox-owner-074",
+    "-v"
+  ],
+  "elapsed_ns": 1320604300,
+  "exit": 0,
+  "stderr_sha256": "e087c20a6d43f388154a19e11471854704da5236c0900928c143d22e6aaef718",
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

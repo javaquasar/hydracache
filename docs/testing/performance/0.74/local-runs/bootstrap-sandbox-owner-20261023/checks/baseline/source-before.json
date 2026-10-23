@@ -1,0 +1,5 @@
+{
+  "crates/xtask/tests/bootstrap_installed_origin_074.rs": "20312d28f35c2592295aec8a3f232f697630b80696d2dcdd459c700747bb53c5",
+  "docs/testing/performance/0.74/bootstrap-sandbox-owner-plan-20261023.md": "7612a81d8ff4780e0ed1bce1cd143b7c0fca4486d6489b4c716f1be916a60fd6",
+  "tools/bootstrap-sandbox-owner-074/check.py": "2cc93e5de54918eacf6c0b197be1d69938e1222e080ce9180f24400f717663ea"
+}

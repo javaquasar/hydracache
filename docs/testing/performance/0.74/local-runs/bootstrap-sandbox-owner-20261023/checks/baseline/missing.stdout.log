@@ -1,0 +1,18 @@
+
+running 1 test
+test bootstrap_sandbox_owner_component_precedes_admission ... FAILED
+
+failures:
+
+---- bootstrap_sandbox_owner_component_precedes_admission stdout ----
+
+thread 'bootstrap_sandbox_owner_component_precedes_admission' (11472) panicked at crates\xtask\tests\bootstrap_installed_origin_074.rs:14:5:
+original owner sandbox observation binding is absent
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    bootstrap_sandbox_owner_component_precedes_admission
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 13 filtered out; finished in 0.01s
+
