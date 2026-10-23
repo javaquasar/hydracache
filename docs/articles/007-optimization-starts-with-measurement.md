@@ -18574,3 +18574,20 @@ change, not to repeated unchanged trials. No live probes or clock series ran.
 The common lesson is concrete: a submitted command needs a checked completion
 boundary, and a visible receipt needs a proven publication boundary. Neither
 justifies weakening product guards or declaring a later server gate successful.
+
+### Real registration is a narrower gate than a useful trace
+
+The [fresh WSL configuration gate](../testing/performance/0.74/wsl-clock-registration-20261023.md)
+confirmed that the corrected writer can register all seven exact probes on the
+pinned kernel and remove them afterward. All 28 journaled setup operations
+completed, with the private buffer disabled throughout. The same preflight,
+guardian and deadline checks were reused, and root controls/session identities
+matched after retirement. Earlier failures remain archived independently.
+
+This result removes the observed append-stream blocker for the tested
+registration path. It does not validate the values emitted by running probes,
+the stack decoder or loss counters, because no events or clock samples were
+collected. Separating configuration from observation makes the next question
+precise: can one bounded capture identify the opposing setter while retaining
+complete loss and cleanup evidence? A configuration pass is neither that
+capture nor permission to reopen an original-owner or server gate.

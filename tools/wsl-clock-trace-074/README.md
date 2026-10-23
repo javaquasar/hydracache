@@ -46,3 +46,10 @@ The nonseeking registry writer is now implemented with mock/owned-regular-file
 controls only. See the [writer report](../../docs/testing/performance/0.74/wsl-clock-writer-20261023.md).
 Both consumed lanes remain consumed; neither is an entry point for validating
 the corrected writer. A fresh live configuration requires separate scope.
+
+The separately authorized fresh configuration lane has now passed and is also
+consumed. Seven exact probes were registered and removed, with no buffer
+activation or clock queries. See the
+[real configuration report](../../docs/testing/performance/0.74/wsl-clock-registration-20261023.md).
+Verify it with `python -B tools/wsl-clock-trace-074/registration.py verify`.
+Do not rerun its collect/session modes. A clock capture remains a separate gate.

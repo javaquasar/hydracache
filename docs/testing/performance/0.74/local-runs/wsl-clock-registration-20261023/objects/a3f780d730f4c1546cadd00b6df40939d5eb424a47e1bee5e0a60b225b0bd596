@@ -1,0 +1,14 @@
+{
+  "admission": false,
+  "cleanup_context_confirmed": true,
+  "clock_queries": 0,
+  "completed_operations": 28,
+  "configuration_complete": true,
+  "configuration_only": true,
+  "failed_operations": [],
+  "method": "hc074-nonseeking-registry-configuration-v1",
+  "original_owner_run": false,
+  "product": false,
+  "server": false,
+  "trace_activation": false
+}

@@ -6511,3 +6511,19 @@ passing local gates. Preflight, guardian, cleanup ownership, runtime checks,
 qualification and original deadlines are unchanged. No new live configuration,
 clock observation, service or server action occurred. Real registration with
 the new writer still needs its separately scoped gate.
+
+## Real registry configuration and retirement pass
+
+The separately authorized [fresh configuration gate](wsl-clock-registration-20261023.md)
+passed on the pinned WSL kernel: seven exact probe definitions, all 28 setup
+operations and all event-format reads succeeded. The private buffer stayed off
+and there were zero clock queries. Both owner and guardian confirmed complete
+removal; global controls, boot, PID1 start ticks and time namespace compare
+unchanged. Thirty-three pre-dispatch controls and the local gates pass.
+
+The 43-file exact archive retains this first successful configuration separately
+from both earlier live refusals and the writer-control failures. The same
+session guards and original deadlines were reused without changes. Actual
+event/stack/loss analysis and setter attribution still need a separately scoped
+clock observation; this configuration success does not admit original-owner,
+product workload or server execution.

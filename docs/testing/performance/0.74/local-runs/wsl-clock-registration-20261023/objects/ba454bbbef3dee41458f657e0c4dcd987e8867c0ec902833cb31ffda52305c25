@@ -1,0 +1,36 @@
+{
+  "frozen_inputs": {
+    "local-runs/bootstrap-original-getunit-20261023/index.json": "9f2fd0f457ec6d48f4e87e7bfc2bd1262bbf191cf51b760fe744eb369394b9f6",
+    "local-runs/wsl-clock-causality-20261023/index.json": "6a7d11e8e8dc830262b8191bacdce03b1a0b822261d246dbaae0991da0694298",
+    "local-runs/wsl-clock-causality-root-context-20261023/index.json": "798b204c4b14865f482d64cdc4176aec7c1c3c4126b87bf635e8d9c2ba140082",
+    "local-runs/wsl-clock-einval-20261023/index.json": "99c84217cbe5d99e3aef1899e94178bc20bf03c5728dabf954bf135ad5c7f758",
+    "local-runs/wsl-clock-offline-join-20261023/index.json": "56250b03ab2aab0efb3cd1d5e559fcae6f5e0e64314f75693297d7ef4bff8aff",
+    "local-runs/wsl-clock-readonly-20261023/index.json": "edec06e2ac4fa97126ce14ac5c0e4d1aff9cae7bd39f96bb91391102f3d606e3",
+    "local-runs/wsl-clock-trace-20261023/index.json": "89912e476413847377bed1f22d1e52c799d2ded988fd3f861ecfedc56960da03",
+    "local-runs/wsl-clock-writer-20261023/index.json": "de758b208afe099e48da3f2fc176382a25b26fa9887c46b9a4ed4daa4aebec07",
+    "qualification-manifest.toml": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+  },
+  "original_windows": [
+    300,
+    60,
+    10
+  ],
+  "qualification_changed": false,
+  "runtime_diff": false,
+  "source_drift": false,
+  "sources": {
+    "docs/testing/performance/0.74/wsl-clock-registration-plan-20261023.md": "48951138d7941563fd6430e7911ad9353a18fa888f24c62ae6c25241f418fc8d",
+    "tools/wsl-clock-trace-074/.gitattributes": "14d5f7ae570e4e30bd506ee098d5087da6c80a968910d3a86601585a17e3a216",
+    "tools/wsl-clock-trace-074/README.md": "aff4a2c4599dff9fb85ed6e603a5ec2828354d36a0cec621dd8c3a82ace13d93",
+    "tools/wsl-clock-trace-074/analyze.py": "aba6a613d26172c4c15eed1ce1779c70f469259e16ef474da4f869bd02f86621",
+    "tools/wsl-clock-trace-074/btf.py": "33f9999268f587fa591c79037aea3e5a4c33712ac0294b17cd0ecad9f0cb1c5c",
+    "tools/wsl-clock-trace-074/capture.py": "d69b56530c06273c6ca45774161d401ab3534526a7ddfd752508e58b43a28449",
+    "tools/wsl-clock-trace-074/einval.py": "7462df961bfbca6f5231574d8650bb59bb4a1a5f9b5e0b8cc17614d944f381d1",
+    "tools/wsl-clock-trace-074/registration.py": "5cb3167fcba31dd3132f1843137e951b7245d2a907b0ef03e71c0dc857c39a30",
+    "tools/wsl-clock-trace-074/run.py": "c2e8e9b3c727e54e16403050daa20bb7aac0a93b2bfcc1f32e7637fde93bd6f6",
+    "tools/wsl-clock-trace-074/test_einval.py": "d98fb6f3a212163fb99fcb7691ffbbb76b9de3bb1e4fc03303037eb615b28ef3",
+    "tools/wsl-clock-trace-074/test_registration.py": "064826e6a49fd00446e3da58a81d10406791be11d6a3ee0d7a2ed915b674df95",
+    "tools/wsl-clock-trace-074/test_registry_writer.py": "2e93d1aab2e7c1e858d53d4dabb01060d31954a9eb2f1e38320a3d7140157512",
+    "tools/wsl-clock-trace-074/test_trace.py": "31442a31411102f2ee9cc40a9e6fd29c50bb47b7623e7c08c54b747694188477"
+  }
+}

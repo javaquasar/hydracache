@@ -1,0 +1,5 @@
+{
+  "private_error": "",
+  "registered_probes": "p:hc074clock_e06c6293733e4dcba9479b8d126b387c/adjust do_adjtimex modes=+0(%di):u32 freq=+16(%di):s64 tick=+88(%di):s64 sec=+72(%di):s64 ns=+80(%di):s64\nr64:hc074clock_e06c6293733e4dcba9479b8d126b387c/adjust_return do_adjtimex retval=$retval:s64\np:hc074clock_e06c6293733e4dcba9479b8d126b387c/settime do_settimeofday64 sec=+0(%di):s64 ns=+8(%di):s64\nr64:hc074clock_e06c6293733e4dcba9479b8d126b387c/settime_return do_settimeofday64 retval=$retval:s64\np:hc074clock_e06c6293733e4dcba9479b8d126b387c/offset timekeeping_inject_offset sec=+0(%di):s64 ns=+8(%di):s64\nr64:hc074clock_e06c6293733e4dcba9479b8d126b387c/offset_return timekeeping_inject_offset retval=$retval:s64\np:hc074clock_e06c6293733e4dcba9479b8d126b387c/host hv_set_host_time\n",
+  "root_error": ""
+}

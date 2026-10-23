@@ -1,0 +1,215 @@
+{
+  "admission": false,
+  "clock_change": false,
+  "files": {
+    "observation/analysis.json": {
+      "bytes": 362,
+      "sha256": "a3f780d730f4c1546cadd00b6df40939d5eb424a47e1bee5e0a60b225b0bd596"
+    },
+    "observation/checks.json": {
+      "bytes": 2825,
+      "sha256": "ba454bbbef3dee41458f657e0c4dcd987e8867c0ec902833cb31ffda52305c25"
+    },
+    "observation/cleanup-owner.json": {
+      "bytes": 94,
+      "sha256": "1fd317e5fa6b4210a4443e9d3f3ef9b4ce2a0b01e876af7f9019afa06e2e072f"
+    },
+    "observation/cleanup.lock": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/configuration-complete.json": {
+      "bytes": 45,
+      "sha256": "3674cbdc0ab493b4847b1efbcd0ae2ccb4322743f80cbf46fb23bef2b28d5309"
+    },
+    "observation/controls.json": {
+      "bytes": 298,
+      "sha256": "444efb6818415573cc356acf4df417694ce2f6eb22fd303c11f29ac78f85758b"
+    },
+    "observation/controls.stderr.log": {
+      "bytes": 4606,
+      "sha256": "afce3e2133e5f4c33c391ddc31fe7aa0bd185d27be9364b9d27dc2ecceac8cb7"
+    },
+    "observation/controls.stdout.log": {
+      "bytes": 194,
+      "sha256": "bc85499bb4a45c385570cf48b17f10cf54ac38432da68c94bdba77172e2903d4"
+    },
+    "observation/doc-check.json": {
+      "bytes": 153,
+      "sha256": "71d7138217ca02e7d459b74a2cce6b815014aa952372a12401594f4420ee4ab4"
+    },
+    "observation/doc-check.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/doc-check.stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "observation/einval-verify.json": {
+      "bytes": 157,
+      "sha256": "d6dc354dedea14c166df6533e65177ca78226326c7550ee770b0fe3917c75536"
+    },
+    "observation/einval-verify.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/einval-verify.stdout.log": {
+      "bytes": 99,
+      "sha256": "cedc0ac0521815636706d7c636065749d4b21a62308e27599949756cce046cc9"
+    },
+    "observation/first-trace-verify.json": {
+      "bytes": 154,
+      "sha256": "ec6ed8a8f17957e13390c5a46300dd068dab4b771c65ebde020de6c67cfa4613"
+    },
+    "observation/first-trace-verify.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/first-trace-verify.stdout.log": {
+      "bytes": 99,
+      "sha256": "b999696f910b1d219ff9e13939c4513dbd7b85c3d4a2d983df50ed81d89e30b9"
+    },
+    "observation/guardian.json": {
+      "bytes": 127,
+      "sha256": "f63c3bafadae71fe1677135be64a5d4fd4760e56b4ff9a75a92e439c94e16a74"
+    },
+    "observation/intent.json": {
+      "bytes": 3146,
+      "sha256": "3555284069e4c3c4ca38c6741d8d2564a5acef01537ff311f1ffc43ee94bf59b"
+    },
+    "observation/operations.jsonl": {
+      "bytes": 11744,
+      "sha256": "27fe670386fcf32fa151b1d24bf185cd8d7481b47960f1df79f413617e75c811"
+    },
+    "observation/partial-state.json": {
+      "bytes": 813,
+      "sha256": "73444fa2c5f2bc7fd4a1735acc8b0074b242a57573ebf5cef67ec533907b3169"
+    },
+    "observation/performance-contract.json": {
+      "bytes": 199,
+      "sha256": "b171aebd0718e9dbb4678666d3ef7eeea83b1292948403ff1c5ae01d08b6e90b"
+    },
+    "observation/performance-contract.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/performance-contract.stdout.log": {
+      "bytes": 60,
+      "sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+    },
+    "observation/postflight.json": {
+      "bytes": 908,
+      "sha256": "e19ee51b338c9fb9f7bae7c67dda037ed869fd5773bde001ebe600a4b025457d"
+    },
+    "observation/preflight.json": {
+      "bytes": 1434,
+      "sha256": "f6ea300749fb4a793b83ee416ed8049bf2396253360a60eb9188edebccb34ef5"
+    },
+    "observation/session-intent.json": {
+      "bytes": 1030,
+      "sha256": "6b98ac3f28eac875cc28f40241ffc54229bbba822060f6886562609e78ca1a45"
+    },
+    "observation/session.json": {
+      "bytes": 267,
+      "sha256": "7a11c0827f08b38d6585e781d521875345dba8673b742c810522df8bfe6a7dca"
+    },
+    "observation/session.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/session.stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "source/docs/testing/performance/0.74/wsl-clock-registration-plan-20261023.md": {
+      "bytes": 2134,
+      "sha256": "48951138d7941563fd6430e7911ad9353a18fa888f24c62ae6c25241f418fc8d"
+    },
+    "source/tools/wsl-clock-trace-074/.gitattributes": {
+      "bytes": 39,
+      "sha256": "14d5f7ae570e4e30bd506ee098d5087da6c80a968910d3a86601585a17e3a216"
+    },
+    "source/tools/wsl-clock-trace-074/README.md": {
+      "bytes": 2603,
+      "sha256": "aff4a2c4599dff9fb85ed6e603a5ec2828354d36a0cec621dd8c3a82ace13d93"
+    },
+    "source/tools/wsl-clock-trace-074/analyze.py": {
+      "bytes": 7112,
+      "sha256": "aba6a613d26172c4c15eed1ce1779c70f469259e16ef474da4f869bd02f86621"
+    },
+    "source/tools/wsl-clock-trace-074/btf.py": {
+      "bytes": 4055,
+      "sha256": "33f9999268f587fa591c79037aea3e5a4c33712ac0294b17cd0ecad9f0cb1c5c"
+    },
+    "source/tools/wsl-clock-trace-074/capture.py": {
+      "bytes": 13419,
+      "sha256": "d69b56530c06273c6ca45774161d401ab3534526a7ddfd752508e58b43a28449"
+    },
+    "source/tools/wsl-clock-trace-074/einval.py": {
+      "bytes": 9109,
+      "sha256": "7462df961bfbca6f5231574d8650bb59bb4a1a5f9b5e0b8cc17614d944f381d1"
+    },
+    "source/tools/wsl-clock-trace-074/registration.py": {
+      "bytes": 4651,
+      "sha256": "5cb3167fcba31dd3132f1843137e951b7245d2a907b0ef03e71c0dc857c39a30"
+    },
+    "source/tools/wsl-clock-trace-074/run.py": {
+      "bytes": 6907,
+      "sha256": "c2e8e9b3c727e54e16403050daa20bb7aac0a93b2bfcc1f32e7637fde93bd6f6"
+    },
+    "source/tools/wsl-clock-trace-074/test_einval.py": {
+      "bytes": 4565,
+      "sha256": "d98fb6f3a212163fb99fcb7691ffbbb76b9de3bb1e4fc03303037eb615b28ef3"
+    },
+    "source/tools/wsl-clock-trace-074/test_registration.py": {
+      "bytes": 3113,
+      "sha256": "064826e6a49fd00446e3da58a81d10406791be11d6a3ee0d7a2ed915b674df95"
+    },
+    "source/tools/wsl-clock-trace-074/test_registry_writer.py": {
+      "bytes": 6483,
+      "sha256": "2e93d1aab2e7c1e858d53d4dabb01060d31954a9eb2f1e38320a3d7140157512"
+    },
+    "source/tools/wsl-clock-trace-074/test_trace.py": {
+      "bytes": 13658,
+      "sha256": "31442a31411102f2ee9cc40a9e6fd29c50bb47b7623e7c08c54b747694188477"
+    }
+  },
+  "frozen_inputs": {
+    "local-runs/bootstrap-original-getunit-20261023/index.json": "9f2fd0f457ec6d48f4e87e7bfc2bd1262bbf191cf51b760fe744eb369394b9f6",
+    "local-runs/wsl-clock-causality-20261023/index.json": "6a7d11e8e8dc830262b8191bacdce03b1a0b822261d246dbaae0991da0694298",
+    "local-runs/wsl-clock-causality-root-context-20261023/index.json": "798b204c4b14865f482d64cdc4176aec7c1c3c4126b87bf635e8d9c2ba140082",
+    "local-runs/wsl-clock-einval-20261023/index.json": "99c84217cbe5d99e3aef1899e94178bc20bf03c5728dabf954bf135ad5c7f758",
+    "local-runs/wsl-clock-offline-join-20261023/index.json": "56250b03ab2aab0efb3cd1d5e559fcae6f5e0e64314f75693297d7ef4bff8aff",
+    "local-runs/wsl-clock-readonly-20261023/index.json": "edec06e2ac4fa97126ce14ac5c0e4d1aff9cae7bd39f96bb91391102f3d606e3",
+    "local-runs/wsl-clock-trace-20261023/index.json": "89912e476413847377bed1f22d1e52c799d2ded988fd3f861ecfedc56960da03",
+    "local-runs/wsl-clock-writer-20261023/index.json": "de758b208afe099e48da3f2fc176382a25b26fa9887c46b9a4ed4daa4aebec07",
+    "qualification-manifest.toml": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+  },
+  "original_owner_run": false,
+  "original_windows": [
+    300,
+    60,
+    10
+  ],
+  "product": false,
+  "schema": "hc074-bounded-clock-trace-evidence-v1",
+  "server": false,
+  "service_change": false,
+  "sources": {
+    "docs/testing/performance/0.74/wsl-clock-registration-plan-20261023.md": "48951138d7941563fd6430e7911ad9353a18fa888f24c62ae6c25241f418fc8d",
+    "tools/wsl-clock-trace-074/.gitattributes": "14d5f7ae570e4e30bd506ee098d5087da6c80a968910d3a86601585a17e3a216",
+    "tools/wsl-clock-trace-074/README.md": "aff4a2c4599dff9fb85ed6e603a5ec2828354d36a0cec621dd8c3a82ace13d93",
+    "tools/wsl-clock-trace-074/analyze.py": "aba6a613d26172c4c15eed1ce1779c70f469259e16ef474da4f869bd02f86621",
+    "tools/wsl-clock-trace-074/btf.py": "33f9999268f587fa591c79037aea3e5a4c33712ac0294b17cd0ecad9f0cb1c5c",
+    "tools/wsl-clock-trace-074/capture.py": "d69b56530c06273c6ca45774161d401ab3534526a7ddfd752508e58b43a28449",
+    "tools/wsl-clock-trace-074/einval.py": "7462df961bfbca6f5231574d8650bb59bb4a1a5f9b5e0b8cc17614d944f381d1",
+    "tools/wsl-clock-trace-074/registration.py": "5cb3167fcba31dd3132f1843137e951b7245d2a907b0ef03e71c0dc857c39a30",
+    "tools/wsl-clock-trace-074/run.py": "c2e8e9b3c727e54e16403050daa20bb7aac0a93b2bfcc1f32e7637fde93bd6f6",
+    "tools/wsl-clock-trace-074/test_einval.py": "d98fb6f3a212163fb99fcb7691ffbbb76b9de3bb1e4fc03303037eb615b28ef3",
+    "tools/wsl-clock-trace-074/test_registration.py": "064826e6a49fd00446e3da58a81d10406791be11d6a3ee0d7a2ed915b674df95",
+    "tools/wsl-clock-trace-074/test_registry_writer.py": "2e93d1aab2e7c1e858d53d4dabb01060d31954a9eb2f1e38320a3d7140157512",
+    "tools/wsl-clock-trace-074/test_trace.py": "31442a31411102f2ee9cc40a9e6fd29c50bb47b7623e7c08c54b747694188477"
+  },
+  "tracing_state_changed": true
+}
