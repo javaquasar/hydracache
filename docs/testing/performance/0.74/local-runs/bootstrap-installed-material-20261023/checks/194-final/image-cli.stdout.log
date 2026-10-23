@@ -1,0 +1,8 @@
+
+running 3 tests
+test current_image_matching_sealed_inode_still_cannot_authenticate_forged_context ... ok
+test current_image_identical_bytes_at_different_inode_refuse_before_authority_boundary ... ok
+test current_image_extra_descriptor_and_wrong_assertion_cannot_bypass_old_census ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+

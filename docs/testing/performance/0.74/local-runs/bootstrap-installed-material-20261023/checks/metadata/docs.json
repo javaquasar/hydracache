@@ -1,0 +1,11 @@
+{
+  "argv": [
+    "cargo",
+    "xtask",
+    "doc-check"
+  ],
+  "elapsed_ns": 36731315200,
+  "exit": 0,
+  "stderr_sha256": "406863888478ce63d80ebf8008ddb3361b3bb15ccd0db852c099023aced35c65",
+  "stdout_sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+}

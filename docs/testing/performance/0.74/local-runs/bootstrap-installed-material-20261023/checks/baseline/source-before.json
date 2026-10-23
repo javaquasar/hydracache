@@ -1,0 +1,6 @@
+{
+  "crates/xtask/tests/bootstrap_installed_origin_074.rs": "fd3ee9cdce38d2d31419c717eea296b50a25f74ec8089dad46b3662ee4daa175",
+  "docs/testing/performance/0.74/bootstrap-installed-material-plan-20261023.md": "31542686d565e3e3e0b03536115961387133154b7aa5a7b32552125992c6421e",
+  "tools/bootstrap-installed-material-074/check.py": "45de47ef18ddd35389b35e84e7ba1e86193e25617c7fc83f78ded12434c1bba9",
+  "tools/long-run-supervisor-074/src/diagnostic_bootstrap_installed_owner.rs": "a313cd0f8d21d5067e09eca60e2fc3e3c53f0d1c6ce210338d608878383a760d"
+}

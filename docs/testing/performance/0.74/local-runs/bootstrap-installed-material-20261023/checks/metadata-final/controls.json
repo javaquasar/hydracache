@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "python",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tools/bootstrap-installed-material-074",
+    "-v"
+  ],
+  "elapsed_ns": 1600253900,
+  "exit": 0,
+  "stderr_sha256": "a45435ea867553238f3768e864938c11149e94cf9d117f71da981d798cfdd021",
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

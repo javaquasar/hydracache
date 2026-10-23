@@ -1,0 +1,13 @@
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error: this looks like you are trying to swap `f.installed.fds[0]` and `old`
+   --> tools/long-run-supervisor-074/src/diagnostic_bootstrap_installed_entry_census_tests.rs:126:5
+    |
+126 | /     f.installed.fds[0] = old;
+127 | |     let old = f.installed.fds[0];
+    | |________________________________^ help: try: `std::mem::swap(&mut f.installed.fds[0], &mut old)`
+    |
+    = note: or maybe you should use `std::mem::replace`?
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#almost_swapped
+    = note: `#[deny(clippy::almost_swapped)]` on by default
+
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 1 previous error
