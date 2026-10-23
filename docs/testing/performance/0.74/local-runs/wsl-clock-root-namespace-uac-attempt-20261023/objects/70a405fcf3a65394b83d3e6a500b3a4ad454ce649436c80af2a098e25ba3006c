@@ -1,0 +1,22 @@
+{
+  "schema": "hc074-operator-attempt-unconfirmed-v1",
+  "source_commit": "7ac58fba2c2afd65439acb3435bd22fe1dbe63ec",
+  "runner": "tools/wsl-clock-trace-074/root_namespace.py",
+  "runner_sha256": "99e140b530e2200d475e7b97c31ece6681563d1ea89bf3c49e589717a62687e5",
+  "expected_output": "target/wsl-clock-root-namespace-20261023",
+  "operator_reported_ready": true,
+  "operator_reported_consoles_closed": true,
+  "expected_output_observed_absent": true,
+  "stdout_available": false,
+  "stderr_available": false,
+  "execution_confirmed": null,
+  "root_dispatch_confirmed": null,
+  "exit_code": null,
+  "failure_cause": null,
+  "classification": "output_lost_execution_unconfirmed",
+  "replay_authorized": false,
+  "replacement_attempt_authorized": false,
+  "original_windows": [300, 60, 10],
+  "admission": false,
+  "scope": "Record of operator report and absent local artifacts, not a reconstructed process receipt or proof of no execution"
+}

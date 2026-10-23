@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\wsl-clock-trace-074\root_namespace_logged.py", line 92, in execute
+    original.collect()  # Exact original checks, order, script and 15/30-second client limits.
+    ~~~~~~~~~~~~~~~~^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\wsl-clock-trace-074\root_namespace.py", line 103, in collect
+    shell()
+    ~~~~~^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\wsl-clock-trace-074\root_namespace.py", line 73, in shell
+    raise RuntimeError(f'First root lookup exit {rc}; preserve all files, no retry')
+RuntimeError: First root lookup exit 124; preserve all files, no retry

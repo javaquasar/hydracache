@@ -1,0 +1,8 @@
+{
+  "exit": 0,
+  "outputs": [
+    "subprocess-01-stdout.bin",
+    "subprocess-01-stderr.bin"
+  ],
+  "retry": false
+}

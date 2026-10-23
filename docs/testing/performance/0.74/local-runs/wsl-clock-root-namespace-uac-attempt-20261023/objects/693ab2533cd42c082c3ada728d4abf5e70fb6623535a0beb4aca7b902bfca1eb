@@ -1,0 +1,68 @@
+"""Controls on sealed local bytes only; no live subprocesses or WSL calls."""
+import importlib.util
+import json
+from pathlib import Path
+import unittest
+
+HERE = Path(__file__).resolve().parent
+spec = importlib.util.spec_from_file_location('retention', HERE / 'retain-root-uac-20261023.py')
+r = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(r)
+snapshot = json.loads((r.OUT / 'snapshot.json').read_bytes())
+FILES = {k: (r.OUT / 'snapshot' / v['sha256']).read_bytes() for k, v in snapshot.items()}
+RAW = FILES['journal/lookup/debug-shell.stdout.log']
+
+
+class OfflineOutcomeControls(unittest.TestCase):
+    def test_original_timeout_survives_complete_metadata(self):
+        result = r.audit(FILES)
+        self.assertEqual(result, json.loads((r.OUT / 'analysis.json').read_bytes()))
+        self.assertEqual(result['debug_client_receipt_exit'], 124)
+        self.assertFalse(result['client_exchange_success'])
+        self.assertTrue(result['root_metadata_observed'])
+        self.assertIsNone(result['guest_process_retirement_confirmed'])
+        self.assertFalse(result['historical_writer_identity_authenticated'])
+
+    def test_current_global_and_nested_identities(self):
+        p = {p['pid']: p for p in r.metadata(RAW)['processes']}
+        self.assertEqual(p[210]['exe'], '/usr/sbin/chronyd')
+        self.assertEqual(p[1157]['nspid'], [1157, 193, 176])
+        self.assertEqual([p[x]['tgid'] for x in (1126, 1112, 920)], [912] * 3)
+        self.assertEqual(len({p[x]['sha256'] for x in (1126, 1112, 920)}), 1)
+
+    def test_missing_or_duplicate_marker_refuses(self):
+        for raw in (RAW.replace(b'HC074_ROOT_METADATA_END\r', b'END_MISSING\r'),
+                    RAW + b'\nHC074_ROOT_METADATA_END\n'):
+            with self.assertRaises(ValueError):
+                r.metadata(raw)
+
+    def test_echoed_command_is_not_a_standalone_marker(self):
+        with self.assertRaises(ValueError):
+            r.metadata(b"root# printf 'HC074_ROOT_METADATA_BEGIN\\n'\nroot# printf 'HC074_ROOT_METADATA_END\\n'\n")
+
+    def test_failed_field_refuses(self):
+        with self.assertRaises(ValueError):
+            r.metadata(RAW.replace(b'RESULT 0', b'RESULT 1', 1))
+
+    def test_pid_or_boot_mismatch_refuses(self):
+        for raw in (RAW.replace(b'Pid:\t210', b'Pid:\t211', 1),
+                    RAW.replace(r.identity.BOOT.encode(), b'changed-boot')):
+            with self.assertRaises(ValueError):
+                r.metadata(raw)
+
+    def test_previous_identity_pin_change_refuses(self):
+        changed = dict(FILES)
+        changed['input/writer-identity-index.json'] += b'\n'
+        with self.assertRaises(AssertionError):
+            r.audit(changed)
+
+    def test_timeout_cannot_be_relabelled_success(self):
+        changed = dict(FILES)
+        name = 'journal/lookup/debug-shell.json'
+        changed[name] = json.dumps(json.loads(changed[name]) | {'exit': 0}).encode()
+        with self.assertRaises(AssertionError):
+            r.audit(changed)
+
+
+if __name__ == '__main__':
+    unittest.main(verbosity=2)

@@ -1,0 +1,9 @@
+{
+  "argv": [
+    "C:\\Python313\\python.exe",
+    "-B",
+    "target/test-root-uac-offline-20261023.py"
+  ],
+  "exit": 0,
+  "timeout_seconds": 30
+}

@@ -1,0 +1,5 @@
+{
+  "error": "TimeoutExpired(['C:\\\\Windows\\\\System32\\\\wsl.exe', '--debug-shell'], 29.999970100005157)",
+  "outputs": [],
+  "retry": false
+}

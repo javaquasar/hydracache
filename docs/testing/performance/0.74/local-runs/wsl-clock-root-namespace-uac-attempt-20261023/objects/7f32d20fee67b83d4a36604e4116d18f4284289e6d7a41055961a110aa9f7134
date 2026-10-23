@@ -1,0 +1,34 @@
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
+$dir = 'C:\Workspace\prj\jq\cashe\hydracache-074\target\wsl-clock-root-namespace-uac-request-20261023'
+$target = 'C:\Workspace\prj\jq\cashe\hydracache-074\tools\wsl-clock-trace-074\root_namespace_uac.ps1'
+$arguments = '-NoProfile -ExecutionPolicy Bypass -File "' + $target + '"'
+$started = $false
+function Save([string]$name, $value) {
+    $bytes = [Text.Encoding]::UTF8.GetBytes(($value | ConvertTo-Json -Depth 8) + "`n")
+    $file = [IO.File]::Open((Join-Path $dir $name), 'CreateNew', 'Write', 'Read')
+    try { $file.Write($bytes, 0, $bytes.Length); $file.Flush($true) }
+    finally { $file.Dispose() }
+}
+try {
+    Save 'uac-request-issued.json' @{
+        executable = 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe'
+        arguments = $arguments; verb = 'RunAs'; window_style = 'Hidden'; retry = $false
+    }
+    $started = $null
+    $process = Start-Process -FilePath 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe' -ArgumentList $arguments -Verb RunAs -PassThru -WindowStyle Hidden -ErrorAction Stop
+    $started = $true
+    Save 'uac-process-started.json' @{ pid = $process.Id; retry = $false; admission = $false }
+    $process.WaitForExit()
+    Save 'uac-process-exit.json' @{ exit = $process.ExitCode; retry = $false; admission = $false }
+} catch {
+    $chain = @()
+    for ($errorObject = $_.Exception; $null -ne $errorObject; $errorObject = $errorObject.InnerException) {
+        $native = $null
+        if ($errorObject -is [ComponentModel.Win32Exception]) { $native = $errorObject.NativeErrorCode }
+        $chain += @{ type = $errorObject.GetType().FullName; message = $errorObject.Message; native_error = $native }
+    }
+    Save 'uac-request-error.json' @{ child_started = $started; chain = $chain; detail = ($_ | Out-String); retry = $false; admission = $false }
+    [Console]::Error.WriteLine(($_ | Out-String))
+    exit 1
+}

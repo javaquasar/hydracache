@@ -1,0 +1,12 @@
+{
+  "argv": [
+    "C:/Windows/System32/WindowsPowerShell/v1.0/powershell.exe",
+    "-NoProfile",
+    "-ExecutionPolicy",
+    "Bypass",
+    "-File",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\wsl-clock-root-namespace-uac-controls-20261023\\request-source.ps1"
+  ],
+  "exit": 0,
+  "timeout_seconds": null
+}

@@ -1,0 +1,8 @@
+{
+  "admission": false,
+  "captured_outputs": [],
+  "error": "RuntimeError('First root lookup exit 124; preserve all files, no retry')",
+  "phase": "original-preflight-and-lookup",
+  "retry": false,
+  "traceback": "Traceback (most recent call last):\n  File \"C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\wsl-clock-trace-074\\root_namespace_logged.py\", line 92, in execute\n    original.collect()  # Exact original checks, order, script and 15/30-second client limits.\n    ~~~~~~~~~~~~~~~~^^\n  File \"C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\wsl-clock-trace-074\\root_namespace.py\", line 103, in collect\n    shell()\n    ~~~~~^^\n  File \"C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\wsl-clock-trace-074\\root_namespace.py\", line 73, in shell\n    raise RuntimeError(f'First root lookup exit {rc}; preserve all files, no retry')\nRuntimeError: First root lookup exit 124; preserve all files, no retry\n"
+}

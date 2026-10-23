@@ -1,0 +1,9 @@
+{
+  "argv": [
+    "git",
+    "status",
+    "--porcelain"
+  ],
+  "retry": false,
+  "timeout": null
+}

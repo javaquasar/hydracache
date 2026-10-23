@@ -1,0 +1,5 @@
+{
+    "retry":  false,
+    "admission":  false,
+    "exit":  1
+}

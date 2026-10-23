@@ -1,0 +1,218 @@
+{
+  "administrator_preflight_passed": true,
+  "admission": false,
+  "client_exchange_success": false,
+  "clock_change": false,
+  "current_root_metadata": {
+    "boot": "cf222c07-5476-4f70-9a32-455e99204d0a",
+    "observer_pidns": "pid:[4026531836]",
+    "observer_timens": "time:[4026531834]",
+    "processes": [
+      {
+        "cgroup": "0::/",
+        "comm": "mini_init",
+        "exe": "/init",
+        "mntns": "mnt:[4026531841]",
+        "nspid": [
+          1
+        ],
+        "nstgid": [
+          1
+        ],
+        "pid": 1,
+        "pidns": "pid:[4026531836]",
+        "sha256": "d3b26895f03f698110046054987d873f3cf22ce5953c35ea9789e4cc2df83880",
+        "start_ticks": 6,
+        "tgid": 1,
+        "timens": "time:[4026531834]",
+        "uid": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "cgroup": "0::/",
+        "comm": "chronyd",
+        "exe": "/usr/sbin/chronyd",
+        "mntns": "mnt:[4026531841]",
+        "nspid": [
+          210
+        ],
+        "nstgid": [
+          210
+        ],
+        "pid": 210,
+        "pidns": "pid:[4026531836]",
+        "sha256": "bf39d010dfc6177cd864d96ddd0cb32eb796704e8c68fe8bd65088d20d2e64b8",
+        "start_ticks": 47,
+        "tgid": 210,
+        "timens": "time:[4026531834]",
+        "uid": [
+          999,
+          999,
+          999,
+          999
+        ]
+      },
+      {
+        "cgroup": "0::/system.slice/systemd-timesyncd.service",
+        "comm": "systemd-timesyn",
+        "exe": "/usr/lib/systemd/systemd-timesyncd",
+        "mntns": "mnt:[4026532373]",
+        "nspid": [
+          1157,
+          193,
+          176
+        ],
+        "nstgid": [
+          1157,
+          193,
+          176
+        ],
+        "pid": 1157,
+        "pidns": "pid:[4026532241]",
+        "sha256": "5e87427803daf1dbe974cc62fba335c96ff24e37892f67d9095d6703d2c32009",
+        "start_ticks": 11340,
+        "tgid": 1157,
+        "timens": "time:[4026531834]",
+        "uid": [
+          996,
+          996,
+          996,
+          996
+        ]
+      },
+      {
+        "cgroup": "0::/",
+        "comm": "init",
+        "exe": "/init",
+        "mntns": "mnt:[4026532308]",
+        "nspid": [
+          1126,
+          180,
+          135,
+          94
+        ],
+        "nstgid": [
+          912,
+          104,
+          59,
+          18
+        ],
+        "pid": 1126,
+        "pidns": "pid:[4026532309]",
+        "sha256": "ed145ae8e128aeff4141dad30deef9222567cad9f45ecad7e128f05cfe64addc",
+        "start_ticks": 11319,
+        "tgid": 912,
+        "timens": "time:[4026531834]",
+        "uid": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "cgroup": "0::/",
+        "comm": "init",
+        "exe": "/init",
+        "mntns": "mnt:[4026532308]",
+        "nspid": [
+          1112,
+          171,
+          126,
+          85
+        ],
+        "nstgid": [
+          912,
+          104,
+          59,
+          18
+        ],
+        "pid": 1112,
+        "pidns": "pid:[4026532309]",
+        "sha256": "ed145ae8e128aeff4141dad30deef9222567cad9f45ecad7e128f05cfe64addc",
+        "start_ticks": 11312,
+        "tgid": 912,
+        "timens": "time:[4026531834]",
+        "uid": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "cgroup": "0::/",
+        "comm": "init",
+        "exe": "/init",
+        "mntns": "mnt:[4026532308]",
+        "nspid": [
+          920,
+          112,
+          67,
+          26
+        ],
+        "nstgid": [
+          912,
+          104,
+          59,
+          18
+        ],
+        "pid": 920,
+        "pidns": "pid:[4026532309]",
+        "sha256": "ed145ae8e128aeff4141dad30deef9222567cad9f45ecad7e128f05cfe64addc",
+        "start_ticks": 11153,
+        "tgid": 912,
+        "timens": "time:[4026531834]",
+        "uid": [
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    ]
+  },
+  "current_timesyn_saved_views_match": true,
+  "debug_client_exit_is_synthetic_timeout": true,
+  "debug_client_invocations": 1,
+  "debug_client_receipt_exit": 124,
+  "debug_client_timeout_seconds": 30,
+  "debug_stderr_bytes": 0,
+  "debug_stdout_bytes": 18864,
+  "elevated_powershell_exit": 1,
+  "elevated_powershell_pid": 35288,
+  "first_unknown_outcome_sha256": "70a405fcf3a65394b83d3e6a500b3a4ad454ce649436c80af2a098e25ba3006c",
+  "guest_process_retirement_confirmed": null,
+  "guest_script_end_marker_observed": true,
+  "guest_script_output_observed": true,
+  "historical_writer_identity_authenticated": false,
+  "inventory_equal": true,
+  "inventory_equality_proves_guest_retirement": false,
+  "original_collector_timeout_preserved": true,
+  "original_owner_run": false,
+  "original_windows": [
+    300,
+    60,
+    10
+  ],
+  "previous_known_refusal_index_sha256": "9169b0e30dc42349293137b0609ab77af653acc349f05e71dcfe41768a224c86",
+  "product": false,
+  "python_exit": 1,
+  "python_pid": 46504,
+  "retry": false,
+  "root_metadata_observed": true,
+  "running_distro_inventory": [
+    "Ubuntu",
+    "docker-desktop"
+  ],
+  "schema": "hc074-root-uac-offline-outcome-v1",
+  "server": false,
+  "service_change": false,
+  "source_commit": "d6446f53919d0dfed54f7dc760741c12221e03c5",
+  "tracing_state_changed": false,
+  "uac_requests": 1
+}

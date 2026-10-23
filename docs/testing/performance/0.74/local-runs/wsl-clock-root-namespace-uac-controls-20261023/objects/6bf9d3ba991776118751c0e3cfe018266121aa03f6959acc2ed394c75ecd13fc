@@ -1,0 +1,16 @@
+{
+  "admission": false,
+  "clock_change": false,
+  "original_owner_run": false,
+  "original_windows": [
+    300,
+    60,
+    10
+  ],
+  "product": false,
+  "scope": "projection, mocks and temporary fake payloads only",
+  "server": false,
+  "service_change": false,
+  "uac_requested": false,
+  "wsl_dispatch": false
+}

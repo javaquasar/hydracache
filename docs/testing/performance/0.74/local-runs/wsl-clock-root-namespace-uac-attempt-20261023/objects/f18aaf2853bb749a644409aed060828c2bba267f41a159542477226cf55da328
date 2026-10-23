@@ -1,0 +1,8 @@
+{
+  "argv": [
+    "C:\\Windows\\System32\\wsl.exe",
+    "--debug-shell"
+  ],
+  "retry": false,
+  "timeout": 30
+}

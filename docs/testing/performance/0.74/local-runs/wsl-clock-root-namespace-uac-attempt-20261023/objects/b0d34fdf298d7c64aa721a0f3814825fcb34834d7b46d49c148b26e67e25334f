@@ -1,0 +1,10 @@
+{
+  "argv": [
+    "C:\\Python313\\python.exe",
+    "-B",
+    "tools/wsl-clock-trace-074/observe.py",
+    "verify"
+  ],
+  "exit": 0,
+  "timeout_seconds": 60
+}

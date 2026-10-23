@@ -1,0 +1,168 @@
+"""Retain the completed single UAC attempt; no UAC or WSL dispatch is available."""
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+import sys
+
+ROOT = Path(r'C:\Workspace\prj\jq\cashe\hydracache-074')
+sys.path.insert(0, str(ROOT / 'tools/wsl-clock-trace-074'))
+import root_namespace as original
+import run as base
+
+PREP = ROOT / 'target/wsl-clock-root-namespace-uac-controls-20261023'
+REQUEST = ROOT / 'target/wsl-clock-root-namespace-uac-request-20261023'
+JOURNAL = ROOT / 'target/wsl-clock-root-namespace-uac-20261023'
+OUT = ROOT / 'target/wsl-clock-root-namespace-uac-outcome-20261023'
+DEST = ROOT / 'docs/testing/performance/0.74/local-runs'
+COMMIT = 'd6446f53919d0dfed54f7dc760741c12221e03c5'
+FIRST = '70a405fcf3a65394b83d3e6a500b3a4ad454ce649436c80af2a098e25ba3006c'
+REFUSAL = '9169b0e30dc42349293137b0609ab77af653acc349f05e71dcfe41768a224c86'
+FLAGS = dict.fromkeys(('admission', 'product', 'server', 'original_owner_run',
+                       'clock_change', 'service_change', 'tracing_state_changed', 'retry'), False)
+
+
+def digest(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+
+def tree(folder, prefix):
+    return {prefix + '/' + p.relative_to(folder).as_posix(): p.read_bytes()
+            for p in sorted(folder.rglob('*')) if p.is_file()}
+
+
+def decode(files, name):
+    return json.loads(files[name])
+
+
+def audit(files):
+    intent = decode(files, 'request/intent.json')
+    lookup = decode(files, 'journal/lookup/intent.json')
+    assert intent['source_commit'] == lookup['git'] == COMMIT
+    assert intent['first_unknown_outcome_sha256'] == FIRST
+    assert intent['previous_known_refusal_index_sha256'] == REFUSAL
+    assert intent['uac_requests_allowed'] == 1
+    assert intent['original_windows'] == lookup['original_windows'] == [300, 60, 10]
+    assert all(intent[k] is False for k in FLAGS)
+    assert decode(files, 'request/uac-request-issued.json')['verb'] == 'RunAs'
+    assert decode(files, 'request/controller.json')['exit'] == 0
+    assert decode(files, 'request/uac-process-exit.json')['exit'] == 1
+    assert decode(files, 'journal/launcher-result.json')['child_exit'] == 1
+    assert decode(files, 'journal/launcher-started.json')['child_started'] is True
+    assert 'request/uac-request-error.json' not in files
+    failure = decode(files, 'journal/payload-failure.json')
+    assert failure['phase'] == 'original-preflight-and-lookup'
+    assert failure['error'] == "RuntimeError('First root lookup exit 124; preserve all files, no retry')"
+    debug = decode(files, 'journal/lookup/debug-shell.json')
+    assert debug['exit'] == 124 and debug['timeout_seconds'] == 30 and debug['retry'] is False
+    assert debug['argv'] == [original.WSL, '--debug-shell']
+    call = decode(files, 'journal/subprocess-04-intent.json')
+    assert call == {'argv': debug['argv'], 'retry': False, 'timeout': 30}
+    error = decode(files, 'journal/subprocess-04-error.json')
+    assert 'TimeoutExpired' in error['error'] and error['retry'] is False
+    assert error['outputs'] == []
+    assert files['journal/lookup/stdin.sh'] == original.SCRIPT
+    assert files['journal/lookup/debug-shell.stdout.log'] == b''
+    assert files['journal/lookup/debug-shell.stderr.log'] == b''
+    names = []
+    for label in ('before', 'after'):
+        receipt = decode(files, f'journal/lookup/running-{label}.json')
+        assert receipt['exit'] == 0 and receipt['timeout_seconds'] == 15
+        names.append(original.inventory(files[f'journal/lookup/running-{label}.stdout.log']))
+    assert names[0] == names[1]
+    assert decode(files, 'journal/subprocess-06-result.json')['returncode'] == 0
+    return {'schema': 'hc074-root-uac-offline-outcome-v1', 'source_commit': COMMIT,
+            'uac_requests': 1, 'elevated_powershell_pid': decode(files, 'request/uac-process-started.json')['pid'],
+            'elevated_powershell_exit': 1,
+            'python_pid': decode(files, 'journal/launcher-started.json')['child_pid'], 'python_exit': 1,
+            'administrator_preflight_passed': True, 'debug_client_invocations': 1,
+            'debug_client_timeout_seconds': 30, 'debug_client_receipt_exit': 124,
+            'debug_client_exit_is_synthetic_timeout': True,
+            'debug_stdout_bytes': 0, 'debug_stderr_bytes': 0,
+            'guest_script_execution_confirmed': None, 'guest_script_completion_confirmed': None,
+            'guest_process_retirement_confirmed': None, 'root_metadata_observed': False,
+            'historical_writer_identity_authenticated': False,
+            'running_distro_inventory': names[0], 'inventory_equal': True,
+            'inventory_equality_proves_guest_retirement': False,
+            'first_unknown_outcome_sha256': FIRST, 'previous_known_refusal_index_sha256': REFUSAL,
+            'original_windows': [300, 60, 10], **FLAGS}
+
+
+def snapshot():
+    assert subprocess.check_output(['git', 'status', '--porcelain'], cwd=ROOT).strip() == b''
+    assert subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip() == COMMIT
+    assert not original.OUT.exists()
+    request = json.loads((REQUEST / 'intent.json').read_bytes())
+    lookup = json.loads((JOURNAL / 'lookup/intent.json').read_bytes())
+    proof = base.sources()
+    assert lookup['sources'] == proof
+    for name, sha in request['sources'].items():
+        assert digest((ROOT / name).read_bytes()) == sha, name
+    previous = ROOT / 'docs/testing/performance/0.74/local-runs/wsl-clock-root-namespace-logged-attempt-20261023/index.json'
+    assert digest(previous.read_bytes()) == REFUSAL
+    OUT.mkdir(exist_ok=False)
+    inputs = tree(REQUEST, 'request') | tree(JOURNAL, 'journal')
+    base.put(OUT / 'analysis.json', audit(inputs))
+    sources = set(proof) | set(request['sources'])
+    source_inputs = {'source/' + name: (ROOT / name).read_bytes() for name in sorted(sources)}
+    source_inputs['source/root-namespace-first-unconfirmed-20261023.json'] = (ROOT / 'docs/testing/performance/0.74/root-namespace-first-unconfirmed-20261023.json').read_bytes()
+    # Snapshot before documentation changes; raw journals are never modified.
+    snapshot_files = inputs | tree(PREP, 'controls') | source_inputs
+    objects = OUT / 'snapshot'
+    objects.mkdir()
+    index = {}
+    for name, raw in sorted(snapshot_files.items()):
+        sha = digest(raw)
+        path = objects / sha
+        if not path.exists():
+            with path.open('xb') as stream:
+                stream.write(raw)
+        index[name] = {'sha256': sha, 'bytes': len(raw)}
+    base.put(OUT / 'snapshot.json', index)
+    base.put(OUT / 'scope.json', {'source_commit': COMMIT, 'source_pins_unchanged': True,
+             'qualification_manifest_sha256': base.FROZEN['qualification-manifest.toml'],
+             'original_output_directory_absent': True, 'original_windows': [300, 60, 10], **FLAGS})
+    print(json.dumps(audit(inputs), indent=2))
+
+
+def seal():
+    frozen = json.loads((OUT / 'snapshot.json').read_bytes())
+    inputs = {}
+    for name, entry in frozen.items():
+        raw = (OUT / 'snapshot' / entry['sha256']).read_bytes()
+        assert digest(raw) == entry['sha256'] and len(raw) == entry['bytes']
+        inputs[name] = raw
+    assert audit(inputs) == json.loads((OUT / 'analysis.json').read_bytes())
+    groups = {
+        'wsl-clock-root-namespace-uac-controls-20261023':
+            {k: v for k, v in inputs.items() if k.startswith(('controls/', 'source/'))},
+        'wsl-clock-root-namespace-uac-attempt-20261023':
+            {k: v for k, v in inputs.items() if not k.startswith('controls/')},
+    }
+    outcomes = tree(OUT, 'outcome')
+    outcomes = {k: v for k, v in outcomes.items() if not k.startswith('outcome/snapshot/')}
+    for label, files in groups.items():
+        if 'attempt' in label:
+            files.update(outcomes)
+        files['retention/retain-root-uac-20261023.py'] = Path(__file__).read_bytes()
+        archive = DEST / label
+        archive.mkdir(exist_ok=False)
+        objects = archive / 'objects'
+        objects.mkdir()
+        entries = {}
+        for name, raw in sorted(files.items()):
+            sha = digest(raw)
+            if not (objects / sha).exists():
+                with (objects / sha).open('xb') as stream:
+                    stream.write(raw)
+            entries[name] = {'sha256': sha, 'bytes': len(raw)}
+        base.put(archive / 'index.json', {'schema': 'hc074-root-uac-evidence-v1',
+                 'files': entries, 'source_commit': COMMIT,
+                 'original_windows': [300, 60, 10], **FLAGS})
+        print(json.dumps({'archive': label, 'files': len(entries),
+                          'objects': len(list(objects.iterdir())),
+                          'index_sha256': digest((archive / 'index.json').read_bytes())}))
+
+
+if __name__ == '__main__':
+    {'snapshot': snapshot, 'seal': seal}[sys.argv[1]]()

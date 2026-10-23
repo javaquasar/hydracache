@@ -18713,3 +18713,38 @@ The two outcomes remain separately pinned. Original checks and windows stayed
 unchanged, and no clock, service or server action followed. Further diagnosis
 needs a real elevated execution context and a separately scoped fresh attempt,
 not weakening the guard or silently reusing the journal.
+
+### A timeout can retain useful data without becoming a passing run
+
+The [separately approved UAC attempt](../testing/performance/0.74/wsl-clock-root-namespace-uac-attempt-20261023.md)
+reached the root debug shell, but the unchanged 30-second client limit expired.
+Python exited 1 and the collector kept its synthetic timeout result. Redirected
+stdout still retained 18,864 bytes with the complete fixed metadata sequence.
+Transport completion and useful observations are separate facts: keeping the
+metadata does not justify replacing the timeout, extending the deadline or
+running again until a green result appears.
+
+The first offline audit made the opposite mistake: it assumed no stdout existed
+because TimeoutExpired exposed no captured-output attributes. Those attributes
+were empty because the call wrote to an open file rather than a PIPE. Reading
+the original file corrected the analysis without another live observation. Both
+the failed assertion and its source remain alongside the raw terminal bytes;
+eight byte-only controls protect the corrected interpretation, including a
+refusal to relabel the timeout as success. Prompts and echoed printf commands
+are not accepted as standalone completion markers.
+
+The root view narrows the clock investigation. Current PID 210 is the root
+chronyd executable, not Ubuntu's numerically colliding agetty. Current PID 1157
+has NSpid `1157 193 176`, matching the saved system-distro and Ubuntu timesyncd
+views by start ticks, executable digest, credentials, namespaces and cgroup.
+The three init numbers from the earlier trace resolve to threads of TGID 912,
+not three independent service owners. All share the observed time namespace.
+These are later identity observations, not retroactive authentication of the
+trace: its start/executable context was not captured at the setter calls.
+
+The end marker, logout text and equal distro inventory also do not prove that
+every guest process retired after the Windows client timed out. That remains a
+separate boundary, as do a clock-policy decision and healthy original delivery.
+The useful outcome is a narrower diagnosis with an intact first refusal, not a
+product-performance improvement or permission to change services. No original
+window was widened and no clock, service or server intervention followed.

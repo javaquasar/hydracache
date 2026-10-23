@@ -1,0 +1,19 @@
+{
+  "admission": false,
+  "clock_change": false,
+  "original_output_directory_absent": true,
+  "original_owner_run": false,
+  "original_windows": [
+    300,
+    60,
+    10
+  ],
+  "product": false,
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "retry": false,
+  "server": false,
+  "service_change": false,
+  "source_commit": "d6446f53919d0dfed54f7dc760741c12221e03c5",
+  "source_pins_unchanged": true,
+  "tracing_state_changed": false
+}

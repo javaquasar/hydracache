@@ -79,9 +79,9 @@ context. `test_root_namespace.py` uses offline mocks only; no WSL is dispatched.
 
 That original operator handoff now has an unconfirmed/lost-output outcome. Do
 not execute it again. The separate [journal-first preparation](../../docs/testing/performance/0.74/wsl-clock-root-namespace-journal-plan-20261023.md)
-opens outer logs before Python and all original preflights. The future entry is
-`root_namespace_logged.ps1`, never either Python payload directly. No new live
-launch is authorized yet. `test_root_namespace_logged.py` uses mocked preflights
+opens outer logs before Python and all original preflights. Its entry was
+`root_namespace_logged.ps1`, never either Python payload directly; that lane is
+now consumed. `test_root_namespace_logged.py` uses mocked preflights
 and temporary fake PowerShell/Python payloads only, not the real entry or WSL.
 
 After later explicit authorization the new launcher was invoked once and
@@ -96,3 +96,11 @@ uses `root_namespace_uac.ps1` and a distinct output lane. Its projection test
 keeps the previous launcher identical apart from two placement tokens; the core
 and collector remain unchanged. Only the controller may request standard UAC
 once under that scope. Do not start either consumed historical entry.
+
+This UAC lane is now [consumed as well](../../docs/testing/performance/0.74/wsl-clock-root-namespace-uac-attempt-20261023.md).
+Administrator preflight passed, but the debug client timed out at the unchanged
+30-second limit. Its raw file contains complete current root metadata, including
+the `1157 → 193 → 176` timesyncd chain and root chronyd PID 210. Offline parsing
+does not turn that timeout into success, authenticate historical writers or
+prove guest-process retirement. Do not rerun either the controller or launcher,
+clear any of the three output lanes, or change clocks/services to pass a gate.

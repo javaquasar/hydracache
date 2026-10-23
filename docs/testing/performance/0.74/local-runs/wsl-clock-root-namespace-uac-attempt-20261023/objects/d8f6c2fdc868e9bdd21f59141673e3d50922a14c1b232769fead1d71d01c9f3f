@@ -1,0 +1,30 @@
+{
+  "admission": false,
+  "authorization": "User replied \u043f\u0440\u043e\u0434\u043e\u043b\u0436\u0430\u0439 to explicit proposal of one separate read-only attempt through standard Windows UAC, with system consent confirmation",
+  "clock_change": false,
+  "first_unknown_outcome_sha256": "70a405fcf3a65394b83d3e6a500b3a4ad454ce649436c80af2a098e25ba3006c",
+  "original_owner_run": false,
+  "original_windows": [
+    300,
+    60,
+    10
+  ],
+  "previous_known_refusal_index_sha256": "9169b0e30dc42349293137b0609ab77af653acc349f05e71dcfe41768a224c86",
+  "product": false,
+  "retry": false,
+  "schema": "hc074-standard-uac-single-request-v1",
+  "server": false,
+  "service_change": false,
+  "source_commit": "d6446f53919d0dfed54f7dc760741c12221e03c5",
+  "sources": {
+    "docs/testing/performance/0.74/root-namespace-first-unconfirmed-20261023.json": "70a405fcf3a65394b83d3e6a500b3a4ad454ce649436c80af2a098e25ba3006c",
+    "target/wsl-clock-root-namespace-uac-controls-20261023/request-source.ps1": "7f32d20fee67b83d4a36604e4116d18f4284289e6d7a41055961a110aa9f7134",
+    "tools/wsl-clock-trace-074/root_namespace.py": "99e140b530e2200d475e7b97c31ece6681563d1ea89bf3c49e589717a62687e5",
+    "tools/wsl-clock-trace-074/root_namespace_logged.ps1": "0b7183f23434729f0f3b9b46709517ae03ab0347686a17b7d97ea69154c03de9",
+    "tools/wsl-clock-trace-074/root_namespace_logged.py": "9a2dd2701bbbe718b63a3b5989c0f23c786e213a27f2d33a07c8657484e5829c",
+    "tools/wsl-clock-trace-074/root_namespace_uac.ps1": "9cb3d391c9ee98eb56336a7ba5459af1eec4e4f9edf0055409f843bf0cd39b79",
+    "tools/wsl-clock-trace-074/root_namespace_uac.py": "ad0b5700d7b61a73990fc5f65df7eb88777845d38208840383f0b198ee38bd37"
+  },
+  "tracing_state_changed": false,
+  "uac_requests_allowed": 1
+}

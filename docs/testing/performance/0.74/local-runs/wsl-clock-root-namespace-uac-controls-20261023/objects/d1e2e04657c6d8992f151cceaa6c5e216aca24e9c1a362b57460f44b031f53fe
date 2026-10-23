@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "python",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tools/wsl-clock-trace-074",
+    "-p",
+    "test_identity.py",
+    "-v"
+  ],
+  "exit": 0,
+  "timeout_seconds": 60
+}

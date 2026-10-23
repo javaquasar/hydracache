@@ -1,0 +1,12 @@
+{
+  "classification": "offline_audit_assertion_failed",
+  "command": "python -B target/retain-root-uac-20261023.py snapshot",
+  "exit": 1,
+  "exception": "AssertionError",
+  "failing_assertion": "assert files['journal/lookup/debug-shell.stdout.log'] == b''",
+  "cause": "Incorrect offline assumption that redirected file output was absent because TimeoutExpired.outputs was empty. The stdout handle was a file, not PIPE.",
+  "live_collector_rerun": false,
+  "uac_requested_again": false,
+  "raw_journals_modified": false,
+  "admission": false
+}

@@ -1,0 +1,7 @@
+{
+    "window_style":  "Hidden",
+    "retry":  false,
+    "arguments":  "-NoProfile -ExecutionPolicy Bypass -File \"C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\wsl-clock-trace-074\\root_namespace_uac.ps1\"",
+    "verb":  "RunAs",
+    "executable":  "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
+}

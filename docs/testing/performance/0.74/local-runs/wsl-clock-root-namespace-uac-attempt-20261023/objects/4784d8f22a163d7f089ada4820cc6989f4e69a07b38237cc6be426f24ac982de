@@ -1,0 +1,9 @@
+{
+  "argv": [
+    "git",
+    "rev-parse",
+    "HEAD"
+  ],
+  "retry": false,
+  "timeout": null
+}

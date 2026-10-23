@@ -55,3 +55,10 @@ All four new and 32 existing Windows offline controls pass.
 Only one live consent request follows these controls. The subsequent result is
 to be retained separately from both the old unknown and the known non-admin
 refusal. No result is claimed by this preparation document.
+
+## Recorded outcome
+
+That one request has now been consumed. The [first-result report](wsl-clock-root-namespace-uac-attempt-20261023.md)
+retains a 30-second client timeout with useful root metadata in redirected
+stdout. It is not a passing collector exchange or authorization for a repeat.
+Both the request and child journals must remain intact.

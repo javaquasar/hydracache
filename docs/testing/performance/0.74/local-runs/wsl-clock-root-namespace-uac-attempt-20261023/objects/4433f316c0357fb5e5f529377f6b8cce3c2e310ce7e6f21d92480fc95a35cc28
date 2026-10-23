@@ -1,0 +1,10 @@
+{
+  "argv": [
+    "C:\\Windows\\System32\\wsl.exe",
+    "--list",
+    "--running",
+    "--quiet"
+  ],
+  "exit": 0,
+  "timeout_seconds": 15
+}

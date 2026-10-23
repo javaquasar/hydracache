@@ -1,0 +1,18 @@
+{
+    "original_windows":  [
+                             300,
+                             60,
+                             10
+                         ],
+    "retry":  false,
+    "server":  false,
+    "root_lookup_authorized_by_this_receipt":  false,
+    "service_change":  false,
+    "original_owner_run":  false,
+    "tracing_state_changed":  false,
+    "previous_attempt":  "output_lost_execution_unconfirmed",
+    "admission":  false,
+    "schema":  "hc074-preflight-journal-intent-v1",
+    "product":  false,
+    "clock_change":  false
+}

@@ -1,0 +1,32 @@
+if [ "$(id -u)" != 0 ]; then exit 40; fi
+boot=$(cat /proc/sys/kernel/random/boot_id) || exit 41
+printf 'OBSERVED_BOOT %s\n' "$boot"
+if [ "$boot" != cf222c07-5476-4f70-9a32-455e99204d0a ]; then exit 42; fi
+pidns=$(readlink /proc/self/ns/pid) || exit 43
+printf 'OBSERVED_PIDNS %s\n' "$pidns"
+case "$pidns" in 'pid:[4026532229]'|'pid:[4026532241]'|'pid:[4026532222]') exit 44;; esac
+timens=$(readlink /proc/self/ns/time) || exit 45
+printf 'OBSERVED_TIMENS %s\n' "$timens"
+if [ "$timens" != 'time:[4026531834]' ]; then exit 46; fi
+printf 'HC074_ROOT_METADATA_BEGIN\n'
+printf 'BOOT %s\nOBSERVER_PIDNS %s\nOBSERVER_TIMENS %s\n' "$boot" "$pidns" "$timens"
+emit() {
+ printf '\nFIELD %s\n' "$1"
+ shift
+ if "$@"; then rc=0; else rc=$?; fi
+ printf '\nRESULT %s\n' "$rc"
+}
+for pid in 1 210 1157 1126 1112 920; do
+ printf '\nPROCESS %s\n' "$pid"
+ if [ ! -d "/proc/$pid" ]; then printf 'ABSENT\n'; continue; fi
+ emit stat-before cat "/proc/$pid/stat"
+ emit status cat "/proc/$pid/status"
+ emit cgroup cat "/proc/$pid/cgroup"
+ for leaf in exe ns/pid ns/time ns/mnt; do emit "$leaf" readlink "/proc/$pid/$leaf"; done
+ emit executable-digest sha256sum "/proc/$pid/exe"
+ emit stat-after cat "/proc/$pid/stat"
+done
+after=$(cat /proc/sys/kernel/random/boot_id) || exit 47
+if [ "$after" != "$boot" ]; then exit 48; fi
+printf 'HC074_ROOT_METADATA_END\n'
+exit 0

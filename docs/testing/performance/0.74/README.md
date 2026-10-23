@@ -6622,3 +6622,24 @@ bypass was attempted, and no clock/service, product or server action ran.
 The real journal is consumed. Root metadata remains uncollected; further work
 requires an actually elevated Windows context and a separately approved distinct
 attempt, not reuse of this directory or reinterpretation of the older unknown.
+
+## UAC attempt retains root metadata but times out
+
+The [single separately approved UAC attempt](wsl-clock-root-namespace-uac-attempt-20261023.md)
+passed Administrator preflight at `d6446f53`. The original debug-client limit
+expired after 30 seconds, leaving synthetic exit 124 and payload exit 1; the
+18,864-byte stdout nevertheless contains both markers and all six fixed process
+records. The first timeout remains a refusal, not a passing exchange.
+
+Offline analysis identifies current root chronyd PID 210 and matches root
+timesyncd PID 1157 through NSpid `1157 → 193 → 176` to both saved current views.
+The three init IDs are threads of TGID 912. These later metadata do not
+authenticate historical trace identities. Guest-process retirement remains
+unconfirmed despite the logout text and unchanged running-distro inventory.
+
+Separate 65-file preparation and 103-file attempt archives retain exact bytes,
+source pins, both first offline failures and the 36 pre-request/eight byte-only
+outcome controls. Local gates and earlier archive verifiers pass; frozen runtime,
+qualification digest, live checks and original windows remain unchanged. All
+root-lookup lanes are consumed. No repeat, clock/service change, original-owner,
+product or server run was performed; another live diagnostic needs fresh scope.

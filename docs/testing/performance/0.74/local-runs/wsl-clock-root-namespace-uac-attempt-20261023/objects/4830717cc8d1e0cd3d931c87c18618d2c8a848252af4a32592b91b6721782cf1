@@ -1,0 +1,13 @@
+test_current_global_and_nested_identities (__main__.OfflineOutcomeControls.test_current_global_and_nested_identities) ... ok
+test_echoed_command_is_not_a_standalone_marker (__main__.OfflineOutcomeControls.test_echoed_command_is_not_a_standalone_marker) ... ok
+test_failed_field_refuses (__main__.OfflineOutcomeControls.test_failed_field_refuses) ... ok
+test_missing_or_duplicate_marker_refuses (__main__.OfflineOutcomeControls.test_missing_or_duplicate_marker_refuses) ... ok
+test_original_timeout_survives_complete_metadata (__main__.OfflineOutcomeControls.test_original_timeout_survives_complete_metadata) ... ok
+test_pid_or_boot_mismatch_refuses (__main__.OfflineOutcomeControls.test_pid_or_boot_mismatch_refuses) ... ok
+test_previous_identity_pin_change_refuses (__main__.OfflineOutcomeControls.test_previous_identity_pin_change_refuses) ... ok
+test_timeout_cannot_be_relabelled_success (__main__.OfflineOutcomeControls.test_timeout_cannot_be_relabelled_success) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.024s
+
+OK

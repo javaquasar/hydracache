@@ -1,0 +1,10 @@
+{
+  "argv": [
+    "C:\\Windows\\System32\\wsl.exe",
+    "--debug-shell"
+  ],
+  "exit": 124,
+  "interpretation": "Current metadata only; field results may fail or PIDs may be absent",
+  "retry": false,
+  "timeout_seconds": 30
+}

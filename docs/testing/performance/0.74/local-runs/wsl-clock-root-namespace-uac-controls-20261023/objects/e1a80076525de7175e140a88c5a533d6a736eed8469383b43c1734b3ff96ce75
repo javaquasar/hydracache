@@ -1,0 +1,23 @@
+test_adapter_calls_same_core_once_and_restores_placement (test_root_namespace_uac.PlacementTests.test_adapter_calls_same_core_once_and_restores_placement) ... ok
+test_changed_core_refuses_before_original_checks (test_root_namespace_uac.PlacementTests.test_changed_core_refuses_before_original_checks) ... ok
+test_fake_child_receives_only_new_directory_and_cannot_reuse_it (test_root_namespace_uac.PlacementTests.test_fake_child_receives_only_new_directory_and_cannot_reuse_it) ... FAIL
+test_launcher_only_changes_two_fixed_placement_tokens (test_root_namespace_uac.PlacementTests.test_launcher_only_changes_two_fixed_placement_tokens) ... ok
+
+======================================================================
+FAIL: test_fake_child_receives_only_new_directory_and_cannot_reuse_it (test_root_namespace_uac.PlacementTests.test_fake_child_receives_only_new_directory_and_cannot_reuse_it)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\wsl-clock-trace-074\test_root_namespace_uac.py", line 64, in test_fake_child_receives_only_new_directory_and_cannot_reuse_it
+    self.assertEqual((journal / 'stdout.log').read_text().strip(), str(journal))
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'C:\\Users\\ArturBuzov\\AppData\\Local\\Temp\\tmpuk_6n[69 chars]1023' != 'C:\\Users\\ARTURB~1\\AppData\\Local\\Temp\\tmpuk_6nyj[67 chars]1023'
+- C:\Users\ArturBuzov\AppData\Local\Temp\tmpuk_6nyjo\workspace with spaces\target\wsl-clock-root-namespace-uac-20261023
+?           ^^^^ ^^^^
++ C:\Users\ARTURB~1\AppData\Local\Temp\tmpuk_6nyjo\workspace with spaces\target\wsl-clock-root-namespace-uac-20261023
+?           ^^^^ ^^
+
+
+----------------------------------------------------------------------
+Ran 4 tests in 2.728s
+
+FAILED (failures=1)

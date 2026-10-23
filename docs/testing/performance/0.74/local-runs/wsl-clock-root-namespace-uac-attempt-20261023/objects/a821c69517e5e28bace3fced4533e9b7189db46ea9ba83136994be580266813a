@@ -1,0 +1,15 @@
+{
+  "argv": [
+    "git",
+    "diff",
+    "--exit-code",
+    "8fb0fb5a",
+    "--",
+    "tools/long-run-supervisor-074/src",
+    "tools/long-run-supervisor-074/tests",
+    "Cargo.lock",
+    "docs/COMPAT.md"
+  ],
+  "exit": 0,
+  "timeout_seconds": 60
+}
