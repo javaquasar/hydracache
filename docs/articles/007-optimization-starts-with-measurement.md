@@ -18653,3 +18653,21 @@ correction has its own regression test. All 46 Linux controls now pass; runtime
 checks and original windows remain unchanged. Better attribution narrows the
 next intervention. It does not turn an infrastructure diagnosis into a product
 performance improvement or permission to reopen original delivery.
+
+### A diagnostic handoff must stop before an unavailable privilege
+
+The [root-namespace runner](../testing/performance/0.74/wsl-clock-root-namespace-plan-20261023.md)
+turns the remaining access boundary into a bounded operator action. A non-admin
+Windows caller refuses before invoking WSL. An already elevated caller must
+still satisfy committed-source, evidence-pin and running-distro guards; the
+script then reads only the fixed original PID numbers. It neither asks for its
+own elevation nor starts missing distributions to recreate an older context.
+
+The runner preserves one first exchange, including timeout or missing completion
+markers, without redispatch. Nine mocked controls, eleven existing offline
+controls and a syntax-only shell check pass. The first two test errors were a
+bytes-versus-text mock defect and remain archived separately. These controls
+prove local orchestration behavior, not that the real root debug shell accepts
+the stdin exchange. That compatibility and the process identity interpretation
+remain the next live metadata gate. No clock, service or product intervention
+is hidden inside the handoff, and no original admission window has changed.

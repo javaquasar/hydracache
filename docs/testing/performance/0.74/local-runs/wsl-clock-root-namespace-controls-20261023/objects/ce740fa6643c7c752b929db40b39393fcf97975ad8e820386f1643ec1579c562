@@ -1,0 +1,6 @@
+{
+  "administrator": false,
+  "expected_entry_exit": 1,
+  "root_lane_absent": true,
+  "root_lookup_performed": false
+}

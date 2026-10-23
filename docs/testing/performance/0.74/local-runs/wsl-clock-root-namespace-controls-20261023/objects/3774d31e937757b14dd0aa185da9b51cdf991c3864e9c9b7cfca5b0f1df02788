@@ -1,0 +1,10 @@
+{
+  "argv": [
+    "python",
+    "-B",
+    "tools/wsl-clock-trace-074/root_namespace.py",
+    "collect"
+  ],
+  "exit": 1,
+  "timeout_seconds": 15
+}

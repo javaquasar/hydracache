@@ -1,0 +1,26 @@
+{
+  "administrator": false,
+  "admission": false,
+  "clock_change": false,
+  "existing_attribution_controls": 3,
+  "existing_identity_controls": 8,
+  "first_suite_cause": "test git mock returned bytes despite text=True; corrected mock only",
+  "first_suite_errors": 2,
+  "live_debug_exchange_validated": false,
+  "new_runner_controls": 9,
+  "nonadmin_entry_observed_before_absolute_wsl_path_change": true,
+  "original_owner_run": false,
+  "original_windows": [
+    300,
+    60,
+    10
+  ],
+  "product": false,
+  "retry_to_pass": false,
+  "root_lookup_lane_absent": true,
+  "root_lookup_performed": false,
+  "server": false,
+  "service_change": false,
+  "shell_syntax_only": true,
+  "source_commit": "892aeddb4f44a5c54ca9a72c160b2bf3dd623266"
+}

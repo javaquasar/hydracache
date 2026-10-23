@@ -1,0 +1,178 @@
+{
+  "admission": false,
+  "capture_index_sha256": "6b54d38f0ce7b4ceacdeb0ce879a7aee6570e53501cfc12206b39c78eaef051d",
+  "clock_change": false,
+  "files": {
+    "observation/actual-nonadmin-check.json": {
+      "bytes": 119,
+      "sha256": "ce740fa6643c7c752b929db40b39393fcf97975ad8e820386f1643ec1579c562"
+    },
+    "observation/actual-nonadmin-guard.json": {
+      "bytes": 147,
+      "sha256": "3774d31e937757b14dd0aa185da9b51cdf991c3864e9c9b7cfca5b0f1df02788"
+    },
+    "observation/actual-nonadmin-guard.stderr.log": {
+      "bytes": 486,
+      "sha256": "1b0968af69aae9e41cd649291c4ef64fdce93ce3a1726338a150368d37d6686c"
+    },
+    "observation/actual-nonadmin-guard.stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/attribution-controls.json": {
+      "bytes": 213,
+      "sha256": "feea0121d95016049e541860fd6338840980c2fc31373f4e9e8e1f88e8aff416"
+    },
+    "observation/attribution-controls.stderr.log": {
+      "bytes": 524,
+      "sha256": "445e47439a02b0342fccb74dfe110ee914394716d54f03a48768a887f96eceb0"
+    },
+    "observation/attribution-controls.stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/capture-verify.json": {
+      "bytes": 139,
+      "sha256": "5144e91e6ccff793907f14460f35b36e8e0ab44914f65131bea22abb8e50f4f6"
+    },
+    "observation/capture-verify.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/capture-verify.stdout.log": {
+      "bytes": 99,
+      "sha256": "b2db98a028f36abb67b45b3e135c3c75fb540895fb92bcfbadc39ff6f6a5328a"
+    },
+    "observation/controls.json": {
+      "bytes": 216,
+      "sha256": "ff11bd227226f6a43c51afac0914fdea0733881dad9134e441e0fc48c259991c"
+    },
+    "observation/controls.stderr.log": {
+      "bytes": 5904,
+      "sha256": "0989ac8463492230e3ce76e6afe0976ac452872114b290f34a5f49c4841f178c"
+    },
+    "observation/controls.stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/doc-check.json": {
+      "bytes": 104,
+      "sha256": "85e42da02c5fcd2d39059d6f89cfefc566dcdb9139c6832321397ad81a5fd1cb"
+    },
+    "observation/doc-check.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/doc-check.stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "observation/expanded-controls.json": {
+      "bytes": 216,
+      "sha256": "f3a7ed5dfa34f42087338b10c38fe0bb6f1d600f259acbbbd478386560297653"
+    },
+    "observation/expanded-controls.stderr.log": {
+      "bytes": 1480,
+      "sha256": "cdfe76690513d51fba86a7bc2ac0aa414d3a8a5a24eb8ac7bd0979c1177f3cc8"
+    },
+    "observation/expanded-controls.stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/identity-controls.json": {
+      "bytes": 210,
+      "sha256": "951ea7f6041ba205a06d213d95d2f024332f21f916b0aa2c179eb86fb16b5f50"
+    },
+    "observation/identity-controls.stderr.log": {
+      "bytes": 1015,
+      "sha256": "813edc76626d8aebd7c0b96cd15bcd02132e78483c0fbc72539126865bfbebb0"
+    },
+    "observation/identity-controls.stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/identity-verify.json": {
+      "bytes": 140,
+      "sha256": "ad195fd273c71271befcddb7848018b09cc2d2854ce380b7e80d95c9e4e1b73d"
+    },
+    "observation/identity-verify.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/identity-verify.stdout.log": {
+      "bytes": 99,
+      "sha256": "fe08a1a996fff32d77e61786cbb81d92d7f0638e562c30785fa5c324f4471325"
+    },
+    "observation/intent.json": {
+      "bytes": 303,
+      "sha256": "18315f9b39c84998dfbf6197754be384533c00eafdff4a4e1e20a1a70e320e1a"
+    },
+    "observation/performance-contract.json": {
+      "bytes": 150,
+      "sha256": "fe05907ee5cd904adbe535b365e33278a268306a9e08c2d49c43ecaa6f252282"
+    },
+    "observation/performance-contract.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/performance-contract.stdout.log": {
+      "bytes": 60,
+      "sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+    },
+    "observation/shell-syntax.json": {
+      "bytes": 225,
+      "sha256": "a999d8f37412c1b21b058123aa101fe122a0530f183d93bd856a4386fb73adba"
+    },
+    "observation/shell-syntax.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/shell-syntax.stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/summary.json": {
+      "bytes": 744,
+      "sha256": "62d6b9ffa9fc20138644fc09a769c3c8a3445631ee697563c53b67954379e04b"
+    },
+    "observation/text-mode-mock-controls.json": {
+      "bytes": 216,
+      "sha256": "f3a7ed5dfa34f42087338b10c38fe0bb6f1d600f259acbbbd478386560297653"
+    },
+    "observation/text-mode-mock-controls.stderr.log": {
+      "bytes": 1202,
+      "sha256": "e694f418f9d01a4807fefa9d0a1abeebdfc67edf2c77ace0b7ead3fbe66c595f"
+    },
+    "observation/text-mode-mock-controls.stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "source/docs/testing/performance/0.74/wsl-clock-root-namespace-plan-20261023.md": {
+      "bytes": 4612,
+      "sha256": "b858b1400633a71e508c90cbf72f38a07e466e80dd653400163f314bd14836c7"
+    },
+    "source/tools/wsl-clock-trace-074/root_namespace.py": {
+      "bytes": 5391,
+      "sha256": "99e140b530e2200d475e7b97c31ece6681563d1ea89bf3c49e589717a62687e5"
+    },
+    "source/tools/wsl-clock-trace-074/test_root_namespace.py": {
+      "bytes": 9158,
+      "sha256": "97e6c9bf0e00a21f68dabafdb34b08ecaf4e6c19def41faf0bf4e69aab94d8ad"
+    }
+  },
+  "original_owner_run": false,
+  "original_windows": [
+    300,
+    60,
+    10
+  ],
+  "product": false,
+  "root_debug_shell_run": false,
+  "schema": "hc074-offline-root-namespace-controls-v1",
+  "server": false,
+  "service_change": false,
+  "source_commit": "892aeddb4f44a5c54ca9a72c160b2bf3dd623266",
+  "trace_capture": false,
+  "tracing_state_changed": false,
+  "writer_identity_index_sha256": "4d2c26ffc6219eab7664de0e77d1b072392cf4e96434a6d8343cb1a0ce76fb7c"
+}

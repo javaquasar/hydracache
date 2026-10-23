@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\wsl-clock-trace-074\root_namespace.py", line 116, in <module>
+    collect()
+    ~~~~~~~^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\wsl-clock-trace-074\root_namespace.py", line 83, in collect
+    raise RuntimeError('Requires an already elevated Windows PowerShell; no WSL command was run')
+RuntimeError: Requires an already elevated Windows PowerShell; no WSL command was run

@@ -78,3 +78,15 @@ authenticate a historical trace PID, prove the survival of earlier init tasks,
 admit original delivery, or establish a production clock policy. Any surviving
 process must still be joined using its boot, start ticks, namespace chain and
 executable, with the post-capture observation boundary stated explicitly.
+
+## Retained offline controls
+
+Runner and method commit: `892aeddb`. The separate
+[39-file controls archive](local-runs/wsl-clock-root-namespace-controls-20261023/index.json)
+has index SHA-256
+`b432abc379020f7a48cd38416d68246122502b61ac60db831339935f1a384501`.
+It retains the first mock failure, corrected/expanded controls, actual non-admin
+refusal, stdin syntax-check receipt, local gates and exact offline sources.
+The actual non-admin entry preceded the absolute WSL-path hardening; that guard
+remained unchanged, while mocks cover the final argv. No real debug-shell
+invocation occurred in either candidate. Root lookup output is still absent.

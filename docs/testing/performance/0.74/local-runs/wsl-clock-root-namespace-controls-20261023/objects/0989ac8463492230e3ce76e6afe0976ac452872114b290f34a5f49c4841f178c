@@ -1,0 +1,81 @@
+test_collector_retains_postflight_after_lookup_failure (test_root_namespace.RootNamespaceTests.test_collector_retains_postflight_after_lookup_failure) ... ERROR
+test_collector_stops_before_lookup_on_inventory_drift (test_root_namespace.RootNamespaceTests.test_collector_stops_before_lookup_on_inventory_drift) ... ERROR
+test_inventory_utf16_and_utf8_and_drift (test_root_namespace.RootNamespaceTests.test_inventory_utf16_and_utf8_and_drift) ... ok
+test_nonadmin_never_dispatches_or_creates_lane (test_root_namespace.RootNamespaceTests.test_nonadmin_never_dispatches_or_creates_lane) ... ok
+test_script_has_only_fixed_readonly_targets_and_guards (test_root_namespace.RootNamespaceTests.test_script_has_only_fixed_readonly_targets_and_guards) ... ok
+test_shell_first_success_failure_timeout_and_missing_completion (test_root_namespace.RootNamespaceTests.test_shell_first_success_failure_timeout_and_missing_completion) ... ok
+
+======================================================================
+ERROR: test_collector_retains_postflight_after_lookup_failure (test_root_namespace.RootNamespaceTests.test_collector_retains_postflight_after_lookup_failure)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\wsl-clock-trace-074\test_root_namespace.py", line 102, in test_collector_retains_postflight_after_lookup_failure
+    r.collect()
+    ~~~~~~~~~^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\wsl-clock-trace-074\root_namespace.py", line 89, in collect
+    base.put(OUT / 'intent.json', {'schema': 'hc074-readonly-root-namespace-intent-v1',
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+             'git': subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=base.ROOT, text=True).strip(),
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+             'sources': proof, 'source_capture_sha256': identity.CAPTURE_SHA,
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+             'writer_identity_sha256': IDENTITY_SHA, 'original_windows': [300, 60, 10],
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+             'retry': False, **dict.fromkeys(identity.FALSE_FLAGS, False)})
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\wsl-clock-trace-074\run.py", line 31, in put
+    json.dump(value, stream, indent=2, sort_keys=True)
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\json\__init__.py", line 179, in dump
+    for chunk in iterable:
+                 ^^^^^^^^
+  File "C:\Python313\Lib\json\encoder.py", line 433, in _iterencode
+    yield from _iterencode_dict(o, _current_indent_level)
+  File "C:\Python313\Lib\json\encoder.py", line 407, in _iterencode_dict
+    yield from chunks
+  File "C:\Python313\Lib\json\encoder.py", line 440, in _iterencode
+    o = _default(o)
+  File "C:\Python313\Lib\json\encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+                    f'is not JSON serializable')
+TypeError: Object of type bytes is not JSON serializable
+
+======================================================================
+ERROR: test_collector_stops_before_lookup_on_inventory_drift (test_root_namespace.RootNamespaceTests.test_collector_stops_before_lookup_on_inventory_drift)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\wsl-clock-trace-074\test_root_namespace.py", line 86, in test_collector_stops_before_lookup_on_inventory_drift
+    r.collect()
+    ~~~~~~~~~^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\wsl-clock-trace-074\root_namespace.py", line 89, in collect
+    base.put(OUT / 'intent.json', {'schema': 'hc074-readonly-root-namespace-intent-v1',
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+             'git': subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=base.ROOT, text=True).strip(),
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+             'sources': proof, 'source_capture_sha256': identity.CAPTURE_SHA,
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+             'writer_identity_sha256': IDENTITY_SHA, 'original_windows': [300, 60, 10],
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+             'retry': False, **dict.fromkeys(identity.FALSE_FLAGS, False)})
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\wsl-clock-trace-074\run.py", line 31, in put
+    json.dump(value, stream, indent=2, sort_keys=True)
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\json\__init__.py", line 179, in dump
+    for chunk in iterable:
+                 ^^^^^^^^
+  File "C:\Python313\Lib\json\encoder.py", line 433, in _iterencode
+    yield from _iterencode_dict(o, _current_indent_level)
+  File "C:\Python313\Lib\json\encoder.py", line 407, in _iterencode_dict
+    yield from chunks
+  File "C:\Python313\Lib\json\encoder.py", line 440, in _iterencode
+    o = _default(o)
+  File "C:\Python313\Lib\json\encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+                    f'is not JSON serializable')
+TypeError: Object of type bytes is not JSON serializable
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.194s
+
+FAILED (errors=2)

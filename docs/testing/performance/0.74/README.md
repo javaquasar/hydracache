@@ -6565,3 +6565,22 @@ PID1, tracing controls and the running-distro inventory match their recorded
 inputs. No clocks, services, stopped distro, original-owner or server were
 changed or launched. Read-only root-namespace access and a separately agreed
 clock policy remain the next boundaries; no admission window was widened.
+
+## Root namespace diagnostic handoff is prepared
+
+The [one-shot handoff](wsl-clock-root-namespace-plan-20261023.md) now has a
+committed runner for an already elevated Windows PowerShell. It refuses before
+WSL on non-admin entry, checks the exact running-distro inventory and frozen
+sources, then submits only fixed read-only procfs lookups with one client
+timeout and an exclusive output lane. It does not self-elevate or launch a
+stopped distro. Partial exchanges and absent processes remain first results,
+not reasons to retry.
+
+Nine new mocked controls and eleven existing offline controls pass on Windows;
+the exact shell script passes syntax-only validation. Doc-check, the local
+performance contract and both original evidence verifiers pass. The 39-file
+controls archive preserves the initial two test-mock errors and the observed
+non-admin refusal. There was no new WSL dispatch, clock series, service action,
+original-owner or server run. Actual debug-shell exchange compatibility and
+root-namespace writer identification remain unvalidated until the operator
+executes the single documented command from an elevated Windows context.

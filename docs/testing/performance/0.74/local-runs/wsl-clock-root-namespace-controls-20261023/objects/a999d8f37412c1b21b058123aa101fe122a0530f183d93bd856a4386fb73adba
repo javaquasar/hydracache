@@ -1,0 +1,11 @@
+{
+  "argv": [
+    "C:/Program Files/Git/bin/bash.exe",
+    "--noprofile",
+    "--norc",
+    "-n"
+  ],
+  "exit": 0,
+  "stdin_sha256": "39dfd75a30e2e75f71733911ec311f09b3491f8009a9242e049a3e0aebfbd04f",
+  "syntax_only": true
+}

@@ -1,0 +1,12 @@
+test_collector_retains_postflight_after_lookup_failure (test_root_namespace.RootNamespaceTests.test_collector_retains_postflight_after_lookup_failure) ... ok
+test_collector_stops_before_lookup_on_inventory_drift (test_root_namespace.RootNamespaceTests.test_collector_stops_before_lookup_on_inventory_drift) ... ok
+test_collector_success_is_not_admission_and_writes_exact_stdin (test_root_namespace.RootNamespaceTests.test_collector_success_is_not_admission_and_writes_exact_stdin) ... ok
+test_inventory_utf16_and_utf8_and_drift (test_root_namespace.RootNamespaceTests.test_inventory_utf16_and_utf8_and_drift) ... ok
+test_nonadmin_never_dispatches_or_creates_lane (test_root_namespace.RootNamespaceTests.test_nonadmin_never_dispatches_or_creates_lane) ... ok
+test_script_has_only_fixed_readonly_targets_and_guards (test_root_namespace.RootNamespaceTests.test_script_has_only_fixed_readonly_targets_and_guards) ... ok
+test_shell_first_success_failure_timeout_and_missing_completion (test_root_namespace.RootNamespaceTests.test_shell_first_success_failure_timeout_and_missing_completion) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.148s
+
+OK
