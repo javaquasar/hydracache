@@ -1,4 +1,6 @@
 #![allow(dead_code)] // Exact additive views for preceding contracts.
+#[path = "bootstrap_installed_child_guard.rs"]
+pub mod child;
 pub const BLOCK: &str = r#"
 <!-- BEGIN BOOTSTRAP INSTALLED MATERIAL V1 -->
 ## Parent retained installed entry materialization v1
@@ -42,11 +44,13 @@ fn remove(raw: &str, addition: &str) -> String {
     raw.replacen(addition, "", 1)
 }
 pub fn source_view(name: &str, raw: &str) -> String {
+    let raw = child::source_view(name, raw);
+    let raw = raw.as_str();
     match hook(name) {
         Some(hook) => remove(raw, hook),
         None => raw.into(),
     }
 }
 pub fn compat_view(raw: &str) -> String {
-    remove(raw, BLOCK)
+    remove(&child::compat_view(raw), BLOCK)
 }

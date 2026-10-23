@@ -11,11 +11,20 @@ mod census_entry;
 #[path = "../diagnostic_bootstrap_image_entry.rs"]
 mod image_entry;
 
+#[path = "../diagnostic_bootstrap_installed_mode.rs"]
+mod installed_mode;
+
 #[cfg(all(test, target_os = "linux", target_arch = "x86_64"))]
 #[path = "../../tests/support/bootstrap_child_material.rs"]
 mod bootstrap_child_material;
 
 fn main() {
+    if installed_mode::requested() {
+        if let Err(error) = installed_mode::run() {
+            eprintln!("Bootstrap refused: {error}; no start, send or executable handoff.");
+        }
+        std::process::exit(2);
+    }
     if image_entry::requested() {
         if let Err(error) = image_entry::run() {
             eprintln!("Bootstrap refused: {error}; no start, send or executable handoff.");

@@ -230,3 +230,6 @@ pub(in super::super) fn revalidate(
 #[cfg(test)]
 #[path = "diagnostic_bootstrap_child_roles_tests.rs"]
 mod tests;
+
+#[path = "diagnostic_bootstrap_installed_child.rs"]
+pub(in super::super) mod installed;

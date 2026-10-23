@@ -10,6 +10,15 @@ fn installed_origin_exists_before_systemd_or_child_admission() {
 
 use guard::installed_entry as entry_guard;
 #[test]
+fn bootstrap_installed_child_component_precedes_delivery() {
+    assert!(
+        root()
+            .join("tools/long-run-supervisor-074/src/diagnostic_bootstrap_installed_child.rs")
+            .is_file(),
+        "installed child consistency reader is absent"
+    );
+}
+#[test]
 fn bootstrap_installed_material_component_precedes_delivery() {
     assert!(
         root()
@@ -80,7 +89,7 @@ fn installed_origin_only_three_additive_hooks_preserve_old_live_frames_and_child
         "diagnostic_bootstrap_entry_binding.rs",
     ] {
         assert_eq!(
-            source(name),
+            entry_guard::material::child::source_view(name, &source(name)),
             baseline(&format!("tools/long-run-supervisor-074/src/{name}"))
         );
     }
@@ -334,4 +343,121 @@ fn bootstrap_installed_material_additive_compat_keeps_schema_and_qualification()
     }
     assert_eq!(source("diagnostic_bootstrap_installed_entry_format.rs"),
         String::from_utf8(std::process::Command::new("git").current_dir(root()).args(["show", "5f8467b0:tools/long-run-supervisor-074/src/diagnostic_bootstrap_installed_entry_format.rs"]).output().unwrap().stdout).unwrap().replace('\r', ""));
+}
+
+fn child_baseline(path: &str) -> String {
+    let output = std::process::Command::new("git")
+        .current_dir(root())
+        .args(["--no-replace-objects", "show", &format!("ee81c2d2:{path}")])
+        .output()
+        .unwrap();
+    assert!(output.status.success());
+    String::from_utf8(output.stdout).unwrap().replace('\r', "")
+}
+
+#[test]
+fn bootstrap_installed_child_exact_hooks_preserve_every_old_mode_and_frame() {
+    let view = entry_guard::material::child::source_view;
+    for (name, path) in [
+        (
+            "bin/diagnostic_held_bootstrap.rs",
+            "tools/long-run-supervisor-074/src/bin/diagnostic_held_bootstrap.rs",
+        ),
+        (
+            "diagnostic_bootstrap_child_roles.rs",
+            "tools/long-run-supervisor-074/src/diagnostic_bootstrap_child_roles.rs",
+        ),
+        (
+            "bootstrap_current_image.rs",
+            "tools/long-run-supervisor-074/tests/bootstrap_current_image.rs",
+        ),
+    ] {
+        let raw = read(path);
+        let old = child_baseline(path);
+        assert_eq!(view(name, &raw), old);
+        let hook = entry_guard::material::child::hook(name).unwrap();
+        for bad in [raw.replace(hook, ""), format!("{raw}{hook}")] {
+            assert!(std::panic::catch_unwind(|| view(name, &bad)).is_err());
+        }
+        assert_ne!(view(name, &format!("{raw}\n// unrelated drift\n")), old);
+    }
+    for name in [
+        "diagnostic_bootstrap_child_reader.rs",
+        "diagnostic_bootstrap_child_role_kernel.rs",
+        "diagnostic_bootstrap_closed_inventory.rs",
+        "diagnostic_bootstrap_current_image.rs",
+        "diagnostic_bootstrap_installed_owner.rs",
+        "diagnostic_bootstrap_installed_source.rs",
+        "diagnostic_bootstrap_installed_entry_owner.rs",
+        "diagnostic_bootstrap_entry_binding.rs",
+        "diagnostic_original_manager_message.rs",
+        "diagnostic_held_unit_projection.rs",
+    ] {
+        assert_eq!(
+            source(name),
+            child_baseline(&format!("tools/long-run-supervisor-074/src/{name}"))
+        );
+    }
+}
+
+#[test]
+fn bootstrap_installed_child_is_separate_consistency_not_authority_or_transport() {
+    let raw = read("docs/COMPAT.md");
+    assert_eq!(
+        entry_guard::material::child::compat_view(&raw),
+        child_baseline("docs/COMPAT.md")
+    );
+    for bad in [
+        raw.replace(entry_guard::material::child::BLOCK, ""),
+        format!("{raw}{}", entry_guard::material::child::BLOCK),
+    ] {
+        assert!(
+            std::panic::catch_unwind(|| entry_guard::material::child::compat_view(&bad)).is_err()
+        );
+    }
+    for name in [
+        "Cargo.lock",
+        "tools/long-run-supervisor-074/Cargo.toml",
+        "docs/testing/gated-test-registry.toml",
+        "docs/testing/performance/0.74/qualification-manifest.toml",
+    ] {
+        assert_eq!(read(name), child_baseline(name));
+    }
+    for name in [
+        "diagnostic_bootstrap_installed_mode.rs",
+        "diagnostic_bootstrap_installed_child.rs",
+        "diagnostic_bootstrap_installed_executable.rs",
+        "diagnostic_bootstrap_installed_inventory.rs",
+    ] {
+        let raw = source(name);
+        let code = raw.split("#[cfg(test)]").next().unwrap();
+        for forbidden in [
+            "execve",
+            "sendmsg",
+            "Command::",
+            "F_SETFD",
+            "F_SETFL",
+            "dup2",
+            "IntoRawFd",
+            "try_clone",
+            "clock_gettime",
+            "SystemTime",
+            "Instant",
+            "setns",
+            "unshare",
+        ] {
+            assert!(!code.contains(forbidden), "{name}/{forbidden}");
+        }
+    }
+    let mode = source("diagnostic_bootstrap_installed_mode.rs");
+    assert!(mode.contains("original bootstrap authentication is closed"));
+    assert!(mode.contains("installed::revalidate(&observed)?"));
+    let child = source("diagnostic_bootstrap_installed_child.rs");
+    assert!(child.contains("let roles = capture("));
+    assert!(child.contains("need(observe()? == *prior)"));
+    assert_eq!(child.matches("inventory::inspect()?").count(), 2);
+    assert!(child.contains("let installed_role = kernel::snapshot(15)?"));
+    assert!(child.contains("let record = record(16)?"));
+    assert!(source("diagnostic_bootstrap_installed_executable.rs")
+        .contains(".open(\"/proc/thread-self\")?"));
 }
