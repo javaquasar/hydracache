@@ -6,6 +6,15 @@ from unittest.mock import patch
 import check as c
 
 class Controls(unittest.TestCase):
+    def test_durable_json_uses_writable_exclusive_handle(self):
+        import json
+        spec=importlib.util.spec_from_file_location('native_write',c.ROOT/'tools/bootstrap-original-service-074/native_fixture.py')
+        module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+        with tempfile.TemporaryDirectory() as tmp:
+            target=Path(tmp)/'intent.json'
+            module.durable_json(target,{'no_dispatch':True})
+            self.assertEqual(json.loads(target.read_text()),{'no_dispatch':True})
+            with self.assertRaises(FileExistsError): module.durable_json(target,{'changed':True})
     def test_checks_cannot_launch_ignored_or_privileged_tests(self):
         for lane in ('host','194','188','metadata'):
             for _, argv in c.commands(lane):

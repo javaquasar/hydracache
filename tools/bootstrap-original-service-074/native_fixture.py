@@ -14,6 +14,12 @@ QUAL='11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc'
 BOOTSTRAP=Path(r'\\wsl.localhost\Ubuntu\home\artur\.cache\hydracache-074-194-check\x86_64-unknown-linux-gnu\release\diagnostic_held_bootstrap')
 
 def sha(path): return hashlib.sha256(path.read_bytes()).hexdigest()
+def durable_json(path, value):
+    with path.open('x',encoding='utf-8',newline='\n') as receipt:
+        json.dump(value,receipt,indent=2)
+        receipt.write('\n')
+        receipt.flush()
+        os.fsync(receipt.fileno())
 def linux(path):
     value=path.resolve().as_posix()
     if not value.startswith('C:/Workspace/prj/jq/cashe/hydracache-074/'):
@@ -36,8 +42,7 @@ def run(binary):
         'qualification':QUAL,'original_windows':[300,60,10],'server':False,'product':False,
         'release_install':False,'existing_services_changed':False,'retry':False,
         'git':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()}
-    (lane/'intent.json').write_text(json.dumps(intent,indent=2)+'\n',encoding='utf-8')
-    with (lane/'intent.json').open('rb') as receipt: os.fsync(receipt.fileno())
+    durable_json(lane/'intent.json',intent)
     command=['wsl.exe','-d',DISTRO,'-u','root','--cd','/','--exec','/bin/sh',
         linux(ROOT/'tools/bootstrap-original-service-074/native_fixture.sh'),
         linux(lane),linux(bundle),intent['bootstrap'],intent['libtest']]
@@ -52,7 +57,7 @@ def run(binary):
     if result.returncode == 0 and (not receipt['readiness_observed'] or live.count('running 1 test') != 1):
         receipt['validation_error']='No exact positive original readiness result'
         result.returncode=74
-    (lane/'result.json').write_text(json.dumps(receipt,indent=2)+'\n',encoding='utf-8')
+    durable_json(lane/'result.json',receipt)
     print(json.dumps(receipt))
     raise SystemExit(result.returncode)
 
