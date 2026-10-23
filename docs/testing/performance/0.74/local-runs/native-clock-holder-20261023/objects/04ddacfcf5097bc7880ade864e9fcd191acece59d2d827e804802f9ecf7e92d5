@@ -1,0 +1,14 @@
+MainPID=8839
+NRestarts=0
+ActiveState=active
+SubState=running
+ABSENT /var/lib/hydracache-performance/campaigns/active-campaign
+ABSENT /var/lib/hydracache-performance/campaigns/active-diagnostic.json
+ABSENT /var/lib/hydracache-performance/campaigns/.active-diagnostic.pending
+ABSENT /var/lib/hydracache-performance/campaigns/diagnostic-requests.json
+ABSENT /var/lib/hydracache-performance/campaigns/.diagnostic-requests.pending
+ABSENT /var/lib/hydracache-performance/campaign-lifecycle-smoke-v1.json
+ABSENT /var/lib/hydracache-performance/controller-loss-smoke-v1.json
+ABSENT /var/lib/hydracache-performance/diagnostic-intents-074
+ABSENT /var/lib/hydracache-performance/worker-authority-074
+HC074_NATIVE_PREFLIGHT_OK

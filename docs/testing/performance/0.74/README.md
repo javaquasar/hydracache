@@ -6674,3 +6674,20 @@ context enrollment, first-result preservation and staged permissions. It does
 not create an environment, change policy/enrollment, run another clock control
 or open original-owner/server/product execution. VM functional results would
 not replace release performance qualification.
+
+## Dedicated host control retains a native preparation expiry
+
+After explicit server approval, the [bounded native experiment](native-clock-and-holder-result-20261023.md)
+retained one complete 601-row clock control without sampled backward/bracket
+anomalies. The unchanged GNU holder image then failed its first healthy case
+in owned-root preparation at age 10,015,008,749 ns. The remaining four cases did
+not run. No retry, window change or original-delivery send followed.
+
+Postflight and an independent SSH check pass: supervisor PID 8839/restarts zero,
+boot, installed hashes and checked markers are unchanged; mount tables match
+and no checked temporary fixture roots/cgroups remain. Staging is retained.
+The exact 122-file archive preserves the negative outcome and offline analysis.
+Local gates and 10 observer/five outcome controls pass, not the holder matrix.
+No release, clock, service, production enrollment or product workload changed.
+Next attribute preparation cost without treating native Linux as automatic
+admission. The host's systemd 255 original-delivery compatibility is separate.

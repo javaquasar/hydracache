@@ -75,3 +75,10 @@ Passing the limited synthetic holder faults does not prove all production
 writers retired, authenticated original delivery, durable completion/later
 cells, reconnect, production enrollment or server/release admission. Those
 remain separate implementation and rehearsal gates.
+
+## First result
+
+Both phases are consumed. The [result](native-clock-and-holder-result-20261023.md)
+retains a clean finite clock control and an unexpected healthy-case expiry at
+10,015,008,749 ns during owned-root preparation. The matrix stopped before the
+four fault cases. Do not reuse these lanes or treat postflight success as a pass.

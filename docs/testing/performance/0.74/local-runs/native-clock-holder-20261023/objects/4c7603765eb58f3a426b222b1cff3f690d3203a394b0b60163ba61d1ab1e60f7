@@ -1,0 +1,38 @@
+set -eu
+[ "$(id -u)" = 1000 ]
+[ "$(id -g)" = 1000 ]
+boot=$(cat /proc/sys/kernel/random/boot_id)
+printf 'BOOT %s\n' "$boot"
+[ "$boot" = e81671d6-bf23-4ebf-b8fe-5dad1f45866f ]
+unit=hydracache-performance-supervisor-074.service
+systemctl show "$unit" -p ActiveState -p SubState -p MainPID -p NRestarts
+[ "$(systemctl show "$unit" -p ActiveState --value)" = active ]
+[ "$(systemctl show "$unit" -p SubState --value)" = running ]
+[ "$(systemctl show "$unit" -p MainPID --value)" = 8839 ]
+[ "$(systemctl show "$unit" -p NRestarts --value)" = 0 ]
+for path in \
+ /var/lib/hydracache-performance/campaigns/active-campaign \
+ /var/lib/hydracache-performance/campaigns/active-diagnostic.json \
+ /var/lib/hydracache-performance/campaigns/.active-diagnostic.pending \
+ /var/lib/hydracache-performance/campaigns/diagnostic-requests.json \
+ /var/lib/hydracache-performance/campaigns/.diagnostic-requests.pending \
+ /var/lib/hydracache-performance/campaign-lifecycle-smoke-v1.json \
+ /var/lib/hydracache-performance/controller-loss-smoke-v1.json \
+ /var/lib/hydracache-performance/diagnostic-intents-074 \
+ /var/lib/hydracache-performance/worker-authority-074; do
+ sudo -n test ! -e "$path"
+ sudo -n test ! -L "$path"
+ printf 'ABSENT %s\n' "$path"
+done
+binary=$(sudo -n sha256sum /opt/hydracache-perf/bin/hydracache-long-run-supervisor-074)
+receipt=$(sudo -n sha256sum /var/lib/hydracache-performance/provisioning-receipt-074.json)
+printf '%s\n%s\n' "$binary" "$receipt"
+[ "${binary%% *}" = f797629f65385ebfd4d94577a43a2d1d020f71c1e841028dad7d02a51b47ad62 ]
+[ "${receipt%% *}" = b314953d4deedaeaade3e24468da4844b7f13d348a5d77b8e8f41c672ff44525 ]
+uname -srmo
+systemd --version | head -n 1
+printf 'CGROUP_FS '; stat -fc %T /sys/fs/cgroup
+df -Pk /tmp
+command -v timeout
+command -v python3
+printf 'HC074_SERVER_READONLY_PREFLIGHT_OK\n'

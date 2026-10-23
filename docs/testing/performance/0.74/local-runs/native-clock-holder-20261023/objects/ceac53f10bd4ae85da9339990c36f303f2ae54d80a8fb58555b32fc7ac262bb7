@@ -1,0 +1,17 @@
+{
+  "admission": false,
+  "clock_change": false,
+  "helper_seconds": 80,
+  "original_windows": [
+    300,
+    60,
+    10
+  ],
+  "product": false,
+  "retry": false,
+  "sample_sha256": "e5c44ef4920caf685b0860d695ac25d78cf791e868621e5981dc4f30838ed71e",
+  "server": true,
+  "service_change": false,
+  "source_commit": "6ae3751cb25e2535bff5769ccf06246c9939fd98",
+  "ssh_seconds": 120
+}

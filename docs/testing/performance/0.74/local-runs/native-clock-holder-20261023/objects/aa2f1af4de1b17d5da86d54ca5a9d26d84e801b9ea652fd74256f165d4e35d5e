@@ -1,0 +1,98 @@
+"""Stage one protected GNU holder matrix; never repeats execution."""
+from pathlib import Path
+import json
+import re
+import subprocess
+import sys
+
+ROOT = Path(r'C:\Workspace\prj\jq\cashe\hydracache-074')
+sys.path.insert(0, str(ROOT / 'tools/wsl-clock-trace-074'))
+import run as b
+OUT = ROOT / 'target/linux-clock-control-20261023'
+SSH = ['ssh', '-T', '-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=yes', '-o', 'ConnectTimeout=15', 'hydracache-ax42']
+SCP = ['scp', '-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=yes', '-o', 'ConnectTimeout=15']
+
+
+def call(label, argv, timeout, data=None):
+    b.put(OUT / (label + '-intent.json'), {'argv': argv, 'timeout_seconds': timeout, 'retry': False})
+    with (OUT / (label + '.stdout.log')).open('xb') as stdout, (OUT / (label + '.stderr.log')).open('xb') as stderr:
+        try:
+            rc = subprocess.run(argv, input=data, stdout=stdout, stderr=stderr, cwd=ROOT, timeout=timeout, check=False).returncode
+        except subprocess.TimeoutExpired:
+            rc = 124
+    b.put(OUT / (label + '-result.json'), {'exit': rc, 'retry': False, 'server': True, 'admission': False, 'product': False})
+    if rc:
+        raise RuntimeError(f'{label}: first exit {rc}; do not resubmit')
+
+
+clock = json.loads((OUT / 'clock-analysis.json').read_bytes())
+if (clock['first_anomaly'] is not None or not clock['identity_unchanged']
+        or any(clock[k] != 0 for k in ('transport_exit', 'sample_exit', 'postflight_exit'))):
+    raise ValueError('Clock phase refused')
+if subprocess.check_output(['git', 'status', '--porcelain'], cwd=ROOT).strip():
+    raise ValueError('Uncommitted control sources')
+proof = json.loads((ROOT / 'target/bootstrap-original-getunit-20261023/build-proof.json').read_bytes())
+for name, sha in proof['checked_sources'].items():
+    if b.digest((ROOT / name).read_bytes()) != sha:
+        raise ValueError('Build input changed: ' + name)
+image = ROOT / 'target/bootstrap-original-getunit-20261023/native-once/libtest'
+if b.digest(image.read_bytes()) != proof['libtest_sha256']:
+    raise ValueError('Image drift')
+b.sources()
+bundle = ROOT / 'target/diagnostic-start-material-bundle-20261017'
+names = ('timing-controls-074', 'build-receipt-v1.json', 'build-log.jsonl', 'Cargo.lock.root',
+         'Cargo.lock.observer', 'embedded.json', 'direct.json', 'resp2.json', 'resp3.json')
+sources = {'holder-session.sh': ROOT / 'tools/native-server-control-074/holder-session.sh', 'libtest': image}
+sources |= {'bundle/' + n: bundle / n for n in names}
+manifest = OUT / 'holder-inputs.sha256'
+with manifest.open('x', encoding='ascii', newline='\n') as stream:
+    for name, path in sorted(sources.items()):
+        stream.write(b.digest(path.read_bytes()) + '  ' + name + '\n')
+b.put(OUT / 'holder-phase-intent.json', {'source_commit': subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip(),
+     'libtest_sha256': proof['libtest_sha256'], 'build_proof_inputs_verified': len(proof['checked_sources']),
+     'input_hashes': {name: b.digest(path.read_bytes()) for name, path in sources.items()},
+     'original_windows': [300, 60, 10], 'matrix': ['healthy', 'revalidate', 'role-before', 'role-after', 'trust-after'],
+     'compiler': 'GNU 1.94', 'external_timeout_seconds': 1200, 'server': True, 'product': False,
+     'admission': False, 'original_send': False, 'service_change': False, 'clock_change': False, 'retry': False})
+call('holder-readonly-preflight', SSH + ['sh', '-s'], 45, (ROOT / 'target/linux-clock-control-preflight-20261023.sh').read_bytes())
+call('holder-create', SSH + ['sh', '-s'], 30, b'umask 077\nmktemp -d /tmp/hc074-native-held-upload-20261023.XXXXXX\n')
+upload = (OUT / 'holder-create.stdout.log').read_text().strip()
+if not re.fullmatch(r'/tmp/hc074-native-held-upload-20261023\.[A-Za-z0-9]{6}', upload):
+    raise ValueError('Unexpected upload path')
+call('holder-transfer-main', SCP + [str(sources['holder-session.sh']), str(image), 'hydracache-ax42:' + upload + '/'], 60)
+call('holder-transfer-manifest', SCP + [str(manifest), 'hydracache-ax42:' + upload + '/inputs.sha256'], 30)
+call('holder-transfer-bundle', SCP + ['-r', str(bundle), 'hydracache-ax42:' + upload + '/bundle'], 90)
+script = f'''set -eu
+[ "$(id -u):$(id -g)" = 0:0 ]
+umask 077
+upload={upload}
+[ "$(stat -c '%a:%u:%g' "$upload")" = 700:1000:1000 ]
+[ ! -L "$upload" ]
+root=$(mktemp -d /tmp/hc074-native-held-root-20261023.XXXXXX)
+mkdir -m 700 "$root/bundle"
+for file in holder-session.sh libtest inputs.sha256; do
+ [ -f "$upload/$file" ] && [ ! -L "$upload/$file" ]
+ install -m 500 "$upload/$file" "$root/$file"
+done
+for file in {' '.join(names)}; do
+ [ -f "$upload/bundle/$file" ] && [ ! -L "$upload/bundle/$file" ]
+ install -m 400 "$upload/bundle/$file" "$root/bundle/$file"
+done
+chmod 500 "$root/bundle"
+cd "$root"
+printf '%s\n' '{b.digest(sources['holder-session.sh'].read_bytes())}  holder-session.sh' '{b.digest(manifest.read_bytes())}  inputs.sha256' | sha256sum --check
+sha256sum --check inputs.sha256
+/bin/sh -n holder-session.sh
+printf 'ROOT=%s\n' "$root"
+nohup /usr/bin/env -i PATH=/usr/sbin:/usr/bin:/sbin:/bin /bin/sh "$root/holder-session.sh" >wrapper.log 2>&1 </dev/null &
+printf 'WRAPPER_PID=%s\n' "$!"
+'''.encode()
+with (OUT / 'holder-stage-input.sh').open('xb') as stream:
+    stream.write(script)
+call('holder-stage', SSH + ['sudo', '-n', 'sh', '-s'], 60, script)
+stdout = (OUT / 'holder-stage.stdout.log').read_text()
+matches = re.findall(r'^ROOT=(/tmp/hc074-native-held-root-20261023\.[A-Za-z0-9]{6})$', stdout, re.M)
+if len(matches) != 1:
+    raise ValueError('Inspect same stage output; never resubmit')
+b.put(OUT / 'holder-remote.json', {'path': matches[0], 'upload': upload, 'retry': False})
+print(stdout)

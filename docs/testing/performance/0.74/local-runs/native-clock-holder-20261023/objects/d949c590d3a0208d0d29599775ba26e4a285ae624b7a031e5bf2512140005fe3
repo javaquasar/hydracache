@@ -1,0 +1,27 @@
+set -eu
+[ "$(id -u):$(id -g)" = 0:0 ]
+umask 077
+upload=/tmp/hc074-native-held-upload-20261023.dXIenK
+[ "$(stat -c '%a:%u:%g' "$upload")" = 700:1000:1000 ]
+[ ! -L "$upload" ]
+root=$(mktemp -d /tmp/hc074-native-held-root-20261023.XXXXXX)
+mkdir -m 700 "$root/bundle"
+for file in holder-session.sh libtest inputs.sha256; do
+ [ -f "$upload/$file" ] && [ ! -L "$upload/$file" ]
+ install -m 500 "$upload/$file" "$root/$file"
+done
+for file in timing-controls-074 build-receipt-v1.json build-log.jsonl Cargo.lock.root Cargo.lock.observer embedded.json direct.json resp2.json resp3.json; do
+ [ -f "$upload/bundle/$file" ] && [ ! -L "$upload/bundle/$file" ]
+ install -m 400 "$upload/bundle/$file" "$root/bundle/$file"
+done
+chmod 500 "$root/bundle"
+cd "$root"
+printf '%s
+' 'e6a2bf2b654ab9a25888bb96bcfb94463c1d66b7c1c577c3927097fdba4dccf5  holder-session.sh' 'eda17171eeb658e5dec422f89140a2b01eb437bab2adedb7b5b90c4b6873cbbc  inputs.sha256' | sha256sum --check
+sha256sum --check inputs.sha256
+/bin/sh -n holder-session.sh
+printf 'ROOT=%s
+' "$root"
+nohup /usr/bin/env -i PATH=/usr/sbin:/usr/bin:/sbin:/bin /bin/sh "$root/holder-session.sh" >wrapper.log 2>&1 </dev/null &
+printf 'WRAPPER_PID=%s
+' "$!"

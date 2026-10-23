@@ -1,0 +1,9 @@
+set -eu
+cd '/tmp/hc074-native-clock-20261023.Zq88Md'
+[ "$(stat -c '%a:%u:%g' .)" = 700:1000:1000 ]
+sha256sum --check inputs.sha256
+/bin/sh -n preflight.sh
+/bin/sh -n clock-session.sh
+chmod 500 sample preflight.sh clock-session.sh
+chmod 400 inputs.sha256
+exec /bin/sh ./clock-session.sh

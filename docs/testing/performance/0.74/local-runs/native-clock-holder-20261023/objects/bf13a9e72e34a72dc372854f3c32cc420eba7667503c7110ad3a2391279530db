@@ -1,0 +1,110 @@
+{
+  "admission": false,
+  "all_production_writers_retired_proven": false,
+  "attempted_cases": [
+    "healthy"
+  ],
+  "complete_matrix_passed": false,
+  "completed_cases": [],
+  "first_original_refusal": {
+    "age_sites": [
+      {
+        "calls": 42,
+        "first": {
+          "age_ns": 9027489393,
+          "file": "tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs",
+          "issued_ns": 1507395909677355,
+          "line": 121,
+          "now_ns": 1507404937166748,
+          "reason": "within-window"
+        },
+        "first_refusal": null,
+        "last": {
+          "age_ns": 9876706154,
+          "file": "tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs",
+          "issued_ns": 1507395909677355,
+          "line": 121,
+          "now_ns": 1507405786383509,
+          "reason": "within-window"
+        }
+      },
+      {
+        "calls": 62,
+        "first": {
+          "age_ns": 264756843,
+          "file": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+          "issued_ns": 1507395909677355,
+          "line": 109,
+          "now_ns": 1507396174434198,
+          "reason": "within-window"
+        },
+        "first_refusal": {
+          "age_ns": 10015008749,
+          "file": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+          "issued_ns": 1507395909677355,
+          "line": 109,
+          "now_ns": 1507405924686104,
+          "reason": "expired"
+        },
+        "last": {
+          "age_ns": 10015008749,
+          "file": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+          "issued_ns": 1507395909677355,
+          "line": 109,
+          "now_ns": 1507405924686104,
+          "reason": "expired"
+        }
+      },
+      {
+        "calls": 58,
+        "first": {
+          "age_ns": 944769184,
+          "file": "tools/long-run-supervisor-074/src/diagnostic_preconsent_frame.rs",
+          "issued_ns": 1507395909677355,
+          "line": 188,
+          "now_ns": 1507396854446539,
+          "reason": "within-window"
+        },
+        "first_refusal": null,
+        "last": {
+          "age_ns": 9859203178,
+          "file": "tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs",
+          "issued_ns": 1507395909677355,
+          "line": 139,
+          "now_ns": 1507405768880533,
+          "reason": "within-window"
+        }
+      }
+    ],
+    "case": "healthy",
+    "causal": {
+      "age_ns": 10015008749,
+      "diagnostic_reason": "expired",
+      "issued_boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+      "issued_ns": 1507395909677355,
+      "now_boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+      "now_ns": 1507405924686104,
+      "site": "window"
+    },
+    "kernel": null
+  },
+  "matrix_exit": 101,
+  "not_executed_cases": [
+    "revalidate",
+    "role-before",
+    "role-after",
+    "trust-after"
+  ],
+  "original_delivery_proven": false,
+  "original_windows": [
+    300,
+    60,
+    10
+  ],
+  "postflight_exit": 0,
+  "product": false,
+  "retry": false,
+  "schema": "hc074-native-holder-offline-outcome-v1",
+  "server": true,
+  "wrapper_exit": 101
+}

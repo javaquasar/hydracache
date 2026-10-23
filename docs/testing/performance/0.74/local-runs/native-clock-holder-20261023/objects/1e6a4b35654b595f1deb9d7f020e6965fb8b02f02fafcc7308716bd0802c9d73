@@ -1,0 +1,24 @@
+Linux 6.8.0-138-generic x86_64 GNU/Linux
+systemd 255 (255.4-1ubuntu8.17)
+FILE /sys/devices/system/clocksource/clocksource0/current_clocksource
+tsc
+FILE /sys/devices/system/clocksource/clocksource0/available_clocksource
+tsc hpet acpi_pm 
+FILE /sys/devices/system/cpu/online
+0-7
+Cpus_allowed_list:	0,5-15
+Mems_allowed_list:	0
+MainPID=804
+Id=systemd-timesyncd.service
+LoadState=loaded
+ActiveState=active
+
+MainPID=0
+Id=chrony.service
+LoadState=not-found
+ActiveState=inactive
+
+MainPID=0
+Id=ntp.service
+LoadState=not-found
+ActiveState=inactive

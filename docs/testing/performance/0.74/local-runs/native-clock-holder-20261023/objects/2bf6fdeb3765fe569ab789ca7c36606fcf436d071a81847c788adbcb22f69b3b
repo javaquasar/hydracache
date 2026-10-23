@@ -1,0 +1,27 @@
+{
+  "admission": false,
+  "argv": [
+    "ssh",
+    "-T",
+    "-o",
+    "BatchMode=yes",
+    "-o",
+    "StrictHostKeyChecking=yes",
+    "-o",
+    "ConnectTimeout=15",
+    "hydracache-ax42",
+    "sh",
+    "-s"
+  ],
+  "authorization": "User selected the dedicated Linux server experiment; no installation, clocks, services or product workload",
+  "clock_change": false,
+  "original_owner_run": false,
+  "product": false,
+  "read_only": true,
+  "retry": false,
+  "schema": "hc074-server-clock-preflight-v1",
+  "script_sha256": "4c7603765eb58f3a426b222b1cff3f690d3203a394b0b60163ba61d1ab1e60f7",
+  "server": true,
+  "service_change": false,
+  "timeout_seconds": 45
+}

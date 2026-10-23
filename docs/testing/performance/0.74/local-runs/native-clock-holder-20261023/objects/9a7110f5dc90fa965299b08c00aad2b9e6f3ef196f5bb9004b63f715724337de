@@ -1,0 +1,79 @@
+"""One bounded native clock observation; no redispatch and no service mutations."""
+from pathlib import Path
+import json
+import re
+import subprocess
+import sys
+
+ROOT = Path(r'C:\Workspace\prj\jq\cashe\hydracache-074')
+sys.path.insert(0, str(ROOT / 'tools/wsl-clock-trace-074'))
+import run as b
+OUT = ROOT / 'target/linux-clock-control-20261023'
+SSH = ['ssh', '-T', '-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=yes', '-o', 'ConnectTimeout=15', 'hydracache-ax42']
+SCP = ['scp', '-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=yes', '-o', 'ConnectTimeout=15']
+
+
+def call(label, argv, timeout, data=None):
+    b.put(OUT / (label + '-intent.json'), {'argv': argv, 'timeout_seconds': timeout, 'retry': False})
+    with (OUT / (label + '.stdout.log')).open('xb') as stdout, (OUT / (label + '.stderr.log')).open('xb') as stderr:
+        try:
+            rc = subprocess.run(argv, input=data, stdout=stdout, stderr=stderr, cwd=ROOT, timeout=timeout, check=False).returncode
+        except subprocess.TimeoutExpired:
+            rc = 124
+    b.put(OUT / (label + '-result.json'), {'exit': rc, 'retry': False, 'server': True, 'admission': False, 'product': False})
+    return rc
+
+
+if subprocess.check_output(['git', 'status', '--porcelain'], cwd=ROOT).strip():
+    raise ValueError('Commit reviewed sources before observation')
+sample = ROOT / 'target/wsl-clock-readonly-20261023/sample'
+if b.digest(sample.read_bytes()) != 'e5c44ef4920caf685b0860d695ac25d78cf791e868621e5981dc4f30838ed71e':
+    raise ValueError('Changed prebuilt sample')
+b.sources()
+upload = OUT / 'clock-upload'
+upload.mkdir()
+sources = {'sample': sample, 'preflight.sh': ROOT / 'tools/native-server-control-074/preflight.sh',
+           'clock-session.sh': ROOT / 'tools/native-server-control-074/clock-session.sh'}
+for name, source in sources.items():
+    with (upload / name).open('xb') as stream:
+        stream.write(source.read_bytes())
+with (upload / 'inputs.sha256').open('x', encoding='ascii', newline='\n') as stream:
+    for name in sorted(sources):
+        stream.write(b.digest((upload / name).read_bytes()) + '  ' + name + '\n')
+b.put(OUT / 'clock-phase-intent.json', {'source_commit': subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip(),
+     'sample_sha256': b.digest(sample.read_bytes()), 'helper_seconds': 80, 'ssh_seconds': 120,
+     'original_windows': [300, 60, 10], 'server': True, 'product': False, 'admission': False,
+     'clock_change': False, 'service_change': False, 'retry': False})
+rc = call('clock-create', SSH + ['sh', '-s'], 30, b'umask 077\nmktemp -d /tmp/hc074-native-clock-20261023.XXXXXX\n')
+if rc:
+    raise SystemExit(rc)
+remote = (OUT / 'clock-create.stdout.log').read_text().strip()
+if not re.fullmatch(r'/tmp/hc074-native-clock-20261023\.[A-Za-z0-9]{6}', remote):
+    raise ValueError('Unexpected temporary path')
+b.put(OUT / 'clock-remote.json', {'path': remote, 'retry': False})
+rc = call('clock-transfer', SCP + [str(p) for p in sorted(upload.iterdir())] + ['hydracache-ax42:' + remote + '/'], 60)
+if rc:
+    raise SystemExit(rc)
+script = (f"set -eu\ncd '{remote}'\n[ \"$(stat -c '%a:%u:%g' .)\" = 700:1000:1000 ]\n"
+          "sha256sum --check inputs.sha256\n/bin/sh -n preflight.sh\n/bin/sh -n clock-session.sh\n"
+          "chmod 500 sample preflight.sh clock-session.sh\nchmod 400 inputs.sha256\nexec /bin/sh ./clock-session.sh\n").encode()
+with (OUT / 'clock-remote-input.sh').open('xb') as stream:
+    stream.write(script)
+rc = call('clock-execute', SSH + ['sh', '-s'], 120, script)
+download = OUT / 'clock-download'
+download.mkdir()
+retrieved = call('clock-retrieve', SCP + ['-r', 'hydracache-ax42:' + remote, str(download)], 60)
+if retrieved:
+    raise SystemExit(retrieved)
+local = download / Path(remote).name
+sys.path.insert(0, str(ROOT / 'tools/wsl-clock-readonly-074'))
+import diagnose as d
+analysis = d.analyze((local / 'samples.jsonl').read_text())
+analysis.update(server=True, transport_exit=rc,
+                sample_exit=int((local / 'sample.exit').read_text()),
+                postflight_exit=int((local / 'postflight.exit').read_text()),
+                identity_unchanged=d.identity((local / 'identity-before.txt').read_text()) == d.identity((local / 'identity-after.txt').read_text()))
+b.put(OUT / 'clock-analysis.json', analysis)
+print(json.dumps(analysis, indent=2))
+raise SystemExit(0 if rc == analysis['sample_exit'] == analysis['postflight_exit'] == 0
+                 and analysis['identity_unchanged'] and analysis['first_anomaly'] is None else 1)

@@ -1,0 +1,39 @@
+{
+  "admission": false,
+  "build_proof_inputs_verified": 191,
+  "clock_change": false,
+  "compiler": "GNU 1.94",
+  "external_timeout_seconds": 1200,
+  "input_hashes": {
+    "bundle/Cargo.lock.observer": "e3be470f5a1bff4e917e841fc5bfbd257ff12559206bbc1481c3c4bca528eb1d",
+    "bundle/Cargo.lock.root": "be46eaf8e97e507bda5e3f2b671d0d622e6a639ce1d4613769a4693723d62b19",
+    "bundle/build-log.jsonl": "8a2a495348bd317f7a2092a622838fc489bdcf077f4a8269210b2b78381b3c58",
+    "bundle/build-receipt-v1.json": "e32bb7cd9b6cbf1d91d52abc79cb1e0225b3a7f6602e82e5b9a303c3645a77d7",
+    "bundle/direct.json": "5485b10f50906833006ad3f3a40b4909760ef01e3f2c86395e4366bf83cc6ef9",
+    "bundle/embedded.json": "5c219730c8a782ed47dfa0b291a29f44f753c3688f8548c136174a89cee55149",
+    "bundle/resp2.json": "f0aba16dfe0354801d0b3c83ee9fc2d1b4751be5f50280634690ed4bcf3030ae",
+    "bundle/resp3.json": "b680683c291d0a4dadbac1901f051ba0fedcac0ac9127d197e0261fe6fdabdd7",
+    "bundle/timing-controls-074": "bda1c094f3de7c6d42ec45c757838c7a41a8ff1d63a025c661af84455169a101",
+    "holder-session.sh": "e6a2bf2b654ab9a25888bb96bcfb94463c1d66b7c1c577c3927097fdba4dccf5",
+    "libtest": "ca5484aa951414b80aefd0148c7d8f5185a8fdf73bb197cf98a790de59b8cff1"
+  },
+  "libtest_sha256": "ca5484aa951414b80aefd0148c7d8f5185a8fdf73bb197cf98a790de59b8cff1",
+  "matrix": [
+    "healthy",
+    "revalidate",
+    "role-before",
+    "role-after",
+    "trust-after"
+  ],
+  "original_send": false,
+  "original_windows": [
+    300,
+    60,
+    10
+  ],
+  "product": false,
+  "retry": false,
+  "server": true,
+  "service_change": false,
+  "source_commit": "048819cc70f5e998d068e738d76ac73558c49778"
+}

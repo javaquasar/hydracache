@@ -1,0 +1,17 @@
+{
+  "argv": [
+    "ssh",
+    "-T",
+    "-o",
+    "BatchMode=yes",
+    "-o",
+    "StrictHostKeyChecking=yes",
+    "-o",
+    "ConnectTimeout=15",
+    "hydracache-ax42",
+    "sh",
+    "-s"
+  ],
+  "read_only": true,
+  "retry": false
+}

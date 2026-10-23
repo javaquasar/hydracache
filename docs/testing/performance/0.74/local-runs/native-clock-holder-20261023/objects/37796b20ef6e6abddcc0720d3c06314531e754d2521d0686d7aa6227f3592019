@@ -1,0 +1,15 @@
+{
+  "argv": [
+    "scp",
+    "-o",
+    "BatchMode=yes",
+    "-o",
+    "StrictHostKeyChecking=yes",
+    "-o",
+    "ConnectTimeout=15",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\linux-clock-control-20261023\\holder-inputs.sha256",
+    "hydracache-ax42:/tmp/hc074-native-held-upload-20261023.dXIenK/inputs.sha256"
+  ],
+  "retry": false,
+  "timeout_seconds": 30
+}

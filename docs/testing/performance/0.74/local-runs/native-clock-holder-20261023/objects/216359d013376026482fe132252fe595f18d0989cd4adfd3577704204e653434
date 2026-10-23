@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "scp",
+    "-o",
+    "BatchMode=yes",
+    "-o",
+    "StrictHostKeyChecking=yes",
+    "-o",
+    "ConnectTimeout=15",
+    "-r",
+    "hydracache-ax42:/tmp/hc074-native-clock-20261023.Zq88Md",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\linux-clock-control-20261023\\clock-download"
+  ],
+  "retry": false,
+  "timeout_seconds": 60
+}

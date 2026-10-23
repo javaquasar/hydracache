@@ -1,0 +1,24 @@
+BOOT e81671d6-bf23-4ebf-b8fe-5dad1f45866f
+MainPID=8839
+NRestarts=0
+ActiveState=active
+SubState=running
+ABSENT /var/lib/hydracache-performance/campaigns/active-campaign
+ABSENT /var/lib/hydracache-performance/campaigns/active-diagnostic.json
+ABSENT /var/lib/hydracache-performance/campaigns/.active-diagnostic.pending
+ABSENT /var/lib/hydracache-performance/campaigns/diagnostic-requests.json
+ABSENT /var/lib/hydracache-performance/campaigns/.diagnostic-requests.pending
+ABSENT /var/lib/hydracache-performance/campaign-lifecycle-smoke-v1.json
+ABSENT /var/lib/hydracache-performance/controller-loss-smoke-v1.json
+ABSENT /var/lib/hydracache-performance/diagnostic-intents-074
+ABSENT /var/lib/hydracache-performance/worker-authority-074
+f797629f65385ebfd4d94577a43a2d1d020f71c1e841028dad7d02a51b47ad62  /opt/hydracache-perf/bin/hydracache-long-run-supervisor-074
+b314953d4deedaeaade3e24468da4844b7f13d348a5d77b8e8f41c672ff44525  /var/lib/hydracache-performance/provisioning-receipt-074.json
+Linux 6.8.0-138-generic x86_64 GNU/Linux
+systemd 255 (255.4-1ubuntu8.17)
+CGROUP_FS cgroup2fs
+Filesystem     1024-blocks     Used Available Capacity Mounted on
+/dev/md2         457717264 25903092 408489948       6% /
+/usr/bin/timeout
+/usr/bin/python3
+HC074_SERVER_READONLY_PREFLIGHT_OK

@@ -18794,3 +18794,31 @@ windows remain unchanged, and old WSL context pins cannot be transplanted to a
 new kernel. Functional fault coverage on a VM would not supply bare-metal
 performance or continuous-retention qualification. This separates infrastructure
 readiness from product readiness without making the first refusals disappear.
+
+### A healthy clock control does not close a preparation budget failure
+
+The operator then selected the [bounded dedicated-Linux control](../testing/performance/0.74/native-clock-and-holder-result-20261023.md)
+instead of creating a local VM. The same standalone observer retained all 601
+rows without sampled backward or libc/syscall bracket anomalies. No clocks or
+time services were changed. That finite result justified only proceeding to the
+preregistered limited holder test, not asserting permanent clock health.
+
+The unchanged GNU image still failed its first healthy case. Its original
+BOOTTIME origin was already 9.027 seconds old at the first custody observation;
+owned-root preparation reached an expiry at 10.015 seconds. The kernel refusal
+field was null, while the causal record explicitly said expired. The matrix
+stopped before its four intended fault cases. This is a different first result
+from the earlier WSL clock-order failures, not a replacement for them.
+
+The lesson is narrower than blaming a clock or a single expensive check. Age
+records locate a preparation budget problem but do not separate CPU, filesystem
+work and scheduling. They call for attribution before another isolated change,
+not extending the window, reissuing an origin or running healthy until it passes.
+Systemd FD compatibility is another future gate, not the cause recorded here.
+
+Supervisor, boot, installed hashes and checked marker state remained unchanged,
+and postflight confirmed the checked fixture cleanup and mount-table equality.
+Those successful safety checks are retained beside the failed matrix; they do
+not turn it into all-writer or original-delivery proof. The next optimization
+must preserve both facts: the environment control passed, and preparation still
+did not fit the original admission window.

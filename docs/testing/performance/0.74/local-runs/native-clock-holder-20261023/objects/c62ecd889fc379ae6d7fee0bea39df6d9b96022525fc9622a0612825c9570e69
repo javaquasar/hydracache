@@ -1,0 +1,4 @@
+clock-session.sh: OK
+preflight.sh: OK
+sample: OK
+HC074_NATIVE_CLOCK sample_exit=0 postflight_exit=0 server=true product=false

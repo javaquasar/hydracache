@@ -1,0 +1,70 @@
+"""Seal one native clock control and the first negative holder outcome offline."""
+import json
+from pathlib import Path
+import sys
+
+ROOT = Path(r'C:\Workspace\prj\jq\cashe\hydracache-074')
+sys.path.insert(0, str(ROOT / 'tools/wsl-clock-trace-074'))
+import run as b
+sys.path.insert(0, str(ROOT / 'tools/native-server-control-074'))
+import review
+sys.path.insert(0, str(ROOT / 'tools/wsl-clock-readonly-074'))
+import diagnose as d
+
+OUT = ROOT / 'target/linux-clock-control-20261023'
+DEST = ROOT / 'docs/testing/performance/0.74/local-runs/native-clock-holder-20261023'
+remote = json.loads((OUT / 'clock-remote.json').read_bytes())['path']
+clock = OUT / 'clock-download' / Path(remote).name
+observed = d.analyze((clock / 'samples.jsonl').read_text())
+saved = json.loads((OUT / 'clock-analysis.json').read_bytes())
+if any(saved[k] != v for k, v in observed.items()):
+    raise ValueError('Clock analysis drift')
+holder = OUT / 'holder-download'
+result = review.holder((holder / 'matrix.log').read_bytes(), int((holder / 'matrix.exit').read_text()),
+                      int((holder / 'wrapper.exit').read_text()), int((holder / 'postflight.exit').read_text()))
+if result != json.loads((OUT / 'holder-offline-review.json').read_bytes()):
+    raise ValueError('Holder analysis drift')
+if json.loads((OUT / 'final-preflight-result.json').read_bytes())['exit'] != 0:
+    raise ValueError('Independent postflight failed')
+b.sources()
+inputs = {'observation/' + p.relative_to(OUT).as_posix(): p.read_bytes()
+          for p in sorted(OUT.rglob('*')) if p.is_file() and p.name != 'sample'}
+paths = [ROOT / 'tools/wsl-clock-readonly-074' / n for n in ('sample.rs', 'diagnose.py', 'test_diagnose.py')]
+paths += [ROOT / 'tools/native-server-control-074' / n for n in
+          ('preflight.sh', 'clock-session.sh', 'holder-session.sh', 'review.py', 'test_review.py')]
+paths += [ROOT / 'tools/long-run-supervisor-074' / n for n in
+          ('tests/support/consuming_held_live.rs', 'tests/support/consuming_held_live_namespace.rs',
+           'src/diagnostic_kernel_admission.rs', 'src/diagnostic_kernel_origin.rs')]
+paths += [ROOT / 'target' / n for n in ('linux-clock-control-preflight-20261023.sh',
+          'linux-clock-control-preflight-20261023.py', 'run-native-clock-once-20261023.py',
+          'run-native-holder-once-20261023.py', 'read-native-holder-20261023.py')]
+paths += [Path(__file__), ROOT / 'target/bootstrap-original-getunit-20261023/build-proof.json',
+          ROOT / 'target/wsl-clock-readonly-20261023/build.json',
+          ROOT / 'docs/testing/performance/0.74/native-clock-and-holder-plan-20261023.md',
+          ROOT / 'docs/testing/performance/0.74/qualification-manifest.toml']
+inputs |= {'source/' + p.relative_to(ROOT).as_posix(): p.read_bytes() for p in paths}
+DEST.mkdir(exist_ok=False)
+objects = DEST / 'objects'
+objects.mkdir()
+files = {}
+for name, raw in sorted(inputs.items()):
+    sha = b.digest(raw)
+    if not (objects / sha).exists():
+        with (objects / sha).open('xb') as stream:
+            stream.write(raw)
+    files[name] = {'sha256': sha, 'bytes': len(raw)}
+b.put(DEST / 'index.json', {'schema': 'hc074-native-clock-holder-evidence-v1', 'files': files,
+    'clock_control_source_commit': '6ae3751c', 'holder_runner_commit': '048819cc',
+    'offline_reader_commit': 'e95caf4a', 'runtime_base': '8fb0fb5a',
+    'clock_sample_sha256': 'e5c44ef4920caf685b0860d695ac25d78cf791e868621e5981dc4f30838ed71e',
+    'holder_libtest_sha256': 'ca5484aa951414b80aefd0148c7d8f5185a8fdf73bb197cf98a790de59b8cff1',
+    'original_windows': [300, 60, 10], 'server': True, 'product': False, 'admission': False,
+    'original_send': False, 'clock_change': False, 'service_change': False,
+    'release_install': False, 'retry': False,
+    'clock_control_passed': True, 'holder_matrix_passed': False})
+for entry in files.values():
+    raw = (objects / entry['sha256']).read_bytes()
+    if b.digest(raw) != entry['sha256'] or len(raw) != entry['bytes']:
+        raise ValueError('Archive object drift')
+print(json.dumps({'files': len(files), 'objects': len(list(objects.iterdir())),
+                   'index_sha256': b.digest((DEST / 'index.json').read_bytes())}))

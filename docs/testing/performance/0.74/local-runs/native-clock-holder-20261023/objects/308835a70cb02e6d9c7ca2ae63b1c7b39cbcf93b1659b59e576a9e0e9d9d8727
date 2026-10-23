@@ -1,0 +1,103 @@
+{
+  "admission": false,
+  "caused_by_specific_service": null,
+  "cpu_endpoint_changes": 0,
+  "cpus": [
+    6
+  ],
+  "direct_elapsed_ns": {
+    "boottime": 60035762979,
+    "monotonic": 60035762429,
+    "monotonic_raw": 60036938444,
+    "realtime": 60035762639
+  },
+  "direct_realtime_minus_boottime_delta_residual_ns": [
+    -290,
+    140
+  ],
+  "first_anomaly": null,
+  "identity_unchanged": true,
+  "postflight_exit": 0,
+  "rows": 601,
+  "sample_exit": 0,
+  "server": true,
+  "stats": {
+    "boottime": {
+      "backwards_by_api": [
+        0,
+        0,
+        0
+      ],
+      "bracket_violations": 0,
+      "max_libc_bracket_ns": 1320,
+      "maximum_delta_by_api_ns": [
+        100080342,
+        100079882,
+        100079732
+      ],
+      "minimum_delta_by_api_ns": [
+        100013613,
+        100013643,
+        100013643
+      ]
+    },
+    "monotonic": {
+      "backwards_by_api": [
+        0,
+        0,
+        0
+      ],
+      "bracket_violations": 0,
+      "max_libc_bracket_ns": 730,
+      "maximum_delta_by_api_ns": [
+        100079622,
+        100079492,
+        100079442
+      ],
+      "minimum_delta_by_api_ns": [
+        100013633,
+        100013643,
+        100013633
+      ]
+    },
+    "monotonic_raw": {
+      "backwards_by_api": [
+        0,
+        0,
+        0
+      ],
+      "bracket_violations": 0,
+      "max_libc_bracket_ns": 710,
+      "maximum_delta_by_api_ns": [
+        100081393,
+        100081293,
+        100081263
+      ],
+      "minimum_delta_by_api_ns": [
+        100015603,
+        100015623,
+        100015623
+      ]
+    },
+    "realtime": {
+      "backwards_by_api": [
+        0,
+        0,
+        0
+      ],
+      "bracket_violations": 0,
+      "max_libc_bracket_ns": 730,
+      "maximum_delta_by_api_ns": [
+        100079732,
+        100079592,
+        100079622
+      ],
+      "minimum_delta_by_api_ns": [
+        100013633,
+        100013643,
+        100013643
+      ]
+    }
+  },
+  "transport_exit": 0
+}

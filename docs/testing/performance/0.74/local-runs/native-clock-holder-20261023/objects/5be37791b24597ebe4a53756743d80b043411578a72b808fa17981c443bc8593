@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "scp",
+    "-o",
+    "BatchMode=yes",
+    "-o",
+    "StrictHostKeyChecking=yes",
+    "-o",
+    "ConnectTimeout=15",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\native-server-control-074\\holder-session.sh",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\bootstrap-original-getunit-20261023\\native-once\\libtest",
+    "hydracache-ax42:/tmp/hc074-native-held-upload-20261023.dXIenK/"
+  ],
+  "retry": false,
+  "timeout_seconds": 60
+}

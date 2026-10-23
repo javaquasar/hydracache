@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "C:\\Python313\\python.exe",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tools/native-server-control-074",
+    "-p",
+    "test_review.py",
+    "-v"
+  ],
+  "exit": 0,
+  "timeout_seconds": 60
+}

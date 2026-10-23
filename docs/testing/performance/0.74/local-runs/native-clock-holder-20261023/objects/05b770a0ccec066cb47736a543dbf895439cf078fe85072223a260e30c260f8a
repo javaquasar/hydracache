@@ -1,0 +1,32 @@
+"""One strictly read-only SSH preflight; no fallback or redispatch."""
+from pathlib import Path
+import subprocess
+import sys
+
+ROOT = Path(r'C:\Workspace\prj\jq\cashe\hydracache-074')
+sys.path.insert(0, str(ROOT / 'tools/wsl-clock-trace-074'))
+import run as b
+out = ROOT / 'target/linux-clock-control-20261023'
+out.mkdir(exist_ok=False)
+script = (ROOT / 'target/linux-clock-control-preflight-20261023.sh').read_bytes()
+if b'\r' in script:
+    raise ValueError('Only reviewed LF script input')
+argv = ['ssh', '-T', '-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=yes',
+        '-o', 'ConnectTimeout=15', 'hydracache-ax42', 'sh', '-s']
+b.put(out / 'intent.json', {'schema': 'hc074-server-clock-preflight-v1',
+    'authorization': 'User selected the dedicated Linux server experiment; no installation, clocks, services or product workload',
+    'argv': argv, 'script_sha256': b.digest(script), 'timeout_seconds': 45,
+    'server': True, 'read_only': True, 'admission': False, 'product': False,
+    'clock_change': False, 'service_change': False, 'original_owner_run': False, 'retry': False})
+with (out / 'preflight.stdout.log').open('xb') as stdout, (out / 'preflight.stderr.log').open('xb') as stderr:
+    try:
+        rc = subprocess.run(argv, input=script, stdout=stdout, stderr=stderr,
+                            cwd=ROOT, timeout=45, check=False).returncode
+    except subprocess.TimeoutExpired:
+        rc = 124
+b.put(out / 'preflight-result.json', {'exit': rc, 'retry': False, 'server': True,
+                                     'admission': False, 'product': False})
+print('First SSH preflight exit:', rc)
+print((out / 'preflight.stdout.log').read_text(encoding='utf-8', errors='replace'))
+print((out / 'preflight.stderr.log').read_text(encoding='utf-8', errors='replace'))
+raise SystemExit(rc)
