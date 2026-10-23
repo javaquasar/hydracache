@@ -8,7 +8,10 @@ libtest_sha=$4
 test "$(id -u)" = 0
 test "$(cat /etc/hostname)" = hc074-native
 test "$(systemctl --version | head -n 1 | cut -d ' ' -f 2)" = 257
-case "$lane" in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/target/bootstrap-original-service-20261023/native-account-compatible-once) ;; *) exit 74;; esac
+case "$lane" in
+    /mnt/c/Workspace/prj/jq/cashe/hydracache-074/target/bootstrap-original-service-20261023/native-account-compatible-once|/mnt/c/Workspace/prj/jq/cashe/hydracache-074/target/bootstrap-original-getunit-20261023/native-once) ;;
+    *) exit 74;;
+esac
 test "$(sha256sum "$lane/bootstrap" | cut -d ' ' -f 1)" = "$bootstrap_sha"
 test "$(sha256sum "$lane/libtest" | cut -d ' ' -f 1)" = "$libtest_sha"
 fixed=/opt/hydracache-perf/bin/diagnostic-held-bootstrap-074
