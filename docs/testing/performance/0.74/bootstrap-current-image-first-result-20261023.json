@@ -1,0 +1,10 @@
+{
+  "kind": "captured-tool summary, not raw runner receipt",
+  "baseline": "c3dd8469",
+  "command": "cargo test --offline --locked -p xtask --test bootstrap_current_image_074 -- --nocapture",
+  "exit": 101,
+  "result": "0 passed; 1 failed; current executable inode consistency is absent",
+  "original_live_attempt": false,
+  "performance_measurement": false,
+  "server": false
+}
