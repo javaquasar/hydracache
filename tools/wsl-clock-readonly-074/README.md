@@ -47,3 +47,8 @@ refuses to overwrite an existing analysis. verify does not enter WSL. retain
 keeps exact sources/logs in a separate non-admitting content-addressed archive;
 the old original-owner archive is never resealed. A complete ordered sample is
 not permission to repeat original-owner execution or open a release gate.
+
+The fixed lane is now consumed. Its first series reproduced two backward
+REALTIME intervals through both read paths. Use only verify for the retained
+[result](../../docs/testing/performance/0.74/wsl-clock-readonly-20261023.md);
+do not repeat build or observe from the historical command sequence above.

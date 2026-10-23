@@ -18434,3 +18434,28 @@ works on the actual manager, and the live clock guard remains fail-closed. It
 does not confirm original delivery, readiness or all-writer cessation. Clock
 consistency needs read-only attribution before another recorded live candidate;
 the first refusal, original origins and every existing predicate remain intact.
+
+### Masked services do not prove independent WSL clocks
+
+A [read-only clock observation](../testing/performance/0.74/wsl-clock-readonly-20261023.md)
+removed the admission workflow from the experiment. One fixed session collected
+601 low-rate rows, bracketing direct kernel clock_gettime reads with libc reads.
+REALTIME went backwards twice through both paths, by about 5.93 seconds between
+adjacent rows. BOOTTIME and MONOTONIC kept increasing; boot, init and namespace
+identities did not change within the session. The problem is therefore observable
+without original-owner preparation and is not confined to libc observations.
+
+The environment supplied a useful boundary correction. Clock services were
+masked inside the diagnostic distro, but a separate read-only query found an
+active systemd-timesyncd in Ubuntu with the same VM boot ID and time namespace.
+Kernel metadata also recorded a configured implicit time-sync mechanism and earlier
+backward-time messages. These facts expose possible shared-clock authorities;
+they do not identify which mechanism caused either sampled step. Disabling a
+service based only on this association would confuse a candidate with a cause.
+
+The direct MONOTONIC and RAW endpoint differences also disagreed, so diagnosing
+the time setter alone may not explain all observed rate behavior. The raw series,
+first anomaly and failed Windows time-status query are retained separately from
+the original admission refusal. No clocks, services, predicates or deadlines
+changed, and original-owner was not repeated. This is progress in attribution,
+not a successful delivery gate or a preparation-speed improvement.

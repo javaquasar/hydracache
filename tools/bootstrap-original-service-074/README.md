@@ -46,3 +46,8 @@ getunit_seal.py verify checks this separate archive without rerunning the fixtur
 Its offline analysis distinguishes backward REALTIME observations from budget
 expiry and does not attribute the cause to a specific service. No existing
 service, clock, server, worker execution or qualification route is enabled.
+
+The later [read-only clock diagnosis](../../docs/testing/performance/0.74/wsl-clock-readonly-20261023.md)
+uses a separate standalone observer, not this fixture. It reproduces backward
+REALTIME through libc and direct syscalls without original-owner execution. The
+consumed lane remains closed; no guard, deadline or first refusal was changed.

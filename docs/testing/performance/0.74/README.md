@@ -6422,3 +6422,19 @@ units and temporary identity/image are absent, and existing services/clocks were
 not changed. The new archive keeps the old evidence untouched. Positive original
 delivery and all-writer retirement still need their own gates; read-only time
 consistency attribution is the next step, not a retry of the consumed lane.
+
+## Read only WSL clock diagnosis
+
+The [separate clock observation](wsl-clock-readonly-20261023.md) retained 601 rows
+from one bounded session without original-owner execution. REALTIME moved
+backwards twice through both libc and direct syscall reads, while BOOTTIME and
+MONOTONIC remained increasing. Init and namespace identities stayed fixed within
+the session. The direct path rules out an effect confined to the libc read path;
+it does not identify the clock setter.
+
+The neighboring Ubuntu reports an active time service and the same time
+namespace. Native distro masks therefore do not prove independent clocks.
+The earlier failure and all deadlines remain unchanged. No services or clocks
+were modified, no original-owner lane repeated and no server invoked. Separate
+exact evidence retains the Windows status-query error as well as the complete
+clock series. Caller/rate attribution and healthy original delivery remain open.
