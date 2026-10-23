@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "wsl.exe",
+    "-d",
+    "Ubuntu",
+    "-u",
+    "artur",
+    "--exec",
+    "/bin/sh",
+    "-c",
+    "uname -a; cat /proc/sys/kernel/random/boot_id; cat /proc/1/stat; readlink /proc/self/ns/time; cat /proc/self/timens_offsets; cat /proc/cmdline; systemctl list-units --all --no-pager --no-legend --type=service | grep -Ei \"timesync|chron|ntp|timedated\"; ps -eo pid,comm | grep -Ei \"timesync|chron|ntpd|timedated\"; journalctl -b --no-pager -n 50 -u systemd-timesyncd -u systemd-timedated -u chrony -u ntp"
+  ],
+  "exit": 0,
+  "stderr_sha256": "b9295050338450e1f2fe7f4bd4411764002b46d9dfe5fea0bc86c964e426bc8c",
+  "stdout_sha256": "6948d7f2aec8d4ed7da2f50c1dbdc61dedf32e88b0840d9dfd50d66bce4dfe4b"
+}

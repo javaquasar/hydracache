@@ -1,0 +1,10 @@
+{
+  "argv": [
+    "w32tm.exe",
+    "/query",
+    "/status"
+  ],
+  "exit": 2147943462,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stdout_sha256": "0c696b31c56ec3e095fa70a8a44283d5854298f284ce0d8bfdbdedfc31497810"
+}

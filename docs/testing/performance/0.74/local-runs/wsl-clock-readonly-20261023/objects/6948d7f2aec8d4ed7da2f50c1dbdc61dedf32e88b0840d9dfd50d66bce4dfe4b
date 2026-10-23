@@ -1,0 +1,17 @@
+Linux LT-TCH-12 6.6.87.2-microsoft-standard-WSL2 #1 SMP PREEMPT_DYNAMIC Thu Jun  5 18:30:46 UTC 2025 x86_64 x86_64 x86_64 GNU/Linux
+cf222c07-5476-4f70-9a32-455e99204d0a
+1 (systemd) S 0 1 1 0 -1 4194560 8033 158675 96 1910 135 180 491 475 20 0 1 0 10939 22482944 2991 18446744073709551615 1 1 0 0 0 0 671173123 4096 1260 0 0 0 17 2 0 0 0 0 0 0 0 0 0 0 0 0 0
+time:[4026531834]
+monotonic           0         0
+boottime            0         0
+initrd=\initrd.img WSL_ROOT_INIT=1 panic=-1 nr_cpus=8 hv_utils.timesync_implicit=1 console=hvc0 debug pty.legacy_count=0 WSL_ENABLE_CRASH_DUMP=1
+  initrd-parse-etc.service                 loaded    inactive   dead         Mountpoints Configured in the Real Root
+  systemd-timesyncd.service                loaded    active     running      Network Time Synchronization
+Oct 23 11:25:25 LT-TCH-12 systemd[1]: Starting systemd-timesyncd.service - Network Time Synchronization...
+Oct 23 11:25:25 LT-TCH-12 systemd[1]: Started systemd-timesyncd.service - Network Time Synchronization.
+Oct 23 11:25:26 LT-TCH-12 systemd[1]: Starting systemd-timedated.service - Time & Date Service...
+Oct 23 11:25:26 LT-TCH-12 systemd[1]: Started systemd-timedated.service - Time & Date Service.
+Oct 23 11:25:35 LT-TCH-12 systemd-timesyncd[176]: Timed out waiting for reply from 185.125.190.57:123 (ntp.ubuntu.com).
+Oct 23 11:25:44 LT-TCH-12 systemd-timesyncd[176]: Contacted time server 91.189.91.157:123 (ntp.ubuntu.com).
+Oct 23 11:25:44 LT-TCH-12 systemd-timesyncd[176]: Initial clock synchronization to Fri 2026-10-23 11:25:44.176407 CEST.
+Oct 23 11:26:05 LT-TCH-12 systemd[1]: systemd-timedated.service: Deactivated successfully.

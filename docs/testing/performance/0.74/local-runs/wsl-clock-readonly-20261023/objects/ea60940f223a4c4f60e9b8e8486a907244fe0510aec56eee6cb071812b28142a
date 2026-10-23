@@ -1,0 +1,15 @@
+test_first_backwards_not_hidden_by_later_recovery (test_diagnose.Analysis.test_first_backwards_not_hidden_by_later_recovery) ... ok
+test_incomplete_unknown_reordered_and_invalid_refuse (test_diagnose.Analysis.test_incomplete_unknown_reordered_and_invalid_refuse) ... ok
+test_ordered_observations_do_not_admit (test_diagnose.Analysis.test_ordered_observations_do_not_admit) ... ok
+test_pid1_cpu_time_changes_not_new_init_but_start_ticks_are (test_diagnose.Analysis.test_pid1_cpu_time_changes_not_new_init_but_start_ticks_are) ... ok
+test_syscall_disagreement_separate_from_elapsed_delta (test_diagnose.Analysis.test_syscall_disagreement_separate_from_elapsed_delta) ... ok
+test_evidence_publication_is_exclusive (test_diagnose.Safety.test_evidence_publication_is_exclusive) ... ok
+test_frozen_and_workspace_guards (test_diagnose.Safety.test_frozen_and_workspace_guards) ... ok
+test_only_readonly_clock_ffi_and_explicit_bound (test_diagnose.Safety.test_only_readonly_clock_ffi_and_explicit_bound) ... ok
+test_refusal_first_vs_optional_metadata (test_diagnose.Safety.test_refusal_first_vs_optional_metadata) ... ok
+test_shell_has_no_unit_or_clock_mutations (test_diagnose.Safety.test_shell_has_no_unit_or_clock_mutations) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.057s
+
+OK

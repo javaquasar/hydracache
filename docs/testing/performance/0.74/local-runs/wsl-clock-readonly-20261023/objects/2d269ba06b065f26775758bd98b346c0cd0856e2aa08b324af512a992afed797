@@ -1,0 +1,143 @@
+{
+  "admission": false,
+  "caused_by_specific_service": null,
+  "cpu_endpoint_changes": 0,
+  "cpus": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "direct_elapsed_ns": {
+    "boottime": 61005095599,
+    "monotonic": 61005097216,
+    "monotonic_raw": 66551008278,
+    "realtime": 66461546336
+  },
+  "direct_realtime_minus_boottime_delta_residual_ns": [
+    -6034336175,
+    8762749113
+  ],
+  "first_anomaly": {
+    "api": 0,
+    "clock": "realtime",
+    "delta_ns": -5933526266,
+    "kind": "backwards",
+    "row": 85
+  },
+  "identity_after": {
+    "boot_id": "cf222c07-5476-4f70-9a32-455e99204d0a",
+    "namespaces_and_time_offsets": [
+      "1/user=user:[4026531837]",
+      "1/mnt=mnt:[4026533155]",
+      "1/pid=pid:[4026533158]",
+      "1/time=time:[4026531834]",
+      "self/user=user:[4026531837]",
+      "self/mnt=mnt:[4026533155]",
+      "self/pid=pid:[4026533158]",
+      "self/time=time:[4026531834]",
+      "monotonic           0         0",
+      "boottime            0         0"
+    ],
+    "pid1_start_ticks": 655191
+  },
+  "identity_before": {
+    "boot_id": "cf222c07-5476-4f70-9a32-455e99204d0a",
+    "namespaces_and_time_offsets": [
+      "1/user=user:[4026531837]",
+      "1/mnt=mnt:[4026533155]",
+      "1/pid=pid:[4026533158]",
+      "1/time=time:[4026531834]",
+      "self/user=user:[4026531837]",
+      "self/mnt=mnt:[4026533155]",
+      "self/pid=pid:[4026533158]",
+      "self/time=time:[4026531834]",
+      "monotonic           0         0",
+      "boottime            0         0"
+    ],
+    "pid1_start_ticks": 655191
+  },
+  "rows": 601,
+  "same_session": true,
+  "stats": {
+    "boottime": {
+      "backwards_by_api": [
+        0,
+        0,
+        0
+      ],
+      "bracket_violations": 0,
+      "max_libc_bracket_ns": 18204,
+      "maximum_delta_by_api_ns": [
+        239991439,
+        239991024,
+        239990972
+      ],
+      "minimum_delta_by_api_ns": [
+        100298797,
+        100299419,
+        100299468
+      ]
+    },
+    "monotonic": {
+      "backwards_by_api": [
+        0,
+        0,
+        0
+      ],
+      "bracket_violations": 0,
+      "max_libc_bracket_ns": 9975,
+      "maximum_delta_by_api_ns": [
+        239990971,
+        239990877,
+        239990874
+      ],
+      "minimum_delta_by_api_ns": [
+        100299469,
+        100299568,
+        100299570
+      ]
+    },
+    "monotonic_raw": {
+      "backwards_by_api": [
+        0,
+        0,
+        0
+      ],
+      "bracket_violations": 0,
+      "max_libc_bracket_ns": 1214,
+      "maximum_delta_by_api_ns": [
+        261808197,
+        261808189,
+        261808182
+      ],
+      "minimum_delta_by_api_ns": [
+        109417697,
+        109417694,
+        109417679
+      ]
+    },
+    "realtime": {
+      "backwards_by_api": [
+        2,
+        2,
+        2
+      ],
+      "bracket_violations": 0,
+      "max_libc_bracket_ns": 10939,
+      "maximum_delta_by_api_ns": [
+        8875079539,
+        8875079538,
+        8875079649
+      ],
+      "minimum_delta_by_api_ns": [
+        -5933526266,
+        -5933526268,
+        -5933526266
+      ]
+    }
+  }
+}

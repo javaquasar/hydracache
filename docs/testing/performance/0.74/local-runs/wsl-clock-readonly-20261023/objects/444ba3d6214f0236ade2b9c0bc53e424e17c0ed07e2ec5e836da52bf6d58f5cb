@@ -1,0 +1,25 @@
+{
+  "admission": false,
+  "binary": "e5c44ef4920caf685b0860d695ac25d78cf791e868621e5981dc4f30838ed71e",
+  "clock_change": false,
+  "distro": "HydraCache074Native",
+  "git": "3d3b02c5a0b2398c09dc01ec0bd86627d9de7590",
+  "helper_timeout_seconds": 80,
+  "original_owner_run": false,
+  "outer_timeout_seconds": 120,
+  "period_ms": 100,
+  "retry": false,
+  "samples": 601,
+  "server": false,
+  "service_change": false,
+  "sources": {
+    "docs/testing/performance/0.74/local-runs/bootstrap-original-getunit-20261023/index.json": "9f2fd0f457ec6d48f4e87e7bfc2bd1262bbf191cf51b760fe744eb369394b9f6",
+    "docs/testing/performance/0.74/qualification-manifest.toml": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+    "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs": "5f77f86c3c29a42156d63ffa913583f8a8c6419562f6c2bea5c34e75937260fa",
+    "tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs": "4e18523c71b6b5bdf3a74d75e58df096f25c6f773067d013a07db2a8cfde5214",
+    "tools/wsl-clock-readonly-074/diagnose.py": "ec232cf6c5e55f18e7b6c6216d3cedf64b68f1eae2b81d613203c372d6431ee2",
+    "tools/wsl-clock-readonly-074/sample.rs": "226631943935fd32c1fc0a059b517174eb045de0b86b0a8e7790f9e765826797",
+    "tools/wsl-clock-readonly-074/session.sh": "6c9851d584a6004c811a82d096c3bedafbf75f5e1483096593fb7c9356e73b12",
+    "tools/wsl-clock-readonly-074/test_diagnose.py": "7e7685896d223bbad1b5b7540b67cbd58c437a91a09875f06a8feeed1f6f8e3f"
+  }
+}

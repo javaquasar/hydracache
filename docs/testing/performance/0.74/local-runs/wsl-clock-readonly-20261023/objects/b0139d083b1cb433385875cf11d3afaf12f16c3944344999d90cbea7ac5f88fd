@@ -1,0 +1,75 @@
+Linux hc074-native 6.6.87.2-microsoft-standard-WSL2 #1 SMP PREEMPT_DYNAMIC Thu Jun  5 18:30:46 UTC 2025 x86_64 GNU/Linux
+systemd 257 (257.13-1~deb13u1)
++PAM +AUDIT +SELINUX +APPARMOR +IMA +IPE +SMACK +SECCOMP +GCRYPT -GNUTLS +OPENSSL +ACL +BLKID +CURL +ELFUTILS +FIDO2 +IDN2 -IDN +IPTC +KMOD +LIBCRYPTSETUP +LIBCRYPTSETUP_PLUGINS +LIBFDISK +PCRE2 +PWQUALITY +P11KIT +QRENCODE +TPM2 +BZIP2 +LZ4 +XZ +ZLIB +ZSTD +BPF_FRAMEWORK +BTF -XKBCOMMON -UTMP +SYSVINIT +LIBARCHIVE
+file=/sys/devices/system/clocksource/clocksource0/current_clocksource
+tsc
+file=/sys/devices/system/clocksource/clocksource0/available_clocksource
+tsc hyperv_clocksource_tsc_page hyperv_clocksource_msr acpi_pm 
+file=/proc/uptime
+6553.79 48122.54
+file=/sys/devices/system/cpu/online
+0-7
+file=/proc/sys/kernel/osrelease
+6.6.87.2-microsoft-standard-WSL2
+Cpus_allowed_list:	0-7
+Mems_allowed_list:	0
+clock masks
+apt-daily.timer -> /dev/null
+apt-daily-upgrade.timer -> /dev/null
+e2scrub_all.timer -> /dev/null
+fstrim.timer -> /dev/null
+logrotate.timer -> /dev/null
+man-db.timer -> /dev/null
+systemd-timedated.service -> /dev/null
+systemd-timesyncd.service -> /dev/null
+systemd-time-wait-sync.service -> /dev/null
+loaded clock related units
+  ifupdown-pre.service                                                                                                                                                         loaded    active     exited          Helper to synchronize boot up for ifupdown
+  initrd-parse-etc.service                                                                                                                                                     loaded    inactive   dead            Mountpoints Configured in the Real Root
+  systemd-bsod.service                                                                                                                                                         loaded    inactive   dead            Display Boot-Time Emergency Messages In Full Screen
+● user-runtime-dir@0.service                                                                                                                                                   loaded    activating start     start User Runtime Directory /run/user/0
+  time-set.target                                                                                                                                                              loaded    inactive   dead            System Time Set
+  time-sync.target                                                                                                                                                             loaded    inactive   dead            System Time Synchronized
+  timers.target                                                                                                                                                                loaded    active     active          Timer Units
+● apt-daily-upgrade.timer                                                                                                                                                      masked    inactive   dead            apt-daily-upgrade.timer
+● apt-daily.timer                                                                                                                                                              masked    inactive   dead            apt-daily.timer
+  dpkg-db-backup.timer                                                                                                                                                         loaded    active     waiting         Daily dpkg database backup timer
+● e2scrub_all.timer                                                                                                                                                            masked    inactive   dead            e2scrub_all.timer
+● fstrim.timer                                                                                                                                                                 masked    inactive   dead            fstrim.timer
+● logrotate.timer                                                                                                                                                              masked    inactive   dead            logrotate.timer
+  systemd-tmpfiles-clean.timer                                                                                                                                                 loaded    active     waiting         Daily Cleanup of Temporary Directories
+process names related to clocks
+your 131072x1 screen size is bogus. expect trouble
+bounded kernel clock messages
+[    0.000000] Command line: initrd=\initrd.img WSL_ROOT_INIT=1 panic=-1 nr_cpus=8 hv_utils.timesync_implicit=1 console=hvc0 debug pty.legacy_count=0 WSL_ENABLE_CRASH_DUMP=1
+[    0.000000] clocksource: hyperv_clocksource_tsc_page: mask: 0xffffffffffffffff max_cycles: 0x24e6a1710, max_idle_ns: 440795202120 ns
+[    0.000000] clocksource: hyperv_clocksource_msr: mask: 0xffffffffffffffff max_cycles: 0x24e6a1710, max_idle_ns: 440795202120 ns
+[    0.000000] tsc: Detected 3302.398 MHz processor
+[    0.017246] TSC deadline timer available
+[    0.017262] clocksource: refined-jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 7645519600211568 ns
+[    0.018405] Kernel command line: initrd=\initrd.img WSL_ROOT_INIT=1 panic=-1 nr_cpus=8 hv_utils.timesync_implicit=1 console=hvc0 debug pty.legacy_count=0 WSL_ENABLE_CRASH_DUMP=1
+[    0.070061] clocksource: tsc-early: mask: 0xffffffffffffffff max_cycles: 0x2f9a25be244, max_idle_ns: 440795277658 ns
+[    0.102794] clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 7645041785100000 ns
+[    0.126739] clocksource: Switched to clocksource tsc-early
+[    0.136213] clocksource: acpi_pm: mask: 0xffffff max_cycles: 0xffffff, max_idle_ns: 2085701024 ns
+[    0.140277] clocksource: tsc: mask: 0xffffffffffffffff max_cycles: 0x2f9a25be244, max_idle_ns: 440795277658 ns
+[    0.140810] clocksource: Switched to clocksource tsc
+[    0.208149] hv_utils: TimeSync IC version 4.0
+[  500.267268] systemd-journald[61]: Time jumped backwards, rotating.
+[  532.996951] systemd-journald[61]: Time jumped backwards, rotating.
+[ 1547.774860] systemd-journald[61]: Time jumped backwards, rotating.
+[ 2227.224607] systemd-journald[61]: Time jumped backwards, rotating.
+[ 2227.226463] systemd-journald[39]: Time jumped backwards, rotating.
+[ 2325.304918] systemd-journald[61]: Time jumped backwards, rotating.
+[ 2325.307134] systemd-journald[36]: Time jumped backwards, rotating.
+[ 2456.224859] systemd-journald[61]: Time jumped backwards, rotating.
+[ 2456.229382] systemd-journald[36]: Time jumped backwards, rotating.
+[ 2488.955524] systemd-journald[61]: Time jumped backwards, rotating.
+[ 2619.878440] systemd-journald[61]: Time jumped backwards, rotating.
+[ 3209.127292] systemd-journald[61]: Time jumped backwards, rotating.
+[ 4186.486074] systemd-journald[61]: Time jumped backwards, rotating.
+[ 5097.691954] systemd-journald[61]: Time jumped backwards, rotating.
+[ 5163.152253] systemd-journald[61]: Time jumped backwards, rotating.
+[ 5163.156608] systemd-journald[36]: Time jumped backwards, rotating.
+bounded current boot synchronization journal
+-- No entries --

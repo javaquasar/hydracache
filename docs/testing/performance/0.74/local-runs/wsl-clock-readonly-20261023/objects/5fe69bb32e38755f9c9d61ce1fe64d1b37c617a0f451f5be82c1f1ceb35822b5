@@ -1,0 +1,19 @@
+{
+  "argv": [
+    "wsl.exe",
+    "-d",
+    "Ubuntu",
+    "-u",
+    "artur",
+    "--exec",
+    "/home/artur/.cargo/bin/rustfmt",
+    "+1.94.0",
+    "--edition",
+    "2021",
+    "--check",
+    "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/wsl-clock-readonly-074/sample.rs"
+  ],
+  "exit": 0,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}
