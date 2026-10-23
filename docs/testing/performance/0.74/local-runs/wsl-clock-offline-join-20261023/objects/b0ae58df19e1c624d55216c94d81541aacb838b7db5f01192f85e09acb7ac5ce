@@ -1,0 +1,27 @@
+test_incomplete_changed_modes_and_bad_brackets_refuse (test_causality.Causality.test_incomplete_changed_modes_and_bad_brackets_refuse) ... ok
+test_ntp_decoding_and_signed_offset (test_causality.Causality.test_ntp_decoding_and_signed_offset) ... ok
+test_query_abi_has_no_setting_inputs (test_causality.Causality.test_query_abi_has_no_setting_inputs) ... ok
+test_tick_model_and_raw_enclosure_not_admission (test_causality.Causality.test_tick_model_and_raw_enclosure_not_admission) ... ok
+test_updates_and_first_backward_preserved_without_caller_claim (test_causality.Causality.test_updates_and_first_backward_preserved_without_caller_claim) ... ok
+test_first_backwards_not_hidden_by_later_recovery (test_diagnose.Analysis.test_first_backwards_not_hidden_by_later_recovery) ... ok
+test_incomplete_unknown_reordered_and_invalid_refuse (test_diagnose.Analysis.test_incomplete_unknown_reordered_and_invalid_refuse) ... ok
+test_ordered_observations_do_not_admit (test_diagnose.Analysis.test_ordered_observations_do_not_admit) ... ok
+test_pid1_cpu_time_changes_not_new_init_but_start_ticks_are (test_diagnose.Analysis.test_pid1_cpu_time_changes_not_new_init_but_start_ticks_are) ... ok
+test_syscall_disagreement_separate_from_elapsed_delta (test_diagnose.Analysis.test_syscall_disagreement_separate_from_elapsed_delta) ... ok
+test_evidence_publication_is_exclusive (test_diagnose.Safety.test_evidence_publication_is_exclusive) ... ok
+test_frozen_and_workspace_guards (test_diagnose.Safety.test_frozen_and_workspace_guards) ... ok
+test_only_readonly_clock_ffi_and_explicit_bound (test_diagnose.Safety.test_only_readonly_clock_ffi_and_explicit_bound) ... ok
+test_refusal_first_vs_optional_metadata (test_diagnose.Safety.test_refusal_first_vs_optional_metadata) ... ok
+test_shell_has_no_unit_or_clock_mutations (test_diagnose.Safety.test_shell_has_no_unit_or_clock_mutations) ... ok
+test_exact_objects_and_nonadmitting_flags (test_offline_join.Archive.test_exact_objects_and_nonadmitting_flags) ... ok
+test_base_method_checks_are_not_bypassed (test_offline_join.Windows.test_base_method_checks_are_not_bypassed) ... ok
+test_end_of_capture_has_no_future_observation (test_offline_join.Windows.test_end_of_capture_has_no_future_observation) ... ok
+test_missing_packets_and_spikes_are_not_invented_steps (test_offline_join.Windows.test_missing_packets_and_spikes_are_not_invented_steps) ... ok
+test_opposing_remainder_stays_conditional (test_offline_join.Windows.test_opposing_remainder_stays_conditional) ... ok
+test_publication_does_not_pretend_getter_and_clock_are_simultaneous (test_offline_join.Windows.test_publication_does_not_pretend_getter_and_clock_are_simultaneous) ... ok
+test_small_ntp_offset_is_not_treated_as_an_instant_full_step (test_offline_join.Windows.test_small_ntp_offset_is_not_treated_as_an_instant_full_step) ... ok
+
+----------------------------------------------------------------------
+Ran 22 tests in 0.066s
+
+OK

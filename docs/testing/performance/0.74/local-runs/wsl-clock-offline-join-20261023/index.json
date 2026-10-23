@@ -1,0 +1,123 @@
+{
+  "admission": false,
+  "files": {
+    "observation/analysis.json": {
+      "bytes": 1615,
+      "sha256": "ab4f94035fec59e319fe012a2c7dce2f63f85481610b5d43a98a12c50607e8a5"
+    },
+    "observation/controls-offline.json": {
+      "bytes": 395,
+      "sha256": "859c86f46837cf1be8d5ec7ec73da48d15110111def9e0e5a870a80bfca15719"
+    },
+    "observation/controls-offline.stderr.log": {
+      "bytes": 2953,
+      "sha256": "b0ae58df19e1c624d55216c94d81541aacb838b7db5f01192f85e09acb7ac5ce"
+    },
+    "observation/controls-offline.stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/doc-check.json": {
+      "bytes": 302,
+      "sha256": "09bfafa7074142e238f667b9746ff39127b8579b515e8dd9f7184942de86adda"
+    },
+    "observation/doc-check.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/doc-check.stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "observation/gated-registry.json": {
+      "bytes": 309,
+      "sha256": "481b8294e71479fd841f0f5dbee104a48a2f0445e8c6d3e578247e9bdb74bce3"
+    },
+    "observation/gated-registry.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/gated-registry.stdout.log": {
+      "bytes": 60,
+      "sha256": "19c33b14c465fd5497bae810aa56160a2891365845f00f0f45e8d2bc78156a45"
+    },
+    "observation/local-contract.json": {
+      "bytes": 348,
+      "sha256": "2b549c8e447704a922515df7e90e59e94f3453cc93b0fcb33772fb3385f7ef22"
+    },
+    "observation/local-contract.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/local-contract.stdout.log": {
+      "bytes": 60,
+      "sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+    },
+    "source/docs/testing/performance/0.74/local-runs/bootstrap-original-getunit-20261023/index.json": {
+      "bytes": 46015,
+      "sha256": "9f2fd0f457ec6d48f4e87e7bfc2bd1262bbf191cf51b760fe744eb369394b9f6"
+    },
+    "source/docs/testing/performance/0.74/local-runs/wsl-clock-causality-root-context-20261023/index.json": {
+      "bytes": 7848,
+      "sha256": "798b204c4b14865f482d64cdc4176aec7c1c3c4126b87bf635e8d9c2ba140082"
+    },
+    "source/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "source/tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs": {
+      "bytes": 15567,
+      "sha256": "5f77f86c3c29a42156d63ffa913583f8a8c6419562f6c2bea5c34e75937260fa"
+    },
+    "source/tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs": {
+      "bytes": 22126,
+      "sha256": "4e18523c71b6b5bdf3a74d75e58df096f25c6f773067d013a07db2a8cfde5214"
+    },
+    "source/tools/wsl-clock-readonly-074/causality-session.sh": {
+      "bytes": 1830,
+      "sha256": "99832d0f119698edd3ec61db7d092dcb2d471913d2dd6e62b2c028afb8674017"
+    },
+    "source/tools/wsl-clock-readonly-074/causality.py": {
+      "bytes": 7126,
+      "sha256": "3c224669c85554919376746603713018f2b53ec763ea73cb23bcb4d98fe96fbc"
+    },
+    "source/tools/wsl-clock-readonly-074/diagnose.py": {
+      "bytes": 11620,
+      "sha256": "ec232cf6c5e55f18e7b6c6216d3cedf64b68f1eae2b81d613203c372d6431ee2"
+    },
+    "source/tools/wsl-clock-readonly-074/discipline.c": {
+      "bytes": 1968,
+      "sha256": "8f5320677f32e29241890ed8849fe6f7cbf176f954cc7263b7af290925af12a9"
+    },
+    "source/tools/wsl-clock-readonly-074/offline_join.py": {
+      "bytes": 4750,
+      "sha256": "b5424a267320b267b090783d18a8e97e98d5e5463edd7f9c81cd035f92f65838"
+    },
+    "source/tools/wsl-clock-readonly-074/sample.rs": {
+      "bytes": 3024,
+      "sha256": "226631943935fd32c1fc0a059b517174eb045de0b86b0a8e7790f9e765826797"
+    },
+    "source/tools/wsl-clock-readonly-074/session.sh": {
+      "bytes": 2047,
+      "sha256": "6c9851d584a6004c811a82d096c3bedafbf75f5e1483096593fb7c9356e73b12"
+    },
+    "source/tools/wsl-clock-readonly-074/test_causality.py": {
+      "bytes": 3635,
+      "sha256": "b25c2eabcdf6ed0f1e48a7fd9653776812a3c7f4f2cce1bb288f4c8f97d83ffd"
+    },
+    "source/tools/wsl-clock-readonly-074/test_diagnose.py": {
+      "bytes": 5929,
+      "sha256": "7e7685896d223bbad1b5b7540b67cbd58c437a91a09875f06a8feeed1f6f8e3f"
+    },
+    "source/tools/wsl-clock-readonly-074/test_offline_join.py": {
+      "bytes": 3939,
+      "sha256": "22a3e87b4dc25a06f5b20c2c794c0183e122b542429e5d77d390a71dac35c83c"
+    }
+  },
+  "first_refusal_index_sha256": "9f2fd0f457ec6d48f4e87e7bfc2bd1262bbf191cf51b760fe744eb369394b9f6",
+  "original_owner_run": false,
+  "product": false,
+  "qualification_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "schema": "hc074-clock-readonly-evidence-v1",
+  "server": false
+}

@@ -1,0 +1,48 @@
+{
+  "admission": false,
+  "exact_backward_setter": null,
+  "historical_tick_setter": null,
+  "input_index_sha256": "798b204c4b14865f482d64cdc4176aec7c1c3c4126b87bf635e8d9c2ba140082",
+  "method": "hc074-clock-ntp-offline-publication-join-v1",
+  "new_live_observations": 0,
+  "original_analysis_reproduced": true,
+  "publication_windows": [
+    {
+      "applied_step_assumption": "upstream non-spike callback succeeds before publishing NTPMessage",
+      "complete": true,
+      "exact_caller": null,
+      "first_clock_row": 10,
+      "getter_row": 11,
+      "last_clock_row": 12,
+      "net_residual_ns": 2730957131,
+      "ntp_offset_from_saved_timestamps_ns": 8785012500,
+      "packet": 308,
+      "remainder_if_ntp_step_applied_ns": -6054055369
+    },
+    {
+      "applied_step_assumption": "upstream non-spike callback succeeds before publishing NTPMessage",
+      "complete": true,
+      "exact_caller": null,
+      "first_clock_row": 39,
+      "getter_row": 40,
+      "last_clock_row": 41,
+      "net_residual_ns": 8786289453,
+      "ntp_offset_from_saved_timestamps_ns": 8786289500,
+      "packet": 309,
+      "remainder_if_ntp_step_applied_ns": -47
+    },
+    {
+      "applied_step_assumption": "upstream non-spike callback succeeds before publishing NTPMessage",
+      "complete": true,
+      "exact_caller": null,
+      "first_clock_row": 67,
+      "getter_row": 68,
+      "last_clock_row": 69,
+      "net_residual_ns": 2727654980,
+      "ntp_offset_from_saved_timestamps_ns": 8786406000,
+      "packet": 310,
+      "remainder_if_ntp_step_applied_ns": -6058751020
+    }
+  ],
+  "tracing_enabled": false
+}

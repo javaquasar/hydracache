@@ -1,0 +1,15 @@
+{
+  "argv": [
+    "C:\\Python313\\python.exe",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\wsl-clock-readonly-074",
+    "-v"
+  ],
+  "exit": 0,
+  "stderr_sha256": "b0ae58df19e1c624d55216c94d81541aacb838b7db5f01192f85e09acb7ac5ce",
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}
