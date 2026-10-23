@@ -6391,3 +6391,19 @@ pass. The exact-byte-audited packet retains fourteen lanes, including the first
 fixture, compatibility and late-ACK-oracle refusals. A queued ACK is not recovered
 readiness after child death. Original manager delivery, all-writer cessation,
 completion and server admission remain separate, unclosed gates.
+
+## Original-manager service first local attempt
+
+The [original-service report](bootstrap-original-service-20261023.md) records a
+separate consumed-owner fixture on the real manager cgroup tree and the explicit
+temporary diagnostic/account permissions. The first preparation failed before
+libtest invocation; the compatible candidate's only original test then refused at unit
+absence preflight, before admission or manager send. No positive delivery or
+server permission is inferred. The temporary identity and diagnostic image were
+removed; existing services and clocks were not changed.
+
+The isolated non-loading GetUnit correction passes GNU/MSRV refusal controls but
+has not repeated the original live attempt. A fresh, separately recorded bounded
+candidate is the next gate. Deduplicated exact evidence retains first refusals;
+the current native output cannot be reused to retry. Original 300/60/10 windows,
+all production frames and the frozen qualification digest remain unchanged.

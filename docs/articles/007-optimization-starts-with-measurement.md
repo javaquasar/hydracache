@@ -18381,3 +18381,33 @@ throughput measurements. Original delivery through the real manager, complete
 unit hardening, authenticated worker start and all-writer cessation before fence
 release still require their own integration gates. No service, clock or server
 action was needed for this readiness-only gate.
+
+### A status query can be the wrong absence test
+
+The next [original-manager experiment](../testing/performance/0.74/bootstrap-original-service-20261023.md)
+connects the real consumed owner to the diagnostic installed image and its
+readiness-only transport. It deliberately does not recycle the old fixture's
+private cgroup mount: systemd must place any child on its actual tree. Production
+frames and original admission windows are unchanged; no worker can be released.
+
+The first result was not a successful delivery. Debian first rejected an account
+preparation option, before libtest invocation. The compatible candidate then entered
+the original-owner test once and stopped at the unit-absence guard. There were
+zero causal observations, no scope creation and no manager send. A read-only
+control explained why: systemctl show can report an implicit slice definition as
+loaded even when GetUnit says the unit is not loaded. A status/property lookup is
+not interchangeable with a non-loading existence query.
+
+The isolated correction uses GetUnit and recognizes only the exact missing-unit
+response. Permission failures, disconnects, a different unit or extra output are
+uncertainty, not permission to create. GNU and MSRV controls cover these cases;
+the first live refusal is not replaced by a rerun. This is a preflight correction,
+not a cheaper validation frame or a measured runtime improvement.
+
+WSL supplied another lesson: a shared VM boot_id can remain unchanged across a
+distro init that replaces the mount namespace and clears tmpfs /tmp. Recovery
+data must outlive that boundary. The runner now keeps protected recovery copies
+in /var/tmp, and compares the account entries and diagnostic inode it actually
+owns. Cleanup succeeded for the original-test candidate, but cleanup does not
+prove the untouched all-writer retirement protocol. Real delivery, readiness,
+retirement, completion and server admission still need separate positive gates.
