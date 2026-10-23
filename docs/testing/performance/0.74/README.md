@@ -6209,3 +6209,14 @@ refuses instead of being recreated. The new COMPAT format is additive; decoding
 or sealing it is not authentication. Child-reader/executable, inherited FD
 protocol, authenticated original delivery and all-writer cessation remain open.
 No live retry, server, service/clock change or product workload is enabled.
+
+### Bootstrap reader refuses even canonical forged entry
+
+The [separate executable and reader](bootstrap-child-reader-20261023.md) now
+inspect a bounded sealed entry at child FD 14 after exact activation assertions.
+The reader compares a second fresh observation without changing offsets, flags,
+environment or deadlines. Metadata equality is not sender authentication: only
+entry is inspected, not the complete role census. Even canonical forged input
+exits 2 with original authentication closed. Parent original-owner transport,
+signed actual build enrollment, manager/root/guardian/credential authentication,
+launcher execveat and all-writer cessation remain required before server admission.

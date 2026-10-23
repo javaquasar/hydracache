@@ -18041,3 +18041,22 @@ and metadata work is bounded but unmeasured: passing unit tests does not show
 that full original preparation fits its deadline. A separately authenticated
 child-reader/executable, actual original delivery and writer-death proof remain
 the next execution gates; an immutable assertion is only a prerequisite.
+
+### A child reader must reject a well formed forgery as authority
+
+The [separate bootstrap executable](../testing/performance/0.74/bootstrap-child-reader-20261023.md)
+now reads the fixed entry through bounded positional reads, checking exact size,
+readonly state, seals, metadata and offset before comparing a second observation.
+It neither repairs its inputs nor changes the parent's validation windows. Child
+descriptor flags differ deliberately from parent retention flags: an inherited
+descriptor cannot still have CLOEXEC set across the exec that delivered it.
+
+The important negative control is not a corrupt byte. It is a completely
+canonical, sealed record with invented ownership data. The reader can establish
+that those assertions were read consistently, but cannot establish their truth.
+The executable therefore exits at an explicit authentication-closed boundary,
+including for that forged input. This separates actual kernel input checks from
+the still-required original credentials, manager/root/guardians and complete FD
+authentication. Compiling the selected bootstrap is similarly distinct from
+enrolling its exact signed build. Neither result permits launcher execution,
+writer completion or a server rehearsal.
