@@ -90,3 +90,9 @@ with exit 1 before WSL. That journal is now consumed: do not clear or reuse it,
 invoke this launcher again, or infer a known result for the older operator
 attempt. Further execution needs a distinct approved lane and an actually
 elevated Windows context. No source correction or bypass accompanied the refusal.
+
+The separately approved [UAC attempt](../../docs/testing/performance/0.74/wsl-clock-root-namespace-uac-plan-20261023.md)
+uses `root_namespace_uac.ps1` and a distinct output lane. Its projection test
+keeps the previous launcher identical apart from two placement tokens; the core
+and collector remain unchanged. Only the controller may request standard UAC
+once under that scope. Do not start either consumed historical entry.
