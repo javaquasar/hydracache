@@ -69,3 +69,10 @@ cgroup and the nested NSpid chain; it never authenticates a historical trace PID
 Use `python -B tools/wsl-clock-trace-074/identity.py verify` for the separate
 writer-identity archive. Retention is exclusive, not a metadata recollection.
 The eight `test_identity.py` controls use synthetic metadata and temporary files.
+
+The [root-namespace handoff](../../docs/testing/performance/0.74/wsl-clock-root-namespace-plan-20261023.md)
+is prepared, not live-validated. `root_namespace.py collect` requires an already
+elevated Windows PowerShell and a clean committed worktree; it never self-elevates.
+It makes one fixed read-only lookup and preserves the first output in a separate
+exclusive lane. Do not use it to repeat the old refused command from this agent
+context. `test_root_namespace.py` uses offline mocks only; no WSL is dispatched.
