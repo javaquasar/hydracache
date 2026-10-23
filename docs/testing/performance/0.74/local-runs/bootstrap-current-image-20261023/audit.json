@@ -1,0 +1,25 @@
+{
+  "accepted_lanes": [
+    "host",
+    "194",
+    "188",
+    "metadata"
+  ],
+  "admission_allowed": false,
+  "checked_commit": "15dbb665a1cac461b01e8a1058ad839ea23a1f58",
+  "clock_changes": false,
+  "credentials_manager_guardians_authenticated": false,
+  "matching_forged_context_refuses_authority": true,
+  "matching_sealed_current_image_control": true,
+  "original_delivery": false,
+  "original_owner_transfer": false,
+  "performance_measurement": false,
+  "product": false,
+  "protected_procfs_namespace": false,
+  "qualification_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "same_bytes_different_inode_refuses": true,
+  "server": false,
+  "service_changes": false,
+  "signed_actual_build_enrolled": false,
+  "writer_cessation": false
+}

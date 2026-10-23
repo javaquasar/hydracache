@@ -1,0 +1,13 @@
+{
+  "argv": [
+    "cargo",
+    "xtask",
+    "performance-contract-check",
+    "--release",
+    "0.74"
+  ],
+  "elapsed_ns": 1258100700,
+  "exit": 0,
+  "stderr_sha256": "2f8ebeedbb7a2b481e355ebc9ce405406d531d1da4eda3eae901d7dd24bb1b16",
+  "stdout_sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+}

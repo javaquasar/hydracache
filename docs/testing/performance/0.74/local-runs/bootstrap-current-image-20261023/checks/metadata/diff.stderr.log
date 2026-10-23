@@ -1,0 +1,4 @@
+warning: in the working copy of 'crates/xtask/tests/support/bootstrap_roles_guard.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/performance/0.74/bootstrap-current-image-first-result-20261023.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tools/long-run-supervisor-074/src/bin/diagnostic_held_bootstrap.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tools/long-run-supervisor-074/src/diagnostic_bootstrap_child_reader.rs', LF will be replaced by CRLF the next time Git touches it

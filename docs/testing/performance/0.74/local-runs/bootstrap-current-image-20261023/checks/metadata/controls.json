@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "python",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tools/bootstrap-current-image-074",
+    "-v"
+  ],
+  "elapsed_ns": 750566100,
+  "exit": 0,
+  "stderr_sha256": "3b0a96289f7d2a40267ebc8f9bdfae87fe61d0183dd7246acfa2a5016e5ed32f",
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

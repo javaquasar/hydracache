@@ -1,0 +1,21 @@
+{
+  "argv": [
+    "cargo",
+    "clippy",
+    "--offline",
+    "--locked",
+    "-p",
+    "hydracache-long-run-supervisor-074",
+    "-p",
+    "xtask",
+    "--all-targets",
+    "--all-features",
+    "--",
+    "-D",
+    "warnings"
+  ],
+  "elapsed_ns": 4425266700,
+  "exit": 0,
+  "stderr_sha256": "9fac59b30fb3b9782b53704ca5f51ed16f20f526cb58921c6adc813fc9cc1b5b",
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

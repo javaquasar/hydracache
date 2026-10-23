@@ -1,0 +1,29 @@
+{
+  "argv": [
+    "wsl.exe",
+    "-d",
+    "Ubuntu",
+    "-u",
+    "artur",
+    "--",
+    "env",
+    "RUSTUP_AUTO_INSTALL=0",
+    "CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-188-check",
+    "/home/artur/.cargo/bin/cargo",
+    "+1.88.0",
+    "test",
+    "--offline",
+    "--locked",
+    "--release",
+    "-p",
+    "hydracache-long-run-supervisor-074",
+    "--test",
+    "bootstrap_current_image",
+    "--",
+    "--nocapture"
+  ],
+  "elapsed_ns": 20453316800,
+  "exit": 0,
+  "stderr_sha256": "c80c17237e00ee3893c0f23eade858fef1e9859dd0e8ceee8e5a76a942a2096b",
+  "stdout_sha256": "71481eefcf9a6cf302af30de1703148bd2dddb82a2598bfe631ba5a92ab135bc"
+}

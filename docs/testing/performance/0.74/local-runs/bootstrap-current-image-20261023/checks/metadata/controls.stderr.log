@@ -1,0 +1,8 @@
+test_existing_packet_cannot_rerun_or_reseal (test_controls.Controls.test_existing_packet_cannot_rerun_or_reseal) ... ok
+test_failed_lane_cannot_be_accepted (test_controls.Controls.test_failed_lane_cannot_be_accepted) ... ok
+test_fixed_scopes_and_unknown_lane_refusal (test_controls.Controls.test_fixed_scopes_and_unknown_lane_refusal) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.023s
+
+OK
