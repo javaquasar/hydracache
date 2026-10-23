@@ -731,3 +731,7 @@ docs/testing/performance/0.74/local-runs/bootstrap-current-image-20261023/** -te
 
 tools/bootstrap-child-boundary-074/*.py text eol=lf
 docs/testing/performance/0.74/local-runs/bootstrap-child-boundary-20261023/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+
+tools/bootstrap-installed-origin-074/*.py text eol=lf
+tools/bootstrap-installed-origin-074/README.md text eol=lf
+docs/testing/performance/0.74/local-runs/bootstrap-installed-origin-20261023/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
