@@ -718,3 +718,6 @@ docs/testing/performance/0.74/local-runs/bootstrap-image-census-20261023/** -tex
 tools/bootstrap-entry-binding-074/*.py text eol=lf
 tools/bootstrap-entry-binding-074/README.md text eol=lf
 docs/testing/performance/0.74/local-runs/bootstrap-entry-binding-20261023/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+tools/bootstrap-child-reader-074/*.py text eol=lf
+tools/bootstrap-child-reader-074/README.md text eol=lf
+docs/testing/performance/0.74/local-runs/bootstrap-child-reader-20261023/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
