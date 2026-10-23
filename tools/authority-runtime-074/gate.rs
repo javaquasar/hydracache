@@ -2,6 +2,8 @@
 use crate::storage_contract as storage;
 #[path = "performance.rs"]
 pub mod performance;
+#[path = "../status-field-gate-074/contract.rs"]
+pub mod status_fields;
 use std::path::{Path, PathBuf};
 
 pub const BASE: &str = storage::SOURCE;
@@ -65,6 +67,12 @@ pub fn legacy_adapter(path: &str, original: &str) -> String {
     output
 }
 pub fn expected(path: &str) -> Option<String> {
+    if path == status_fields::SOURCE {
+        return Some(status_fields::candidate(&frozen(BASE, path)));
+    }
+    if path == status_fields::LEGACY_TEST {
+        return Some(status_fields::legacy_test(&frozen(BASE, path)));
+    }
     if path == performance::MAIN {
         return Some(format!("{}\n{}", performance::IMPORTS, frozen(BASE, path)));
     }
@@ -151,6 +159,12 @@ pub fn expected(path: &str) -> Option<String> {
     })
 }
 pub fn accepts(path: &str, raw: &str) -> bool {
+    if path == status_fields::SOURCE || path == status_fields::LEGACY_TEST {
+        let helper = std::fs::read_to_string(root().join(status_fields::HELPER)).unwrap();
+        if !status_fields::helper_is_pinned(&helper) {
+            return false;
+        }
+    }
     expected(path).is_some_and(|expected| storage::accepts(&expected, raw))
 }
 // This is not permissive normalization: require the whole approved current file

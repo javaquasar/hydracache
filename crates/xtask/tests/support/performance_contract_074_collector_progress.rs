@@ -57,7 +57,7 @@ fn collector_progress_requires_fresh_original_receiver_without_start_or_renewal(
     assert_eq!(c["controller_loss_seconds"].as_integer(), Some(10));
     assert_eq!(c["total_seconds"].as_integer(), Some(300));
     let read = |file: &str| {
-        let raw = std::fs::read_to_string(
+        let raw = crate::runtime_io::read_to_string(
             super::root().join(format!("tools/long-run-supervisor-074/src/{file}")),
         )
         .unwrap()

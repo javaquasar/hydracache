@@ -300,6 +300,8 @@ fn bounded(file: &File) -> Result<Vec<u8>, KernelError> {
     bytes.truncate(count);
     Ok(bytes)
 }
+#[path = "diagnostic_projection_fields.rs"]
+mod projection_fields;
 #[path = "diagnostic_projection_groups.rs"]
 mod projection_groups;
 
@@ -315,10 +317,11 @@ fn projection(bytes: &[u8], credentials: &libc::ucred) -> Result<Projection, Ker
         crate::diagnostic_ipc::validation_trace::kernel_walk::Kind::Projection,
     );
     let text = std::str::from_utf8(bytes).map_err(|_| kernel_invalid!("projection-utf8"))?;
-    let groups_field = |prefix: &str| -> Result<Vec<u32>, KernelError> {
-        let mut lines = text.lines().filter_map(|line| line.strip_prefix(prefix));
-        let body = kernel_required!(lines.next(), "projection-missing-field")?;
-        if lines.next().is_some() {
+    let fields = projection_fields::Fields::new(text);
+    let groups_field = |name| -> Result<Vec<u32>, KernelError> {
+        let (body, duplicate) = fields.get(name);
+        let body = kernel_required!(body, "projection-missing-field")?;
+        if duplicate {
             return Err(kernel_invalid!("projection-duplicate-field"));
         }
         let values = body
@@ -332,10 +335,10 @@ fn projection(bytes: &[u8], credentials: &libc::ucred) -> Result<Projection, Ker
         }
         Ok(values)
     };
-    let scalar = |prefix: &str| -> Result<([u32; 33], usize), KernelError> {
-        let mut lines = text.lines().filter_map(|line| line.strip_prefix(prefix));
-        let body = kernel_required!(lines.next(), "projection-missing-field")?;
-        if lines.next().is_some() {
+    let scalar = |name| -> Result<([u32; 33], usize), KernelError> {
+        let (body, duplicate) = fields.get(name);
+        let body = kernel_required!(body, "projection-missing-field")?;
+        if duplicate {
             return Err(kernel_invalid!("projection-duplicate-field"));
         }
         let mut values = [0; 33];
@@ -351,23 +354,23 @@ fn projection(bytes: &[u8], credentials: &libc::ucred) -> Result<Projection, Ker
         }
         Ok((values, len))
     };
-    let (values, len) = scalar("Pid:")?;
+    let (values, len) = scalar(projection_fields::Name::Pid)?;
     if values[..len] != [credentials.pid as u32] {
         return Err(kernel_invalid!("projection-process-id"));
     }
-    let (values, len) = scalar("Tgid:")?;
+    let (values, len) = scalar(projection_fields::Name::Tgid)?;
     if values[..len] != [credentials.pid as u32] {
         return Err(kernel_invalid!("projection-process-id"));
     }
-    let (values, len) = scalar("Uid:")?;
+    let (values, len) = scalar(projection_fields::Name::Uid)?;
     let uid: [u32; 4] = values[..len]
         .try_into()
         .map_err(|_| kernel_invalid!("projection-uid-width"))?;
-    let (values, len) = scalar("Gid:")?;
+    let (values, len) = scalar(projection_fields::Name::Gid)?;
     let gid: [u32; 4] = values[..len]
         .try_into()
         .map_err(|_| kernel_invalid!("projection-gid-width"))?;
-    let groups = groups_field("Groups:")?;
+    let groups = groups_field(projection_fields::Name::Groups)?;
     if uid != [credentials.uid; 4]
         || gid != [credentials.gid; 4]
         || groups.windows(2).any(|v| v[0] >= v[1])
@@ -439,3 +442,7 @@ fn alive(pidfd: &OwnedFd, pid: libc::pid_t) -> Result<(), KernelError> {
 #[cfg(test)]
 #[path = "diagnostic_kernel_admission_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "diagnostic_projection_fields_tests.rs"]
+mod projection_fields_tests;

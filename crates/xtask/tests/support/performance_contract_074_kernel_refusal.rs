@@ -156,7 +156,7 @@ fn kernel_refusal_test_instrumentation_preserves_every_non_test_guard() {
         assert!(baseline.status.success());
         let baseline = String::from_utf8(baseline.stdout).unwrap();
         // BEGIN ORIGINAL MANAGER KERNEL REFERENCE
-        let current = std::fs::read_to_string(super::root().join(&path)).unwrap();
+        let current = crate::runtime_io::read_to_string(super::root().join(&path)).unwrap();
         let current = super::original_start_consent::normalize(&path, &current.replace('\r', ""));
         // END ORIGINAL MANAGER KERNEL REFERENCE
         let current = if name == "diagnostic_kernel_admission.rs" {

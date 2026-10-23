@@ -136,7 +136,7 @@ fn legacy_adapters_preserve_complete_prior_test_bodies_and_assertions() {
 
 #[test]
 fn full_contract_adapters_change_only_one_preservation_reader_per_module() {
-    assert_eq!(gate::performance::READERS.len(), 50);
+    assert_eq!(gate::performance::READERS.len(), 52);
     for (path, reader) in gate::performance::READERS {
         let original = gate::frozen(gate::BASE, path);
         let installed = read(path);

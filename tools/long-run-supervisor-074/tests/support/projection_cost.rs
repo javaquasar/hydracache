@@ -192,6 +192,8 @@ fn projection_fields_complete_sender_preserves_reads_counts_and_original_refusal
 #[test]
 fn projection_fields_runtime_binding_is_exact_frozen_candidate() {
     let runtime = include_str!("../../src/diagnostic_kernel_admission.rs").replace('\r', "");
+    let runtime =
+        crate::diagnostic_kernel_admission::projection_fields_tests::legacy_source(&runtime);
     let body = include_str!("projection_candidate.rs").replace('\r', "");
     let body = body
         .split_once(") -> Result<Projection, KernelError> {")
