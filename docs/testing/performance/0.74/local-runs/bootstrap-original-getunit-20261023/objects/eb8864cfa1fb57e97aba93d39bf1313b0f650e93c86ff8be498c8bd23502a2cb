@@ -1,0 +1,16 @@
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::cgroup::held_live::original_service::privileged_original_manager_service_once ... HC074-ORIGINAL-SCOPE-INTENT slice=system-hc074ab4927cacdc66b23d6791ee3652000582ef13ccb34152b24aec922f221bb267c.slice service=hydracache-diagnostic-074-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc-1.service marker=HC074 isolated original service ab4927cacdc66b23d6791ee3652000582ef13ccb34152b24aec922f221bb267c
+HC074-ORIGINAL-SCOPE slice=system-hc074ab4927cacdc66b23d6791ee3652000582ef13ccb34152b24aec922f221bb267c.slice service=hydracache-diagnostic-074-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc-1.service temporary=true
+HC074-ORIGINAL-GROUP cleanup_ok=true
+HC074-ORIGINAL-SCOPE cleanup_ok=true
+HC074-ORIGINAL-SERVICE-FIRST {"age":{"sites":[{"calls":0,"first":null,"first_refusal":null,"last":null},{"calls":0,"first":null,"first_refusal":null,"last":null},{"calls":0,"first":null,"first_refusal":null,"last":null}]},"causal":{"first":null,"first_refusal":null,"last":null,"observations":0},"deadline_changed":false,"guard_clock_added":false,"kernel":{"clock":[4761189865740,4762640585769,1792752579332718998,1792752574760274264,1,60000000000],"file":"tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs","line":259,"phase":"unassigned","site":"clock-order"},"product":false,"returned":false,"server":false}
+FAILED
+
+failures:
+
+failures:
+    diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::cgroup::held_live::original_service::privileged_original_manager_service_once
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1619 filtered out; finished in 1.84s
+

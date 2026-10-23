@@ -1,0 +1,2 @@
+objects/* -text -diff -whitespace
+*.json text eol=lf

@@ -1,0 +1,19 @@
+{
+  "argv": [
+    "wsl.exe",
+    "-d",
+    "HydraCache074Native",
+    "-u",
+    "root",
+    "--cd",
+    "/",
+    "--exec",
+    "/bin/sh",
+    "-n",
+    "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/bootstrap-original-service-074/native_fixture.sh"
+  ],
+  "elapsed_ns": 1345564000,
+  "exit": 0,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

@@ -1,0 +1,18 @@
+{
+  "git": "541bdc792bb92b0b763ae50050ce0dc462ae50e6",
+  "baseline": "8fb0fb5a",
+  "distro": "HydraCache074Native",
+  "bootstrap": "4750a12568c4293ad8db6ce356abb272e36ea2eb81d6c1639c55f1a74947dfce",
+  "libtest": "ca5484aa951414b80aefd0148c7d8f5185a8fdf73bb197cf98a790de59b8cff1",
+  "original_windows": [
+    300,
+    60,
+    10
+  ],
+  "qualification": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "server": false,
+  "product": false,
+  "retry": false,
+  "release_install": false,
+  "existing_services_changed": false
+}
