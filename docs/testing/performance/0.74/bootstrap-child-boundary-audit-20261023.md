@@ -29,7 +29,11 @@ refuses authority, and an on-disk executable beside that copy refuses image
 consistency. They are not a production launch recipe or completed provenance
 join. A new root executable or namespace has not been tested here.
 
-## Proposed production amendment awaiting approval
+## Production amendment approved for local implementation
+
+The user's continuation after c506d0cc approves the local amendment. The first
+[installed-origin component](bootstrap-installed-origin-20261023.md) follows it;
+approval does not cover installation or service/server runs.
 
 Preserve all unit hardening and root-only openers. Extend only the separately
 enrolled bootstrap/child protocol, rather than weakening an existing mode.
@@ -50,13 +54,13 @@ enrolled bootstrap/child protocol, rather than weakening an existing mode.
    number alone is insufficient. Do not introduce a server-side signing-key
    default, new time origin or credential/namespace repair.
 
-This is a recommendation for approval, not implemented authentication. The
+This is an approved direction, not completed authentication. The
 alternative is a separately reviewed FD-native systemd executable-addressing
 mechanism preserving the sealed image as the actual executable. Merely using
 the creator's /proc pathname, retrying the rejected bind, running the child as
 root or disabling sandbox properties is not an accepted substitute.
 
-Approval would authorize local design/implementation and bounded fault controls,
+Approval authorizes local design/implementation and bounded fault controls,
 not installation, service changes, server runs or product workload. Original
 delivery, all-writer cessation, durable completion and the SIGKILL/lost-ACK
 matrix still depend on the resulting integration gate.

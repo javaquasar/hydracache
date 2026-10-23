@@ -4,6 +4,9 @@
   "command": "cargo test --offline --locked -p xtask --test bootstrap_installed_origin_074 -- --nocapture",
   "tool_exit": 1,
   "result": "0 passed; 1 failed; installed origin owner binding is absent",
+  "development_linux": {"result": "9 passed; 0 failed; GNU 1.94 warned that duplicated full-path constant FIXED_PATH was unused", "correction": "remove the unused duplicate constant; the production opener still selects only root plus the same fixed opt/hydracache-perf/bin components and executable leaf; no warning suppression or runtime predicate change"},
+  "initial_fixed_lanes": {"host": "passed", "metadata": "passed", "gnu_and_msrv": "runtime controls and check passed; strict Clippy refused needless_range_loop", "correction": "enumerate all four retained directories and get the three next components; preserve four comparisons and three opens without lint suppression"},
+  "source_review": {"finding": "owner-only search permissions are insufficient for a future non-root child pathname", "correction": "new installed-origin ancestry additionally requires other-search; private roots become explicitly 0755 and include 0700 refusal; direct bounded pread makes the no-EINTR-retry behavior explicit", "scope": "new component only; old live checks, deadlines and child modes unchanged"},
   "original_live_attempt": false,
   "performance_measurement": false,
   "server": false

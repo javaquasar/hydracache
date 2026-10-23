@@ -18135,5 +18135,37 @@ The proposed next contract keeps root-only selection and all sandbox properties,
 then binds the particular held child's generation, namespaces, credentials,
 image and streams under the original owner before release. It needs a versioned
 inventory/authentication/replay design, not a fallback or a fresh admission
-window. That amendment awaits approval. This audit adds source guards only;
-no production child, launcher handoff or performance improvement is claimed.
+window. The user subsequently approved local implementation. This audit adds
+source guards only; no production child, launcher handoff or performance
+improvement is claimed.
+
+### An installed bootstrap needs its own retained origin
+
+The first [installed-origin implementation](../testing/performance/0.74/bootstrap-installed-origin-20261023.md)
+keeps the original sealed reference instead of repurposing it. A consuming wrapper
+retains the separately named installed image, compares its safe ancestry and
+exact inode/metadata/content with the same owner's verified bootstrap build,
+and repeats those observations between the unchanged complete bootstrap frames.
+The installed object and sealed reference must be distinct even when their
+content hashes match. Neither object selects the key or policy that trusts it.
+
+The parent-local inventory accounts for every added descriptor: four ancestry
+handles and the installed image extend the old 27 to 32, while semantic roles
+grow from fifteen to sixteen. Same-byte name replacement, aliases, unsafe modes,
+flags/offset drift or missing retained source refuse without replacement or
+retry. On failure the original owner retires before the new descriptors close.
+
+Private filesystem controls and owner models check this read-only composition,
+not an installed production binary or a live child admission. The next protocol
+must bind the actual sandbox executable/credentials/namespaces to that retained
+origin before release. Additional pathname walks and content hashing may affect
+preparation cost, but correctness test elapsed time supplies no performance or
+original-deadline-fit claim.
+
+Review tightened the new ancestry contract to require search permission for the
+future non-root child, not just the privileged reader. The initial private-root
+controls and the first strict lint refusals remain in the evidence alongside
+corrected final checks. Nine new filesystem/census/owner controls and the selected
+preceding Linux controls passed on GNU 1.94 and MSRV 1.88; these observations remain
+separate from real root-host enrollment, current-child authentication and the
+actual systemd execution gate.

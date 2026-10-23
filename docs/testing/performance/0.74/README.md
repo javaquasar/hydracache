@@ -6262,5 +6262,24 @@ executable origin systemd can address, distinct from a sealed reference copy,
 and admission of the particular non-root sandbox child by the original owner.
 Existing root-only trust openers and same-host mount-namespace observers are
 not child enrollment. No root check, sandbox property, inode requirement or
-deadline was weakened. A versioned production amendment is proposed for user
-approval; four source guards preserve the audited boundary in the meantime.
+deadline was weakened. The subsequent continuation approves local implementation
+of the versioned production amendment; four source guards preserve the old
+boundary with exact additive source views.
+
+### Installed origin is distinct from the sealed bootstrap reference
+
+The [installed-origin component](bootstrap-installed-origin-20261023.md) consumes
+the same original owner and retains a fixed root-selected source independently
+of the sealed reference. Query-only pathname/ancestry/ELF/hash/metadata checks
+run between unchanged complete frames. Parent-local census grows to 32 FDs and
+16 roles without changing its old prefix or any child mode. Local temporary-root
+tests and owner models do not establish real root/namespace enrollment, child
+transport, ExecStart, writer cessation or server admission. No installation or
+clock/service/server action is performed; added cost remains unmeasured.
+
+Final local gates passed: Windows 54 source contracts and 15 bootstrap controls;
+GNU 1.94/MSRV 1.88 each 73 selected controls, all-target check and strict Clippy;
+format/docs, 188 registered gates and the nonpromotable local contract. The report
+links exact-byte-audited evidence, including first strict lint refusals. Neither
+private fixture ownership nor the unsigned selected build is a real installed
+origin or child-authentication proof.
