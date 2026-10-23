@@ -1,3 +1,5 @@
+#[path = "support/bootstrap_entry_guard.rs"]
+mod entry_guard;
 #[path = "support/bootstrap_image_guard.rs"]
 mod guard;
 fn source(name: &str) -> String {
@@ -118,7 +120,11 @@ fn bootstrap_image_census_exports_no_fd_mapping_transport_or_new_clock() {
         "diagnostic_original_manager_message.rs",
         "diagnostic_root_guardian_raw.rs",
     ] {
-        assert_eq!(source(name), baseline(name), "{name}");
+        assert_eq!(
+            entry_guard::source_view(name, &source(name)),
+            baseline(name),
+            "{name}"
+        );
     }
     for name in [
         "Cargo.lock",
@@ -130,6 +136,11 @@ fn bootstrap_image_census_exports_no_fd_mapping_transport_or_new_clock() {
         let raw = std::fs::read_to_string(root.join(name))
             .unwrap()
             .replace('\r', "");
+        let raw = if name == "docs/COMPAT.md" {
+            entry_guard::compat_view(&raw)
+        } else {
+            raw
+        };
         let out = std::process::Command::new("git")
             .args(["--no-replace-objects", "show", &format!("e40d4732:{name}")])
             .current_dir(root)

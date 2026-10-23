@@ -1,3 +1,4 @@
+use crate::entry_guard;
 pub const BLOCK: &str = r#"
 <!-- BEGIN BOOTSTRAP BUILD V1 -->
 ## Signed bootstrap policy and build receipt v1
@@ -38,6 +39,7 @@ child credentials, execveat, all-writer cessation, completion or server operatio
 
 #[allow(dead_code)] // Shared by distinct current-source integration test targets.
 pub fn compat_view(raw: &str) -> String {
+    let raw = entry_guard::compat_view(raw);
     assert_eq!(raw.matches(BLOCK).count(), 1);
     raw.replacen(BLOCK, "", 1)
 }

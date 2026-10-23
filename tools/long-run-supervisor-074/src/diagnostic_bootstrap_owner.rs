@@ -6,6 +6,11 @@ use crate::diagnostic_worker_policy::trusted_input::controller_input::held_runti
 use std::fs::File;
 use crate::diagnostic_artifacts::linux::held_role_census::bootstrap_images::BootstrapImageBindings;
 
+#[path = "diagnostic_bootstrap_entry_binding.rs"]
+mod entry_binding;
+use crate::diagnostic_artifacts::linux::held_role_census::bootstrap_images::entry::EntryBindings;
+use kernel::bootstrap_entry::EntryResource;
+
 #[derive(Debug, thiserror::Error)]
 pub(crate) enum BootstrapError {
     #[error("original complete material frame refused: {0}")]
@@ -52,11 +57,13 @@ struct Observation {
     context: Context,
     image: bootstrap_build::sealed::Stamp,
     census: BootstrapImageBindings,
+    entry: EntryBindings,
 }
 pub(crate) struct BootstrapOwnedUnit<'root, 'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p> {
     // Explicit retirement and field order both keep the original before new FD close.
     owner: MaterializedHeldUnit<'root, 'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
     image: File,
+    entry: Option<EntryResource>,
     documents: Option<[Vec<u8>; 2]>,
     selection: Option<SelectionReceipt>,
     retained: Option<Observation>,
@@ -133,11 +140,38 @@ impl Checks for BootstrapOwnedUnit<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
                 [metadata.dev(), metadata.ino(), metadata.len()],
             ],
         )?;
+        let legacy = self
+            .owner
+            .resources
+            .as_ref()
+            .ok_or(BootstrapError::Binding)?
+            .entry_contribution(&bindings(&context))
+            .map_err(ArtifactError::from)?;
+        let expected = entry_binding::expected(
+            &context,
+            docs,
+            [metadata.dev(), metadata.ino(), metadata.len()],
+            legacy,
+            &census,
+        )?;
+        if self.entry.is_none() {
+            if self.retained.is_some() {
+                return Err(BootstrapError::Binding);
+            }
+            self.entry = Some(EntryResource::create(&expected).map_err(ArtifactError::from)?);
+        }
+        let entry = self
+            .entry
+            .as_ref()
+            .ok_or(BootstrapError::Binding)?
+            .inspect(&expected, &census)
+            .map_err(ArtifactError::from)?;
         self.selection = Some(selected);
         Ok(Observation {
             context,
             image,
             census,
+            entry,
         })
     }
     fn retained(&self) -> Option<&Observation> {
@@ -174,6 +208,7 @@ impl<'root, 'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>
         let mut held = BootstrapOwnedUnit {
             owner: self,
             image,
+            entry: None,
             documents: None,
             selection: None,
             retained: None,

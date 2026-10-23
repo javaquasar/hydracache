@@ -100,3 +100,6 @@ pub(crate) fn collect(
 #[cfg(test)]
 #[path = "diagnostic_bootstrap_image_census_tests.rs"]
 pub(crate) mod tests;
+
+#[path = "diagnostic_bootstrap_entry_census.rs"]
+pub(crate) mod entry;

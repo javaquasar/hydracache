@@ -1,4 +1,6 @@
 use std::path::Path;
+#[path = "support/bootstrap_entry_guard.rs"]
+mod entry_guard;
 #[path = "support/bootstrap_build_guard.rs"]
 mod guard;
 fn read(name: &str) -> String {

@@ -446,3 +446,6 @@ pub(crate) mod sealed;
 #[cfg(test)]
 #[path = "diagnostic_bootstrap_build_tests.rs"]
 pub(crate) mod tests;
+
+#[path = "diagnostic_bootstrap_entry_format.rs"]
+pub mod entry_format;

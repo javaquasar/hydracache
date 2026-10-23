@@ -2,6 +2,8 @@
 mod build_guard;
 #[path = "support/held_role_census_guard.rs"]
 mod census_guard;
+#[path = "support/bootstrap_entry_guard.rs"]
+mod entry_guard;
 
 fn read(name: &str) -> String {
     std::fs::read_to_string(

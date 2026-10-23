@@ -1,16 +1,19 @@
+use crate::entry_guard;
 #[allow(dead_code)] // Different current-source targets use different exact views.
 pub fn provider_view(name: &str, raw: &str) -> String {
+    let raw = entry_guard::source_view(name, raw);
     let hook=match name {
         "diagnostic_held_role_census.rs"=>"\n#[path = \"diagnostic_bootstrap_image_census.rs\"]\npub(crate) mod bootstrap_images;\n",
         "diagnostic_held_role_files.rs"=>"\n#[path = \"diagnostic_bootstrap_image_provider.rs\"]\nmod bootstrap_images;\n",
         "diagnostic_held_unit_material_kernel.rs"=>"\n#[path = \"diagnostic_bootstrap_original_inventory.rs\"]\npub(super) mod bootstrap_inputs;\n",
-        _=>return raw.into(),
+        _=>return raw,
     };
     assert_eq!(raw.matches(hook).count(), 1);
     raw.replacen(hook, "", 1)
 }
 #[allow(dead_code)]
 pub fn owner_view(raw: &str) -> String {
+    let raw = entry_guard::source_view("diagnostic_bootstrap_owner.rs", raw);
     let additions=[
         "use crate::diagnostic_artifacts::linux::held_role_census::bootstrap_images::BootstrapImageBindings;\n",
         "    census: BootstrapImageBindings,\n",

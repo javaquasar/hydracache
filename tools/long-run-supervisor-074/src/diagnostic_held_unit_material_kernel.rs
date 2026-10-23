@@ -18,6 +18,9 @@ pub(super) struct Bindings {
 
 #[path = "diagnostic_bootstrap_original_inventory.rs"]
 pub(super) mod bootstrap_inputs;
+
+#[path = "diagnostic_bootstrap_entry_resource.rs"]
+pub(super) mod bootstrap_entry;
 fn refused() -> io::Error {
     io::Error::new(io::ErrorKind::PermissionDenied, "held material binding")
 }

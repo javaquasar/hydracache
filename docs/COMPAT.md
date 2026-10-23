@@ -2032,3 +2032,34 @@ and host/launcher digests inside unchanged complete frames, and retires that sam
 owner on refusal. Static assertions and model tests do not admit original delivery,
 child credentials, execveat, all-writer cessation, completion or server operation.
 <!-- END BOOTSTRAP BUILD V1 -->
+
+<!-- BEGIN BOOTSTRAP ENTRY V1 -->
+## Bootstrap child-entry assertions v1 (not enabled for delivery)
+
+HCBT0741 is exactly 1024 little-endian bytes, size u32 at 8, zero padding at
+12..16 and 220..224. Offsets: owner[6] u64 at 16, origins[4] at 64, bounds[4]
+at 96; attempt/context SHA256 at 128/160; root device/inode/deadline at 192;
+nonzero serial u32 at 216; name digests[2] at 224; document digests[7] at 288
+(five original documents then bootstrap policy/receipt); image identities[6]
+at 512 (host, launcher, bootstrap, worker, sealed config, legacy256); stream
+identities[4] at 656 (stdin, stdout, stderr, child release); guardian pid/dev/ino
+triples[2] at 720; image digests[5] at 768 (host, launcher, bootstrap, worker,
+config); legacy digest at 928, parent-local census fingerprint at 960 and
+canonical newline DiagnosticState digest at 992. Names hash UTF-8 bytes without
+newline. All digests are raw SHA256. Identities are dev/ino/size u64 triples,
+stream pairs dev/ino. Deadline is the original minimum, never a new window.
+
+Wrong length/magic/size/padding, invalid integer shape, zero serial, mismatched
+minimum/root deadline or legacy size refuse. Structural decode is NOT
+authentication; shape-valid mutations remain assertions. The parent compares
+every byte against its own freshly validated original sources and retains the
+same readonly/CLOEXEC/four-sealed inode and offset inside unchanged full frames.
+The parent fingerprint binds its descriptor values/roles/image stamps; it is
+NOT a child FD remapping table, signature or transferable permit.
+
+This is an additive, currently non-delivered format, not a reinterpretation of
+HCHL0741. Old readers must refuse it; no migration/default/fallback. It grants
+no child credential, manager/guardian authentication, execveat, original start,
+writer cessation, completion or server admission. No child-reader/binary or
+transport is enabled by this schema.
+<!-- END BOOTSTRAP ENTRY V1 -->
