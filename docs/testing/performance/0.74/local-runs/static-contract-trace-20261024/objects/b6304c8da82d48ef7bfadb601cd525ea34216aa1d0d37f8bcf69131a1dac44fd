@@ -1,0 +1,14 @@
+{
+  "git-config.html": {
+    "bytes": 449386,
+    "sha256": "22bab3072ce45a6b6f2dd5f8445c2b5d69b1693940859e00f8cfaaf2372ed317"
+  },
+  "technical/api-trace2.adoc": {
+    "bytes": 44496,
+    "sha256": "3d7de4333643f8486bfe99aeb278e05da5fe52461800ae99151da7f2a10f89e1"
+  },
+  "trace2-target-values.adoc": {
+    "bytes": 529,
+    "sha256": "7bcd1dd97c97696041eb62cfcdfcbb2041ae0da00b4c7af02602daff57c4ff63"
+  }
+}

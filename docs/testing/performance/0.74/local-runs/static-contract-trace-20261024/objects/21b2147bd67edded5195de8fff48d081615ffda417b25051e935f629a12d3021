@@ -1,0 +1,43 @@
+"""Read-only artifact and current-process controls; no target replay."""
+import ctypes
+import os
+from pathlib import Path
+import unittest
+
+import capture
+
+
+class CaptureTests(unittest.TestCase):
+    def test_exact_saved_case_catalog(self):
+        self.assertEqual(len(capture.expected_cases()),321)
+
+    def test_artifact_is_the_fresh_receipted_target(self):
+        path = capture.artifact()
+        self.assertEqual(path.parent,(capture.ROOT/"target/debug/deps").resolve())
+        self.assertTrue(path.name.startswith("performance_contract_074-"))
+
+    @unittest.skipUnless(os.name == "nt", "Windows GetProcessTimes control")
+    def test_current_process_handle_remains_same_and_cpu_does_not_go_backwards(self):
+        api = ctypes.WinDLL("kernel32",use_last_error=True)
+        api.GetCurrentProcess.restype = ctypes.c_void_p
+        handle = api.GetCurrentProcess()
+        before, after = capture.cpu_times(handle), capture.cpu_times(handle)
+        self.assertEqual(before["created_filetime"],after["created_filetime"])
+        self.assertEqual(after["exited_filetime"],0)
+        self.assertGreaterEqual(after["kernel_ns"],before["kernel_ns"])
+        self.assertGreaterEqual(after["user_ns"],before["user_ns"])
+        self.assertTrue(after["excludes_children"])
+
+    def test_scope_and_original_bound_are_fixed(self):
+        self.assertEqual(capture.BOUND,780)
+        self.assertEqual(capture.OUT,capture.ROOT/"target/static-contract-trace-20261024/first")
+        raw = Path(capture.__file__).read_text()
+        self.assertNotIn("workflow_dispatch",raw)
+        self.assertNotIn("systemctl",raw)
+        self.assertNotIn("ssh",raw)
+        self.assertNotIn("--ignored",raw)
+        self.assertNotIn("--nocapture",raw)
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -1,0 +1,70 @@
+{
+  "archive_sha256": "b099bbeea3272ef9dea3018e1b28514172867be7deaa0523d4d54c8db7673fdf",
+  "cache_admission": false,
+  "classes": {
+    "full_hex_file": {
+      "most_repeated": [
+        {
+          "argument": "be06c237c3c8c3b6cf4e5eb608c90d0f9feaa47c:tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs",
+          "requests": 6
+        },
+        {
+          "argument": "be06c237c3c8c3b6cf4e5eb608c90d0f9feaa47c:tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs",
+          "requests": 6
+        },
+        {
+          "argument": "b2adb5b73a2f66fc690637260c100b5c8489aa35:tools/long-run-supervisor-074/src/diagnostic_worker_trust_input.rs",
+          "requests": 4
+        },
+        {
+          "argument": "3b8e73feec8412e4090bf05575f06a05901e1010:tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs",
+          "requests": 3
+        },
+        {
+          "argument": "0847b53f37a0fd79ad64845e53dc38354d99e552:tools/long-run-supervisor-074/src/diagnostic_collector_starting_publication_tests.rs",
+          "requests": 2
+        }
+      ],
+      "repeated_raw_arguments": 26,
+      "requests": 1884,
+      "unique_raw_arguments": 1858
+    },
+    "short_hex_file": {
+      "most_repeated": [
+        {
+          "argument": "77b3ad15:tools/long-run-supervisor-074/src/diagnostic_collector_reservation_storage.rs",
+          "requests": 8
+        },
+        {
+          "argument": "926a3b6f:tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange.rs",
+          "requests": 8
+        },
+        {
+          "argument": "3e4be719:tools/long-run-supervisor-074/src/diagnostic_original_descriptor_holder_tests.rs",
+          "requests": 6
+        },
+        {
+          "argument": "422aa5f2:tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs",
+          "requests": 6
+        },
+        {
+          "argument": "ba017a7d:tools/long-run-supervisor-074/src/diagnostic_original_manager_message.rs",
+          "requests": 6
+        }
+      ],
+      "repeated_raw_arguments": 229,
+      "requests": 10499,
+      "unique_raw_arguments": 10270
+    }
+  },
+  "coordinator": "\"\"\"Offline argv-shape derivation; never resolve a revision or rerun Git.\"\"\"\nfrom collections import Counter,defaultdict\nfrom pathlib import Path\nimport hashlib\nimport io\nimport json\nimport re\nimport sys\nimport tarfile\n\nROOT = Path(__file__).resolve().parent.parent\nsys.path.insert(0,str(ROOT/'tools/xtask-git-trace-074'))\nimport trace_review\n\ndef request(argv):\n    args = argv[1:]\n    if args[:1] == ['--no-replace-objects']: args = args[1:]\n    if not args or args[0] != 'show': return None\n    if len(args) != 2 or ':' not in args[1]: return ('other_show_argv',json.dumps(args))\n    revision,path = args[1].split(':',1)\n    if re.fullmatch('[0-9a-f]{40}',revision): return ('full_hex_file',args[1])\n    if re.fullmatch('[0-9a-f]{4,39}',revision): return ('short_hex_file',args[1])\n    return ('dynamic_or_other_file',args[1])\n\nfor argv,expected in [\n    (['git','show','a'*40+':file'], 'full_hex_file'),\n    (['git','--no-replace-objects','show','abcd:file'], 'short_hex_file'),\n    (['git','show','HEAD:file'], 'dynamic_or_other_file'),\n    (['git','show','--format=%H'], 'other_show_argv'),\n    (['git','ls-tree','abcd'],None),\n]:\n    value = request(argv)\n    assert (value[0] if value else None) == expected\n\nfolder = ROOT/'docs/testing/performance/0.74/local-runs/static-contract-trace-20261024'\nraw = (folder/'index.json').read_bytes()\nassert hashlib.sha256(raw).hexdigest() == '11e89b85754443b1c5ff818ebfa4e5fcd2e896d812a85065cac2ffe70389e085'\nindex = json.loads(raw)\ndef member(name):\n    entry = index['members'][name]\n    raw = (folder/'objects'/entry['sha256']).read_bytes()\n    assert len(raw) == entry['bytes'] and hashlib.sha256(raw).hexdigest() == entry['sha256']\n    return raw\n\nassert (ROOT/'tools/xtask-git-trace-074/trace_review.py').read_bytes() == member('source/current/tools/xtask-git-trace-074/trace_review.py')\nledger = json.loads(member('capture/git-trace2-members.json'))\ncounts = defaultdict(Counter)\nroots = 0\nseen = set()\nwith tarfile.open(fileobj=io.BytesIO(member('capture/git-trace2.tar.gz')),mode='r:gz') as archive:\n    for item in archive:\n        assert item.isfile() and item.name in ledger and item.name not in seen\n        seen.add(item.name)\n        raw = archive.extractfile(item).read()\n        assert ledger[item.name] == dict(bytes=len(raw),sha256=hashlib.sha256(raw).hexdigest())\n        if item.name.startswith('target-trace/'):\n            session = trace_review.session(raw.decode())\n            if not session['nested']:\n                roots += 1\n                value = request(session['argv'])\n                if value: counts[value[0]][value[1]] += 1\nassert seen == set(ledger) and roots == index['facts']['git']['root_sessions']\nclasses = {name:dict(requests=sum(values.values()),unique_raw_arguments=len(values),\n    repeated_raw_arguments=sum(count-1 for count in values.values()),\n    most_repeated=[dict(argument=key,requests=count) for key,count in sorted(values.items(),key=lambda pair:(-pair[1],pair[0]))[:5]])\n    for name,values in sorted(counts.items())}\nassert sum(value['requests'] for value in classes.values()) == index['facts']['git']['commands']['show']\nrecord = dict(schema='hc074-static-trace-argv-shapes-v1',input_index_sha256=hashlib.sha256((folder/'index.json').read_bytes()).hexdigest(),\n    archive_sha256=index['members']['capture/git-trace2.tar.gz']['sha256'],root_sessions=roots,\n    classes=classes,synthetic_shape_controls=5,revision_resolution_performed=False,\n    raw_argument_repetition_is_immutable_identity=False,cache_admission=False,\n    new_measurement=False,package_retry=False,server=False,coordinator=Path(__file__).read_text())\ndata = (json.dumps(record,indent=2,sort_keys=True)+'\\n').encode()\nout = ROOT/'docs/testing/performance/0.74/local-runs/static-contract-trace-shapes-20261024.json'\nwith out.open('xb') as stream: stream.write(data)\nprint(json.dumps(dict(sha256=hashlib.sha256(data).hexdigest(),root_sessions=roots,\n    classes={name:{key:value for key,value in entry.items() if key!='most_repeated'} for name,entry in classes.items()}),indent=2))\n",
+  "input_index_sha256": "11e89b85754443b1c5ff818ebfa4e5fcd2e896d812a85065cac2ffe70389e085",
+  "new_measurement": false,
+  "package_retry": false,
+  "raw_argument_repetition_is_immutable_identity": false,
+  "revision_resolution_performed": false,
+  "root_sessions": 12424,
+  "schema": "hc074-static-trace-argv-shapes-v1",
+  "server": false,
+  "synthetic_shape_controls": 5
+}

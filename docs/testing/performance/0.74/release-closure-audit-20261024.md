@@ -219,3 +219,14 @@ identify CPU, child Git or parser cost, and the nominal 45.40-second remainder
 is not an attributed interval. Nineteen offline-reader controls pass; no package
 or measurement is rerun. Further diagnostic instrumentation must be separate
 from a cache candidate and must preserve every assertion and original bound.
+
+The [single static Trace2 diagnostic](static-contract-git-attribution-result-20261024.md)
+passes all 321 unchanged `performance_contract_074` cases with four threads and
+the original 780-second bound. Its 12424 complete Git sessions establish real
+historical-read/process work, not Rust parser or per-test CPU attribution.
+Full-hash raw arguments repeat only 26 times; short-hash raw arguments repeat
+229 times and are not proven immutable identities. A broad argument cache is
+not supported as the main fix; isolated immutable-blob batching needs its own
+byte/error/ref/concurrency controls. No reader optimization, original execution
+or qualification is admitted, and this target pass does not complete the old
+interrupted full-package attempt.

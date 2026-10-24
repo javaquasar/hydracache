@@ -1,0 +1,183 @@
+"""One local static-contract diagnostic; never a package retry or server runner."""
+import ctypes
+from ctypes import wintypes
+import hashlib
+import json
+import os
+from pathlib import Path
+import shutil
+import subprocess
+import sys
+import time
+
+import trace_review
+
+ROOT = Path(__file__).resolve().parents[2]
+BUILD = ROOT / "target/source-continuation-20261024/static-trace-build"
+OUT = ROOT / "target/static-contract-trace-20261024/first"
+BOUND = 780
+
+
+def sha(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+
+def cpu_times(handle):
+    trace_review.require(os.name == "nt", "Windows process-time implementation required")
+    api = ctypes.WinDLL("kernel32", use_last_error=True)
+    api.GetProcessTimes.argtypes = [wintypes.HANDLE] + [ctypes.POINTER(wintypes.FILETIME)] * 4
+    api.GetProcessTimes.restype = wintypes.BOOL
+    values = [wintypes.FILETIME() for _ in range(4)]
+    if not api.GetProcessTimes(wintypes.HANDLE(int(handle)), *(ctypes.byref(value) for value in values)):
+        raise ctypes.WinError(ctypes.get_last_error())
+    numbers = [(value.dwHighDateTime << 32) | value.dwLowDateTime for value in values]
+    return dict(created_filetime=numbers[0], exited_filetime=numbers[1],
+                kernel_ns=numbers[2] * 100, user_ns=numbers[3] * 100,
+                excludes_children=True)
+
+
+def git(*args):
+    return subprocess.check_output(["git", "--no-replace-objects", *args], cwd=ROOT)
+
+
+def snapshot():
+    names = git("ls-files", "-z", "--cached", "--others", "--exclude-standard", "--",
+                "Cargo.toml", "Cargo.lock", "deny.toml", ".cargo", "crates", "tools")
+    return {name.decode(): sha((ROOT / name.decode()).read_bytes())
+            for name in sorted(set(names.split(b"\0")) - {b""})}
+
+
+def expected_cases():
+    folder = ROOT / "docs/testing/performance/0.74/local-runs/package-log-review-20261024"
+    raw = (folder / "index.json").read_bytes()
+    trace_review.require(sha(raw) == "d4fa8f02e593ce7225d720f6ae6860fe7f6272db6e0f9eb75e3fa7001de00f93", "case provenance changed")
+    index = json.loads(raw)
+    entry = index["members"]["analysis/report.json"]
+    report = (folder / "objects" / entry["sha256"]).read_bytes()
+    trace_review.require(len(report) == entry["bytes"] and sha(report) == entry["sha256"], "case report differs")
+    targets = json.loads(report)["runs"][1]["targets"]
+    target, = [item for item in targets if item["target"] == "tests/performance_contract_074.rs"]
+    names = sorted(case["name"] for case in target["cases"])
+    trace_review.require(len(names) == 321 and len(set(names)) == 321, "expected case catalog differs")
+    return names
+
+
+def artifact():
+    result = json.loads((BUILD / "result.json").read_text())
+    trace_review.require(result["exit"] == 0 and result["source_unchanged"] and result["head_unchanged"], "build receipt refused")
+    messages = [json.loads(line) for line in (BUILD / "stdout.log").read_text().splitlines() if line.startswith("{")]
+    messages = [message for message in messages if message.get("reason") == "compiler-artifact"
+                and message.get("target", {}).get("name") == "performance_contract_074"]
+    item, = messages
+    path = Path(item["executable"]).resolve()
+    trace_review.require(path.is_file() and path.parent == (ROOT / "target/debug/deps").resolve(), "unexpected test artifact")
+    trace_review.require(item["profile"]["test"] is True and item["fresh"] is True, "expected unchanged test binary")
+    before = json.loads((BUILD / "intent.json").read_text())["source"]
+    current = snapshot()
+    trace_review.require(all(current.get(path) == digest for path, digest in before.items()), "captured build inputs changed")
+    allowed = ("tools/xtask-git-trace-074/",)
+    trace_review.require(all(path.startswith(allowed) and path.endswith((".py", ".md"))
+                             for path in current.keys() - before.keys()), "unexpected added build input")
+    return path
+
+
+def write(name, value):
+    with (OUT / name).open("x", encoding="utf-8", newline="\n") as stream:
+        json.dump(value, stream, indent=2, sort_keys=True)
+        stream.write("\n")
+
+
+def trace_files(directory):
+    paths = sorted(directory.iterdir())
+    trace_review.require(all(path.is_file() and path.name != "git-trace2-discard" for path in paths), "trace directory discarded or aliased")
+    return [path.read_text(encoding="utf-8") for path in paths]
+
+
+def prepare():
+    trace_review.require(os.name == "nt", "local Windows capture only")
+    blocked = [name for name in os.environ if name.startswith(("GIT_TRACE", "GIT_CONFIG", "RUST_TEST_"))
+               or name in {"GIT_DIR", "GIT_WORK_TREE", "GIT_COMMON_DIR", "GIT_REPLACE_REF_BASE"}]
+    trace_review.require(not blocked, f"existing capture-affecting environment: {blocked}")
+    config = subprocess.run(["git", "config", "--get-regexp", "^trace2\\."], cwd=ROOT, capture_output=True)
+    trace_review.require(config.returncode == 1 and not config.stdout and not config.stderr, "existing Trace2 configuration")
+    trace_review.require(not git("replace", "-l").strip(), "Git replacement refs present")
+    binary = artifact()
+    cases = expected_cases()
+    listed = subprocess.run([str(binary), "--list"], cwd=ROOT, capture_output=True)
+    (OUT / "list.stdout").write_bytes(listed.stdout)
+    (OUT / "list.stderr").write_bytes(listed.stderr)
+    trace_review.require(listed.returncode == 0 and trace_review.listed_cases(listed.stdout.decode()) == cases, "test listing differs")
+    directory = OUT / "control-trace"
+    directory.mkdir()
+    env = dict(os.environ, GIT_TRACE2_EVENT=str(directory.resolve()), GIT_TRACE2_EVENT_BRIEF="0", GIT_TRACE2_DST_DEBUG="1")
+    control = subprocess.run(["git", "--version"], cwd=ROOT, env=env, capture_output=True)
+    (OUT / "control.stdout").write_bytes(control.stdout)
+    (OUT / "control.stderr").write_bytes(control.stderr)
+    observed = trace_review.summarize(trace_files(directory))
+    trace_review.require(control.returncode == 0 and not control.stderr and observed["sessions"] == 1
+                         and observed["commands"] == {"version": 1}, "Trace2 control refused")
+    write("preflight.json", dict(binary=str(binary), binary_sha256=sha(binary.read_bytes()),
+        cases=cases, build_stdout_sha256=sha((BUILD / "stdout.log").read_bytes()),
+        git_executable=shutil.which("git"), git_version=control.stdout.decode().strip(),
+        git_executable_sha256=sha(Path(shutil.which("git")).read_bytes()), control=observed))
+    return binary, cases, env
+
+
+def run_once():
+    OUT.mkdir(parents=True, exist_ok=False)
+    before, head = snapshot(), git("rev-parse", "HEAD").decode().strip()
+    write("intent.json", dict(source=before, head=head, bound_seconds=BOUND,
+        argv=["performance_contract_074", "--test-threads=4"], threads=4, expected_cases=321,
+        one_instrumented_static_target=True, package_retry=False, runtime_changed=False,
+        observation_frequency_changed=False, deadlines_changed=False, server=False,
+        services_or_clocks=False, original_owner=False, product_workload=False, qualification=False))
+    refusal, code, result = None, None, {}
+    try:
+        binary, cases, env = prepare()
+        original_binary = sha(binary.read_bytes())
+        directory = OUT / "target-trace"
+        directory.mkdir()
+        env["GIT_TRACE2_EVENT"] = str(directory.resolve())
+        with (OUT / "stdout.log").open("xb") as stdout, (OUT / "stderr.log").open("xb") as stderr:
+            start = time.monotonic_ns()
+            child = subprocess.Popen([str(binary), "--test-threads=4"], cwd=ROOT, env=env, stdout=stdout, stderr=stderr)
+            write("process.json", dict(pid=child.pid, initial_times=cpu_times(child._handle)))
+            while child.poll() is None:
+                if time.monotonic_ns() - start >= BOUND * 1_000_000_000:
+                    refusal = "outer-timeout"
+                if shutil.disk_usage(ROOT).free < 4 * 1024**3:
+                    refusal = "disk-floor"
+                if refusal:
+                    cleanup = subprocess.run(["taskkill", "/PID", str(child.pid), "/T", "/F"], capture_output=True)
+                    (OUT / "owned-cleanup.stdout").write_bytes(cleanup.stdout)
+                    (OUT / "owned-cleanup.stderr").write_bytes(cleanup.stderr)
+                    child.wait(timeout=30)
+                    break
+                try:
+                    child.wait(timeout=1)
+                except subprocess.TimeoutExpired:
+                    pass
+            code = child.returncode
+            result.update(target_wall_ns=time.monotonic_ns()-start, process_times=cpu_times(child._handle))
+        write("observation.json", dict(result, exit=code, outer_refusal=refusal))
+        trace_review.require(refusal is None and code == 0, "target did not complete successfully")
+        result["cases"] = trace_review.case_result((OUT / "stdout.log").read_text(), cases)
+        result["git"] = trace_review.summarize(trace_files(directory))
+        trace_review.require(sha(binary.read_bytes()) == original_binary, "binary changed during capture")
+    except (OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError) as error:
+        refusal = refusal or str(error)
+    after = snapshot()
+    result.update(exit=code, refusal=refusal, source_unchanged=before == after,
+                  head_unchanged=head == git("rev-parse", "HEAD").decode().strip(),
+                  source_after=after, admission=False, qualification=False,
+                  rust_parsing_attribution=False, observer_overhead_measured=False)
+    write("result.json", result)
+    print(json.dumps({key:value for key,value in result.items() if key not in {"source_after", "git"}}, indent=2))
+    return int(refusal is not None or not result["source_unchanged"] or not result["head_unchanged"])
+
+
+if __name__ == "__main__":
+    if sys.argv[1:] != ["--run-once"]:
+        print("Prepared only. --run-once performs one local static 321-case Trace2 diagnostic, never a package/server workload.")
+        raise SystemExit(0)
+    raise SystemExit(run_once())

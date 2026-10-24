@@ -1,0 +1,99 @@
+"""Retain one static diagnostic and every raw Trace2 session without flattening."""
+from pathlib import Path
+import gzip
+import hashlib
+import io
+import json
+import subprocess
+import tarfile
+
+ROOT = Path(__file__).resolve().parent.parent
+CAP = ROOT/'target/static-contract-trace-20261024/first'
+OUT = ROOT/'docs/testing/performance/0.74/local-runs/static-contract-trace-20261024'
+BASE = 'aeaa35bab50162028ff9781118edb9880c10c82d'
+code = subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()
+result = json.loads((CAP/'result.json').read_text())
+intent = json.loads((CAP/'intent.json').read_text())
+assert result['source_unchanged'] and result['head_unchanged']
+assert result['source_after'] == intent['source'] and intent['head'] == code
+assert not result['owned_target_alive'] and intent['bound_seconds'] == 780
+assert result['refusal'] is None and result['exit'] == 0
+assert result['cases']['passed'] == 321 and result['cases']['failed'] == 0
+process = json.loads((CAP/'process.json').read_text())
+assert process['initial_times']['created_filetime'] == result['process_times']['created_filetime']
+assert result['process_times']['exited_filetime'] > 0
+phases = ['static-trace-build','static-trace-parser-tests','static-trace-capture-controls',
+    'static-trace-final-controls','static-trace-syntax','static-trace-indent','static-trace-plan']
+for phase in phases:
+    value = json.loads((ROOT/'target/source-continuation-20261024'/phase/'result.json').read_text())
+    assert value['exit'] == 0 and value['outer_refusal'] is None
+    assert value['source_unchanged'] and value['head_unchanged']
+paths = ['tools/xtask-git-trace-074/'+name for name in ['capture.py','trace_review.py','test_capture.py','test_trace_review.py','README.md']]
+assert subprocess.check_output(['git','diff','--name-only',BASE,'--','tools','crates','Cargo.toml','Cargo.lock','deny.toml','.cargo'],cwd=ROOT,text=True).splitlines() == sorted(paths)
+protected = {'Cargo.toml':'18a8a27cf140a1d6eb31c8316ee39bb7d5832866a990346eee16cd0c30de344b',
+    'Cargo.lock':'d2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c',
+    'docs/testing/performance/0.74/qualification-manifest.toml':'11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc'}
+for path,digest in protected.items(): assert hashlib.sha256((ROOT/path).read_bytes()).hexdigest() == digest
+OUT.mkdir(parents=True,exist_ok=False)
+(OUT/'objects').mkdir()
+(OUT/'.gitattributes').write_text('index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n',encoding='utf-8',newline='\n')
+members = {}
+def put(name,raw):
+    digest = hashlib.sha256(raw).hexdigest()
+    path = OUT/'objects'/digest
+    if path.exists(): assert path.read_bytes() == raw
+    else:
+        with path.open('xb') as stream: stream.write(raw)
+    assert name not in members
+    members[name] = dict(bytes=len(raw),sha256=digest)
+for phase in phases:
+    for name in ['intent.json','result.json','stdout.log','stderr.log']:
+        put(f'checks/{phase}/{name}',(ROOT/'target/source-continuation-20261024'/phase/name).read_bytes())
+for path in sorted(CAP.iterdir()):
+    if path.is_file(): put('capture/'+path.name,path.read_bytes())
+archive_members = {}
+buffer = io.BytesIO()
+with gzip.GzipFile(fileobj=buffer,filename='',mode='wb',mtime=0) as compressed:
+    with tarfile.open(fileobj=compressed,mode='w',format=tarfile.PAX_FORMAT) as archive:
+        for folder in ['control-trace','target-trace']:
+            for path in sorted((CAP/folder).iterdir()):
+                assert path.is_file() and not path.is_symlink()
+                raw = path.read_bytes()
+                name = folder+'/'+path.name
+                archive_members[name] = dict(bytes=len(raw),sha256=hashlib.sha256(raw).hexdigest())
+                entry = tarfile.TarInfo(name)
+                entry.size,entry.mode,entry.mtime = len(raw),0o644,0
+                archive.addfile(entry,io.BytesIO(raw))
+assert len([name for name in archive_members if name.startswith('target-trace/')]) == result['git']['sessions']
+packed = buffer.getvalue()
+with tarfile.open(fileobj=io.BytesIO(packed),mode='r:gz') as archive:
+    assert len(archive.getmembers()) == len(archive_members)
+    for entry in archive.getmembers():
+        raw = archive.extractfile(entry).read()
+        assert archive_members[entry.name] == dict(bytes=len(raw),sha256=hashlib.sha256(raw).hexdigest())
+put('capture/git-trace2.tar.gz',packed)
+put('capture/git-trace2-members.json',(json.dumps(archive_members,indent=2,sort_keys=True)+'\n').encode())
+for path in paths: put('source/current/'+path,(ROOT/path).read_bytes())
+initial = json.loads((ROOT/'target/source-continuation-20261024/static-trace-capture-controls/intent.json').read_text())
+for name in ['capture.py','test_capture.py']:
+    raw = (ROOT/'target/static-trace-initial-source-20261024'/name).read_bytes()
+    assert hashlib.sha256(raw).hexdigest() == initial['source']['tools/xtask-git-trace-074/'+name]
+    put('source/initial/'+name,raw)
+docs = {}
+for name in ['technical/api-trace2.adoc','trace2-target-values.adoc','git-config.html']:
+    path = Path('C:/Program Files/Git/mingw64/share/doc/git-doc')/name
+    docs[name] = dict(bytes=path.stat().st_size,sha256=hashlib.sha256(path.read_bytes()).hexdigest())
+put('provenance/installed-git-docs.json',(json.dumps(docs,indent=2,sort_keys=True)+'\n').encode())
+for name in ['run-source-step-20261024.py','run-fresh-reader-20261024.py','retain-static-trace-initial-20261024.py','seal-static-trace-20261024.py']:
+    put('coordinator/'+name,(ROOT/'target'/name).read_bytes())
+facts = dict(baseline=BASE,code_commit=code,source_paths=paths,self_tests=14,original_cases=321,
+    protected_sha256=protected,trace_files=len(archive_members),trace_archive_bytes=len(packed),
+    target_wall_ns=result['target_wall_ns'],process_times=result['process_times'],git=result['git'],
+    rust_inputs_changed=False,dependencies_changed=False,package_retry=False,
+    one_instrumented_static_target=True,product_workload=False,server=False,services_or_clocks=False,
+    original_owner=False,qualification=False,deadlines_changed=False,observation_frequency_changed=False,
+    observer_overhead_measured=False,rust_parser_attribution=False,performance_gain_claim=False)
+raw = (json.dumps(dict(schema='hc074-static-contract-trace-v1',facts=facts,members=members),indent=2,sort_keys=True)+'\n').encode()
+with (OUT/'index.json').open('xb') as stream: stream.write(raw)
+print(json.dumps(dict(index_sha256=hashlib.sha256(raw).hexdigest(),members=len(members),
+    objects=len(list((OUT/'objects').iterdir())),trace_files=len(archive_members),archive_bytes=len(packed)),indent=2))

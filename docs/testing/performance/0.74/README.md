@@ -6855,3 +6855,13 @@ unstarted targets remain distinct from the 118 complete verdicts. Nineteen
 reader controls pass. The logs support target wall-time ranking, not per-test
 CPU/Git/I/O attribution or a causal performance claim; the next diagnostic
 protocol is prepared but not executed.
+
+The later [isolated Git attribution](static-contract-git-attribution-result-20261024.md)
+runs only the unchanged 321-case static target with Trace2 and parent process
+CPU observation. All cases and source/identity checks pass. It captures 12424
+complete Git sessions, including 12383 `show` calls. Exact raw argument repeats
+are sparse: 26 for full hashes and 229 for short hashes. That does not support
+a broad memoization cache as the principal fix. Distinct immutable-blob batching
+is the next extracted hypothesis, not an implemented optimization. Git spans
+overlap, parsing and observer overhead remain unattributed, and the full package
+and production admission remain open.

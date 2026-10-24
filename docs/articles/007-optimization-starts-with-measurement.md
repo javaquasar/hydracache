@@ -19150,3 +19150,23 @@ be assigned wholesale to the interrupted test. The next hypothesis therefore
 needs separate observation of immutable-source lookup and token/AST work,
 without caching fresh checks or changing their frequency. A cache optimization
 is not justified by this target ranking alone.
+
+The subsequent [static Trace2 diagnostic](../testing/performance/0.74/static-contract-git-attribution-result-20261024.md)
+tests that distinction without changing a Rust assertion. The same 321-case
+executable runs with four threads while Git records its own sessions and the
+parent observes its retained process handle. All cases and identity checks
+pass. Parent wall time is 523.944 seconds and parent CPU is 240.656 seconds,
+excluding children. The 12424 Git sessions report 847.300 seconds in aggregate,
+but those spans overlap and cannot be subtracted to invent a parser/I/O split.
+Trace2 overhead is not measured, so the older uninstrumented times are not a
+performance comparison.
+
+The counts change the next hypothesis. Git performs 12383 `show` operations,
+yet full-hash argument strings repeat only 26 times and short-hash strings
+229 times. Most strings are distinct historical reads. A general memoization
+cache is therefore not supported as the principal improvement by this profile;
+short revisions also cannot be silently promoted to immutable OID identities.
+The next isolated candidate should examine batching distinct immutable reads,
+with exact byte/error/ref and concurrency controls, while keeping every source
+comparison and fresh observation. No such optimization or product gain is
+claimed yet, and the interrupted full-package check remains incomplete.

@@ -1,0 +1,39 @@
+"""Recover exact reviewed pre-cleanup controls, checked against first intent."""
+from pathlib import Path
+import hashlib
+import json
+
+ROOT = Path(__file__).resolve().parent.parent
+folder = ROOT/'target/static-trace-initial-source-20261024'
+folder.mkdir(exist_ok=True)
+prefix = 'tools/xtask-git-trace-074/'
+intent = json.loads((ROOT/'target/source-continuation-20261024/static-trace-capture-controls/intent.json').read_text())
+raw = (ROOT/prefix/'capture.py').read_text()
+start, end = raw.index('def stop_owned(child):\n'), raw.index('def run_once():\n')
+raw = raw[:start]+raw[end:]
+raw = raw.replace('    child, cleanup_attempted = None, False\n','')
+raw = raw.replace('                    cleanup_attempted = True\n                    stop_owned(child)\n',
+    '                    cleanup = subprocess.run(["taskkill", "/PID", str(child.pid), "/T", "/F"], capture_output=True)\n'
+    '                    (OUT / "owned-cleanup.stdout").write_bytes(cleanup.stdout)\n'
+    '                    (OUT / "owned-cleanup.stderr").write_bytes(cleanup.stderr)\n'
+    '                    child.wait(timeout=30)\n')
+start, end = raw.index('    finally:\n'), raw.index('    after = snapshot()\n')
+raw = raw[:start]+raw[end:]
+raw = raw.replace('                  rust_parsing_attribution=False, observer_overhead_measured=False,\n                  owned_target_alive=child is not None and child.poll() is None)',
+    '                  rust_parsing_attribution=False, observer_overhead_measured=False)')
+test = (ROOT/prefix/'test_capture.py').read_text()
+test = test.replace('from unittest import mock\nimport tempfile\n','')
+start, end = test.index('    def test_cleanup_never_signals_'), test.index('\n\nif __name__ == "__main__":')
+expected = intent['source'][prefix+'test_capture.py']
+variants = [test[:start].rstrip()+'\n'*count+test[end:] for count in range(5)]
+matches = [text for text in variants if hashlib.sha256(text.encode()).hexdigest() == expected]
+assert len(matches) == 1
+test, = matches
+for name, text in [('capture.py',raw),('test_capture.py',test)]:
+    encoded = text.encode()
+    assert hashlib.sha256(encoded).hexdigest() == intent['source'][prefix+name], name
+    if (folder/name).exists():
+        assert (folder/name).read_bytes() == encoded
+    else:
+        with (folder/name).open('xb') as stream: stream.write(encoded)
+print('Both initial control sources match their first captured hashes')
