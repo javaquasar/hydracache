@@ -102,6 +102,12 @@ fn attempt(f: &material::Fixture, matching: bool, extra: bool) -> String {
 }
 #[test]
 fn current_image_matching_sealed_inode_still_cannot_authenticate_forged_context() {
+    if crate::owned_case::isolate(
+        module_path!(),
+        "current_image_matching_sealed_inode_still_cannot_authenticate_forged_context",
+    ) {
+        return;
+    }
     let raw = std::fs::read(BINARY).unwrap();
     let f = fixture(&raw);
     let text = attempt(&f, true, false);
@@ -112,6 +118,12 @@ fn current_image_matching_sealed_inode_still_cannot_authenticate_forged_context(
 }
 #[test]
 fn current_image_identical_bytes_at_different_inode_refuse_before_authority_boundary() {
+    if crate::owned_case::isolate(
+        module_path!(),
+        "current_image_identical_bytes_at_different_inode_refuse_before_authority_boundary",
+    ) {
+        return;
+    }
     let raw = std::fs::read(BINARY).unwrap();
     let f = fixture(&raw);
     let text = attempt(&f, false, false);
@@ -123,6 +135,12 @@ fn current_image_identical_bytes_at_different_inode_refuse_before_authority_boun
 }
 #[test]
 fn current_image_extra_descriptor_and_wrong_assertion_cannot_bypass_old_census() {
+    if crate::owned_case::isolate(
+        module_path!(),
+        "current_image_extra_descriptor_and_wrong_assertion_cannot_bypass_old_census",
+    ) {
+        return;
+    }
     let raw = std::fs::read(BINARY).unwrap();
     let f = fixture(&raw);
     let text = attempt(&f, true, true);
@@ -133,3 +151,6 @@ fn current_image_extra_descriptor_and_wrong_assertion_cannot_bypass_old_census()
     let text = attempt(&f, true, false);
     assert!(!text.contains("authentication is closed"), "{text}");
 }
+
+#[path = "../../owned-case-074/library.rs"]
+pub(crate) mod owned_case;

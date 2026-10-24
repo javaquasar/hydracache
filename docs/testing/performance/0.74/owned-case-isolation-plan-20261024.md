@@ -64,3 +64,18 @@ bypasses the current IO view and still sees the added test-only trace module.
 Permit only that exact cfg/path/module hook in its existing round-cost normalizer;
 retain its whole old-body assertion and all match counts. Module ordering and
 trailing-comma source-view refusals remain first results, not runtime failures.
+
+The separate current-image candidate wraps fifteen exec-sensitive cases in
+three existing files, preserving every old body. The two imported ancillary
+tests remain unchanged: the complete target still selects all seventeen with
+four parent threads. The intentional open-writer ETXTBSY control remains a
+negative exec control inside its own child; its writer is not silently closed.
+No registry target, ignore attribute, old deadline or production mode changes.
+
+After the changed fixture/isolation controls, run one complete ordinary library
+cohort per GNU/MSRV image, with four threads, no selectors and no ignored tests.
+Separate compilation (1200-second outer bound) from the pinned image execution
+(1800-second outer bound, matching the first ordinary cohort). These are outer
+test-harness bounds, not enlarged live admission windows. Keep every first
+failure; a later green test does not establish a cause for earlier clock/kernel
+failures. No original-owner or measurement retry is authorized by this cohort.

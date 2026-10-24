@@ -4,21 +4,27 @@ use std::path::Path;
 #[path = "../material-lock-fixture-074/contract.rs"]
 mod material_lock;
 pub const BASE: &str = "25faa7bb762aa229631e6f6cfc25cae33e16ff43";
-pub const PATHS: [&str; 6] = [
+pub const PATHS: [&str; 9] = [
     "tools/authority-runtime-074/io.rs",
     "tools/long-run-supervisor-074/tests/held_launcher.rs",
     "tools/long-run-supervisor-074/src/diagnostic_validation_trace.rs",
     "tools/long-run-supervisor-074/src/diagnostic_cgroup_root_transport_tests.rs",
     "tools/long-run-supervisor-074/src/diagnostic_held_unit_material_kernel_tests.rs",
     material_lock::SOURCE,
+    "tools/long-run-supervisor-074/tests/bootstrap_current_image.rs",
+    "tools/long-run-supervisor-074/tests/support/bootstrap_installed_controls.rs",
+    "tools/long-run-supervisor-074/tests/support/bootstrap_held_entry_controls.rs",
 ];
-const BASE_HASHES: [&str; 6] = [
+const BASE_HASHES: [&str; 9] = [
     "1b4e852c40018bf6023d9e8e965e5debebc65b4689d556e2760b41c102952701",
     "70ca8141f1664f6e59664bbf02bf0695ddb48f69109d5e5551883c60e2048f81",
     "a3a5fd83f5f1c79945a8282adaac1b895f5f89d63a952365c538c15858bc1be2",
     "33732600eb4fa3c8e436a68caa3a24d2741c4daac92d7e6965b1282873b45554",
     "b603700b10f2284777c89108e973a1720c9896b0668cf2b17c40f3c2becd7b1e",
     "ede23782d4ff6a5ae052ca542998c3ebd8968af2ad678f67b179af4fdb05d828",
+    "db078f7087d3d424375c42fefd007b6332a15f482cb1c6d994cc968d89044556",
+    "6214ffc3e1081dc364552c40c9efacfb2baa05612439c061e6894df8ff616478",
+    "1ba9daa6642174d1f7ac9a9064f9389e3225583966bea9d96fed2e0298acec48",
 ];
 pub const HELPERS: [(&str, &str); 2] = [
     (
@@ -93,6 +99,43 @@ pub fn candidate(path: &str, original: &str) -> Option<String> {
     } else if path == material_lock::SOURCE {
         assert_eq!(BASE, material_lock::BASE, "same exact fixture predecessor");
         material_lock::candidate(&raw)
+    } else if [PATHS[6], PATHS[7], PATHS[8]].contains(&path) {
+        let names: &[&str] = if path == PATHS[6] {
+            &[
+                "current_image_matching_sealed_inode_still_cannot_authenticate_forged_context",
+                "current_image_identical_bytes_at_different_inode_refuse_before_authority_boundary",
+                "current_image_extra_descriptor_and_wrong_assertion_cannot_bypass_old_census",
+            ]
+        } else if path == PATHS[7] {
+            &[
+            "installed_child_busy_inode_is_shell_refusal_not_reader_evidence",
+            "installed_child_filesystem_inode_matches_but_forged_context_still_refuses_authentication",
+            "installed_child_same_bytes_other_executable_inode_cannot_authenticate",
+            "installed_child_extra_missing_offset_hash_and_embedded_old_record_refuse",
+        ]
+        } else {
+            &[
+                "held_entry_valid_readiness_then_duplicate_refuses_without_worker",
+                "held_entry_activation_and_census_faults_refuse_without_ack",
+                "held_entry_context_entry_invocation_deadline_reserved_and_pid_faults_refuse",
+                "held_entry_wrong_kernel_sender_and_malformed_packet_refuse",
+                "held_entry_guardian_loss_and_peer_disconnect_stop_nonexecuting_hold",
+                "held_entry_sigkill_before_and_after_unconsumed_ack_is_not_reexecution",
+                "held_entry_original_alarm_expires_without_rearming",
+                "held_entry_old_equal_name_assertions_refuse_without_weakening_exchange",
+            ]
+        };
+        let mut raw = raw;
+        for name in names {
+            let signature = format!("fn {name}() {{");
+            raw=replace(&raw,&signature,&format!("{signature}\n    if crate::owned_case::isolate(module_path!(), \"{name}\",) {{ return; }}"));
+        }
+        if path == PATHS[6] {
+            raw.push_str(
+                "\n#[path = \"../../owned-case-074/library.rs\"]\npub(crate) mod owned_case;\n",
+            );
+        }
+        raw
     } else {
         let name = if path == PATHS[3] {
             "cgroup_root_transport_every_bound_byte_refuses_and_closes_rights"
@@ -104,6 +147,9 @@ pub fn candidate(path: &str, original: &str) -> Option<String> {
     })
 }
 pub fn accepts(path: &str, original: &str, actual: &str) -> bool {
+    if path == material_lock::SOURCE {
+        return material_lock::accepts(original, actual);
+    }
     candidate(path, original).is_some_and(|expected| {
         syn::parse_file(actual).is_ok()
             && expected

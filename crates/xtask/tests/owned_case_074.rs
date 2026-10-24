@@ -6,6 +6,28 @@ mod runtime;
 #[path = "../../../tools/authority-storage-source-074/contract.rs"]
 mod storage_contract;
 #[test]
+fn owned_case_bootstrap_reader_changes_one_read_and_keeps_every_assertion() {
+    let path = "crates/xtask/tests/bootstrap_installed_origin_074.rs";
+    let old = runtime::frozen(contract::BASE, path);
+    let current = std::fs::read_to_string(runtime::root().join(path)).unwrap();
+    let imports = "#[path = \"../../../tools/authority-runtime-074/gate.rs\"]\nmod runtime;\n#[path = \"../../../tools/authority-runtime-074/io.rs\"]\nmod runtime_io;\n#[path = \"../../../tools/authority-storage-source-074/contract.rs\"]\nmod storage_contract;\n";
+    let before = "fn read(path: &str) -> String {";
+    assert_eq!(old.matches(before).count(), 1);
+    let after = "fn read(path: &str) -> String {\n    if runtime_io::owned_case_view::PATHS[6..].contains(&path) {\n        return runtime_io::read_to_string(root().join(path)).unwrap();\n    }";
+    let expected = format!("{imports}{}", old.replacen(before, after, 1));
+    assert!(storage_contract::accepts(&expected, &current));
+    assert_ne!(old, current.replace("\r\n", "\n"));
+    for changed in [
+        current.replace(
+            "if runtime_io::owned_case_view::PATHS[6..].contains(&path)",
+            "if true",
+        ),
+        format!("{current}\nfn unrelated_effect() {{}}"),
+    ] {
+        assert!(!storage_contract::accepts(&expected, &changed));
+    }
+}
+#[test]
 fn owned_case_exact_current_additions_preserve_every_old_body_and_reader() {
     contract::require_helpers(&runtime::root());
     for path in contract::PATHS {

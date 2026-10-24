@@ -1,3 +1,9 @@
+#[path = "../../../tools/authority-runtime-074/gate.rs"]
+mod runtime;
+#[path = "../../../tools/authority-runtime-074/io.rs"]
+mod runtime_io;
+#[path = "../../../tools/authority-storage-source-074/contract.rs"]
+mod storage_contract;
 #[test]
 fn installed_origin_exists_before_systemd_or_child_admission() {
     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
@@ -273,6 +279,9 @@ fn root() -> std::path::PathBuf {
     std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
 }
 fn read(path: &str) -> String {
+    if runtime_io::owned_case_view::PATHS[6..].contains(&path) {
+        return runtime_io::read_to_string(root().join(path)).unwrap();
+    }
     std::fs::read_to_string(root().join(path))
         .unwrap()
         .replace('\r', "")

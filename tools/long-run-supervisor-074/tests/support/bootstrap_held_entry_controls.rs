@@ -280,6 +280,12 @@ fn await_ack(fd: &OwnedFd, child: &mut Running, f: &Installed, raw: &[u8]) {
 }
 #[test]
 fn held_entry_valid_readiness_then_duplicate_refuses_without_worker() {
+    if crate::owned_case::isolate(
+        module_path!(),
+        "held_entry_valid_readiness_then_duplicate_refuses_without_worker",
+    ) {
+        return;
+    }
     let f = held_fixture();
     let [parent, endpoint] = pair();
     let mut child = spawn(&f, &endpoint, "");
@@ -292,6 +298,12 @@ fn held_entry_valid_readiness_then_duplicate_refuses_without_worker() {
 }
 #[test]
 fn held_entry_activation_and_census_faults_refuse_without_ack() {
+    if crate::owned_case::isolate(
+        module_path!(),
+        "held_entry_activation_and_census_faults_refuse_without_ack",
+    ) {
+        return;
+    }
     for fault in [
         "foreign-env",
         "missing-env",
@@ -316,6 +328,12 @@ fn held_entry_activation_and_census_faults_refuse_without_ack() {
 }
 #[test]
 fn held_entry_context_entry_invocation_deadline_reserved_and_pid_faults_refuse() {
+    if crate::owned_case::isolate(
+        module_path!(),
+        "held_entry_context_entry_invocation_deadline_reserved_and_pid_faults_refuse",
+    ) {
+        return;
+    }
     for at in [8, 28, 64, 96, 128, 160, 192, 208] {
         let f = held_fixture();
         let [parent, endpoint] = pair();
@@ -330,6 +348,12 @@ fn held_entry_context_entry_invocation_deadline_reserved_and_pid_faults_refuse()
 
 #[test]
 fn held_entry_wrong_kernel_sender_and_malformed_packet_refuse() {
+    if crate::owned_case::isolate(
+        module_path!(),
+        "held_entry_wrong_kernel_sender_and_malformed_packet_refuse",
+    ) {
+        return;
+    }
     for wrong_sender in [false, true] {
         let f = held_fixture();
         let [parent, endpoint] = pair();
@@ -366,6 +390,12 @@ fn held_entry_wrong_kernel_sender_and_malformed_packet_refuse() {
 }
 #[test]
 fn held_entry_guardian_loss_and_peer_disconnect_stop_nonexecuting_hold() {
+    if crate::owned_case::isolate(
+        module_path!(),
+        "held_entry_guardian_loss_and_peer_disconnect_stop_nonexecuting_hold",
+    ) {
+        return;
+    }
     for guardian in [true, false] {
         let mut f = held_fixture();
         let [parent, endpoint] = pair();
@@ -387,6 +417,12 @@ fn held_entry_guardian_loss_and_peer_disconnect_stop_nonexecuting_hold() {
 }
 #[test]
 fn held_entry_sigkill_before_and_after_unconsumed_ack_is_not_reexecution() {
+    if crate::owned_case::isolate(
+        module_path!(),
+        "held_entry_sigkill_before_and_after_unconsumed_ack_is_not_reexecution",
+    ) {
+        return;
+    }
     for sent in [false, true] {
         let f = held_fixture();
         let [parent, endpoint] = pair();
@@ -456,6 +492,12 @@ fn held_entry_sigkill_before_and_after_unconsumed_ack_is_not_reexecution() {
 }
 #[test]
 fn held_entry_original_alarm_expires_without_rearming() {
+    if crate::owned_case::isolate(
+        module_path!(),
+        "held_entry_original_alarm_expires_without_rearming",
+    ) {
+        return;
+    }
     let f = held_fixture();
     let [parent, endpoint] = pair();
     let mut child = spawn(&f, &endpoint, "");
@@ -482,6 +524,12 @@ fn held_entry_original_alarm_expires_without_rearming() {
 
 #[test]
 fn held_entry_old_equal_name_assertions_refuse_without_weakening_exchange() {
+    if crate::owned_case::isolate(
+        module_path!(),
+        "held_entry_old_equal_name_assertions_refuse_without_weakening_exchange",
+    ) {
+        return;
+    }
     let f = Installed::new();
     assert_eq!(f.old.entry.names[0], f.old.entry.names[1]);
     let [parent, endpoint] = pair();

@@ -138,6 +138,12 @@ fn attempt_with_exit(f: &Installed, matching: bool, fault: &str, expected: i32) 
 }
 #[test]
 fn installed_child_busy_inode_is_shell_refusal_not_reader_evidence() {
+    if crate::owned_case::isolate(
+        module_path!(),
+        "installed_child_busy_inode_is_shell_refusal_not_reader_evidence",
+    ) {
+        return;
+    }
     let f = Installed::new();
     let _writer = File::options().write(true).open(f.path()).unwrap();
     let text = attempt_with_exit(&f, true, "held-writer", 126);
@@ -146,6 +152,12 @@ fn installed_child_busy_inode_is_shell_refusal_not_reader_evidence() {
 }
 #[test]
 fn installed_child_filesystem_inode_matches_but_forged_context_still_refuses_authentication() {
+    if crate::owned_case::isolate(
+        module_path!(),
+        "installed_child_filesystem_inode_matches_but_forged_context_still_refuses_authentication",
+    ) {
+        return;
+    }
     let f = Installed::new();
     let text = attempt(&f, true, "");
     assert!(
@@ -155,12 +167,24 @@ fn installed_child_filesystem_inode_matches_but_forged_context_still_refuses_aut
 }
 #[test]
 fn installed_child_same_bytes_other_executable_inode_cannot_authenticate() {
+    if crate::owned_case::isolate(
+        module_path!(),
+        "installed_child_same_bytes_other_executable_inode_cannot_authenticate",
+    ) {
+        return;
+    }
     let f = Installed::new();
     let text = attempt(&f, false, "");
     assert!(!text.contains("authentication is closed"), "{text}");
 }
 #[test]
 fn installed_child_extra_missing_offset_hash_and_embedded_old_record_refuse() {
+    if crate::owned_case::isolate(
+        module_path!(),
+        "installed_child_extra_missing_offset_hash_and_embedded_old_record_refuse",
+    ) {
+        return;
+    }
     for fault in ["extra", "missing", "offset"] {
         let f = Installed::new();
         let text = attempt(&f, true, fault);
