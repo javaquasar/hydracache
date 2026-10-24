@@ -10,7 +10,7 @@ mod storage_contract;
 #[test]
 fn historical_input_reader_is_one_exact_additive_verified_branch() {
     let path = "tools/authority-runtime-074/io.rs";
-    let old = runtime::frozen("81f4add2", path);
+    let old = runtime::frozen("81f4add2d8abd9fecdfc15b8e93dfc47779c570d", path);
     let expected = old.replacen("use std::{io, path::Path};", "use std::{io, path::Path};\n#[path = \"../historical-input-view-074/contract.rs\"]\npub(crate) mod reviewed_inputs;", 1)
         .replacen("    Ok(super::runtime::view(&relative, raw))", "    if reviewed_inputs::PATHS.contains(&relative.as_str()) {\n        return Ok(reviewed_inputs::predecessor(&relative, &raw));\n    }\n    Ok(super::runtime::view(&relative, raw))", 1);
     let actual = std::fs::read_to_string(runtime::root().join(path)).unwrap();

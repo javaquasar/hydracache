@@ -15,6 +15,9 @@ Return independent owned strings as before; no partial output or failed loader
 may enter the cache. A process-local frozen history snapshot is sufficient:
 the reviewed commit objects do not change during a gate. This is not a cache
 of refs, current files, expected authority or live observations.
+The integrated wrapper accepts only full forty-hex commit object IDs, never
+mutable refs or ambiguous abbreviated names. Expand the one existing short
+test pin to its exact full object ID without changing its assertion.
 
 Standalone controls precede integration: one complete load for 64 same-key
 lookups; separate revision/path/instance identity; sixteen concurrent same-key

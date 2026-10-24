@@ -28,19 +28,8 @@ pub fn root() -> PathBuf {
 pub fn frozen(revision: &str, path: &str) -> String {
     assert!(matches!(revision, REVIEWED | PREDECESSOR));
     assert!(PATHS.contains(&path));
-    let output = std::process::Command::new("git")
-        .arg("--no-replace-objects")
-        .args(["show", &format!("{revision}:{path}")])
-        .current_dir(root())
-        .output()
-        .unwrap();
-    assert!(
-        output.status.success(),
-        "missing reviewed source input: {path}"
-    );
-    String::from_utf8(output.stdout)
-        .unwrap()
-        .replace("\r\n", "\n")
+    assert_eq!(root(), crate::runtime::root());
+    crate::runtime::frozen(revision, path)
 }
 pub fn expected(path: &str) -> Option<String> {
     PATHS.contains(&path).then(|| frozen(REVIEWED, path))

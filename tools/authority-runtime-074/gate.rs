@@ -1,5 +1,7 @@
 //! Exact current installation gate plus a verified predecessor view for old phases.
 use crate::storage_contract as storage;
+#[path = "../historical-source-cache-074/library.rs"]
+pub mod historical_cache;
 #[path = "performance.rs"]
 pub mod performance;
 #[path = "../status-field-gate-074/contract.rs"]
@@ -26,6 +28,13 @@ pub fn root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
 }
 pub fn frozen(revision: &str, path: &str) -> String {
+    assert!(revision.len() == 40 && revision.bytes().all(|byte| byte.is_ascii_hexdigit()));
+    static CACHE: std::sync::OnceLock<historical_cache::Cache> = std::sync::OnceLock::new();
+    CACHE
+        .get_or_init(historical_cache::Cache::default)
+        .get(revision, path, || load_frozen(revision, path))
+}
+fn load_frozen(revision: &str, path: &str) -> String {
     let output = std::process::Command::new("git")
         .arg("--no-replace-objects")
         .args(["show", &format!("{revision}:{path}")])
