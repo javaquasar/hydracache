@@ -1,13 +1,24 @@
 const BASE: &str = "72efce2401e753b857f7fc03f3300b6aae19bd5d";
 #[path = "support/document_scratch_guard.rs"]
 mod guard;
+#[path = "support/document_scratch_inputs.rs"]
+mod inputs;
+#[path = "../../../tools/authority-runtime-074/gate.rs"]
+mod runtime;
+#[path = "../../../tools/authority-runtime-074/io.rs"]
+mod runtime_io;
+#[path = "../../../tools/authority-storage-source-074/contract.rs"]
+mod storage_contract;
 fn root() -> std::path::PathBuf {
     std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..")
 }
 fn read(path: &str) -> String {
-    std::fs::read_to_string(root().join(path))
-        .unwrap()
-        .replace('\r', "")
+    let raw = inputs::read(path);
+    if path == guard::ORIGIN {
+        crate::hc074_pidfd_info_path_view!(path, &raw)
+    } else {
+        raw
+    }
 }
 fn git(path: &str) -> String {
     let out = std::process::Command::new("git")
