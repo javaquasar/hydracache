@@ -19282,3 +19282,30 @@ six-profile oracle and all bounds remain intact. Neither this fixture separation
 nor invocation counts establish a speedup. The next implementation must bind
 fallback output to its admitted reference view before any caller integration,
 without removing fresh checks or deriving trust from the observed bytes.
+
+The [pinned fallback implementation](../testing/performance/0.74/historical-blob-pinned-fallback-result-20261024.md)
+closes that specific gap by binding a second independent reference to the first:
+the original query, object/missing pin and replacement policy carry exact
+stdout/stderr byte pins and terminal status. A validated raw tree is not enough
+to authenticate a later formatted `show` response, and a validated absence is not
+permission to return a newly present blob. The reader therefore validates the
+actual fallback outcome before releasing any results. Restoring refs/config
+before the final check no longer hides changed output.
+
+This changes the explicit admission boundary rather than pretending a raw object
+pin contains information it never captured. The raw-pin-only entry points still
+support blobs, but missing/non-blob requests now require an output binding and
+otherwise refuse before effects. Pins are never rebuilt from observed fallback
+bytes. The original query spelling, replacement flags, all existing checks and
+shared deadline remain; hashing adds work inside that same deadline. A later
+failure also withholds every earlier blob/fallback result.
+
+The candidate rejects missing-path, tree-ref and replacement-config ABA, including
+restoration before verification. All twenty component cases pass on current Rust
+and MSRV, preserving the 54-result independent reference corpus; thirty-one
+Python cases and current check/strict lint also pass. These new sequential runs
+leave every old timeout and fixture failure intact. They establish a narrower
+correctness result, not a performance gain or a trusted production pin source.
+Reference preparation, hashing, spooling and copies must still be measured on
+the complete path. No real caller is connected until its authority, environment,
+fresh-observation order and error contract are separately admitted.

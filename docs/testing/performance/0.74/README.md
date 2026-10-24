@@ -6905,3 +6905,14 @@ fixture expectation failures and all deadline refusals remain retained; latest
 combined transport commands are red at full-oracle preparation and are not
 retried. No real caller is connected, and no original live checks or deadlines
 change. A proved fallback/reference-view contract is required before integration.
+
+The [pinned fallback candidate](historical-blob-pinned-fallback-result-20261024.md)
+closes that output gap with independent stdout/stderr/status pins bound to the
+original query, decoder pin and replacement policy. Missing/non-blob calls without
+bindings now refuse before effects. Missing-path, tree-ref and replacement-config
+ABA refuse even after restoration; later failures publish no earlier prefix.
+All 20 component tests pass on current/MSRV, including the six-profile/54-result
+corpus, plus 31 Python controls and current check/strict lint. Earlier refusals
+remain immutable. This green output-binding gate does not admit a real caller:
+trust/provenance, Linux, preparation cost and unchanged-bound package/release gates
+remain open, with every original live check and deadline retained.

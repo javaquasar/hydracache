@@ -1,0 +1,1 @@
+{"args":["cat-file","tree","93296024e68a10383a0dfbbdd97cc308d64a1baf"],"input_hex":"","policy":"Disabled","result":{"code":0,"stderr_hex":"","stdout_hex":"313030363434206f74686572000aaa0f198cef816245eb1dc21ce8b1ffe2e61584"}}

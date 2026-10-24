@@ -1,0 +1,55 @@
+{
+  "admission": false,
+  "cases": [
+    {
+      "case": 0,
+      "matched": true,
+      "policy": "disabled",
+      "replaced": false,
+      "requests": 9,
+      "short": false
+    },
+    {
+      "case": 1,
+      "matched": true,
+      "policy": "default",
+      "replaced": false,
+      "requests": 9,
+      "short": false
+    },
+    {
+      "case": 2,
+      "matched": true,
+      "policy": "default",
+      "replaced": false,
+      "requests": 9,
+      "short": true
+    },
+    {
+      "case": 3,
+      "matched": true,
+      "policy": "disabled",
+      "replaced": true,
+      "requests": 9,
+      "short": false
+    },
+    {
+      "case": 4,
+      "matched": true,
+      "policy": "default",
+      "replaced": true,
+      "requests": 9,
+      "short": false
+    },
+    {
+      "case": 5,
+      "matched": true,
+      "policy": "default",
+      "replaced": true,
+      "requests": 9,
+      "short": true
+    }
+  ],
+  "first_result_retained": true,
+  "measurement": false
+}

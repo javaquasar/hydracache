@@ -270,3 +270,14 @@ from the unchanged six-profile oracle; latest combined regression attempts fail
 the latter's original deadline and remain red, with all first outcomes retained.
 Thirty-one Python controls and current check/strict lint pass. No runtime source
 guard, live observation, original window or release admission changes.
+
+The [output-binding followup](historical-blob-pinned-fallback-result-20261024.md)
+now closes the demonstrated unpinned fallback return: independent outcome pins
+bind the original query/pin/policy, and missing/tree/config ABA returns
+`FallbackOutput` after restoration. Unbound entry points fail closed before Git;
+no earlier prefix escapes a later refusal. Twenty component cases pass on each
+toolchain, with all 54 reference outcomes retained, 31 Python cases and current
+check/strict lint green. These new sequential candidate passes do not erase old
+first failures. Actual pin authority, caller eligibility, Linux and preparation
+cost remain before integration; whole-package and original release barriers are
+unchanged. This is not an original delivery, all-writer or lifecycle admission.

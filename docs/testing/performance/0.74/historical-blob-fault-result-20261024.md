@@ -100,3 +100,8 @@ All original live checks, observation frequency and 300/60/10 windows remain
 unchanged. The old 780-second package guard, Cargo manifests/lockfile and
 qualification manifest retain their exact bytes. No clocks, services, existing
 worktrees, server, original-owner run, product workload or qualification is used.
+
+The subsequent [pinned fallback candidate](historical-blob-pinned-fallback-result-20261024.md)
+fixes this output gap with independent outcome pins and tests the same ABA cuts
+as a refusal. This report and its packet remain the first pre-fix record, not
+the current component verdict. Real caller admission remains closed.
