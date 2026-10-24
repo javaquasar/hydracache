@@ -6812,3 +6812,10 @@ and strict checks pass. A separate read-only audit records all 530 current paths
 the 446-file phase has 84 additions and 31 changed old bodies, with no removals.
 Inventory/held-build comparisons remain open; observed source identity is not
 permission to filter unknown names or admit production execution.
+
+The [exact artifact phase projection](artifact-phase-projection-result-20261024.md)
+now verifies all 530 current source paths, index identities, filesystem shape
+and canonical bytes before exposing the known 446-file inventory. All twenty
+old artifact cases and their whole-body comparisons pass without assertion or
+count changes; the final focused cohort has thirty-three passing cases. The
+independent current-tree history gate and actual execution admission stay open.

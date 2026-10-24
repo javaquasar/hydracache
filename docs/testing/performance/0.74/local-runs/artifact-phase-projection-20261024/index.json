@@ -1,0 +1,373 @@
+{
+  "facts": {
+    "baseline": "f6ec596cad38c71fe912e40b2a7c67a84dbd664f",
+    "changed_old_sources_vs_446": 31,
+    "code_paths": [
+      "crates/xtask/tests/diagnostic_artifact_fixture_074.rs",
+      "crates/xtask/tests/artifact_inventory_reader_074.rs",
+      "crates/xtask/tests/support/artifact_inventory_input.rs"
+    ],
+    "deadlines_changed": false,
+    "dependency_changes": false,
+    "final_code_commit": "45db045d97fbe6f18c0967862f20249e93e40c35",
+    "free_bytes_at_capture": 27648667648,
+    "full_package_rerun": false,
+    "independent_current_tree_gate_closed": false,
+    "ledger_digest": "cfd5e7f1c153f5214dd71da196dfdbac2d1c05806fa14865605e9ce0776bc9c0",
+    "observation_frequency_changed": false,
+    "original_artifact_cases_passed": 20,
+    "original_assertions_and_counts_changed": false,
+    "original_owner": false,
+    "performance_measurements": false,
+    "pinned_current_sources": 530,
+    "pinned_new_sources_vs_446": 84,
+    "protected_sha256": {
+      "Cargo.lock": "d2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c",
+      "Cargo.toml": "18a8a27cf140a1d6eb31c8316ee39bb7d5832866a990346eee16cd0c30de344b",
+      "docs/testing/performance/0.74/qualification-manifest.toml": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "qualification": false,
+    "results": {
+      "artifact-phase-baseline": {
+        "exit": 101,
+        "failed": 0,
+        "filtered": 0,
+        "ignored": 0,
+        "passed": 0,
+        "target_verdicts": 0
+      },
+      "artifact-phase-candidate": {
+        "exit": 101,
+        "failed": 0,
+        "filtered": 0,
+        "ignored": 0,
+        "passed": 0,
+        "target_verdicts": 0
+      },
+      "artifact-phase-check": {
+        "exit": 0,
+        "failed": 0,
+        "filtered": 0,
+        "ignored": 0,
+        "passed": 0,
+        "target_verdicts": 0
+      },
+      "artifact-phase-clippy": {
+        "exit": 0,
+        "failed": 0,
+        "filtered": 0,
+        "ignored": 0,
+        "passed": 0,
+        "target_verdicts": 0
+      },
+      "artifact-phase-contract": {
+        "exit": 0,
+        "failed": 0,
+        "filtered": 0,
+        "ignored": 0,
+        "passed": 0,
+        "target_verdicts": 0
+      },
+      "artifact-phase-corrected-baseline": {
+        "exit": 101,
+        "failed": 1,
+        "filtered": 0,
+        "ignored": 0,
+        "passed": 3,
+        "target_verdicts": 1
+      },
+      "artifact-phase-corrected-candidate": {
+        "exit": 0,
+        "failed": 0,
+        "filtered": 0,
+        "ignored": 0,
+        "passed": 24,
+        "target_verdicts": 2
+      },
+      "artifact-phase-doc": {
+        "exit": 0,
+        "failed": 0,
+        "filtered": 0,
+        "ignored": 0,
+        "passed": 0,
+        "target_verdicts": 0
+      },
+      "artifact-phase-format": {
+        "exit": 0,
+        "failed": 0,
+        "filtered": 0,
+        "ignored": 0,
+        "passed": 0,
+        "target_verdicts": 0
+      },
+      "artifact-phase-gated": {
+        "exit": 0,
+        "failed": 0,
+        "filtered": 0,
+        "ignored": 0,
+        "passed": 0,
+        "target_verdicts": 0
+      },
+      "artifact-phase-index-controls": {
+        "exit": 0,
+        "failed": 0,
+        "filtered": 0,
+        "ignored": 0,
+        "passed": 33,
+        "target_verdicts": 5
+      }
+    },
+    "runtime_changes": false,
+    "server": false,
+    "services_or_clocks": false,
+    "test_only_inventory_bridge_admitted": true,
+    "whole_body_source_counts": [
+      437,
+      438,
+      440,
+      441,
+      442,
+      443,
+      446
+    ]
+  },
+  "members": {
+    "coordinator/run-fresh-reader-20261024.py": {
+      "bytes": 544,
+      "sha256": "851631e846ec7d3696a0e2fa550b6f87e8f07e8412f5dafc0530c0bc70c597ed"
+    },
+    "coordinator/run-source-step-20261024.py": {
+      "bytes": 2596,
+      "sha256": "a92482cabcfcf8f6440e95972bee8d204bb9c59c8805c45c7b57363dcc3ab430"
+    },
+    "coordinator/seal-artifact-phase-20261024.py": {
+      "bytes": 5620,
+      "sha256": "71e7e4a585e446a305725128fd4d811dc9265a41a7f960c2bb41c5a0d2ba767c"
+    },
+    "input/pinned-inventory-ledger.json": {
+      "bytes": 576734,
+      "sha256": "cfd5e7f1c153f5214dd71da196dfdbac2d1c05806fa14865605e9ce0776bc9c0"
+    },
+    "observation/artifact-phase-baseline/intent.json": {
+      "bytes": 311469,
+      "sha256": "50e9c6a75f69b81b0d04634191540a96c7eb5a852ee3c53649b0e172cde8dee5"
+    },
+    "observation/artifact-phase-baseline/result.json": {
+      "bytes": 311096,
+      "sha256": "d3619a4dbe3d6cf10d488c80ca5d2f9cc1de46dfe65c96993a7e778b59f760ed"
+    },
+    "observation/artifact-phase-baseline/stderr.log": {
+      "bytes": 2869,
+      "sha256": "ccf74a7cebcf3359d5ceb083051bfba0624bcb7816d4d92a7680be540b07f9b1"
+    },
+    "observation/artifact-phase-baseline/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/artifact-phase-candidate/intent.json": {
+      "bytes": 311524,
+      "sha256": "3e1d359e14537c9b06083abe4d4ae475357a2eec1329930fb7f2d1c24f34011a"
+    },
+    "observation/artifact-phase-candidate/result.json": {
+      "bytes": 311096,
+      "sha256": "111e6e7a0f618d990100b473b66beb0909ab85dcda43f5289dc0787ef4713516"
+    },
+    "observation/artifact-phase-candidate/stderr.log": {
+      "bytes": 5574,
+      "sha256": "1027d04e1e5f546f2f20732bd64e01df853cf82537c3e29dfa674a6f634ac8a7"
+    },
+    "observation/artifact-phase-candidate/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/artifact-phase-check/intent.json": {
+      "bytes": 311403,
+      "sha256": "54b2bb69867e23691dae6a40e4cede4cc7218d821133bbee4e7eb37b5eb17751"
+    },
+    "observation/artifact-phase-check/result.json": {
+      "bytes": 311094,
+      "sha256": "14be9256e76e68d9dc238423164e32b300d97934dddeb86741c23270d8ad6a7e"
+    },
+    "observation/artifact-phase-check/stderr.log": {
+      "bytes": 155,
+      "sha256": "cd54c4e2123181b2548b10885ef46cdcd753f1dd27c7a729b4d00b835595536b"
+    },
+    "observation/artifact-phase-check/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/artifact-phase-clippy/intent.json": {
+      "bytes": 311466,
+      "sha256": "5aa119ec5b923f8d8401d3cbfd5ef87dc5a26b7934efcf7990e1abb7032b9dd2"
+    },
+    "observation/artifact-phase-clippy/result.json": {
+      "bytes": 311094,
+      "sha256": "14be9256e76e68d9dc238423164e32b300d97934dddeb86741c23270d8ad6a7e"
+    },
+    "observation/artifact-phase-clippy/stderr.log": {
+      "bytes": 155,
+      "sha256": "f50fb4bea9a40a26c25c792702d652914e3dd3d5018e6e0656a0fa0b3553f410"
+    },
+    "observation/artifact-phase-clippy/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/artifact-phase-contract/intent.json": {
+      "bytes": 311456,
+      "sha256": "37ea393cf1d1ac841613b9cb68e8fe006f1de8e526f6693e96bde84cfdaab892"
+    },
+    "observation/artifact-phase-contract/result.json": {
+      "bytes": 311094,
+      "sha256": "14be9256e76e68d9dc238423164e32b300d97934dddeb86741c23270d8ad6a7e"
+    },
+    "observation/artifact-phase-contract/stderr.log": {
+      "bytes": 152,
+      "sha256": "9d289d3adfe0506f2747035aeaf34c0d262fc6a73f3c5f604af59541750935a3"
+    },
+    "observation/artifact-phase-contract/stdout.log": {
+      "bytes": 60,
+      "sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+    },
+    "observation/artifact-phase-corrected-baseline/intent.json": {
+      "bytes": 311469,
+      "sha256": "be3c27779cfef51eaeb83d4f46f7f75af0ca57c30d9b423855459bee2fdb7eae"
+    },
+    "observation/artifact-phase-corrected-baseline/result.json": {
+      "bytes": 311096,
+      "sha256": "657a4ade20873bb3b2be1a989d186bf95dd44cdcd43a77a0dfac4b904c57475c"
+    },
+    "observation/artifact-phase-corrected-baseline/stderr.log": {
+      "bytes": 361,
+      "sha256": "8cb7a464df97ff0309c62e2eb39da8c2ac0cf2f13505ad84c8bd4d2b1490a633"
+    },
+    "observation/artifact-phase-corrected-baseline/stdout.log": {
+      "bytes": 50288,
+      "sha256": "40fb9eda98516bd559d6ec279c11201af7299d2e2d0a214adb6ce62975ba9ceb"
+    },
+    "observation/artifact-phase-corrected-candidate/intent.json": {
+      "bytes": 311524,
+      "sha256": "bfc1cdef160918bf968807fac9bbfe1d4e5d892d2ddb2fc145f84ab8949d9cc7"
+    },
+    "observation/artifact-phase-corrected-candidate/result.json": {
+      "bytes": 311094,
+      "sha256": "ade9f60cc49fccb2a62f295ae098da98c39ed6acb2977b52ec6a53e0a513b0bd"
+    },
+    "observation/artifact-phase-corrected-candidate/stderr.log": {
+      "bytes": 406,
+      "sha256": "b5edd7049eec629e4dc718e9d3faa81064e901695b7ca6ab7e0987f72a85faee"
+    },
+    "observation/artifact-phase-corrected-candidate/stdout.log": {
+      "bytes": 2209,
+      "sha256": "391f1515fb5392fca733757f15b484f34f3e3114b96e761bc823b8ed71cfb3cc"
+    },
+    "observation/artifact-phase-doc/intent.json": {
+      "bytes": 311408,
+      "sha256": "88322d0c23fb4090d324b0bba05b156dd8ad1393dbd2dc3a50a11c9731f05a2f"
+    },
+    "observation/artifact-phase-doc/result.json": {
+      "bytes": 311094,
+      "sha256": "14be9256e76e68d9dc238423164e32b300d97934dddeb86741c23270d8ad6a7e"
+    },
+    "observation/artifact-phase-doc/stderr.log": {
+      "bytes": 203,
+      "sha256": "f4414ff2427471966e9c9195397da5dbdea723c2372874b95d47326b920737b4"
+    },
+    "observation/artifact-phase-doc/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "observation/artifact-phase-format/intent.json": {
+      "bytes": 311525,
+      "sha256": "4683ad15595bc31d9e0ad014503070924744d1aac258f9627bea15500849dda2"
+    },
+    "observation/artifact-phase-format/result.json": {
+      "bytes": 311094,
+      "sha256": "14be9256e76e68d9dc238423164e32b300d97934dddeb86741c23270d8ad6a7e"
+    },
+    "observation/artifact-phase-format/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/artifact-phase-format/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/artifact-phase-gated/intent.json": {
+      "bytes": 311415,
+      "sha256": "04a50926df4a555d7d73cd171508e75d4fca323869eb9114f3e4814a60553ebe"
+    },
+    "observation/artifact-phase-gated/result.json": {
+      "bytes": 311094,
+      "sha256": "14be9256e76e68d9dc238423164e32b300d97934dddeb86741c23270d8ad6a7e"
+    },
+    "observation/artifact-phase-gated/stderr.log": {
+      "bytes": 127,
+      "sha256": "4137ec08f6b6b070b23e57f39f4e29619ec4ee0f48209a122ebf42e0f9c358f0"
+    },
+    "observation/artifact-phase-gated/stdout.log": {
+      "bytes": 60,
+      "sha256": "19c33b14c465fd5497bae810aa56160a2891365845f00f0f45e8d2bc78156a45"
+    },
+    "observation/artifact-phase-index-controls/intent.json": {
+      "bytes": 311672,
+      "sha256": "4795bd90f7873c2c54b5d170b637d2eab2dfc2b60c375c22878b3cb8caee9952"
+    },
+    "observation/artifact-phase-index-controls/result.json": {
+      "bytes": 311094,
+      "sha256": "14be9256e76e68d9dc238423164e32b300d97934dddeb86741c23270d8ad6a7e"
+    },
+    "observation/artifact-phase-index-controls/stderr.log": {
+      "bytes": 753,
+      "sha256": "5b500023aaaba876288897fab0cb49ffbc6c784aaf360dbb38287a51dd4b7573"
+    },
+    "observation/artifact-phase-index-controls/stdout.log": {
+      "bytes": 3352,
+      "sha256": "5928c4e42fa3c8ca7d92615138df337428a0aaf038911fe7d00e5e882a1b8fe7"
+    },
+    "source/baseline/crates/xtask/tests/diagnostic_artifact_fixture_074.rs": {
+      "bytes": 23103,
+      "sha256": "93ca89a049f40d1ae6b2c82078578abc82656e9a22c9496f565873827e3c9afb"
+    },
+    "source/committed-code.diff": {
+      "bytes": 14282,
+      "sha256": "d3e02d2ede5d818b536fc50c2219b385afa2cb39cc2fb624beef0832e26aea3a"
+    },
+    "source/current/crates/xtask/tests/artifact_inventory_reader_074.rs": {
+      "bytes": 5308,
+      "sha256": "42b8a38942c40b66d5df580afb1a001802c0a7a235347bb9c458679f130909c6"
+    },
+    "source/current/crates/xtask/tests/diagnostic_artifact_fixture_074.rs": {
+      "bytes": 23589,
+      "sha256": "5819f89ec58a899e03d7c0f14c6af91f4be6248a26f8578186cfc47b5900a805"
+    },
+    "source/current/crates/xtask/tests/support/artifact_inventory_input.rs": {
+      "bytes": 6377,
+      "sha256": "536cb02654d3b2bb21328a0b3dc81726d6f7bef8f1b19994168f247b0ec0d56b"
+    },
+    "source/retained/artifact-phase-first-passing-20261024/crates/xtask/tests/artifact_inventory_reader_074.rs": {
+      "bytes": 4392,
+      "sha256": "dca0b6d9089d6ebc80c3650a6159ed0d9d92493b05c40e72f48e19aba7cdd3c4"
+    },
+    "source/retained/artifact-phase-first-passing-20261024/crates/xtask/tests/diagnostic_artifact_fixture_074.rs": {
+      "bytes": 23589,
+      "sha256": "5819f89ec58a899e03d7c0f14c6af91f4be6248a26f8578186cfc47b5900a805"
+    },
+    "source/retained/artifact-phase-first-passing-20261024/crates/xtask/tests/support/artifact_inventory_input.rs": {
+      "bytes": 6284,
+      "sha256": "f26987d627da7069d917f7c6dfd5b60fb6b79b87092b548a1f72277afc965cee"
+    },
+    "source/retained/artifact-phase-format-refusal-20261024/crates/xtask/tests/artifact_inventory_reader_074.rs": {
+      "bytes": 4392,
+      "sha256": "dca0b6d9089d6ebc80c3650a6159ed0d9d92493b05c40e72f48e19aba7cdd3c4"
+    },
+    "source/retained/artifact-phase-format-refusal-20261024/crates/xtask/tests/diagnostic_artifact_fixture_074.rs": {
+      "bytes": 23589,
+      "sha256": "5819f89ec58a899e03d7c0f14c6af91f4be6248a26f8578186cfc47b5900a805"
+    },
+    "source/retained/artifact-phase-format-refusal-20261024/crates/xtask/tests/support/artifact_inventory_input.rs": {
+      "bytes": 6196,
+      "sha256": "346da6c030c5d87c8af848138b127005d26ee70012b3c7a5a20666ccdb40f5c6"
+    }
+  },
+  "schema": "hc074-artifact-phase-projection-v1"
+}

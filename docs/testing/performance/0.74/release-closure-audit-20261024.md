@@ -158,3 +158,12 @@ paths, including 84 additions and 31 changed old files relative to the 446-file
 phase. Exact inventory projection, old held-build compatibility and the
 independent current-tree history gate remain open. Runtime admission and the
 fifteen-advisory dependency boundary are unchanged.
+
+The later [artifact phase projection](artifact-phase-projection-result-20261024.md)
+closes the targeted inventory/held-build frontier: all twenty original artifact
+cases, including seven historical whole-body source sets, pass with assertions
+unchanged. Before projection it checks every current path, index record,
+filesystem entry and canonical source digest against the pinned 530-file ledger.
+The focused cohort has thirty-three passes and strict checks are green. This
+does not close the independent current-tree history gate, the wider package or
+any original execution/retirement/admission prerequisite.

@@ -19062,3 +19062,16 @@ finds 530 current paths against the old 446-file phase: 84 additions, but also
 The exact path/blob/byte ledger is therefore an observation baseline, not a
 passing historical comparison or permission to execute. Each changed body still
 needs an explicit attributable delta, and the original launch gates stay closed.
+
+The inventory repair now enforces that distinction. It verifies all 530 current
+paths, Git mode/blob/stage identities, filesystem entries and canonical contents
+before projecting the known 446-file phase. Only immutable ledger data is cached;
+current source checks run again for every projection. The existing normalizers
+then reconstruct and compare every old body, including the 31 changed files.
+All twenty original artifact cases pass, with no changed count or assertion.
+Exhaustive canaries reject missing/duplicate/unknown paths, changed bytes, read
+errors and index substitutions. The final focused cohort has thirty-three
+passes and strict checks are green; the
+[projection result](../testing/performance/0.74/artifact-phase-projection-result-20261024.md)
+retains first compiler/baseline refusals and separates source compatibility from
+the still-open execution and full-package gates.

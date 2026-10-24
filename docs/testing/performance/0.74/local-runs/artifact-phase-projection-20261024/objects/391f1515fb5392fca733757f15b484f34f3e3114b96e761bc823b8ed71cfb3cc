@@ -1,0 +1,34 @@
+
+running 4 tests
+test inventory_projection_rejects_every_missing_duplicate_unknown_and_reordered_path ... ok
+test inventory_projection_rejects_each_changed_old_or_new_body_and_read_failure ... ok
+test inventory_reader_preserves_every_old_assertion_and_comparison_count ... ok
+test inventory_projection_requires_all_current_source_files_before_old_list ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.38s
+
+
+running 20 tests
+test consuming_held_join_exact_adapter_rejects_missing_duplicate_extra_and_body_drift ... ok
+test actual_consuming_adapter_refuses_missing_duplicate_hook_and_unrelated_drift ... ok
+test held_build_source_allowlist_requires_all_old_files_and_exactly_one_named_addition ... ok
+test held_trust_adapter_refuses_missing_duplicate_extra_and_unrelated_drift ... ok
+test held_build_adapter_rejects_missing_duplicate_and_unrelated_old_drift ... ok
+test immutable_fixture_adapter_refuses_missing_duplicate_and_unrelated_test_drift ... ok
+test immutable_fixture_changes_only_old_input_helper_not_any_old_assertion ... ok
+test immutable_fixture_is_exact_worker_blob_and_checkout_keeps_raw_lf ... ok
+test held_trust_preserves_all_442_preceding_sources_and_production_inputs ... ok
+test consuming_held_join_preserves_all_443_old_sources_and_formats ... ok
+test actual_consuming_fixture_preserves_all_446_preceding_sources_and_formats ... ok
+test immutable_fixture_preserves_all_437_runtime_sources_and_production_inputs ... ok
+test namespace_fixture_is_test_only_private_mount_and_not_manager_authority ... ok
+test role_binding_adapter_refuses_missing_duplicate_and_unrelated_drift ... ok
+test launcher_adapter_refuses_missing_duplicate_and_unrelated_drift ... ok
+test namespace_adapter_refuses_missing_duplicate_and_unrelated_drift ... ok
+test role_files_adapter_refuses_missing_duplicate_and_unrelated_drift ... ok
+test launcher_preserves_all_438_preceding_sources_and_exact_old_formats ... ok
+test role_binding_preserves_all_441_preceding_runtime_sources_and_inputs ... ok
+test role_files_preserve_all_440_previous_runtime_sources_and_inputs ... ok
+
+test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 64.46s
+

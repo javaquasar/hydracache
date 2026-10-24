@@ -1,0 +1,371 @@
+diff --git a/crates/xtask/tests/artifact_inventory_reader_074.rs b/crates/xtask/tests/artifact_inventory_reader_074.rs
+new file mode 100644
+index 00000000..664277e3
+--- /dev/null
++++ b/crates/xtask/tests/artifact_inventory_reader_074.rs
+@@ -0,0 +1,131 @@
++//! A known source snapshot is not runtime admission; old body assertions remain.
++#[path = "support/artifact_inventory_input.rs"]
++mod inventory;
++
++const BASE: &str = "f6ec596cad38c71fe912e40b2a7c67a84dbd664f";
++const FILE: &str = "crates/xtask/tests/diagnostic_artifact_fixture_074.rs";
++
++#[test]
++fn inventory_reader_preserves_every_old_assertion_and_comparison_count() {
++    let output = std::process::Command::new("git")
++        .arg("--no-replace-objects")
++        .args(["show", &format!("{BASE}:{FILE}")])
++        .current_dir(inventory::root())
++        .output()
++        .unwrap();
++    assert!(output.status.success());
++    let old = String::from_utf8(output.stdout)
++        .unwrap()
++        .replace("\r\n", "\n");
++    let hook = "#[path = \"support/fixed_slice_namespace_guard.rs\"]\nmod namespace;\n";
++    let imports = "#[path = \"support/artifact_inventory_input.rs\"]\nmod inventory;\n";
++    let after = "#[path = \"../../../tools/authority-runtime-074/gate.rs\"]\nmod runtime;\n#[path = \"../../../tools/authority-runtime-074/io.rs\"]\nmod runtime_io;\n#[path = \"../../../tools/authority-storage-source-074/contract.rs\"]\nmod storage_contract;\n";
++    let read = "    std::fs::read_to_string(root().join(path))";
++    let result = "    String::from_utf8(output.stdout).unwrap().replace('\\r', \"\")\n}";
++    for token in [hook, read, result] {
++        assert_eq!(old.matches(token).count(), 1);
++    }
++    let expected = old.replacen(hook, &format!("{imports}{hook}{after}"), 1)
++        .replacen(read, "    runtime_io::read_to_string(root().join(path))", 1)
++        .replacen(result, "    let raw = String::from_utf8(output.stdout).unwrap().replace('\\r', \"\");\n    if args == [\"ls-files\", \"--\", inventory::SCOPE] {\n        inventory::project(&raw).expect(\"current inventory refused before historical phase\")\n    } else {\n        raw\n    }\n}", 1);
++    let current = std::fs::read_to_string(inventory::root().join(FILE))
++        .unwrap()
++        .replace("\r\n", "\n");
++    assert_eq!(expected, current);
++}
++
++#[test]
++fn inventory_projection_requires_all_current_source_files_before_old_list() {
++    let projected = inventory::project(inventory::current()).unwrap();
++    assert_eq!(projected.lines().count(), 446);
++    let output = std::process::Command::new("git")
++        .arg("--no-replace-objects")
++        .args([
++            "ls-tree",
++            "-r",
++            "--name-only",
++            "6c6e47ee5dd3504d0be064b28af5a3e3ac087c9e",
++            "--",
++            inventory::SCOPE,
++        ])
++        .current_dir(inventory::root())
++        .output()
++        .unwrap();
++    assert!(output.status.success());
++    assert_eq!(projected, String::from_utf8(output.stdout).unwrap());
++}
++
++#[test]
++fn inventory_projection_rejects_every_missing_duplicate_unknown_and_reordered_path() {
++    let good = inventory::current();
++    let observed = |path: &str| Ok(inventory::entries()[path].digest.clone());
++    assert!(inventory::project_with(good, observed).is_ok());
++    for path in inventory::entries().keys() {
++        for bad in [
++            good.replacen(&format!("{path}\n"), "", 1),
++            format!("{good}{path}\n"),
++        ] {
++            let mut called = false;
++            assert!(inventory::project_with(&bad, |_| {
++                called = true;
++                Err("must not inspect")
++            })
++            .is_err());
++            assert!(!called);
++        }
++    }
++    for bad in [
++        String::new(),
++        format!("{good}{}/unknown.rs\n", inventory::SCOPE),
++        format!("{good}../escape.rs\n"),
++        good.lines().rev().map(|name| format!("{name}\n")).collect(),
++    ] {
++        assert!(inventory::project_with(&bad, observed).is_err());
++    }
++}
++
++#[test]
++fn inventory_projection_rejects_each_changed_old_or_new_body_and_read_failure() {
++    for changed in inventory::entries().keys() {
++        assert!(inventory::project_with(inventory::current(), |path| {
++            if path == changed {
++                Ok("wrong digest".into())
++            } else {
++                Ok(inventory::entries()[path].digest.clone())
++            }
++        })
++        .is_err());
++        assert!(inventory::project_with(inventory::current(), |path| {
++            if path == changed {
++                Err("read failure")
++            } else {
++                Ok(inventory::entries()[path].digest.clone())
++            }
++        })
++        .is_err());
++    }
++}
++
++#[test]
++fn inventory_index_requires_exact_mode_blob_stage_and_path_for_every_entry() {
++    let raw = inventory::expected_index();
++    assert!(inventory::index_matches(&raw));
++    for (path, entry) in inventory::entries() {
++        let line = format!("{} {} 0\t{path}\n", entry.mode, entry.blob);
++        for bad in [
++            raw.replacen(&line, &format!("100755 {} 0\t{path}\n", entry.blob), 1),
++            raw.replacen(&line, &format!("100644 {} 1\t{path}\n", entry.blob), 1),
++            raw.replacen(&line, &format!("100644 {} 0\t{path}\n", "0".repeat(40)), 1),
++            raw.replacen(&line, "", 1),
++            format!("{raw}{line}"),
++        ] {
++            assert_ne!(bad, raw);
++            assert!(!inventory::index_matches(&bad));
++        }
++    }
++    assert!(!inventory::index_matches(&format!(
++        "{raw}100644 {} 0\t{}/unknown.rs\n",
++        "0".repeat(40),
++        inventory::SCOPE
++    )));
++}
+diff --git a/crates/xtask/tests/diagnostic_artifact_fixture_074.rs b/crates/xtask/tests/diagnostic_artifact_fixture_074.rs
+index e0ac7452..0ac43e5a 100644
+--- a/crates/xtask/tests/diagnostic_artifact_fixture_074.rs
++++ b/crates/xtask/tests/diagnostic_artifact_fixture_074.rs
+@@ -49,8 +49,16 @@ fn actual_consuming_adapter_refuses_missing_duplicate_hook_and_unrelated_drift()
+     }
+ }
+ 
++#[path = "support/artifact_inventory_input.rs"]
++mod inventory;
+ #[path = "support/fixed_slice_namespace_guard.rs"]
+ mod namespace;
++#[path = "../../../tools/authority-runtime-074/gate.rs"]
++mod runtime;
++#[path = "../../../tools/authority-runtime-074/io.rs"]
++mod runtime_io;
++#[path = "../../../tools/authority-storage-source-074/contract.rs"]
++mod storage_contract;
+ 
+ const BASE: &str = "23c57b77523ad1cc16b1a79fc90b02a125f8d9b8";
+ const NEW_SOURCE: &str = "tools/long-run-supervisor-074/src/diagnostic_held_build.rs";
+@@ -126,7 +134,7 @@ fn root() -> PathBuf {
+     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..")
+ }
+ fn read(path: &str) -> String {
+-    std::fs::read_to_string(root().join(path))
++    runtime_io::read_to_string(root().join(path))
+         .unwrap()
+         .replace('\r', "")
+ }
+@@ -141,7 +149,12 @@ fn git(args: &[&str]) -> String {
+         "{}",
+         String::from_utf8_lossy(&output.stderr)
+     );
+-    String::from_utf8(output.stdout).unwrap().replace('\r', "")
++    let raw = String::from_utf8(output.stdout).unwrap().replace('\r', "");
++    if args == ["ls-files", "--", inventory::SCOPE] {
++        inventory::project(&raw).expect("current inventory refused before historical phase")
++    } else {
++        raw
++    }
+ }
+ fn normalize(raw: &str) -> String {
+     assert_eq!(raw.matches(NEW).count(), 1, "exact immutable helper");
+diff --git a/crates/xtask/tests/support/artifact_inventory_input.rs b/crates/xtask/tests/support/artifact_inventory_input.rs
+new file mode 100644
+index 00000000..cc6a25f7
+--- /dev/null
++++ b/crates/xtask/tests/support/artifact_inventory_input.rs
+@@ -0,0 +1,184 @@
++//! Verified test-only source census; not host provenance or execution admission.
++use sha2::{Digest, Sha256};
++use std::collections::BTreeMap;
++use std::path::{Path, PathBuf};
++
++pub(crate) const SCOPE: &str = "tools/long-run-supervisor-074/src";
++const LEDGER: &[u8] = include_bytes!("../../../../docs/testing/performance/0.74/local-runs/role-census-inventory-20261024/objects/cfd5e7f1c153f5214dd71da196dfdbac2d1c05806fa14865605e9ce0776bc9c0");
++const DIGEST: &str = "cfd5e7f1c153f5214dd71da196dfdbac2d1c05806fa14865605e9ce0776bc9c0";
++pub(crate) struct Entry {
++    pub(crate) mode: String,
++    pub(crate) blob: String,
++    pub(crate) digest: String,
++}
++struct Inventory {
++    entries: BTreeMap<String, Entry>,
++    current: String,
++    previous: String,
++}
++fn digest(raw: &[u8]) -> String {
++    Sha256::digest(raw)
++        .iter()
++        .map(|byte| format!("{byte:02x}"))
++        .collect()
++}
++fn ledger() -> &'static Inventory {
++    static VALUE: std::sync::OnceLock<Inventory> = std::sync::OnceLock::new();
++    VALUE.get_or_init(|| {
++        assert_eq!(digest(LEDGER), DIGEST);
++        let value: serde_json::Value = serde_json::from_slice(LEDGER).unwrap();
++        assert_eq!(value["schema"], "hc074-artifact-inventory-observation-v1");
++        assert_eq!(
++            value["pinned_current_source"],
++            "c91068bfa8b297bb075b63457da235aaa9c6232e"
++        );
++        let entries: BTreeMap<_, _> = value["current"]
++            .as_object()
++            .unwrap()
++            .iter()
++            .map(|(name, entry)| {
++                assert!(name.starts_with(&format!("{SCOPE}/")));
++                assert!(!name.split('/').any(|part| part == ".."));
++                assert_eq!(entry["mode"], "100644");
++                (
++                    name.clone(),
++                    Entry {
++                        mode: entry["mode"].as_str().unwrap().to_owned(),
++                        blob: entry["blob"].as_str().unwrap().to_owned(),
++                        digest: entry["canonical_sha256"].as_str().unwrap().to_owned(),
++                    },
++                )
++            })
++            .collect();
++        assert_eq!(entries.len(), 530);
++        let phase = &value["phases"]["446"];
++        assert_eq!(
++            phase["revision"],
++            "6c6e47ee5dd3504d0be064b28af5a3e3ac087c9e"
++        );
++        assert_eq!(phase["added_count"], 84);
++        assert_eq!(phase["changed_old_count"], 31);
++        assert!(phase["removed"].as_array().unwrap().is_empty());
++        let names = |previous: bool| {
++            entries
++                .keys()
++                .filter(|name| !previous || phase["added"].get(*name).is_none())
++                .map(|name| format!("{name}\n"))
++                .collect::<String>()
++        };
++        let current = names(false);
++        let previous = names(true);
++        assert_eq!(previous.lines().count(), 446);
++        Inventory {
++            entries,
++            current,
++            previous,
++        }
++    })
++}
++pub(crate) fn entries() -> &'static BTreeMap<String, Entry> {
++    &ledger().entries
++}
++pub(crate) fn current() -> &'static str {
++    &ledger().current
++}
++pub(crate) fn project_with(
++    names: &str,
++    mut observe: impl FnMut(&str) -> Result<String, &'static str>,
++) -> Result<String, &'static str> {
++    if names != current() {
++        return Err("unknown, missing, duplicate or reordered source inventory");
++    }
++    for (path, expected) in entries() {
++        if observe(path)? != expected.digest {
++            return Err("current source bytes drift");
++        }
++    }
++    Ok(ledger().previous.clone())
++}
++pub(crate) fn root() -> PathBuf {
++    Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
++}
++fn git_index() -> Result<String, &'static str> {
++    let output = std::process::Command::new("git")
++        .arg("--no-replace-objects")
++        .args(["ls-files", "--stage", "--", SCOPE])
++        .current_dir(root())
++        .output()
++        .map_err(|_| "index query failed")?;
++    if !output.status.success() {
++        return Err("index query refused");
++    }
++    String::from_utf8(output.stdout).map_err(|_| "non-UTF8 index")
++}
++pub(crate) fn expected_index() -> String {
++    entries()
++        .iter()
++        .map(|(name, entry)| format!("{} {} 0\t{name}\n", entry.mode, entry.blob))
++        .collect()
++}
++pub(crate) fn index_matches(raw: &str) -> bool {
++    raw == expected_index()
++}
++fn reparse(metadata: &std::fs::Metadata) -> bool {
++    #[cfg(windows)]
++    {
++        use std::os::windows::fs::MetadataExt;
++        metadata.file_attributes() & 0x400 != 0
++    }
++    #[cfg(not(windows))]
++    {
++        let _ = metadata;
++        false
++    }
++}
++fn filesystem_paths(directory: &Path, paths: &mut Vec<String>) -> Result<(), &'static str> {
++    for item in std::fs::read_dir(directory).map_err(|_| "source directory unreadable")? {
++        let path = item.map_err(|_| "source entry unreadable")?.path();
++        let metadata =
++            std::fs::symlink_metadata(&path).map_err(|_| "source metadata unreadable")?;
++        if reparse(&metadata) || metadata.file_type().is_symlink() {
++            return Err("source alias refused");
++        }
++        if metadata.is_dir() {
++            filesystem_paths(&path, paths)?;
++        } else if metadata.is_file() {
++            paths.push(
++                path.strip_prefix(root())
++                    .map_err(|_| "foreign source")?
++                    .to_str()
++                    .ok_or("non-UTF8 source")?
++                    .replace('\\', "/"),
++            );
++        } else {
++            return Err("nonregular source");
++        }
++    }
++    Ok(())
++}
++pub(crate) fn project(names: &str) -> Result<String, &'static str> {
++    if names != current() {
++        return Err("source list drift");
++    }
++    if !index_matches(&git_index()?) {
++        return Err("source index drift");
++    }
++    let mut paths = Vec::new();
++    filesystem_paths(&root().join(SCOPE), &mut paths)?;
++    paths.sort();
++    if paths
++        .iter()
++        .map(|name| format!("{name}\n"))
++        .collect::<String>()
++        != names
++    {
++        return Err("source filesystem inventory drift");
++    }
++    project_with(names, |path| {
++        let raw = std::fs::read(root().join(path)).map_err(|_| "source unreadable")?;
++        let canonical = String::from_utf8(raw)
++            .map_err(|_| "non-UTF8 source body")?
++            .replace("\r\n", "\n");
++        Ok(digest(canonical.as_bytes()))
++    })
++}
