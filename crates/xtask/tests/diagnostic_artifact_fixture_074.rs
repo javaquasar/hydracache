@@ -49,8 +49,16 @@ fn actual_consuming_adapter_refuses_missing_duplicate_hook_and_unrelated_drift()
     }
 }
 
+#[path = "support/artifact_inventory_input.rs"]
+mod inventory;
 #[path = "support/fixed_slice_namespace_guard.rs"]
 mod namespace;
+#[path = "../../../tools/authority-runtime-074/gate.rs"]
+mod runtime;
+#[path = "../../../tools/authority-runtime-074/io.rs"]
+mod runtime_io;
+#[path = "../../../tools/authority-storage-source-074/contract.rs"]
+mod storage_contract;
 
 const BASE: &str = "23c57b77523ad1cc16b1a79fc90b02a125f8d9b8";
 const NEW_SOURCE: &str = "tools/long-run-supervisor-074/src/diagnostic_held_build.rs";
@@ -126,7 +134,7 @@ fn root() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..")
 }
 fn read(path: &str) -> String {
-    std::fs::read_to_string(root().join(path))
+    runtime_io::read_to_string(root().join(path))
         .unwrap()
         .replace('\r', "")
 }
@@ -141,7 +149,12 @@ fn git(args: &[&str]) -> String {
         "{}",
         String::from_utf8_lossy(&output.stderr)
     );
-    String::from_utf8(output.stdout).unwrap().replace('\r', "")
+    let raw = String::from_utf8(output.stdout).unwrap().replace('\r', "");
+    if args == ["ls-files", "--", inventory::SCOPE] {
+        inventory::project(&raw).expect("current inventory refused before historical phase")
+    } else {
+        raw
+    }
 }
 fn normalize(raw: &str) -> String {
     assert_eq!(raw.matches(NEW).count(), 1, "exact immutable helper");
