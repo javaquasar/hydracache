@@ -1,5 +1,11 @@
 #[path = "support/custody_cost_guard.rs"]
 mod guard;
+#[path = "../../../tools/authority-runtime-074/gate.rs"]
+mod runtime;
+#[path = "../../../tools/authority-runtime-074/io.rs"]
+mod runtime_io;
+#[path = "../../../tools/authority-storage-source-074/contract.rs"]
+mod storage_contract;
 const BASE: &str = "72efce2401e753b857f7fc03f3300b6aae19bd5d";
 fn root() -> std::path::PathBuf {
     std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..")
@@ -14,7 +20,7 @@ fn git(args: &[&str]) -> String {
     String::from_utf8(out.stdout).unwrap().replace('\r', "")
 }
 fn read(path: &str) -> String {
-    std::fs::read_to_string(root().join(path))
+    runtime_io::read_to_string(root().join(path))
         .unwrap()
         .replace('\r', "")
 }
