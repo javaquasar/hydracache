@@ -1,0 +1,43 @@
+"""Extend the retained ten-packet reconciliation with two new exact packets."""
+from pathlib import Path
+import hashlib
+import json
+ROOT = Path(__file__).resolve().parent.parent
+BASE = ROOT/'docs/testing/performance/0.74/local-runs'
+prior = json.loads((ROOT/'target/status-field-scan-20261024/session-packet-reconciliation.json').read_bytes())
+expected = {name: row['index_sha256'] for name, row in prior['packets'].items()}
+expected.update({
+    'local-milestone-20261024': '77fbc293a2f9dc4c10cea302375af693f9331fea422b4b10e39350d3aa785e8a',
+    'package-frontier-20261024': '3ef3c590c843488e0c93e003fc08a5415bd93b9118e3b71e14efdcf52b8b0734',
+})
+def sha(raw): return hashlib.sha256(raw).hexdigest()
+indices = {}
+objects = members = 0
+for name, digest in expected.items():
+    folder = BASE/name
+    raw = (folder/'index.json').read_bytes()
+    if sha(raw) != digest: raise ValueError('Index differs: '+name)
+    index = json.loads(raw)
+    rows = index['files']
+    unique = {row['sha256']: row['bytes'] for row in rows.values()}
+    if {p.name for p in (folder/'objects').iterdir()} != set(unique):
+        raise ValueError('Object census differs')
+    for key, size in unique.items():
+        path = folder/'objects'/key
+        if path.is_symlink() or getattr(path.stat(follow_symlinks=False), 'st_file_attributes', 0)&0x400:
+            raise ValueError('Reparse object')
+        value = path.read_bytes()
+        if len(value) != size or sha(value) != key: raise ValueError('Object differs')
+    objects += len(unique)
+    members += len(rows)
+    indices[name] = index
+successor = indices['transport-eof-scope-20261024']
+for row in successor['common_compiled_sources'].values():
+    if indices['ordinary-repair-20261024']['files'][row['member']] != {k:row[k] for k in ('bytes','sha256')}:
+        raise ValueError('Common source differs')
+result = dict(packets=len(expected), pinned_indices=expected, physical_objects=objects,
+    members=members, common_source_links=len(successor['common_compiled_sources']),
+    runtime_probes=False, measurement=False, network=False, server=False, admission=False)
+with (ROOT/'target/status-field-scan-20261024/final-readonly-checks/archive-reconciliation.json').open('x', encoding='utf-8') as stream:
+    json.dump(result, stream, indent=2)
+print({key:value for key,value in result.items() if key!='pinned_indices'})

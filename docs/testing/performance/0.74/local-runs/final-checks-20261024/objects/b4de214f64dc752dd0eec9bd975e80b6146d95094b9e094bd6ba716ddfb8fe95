@@ -1,0 +1,25 @@
+{
+  "packets": 12,
+  "pinned_indices": {
+    "native-preparation-cost-20261024": "851905836b094874c0d34e9c150637dae47ba64bd3d60988dd4b75880e849fa0",
+    "status-field-scan-baseline-20261024": "a8727b4050203aa78c4a60d36afbc13b28d8f0f28be6ed6470862f250c76f8ba",
+    "status-field-scan-20261024": "fa6cf67055f7e857ecee141e8ac32972684ca3d8d46558e5352904bac465e0fc",
+    "ordinary-regression-first-20261024": "ca6a28a967606720a4475aa8d4240c350b9e2d9be916b5f251df4ea46e3c1391",
+    "source-guard-entry-first-20261024": "c3b659adb13ea7c7b8d19f6463f67d1d10cedb8d1c66df807a95484871ffbedf",
+    "historical-cache-product-fast-20261024": "95e1015fd87aa172b74ecc36a076dbcc1c56479b584ae3b28b6b10702e068c84",
+    "material-lock-frozen-input-20261024": "b1015fda8a066c48ce85c4ba1a6fe83d4163ff0f40d5b2bd97a6d0f6ec49d5a2",
+    "ordinary-repair-20261024": "5d32f67e9b2f36028750ed4fb67b581678dbba50ed19ad72f5ea0cab20ce1bf3",
+    "transport-eof-scope-20261024": "3f5885dd8b2692ed79ecb4b5d0a085b8a9e0485dbf03406f183d3cd69c7dd6d0",
+    "status-field-memory-20261024": "9db1d2987a239cf16574e09552cca3862e08720a7cbd44c83a2f0910eeb5f336",
+    "local-milestone-20261024": "77fbc293a2f9dc4c10cea302375af693f9331fea422b4b10e39350d3aa785e8a",
+    "package-frontier-20261024": "3ef3c590c843488e0c93e003fc08a5415bd93b9118e3b71e14efdcf52b8b0734"
+  },
+  "physical_objects": 1386,
+  "members": 1685,
+  "common_source_links": 707,
+  "runtime_probes": false,
+  "measurement": false,
+  "network": false,
+  "server": false,
+  "admission": false
+}

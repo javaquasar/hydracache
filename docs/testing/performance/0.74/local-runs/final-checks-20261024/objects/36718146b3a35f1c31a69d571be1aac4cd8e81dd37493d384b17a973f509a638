@@ -1,0 +1,43 @@
+"""Retain final non-promotable structural checks and archive reconciliation."""
+from pathlib import Path
+import hashlib
+import json
+import shutil
+import subprocess
+ROOT=Path(__file__).resolve().parent.parent
+RAW=ROOT/'target/status-field-scan-20261024/final-readonly-checks'
+DEST=ROOT/'docs/testing/performance/0.74/local-runs/final-checks-20261024'
+def sha(raw): return hashlib.sha256(raw).hexdigest()
+result=json.loads((RAW/'result.json').read_bytes())
+archive=json.loads((RAW/'archive-reconciliation.json').read_bytes())
+if not result['all_requested_checks_pass'] or not result['protected_unchanged']:
+    raise ValueError('Final structural outcome differs')
+if (archive['packets'],archive['members'],archive['physical_objects'],archive['common_source_links'])!=(12,1685,1386,707):
+    raise ValueError('Archive census differs')
+source_changes=subprocess.check_output(['git','diff','--name-only','d9a2b85c','--','crates'],cwd=ROOT,text=True).splitlines()
+if any(not name.startswith('crates/xtask/') for name in source_changes):
+    raise ValueError('Product source changed')
+if subprocess.check_output(['git','diff','--name-only','d9a2b85c','--','Cargo.toml','Cargo.lock','deny.toml','docs/testing/performance/0.74/qualification-manifest.toml'],cwd=ROOT,text=True):
+    raise ValueError('Frozen dependency/admission input changed')
+facts=dict(result=result,archive_reconciliation=archive,free_bytes_at_capture=shutil.disk_usage(ROOT).free,
+    source_commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
+    product_crates_changed=False,dependency_updates=False,qualification=False,release_admission=False,
+    push=False,source_services_or_clock_changed=False)
+DEST.mkdir();(DEST/'objects').mkdir();files={}
+def retain(name,raw):
+    key=sha(raw);path=DEST/'objects'/key
+    if not path.exists():
+        with path.open('xb') as stream:stream.write(raw)
+    elif path.read_bytes()!=raw:raise ValueError('Content collision')
+    files[name]=dict(bytes=len(raw),sha256=key)
+for path in sorted(RAW.iterdir()):
+    if path.is_file():retain('observation/'+path.name,path.read_bytes())
+for name in ('final-readonly-checks-20261024.py','audit-final-archives-20261024.py','verify-final-packets-staged-20261024.py'):
+    retain('coordinator/'+name,(ROOT/'target'/name).read_bytes())
+retain('coordinator/'+Path(__file__).name,Path(__file__).read_bytes())
+retain('analysis/facts.json',(json.dumps(facts,indent=2,sort_keys=True)+'\n').encode())
+with (DEST/'index.json').open('x',encoding='utf-8',newline='\n') as stream:
+    json.dump(dict(schema='hc074-final-structural-checks-v1',facts=facts,files=files),stream,indent=2,sort_keys=True);stream.write('\n')
+with (DEST/'.gitattributes').open('x',encoding='ascii',newline='\n') as stream:
+    stream.write('index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n')
+print(dict(files=len(files),objects=len(list((DEST/'objects').iterdir())),index_sha256=sha((DEST/'index.json').read_bytes()),free_bytes=facts['free_bytes_at_capture']))

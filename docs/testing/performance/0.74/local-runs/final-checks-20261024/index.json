@@ -1,0 +1,149 @@
+{
+  "facts": {
+    "archive_reconciliation": {
+      "admission": false,
+      "common_source_links": 707,
+      "measurement": false,
+      "members": 1685,
+      "network": false,
+      "packets": 12,
+      "physical_objects": 1386,
+      "pinned_indices": {
+        "historical-cache-product-fast-20261024": "95e1015fd87aa172b74ecc36a076dbcc1c56479b584ae3b28b6b10702e068c84",
+        "local-milestone-20261024": "77fbc293a2f9dc4c10cea302375af693f9331fea422b4b10e39350d3aa785e8a",
+        "material-lock-frozen-input-20261024": "b1015fda8a066c48ce85c4ba1a6fe83d4163ff0f40d5b2bd97a6d0f6ec49d5a2",
+        "native-preparation-cost-20261024": "851905836b094874c0d34e9c150637dae47ba64bd3d60988dd4b75880e849fa0",
+        "ordinary-regression-first-20261024": "ca6a28a967606720a4475aa8d4240c350b9e2d9be916b5f251df4ea46e3c1391",
+        "ordinary-repair-20261024": "5d32f67e9b2f36028750ed4fb67b581678dbba50ed19ad72f5ea0cab20ce1bf3",
+        "package-frontier-20261024": "3ef3c590c843488e0c93e003fc08a5415bd93b9118e3b71e14efdcf52b8b0734",
+        "source-guard-entry-first-20261024": "c3b659adb13ea7c7b8d19f6463f67d1d10cedb8d1c66df807a95484871ffbedf",
+        "status-field-memory-20261024": "9db1d2987a239cf16574e09552cca3862e08720a7cbd44c83a2f0910eeb5f336",
+        "status-field-scan-20261024": "fa6cf67055f7e857ecee141e8ac32972684ca3d8d46558e5352904bac465e0fc",
+        "status-field-scan-baseline-20261024": "a8727b4050203aa78c4a60d36afbc13b28d8f0f28be6ed6470862f250c76f8ba",
+        "transport-eof-scope-20261024": "3f5885dd8b2692ed79ecb4b5d0a085b8a9e0485dbf03406f183d3cd69c7dd6d0"
+      },
+      "runtime_probes": false,
+      "server": false
+    },
+    "dependency_updates": false,
+    "free_bytes_at_capture": 19950665728,
+    "product_crates_changed": false,
+    "push": false,
+    "qualification": false,
+    "release_admission": false,
+    "result": {
+      "after": {
+        "Cargo.lock": "d2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c",
+        "Cargo.toml": "18a8a27cf140a1d6eb31c8316ee39bb7d5832866a990346eee16cd0c30de344b",
+        "crates/xtask/tests/authority_context_074.rs": "7370e1191e9bdc51977abe59b241dc7904e5048b597ca9bc36c5d08d751dedc5",
+        "crates/xtask/tests/owned_case_074.rs": "2a5def6be0bef44b32ffb177540b9b98b100464c995b997db4a69572e3b17239",
+        "deny.toml": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930",
+        "docs/testing/performance/0.74/qualification-manifest.toml": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+      },
+      "all_requested_checks_pass": true,
+      "full_format_pass": false,
+      "full_milestone_pass": false,
+      "protected_unchanged": true,
+      "release_admission": false,
+      "results": {
+        "changed-source-format": {
+          "exit": 0,
+          "timeout": false
+        },
+        "diff": {
+          "exit": 0,
+          "timeout": false
+        },
+        "doc": {
+          "exit": 0,
+          "timeout": false
+        },
+        "gated": {
+          "exit": 0,
+          "timeout": false
+        },
+        "local-contract": {
+          "exit": 0,
+          "timeout": false
+        }
+      }
+    },
+    "source_commit": "e2891d1edeed097b6203085708144fe1a236b11b",
+    "source_services_or_clock_changed": false
+  },
+  "files": {
+    "analysis/facts.json": {
+      "bytes": 3112,
+      "sha256": "94a99e35965a15d56486dba8a46c0e2387af8abffbb774185a42665666d414ca"
+    },
+    "coordinator/audit-final-archives-20261024.py": {
+      "bytes": 2362,
+      "sha256": "b281fdf7567ecbcc0aa74b9b874becf324564dff5dd455c26b78bce5d37f8297"
+    },
+    "coordinator/final-readonly-checks-20261024.py": {
+      "bytes": 2628,
+      "sha256": "7de85aac447ac4db0dfe0cfa2e0e4fa038ff5a5acee52d6ee7563bbda7cbe251"
+    },
+    "coordinator/retain-final-checks-20261024.py": {
+      "bytes": 3044,
+      "sha256": "36718146b3a35f1c31a69d571be1aac4cd8e81dd37493d384b17a973f509a638"
+    },
+    "coordinator/verify-final-packets-staged-20261024.py": {
+      "bytes": 1606,
+      "sha256": "1d78f3d46a97f58989ca02d80941f4ce9358dc809da2d4083dd1d87749088225"
+    },
+    "observation/archive-reconciliation.json": {
+      "bytes": 1532,
+      "sha256": "b4de214f64dc752dd0eec9bd975e80b6146d95094b9e094bd6ba716ddfb8fe95"
+    },
+    "observation/changed-source-format.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/changed-source-format.stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/diff.stderr.log": {
+      "bytes": 438,
+      "sha256": "89ed3111a7f1aa76badd235ecd8d75d0ebdf195a0a394decf0a5193bc473bf7c"
+    },
+    "observation/diff.stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/doc.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/doc.stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "observation/gated.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/gated.stdout.log": {
+      "bytes": 60,
+      "sha256": "19c33b14c465fd5497bae810aa56160a2891365845f00f0f45e8d2bc78156a45"
+    },
+    "observation/intent.json": {
+      "bytes": 1746,
+      "sha256": "30b56b53ce135220bfa3bef1d9c13e03264283f081fc9186a3f4a37f901b0c7e"
+    },
+    "observation/local-contract.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/local-contract.stdout.log": {
+      "bytes": 60,
+      "sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+    },
+    "observation/result.json": {
+      "bytes": 1188,
+      "sha256": "5a65d05e0ea41883fa2e2ab9081ce9d5faa1f73416df2ab41430dca5a2ab34e3"
+    }
+  },
+  "schema": "hc074-final-structural-checks-v1"
+}

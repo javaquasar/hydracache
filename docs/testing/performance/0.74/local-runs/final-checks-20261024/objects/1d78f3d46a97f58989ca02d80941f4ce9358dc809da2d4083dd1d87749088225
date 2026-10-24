@@ -1,0 +1,30 @@
+"""Verify exact staged packet bytes in one batch per packet."""
+from pathlib import Path
+import hashlib
+import json
+import subprocess
+
+ROOT = Path(__file__).resolve().parent.parent
+base = 'docs/testing/performance/0.74/local-runs/'
+for folder in ('status-field-memory-20261024', 'transport-eof-scope-20261024',
+               'local-milestone-20261024', 'package-frontier-20261024'):
+    prefix = base + folder
+    index = subprocess.check_output(['git', 'show', ':' + prefix + '/index.json'], cwd=ROOT)
+    if index != (ROOT / prefix / 'index.json').read_bytes():
+        raise ValueError('Staged index differs')
+    expected = {row['sha256']: row['bytes'] for row in json.loads(index)['files'].values()}
+    requests = ''.join(':' + prefix + '/objects/' + digest + '\n' for digest in expected).encode()
+    data = subprocess.check_output(['git', 'cat-file', '--batch'], input=requests, cwd=ROOT)
+    offset = 0
+    for digest, size in expected.items():
+        end = data.index(b'\n', offset)
+        header = data[offset:end].decode().split()
+        if len(header) != 3 or header[1] != 'blob' or int(header[2]) != size:
+            raise ValueError('Staged blob size/type differs')
+        raw = data[end + 1:end + 1 + size]
+        if hashlib.sha256(raw).hexdigest() != digest or data[end + 1 + size:end + 2 + size] != b'\n':
+            raise ValueError('Staged blob bytes differ')
+        offset = end + 2 + size
+    if offset != len(data):
+        raise ValueError('Trailing batch bytes')
+    print(dict(packet=folder, staged_objects=len(expected), index_sha256=hashlib.sha256(index).hexdigest()))

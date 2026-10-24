@@ -1,0 +1,46 @@
+"""Bounded final structural checks, no measurement or admission."""
+from pathlib import Path
+import hashlib
+import json
+import subprocess
+ROOT = Path(__file__).resolve().parent.parent
+OUT = ROOT / 'target/status-field-scan-20261024/final-readonly-checks'
+OUT.mkdir()
+def sha(raw): return hashlib.sha256(raw).hexdigest()
+protected = ['Cargo.toml', 'Cargo.lock', 'deny.toml',
+    'docs/testing/performance/0.74/qualification-manifest.toml',
+    'crates/xtask/tests/authority_context_074.rs', 'crates/xtask/tests/owned_case_074.rs']
+before = {name: sha((ROOT/name).read_bytes()) for name in protected}
+commands = {
+    'doc': ['target/debug/xtask.exe', 'doc-check'],
+    'local-contract': ['target/debug/xtask.exe', 'performance-contract-check', '--release', '0.74'],
+    'gated': ['target/debug/xtask.exe', 'gated-test-check'],
+    'changed-source-format': ['rustfmt', '--edition', '2021', '--check',
+        'crates/xtask/tests/authority_context_074.rs', 'crates/xtask/tests/owned_case_074.rs'],
+    'diff': ['git', 'diff', '--check'],
+}
+intent = dict(commands=commands, before=before, each_bound_seconds=120,
+    cli_image_sha256=sha((ROOT/'target/debug/xtask.exe').read_bytes()),
+    earlier_full_format=dict(exit=1, os_error=206,
+        message='The filename or extension is too long.',
+        raw_log_captured=False, observed_tool_chunk='66badb',
+        full_format_success=False),
+    no_runtime_or_original_owner=True, no_server=True, no_services=True,
+    no_clock_changes=True, no_measurement=True)
+(OUT/'intent.json').write_text(json.dumps(intent, indent=2)+'\n', encoding='utf-8')
+results = {}
+for name, argv in commands.items():
+    with (OUT/(name+'.stdout.log')).open('xb') as stdout, (OUT/(name+'.stderr.log')).open('xb') as stderr:
+        try:
+            code = subprocess.run(argv, cwd=ROOT, stdout=stdout, stderr=stderr,
+                                  timeout=120, check=False).returncode
+            results[name] = dict(exit=code, timeout=False)
+        except subprocess.TimeoutExpired:
+            results[name] = dict(exit=None, timeout=True)
+    print(name, results[name], flush=True)
+after = {name: sha((ROOT/name).read_bytes()) for name in protected}
+result = dict(results=results, protected_unchanged=before==after, after=after,
+    all_requested_checks_pass=all(row['exit']==0 and not row['timeout'] for row in results.values()),
+    full_format_pass=False, full_milestone_pass=False, release_admission=False)
+(OUT/'result.json').write_text(json.dumps(result, indent=2)+'\n', encoding='utf-8')
+raise SystemExit(int(not result['all_requested_checks_pass'] or not result['protected_unchanged']))
