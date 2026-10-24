@@ -1,0 +1,2027 @@
+{
+  "build": "debug; no product throughput or release claim",
+  "child_exit": 0,
+  "completion": {
+    "component_samples": 48,
+    "e2e_samples": 120,
+    "first_samples_retained": true,
+    "git_reads_expected_components": 12,
+    "git_reads_expected_e2e": 120,
+    "package_replay": false,
+    "production_authority": false,
+    "warmup": false
+  },
+  "component_phases_are_disjoint": false,
+  "first_refusal_preserved": {
+    "exit": 0,
+    "reason": "sample count",
+    "type": "ValueError"
+  },
+  "inputs_sha256": {
+    "capture/intent.json": "4588246e6148b20e7163bee4010661b2c9b1ebcc9898fbdf4a9f0737058f769d",
+    "capture/preflight.json": "127c1dd143aa1957245965d37b24eef953aa879daa2e85faafb89e83ee35c749",
+    "capture/refusal.json": "0052d5e7247d2b180db39c7b6b58038f4d587d3c6abfe395d796749097aae83a",
+    "outer/intent.json": "2327be1cc5582ffa089e3fb0c5ed3154c562e581a16de117d6282221223ee102",
+    "outer/result.json": "95c3a8c7689ea3fed39efca249d738b984f39c1e5ef2e5ec7c30a9c02e1c88fc"
+  },
+  "measured_binary_sha256": "c35d389a1911a073d83cbdf0d82b7d4d4561f85ff53475f6357d55db7f972e68",
+  "offline_only": true,
+  "samples": [
+    {
+      "block": 0,
+      "iterations": 1,
+      "operation": "original",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 34850,
+      "slot": 0,
+      "variant": "legacy",
+      "wall_ns": 55677900
+    },
+    {
+      "block": 0,
+      "iterations": 1,
+      "operation": "original",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 34850,
+      "slot": 1,
+      "variant": "current",
+      "wall_ns": 58134400
+    },
+    {
+      "block": 0,
+      "iterations": 1,
+      "operation": "original",
+      "parent_cpu_ns": 15625000,
+      "phase": "e2e",
+      "result_bytes": 34850,
+      "slot": 2,
+      "variant": "current",
+      "wall_ns": 63251500
+    },
+    {
+      "block": 0,
+      "iterations": 1,
+      "operation": "original",
+      "parent_cpu_ns": 15625000,
+      "phase": "e2e",
+      "result_bytes": 34850,
+      "slot": 3,
+      "variant": "legacy",
+      "wall_ns": 46713500
+    },
+    {
+      "block": 0,
+      "iterations": 1,
+      "operation": "accepts",
+      "parent_cpu_ns": 46875000,
+      "phase": "e2e",
+      "result_bytes": 4,
+      "slot": 0,
+      "variant": "legacy",
+      "wall_ns": 66966300
+    },
+    {
+      "block": 0,
+      "iterations": 1,
+      "operation": "accepts",
+      "parent_cpu_ns": 15625000,
+      "phase": "e2e",
+      "result_bytes": 4,
+      "slot": 1,
+      "variant": "current",
+      "wall_ns": 72470100
+    },
+    {
+      "block": 0,
+      "iterations": 1,
+      "operation": "accepts",
+      "parent_cpu_ns": 31250000,
+      "phase": "e2e",
+      "result_bytes": 4,
+      "slot": 2,
+      "variant": "current",
+      "wall_ns": 72247100
+    },
+    {
+      "block": 0,
+      "iterations": 1,
+      "operation": "accepts",
+      "parent_cpu_ns": 31250000,
+      "phase": "e2e",
+      "result_bytes": 4,
+      "slot": 3,
+      "variant": "legacy",
+      "wall_ns": 66650300
+    },
+    {
+      "block": 0,
+      "iterations": 1,
+      "operation": "view",
+      "parent_cpu_ns": 46875000,
+      "phase": "e2e",
+      "result_bytes": 34850,
+      "slot": 0,
+      "variant": "legacy",
+      "wall_ns": 117320800
+    },
+    {
+      "block": 0,
+      "iterations": 1,
+      "operation": "view",
+      "parent_cpu_ns": 31250000,
+      "phase": "e2e",
+      "result_bytes": 34850,
+      "slot": 1,
+      "variant": "current",
+      "wall_ns": 136438600
+    },
+    {
+      "block": 0,
+      "iterations": 1,
+      "operation": "view",
+      "parent_cpu_ns": 15625000,
+      "phase": "e2e",
+      "result_bytes": 34850,
+      "slot": 2,
+      "variant": "current",
+      "wall_ns": 131840900
+    },
+    {
+      "block": 0,
+      "iterations": 1,
+      "operation": "view",
+      "parent_cpu_ns": 46875000,
+      "phase": "e2e",
+      "result_bytes": 34850,
+      "slot": 3,
+      "variant": "legacy",
+      "wall_ns": 117005800
+    },
+    {
+      "block": 0,
+      "iterations": 1,
+      "operation": "mismatch",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 5,
+      "slot": 0,
+      "variant": "legacy",
+      "wall_ns": 47061500
+    },
+    {
+      "block": 0,
+      "iterations": 1,
+      "operation": "mismatch",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 5,
+      "slot": 1,
+      "variant": "current",
+      "wall_ns": 152110200
+    },
+    {
+      "block": 0,
+      "iterations": 1,
+      "operation": "mismatch",
+      "parent_cpu_ns": 15625000,
+      "phase": "e2e",
+      "result_bytes": 5,
+      "slot": 2,
+      "variant": "current",
+      "wall_ns": 52769700
+    },
+    {
+      "block": 0,
+      "iterations": 1,
+      "operation": "mismatch",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 5,
+      "slot": 3,
+      "variant": "legacy",
+      "wall_ns": 44953800
+    },
+    {
+      "block": 0,
+      "iterations": 1,
+      "operation": "unrelated",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 9,
+      "slot": 0,
+      "variant": "legacy",
+      "wall_ns": 700
+    },
+    {
+      "block": 0,
+      "iterations": 1,
+      "operation": "unrelated",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 9,
+      "slot": 1,
+      "variant": "current",
+      "wall_ns": 600
+    },
+    {
+      "block": 0,
+      "iterations": 1,
+      "operation": "unrelated",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 9,
+      "slot": 2,
+      "variant": "current",
+      "wall_ns": 200
+    },
+    {
+      "block": 0,
+      "iterations": 1,
+      "operation": "unrelated",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 9,
+      "slot": 3,
+      "variant": "legacy",
+      "wall_ns": 300
+    },
+    {
+      "block": 1,
+      "iterations": 1,
+      "operation": "original",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 34850,
+      "slot": 0,
+      "variant": "current",
+      "wall_ns": 48082000
+    },
+    {
+      "block": 1,
+      "iterations": 1,
+      "operation": "original",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 34850,
+      "slot": 1,
+      "variant": "legacy",
+      "wall_ns": 45073000
+    },
+    {
+      "block": 1,
+      "iterations": 1,
+      "operation": "original",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 34850,
+      "slot": 2,
+      "variant": "legacy",
+      "wall_ns": 46007700
+    },
+    {
+      "block": 1,
+      "iterations": 1,
+      "operation": "original",
+      "parent_cpu_ns": 15625000,
+      "phase": "e2e",
+      "result_bytes": 34850,
+      "slot": 3,
+      "variant": "current",
+      "wall_ns": 52822200
+    },
+    {
+      "block": 1,
+      "iterations": 1,
+      "operation": "accepts",
+      "parent_cpu_ns": 15625000,
+      "phase": "e2e",
+      "result_bytes": 4,
+      "slot": 0,
+      "variant": "current",
+      "wall_ns": 71189100
+    },
+    {
+      "block": 1,
+      "iterations": 1,
+      "operation": "accepts",
+      "parent_cpu_ns": 31250000,
+      "phase": "e2e",
+      "result_bytes": 4,
+      "slot": 1,
+      "variant": "legacy",
+      "wall_ns": 69678500
+    },
+    {
+      "block": 1,
+      "iterations": 1,
+      "operation": "accepts",
+      "parent_cpu_ns": 15625000,
+      "phase": "e2e",
+      "result_bytes": 4,
+      "slot": 2,
+      "variant": "legacy",
+      "wall_ns": 69869500
+    },
+    {
+      "block": 1,
+      "iterations": 1,
+      "operation": "accepts",
+      "parent_cpu_ns": 31250000,
+      "phase": "e2e",
+      "result_bytes": 4,
+      "slot": 3,
+      "variant": "current",
+      "wall_ns": 76642200
+    },
+    {
+      "block": 1,
+      "iterations": 1,
+      "operation": "view",
+      "parent_cpu_ns": 46875000,
+      "phase": "e2e",
+      "result_bytes": 34850,
+      "slot": 0,
+      "variant": "current",
+      "wall_ns": 122885500
+    },
+    {
+      "block": 1,
+      "iterations": 1,
+      "operation": "view",
+      "parent_cpu_ns": 46875000,
+      "phase": "e2e",
+      "result_bytes": 34850,
+      "slot": 1,
+      "variant": "legacy",
+      "wall_ns": 117021900
+    },
+    {
+      "block": 1,
+      "iterations": 1,
+      "operation": "view",
+      "parent_cpu_ns": 15625000,
+      "phase": "e2e",
+      "result_bytes": 34850,
+      "slot": 2,
+      "variant": "legacy",
+      "wall_ns": 115523300
+    },
+    {
+      "block": 1,
+      "iterations": 1,
+      "operation": "view",
+      "parent_cpu_ns": 46875000,
+      "phase": "e2e",
+      "result_bytes": 34850,
+      "slot": 3,
+      "variant": "current",
+      "wall_ns": 123744700
+    },
+    {
+      "block": 1,
+      "iterations": 1,
+      "operation": "mismatch",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 5,
+      "slot": 0,
+      "variant": "current",
+      "wall_ns": 51411900
+    },
+    {
+      "block": 1,
+      "iterations": 1,
+      "operation": "mismatch",
+      "parent_cpu_ns": 15625000,
+      "phase": "e2e",
+      "result_bytes": 5,
+      "slot": 1,
+      "variant": "legacy",
+      "wall_ns": 44673700
+    },
+    {
+      "block": 1,
+      "iterations": 1,
+      "operation": "mismatch",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 5,
+      "slot": 2,
+      "variant": "legacy",
+      "wall_ns": 46423700
+    },
+    {
+      "block": 1,
+      "iterations": 1,
+      "operation": "mismatch",
+      "parent_cpu_ns": 15625000,
+      "phase": "e2e",
+      "result_bytes": 5,
+      "slot": 3,
+      "variant": "current",
+      "wall_ns": 53727500
+    },
+    {
+      "block": 1,
+      "iterations": 1,
+      "operation": "unrelated",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 9,
+      "slot": 0,
+      "variant": "current",
+      "wall_ns": 900
+    },
+    {
+      "block": 1,
+      "iterations": 1,
+      "operation": "unrelated",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 9,
+      "slot": 1,
+      "variant": "legacy",
+      "wall_ns": 700
+    },
+    {
+      "block": 1,
+      "iterations": 1,
+      "operation": "unrelated",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 9,
+      "slot": 2,
+      "variant": "legacy",
+      "wall_ns": 400
+    },
+    {
+      "block": 1,
+      "iterations": 1,
+      "operation": "unrelated",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 9,
+      "slot": 3,
+      "variant": "current",
+      "wall_ns": 200
+    },
+    {
+      "block": 2,
+      "iterations": 1,
+      "operation": "original",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 34850,
+      "slot": 0,
+      "variant": "legacy",
+      "wall_ns": 43820600
+    },
+    {
+      "block": 2,
+      "iterations": 1,
+      "operation": "original",
+      "parent_cpu_ns": 15625000,
+      "phase": "e2e",
+      "result_bytes": 34850,
+      "slot": 1,
+      "variant": "current",
+      "wall_ns": 51447300
+    },
+    {
+      "block": 2,
+      "iterations": 1,
+      "operation": "original",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 34850,
+      "slot": 2,
+      "variant": "current",
+      "wall_ns": 46803900
+    },
+    {
+      "block": 2,
+      "iterations": 1,
+      "operation": "original",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 34850,
+      "slot": 3,
+      "variant": "legacy",
+      "wall_ns": 44924500
+    },
+    {
+      "block": 2,
+      "iterations": 1,
+      "operation": "accepts",
+      "parent_cpu_ns": 15625000,
+      "phase": "e2e",
+      "result_bytes": 4,
+      "slot": 0,
+      "variant": "legacy",
+      "wall_ns": 165789500
+    },
+    {
+      "block": 2,
+      "iterations": 1,
+      "operation": "accepts",
+      "parent_cpu_ns": 46875000,
+      "phase": "e2e",
+      "result_bytes": 4,
+      "slot": 1,
+      "variant": "current",
+      "wall_ns": 72505300
+    },
+    {
+      "block": 2,
+      "iterations": 1,
+      "operation": "accepts",
+      "parent_cpu_ns": 15625000,
+      "phase": "e2e",
+      "result_bytes": 4,
+      "slot": 2,
+      "variant": "current",
+      "wall_ns": 71246500
+    },
+    {
+      "block": 2,
+      "iterations": 1,
+      "operation": "accepts",
+      "parent_cpu_ns": 46875000,
+      "phase": "e2e",
+      "result_bytes": 4,
+      "slot": 3,
+      "variant": "legacy",
+      "wall_ns": 65324000
+    },
+    {
+      "block": 2,
+      "iterations": 1,
+      "operation": "view",
+      "parent_cpu_ns": 15625000,
+      "phase": "e2e",
+      "result_bytes": 34850,
+      "slot": 0,
+      "variant": "legacy",
+      "wall_ns": 115141700
+    },
+    {
+      "block": 2,
+      "iterations": 1,
+      "operation": "view",
+      "parent_cpu_ns": 31250000,
+      "phase": "e2e",
+      "result_bytes": 34850,
+      "slot": 1,
+      "variant": "current",
+      "wall_ns": 125364800
+    },
+    {
+      "block": 2,
+      "iterations": 1,
+      "operation": "view",
+      "parent_cpu_ns": 31250000,
+      "phase": "e2e",
+      "result_bytes": 34850,
+      "slot": 2,
+      "variant": "current",
+      "wall_ns": 134245600
+    },
+    {
+      "block": 2,
+      "iterations": 1,
+      "operation": "view",
+      "parent_cpu_ns": 46875000,
+      "phase": "e2e",
+      "result_bytes": 34850,
+      "slot": 3,
+      "variant": "legacy",
+      "wall_ns": 112788600
+    },
+    {
+      "block": 2,
+      "iterations": 1,
+      "operation": "mismatch",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 5,
+      "slot": 0,
+      "variant": "legacy",
+      "wall_ns": 46138600
+    },
+    {
+      "block": 2,
+      "iterations": 1,
+      "operation": "mismatch",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 5,
+      "slot": 1,
+      "variant": "current",
+      "wall_ns": 53459300
+    },
+    {
+      "block": 2,
+      "iterations": 1,
+      "operation": "mismatch",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 5,
+      "slot": 2,
+      "variant": "current",
+      "wall_ns": 51791600
+    },
+    {
+      "block": 2,
+      "iterations": 1,
+      "operation": "mismatch",
+      "parent_cpu_ns": 15625000,
+      "phase": "e2e",
+      "result_bytes": 5,
+      "slot": 3,
+      "variant": "legacy",
+      "wall_ns": 44155300
+    },
+    {
+      "block": 2,
+      "iterations": 1,
+      "operation": "unrelated",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 9,
+      "slot": 0,
+      "variant": "legacy",
+      "wall_ns": 700
+    },
+    {
+      "block": 2,
+      "iterations": 1,
+      "operation": "unrelated",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 9,
+      "slot": 1,
+      "variant": "current",
+      "wall_ns": 600
+    },
+    {
+      "block": 2,
+      "iterations": 1,
+      "operation": "unrelated",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 9,
+      "slot": 2,
+      "variant": "current",
+      "wall_ns": 200
+    },
+    {
+      "block": 2,
+      "iterations": 1,
+      "operation": "unrelated",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 9,
+      "slot": 3,
+      "variant": "legacy",
+      "wall_ns": 200
+    },
+    {
+      "block": 3,
+      "iterations": 1,
+      "operation": "original",
+      "parent_cpu_ns": 15625000,
+      "phase": "e2e",
+      "result_bytes": 34850,
+      "slot": 0,
+      "variant": "current",
+      "wall_ns": 52309700
+    },
+    {
+      "block": 3,
+      "iterations": 1,
+      "operation": "original",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 34850,
+      "slot": 1,
+      "variant": "legacy",
+      "wall_ns": 44508400
+    },
+    {
+      "block": 3,
+      "iterations": 1,
+      "operation": "original",
+      "parent_cpu_ns": 15625000,
+      "phase": "e2e",
+      "result_bytes": 34850,
+      "slot": 2,
+      "variant": "legacy",
+      "wall_ns": 49633400
+    },
+    {
+      "block": 3,
+      "iterations": 1,
+      "operation": "original",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 34850,
+      "slot": 3,
+      "variant": "current",
+      "wall_ns": 50890900
+    },
+    {
+      "block": 3,
+      "iterations": 1,
+      "operation": "accepts",
+      "parent_cpu_ns": 31250000,
+      "phase": "e2e",
+      "result_bytes": 4,
+      "slot": 0,
+      "variant": "current",
+      "wall_ns": 72750800
+    },
+    {
+      "block": 3,
+      "iterations": 1,
+      "operation": "accepts",
+      "parent_cpu_ns": 15625000,
+      "phase": "e2e",
+      "result_bytes": 4,
+      "slot": 1,
+      "variant": "legacy",
+      "wall_ns": 67067900
+    },
+    {
+      "block": 3,
+      "iterations": 1,
+      "operation": "accepts",
+      "parent_cpu_ns": 15625000,
+      "phase": "e2e",
+      "result_bytes": 4,
+      "slot": 2,
+      "variant": "legacy",
+      "wall_ns": 65483300
+    },
+    {
+      "block": 3,
+      "iterations": 1,
+      "operation": "accepts",
+      "parent_cpu_ns": 46875000,
+      "phase": "e2e",
+      "result_bytes": 4,
+      "slot": 3,
+      "variant": "current",
+      "wall_ns": 72290600
+    },
+    {
+      "block": 3,
+      "iterations": 1,
+      "operation": "view",
+      "parent_cpu_ns": 31250000,
+      "phase": "e2e",
+      "result_bytes": 34850,
+      "slot": 0,
+      "variant": "current",
+      "wall_ns": 126058100
+    },
+    {
+      "block": 3,
+      "iterations": 1,
+      "operation": "view",
+      "parent_cpu_ns": 15625000,
+      "phase": "e2e",
+      "result_bytes": 34850,
+      "slot": 1,
+      "variant": "legacy",
+      "wall_ns": 212181000
+    },
+    {
+      "block": 3,
+      "iterations": 1,
+      "operation": "view",
+      "parent_cpu_ns": 46875000,
+      "phase": "e2e",
+      "result_bytes": 34850,
+      "slot": 2,
+      "variant": "legacy",
+      "wall_ns": 109177300
+    },
+    {
+      "block": 3,
+      "iterations": 1,
+      "operation": "view",
+      "parent_cpu_ns": 31250000,
+      "phase": "e2e",
+      "result_bytes": 34850,
+      "slot": 3,
+      "variant": "current",
+      "wall_ns": 125648100
+    },
+    {
+      "block": 3,
+      "iterations": 1,
+      "operation": "mismatch",
+      "parent_cpu_ns": 15625000,
+      "phase": "e2e",
+      "result_bytes": 5,
+      "slot": 0,
+      "variant": "current",
+      "wall_ns": 53167400
+    },
+    {
+      "block": 3,
+      "iterations": 1,
+      "operation": "mismatch",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 5,
+      "slot": 1,
+      "variant": "legacy",
+      "wall_ns": 47832300
+    },
+    {
+      "block": 3,
+      "iterations": 1,
+      "operation": "mismatch",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 5,
+      "slot": 2,
+      "variant": "legacy",
+      "wall_ns": 44909800
+    },
+    {
+      "block": 3,
+      "iterations": 1,
+      "operation": "mismatch",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 5,
+      "slot": 3,
+      "variant": "current",
+      "wall_ns": 50859000
+    },
+    {
+      "block": 3,
+      "iterations": 1,
+      "operation": "unrelated",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 9,
+      "slot": 0,
+      "variant": "current",
+      "wall_ns": 700
+    },
+    {
+      "block": 3,
+      "iterations": 1,
+      "operation": "unrelated",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 9,
+      "slot": 1,
+      "variant": "legacy",
+      "wall_ns": 400
+    },
+    {
+      "block": 3,
+      "iterations": 1,
+      "operation": "unrelated",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 9,
+      "slot": 2,
+      "variant": "legacy",
+      "wall_ns": 300
+    },
+    {
+      "block": 3,
+      "iterations": 1,
+      "operation": "unrelated",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 9,
+      "slot": 3,
+      "variant": "current",
+      "wall_ns": 300
+    },
+    {
+      "block": 4,
+      "iterations": 1,
+      "operation": "original",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 34850,
+      "slot": 0,
+      "variant": "legacy",
+      "wall_ns": 48160300
+    },
+    {
+      "block": 4,
+      "iterations": 1,
+      "operation": "original",
+      "parent_cpu_ns": 15625000,
+      "phase": "e2e",
+      "result_bytes": 34850,
+      "slot": 1,
+      "variant": "current",
+      "wall_ns": 51226600
+    },
+    {
+      "block": 4,
+      "iterations": 1,
+      "operation": "original",
+      "parent_cpu_ns": 15625000,
+      "phase": "e2e",
+      "result_bytes": 34850,
+      "slot": 2,
+      "variant": "current",
+      "wall_ns": 47405600
+    },
+    {
+      "block": 4,
+      "iterations": 1,
+      "operation": "original",
+      "parent_cpu_ns": 15625000,
+      "phase": "e2e",
+      "result_bytes": 34850,
+      "slot": 3,
+      "variant": "legacy",
+      "wall_ns": 45109200
+    },
+    {
+      "block": 4,
+      "iterations": 1,
+      "operation": "accepts",
+      "parent_cpu_ns": 31250000,
+      "phase": "e2e",
+      "result_bytes": 4,
+      "slot": 0,
+      "variant": "legacy",
+      "wall_ns": 64181600
+    },
+    {
+      "block": 4,
+      "iterations": 1,
+      "operation": "accepts",
+      "parent_cpu_ns": 31250000,
+      "phase": "e2e",
+      "result_bytes": 4,
+      "slot": 1,
+      "variant": "current",
+      "wall_ns": 76043800
+    },
+    {
+      "block": 4,
+      "iterations": 1,
+      "operation": "accepts",
+      "parent_cpu_ns": 31250000,
+      "phase": "e2e",
+      "result_bytes": 4,
+      "slot": 2,
+      "variant": "current",
+      "wall_ns": 77927800
+    },
+    {
+      "block": 4,
+      "iterations": 1,
+      "operation": "accepts",
+      "parent_cpu_ns": 31250000,
+      "phase": "e2e",
+      "result_bytes": 4,
+      "slot": 3,
+      "variant": "legacy",
+      "wall_ns": 63940100
+    },
+    {
+      "block": 4,
+      "iterations": 1,
+      "operation": "view",
+      "parent_cpu_ns": 46875000,
+      "phase": "e2e",
+      "result_bytes": 34850,
+      "slot": 0,
+      "variant": "legacy",
+      "wall_ns": 110439000
+    },
+    {
+      "block": 4,
+      "iterations": 1,
+      "operation": "view",
+      "parent_cpu_ns": 31250000,
+      "phase": "e2e",
+      "result_bytes": 34850,
+      "slot": 1,
+      "variant": "current",
+      "wall_ns": 124225200
+    },
+    {
+      "block": 4,
+      "iterations": 1,
+      "operation": "view",
+      "parent_cpu_ns": 31250000,
+      "phase": "e2e",
+      "result_bytes": 34850,
+      "slot": 2,
+      "variant": "current",
+      "wall_ns": 117915900
+    },
+    {
+      "block": 4,
+      "iterations": 1,
+      "operation": "view",
+      "parent_cpu_ns": 15625000,
+      "phase": "e2e",
+      "result_bytes": 34850,
+      "slot": 3,
+      "variant": "legacy",
+      "wall_ns": 108441300
+    },
+    {
+      "block": 4,
+      "iterations": 1,
+      "operation": "mismatch",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 5,
+      "slot": 0,
+      "variant": "legacy",
+      "wall_ns": 45064300
+    },
+    {
+      "block": 4,
+      "iterations": 1,
+      "operation": "mismatch",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 5,
+      "slot": 1,
+      "variant": "current",
+      "wall_ns": 48992500
+    },
+    {
+      "block": 4,
+      "iterations": 1,
+      "operation": "mismatch",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 5,
+      "slot": 2,
+      "variant": "current",
+      "wall_ns": 50469200
+    },
+    {
+      "block": 4,
+      "iterations": 1,
+      "operation": "mismatch",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 5,
+      "slot": 3,
+      "variant": "legacy",
+      "wall_ns": 141780200
+    },
+    {
+      "block": 4,
+      "iterations": 1,
+      "operation": "unrelated",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 9,
+      "slot": 0,
+      "variant": "legacy",
+      "wall_ns": 700
+    },
+    {
+      "block": 4,
+      "iterations": 1,
+      "operation": "unrelated",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 9,
+      "slot": 1,
+      "variant": "current",
+      "wall_ns": 700
+    },
+    {
+      "block": 4,
+      "iterations": 1,
+      "operation": "unrelated",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 9,
+      "slot": 2,
+      "variant": "current",
+      "wall_ns": 200
+    },
+    {
+      "block": 4,
+      "iterations": 1,
+      "operation": "unrelated",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 9,
+      "slot": 3,
+      "variant": "legacy",
+      "wall_ns": 200
+    },
+    {
+      "block": 5,
+      "iterations": 1,
+      "operation": "original",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 34850,
+      "slot": 0,
+      "variant": "current",
+      "wall_ns": 44851000
+    },
+    {
+      "block": 5,
+      "iterations": 1,
+      "operation": "original",
+      "parent_cpu_ns": 15625000,
+      "phase": "e2e",
+      "result_bytes": 34850,
+      "slot": 1,
+      "variant": "legacy",
+      "wall_ns": 43434800
+    },
+    {
+      "block": 5,
+      "iterations": 1,
+      "operation": "original",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 34850,
+      "slot": 2,
+      "variant": "legacy",
+      "wall_ns": 43346600
+    },
+    {
+      "block": 5,
+      "iterations": 1,
+      "operation": "original",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 34850,
+      "slot": 3,
+      "variant": "current",
+      "wall_ns": 44831000
+    },
+    {
+      "block": 5,
+      "iterations": 1,
+      "operation": "accepts",
+      "parent_cpu_ns": 15625000,
+      "phase": "e2e",
+      "result_bytes": 4,
+      "slot": 0,
+      "variant": "current",
+      "wall_ns": 70058100
+    },
+    {
+      "block": 5,
+      "iterations": 1,
+      "operation": "accepts",
+      "parent_cpu_ns": 15625000,
+      "phase": "e2e",
+      "result_bytes": 4,
+      "slot": 1,
+      "variant": "legacy",
+      "wall_ns": 65796500
+    },
+    {
+      "block": 5,
+      "iterations": 1,
+      "operation": "accepts",
+      "parent_cpu_ns": 15625000,
+      "phase": "e2e",
+      "result_bytes": 4,
+      "slot": 2,
+      "variant": "legacy",
+      "wall_ns": 65581800
+    },
+    {
+      "block": 5,
+      "iterations": 1,
+      "operation": "accepts",
+      "parent_cpu_ns": 46875000,
+      "phase": "e2e",
+      "result_bytes": 4,
+      "slot": 3,
+      "variant": "current",
+      "wall_ns": 66034400
+    },
+    {
+      "block": 5,
+      "iterations": 1,
+      "operation": "view",
+      "parent_cpu_ns": 15625000,
+      "phase": "e2e",
+      "result_bytes": 34850,
+      "slot": 0,
+      "variant": "current",
+      "wall_ns": 115663700
+    },
+    {
+      "block": 5,
+      "iterations": 1,
+      "operation": "view",
+      "parent_cpu_ns": 15625000,
+      "phase": "e2e",
+      "result_bytes": 34850,
+      "slot": 1,
+      "variant": "legacy",
+      "wall_ns": 106399700
+    },
+    {
+      "block": 5,
+      "iterations": 1,
+      "operation": "view",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 34850,
+      "slot": 2,
+      "variant": "legacy",
+      "wall_ns": 107112300
+    },
+    {
+      "block": 5,
+      "iterations": 1,
+      "operation": "view",
+      "parent_cpu_ns": 15625000,
+      "phase": "e2e",
+      "result_bytes": 34850,
+      "slot": 3,
+      "variant": "current",
+      "wall_ns": 130562900
+    },
+    {
+      "block": 5,
+      "iterations": 1,
+      "operation": "mismatch",
+      "parent_cpu_ns": 15625000,
+      "phase": "e2e",
+      "result_bytes": 5,
+      "slot": 0,
+      "variant": "current",
+      "wall_ns": 44555300
+    },
+    {
+      "block": 5,
+      "iterations": 1,
+      "operation": "mismatch",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 5,
+      "slot": 1,
+      "variant": "legacy",
+      "wall_ns": 42496700
+    },
+    {
+      "block": 5,
+      "iterations": 1,
+      "operation": "mismatch",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 5,
+      "slot": 2,
+      "variant": "legacy",
+      "wall_ns": 42339700
+    },
+    {
+      "block": 5,
+      "iterations": 1,
+      "operation": "mismatch",
+      "parent_cpu_ns": 15625000,
+      "phase": "e2e",
+      "result_bytes": 5,
+      "slot": 3,
+      "variant": "current",
+      "wall_ns": 44673200
+    },
+    {
+      "block": 5,
+      "iterations": 1,
+      "operation": "unrelated",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 9,
+      "slot": 0,
+      "variant": "current",
+      "wall_ns": 600
+    },
+    {
+      "block": 5,
+      "iterations": 1,
+      "operation": "unrelated",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 9,
+      "slot": 1,
+      "variant": "legacy",
+      "wall_ns": 500
+    },
+    {
+      "block": 5,
+      "iterations": 1,
+      "operation": "unrelated",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 9,
+      "slot": 2,
+      "variant": "legacy",
+      "wall_ns": 200
+    },
+    {
+      "block": 5,
+      "iterations": 1,
+      "operation": "unrelated",
+      "parent_cpu_ns": 0,
+      "phase": "e2e",
+      "result_bytes": 9,
+      "slot": 3,
+      "variant": "current",
+      "wall_ns": 200
+    },
+    {
+      "block": 0,
+      "component": "observer",
+      "iterations": 128,
+      "parent_cpu_ns": 0,
+      "phase": "component",
+      "wall_ns": 1700
+    },
+    {
+      "block": 0,
+      "component": "reference",
+      "iterations": 128,
+      "parent_cpu_ns": 0,
+      "phase": "component",
+      "wall_ns": 407900
+    },
+    {
+      "block": 0,
+      "component": "sha256",
+      "iterations": 128,
+      "parent_cpu_ns": 62500000,
+      "phase": "component",
+      "wall_ns": 67620000
+    },
+    {
+      "block": 0,
+      "component": "interpret",
+      "iterations": 128,
+      "parent_cpu_ns": 0,
+      "phase": "component",
+      "wall_ns": 4119000
+    },
+    {
+      "block": 0,
+      "component": "helper-read-hash",
+      "iterations": 128,
+      "parent_cpu_ns": 15625000,
+      "phase": "component",
+      "wall_ns": 13565800
+    },
+    {
+      "block": 0,
+      "component": "body-predicate",
+      "iterations": 4,
+      "parent_cpu_ns": 78125000,
+      "phase": "component",
+      "wall_ns": 80327500
+    },
+    {
+      "block": 0,
+      "component": "pipe",
+      "iterations": 1,
+      "parent_cpu_ns": 0,
+      "phase": "component",
+      "wall_ns": 44940700
+    },
+    {
+      "block": 0,
+      "component": "owned",
+      "iterations": 1,
+      "parent_cpu_ns": 0,
+      "phase": "component",
+      "wall_ns": 49449300
+    },
+    {
+      "block": 1,
+      "component": "observer",
+      "iterations": 128,
+      "parent_cpu_ns": 0,
+      "phase": "component",
+      "wall_ns": 1800
+    },
+    {
+      "block": 1,
+      "component": "reference",
+      "iterations": 128,
+      "parent_cpu_ns": 0,
+      "phase": "component",
+      "wall_ns": 389000
+    },
+    {
+      "block": 1,
+      "component": "sha256",
+      "iterations": 128,
+      "parent_cpu_ns": 62500000,
+      "phase": "component",
+      "wall_ns": 65017100
+    },
+    {
+      "block": 1,
+      "component": "interpret",
+      "iterations": 128,
+      "parent_cpu_ns": 0,
+      "phase": "component",
+      "wall_ns": 4124300
+    },
+    {
+      "block": 1,
+      "component": "helper-read-hash",
+      "iterations": 128,
+      "parent_cpu_ns": 15625000,
+      "phase": "component",
+      "wall_ns": 11331600
+    },
+    {
+      "block": 1,
+      "component": "body-predicate",
+      "iterations": 4,
+      "parent_cpu_ns": 78125000,
+      "phase": "component",
+      "wall_ns": 78856400
+    },
+    {
+      "block": 1,
+      "component": "pipe",
+      "iterations": 1,
+      "parent_cpu_ns": 93750000,
+      "phase": "component",
+      "wall_ns": 145027600
+    },
+    {
+      "block": 1,
+      "component": "owned",
+      "iterations": 1,
+      "parent_cpu_ns": 0,
+      "phase": "component",
+      "wall_ns": 50086400
+    },
+    {
+      "block": 2,
+      "component": "observer",
+      "iterations": 128,
+      "parent_cpu_ns": 0,
+      "phase": "component",
+      "wall_ns": 2000
+    },
+    {
+      "block": 2,
+      "component": "reference",
+      "iterations": 128,
+      "parent_cpu_ns": 0,
+      "phase": "component",
+      "wall_ns": 400900
+    },
+    {
+      "block": 2,
+      "component": "sha256",
+      "iterations": 128,
+      "parent_cpu_ns": 62500000,
+      "phase": "component",
+      "wall_ns": 64973000
+    },
+    {
+      "block": 2,
+      "component": "interpret",
+      "iterations": 128,
+      "parent_cpu_ns": 0,
+      "phase": "component",
+      "wall_ns": 4296000
+    },
+    {
+      "block": 2,
+      "component": "helper-read-hash",
+      "iterations": 128,
+      "parent_cpu_ns": 15625000,
+      "phase": "component",
+      "wall_ns": 12540500
+    },
+    {
+      "block": 2,
+      "component": "body-predicate",
+      "iterations": 4,
+      "parent_cpu_ns": 78125000,
+      "phase": "component",
+      "wall_ns": 80946200
+    },
+    {
+      "block": 2,
+      "component": "pipe",
+      "iterations": 1,
+      "parent_cpu_ns": 0,
+      "phase": "component",
+      "wall_ns": 45543200
+    },
+    {
+      "block": 2,
+      "component": "owned",
+      "iterations": 1,
+      "parent_cpu_ns": 15625000,
+      "phase": "component",
+      "wall_ns": 50785500
+    },
+    {
+      "block": 3,
+      "component": "observer",
+      "iterations": 128,
+      "parent_cpu_ns": 0,
+      "phase": "component",
+      "wall_ns": 2100
+    },
+    {
+      "block": 3,
+      "component": "reference",
+      "iterations": 128,
+      "parent_cpu_ns": 0,
+      "phase": "component",
+      "wall_ns": 423200
+    },
+    {
+      "block": 3,
+      "component": "sha256",
+      "iterations": 128,
+      "parent_cpu_ns": 78125000,
+      "phase": "component",
+      "wall_ns": 66275700
+    },
+    {
+      "block": 3,
+      "component": "interpret",
+      "iterations": 128,
+      "parent_cpu_ns": 0,
+      "phase": "component",
+      "wall_ns": 4570200
+    },
+    {
+      "block": 3,
+      "component": "helper-read-hash",
+      "iterations": 128,
+      "parent_cpu_ns": 15625000,
+      "phase": "component",
+      "wall_ns": 12526500
+    },
+    {
+      "block": 3,
+      "component": "body-predicate",
+      "iterations": 4,
+      "parent_cpu_ns": 78125000,
+      "phase": "component",
+      "wall_ns": 79364200
+    },
+    {
+      "block": 3,
+      "component": "pipe",
+      "iterations": 1,
+      "parent_cpu_ns": 0,
+      "phase": "component",
+      "wall_ns": 46124000
+    },
+    {
+      "block": 3,
+      "component": "owned",
+      "iterations": 1,
+      "parent_cpu_ns": 0,
+      "phase": "component",
+      "wall_ns": 56305800
+    },
+    {
+      "block": 4,
+      "component": "observer",
+      "iterations": 128,
+      "parent_cpu_ns": 0,
+      "phase": "component",
+      "wall_ns": 1900
+    },
+    {
+      "block": 4,
+      "component": "reference",
+      "iterations": 128,
+      "parent_cpu_ns": 0,
+      "phase": "component",
+      "wall_ns": 432200
+    },
+    {
+      "block": 4,
+      "component": "sha256",
+      "iterations": 128,
+      "parent_cpu_ns": 78125000,
+      "phase": "component",
+      "wall_ns": 66096800
+    },
+    {
+      "block": 4,
+      "component": "interpret",
+      "iterations": 128,
+      "parent_cpu_ns": 0,
+      "phase": "component",
+      "wall_ns": 4103000
+    },
+    {
+      "block": 4,
+      "component": "helper-read-hash",
+      "iterations": 128,
+      "parent_cpu_ns": 15625000,
+      "phase": "component",
+      "wall_ns": 10780900
+    },
+    {
+      "block": 4,
+      "component": "body-predicate",
+      "iterations": 4,
+      "parent_cpu_ns": 78125000,
+      "phase": "component",
+      "wall_ns": 79204000
+    },
+    {
+      "block": 4,
+      "component": "pipe",
+      "iterations": 1,
+      "parent_cpu_ns": 0,
+      "phase": "component",
+      "wall_ns": 46596500
+    },
+    {
+      "block": 4,
+      "component": "owned",
+      "iterations": 1,
+      "parent_cpu_ns": 0,
+      "phase": "component",
+      "wall_ns": 49558100
+    },
+    {
+      "block": 5,
+      "component": "observer",
+      "iterations": 128,
+      "parent_cpu_ns": 0,
+      "phase": "component",
+      "wall_ns": 2100
+    },
+    {
+      "block": 5,
+      "component": "reference",
+      "iterations": 128,
+      "parent_cpu_ns": 0,
+      "phase": "component",
+      "wall_ns": 396800
+    },
+    {
+      "block": 5,
+      "component": "sha256",
+      "iterations": 128,
+      "parent_cpu_ns": 46875000,
+      "phase": "component",
+      "wall_ns": 64402200
+    },
+    {
+      "block": 5,
+      "component": "interpret",
+      "iterations": 128,
+      "parent_cpu_ns": 0,
+      "phase": "component",
+      "wall_ns": 4470300
+    },
+    {
+      "block": 5,
+      "component": "helper-read-hash",
+      "iterations": 128,
+      "parent_cpu_ns": 15625000,
+      "phase": "component",
+      "wall_ns": 11720800
+    },
+    {
+      "block": 5,
+      "component": "body-predicate",
+      "iterations": 4,
+      "parent_cpu_ns": 78125000,
+      "phase": "component",
+      "wall_ns": 80424900
+    },
+    {
+      "block": 5,
+      "component": "pipe",
+      "iterations": 1,
+      "parent_cpu_ns": 15625000,
+      "phase": "component",
+      "wall_ns": 42541700
+    },
+    {
+      "block": 5,
+      "component": "owned",
+      "iterations": 1,
+      "parent_cpu_ns": 0,
+      "phase": "component",
+      "wall_ns": 49621300
+    }
+  ],
+  "stdout_sha256": "4843314a808417bdf84f3f25af75656a7f02d5a1dd4625110747de3d39250c95",
+  "summary": {
+    "accepts/current": {
+      "iterations_per_sample": 1,
+      "parent_cpu_ns_per_call": {
+        "max": 46875000.0,
+        "mean": 29947916.666666668,
+        "median": 31250000.0,
+        "min": 15625000.0
+      },
+      "samples": 12,
+      "wall_ns_per_call": {
+        "max": 77927800.0,
+        "mean": 72617150.0,
+        "median": 72380350.0,
+        "min": 66034400.0
+      }
+    },
+    "accepts/legacy": {
+      "iterations_per_sample": 1,
+      "parent_cpu_ns_per_call": {
+        "max": 46875000.0,
+        "mean": 26041666.666666668,
+        "median": 23437500.0,
+        "min": 15625000.0
+      },
+      "samples": 12,
+      "wall_ns_per_call": {
+        "max": 165789500.0,
+        "mean": 74694108.33333333,
+        "median": 66223400.0,
+        "min": 63940100.0
+      }
+    },
+    "body-predicate": {
+      "iterations_per_sample": 4,
+      "parent_cpu_ns_per_call": {
+        "max": 19531250.0,
+        "mean": 19531250.0,
+        "median": 19531250.0,
+        "min": 19531250.0
+      },
+      "samples": 6,
+      "wall_ns_per_call": {
+        "max": 20236550.0,
+        "mean": 19963466.666666668,
+        "median": 19961462.5,
+        "min": 19714100.0
+      }
+    },
+    "helper-read-hash": {
+      "iterations_per_sample": 128,
+      "parent_cpu_ns_per_call": {
+        "max": 122070.3125,
+        "mean": 122070.3125,
+        "median": 122070.3125,
+        "min": 122070.3125
+      },
+      "samples": 6,
+      "wall_ns_per_call": {
+        "max": 105982.8125,
+        "mean": 94356.90104166667,
+        "median": 94716.015625,
+        "min": 84225.78125
+      }
+    },
+    "interpret": {
+      "iterations_per_sample": 128,
+      "parent_cpu_ns_per_call": {
+        "max": 0.0,
+        "mean": 0.0,
+        "median": 0.0,
+        "min": 0.0
+      },
+      "samples": 6,
+      "wall_ns_per_call": {
+        "max": 35704.6875,
+        "mean": 33441.145833333336,
+        "median": 32891.796875,
+        "min": 32054.6875
+      }
+    },
+    "mismatch/current": {
+      "iterations_per_sample": 1,
+      "parent_cpu_ns_per_call": {
+        "max": 15625000.0,
+        "mean": 6510416.666666667,
+        "median": 0.0,
+        "min": 0.0
+      },
+      "samples": 12,
+      "wall_ns_per_call": {
+        "max": 152110200.0,
+        "mean": 58998900.0,
+        "median": 51601750.0,
+        "min": 44555300.0
+      }
+    },
+    "mismatch/legacy": {
+      "iterations_per_sample": 1,
+      "parent_cpu_ns_per_call": {
+        "max": 15625000.0,
+        "mean": 2604166.6666666665,
+        "median": 0.0,
+        "min": 0.0
+      },
+      "samples": 12,
+      "wall_ns_per_call": {
+        "max": 141780200.0,
+        "mean": 53152466.666666664,
+        "median": 45009050.0,
+        "min": 42339700.0
+      }
+    },
+    "observer": {
+      "iterations_per_sample": 128,
+      "parent_cpu_ns_per_call": {
+        "max": 0.0,
+        "mean": 0.0,
+        "median": 0.0,
+        "min": 0.0
+      },
+      "samples": 6,
+      "wall_ns_per_call": {
+        "max": 16.40625,
+        "mean": 15.104166666666666,
+        "median": 15.234375,
+        "min": 13.28125
+      }
+    },
+    "original/current": {
+      "iterations_per_sample": 1,
+      "parent_cpu_ns_per_call": {
+        "max": 15625000.0,
+        "mean": 7812500.0,
+        "median": 7812500.0,
+        "min": 0.0
+      },
+      "samples": 12,
+      "wall_ns_per_call": {
+        "max": 63251500.0,
+        "mean": 51004675.0,
+        "median": 51058750.0,
+        "min": 44831000.0
+      }
+    },
+    "original/legacy": {
+      "iterations_per_sample": 1,
+      "parent_cpu_ns_per_call": {
+        "max": 15625000.0,
+        "mean": 5208333.333333333,
+        "median": 0.0,
+        "min": 0.0
+      },
+      "samples": 12,
+      "wall_ns_per_call": {
+        "max": 55677900.0,
+        "mean": 46367491.666666664,
+        "median": 45091100.0,
+        "min": 43346600.0
+      }
+    },
+    "owned": {
+      "iterations_per_sample": 1,
+      "parent_cpu_ns_per_call": {
+        "max": 15625000.0,
+        "mean": 2604166.6666666665,
+        "median": 0.0,
+        "min": 0.0
+      },
+      "samples": 6,
+      "wall_ns_per_call": {
+        "max": 56305800.0,
+        "mean": 50967733.333333336,
+        "median": 49853850.0,
+        "min": 49449300.0
+      }
+    },
+    "pipe": {
+      "iterations_per_sample": 1,
+      "parent_cpu_ns_per_call": {
+        "max": 93750000.0,
+        "mean": 18229166.666666668,
+        "median": 0.0,
+        "min": 0.0
+      },
+      "samples": 6,
+      "wall_ns_per_call": {
+        "max": 145027600.0,
+        "mean": 61795616.666666664,
+        "median": 45833600.0,
+        "min": 42541700.0
+      }
+    },
+    "reference": {
+      "iterations_per_sample": 128,
+      "parent_cpu_ns_per_call": {
+        "max": 0.0,
+        "mean": 0.0,
+        "median": 0.0,
+        "min": 0.0
+      },
+      "samples": 6,
+      "wall_ns_per_call": {
+        "max": 3376.5625,
+        "mean": 3190.1041666666665,
+        "median": 3159.375,
+        "min": 3039.0625
+      }
+    },
+    "sha256": {
+      "iterations_per_sample": 128,
+      "parent_cpu_ns_per_call": {
+        "max": 610351.5625,
+        "mean": 508626.3020833333,
+        "median": 488281.25,
+        "min": 366210.9375
+      },
+      "samples": 6,
+      "wall_ns_per_call": {
+        "max": 528281.25,
+        "mean": 513521.875,
+        "median": 512163.671875,
+        "min": 503142.1875
+      }
+    },
+    "unrelated/current": {
+      "iterations_per_sample": 1,
+      "parent_cpu_ns_per_call": {
+        "max": 0.0,
+        "mean": 0.0,
+        "median": 0.0,
+        "min": 0.0
+      },
+      "samples": 12,
+      "wall_ns_per_call": {
+        "max": 900.0,
+        "mean": 450.0,
+        "median": 450.0,
+        "min": 200.0
+      }
+    },
+    "unrelated/legacy": {
+      "iterations_per_sample": 1,
+      "parent_cpu_ns_per_call": {
+        "max": 0.0,
+        "mean": 0.0,
+        "median": 0.0,
+        "min": 0.0
+      },
+      "samples": 12,
+      "wall_ns_per_call": {
+        "max": 700.0,
+        "mean": 441.6666666666667,
+        "median": 400.0,
+        "min": 200.0
+      }
+    },
+    "view/current": {
+      "iterations_per_sample": 1,
+      "parent_cpu_ns_per_call": {
+        "max": 46875000.0,
+        "mean": 29947916.666666668,
+        "median": 31250000.0,
+        "min": 15625000.0
+      },
+      "samples": 12,
+      "wall_ns_per_call": {
+        "max": 136438600.0,
+        "mean": 126216166.66666667,
+        "median": 125506450.0,
+        "min": 115663700.0
+      }
+    },
+    "view/legacy": {
+      "iterations_per_sample": 1,
+      "parent_cpu_ns_per_call": {
+        "max": 46875000.0,
+        "mean": 29947916.666666668,
+        "median": 31250000.0,
+        "min": 0.0
+      },
+      "samples": 12,
+      "wall_ns_per_call": {
+        "max": 212181000.0,
+        "mean": 120712725.0,
+        "median": 113965150.0,
+        "min": 106399700.0
+      }
+    }
+  },
+  "timing": "Instant monotonic wall and current-process GetProcessTimes; excludes Git child CPU"
+}

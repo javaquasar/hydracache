@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\historical-blob-batch-074\census_cost.py", line 143, in <module>
+    capture(root, Path(sys.argv[1]).resolve(), Path(sys.argv[2]).resolve())
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\historical-blob-batch-074\census_cost.py", line 91, in capture
+    require(not blocked, 'ambient capture overrides: ' + ','.join(sorted(blocked)))
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\historical-blob-batch-074\census_cost.py", line 22, in require
+    raise ValueError(message)
+ValueError: ambient capture overrides: GIT_PAGER

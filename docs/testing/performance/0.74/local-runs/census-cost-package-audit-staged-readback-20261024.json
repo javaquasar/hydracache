@@ -1,0 +1,11 @@
+{
+  "record_type": "transcribed_tool_output_from_independent_staged_readback",
+  "command": ["python", "target/verify-census-cost-staged-20261024.py"],
+  "staged_index_sha256": "16632159c18fba4c3b8d10fbc2d4176298c4692f90452f280dd1eeb66faf338c",
+  "members": 486,
+  "objects": 437,
+  "raw_samples": 168,
+  "package_targets": 135,
+  "protected_unchanged": true,
+  "offline_only": true
+}

@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\historical-blob-batch-074\census_cost.py", line 153, in <module>
+    capture(root, Path(sys.argv[1]).resolve(), Path(sys.argv[2]).resolve())
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\historical-blob-batch-074\census_cost.py", line 136, in capture
+    result = review((destination / 'stdout.log').read_bytes())
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\historical-blob-batch-074\census_cost.py", line 38, in review
+    require(len(rows) == BLOCKS * (len(OPERATIONS) * 4 + len(COMPONENTS)), 'sample count')
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\historical-blob-batch-074\census_cost.py", line 22, in require
+    raise ValueError(message)
+ValueError: sample count

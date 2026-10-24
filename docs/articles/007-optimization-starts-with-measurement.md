@@ -19425,3 +19425,38 @@ points. Hashing, reference construction and file-backed capture may add cost and
 need full-path attribution. A batching proposal cannot claim a win by eagerly
 reading a source the old failure path would never observe. Full bounded package
 replay, cost attribution and production admission remain independent gates.
+
+The [first complete caller attribution](../testing/performance/0.74/census-cost-package-audit-result-20261024.md)
+does not justify calling the integration an optimization. One fixed Windows/debug
+cohort retains six alternating ABBA/BAAB blocks, twelve samples for each old/new
+operation, and every first sample and outlier. The connected `original` median is
+51.06 ms versus 45.09 ms for legacy; the selected `view` is 125.51 versus 113.97 ms.
+These are local observations, not a production regression estimate. The guard's
+new integrity contract has a cost even though its conditional Git count is unchanged.
+
+Separate controls help select the next question. Static reference construction
+takes about 3.16 microseconds, SHA256 of 34850 bytes about 0.512 ms, and the existing
+full body predicate about 19.96 ms per invocation in this debug build. Pipe and
+bounded-owned Git capture have medians of 45.83 and 49.85 ms. Their separately
+measured intervals are not slices that can be subtracted from the full caller;
+they include their own checks and scheduling. Parent CPU excludes Git children
+and has coarse observed quantization. The empty-loop control cannot account for
+all observer overhead. The next hypothesis concerns transport/process capture,
+not removal of source pins or fresh validation. No implementation of that
+hypothesis is admitted by these numbers.
+
+The first actual measured child succeeds, but its log reader rejects the sample
+count because libtest prefixes the first record with its status line. Fixing the
+reader and deriving a separate report from the same saved output preserves both
+facts: the child passed, and the original wrapper failed. Repeating the workload
+would have hidden a tooling problem behind another host sample. Earlier build,
+pager-environment, build-receipt and strict-lint refusals remain distinct too.
+
+The full package requires a different audit. Its current 135-target catalog is
+not the old 130-target source interrupted at 780 seconds. Source assertions
+containing service commands do not imply those commands execute, while temporary
+Git/protoc fixtures and child-termination controls really do have local effects.
+A lexical inventory is not expanded-macro or indirect-call reachability proof.
+The full replay stays unproven until that effect closure and the unchanged-bound
+execution are complete. Focused tests and a source-reader cost cohort cannot fill
+an incomplete package suffix or open production delivery and writer retirement.

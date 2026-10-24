@@ -1,0 +1,5 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.74s
+     Running tests\census_cost_074.rs (target\debug\deps\census_cost_074-cc21f9b43c2ba5b5.exe)
+     Running tests\held_complete_role_census_074.rs (target\debug\deps\held_complete_role_census_074-8d8652a4de24ccda.exe)
+     Running tests\historical_blob_caller_074.rs (target\debug\deps\historical_blob_caller_074-0b145296431064c2.exe)
+     Running tests\role_census_reader_074.rs (target\debug\deps\role_census_reader_074-e8c3f359ebe987ed.exe)

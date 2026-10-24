@@ -321,3 +321,21 @@ cases each; GNU/WSL passes 33 fixture cases each. Forty-five Python controls and
 strict local gates pass; first import-position/lint refusals remain. No Git-process
 reduction is established. Full package replay/cost attribution and the original
 clock, trust, delivery, writer and release barriers remain separate.
+
+The [first connected-caller cost cohort](census-cost-package-audit-result-20261024.md)
+does not support a speedup claim: Windows/debug `original` and selected `view`
+have higher medians than frozen legacy. All 120 complete calls and 48 component
+series are retained; parser repair reads that same first output, without another
+measured child or changing the failed wrapper verdict. Reference construction is
+small relative to process/capture, but component intervals are not disjoint full-
+call phases. No transport candidate or validation relaxation is accepted.
+
+The current full-package catalog is 135 targets, matched to offline Cargo
+metadata, not the old 130-target timeout source. A lexical inventory and manual
+entry-point review identify temporary Git repositories, protoc scratch generation
+and owned child termination. Expanded macro/indirect-dispatch effect closure is
+still false; no full replay, filtered substitute or larger-than-780-second budget
+is used. The first old failures/timeouts, original 300/60/10 windows and every
+production delivery/writer/lifecycle/trust/security barrier remain open. Local
+Windows/current/MSRV pass 39 focused cases each, 54 Python controls, check/strict
+Clippy and focused formatting; these do not complete the full package.

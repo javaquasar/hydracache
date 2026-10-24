@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\historical-blob-batch-074\census_cost.py", line 151, in <module>
+    capture(root, Path(sys.argv[1]).resolve(), Path(sys.argv[2]).resolve())
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\historical-blob-batch-074\census_cost.py", line 103, in capture
+    require(all(source.get(p) == digest for p, digest in current.items()
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                if p.endswith(('.rs', '.toml'))), 'build source drift')
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\historical-blob-batch-074\census_cost.py", line 22, in require
+    raise ValueError(message)
+ValueError: build source drift

@@ -1,0 +1,5 @@
+{
+  "exit": null,
+  "reason": "ambient capture overrides: GIT_PAGER",
+  "type": "ValueError"
+}

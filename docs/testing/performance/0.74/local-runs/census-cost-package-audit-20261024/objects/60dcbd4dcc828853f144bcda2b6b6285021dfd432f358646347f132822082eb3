@@ -1,0 +1,159 @@
+"""Seal the sole measured caller cohort, first refusals and read-only package audit."""
+from pathlib import Path
+import hashlib
+import json
+import re
+import subprocess
+import sys
+
+ROOT = Path(__file__).resolve().parent.parent
+BASE = 'docs/testing/performance/0.74/local-runs/census-cost-package-audit-20261024'
+CODE = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT).decode().strip()
+assert CODE.startswith('39712b38')
+PROTECTED = {
+    'Cargo.toml': '18a8a27cf140a1d6eb31c8316ee39bb7d5832866a990346eee16cd0c30de344b',
+    'Cargo.lock': 'd2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c',
+    'docs/testing/performance/0.74/qualification-manifest.toml': '11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc',
+}
+sys.path.insert(0, str(ROOT / 'tools/historical-blob-batch-074'))
+import census_cost
+members, objects, phases = {}, {}, []
+
+
+def sha(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+
+def add(name, raw):
+    assert name not in members
+    digest = sha(raw)
+    members[name] = dict(sha256=digest, bytes=len(raw))
+    objects[digest] = raw
+
+
+checks = ROOT / 'target/source-continuation-20261024'
+expected_failures = {'census-cost-build-v1': 101, 'census-cost-clippy-v1': 101,
+    'census-cost-cohort-v1': 1, 'census-cost-cohort-v2': 1, 'census-cost-cohort-v3': 1,
+    'census-cost-format': 1}
+for folder in sorted(checks.glob('census-cost-*')):
+    intent = json.loads((folder / 'intent.json').read_bytes())
+    result = json.loads((folder / 'result.json').read_bytes())
+    expected = expected_failures.get(folder.name, 0)
+    assert result['exit'] == expected and result['outer_refusal'] is None
+    assert result['source_unchanged'] and result['head_unchanged'] and intent['source'] == result['source_after']
+    for path in sorted(folder.iterdir()):
+        assert path.is_file()
+        add(f'checks/{folder.name}/{path.name}', path.read_bytes())
+    passes = list(map(int, re.findall(r'test result: ok\. (\d+) passed; 0 failed;', (folder / 'stdout.log').read_text())))
+    if folder.name in ('census-cost-current-final', 'census-cost-msrv-final'):
+        assert passes == [2, 4, 9, 11, 5, 6, 2]
+        assert 'warning:' not in (folder / 'stderr.log').read_text()
+    if folder.name == 'census-cost-python-receipts':
+        assert 'Ran 54 tests' in (folder / 'stderr.log').read_text()
+    phases.append(dict(phase=folder.name, exit=expected, rust_passes=passes))
+
+for folder in sorted((ROOT / 'target/census-cost-20261024').iterdir()):
+    for path in sorted(folder.iterdir()):
+        assert path.is_file()
+        add(f'captures/{folder.name}/{path.name}', path.read_bytes())
+    expected = {'first': 'ambient capture overrides: GIT_PAGER',
+                'pager-contract': 'build source drift', 'build-scope': 'sample count'}[folder.name]
+    assert json.loads((folder / 'refusal.json').read_bytes())['reason'] == expected
+    assert (folder / 'stdout.log').exists() == (folder.name == 'build-scope')
+
+# The very first Python preflight was hash-captured, not copied as raw source.
+# Reconstruct only its exact known delta from the retained second source and
+# require its original pre-effect hash; label it reconstructed, not raw-captured.
+v2 = (ROOT / 'target/census-cost-20261024/pager-contract/census_cost.py.raw').read_text()
+start, end = v2.index('def environment_overrides('), v2.index('def review(raw):')
+v1 = v2[:start] + v2[end:]
+v1 = v1.replace('blocked = environment_overrides(os.environ)',
+    "blocked = [k for k in os.environ if k.startswith(('GIT_', 'RUST_TEST_', 'HC074_CENSUS_'))]")
+v1 = v1.replace("git_executable=shutil.which('git'), inherited_pager=os.environ.get('GIT_PAGER'),\n              fixture_pin_integrity=True",
+                "git_executable=shutil.which('git'), fixture_pin_integrity=True")
+original = json.loads((ROOT / 'target/census-cost-20261024/first/intent.json').read_bytes())
+assert sha(v1.encode()) == original['source']['tools/historical-blob-batch-074/census_cost.py']
+add('reconstructed-first-preflight-source/census_cost.py', v1.encode())
+
+saved = ROOT / 'target/census-cost-20261024/build-scope'
+outer = checks / 'census-cost-cohort-v3'
+derived = census_cost.derive_saved(saved, outer)
+captured = json.loads((checks / 'census-cost-derived-final/stdout.log').read_bytes())
+assert captured == derived
+add('derived/cost.json', (checks / 'census-cost-derived-final/stdout.log').read_bytes())
+assert len(derived['samples']) == 168 and len(derived['inputs_sha256']) == 5
+
+build = checks / 'census-cost-build-v2'
+compiled = json.loads((build / 'intent.json').read_bytes())['source']
+measured = json.loads((outer / 'intent.json').read_bytes())['source']
+assert all(measured.get(path) == digest for path, digest in compiled.items()
+           if path.endswith(('.rs', '.toml', '.lock')))
+raw = (checks / 'census-cost-clippy-v1/census_cost_074.rs.raw').read_bytes()
+name = 'crates/xtask/tests/census_cost_074.rs'
+assert sha(raw) == compiled[name] == measured[name]
+add('measured-source/' + name, raw)
+now = (ROOT / name).read_text()
+assert raw.decode().replace('\r\n', '\n').replace('block % 2 == 0', 'block.is_multiple_of(2)') == now
+raw = (checks / 'census-cost-build-v1/census_cost_074.rs.raw').read_bytes()
+assert sha(raw) == json.loads((checks / 'census-cost-build-v1/intent.json').read_bytes())['source'][name]
+add('first-build-source/' + name, raw)
+
+audit_raw = (checks / 'census-cost-audit-final-a/stdout.log').read_bytes()
+assert audit_raw == (checks / 'census-cost-audit-final-b/stdout.log').read_bytes()
+audit = json.loads(audit_raw)
+assert audit['target_count'] == 135 and len(audit['sources']) == 330
+assert len(audit['lexical_sightings']) == 629 and len(audit['unresolved_literal_path_candidates']) == 29
+assert not audit['package_replayed'] and not audit['execution_effects_cleared']
+assert audit['outer_bound_seconds'] == 780
+metadata = json.loads((checks / 'census-cost-metadata/stdout.log').read_bytes())
+package, = [p for p in metadata['packages'] if p['name'] == 'xtask']
+catalog = ['unittests src/lib.rs', 'unittests src/main.rs'] + sorted(
+    'tests/' + t['name'] + '.rs' for t in package['targets'] if t['kind'] == ['test'])
+assert catalog == audit['targets'] and len(package['targets']) == 135
+add('derived/package-audit.json', audit_raw)
+for name, digest in audit['sources'].items():
+    raw = (ROOT / name).read_bytes()
+    assert sha(raw) == digest
+    add('audit-source/' + name, raw)
+
+for name in ['census_cost.py', 'package_replay_audit.py', 'test_census_cost.py',
+             'test_package_replay_audit.py', 'caller_integration.py', 'README.md']:
+    path = 'tools/historical-blob-batch-074/' + name
+    add('source/' + path, (ROOT / path).read_bytes())
+path = 'tools/xtask-package-attribution-074/review.py'
+add('source/' + path, (ROOT / path).read_bytes())
+for path, digest in PROTECTED.items():
+    raw = (ROOT / path).read_bytes()
+    assert sha(raw) == digest
+    add('protected/' + path, raw)
+unchanged = ['crates/xtask/tests/support/census_provider_input.rs',
+    'crates/xtask/tests/support/census_provider_input_legacy.rs',
+    *['tools/historical-blob-batch-074/' + name + '.rs' for name in
+      ('census_caller', 'census_reference', 'transport', 'decoder')], 'tools/material-lock-fixture-074/contract.rs']
+for path in unchanged:
+    previous = subprocess.check_output(['git', 'show', 'e530b96f9fcfec6c96d998c8ade34ea166110b93:' + path], cwd=ROOT)
+    current = (ROOT / path).read_bytes()
+    assert previous.replace(b'\r\n', b'\n') == current.replace(b'\r\n', b'\n')
+    add('unchanged/' + path, current)
+for name in ('run-source-step-20261024.py', 'run-fresh-reader-20261024.py',
+             'seal-census-cost-20261024.py', 'verify-census-cost-staged-20261024.py'):
+    add('coordinators/' + name, (ROOT / 'target' / name).read_bytes())
+index = dict(schema='hc074-census-cost-package-audit-v1', code_commit=CODE, members=members,
+    facts=dict(phases=phases, protected_sha256=PROTECTED, measured_cohorts=1, e2e_samples=120,
+        component_samples=48, windows_tests_per_toolchain=39, python_controls=54,
+        default_package_targets=135, package_outer_bound_seconds=780, package_replayed=False,
+        package_pass=False, execution_effects_cleared=False, raw_first_refusals_retained=True,
+        original_wrapper_reclassified=False, measured_child_repeated=False, speedup_confirmed=False,
+        component_phases_disjoint=False, parent_cpu_excludes_git=True,
+        original_checks_or_deadlines_changed=False, dependency_baseline_changed=False,
+        server=False, services=False, clocks_changed=False, wsl=False, product_workload=False,
+        qualification=False, production_admission=False, unchanged_sources=unchanged))
+out = ROOT / BASE
+out.mkdir(parents=True, exist_ok=False)
+(out / 'objects').mkdir()
+(out / '.gitattributes').write_bytes(b'index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n')
+for digest, raw in objects.items():
+    (out / 'objects' / digest).write_bytes(raw)
+raw = (json.dumps(index, indent=2, sort_keys=True) + '\n').encode()
+(out / 'index.json').write_bytes(raw)
+print(json.dumps(dict(index_sha256=sha(raw), members=len(members), objects=len(objects), phases=len(phases))))

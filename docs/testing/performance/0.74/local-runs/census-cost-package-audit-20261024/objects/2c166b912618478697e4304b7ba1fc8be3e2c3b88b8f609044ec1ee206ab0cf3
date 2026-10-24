@@ -1,0 +1,69 @@
+"""Independent exact staged-CAS readback; never reruns caller or package tests."""
+from pathlib import Path
+import hashlib
+import json
+import subprocess
+
+ROOT = Path(__file__).resolve().parent.parent
+BASE = 'docs/testing/performance/0.74/local-runs/census-cost-package-audit-20261024'
+
+
+def staged(path):
+    return subprocess.check_output(['git', 'show', ':' + BASE + '/' + path], cwd=ROOT)
+
+
+raw = staged('index.json')
+index = json.loads(raw)
+assert index['schema'] == 'hc074-census-cost-package-audit-v1'
+objects = {}
+for name, item in index['members'].items():
+    digest = item['sha256']
+    assert len(digest) == 64 and all(c in '0123456789abcdef' for c in digest)
+    if digest not in objects:
+        objects[digest] = staged('objects/' + digest)
+    body = objects[digest]
+    assert hashlib.sha256(body).hexdigest() == digest and len(body) == item['bytes']
+
+
+def member(name):
+    return objects[index['members'][name]['sha256']]
+
+
+report = json.loads(member('derived/cost.json'))
+records = []
+for line in member('captures/build-scope/stdout.log').decode().splitlines():
+    if line.startswith('test census_cost_child ... HC074_COST '):
+        line = line[len('test census_cost_child ... '):]
+    if line.startswith('HC074_COST '):
+        records.append(json.loads(line[len('HC074_COST '):]))
+assert records == report['samples'] and len(records) == 168
+assert hashlib.sha256(member('captures/build-scope/stdout.log')).hexdigest() == report['stdout_sha256']
+assert report['first_refusal_preserved'] == json.loads(member('captures/build-scope/refusal.json'))
+assert report['first_refusal_preserved'] == dict(exit=0, reason='sample count', type='ValueError')
+for label in ('capture/intent.json', 'capture/preflight.json', 'capture/refusal.json', 'outer/intent.json', 'outer/result.json'):
+    source = ('captures/build-scope/' + label.split('/')[1]) if label.startswith('capture/') else (
+        'checks/census-cost-cohort-v3/' + label.split('/')[1])
+    assert hashlib.sha256(member(source)).hexdigest() == report['inputs_sha256'][label]
+for phase in index['facts']['phases']:
+    result = json.loads(member('checks/' + phase['phase'] + '/result.json'))
+    assert result['exit'] == phase['exit'] and result['source_unchanged'] and result['head_unchanged']
+    if phase['phase'] in ('census-cost-current-final', 'census-cost-msrv-final'):
+        assert sum(phase['rust_passes']) == 39
+audit = json.loads(member('derived/package-audit.json'))
+assert len(audit['targets']) == len(set(audit['targets'])) == 135
+assert not audit['execution_effects_cleared'] and not audit['package_replayed']
+metadata = json.loads(member('checks/census-cost-metadata/stdout.log'))
+package, = [p for p in metadata['packages'] if p['name'] == 'xtask']
+assert len(package['targets']) == 135
+for path, digest in audit['sources'].items():
+    assert hashlib.sha256(member('audit-source/' + path)).hexdigest() == digest
+for path, digest in index['facts']['protected_sha256'].items():
+    assert hashlib.sha256(member('protected/' + path)).hexdigest() == digest
+    assert hashlib.sha256((ROOT / path).read_bytes()).hexdigest() == digest
+for row in records:
+    assert row['wall_ns'] >= 0 and row['parent_cpu_ns'] >= 0
+assert index['facts']['measured_cohorts'] == 1
+assert not index['facts']['package_pass'] and not index['facts']['original_checks_or_deadlines_changed']
+print(json.dumps(dict(staged_index_sha256=hashlib.sha256(raw).hexdigest(),
+    members=len(index['members']), objects=len(objects), raw_samples=168, package_targets=135,
+    protected_unchanged=True, offline_only=True)))

@@ -6957,3 +6957,21 @@ toolchain, including the real consumer; GNU/WSL passes 33 fixture cases each on
 import-position and duplicate-module refusals remain retained. This is local
 source integrity, not batching, throughput evidence or production authority;
 the complete unchanged-bound package and cost gates remain open.
+
+The [connected caller cost and package audit](census-cost-package-audit-result-20261024.md)
+retains one Windows/debug cohort: twelve samples per operation/variant, 120
+complete calls and 48 component series, without warmup or rerunning the measured
+child. Connected `original`/`view` medians are 51.06/125.51 ms versus legacy
+45.09/113.97 ms. This is a negative local speedup observation, not a release
+regression claim. Reference construction is about 3.16 microseconds; process/
+capture is the next hypothesis, not an accepted optimization. Initial build,
+preflight, parser and lint refusals remain. The parser correction reuses the same
+raw first child output; the original failed wrapper is not relabeled as passing.
+
+The default current package has 135 targets, independently matched to Cargo
+metadata. Its inventory scanner is lexical, not transitive effect clearance.
+Temporary Git/protoc/child-termination fixtures require distinguishing from
+source-only service assertions before full replay. No package dispatch or timeout
+extension occurs. Thirty-nine Windows cases pass on each toolchain, with 54
+Python controls and strict local gates. Full package, original delivery/writer/
+lifecycle, trust/time, security and server admission remain separate.

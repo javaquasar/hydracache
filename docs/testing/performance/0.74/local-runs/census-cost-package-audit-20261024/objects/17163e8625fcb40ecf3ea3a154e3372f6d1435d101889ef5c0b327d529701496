@@ -1,0 +1,143 @@
+"""One bounded, append-only Windows attribution of the actual connected caller."""
+import hashlib
+import json
+import os
+from pathlib import Path
+import shutil
+import statistics
+import subprocess
+import sys
+import time
+
+import caller_integration
+
+BLOCKS = 6
+OPERATIONS = ('original', 'accepts', 'view', 'mismatch', 'unrelated')
+COMPONENTS = ('observer', 'reference', 'sha256', 'interpret', 'helper-read-hash',
+              'body-predicate', 'pipe', 'owned')
+
+
+def require(condition, message):
+    if not condition:
+        raise ValueError(message)
+
+
+def review(raw):
+    lines = raw.decode('utf-8').splitlines()
+    rows = [json.loads(line.removeprefix('HC074_COST '))
+            for line in lines if line.startswith('HC074_COST ')]
+    done, = [json.loads(line.removeprefix('HC074_COST_DONE '))
+             for line in lines if line.startswith('HC074_COST_DONE ')]
+    require(len(rows) == BLOCKS * (len(OPERATIONS) * 4 + len(COMPONENTS)), 'sample count')
+    expected = []
+    for block in range(BLOCKS):
+        variants = ('legacy', 'current', 'current', 'legacy') if block % 2 == 0 else (
+            'current', 'legacy', 'legacy', 'current')
+        for operation in OPERATIONS:
+            for slot, variant in enumerate(variants):
+                expected.append(dict(phase='e2e', block=block, slot=slot,
+                                     operation=operation, variant=variant, iterations=1))
+    for block in range(BLOCKS):
+        for component in COMPONENTS:
+            iterations = 1 if component in ('pipe', 'owned') else 4 if component == 'body-predicate' else 128
+            expected.append(dict(phase='component', block=block, component=component, iterations=iterations))
+    for row, identity in zip(rows, expected):
+        require(all(row.get(k) == v for k, v in identity.items()), 'sample order or identity')
+        require(all(type(row.get(k)) is int and row[k] >= 0 for k in ('wall_ns', 'parent_cpu_ns')), 'sample time')
+    require(done == dict(e2e_samples=120, component_samples=48, git_reads_expected_e2e=120,
+                         git_reads_expected_components=12, first_samples_retained=True,
+                         warmup=False, package_replay=False, production_authority=False), 'completion scope')
+    groups = {}
+    for row in rows:
+        name = row.get('operation', row.get('component'))
+        if row['phase'] == 'e2e':
+            name += '/' + row['variant']
+        groups.setdefault(name, []).append(row)
+    summary = {}
+    for name, group in groups.items():
+        summary[name] = dict(samples=len(group), iterations_per_sample=group[0]['iterations'])
+        for metric in ('wall_ns', 'parent_cpu_ns'):
+            values = [row[metric] / row['iterations'] for row in group]
+            summary[name][metric + '_per_call'] = dict(min=min(values), median=statistics.median(values),
+                                                      max=max(values), mean=statistics.mean(values))
+    return dict(samples=rows, completion=done, summary=summary,
+                timing='Instant monotonic wall and current-process GetProcessTimes; excludes Git child CPU',
+                build='debug; no product throughput or release claim', component_phases_are_disjoint=False)
+
+
+def snapshot(root):
+    paths = [root / 'Cargo.toml', root / 'Cargo.lock', root / 'deny.toml',
+             root / 'docs/testing/performance/0.74/qualification-manifest.toml']
+    for base in ('crates/xtask', 'tools/historical-blob-batch-074', 'tools/material-lock-fixture-074'):
+        paths.extend(p for p in (root / base).rglob('*') if p.suffix in ('.rs', '.py', '.toml'))
+    return {p.relative_to(root).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(paths)}
+
+
+def capture(root, build, destination):
+    destination.mkdir(parents=True, exist_ok=False)
+    def write(name, value):
+        with (destination / name).open('x', encoding='utf-8', newline='\n') as stream:
+            json.dump(value, stream, indent=2, sort_keys=True)
+            stream.write('\n')
+    # Preserve intent and preflight refusal, before any subprocess or pin preparation.
+    write('intent.json', dict(build=str(build), source=snapshot(root), outer_seconds=180,
+          blocks=BLOCKS, operations=OPERATIONS, components=COMPONENTS, no_warmup=True,
+          no_retry=True, package_replay=False, services=False, clocks_changed=False, server=False))
+    process = None
+    try:
+        require(os.name == 'nt', 'Windows only')
+        require(shutil.disk_usage(root).free >= 4 * 1024**3, 'disk floor')
+        blocked = [k for k in os.environ if k.startswith(('GIT_', 'RUST_TEST_', 'HC074_CENSUS_'))]
+        require(not blocked, 'ambient capture overrides: ' + ','.join(sorted(blocked)))
+        receipt = json.loads((build / 'result.json').read_text())
+        require(receipt['exit'] == 0 and receipt['source_unchanged'] and receipt['head_unchanged'], 'build refused')
+        source = json.loads((build / 'intent.json').read_text())['source']
+        current = snapshot(root)
+        require(all(source.get(p) == digest for p, digest in current.items()
+                    if p.endswith(('.rs', '.toml'))), 'build source drift')
+        artifacts = [json.loads(line) for line in (build / 'stdout.log').read_text().splitlines()
+                     if line.startswith('{')]
+        artifact, = [v for v in artifacts if v.get('reason') == 'compiler-artifact'
+                     and v.get('target', {}).get('name') == 'census_cost_074']
+        binary = Path(artifact['executable']).resolve()
+        require(binary.parent == (root / 'target/debug/deps').resolve() and binary.suffix == '.exe', 'binary path')
+        require(artifact['profile']['test'] is True, 'test binary required')
+        cases = caller_integration.pins(root)
+        caller_integration.reference_source(cases)
+        document = dict(cases=cases, test_fixture_pin_integrity=True, production_pin_authority=False)
+        write('pins.json', document)
+        write('preflight.json', dict(source=current, binary_sha256=hashlib.sha256(binary.read_bytes()).hexdigest(),
+              git_executable=shutil.which('git'), fixture_pin_integrity=True, production_pin_authority=False))
+        before = snapshot(root)
+        with (destination / 'stdout.log').open('xb') as stdout, (destination / 'stderr.log').open('xb') as stderr:
+            process = subprocess.Popen([str(binary), '--exact', 'census_cost_child', '--nocapture', '--test-threads=1'],
+                cwd=root, stdout=stdout, stderr=stderr,
+                env=dict(os.environ, HC074_CENSUS_COST_INPUT=str((destination / 'pins.json').resolve())))
+            start = time.monotonic()
+            while process.poll() is None:
+                require(time.monotonic() - start < 180, 'outer timeout')
+                require(shutil.disk_usage(root).free >= 4 * 1024**3, 'disk floor')
+                try:
+                    process.wait(timeout=1)
+                except subprocess.TimeoutExpired:
+                    pass
+        require(process.returncode == 0, 'first child result failed')
+        require(before == snapshot(root), 'source changed')
+        result = review((destination / 'stdout.log').read_bytes())
+        result['exit'] = process.returncode
+        result['source_unchanged'] = True
+        write('result.json', result)
+    except BaseException as error:
+        if process is not None and process.poll() is None:
+            with (destination / 'cleanup.log').open('xb') as stream:
+                subprocess.run(['taskkill', '/PID', str(process.pid), '/T', '/F'],
+                    stdout=stream, stderr=subprocess.STDOUT, timeout=30, check=False)
+            process.wait(timeout=30)
+        write('refusal.json', dict(type=type(error).__name__, reason=str(error),
+                                  exit=None if process is None else process.returncode))
+        raise
+
+
+if __name__ == '__main__':
+    root = Path(__file__).resolve().parents[2]
+    capture(root, Path(sys.argv[1]).resolve(), Path(sys.argv[2]).resolve())

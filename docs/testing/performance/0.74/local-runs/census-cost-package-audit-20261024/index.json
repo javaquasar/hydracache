@@ -1,0 +1,2159 @@
+{
+  "code_commit": "39712b385e2ed027ec045382cef504e935dedcff",
+  "facts": {
+    "clocks_changed": false,
+    "component_phases_disjoint": false,
+    "component_samples": 48,
+    "default_package_targets": 135,
+    "dependency_baseline_changed": false,
+    "e2e_samples": 120,
+    "execution_effects_cleared": false,
+    "measured_child_repeated": false,
+    "measured_cohorts": 1,
+    "original_checks_or_deadlines_changed": false,
+    "original_wrapper_reclassified": false,
+    "package_outer_bound_seconds": 780,
+    "package_pass": false,
+    "package_replayed": false,
+    "parent_cpu_excludes_git": true,
+    "phases": [
+      {
+        "exit": 0,
+        "phase": "census-cost-audit-final-a",
+        "rust_passes": []
+      },
+      {
+        "exit": 0,
+        "phase": "census-cost-audit-final-b",
+        "rust_passes": []
+      },
+      {
+        "exit": 0,
+        "phase": "census-cost-audit-v1",
+        "rust_passes": []
+      },
+      {
+        "exit": 101,
+        "phase": "census-cost-build-v1",
+        "rust_passes": []
+      },
+      {
+        "exit": 0,
+        "phase": "census-cost-build-v2",
+        "rust_passes": []
+      },
+      {
+        "exit": 0,
+        "phase": "census-cost-check",
+        "rust_passes": []
+      },
+      {
+        "exit": 0,
+        "phase": "census-cost-clippy-final",
+        "rust_passes": []
+      },
+      {
+        "exit": 101,
+        "phase": "census-cost-clippy-v1",
+        "rust_passes": []
+      },
+      {
+        "exit": 1,
+        "phase": "census-cost-cohort-v1",
+        "rust_passes": []
+      },
+      {
+        "exit": 1,
+        "phase": "census-cost-cohort-v2",
+        "rust_passes": []
+      },
+      {
+        "exit": 1,
+        "phase": "census-cost-cohort-v3",
+        "rust_passes": []
+      },
+      {
+        "exit": 0,
+        "phase": "census-cost-current-final",
+        "rust_passes": [
+          2,
+          4,
+          9,
+          11,
+          5,
+          6,
+          2
+        ]
+      },
+      {
+        "exit": 0,
+        "phase": "census-cost-derived-final",
+        "rust_passes": []
+      },
+      {
+        "exit": 0,
+        "phase": "census-cost-derived-v1",
+        "rust_passes": []
+      },
+      {
+        "exit": 0,
+        "phase": "census-cost-doc-check",
+        "rust_passes": []
+      },
+      {
+        "exit": 0,
+        "phase": "census-cost-focused-v1",
+        "rust_passes": [
+          2,
+          4,
+          11,
+          2
+        ]
+      },
+      {
+        "exit": 1,
+        "phase": "census-cost-format",
+        "rust_passes": []
+      },
+      {
+        "exit": 0,
+        "phase": "census-cost-format-focused",
+        "rust_passes": []
+      },
+      {
+        "exit": 0,
+        "phase": "census-cost-indent",
+        "rust_passes": []
+      },
+      {
+        "exit": 0,
+        "phase": "census-cost-metadata",
+        "rust_passes": []
+      },
+      {
+        "exit": 0,
+        "phase": "census-cost-msrv-final",
+        "rust_passes": [
+          2,
+          4,
+          9,
+          11,
+          5,
+          6,
+          2
+        ]
+      },
+      {
+        "exit": 0,
+        "phase": "census-cost-performance-contract",
+        "rust_passes": []
+      },
+      {
+        "exit": 0,
+        "phase": "census-cost-python-final",
+        "rust_passes": []
+      },
+      {
+        "exit": 0,
+        "phase": "census-cost-python-receipts",
+        "rust_passes": []
+      },
+      {
+        "exit": 0,
+        "phase": "census-cost-python-v1",
+        "rust_passes": []
+      },
+      {
+        "exit": 0,
+        "phase": "census-cost-python-v2",
+        "rust_passes": []
+      },
+      {
+        "exit": 0,
+        "phase": "census-cost-python-v3",
+        "rust_passes": []
+      },
+      {
+        "exit": 0,
+        "phase": "census-cost-rust-version",
+        "rust_passes": []
+      },
+      {
+        "exit": 0,
+        "phase": "census-cost-syntax",
+        "rust_passes": []
+      }
+    ],
+    "product_workload": false,
+    "production_admission": false,
+    "protected_sha256": {
+      "Cargo.lock": "d2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c",
+      "Cargo.toml": "18a8a27cf140a1d6eb31c8316ee39bb7d5832866a990346eee16cd0c30de344b",
+      "docs/testing/performance/0.74/qualification-manifest.toml": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "python_controls": 54,
+    "qualification": false,
+    "raw_first_refusals_retained": true,
+    "server": false,
+    "services": false,
+    "speedup_confirmed": false,
+    "unchanged_sources": [
+      "crates/xtask/tests/support/census_provider_input.rs",
+      "crates/xtask/tests/support/census_provider_input_legacy.rs",
+      "tools/historical-blob-batch-074/census_caller.rs",
+      "tools/historical-blob-batch-074/census_reference.rs",
+      "tools/historical-blob-batch-074/transport.rs",
+      "tools/historical-blob-batch-074/decoder.rs",
+      "tools/material-lock-fixture-074/contract.rs"
+    ],
+    "windows_tests_per_toolchain": 39,
+    "wsl": false
+  },
+  "members": {
+    "audit-source/crates/xtask/src/bench_budget.rs": {
+      "bytes": 16938,
+      "sha256": "037c4ebfaf17da39bdb75bef681d5e1a1c6bcc3ef5b5bf3b81bb0b838f5487ce"
+    },
+    "audit-source/crates/xtask/src/canary_check.rs": {
+      "bytes": 14936,
+      "sha256": "32a8ccbe6820026094dfe92711933c6008ca02d5a7dec1fb36cdb101c4c4e245"
+    },
+    "audit-source/crates/xtask/src/canary_sweep.rs": {
+      "bytes": 18848,
+      "sha256": "dbe780be06de90b93c864c377eb67d75c9050f5c6dfe577ab70a9660248b4bd6"
+    },
+    "audit-source/crates/xtask/src/ci_admission.rs": {
+      "bytes": 12950,
+      "sha256": "c94458899e44a01059fa161a5fb9b457437bf2b2d694178db66bdc35bafd709e"
+    },
+    "audit-source/crates/xtask/src/ci_topology.rs": {
+      "bytes": 22503,
+      "sha256": "b2bfcf8d6be890965e367e0461cee995f94746caac15d9c69b65f756f6e5cdfc"
+    },
+    "audit-source/crates/xtask/src/client_conformance.rs": {
+      "bytes": 6274,
+      "sha256": "88664e75e0d0b376f3ba75188f14ca1d1290d3b840b03ab0697e473ef91a6039"
+    },
+    "audit-source/crates/xtask/src/client_package.rs": {
+      "bytes": 12629,
+      "sha256": "5e3548498872291dc7a805e79bb9c1a66088699a70358bf423302872a19d330e"
+    },
+    "audit-source/crates/xtask/src/client_plane_bakeoff.rs": {
+      "bytes": 5654,
+      "sha256": "65f91a07c4ffe248e69fdfd9a903aae222b9c4c07c9b20d150f42874e7c02fb4"
+    },
+    "audit-source/crates/xtask/src/client_plane_ci.rs": {
+      "bytes": 29308,
+      "sha256": "2d0cb796be542cf5c5256ce7e2b74312e6240ad1b4dd43ba6aa71935913afdf6"
+    },
+    "audit-source/crates/xtask/src/client_plane_compat.rs": {
+      "bytes": 33635,
+      "sha256": "dd733b4605ac3d7cb5b48533c9e72987be1a4c4d3555ca059a93cd3cc4280f31"
+    },
+    "audit-source/crates/xtask/src/client_plane_fault.rs": {
+      "bytes": 14129,
+      "sha256": "3d7c4d11062e789749cc73da73996f039a026870d73ff7632ac5d67eafe2b4b6"
+    },
+    "audit-source/crates/xtask/src/client_plane_generation.rs": {
+      "bytes": 6855,
+      "sha256": "d47e64168d0c9a937544db3948a1dec715d590b5627591078a2d58a9f69a98cb"
+    },
+    "audit-source/crates/xtask/src/client_plane_java.rs": {
+      "bytes": 4998,
+      "sha256": "3590f60bc5be9001f95707b613d1bdb6f230778fab281b1b8dc53db137e6a8ec"
+    },
+    "audit-source/crates/xtask/src/client_plane_python.rs": {
+      "bytes": 25881,
+      "sha256": "164516904068958b4a89a8fa9bcd986e966b83a27fb093b41478d9328f918853"
+    },
+    "audit-source/crates/xtask/src/client_plane_rust.rs": {
+      "bytes": 4793,
+      "sha256": "7617b39174ba7e4839760929759b1ba0d9bfb0a68a8b0817046fc5171ca97925"
+    },
+    "audit-source/crates/xtask/src/client_plane_spike.rs": {
+      "bytes": 4561,
+      "sha256": "1a22a334a8fc2a015cb10301dc13bf750bd2f8988b98ae6ea49035b6f3ced140"
+    },
+    "audit-source/crates/xtask/src/client_schema.rs": {
+      "bytes": 6106,
+      "sha256": "8128af2acfa0be0295bfb6762848822fbfe672bb327ac87a3ad9e377672ba9fe"
+    },
+    "audit-source/crates/xtask/src/compat_check.rs": {
+      "bytes": 8535,
+      "sha256": "a7208cb033a51d34d9b05b90258a5d7748ef693064833cc6990e584745d2cd85"
+    },
+    "audit-source/crates/xtask/src/coverage_ratchet.rs": {
+      "bytes": 30179,
+      "sha256": "147efa1b750d5f5ecfbe4ec6b6115e863524c2b7691705404a98c7723375e737"
+    },
+    "audit-source/crates/xtask/src/determinism_sweep.rs": {
+      "bytes": 10454,
+      "sha256": "6563927aa81323f29bd4a9f12a1cec62e86a1fd700656b4aba6c0f926b7342b3"
+    },
+    "audit-source/crates/xtask/src/doc_check.rs": {
+      "bytes": 45686,
+      "sha256": "83d2f2cc22508669c9c5cd8024ede7c3975a5889460892f24d48eb4f19dbda0d"
+    },
+    "audit-source/crates/xtask/src/durable_inspect.rs": {
+      "bytes": 765,
+      "sha256": "f17c500c9b730adeade1875b2e071b50f3c7463e51f5e6a55720df3f61131857"
+    },
+    "audit-source/crates/xtask/src/evidence_run.rs": {
+      "bytes": 30730,
+      "sha256": "7fe0166119f0099bd05be3939ade563992b6c84964aa4aaabf3f32022bdaaf22"
+    },
+    "audit-source/crates/xtask/src/evidence_run/windows_job.rs": {
+      "bytes": 6055,
+      "sha256": "d5c5463f3b77e8c6e39bc9c47f7f217c2bb2ffe3c3ae3d2fe0e6071a5dfb33e9"
+    },
+    "audit-source/crates/xtask/src/fast_suite.rs": {
+      "bytes": 14644,
+      "sha256": "11849d6ee9ea71ea1f1f8d3d2a557573f62ab29d71b96a82aa001c34c05e53b2"
+    },
+    "audit-source/crates/xtask/src/feature_leak.rs": {
+      "bytes": 4556,
+      "sha256": "f0264b376901aa886da5df851040a79b84e80f1ea06082c0f21e0ea4cc80d50f"
+    },
+    "audit-source/crates/xtask/src/gated_tests.rs": {
+      "bytes": 36472,
+      "sha256": "18e1ac7ecc134fb19627fe338d839cc2d2ad8f16b073a94a53d2ca40d3d21c0e"
+    },
+    "audit-source/crates/xtask/src/host_attestation.rs": {
+      "bytes": 29118,
+      "sha256": "9b70a00fd8c0440ac92cc73b652f257da5a2e73f4d633277283b07e2ddbd3019"
+    },
+    "audit-source/crates/xtask/src/lib.rs": {
+      "bytes": 1360,
+      "sha256": "27e15b43137cf5b36139446d343f0aa242272bae1c0ea36081deb7ff71138efc"
+    },
+    "audit-source/crates/xtask/src/long_run_campaign.rs": {
+      "bytes": 29680,
+      "sha256": "5e0c0897b163b73f1f2f79a38d3f6058790b997a8a1dd884e79189ec5de0b9e4"
+    },
+    "audit-source/crates/xtask/src/main.rs": {
+      "bytes": 16697,
+      "sha256": "95f70dfa53430ad17adb8ae28163675eb83d636303f715751b675da5535a6d82"
+    },
+    "audit-source/crates/xtask/src/management_center.rs": {
+      "bytes": 49031,
+      "sha256": "e7ac7e7636a93a608f47fb08d9caf861c589c42c705753818414d5c2eca815dd"
+    },
+    "audit-source/crates/xtask/src/memory_baseline.rs": {
+      "bytes": 30285,
+      "sha256": "73ecaf554d35184fe7dd7c46d2e6cb3710b2818ff8ef02128e65c2bc5a1d870c"
+    },
+    "audit-source/crates/xtask/src/memory_campaign.rs": {
+      "bytes": 26763,
+      "sha256": "34a7d3669d83275fad21d43df915c606c457c8c03daea40f9e7f62c3909f6316"
+    },
+    "audit-source/crates/xtask/src/memory_contracts.rs": {
+      "bytes": 44395,
+      "sha256": "567ed6af90a369bcb91bbb07519d36e240e926a14e9d6a435552b835adb7416c"
+    },
+    "audit-source/crates/xtask/src/memory_ownership.rs": {
+      "bytes": 32430,
+      "sha256": "6a6566cff2cd6198364ef0fc5ca90efd580432072f124114a9354ecef03175f5"
+    },
+    "audit-source/crates/xtask/src/memory_statistics.rs": {
+      "bytes": 7218,
+      "sha256": "d827b8067267683b7382b5274f744f2624d21218207c889ba32f1fd19d95bbfb"
+    },
+    "audit-source/crates/xtask/src/migration_conformance.rs": {
+      "bytes": 35657,
+      "sha256": "188536ef1d5b785b101d8c7cb58a1a152a3ef8cce9155a69c800e2eacdfbf75c"
+    },
+    "audit-source/crates/xtask/src/miri_check.rs": {
+      "bytes": 6517,
+      "sha256": "3742f39d78c78a1b6e6cc9e035eba9b2003565b4922df80825369de4198476ef"
+    },
+    "audit-source/crates/xtask/src/mutants.rs": {
+      "bytes": 13475,
+      "sha256": "117ccd32e6ecd60d398b01cc208232bf587f183193f48f9773cd3db63e3b2fbe"
+    },
+    "audit-source/crates/xtask/src/perf.rs": {
+      "bytes": 82644,
+      "sha256": "63218eaa9c6adf1aaffb88940659300164254b8d885ce484fe104fde7a595db6"
+    },
+    "audit-source/crates/xtask/src/perf_bootstrap.rs": {
+      "bytes": 29461,
+      "sha256": "2eca0bac33ce18c33197dba830729ab121a9e4ed24ea506d065c8239f29acd01"
+    },
+    "audit-source/crates/xtask/src/perf_budget.rs": {
+      "bytes": 313753,
+      "sha256": "51bf1881c52b343ecffb313c444327e57f811724dae22858ffd1e320c1e645c6"
+    },
+    "audit-source/crates/xtask/src/perf_full_dress.rs": {
+      "bytes": 13768,
+      "sha256": "4019ce6bc5138e4f1788e18aa531bfcb74477e988ee5bd6e4e11f099cdfdf811"
+    },
+    "audit-source/crates/xtask/src/perf_qualification.rs": {
+      "bytes": 13037,
+      "sha256": "327ac931d8b2aa7d8a3590ae90e2cecb24991edad9836fd7cc788c62cd75f947"
+    },
+    "audit-source/crates/xtask/src/perf_reference.rs": {
+      "bytes": 55500,
+      "sha256": "0a967ded28008e2b063622f3f8e5590b6240411b152008d853232a211cd66711"
+    },
+    "audit-source/crates/xtask/src/performance_contract.rs": {
+      "bytes": 471118,
+      "sha256": "d227c9663312ea49df7e80bdf1e670261582433ecb58e9ce2ecdc47a3e806420"
+    },
+    "audit-source/crates/xtask/src/performance_contract_074.rs": {
+      "bytes": 37946,
+      "sha256": "1d0d5d46037774871ab014bf67cb435b7a67cf6826f38c57ce077d68d82d0206"
+    },
+    "audit-source/crates/xtask/src/performance_local.rs": {
+      "bytes": 14667,
+      "sha256": "d24f8e781a44d0f52f375d0bc83059518fb7a12cc975cc686b8c874d8f050231"
+    },
+    "audit-source/crates/xtask/src/performance_overhead.rs": {
+      "bytes": 14182,
+      "sha256": "4fa1e895d432b6e3b98f5d414d3df3cc607cd41006c793c56353b0f7d2a3739c"
+    },
+    "audit-source/crates/xtask/src/quarantine.rs": {
+      "bytes": 7753,
+      "sha256": "eedd06028713ba2a848776fb7b58a518a80cbb5dc78ca114de98bf8b03e693c9"
+    },
+    "audit-source/crates/xtask/src/raft_spec_check.rs": {
+      "bytes": 14934,
+      "sha256": "871518a1d57a1b749ce95245ac08dedd1ab2dc531dcc8e5c05d79c3f5b11db24"
+    },
+    "audit-source/crates/xtask/src/release_evidence.rs": {
+      "bytes": 74651,
+      "sha256": "270c2566cd5c076783aaf3304af07e21b434324239268108de31e29e6d181cc5"
+    },
+    "audit-source/crates/xtask/src/release_governance.rs": {
+      "bytes": 81858,
+      "sha256": "5c0fa8c1b768c7ded28add3f4ec0d9666914639249eb6ae4550c80b2814e60e5"
+    },
+    "audit-source/crates/xtask/src/tsan_check.rs": {
+      "bytes": 10436,
+      "sha256": "3c8174f8421a255a29a3d2dff5bdb953ee294f477ba462542dcd3f2146b515f5"
+    },
+    "audit-source/crates/xtask/src/verify.rs": {
+      "bytes": 23498,
+      "sha256": "8275b2093464899319bb5de2246ec8893e872ebf67e91d1bb4e2d65ca3a41918"
+    },
+    "audit-source/crates/xtask/tests/allocation_copy_071.rs": {
+      "bytes": 1787,
+      "sha256": "ad8e813053944554d4b4daac14377ca530b0f2cf6d28e161b04bc19d25bbc92b"
+    },
+    "audit-source/crates/xtask/tests/allocation_retention_070.rs": {
+      "bytes": 7649,
+      "sha256": "64d163bd29789303cf957341af1b887d97aa0b69b7abcb87823bd32eb85f44ce"
+    },
+    "audit-source/crates/xtask/tests/allocator_matrix_071.rs": {
+      "bytes": 2053,
+      "sha256": "80202b7a7a8f37e8c1aa527595b70c68f5dd792d3588e3f17513d91a94fef8d1"
+    },
+    "audit-source/crates/xtask/tests/artifact_inventory_reader_074.rs": {
+      "bytes": 5308,
+      "sha256": "42b8a38942c40b66d5df580afb1a001802c0a7a235347bb9c458679f130909c6"
+    },
+    "audit-source/crates/xtask/tests/authority_breakdown_074.rs": {
+      "bytes": 4758,
+      "sha256": "2ad1c786d0a65efc7b13b6484de5df1b5deb364a8d219c756684ad7baad6fd39"
+    },
+    "audit-source/crates/xtask/tests/authority_context_074.rs": {
+      "bytes": 4253,
+      "sha256": "7370e1191e9bdc51977abe59b241dc7904e5048b597ca9bc36c5d08d751dedc5"
+    },
+    "audit-source/crates/xtask/tests/authority_cpu_074.rs": {
+      "bytes": 1946,
+      "sha256": "4ae9a323b46e930a854be8590ab1008c8c7afd614ed7d82c435f3a5febe9d8ef"
+    },
+    "audit-source/crates/xtask/tests/authority_expected_name_074.rs": {
+      "bytes": 4996,
+      "sha256": "40c9584f5d86f26f3f6d6f1dfe0bffc10f7c561e5814dc59c227b95dfaca3839"
+    },
+    "audit-source/crates/xtask/tests/authority_fd_path_074.rs": {
+      "bytes": 4082,
+      "sha256": "e7124bf719108742fe3c963bdb5860e73030f03b99e5814f527f8338bdd26c8e"
+    },
+    "audit-source/crates/xtask/tests/authority_hex_reader_074.rs": {
+      "bytes": 3270,
+      "sha256": "b9ecbcccb582f784ec99787d05ecf7e88b51991bc3fc102d519ba3190d668090"
+    },
+    "audit-source/crates/xtask/tests/authority_inventory_074.rs": {
+      "bytes": 5475,
+      "sha256": "31ad34b63d961b587823f144e5fa438e1bd4383e66319e9c5479911301386096"
+    },
+    "audit-source/crates/xtask/tests/authority_key_hex_074.rs": {
+      "bytes": 4241,
+      "sha256": "e6099a84dae2a372c728245d4437c899b52d5e3235bc349e0725596951ccfb29"
+    },
+    "audit-source/crates/xtask/tests/authority_leaf_cpu_074.rs": {
+      "bytes": 4235,
+      "sha256": "98eda69c881deb82eec129b67c9e60b437ca9538fdd3f76fa1d148671b5d157f"
+    },
+    "audit-source/crates/xtask/tests/authority_leaf_name_074.rs": {
+      "bytes": 4240,
+      "sha256": "9adfa0697b6479af0b965d508195434ca0d1b523ace0c816fb9e16c11ecbf4d3"
+    },
+    "audit-source/crates/xtask/tests/authority_name_capacity_074.rs": {
+      "bytes": 4500,
+      "sha256": "d9a6de49cf11eae9cecb65eeaa9c6ab15da5f7f1ed0df10f1f97d8b9c8c08fb8"
+    },
+    "audit-source/crates/xtask/tests/authority_open_name_074.rs": {
+      "bytes": 5279,
+      "sha256": "4335605e698ceb16fe68468e48a95590f77a838be0421b477921d58aae6193a9"
+    },
+    "audit-source/crates/xtask/tests/authority_operator_order_074.rs": {
+      "bytes": 5415,
+      "sha256": "36c433c16c97ba484fd5df93c4bd4a4e3b3884bc436d04b967a4c5430504fbf4"
+    },
+    "audit-source/crates/xtask/tests/authority_owned_journal_074.rs": {
+      "bytes": 4354,
+      "sha256": "f57127bdcc7c9488ed6a6c6955d8cfa3bdc6131b39f229a94c2ce0f00951dc3b"
+    },
+    "audit-source/crates/xtask/tests/authority_owners_074.rs": {
+      "bytes": 12829,
+      "sha256": "d19e6730c3b91ef34894906ff1767281ae278aceebff39abdeca70a0de8b54cc"
+    },
+    "audit-source/crates/xtask/tests/authority_read_baseline_074.rs": {
+      "bytes": 4506,
+      "sha256": "b006894092b3e34fb882dc4dbf3b750c0823682b1615fd1fd6644b0216b0a091"
+    },
+    "audit-source/crates/xtask/tests/authority_runtime_074.rs": {
+      "bytes": 5416,
+      "sha256": "fcc4472d1ffa648449913bbe3782c8065ff3d606511ffd4a936d223b3725c48e"
+    },
+    "audit-source/crates/xtask/tests/authority_rust_history_074.rs": {
+      "bytes": 14783,
+      "sha256": "d09ff8438d371b59a6c17731dcd94aeff053a0b3f73c5db9257589ff534c2553"
+    },
+    "audit-source/crates/xtask/tests/authority_scratch_reuse_074.rs": {
+      "bytes": 5281,
+      "sha256": "27bc45fbaa465fba55f3d006ee1debf774ac73d91e641fd51023842eb7e2185c"
+    },
+    "audit-source/crates/xtask/tests/authority_storage_source_074.rs": {
+      "bytes": 17108,
+      "sha256": "c96e64cf98bfcbbeb91611b84763754924cde4d11ded091f365799154f0c0a5b"
+    },
+    "audit-source/crates/xtask/tests/bench_budget.rs": {
+      "bytes": 7443,
+      "sha256": "e524068de42847f9e543abec5e0a3cf708e46b1aa17ac7f6d432e2e61518abc4"
+    },
+    "audit-source/crates/xtask/tests/boot_operations_074.rs": {
+      "bytes": 4968,
+      "sha256": "fc9055e9d4696aadf9c869e7ccdc56ce4c4cb608a91ff194cfec951e9728499b"
+    },
+    "audit-source/crates/xtask/tests/bootstrap_build_owner_074.rs": {
+      "bytes": 5381,
+      "sha256": "10c91cceb895b3516703404e540afc11e3e1c130144c3c5c80f7c2bd3672c4dd"
+    },
+    "audit-source/crates/xtask/tests/bootstrap_child_boundary_074.rs": {
+      "bytes": 5448,
+      "sha256": "ce6db3b318f32bac8adebf3105ac3694fe4aca663cd80d83662d18075e8ccbcd"
+    },
+    "audit-source/crates/xtask/tests/bootstrap_child_census_074.rs": {
+      "bytes": 4767,
+      "sha256": "e9cb88ce9eace5c1ba3b20c9fb186524ed1dc2b75260c14bbd48212bda5ff8e3"
+    },
+    "audit-source/crates/xtask/tests/bootstrap_child_reader_074.rs": {
+      "bytes": 4833,
+      "sha256": "66d5ca82cf8837f86db9bb1f0577eb68e831ef0b15a9c536e163a7f706079fff"
+    },
+    "audit-source/crates/xtask/tests/bootstrap_current_image_074.rs": {
+      "bytes": 4953,
+      "sha256": "95e309e7f3be196d38977ad2acd45d365e2e334cba7c943e5f17bfcdad5c9e7c"
+    },
+    "audit-source/crates/xtask/tests/bootstrap_enrollment_074.rs": {
+      "bytes": 3114,
+      "sha256": "bb7b7f64f5a2c51b48c0bf18eccfefcbe15df0d6e29f5aa93305abf171ffbb6e"
+    },
+    "audit-source/crates/xtask/tests/bootstrap_entry_binding_074.rs": {
+      "bytes": 4310,
+      "sha256": "d9dfbfcd379e6870272d58f5ebacfb27187c348c58042a4f0bd9688506926c7c"
+    },
+    "audit-source/crates/xtask/tests/bootstrap_image_census_074.rs": {
+      "bytes": 5377,
+      "sha256": "423ce467d263aa322278bdfe8aa2526a955163984292644f0122eb811ea3d09f"
+    },
+    "audit-source/crates/xtask/tests/bootstrap_installed_origin_074.rs": {
+      "bytes": 29017,
+      "sha256": "0396712e97cf26f9378293607883a3ccc692626add945cd36a8a9a4dcabaec42"
+    },
+    "audit-source/crates/xtask/tests/canary_check.rs": {
+      "bytes": 14958,
+      "sha256": "9b3ff2ae4331c78978dfa07bf9b08a4b479eebcfcd57d3d45c17ff6627f6318e"
+    },
+    "audit-source/crates/xtask/tests/cancellation_safety.rs": {
+      "bytes": 2543,
+      "sha256": "c77a577d961a5844e6446c7173d407d57e88d896ece377477de90e3ae2967abb"
+    },
+    "audit-source/crates/xtask/tests/census_cost_074.rs": {
+      "bytes": 11749,
+      "sha256": "689e6cdd6705134f1a2d179b6db744672519a1e32f2edd798ab3cba96ab8787f"
+    },
+    "audit-source/crates/xtask/tests/ci_reliability_071.rs": {
+      "bytes": 14658,
+      "sha256": "139ccba78844ab057e6b8a30a0c2082413e78b566cbed87d1a1c19d4321e2dd0"
+    },
+    "audit-source/crates/xtask/tests/client_plane_ci.rs": {
+      "bytes": 6040,
+      "sha256": "2b54b3481e0e24d0988059d10ca403a33e352f522ad1742c2f23cadb109b7224"
+    },
+    "audit-source/crates/xtask/tests/client_release_068.rs": {
+      "bytes": 6942,
+      "sha256": "cf97af9029c33edc6e0f9e49955ae427e55b32cb5c002ecbc10fb7689837b9c7"
+    },
+    "audit-source/crates/xtask/tests/collector_peer_baseline_074.rs": {
+      "bytes": 5937,
+      "sha256": "f5e71f9c9dc81bbd3fb89f93bd9941cf739c2373e516843514f585818d8cea24"
+    },
+    "audit-source/crates/xtask/tests/collector_peer_capacity_074.rs": {
+      "bytes": 6882,
+      "sha256": "7223e09138b0126467a0055c446cf19b30d874e2c352a8e7c9ca0fe9b8b81379"
+    },
+    "audit-source/crates/xtask/tests/context_document_baseline_074.rs": {
+      "bytes": 5586,
+      "sha256": "bcf3df1e0601974db1f3f3504c2a7b14ad4caf67a8ed2b8098645965ab90af31"
+    },
+    "audit-source/crates/xtask/tests/context_document_stack_074.rs": {
+      "bytes": 7118,
+      "sha256": "be9e4b34180b5272cd65a93bfd015306dd8be842862fee2a1cba700b313c25e0"
+    },
+    "audit-source/crates/xtask/tests/cost_phase_reader_074.rs": {
+      "bytes": 5168,
+      "sha256": "feb429fc9af511d1c26bf114378cf0896ea0ac62fec0de2e0d8f19d3f9f5041c"
+    },
+    "audit-source/crates/xtask/tests/coverage_ratchet.rs": {
+      "bytes": 8578,
+      "sha256": "99589c239866e20189e55c719223d9fea1fa56c9223bf879cf80f50d33cd5a34"
+    },
+    "audit-source/crates/xtask/tests/current_tree_input_audit_074.rs": {
+      "bytes": 3548,
+      "sha256": "d65d950f210051b4d2a77636b22bfd51747863f8c256dfd2f3067d66d0061eab"
+    },
+    "audit-source/crates/xtask/tests/current_tree_reader_074.rs": {
+      "bytes": 5233,
+      "sha256": "7d76db82b03761e933c407021454ccf717989e553310f0269d27d27cdd0e7973"
+    },
+    "audit-source/crates/xtask/tests/custody_preparation_cost_074.rs": {
+      "bytes": 2281,
+      "sha256": "71a81eccf4595f2d99fcfe51cbe731c50097014ac32fb37bac89444cc6d0c3cb"
+    },
+    "audit-source/crates/xtask/tests/custody_reader_074.rs": {
+      "bytes": 2972,
+      "sha256": "ce7dd421e3acfdd79f62a3d3caca38670b42eabf3712bdd81811422cdf7fe9a1"
+    },
+    "audit-source/crates/xtask/tests/demo_static.rs": {
+      "bytes": 11558,
+      "sha256": "523c94ff4f5f84009b91c696ada570334b7a21a4a487e0b710215e08ddefe506"
+    },
+    "audit-source/crates/xtask/tests/determinism_sweep.rs": {
+      "bytes": 1741,
+      "sha256": "63303d586aa84bbe77b6e4fe5073f6cd5f2102f7965f4307f53f89d8b2995400"
+    },
+    "audit-source/crates/xtask/tests/diagnostic_artifact_fixture_074.rs": {
+      "bytes": 23589,
+      "sha256": "5819f89ec58a899e03d7c0f14c6af91f4be6248a26f8578186cfc47b5900a805"
+    },
+    "audit-source/crates/xtask/tests/doc_check.rs": {
+      "bytes": 25418,
+      "sha256": "5430bd4a60b8dac57bb53e7ac3ce652d28d09b65582419cfc3cbe1ea642307aa"
+    },
+    "audit-source/crates/xtask/tests/document_scratch_cost_074.rs": {
+      "bytes": 8200,
+      "sha256": "3f221c36780e053481009987b27bda38f69385d55ef778364882030ef856248c"
+    },
+    "audit-source/crates/xtask/tests/document_scratch_reader_074.rs": {
+      "bytes": 5008,
+      "sha256": "d5307f1ed3aff36d9257c183c77ac0ab5a856a09cb4c7c99e649ccbfb94bce79"
+    },
+    "audit-source/crates/xtask/tests/evidence_run.rs": {
+      "bytes": 21953,
+      "sha256": "4ca309b854146459fe384d58b050d039fc8058f52c90e631715a5422b06a0e34"
+    },
+    "audit-source/crates/xtask/tests/fast_suite.rs": {
+      "bytes": 7390,
+      "sha256": "5c310eab0201efc1e3446946df0f8b6f54b6c8974c48c6772aade01d84d741aa"
+    },
+    "audit-source/crates/xtask/tests/fresh_kernel_cost_074.rs": {
+      "bytes": 2496,
+      "sha256": "c3a5690ec07c0dc6eb6b139472c27059bda3d9bec944578878a0fa28f8f254c8"
+    },
+    "audit-source/crates/xtask/tests/fresh_status_reader_074.rs": {
+      "bytes": 3339,
+      "sha256": "69bd016f0be59482f22f797d03ca9239d234c190d423110df9cdcd216adf4a2d"
+    },
+    "audit-source/crates/xtask/tests/gated_tests.rs": {
+      "bytes": 8776,
+      "sha256": "1f05d72c6ac7ca78ea7179dff4cf1ef72871f5d806617895c8608717e709ca1c"
+    },
+    "audit-source/crates/xtask/tests/held_activation_ingress_074.rs": {
+      "bytes": 5394,
+      "sha256": "f3b9054fd5b54c6ba0242b60ab3eb5eb4db1eb6e35c08e18ce998c325c24bbe1"
+    },
+    "audit-source/crates/xtask/tests/held_bind_alias_refusal_074.rs": {
+      "bytes": 3030,
+      "sha256": "34cf73ac411bfc0f052981021db3cb6ade88a4af807228936af55cb77bc1e517"
+    },
+    "audit-source/crates/xtask/tests/held_complete_role_census_074.rs": {
+      "bytes": 5753,
+      "sha256": "afee11f16f157f7ef9cbc254950fd0b853c8ee7ef553a92981b0fbf823a302a9"
+    },
+    "audit-source/crates/xtask/tests/held_material_074.rs": {
+      "bytes": 5364,
+      "sha256": "9b698fac07fb430c5ec9d015edb7620d15f3bc38f36b0a07bcabbec7929f0e25"
+    },
+    "audit-source/crates/xtask/tests/held_material_live_074.rs": {
+      "bytes": 1528,
+      "sha256": "e1006e3be18068155619749464f50d461b6d2e3a0b35c633d21a59493a742494"
+    },
+    "audit-source/crates/xtask/tests/held_material_roles_074.rs": {
+      "bytes": 3571,
+      "sha256": "dfb789b3c9a3ab9403812846d5a5729b59ad641b94db567f2aea38c271e491c0"
+    },
+    "audit-source/crates/xtask/tests/held_preparation_cost_074.rs": {
+      "bytes": 6625,
+      "sha256": "2567678853fb35be818ff18c3387fcb9d488b3cc2fa661902e952e9b80692af5"
+    },
+    "audit-source/crates/xtask/tests/held_unit_projection_074.rs": {
+      "bytes": 5720,
+      "sha256": "5e59da1d1b782e7cd008051ab07b00f140efa05447bd8b99be5de7f85248e5ab"
+    },
+    "audit-source/crates/xtask/tests/historical_blob_batch_074.rs": {
+      "bytes": 7520,
+      "sha256": "01c4c8504c74aa00e22fa02348e78e9fffe75668a04a56f126de5e2751c390b2"
+    },
+    "audit-source/crates/xtask/tests/historical_blob_caller_074.rs": {
+      "bytes": 36564,
+      "sha256": "a356543355cfb69bfe01143dbf8531b056281383a2375bf2f71b46f81c3e2ce8"
+    },
+    "audit-source/crates/xtask/tests/historical_blob_fault_074.rs": {
+      "bytes": 36624,
+      "sha256": "a8f509605a36b48c87e06e00695ebb7863af13bc8d26129bad119ead40322ee2"
+    },
+    "audit-source/crates/xtask/tests/historical_blob_transport_074.rs": {
+      "bytes": 16250,
+      "sha256": "df7c69dff0814806426cb9a775a4945bd0c5262bd334cb924eddec041a8627b9"
+    },
+    "audit-source/crates/xtask/tests/historical_input_view_074.rs": {
+      "bytes": 5508,
+      "sha256": "5a020d1c4c98f338bb1c2b9182bc7bb139363cbfaf643ea0ab996f6541d28261"
+    },
+    "audit-source/crates/xtask/tests/historical_source_cache_074.rs": {
+      "bytes": 4612,
+      "sha256": "cf9fa46495834f306cc79d018a13651e13538f586035177246179e0e3bd1297a"
+    },
+    "audit-source/crates/xtask/tests/long_run_campaign_074.rs": {
+      "bytes": 22828,
+      "sha256": "b1764838adb1579d6cf8da0d0990d2c0b08dbeaf1ec58eccd352c23c5540e3d7"
+    },
+    "audit-source/crates/xtask/tests/management_center_072.rs": {
+      "bytes": 13485,
+      "sha256": "3cc94c0a27c429bffee215b35aa4b908c860d2388202cc5ef36bb2e80340ac33"
+    },
+    "audit-source/crates/xtask/tests/management_compat_072.rs": {
+      "bytes": 7761,
+      "sha256": "c5dab38288328757ebcd3064fd8a38b1cb1a7279785a617de4295f9f4775e2ed"
+    },
+    "audit-source/crates/xtask/tests/material_lock_fixture_074.rs": {
+      "bytes": 1927,
+      "sha256": "41f71639f41cadc771ad2a141ff3ed6b5a2443d344dff929f2d3a04553703a6e"
+    },
+    "audit-source/crates/xtask/tests/memory_baseline_071.rs": {
+      "bytes": 8170,
+      "sha256": "8fef91cbf09acb80577587d6ecd0c0667617e48789bb29a9b3188d2f845f89cf"
+    },
+    "audit-source/crates/xtask/tests/memory_campaign_admission_071.rs": {
+      "bytes": 12324,
+      "sha256": "883bc1ed810fbb0b09602583b24264598621be77ad7a9e70326d1e0ee1cd24b6"
+    },
+    "audit-source/crates/xtask/tests/memory_compat_071.rs": {
+      "bytes": 5645,
+      "sha256": "bad6709e70411838071d801a257eaf4c3b5a80a71960f5cd42b8331f37fe1337"
+    },
+    "audit-source/crates/xtask/tests/memory_contracts_071.rs": {
+      "bytes": 8125,
+      "sha256": "98b7d4ed6933837ffda01b3e216c62d9689776c18eb04c01e391d58e5511d540"
+    },
+    "audit-source/crates/xtask/tests/memory_decision_071.rs": {
+      "bytes": 1903,
+      "sha256": "e6b9af7f3b4ee2c2ef62b117db85b67da0368922b9baa3d6927d9e35a05bab78"
+    },
+    "audit-source/crates/xtask/tests/memory_host_profile_071.rs": {
+      "bytes": 5172,
+      "sha256": "0c3c6c21490314387a069d51739e1d5b7c93ad917ae5248c79bf3ef3a1e8aca3"
+    },
+    "audit-source/crates/xtask/tests/memory_ownership_071.rs": {
+      "bytes": 7476,
+      "sha256": "d9ec47d4fc163e183bdf83cfd578e168d68fea46cee4e599d15dd25156a70ea5"
+    },
+    "audit-source/crates/xtask/tests/memory_profile_071.rs": {
+      "bytes": 4795,
+      "sha256": "f8943b0f122fe24d6476246d563bb8792a9429d3d652afa35f7dd3bf98c5254a"
+    },
+    "audit-source/crates/xtask/tests/memory_regression_071.rs": {
+      "bytes": 9125,
+      "sha256": "3ab230aa8ba4b73707b0c5c73326b968844e7c1be24b65e7f29ccf283ad7af05"
+    },
+    "audit-source/crates/xtask/tests/memory_statistics_071.rs": {
+      "bytes": 3381,
+      "sha256": "8ee814d4978f6de23182ff5f4006beb848e1cdf02c7f9d72670a3a2472e0e5c8"
+    },
+    "audit-source/crates/xtask/tests/migration_conformance_069.rs": {
+      "bytes": 11875,
+      "sha256": "4ca4376a75f27393507de4d89957c87ea4e8b15c7e2a21e5bdae41d77d3c39d4"
+    },
+    "audit-source/crates/xtask/tests/miri_check.rs": {
+      "bytes": 277,
+      "sha256": "03fc88efc984850df094bff397b3b21cdcd7d4affb2aede1b904bd76c0599641"
+    },
+    "audit-source/crates/xtask/tests/mutants.rs": {
+      "bytes": 7243,
+      "sha256": "73468bba1ca5c2b6c55e3020cf2da7b21ada828240bc5699d78e0344474559b3"
+    },
+    "audit-source/crates/xtask/tests/owned_case_074.rs": {
+      "bytes": 5729,
+      "sha256": "2a5def6be0bef44b32ffb177540b9b98b100464c995b997db4a69572e3b17239"
+    },
+    "audit-source/crates/xtask/tests/perf_attestation_0671.rs": {
+      "bytes": 5254,
+      "sha256": "04a816ae0ec28a2f0185814390681b63af8f788d0975579d28294cebcc162ddb"
+    },
+    "audit-source/crates/xtask/tests/perf_bootstrap_0671.rs": {
+      "bytes": 11404,
+      "sha256": "9e12d3dff6ccb92329bbb5e64e809f9b41d322ca53f58f40ca2f31aabc0f51dd"
+    },
+    "audit-source/crates/xtask/tests/perf_budget_067.rs": {
+      "bytes": 72185,
+      "sha256": "da6af8e3dc3d8e53e239a4da1790eb087aeb57dae36d25769eaeffb71e96e6bf"
+    },
+    "audit-source/crates/xtask/tests/perf_ci_instruction.rs": {
+      "bytes": 5896,
+      "sha256": "9770779a87592e17d60f0e9faaa55cbf820a3f5d524e7acffe1fc51792490e1d"
+    },
+    "audit-source/crates/xtask/tests/perf_exploratory_harness.rs": {
+      "bytes": 8794,
+      "sha256": "0eb3dee2d86245f282f02ab15dd27e7e7ac9c63c9f3f84f46c1ede8560fef9c9"
+    },
+    "audit-source/crates/xtask/tests/perf_exploratory_reports.rs": {
+      "bytes": 2659,
+      "sha256": "1cd3fd588550321775dada952459a47ea4a7d70c16fbd31cef1f119151c41397"
+    },
+    "audit-source/crates/xtask/tests/perf_full_dress_0671.rs": {
+      "bytes": 8610,
+      "sha256": "ac086d1382a9683b60184a8bf0b98267e08748950abfd7dec757595c35e8d5d0"
+    },
+    "audit-source/crates/xtask/tests/perf_host_tuning.rs": {
+      "bytes": 19093,
+      "sha256": "3c21ddbdeea6e5c0d281e70501e99c11790f726ebf74393661648c702fd6c61c"
+    },
+    "audit-source/crates/xtask/tests/perf_local_orchestration_0671.rs": {
+      "bytes": 11892,
+      "sha256": "339b792a2ad1c64bd09c7fcc864d4a986fec036a4aed4c8686c348528b6ac37c"
+    },
+    "audit-source/crates/xtask/tests/perf_prebuild_067.rs": {
+      "bytes": 17231,
+      "sha256": "6fbe4ada51dcd669287c1088f9638461df1d7c4815f2831bdd7b6acccadf5812"
+    },
+    "audit-source/crates/xtask/tests/perf_qualification_0671.rs": {
+      "bytes": 4140,
+      "sha256": "81c5f292084c73ddbfe067d8be3d18af62cc2ef24fd2bbcb448a44ac95e8e519"
+    },
+    "audit-source/crates/xtask/tests/perf_reference_0671.rs": {
+      "bytes": 28608,
+      "sha256": "c09714b16654d974bb9eb247a54730babd90feed6ab128c1db7b4530d2a945b9"
+    },
+    "audit-source/crates/xtask/tests/perf_runner_0671.rs": {
+      "bytes": 13308,
+      "sha256": "44e05cef5cb2584c95930169d74729fcb440f0429c4c6f022199006951dd2d36"
+    },
+    "audit-source/crates/xtask/tests/performance_contract_067.rs": {
+      "bytes": 610,
+      "sha256": "c2401d8c3c1231b1abbf8e3c5f59b20f156a628017a878d9c90332638846cc58"
+    },
+    "audit-source/crates/xtask/tests/performance_contract_073.rs": {
+      "bytes": 127889,
+      "sha256": "08fed23c274aa925d8f5fe16dc243b7a4103ff2f254fc18c28a93b156c633fe8"
+    },
+    "audit-source/crates/xtask/tests/performance_contract_074.rs": {
+      "bytes": 544808,
+      "sha256": "b99acaf03257db18bb5f52e53ed948bf9ca26250e9193c0cfeeabb4725fa5906"
+    },
+    "audit-source/crates/xtask/tests/performance_local_073.rs": {
+      "bytes": 3055,
+      "sha256": "cbc5c6c4bcb3e4617ca4e0b10da2125b30b6beb729d7418a648c15f4a5f110ac"
+    },
+    "audit-source/crates/xtask/tests/pid_path_cost_074.rs": {
+      "bytes": 2880,
+      "sha256": "1bfc08e9169bfedbfb08c4fcc9d74525ababc380818b5664ef0f06448b1acffd"
+    },
+    "audit-source/crates/xtask/tests/pid_path_reader_074.rs": {
+      "bytes": 2562,
+      "sha256": "95e25ceabd235cf335e39318afaee5aee5f6c0f7ffe70b7c02dcb6615d9961ec"
+    },
+    "audit-source/crates/xtask/tests/pidfd_info_path_074.rs": {
+      "bytes": 5724,
+      "sha256": "19481fa285a2d886e2b74d8ffea1c93ed16d1c5bb06978a5968c54886b724124"
+    },
+    "audit-source/crates/xtask/tests/proc_document_baseline_074.rs": {
+      "bytes": 5720,
+      "sha256": "45d8af0a90dd8054163e956accb1fcee0532b3ab65d081e1c832b334b3bf2035"
+    },
+    "audit-source/crates/xtask/tests/projection_groups_074.rs": {
+      "bytes": 4586,
+      "sha256": "855956f0bbf1a46c094d7fe4ebae632aa613f72257ad2dfea6798e3bc037c47e"
+    },
+    "audit-source/crates/xtask/tests/quarantine.rs": {
+      "bytes": 9147,
+      "sha256": "bd6cfb1c4b781b277a5ffc2e0fe6d6d2bc4ba4fbbd2ed9dfa0e3de5caf0be004"
+    },
+    "audit-source/crates/xtask/tests/raft_spec_check.rs": {
+      "bytes": 603,
+      "sha256": "bc16bd25b31dff69465ad87892b52bfb1785e58111bed6c32c497d8b4d35f8f0"
+    },
+    "audit-source/crates/xtask/tests/release_evidence.rs": {
+      "bytes": 25832,
+      "sha256": "2d26d9a8c64cb3aa88a4d52ebe7b013ff5e6ad3349303428ce78e321e8de300c"
+    },
+    "audit-source/crates/xtask/tests/release_governance.rs": {
+      "bytes": 41797,
+      "sha256": "e70593335000f36f563751a1bac2e525bf005acfa6cfb430804f7c674a5e5b23"
+    },
+    "audit-source/crates/xtask/tests/release_governance_071.rs": {
+      "bytes": 8647,
+      "sha256": "9f0a7ec8d88539038a3bc187de475a9093415b84d538d6679f9c99a2aabf486f"
+    },
+    "audit-source/crates/xtask/tests/remaining_preparation_cost_074.rs": {
+      "bytes": 7180,
+      "sha256": "364638656cc7382df97a0ddb9f1540c3fcf62d29bee00a2c89fe43369494179f"
+    },
+    "audit-source/crates/xtask/tests/role_census_reader_074.rs": {
+      "bytes": 4040,
+      "sha256": "ca4d941865dce310bfffb097304ab4ad2d27eb494a930217529d05b4a8fa4994"
+    },
+    "audit-source/crates/xtask/tests/sample_boot_baseline_074.rs": {
+      "bytes": 6185,
+      "sha256": "971d6aa66e4baff3c73cca4f3e10e2d8e5f3dd242435005147c21a5371adea40"
+    },
+    "audit-source/crates/xtask/tests/sample_boot_inline_074.rs": {
+      "bytes": 5732,
+      "sha256": "cfcbf9b20ba2c6408fc9a7e12e055c029759af5ed1c863a52a82f6421b54b9f3"
+    },
+    "audit-source/crates/xtask/tests/starting_effects_cost_074.rs": {
+      "bytes": 3167,
+      "sha256": "acca1d951cd7e4fff92a09a5bfaa69eaa7f496c7e931a60e24bf8e01f0396eaf"
+    },
+    "audit-source/crates/xtask/tests/status_field_scan_074.rs": {
+      "bytes": 2448,
+      "sha256": "86279193401db2e26161833d6d039e054322a4a7808b9224d92deeb46c2a5b95"
+    },
+    "audit-source/crates/xtask/tests/support/artifact_inventory_input.rs": {
+      "bytes": 6377,
+      "sha256": "536cb02654d3b2bb21328a0b3dc81726d6f7bef8f1b19994168f247b0ec0d56b"
+    },
+    "audit-source/crates/xtask/tests/support/authority_breakdown_guard.rs": {
+      "bytes": 1323,
+      "sha256": "5b94c70acee6ca77b184d6c7f44f21ebb8b3fdc462d87e53a5b25e906f4fc49a"
+    },
+    "audit-source/crates/xtask/tests/support/authority_context_guard.rs": {
+      "bytes": 1922,
+      "sha256": "95bac9a9428c084922a4d51e6454268b0aad3ac8b7db7399d36460fb65ef33be"
+    },
+    "audit-source/crates/xtask/tests/support/authority_cpu_guard.rs": {
+      "bytes": 1198,
+      "sha256": "d02d94c60ea4caff6cf79d20825a920c2e54e32c225ecd0ad66bad6ae16ec318"
+    },
+    "audit-source/crates/xtask/tests/support/authority_expected_name_guard.rs": {
+      "bytes": 2338,
+      "sha256": "5a29d5aa6f6b9c78f2709c79badf1fe8c7556b6e785544ab09b5eea0050c1285"
+    },
+    "audit-source/crates/xtask/tests/support/authority_fd_path_guard.rs": {
+      "bytes": 1934,
+      "sha256": "b7411255123b213837426eb56bdaba4afe80aab27615416d7538b78beceb9706"
+    },
+    "audit-source/crates/xtask/tests/support/authority_hex_guard.rs": {
+      "bytes": 1882,
+      "sha256": "683741191e50c3760cd523714babed160279a8117c79b7ea79a512d77315f890"
+    },
+    "audit-source/crates/xtask/tests/support/authority_history_io.rs": {
+      "bytes": 5382,
+      "sha256": "3a31e59c10654618036d6980f3e14cb3a19db72843331d1d74eefffc3fc6698c"
+    },
+    "audit-source/crates/xtask/tests/support/authority_inventory_guard.rs": {
+      "bytes": 1992,
+      "sha256": "a8088c1b58770f958607bc62f4828940716962e258204848a33b1b85a9ebd631"
+    },
+    "audit-source/crates/xtask/tests/support/authority_leaf_cpu_guard.rs": {
+      "bytes": 1241,
+      "sha256": "3787f8d47cd58767dc144c2f2c4d7dfda76b95252a6b77d640f539cdf10ce914"
+    },
+    "audit-source/crates/xtask/tests/support/authority_leaf_name_guard.rs": {
+      "bytes": 1973,
+      "sha256": "e8b8695ff3934be2fc8be248efd9b0378e30a3cf4462319e42641b34857f8c8f"
+    },
+    "audit-source/crates/xtask/tests/support/authority_name_capacity_guard.rs": {
+      "bytes": 2464,
+      "sha256": "ffd4637b7236d7b0497d160df6388490e850a6b6a75ce85a295bf877fca3b75f"
+    },
+    "audit-source/crates/xtask/tests/support/authority_open_name_guard.rs": {
+      "bytes": 1962,
+      "sha256": "5eb0e0f3b73d2e71011552e36c4157fee461075b584fa8487fb8416738179e9c"
+    },
+    "audit-source/crates/xtask/tests/support/authority_owners_guard.rs": {
+      "bytes": 1264,
+      "sha256": "3fdebc8a98fb3b522700876dd55b34f427298c8856c196182eff4d48eadf5e34"
+    },
+    "audit-source/crates/xtask/tests/support/boot_operations_guard.rs": {
+      "bytes": 1865,
+      "sha256": "7f5d5f70ca9289105ec4bd46baf86990b13a879f3b5b55331cb30dcc08560904"
+    },
+    "audit-source/crates/xtask/tests/support/bootstrap_build_guard.rs": {
+      "bytes": 2858,
+      "sha256": "bf94998b4ce92c03c0c0b1b4659e780ef9fbc7379e757ff8e38aee6e80424eee"
+    },
+    "audit-source/crates/xtask/tests/support/bootstrap_child_guard.rs": {
+      "bytes": 2364,
+      "sha256": "b92cd35fe5d5fa1fbdfa31589e68cfc86650a799276b207566ca82392edf2198"
+    },
+    "audit-source/crates/xtask/tests/support/bootstrap_current_image_guard.rs": {
+      "bytes": 3657,
+      "sha256": "aa3fce235ce0c6f193d8e5dcc810579226549a973e0c4f86498f22acb3576696"
+    },
+    "audit-source/crates/xtask/tests/support/bootstrap_enrollment_guard.rs": {
+      "bytes": 1784,
+      "sha256": "b51071c48b38511cf72b28a67a41239603554751fe29b91e41d9f6eb56eb43ca"
+    },
+    "audit-source/crates/xtask/tests/support/bootstrap_entry_guard.rs": {
+      "bytes": 4560,
+      "sha256": "1e2116bb9c413f732fcfac3061f8b096d1ad71f81d4f9b97506a2abfe406337b"
+    },
+    "audit-source/crates/xtask/tests/support/bootstrap_held_delivery_guard.rs": {
+      "bytes": 3436,
+      "sha256": "2ff3b2243065ef0446dc10d912b281a2d40f9e1061ff01481e8a4db719b2d4b7"
+    },
+    "audit-source/crates/xtask/tests/support/bootstrap_held_entry_guard.rs": {
+      "bytes": 3505,
+      "sha256": "726c36a998b6676d96aa5feb353edfd0940c672d1f7ccb70aa58089a74c3b67d"
+    },
+    "audit-source/crates/xtask/tests/support/bootstrap_image_guard.rs": {
+      "bytes": 2230,
+      "sha256": "81d992243efafec9343c43bd20b63e2ab1bfdb16e61b1f760f24946b36b36ea8"
+    },
+    "audit-source/crates/xtask/tests/support/bootstrap_installed_child_guard.rs": {
+      "bytes": 3581,
+      "sha256": "fab42db9458a56953a663d10d521a94e0b4a81dd4c144a475ee4f70b97711874"
+    },
+    "audit-source/crates/xtask/tests/support/bootstrap_installed_entry_guard.rs": {
+      "bytes": 2425,
+      "sha256": "f4ffd798cec72d4af9fee8d10e0c38f1bd69fb91bec6f0c3d8095b382df54176"
+    },
+    "audit-source/crates/xtask/tests/support/bootstrap_installed_guard.rs": {
+      "bytes": 2557,
+      "sha256": "bbd2fc413f6caa51cef2a6cadcf7344e0351c2c88c168fd50383b55f9e7aa891"
+    },
+    "audit-source/crates/xtask/tests/support/bootstrap_installed_material_guard.rs": {
+      "bytes": 3012,
+      "sha256": "aa1618dfe7679ea386cee7d42c4cb033541a235f1c1d1e1166bfa4e35927898d"
+    },
+    "audit-source/crates/xtask/tests/support/bootstrap_roles_guard.rs": {
+      "bytes": 4896,
+      "sha256": "00e8c66bc00cba9fb6b6406a57dac38667dcfa3cf42a1188237b7d08fce377d2"
+    },
+    "audit-source/crates/xtask/tests/support/bootstrap_sandbox_guard.rs": {
+      "bytes": 1246,
+      "sha256": "4d08f476aadab96df88fd9358c619fad3688797cca09c7ee06e44ca540a2e443"
+    },
+    "audit-source/crates/xtask/tests/support/census_provider_input.rs": {
+      "bytes": 1908,
+      "sha256": "f55546b7f9892b38f97ad45918d1f6978975528cfd352ae98043e25970dbd12b"
+    },
+    "audit-source/crates/xtask/tests/support/census_provider_input_legacy.rs": {
+      "bytes": 1519,
+      "sha256": "89cdefcca5a8994e51d7a083918f68da6ae2254f36396b8765461d6da55367e2"
+    },
+    "audit-source/crates/xtask/tests/support/collector_peer_baseline_guard.rs": {
+      "bytes": 712,
+      "sha256": "470b1ac65de0ed52847153c3cd0fc0ce4493bc1e097cb0357d5774bdc8209911"
+    },
+    "audit-source/crates/xtask/tests/support/collector_peer_capacity_guard.rs": {
+      "bytes": 1320,
+      "sha256": "be66c122ce1ba80485d2513bfe22109c40189690cd4cc05877346c024d19f42e"
+    },
+    "audit-source/crates/xtask/tests/support/consuming_held_join_guard.rs": {
+      "bytes": 1756,
+      "sha256": "ce111d49c56012d63f3a4bdab1f0038ec58622f1da5dc1201cbb2f7d3b0f1a6e"
+    },
+    "audit-source/crates/xtask/tests/support/consuming_held_live_guard.rs": {
+      "bytes": 2412,
+      "sha256": "ea335423fdb01856c723e9fd41f412d04545bd261d09cc83dd2fabad41e2193d"
+    },
+    "audit-source/crates/xtask/tests/support/context_document_baseline_guard.rs": {
+      "bytes": 798,
+      "sha256": "4165e37c1c7a6e103eea0f2b22ad0bc3183f5df7adab506a4836298404dea525"
+    },
+    "audit-source/crates/xtask/tests/support/context_document_stack_guard.rs": {
+      "bytes": 1542,
+      "sha256": "14947afccca76aeb3bf19f511af9c5ce236991cd2daaeacca600f6258174dc23"
+    },
+    "audit-source/crates/xtask/tests/support/current_tree_input.rs": {
+      "bytes": 5171,
+      "sha256": "78bb32368f8bb2fb235ec53052a12d908df7c27db152441881334ccdf64ec935"
+    },
+    "audit-source/crates/xtask/tests/support/custody_cost_guard.rs": {
+      "bytes": 2790,
+      "sha256": "9db6f7ae30301f8040b21f485574eaa8ec72202046c3c305b51fcfad6e0882ec"
+    },
+    "audit-source/crates/xtask/tests/support/document_scratch_guard.rs": {
+      "bytes": 8507,
+      "sha256": "ffbe6713982d35bbb2d2e665f17e160ee1a57165a2fc788d6f5bb97c3de3261d"
+    },
+    "audit-source/crates/xtask/tests/support/document_scratch_inputs.rs": {
+      "bytes": 1248,
+      "sha256": "cb86df0321930d0545b92fc46e3068e5f1980252e1ef672cb893b353070d5de0"
+    },
+    "audit-source/crates/xtask/tests/support/fixed_slice_namespace_guard.rs": {
+      "bytes": 1994,
+      "sha256": "ab7dce399180d762ce5bbacd738d163fa4121be5bfa24be54bb92bd0f0904ae7"
+    },
+    "audit-source/crates/xtask/tests/support/fresh_status_guard.rs": {
+      "bytes": 1894,
+      "sha256": "3b98eaed3badcb3cda57930e45cae7fcaf2e2bad56a0f6729547050346b4949d"
+    },
+    "audit-source/crates/xtask/tests/support/held_build_guard.rs": {
+      "bytes": 3122,
+      "sha256": "4158a303c636b58a167b76104f0a491634a4a45838022a932ca111b2a48f50fb"
+    },
+    "audit-source/crates/xtask/tests/support/held_launcher_guard.rs": {
+      "bytes": 5428,
+      "sha256": "28869049ded6d7fcdccb7f91f816f2e4445cd3a605e5e382dcc893ebf84e43fb"
+    },
+    "audit-source/crates/xtask/tests/support/held_material_guard.rs": {
+      "bytes": 1088,
+      "sha256": "b9ea61cba448b47c70e99a2cfc087e3b4258bd427b36226d943be3a75ec0b896"
+    },
+    "audit-source/crates/xtask/tests/support/held_material_live_guard.rs": {
+      "bytes": 2371,
+      "sha256": "03fe0fceeb389a6bfc82565141cd9926e1fb4a5162213f23df1691f84d5f32fa"
+    },
+    "audit-source/crates/xtask/tests/support/held_role_binding_guard.rs": {
+      "bytes": 3010,
+      "sha256": "a58afe7f809b01be6ff20511a60fba71cf7d3127fa7b424d54dc8c9bb0b6a4a9"
+    },
+    "audit-source/crates/xtask/tests/support/held_role_census_guard.rs": {
+      "bytes": 717,
+      "sha256": "abecf9f3dd8271bad784fdf33c7f42f60e1f8a8eb00215d91b29e0694e390247"
+    },
+    "audit-source/crates/xtask/tests/support/held_role_files_guard.rs": {
+      "bytes": 1229,
+      "sha256": "6e866c7d58fe8c40fccd15f58c47f5682299e25af560817adced13bf7de5c053"
+    },
+    "audit-source/crates/xtask/tests/support/held_runtime_trust_guard.rs": {
+      "bytes": 3420,
+      "sha256": "bfe6355747ee3d2e95c8d0ee7e51af70830564c633ed2ef075f53d5690844f90"
+    },
+    "audit-source/crates/xtask/tests/support/held_unit_projection_guard.rs": {
+      "bytes": 1571,
+      "sha256": "df4e3b49148ded249e31cbfc796bc50a58cfaf885acb7799b149d00a6701bbd6"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_barred_collector.rs": {
+      "bytes": 13060,
+      "sha256": "02f4b1fd12b035c811d03aa82f801c7036c25d39e6b0fd9054d9e28288249399"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_barred_custody.rs": {
+      "bytes": 15642,
+      "sha256": "a05759fd7e64ebecbe94f51ae7b82a8d9e07e922b74bc1edb5404f71c6e80626"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_boot_buffer.rs": {
+      "bytes": 6422,
+      "sha256": "c7d8cb15637a31db3010a7a9e13eaeca2e3cc5a674bbac2d102df485fd117ed6"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_boot_comparison.rs": {
+      "bytes": 7477,
+      "sha256": "075b98d22a5d488575c7a43bed22774b0efd52c1a2f1c31179ce25152ba6c309"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_cgroup_root_enrollment.rs": {
+      "bytes": 7434,
+      "sha256": "e0dca28956b4b188af2cc3bcb67c2bb07d94ca520835df571fb31708370746ae"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_cgroup_root_transport.rs": {
+      "bytes": 6740,
+      "sha256": "2ce247d866824b6ebdf752ae19a5f79c016c6d416b88eb7567c2a972aed231ba"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_claim_construction.rs": {
+      "bytes": 6176,
+      "sha256": "e4a7db3309c3fa19d2985e66407870899c367fefd6974e9b9a0c71a7291b8d37"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_closing_validation.rs": {
+      "bytes": 4487,
+      "sha256": "280426cf9a526f4df611b0331e7308a4b74684fba86140f2e272886fb8e85bc6"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_collector_causal.rs": {
+      "bytes": 9778,
+      "sha256": "91de7da6660ac8faca3a8b5364e7e5d56120c0d2e7a25d219b6bffffc64c66ee"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_collector_intent.rs": {
+      "bytes": 5249,
+      "sha256": "552f2122cbca189b79c3c233698b10fcd0ab59c8ddf59b8b87d4e939da673507"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_collector_notices.rs": {
+      "bytes": 2318,
+      "sha256": "de3b1f050464603e5b6773074e3645e653f387da5e329f1816eea54c3306ee21"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_collector_progress.rs": {
+      "bytes": 5323,
+      "sha256": "777d11650918952748b3e9a369372b9504ee8d3eef6f1055cbeb15abddc7c6c9"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_collector_reserved.rs": {
+      "bytes": 8671,
+      "sha256": "1348461fd3c4ab6376da26f93fe3e336621d9ae39620fd6966e1365d8d2727c8"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_consent_budget.rs": {
+      "bytes": 6743,
+      "sha256": "ae051bc9fc631d6f1ac9f2869d4b73430e9e7d8701cb2c857e9efadd4efc289e"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_custody_join.rs": {
+      "bytes": 21656,
+      "sha256": "5aa412bb1a789afe8614b3d379fb3fbef6e9438a7f6a981b277b5460d053611d"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_custody_loss.rs": {
+      "bytes": 9128,
+      "sha256": "7766dc70d876853ec0222bc000344bb1210981c5cba3d5bc7b61a44c269852e3"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_dispatch_exchange.rs": {
+      "bytes": 7243,
+      "sha256": "f67637b9a524a3422eed9f7ab18f36c1225c82bd427271967527fcfa7c5402c8"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_enrollment_frame.rs": {
+      "bytes": 15651,
+      "sha256": "c193eaf66fff6ea47d127bbd0d6e6f13cdacdf2f4b9244a58707851c6959884f"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_fence_custody.rs": {
+      "bytes": 7227,
+      "sha256": "226b8d481852582e8bd7de4ad6f3de9210354d2141115db303c09145c6e9afed"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_fixed_grouped.rs": {
+      "bytes": 24839,
+      "sha256": "c9a360a42751035643fbb72ff1fc73e9549889734a0636b86ba72a05fee8f74a"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_fixed_leaf_path.rs": {
+      "bytes": 10457,
+      "sha256": "2168b7b2dd32660ae6feb8f012a729f541ef9c7f8309e55865af2f147ebb506c"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_fixed_slice.rs": {
+      "bytes": 5726,
+      "sha256": "5bf7b3618f2cf80143a28c8bf56e368faa59d8d8d8517771e3998feab51888ec"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_gnu_preparation.rs": {
+      "bytes": 7346,
+      "sha256": "662c05c69fd2dba1c21284cc300a5eca6cfc31a11a677acdbbb076c281fd0d25"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_held_placement.rs": {
+      "bytes": 6422,
+      "sha256": "e38db289161def76316d7e499344d0d9190b25875822fd74f34718a1d596ee90"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_kernel_refusal.rs": {
+      "bytes": 8966,
+      "sha256": "550c107afc16c2aeda215a308c339efa3f41ab6e6a0748b28b3a3cb48dbcd9a2"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_kernel_walk.rs": {
+      "bytes": 7636,
+      "sha256": "2e28bbf60a0874814101643fd792b9f5d998600b709eede3fd6c629f3259930c"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_live_walk.rs": {
+      "bytes": 7142,
+      "sha256": "c5d521a9480f522cf8df8e4652a1a826aab1c939d3006f6ce661324eb4c1e44c"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_manager_channel.rs": {
+      "bytes": 14643,
+      "sha256": "1c1723ed216168dfa058fb3e4defffef40a4a785619d21a6eeb8d0ab97735e14"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_negotiated_dispatch.rs": {
+      "bytes": 5966,
+      "sha256": "bd4aead2d4068e32ecbf00c49d5d25aaf8d3da632f827b9e370a84245b56c87a"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_original_barrier.rs": {
+      "bytes": 13557,
+      "sha256": "02bddff20ad693cec3800fe24ed1d903613c2f542a767c8efaacd871e5c187cc"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_original_collector.rs": {
+      "bytes": 7233,
+      "sha256": "a3a2cb78336dc71c2ea00ff3b3d02a7002484361bfea59bbe72030a32f4aa8d3"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_original_descriptors.rs": {
+      "bytes": 17403,
+      "sha256": "82b8e524a7c03af4690cc042481ce744e46508b7982d7a170c5196b31a99c3a3"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_original_manager_join.rs": {
+      "bytes": 15715,
+      "sha256": "20bfabe7aae572c57800353553b2404c185018a70b126e9c06eb0f23331b4585"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_original_manager_message.rs": {
+      "bytes": 13266,
+      "sha256": "ed0c199daef310dfff17f167df94e474e64ffca8192f700fadae0b001507fcaf"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_original_pending_watchdog.rs": {
+      "bytes": 9178,
+      "sha256": "72a264412f6f8f01a72f7c7224e3c2f9200d4b051fe5477e2cf52be5b8a7fc32"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_original_pipes.rs": {
+      "bytes": 10168,
+      "sha256": "993091c191ff795b310e131908512967aea9e25b3c438ec81613015301dd1a85"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_original_reply_binding.rs": {
+      "bytes": 14337,
+      "sha256": "1fedbb955520d8f21f37b7af24e8ce81cd47ccb3b74f87e87f4e42ab80970558"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_original_root_join.rs": {
+      "bytes": 9459,
+      "sha256": "a755e5d6776ace9f09b59e0a6020fb5be3378647a9d0e3395b524ed3fa293b16"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_original_start_consent.rs": {
+      "bytes": 8888,
+      "sha256": "fb5509d5073b79b201c3bdfe4f7248aa60e40cfdd6320e4d0553549983577f48"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_original_watchdog_context.rs": {
+      "bytes": 6832,
+      "sha256": "b86f14b9745b5b4e028e0266b8773cfb3727fda086d5c9404b5399f578fa8fe3"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_output_join.rs": {
+      "bytes": 18390,
+      "sha256": "ca206101550aceed82f724be904f91769d88ffc32989df3f63320f2f4207f117"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_owned_placement.rs": {
+      "bytes": 6792,
+      "sha256": "1cd5fd3248a2b071d1b684e7c270c6fc1928a6edb5ed4eeca180d35c394b9721"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_owned_root_manager.rs": {
+      "bytes": 10784,
+      "sha256": "81e4f8080d24b5578ab0765ee2d9fdb125c8d7c0c309ba1ece6eda9c92b8c8b3"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_pipe_transport.rs": {
+      "bytes": 7813,
+      "sha256": "ddb2fefdcf729e08885dc5fa7652b7af7627b59cbedc364f5d4baff3347fe6a5"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_placement_preparation.rs": {
+      "bytes": 3857,
+      "sha256": "d297df34a3cfe255f7730197456d27d7d2e4f61c0ef191a7dc1d9296710840c5"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_placement_stage_cost.rs": {
+      "bytes": 5733,
+      "sha256": "57fed0c13bb5bc2854b6a0b2d20f22dd0b42e2e4ae25002ca602786c28d87977"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_plain_worker.rs": {
+      "bytes": 5960,
+      "sha256": "05878cd64931d011b64a9eb86c4ae28228cc6a6bc1801d714b5c516d5e2a729d"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_prearmed.rs": {
+      "bytes": 7855,
+      "sha256": "38354591964bfd8be941471ff6285587693f04791a2591f118cd60e70bbd9439"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_preconsent_frame.rs": {
+      "bytes": 11534,
+      "sha256": "69bd261d2131f19fb2ecfdf16c4559ffef98603a999b82ad12006f301ec2d92e"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_preparation_budget.rs": {
+      "bytes": 6481,
+      "sha256": "98bd96a34a69b1537829e4799235eab438a59bab1ee950ee20a365992d128e61"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_redundant.rs": {
+      "bytes": 7829,
+      "sha256": "ded98e9c28f56ed68568c2e0a81df132a8da2a29cb3c7fb9cc1a3f39bcdbf7f5"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_reply_flags.rs": {
+      "bytes": 4525,
+      "sha256": "086e28af21d0803eba29a735c5b31fcaaa213cdfaf5df54aea383d2793877ead"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_reply_state.rs": {
+      "bytes": 7028,
+      "sha256": "c57c24361afb56491098757c539b01064d7fe966900b1381b0e0ca2d8f0f7c71"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_root_creator.rs": {
+      "bytes": 6462,
+      "sha256": "914a06109c422255605b3dca3892ad8aef30c39afe5b8cc45b316cdccba5c6c7"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_root_guardian.rs": {
+      "bytes": 8116,
+      "sha256": "14f8d1f9d4cd674cc7eec02fad0193e2253869104188b0d8c17cb4135e5ab262"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_root_retirement.rs": {
+      "bytes": 6572,
+      "sha256": "eeb4fa274e491a26218b1072f1af5698094ab787fe6f584a1568a73177cbf405"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_safety_alarm.rs": {
+      "bytes": 24235,
+      "sha256": "88ea2da4c305a22cce4f5b5eff54f92534026164ab03586010e1c99695b7097a"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_short_fence.rs": {
+      "bytes": 6579,
+      "sha256": "e99335bf743cd263207189d18408ce7122d215e7aa84a1060dbe9338dcbf9f9a"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_start_consent.rs": {
+      "bytes": 7017,
+      "sha256": "6798261e33805a9c45586dfb85e81c2602e836d1e883d98755ddce7ed723f8e0"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_start_material.rs": {
+      "bytes": 9515,
+      "sha256": "f85653cb51b9b396f25b2ce6d0e0b0d2db0a7dfe04f18b607dfd13e04301424e"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_starting_publication.rs": {
+      "bytes": 28109,
+      "sha256": "84e2a445199fff172477caf03924f2cf9ff201633cf210be23bacb1171a85db4"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_starting_record.rs": {
+      "bytes": 9325,
+      "sha256": "84f39189e804a6f81c34f27977bd1891d98542da7a22da5458f1a6523dd07de2"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_two_phase_launch.rs": {
+      "bytes": 8497,
+      "sha256": "52595986bbf7887708f7c17c644b401b1d9a645355f26890b728b64c99bdd67a"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_validation_cost.rs": {
+      "bytes": 7663,
+      "sha256": "1137e5a4309ce981b14515464857e96b7bc353090154c43a294a0c7aadc42a1a"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_validation_frame.rs": {
+      "bytes": 11328,
+      "sha256": "6eb00a74bef4c65498030912f38352e397d95284d8fb7106dfb74e74745bb4da"
+    },
+    "audit-source/crates/xtask/tests/support/performance_contract_074_worker_proof.rs": {
+      "bytes": 6997,
+      "sha256": "6a8f3167e3066cea77542e075432c12f635d918c20a11f9b5b2d81914df59f7a"
+    },
+    "audit-source/crates/xtask/tests/support/pid_path_guard.rs": {
+      "bytes": 3063,
+      "sha256": "350c4602ad92893bf07a29ee3d054e08456e0f852bd61ac53aee8d1014a70497"
+    },
+    "audit-source/crates/xtask/tests/support/pidfd_info_path_guard.rs": {
+      "bytes": 1480,
+      "sha256": "516a6688e1f1db86a836a798c72044d5189844d6292f0e35eaf81074f0e64d89"
+    },
+    "audit-source/crates/xtask/tests/support/projection_groups_guard.rs": {
+      "bytes": 1384,
+      "sha256": "0180137ac68cb0d74be95121ab0f366637d61e6924ef40906be6ea65f890b7e8"
+    },
+    "audit-source/crates/xtask/tests/support/projection_prefix_guard.rs": {
+      "bytes": 1949,
+      "sha256": "8ac781a0a877adeddec17585219482b90da9bc47f904105e0f09c8c49312a7f2"
+    },
+    "audit-source/crates/xtask/tests/support/remaining_preparation_guard.rs": {
+      "bytes": 9136,
+      "sha256": "dde531610ab4981ecec66d8d01610c50115fb670c694c3f2a83e9eafb5c704ec"
+    },
+    "audit-source/crates/xtask/tests/support/trust_component_baseline_guard.rs": {
+      "bytes": 765,
+      "sha256": "f1283862c0f947a9da98191e833acf0298213779b741b88a22b8f0d2f0993cd9"
+    },
+    "audit-source/crates/xtask/tests/support/trust_component_stack_guard.rs": {
+      "bytes": 1752,
+      "sha256": "13b0f0ffe11b68e56f3a827680e3f3df23f9cbf47d135a23b8cd96b957dbdd95"
+    },
+    "audit-source/crates/xtask/tests/trust_component_baseline_074.rs": {
+      "bytes": 6432,
+      "sha256": "cb615389b04e3ac6bf8f024fa6c1af84130a9ee319b16a97020138606079f8bc"
+    },
+    "audit-source/crates/xtask/tests/trust_component_stack_074.rs": {
+      "bytes": 7450,
+      "sha256": "6dd82c0bfc1c9aee304499eb12641757fe350bc39eb4e7277c0339c5f805e92d"
+    },
+    "audit-source/crates/xtask/tests/tsan_check.rs": {
+      "bytes": 1311,
+      "sha256": "3a3ff6005ef801cd7d77fe5902700cf9273a5f2bb2434419d78bf2e1a292b187"
+    },
+    "audit-source/crates/xtask/tests/validation_leaf_reader_074.rs": {
+      "bytes": 3097,
+      "sha256": "c8aa41e7c247fae594602c71a9f6964a392f77c59b3934a644be944f94a0c511"
+    },
+    "audit-source/crates/xtask/tests/validation_leaf_requests_074.rs": {
+      "bytes": 3064,
+      "sha256": "f12aacc76267643688f3438f027ba7d709c95223df6dd59637f5798a63587149"
+    },
+    "audit-source/crates/xtask/tests/validation_round_cost_074.rs": {
+      "bytes": 3561,
+      "sha256": "d956a82518f3b29ceff42224d15635c1da3bb1545807abeba8fdc068301a75b7"
+    },
+    "audit-source/tools/authority-runtime-074/cost_reader.rs": {
+      "bytes": 3360,
+      "sha256": "2602e6099e2e323570ac25ac83f5cefbf08141f7a6f10c9892fdf1c48c2f7d84"
+    },
+    "audit-source/tools/authority-runtime-074/gate.rs": {
+      "bytes": 7359,
+      "sha256": "0c539c0c44d90f4e62d566db1b141a6982042b58378f236f5134126df266671d"
+    },
+    "audit-source/tools/authority-runtime-074/history_reader.rs": {
+      "bytes": 2592,
+      "sha256": "2c0e8c6313054cde8d8aa0bd27d8739e64db9c72fe224c85cd8e4be9b34f7950"
+    },
+    "audit-source/tools/authority-runtime-074/io.rs": {
+      "bytes": 1429,
+      "sha256": "9d24652cdabe794b1d2be458c3b71880a98530045c3a17f2577a4573bb718202"
+    },
+    "audit-source/tools/authority-runtime-074/performance.rs": {
+      "bytes": 12987,
+      "sha256": "04a02636d2513454c26b086031f9beeb3cac010132ed56621c078765adf90850"
+    },
+    "audit-source/tools/authority-rust-history-074/contract.rs": {
+      "bytes": 2929,
+      "sha256": "5161c9679c4a75b42305c852487390983ff4af400a9a35f4e541b387417b29f7"
+    },
+    "audit-source/tools/authority-storage-source-074/contract.rs": {
+      "bytes": 6943,
+      "sha256": "aefcd4f6a9ed0acc1e072225ea3ed4dda82d2d1ccda0ba4f22ca74459efa64c2"
+    },
+    "audit-source/tools/historical-blob-batch-074/decoder.rs": {
+      "bytes": 4640,
+      "sha256": "7287fac38513dd2a8a77acb3537c57ae7e2870b24ec0ff591a57bcb62273ad1e"
+    },
+    "audit-source/tools/historical-blob-batch-074/mod.rs": {
+      "bytes": 159,
+      "sha256": "a0235938d083f908dcf378c92407982875fd7aef2e19fc01641af1ebedbbcb94"
+    },
+    "audit-source/tools/historical-blob-batch-074/transport.rs": {
+      "bytes": 14967,
+      "sha256": "4c17249c6c4d30c025ebf60ccbb5410877e48ab253185583bb07decff717b688"
+    },
+    "audit-source/tools/historical-input-view-074/contract.rs": {
+      "bytes": 2308,
+      "sha256": "158fc7ae7e8325f05c272218919e81f8e0cb17123ead1007a25f120757f6dd94"
+    },
+    "audit-source/tools/historical-source-cache-074/cache.rs": {
+      "bytes": 3141,
+      "sha256": "7251f5f89a479461582608e4a7b5a6593d8c37a95808342ab6a57c1ecc0fc3ed"
+    },
+    "audit-source/tools/historical-source-cache-074/library.rs": {
+      "bytes": 903,
+      "sha256": "69cc04200b0f3d42ea526f5b92708b725b78f81619c1d54158e2ad9fd0ecfdfb"
+    },
+    "audit-source/tools/material-lock-fixture-074/contract.rs": {
+      "bytes": 1991,
+      "sha256": "9003527a95736011c1e9eb4c4bd02310ac3c3a61b21f6aa0484278317a2f6e5f"
+    },
+    "audit-source/tools/owned-case-074/contract.rs": {
+      "bytes": 8165,
+      "sha256": "55e7d11cbdabe73f17310338f9b6290277b2ea4de0003b12dcdfb0875e404758"
+    },
+    "audit-source/tools/status-field-gate-074/contract.rs": {
+      "bytes": 3570,
+      "sha256": "175366f05b7e8c37eaf246a968faff54415b358fa4f4bac31370ff8f302b0ece"
+    },
+    "captures/build-scope/census_cost.py.raw": {
+      "bytes": 8613,
+      "sha256": "0940ceba26b52fbf03711caacf9a8580d170c72fd38bd35bc02c1d70ca5d780c"
+    },
+    "captures/build-scope/intent.json": {
+      "bytes": 43616,
+      "sha256": "4588246e6148b20e7163bee4010661b2c9b1ebcc9898fbdf4a9f0737058f769d"
+    },
+    "captures/build-scope/pins.json": {
+      "bytes": 140907,
+      "sha256": "fa1e5ff087d0b345903000c94c9e90bb1dcaa144a769faab38adcaee777282e9"
+    },
+    "captures/build-scope/preflight.json": {
+      "bytes": 43312,
+      "sha256": "127c1dd143aa1957245965d37b24eef953aa879daa2e85faafb89e83ee35c749"
+    },
+    "captures/build-scope/refusal.json": {
+      "bytes": 68,
+      "sha256": "0052d5e7247d2b180db39c7b6b58038f4d587d3c6abfe395d796749097aae83a"
+    },
+    "captures/build-scope/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "captures/build-scope/stdout.log": {
+      "bytes": 25585,
+      "sha256": "4843314a808417bdf84f3f25af75656a7f02d5a1dd4625110747de3d39250c95"
+    },
+    "captures/first/intent.json": {
+      "bytes": 43616,
+      "sha256": "60c5981bd75354ac43584691b6cdd2b961528b194fcbd143b0514d6e848d60a5"
+    },
+    "captures/first/refusal.json": {
+      "bytes": 95,
+      "sha256": "d5b97f8df9e1c5eea7fd16cc9af6b0d2477233860e08017a1ab89b762902f1a1"
+    },
+    "captures/pager-contract/census_cost.py.raw": {
+      "bytes": 8388,
+      "sha256": "83a5bff0745ac7bc225a705627e2671d81fdc419b1d0bec6eb2a161c9164cede"
+    },
+    "captures/pager-contract/intent.json": {
+      "bytes": 43616,
+      "sha256": "a82efac4ed7b5b61c7b07fbc6cd36ff526eef051bec57d8df9b6874b8bda4c69"
+    },
+    "captures/pager-contract/refusal.json": {
+      "bytes": 77,
+      "sha256": "05b6c77d94d91430f208af0ce30464a18eeca00bb15d79ba02a1ece15f8a8b91"
+    },
+    "checks/census-cost-audit-final-a/intent.json": {
+      "bytes": 317316,
+      "sha256": "5eb6e4eee2d0baaeca7c6f29ee284bcfb15f62e90dba932d9984a85b3cd99da6"
+    },
+    "checks/census-cost-audit-final-a/result.json": {
+      "bytes": 317054,
+      "sha256": "b6a2c2420052e28317304ca7a3740318819f8950ec6ca90342ca8c5dd5874cf9"
+    },
+    "checks/census-cost-audit-final-a/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/census-cost-audit-final-a/stdout.log": {
+      "bytes": 801261,
+      "sha256": "a671fb37cee981738578041d713cf0e81f27785c08864742d467a6888d67104e"
+    },
+    "checks/census-cost-audit-final-b/intent.json": {
+      "bytes": 317316,
+      "sha256": "5eb6e4eee2d0baaeca7c6f29ee284bcfb15f62e90dba932d9984a85b3cd99da6"
+    },
+    "checks/census-cost-audit-final-b/result.json": {
+      "bytes": 317054,
+      "sha256": "b6a2c2420052e28317304ca7a3740318819f8950ec6ca90342ca8c5dd5874cf9"
+    },
+    "checks/census-cost-audit-final-b/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/census-cost-audit-final-b/stdout.log": {
+      "bytes": 801261,
+      "sha256": "a671fb37cee981738578041d713cf0e81f27785c08864742d467a6888d67104e"
+    },
+    "checks/census-cost-audit-v1/intent.json": {
+      "bytes": 317316,
+      "sha256": "ece1f763f999385a71f440bcb86e83b93c35f568d2760d703404352cf771dd09"
+    },
+    "checks/census-cost-audit-v1/result.json": {
+      "bytes": 317054,
+      "sha256": "0d6f1ed2aef238b6e43eddb680dc0bb1cd5124077c7102f9313503f64dc9f812"
+    },
+    "checks/census-cost-audit-v1/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/census-cost-audit-v1/stdout.log": {
+      "bytes": 801261,
+      "sha256": "3aeda46347736c99d0eb5b2ce208b284419ece1b814812f062501785cd2e43a4"
+    },
+    "checks/census-cost-build-v1/census_cost_074.rs.raw": {
+      "bytes": 11653,
+      "sha256": "b47b31dc0bb118ef742bd4e2aa9b9353714343a827bcce4658433defbc314dd8"
+    },
+    "checks/census-cost-build-v1/intent.json": {
+      "bytes": 317141,
+      "sha256": "c43ae8f320928898b1dd860893ae95ab346491c2617f99b748841e56e134f8a4"
+    },
+    "checks/census-cost-build-v1/result.json": {
+      "bytes": 316787,
+      "sha256": "9c80786dc9fd568c5a340c6419865d04e64ed7fe6599de329dbce27e31744e6c"
+    },
+    "checks/census-cost-build-v1/stderr.log": {
+      "bytes": 224,
+      "sha256": "fd431da23d3294baf86a69d865e9738b8a83bbdc73eb14c282aab7fb3dc8cd0f"
+    },
+    "checks/census-cost-build-v1/stdout.log": {
+      "bytes": 330736,
+      "sha256": "fa7d7b76e29672928ef99f43e1e7427604ee3dfbd033626e3a1fb1ff175fdd29"
+    },
+    "checks/census-cost-build-v2/intent.json": {
+      "bytes": 317141,
+      "sha256": "14f0cc65d40931c8a3aa4c6545047a7a97e0c0aba1298cea28b5e18c43a4a613"
+    },
+    "checks/census-cost-build-v2/result.json": {
+      "bytes": 316785,
+      "sha256": "3f6efb08adfd8323c95977ff309370b7687b683cdf559d667d07a4548e8eac0e"
+    },
+    "checks/census-cost-build-v2/stderr.log": {
+      "bytes": 156,
+      "sha256": "d65cc33ec2d9285bc76f28dad269618b525d74e0e8c6ad10ae491bde458074c6"
+    },
+    "checks/census-cost-build-v2/stdout.log": {
+      "bytes": 319630,
+      "sha256": "dbf43e1a29ec89b3f714d3b5eb5e4cc52933f1915568b435552830b0a4bfe633"
+    },
+    "checks/census-cost-check/intent.json": {
+      "bytes": 317347,
+      "sha256": "c42e4b54cb92bd678762783094a39322f17179d0599a71722925fce5f4315657"
+    },
+    "checks/census-cost-check/result.json": {
+      "bytes": 317054,
+      "sha256": "01b1469dff7811ffd3288f596bd878c2e6ed3731ab664f97665b6494e99cb4ba"
+    },
+    "checks/census-cost-check/stderr.log": {
+      "bytes": 155,
+      "sha256": "57a67eb9c90def54773a27095a4ef626ed623efdc6082e0de13d74a6c8d15823"
+    },
+    "checks/census-cost-check/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/census-cost-clippy-final/intent.json": {
+      "bytes": 317410,
+      "sha256": "e9034381c84353f659b4a872866686b2d89cd7045676d349c3b93379f44f604b"
+    },
+    "checks/census-cost-clippy-final/result.json": {
+      "bytes": 317054,
+      "sha256": "01b1469dff7811ffd3288f596bd878c2e6ed3731ab664f97665b6494e99cb4ba"
+    },
+    "checks/census-cost-clippy-final/stderr.log": {
+      "bytes": 155,
+      "sha256": "a0410f00f99348c41307bb56b72440b4e72bed2966703c772225248009c1b147"
+    },
+    "checks/census-cost-clippy-final/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/census-cost-clippy-v1/census_cost_074.rs.raw": {
+      "bytes": 11740,
+      "sha256": "506d0104b2d41aaef863bc6bc1e0b3559882ee6743565939bc4886085d95038a"
+    },
+    "checks/census-cost-clippy-v1/intent.json": {
+      "bytes": 317410,
+      "sha256": "18453fd0f203d44bea638f99f1d822ef9275f58cbc9ec3f7c5839f345c477dff"
+    },
+    "checks/census-cost-clippy-v1/result.json": {
+      "bytes": 317056,
+      "sha256": "f574daad4de923bc64ce2e1c7e625ab1148e6bbbf8db807d71f13efebcd94e6d"
+    },
+    "checks/census-cost-clippy-v1/stderr.log": {
+      "bytes": 718,
+      "sha256": "566c33eb2202734a65fa4da0656fa01cb71dc2abfb74e195e0f2fb3c4628d0ae"
+    },
+    "checks/census-cost-clippy-v1/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/census-cost-cohort-v1/intent.json": {
+      "bytes": 317145,
+      "sha256": "ba84e727161a5939683e6e2236b53e40f6ca90d72fe0dca12729fc08ca8c975d"
+    },
+    "checks/census-cost-cohort-v1/result.json": {
+      "bytes": 316785,
+      "sha256": "459180a31439b41bbae154d8e334f9b74e1ffc33abfd21140c030f22b4386518"
+    },
+    "checks/census-cost-cohort-v1/stderr.log": {
+      "bytes": 800,
+      "sha256": "65db70503cffb2d08fe8c60541fc652fbcc3251aceccb09c24ddf516b4ae0d96"
+    },
+    "checks/census-cost-cohort-v1/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/census-cost-cohort-v2/intent.json": {
+      "bytes": 317154,
+      "sha256": "652199a516875bd9e54f55a49b093fd25a5837b56634ddb32dbdb98973b6457b"
+    },
+    "checks/census-cost-cohort-v2/result.json": {
+      "bytes": 316785,
+      "sha256": "eed47f319f532c047c3d7f3456c3f41c13a47c6d5c74edf04a72c7462f597cf0"
+    },
+    "checks/census-cost-cohort-v2/stderr.log": {
+      "bytes": 907,
+      "sha256": "7e392a0d14dbfd709181c18a34f057907e4664dc71120cc2da27b1be34dcc30f"
+    },
+    "checks/census-cost-cohort-v2/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/census-cost-cohort-v3/intent.json": {
+      "bytes": 317151,
+      "sha256": "2327be1cc5582ffa089e3fb0c5ed3154c562e581a16de117d6282221223ee102"
+    },
+    "checks/census-cost-cohort-v3/result.json": {
+      "bytes": 316785,
+      "sha256": "95c3a8c7689ea3fed39efca249d738b984f39c1e5ef2e5ec7c30a9c02e1c88fc"
+    },
+    "checks/census-cost-cohort-v3/stderr.log": {
+      "bytes": 973,
+      "sha256": "ba468d1186381310a01cf73b9bb2f752752d63d3f5ce9f7a96390e7a250729e0"
+    },
+    "checks/census-cost-cohort-v3/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/census-cost-current-final/intent.json": {
+      "bytes": 317715,
+      "sha256": "b02f036298115df0664f6a7540a9dd16afe5207fb0c67cbf5d2d8c7b75aa8366"
+    },
+    "checks/census-cost-current-final/result.json": {
+      "bytes": 317054,
+      "sha256": "01b1469dff7811ffd3288f596bd878c2e6ed3731ab664f97665b6494e99cb4ba"
+    },
+    "checks/census-cost-current-final/stderr.log": {
+      "bytes": 953,
+      "sha256": "ad027cd3485267e195c27629fbd8ab88753d289202ed195067c5033deb66b1f2"
+    },
+    "checks/census-cost-current-final/stdout.log": {
+      "bytes": 3663,
+      "sha256": "460d95041863f74a1bc6d8e844af02ac41c15bca9c920ad75050365584117984"
+    },
+    "checks/census-cost-derived-final/intent.json": {
+      "bytes": 317444,
+      "sha256": "33540f7ef8f15098f6d427816b81e5208e46df842bfcef341c33a3c64126ff98"
+    },
+    "checks/census-cost-derived-final/result.json": {
+      "bytes": 317054,
+      "sha256": "01b1469dff7811ffd3288f596bd878c2e6ed3731ab664f97665b6494e99cb4ba"
+    },
+    "checks/census-cost-derived-final/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/census-cost-derived-final/stdout.log": {
+      "bytes": 46230,
+      "sha256": "ea68433030215faa4a3ade39a59a78641e17aa374da7fbc4f7b91b3f78a85b5a"
+    },
+    "checks/census-cost-derived-v1/intent.json": {
+      "bytes": 317307,
+      "sha256": "ae54c6ef05ef95a2c8abf98bebe992b1a3ed6c270f53ad6585ab8ae89d9e628e"
+    },
+    "checks/census-cost-derived-v1/result.json": {
+      "bytes": 316917,
+      "sha256": "3cb94e7d37e77cf1de868fc366b9506bbb7ca7a303f8f1ed1770f3d26ede29cd"
+    },
+    "checks/census-cost-derived-v1/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/census-cost-derived-v1/stdout.log": {
+      "bytes": 46106,
+      "sha256": "934eef463e47310d8ad44a6655fd375e5e416829074bbe6d65079d2f1be3e3f1"
+    },
+    "checks/census-cost-doc-check/intent.json": {
+      "bytes": 317368,
+      "sha256": "6277ee4276af46f531c0559901836a4dc915b5d528f06c8de8ae3649647f0c39"
+    },
+    "checks/census-cost-doc-check/result.json": {
+      "bytes": 317054,
+      "sha256": "b6a2c2420052e28317304ca7a3740318819f8950ec6ca90342ca8c5dd5874cf9"
+    },
+    "checks/census-cost-doc-check/stderr.log": {
+      "bytes": 203,
+      "sha256": "a27c8ace5d5b6164af7668a281265af6f285618753df78eebccff2cbccbf5cec"
+    },
+    "checks/census-cost-doc-check/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "checks/census-cost-focused-v1/intent.json": {
+      "bytes": 317279,
+      "sha256": "5ea2130e41eb0de6616021ca99ad9fe4e9e73414870ef73da8c432ec56415b56"
+    },
+    "checks/census-cost-focused-v1/result.json": {
+      "bytes": 316785,
+      "sha256": "3f6efb08adfd8323c95977ff309370b7687b683cdf559d667d07a4548e8eac0e"
+    },
+    "checks/census-cost-focused-v1/stderr.log": {
+      "bytes": 517,
+      "sha256": "017b2d3b1e3d3193f5ff9d0a9621b971675aecb6bcafb1f47aca5eff1f8edd1b"
+    },
+    "checks/census-cost-focused-v1/stdout.log": {
+      "bytes": 1851,
+      "sha256": "49d12d1245c2fa08616fcae5dbc7d44745c2eb756892910d9f1b00b53d3ae566"
+    },
+    "checks/census-cost-format-focused/intent.json": {
+      "bytes": 317362,
+      "sha256": "fc7d6dbe3bb76f7293b12cb12b62f1f696dcbc21db41d1c7c00de8aeaea81c10"
+    },
+    "checks/census-cost-format-focused/result.json": {
+      "bytes": 317054,
+      "sha256": "c4eb08927ad5654194e1c2ce6b9600c7b1df73590a436339cd6398c2e67f6483"
+    },
+    "checks/census-cost-format-focused/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/census-cost-format-focused/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/census-cost-format/intent.json": {
+      "bytes": 317304,
+      "sha256": "6fea4616be88a521001e1f83565ff6e837a1b7d30c4301c1a36b553581d51700"
+    },
+    "checks/census-cost-format/result.json": {
+      "bytes": 317054,
+      "sha256": "25676dada5860ab81d9c0a06410e1de4f65a0e56aacfa002a3d093bc130ba2df"
+    },
+    "checks/census-cost-format/stderr.log": {
+      "bytes": 817,
+      "sha256": "a3c64adc493a218a5a8332dfc60b9e9fd0cf455d8215931a5888f9bc84a29c70"
+    },
+    "checks/census-cost-format/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/census-cost-indent/intent.json": {
+      "bytes": 317320,
+      "sha256": "d017e8689e600ad2bf2027a54a4ea6a091e4e8396a0b02a2dfd03b9b4512810a"
+    },
+    "checks/census-cost-indent/result.json": {
+      "bytes": 317054,
+      "sha256": "c4eb08927ad5654194e1c2ce6b9600c7b1df73590a436339cd6398c2e67f6483"
+    },
+    "checks/census-cost-indent/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/census-cost-indent/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/census-cost-metadata/intent.json": {
+      "bytes": 317372,
+      "sha256": "6edbc09e209d15be1cea6bf07f3aeb0b191e548844056d2d00e6e98d0b55e3f5"
+    },
+    "checks/census-cost-metadata/result.json": {
+      "bytes": 317054,
+      "sha256": "01b1469dff7811ffd3288f596bd878c2e6ed3731ab664f97665b6494e99cb4ba"
+    },
+    "checks/census-cost-metadata/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/census-cost-metadata/stdout.log": {
+      "bytes": 285678,
+      "sha256": "84e1c5602e701bfac090418b7bbffaf1699ea6ce81dafe593e402dff13efaf5d"
+    },
+    "checks/census-cost-msrv-final/intent.json": {
+      "bytes": 317715,
+      "sha256": "507e0e388a70d50fea71733d3b2bae21595b863b4af0c39bd962349a9083cca2"
+    },
+    "checks/census-cost-msrv-final/result.json": {
+      "bytes": 317054,
+      "sha256": "01b1469dff7811ffd3288f596bd878c2e6ed3731ab664f97665b6494e99cb4ba"
+    },
+    "checks/census-cost-msrv-final/stderr.log": {
+      "bytes": 1008,
+      "sha256": "db73dae43537e4e57091be6b8d6ea9378979f1c4dfd978ae324dfc8e2c29bb85"
+    },
+    "checks/census-cost-msrv-final/stdout.log": {
+      "bytes": 3663,
+      "sha256": "1d9919b6f0e50e666b084e0ad7732b9ebeb2df94ef127ac2ed0d5387b04217d5"
+    },
+    "checks/census-cost-performance-contract/intent.json": {
+      "bytes": 317416,
+      "sha256": "173bbbb4e2cbe0f34eae87e89f0e0ddcc24e6ec651b5bde42473605ee5e2c33f"
+    },
+    "checks/census-cost-performance-contract/result.json": {
+      "bytes": 317054,
+      "sha256": "b6a2c2420052e28317304ca7a3740318819f8950ec6ca90342ca8c5dd5874cf9"
+    },
+    "checks/census-cost-performance-contract/stderr.log": {
+      "bytes": 152,
+      "sha256": "3883a7e4f583036dae1751b57c52bfe658bf2ce8e81a9784cba59bde924c2030"
+    },
+    "checks/census-cost-performance-contract/stdout.log": {
+      "bytes": 60,
+      "sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+    },
+    "checks/census-cost-python-final/intent.json": {
+      "bytes": 317377,
+      "sha256": "73303fd6b403433401da3c62facc6cdfb11a45d65fb9b47928e22afc30542b72"
+    },
+    "checks/census-cost-python-final/result.json": {
+      "bytes": 317054,
+      "sha256": "0d6f1ed2aef238b6e43eddb680dc0bb1cd5124077c7102f9313503f64dc9f812"
+    },
+    "checks/census-cost-python-final/stderr.log": {
+      "bytes": 158,
+      "sha256": "fd342aad6070c0b683a0df687c7850048a5a8ce6fd0adb9ed8d4bd1e9f460b54"
+    },
+    "checks/census-cost-python-final/stdout.log": {
+      "bytes": 82,
+      "sha256": "f632472212663717a16f350315529b24ff21bcf9c34eaaa70ce866ff6e87b6b2"
+    },
+    "checks/census-cost-python-receipts/intent.json": {
+      "bytes": 317377,
+      "sha256": "548ff7ded00269fa6464a87fbf9e83bbc3cc521c60d7c8cd1de64615155fb8d7"
+    },
+    "checks/census-cost-python-receipts/result.json": {
+      "bytes": 317054,
+      "sha256": "b6a2c2420052e28317304ca7a3740318819f8950ec6ca90342ca8c5dd5874cf9"
+    },
+    "checks/census-cost-python-receipts/stderr.log": {
+      "bytes": 158,
+      "sha256": "10a2c6cc0e2d5dde7ae5a56cd476878fc8413aed762e380ca5c5c90c024a8416"
+    },
+    "checks/census-cost-python-receipts/stdout.log": {
+      "bytes": 82,
+      "sha256": "f632472212663717a16f350315529b24ff21bcf9c34eaaa70ce866ff6e87b6b2"
+    },
+    "checks/census-cost-python-v1/intent.json": {
+      "bytes": 317108,
+      "sha256": "1d53ac341322262cf1068a0f09ccd1ede98b72e55d84a1e212310ae07970f72d"
+    },
+    "checks/census-cost-python-v1/result.json": {
+      "bytes": 316785,
+      "sha256": "3759ded53c7a398060e2d21e65b49dffe2f6b9c6e3c7074ea538f94543b7727e"
+    },
+    "checks/census-cost-python-v1/stderr.log": {
+      "bytes": 154,
+      "sha256": "646b02c6fe1d2099d4910e71e54e298a7cde0a4a3e5a357cb1e3925da555770a"
+    },
+    "checks/census-cost-python-v1/stdout.log": {
+      "bytes": 82,
+      "sha256": "f632472212663717a16f350315529b24ff21bcf9c34eaaa70ce866ff6e87b6b2"
+    },
+    "checks/census-cost-python-v2/intent.json": {
+      "bytes": 317108,
+      "sha256": "77bf9a32fb5aa92e9a492f5f80b8304ff5484b9e2eba7860958fdab06b9c074e"
+    },
+    "checks/census-cost-python-v2/result.json": {
+      "bytes": 316785,
+      "sha256": "a70e802b62bf7e9f7327a4031806541b4d37f690f10b9e2deb85a52332f8d98c"
+    },
+    "checks/census-cost-python-v2/stderr.log": {
+      "bytes": 155,
+      "sha256": "0353d21c0c9c98ac70919e6dd662a07ac20ad881900dfc1e2094f25f8ecd9c4a"
+    },
+    "checks/census-cost-python-v2/stdout.log": {
+      "bytes": 82,
+      "sha256": "f632472212663717a16f350315529b24ff21bcf9c34eaaa70ce866ff6e87b6b2"
+    },
+    "checks/census-cost-python-v3/intent.json": {
+      "bytes": 317108,
+      "sha256": "827d76ccf8d219c7219b171d1c080110bc87b55078b00e2198a0edc0a5814ea9"
+    },
+    "checks/census-cost-python-v3/result.json": {
+      "bytes": 316785,
+      "sha256": "faaeff26bb720251a10640d783f50687fc44976626fea3c17b8bb80e8860b678"
+    },
+    "checks/census-cost-python-v3/stderr.log": {
+      "bytes": 156,
+      "sha256": "06e017186e80fff92da1d1e687cac1ec2cd9957f7d1ae0923d63887ac2f7d713"
+    },
+    "checks/census-cost-python-v3/stdout.log": {
+      "bytes": 82,
+      "sha256": "f632472212663717a16f350315529b24ff21bcf9c34eaaa70ce866ff6e87b6b2"
+    },
+    "checks/census-cost-rust-version/intent.json": {
+      "bytes": 317287,
+      "sha256": "a5879b6f6cd7de4aa530a5b2356d8e57e164a4ece7fc74fe839de4e9350a719f"
+    },
+    "checks/census-cost-rust-version/result.json": {
+      "bytes": 317054,
+      "sha256": "c4eb08927ad5654194e1c2ce6b9600c7b1df73590a436339cd6398c2e67f6483"
+    },
+    "checks/census-cost-rust-version/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/census-cost-rust-version/stdout.log": {
+      "bytes": 194,
+      "sha256": "e8b20add2bc8286eed0085fbff1207c7d4bed09b98c2dae58cff89dff7d43a99"
+    },
+    "checks/census-cost-syntax/intent.json": {
+      "bytes": 317333,
+      "sha256": "16b281db55357c998cb89c97353d1bb5adfb4eddfc71e8fd532dde6b5f4f3ed1"
+    },
+    "checks/census-cost-syntax/result.json": {
+      "bytes": 317054,
+      "sha256": "c4eb08927ad5654194e1c2ce6b9600c7b1df73590a436339cd6398c2e67f6483"
+    },
+    "checks/census-cost-syntax/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/census-cost-syntax/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "coordinators/run-fresh-reader-20261024.py": {
+      "bytes": 544,
+      "sha256": "851631e846ec7d3696a0e2fa550b6f87e8f07e8412f5dafc0530c0bc70c597ed"
+    },
+    "coordinators/run-source-step-20261024.py": {
+      "bytes": 2596,
+      "sha256": "a92482cabcfcf8f6440e95972bee8d204bb9c59c8805c45c7b57363dcc3ab430"
+    },
+    "coordinators/seal-census-cost-20261024.py": {
+      "bytes": 9204,
+      "sha256": "60dcbd4dcc828853f144bcda2b6b6285021dfd432f358646347f132822082eb3"
+    },
+    "coordinators/verify-census-cost-staged-20261024.py": {
+      "bytes": 3576,
+      "sha256": "2c166b912618478697e4304b7ba1fc8be3e2c3b88b8f609044ec1ee206ab0cf3"
+    },
+    "derived/cost.json": {
+      "bytes": 46230,
+      "sha256": "ea68433030215faa4a3ade39a59a78641e17aa374da7fbc4f7b91b3f78a85b5a"
+    },
+    "derived/package-audit.json": {
+      "bytes": 801261,
+      "sha256": "a671fb37cee981738578041d713cf0e81f27785c08864742d467a6888d67104e"
+    },
+    "first-build-source/crates/xtask/tests/census_cost_074.rs": {
+      "bytes": 11653,
+      "sha256": "b47b31dc0bb118ef742bd4e2aa9b9353714343a827bcce4658433defbc314dd8"
+    },
+    "measured-source/crates/xtask/tests/census_cost_074.rs": {
+      "bytes": 11740,
+      "sha256": "506d0104b2d41aaef863bc6bc1e0b3559882ee6743565939bc4886085d95038a"
+    },
+    "protected/Cargo.lock": {
+      "bytes": 175330,
+      "sha256": "d2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c"
+    },
+    "protected/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "18a8a27cf140a1d6eb31c8316ee39bb7d5832866a990346eee16cd0c30de344b"
+    },
+    "protected/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "reconstructed-first-preflight-source/census_cost.py": {
+      "bytes": 8010,
+      "sha256": "17163e8625fcb40ecf3ea3a154e3372f6d1435d101889ef5c0b327d529701496"
+    },
+    "source/tools/historical-blob-batch-074/README.md": {
+      "bytes": 23534,
+      "sha256": "787051444c0de771c36bdcb009d894d5d96606df7137a2c36d1c18f40ad378ed"
+    },
+    "source/tools/historical-blob-batch-074/caller_integration.py": {
+      "bytes": 6845,
+      "sha256": "3ef9fdbec1c5969d460edadd41238c8d9eb2f3f7a72eb36f1f327a7d9df911ec"
+    },
+    "source/tools/historical-blob-batch-074/census_cost.py": {
+      "bytes": 10795,
+      "sha256": "d953065d5b5617efa5c854b25d4491a223a0b1866c229d268876f261624a80cc"
+    },
+    "source/tools/historical-blob-batch-074/package_replay_audit.py": {
+      "bytes": 3353,
+      "sha256": "65e4706d425507c5d93c8633bc1e543cb74497bb523b692f7c023db317298106"
+    },
+    "source/tools/historical-blob-batch-074/test_census_cost.py": {
+      "bytes": 5581,
+      "sha256": "56b40925a2332d51721eb98b6ddfaf27de1b19be00723748dc002ee04467a57a"
+    },
+    "source/tools/historical-blob-batch-074/test_package_replay_audit.py": {
+      "bytes": 916,
+      "sha256": "76deddcc6d1828909c4895d525ef148f487cbd63e49a19634b1c161124f1053d"
+    },
+    "source/tools/xtask-package-attribution-074/review.py": {
+      "bytes": 10937,
+      "sha256": "0229d4067fffd0d0b5acee7d864efc64aadfb201de1ea3f17944a2f8dddf3c4d"
+    },
+    "unchanged/crates/xtask/tests/support/census_provider_input.rs": {
+      "bytes": 1908,
+      "sha256": "f55546b7f9892b38f97ad45918d1f6978975528cfd352ae98043e25970dbd12b"
+    },
+    "unchanged/crates/xtask/tests/support/census_provider_input_legacy.rs": {
+      "bytes": 1519,
+      "sha256": "89cdefcca5a8994e51d7a083918f68da6ae2254f36396b8765461d6da55367e2"
+    },
+    "unchanged/tools/historical-blob-batch-074/census_caller.rs": {
+      "bytes": 9187,
+      "sha256": "8019c0b741a21a58eea1e19564f4ebd27e1926403c363ec724741841f92c8df5"
+    },
+    "unchanged/tools/historical-blob-batch-074/census_reference.rs": {
+      "bytes": 1746,
+      "sha256": "bda5ea1b318109501e796434064b37c5dbb652fb867db6a3b9f9bf6dd0b0b0dc"
+    },
+    "unchanged/tools/historical-blob-batch-074/decoder.rs": {
+      "bytes": 4640,
+      "sha256": "7287fac38513dd2a8a77acb3537c57ae7e2870b24ec0ff591a57bcb62273ad1e"
+    },
+    "unchanged/tools/historical-blob-batch-074/transport.rs": {
+      "bytes": 14967,
+      "sha256": "4c17249c6c4d30c025ebf60ccbb5410877e48ab253185583bb07decff717b688"
+    },
+    "unchanged/tools/material-lock-fixture-074/contract.rs": {
+      "bytes": 1991,
+      "sha256": "9003527a95736011c1e9eb4c4bd02310ac3c3a61b21f6aa0484278317a2f6e5f"
+    }
+  },
+  "schema": "hc074-census-cost-package-audit-v1"
+}
