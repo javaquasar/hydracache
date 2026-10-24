@@ -1,0 +1,9 @@
+    Checking hydracache-core v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-core)
+    Checking hydracache-client-protocol v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-client-protocol)
+    Checking hydracache v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache)
+    Checking ring v0.17.14
+    Checking rcgen v0.14.8
+    Checking hydracache-observability v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-observability)
+    Checking hydracache-client-transport-axum v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-client-transport-axum)
+    Checking hydracache-redis-compat v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-redis-compat)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 13.72s

@@ -1,0 +1,8 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.47s
+     Running tests\authority_context_074.rs (target\debug\deps\authority_context_074-7bfa8ec9583d5044.exe)
+     Running tests\authority_hex_reader_074.rs (target\debug\deps\authority_hex_reader_074-76568c3c20fa1f3f.exe)
+     Running tests\authority_key_hex_074.rs (target\debug\deps\authority_key_hex_074-cd6937e62036ede2.exe)
+     Running tests\historical_input_view_074.rs (target\debug\deps\historical_input_view_074-52402be9b85f3031.exe)
+     Running tests\historical_source_cache_074.rs (target\debug\deps\historical_source_cache_074-3a536e6e160af238.exe)
+     Running tests\owned_case_074.rs (target\debug\deps\owned_case_074-8f02f7e8d8c5d19f.exe)

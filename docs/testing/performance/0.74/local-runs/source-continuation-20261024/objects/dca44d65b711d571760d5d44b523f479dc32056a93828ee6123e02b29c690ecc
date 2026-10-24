@@ -1,0 +1,83 @@
+"""Retain an authorization rollback and one isolated exact-reader repair."""
+from pathlib import Path
+import hashlib
+import json
+import re
+import shutil
+import subprocess
+ROOT=Path(__file__).resolve().parent.parent
+RAW=ROOT/'target/source-continuation-20261024'
+DEST=ROOT/'docs/testing/performance/0.74/local-runs/source-continuation-20261024'
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+def read(path):return json.loads(path.read_bytes())
+phases=('rollback-resp','rollback-check','rollback-clippy','rollback-policy',
+    'hex-reader-baseline','hex-reader-candidate','hex-reader-check','hex-reader-clippy',
+    'continuation-doc-check','continuation-local-contract','continuation-gated')
+results={name:read(RAW/name/'result.json') for name in phases}
+for name,row in results.items():
+    expected=1 if name=='rollback-policy' else 101 if name=='hex-reader-baseline' else 0
+    if row['exit']!=expected or row['outer_refusal'] is not None or not row['source_unchanged'] or not row['head_unchanged']:
+        raise ValueError('First outcome/provenance differs: '+name)
+pins={'Cargo.toml':'18a8a27cf140a1d6eb31c8316ee39bb7d5832866a990346eee16cd0c30de344b',
+    'Cargo.lock':'d2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c',
+    'docs/testing/performance/0.74/qualification-manifest.toml':'11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc'}
+for name,pin in pins.items():
+    if sha((ROOT/name).read_bytes())!=pin:raise ValueError('Restored/protected input differs')
+if subprocess.check_output(['git','diff','cd6c6931..HEAD','--','Cargo.toml','Cargo.lock','deny.toml'],cwd=ROOT):
+    raise ValueError('Dependency graph/config differs from baseline')
+changed=subprocess.check_output(['git','diff','--name-only','cd6c6931..HEAD','--','crates','tools'],cwd=ROOT,text=True).splitlines()
+if set(changed)!={'crates/xtask/tests/authority_key_hex_074.rs','crates/xtask/tests/authority_hex_reader_074.rs'}:
+    raise ValueError('Unexpected code delta')
+if (ROOT/'crates/hydracache-redis-compat/tests/tls_session_security_074.rs').exists():
+    raise ValueError('Reverted test target still active')
+ids=re.findall(r'ID: (RUSTSEC-[0-9-]+)',(RAW/'rollback-policy/stderr.log').read_text(encoding='utf-8'))
+old_index=ROOT/'docs/testing/performance/0.74/local-runs/local-milestone-20261024/index.json'
+if sha(old_index.read_bytes())!='77fbc293a2f9dc4c10cea302375af693f9331fea422b4b10e39350d3aa785e8a':
+    raise ValueError('Original policy packet differs')
+if len(ids)!=15 or set(ids)!=set(read(old_index)['facts']['dependency_advisories']):
+    raise ValueError('Restored advisory set differs')
+counts={}
+for name,expected in [('rollback-resp',(14,178,23)),('hex-reader-candidate',(6,20,0))]:
+    rows=[tuple(map(int,row)) for row in re.findall(r'test result: ok\. (\d+) passed; (\d+) failed; (\d+) ignored; (\d+) measured; (\d+) filtered out;', (RAW/name/'stdout.log').read_text(encoding='utf-8'))]
+    totals=[sum(row[i] for row in rows) for i in range(5)]
+    if (len(rows),totals[0],totals[2])!=expected or any(totals[i] for i in (1,3,4)):
+        raise ValueError('Selected test membership differs')
+    counts[name]=dict(target_results=len(rows),passed=totals[0],ignored=totals[2],filtered=0)
+canary='crates/xtask/tests/authority_hex_reader_074.rs'
+if read(RAW/'hex-reader-baseline/intent.json')['source'][canary]!=read(RAW/'hex-reader-candidate/intent.json')['source'][canary]:
+    raise ValueError('Baseline/candidate canary drift')
+incremental=ROOT/'target/debug/incremental'
+facts=dict(rollback_commit='b30c099996a4b4a6f98f48c491fb1e7b0bdac5f0',
+    reader_commit='5161b50bd01f846c0553096e50210f34bbe5058c',
+    source_head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
+    restored_working_sha256=pins,dependency_changes_applied=False,remaining_advisories=ids,
+    reserved_live_frequency_change_authorized=False,reserved_live_frequency_changed=False,
+    runtime_code_changed_since_cd6c6931=False,counts=counts,
+    operator_cleanup_reported=True,initial_cache_absence_tool_chunk='20409d',
+    initial_free_bytes_observed=29036113920,free_bytes_at_capture=shutil.disk_usage(ROOT).free,
+    incremental_directory_recreated=incremental.exists(),
+    incremental_directory_entries=len(list(incremental.iterdir())) if incremental.is_dir() else None,
+    additional_build_deletion=False,full_xtask_package_rerun=False,
+    server=False,clock_or_services_changed=False,original_owner=False,
+    qualification=False,release_admission=False)
+DEST.mkdir();(DEST/'objects').mkdir();files={}
+def retain(name,raw):
+    key=sha(raw);path=DEST/'objects'/key
+    if not path.exists():
+        with path.open('xb') as stream:stream.write(raw)
+    elif path.read_bytes()!=raw:raise ValueError('Collision')
+    files[name]=dict(bytes=len(raw),sha256=key)
+for phase in phases:
+    for path in sorted((RAW/phase).iterdir()):
+        if path.is_file():retain('observation/'+phase+'/'+path.name,path.read_bytes())
+for name in ('run-source-step-20261024.py',Path(__file__).name):
+    retain('coordinator/'+name,(ROOT/'target'/name).read_bytes())
+for name in ('crates/xtask/tests/authority_key_hex_074.rs',canary):
+    retain('candidate/'+name,(ROOT/name).read_bytes())
+retain('baseline/authority_key_hex_074.rs',subprocess.check_output(['git','show','1dc9f08b:crates/xtask/tests/authority_key_hex_074.rs'],cwd=ROOT))
+retain('analysis/facts.json',(json.dumps(facts,indent=2,sort_keys=True)+'\n').encode())
+with (DEST/'index.json').open('x',encoding='utf-8',newline='\n') as stream:
+    json.dump(dict(schema='hc074-source-continuation-v1',files=files,facts=facts),stream,indent=2,sort_keys=True);stream.write('\n')
+with (DEST/'.gitattributes').open('x',encoding='ascii',newline='\n') as stream:
+    stream.write('index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n')
+print(dict(files=len(files),objects=len(list((DEST/'objects').iterdir())),index_sha256=sha((DEST/'index.json').read_bytes()),facts=facts))

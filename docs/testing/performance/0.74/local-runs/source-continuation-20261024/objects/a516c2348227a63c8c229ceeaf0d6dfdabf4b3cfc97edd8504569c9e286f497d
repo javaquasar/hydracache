@@ -1,0 +1,58 @@
+{
+  "additional_build_deletion": false,
+  "clock_or_services_changed": false,
+  "counts": {
+    "hex-reader-candidate": {
+      "filtered": 0,
+      "ignored": 0,
+      "passed": 20,
+      "target_results": 6
+    },
+    "rollback-resp": {
+      "filtered": 0,
+      "ignored": 23,
+      "passed": 178,
+      "target_results": 14
+    }
+  },
+  "dependency_changes_applied": false,
+  "free_bytes_at_capture": 27938852864,
+  "full_xtask_package_rerun": false,
+  "incremental_directory_entries": 0,
+  "incremental_directory_recreated": true,
+  "initial_cache_absence_tool_chunk": "20409d",
+  "initial_free_bytes_observed": 29036113920,
+  "operator_cleanup_reported": true,
+  "original_owner": false,
+  "qualification": false,
+  "reader_commit": "5161b50bd01f846c0553096e50210f34bbe5058c",
+  "release_admission": false,
+  "remaining_advisories": [
+    "RUSTSEC-2026-0346",
+    "RUSTSEC-2026-0347",
+    "RUSTSEC-2026-0348",
+    "RUSTSEC-2026-0349",
+    "RUSTSEC-2026-0382",
+    "RUSTSEC-2026-0386",
+    "RUSTSEC-2024-0449",
+    "RUSTSEC-2026-0383",
+    "RUSTSEC-2026-0381",
+    "RUSTSEC-2026-0371",
+    "RUSTSEC-2026-0367",
+    "RUSTSEC-2026-0368",
+    "RUSTSEC-2026-0369",
+    "RUSTSEC-2026-0370",
+    "RUSTSEC-2026-0372"
+  ],
+  "reserved_live_frequency_change_authorized": false,
+  "reserved_live_frequency_changed": false,
+  "restored_working_sha256": {
+    "Cargo.lock": "d2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c",
+    "Cargo.toml": "18a8a27cf140a1d6eb31c8316ee39bb7d5832866a990346eee16cd0c30de344b",
+    "docs/testing/performance/0.74/qualification-manifest.toml": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+  },
+  "rollback_commit": "b30c099996a4b4a6f98f48c491fb1e7b0bdac5f0",
+  "runtime_code_changed_since_cd6c6931": false,
+  "server": false,
+  "source_head": "5161b50bd01f846c0553096e50210f34bbe5058c"
+}

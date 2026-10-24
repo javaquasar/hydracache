@@ -1,0 +1,19 @@
+
+running 2 tests
+test hex_reader_changes_only_registry_input_and_preserves_every_old_assertion ... FAILED
+test hex_registry_view_requires_exact_current_bytes_before_the_old_view ... ok
+
+failures:
+
+---- hex_reader_changes_only_registry_input_and_preserves_every_old_assertion stdout ----
+
+thread 'hex_reader_changes_only_registry_input_and_preserves_every_old_assertion' (51104) panicked at crates\xtask\tests\authority_hex_reader_074.rs:33:5:
+assertion failed: storage_contract::accepts(&expected, &current)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    hex_reader_changes_only_registry_input_and_preserves_every_old_assertion
+
+test result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.36s
+

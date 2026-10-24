@@ -1,0 +1,2 @@
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.60s
+     Running `target\debug\xtask.exe gated-test-check`

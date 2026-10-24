@@ -1,0 +1,4 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 21.39s
+     Running tests\authority_hex_reader_074.rs (target\debug\deps\authority_hex_reader_074-76568c3c20fa1f3f.exe)
+error: test failed, to rerun pass `-p xtask --test authority_hex_reader_074`
