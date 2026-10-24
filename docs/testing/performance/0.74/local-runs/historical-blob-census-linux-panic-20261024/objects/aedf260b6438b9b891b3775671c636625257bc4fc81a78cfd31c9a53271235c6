@@ -1,0 +1,56 @@
+    Checking xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+error: used `unwrap()` on `Err` value
+   --> crates\xtask\tests\..\..\..\tools\historical-blob-batch-074\census_caller.rs:219:47
+    |
+219 |             Err(InputError::Helper(error)) => Result::<T, _>::Err(error).unwrap(),
+    |                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#unnecessary_literal_unwrap
+    = note: `-D clippy::unnecessary-literal-unwrap` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::unnecessary_literal_unwrap)]`
+help: remove the `Err` and `unwrap()`
+    |
+219 -             Err(InputError::Helper(error)) => Result::<T, _>::Err(error).unwrap(),
+219 +             Err(InputError::Helper(error)) => panic!("{:?}", error),
+    |
+
+error: used `unwrap()` on `Err` value
+   --> crates\xtask\tests\..\..\..\tools\historical-blob-batch-074\census_caller.rs:244:17
+    |
+244 |                 Result::<(), _>::Err(error).unwrap();
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#unnecessary_literal_unwrap
+help: remove the `Err` and `unwrap()`
+    |
+244 -                 Result::<(), _>::Err(error).unwrap();
+244 +                 panic!("{:?}", error);
+    |
+
+error: used `unwrap()` on `Err` value
+   --> crates\xtask\tests\historical_blob_caller_074.rs:277:23
+    |
+277 |             caught(|| Result::<String, _>::Err(std::io::Error::from_raw_os_error(code)).unwrap());
+    |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#unnecessary_literal_unwrap
+help: remove the `Err` and `unwrap()`
+    |
+277 -             caught(|| Result::<String, _>::Err(std::io::Error::from_raw_os_error(code)).unwrap());
+277 +             caught(|| panic!("{:?}", std::io::Error::from_raw_os_error(code)));
+    |
+
+error: used `unwrap()` on `Err` value
+   --> crates\xtask\tests\historical_blob_caller_074.rs:359:23
+    |
+359 |             caught(|| Result::<String, _>::Err(std::io::Error::other("helper")).unwrap())
+    |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#unnecessary_literal_unwrap
+help: remove the `Err` and `unwrap()`
+    |
+359 -             caught(|| Result::<String, _>::Err(std::io::Error::other("helper")).unwrap())
+359 +             caught(|| panic!("{:?}", std::io::Error::other("helper")))
+    |
+
+error: could not compile `xtask` (test "historical_blob_caller_074") due to 4 previous errors

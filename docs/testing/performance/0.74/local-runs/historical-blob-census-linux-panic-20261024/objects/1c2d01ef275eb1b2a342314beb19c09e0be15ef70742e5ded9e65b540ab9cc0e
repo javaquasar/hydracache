@@ -1,0 +1,157 @@
+"""Independent staged CAS, Git object, native source and panic profile readback."""
+from pathlib import Path
+import base64
+import hashlib
+import json
+import subprocess
+import zlib
+
+ROOT = Path(__file__).resolve().parent.parent
+BASE = 'docs/testing/performance/0.74/local-runs/historical-blob-census-linux-panic-20261024'
+
+
+def git(args, raw=None):
+    return subprocess.check_output(['git', *args], cwd=ROOT, input=raw)
+
+
+def staged(path):
+    return git(['show', ':' + path])
+
+
+def sha(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+
+index_raw = staged(BASE + '/index.json')
+assert index_raw == (ROOT / BASE / 'index.json').read_bytes()
+index = json.loads(index_raw)
+assert index['code_commit'] == 'fc15b0c5d25cbba08e768f47c843f8b5048cc45f'
+objects = {}
+for value in index['members'].values():
+    digest = value['sha256']
+    if digest not in objects:
+        path = BASE + '/objects/' + digest
+        objects[digest] = staged(path)
+        assert objects[digest] == (ROOT / path).read_bytes()
+    assert sha(objects[digest]) == digest and len(objects[digest]) == value['bytes']
+
+
+def member(name):
+    return objects[index['members'][name]['sha256']]
+
+
+def check_profiles(get):
+    pins = json.loads(get('producer.stdout.json'))
+    assert pins['test_fixture_pin_integrity'] and not pins['production_pin_authority']
+    specs = [v['spec'] for v in pins['cases']]
+    for value in pins['cases']:
+        raw = bytes.fromhex(value['stdout_hex'])
+        assert sha(raw) == value['pin']['sha256'] and len(raw) == value['pin']['bytes']
+        assert hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest() == value['pin']['oid']
+    count = 0
+    for mode in ('clean','trace','config','config-error','repository-error'):
+        text = get(mode+'.stdout.log').decode()
+        line = next(v for v in text.splitlines() if '"operations"' in v)
+        value = json.loads(line[line.index('{'):])
+        assert value['mode'] == mode and not value['caller_integrated']
+        assert len(value['operations']) == 5
+        total = 0
+        for op in value['operations']:
+            name = op['operation']
+            failed = mode.endswith('error') and name != 'unrelated'
+            expected = {'original':[specs[0]], 'accepts':[specs[1]], 'view':[specs[0]] if failed else specs,
+                        'unrelated':[], 'mismatch':[specs[1]]}[name]
+            assert op['old_git_argv'] == op['candidate_git_argv'] == op['facade_git_argv']
+            assert [v[3] for v in op['old_git_argv']] == expected
+            assert all(v[1:3] == ['--no-replace-objects','show'] and len(v)==4 for v in op['old_git_argv'])
+            assert op['old_error'] == op['facade_error']
+            assert op['old_panic_kind'] == op['facade_panic_kind']
+            assert op['old_success'] == op['facade_success'] == (not failed)
+            total += 3 * len(expected)
+            if failed:
+                assert op['old_error'] == 'missing exact material fixture source'
+                assert 'Process' in op['candidate']['Err'] and len(op['outputs']) == 1
+                assert op['old_panic_kind'] in ('str','String')
+                output = op['outputs'][0]['output']
+                assert output['code'] == 128 and bytes.fromhex(output['stderr_hex'])
+                assert op['candidate_events'] == (['helper','helper-check','Base'] if name=='view' else [
+                    'Base' if name=='original' else 'Reviewed'])
+            else:
+                assert 'Ok' in op['candidate'] and op['old_error'] is None
+                if name == 'unrelated':
+                    assert op['candidate_events'] == [] and op['outputs'] == []
+                if name == 'mismatch':
+                    assert op['candidate']['Ok'] == 'false' and op['candidate_events'] == ['Reviewed']
+                if mode == 'trace':
+                    assert all(v>0 for v in op['retained_stderr_bytes'])
+            count += 1
+        starts = [json.loads(v) for v in get(mode+'.trace.jsonl').decode().splitlines() if json.loads(v)['event']=='start']
+        assert len(starts) == total + (0 if mode.endswith('error') else 1)
+    assert count == 25
+
+
+for phase in ('census-panic-current-final','census-panic-msrv'):
+    check_profiles(lambda name: member(f'observations/{phase}/census-contract/{name}'))
+
+for version in ('v1','v2','v3','v4'):
+    native = json.loads(member(f'linux/{version}/stdout.json'))
+    assert native['source_unchanged'] and native['owned_root_removed'] and native['active_groups_after']==[]
+    assert native['boot_before'] == native['boot_after'] and native['uid']==1000
+    payload = json.loads(member(f'linux/{version}/input.json'))
+    git_objects = json.loads(member(f'linux/{version}/git-source-objects.json'))
+    assert len(git_objects) == 16
+    for name, entry in payload['files'].items():
+        raw = base64.b64decode(entry['base64'],validate=True)
+        assert sha(raw) == entry['sha256'] == native['sources'][name]
+        assert raw == member(f'linux-input/{version}/{name}')
+        if name.startswith('repo/.git/objects/'):
+            oid = ''.join(name.split('/')[-2:])
+            envelope = zlib.decompress(raw)
+            assert hashlib.sha1(envelope).hexdigest() == oid
+            header, body = envelope.split(b'\0',1)
+            kind, size = header.split(b' ')
+            assert int(size) == len(body) and kind.decode() == git_objects[oid]['kind']
+            assert sha(body) == git_objects[oid]['sha256']
+        elif version == 'v4':
+            source = ('tools/historical-blob-batch-074/linux-census-fixture.toml' if name=='repo/crates/xtask/Cargo.toml'
+                      else name.removeprefix('repo/'))
+            assert raw == (ROOT / source).read_bytes()
+            assert git(['hash-object','--stdin','--path',source],raw).strip() == git(['rev-parse',':'+source]).strip()
+    if version == 'v1':
+        assert native['first_refusal'].endswith('1.94.0-build')
+        assert 'serde_core::ser::Serialize' in member(f'linux-checks/{version}/1.94.0-build.stderr').decode()
+    elif version == 'v2':
+        assert native['first_refusal'].endswith('1.94.0-historical_blob_fault_074')
+        assert 'Err` value: Environment' in member(f'linux-checks/{version}/1.94.0-historical_blob_fault_074.stdout').decode()
+    else:
+        assert native['component_tests_passed'] and native['locked_packages']==33
+        for toolchain in ('1.94.0','1.88.0'):
+            check_profiles(lambda name:member(f'linux-observations/{version}/{toolchain}-census-contract/{name}'))
+            oracle = json.loads(member(f'linux-observations/{version}/{toolchain}/oracle.stdout.json'))
+            assert len(oracle['cases']) == 6
+            for number, case in enumerate(oracle['cases']):
+                observed = json.loads(member(f'linux-observations/{version}/{toolchain}/native-case-{number}.json'))
+                assert observed['outputs'] == case['expected']
+            trace = member(f'linux-observations/{version}/{toolchain}-caller/trace.stdout.log').decode()
+            line = next(v for v in trace.splitlines() if '"old_original_exact"' in v)
+            old = json.loads(line[line.index('{'):])
+            assert old['old_original_exact'] and old['native'] == [{'refusal':'Process'}]*2
+            assert not old['caller_integrated'] and not old['caller_admitted']
+
+for name in index['members']:
+    if name.startswith(('final/', 'final-source/')):
+        path = name.split('/',1)[1]
+        raw = member(name)
+        assert raw == (ROOT / path).read_bytes()
+        assert git(['hash-object','--stdin','--path',path],raw).strip() == git(['rev-parse',':'+path]).strip()
+for path,digest in index['facts']['protected_sha256'].items():
+    assert sha((ROOT / path).read_bytes()) == digest
+assert sha(member('prior-contract-index.json')) == 'b20b3b825033dca9cb0313da64d0dbfc67c7879c9a29303980615e3510ab50fa'
+assert 'unnecessary_literal_unwrap' in member('checks/census-panic-clippy/stderr.log').decode()
+for path in ('crates/xtask/tests/support/census_provider_input.rs','tools/historical-blob-batch-074/caller_pins.py',
+             'tools/historical-blob-batch-074/decoder.rs','deny.toml'):
+    assert git(['diff','f77aca4dbca247ee03321815e498bb19de595fc3','--',path]) == b''
+assert staged(BASE+'/.gitattributes') == b'index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n'
+assert not index['facts']['caller_integrated'] and not index['facts']['original_clock_admitted']
+print(json.dumps(dict(index_sha256=sha(index_raw),verified_members=len(index['members']),raw_objects=len(objects),
+    native_attempts=4,final_native_tests_per_toolchain=32,caller_integrated=False)))

@@ -286,3 +286,23 @@ distinguishes these finite-profile results from integration: the bounded,
 file-backed, typed-error adapter is not arbitrary unbounded/panic-API equivalence
 or production environment admission. The old caller is not redirected. Linux
 caller proof and the error facade remain before a switch; no speedup is claimed.
+
+## Local Linux caller and old panic boundary
+
+The subsequent [Linux and panic report](../../docs/testing/performance/0.74/historical-blob-census-linux-panic-result-20261024.md)
+closes those two isolated gates. `panic_api` preserves old process/helper/provider
+messages and std's actual UTF8/IO unwrap payloads. Transport retains an original
+IO sidecar while its old public refusal behavior, checks, budgets and cleanup
+remain. New pin/deadline/budget refusals stay explicit, without fallback or retry.
+
+`linux-census-fixture.toml` and the explicit census runner profile exercise the
+unchanged caller in a new private Git fixture built from sixteen existing objects
+and exact source/evidence bytes. Offline package identities must remain a subset
+of the old lock. The first missing-serde/std and ambient-config refusals remain
+retained; neither is fixed by relaxing a guard. Windows and GNU/WSL pass 32 cases
+per toolchain on 1.94/1.88, including 25 old/typed/facade operation triples and the
+old strict batch counterexample. Python has 40 controls; strict local gates pass.
+The real caller is still unmodified. Integration must preserve the revision
+allowlist and source provenance without importing diagnostic producer reads into
+the conditional guard schedule. WSL clock authority and performance admission
+remain closed.

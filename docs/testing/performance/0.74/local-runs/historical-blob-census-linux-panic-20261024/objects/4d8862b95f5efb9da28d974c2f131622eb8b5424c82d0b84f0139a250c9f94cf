@@ -1,0 +1,14 @@
+
+running 9 tests
+test every_truncated_prefix_and_extra_suffix_refuse ... ok
+test invalid_reference_or_missing_identity_never_accepts_the_stream ... ok
+test modified_bytes_cannot_create_their_own_pin_or_publish_a_valid_prefix ... ok
+test missing_and_duplicate_records_keep_original_order ... ok
+test short_missing_requires_explicit_syntax_and_never_expands_or_changes_old_missing ... ok
+test wrong_oid_type_count_and_noncanonical_headers_refuse ... ok
+test size_record_count_and_header_budgets_refuse ... ok
+test independent_threads_and_observations_cannot_share_stale_records ... ok
+test every_kind_empty_binary_and_large_bytes_match_the_independent_reference ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+

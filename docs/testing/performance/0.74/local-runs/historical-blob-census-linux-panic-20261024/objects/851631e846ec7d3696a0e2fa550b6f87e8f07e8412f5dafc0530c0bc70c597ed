@@ -1,0 +1,12 @@
+"""Distinct runner identity; capture tracked and new source before checks."""
+from pathlib import Path
+import runpy
+import subprocess
+runner = Path(__file__).with_name('run-source-step-20261024.py')
+original = subprocess.check_output
+def source_inventory(argv, *args, **kwargs):
+    if argv[:3] == ['git', 'ls-files', '-z']:
+        argv = [*argv[:3], '--cached', '--others', '--exclude-standard', *argv[3:]]
+    return original(argv, *args, **kwargs)
+subprocess.check_output = source_inventory
+runpy.run_path(str(runner), run_name='__main__')

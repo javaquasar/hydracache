@@ -6937,3 +6937,13 @@ current/MSRV, with check/strict lint green. The first invalid-input fixture rema
 retained. The generic batch, actual caller and all original live windows remain
 unchanged. Typed/bounded errors are not the old unbounded panic API; Linux caller
 proof, the error facade and integration remain separate gates, without a timing claim.
+
+The [Linux caller and panic facade](historical-blob-census-linux-panic-result-20261024.md)
+now pass 32 cases per platform/toolchain on Windows and GNU/WSL with 1.94/1.88.
+The old caller, typed adapter and facade retain identical reached Git argv/order;
+panic payload text/type and original IO errors are preserved. Forty Python
+controls and strict local gates pass. Missing-serde/std, forbidden ambient-config
+and initial literal-unwrap lint failures remain retained with their sources.
+No real caller is switched. Its allowlist, exact source delta and independent pin
+consumption without extra producer reads remain integration prerequisites; WSL
+clock, production authority and original release barriers stay closed.

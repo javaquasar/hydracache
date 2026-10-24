@@ -108,3 +108,8 @@ Cargo manifests/lockfile, dependency policy, qualification manifest and frozen
 0.73 artifacts remain unchanged. The old incomplete full-package and release
 gates remain open. No clocks, services, server, original-owner execution,
 product workload, qualification, installation or push occurs.
+
+The subsequent [Linux caller and panic facade](historical-blob-census-linux-panic-result-20261024.md)
+passes those two isolated gates with original IO causes and panic payloads. This
+does not rewrite this earlier typed-only result or connect the actual caller;
+allowlist/source provenance and a no-extra-read integration remain separate.

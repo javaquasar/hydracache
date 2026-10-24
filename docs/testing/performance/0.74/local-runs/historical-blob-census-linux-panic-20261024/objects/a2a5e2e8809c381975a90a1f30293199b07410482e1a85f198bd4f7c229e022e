@@ -1,0 +1,36 @@
+# Disposable caller/package-subset fixture, not the workspace dependency baseline.
+[package]
+name = "hc074-historical-blob-linux-fixture"
+version = "0.0.0"
+edition = "2021"
+publish = false
+autotests = false
+
+[workspace]
+
+[dependencies]
+sha2 = "=0.10.9"
+serde_json = "=1.0.150"
+tempfile = "=3.27.0"
+syn = { version = "=2.0.118", features = ["full"] }
+proc-macro2 = "=1.0.106"
+
+[[test]]
+name = "historical_blob_batch_074"
+path = "tests/historical_blob_batch_074.rs"
+
+[[test]]
+name = "historical_blob_fault_074"
+path = "tests/historical_blob_fault_074.rs"
+
+[[test]]
+name = "historical_blob_transport_074"
+path = "tests/historical_blob_transport_074.rs"
+
+[[test]]
+name = "historical_blob_caller_074"
+path = "tests/historical_blob_caller_074.rs"
+
+[[test]]
+name = "role_census_reader_074"
+path = "tests/role_census_reader_074.rs"

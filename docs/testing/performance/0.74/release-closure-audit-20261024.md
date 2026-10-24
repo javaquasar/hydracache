@@ -301,3 +301,14 @@ invalid-original fixture is retained, not retried unchanged. Actual caller
 integration stays false: bounded typed errors require an explicit old-API facade,
 Linux caller proof and a separately justified integration decision. This is not
 a batching/performance result or progress through original delivery/lifecycle gates.
+
+The [Linux/panic followup](historical-blob-census-linux-panic-result-20261024.md)
+closes the finite-profile Linux caller and old-panic facade gates, not integration.
+Windows/GNU each pass 32 cases on current/MSRV with preserved original IO cause,
+panic payloads, conditional argv/order and all old batch/ABA refusals. The first
+two native fixture failures and the initial strict lint refusal remain retained;
+no guard, deadline or lint exception is used to obtain the later pass. Forty
+Python controls and strict local checks pass. Actual source-guard integration
+must still preserve revision/source authority without importing producer reads
+into the live schedule. Production clock/trust, delivery and lifecycle remain
+subject to the original barriers above.

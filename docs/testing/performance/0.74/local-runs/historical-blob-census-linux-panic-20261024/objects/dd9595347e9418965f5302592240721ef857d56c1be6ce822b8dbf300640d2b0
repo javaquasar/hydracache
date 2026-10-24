@@ -1,0 +1,3 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.03s
+     Running tests/historical_blob_fault_074.rs (/tmp/hc074-blob-linux-20261024-xgaab8b0/build/debug/deps/historical_blob_fault_074-4d244e50dee36829)
+error: test failed, to rerun pass `--test historical_blob_fault_074`

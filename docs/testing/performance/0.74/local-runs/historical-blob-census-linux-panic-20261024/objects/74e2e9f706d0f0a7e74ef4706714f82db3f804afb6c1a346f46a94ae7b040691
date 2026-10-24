@@ -1,0 +1,36 @@
+{
+  "active_groups_after": [],
+  "admission": false,
+  "boot_after": "cf222c07-5476-4f70-9a32-455e99204d0a",
+  "boot_before": "cf222c07-5476-4f70-9a32-455e99204d0a",
+  "clocks_after": {
+    "CLOCK_BOOTTIME": 95154598650962,
+    "CLOCK_MONOTONIC": 95154598650039,
+    "CLOCK_MONOTONIC_RAW": 104400921562698,
+    "CLOCK_REALTIME": 1792852509952788177
+  },
+  "clocks_before": {
+    "CLOCK_BOOTTIME": 95116838932301,
+    "CLOCK_MONOTONIC": 95116838931399,
+    "CLOCK_MONOTONIC_RAW": 104359729127042,
+    "CLOCK_REALTIME": 1792852469259115340
+  },
+  "clocks_or_services_changed": false,
+  "component_tests_passed": true,
+  "locked_packages": 33,
+  "owned_root_removed": true,
+  "package_gate": false,
+  "root": "/tmp/hc074-blob-linux-20261024-7mfllrqf",
+  "schema": "hc074-local-linux-blob-session-v1",
+  "server": false,
+  "source_unchanged": true,
+  "uid": 1000,
+  "uname": [
+    "Linux",
+    "LT-TCH-12",
+    "6.6.87.2-microsoft-standard-WSL2",
+    "#1 SMP PREEMPT_DYNAMIC Thu Jun  5 18:30:46 UTC 2025",
+    "x86_64"
+  ]
+}
+[{"name": "git-fixture-init", "code": 0, "reason": null}, {"name": "lock-seed", "code": 0, "reason": null}, {"name": "1.94.0-build", "code": 0, "reason": null}, {"name": "1.94.0-historical_blob_batch_074", "code": 0, "reason": null}, {"name": "1.94.0-historical_blob_fault_074", "code": 0, "reason": null}, {"name": "1.94.0-historical_blob_transport_074", "code": 0, "reason": null}, {"name": "1.94.0-historical_blob_caller_074", "code": 0, "reason": null}, {"name": "1.94.0-role_census_reader_074", "code": 0, "reason": null}, {"name": "1.88.0-build", "code": 0, "reason": null}, {"name": "1.88.0-historical_blob_batch_074", "code": 0, "reason": null}, {"name": "1.88.0-historical_blob_fault_074", "code": 0, "reason": null}, {"name": "1.88.0-historical_blob_transport_074", "code": 0, "reason": null}, {"name": "1.88.0-historical_blob_caller_074", "code": 0, "reason": null}, {"name": "1.88.0-role_census_reader_074", "code": 0, "reason": null}]

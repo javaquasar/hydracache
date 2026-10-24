@@ -1,0 +1,384 @@
+{
+  "facts": {
+    "baseline": "c91068bfa8b297bb075b63457da235aaa9c6232e",
+    "code_paths": [
+      "crates/xtask/tests/held_complete_role_census_074.rs",
+      "crates/xtask/tests/role_census_reader_074.rs",
+      "crates/xtask/tests/support/census_provider_input.rs"
+    ],
+    "deadlines_changed": false,
+    "dependency_changes": false,
+    "final_code_commit": "c178ec522da8e8aeab5a14dc48f41e2b478727cf",
+    "free_bytes_at_capture": 27695063040,
+    "full_package_rerun": false,
+    "historical_inventory_tests_rerun": false,
+    "inventory_bridge_admitted": false,
+    "observation_frequency_changed": false,
+    "old_inventory_and_held_build_tests_changed": false,
+    "original_owner": false,
+    "performance_measurements": false,
+    "protected_sha256": {
+      "Cargo.lock": "d2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c",
+      "Cargo.toml": "18a8a27cf140a1d6eb31c8316ee39bb7d5832866a990346eee16cd0c30de344b",
+      "docs/testing/performance/0.74/qualification-manifest.toml": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "qualification": false,
+    "rejected_variants_retained": true,
+    "results": {
+      "artifact-inventory-audit": {
+        "exit": 0,
+        "failed": 0,
+        "filtered": 0,
+        "ignored": 0,
+        "passed": 0,
+        "target_verdicts": 0
+      },
+      "census-exact-candidate": {
+        "exit": 0,
+        "failed": 0,
+        "filtered": 0,
+        "ignored": 0,
+        "passed": 16,
+        "target_verdicts": 7
+      },
+      "census-exact-check": {
+        "exit": 0,
+        "failed": 0,
+        "filtered": 0,
+        "ignored": 0,
+        "passed": 0,
+        "target_verdicts": 0
+      },
+      "census-exact-clippy": {
+        "exit": 0,
+        "failed": 0,
+        "filtered": 0,
+        "ignored": 0,
+        "passed": 0,
+        "target_verdicts": 0
+      },
+      "census-inventory-contract": {
+        "exit": 0,
+        "failed": 0,
+        "filtered": 0,
+        "ignored": 0,
+        "passed": 0,
+        "target_verdicts": 0
+      },
+      "census-inventory-doc": {
+        "exit": 0,
+        "failed": 0,
+        "filtered": 0,
+        "ignored": 0,
+        "passed": 0,
+        "target_verdicts": 0
+      },
+      "census-inventory-format": {
+        "exit": 0,
+        "failed": 0,
+        "filtered": 0,
+        "ignored": 0,
+        "passed": 0,
+        "target_verdicts": 0
+      },
+      "census-inventory-gated": {
+        "exit": 0,
+        "failed": 0,
+        "filtered": 0,
+        "ignored": 0,
+        "passed": 0,
+        "target_verdicts": 0
+      },
+      "census-narrow-baseline": {
+        "exit": 101,
+        "failed": 2,
+        "filtered": 0,
+        "ignored": 0,
+        "passed": 0,
+        "target_verdicts": 1
+      },
+      "census-narrow-candidate": {
+        "exit": 101,
+        "failed": 1,
+        "filtered": 0,
+        "ignored": 0,
+        "passed": 15,
+        "target_verdicts": 7
+      },
+      "census-reader-baseline": {
+        "exit": 101,
+        "failed": 2,
+        "filtered": 0,
+        "ignored": 0,
+        "passed": 0,
+        "target_verdicts": 1
+      },
+      "census-reader-candidate": {
+        "exit": 101,
+        "failed": 3,
+        "filtered": 0,
+        "ignored": 0,
+        "passed": 6,
+        "target_verdicts": 4
+      }
+    },
+    "runtime_changes": false,
+    "server": false,
+    "services_or_clocks": false
+  },
+  "members": {
+    "audit/inventory.json": {
+      "bytes": 576734,
+      "sha256": "cfd5e7f1c153f5214dd71da196dfdbac2d1c05806fa14865605e9ce0776bc9c0"
+    },
+    "coordinator/audit-artifact-inventory-20261024.py": {
+      "bytes": 4874,
+      "sha256": "9b9b555e8a5ecec310dd9d22420ee4a6c999f831600e2048568444ddcdf24c43"
+    },
+    "coordinator/run-fresh-reader-20261024.py": {
+      "bytes": 544,
+      "sha256": "851631e846ec7d3696a0e2fa550b6f87e8f07e8412f5dafc0530c0bc70c597ed"
+    },
+    "coordinator/run-source-step-20261024.py": {
+      "bytes": 2596,
+      "sha256": "a92482cabcfcf8f6440e95972bee8d204bb9c59c8805c45c7b57363dcc3ab430"
+    },
+    "coordinator/seal-census-inventory-20261024.py": {
+      "bytes": 5453,
+      "sha256": "bb28ccfb6bcaabb36ddf21c796a8de542c80ea4ebb796a17a7757a154fa80c2a"
+    },
+    "observation/artifact-inventory-audit/intent.json": {
+      "bytes": 311085,
+      "sha256": "3832ac22426e5b79753f3c6f62dce1368947a224f0e2d2c5b9a1529b4ea34c4e"
+    },
+    "observation/artifact-inventory-audit/result.json": {
+      "bytes": 310835,
+      "sha256": "e9402b0e7c61676725d46f4e027a287b6248d6b0dac41306fc4ceee69c77cf77"
+    },
+    "observation/artifact-inventory-audit/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/artifact-inventory-audit/stdout.log": {
+      "bytes": 1300,
+      "sha256": "fd05318d0b045626b8afdc6ad632b0f959cb95b48f7a774113e587d60a576ad4"
+    },
+    "observation/census-exact-candidate/intent.json": {
+      "bytes": 311488,
+      "sha256": "74543e7743ae70ef4b1a37fc5a956e1dc481f15c202c5991c34491824fee8156"
+    },
+    "observation/census-exact-candidate/result.json": {
+      "bytes": 310835,
+      "sha256": "e9402b0e7c61676725d46f4e027a287b6248d6b0dac41306fc4ceee69c77cf77"
+    },
+    "observation/census-exact-candidate/stderr.log": {
+      "bytes": 937,
+      "sha256": "a5154d97fabfecdfdd3b60529ea743450d12eaaf7663ac36a211c9ca9122c5cd"
+    },
+    "observation/census-exact-candidate/stdout.log": {
+      "bytes": 2149,
+      "sha256": "8a6427a53c9c32fae3cad8d42eab3a51ee6e2e871b5c451406813a2d71a83cef"
+    },
+    "observation/census-exact-check/intent.json": {
+      "bytes": 311144,
+      "sha256": "b9c46cc510b4eedbf322a40481b67c58aabeeb55a46b16a95abf9be6f95a4a14"
+    },
+    "observation/census-exact-check/result.json": {
+      "bytes": 310835,
+      "sha256": "e9402b0e7c61676725d46f4e027a287b6248d6b0dac41306fc4ceee69c77cf77"
+    },
+    "observation/census-exact-check/stderr.log": {
+      "bytes": 155,
+      "sha256": "b83dc825468641d75d2306e0e90eaa0265d3ddde5f52b7f9fb324d286006495b"
+    },
+    "observation/census-exact-check/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/census-exact-clippy/intent.json": {
+      "bytes": 311207,
+      "sha256": "a2b23da98e55008ff49e1a2f18359942a1b5bda4fb787b5203720b7203526a11"
+    },
+    "observation/census-exact-clippy/result.json": {
+      "bytes": 310835,
+      "sha256": "e9402b0e7c61676725d46f4e027a287b6248d6b0dac41306fc4ceee69c77cf77"
+    },
+    "observation/census-exact-clippy/stderr.log": {
+      "bytes": 155,
+      "sha256": "d2f838c482ddbee6386bfdfe8aa77d7797e9cd72aa78eef5226afa8f28bf868f"
+    },
+    "observation/census-exact-clippy/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/census-inventory-contract/intent.json": {
+      "bytes": 311197,
+      "sha256": "72d4dac0b5424fb5726f499d1cf9637132ddec5ea7ee5cf65707bf20db8a3d70"
+    },
+    "observation/census-inventory-contract/result.json": {
+      "bytes": 310835,
+      "sha256": "e9402b0e7c61676725d46f4e027a287b6248d6b0dac41306fc4ceee69c77cf77"
+    },
+    "observation/census-inventory-contract/stderr.log": {
+      "bytes": 152,
+      "sha256": "1a8f2abd08ab66ecc7513432231815a8eddb8c6535ecbe82e4b3fceee13da01f"
+    },
+    "observation/census-inventory-contract/stdout.log": {
+      "bytes": 60,
+      "sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+    },
+    "observation/census-inventory-doc/intent.json": {
+      "bytes": 311149,
+      "sha256": "474540722c60334f406fbefa1292b3858ccc4114f8dfc044bad7c3ddcbf69f8e"
+    },
+    "observation/census-inventory-doc/result.json": {
+      "bytes": 310835,
+      "sha256": "e9402b0e7c61676725d46f4e027a287b6248d6b0dac41306fc4ceee69c77cf77"
+    },
+    "observation/census-inventory-doc/stderr.log": {
+      "bytes": 203,
+      "sha256": "2e81c0d902ee5a1714469a5a5b64330a71e03b814008c3f7fd7fa3caa3e79b2d"
+    },
+    "observation/census-inventory-doc/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "observation/census-inventory-format/intent.json": {
+      "bytes": 311254,
+      "sha256": "f7932d29b30c29079d6ef30612c468ce428d42fb43075bfb77144b83c47ed5c9"
+    },
+    "observation/census-inventory-format/result.json": {
+      "bytes": 310835,
+      "sha256": "e9402b0e7c61676725d46f4e027a287b6248d6b0dac41306fc4ceee69c77cf77"
+    },
+    "observation/census-inventory-format/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/census-inventory-format/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/census-inventory-gated/intent.json": {
+      "bytes": 311156,
+      "sha256": "c44ed9f9b909dca571e458a818e533cc7c7d044bccaa85ccaa5430d91d19f47a"
+    },
+    "observation/census-inventory-gated/result.json": {
+      "bytes": 310835,
+      "sha256": "e9402b0e7c61676725d46f4e027a287b6248d6b0dac41306fc4ceee69c77cf77"
+    },
+    "observation/census-inventory-gated/stderr.log": {
+      "bytes": 127,
+      "sha256": "0275eb682b18b1b58f7076f27a554a231caa9914f2ccd825f4cf772d374b5d53"
+    },
+    "observation/census-inventory-gated/stdout.log": {
+      "bytes": 60,
+      "sha256": "19c33b14c465fd5497bae810aa56160a2891365845f00f0f45e8d2bc78156a45"
+    },
+    "observation/census-narrow-baseline/intent.json": {
+      "bytes": 311203,
+      "sha256": "e52fa2726d205d47a614586300472f8d0551246c3c29bf21bb7a9f55164bded2"
+    },
+    "observation/census-narrow-baseline/result.json": {
+      "bytes": 310837,
+      "sha256": "95a43fd082501fc88409516015424e465af0952a56c80bd228f5d89a6866d234"
+    },
+    "observation/census-narrow-baseline/stderr.log": {
+      "bytes": 340,
+      "sha256": "441d43a01e6dae7c264afa356c0b8cc4f615a48f9e06ba67e37ac18102ea7826"
+    },
+    "observation/census-narrow-baseline/stdout.log": {
+      "bytes": 12746,
+      "sha256": "5ad00b9f5ea3e81f1dd946a39011ed0ebc1753dd6ecb852802eeadf1b0100bd9"
+    },
+    "observation/census-narrow-candidate/intent.json": {
+      "bytes": 311488,
+      "sha256": "7b80fddaae53fc23d1a4d76a084d6d824e8de2da7078d4513779ad3fa8b713a5"
+    },
+    "observation/census-narrow-candidate/result.json": {
+      "bytes": 310837,
+      "sha256": "9d3572c5499dd978694636656bc01a11ee0bb5ae8bf67d1b311f5d72cf4024a6"
+    },
+    "observation/census-narrow-candidate/stderr.log": {
+      "bytes": 1012,
+      "sha256": "ed34a51d8106c69e5696023fff2f60c4491f5fa623a21d0d2b64bfc55482e482"
+    },
+    "observation/census-narrow-candidate/stdout.log": {
+      "bytes": 2832,
+      "sha256": "772ea8d642415feb3d1f6307ecaf951905de09347d0287c54ea4c447d457213a"
+    },
+    "observation/census-reader-baseline/intent.json": {
+      "bytes": 311075,
+      "sha256": "f69b46ec79b52a92aad3adc0d66623bcc5787a10b235af41f57c1689b5d14cc5"
+    },
+    "observation/census-reader-baseline/result.json": {
+      "bytes": 310709,
+      "sha256": "d52d7f08c4261cc405a5dc362fd9a78276df010552300fed84faa2d2727b7690"
+    },
+    "observation/census-reader-baseline/stderr.log": {
+      "bytes": 340,
+      "sha256": "18144cc56e02c4d5707cab4cb268331a9e27a990350e8ac5d0a83ca3fdc1fe83"
+    },
+    "observation/census-reader-baseline/stdout.log": {
+      "bytes": 1128,
+      "sha256": "2b6985612a508c4262d9c90e738d32c3260916253fb35bc3b9e3be3c60e9ea10"
+    },
+    "observation/census-reader-candidate/intent.json": {
+      "bytes": 311360,
+      "sha256": "6386c2a38a0591ad03c060915a7f40408c8389c212bef7f62762c916338c38d1"
+    },
+    "observation/census-reader-candidate/result.json": {
+      "bytes": 310709,
+      "sha256": "1157756c1c1581313cdda20447a51ddbbe52841d8ae460c1f94a99b9e34a379b"
+    },
+    "observation/census-reader-candidate/stderr.log": {
+      "bytes": 692,
+      "sha256": "95e6cc231d244e655e63fb0cb872999b18974c00ed6226bbbc8111bebca31881"
+    },
+    "observation/census-reader-candidate/stdout.log": {
+      "bytes": 2564,
+      "sha256": "c716f250fc063996f02b7a5d36886b7bda3d69f4e19ec2559d520da9697c1d1a"
+    },
+    "source/baseline/crates/xtask/tests/held_complete_role_census_074.rs": {
+      "bytes": 5300,
+      "sha256": "13a12e840b878b29a2e9ebfc6cae00bf49ebdc6e47e343cfc3a2ed525b217114"
+    },
+    "source/committed-code.diff": {
+      "bytes": 6230,
+      "sha256": "6d16f1f19ba7a44df0606aedebfb6939f048975c7ace3a0fccec650d08f5a618"
+    },
+    "source/current/crates/xtask/tests/held_complete_role_census_074.rs": {
+      "bytes": 5413,
+      "sha256": "3333285baf2c2f65a8ef6735cc2d891936e7c0efa4fe806b1a89fd95283b5c7a"
+    },
+    "source/current/crates/xtask/tests/role_census_reader_074.rs": {
+      "bytes": 3194,
+      "sha256": "3d82318e98f0ad4eab9c0b295bf932646db23c9b34ca9e78fc61bd8333edbdfe"
+    },
+    "source/current/crates/xtask/tests/support/census_provider_input.rs": {
+      "bytes": 1568,
+      "sha256": "6097f17dee5896641528276094afbf41e8b4d393ea5f7162126af7eae7867fb3"
+    },
+    "source/rejected/census-narrow-comment-oracle-20261024/crates/xtask/tests/held_complete_role_census_074.rs": {
+      "bytes": 5413,
+      "sha256": "3333285baf2c2f65a8ef6735cc2d891936e7c0efa4fe806b1a89fd95283b5c7a"
+    },
+    "source/rejected/census-narrow-comment-oracle-20261024/crates/xtask/tests/role_census_reader_074.rs": {
+      "bytes": 3149,
+      "sha256": "b6bc768278049ead0e49f82a8668d53ca6f3d0152e9cc541238fd336c4dad3ab"
+    },
+    "source/rejected/census-narrow-comment-oracle-20261024/crates/xtask/tests/support/census_provider_input.rs": {
+      "bytes": 1259,
+      "sha256": "af2d4eea8d06de40d4e7098b505162eeb4a15a60ed47c0591351c12d9ecaac6c"
+    },
+    "source/rejected/census-rejected-generic-20261024/crates/xtask/tests/held_complete_role_census_074.rs": {
+      "bytes": 5534,
+      "sha256": "4cd3592cf67191ad617b0213a7b6fccdc3f9db0015f8c705f45e5afd278b38d9"
+    },
+    "source/rejected/census-rejected-generic-20261024/crates/xtask/tests/role_census_reader_074.rs": {
+      "bytes": 2909,
+      "sha256": "41edefa06aec0273764c44efcf86ac9ad4200a44962c6af3bcf7d6fefa1b724d"
+    }
+  },
+  "schema": "hc074-role-census-inventory-v1"
+}

@@ -19366,3 +19366,38 @@ an old unbounded panic API; those differences cannot be relabeled equivalence.
 Linux caller behavior and an explicit old-error facade remain before integration.
 No measured speedup, production environment authority or release readiness follows
 from these controls.
+
+The [Linux caller and panic followup](../testing/performance/0.74/historical-blob-census-linux-panic-result-20261024.md)
+then tests the actual old caller inside a disposable local Linux repository.
+Sixteen existing objects supply the exact commit/tree/blob paths, while copied
+source and earlier sealed anchors keep pin provenance independent of the new
+reader. No full clone, network fetch or production installation is needed. The
+same GNU 1.94/1.88 toolchains pass 32 cases each; Windows passes the same case set
+on both versions. The existing WSL clock disagreement remains a separate refusal
+of original time authority, not something these semantic checks can overrule.
+
+Preserving a panic API requires more than returning an error with the same label.
+Converting an original IO error to its Display string loses the Debug information
+used by the old unwrap. A sidecar now keeps the actual error; a facade uses std's
+own unwrap boundary for IO and UTF8, and the original literal messages for process,
+helper and provider rejection. Five profiles compare old, typed and panic paths
+with identical conditional Git argv/order and matching caught panic payloads.
+Additional pin/budget/deadline refusals remain explicit instead of impersonating
+an old process failure. No fresh observation or deadline changes.
+
+Two native fixture mistakes remain instructive first results. Omitting serde/std
+prevents receipt compilation; injecting common Git-config variables triggers the
+old component's environment refusal. Correcting the isolated manifest and common
+fixture environment makes the intended test possible without weakening either
+guard. An initial literal-unwrap lint refusal is also retained; a shared unwrap
+boundary preserves actual std behavior without lint exceptions. The final source
+passes the full local component set again, rather than inheriting an earlier pass.
+
+These results close the scoped Linux and panic-compatibility questions, not the
+integration or speedup claim. Diagnostic pin production performs extra reference
+reads; moving that preparation into a real source guard would change its schedule.
+A later switch must consume independently established anchors, preserve the old
+revision allowlist and prove the exact allowed source delta without adding those
+reads. Only after that integration can full-path cost and any process-amortization
+hypothesis be evaluated. Production authority and release qualification do not
+follow from a passing compatibility facade.

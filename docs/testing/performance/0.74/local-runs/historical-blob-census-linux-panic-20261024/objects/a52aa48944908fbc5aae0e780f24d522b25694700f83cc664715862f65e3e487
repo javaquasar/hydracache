@@ -1,0 +1,154 @@
+"""Retain four native candidates, old panic compatibility and every first refusal."""
+from pathlib import Path
+import base64
+import hashlib
+import json
+import re
+import subprocess
+
+ROOT = Path(__file__).resolve().parent.parent
+BASE = 'docs/testing/performance/0.74/local-runs/historical-blob-census-linux-panic-20261024'
+CODE = 'fc15b0c5d25cbba08e768f47c843f8b5048cc45f'
+PHASES = ('v1', 'python', 'linux-v1', 'linux-v2', 'linux-v3', 'check', 'final',
+    'windows-components', 'clippy', 'clippy-final', 'linux-v4', 'msrv', 'format',
+    'python-syntax', 'python-indentation', 'current-final', 'check-final', 'doc-check',
+    'performance-contract')
+PROTECTED = {
+    'Cargo.toml': '18a8a27cf140a1d6eb31c8316ee39bb7d5832866a990346eee16cd0c30de344b',
+    'Cargo.lock': 'd2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c',
+    'docs/testing/performance/0.74/qualification-manifest.toml':
+        '11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc',
+}
+DOCS = ('tools/historical-blob-batch-074/README.md',
+    'docs/articles/007-optimization-starts-with-measurement.md',
+    'docs/testing/performance/0.74/README.md',
+    'docs/testing/performance/0.74/release-closure-audit-20261024.md',
+    'docs/testing/performance/0.74/historical-blob-census-contract-result-20261024.md',
+    'docs/testing/performance/0.74/historical-blob-census-linux-panic-result-20261024.md')
+
+
+def sha(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+
+members, objects, phases = {}, {}, []
+
+
+def add(name, raw):
+    assert name not in members
+    digest = sha(raw)
+    members[name] = dict(sha256=digest, bytes=len(raw))
+    objects[digest] = raw
+
+
+assert subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT).decode().strip() == CODE
+for short in PHASES:
+    phase = 'census-panic-' + short
+    folder = ROOT / 'target/source-continuation-20261024' / phase
+    intent = json.loads((folder / 'intent.json').read_bytes())
+    result = json.loads((folder / 'result.json').read_bytes())
+    expected = 1 if short in ('linux-v1', 'linux-v2') else 101 if short == 'clippy' else 0
+    assert result['exit'] == expected and result['outer_refusal'] is None
+    assert result['source_unchanged'] and result['head_unchanged']
+    assert intent['source'] == result['source_after']
+    for name in ('intent.json', 'stdout.log', 'stderr.log', 'result.json'):
+        add(f'checks/{phase}/{name}', (folder / name).read_bytes())
+    sources = ROOT / 'target/blob-fault-source-snapshots-20261024' / phase
+    raw_index = (sources / 'index.json').read_bytes()
+    add(f'phase-sources/{phase}/index.json', raw_index)
+    for path, digest in json.loads(raw_index).items():
+        raw = (sources / digest).read_bytes()
+        assert sha(raw) == digest == intent['source'][path]
+        add(f'phase-sources/{phase}/{path}', raw)
+    stdout = (folder / 'stdout.log').read_text()
+    stderr = (folder / 'stderr.log').read_text()
+    passes = list(map(int, re.findall(r'test result: ok\. (\d+) passed; 0 failed;', stdout)))
+    if short in ('msrv', 'current-final'):
+        assert passes == [9, 10, 5, 6, 2]
+    if short == 'python':
+        assert 'Ran 40 tests in' in stderr and stderr.rstrip().endswith('OK')
+    if short == 'clippy':
+        assert 'unnecessary_literal_unwrap' in stderr
+    phases.append(dict(phase=phase, exit=expected, rust_passes=passes))
+    for suffix in ('caller', 'census-contract', 'mutations', 'cleanup'):
+        folder = ROOT / 'target/blob-fault-20261024' / (phase + '-' + suffix)
+        if folder.is_dir():
+            for path in sorted(folder.rglob('*')):
+                if path.is_file():
+                    add(f'observations/{phase}/{suffix}/{path.relative_to(folder).as_posix()}', path.read_bytes())
+    folder = ROOT / 'target/blob-fault-20261024' / phase
+    if folder.is_dir():
+        for path in sorted(folder.rglob('*')):
+            if path.is_file():
+                add(f'observations/{phase}/transport/{path.relative_to(folder).as_posix()}', path.read_bytes())
+
+for version in ('v1', 'v2', 'v3', 'v4'):
+    folder_name = 'census-panic-linux' + ('' if version == 'v1' else '-' + version) + '-20261024'
+    folder = ROOT / 'target' / folder_name
+    for path in sorted(folder.iterdir()):
+        assert path.is_file()
+        add(f'linux/{version}/{path.name}', path.read_bytes())
+    value = json.loads((folder / 'stdout.json').read_bytes())
+    assert value['uid'] == 1000 and value['source_unchanged'] and value['owned_root_removed']
+    assert value['active_groups_after'] == [] and value['boot_before'] == value['boot_after']
+    assert value['locked_packages'] == 33
+    payload = json.loads((folder / 'input.json').read_bytes())
+    assert payload['profile'] == 'census'
+    for name, entry in payload['files'].items():
+        raw = base64.b64decode(entry['base64'], validate=True)
+        assert sha(raw) == entry['sha256'] == value['sources'][name]
+        add(f'linux-input/{version}/{name}', raw)
+    for phase in value['phases']:
+        for stream in ('stdout', 'stderr'):
+            add(f'linux-checks/{version}/{phase["name"]}.{stream}', base64.b64decode(phase[stream+'_b64'], validate=True))
+    for name, raw in value['evidence'].items():
+        add(f'linux-observations/{version}/{name}', base64.b64decode(raw, validate=True))
+    if version in ('v1', 'v2'):
+        assert value['first_refusal'] == 'ValueError: first phase refusal: ' + (
+            '1.94.0-build' if version == 'v1' else '1.94.0-historical_blob_fault_074')
+    else:
+        assert value['component_tests_passed'] and 'first_refusal' not in value
+        for toolchain in ('1.94.0', '1.88.0'):
+            tests = [p for p in value['phases'] if p['name'].startswith(toolchain+'-') and not p['name'].endswith('-build')]
+            assert len(tests) == 5
+            for phase, count in zip(tests, (9, 5, 6, 10, 2)):
+                assert phase['code'] == 0 and phase['reason'] is None
+                assert phase['effective_bound'] == phase['bound'] == 90
+                assert f'test result: ok. {count} passed; 0 failed;' in base64.b64decode(phase['stdout_b64']).decode()
+
+for path, digest in PROTECTED.items():
+    assert sha((ROOT / path).read_bytes()) == digest
+for path in DOCS:
+    add('final/' + path, (ROOT / path).read_bytes())
+for path in ('tools/historical-blob-batch-074/linux-census-fixture.toml',
+    'crates/xtask/tests/support/census_provider_input.rs', 'tools/material-lock-fixture-074/contract.rs'):
+    add('final-source/' + path, (ROOT / path).read_bytes())
+for name in ('run-blob-fault-step-20261024.py', 'run-fresh-reader-20261024.py',
+    'run-source-step-20261024.py', 'run-census-linux-20261024.py',
+    'seal-census-linux-panic-20261024.py', 'verify-census-linux-panic-staged-20261024.py'):
+    add('coordinators/' + name, (ROOT / 'target' / name).read_bytes())
+prior = (ROOT / 'docs/testing/performance/0.74/local-runs/historical-blob-census-contract-20261024/index.json').read_bytes()
+assert sha(prior) == 'b20b3b825033dca9cb0313da64d0dbfc67c7879c9a29303980615e3510ab50fa'
+add('prior-contract-index.json', prior)
+index = dict(schema='hc074-census-linux-panic-compatibility-v1', code_commit=CODE, members=members,
+    facts=dict(phases=phases, protected_sha256=PROTECTED, windows_tests_per_toolchain=32,
+        linux_wsl_tests_per_toolchain=32, toolchains=['1.94.0','1.88.0'], caller_profiles=5,
+        operation_triples_per_platform_toolchain=25, python_controls=40, locked_package_identities=33,
+        git_fixture_objects=16, first_native_build_refusal_retained=True,
+        first_native_environment_refusal_retained=True, first_clippy_refusal_retained=True,
+        native_roots_removed=4, active_native_groups_after=[], original_caller_changed=False,
+        legacy_panic_profile_gate=True, linux_caller_profile_gate=True, caller_integrated=False,
+        arbitrary_unbounded_equivalence=False, production_pin_authority=False,
+        original_clock_admitted=False, full_package_pass=False, performance_claim=False,
+        original_checks_or_deadlines_changed=False, dependency_baseline_changed=False,
+        server=False, service_or_clock_change=False, original_owner=False, product_workload=False,
+        qualification=False, installation=False, push=False))
+out = ROOT / BASE
+out.mkdir(parents=True, exist_ok=False)
+(out / 'objects').mkdir()
+(out / '.gitattributes').write_bytes(b'index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n')
+for digest, raw in objects.items():
+    (out / 'objects' / digest).write_bytes(raw)
+raw = (json.dumps(index, sort_keys=True, indent=2)+'\n').encode()
+(out / 'index.json').write_bytes(raw)
+print(json.dumps(dict(index_sha256=sha(raw), members=len(members), objects=len(objects), phases=len(phases))))

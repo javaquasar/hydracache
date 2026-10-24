@@ -1,0 +1,1262 @@
+{
+  "code_commit": "a9095e56fb052dff2cab169bf6195b0eb7884d6f",
+  "facts": {
+    "caller_cases": 8,
+    "caller_integrated": false,
+    "dependency_baseline_changed": false,
+    "finite_windows_profile_gate": true,
+    "first_fixture_refusal_retained": true,
+    "first_inner_panic_payload_captured": false,
+    "full_package_pass": false,
+    "generic_batch_counterexample_retained": true,
+    "generic_transport_changed": false,
+    "installation": false,
+    "measurement": false,
+    "new_linux_caller_admitted": false,
+    "old_regression_cases": 2,
+    "operation_pairs_per_toolchain": 25,
+    "original_caller_changed": false,
+    "original_deadlines_changed": false,
+    "phases": [
+      {
+        "exit": 101,
+        "phase": "census-contract-v1",
+        "rust_passes": []
+      },
+      {
+        "exit": 0,
+        "phase": "census-contract-v2",
+        "rust_passes": [
+          8,
+          2
+        ]
+      },
+      {
+        "exit": 0,
+        "phase": "census-contract-msrv",
+        "rust_passes": [
+          8,
+          2
+        ]
+      },
+      {
+        "exit": 0,
+        "phase": "census-contract-check",
+        "rust_passes": []
+      },
+      {
+        "exit": 0,
+        "phase": "census-contract-clippy",
+        "rust_passes": []
+      },
+      {
+        "exit": 0,
+        "phase": "census-contract-format",
+        "rust_passes": []
+      },
+      {
+        "exit": 0,
+        "phase": "census-contract-doc-check",
+        "rust_passes": []
+      },
+      {
+        "exit": 0,
+        "phase": "census-contract-performance-contract",
+        "rust_passes": []
+      }
+    ],
+    "product_workload": false,
+    "production_authority": false,
+    "profiles": 5,
+    "protected_sha256": {
+      "Cargo.lock": "d2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c",
+      "Cargo.toml": "18a8a27cf140a1d6eb31c8316ee39bb7d5832866a990346eee16cd0c30de344b",
+      "docs/testing/performance/0.74/qualification-manifest.toml": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "push": false,
+    "qualification": false,
+    "server": false,
+    "services_or_clocks": false,
+    "source_observation_frequency_changed": false,
+    "toolchains": [
+      "1.94.0",
+      "1.88.0"
+    ],
+    "unbounded_panic_api_equivalence": false
+  },
+  "members": {
+    "checks/census-contract-check/intent.json": {
+      "bytes": 315952,
+      "sha256": "86b79f83cfd731ee962e6853f261574865e77496bc58cdd1111e4b44f974c1dd"
+    },
+    "checks/census-contract-check/result.json": {
+      "bytes": 315643,
+      "sha256": "d6539c63a6bb0f5311fc4c704fcb52479be4d0a57d0e88507c83577ab6c9d019"
+    },
+    "checks/census-contract-check/stderr.log": {
+      "bytes": 155,
+      "sha256": "0a4b7510b8e24ee888613dbd4b7dd069d1109482c465d90248c82e85295a0d53"
+    },
+    "checks/census-contract-check/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/census-contract-clippy/intent.json": {
+      "bytes": 316015,
+      "sha256": "61518b03eb53848285520b0af8520ce3db0c3ac9b1c555147bc07a4ecccb2641"
+    },
+    "checks/census-contract-clippy/result.json": {
+      "bytes": 315643,
+      "sha256": "d6539c63a6bb0f5311fc4c704fcb52479be4d0a57d0e88507c83577ab6c9d019"
+    },
+    "checks/census-contract-clippy/stderr.log": {
+      "bytes": 155,
+      "sha256": "878947e7dd3eef0c75cdeb9e265c1177a1f909e76743317ed667ff220f12c7b3"
+    },
+    "checks/census-contract-clippy/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/census-contract-doc-check/intent.json": {
+      "bytes": 315957,
+      "sha256": "5b079181eb9a5fa3bd0116b015c61d4327ac463b629342945e1023bf41b6e2c3"
+    },
+    "checks/census-contract-doc-check/result.json": {
+      "bytes": 315643,
+      "sha256": "65c5247afa0b763fc889eb8fcac3fbd2b60360dd0aaf56c6d9e9b03bee205ae8"
+    },
+    "checks/census-contract-doc-check/stderr.log": {
+      "bytes": 204,
+      "sha256": "d886de189e1eb879abdc9a89b79cf29213e56b1b06a744bbd8975dcfe4799ada"
+    },
+    "checks/census-contract-doc-check/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "checks/census-contract-format/intent.json": {
+      "bytes": 316019,
+      "sha256": "36e0879be1315e991a093ebcfcb3201ffc5127775837deb69e648182709e7551"
+    },
+    "checks/census-contract-format/result.json": {
+      "bytes": 315643,
+      "sha256": "d6539c63a6bb0f5311fc4c704fcb52479be4d0a57d0e88507c83577ab6c9d019"
+    },
+    "checks/census-contract-format/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/census-contract-format/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/census-contract-msrv/intent.json": {
+      "bytes": 316025,
+      "sha256": "c252884bb682bdd1afbb1ec8caa8551279a8b326e77e19d7c1e67e9bdeb30246"
+    },
+    "checks/census-contract-msrv/result.json": {
+      "bytes": 315643,
+      "sha256": "d6539c63a6bb0f5311fc4c704fcb52479be4d0a57d0e88507c83577ab6c9d019"
+    },
+    "checks/census-contract-msrv/stderr.log": {
+      "bytes": 383,
+      "sha256": "84b467d099257a6f3dc4e8c7d3a4b528312a055055f03f39269870b528b688e9"
+    },
+    "checks/census-contract-msrv/stdout.log": {
+      "bytes": 929,
+      "sha256": "1e46c1d27c6baeb33cc52e2ba7ccc85634baa94a2f721022d8ee9c1256a0a6f6"
+    },
+    "checks/census-contract-performance-contract/intent.json": {
+      "bytes": 316005,
+      "sha256": "bd6a59ed865ff23a2355f08832d4c7a9e0454f45f5c21af31b6c3a70cca83a95"
+    },
+    "checks/census-contract-performance-contract/result.json": {
+      "bytes": 315643,
+      "sha256": "65c5247afa0b763fc889eb8fcac3fbd2b60360dd0aaf56c6d9e9b03bee205ae8"
+    },
+    "checks/census-contract-performance-contract/stderr.log": {
+      "bytes": 152,
+      "sha256": "edbf560f65a313a4f35b9c28a482c8a19c06c391c2c9a6765b9cc9014114b8a0"
+    },
+    "checks/census-contract-performance-contract/stdout.log": {
+      "bytes": 60,
+      "sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+    },
+    "checks/census-contract-v1/intent.json": {
+      "bytes": 316025,
+      "sha256": "1019f48a3d21761ef233b0204488322dbba72a567a09a93d5810a97306536735"
+    },
+    "checks/census-contract-v1/result.json": {
+      "bytes": 315645,
+      "sha256": "875b5ec3686428bcf10bda0ac28141b075e8e0f8fe67789e82851dfbebe108f5"
+    },
+    "checks/census-contract-v1/stderr.log": {
+      "bytes": 352,
+      "sha256": "36c3cf8c6ebfc46c6b1b1865ed1ad633183e50c648f40673a1abd9cb9ed22280"
+    },
+    "checks/census-contract-v1/stdout.log": {
+      "bytes": 1140,
+      "sha256": "b52819236a96e76f56a6b59cb41a7079f9b599a05f3b6fc860fb4122ebab1ddc"
+    },
+    "checks/census-contract-v2/intent.json": {
+      "bytes": 316025,
+      "sha256": "06b4d3ff1893e74fb5b8dc4f86c76eb332953f4afc21690e06f53dbdfb9a0b3e"
+    },
+    "checks/census-contract-v2/result.json": {
+      "bytes": 315643,
+      "sha256": "d6539c63a6bb0f5311fc4c704fcb52479be4d0a57d0e88507c83577ab6c9d019"
+    },
+    "checks/census-contract-v2/stderr.log": {
+      "bytes": 382,
+      "sha256": "e329dd919cbf55a7c678113182b255b98f5c479f16597c10dbb35ac60ac23094"
+    },
+    "checks/census-contract-v2/stdout.log": {
+      "bytes": 929,
+      "sha256": "fac0a64c2832878a22b4ef99378e24075c1495b32b2b5bb126daf889504d96e8"
+    },
+    "coordinators/run-blob-fault-step-20261024.py": {
+      "bytes": 1121,
+      "sha256": "2311620dffcba08a17784517d8bb70952bd1a06c86032313ff6a62b4c23a2768"
+    },
+    "coordinators/run-fresh-reader-20261024.py": {
+      "bytes": 544,
+      "sha256": "851631e846ec7d3696a0e2fa550b6f87e8f07e8412f5dafc0530c0bc70c597ed"
+    },
+    "coordinators/run-source-step-20261024.py": {
+      "bytes": 2596,
+      "sha256": "a92482cabcfcf8f6440e95972bee8d204bb9c59c8805c45c7b57363dcc3ab430"
+    },
+    "coordinators/seal-census-contract-20261024.py": {
+      "bytes": 5615,
+      "sha256": "b893ce35f369843465d326916009520e038023c533698ae7f4d37626deaa2e33"
+    },
+    "coordinators/verify-census-contract-staged-20261024.py": {
+      "bytes": 6951,
+      "sha256": "5bda182b416989003f8f2171a5801b237b82f30ef07858da454b857fcc2010ea"
+    },
+    "final/docs/articles/007-optimization-starts-with-measurement.md": {
+      "bytes": 1326475,
+      "sha256": "bccf0df5b5e9b3d0c64ea739c088aab798fa63cb03123e09f7799b95992f6421"
+    },
+    "final/docs/testing/performance/0.74/README.md": {
+      "bytes": 471923,
+      "sha256": "7579c6782807beac91ae44d92b6e6ab5fd3db81a0976495a3102f4c37fdc58a6"
+    },
+    "final/docs/testing/performance/0.74/historical-blob-caller-linux-result-20261024.md": {
+      "bytes": 7358,
+      "sha256": "3aa3bff07560cbe343c1ed29a92e9ab815e8f2990dc45a1a6a2ae6843e1544d2"
+    },
+    "final/docs/testing/performance/0.74/historical-blob-census-contract-result-20261024.md": {
+      "bytes": 6702,
+      "sha256": "04f0daa21fc2c35fe7a50b81a849450f347dca6021e911ef067e399ecda9c239"
+    },
+    "final/docs/testing/performance/0.74/release-closure-audit-20261024.md": {
+      "bytes": 20941,
+      "sha256": "fdc902fc6690cb5ef7a0fc6f4f81a9193bc645c97e8651504a1dc990dfcb2d01"
+    },
+    "final/tools/historical-blob-batch-074/README.md": {
+      "bytes": 18407,
+      "sha256": "dfae4ce69805995b18a89eb04cf94e810a23bab8bad210786802e535fc68b9a6"
+    },
+    "observations/census-contract-msrv/caller/clean-process.txt": {
+      "bytes": 21,
+      "sha256": "9434ef12816106cf36c23a01f751e4d4141062a0f9354b7aba23bf697c6d3f76"
+    },
+    "observations/census-contract-msrv/caller/clean.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observations/census-contract-msrv/caller/clean.stdout.log": {
+      "bytes": 347,
+      "sha256": "5bdf5bc0631dc706cc7b00b37e2514d11710b8acbede71227029f61d66d31154"
+    },
+    "observations/census-contract-msrv/caller/intent.json": {
+      "bytes": 62,
+      "sha256": "41486a92738ed9baf6fa8b55ee7256dad3a6ae2fb1dee2329d4c246368867cab"
+    },
+    "observations/census-contract-msrv/caller/producer-process.txt": {
+      "bytes": 24,
+      "sha256": "c6a4313a5e6a64b0f5c89577c80107ea393d019dded3544d20f776f2fce8e50f"
+    },
+    "observations/census-contract-msrv/caller/producer.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observations/census-contract-msrv/caller/producer.stdout.json": {
+      "bytes": 141190,
+      "sha256": "9b030d84ade4000a6d48a79e724c3ee92fa9382da11ee3a3b2d61a37738ffc6e"
+    },
+    "observations/census-contract-msrv/caller/result.json": {
+      "bytes": 134,
+      "sha256": "461d8e151f5697c039ca1a95e8a5a079f4431ba4787f26650d548179bacad913"
+    },
+    "observations/census-contract-msrv/caller/trace-process.txt": {
+      "bytes": 21,
+      "sha256": "98af2d812bd7c1c33d6197fd303a6457bcd523ef21320600b0a13ba75a74b645"
+    },
+    "observations/census-contract-msrv/caller/trace.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observations/census-contract-msrv/caller/trace.stdout.log": {
+      "bytes": 361,
+      "sha256": "b076efb42e5823fe409b79898abed0a3e78cce20ce686ba3073a4c8487353c69"
+    },
+    "observations/census-contract-msrv/census-contract/clean-process.txt": {
+      "bytes": 23,
+      "sha256": "6c401997867b0065d277dfb0d5dc3488707f62ef2a7af470ca00a4b0854b3cf1"
+    },
+    "observations/census-contract-msrv/census-contract/clean.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observations/census-contract-msrv/census-contract/clean.stdout.log": {
+      "bytes": 75177,
+      "sha256": "b94f032cd50768c97cb8505ab2650450fc1b905ec6736e03d3536a442cdb045c"
+    },
+    "observations/census-contract-msrv/census-contract/clean.trace.jsonl": {
+      "bytes": 24057,
+      "sha256": "7a71456697236b2e153bf3b3354ee88d454735abdc8203f45493010456416707"
+    },
+    "observations/census-contract-msrv/census-contract/config-error-process.txt": {
+      "bytes": 22,
+      "sha256": "c17ac7dca9b1d56e21f4ffc3cd157ae45a7560ee0952973ab6e2a4f0ee651c75"
+    },
+    "observations/census-contract-msrv/census-contract/config-error.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observations/census-contract-msrv/census-contract/config-error.stdout.log": {
+      "bytes": 3538,
+      "sha256": "35985219345d77de62e9666849a4cba72c199ce3746f27c6ed5051429f73bd08"
+    },
+    "observations/census-contract-msrv/census-contract/config-error.trace.jsonl": {
+      "bytes": 19688,
+      "sha256": "f52a7bde9940167ff1131efe4ec43dd033f9a73f1cd4f5d3b9543dd7593a7a9a"
+    },
+    "observations/census-contract-msrv/census-contract/config-process.txt": {
+      "bytes": 23,
+      "sha256": "bfb6c241ab52a6860ce33209ee6307e21cae0a5aae16271051a3c850db7a1fa9"
+    },
+    "observations/census-contract-msrv/census-contract/config.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observations/census-contract-msrv/census-contract/config.stdout.log": {
+      "bytes": 75178,
+      "sha256": "05277645e68fee03b5164569d291e3a7e59ec42115aa9407f3b010172e50b2c1"
+    },
+    "observations/census-contract-msrv/census-contract/config.trace.jsonl": {
+      "bytes": 24057,
+      "sha256": "8eed27b8dc367ba0c3fb35e45abe0c6ea0a267736536c328fe4c9666148b0bd5"
+    },
+    "observations/census-contract-msrv/census-contract/intent.json": {
+      "bytes": 78,
+      "sha256": "fc108c7eaef56c1aa3af3f286c0a5dc2f64f936961c4268c183c18a9a4bae603"
+    },
+    "observations/census-contract-msrv/census-contract/producer.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observations/census-contract-msrv/census-contract/producer.stdout.json": {
+      "bytes": 141190,
+      "sha256": "9b030d84ade4000a6d48a79e724c3ee92fa9382da11ee3a3b2d61a37738ffc6e"
+    },
+    "observations/census-contract-msrv/census-contract/repository-error-process.txt": {
+      "bytes": 22,
+      "sha256": "2880be77f352420f13d0f3f6f836d84ea2067583af9302b477f0176f729b0b0e"
+    },
+    "observations/census-contract-msrv/census-contract/repository-error.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observations/census-contract-msrv/census-contract/repository-error.stdout.log": {
+      "bytes": 3606,
+      "sha256": "38f8cbb1ece68adde657588f1141a110dffdc8ce9ece43f4c8620611cf98cbc6"
+    },
+    "observations/census-contract-msrv/census-contract/repository-error.trace.jsonl": {
+      "bytes": 16544,
+      "sha256": "f9c69eb5c3858a2fb1d895c93d6be7ffe8fbfb6417bd277143a4edd916c5e1ee"
+    },
+    "observations/census-contract-msrv/census-contract/result.json": {
+      "bytes": 158,
+      "sha256": "fdd8ad4af4526b5a66444c649b05808fc61c800449dc8083a2b26cda07b27e78"
+    },
+    "observations/census-contract-msrv/census-contract/trace-process.txt": {
+      "bytes": 23,
+      "sha256": "c59802a3a506fdbeab9de6aa3c8f504d06da03076630a0f5ee6058b6aee2a636"
+    },
+    "observations/census-contract-msrv/census-contract/trace.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observations/census-contract-msrv/census-contract/trace.stdout.log": {
+      "bytes": 77947,
+      "sha256": "269ad6eecc9707ce2dd445ec23d4c56517d82f474cddcabe1715ebfd657eacf4"
+    },
+    "observations/census-contract-msrv/census-contract/trace.trace.jsonl": {
+      "bytes": 24057,
+      "sha256": "7988e842dedb864e0a90c68597b8dadbcb42c68fd9798c82179d52d7fed033ed"
+    },
+    "observations/census-contract-v1/caller/clean-process.txt": {
+      "bytes": 21,
+      "sha256": "9434ef12816106cf36c23a01f751e4d4141062a0f9354b7aba23bf697c6d3f76"
+    },
+    "observations/census-contract-v1/caller/clean.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observations/census-contract-v1/caller/clean.stdout.log": {
+      "bytes": 347,
+      "sha256": "5542940fdcb1f670d04527b4e84fb70e346a11af9967ba6d359a3aa67a7400e1"
+    },
+    "observations/census-contract-v1/caller/intent.json": {
+      "bytes": 62,
+      "sha256": "41486a92738ed9baf6fa8b55ee7256dad3a6ae2fb1dee2329d4c246368867cab"
+    },
+    "observations/census-contract-v1/caller/producer-process.txt": {
+      "bytes": 24,
+      "sha256": "c6a4313a5e6a64b0f5c89577c80107ea393d019dded3544d20f776f2fce8e50f"
+    },
+    "observations/census-contract-v1/caller/producer.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observations/census-contract-v1/caller/producer.stdout.json": {
+      "bytes": 141190,
+      "sha256": "9b030d84ade4000a6d48a79e724c3ee92fa9382da11ee3a3b2d61a37738ffc6e"
+    },
+    "observations/census-contract-v1/caller/result.json": {
+      "bytes": 134,
+      "sha256": "461d8e151f5697c039ca1a95e8a5a079f4431ba4787f26650d548179bacad913"
+    },
+    "observations/census-contract-v1/caller/trace-process.txt": {
+      "bytes": 21,
+      "sha256": "98af2d812bd7c1c33d6197fd303a6457bcd523ef21320600b0a13ba75a74b645"
+    },
+    "observations/census-contract-v1/caller/trace.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observations/census-contract-v1/caller/trace.stdout.log": {
+      "bytes": 361,
+      "sha256": "9b47eff631dbef5b7f7333213ce3cdae9b240504e0fe0f447e1ac6be4a18ff7f"
+    },
+    "observations/census-contract-v1/census-contract/clean-process.txt": {
+      "bytes": 23,
+      "sha256": "f7aa46ca5e8d01860dd82c4e7386f83280f237e8be2da55723f0458c7cce3480"
+    },
+    "observations/census-contract-v1/census-contract/clean.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observations/census-contract-v1/census-contract/clean.stdout.log": {
+      "bytes": 218,
+      "sha256": "8de1211e3ac67c42fdbbf9464e1643c16075ce8394db1686a2c1444f76bb0753"
+    },
+    "observations/census-contract-v1/census-contract/clean.trace.jsonl": {
+      "bytes": 8748,
+      "sha256": "2fabf3fe102211c9c7fdf24969966842f9c0d4422b1c905e6edb5b909d7b5c63"
+    },
+    "observations/census-contract-v1/census-contract/intent.json": {
+      "bytes": 78,
+      "sha256": "fc108c7eaef56c1aa3af3f286c0a5dc2f64f936961c4268c183c18a9a4bae603"
+    },
+    "observations/census-contract-v1/census-contract/producer.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observations/census-contract-v1/census-contract/producer.stdout.json": {
+      "bytes": 141190,
+      "sha256": "9b030d84ade4000a6d48a79e724c3ee92fa9382da11ee3a3b2d61a37738ffc6e"
+    },
+    "observations/census-contract-v2/caller/clean-process.txt": {
+      "bytes": 21,
+      "sha256": "9434ef12816106cf36c23a01f751e4d4141062a0f9354b7aba23bf697c6d3f76"
+    },
+    "observations/census-contract-v2/caller/clean.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observations/census-contract-v2/caller/clean.stdout.log": {
+      "bytes": 347,
+      "sha256": "12b229622e2b8f09b419e179c1c59d39b70b54c757937b50c8dbe3233d150d29"
+    },
+    "observations/census-contract-v2/caller/intent.json": {
+      "bytes": 62,
+      "sha256": "41486a92738ed9baf6fa8b55ee7256dad3a6ae2fb1dee2329d4c246368867cab"
+    },
+    "observations/census-contract-v2/caller/producer-process.txt": {
+      "bytes": 24,
+      "sha256": "c6a4313a5e6a64b0f5c89577c80107ea393d019dded3544d20f776f2fce8e50f"
+    },
+    "observations/census-contract-v2/caller/producer.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observations/census-contract-v2/caller/producer.stdout.json": {
+      "bytes": 141190,
+      "sha256": "9b030d84ade4000a6d48a79e724c3ee92fa9382da11ee3a3b2d61a37738ffc6e"
+    },
+    "observations/census-contract-v2/caller/result.json": {
+      "bytes": 134,
+      "sha256": "461d8e151f5697c039ca1a95e8a5a079f4431ba4787f26650d548179bacad913"
+    },
+    "observations/census-contract-v2/caller/trace-process.txt": {
+      "bytes": 21,
+      "sha256": "98af2d812bd7c1c33d6197fd303a6457bcd523ef21320600b0a13ba75a74b645"
+    },
+    "observations/census-contract-v2/caller/trace.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observations/census-contract-v2/caller/trace.stdout.log": {
+      "bytes": 361,
+      "sha256": "93c47236d18c69dad84af24fa8e0cf8dc5bb0f12e68403ec454093587630201c"
+    },
+    "observations/census-contract-v2/census-contract/clean-process.txt": {
+      "bytes": 23,
+      "sha256": "6c401997867b0065d277dfb0d5dc3488707f62ef2a7af470ca00a4b0854b3cf1"
+    },
+    "observations/census-contract-v2/census-contract/clean.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observations/census-contract-v2/census-contract/clean.stdout.log": {
+      "bytes": 75177,
+      "sha256": "9596651806beff6285aefbdced21452a3cd8a97872851d267177cadb36884fa6"
+    },
+    "observations/census-contract-v2/census-contract/clean.trace.jsonl": {
+      "bytes": 24057,
+      "sha256": "33e400e4d2dadabb8e182abb2ea41ef69f116eb1dc38c4d10fb87d32010d81a5"
+    },
+    "observations/census-contract-v2/census-contract/config-error-process.txt": {
+      "bytes": 22,
+      "sha256": "c17ac7dca9b1d56e21f4ffc3cd157ae45a7560ee0952973ab6e2a4f0ee651c75"
+    },
+    "observations/census-contract-v2/census-contract/config-error.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observations/census-contract-v2/census-contract/config-error.stdout.log": {
+      "bytes": 3538,
+      "sha256": "56c3daac441b2a9fc029918fe7681ed79f6eb083d8e1787ef1c0f6fc62d5ef90"
+    },
+    "observations/census-contract-v2/census-contract/config-error.trace.jsonl": {
+      "bytes": 19688,
+      "sha256": "aa9e5405e5ec1f311f656cdef41c744c59473895e15fab2a69bb828065a4be59"
+    },
+    "observations/census-contract-v2/census-contract/config-process.txt": {
+      "bytes": 23,
+      "sha256": "bfb6c241ab52a6860ce33209ee6307e21cae0a5aae16271051a3c850db7a1fa9"
+    },
+    "observations/census-contract-v2/census-contract/config.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observations/census-contract-v2/census-contract/config.stdout.log": {
+      "bytes": 75178,
+      "sha256": "f24b1c9f811854129881df0e52fa538ff5a22da0d273f67f6b698e27e636bdd1"
+    },
+    "observations/census-contract-v2/census-contract/config.trace.jsonl": {
+      "bytes": 24057,
+      "sha256": "9294a65b620be4ebd6d05dc65849cafbd94e3c9393db3db04bcdb25ea5b2943d"
+    },
+    "observations/census-contract-v2/census-contract/intent.json": {
+      "bytes": 78,
+      "sha256": "fc108c7eaef56c1aa3af3f286c0a5dc2f64f936961c4268c183c18a9a4bae603"
+    },
+    "observations/census-contract-v2/census-contract/producer.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observations/census-contract-v2/census-contract/producer.stdout.json": {
+      "bytes": 141190,
+      "sha256": "9b030d84ade4000a6d48a79e724c3ee92fa9382da11ee3a3b2d61a37738ffc6e"
+    },
+    "observations/census-contract-v2/census-contract/repository-error-process.txt": {
+      "bytes": 22,
+      "sha256": "2880be77f352420f13d0f3f6f836d84ea2067583af9302b477f0176f729b0b0e"
+    },
+    "observations/census-contract-v2/census-contract/repository-error.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observations/census-contract-v2/census-contract/repository-error.stdout.log": {
+      "bytes": 3606,
+      "sha256": "afcbee62ab94441d4bd4f7b7f2542064b1895fe2f14ed7ddfe1cc5c159da24ed"
+    },
+    "observations/census-contract-v2/census-contract/repository-error.trace.jsonl": {
+      "bytes": 16544,
+      "sha256": "f450181bb17a4383f6110c7422a97b3d5fc09923d7faa6c68f2962c9302ba12c"
+    },
+    "observations/census-contract-v2/census-contract/result.json": {
+      "bytes": 158,
+      "sha256": "fdd8ad4af4526b5a66444c649b05808fc61c800449dc8083a2b26cda07b27e78"
+    },
+    "observations/census-contract-v2/census-contract/trace-process.txt": {
+      "bytes": 23,
+      "sha256": "c59802a3a506fdbeab9de6aa3c8f504d06da03076630a0f5ee6058b6aee2a636"
+    },
+    "observations/census-contract-v2/census-contract/trace.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observations/census-contract-v2/census-contract/trace.stdout.log": {
+      "bytes": 77947,
+      "sha256": "3c6cef6363016be11c8c77609d5e9a31eaea81b1db3b04d2f567dcbcee41c3d4"
+    },
+    "observations/census-contract-v2/census-contract/trace.trace.jsonl": {
+      "bytes": 24057,
+      "sha256": "84cc687f50f5b35d7c879a7f1f7c8b19d78554432bfb8668f8a77fa16404792c"
+    },
+    "phase-sources/census-contract-check/crates/xtask/tests/historical_blob_batch_074.rs": {
+      "bytes": 7520,
+      "sha256": "01c4c8504c74aa00e22fa02348e78e9fffe75668a04a56f126de5e2751c390b2"
+    },
+    "phase-sources/census-contract-check/crates/xtask/tests/historical_blob_caller_074.rs": {
+      "bytes": 26061,
+      "sha256": "df9f665673fbcfc4e54d686934d0cd588e58589e7e26527600ba2d4f4a4c7c0b"
+    },
+    "phase-sources/census-contract-check/crates/xtask/tests/historical_blob_fault_074.rs": {
+      "bytes": 36624,
+      "sha256": "a8f509605a36b48c87e06e00695ebb7863af13bc8d26129bad119ead40322ee2"
+    },
+    "phase-sources/census-contract-check/crates/xtask/tests/historical_blob_transport_074.rs": {
+      "bytes": 16250,
+      "sha256": "df7c69dff0814806426cb9a775a4945bd0c5262bd334cb924eddec041a8627b9"
+    },
+    "phase-sources/census-contract-check/index.json": {
+      "bytes": 2319,
+      "sha256": "8a6cf78c3f3b20a4453c4041f1027e5e5994efd65e6c27fb510c16418c4a9be1"
+    },
+    "phase-sources/census-contract-check/tools/historical-blob-batch-074/caller_pins.py": {
+      "bytes": 5173,
+      "sha256": "25bed385369b715d2ff9c8f259e11201400b5db863066d90baa68d0ce94a5ab7"
+    },
+    "phase-sources/census-contract-check/tools/historical-blob-batch-074/census_caller.rs": {
+      "bytes": 6040,
+      "sha256": "c44dcf02ab76b0953d4cc2f31a3b9a1a7947aaced82bd1a95d5118c1b01682d1"
+    },
+    "phase-sources/census-contract-check/tools/historical-blob-batch-074/collision.py": {
+      "bytes": 1212,
+      "sha256": "29d3b9bb0dcd23d47cdf79052336e2da8daf4f4244903ff8df4b7e713f03b706"
+    },
+    "phase-sources/census-contract-check/tools/historical-blob-batch-074/decoder.rs": {
+      "bytes": 4640,
+      "sha256": "7287fac38513dd2a8a77acb3537c57ae7e2870b24ec0ff591a57bcb62273ad1e"
+    },
+    "phase-sources/census-contract-check/tools/historical-blob-batch-074/eligibility.py": {
+      "bytes": 5851,
+      "sha256": "1bcb7d15cd663b58a026ead5db82e21c68a417c64c3271486e70eb1794d2076b"
+    },
+    "phase-sources/census-contract-check/tools/historical-blob-batch-074/linux_session.py": {
+      "bytes": 7351,
+      "sha256": "f9c7db57f2444fefba808e44ea00e79c1460e19254c33bad9a615647e4e0f991"
+    },
+    "phase-sources/census-contract-check/tools/historical-blob-batch-074/oracle.py": {
+      "bytes": 6696,
+      "sha256": "1e360e21f79f1ecec1b7305fe1b914cd471d63f42686d1badc7548c9e8d1e90d"
+    },
+    "phase-sources/census-contract-check/tools/historical-blob-batch-074/reader.py": {
+      "bytes": 7242,
+      "sha256": "71207da9f35a2b3458092e761c9a86ce9c47d07b8e99db3743bd430c2bd57470"
+    },
+    "phase-sources/census-contract-check/tools/historical-blob-batch-074/test_caller_pins.py": {
+      "bytes": 2011,
+      "sha256": "ce36317e1f6cdd9be258bd891035afec66ffafa36d6c0e8be7572c4e12abea1b"
+    },
+    "phase-sources/census-contract-check/tools/historical-blob-batch-074/test_collision.py": {
+      "bytes": 1302,
+      "sha256": "bfbf29334e38a46346f96814549b757d8219182f091346d580ea5e480a58edaa"
+    },
+    "phase-sources/census-contract-check/tools/historical-blob-batch-074/test_eligibility.py": {
+      "bytes": 1522,
+      "sha256": "388b690c1c2a46afaa072e8cddb18d30b992882676a1dbc873920cb29c252e4e"
+    },
+    "phase-sources/census-contract-check/tools/historical-blob-batch-074/test_linux_session.py": {
+      "bytes": 1286,
+      "sha256": "f0eabc254dff48070a45d63ea373df30a19672af365f29dd8a770ded1a4a2bed"
+    },
+    "phase-sources/census-contract-check/tools/historical-blob-batch-074/test_oracle.py": {
+      "bytes": 2177,
+      "sha256": "dbb48e86aefc2b2bdaf78b16d98957ee5d83c34d904ade7b0f81096c7e8a525c"
+    },
+    "phase-sources/census-contract-check/tools/historical-blob-batch-074/test_reader.py": {
+      "bytes": 14543,
+      "sha256": "f259d0b04eba25412491e57a662e3b4ca3127fcd71ce8648beb0137a141a58c5"
+    },
+    "phase-sources/census-contract-check/tools/historical-blob-batch-074/transport.rs": {
+      "bytes": 13826,
+      "sha256": "28fffebcdb20aafa20071b483965296a14ab1d5de38ee94f54285846acb3a1f0"
+    },
+    "phase-sources/census-contract-clippy/crates/xtask/tests/historical_blob_batch_074.rs": {
+      "bytes": 7520,
+      "sha256": "01c4c8504c74aa00e22fa02348e78e9fffe75668a04a56f126de5e2751c390b2"
+    },
+    "phase-sources/census-contract-clippy/crates/xtask/tests/historical_blob_caller_074.rs": {
+      "bytes": 26061,
+      "sha256": "df9f665673fbcfc4e54d686934d0cd588e58589e7e26527600ba2d4f4a4c7c0b"
+    },
+    "phase-sources/census-contract-clippy/crates/xtask/tests/historical_blob_fault_074.rs": {
+      "bytes": 36624,
+      "sha256": "a8f509605a36b48c87e06e00695ebb7863af13bc8d26129bad119ead40322ee2"
+    },
+    "phase-sources/census-contract-clippy/crates/xtask/tests/historical_blob_transport_074.rs": {
+      "bytes": 16250,
+      "sha256": "df7c69dff0814806426cb9a775a4945bd0c5262bd334cb924eddec041a8627b9"
+    },
+    "phase-sources/census-contract-clippy/index.json": {
+      "bytes": 2319,
+      "sha256": "8a6cf78c3f3b20a4453c4041f1027e5e5994efd65e6c27fb510c16418c4a9be1"
+    },
+    "phase-sources/census-contract-clippy/tools/historical-blob-batch-074/caller_pins.py": {
+      "bytes": 5173,
+      "sha256": "25bed385369b715d2ff9c8f259e11201400b5db863066d90baa68d0ce94a5ab7"
+    },
+    "phase-sources/census-contract-clippy/tools/historical-blob-batch-074/census_caller.rs": {
+      "bytes": 6040,
+      "sha256": "c44dcf02ab76b0953d4cc2f31a3b9a1a7947aaced82bd1a95d5118c1b01682d1"
+    },
+    "phase-sources/census-contract-clippy/tools/historical-blob-batch-074/collision.py": {
+      "bytes": 1212,
+      "sha256": "29d3b9bb0dcd23d47cdf79052336e2da8daf4f4244903ff8df4b7e713f03b706"
+    },
+    "phase-sources/census-contract-clippy/tools/historical-blob-batch-074/decoder.rs": {
+      "bytes": 4640,
+      "sha256": "7287fac38513dd2a8a77acb3537c57ae7e2870b24ec0ff591a57bcb62273ad1e"
+    },
+    "phase-sources/census-contract-clippy/tools/historical-blob-batch-074/eligibility.py": {
+      "bytes": 5851,
+      "sha256": "1bcb7d15cd663b58a026ead5db82e21c68a417c64c3271486e70eb1794d2076b"
+    },
+    "phase-sources/census-contract-clippy/tools/historical-blob-batch-074/linux_session.py": {
+      "bytes": 7351,
+      "sha256": "f9c7db57f2444fefba808e44ea00e79c1460e19254c33bad9a615647e4e0f991"
+    },
+    "phase-sources/census-contract-clippy/tools/historical-blob-batch-074/oracle.py": {
+      "bytes": 6696,
+      "sha256": "1e360e21f79f1ecec1b7305fe1b914cd471d63f42686d1badc7548c9e8d1e90d"
+    },
+    "phase-sources/census-contract-clippy/tools/historical-blob-batch-074/reader.py": {
+      "bytes": 7242,
+      "sha256": "71207da9f35a2b3458092e761c9a86ce9c47d07b8e99db3743bd430c2bd57470"
+    },
+    "phase-sources/census-contract-clippy/tools/historical-blob-batch-074/test_caller_pins.py": {
+      "bytes": 2011,
+      "sha256": "ce36317e1f6cdd9be258bd891035afec66ffafa36d6c0e8be7572c4e12abea1b"
+    },
+    "phase-sources/census-contract-clippy/tools/historical-blob-batch-074/test_collision.py": {
+      "bytes": 1302,
+      "sha256": "bfbf29334e38a46346f96814549b757d8219182f091346d580ea5e480a58edaa"
+    },
+    "phase-sources/census-contract-clippy/tools/historical-blob-batch-074/test_eligibility.py": {
+      "bytes": 1522,
+      "sha256": "388b690c1c2a46afaa072e8cddb18d30b992882676a1dbc873920cb29c252e4e"
+    },
+    "phase-sources/census-contract-clippy/tools/historical-blob-batch-074/test_linux_session.py": {
+      "bytes": 1286,
+      "sha256": "f0eabc254dff48070a45d63ea373df30a19672af365f29dd8a770ded1a4a2bed"
+    },
+    "phase-sources/census-contract-clippy/tools/historical-blob-batch-074/test_oracle.py": {
+      "bytes": 2177,
+      "sha256": "dbb48e86aefc2b2bdaf78b16d98957ee5d83c34d904ade7b0f81096c7e8a525c"
+    },
+    "phase-sources/census-contract-clippy/tools/historical-blob-batch-074/test_reader.py": {
+      "bytes": 14543,
+      "sha256": "f259d0b04eba25412491e57a662e3b4ca3127fcd71ce8648beb0137a141a58c5"
+    },
+    "phase-sources/census-contract-clippy/tools/historical-blob-batch-074/transport.rs": {
+      "bytes": 13826,
+      "sha256": "28fffebcdb20aafa20071b483965296a14ab1d5de38ee94f54285846acb3a1f0"
+    },
+    "phase-sources/census-contract-doc-check/crates/xtask/tests/historical_blob_batch_074.rs": {
+      "bytes": 7520,
+      "sha256": "01c4c8504c74aa00e22fa02348e78e9fffe75668a04a56f126de5e2751c390b2"
+    },
+    "phase-sources/census-contract-doc-check/crates/xtask/tests/historical_blob_caller_074.rs": {
+      "bytes": 26061,
+      "sha256": "df9f665673fbcfc4e54d686934d0cd588e58589e7e26527600ba2d4f4a4c7c0b"
+    },
+    "phase-sources/census-contract-doc-check/crates/xtask/tests/historical_blob_fault_074.rs": {
+      "bytes": 36624,
+      "sha256": "a8f509605a36b48c87e06e00695ebb7863af13bc8d26129bad119ead40322ee2"
+    },
+    "phase-sources/census-contract-doc-check/crates/xtask/tests/historical_blob_transport_074.rs": {
+      "bytes": 16250,
+      "sha256": "df7c69dff0814806426cb9a775a4945bd0c5262bd334cb924eddec041a8627b9"
+    },
+    "phase-sources/census-contract-doc-check/index.json": {
+      "bytes": 2319,
+      "sha256": "8a6cf78c3f3b20a4453c4041f1027e5e5994efd65e6c27fb510c16418c4a9be1"
+    },
+    "phase-sources/census-contract-doc-check/tools/historical-blob-batch-074/caller_pins.py": {
+      "bytes": 5173,
+      "sha256": "25bed385369b715d2ff9c8f259e11201400b5db863066d90baa68d0ce94a5ab7"
+    },
+    "phase-sources/census-contract-doc-check/tools/historical-blob-batch-074/census_caller.rs": {
+      "bytes": 6040,
+      "sha256": "c44dcf02ab76b0953d4cc2f31a3b9a1a7947aaced82bd1a95d5118c1b01682d1"
+    },
+    "phase-sources/census-contract-doc-check/tools/historical-blob-batch-074/collision.py": {
+      "bytes": 1212,
+      "sha256": "29d3b9bb0dcd23d47cdf79052336e2da8daf4f4244903ff8df4b7e713f03b706"
+    },
+    "phase-sources/census-contract-doc-check/tools/historical-blob-batch-074/decoder.rs": {
+      "bytes": 4640,
+      "sha256": "7287fac38513dd2a8a77acb3537c57ae7e2870b24ec0ff591a57bcb62273ad1e"
+    },
+    "phase-sources/census-contract-doc-check/tools/historical-blob-batch-074/eligibility.py": {
+      "bytes": 5851,
+      "sha256": "1bcb7d15cd663b58a026ead5db82e21c68a417c64c3271486e70eb1794d2076b"
+    },
+    "phase-sources/census-contract-doc-check/tools/historical-blob-batch-074/linux_session.py": {
+      "bytes": 7351,
+      "sha256": "f9c7db57f2444fefba808e44ea00e79c1460e19254c33bad9a615647e4e0f991"
+    },
+    "phase-sources/census-contract-doc-check/tools/historical-blob-batch-074/oracle.py": {
+      "bytes": 6696,
+      "sha256": "1e360e21f79f1ecec1b7305fe1b914cd471d63f42686d1badc7548c9e8d1e90d"
+    },
+    "phase-sources/census-contract-doc-check/tools/historical-blob-batch-074/reader.py": {
+      "bytes": 7242,
+      "sha256": "71207da9f35a2b3458092e761c9a86ce9c47d07b8e99db3743bd430c2bd57470"
+    },
+    "phase-sources/census-contract-doc-check/tools/historical-blob-batch-074/test_caller_pins.py": {
+      "bytes": 2011,
+      "sha256": "ce36317e1f6cdd9be258bd891035afec66ffafa36d6c0e8be7572c4e12abea1b"
+    },
+    "phase-sources/census-contract-doc-check/tools/historical-blob-batch-074/test_collision.py": {
+      "bytes": 1302,
+      "sha256": "bfbf29334e38a46346f96814549b757d8219182f091346d580ea5e480a58edaa"
+    },
+    "phase-sources/census-contract-doc-check/tools/historical-blob-batch-074/test_eligibility.py": {
+      "bytes": 1522,
+      "sha256": "388b690c1c2a46afaa072e8cddb18d30b992882676a1dbc873920cb29c252e4e"
+    },
+    "phase-sources/census-contract-doc-check/tools/historical-blob-batch-074/test_linux_session.py": {
+      "bytes": 1286,
+      "sha256": "f0eabc254dff48070a45d63ea373df30a19672af365f29dd8a770ded1a4a2bed"
+    },
+    "phase-sources/census-contract-doc-check/tools/historical-blob-batch-074/test_oracle.py": {
+      "bytes": 2177,
+      "sha256": "dbb48e86aefc2b2bdaf78b16d98957ee5d83c34d904ade7b0f81096c7e8a525c"
+    },
+    "phase-sources/census-contract-doc-check/tools/historical-blob-batch-074/test_reader.py": {
+      "bytes": 14543,
+      "sha256": "f259d0b04eba25412491e57a662e3b4ca3127fcd71ce8648beb0137a141a58c5"
+    },
+    "phase-sources/census-contract-doc-check/tools/historical-blob-batch-074/transport.rs": {
+      "bytes": 13826,
+      "sha256": "28fffebcdb20aafa20071b483965296a14ab1d5de38ee94f54285846acb3a1f0"
+    },
+    "phase-sources/census-contract-format/crates/xtask/tests/historical_blob_batch_074.rs": {
+      "bytes": 7520,
+      "sha256": "01c4c8504c74aa00e22fa02348e78e9fffe75668a04a56f126de5e2751c390b2"
+    },
+    "phase-sources/census-contract-format/crates/xtask/tests/historical_blob_caller_074.rs": {
+      "bytes": 26061,
+      "sha256": "df9f665673fbcfc4e54d686934d0cd588e58589e7e26527600ba2d4f4a4c7c0b"
+    },
+    "phase-sources/census-contract-format/crates/xtask/tests/historical_blob_fault_074.rs": {
+      "bytes": 36624,
+      "sha256": "a8f509605a36b48c87e06e00695ebb7863af13bc8d26129bad119ead40322ee2"
+    },
+    "phase-sources/census-contract-format/crates/xtask/tests/historical_blob_transport_074.rs": {
+      "bytes": 16250,
+      "sha256": "df7c69dff0814806426cb9a775a4945bd0c5262bd334cb924eddec041a8627b9"
+    },
+    "phase-sources/census-contract-format/index.json": {
+      "bytes": 2319,
+      "sha256": "8a6cf78c3f3b20a4453c4041f1027e5e5994efd65e6c27fb510c16418c4a9be1"
+    },
+    "phase-sources/census-contract-format/tools/historical-blob-batch-074/caller_pins.py": {
+      "bytes": 5173,
+      "sha256": "25bed385369b715d2ff9c8f259e11201400b5db863066d90baa68d0ce94a5ab7"
+    },
+    "phase-sources/census-contract-format/tools/historical-blob-batch-074/census_caller.rs": {
+      "bytes": 6040,
+      "sha256": "c44dcf02ab76b0953d4cc2f31a3b9a1a7947aaced82bd1a95d5118c1b01682d1"
+    },
+    "phase-sources/census-contract-format/tools/historical-blob-batch-074/collision.py": {
+      "bytes": 1212,
+      "sha256": "29d3b9bb0dcd23d47cdf79052336e2da8daf4f4244903ff8df4b7e713f03b706"
+    },
+    "phase-sources/census-contract-format/tools/historical-blob-batch-074/decoder.rs": {
+      "bytes": 4640,
+      "sha256": "7287fac38513dd2a8a77acb3537c57ae7e2870b24ec0ff591a57bcb62273ad1e"
+    },
+    "phase-sources/census-contract-format/tools/historical-blob-batch-074/eligibility.py": {
+      "bytes": 5851,
+      "sha256": "1bcb7d15cd663b58a026ead5db82e21c68a417c64c3271486e70eb1794d2076b"
+    },
+    "phase-sources/census-contract-format/tools/historical-blob-batch-074/linux_session.py": {
+      "bytes": 7351,
+      "sha256": "f9c7db57f2444fefba808e44ea00e79c1460e19254c33bad9a615647e4e0f991"
+    },
+    "phase-sources/census-contract-format/tools/historical-blob-batch-074/oracle.py": {
+      "bytes": 6696,
+      "sha256": "1e360e21f79f1ecec1b7305fe1b914cd471d63f42686d1badc7548c9e8d1e90d"
+    },
+    "phase-sources/census-contract-format/tools/historical-blob-batch-074/reader.py": {
+      "bytes": 7242,
+      "sha256": "71207da9f35a2b3458092e761c9a86ce9c47d07b8e99db3743bd430c2bd57470"
+    },
+    "phase-sources/census-contract-format/tools/historical-blob-batch-074/test_caller_pins.py": {
+      "bytes": 2011,
+      "sha256": "ce36317e1f6cdd9be258bd891035afec66ffafa36d6c0e8be7572c4e12abea1b"
+    },
+    "phase-sources/census-contract-format/tools/historical-blob-batch-074/test_collision.py": {
+      "bytes": 1302,
+      "sha256": "bfbf29334e38a46346f96814549b757d8219182f091346d580ea5e480a58edaa"
+    },
+    "phase-sources/census-contract-format/tools/historical-blob-batch-074/test_eligibility.py": {
+      "bytes": 1522,
+      "sha256": "388b690c1c2a46afaa072e8cddb18d30b992882676a1dbc873920cb29c252e4e"
+    },
+    "phase-sources/census-contract-format/tools/historical-blob-batch-074/test_linux_session.py": {
+      "bytes": 1286,
+      "sha256": "f0eabc254dff48070a45d63ea373df30a19672af365f29dd8a770ded1a4a2bed"
+    },
+    "phase-sources/census-contract-format/tools/historical-blob-batch-074/test_oracle.py": {
+      "bytes": 2177,
+      "sha256": "dbb48e86aefc2b2bdaf78b16d98957ee5d83c34d904ade7b0f81096c7e8a525c"
+    },
+    "phase-sources/census-contract-format/tools/historical-blob-batch-074/test_reader.py": {
+      "bytes": 14543,
+      "sha256": "f259d0b04eba25412491e57a662e3b4ca3127fcd71ce8648beb0137a141a58c5"
+    },
+    "phase-sources/census-contract-format/tools/historical-blob-batch-074/transport.rs": {
+      "bytes": 13826,
+      "sha256": "28fffebcdb20aafa20071b483965296a14ab1d5de38ee94f54285846acb3a1f0"
+    },
+    "phase-sources/census-contract-msrv/crates/xtask/tests/historical_blob_batch_074.rs": {
+      "bytes": 7520,
+      "sha256": "01c4c8504c74aa00e22fa02348e78e9fffe75668a04a56f126de5e2751c390b2"
+    },
+    "phase-sources/census-contract-msrv/crates/xtask/tests/historical_blob_caller_074.rs": {
+      "bytes": 26061,
+      "sha256": "df9f665673fbcfc4e54d686934d0cd588e58589e7e26527600ba2d4f4a4c7c0b"
+    },
+    "phase-sources/census-contract-msrv/crates/xtask/tests/historical_blob_fault_074.rs": {
+      "bytes": 36624,
+      "sha256": "a8f509605a36b48c87e06e00695ebb7863af13bc8d26129bad119ead40322ee2"
+    },
+    "phase-sources/census-contract-msrv/crates/xtask/tests/historical_blob_transport_074.rs": {
+      "bytes": 16250,
+      "sha256": "df7c69dff0814806426cb9a775a4945bd0c5262bd334cb924eddec041a8627b9"
+    },
+    "phase-sources/census-contract-msrv/index.json": {
+      "bytes": 2319,
+      "sha256": "8a6cf78c3f3b20a4453c4041f1027e5e5994efd65e6c27fb510c16418c4a9be1"
+    },
+    "phase-sources/census-contract-msrv/tools/historical-blob-batch-074/caller_pins.py": {
+      "bytes": 5173,
+      "sha256": "25bed385369b715d2ff9c8f259e11201400b5db863066d90baa68d0ce94a5ab7"
+    },
+    "phase-sources/census-contract-msrv/tools/historical-blob-batch-074/census_caller.rs": {
+      "bytes": 6040,
+      "sha256": "c44dcf02ab76b0953d4cc2f31a3b9a1a7947aaced82bd1a95d5118c1b01682d1"
+    },
+    "phase-sources/census-contract-msrv/tools/historical-blob-batch-074/collision.py": {
+      "bytes": 1212,
+      "sha256": "29d3b9bb0dcd23d47cdf79052336e2da8daf4f4244903ff8df4b7e713f03b706"
+    },
+    "phase-sources/census-contract-msrv/tools/historical-blob-batch-074/decoder.rs": {
+      "bytes": 4640,
+      "sha256": "7287fac38513dd2a8a77acb3537c57ae7e2870b24ec0ff591a57bcb62273ad1e"
+    },
+    "phase-sources/census-contract-msrv/tools/historical-blob-batch-074/eligibility.py": {
+      "bytes": 5851,
+      "sha256": "1bcb7d15cd663b58a026ead5db82e21c68a417c64c3271486e70eb1794d2076b"
+    },
+    "phase-sources/census-contract-msrv/tools/historical-blob-batch-074/linux_session.py": {
+      "bytes": 7351,
+      "sha256": "f9c7db57f2444fefba808e44ea00e79c1460e19254c33bad9a615647e4e0f991"
+    },
+    "phase-sources/census-contract-msrv/tools/historical-blob-batch-074/oracle.py": {
+      "bytes": 6696,
+      "sha256": "1e360e21f79f1ecec1b7305fe1b914cd471d63f42686d1badc7548c9e8d1e90d"
+    },
+    "phase-sources/census-contract-msrv/tools/historical-blob-batch-074/reader.py": {
+      "bytes": 7242,
+      "sha256": "71207da9f35a2b3458092e761c9a86ce9c47d07b8e99db3743bd430c2bd57470"
+    },
+    "phase-sources/census-contract-msrv/tools/historical-blob-batch-074/test_caller_pins.py": {
+      "bytes": 2011,
+      "sha256": "ce36317e1f6cdd9be258bd891035afec66ffafa36d6c0e8be7572c4e12abea1b"
+    },
+    "phase-sources/census-contract-msrv/tools/historical-blob-batch-074/test_collision.py": {
+      "bytes": 1302,
+      "sha256": "bfbf29334e38a46346f96814549b757d8219182f091346d580ea5e480a58edaa"
+    },
+    "phase-sources/census-contract-msrv/tools/historical-blob-batch-074/test_eligibility.py": {
+      "bytes": 1522,
+      "sha256": "388b690c1c2a46afaa072e8cddb18d30b992882676a1dbc873920cb29c252e4e"
+    },
+    "phase-sources/census-contract-msrv/tools/historical-blob-batch-074/test_linux_session.py": {
+      "bytes": 1286,
+      "sha256": "f0eabc254dff48070a45d63ea373df30a19672af365f29dd8a770ded1a4a2bed"
+    },
+    "phase-sources/census-contract-msrv/tools/historical-blob-batch-074/test_oracle.py": {
+      "bytes": 2177,
+      "sha256": "dbb48e86aefc2b2bdaf78b16d98957ee5d83c34d904ade7b0f81096c7e8a525c"
+    },
+    "phase-sources/census-contract-msrv/tools/historical-blob-batch-074/test_reader.py": {
+      "bytes": 14543,
+      "sha256": "f259d0b04eba25412491e57a662e3b4ca3127fcd71ce8648beb0137a141a58c5"
+    },
+    "phase-sources/census-contract-msrv/tools/historical-blob-batch-074/transport.rs": {
+      "bytes": 13826,
+      "sha256": "28fffebcdb20aafa20071b483965296a14ab1d5de38ee94f54285846acb3a1f0"
+    },
+    "phase-sources/census-contract-performance-contract/crates/xtask/tests/historical_blob_batch_074.rs": {
+      "bytes": 7520,
+      "sha256": "01c4c8504c74aa00e22fa02348e78e9fffe75668a04a56f126de5e2751c390b2"
+    },
+    "phase-sources/census-contract-performance-contract/crates/xtask/tests/historical_blob_caller_074.rs": {
+      "bytes": 26061,
+      "sha256": "df9f665673fbcfc4e54d686934d0cd588e58589e7e26527600ba2d4f4a4c7c0b"
+    },
+    "phase-sources/census-contract-performance-contract/crates/xtask/tests/historical_blob_fault_074.rs": {
+      "bytes": 36624,
+      "sha256": "a8f509605a36b48c87e06e00695ebb7863af13bc8d26129bad119ead40322ee2"
+    },
+    "phase-sources/census-contract-performance-contract/crates/xtask/tests/historical_blob_transport_074.rs": {
+      "bytes": 16250,
+      "sha256": "df7c69dff0814806426cb9a775a4945bd0c5262bd334cb924eddec041a8627b9"
+    },
+    "phase-sources/census-contract-performance-contract/index.json": {
+      "bytes": 2319,
+      "sha256": "8a6cf78c3f3b20a4453c4041f1027e5e5994efd65e6c27fb510c16418c4a9be1"
+    },
+    "phase-sources/census-contract-performance-contract/tools/historical-blob-batch-074/caller_pins.py": {
+      "bytes": 5173,
+      "sha256": "25bed385369b715d2ff9c8f259e11201400b5db863066d90baa68d0ce94a5ab7"
+    },
+    "phase-sources/census-contract-performance-contract/tools/historical-blob-batch-074/census_caller.rs": {
+      "bytes": 6040,
+      "sha256": "c44dcf02ab76b0953d4cc2f31a3b9a1a7947aaced82bd1a95d5118c1b01682d1"
+    },
+    "phase-sources/census-contract-performance-contract/tools/historical-blob-batch-074/collision.py": {
+      "bytes": 1212,
+      "sha256": "29d3b9bb0dcd23d47cdf79052336e2da8daf4f4244903ff8df4b7e713f03b706"
+    },
+    "phase-sources/census-contract-performance-contract/tools/historical-blob-batch-074/decoder.rs": {
+      "bytes": 4640,
+      "sha256": "7287fac38513dd2a8a77acb3537c57ae7e2870b24ec0ff591a57bcb62273ad1e"
+    },
+    "phase-sources/census-contract-performance-contract/tools/historical-blob-batch-074/eligibility.py": {
+      "bytes": 5851,
+      "sha256": "1bcb7d15cd663b58a026ead5db82e21c68a417c64c3271486e70eb1794d2076b"
+    },
+    "phase-sources/census-contract-performance-contract/tools/historical-blob-batch-074/linux_session.py": {
+      "bytes": 7351,
+      "sha256": "f9c7db57f2444fefba808e44ea00e79c1460e19254c33bad9a615647e4e0f991"
+    },
+    "phase-sources/census-contract-performance-contract/tools/historical-blob-batch-074/oracle.py": {
+      "bytes": 6696,
+      "sha256": "1e360e21f79f1ecec1b7305fe1b914cd471d63f42686d1badc7548c9e8d1e90d"
+    },
+    "phase-sources/census-contract-performance-contract/tools/historical-blob-batch-074/reader.py": {
+      "bytes": 7242,
+      "sha256": "71207da9f35a2b3458092e761c9a86ce9c47d07b8e99db3743bd430c2bd57470"
+    },
+    "phase-sources/census-contract-performance-contract/tools/historical-blob-batch-074/test_caller_pins.py": {
+      "bytes": 2011,
+      "sha256": "ce36317e1f6cdd9be258bd891035afec66ffafa36d6c0e8be7572c4e12abea1b"
+    },
+    "phase-sources/census-contract-performance-contract/tools/historical-blob-batch-074/test_collision.py": {
+      "bytes": 1302,
+      "sha256": "bfbf29334e38a46346f96814549b757d8219182f091346d580ea5e480a58edaa"
+    },
+    "phase-sources/census-contract-performance-contract/tools/historical-blob-batch-074/test_eligibility.py": {
+      "bytes": 1522,
+      "sha256": "388b690c1c2a46afaa072e8cddb18d30b992882676a1dbc873920cb29c252e4e"
+    },
+    "phase-sources/census-contract-performance-contract/tools/historical-blob-batch-074/test_linux_session.py": {
+      "bytes": 1286,
+      "sha256": "f0eabc254dff48070a45d63ea373df30a19672af365f29dd8a770ded1a4a2bed"
+    },
+    "phase-sources/census-contract-performance-contract/tools/historical-blob-batch-074/test_oracle.py": {
+      "bytes": 2177,
+      "sha256": "dbb48e86aefc2b2bdaf78b16d98957ee5d83c34d904ade7b0f81096c7e8a525c"
+    },
+    "phase-sources/census-contract-performance-contract/tools/historical-blob-batch-074/test_reader.py": {
+      "bytes": 14543,
+      "sha256": "f259d0b04eba25412491e57a662e3b4ca3127fcd71ce8648beb0137a141a58c5"
+    },
+    "phase-sources/census-contract-performance-contract/tools/historical-blob-batch-074/transport.rs": {
+      "bytes": 13826,
+      "sha256": "28fffebcdb20aafa20071b483965296a14ab1d5de38ee94f54285846acb3a1f0"
+    },
+    "phase-sources/census-contract-v1/crates/xtask/tests/historical_blob_batch_074.rs": {
+      "bytes": 7520,
+      "sha256": "01c4c8504c74aa00e22fa02348e78e9fffe75668a04a56f126de5e2751c390b2"
+    },
+    "phase-sources/census-contract-v1/crates/xtask/tests/historical_blob_caller_074.rs": {
+      "bytes": 25212,
+      "sha256": "7e5448c401a8026de8c7ac04217db9b248efb0dec99a7be75cd8ff1c5efceac2"
+    },
+    "phase-sources/census-contract-v1/crates/xtask/tests/historical_blob_fault_074.rs": {
+      "bytes": 36624,
+      "sha256": "a8f509605a36b48c87e06e00695ebb7863af13bc8d26129bad119ead40322ee2"
+    },
+    "phase-sources/census-contract-v1/crates/xtask/tests/historical_blob_transport_074.rs": {
+      "bytes": 16250,
+      "sha256": "df7c69dff0814806426cb9a775a4945bd0c5262bd334cb924eddec041a8627b9"
+    },
+    "phase-sources/census-contract-v1/index.json": {
+      "bytes": 2319,
+      "sha256": "2996c1c5be80d65e8af0ce1467427222fbd214430b190d3883ab366933a1cf19"
+    },
+    "phase-sources/census-contract-v1/tools/historical-blob-batch-074/caller_pins.py": {
+      "bytes": 5173,
+      "sha256": "25bed385369b715d2ff9c8f259e11201400b5db863066d90baa68d0ce94a5ab7"
+    },
+    "phase-sources/census-contract-v1/tools/historical-blob-batch-074/census_caller.rs": {
+      "bytes": 6040,
+      "sha256": "c44dcf02ab76b0953d4cc2f31a3b9a1a7947aaced82bd1a95d5118c1b01682d1"
+    },
+    "phase-sources/census-contract-v1/tools/historical-blob-batch-074/collision.py": {
+      "bytes": 1212,
+      "sha256": "29d3b9bb0dcd23d47cdf79052336e2da8daf4f4244903ff8df4b7e713f03b706"
+    },
+    "phase-sources/census-contract-v1/tools/historical-blob-batch-074/decoder.rs": {
+      "bytes": 4640,
+      "sha256": "7287fac38513dd2a8a77acb3537c57ae7e2870b24ec0ff591a57bcb62273ad1e"
+    },
+    "phase-sources/census-contract-v1/tools/historical-blob-batch-074/eligibility.py": {
+      "bytes": 5851,
+      "sha256": "1bcb7d15cd663b58a026ead5db82e21c68a417c64c3271486e70eb1794d2076b"
+    },
+    "phase-sources/census-contract-v1/tools/historical-blob-batch-074/linux_session.py": {
+      "bytes": 7351,
+      "sha256": "f9c7db57f2444fefba808e44ea00e79c1460e19254c33bad9a615647e4e0f991"
+    },
+    "phase-sources/census-contract-v1/tools/historical-blob-batch-074/oracle.py": {
+      "bytes": 6696,
+      "sha256": "1e360e21f79f1ecec1b7305fe1b914cd471d63f42686d1badc7548c9e8d1e90d"
+    },
+    "phase-sources/census-contract-v1/tools/historical-blob-batch-074/reader.py": {
+      "bytes": 7242,
+      "sha256": "71207da9f35a2b3458092e761c9a86ce9c47d07b8e99db3743bd430c2bd57470"
+    },
+    "phase-sources/census-contract-v1/tools/historical-blob-batch-074/test_caller_pins.py": {
+      "bytes": 2011,
+      "sha256": "ce36317e1f6cdd9be258bd891035afec66ffafa36d6c0e8be7572c4e12abea1b"
+    },
+    "phase-sources/census-contract-v1/tools/historical-blob-batch-074/test_collision.py": {
+      "bytes": 1302,
+      "sha256": "bfbf29334e38a46346f96814549b757d8219182f091346d580ea5e480a58edaa"
+    },
+    "phase-sources/census-contract-v1/tools/historical-blob-batch-074/test_eligibility.py": {
+      "bytes": 1522,
+      "sha256": "388b690c1c2a46afaa072e8cddb18d30b992882676a1dbc873920cb29c252e4e"
+    },
+    "phase-sources/census-contract-v1/tools/historical-blob-batch-074/test_linux_session.py": {
+      "bytes": 1286,
+      "sha256": "f0eabc254dff48070a45d63ea373df30a19672af365f29dd8a770ded1a4a2bed"
+    },
+    "phase-sources/census-contract-v1/tools/historical-blob-batch-074/test_oracle.py": {
+      "bytes": 2177,
+      "sha256": "dbb48e86aefc2b2bdaf78b16d98957ee5d83c34d904ade7b0f81096c7e8a525c"
+    },
+    "phase-sources/census-contract-v1/tools/historical-blob-batch-074/test_reader.py": {
+      "bytes": 14543,
+      "sha256": "f259d0b04eba25412491e57a662e3b4ca3127fcd71ce8648beb0137a141a58c5"
+    },
+    "phase-sources/census-contract-v1/tools/historical-blob-batch-074/transport.rs": {
+      "bytes": 13826,
+      "sha256": "28fffebcdb20aafa20071b483965296a14ab1d5de38ee94f54285846acb3a1f0"
+    },
+    "phase-sources/census-contract-v2/crates/xtask/tests/historical_blob_batch_074.rs": {
+      "bytes": 7520,
+      "sha256": "01c4c8504c74aa00e22fa02348e78e9fffe75668a04a56f126de5e2751c390b2"
+    },
+    "phase-sources/census-contract-v2/crates/xtask/tests/historical_blob_caller_074.rs": {
+      "bytes": 26061,
+      "sha256": "df9f665673fbcfc4e54d686934d0cd588e58589e7e26527600ba2d4f4a4c7c0b"
+    },
+    "phase-sources/census-contract-v2/crates/xtask/tests/historical_blob_fault_074.rs": {
+      "bytes": 36624,
+      "sha256": "a8f509605a36b48c87e06e00695ebb7863af13bc8d26129bad119ead40322ee2"
+    },
+    "phase-sources/census-contract-v2/crates/xtask/tests/historical_blob_transport_074.rs": {
+      "bytes": 16250,
+      "sha256": "df7c69dff0814806426cb9a775a4945bd0c5262bd334cb924eddec041a8627b9"
+    },
+    "phase-sources/census-contract-v2/index.json": {
+      "bytes": 2319,
+      "sha256": "8a6cf78c3f3b20a4453c4041f1027e5e5994efd65e6c27fb510c16418c4a9be1"
+    },
+    "phase-sources/census-contract-v2/tools/historical-blob-batch-074/caller_pins.py": {
+      "bytes": 5173,
+      "sha256": "25bed385369b715d2ff9c8f259e11201400b5db863066d90baa68d0ce94a5ab7"
+    },
+    "phase-sources/census-contract-v2/tools/historical-blob-batch-074/census_caller.rs": {
+      "bytes": 6040,
+      "sha256": "c44dcf02ab76b0953d4cc2f31a3b9a1a7947aaced82bd1a95d5118c1b01682d1"
+    },
+    "phase-sources/census-contract-v2/tools/historical-blob-batch-074/collision.py": {
+      "bytes": 1212,
+      "sha256": "29d3b9bb0dcd23d47cdf79052336e2da8daf4f4244903ff8df4b7e713f03b706"
+    },
+    "phase-sources/census-contract-v2/tools/historical-blob-batch-074/decoder.rs": {
+      "bytes": 4640,
+      "sha256": "7287fac38513dd2a8a77acb3537c57ae7e2870b24ec0ff591a57bcb62273ad1e"
+    },
+    "phase-sources/census-contract-v2/tools/historical-blob-batch-074/eligibility.py": {
+      "bytes": 5851,
+      "sha256": "1bcb7d15cd663b58a026ead5db82e21c68a417c64c3271486e70eb1794d2076b"
+    },
+    "phase-sources/census-contract-v2/tools/historical-blob-batch-074/linux_session.py": {
+      "bytes": 7351,
+      "sha256": "f9c7db57f2444fefba808e44ea00e79c1460e19254c33bad9a615647e4e0f991"
+    },
+    "phase-sources/census-contract-v2/tools/historical-blob-batch-074/oracle.py": {
+      "bytes": 6696,
+      "sha256": "1e360e21f79f1ecec1b7305fe1b914cd471d63f42686d1badc7548c9e8d1e90d"
+    },
+    "phase-sources/census-contract-v2/tools/historical-blob-batch-074/reader.py": {
+      "bytes": 7242,
+      "sha256": "71207da9f35a2b3458092e761c9a86ce9c47d07b8e99db3743bd430c2bd57470"
+    },
+    "phase-sources/census-contract-v2/tools/historical-blob-batch-074/test_caller_pins.py": {
+      "bytes": 2011,
+      "sha256": "ce36317e1f6cdd9be258bd891035afec66ffafa36d6c0e8be7572c4e12abea1b"
+    },
+    "phase-sources/census-contract-v2/tools/historical-blob-batch-074/test_collision.py": {
+      "bytes": 1302,
+      "sha256": "bfbf29334e38a46346f96814549b757d8219182f091346d580ea5e480a58edaa"
+    },
+    "phase-sources/census-contract-v2/tools/historical-blob-batch-074/test_eligibility.py": {
+      "bytes": 1522,
+      "sha256": "388b690c1c2a46afaa072e8cddb18d30b992882676a1dbc873920cb29c252e4e"
+    },
+    "phase-sources/census-contract-v2/tools/historical-blob-batch-074/test_linux_session.py": {
+      "bytes": 1286,
+      "sha256": "f0eabc254dff48070a45d63ea373df30a19672af365f29dd8a770ded1a4a2bed"
+    },
+    "phase-sources/census-contract-v2/tools/historical-blob-batch-074/test_oracle.py": {
+      "bytes": 2177,
+      "sha256": "dbb48e86aefc2b2bdaf78b16d98957ee5d83c34d904ade7b0f81096c7e8a525c"
+    },
+    "phase-sources/census-contract-v2/tools/historical-blob-batch-074/test_reader.py": {
+      "bytes": 14543,
+      "sha256": "f259d0b04eba25412491e57a662e3b4ca3127fcd71ce8648beb0137a141a58c5"
+    },
+    "phase-sources/census-contract-v2/tools/historical-blob-batch-074/transport.rs": {
+      "bytes": 13826,
+      "sha256": "28fffebcdb20aafa20071b483965296a14ab1d5de38ee94f54285846acb3a1f0"
+    },
+    "unchanged-caller/crates/xtask/tests/support/census_provider_input.rs": {
+      "bytes": 1568,
+      "sha256": "6097f17dee5896641528276094afbf41e8b4d393ea5f7162126af7eae7867fb3"
+    },
+    "unchanged-caller/tools/material-lock-fixture-074/contract.rs": {
+      "bytes": 1991,
+      "sha256": "9003527a95736011c1e9eb4c4bd02310ac3c3a61b21f6aa0484278317a2f6e5f"
+    }
+  },
+  "schema": "hc074-census-environment-error-contract-v1"
+}
