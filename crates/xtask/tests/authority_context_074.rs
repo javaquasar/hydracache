@@ -4,6 +4,66 @@ mod guard;
 mod runtime;
 #[path = "../../../tools/authority-runtime-074/io.rs"]
 mod runtime_io;
+
+#[test]
+fn guard_path_comparison_current_source_is_one_exact_predicate_edit() {
+    let before = include_str!("../../../tools/guard-path-comparison-074/fixed-slice-before.txt")
+        .replace("\r\n", "\n");
+    let current = std::fs::read_to_string(runtime::root().join(runtime::guard_path::SOURCE))
+        .unwrap()
+        .replace("\r\n", "\n");
+    assert_eq!(runtime::guard_path::candidate(&before), current);
+    assert_eq!(
+        runtime::expected(runtime::guard_path::SOURCE),
+        Some(current.clone())
+    );
+    assert!(runtime::accepts(runtime::guard_path::SOURCE, &current));
+    for bad in [
+        current.replace(runtime::guard_path::NEW, ""),
+        format!("{current}{}", runtime::guard_path::NEW),
+        current.replace("assert_eq!", "assert_ne!"),
+        format!("{current}\nconst UNRELATED: bool = true;\n"),
+    ] {
+        assert!(!runtime::accepts(runtime::guard_path::SOURCE, &bad));
+    }
+    // The pre-existing source gate compares Rust tokens, not comments/formatting.
+    assert!(runtime::accepts(
+        runtime::guard_path::SOURCE,
+        &format!("{current}\n// comment\n")
+    ));
+}
+
+#[test]
+fn guard_path_comparison_refuses_missing_duplicate_and_already_changed_baselines() {
+    let before = include_str!("../../../tools/guard-path-comparison-074/fixed-slice-before.txt")
+        .replace("\r\n", "\n");
+    for bad in [
+        before.replace(runtime::guard_path::OLD, ""),
+        format!("{before}{}", runtime::guard_path::OLD),
+        runtime::guard_path::candidate(&before),
+    ] {
+        assert!(std::panic::catch_unwind(|| runtime::guard_path::candidate(&bad)).is_err());
+    }
+}
+
+#[test]
+fn guard_path_comparison_leaves_other_reader_expectations_unchanged() {
+    for path in [
+        "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+        "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+    ] {
+        let (_, read) = runtime::performance::READERS
+            .iter()
+            .find(|(file, _)| *file == path)
+            .unwrap();
+        let original = runtime::frozen(runtime::BASE, path);
+        assert_eq!(
+            runtime::expected(path),
+            Some(runtime::performance::reader(&original, read))
+        );
+    }
+    assert!(runtime::expected("not/an/approved/source.rs").is_none());
+}
 #[path = "../../../tools/authority-storage-source-074/contract.rs"]
 mod storage_contract;
 fn read(path: &str) -> String {

@@ -12,7 +12,3 @@ pub fn candidate(original: &str) -> String {
     );
     original.replacen(OLD, NEW, 1)
 }
-
-pub fn accepts(original: &str, current: &str) -> bool {
-    candidate(original) == current
-}

@@ -116,7 +116,7 @@ fn corpus() -> Vec<String> {
 fn source_delta_is_exact_and_keeps_all_assertions() {
     assert!(contract::SOURCE.ends_with("performance_contract_074_fixed_slice.rs"));
     let changed = contract::candidate(BEFORE);
-    assert!(contract::accepts(BEFORE, &changed));
+    assert_eq!(contract::candidate(BEFORE), changed);
     assert_eq!(changed.replace(contract::NEW, contract::OLD), BEFORE);
     for marker in [
         "assert!",
@@ -138,7 +138,7 @@ fn source_delta_is_exact_and_keeps_all_assertions() {
     ] {
         assert!(std::panic::catch_unwind(|| contract::candidate(&bad)).is_err());
     }
-    assert!(!contract::accepts(BEFORE, &(changed + "\n// unrelated\n")));
+    assert_ne!(contract::candidate(BEFORE), changed + "\n// unrelated\n");
 }
 #[test]
 fn literal_paths_and_seeded_unicode_mutations_keep_exact_positions() {

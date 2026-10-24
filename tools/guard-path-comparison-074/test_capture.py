@@ -46,7 +46,11 @@ class Controls(unittest.TestCase):
     def test_fixed_proposal_and_fixture_are_bound_to_baseline(self):
         folder = Path(__file__).resolve().parent
         self.assertEqual(capture.sha((folder / 'fixed-slice-before.txt').read_bytes()), capture.BASELINE)
-        self.assertEqual(capture.sha((capture.ROOT / capture.SOURCE).read_bytes()), capture.BASELINE)
+        before = (folder / 'fixed-slice-before.txt').read_text()
+        old = 'if path == format!("{PREFIX}{file}") {'
+        new = 'if path.strip_prefix(PREFIX) == Some(*file) {'
+        self.assertEqual(before.count(old), 1)
+        self.assertEqual((capture.ROOT / capture.SOURCE).read_text(), before.replace(old, new, 1))
 
 
 if __name__ == '__main__':
