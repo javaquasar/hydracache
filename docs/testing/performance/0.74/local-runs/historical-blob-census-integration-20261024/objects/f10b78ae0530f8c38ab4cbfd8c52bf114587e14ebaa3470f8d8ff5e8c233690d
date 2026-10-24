@@ -1,0 +1,78 @@
+import copy
+from pathlib import Path
+import tempfile
+import unittest
+from unittest.mock import patch
+
+import caller_integration as integration
+import caller_pins
+
+
+class IntegrationControls(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.root = Path(__file__).resolve().parents[2]
+        cls.old = (cls.root / integration.LEGACY).read_text(encoding='utf-8')
+        cls.cases = integration.pins(cls.root)
+
+    def test_exact_delta_and_static_pins_require_no_git(self):
+        with patch('subprocess.run', side_effect=AssertionError('unexpected Git or process')):
+            integration.audit(self.root, self.old)
+        self.assertEqual(integration.integrated_source(self.old),
+                         (self.root / integration.CALLER).read_text(encoding='utf-8'))
+
+    def fixture(self, directory):
+        root = Path(directory)
+        for path in (integration.CALLER, integration.LEGACY, integration.REFERENCES):
+            target = root / path
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes((self.root / path).read_bytes())
+        return root
+
+    def test_unreviewed_allowlist_checks_deadlines_and_extra_effects_refuse(self):
+        current = integration.integrated_source(self.old)
+        for changed in (current.replace('revision == REVIEWED || revision == contract::BASE', 'true'),
+                        current.replace('contract::helper_matches(&helper)', 'true'),
+                        current.replace('accepts_until(&original, raw, deadline)', 'true'),
+                        current.replace('        deadline,', '        Instant::now() + transport::BOUND,'),
+                        current + '\n// unknown integration delta\n'):
+            with self.subTest(changed=changed[-100:]), tempfile.TemporaryDirectory() as directory:
+                root = self.fixture(directory)
+                (root / integration.CALLER).write_text(changed, encoding='utf-8')
+                with patch.object(integration, 'pins', return_value=self.cases):
+                    with self.assertRaisesRegex(ValueError, 'integration delta'):
+                        integration.audit(root, self.old)
+
+    def test_legacy_or_static_reference_changes_refuse(self):
+        for path, error in ((integration.LEGACY, 'legacy caller'),
+                            (integration.REFERENCES, 'reference implementation')):
+            with tempfile.TemporaryDirectory() as directory:
+                root = self.fixture(directory)
+                with (root / path).open('a', encoding='utf-8') as file:
+                    file.write('\n// unknown edit\n')
+                with patch.object(integration, 'pins', return_value=self.cases):
+                    with self.assertRaisesRegex(ValueError, error):
+                        integration.audit(root, self.old)
+
+    def test_sealed_metadata_cannot_be_refreshed_or_reordered(self):
+        for field, value in (('bytes', 1), ('sha256', '0'*64), ('oid', '0'*40)):
+            bad = copy.deepcopy(self.cases)
+            bad[0]['pin'][field] = value
+            with self.assertRaises(ValueError):
+                integration.reference_source(bad)
+        for bad in ([], self.cases[::-1]):
+            with self.assertRaises(ValueError):
+                integration.reference_source(bad)
+
+    def test_static_packet_drift_refuses_before_any_command(self):
+        with tempfile.TemporaryDirectory() as directory:
+            packet = Path(directory) / integration.PACKET
+            packet.mkdir(parents=True)
+            (packet / 'index.json').write_bytes(b'{}')
+            with patch('subprocess.run', side_effect=AssertionError('unexpected process')):
+                with self.assertRaisesRegex(ValueError, 'packet drift'):
+                    integration.pins(Path(directory))
+
+
+if __name__ == '__main__':
+    unittest.main()

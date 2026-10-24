@@ -6947,3 +6947,13 @@ and initial literal-unwrap lint failures remain retained with their sources.
 No real caller is switched. Its allowlist, exact source delta and independent pin
 consumption without extra producer reads remain integration prerequisites; WSL
 clock, production authority and original release barriers stay closed.
+
+The [census caller integration](historical-blob-census-integration-result-20261024.md)
+connects the bounded legacy-panic reader using two static independent metadata
+rows. No producer Git reads enter the guard; allowlist, signatures, helper/body
+predicates and conditional command order remain. Windows passes 37 cases per
+toolchain, including the real consumer; GNU/WSL passes 33 fixture cases each on
+1.94/1.88. Forty-five Python controls and strict local checks pass. First exact
+import-position and duplicate-module refusals remain retained. This is local
+source integrity, not batching, throughput evidence or production authority;
+the complete unchanged-bound package and cost gates remain open.

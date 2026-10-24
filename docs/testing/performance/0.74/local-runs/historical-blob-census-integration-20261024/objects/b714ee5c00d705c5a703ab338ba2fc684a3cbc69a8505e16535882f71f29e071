@@ -1,0 +1,1 @@
+{"args":["symbolic-ref","HEAD","refs/heads/unrelated"],"input_hex":"","policy":"Disabled","result":{"code":0,"stderr_hex":"","stdout_hex":""}}

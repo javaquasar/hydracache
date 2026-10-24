@@ -1,0 +1,16 @@
+
+running 11 tests
+test census_contract_child_fixture ... ok
+test caller_child_fixture ... ok
+test census_error_contract_preserves_status_before_utf8_and_successful_stderr ... ok
+test census_panic_schedule_preserves_each_guard_message_and_short_circuit ... ok
+test census_schedule_keeps_each_conditional_read_and_first_failure ... ok
+test shadow_cannot_use_an_unbound_missing_reference ... ok
+test census_reference_and_deadline_refuse_before_any_command ... ok
+test static_census_reference_keeps_exact_revision_and_path_allowlist ... ok
+test census_panic_facade_preserves_payloads_and_keeps_new_refusals_explicit ... ok
+test real_census_caller_shadow_preserves_the_logging_counterexample_before_integration ... ok
+test census_inherited_environment_and_error_compatibility_profiles ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.01s
+

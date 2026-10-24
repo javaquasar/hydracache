@@ -1,0 +1,21 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+warning: function `original` is never used
+  --> crates\xtask\tests\support\census_provider_input.rs:21:15
+   |
+21 | pub(crate) fn original() -> String {
+   |               ^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `accepts` is never used
+  --> crates\xtask\tests\support\census_provider_input.rs:25:15
+   |
+25 | pub(crate) fn accepts(original: &str, raw: &str) -> bool {
+   |               ^^^^^^^
+
+warning: `xtask` (test "held_complete_role_census_074") generated 2 warnings
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 08s
+     Running tests\held_complete_role_census_074.rs (target\debug\deps\held_complete_role_census_074-8d8652a4de24ccda.exe)
+     Running tests\historical_blob_caller_074.rs (target\debug\deps\historical_blob_caller_074-0b145296431064c2.exe)
+     Running tests\role_census_reader_074.rs (target\debug\deps\role_census_reader_074-e8c3f359ebe987ed.exe)
+error: test failed, to rerun pass `-p xtask --test role_census_reader_074`

@@ -6,6 +6,11 @@ current-file reader imports it. The isolated native test target below executes
 an oracle that uses the Python prototype as one control. No existing validation
 graph or live observation changes; this is not release or performance admission.
 
+Current status: only the narrow Rust census test-source adapter is now connected,
+with static independent references and unchanged conditional Git reads. The
+Python prototype and native batch entry points are not substituted into its guard.
+See the [integration report](../../docs/testing/performance/0.74/historical-blob-census-integration-result-20261024.md).
+
 `read_batch(root, requests)` accepts at most 256 explicit requests, each with a
 full lowercase SHA1 commit and a UTF8 repository-relative path. Short revisions,
 refs, generators, traversal and line-protocol injection refuse before execution.
@@ -306,3 +311,19 @@ The real caller is still unmodified. Integration must preserve the revision
 allowlist and source provenance without importing diagnostic producer reads into
 the conditional guard schedule. WSL clock authority and performance admission
 remain closed.
+
+## Connected census source caller
+
+`census_reference.rs` supplies two literal metadata rows from earlier sealed
+evidence without runtime preparation reads. `caller_integration.py` audits the
+whole descriptor template and exact caller/import delta against the old packet
+and original caller. Allowlist and panic signatures remain; selected views share
+one deadline across both historical reads. Helper/body checks are not cached or
+removed. The legacy contract import is one audited re-export, not a duplicate.
+
+Windows passes 37 cases per current/MSRV toolchain, including the real consumer;
+GNU/WSL passes the five-target 33-case fixture on both. Five profiles compare
+old/typed/facade/connected argv, read order and panic payloads. Python has 45
+controls; strict local gates pass. First source-expectation/lint refusals remain
+retained. No extra Git command enters the guard; no speedup or production admission
+is claimed. Full package replay and complete-path attribution remain separate.

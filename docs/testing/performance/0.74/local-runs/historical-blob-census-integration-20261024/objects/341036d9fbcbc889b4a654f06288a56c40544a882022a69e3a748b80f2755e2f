@@ -1,0 +1,7 @@
+{
+  "crates/xtask/tests/support/census_provider_input.rs": "f55546b7f9892b38f97ad45918d1f6978975528cfd352ae98043e25970dbd12b",
+  "crates/xtask/tests/support/census_provider_input_legacy.rs": "89cdefcca5a8994e51d7a083918f68da6ae2254f36396b8765461d6da55367e2",
+  "crates/xtask/tests/held_complete_role_census_074.rs": "afee11f16f157f7ef9cbc254950fd0b853c8ee7ef553a92981b0fbf823a302a9",
+  "crates/xtask/tests/role_census_reader_074.rs": "ca4d941865dce310bfffb097304ab4ad2d27eb494a930217529d05b4a8fa4994",
+  "tools/historical-blob-batch-074/linux-census-fixture.toml": "a2da9df0f3c13db8388c76a02c036d5e882460d1555a1f3573b3179c84c59d73"
+}

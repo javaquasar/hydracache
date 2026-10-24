@@ -312,3 +312,12 @@ Python controls and strict local checks pass. Actual source-guard integration
 must still preserve revision/source authority without importing producer reads
 into the live schedule. Production clock/trust, delivery and lifecycle remain
 subject to the original barriers above.
+
+The [census integration](historical-blob-census-integration-result-20261024.md)
+connects that real test-source caller without extra Git preparation in its guard.
+Allowlist, panic surface, predicates and read order remain; static references come
+from prior sealed evidence, not current responses. Windows/current/MSRV pass 37
+cases each; GNU/WSL passes 33 fixture cases each. Forty-five Python controls and
+strict local gates pass; first import-position/lint refusals remain. No Git-process
+reduction is established. Full package replay/cost attribution and the original
+clock, trust, delivery, writer and release barriers remain separate.

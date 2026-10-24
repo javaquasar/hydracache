@@ -1,0 +1,66 @@
+
+running 3 tests
+test complete_role_census_is_inside_the_same_original_material_inventory ... ok
+test complete_role_census_uses_owned_contributions_before_the_existing_closing_owner_check ... ok
+test complete_role_census_keeps_prior_owner_and_provider_bodies_exact_after_additive_hooks ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.99s
+
+
+running 9 tests
+test invalid_reference_or_missing_identity_never_accepts_the_stream ... ok
+test missing_and_duplicate_records_keep_original_order ... ok
+test modified_bytes_cannot_create_their_own_pin_or_publish_a_valid_prefix ... ok
+test short_missing_requires_explicit_syntax_and_never_expands_or_changes_old_missing ... ok
+test every_truncated_prefix_and_extra_suffix_refuse ... ok
+test wrong_oid_type_count_and_noncanonical_headers_refuse ... ok
+test size_record_count_and_header_budgets_refuse ... ok
+test independent_threads_and_observations_cannot_share_stale_records ... ok
+test every_kind_empty_binary_and_large_bytes_match_the_independent_reference ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+
+running 11 tests
+test caller_child_fixture ... ok
+test census_contract_child_fixture ... ok
+test census_error_contract_preserves_status_before_utf8_and_successful_stderr ... ok
+test census_schedule_keeps_each_conditional_read_and_first_failure ... ok
+test shadow_cannot_use_an_unbound_missing_reference ... ok
+test static_census_reference_keeps_exact_revision_and_path_allowlist ... ok
+test census_panic_schedule_preserves_each_guard_message_and_short_circuit ... ok
+test census_reference_and_deadline_refuse_before_any_command ... ok
+test census_panic_facade_preserves_payloads_and_keeps_new_refusals_explicit ... ok
+test real_census_caller_shadow_preserves_the_logging_counterexample_before_integration ... ok
+test census_inherited_environment_and_error_compatibility_profiles ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 10.22s
+
+
+running 5 tests
+test exact_output_pin_binds_each_stream_length_bytes_and_terminal_code ... ok
+test invalid_output_references_and_original_identity_are_not_admitted ... ok
+test missing_or_misaligned_fallback_bindings_refuse_before_git_or_observer ... ok
+test fallback_reference_and_aggregate_budgets_refuse_before_git ... ok
+test stale_pins_refs_config_and_fallback_aba_refuse_before_caller_admission ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 12.18s
+
+
+running 6 tests
+test transport_child_fixture ... ok
+test preflight_refuses_invalid_queries_deadlines_and_pin_identity_before_effects ... ok
+test failed_batch_is_not_retried_as_show_or_published_as_empty_source ... ok
+test direct_nonzero_exit_stdin_and_missing_executable_keep_explicit_results ... ok
+test actual_timeout_and_stderr_budget_reap_only_the_owned_child ... ok
+test real_git_python_and_native_outputs_match_in_six_isolated_cases ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 13.47s
+
+
+running 2 tests
+test census_reader_preserves_every_original_assertion_and_only_adapts_one_provider ... ok
+test census_provider_requires_complete_known_fixture_delta_and_pinned_helper ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.96s
+

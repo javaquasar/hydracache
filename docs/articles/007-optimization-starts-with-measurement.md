@@ -19401,3 +19401,27 @@ revision allowlist and prove the exact allowed source delta without adding those
 reads. Only after that integration can full-path cost and any process-amortization
 hypothesis be evaluated. Production authority and release qualification do not
 follow from a passing compatibility facade.
+
+The [census integration](../testing/performance/0.74/historical-blob-census-integration-result-20261024.md)
+connects that narrow source caller without moving the diagnostic pin producer
+into its guard. Two immutable metadata rows come from the earlier sealed packet.
+A complete descriptor template and exact caller delta are checked against old
+evidence; observed bytes cannot refresh the references. The guard still checks
+the helper, then reads BASE and REVIEWED under one non-renewed deadline. It
+retains the original allowlist, panic signatures and every body predicate.
+
+Five profiles compare frozen legacy, typed reader, panic facade and connected
+caller. Literal Git argv, reached read order and panic payloads agree. A separate
+signature-only test takes function pointers without calling them, preserving the
+API without adding a source read. Windows passes 37 cases per toolchain, including
+the real consumer; GNU/WSL passes 33 each, with consumer source checked as data.
+Forty-five Python controls and strict local gates pass. The first exact-import
+expectation failure, duplicate-module lint refusal and MSRV warnings remain;
+corrections preserve whole-source comparison and use no lint exception.
+
+This improves the explicit integrity contract, not measured throughput. The
+caller still performs the same number of Git commands at the same conditional
+points. Hashing, reference construction and file-backed capture may add cost and
+need full-path attribution. A batching proposal cannot claim a win by eagerly
+reading a source the old failure path would never observe. Full bounded package
+replay, cost attribution and production admission remain independent gates.

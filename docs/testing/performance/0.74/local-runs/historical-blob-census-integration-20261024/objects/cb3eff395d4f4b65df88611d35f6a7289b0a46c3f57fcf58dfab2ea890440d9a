@@ -1,0 +1,23 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+warning: function `original` is never used
+  --> crates\xtask\tests\support\census_provider_input.rs:21:15
+   |
+21 | pub(crate) fn original() -> String {
+   |               ^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+warning: function `accepts` is never used
+  --> crates\xtask\tests\support\census_provider_input.rs:25:15
+   |
+25 | pub(crate) fn accepts(original: &str, raw: &str) -> bool {
+   |               ^^^^^^^
+
+warning: `xtask` (test "held_complete_role_census_074") generated 2 warnings
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 21.98s
+     Running tests\held_complete_role_census_074.rs (target\debug\deps\held_complete_role_census_074-d6401a7fdbeeeb32.exe)
+     Running tests\historical_blob_batch_074.rs (target\debug\deps\historical_blob_batch_074-8bcb13610d8e9082.exe)
+     Running tests\historical_blob_caller_074.rs (target\debug\deps\historical_blob_caller_074-236fc1da3c630efb.exe)
+     Running tests\historical_blob_fault_074.rs (target\debug\deps\historical_blob_fault_074-bac123969d1b64a6.exe)
+     Running tests\historical_blob_transport_074.rs (target\debug\deps\historical_blob_transport_074-a668e2555a6ca170.exe)
+     Running tests\role_census_reader_074.rs (target\debug\deps\role_census_reader_074-b8bee5e7184eda14.exe)

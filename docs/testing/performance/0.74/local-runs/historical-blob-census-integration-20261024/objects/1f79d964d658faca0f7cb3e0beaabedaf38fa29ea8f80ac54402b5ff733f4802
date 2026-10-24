@@ -1,0 +1,11 @@
+
+running 6 tests
+test transport_child_fixture ... ok
+test preflight_refuses_invalid_queries_deadlines_and_pin_identity_before_effects ... ok
+test failed_batch_is_not_retried_as_show_or_published_as_empty_source ... ok
+test direct_nonzero_exit_stdin_and_missing_executable_keep_explicit_results ... ok
+test real_git_python_and_native_outputs_match_in_six_isolated_cases ... ok
+test actual_timeout_and_stderr_budget_reap_only_the_owned_child ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.05s
+

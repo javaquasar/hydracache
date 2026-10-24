@@ -1,0 +1,7 @@
+
+running 2 tests
+test census_reader_preserves_every_original_assertion_and_only_adapts_one_provider ... ok
+test census_provider_requires_complete_known_fixture_delta_and_pinned_helper ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+

@@ -1,0 +1,144 @@
+"""Independent staged bytes, provenance, cleanup and no-extra-read profile proof."""
+from pathlib import Path
+import base64
+import hashlib
+import json
+import subprocess
+import sys
+import tomllib
+import zlib
+
+ROOT=Path(__file__).resolve().parent.parent
+BASE='docs/testing/performance/0.74/local-runs/historical-blob-census-integration-20261024'
+
+
+def git(args,raw=None):
+    return subprocess.check_output(['git',*args],cwd=ROOT,input=raw)
+
+
+def staged(path):
+    return git(['show',':'+path])
+
+
+def sha(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+
+index_raw=staged(BASE+'/index.json')
+assert index_raw==(ROOT/BASE/'index.json').read_bytes()
+index=json.loads(index_raw)
+assert index['code_commit']=='ae508a57220fe95b11887b81f16ff05263f1dee9'
+objects={}
+for item in index['members'].values():
+    digest=item['sha256']
+    if digest not in objects:
+        path=BASE+'/objects/'+digest
+        objects[digest]=staged(path)
+        assert objects[digest]==(ROOT/path).read_bytes()
+    assert sha(objects[digest])==digest and len(objects[digest])==item['bytes']
+
+
+def member(name):
+    return objects[index['members'][name]['sha256']]
+
+
+def profiles(get):
+    pins=json.loads(get('producer.stdout.json'))
+    assert pins['caller_integrated'] and pins['test_fixture_pin_integrity'] and not pins['production_pin_authority']
+    specs=[v['spec'] for v in pins['cases']]
+    for case in pins['cases']:
+        raw=bytes.fromhex(case['stdout_hex'])
+        assert sha(raw)==case['pin']['sha256'] and len(raw)==case['pin']['bytes']
+    assert json.loads(get('result.json'))['caller_integrated']
+    for mode in ('clean','trace','config','config-error','repository-error'):
+        line=next(v for v in get(mode+'.stdout.log').decode().splitlines() if '"operations"' in v)
+        value=json.loads(line[line.index('{'):])
+        assert value['caller_integrated'] and value['mode']==mode and len(value['operations'])==5
+        total=0
+        for op in value['operations']:
+            name=op['operation']
+            failed=mode.endswith('error') and name!='unrelated'
+            expected={'original':[specs[0]],'accepts':[specs[1]],'view':[specs[0]] if failed else specs,
+                'unrelated':[],'mismatch':[specs[1]]}[name]
+            assert op['old_git_argv']==op['candidate_git_argv']==op['facade_git_argv']==op['integrated_git_argv']
+            assert [v[3] for v in op['integrated_git_argv']]==expected
+            assert all(v[1:3]==['--no-replace-objects','show'] and len(v)==4 for v in op['integrated_git_argv'])
+            assert op['old_error']==op['facade_error']==op['integrated_error']
+            assert op['old_panic_kind']==op['facade_panic_kind']==op['integrated_panic_kind']
+            assert op['old_success']==op['facade_success']==op['integrated_success']==(not failed)
+            if failed:
+                assert op['old_error']=='missing exact material fixture source' and 'Process' in op['candidate']['Err']
+            else:
+                assert 'Ok' in op['candidate'] and op['old_error'] is None
+                if name=='unrelated':
+                    assert op['candidate_events']==[] and op['outputs']==[]
+            total+=4*len(expected)
+        starts=[json.loads(v) for v in get(mode+'.trace.jsonl').decode().splitlines() if json.loads(v)['event']=='start']
+        assert len(starts)==total+(0 if mode.endswith('error') else 1)
+
+
+for phase in ('census-integrate-current-receipts','census-integrate-msrv-receipts'):
+    profiles(lambda name:member(f'observations/{phase}/-census-contract/{name}'))
+known={(p['name'],p['version'],p.get('source'),p.get('checksum')) for p in tomllib.loads((ROOT/'Cargo.lock').read_text())['package']}
+for version in ('v1','v2','v3','v4'):
+    native=json.loads(member(f'linux/{version}/stdout.json'))
+    assert native['source_unchanged'] and native['owned_root_removed'] and native['active_groups_after']==[]
+    assert native['boot_before']==native['boot_after'] and native['component_tests_passed'] and native['uid']==1000
+    lock=tomllib.loads(base64.b64decode(native['resolved_lock_b64']).decode())['package']
+    assert len(lock)==33
+    for p in lock:
+        if p['name']=='hc074-historical-blob-linux-fixture':
+            assert p['version']=='0.0.0' and 'source' not in p
+        else:
+            assert (p['name'],p['version'],p.get('source'),p.get('checksum')) in known
+    payload=json.loads(member(f'linux/{version}/input.json'))
+    for name,item in payload['files'].items():
+        raw=base64.b64decode(item['base64'],validate=True)
+        assert sha(raw)==item['sha256']==native['sources'][name]
+        assert raw==member(f'linux-input/{version}/{name}')
+        if name.startswith('repo/.git/objects/'):
+            assert hashlib.sha1(zlib.decompress(raw)).hexdigest()==''.join(name.split('/')[-2:])
+        elif version=='v4':
+            source='tools/historical-blob-batch-074/linux-census-fixture.toml' if name=='repo/crates/xtask/Cargo.toml' else name.removeprefix('repo/')
+            assert raw==(ROOT/source).read_bytes()
+            assert git(['hash-object','--stdin','--path',source],raw).strip()==git(['rev-parse',':'+source]).strip()
+    if version=='v4':
+        for toolchain in ('1.94.0','1.88.0'):
+            profiles(lambda name:member(f'linux-observations/{version}/{toolchain}-census-contract/{name}'))
+            oracle=json.loads(member(f'linux-observations/{version}/{toolchain}/oracle.stdout.json'))
+            assert len(oracle['cases'])==6
+            for number,case in enumerate(oracle['cases']):
+                observed=json.loads(member(f'linux-observations/{version}/{toolchain}/native-case-{number}.json'))
+                assert observed['outputs']==case['expected']
+assert 'assertion `left == right` failed' in member('checks/census-integrate-current-v1/stdout.log').decode()
+assert 'duplicate_mod' in member('checks/census-integrate-clippy/stderr.log').decode()
+assert 'warning: function `original` is never used' in member('checks/census-integrate-msrv/stderr.log').decode()
+for phase in ('census-integrate-current-receipts','census-integrate-msrv-receipts'):
+    assert 'warning:' not in member(f'checks/{phase}/stderr.log').decode()
+    for path in ('crates/xtask/tests/support/census_provider_input.rs','crates/xtask/tests/support/census_provider_input_legacy.rs',
+        'crates/xtask/tests/held_complete_role_census_074.rs','crates/xtask/tests/role_census_reader_074.rs'):
+        raw=member(f'caller-sources/{phase}/{path}')
+        assert raw==(ROOT/path).read_bytes()
+        assert git(['hash-object','--stdin','--path',path],raw).strip()==git(['rev-parse',index['code_commit']+':'+path]).strip()
+for name in index['members']:
+    if name.startswith('final/'):
+        path=name.removeprefix('final/')
+        raw=member(name)
+        assert raw==(ROOT/path).read_bytes()
+        assert git(['hash-object','--stdin','--path',path],raw).strip()==git(['rev-parse',':'+path]).strip()
+for path,digest in index['facts']['protected_sha256'].items():
+    assert sha((ROOT/path).read_bytes())==digest
+sys.path.insert(0,str(ROOT/'tools/historical-blob-batch-074'))
+import caller_integration
+import caller_pins
+packet=ROOT/caller_pins.PACKET
+raw=(packet/'index.json').read_bytes()
+assert sha(raw)==caller_pins.PACKET_SHA
+old=caller_pins.member(packet,json.loads(raw),'source/current/'+caller_integration.CALLER).decode().replace('\r\n','\n')
+caller_integration.audit(ROOT,old) # Pure independent-anchor/delta check: no Git.
+for path in ('tools/historical-blob-batch-074/census_caller.rs','tools/historical-blob-batch-074/transport.rs',
+    'tools/historical-blob-batch-074/decoder.rs','tools/material-lock-fixture-074/contract.rs','deny.toml'):
+    assert git(['diff','d472b66ecda79610f73bbb94c85b122e3d5dc639','--',path])==b''
+assert staged(BASE+'/.gitattributes')==b'index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n'
+print(json.dumps(dict(index_sha256=sha(index_raw),members=len(index['members']),objects=len(objects),
+    guard_extra_git_reads=False,caller_integrated=True,windows_tests=37,linux_tests=33)))

@@ -1,0 +1,149 @@
+"""Exact allowed caller delta and static pins from pre-integration evidence."""
+import hashlib
+import json
+from pathlib import Path
+
+PACKET = 'docs/testing/performance/0.74/local-runs/historical-blob-census-contract-20261024'
+PACKET_SHA = 'b20b3b825033dca9cb0313da64d0dbfc67c7879c9a29303980615e3510ab50fa'
+PIN_MEMBER = 'observations/census-contract-v2/census-contract/producer.stdout.json'
+CALLER = 'crates/xtask/tests/support/census_provider_input.rs'
+LEGACY = 'crates/xtask/tests/support/census_provider_input_legacy.rs'
+REFERENCES = 'tools/historical-blob-batch-074/census_reference.rs'
+
+FROZEN = '''fn frozen(revision: &str, deadline: Instant) -> String {
+    assert!(revision == REVIEWED || revision == contract::BASE);
+    let reference = census_reference::reference(revision, contract::SOURCE)
+        .unwrap_or_else(|failure| panic!("census adapter refusal: {failure:?}"));
+    census_caller::panic_api::frozen(census_caller::read(
+        &std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../.."),
+        &format!("{revision}:{}", contract::SOURCE),
+        &reference,
+        deadline,
+    ))
+}
+'''
+
+
+def replace_once(raw, old, new):
+    if raw.count(old) != 1:
+        raise ValueError('exact caller delta anchor')
+    return raw.replace(old, new, 1)
+
+
+def integrated_source(legacy):
+    raw = legacy.replace('\r\n', '\n')
+    raw = replace_once(raw, 'pub(crate) mod contract;\n',
+        'pub(crate) mod contract;\nuse crate::census_runtime::{census_caller, census_reference, transport};\nuse std::time::Instant;\n')
+    start = raw.index('fn frozen(revision: &str) -> String {')
+    end = raw.index('\npub(crate) fn original()', start)
+    raw = raw[:start] + FROZEN + raw[end:]
+    raw = replace_once(raw, '    frozen(contract::BASE)\n',
+                      '    frozen(contract::BASE, Instant::now() + transport::BOUND)\n')
+    raw = replace_once(raw,
+        '    raw.replace("\\r\\n", "\\n") == frozen(REVIEWED) && contract::accepts(original, raw)\n',
+        '    accepts_until(original, raw, Instant::now() + transport::BOUND)\n}\n\n'
+        'fn accepts_until(original: &str, raw: &str, deadline: Instant) -> bool {\n'
+        '    raw.replace("\\r\\n", "\\n") == frozen(REVIEWED, deadline) && contract::accepts(original, raw)\n')
+    raw = replace_once(raw, '    let helper = std::fs::read_to_string(\n',
+        '    let deadline = Instant::now() + transport::BOUND;\n    let helper = std::fs::read_to_string(\n')
+    raw = replace_once(raw, '    let original = original();\n    assert!(accepts(&original, raw), "unreviewed provider body");\n',
+        '    let original = frozen(contract::BASE, deadline);\n    assert!(\n'
+        '        accepts_until(&original, raw, deadline),\n        "unreviewed provider body"\n    );\n')
+    return raw + '\n// Preserve standalone panic-API signatures while view shares one deadline.\n' \
+        'const _: fn() -> String = original;\nconst _: fn(&str, &str) -> bool = accepts;\n' \
+        'const _: fn(&str, &str) -> String = view;\n'
+
+
+def pins(root):
+    folder = Path(root) / PACKET
+    raw = (folder / 'index.json').read_bytes()
+    if hashlib.sha256(raw).hexdigest() != PACKET_SHA:
+        raise ValueError('static reference packet drift')
+    item = json.loads(raw)['members'][PIN_MEMBER]
+    digest = item['sha256']
+    if len(digest) != 64 or any(c not in '0123456789abcdef' for c in digest):
+        raise ValueError('static reference member name')
+    raw = (folder / 'objects' / digest).read_bytes()
+    if len(raw) != item['bytes'] or hashlib.sha256(raw).hexdigest() != digest:
+        raise ValueError('static reference member drift')
+    value = json.loads(raw)
+    if not value['test_fixture_pin_integrity'] or value['production_pin_authority']:
+        raise ValueError('static reference authority scope')
+    return value['cases']
+
+
+REFERENCE_START = '''//! Static references from the pre-integration sealed census contract evidence.
+//! No Git, current-file read or observed-response-derived reference preparation.
+use super::census_caller::{Failure, Reason, Reference};
+use super::decoder::{Expected, Kind};
+
+pub const SOURCE: &str = "tools/long-run-supervisor-074/src/diagnostic_artifacts_linux.rs";
+pub const BASE: &str = "25faa7bb762aa229631e6f6cfc25cae33e16ff43";
+pub const REVIEWED: &str = "c91068bfa8b297bb075b63457da235aaa9c6232e";
+
+pub const ROWS: [(&str, usize, &str); 2] = [
+'''
+REFERENCE_END = '''];
+
+pub fn reference(revision: &str, source: &str) -> Result<Reference, Failure> {
+    let index = match revision {
+        BASE => 0,
+        REVIEWED => 1,
+        _ => {
+            return Err(Failure {
+                reason: Reason::Reference,
+                output: None,
+                original_io: None,
+            })
+        }
+    };
+    if source != SOURCE {
+        return Err(Failure {
+            reason: Reason::Reference,
+            output: None,
+            original_io: None,
+        });
+    }
+    let (oid, bytes, digest) = ROWS[index];
+    let sha256 = std::array::from_fn(|i| {
+        u8::from_str_radix(&digest[2 * i..2 * i + 2], 16).expect("fixed SHA256")
+    });
+    Reference::new(
+        &format!("{revision}:{source}"),
+        &Expected::Object {
+            oid: oid.to_owned(),
+            kind: Kind::Blob,
+            bytes,
+            sha256,
+        },
+    )
+}
+'''
+
+
+def reference_source(cases):
+    if len(cases) != 2:
+        raise ValueError('static reference count')
+    rows = []
+    for revision, case in zip(('25faa7bb762aa229631e6f6cfc25cae33e16ff43',
+                               'c91068bfa8b297bb075b63457da235aaa9c6232e'), cases):
+        pin = case['pin']
+        body = bytes.fromhex(case['stdout_hex'])
+        if case['spec'] != revision + ':tools/long-run-supervisor-074/src/diagnostic_artifacts_linux.rs':
+            raise ValueError('sealed static query identity')
+        if pin['kind'] != 'blob' or pin['bytes'] != len(body) or pin['sha256'] != hashlib.sha256(body).hexdigest():
+            raise ValueError('sealed static reference body')
+        if pin['oid'] != hashlib.sha1(b'blob '+str(len(body)).encode()+b'\0'+body).hexdigest() or b'\r' in body:
+            raise ValueError('sealed static object identity')
+        rows.append(f'    (\n        "{pin["oid"]}",\n        {pin["bytes"]},\n        "{pin["sha256"]}",\n    ),\n')
+    return REFERENCE_START + ''.join(rows) + REFERENCE_END
+
+
+def audit(root, archived):
+    root = Path(root)
+    if (root / LEGACY).read_text(encoding='utf-8') != archived:
+        raise ValueError('legacy caller reference changed')
+    if (root / CALLER).read_text(encoding='utf-8') != integrated_source(archived):
+        raise ValueError('unreviewed caller integration delta')
+    if (root / REFERENCES).read_text(encoding='utf-8') != reference_source(pins(root)):
+        raise ValueError('static reference implementation drift')

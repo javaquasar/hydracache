@@ -1,0 +1,117 @@
+"""One offline real-caller fixture in an already-running local Ubuntu WSL."""
+from pathlib import Path
+import base64
+import hashlib
+import json
+import subprocess
+import sys
+import zlib
+
+root = Path(__file__).resolve().parent.parent
+assert sys.argv[1:] in ([], ['v2'], ['v3'], ['v4'], ['integrated'])
+suffix = '-' + sys.argv[1] if sys.argv[1:] else ''
+integrated = sys.argv[1:] == ['integrated']
+out = root / ('target/census-integration-linux-20261024' if integrated else 'target/census-panic-linux' + suffix + '-20261024')
+out.mkdir(exist_ok=False)
+(out / 'intent.json').write_text(json.dumps(dict(distro='Ubuntu', must_already_be_running=True,
+    profile='census', network=False, server=False, services_or_clocks=False, outer_bound=1100,
+    component_deadlines_unchanged=True, original_caller_changed=integrated)) + '\n')
+running = subprocess.run(['wsl.exe', '--list', '--running', '--quiet'], capture_output=True, timeout=15)
+(out / 'running.stdout.raw').write_bytes(running.stdout)
+(out / 'running.stderr.raw').write_bytes(running.stderr)
+assert running.returncode == 0
+assert 'Ubuntu' in [v.strip() for v in running.stdout.decode('utf-16-le').replace('\x00', '').splitlines()]
+files, objects = {}, {}
+
+
+def add(name, raw):
+    assert name not in files
+    files[name] = dict(sha256=hashlib.sha256(raw).hexdigest(), base64=base64.b64encode(raw).decode())
+
+
+def git_object(oid, kind):
+    if oid in objects:
+        assert objects[oid]['kind'] == kind
+        return base64.b64decode(objects[oid]['raw_b64'])
+    assert len(oid) == 40 and all(c in '0123456789abcdef' for c in oid)
+    result = subprocess.run(['git', '--no-replace-objects', 'cat-file', kind, oid], cwd=root,
+                            capture_output=True, timeout=10)
+    assert result.returncode == 0 and not result.stderr
+    raw = result.stdout
+    envelope = kind.encode() + b' ' + str(len(raw)).encode() + b'\0' + raw
+    assert hashlib.sha1(envelope).hexdigest() == oid
+    objects[oid] = dict(kind=kind, sha256=hashlib.sha256(raw).hexdigest(), raw_b64=base64.b64encode(raw).decode())
+    assert len(objects) <= 64 and sum(len(base64.b64decode(v['raw_b64'])) for v in objects.values()) <= 2*1024**2
+    add('repo/.git/objects/' + oid[:2] + '/' + oid[2:], zlib.compress(envelope))
+    return raw
+
+
+def source_closure(revision, path):
+    commit = git_object(revision, 'commit')
+    tree = commit.splitlines()[0].removeprefix(b'tree ').decode('ascii')
+    parts = path.split('/')
+    for index, part in enumerate(parts):
+        raw = git_object(tree, 'tree')
+        offset, entries = 0, {}
+        while offset < len(raw):
+            nul = raw.index(b'\0', offset)
+            mode, name = raw[offset:nul].split(b' ', 1)
+            oid = raw[nul+1:nul+21].hex()
+            assert len(oid) == 40 and name not in entries
+            entries[name] = (mode, oid)
+            offset = nul + 21
+        mode, tree = entries[part.encode()]
+        if index == len(parts)-1:
+            assert mode == b'100644'
+            git_object(tree, 'blob')
+        else:
+            assert mode == b'40000'
+
+
+source = 'tools/long-run-supervisor-074/src/diagnostic_artifacts_linux.rs'
+for revision in ('25faa7bb762aa229631e6f6cfc25cae33e16ff43', 'c91068bfa8b297bb075b63457da235aaa9c6232e'):
+    source_closure(revision, source)
+source_closure('c91068bfa8b297bb075b63457da235aaa9c6232e', 'crates/xtask/tests/held_complete_role_census_074.rs')
+(out / 'git-source-objects.json').write_text(json.dumps(objects, sort_keys=True, indent=2)+'\n')
+for path in sorted((root / 'tools/historical-blob-batch-074').iterdir()):
+    if path.suffix in ('.py', '.rs'):
+        add('repo/tools/historical-blob-batch-074/' + path.name, path.read_bytes())
+for name in ('historical_blob_batch_074.rs', 'historical_blob_fault_074.rs', 'historical_blob_transport_074.rs',
+             'historical_blob_caller_074.rs', 'role_census_reader_074.rs', 'held_complete_role_census_074.rs',
+             'support/census_provider_input.rs', 'support/census_provider_input_legacy.rs'):
+    add('repo/crates/xtask/tests/' + name, (root / 'crates/xtask/tests' / name).read_bytes())
+for path in (source, 'tools/material-lock-fixture-074/contract.rs', 'tools/material-lock-fixture-074/controls.rs'):
+    add('repo/' + path, (root / path).read_bytes())
+packet = 'docs/testing/performance/0.74/local-runs/role-census-inventory-20261024'
+raw_index = (root / packet / 'index.json').read_bytes()
+assert hashlib.sha256(raw_index).hexdigest() == '86946490836001a8f887220767b3d3677a050bbf94664370b09fd548ff8a1251'
+add('repo/' + packet + '/index.json', raw_index)
+index = json.loads(raw_index)
+for name in ('audit/inventory.json', 'source/current/crates/xtask/tests/support/census_provider_input.rs',
+             'observation/census-exact-candidate/intent.json'):
+    entry = index['members'][name]
+    raw = (root / packet / 'objects' / entry['sha256']).read_bytes()
+    assert len(raw) == entry['bytes'] and hashlib.sha256(raw).hexdigest() == entry['sha256']
+    add('repo/' + packet + '/objects/' + entry['sha256'], raw)
+if integrated:
+    packet = 'docs/testing/performance/0.74/local-runs/historical-blob-census-contract-20261024'
+    raw_index = (root / packet / 'index.json').read_bytes()
+    assert hashlib.sha256(raw_index).hexdigest() == 'b20b3b825033dca9cb0313da64d0dbfc67c7879c9a29303980615e3510ab50fa'
+    add('repo/' + packet + '/index.json', raw_index)
+    entry = json.loads(raw_index)['members']['observations/census-contract-v2/census-contract/producer.stdout.json']
+    raw = (root / packet / 'objects' / entry['sha256']).read_bytes()
+    assert len(raw) == entry['bytes'] and hashlib.sha256(raw).hexdigest() == entry['sha256']
+    add('repo/' + packet + '/objects/' + entry['sha256'], raw)
+add('repo/crates/xtask/Cargo.toml', (root / 'tools/historical-blob-batch-074/linux-census-fixture.toml').read_bytes())
+add('repo/Cargo.lock', (root / 'Cargo.lock').read_bytes())
+payload = json.dumps(dict(files=files, profile='census')).encode()
+(out / 'input.json').write_bytes(payload)
+script = (root / 'tools/historical-blob-batch-074/linux_session.py').read_text(encoding='utf-8')
+with (out / 'stdout.json').open('xb') as stdout, (out / 'stderr.log').open('xb') as stderr:
+    result = subprocess.run(['wsl.exe', '-d', 'Ubuntu', '--exec', 'python3', '-c', script],
+                            input=payload, stdout=stdout, stderr=stderr, timeout=1100)
+(out / 'result.json').write_text(json.dumps(dict(exit=result.returncode, server=False))+'\n')
+receipt = json.loads((out / 'stdout.json').read_bytes())
+print(json.dumps({k:v for k,v in receipt.items() if k not in ('evidence','resolved_lock_b64','sources','phases')}, indent=2))
+print(json.dumps([dict(name=p['name'],code=p['code'],reason=p['reason']) for p in receipt['phases']]))
+raise SystemExit(result.returncode)

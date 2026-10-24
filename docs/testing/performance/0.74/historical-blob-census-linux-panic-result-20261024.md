@@ -108,3 +108,8 @@ native phases needs that shortening. Cargo manifests/lockfile, deny policy,
 qualification manifest and frozen 0.73 artifacts are unchanged. No clocks,
 services, server, product workload, original-owner execution, installation,
 qualification or push occurs.
+
+The subsequent [caller integration](historical-blob-census-integration-result-20261024.md)
+connects the narrow source reader with static references and no extra guard Git
+reads. This earlier pre-integration result and its first refusals remain;
+production and performance admission are separate.
