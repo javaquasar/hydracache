@@ -1,0 +1,1222 @@
+
+running 222 tests
+test cache::tests::lazy_key_event_tags_are_built_for_observed_mutations ... ok
+test cache::tests::flush_completes_store_maintenance_and_releases_tag_index_state ... ok
+test cache::tests::lazy_key_event_tags_are_not_built_without_subscribers ... ok
+test cache::tests::retention_soak_100_cleanup_cycles_return_all_owners_to_zero ... ignored, 0.70 retention soak: exercised by the scheduled/release evidence lane
+test cache::tests::lazy_key_event_tags_respect_disabled_access_events ... ok
+test cluster::tests::admission_bridge_allows_role_transition_for_same_generation ... ok
+test cluster::tests::admission_bridge_config_normalizes_zero_interval_and_member_filter ... ok
+test cache::tests::geometric_put_remove_flush_cycles_return_retained_owners_to_baseline ... ok
+test cluster::tests::admission_bridge_diagnostics_record_events_without_double_counting_failures ... ok
+test cluster::tests::admission_bridge_event_history_is_bounded_without_resetting_totals ... ok
+test cluster::tests::admission_bridge_rejects_stale_candidate_before_control_plane_write ... ok
+test cluster::tests::admission_bridge_respects_role_filters_and_ignores_local_candidates ... ok
+test cluster::tests::admission_bridge_run_once_admits_candidates_and_deduplicates_generation ... ok
+test cluster::tests::candidate_carries_generation_endpoints_and_metadata ... ok
+test cluster::tests::chitchat_style_discovery_satisfies_trait_and_seed_metadata_paths ... ok
+test cluster::tests::client_to_member_promotion_moves_node_between_role_sets ... ok
+test cluster::tests::closed_membership_subscriber_and_display_errors_are_observable ... ok
+test cluster::tests::component_failure_sets_last_error_and_failed_status ... ok
+test cluster::tests::component_start_is_idempotent ... ok
+test cluster::tests::component_stop_records_graceful_stop ... ok
+test cluster::tests::diagnostics_report_counts_bootstrap_and_subscribers ... ok
+test cluster::tests::discovery_diagnostics_helpers_report_candidate_and_event_counts ... ok
+test cluster::tests::discovery_events_keep_candidate_and_liveness_information ... ok
+test cluster::tests::endpoints_builder_sets_advertised_addresses ... ok
+test cluster::tests::admission_bridge_handle_drop_requests_shutdown_and_records_stop ... ok
+test cluster::tests::fill_counters_are_mutually_exclusive_per_event ... ok
+test cluster::tests::fill_hot_cache_hit_increments_only_hot_counter ... ok
+test cluster::tests::fill_owner_load_increments_only_owner_counter ... ok
+test cluster::tests::generation_ordering_tracks_restarts ... ok
+test cluster::tests::fill_remote_fetch_increments_only_remote_counter ... ok
+test cluster::tests::in_memory_cluster_admits_members_and_clients ... ok
+test cluster::tests::in_memory_cluster_allows_generation_upgrade_and_advances_epoch ... ok
+test cluster::tests::in_memory_cluster_rejects_stale_generation ... ok
+test cluster::tests::in_memory_cluster_resolves_key_owner_from_admitted_members ... ok
+test cluster::tests::in_memory_discovery_records_candidates_and_liveness_events ... ok
+test cluster::tests::in_memory_cluster_satisfies_control_plane_contract ... ok
+test cluster::tests::in_memory_peer_fetch_returns_hits_misses_and_removes_values ... ok
+test cluster::tests::in_memory_discovery_satisfies_discovery_contract ... ok
+test cluster::tests::leave_rejects_stale_generation_without_removing_newer_node ... ok
+test cluster::tests::leave_removes_clients_without_advancing_epoch_and_members_with_epoch ... ok
+test cluster::tests::lifecycle_diagnostics_report_failure_and_running_constructor ... ok
+test cluster::tests::lifecycle_diagnostics_track_start_stop_and_helpers ... ok
+test cluster::tests::load_report_totals_health_and_json_shape_are_stable ... ok
+test cluster::tests::membership_subscriber_reports_lag_for_slow_consumers ... ok
+test cluster::tests::membership_subscriber_receives_join_leave_and_stale_rejection_events ... ok
+test cluster::tests::node_id_formats_and_converts_from_strings ... ok
+test cluster::tests::ownership_decision_builds_peer_fetch_request_for_owner ... ok
+test cluster::tests::ownership_decision_without_owner_cannot_build_peer_fetch_request ... ok
+test cluster::tests::ownership_ignores_client_join_and_leave ... ok
+test cluster::tests::ownership_moves_when_owner_member_leaves_and_returns_on_rejoin ... ok
+test cluster::tests::peer_fetch_endpoint_metadata_is_carried_to_member ... ok
+test cluster::tests::peer_fetch_request_reports_generation_mismatch ... ok
+test cluster::tests::recent_gossip_reset_downgrades_health_to_degraded ... ok
+test cluster::tests::rendezvous_ownership_resolver_reports_no_owner_without_members ... ok
+test cluster::tests::rendezvous_ownership_resolver_selects_stable_member_owner ... ok
+test cluster::tests::role_marks_only_members_as_future_voters ... ok
+test cluster::tests::staging_health_decode_error_is_not_ready ... ok
+test cluster::tests::staging_health_healthy_cluster_is_healthy ... ok
+test cluster::tests::staging_health_lagged_receiver_is_degraded ... ok
+test cluster::tests::staging_health_local_role_returns_none ... ok
+test cluster::tests::staging_health_stale_generation_alone_stays_healthy ... ok
+test cluster::tests::staging_health_stopped_lifecycle_is_not_ready ... ok
+test entry::tests::clone_shares_immutable_tags ... ok
+test cluster::tests::stale_member_candidate_does_not_replace_owner_generation ... ok
+test events::tests::preflight_requires_an_active_subscriber ... ok
+test events::tests::preflight_keeps_access_events_disabled_until_enabled ... ok
+test inflight::tests::zero_waiter_load_is_replaced_instead_of_resurrected ... ok
+test inflight::tests::insert_or_get_current_returns_existing_load_for_same_generation ... ok
+test invalidation_bus::frame_version_compat::frame_version_compat_current_wire_version_round_trips ... ok
+test invalidation_bus::frame_version_compat::frame_version_compat_future_wire_version_fails_closed ... ok
+test invalidation_bus::tests::framed_bus_close_wakes_receivers_and_rejects_publishes ... ok
+test invalidation_bus::tests::framed_bus_delivers_messages_through_binary_frames ... ok
+test cluster::tests::admission_bridge_background_loop_can_shutdown_gracefully ... ok
+test invalidation_bus::tests::framed_bus_reports_decode_errors_without_closing_receiver ... ok
+test invalidation_bus::tests::in_memory_bus_delivers_messages_to_subscribers ... ok
+test invalidation_bus::tests::in_memory_bus_default_and_receiver_count_are_observable ... ok
+test invalidation_bus::tests::in_memory_receiver_reports_lagged_messages_before_latest ... ok
+test invalidation_bus::tests::invalidation_frame_rejects_unsupported_encoding_version ... ok
+test invalidation_bus::tests::invalidation_frame_roundtrips_transport_metadata_and_message ... ok
+test invalidation_bus::tests::in_memory_receiver_returns_none_when_bus_is_closed ... ok
+test invalidation_bus::tests::invalidation_helpers_expose_operation_metadata ... ok
+test invalidation_bus::tests::invalidation_message_can_carry_cluster_generation ... ok
+test invalidation_bus::tests::receive_helpers_describe_closed_and_message_states ... ok
+test load_breaker::tests::policy_retention_limits_are_normalized_and_observable ... ok
+test load_breaker::tests::saturation_never_evicts_an_open_breaker ... ok
+test load_breaker::tests::success_releases_breaker_ownership ... ok
+test memory_footprint::tests::concurrent_admin_read_is_marked_non_atomic ... ok
+test memory_footprint::tests::counter_overflow_faults_before_mutation_releases ... ok
+test memory_footprint::tests::counter_underflow_faults_before_mutation_releases ... ok
+test memory_footprint::tests::exact_snapshot_rejects_epoch_mismatch ... ok
+test memory_footprint::tests::hidden_secondary_index_mismatch_fails_loud ... ok
+test memory_footprint::tests::retained_estimator_overflow_is_fail_loud ... ok
+test refresh::tests::refresh_options_builder_sets_all_values ... ok
+test refresh::tests::refresh_options_can_reuse_stale_while_revalidate_window_for_loader_errors ... ok
+test refresh::tests::refresh_options_default_to_strict_cache_behavior ... ok
+test removal_observer::tests::consumer_claim_is_released_by_raii ... ok
+test removal_observer::tests::delayed_old_cleanup_preserves_new_membership ... ok
+test removal_observer::tests::duplicate_delivery_is_idempotent_and_saturation_fails_closed ... ok
+test removal_observer::tests::empty_drain_skips_consumer_claim_without_hiding_pending_work ... ok
+test removal_observer::tests::pending_cleanup_fails_closed_until_acknowledged ... ok
+test removal_observer::tests::sequence_overflow_fails_closed_until_reconciliation ... ok
+test tag_index::tests::clear_releases_all_index_maps_and_fences_old_loads ... ok
+test tag_index::tests::invalidation_generations_are_observable_until_flush ... ok
+test load_breaker::tests::inactive_closed_entries_expire_without_touching_open_breakers ... ok
+test cache::tests::geometric_ttl_expiry_releases_store_and_tag_memberships ... ok
+test tag_index::tests::unregister_releases_empty_tag_memberships ... ok
+test tests::cluster::builders_accept_control_plane_trait_objects ... ok
+test tests::cluster::builders_return_custom_control_plane_admission_errors ... ok
+test tests::cluster::builders_return_custom_discovery_errors_before_admission ... ok
+test tests::cluster::builders_accept_discovery_trait_objects ... ok
+test tests::cluster::chitchat_style_discovery_records_seed_metadata_and_liveness_events ... ok
+test tests::cluster::cache_runtime_can_subscribe_to_cluster_membership_events ... ok
+test tests::cluster::client_builder_can_create_isolated_cluster_runtime ... ok
+test tests::cluster::client_and_member_can_leave_cluster_without_clearing_local_cache ... ok
+test tests::cluster::cluster_rejects_stale_generation_for_same_node ... ok
+test tests::cluster::diagnostics_helpers_describe_disconnected_control_plane_views ... ok
+test tests::cluster::local_cache_has_no_cluster_diagnostics ... ok
+test tests::cluster::member_and_client_builders_apply_cache_tuning_and_endpoint_metadata ... ok
+test tests::cluster::member_and_client_builders_connect_to_shared_cluster ... ok
+test tests::cluster::member_invalidation_reaches_client_near_cache ... ok
+test tests::cluster::client_invalidation_reaches_member_cache ... ok
+test tests::cluster::multi_node_cluster_propagates_invalidations_and_tracks_membership_changes ... ok
+test tests::cluster::raft_style_metadata_control_plane_records_committed_membership_commands ... ok
+test tests::cluster::raft_style_metadata_control_plane_exposes_trait_paths_and_noop_leave ... ok
+test tests::cluster::staged_membership_replacement_is_atomic_and_preserves_live_channels ... ok
+test tests::cluster::staged_membership_replacement_rejects_wrong_cluster_without_mutation ... ok
+test tests::cluster::stale_runtime_cannot_leave_newer_generation ... ok
+test tag_index::tests::unique_key_and_tag_tombstones_rotate_into_a_bounded_epoch ... ok
+test tests::cluster::stale_runtime_cannot_publish_cluster_invalidation ... ok
+test load_breaker::tests::unique_one_shot_failures_stay_within_entry_budget ... ok
+test tests::concurrency::concurrent_loader_errors_are_shared_and_retry_is_possible ... ok
+test tests::concurrency::stress_concurrent_loads_and_invalidations_stay_usable ... ok
+test tests::consistency::default_mode_is_eventual ... ok
+test tests::consistency::degraded_mode_returns_stale_value_with_reason ... ok
+test tests::consistency::degraded_outcome_shape ... ok
+test tests::consistency::local_generation_prevents_stale_overwrite ... ok
+test tests::concurrency::stress_concurrent_put_remove_flush_and_load_stays_usable ... ok
+test tests::consistency::strict_mode_does_not_return_pre_invalidation_value ... ok
+test tests::consistency::quorum_waits_while_leader_still_fails_closed ... ok
+test tests::consistency::strict_mode_timeout_returns_explicit_error ... ok
+test tests::consistency::token_carries_generation_namespace_origin ... ok
+test tests::events::access_callback_receives_events_when_access_events_are_enabled ... ok
+test tests::consistency::wait_success_timeout_degraded_counters_move ... ok
+test tests::concurrency::stress_concurrent_single_flight_same_key ... ok
+test tests::events::access_events_can_be_enabled_for_miss_load_store_and_hit_flow ... ok
+test tests::events::callback_listener_receives_events_and_unsubscribe_stops_delivery ... ok
+test tests::events::event_subscriber_filters_by_kind_key_prefix_tag_and_origin ... ok
+test tests::events::load_failed_event_is_emitted_when_access_events_are_enabled ... ok
+test tests::events::mutation_subscriber_receives_store_remove_invalidate_and_flush_events ... ok
+test tests::events::next_event_skips_lag_and_returns_latest_matching_event ... ok
+test tests::events::shorthand_subscriptions_cover_mutations_access_key_and_tag_filters ... ok
+test tests::events::slow_subscribers_report_lag_without_blocking_cache_operations ... ok
+test tests::events::single_flight_join_event_is_emitted_when_access_events_are_enabled ... ok
+test tests::events::stale_load_discard_emits_event ... ok
+test tests::events::subscriber_options_and_closed_errors_are_observable ... ok
+test tests::events::typed_access_subscription_filters_to_namespace ... ok
+test tests::events::typed_cache_subscription_observes_physical_namespaced_keys ... ok
+test tests::events::typed_cache_helpers_scope_namespace_key_tag_and_callbacks ... ok
+test tests::cluster::stale_bus_message_generation_is_rejected_by_cluster_receivers ... ok
+test tests::invalidation_bus::framed_bus_decode_errors_are_reported_without_applying_invalidation ... ok
+test tests::invalidation_bus::framed_bus_close_is_reported_in_cache_stats_and_publish_fails ... ok
+test tests::invalidation_bus::framed_bus_propagates_tag_invalidations_between_independent_runtimes ... ok
+test tests::invalidation_bus::key_invalidation_is_published_even_when_source_does_not_hold_key ... ok
+test tests::invalidation_bus::listener_exits_when_cache_inner_is_dropped ... ok
+test tests::invalidation_bus::listener_spawn_without_bus_is_a_noop ... ok
+test tests::invalidation_bus::manual_listener_can_shutdown_without_processing_messages ... ok
+test tests::events::access_events_are_disabled_by_default ... ok
+test tests::invalidation_bus::publish_failures_are_reported_in_stats_and_returned_to_caller ... ok
+test tests::invalidation_bus::receiver_lag_and_close_are_reported_in_stats ... ok
+test tests::invalidation_bus::owned_bus_builder_generates_observable_node_id_and_handles_closed_receiver ... ok
+test tests::invalidation_bus::shared_bus_propagates_flush_without_echoing_back_to_source ... ok
+test tests::invalidation_bus::self_originated_bus_messages_are_ignored_by_listener ... ok
+test tests::invalidation_bus::framed_bus_stale_cluster_generation_is_rejected_before_apply ... ok
+test tests::invalidation_bus::framed_bus_reconnect_does_not_replay_already_applied_invalidation ... ok
+test tests::invalidation_safety::invalidating_tag_during_load_discards_stale_store ... ok
+test tests::invalidation_bus::shared_bus_propagates_tag_invalidations_between_cache_instances ... ok
+test tests::invalidation_safety::flush_and_multi_tag_invalidation_discard_stale_loads ... ok
+test tests::invalidation_safety::invalidation_without_in_flight_loader_does_not_increment_stale_discards ... ok
+test tests::invalidation_safety::post_invalidation_caller_starts_fresh_load ... ok
+test tests::invalidation_safety::untagged_load_is_not_guarded_by_tag_generation ... ok
+test tests::invalidation_safety::stale_load_does_not_overwrite_fresh_value ... ok
+test tests::local_cache::builder_options_accept_small_limits_and_custom_codec ... ok
+test tests::local_cache::cache_and_builder_derived_impls_are_usable ... ok
+test tests::local_cache::cloned_cache_handles_share_state ... ok
+test tests::local_cache::decode_error_invalidates_bad_entry ... ok
+test tests::local_cache::diagnostics_explain_cache_activity_after_repeated_loads ... ok
+test tests::invalidation_bus::typed_cache_invalidation_uses_physical_keys_on_the_shared_bus ... ok
+test tests::local_cache::encoded_values_share_immutable_storage_across_put_and_get ... ok
+test tests::local_cache::get_encoded_returns_stored_bytes_without_decoding ... ok
+test tests::local_cache::get_missing_returns_none ... ok
+test tests::local_cache::get_or_load_loads_on_miss_and_uses_hit_afterward ... ok
+test tests::local_cache::get_or_load_returns_oversize_value_without_storing_it ... ok
+test tests::local_cache::concurrent_misses_share_one_loader_execution ... ok
+test tests::local_cache::invalidate_key_alias_removes_one_entry ... ok
+test tests::local_cache::invalidate_tag_ignores_stale_tag_index_entries ... ok
+test tests::local_cache::get_encoded_removes_expired_entry ... ok
+test tests::invalidation_safety::per_entry_ttl_overrides_default_ttl ... ok
+test tests::local_cache::overwriting_entry_removes_old_tag_mapping ... ok
+test tests::local_cache::loader_helpers_cover_infallible_and_fallible_paths ... ok
+test tests::local_cache::put_encoded_hydrates_bytes_and_participates_in_tag_invalidation ... ok
+test tests::local_cache::put_rejects_encoded_entry_larger_than_max_entry_bytes ... ok
+test tests::local_cache::put_then_get ... ok
+test tests::local_cache::get_removes_expired_entry ... ok
+test tests::local_cache::refresh_options_do_not_change_fresh_hits_before_refresh_ahead_threshold ... ok
+test tests::local_cache::remove_invalidate_tag_and_flush_clear_expected_entries ... ok
+test tests::local_cache::loader_error_without_stale_fallback_returns_error ... ok
+test tests::local_cache::put_encoded_honors_entry_ttl ... ok
+test tests::local_cache::stale_on_loader_error_returns_stale_when_refresh_fails ... ok
+test tests::local_cache::stats_track_hits_misses_loads_invalidations ... ok
+test tests::local_cache::ttl_expires_entry_and_contains_key_removes_it ... ok
+test tests::typed_cache::typed_cache_diagnostics_delegate_to_shared_cache ... ok
+test tests::typed_cache::typed_cache_escapes_builder_segments_and_handles_empty_builder ... ok
+test tests::typed_cache::typed_cache_invalidation_during_load_discards_stale_store ... ok
+test tests::typed_cache::typed_cache_key_builder_and_tag_set_integrate_with_runtime ... ok
+test tests::typed_cache::typed_cache_loader_helpers_and_errors_work ... ok
+test tests::typed_cache::typed_cache_post_invalidation_caller_starts_fresh_load ... ok
+test tests::typed_cache::typed_cache_puts_gets_and_namespaces_keys ... ok
+test tests::local_cache::stale_while_revalidate_returns_stale_and_refreshes_in_background ... ok
+test tests::local_cache::stale_window_expiry_forces_foreground_reload ... ok
+test tests::typed_cache::typed_cache_remove_contains_ttl_and_flush_delegate_to_shared_cache ... ok
+test tests::local_cache::refresh_ahead_returns_fresh_hit_and_refreshes_in_background ... ok
+test tests::typed_cache::typed_cache_single_flight_uses_namespaced_key ... ok
+
+test result: ok. 221 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.53s
+
+
+running 7 tests
+test active_active_home_region_only_rejects_remote_local_write ... ok
+test active_active_intra_region_ryow_unchanged ... ok
+test active_active_local_write_acks_without_crossing_wan ... ok
+test active_active_hlc_tiebreak_is_not_wall_clock_authority ... ok
+test active_active_regions_converge_after_propagation ... ok
+test active_active_requires_explicit_ack ... ok
+test active_active_record_merge_still_prefers_epoch_version_over_hlc ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 4 tests
+test admission_count_and_memory_permits_are_released ... ok
+test admission_fifo_backlog_promotes_oldest_first ... ok
+test admission_overload_is_shed_with_retryable_backpressure_not_unbounded_queue ... ok
+test admission_rejects_single_request_larger_than_memory_budget ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 1 test
+test adr_presence_files_exist_and_are_linked ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+
+running 11 tests
+test allocation_scope_reports_released_vector_as_not_live ... ok
+test allocation_scope_ignores_unrelated_thread_allocations ... ok
+test geometric_slope_verdict_distinguishes_growth_from_zero_or_bounded_plateau ... ok
+test profile_bulk_tag_invalidation ... ignored, manual allocation profile; run with --ignored --nocapture
+test allocation_scope_drop_disables_counting_during_unwind ... ok
+test profile_contains_key_metadata_hits ... ignored, manual allocation profile; run with --ignored --nocapture
+test profile_event_preflight_modes ... ignored, manual allocation profile; run with --ignored --nocapture
+test profile_hot_get_hits ... ignored, manual allocation profile; run with --ignored --nocapture
+test profile_typed_hot_get_hits ... ignored, manual allocation profile; run with --ignored --nocapture
+test allocation_scope_detects_a_retained_vector_and_peak ... ok
+test prior_epoch_deallocation_is_not_charged_to_next_scope ... ok
+
+test result: ok. 6 passed; 0 failed; 5 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 4 tests
+test anti_entropy_interval_is_normalized ... ok
+test lagging_backup_is_caught_up_by_task ... ok
+test repair_confirmation_unblocks_tombstone_gc ... ok
+test under_replicated_key_is_reported ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 5 tests
+test atomic_invalidation_saga_survives_dispatcher_crash ... ignored, chaos gate: dispatcher crash/resume
+test atomic_invalidation_batch_version_beats_concurrent_single_writes ... ok
+test atomic_invalidation_cross_partition_batch_is_rejected_pointing_at_saga ... ok
+test atomic_invalidation_saga_fans_out_at_least_once_idempotently ... ok
+test atomic_invalidation_single_partition_batch_is_all_or_nothing ... ok
+
+test result: ok. 4 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 5 tests
+test backup_restore_corrupt_backup_is_detected_not_restored ... ok
+test backup_restore_full_backup_then_restore_roundtrip_is_identical ... ok
+test backup_restore_pitr_corruption_is_detected ... ok
+test backup_restore_pitr_restores_to_chosen_point ... ok
+test backup_restore_restore_under_simulated_faults ... ignored, chaos gate: run with simulator fault injection in nightly validation
+
+test result: ok. 4 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 3 tests
+test no_row_is_silently_absent_from_execution ... ok
+test canary_cache_semantics_runner_skips_a_listed_row ... ok
+test borrowed_cache_semantics_rows_all_execute_and_match_manifest ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+
+running 5 tests
+test cache_core_matrix_is_seed_deterministic_and_shrinkable ... ok
+test canary_cache_matrix_allows_loader_completion_to_resurrect_invalidated_value ... ok
+test cache_core_matrix_preserves_invalidation_and_singleflight_invariants ... ok
+test loader_failure_cancellation_expiry_and_capacity_pressure_recover ... ok
+test mass_same_tick_expiry_does_not_panic_or_starve ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
+
+running 6 tests
+test cacheable_attribute_caches_function_result ... ok
+test cacheable_macro_accepts_tag_set_expression ... ok
+test cacheable_infallible_macro_caches_loader_result ... ok
+test cacheable_macro_accepts_tags_expression ... ok
+test cacheable_macro_caches_loader_result ... ok
+test cacheable_macro_applies_tags_and_ttl ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+
+running 1 test
+test cacheable_macro_compile_tests has been running for over 60 seconds
+test cacheable_macro_compile_tests ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 417.88s
+
+
+running 2 tests
+test cache_drop_at_registered_boundaries_preserves_state_and_permit_baseline ... ok
+test dropped_singleflight_loader_does_not_poison_the_slot ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 9 tests
+test capacity_autoscale_dwell_window_holds_even_under_pressure ... ok
+test capacity_autoscale_intent_breaking_quorum_is_rejected ... ok
+test capacity_autoscale_intent_outside_compat_window_is_refused ... ok
+test capacity_autoscale_intent_violating_zone_spread_is_rejected ... ok
+test capacity_autoscale_signal_recommends_rebalance_for_hot_partition_skew ... ok
+test capacity_autoscale_signal_recommends_scale_in_after_dwell ... ok
+test capacity_autoscale_scale_out_counts_toward_quorum_only_after_backfill ... ok
+test capacity_autoscale_scale_in_drains_before_removal ... ok
+test capacity_autoscale_signal_recommends_scale_out_under_memory_pressure ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 6 tests
+test causal_consistency_holds_under_partition_and_reorder ... ignored, fault-injection scenario for partition and message reordering
+test causal_consistency_effect_not_visible_before_cause_across_regions ... ok
+test causal_consistency_metadata_is_gced_after_stability ... ok
+test causal_consistency_summary_from_watermark_preserves_read_dependencies ... ok
+test causal_consistency_dependent_write_defers_until_dependencies_applied ... ok
+test causal_consistency_summary_overflow_degrades_conservatively_not_dropped ... ok
+
+test result: ok. 5 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 5 tests
+test rescale_with_checkpoint_loses_no_committed_write ... ok
+test cluster_checkpoint_is_a_consistent_cut ... ok
+test checkpoint_restore_reconciles_with_epoch_version_authority ... ok
+test checkpoint_constructor_and_verifier_reject_every_partial_or_corrupt_cut ... ok
+test unknown_future_checkpoint_format_refuses_to_restore ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 1 test
+test component_lifecycle_feeds_staging_health ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 9 tests
+test partition_indirection_is_deterministic ... ok
+test owner_resolution_is_deterministic_for_same_topology ... ok
+test owner_load_counter_increments_only_owner_path ... ok
+test hot_cache_hit_counter_increments_only_hot_path ... ok
+test validate_replica_accepts_pilot_single_owner_shape ... ok
+test validate_replica_rejects_min_replica_zero ... ok
+test validate_replica_rejects_quorum_above_rf ... ok
+test validate_replica_rejects_quorum_zero ... ok
+test remote_fetch_counter_increments_only_remote_path ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 2 tests
+test in_memory_cluster_survives_manual_load_test ... ignored, manual cluster load test; run with --ignored --nocapture
+test in_memory_cluster_stays_consistent_under_smoke_load ... ok
+
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.27s
+
+
+running 5 tests
+test duplicate_or_reordered_frame_does_not_break_watermark ... ok
+test generation_change_clears_partition ... ok
+test reorder_plus_restart_resolves_to_clear ... ok
+test sequence_gap_triggers_conservative_invalidate ... ok
+test conservative_invalidate_counter_is_reported ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 4 tests
+test topology_fence_keeps_epoch_authority_separate_from_stamp ... ok
+test stamp_is_monotonic_nondecreasing ... ok
+test stamp_changes_when_members_change ... ok
+test client_with_stale_stamp_can_detect_refresh_needed ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 2 tests
+test local_only_report_is_not_pilot_ready_but_is_serializable ... ok
+test metrics_increment_on_success_and_failure_paths ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 8 tests
+test not_ready_when_no_members ... ok
+test not_ready_when_auth_missing ... ok
+test not_ready_when_lifecycle_stopped ... ok
+test not_ready_when_wire_not_strict ... ok
+test posture_safe_with_auth_and_wire_or_declared_mesh ... ok
+test not_ready_when_outside_supported_size ... ok
+test pilot_report_contains_highlight_and_stable_shape ... ok
+test pilot_ready_for_configured_topology ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 1 test
+test cluster_pilot_soak ... ignored, pilot soak is an on-demand release gate; run with --ignored --nocapture
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 3 tests
+test read_after_write_observes_own_write ... ok
+test barrier_respects_generation ... ok
+test barrier_falls_back_to_peer_fetch_on_timeout ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 4 tests
+test diagnostics_show_generation_and_epoch_movement ... ok
+test prop_stale_leave_rejected_targeted_case ... ok
+test prop_rejoin_monotonically_advances_generation ... ok
+test prop_stale_generation_never_publishes ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+
+
+running 3 tests
+test disabling_read_through_stops_remote_peer_fetch ... ok
+test health_report_shows_degraded_cluster_mode ... ok
+test local_only_fallback_works_without_cluster_runtime ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 3 tests
+test single_endpoint_always_uses_gateway_path ... ok
+test direct_degrades_when_read_through_disabled ... ok
+test direct_routes_to_computed_owner_path ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 11 tests
+test cluster_staging_gate_owner_load_hydrates_near_cache ... ok
+test cluster_staging_gate_peer_fetch_auth_and_wire_checks ... ok
+test cluster_staging_gate_soak_under_sustained_load ... ignored, soak: wall-clock thresholds, run manually
+test gossip_reset_increments_reset_count_and_sets_tombstone_age ... ok
+test cluster_staging_gate_rejects_stale_generation_publish ... ok
+test load_report_json_shape_is_stable ... ok
+test cluster_staging_gate_propagates_invalidation_both_directions ... ok
+test load_report_totals_equal_requests ... ok
+test recent_gossip_reset_downgrades_health_to_degraded ... ok
+test cluster_staging_gate_health_summary_is_clean ... ok
+test load_report_health_counters_are_zero_in_gate ... ok
+
+test result: ok. 10 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.15s
+
+
+running 4 tests
+test late_packet_from_old_leader_does_not_resurrect_topology ... ok
+test stale_epoch_message_dropped ... ok
+test owner_set_deterministic_after_commit ... ok
+test gossip_suspect_does_not_change_owner_for_key ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 12 tests
+test removed_key_reads_as_absent_after_tombstone ... ok
+test remove_if_value_writes_tombstone_at_new_version ... ok
+test remove_if_value_mismatch_leaves_record_untouched ... ok
+test replace_if_present_after_tombstone_is_mismatch_not_resurrection ... ok
+test replace_if_present_applies_only_when_live_value_exists ... ok
+test replace_if_present_on_absent_is_mismatch_not_insert ... ok
+test replicated_record_must_match_its_key_partition ... ok
+test tombstone_from_remove_if_value_is_not_resurrected_by_stale_put ... ok
+test tombstone_watermark_rejects_epoch_change_and_regression ... ok
+test tombstone_watermark_requires_every_effective_replica ... ok
+test tombstone_watermark_uses_the_slowest_replica_and_rejects_malformed_progress ... ok
+test ordering_safe_conditional_tombstone_watermark_reclaims_unique_deletes ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+
+running 10 tests
+test conditional_writes_cas_at_consistency_one_is_refused ... ok
+test conditional_writes_compare_and_set_applies_only_on_match ... ok
+test conditional_writes_fenced_lock_rejects_stale_token ... ok
+test conditional_writes_cas_respects_tombstone_version ... ok
+test conditional_writes_lock_survives_partition_via_raft_authority ... ignored, chaos marker: lock survives partition via partition-home authority
+test conditional_writes_multi_key_conditional_is_rejected_loud ... ok
+test conditional_writes_not_owner_diagnostic_is_stable ... ok
+test conditional_writes_put_if_absent_is_linearizable_under_contention ... ok
+test conditional_writes_multi_key_diagnostic_is_stable ... ok
+test conditional_writes_weak_consistency_diagnostic_is_stable ... ok
+
+test result: ok. 9 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 6 tests
+test consistency_levels_deployment_default_is_preserved_as_level ... ok
+test consistency_levels_quorum_read_after_quorum_write_is_read_your_writes ... ok
+test consistency_levels_local_quorum_counts_only_local_region ... ok
+test consistency_levels_each_quorum_requires_every_region ... ok
+test consistency_levels_required_acks_match_replica_math ... ok
+test consistency_levels_unsatisfiable_level_fails_not_degrades ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 2 tests
+test applied_barrier_and_unsupported_mode_are_observable ... ok
+test consistency_modes_distinguish_fresh_degraded_timeout_and_fail_closed ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 5 tests
+test convergence_staleness_bounded_staleness_serves_fast_within_bound ... ok
+test convergence_staleness_causal_mode_requires_full_session_watermark ... ok
+test convergence_staleness_bounded_staleness_never_serves_below_causal_floor ... ok
+test convergence_staleness_beyond_bound_escalates ... ok
+test convergence_staleness_replicas_converge_to_one_value_without_new_writes ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 8 tests
+test crdt_gcounter_merge_is_associative_commutative_idempotent ... ok
+test crdt_lww_register_ties_break_by_writer ... ok
+test crdt_lww_register_uses_hlc_not_wall_clock ... ok
+test crdt_merge_stats_use_bounded_type_labels ... ok
+test crdt_non_crdt_value_still_uses_merge_policy ... ok
+test crdt_pn_counter_converges_across_regions ... ok
+test crdt_tombstone_beats_concurrent_crdt_update ... ok
+test crdt_or_set_add_remove_converges ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 2 tests
+test default_store_durability_state_machine_preserves_ack_and_queue_invariants ... ok
+test durability_snapshot_and_policy_failures_are_fail_closed ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 8 tests
+test durable_replicated_values_future_format_is_rejected_by_upgrade_guard ... ok
+test durable_replicated_values_format_version_round_trips ... ok
+test durable_replicated_values_replicated_value_survives_backup_restart ... ok
+test durable_replicated_values_restart_then_anti_entropy_converges_with_primary ... ok
+test durable_replicated_values_sealed_bytes_only_are_persisted ... ok
+test durable_replicated_values_scan_owned_returns_records_for_readable_map ... ok
+test durable_replicated_values_total_bytes_budget_rejects_over_limit_not_silently ... ok
+test durable_replicated_values_tombstone_persisted_blocks_resurrection_after_restart ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 4 tests
+test invalidation_during_promotion_beats_stale_value ... ok
+test no_backup_owner_reports_degraded ... ok
+test primary_leaves_backup_is_selected_for_promotion ... ok
+test replication_factor_restored_after_finalize ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 6 tests
+test failure_detector_flapping_does_not_change_ownership_before_commit_topology ... ok
+test failure_detector_false_suspect_metric_is_counted ... ok
+test failure_detector_gates_hint_replay_and_repair ... ok
+test failure_detector_adapts_to_slower_but_regular_links ... ok
+test failure_detector_missed_heartbeats_raise_phi_past_threshold ... ok
+test failure_detector_steady_heartbeats_keep_phi_low ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 5 tests
+test injected_latency_is_observed_by_target_only ... ok
+test partition_is_symmetric_and_asymmetric ... ok
+test fault_injector_selftest_zone_loss_is_enumerated ... ok
+test fault_injector_selftest_release_gate_filter_runs ... ok
+test seed_replays_identical_fault_schedule ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 7 tests
+test hinted_handoff_brief_outage_hint_replays_on_return ... ok
+test hinted_handoff_expired_hint_dropped_after_window ... ok
+test hinted_handoff_hint_never_resurrects_tombstone ... ok
+test hinted_handoff_over_budget_hint_dropped_and_marked_for_repair ... ok
+test hinted_handoff_replica_recovers_after_hint_window_falls_back_to_repair ... ignored, chaos marker: outage beyond hint window falls back to Merkle repair
+test hinted_handoff_replay_suppresses_newer_target_value ... ok
+test hinted_handoff_required_replica_miss_still_fails_the_write ... ok
+
+test result: ok. 6 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 3 tests
+test hot_copy_invalidated_before_ttl ... ok
+test full_fanout_reaches_all_holders ... ok
+test three_counters_increment_independently ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 1 test
+test lagged_invalidation_subscriber_fails_conservatively_without_unbounded_queue_growth ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 5 tests
+test invalidation_ring_remote_client_replays_like_embedded ... ok
+test invalidation_ring_restart_keeps_recent_window_when_durable ... ok
+test invalidation_ring_full_ring_advances_tail_without_blocking_writes ... ok
+test invalidation_ring_subscriber_beyond_retention_falls_back_to_clear_partition ... ok
+test invalidation_ring_subscriber_within_retention_replays_exact_range ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 9 tests
+test bus_lag_is_counted_by_the_outbound_relay ... ok
+test outbound_key_tag_flush_are_published_to_transport ... ok
+test duplicate_message_ids_are_deduped_with_a_bounded_window ... ok
+test inbound_is_applied_locally_and_not_republished ... ok
+test foreign_cluster_frames_are_dropped_and_counted ... ok
+test outbound_relay_ignores_peer_bus_messages_but_publishes_local_ones ... ok
+test unknown_and_malformed_inbound_frames_are_loud_and_nonfatal ... ok
+test reordered_older_generation_is_fenced_and_not_applied ... ok
+test own_inbound_frames_are_dropped_before_local_apply ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s
+
+
+running 4 tests
+test load_breaker_repeated_load_failure_trips_breaker_and_counts ... ok
+test load_breaker_open_breaker_fails_fast_and_does_not_stampede_the_loader ... ok
+test load_breaker_never_serves_stale_as_fresh ... ok
+test load_breaker_half_open_probe_recovers_or_reopens ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+
+running 7 tests
+test locality_reads_hedge_winner_is_max_version_not_first_arrival ... ok
+test locality_reads_hedge_delay_adapts_to_rtt_distribution ... ok
+test locality_reads_eventual_read_prefers_local_zone_live ... ok
+test locality_reads_eventual_read_prefers_local_zone ... ok
+test locality_reads_quorum_read_still_contacts_read_quorum ... ok
+test locality_reads_slow_replica_triggers_hedge_and_returns_fresh ... ok
+test locality_reads_slow_replica_triggers_hedge_returns_fresh_live ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 8 tests
+test fence_assigned_only_on_apply_not_propose ... ok
+test expired_lease_can_be_stolen_and_fence_advances ... ok
+test heartbeat_renew_keeps_ownership ... ok
+test diagnostic_reset_clears_owners_without_reusing_fence_tokens ... ok
+test release_by_non_owner_is_rejected_and_counted ... ok
+test session_loss_releases_all_its_locks_and_advances_fence ... ok
+test stale_holder_release_after_expiry_is_rejected ... ok
+test unique_lock_sessions_release_all_heartbeat_ownership ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+
+running 5 tests
+test reentrancy_is_acquire_count_on_session ... ok
+test is_locked_by_owner_reflects_state ... ok
+test reentrant_acquire_keeps_same_fence_and_counts ... ok
+test reentrancy_limit_fails_loud ... ok
+test unlock_frees_only_at_zero_holds ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 4 tests
+test invalidation_and_store_never_leave_stale_value_cached ... ok
+test flush_makes_active_load_generation_stale ... ok
+test post_invalidation_caller_replaces_stale_in_flight_entry ... ok
+test stale_load_cannot_overwrite_fresh_value_after_invalidation ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s
+
+
+running 4 tests
+test moka_adapter_rejects_unrepresentable_retained_weight ... ok
+test w2a_does_not_reinterpret_legacy_capacity ... ok
+test insert_replace_delete_and_flush_reconcile_retained_totals ... ok
+test golden_object_weight_corpus_matches_versioned_estimator ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+
+running 5 tests
+test delayed_replacement_cleanup_preserves_new_same_tag_membership ... ok
+test capacity_eviction_is_accounted_by_the_removal_observer ... ok
+test cancelled_load_releases_the_inflight_owner ... ok
+test snapshot_reports_subscriptions_and_off_mode_without_labels ... ok
+test insert_replace_delete_tag_expire_and_flush_update_bounded_aggregates ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+
+running 6 tests
+test merkle_repair_empty_tree_has_no_ranges ... ok
+test merkle_repair_foreground_read_repair_fixes_divergence_inline ... ok
+test merkle_repair_diff_descends_only_mismatches ... ok
+test merkle_repair_incremental_repair_skips_repaired_ranges ... ok
+test merkle_repair_session_resumes_after_coordinator_crash ... ignored, chaos marker: resumable repair after coordinator crash
+test merkle_repair_preserves_tombstone_invariant ... ok
+
+test result: ok. 5 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 15 tests
+test multitenancy_batch_cannot_bypass_namespace_quota ... ok
+test multitenancy_duplicate_batch_keys_account_only_the_last_value ... ok
+test multitenancy_conditional_noop_does_not_reserve_quota ... ok
+test multitenancy_metrics_snapshot_reports_every_roster_limit_and_usage ... ok
+test multitenancy_over_quota_put_is_rejected_not_silently_evicting_others ... ok
+test multitenancy_oversized_payload_rejected_before_cache_mutation ... ok
+test multitenancy_rate_limit_returns_retryable_backpressure ... ok
+test multitenancy_remove_entry_releases_bytes_and_entry_quota ... ok
+test multitenancy_rejected_batch_callback_leaves_accounting_unchanged ... ok
+test multitenancy_subscription_flood_is_rate_limited_per_tenant ... ok
+test multitenancy_tenant_resolved_from_identity ... ok
+test multitenancy_tenant_eviction_is_namespace_scoped ... ok
+test multitenancy_unknown_tenant_never_creates_metric_label ... ok
+test multitenancy_hot_key_hammering_does_not_starve_other_tenants ... ok
+test multitenancy_fair_share_prevents_one_tenant_starving_replication ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+
+running 4 tests
+test public_typed_listener_is_namespaced_and_unsubscribes ... ok
+test public_slow_subscriber_observes_gap_and_can_resume ... ok
+test public_subscription_delivers_filtered_local_mutations ... ok
+test public_access_listener_requires_explicit_enablement ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
+
+running 5 tests
+test duplicate_or_reordered_frame_does_not_break_watermark ... ok
+test generation_change_clears_partition ... ok
+test lost_frame_is_recovered_by_periodic_task ... ok
+test reorder_and_restart_simultaneously_resolves_to_clear ... ok
+test sequence_gap_triggers_conservative_invalidation ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 9 tests
+test online_reshard_coordinator_crash_resumes_live_move ... ignored, chaos gate: run with -- --ignored when exercising live reshard coordinator crash
+test online_reshard_coordinator_crash_resumes_move_from_progress ... ok
+test online_reshard_move_respecting_zone_spread_is_rejected_if_it_colocates_quorum ... ok
+test online_reshard_drain_node_moves_all_partitions_then_leaves_cleanly ... ok
+test online_reshard_read_your_writes_holds_across_a_live_move ... ok
+test online_reshard_read_your_writes_holds_across_a_move ... ok
+test online_reshard_tombstone_not_resurrected_during_backfill ... ok
+test online_reshard_write_during_move_is_shadowed_to_both_owners ... ok
+test online_reshard_write_during_move_shadowed_live ... ok
+
+test result: ok. 8 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 5 tests
+test event_preflight_publishes_only_observed_event_classes ... ok
+test hot_hit_path_avoids_loader_and_single_flight_after_warmup ... ok
+test repeated_unique_key_workload_bounds_loader_calls_by_unique_keys ... ok
+test bulk_tag_invalidation_removes_large_tagged_set_without_stranding_entries ... ok
+test contended_hot_key_workload_uses_one_loader_and_many_hits ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+
+running 4 tests
+test persistence_config_hazelcast_example_translates ... ok
+test persistence_config_namespace_metric_labels_are_bounded ... ok
+test persistence_config_config_roundtrips_to_policy ... ok
+test persistence_config_persistence_without_storage_dir_refuses_to_start ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 3 tests
+test persistence_metric_labels_are_bounded_and_do_not_embed_dynamic_keys ... ok
+test persistence_without_storage_is_rejected_before_allocating_runtime_state ... ok
+test persistence_optimization_is_deferred_until_anon_file_split_is_qualified ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 4 tests
+test persistence_policy_conflicting_rules_fail_loud ... ok
+test persistence_policy_unconfigured_namespace_is_ram_only ... ok
+test persistence_policy_wildcard_matches_hazelcast_style_patterns ... ok
+test persistence_policy_exact_beats_prefix_beats_default ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 6 tests
+test pending_map_reads_both_during_move ... ok
+test placement_deterministic_for_same_member_set ... ok
+test no_duplicate_backup_owners ... ok
+test quorum_validation_rejects_bad_config ... ok
+test replication_factor_exceeding_members_degrades_clearly ... ok
+test placement_distribution_is_even ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+
+running 4 tests
+test read_your_writes_below_watermark_does_not_serve_stale ... ok
+test read_your_writes_holds_during_single_node_failure_when_quorum_reachable ... ok
+test read_your_writes_acked_write_is_visible_to_quorum_read ... ok
+test read_your_writes_quorum_overlap_validated_at_startup ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 3 tests
+test read_your_writes_live_ryw_holds_during_single_node_failure ... ignored, chaos gate: run with -- --ignored when exercising single-node failure
+test read_your_writes_live_read_below_watermark_does_not_serve_stale ... ok
+test read_your_writes_live_acked_write_visible_to_quorum_read_on_other_node ... ok
+
+test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 3 tests
+test replaying_plan_is_idempotent ... ok
+test under_replication_reported_until_plan_completes ... ok
+test diff_produces_expected_move_tasks ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 2 tests
+test invalidation_during_load_does_not_publish_a_stale_value ... ok
+test hundred_ttl_delete_and_flush_cycles_return_logical_owners_to_zero ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.56s
+
+
+running 3 tests
+test background_refresh_after_tag_invalidation_does_not_restore_stale_value ... ok
+test concurrent_stale_revalidation_shares_one_background_loader ... ok
+test stale_on_loader_error_is_bounded_by_the_configured_window ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
+
+running 7 tests
+test region_failover_rejoining_lower_epoch_region_loses_authority ... ok
+test region_failover_flapping_region_does_not_double_promote ... ok
+test region_failover_promotion_reports_degraded_when_target_missing ... ok
+test region_failover_down_promotes_surviving_home ... ok
+test region_failover_whole_region_loss_self_heals_to_target_rf ... ignored, chaos gate: whole-region loss self-heals to target RF
+test region_failover_restore_rejects_future_snapshot_format ... ok
+test region_failover_restore_rebuilds_from_snapshot ... ok
+
+test result: ok. 6 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 5 tests
+test region_link_cross_region_converges_after_partition_heal ... ignored, chaos gate: run with -- --ignored for cross-region partition-heal convergence
+test region_link_anti_entropy_ships_only_the_diff ... ok
+test region_link_batch_is_compressed_and_deduped ... ok
+test region_link_crdt_metadata_gc_gated_on_all_region_confirmation ... ok
+test region_link_wan_backpressure_bounds_inflight ... ok
+
+test result: ok. 4 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 3 tests
+test region_persistence_namespace_persists_only_in_selected_regions ... ok
+test region_persistence_persist_region_outside_placement_fails_loud ... ok
+test region_persistence_home_region_only_selector_matches_placement ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 9 tests
+test async_backup_does_not_block_write ... ok
+test oversized_value_rejected_and_counted ... ok
+test member_start_rejects_missing_replication_byte_cap ... ok
+test replication_disabled_keeps_local_behavior ... ok
+test replication_failure_increments_counter_and_reports_degraded ... ok
+test stale_generation_replication_is_rejected ... ok
+test sync_async_counts_validated ... ok
+test sync_backup_acked_before_client_response ... ok
+test replication_success_tracks_bytes ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 5 tests
+test encrypted_roundtrip_seals_and_opens ... ok
+test local_only_value_is_cached_but_never_replicated ... ok
+test redaction_strips_fields_before_send ... ok
+test plaintext_without_ack_is_flagged_in_readiness ... ok
+test plaintext_ack_removes_readiness_highlight ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 5 tests
+test replication_under_load_aimd_window_recovers_after_transient_slowness ... ok
+test replication_under_load_anti_entropy_converges_after_partition_heals ... ok
+test replication_under_load_failover_preserves_tombstone_invariant_under_churn ... ok
+test replication_under_load_promotion_freeze_window_is_bounded_under_load ... ok
+test replication_under_load_slow_backup_does_not_stall_primary ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 4 tests
+test replication_under_load_live_anti_entropy_converges_after_partition_heal_chaos ... ignored, chaos gate: run with -- --ignored when exercising slow backup partitions
+test replication_under_load_live_slow_backup_does_not_stall_primary ... ok
+test replication_under_load_live_promotion_freeze_window_bounded_under_load ... ok
+test replication_under_load_live_anti_entropy_converges_after_partition_heal ... ok
+
+test result: ok. 3 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 3 tests
+test estimator_distinguishes_key_tag_ttl_and_payload_shapes ... ok
+test public_cache_and_estimator_preserve_required_auto_traits ... ok
+test representation_change_remains_explicitly_deferred_without_d2_evidence ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 11 tests
+test residency::forbidden_region_read_does_not_serve_stale_replica ... ok
+test residency::pinned_value_is_refused_crossing_a_forbidden_link ... ok
+test residency::policy_commit_and_allow_paths_cover_override_epoch_and_failover_rules ... ok
+test residency::pinned_value_is_not_placed_outside_allowed_regions ... ok
+test residency::residency_holds_under_region_failover ... ignored, chaos gate: run with -- --ignored for region failover residency governance
+test residency::policy_narrowing_evicts_or_marks_existing_out_of_policy_data ... ok
+test residency::policy_epoch_is_enforced_and_reported ... ok
+test residency::residency_include_value_gate_blocks_forbidden_region_bytes ... ok
+test residency::residency_policy_rejects_unknown_future_format ... ok
+test residency::residency_violation_is_audited ... ok
+test residency::unsatisfiable_rf_in_policy_rejects_put_loud ... ok
+
+test result: ok. 10 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 3 tests
+test node_is_deterministic_under_fixed_inputs ... ok
+test storage_requests_round_trip_through_explicit_driver ... ok
+test production_path_behaviour_unchanged ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 2 tests
+test scrubber_unrepairable_corruption_is_reported_not_served ... ok
+test scrubber_corrupt_block_is_detected_and_repaired_from_peer ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 5 tests
+test security_lifecycle_key_rotation_accepts_previous_for_reads_only ... ok
+test security_lifecycle_cert_rotation_window_accepts_old_and_new ... ok
+test security_lifecycle_at_rest_sealed_bytes_only_persisted ... ok
+test security_lifecycle_undecryptable_artifact_is_rejected_not_served ... ok
+test security_lifecycle_wrong_key_id_or_secret_fails_closed ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 11 tests
+test self_heal_advisory_mode_suggests_but_does_not_act ... ok
+test self_heal_control_plane_restore_rebuilds_topology ... ok
+test self_heal_control_plane_snapshot_current_format_round_trips ... ok
+test control_plane_restore_rebuilds_topology_live ... ok
+test self_heal_control_plane_snapshot_future_format_fails_loud ... ok
+test self_heal_debt_over_threshold_triggers_bounded_repair ... ok
+test self_heal_repair_never_starves_hot_path ... ok
+test self_heal_live_repair_debt_and_lag_schedule_bounded_action ... ok
+test self_heal_upgrade_guard_accepts_042_to_043_registered_formats ... ok
+test self_heal_zone_loss_self_heals_to_target_rf ... ignored, chaos gate: zone-loss self-heal
+test self_heal_upgrade_guard_refuses_incompatible_step ... ok
+
+test result: ok. 10 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 5 tests
+test session_context_forged_or_replayed_token_is_rejected ... ok
+test session_context_metrics_reflect_watermark_shape ... ok
+test session_context_sessionless_path_is_unchanged ... ok
+test session_context_watermark_is_bounded_and_coarsens_when_full ... ok
+test session_context_watermark_observe_and_covers_roundtrip ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 3 tests
+test failover_recovery_preserves_empty_repairs_nonempty_or_rebuilds_loudly ... ok
+test session_ttl_boundaries_accept_then_expire_without_wrapping ... ok
+test session_validation_and_rebuild_distinguish_expiry_from_security_errors ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 6 tests
+test session_monotonic_reads_advance_watermark_on_newer_candidate ... ok
+test session_monotonic_reads_never_go_backwards ... ok
+test session_monotonic_sequence_next_saturates_at_max ... ok
+test session_monotonic_writes_allow_other_sessions_or_partitions_independently ... ok
+test session_monotonic_writes_reject_duplicate_or_older_sequence ... ok
+test session_monotonic_writes_reject_newer_sequence_with_lower_stamp ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+
+running 6 tests
+test session_ryw_holds_across_region_failover ... ignored, fault-injection scenario for a networked multi-region runner
+test session_ryw_stale_replica_triggers_escalation_then_repair ... ok
+test session_ryw_unmet_within_budget_fails_loud_not_stale ... ok
+test session_ryw_wait_budget_never_serves_stale_without_recheck ... ok
+test session_ryw_concurrent_other_session_writes_do_not_break_ryw ... ok
+test session_ryw_write_region_a_read_region_b_sees_own_write ... ok
+
+test result: ok. 5 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 5 tests
+test split_brain_lower_epoch_side_loses_topology ... ok
+test split_brain_discard_policy_counts_loser_entries ... ok
+test split_brain_higher_version_wins_merges_values ... ok
+test split_brain_merge_runs_as_topology_op_not_hot_path ... ok
+test split_brain_tombstone_on_winner_beats_value_on_loser ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 4 tests
+test split_brain_live_split_then_heal_under_churn_converges ... ignored, chaos gate: run with -- --ignored when exercising partition heal under churn
+test split_brain_live_loser_side_discards_split_time_topology ... ok
+test split_brain_live_partition_then_heal_resolves_to_higher_epoch ... ok
+test split_brain_live_tombstone_on_winner_beats_value_on_loser ... ok
+
+test result: ok. 3 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 4 tests
+test sustained_overload::oversized_request_is_rejected_and_counted ... ok
+test sustained_overload::sustained_overload_rejects_are_counted_and_queue_is_bounded ... ok
+test sustained_overload::node_recovers_to_healthy_after_overload_subsides ... ok
+test sustained_overload::slow_downstream_does_not_grow_in_flight_unbounded ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 2 tests
+test deterministic_interleavings_match_a_reference_membership_model ... ok
+test high_fanout_membership_is_reclaimed_by_tag_invalidation_and_flush ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+
+running 6 tests
+test tiered_values_tiering_off_matches_042_behavior ... ok
+test tiered_values_hot_eviction_demotes_to_cold_without_loss ... ok
+test tiered_values_cold_hit_promotes_to_hot ... ok
+test tiered_values_hot_tier_respects_byte_budget ... ok
+test tiered_values_tombstone_in_either_tier_wins ... ok
+test tiered_values_trait_surface_keeps_hot_and_cold_views_consistent ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 7 tests
+test concurrent_value_and_tombstone_resolve_by_version ... ok
+test blocking_tombstone_never_silently_dropped ... ok
+test eligible_tombstones_evicted_oldest_first_under_budget ... ok
+test gc_blocked_until_repair_confirmation ... ok
+test replicated_version_is_generation_plus_message_id ... ok
+test tombstone_wins_on_version_tie ... ok
+test tombstone_beats_stale_value_replication ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 4 tests
+test topology_fence_late_packet_from_old_leader_does_not_move_fence_backwards ... ok
+test topology_fence_gossip_suspect_does_not_change_owner ... ok
+test topology_fence_stale_epoch_message_is_dropped ... ok
+test topology_fence_committed_topology_owner_set_is_deterministic ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 9 tests
+test dropped_then_resumed_closes_gap_via_ring ... ok
+test dropped_beyond_retention_clears_partition ... ok
+test foreign_cluster_isolation_holds_under_fault_injection ... ok
+test flood_is_bounded_and_counted ... ok
+test reordering_does_not_double_apply_or_resurrect ... ok
+test echo_storm_does_not_amplify ... ok
+test duplicates_are_deduped_and_apply_once ... ok
+test two_transports_deliver_same_message_id_apply_once ... ok
+test soak_1000_seeds_no_resurrection_no_unbounded_growth ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+
+
+running 9 tests
+test metrics_are_bounded_label ... ok
+test publish_never_blocks_the_cache_write ... ok
+test full_outbound_queue_drops_oldest_counts_and_marks_resume ... ok
+test reconnect_transport_error_triggers_ring_resume_without_gap ... ok
+test resume_fell_behind_emits_clear_partition ... ok
+test resume_range_after_gap_closes_from_watermark ... ok
+test per_source_rate_limit_bounds_flood_and_counts ... ok
+test resume_replayed_events_are_still_fenced_and_deduped ... ok
+test full_inbound_queue_drops_with_counter_not_unbounded ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+
+running 6 tests
+test zone_placement_live_single_zone_loss_keeps_quorum ... ignored, chaos gate: run with -- --ignored when exercising live zone-loss placement
+test zone_placement_one_zone_deployment_matches_042_placement ... ok
+test zone_placement_replicas_spread_across_zones_when_available ... ok
+test zone_placement_underspread_zones_are_flagged_not_silently_colocated ... ok
+test zone_placement_single_zone_loss_keeps_write_quorum ... ok
+test zone_placement_zone_topology_is_authoritative_not_gossip ... ok
+
+test result: ok. 5 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

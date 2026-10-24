@@ -1,0 +1,39 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 6.55s
+     Running tests\bootstrap_installed_origin_074.rs (target\debug\deps\bootstrap_installed_origin_074-2fb1221f97ae80bc.exe)
+
+running 22 tests
+test bootstrap_held_entry_component_precedes_activation ... ok
+test bootstrap_held_delivery_components_precede_execution_admission ... ok
+test bootstrap_installed_child_component_precedes_delivery ... ok
+test bootstrap_held_delivery_exact_additions_leave_old_frames_and_cli_closed ... ok
+test bootstrap_held_entry_additions_preserve_exact_old_modes_and_role_checks ... ok
+test bootstrap_installed_entry_component_precedes_runtime ... ok
+test bootstrap_installed_child_is_separate_consistency_not_authority_or_transport ... ok
+test bootstrap_installed_material_additive_compat_keeps_schema_and_qualification ... ok
+test bootstrap_installed_material_component_precedes_delivery ... ok
+test bootstrap_installed_entry_compat_is_exact_and_does_not_change_old_records ... ok
+test bootstrap_original_service_fixture_precedes_live_admission ... ok
+test bootstrap_installed_material_only_three_hooks_keep_whole_old_owner_and_kernel ... ok
+test bootstrap_installed_child_exact_hooks_preserve_every_old_mode_and_frame ... ok
+test bootstrap_sandbox_owner_component_precedes_admission ... ok
+test bootstrap_sandbox_only_four_exact_additions_preserve_old_frames_and_deadlines ... ok
+test bootstrap_sandbox_takes_no_caller_pid_or_manager_and_cannot_start_or_release ... ok
+test installed_origin_consumes_same_owner_and_cannot_recreate_retained_source_or_export_execution ... ok
+test installed_origin_exists_before_systemd_or_child_admission ... ok
+test bootstrap_installed_entry_only_one_codec_hook_no_owner_or_child_activation ... ok
+test bootstrap_original_service_keeps_old_fixture_and_production_frames_exact ... ok
+test installed_origin_compat_is_additive_and_qualification_inputs_stay_frozen ... ok
+test installed_origin_only_three_additive_hooks_preserve_old_live_frames_and_child_modes ... ok
+
+test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 7.95s
+
+     Running tests\owned_case_074.rs (target\debug\deps\owned_case_074-de09555906c37a73.exe)
+
+running 3 tests
+test owned_case_whole_helper_pins_reject_mutation_before_any_compatibility_view ... ok
+test owned_case_bootstrap_reader_changes_one_read_and_keeps_every_assertion ... ok
+test owned_case_exact_current_additions_preserve_every_old_body_and_reader ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.11s
+

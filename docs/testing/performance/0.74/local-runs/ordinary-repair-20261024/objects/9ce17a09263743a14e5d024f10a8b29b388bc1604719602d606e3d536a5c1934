@@ -1,0 +1,59 @@
+// Included only inside the existing synthetic IO-binding test module.
+#[test]
+fn synthetic_material_lock_receipt_binds_supplied_bytes_and_both_mismatches_refuse() {
+    use std::os::unix::fs::PermissionsExt;
+    for wrong_receipt in [false, true] {
+        let mut fixture = Fixture::new();
+        assert!(fixture
+            .root
+            .canonicalize()
+            .unwrap()
+            .starts_with(fixture.temporary.path().canonicalize().unwrap()));
+        let receipt_path = fixture.root.join("build-receipt-v1.json");
+        let lock_path = fixture.root.join("Cargo.lock.root");
+        let mut receipt: SignedBuild =
+            serde_json::from_slice(&fs::read(&receipt_path).unwrap()).unwrap();
+        assert_eq!(
+            receipt.statement.root_lock,
+            ArtifactDigest::of(&fs::read(&lock_path).unwrap())
+        );
+        let mut pinned = fixture.material();
+        if wrong_receipt {
+            receipt.statement.root_lock = ArtifactDigest::of(b"foreign synthetic lock\n");
+            receipt.signature_hex = crate::hex(
+                &SigningKey::from_bytes(&[74; 32])
+                    .sign(&signing_message(&receipt.statement).unwrap())
+                    .to_bytes(),
+            );
+            let raw = receipt_bytes(&receipt).unwrap();
+            fs::set_permissions(&receipt_path, fs::Permissions::from_mode(0o644)).unwrap();
+            fs::write(&receipt_path, &raw).unwrap();
+            fs::set_permissions(&receipt_path, fs::Permissions::from_mode(0o444)).unwrap();
+            fixture.state.identity.build_provenance_sha256 = sha256_hex(&raw);
+            // Establish that signature/identity validation is not the negative
+            // oracle: only the supplied lock bytes disagree with this receipt.
+            fixture
+                .policy
+                .verify_receipt(&receipt, &fixture.state.identity)
+                .unwrap();
+        } else {
+            fs::set_permissions(&lock_path, fs::Permissions::from_mode(0o644)).unwrap();
+            fs::write(&lock_path, b"different supplied lock\n").unwrap();
+            fs::set_permissions(&lock_path, fs::Permissions::from_mode(0o444)).unwrap();
+            assert!(pinned.revalidate_for(&fixture.state).is_err());
+            assert!(pinned.is_refused());
+            assert!(pinned.revalidate_for(&fixture.state).is_err());
+        }
+        let (uid, gid) = unsafe { (libc::getuid(), libc::getgid()) };
+        assert!(matches!(
+            prepare_fixture_start_material(
+                &fixture.root,
+                uid,
+                gid,
+                &fixture.state,
+                &fixture.policy
+            ),
+            Err(ArtifactError::Contents)
+        ));
+    }
+}

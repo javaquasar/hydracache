@@ -1,0 +1,22 @@
+
+thread 'diagnostic_artifacts::linux::io_binding_tests::checked_material_io_binding_is_fixture_explicit_and_refuses_state_or_process_drift' panicked at tools/long-run-supervisor-074/src/diagnostic_artifacts_linux.rs:665:93:
+called `Result::unwrap()` on an `Err` value: Invalid
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'diagnostic_artifacts::linux::io_binding_tests::fixture_named_process_binding_refuses_replaced_path_while_inode_only_accepts' panicked at tools/long-run-supervisor-074/src/diagnostic_artifacts_linux.rs:665:93:
+called `Result::unwrap()` on an `Err` value: Invalid
+
+thread 'diagnostic_artifacts::linux::io_binding_tests::fixture_named_binding_propagates_material_refusal_without_new_capability' panicked at tools/long-run-supervisor-074/src/diagnostic_artifacts_linux.rs:665:93:
+called `Result::unwrap()` on an `Err` value: Invalid
+
+thread 'diagnostic_artifacts::linux::io_binding_tests::fixture_named_binding_refuses_state_mismatch_and_process_exit' panicked at tools/long-run-supervisor-074/src/diagnostic_artifacts_linux.rs:665:93:
+called `Result::unwrap()` on an `Err` value: Invalid
+
+thread 'diagnostic_artifacts::linux::io_binding_tests::fixture_execution_entry_refuses_before_manager_and_latches_all_original_inputs' panicked at tools/long-run-supervisor-074/src/diagnostic_artifacts_linux.rs:665:93:
+called `Result::unwrap()` on an `Err` value: Invalid
+
+thread 'diagnostic_artifacts::linux::io_binding_tests::synthetic_material_lock_receipt_binds_supplied_bytes_and_both_mismatches_refuse' panicked at tools/long-run-supervisor-074/src/diagnostic_artifacts_linux.rs:665:93:
+called `Result::unwrap()` on an `Err` value: Invalid
+
+thread 'diagnostic_artifacts::linux::io_binding_tests::synthetic_material_origin_and_exact_execution_state_cannot_drift' panicked at tools/long-run-supervisor-074/src/diagnostic_artifacts_linux.rs:665:93:
+called `Result::unwrap()` on an `Err` value: Invalid

@@ -1,0 +1,99 @@
+"""Retain first refusals and separate ordinary repair candidates, never admission."""
+from pathlib import Path, PurePosixPath
+import hashlib
+import importlib.util
+import json
+import re
+import subprocess
+
+ROOT=Path(__file__).resolve().parent.parent
+RAW=ROOT/'target/status-field-scan-20261024'
+DEST=ROOT/'docs/testing/performance/0.74/local-runs/ordinary-repair-20261024'
+
+def sha(raw): return hashlib.sha256(raw).hexdigest()
+def read(path): return json.loads(path.read_bytes())
+spec=importlib.util.spec_from_file_location('review',ROOT/'tools/ordinary-regression-review-074/review.py')
+review=importlib.util.module_from_spec(spec);spec.loader.exec_module(review)
+facts=dict(ordinary={},targeted={},native_strict={},live_observations_changed=False,
+    original_windows_seconds=[300,60,10],server=False,services=False,clock_changes=False,
+    product_measurement=False,original_owner_manual_run=False,retry_to_pass=False,
+    admission=False,release_ready=False,older_coordinator_raw_bytes_complete=False)
+for lane in ('194','188'):
+    folder=RAW/('owned-case-'+lane+'-v9-full-ordinary')
+    facts['ordinary'][lane]=review.review(folder)
+    if facts['ordinary'][lane]['ordinary']['selected']!=1623:
+        raise ValueError('Full ordinary membership changed')
+    for tag, count in (('v3-output',6),('v4-fd',2),('v7-frozen-input',7),('v8-bootstrap-isolation',17)):
+        path=RAW/('owned-case-'+lane+'-'+tag)
+        result=read(path/'result.json')
+        if result['failure'] or not result['source_unchanged'] or f'{count} passed; 0 failed; 0 ignored;' not in (path/'run.stdout.log').read_text():
+            raise ValueError('Focused ordinary candidate incomplete')
+        facts['targeted'][lane+'-'+tag]=dict(passed=count,source_unchanged=True,image=result['image'])
+    strict=read(RAW/('bootstrap-isolation-native-strict-'+lane)/'result.json')
+    if strict['exits']!={'check':0,'clippy':0} or not strict['source_unchanged']:
+        raise ValueError('Native strict gate incomplete')
+    facts['native_strict'][lane]=strict['exits']
+embedded=RAW/'embedded-fast-first'
+if read(embedded/'result.json')['Exit']:
+    raise ValueError('Embedded ordinary gate incomplete')
+counts=[tuple(map(int,row)) for row in re.findall(r'test result: ok\. (\d+) passed; (\d+) failed; (\d+) ignored; (\d+) measured; (\d+) filtered out;', (embedded/'stdout.log').read_text())]
+if len(counts)!=102 or tuple(sum(row[i] for row in counts) for i in range(5))!=(686,0,25,0,0):
+    raise ValueError('Embedded ordinary membership changed')
+facts['embedded']=dict(targets=102,passed=686,failed=0,ignored=25,filtered=0,measurement=False)
+full=RAW/'owned-case-milestone-complete.log'
+if read(RAW/'owned-case-milestone-complete-result.json')['Exit'] or '321 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out;' not in full.read_text():
+    raise ValueError('Full source gate incomplete')
+facts['source_cohort']=dict(passed=321,failed=0,ignored=0,filtered=0)
+strict=read(RAW/'bootstrap-isolation-xtask-strict-final-result.json')
+if strict!={'Test':0,'Check':0,'Clippy':0}: raise ValueError('Xtask strict gate incomplete')
+if read(RAW/'bootstrap-isolated-source-controls-final-result.json')['Exit']:
+    raise ValueError('Current mutation controls incomplete')
+if read(RAW/'bootstrap-isolated-source-narrow-reader-result.json')['Exit']!=101:
+    raise ValueError('First reader ordering refusal changed')
+DEST.mkdir();(DEST/'objects').mkdir();files={}
+def retain(name,raw):
+    digest=sha(raw);path=DEST/'objects'/digest
+    if not path.exists():
+        with path.open('xb') as stream:stream.write(raw)
+    elif path.read_bytes()!=raw:raise ValueError('Content collision')
+    files[name]=dict(bytes=len(raw),sha256=digest)
+for folder in sorted(RAW.iterdir()):
+    if not folder.is_dir() or not (folder.name.startswith(('owned-case-','owned-case-controls-','owned-case-lint-','owned-case-native-final-','material-lock-strict-','bootstrap-isolation-native-strict-')) or folder.name=='embedded-fast-first'):
+        continue
+    for path in sorted(folder.rglob('*')):
+        if path.is_file() and path.name!='image' and path.suffix not in ('.exe','.pdb'):
+            retain('observation/'+path.relative_to(RAW).as_posix(),path.read_bytes())
+for pattern in ('owned-case-source-*','owned-case-milestone-*','bootstrap-isolated-source-*','bootstrap-isolation-xtask-*','material-lock-*','owned-runner-*','ordinary-review-*'):
+    for path in sorted(RAW.glob(pattern)):
+        if path.is_file():retain('observation/'+path.name,path.read_bytes())
+for path in sorted(embedded.iterdir()):
+    if path.is_file():retain('observation/embedded-fast-first/'+path.name,path.read_bytes())
+source=read(RAW/'owned-case-194-v9-full-ordinary/run-intent.json')['source']
+for name,digest in source.items():
+    part=PurePosixPath(name)
+    if part.is_absolute() or '..' in part.parts or ':' in name or '\\' in name:
+        raise ValueError('Unsafe source path')
+    raw=(ROOT/name).read_bytes()
+    if sha(raw)!=digest: raise ValueError('Final ordinary source changed: '+name)
+    retain('compiled-source/v9/'+name,raw)
+for scope in ('tools/ordinary-regression-review-074',):
+    for path in sorted((ROOT/scope).rglob('*')):
+        if path.is_file() and '__pycache__' not in path.parts:
+            retain('source/'+path.relative_to(ROOT).as_posix(),path.read_bytes())
+for name in ('target/check-bootstrap-isolation-native-20261024.py',
+    'crates/xtask/tests/owned_case_074.rs','crates/xtask/tests/bootstrap_installed_origin_074.rs',
+    'docs/testing/performance/0.74/owned-case-isolation-plan-20261024.md',
+    'docs/testing/performance/0.74/material-lock-fixture-plan-20261024.md'):
+    retain('source/'+name,(ROOT/name).read_bytes())
+retain('coordinator/'+Path(__file__).name,Path(__file__).read_bytes())
+retain('analysis/facts.json',(json.dumps(facts,indent=2,sort_keys=True)+'\n').encode())
+index=dict(schema='hc074-ordinary-repair-v1',files=files,facts=facts,
+    prior_first_packet='ca6a28a967606720a4475aa8d4240c350b9e2d9be916b5f251df4ea46e3c1391')
+with (DEST/'index.json').open('x',encoding='utf-8',newline='\n') as stream:
+    json.dump(index,stream,indent=2,sort_keys=True);stream.write('\n')
+with (DEST/'.gitattributes').open('x',encoding='ascii',newline='\n') as stream:
+    stream.write('index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n')
+for row in files.values():
+    raw=(DEST/'objects'/row['sha256']).read_bytes()
+    if len(raw)!=row['bytes'] or sha(raw)!=row['sha256']:raise ValueError('Retained object mismatch')
+print(dict(files=len(files),objects=len(list((DEST/'objects').iterdir())),index_sha256=sha((DEST/'index.json').read_bytes())))

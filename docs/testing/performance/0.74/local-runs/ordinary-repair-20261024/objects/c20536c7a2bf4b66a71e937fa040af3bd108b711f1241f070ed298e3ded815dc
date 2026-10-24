@@ -1,0 +1,6 @@
+{
+  "StartedUTC": "2026-10-24T00:33:09.5927683Z",
+  "Command": "cargo test --offline --locked -p hydracache --lib --tests -- --test-threads=4",
+  "Benchmark": false,
+  "Server": false
+}

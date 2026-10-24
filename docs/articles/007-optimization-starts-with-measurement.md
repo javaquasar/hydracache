@@ -18912,3 +18912,37 @@ their checked correctness, not a throughput floor or acceptance of any rejected
 product hypothesis. Source checks, fixture corrections, performance evidence and
 actual launch authority remain different gates even when all are needed for the
 same release.
+
+### Correct the fixture without weakening the verifier
+
+The [ordinary repair](../testing/performance/0.74/ordinary-repair-result-20261024.md)
+tested a plausible but wrong fix: bind a newly signed fixture receipt to the
+current root lock. The independent production input pin still rejected it on
+both compilers. That rejection was useful evidence, not a reason to change the
+pin. The accepted fixture correction supplies the exact historical lock bytes
+already named by the original receipt. New negative controls show that a valid
+synthetic signature over another digest still cannot override the independent
+pin. A signature proves who asserted bytes; it does not make arbitrary bytes
+part of the approved build.
+
+Descriptor and busy-executable tests needed a different correction. Their old
+assertions were sound only within an owned process scope, not beside unrelated
+forking tests. A narrow exact-case subprocess keeps those bodies intact while
+the parent suite remains parallel. Its controls reject zero selected tests,
+wrong/nonzero outcomes, timeout and surviving descendants; cleanup is never
+counted as successful retirement. The intentional ETXTBSY negative control
+continues holding its writer and requiring refusal.
+
+These repairs do not make the whole suite green. Both complete ordinary cohorts
+retain failures, and their logs record backwards REALTIME under an unchanged
+boot ID. A later passing name does not explain an earlier failing one. Parallel
+log adjacency also cannot tie every clock event to a particular test. Preserve
+the first results, classify only what the saved data proves and keep original
+clock predicates active.
+
+The [remaining release boundaries](../testing/performance/0.74/release-closure-audit-20261024.md)
+are consequently explicit: a parser CPU win, correct fixtures and source tests
+do not establish full preparation fit, authenticated worker execution, cessation
+of every writer, durable completion or production trust. Local correctness,
+ownership proof, performance acceptance and authority to operate the host are
+separate gates. Moving one forward must not silently waive the others.

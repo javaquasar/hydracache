@@ -1,0 +1,322 @@
+   Compiling hydracache-core v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-core)
+   Compiling hydracache v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2m 18s
+     Running unittests src\lib.rs (target\debug\deps\hydracache-a267a9872b3f7d85.exe)
+     Running tests\active_active.rs (target\debug\deps\active_active-655aacb65ec5d54c.exe)
+     Running tests\admission.rs (target\debug\deps\admission-b66b2f0474d9312d.exe)
+     Running tests\adr_presence.rs (target\debug\deps\adr_presence-5e4f62ac265ea5a6.exe)
+     Running tests\allocation_profile.rs (target\debug\deps\allocation_profile-ea4de9bc21797f08.exe)
+     Running tests\anti_entropy.rs (target\debug\deps\anti_entropy-696970e999c07b7e.exe)
+     Running tests\atomic_invalidation.rs (target\debug\deps\atomic_invalidation-c4b1353b676461d9.exe)
+     Running tests\backup_restore.rs (target\debug\deps\backup_restore-0de87f56146e2fe0.exe)
+     Running tests\borrowed_cache_semantics.rs (target\debug\deps\borrowed_cache_semantics-a6192c9f70f5ae03.exe)
+     Running tests\cache_core_concurrency_matrix.rs (target\debug\deps\cache_core_concurrency_matrix-10c629740626ae8f.exe)
+     Running tests\cacheable_macro.rs (target\debug\deps\cacheable_macro-cb9f1a4fefbcdff6.exe)
+     Running tests\cacheable_ui.rs (target\debug\deps\cacheable_ui-23bf2ca194c005d3.exe)
+   Compiling proc-macro2 v1.0.106
+   Compiling quote v1.0.46
+   Compiling unicode-ident v1.0.24
+   Compiling cfg-if v1.0.4
+   Compiling windows-link v0.2.1
+   Compiling stable_deref_trait v1.2.1
+   Compiling serde_core v1.0.228
+   Compiling crossbeam-utils v0.8.21
+   Compiling autocfg v1.5.1
+   Compiling serde v1.0.228
+   Compiling memchr v2.8.2
+   Compiling windows-sys v0.61.2
+   Compiling num-traits v0.2.19
+   Compiling zerocopy v0.8.52
+   Compiling pin-project-lite v0.2.17
+   Compiling smallvec v1.15.2
+   Compiling once_cell v1.21.4
+   Compiling regex-syntax v0.8.11
+   Compiling getrandom v0.3.4
+   Compiling scopeguard v1.2.0
+   Compiling shlex v2.0.1
+   Compiling syn v2.0.118
+   Compiling find-msvc-tools v0.1.9
+   Compiling aho-corasick v1.1.4
+   Compiling crossbeam-epoch v0.9.20
+   Compiling lock_api v0.4.14
+   Compiling cc v1.2.65
+   Compiling getrandom v0.4.3
+   Compiling parking_lot_core v0.9.12
+   Compiling zmij v1.0.21
+   Compiling regex-automata v0.4.14
+   Compiling semver v1.0.28
+   Compiling writeable v0.6.3
+   Compiling litemap v0.8.2
+   Compiling rustc_version v0.4.1
+   Compiling num-integer v0.1.46
+   Compiling icu_properties_data v2.2.0
+   Compiling serde_json v1.0.150
+   Compiling icu_normalizer_data v2.2.0
+   Compiling synstructure v0.13.2
+   Compiling thiserror v2.0.18
+   Compiling rustversion v1.0.22
+   Compiling utf8_iter v1.0.4
+   Compiling heapless v0.7.17
+   Compiling concurrent-queue v2.5.0
+   Compiling byteorder v1.5.0
+   Compiling winnow v1.0.3
+   Compiling equivalent v1.0.2
+   Compiling parking v2.2.1
+   Compiling ref-cast v1.0.25
+   Compiling hashbrown v0.17.1
+   Compiling version_check v0.9.5
+   Compiling lazy_static v1.5.0
+   Compiling itoa v1.0.18
+   Compiling indexmap v2.14.0
+   Compiling event-listener v5.4.1
+   Compiling toml_parser v1.1.2+spec-1.1.0
+   Compiling ahash v0.8.12
+   Compiling parking_lot v0.12.5
+   Compiling zerofrom-derive v0.1.7
+   Compiling serde_derive v1.0.228
+   Compiling yoke-derive v0.8.2
+   Compiling zerovec-derive v0.11.3
+   Compiling zerocopy-derive v0.8.52
+   Compiling zerofrom v0.1.8
+   Compiling displaydoc v0.2.6
+   Compiling thiserror-impl v2.0.18
+   Compiling ref-cast-impl v1.0.25
+   Compiling hash32 v0.2.1
+   Compiling yoke v0.8.3
+   Compiling zerovec v0.11.6
+   Compiling zerotrie v0.2.4
+   Compiling num-bigint v0.4.8
+   Compiling rand_core v0.9.5
+   Compiling spin v0.9.9
+   Compiling tracing-core v0.1.36
+   Compiling toml_datetime v1.1.1+spec-1.1.0
+   Compiling bit-vec v0.8.0
+   Compiling either v1.16.0
+   Compiling winapi v0.3.9
+   Compiling bytes v1.12.0
+   Compiling rayon-core v1.13.0
+   Compiling log v0.4.33
+   Compiling portable-atomic v1.13.1
+   Compiling tinystr v0.8.3
+   Compiling potential_utf v0.1.5
+   Compiling bit-set v0.8.0
+   Compiling half v2.7.1
+   Compiling num-rational v0.4.2
+   Compiling toml_edit v0.25.12+spec-1.1.0
+   Compiling icu_locale_core v2.2.0
+   Compiling icu_collections v2.2.0
+   Compiling generator v0.8.9
+   Compiling cobs v0.3.0
+   Compiling event-listener-strategy v0.5.4
+   Compiling tokio-macros v2.7.0
+   Compiling futures-macro v0.3.32
+   Compiling num-iter v0.1.45
+   Compiling icu_provider v2.2.0
+   Compiling crossbeam-deque v0.8.6
+   Compiling alloca v0.4.0
+   Compiling num-complex v0.4.6
+   Compiling mio v1.2.1
+   Compiling socket2 v0.6.4
+   Compiling icu_properties v2.2.0
+   Compiling icu_normalizer v2.2.0
+   Compiling winapi-util v0.1.11
+   Compiling borrow-or-share v0.2.4
+   Compiling anstyle v1.0.14
+   Compiling fastrand v2.4.1
+   Compiling allocator-api2 v0.2.21
+   Compiling unicode-general-category v1.1.0
+   Compiling foldhash v0.2.0
+   Compiling futures-task v0.3.32
+   Compiling ciborium-io v0.2.2
+   Compiling plotters-backend v0.3.7
+   Compiling clap_lex v1.1.0
+   Compiling slab v0.4.12
+   Compiling futures-core v0.3.32
+   Compiling clap_builder v4.6.0
+   Compiling futures-util v0.3.32
+   Compiling fluent-uri v0.4.1
+   Compiling ciborium-ll v0.2.2
+   Compiling plotters-svg v0.3.7
+   Compiling tempfile v3.27.0
+   Compiling tokio v1.52.3
+   Compiling idna_adapter v1.2.2
+   Compiling same-file v1.0.6
+   Compiling num v0.4.3
+   Compiling async-lock v3.4.2
+   Compiling proc-macro-crate v3.5.0
+   Compiling postcard v1.1.3
+   Compiling ppv-lite86 v0.2.21
+   Compiling tracing-log v0.2.0
+   Compiling itertools v0.13.0
+   Compiling tracing v0.1.44
+   Compiling async-trait v0.1.89
+   Compiling sharded-slab v0.1.7
+   Compiling matchers v0.2.0
+   Compiling regex v1.12.4
+   Compiling uuid v1.23.4
+   Compiling crossbeam-channel v0.5.15
+   Compiling nu-ansi-term v0.50.3
+   Compiling windows-result v0.4.1
+   Compiling thread_local v1.1.9
+   Compiling tagptr v0.2.0
+   Compiling percent-encoding v2.3.2
+   Compiling cast v0.3.0
+   Compiling micromap v0.3.0
+   Compiling fnv v1.0.7
+   Compiling vsimd v0.8.0
+   Compiling outref v0.5.2
+   Compiling quick-error v1.2.3
+   Compiling wait-timeout v0.2.1
+   Compiling tracing-subscriber v0.3.23
+   Compiling rusty-fork v0.3.1
+   Compiling hydra-moka v0.12.15-hydra.1
+   Compiling hydracache-core v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-core)
+   Compiling referencing v0.48.1
+   Compiling uuid-simd v0.8.0
+   Compiling page_size v0.6.0
+   Compiling rand_chacha v0.9.0
+   Compiling criterion-plot v0.8.2
+   Compiling rayon v1.12.0
+   Compiling hydracache-macros v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-macros)
+   Compiling clap v4.6.1
+   Compiling walkdir v2.5.0
+   Compiling fraction v0.15.4
+   Compiling plotters v0.3.7
+   Compiling idna v1.1.0
+   Compiling ciborium v0.2.2
+   Compiling fancy-regex v0.18.0
+   Compiling tinytemplate v1.2.1
+   Compiling email_address v0.2.9
+   Compiling rand_xorshift v0.4.0
+   Compiling rand v0.9.4
+   Compiling jsonschema-regex v0.48.1
+   Compiling crossbeam-queue v0.3.12
+   Compiling scoped-tls v1.0.1
+   Compiling bytecount v0.6.9
+   Compiling oorandom v11.1.5
+   Compiling bitflags v2.13.0
+   Compiling data-encoding v2.11.0
+   Compiling num-cmp v0.1.0
+   Compiling anes v0.1.6
+   Compiling unarray v0.1.4
+   Compiling loom v0.7.2
+   Compiling jsonschema v0.48.1
+   Compiling hydracache v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache)
+   Compiling criterion v0.8.2
+   Compiling proptest v1.11.0
+   Compiling hydracache-tests v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\target\tests\trybuild\hydracache)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 4m 19s
+
+
+test tests/cacheable/pass_cacheable.rs [should pass] ... ok
+test tests/cacheable/pass_cacheable_attribute.rs [should pass] ... ok
+test tests/cacheable/pass_cacheable_attribute_key_tags.rs [should pass] ... ok
+test tests/cacheable/pass_cacheable_infallible.rs [should pass] ... ok
+test tests/cacheable/pass_cacheable_tags.rs [should pass] ... ok
+test tests/cacheable/fail_attribute_conflicting_key.rs [should fail to compile] ... ok
+test tests/cacheable/fail_attribute_conflicting_ttl.rs [should fail to compile] ... ok
+test tests/cacheable/fail_attribute_duplicate_key_segments.rs [should fail to compile] ... ok
+test tests/cacheable/fail_attribute_empty_key_segments.rs [should fail to compile] ... ok
+test tests/cacheable/fail_attribute_empty_tag_segment_group.rs [should fail to compile] ... ok
+test tests/cacheable/fail_attribute_empty_tag_segments.rs [should fail to compile] ... ok
+test tests/cacheable/fail_attribute_flat_tag_segments.rs [should fail to compile] ... ok
+test tests/cacheable/fail_attribute_missing_cache.rs [should fail to compile] ... ok
+test tests/cacheable/fail_attribute_missing_key.rs [should fail to compile] ... ok
+test tests/cacheable/fail_attribute_non_result.rs [should fail to compile] ... ok
+test tests/cacheable/fail_attribute_unknown_option.rs [should fail to compile] ... ok
+test tests/cacheable/fail_conflicting_ttl.rs [should fail to compile] ... ok
+test tests/cacheable/fail_missing_cache.rs [should fail to compile] ... ok
+test tests/cacheable/fail_missing_key.rs [should fail to compile] ... ok
+test tests/cacheable/fail_missing_load.rs [should fail to compile] ... ok
+
+
+     Running tests\cancellation_safety.rs (target\debug\deps\cancellation_safety-927871b63cf1a888.exe)
+     Running tests\capacity_autoscale.rs (target\debug\deps\capacity_autoscale-1f278140d4ee14cb.exe)
+     Running tests\causal_consistency.rs (target\debug\deps\causal_consistency-722399e33927b1cd.exe)
+     Running tests\cluster_checkpoint.rs (target\debug\deps\cluster_checkpoint-14f57e5e03f80e20.exe)
+     Running tests\cluster_component_lifecycle.rs (target\debug\deps\cluster_component_lifecycle-61ef209e0bb2223b.exe)
+     Running tests\cluster_counters_partition.rs (target\debug\deps\cluster_counters_partition-8c16d9db55ba0594.exe)
+     Running tests\cluster_load_stability.rs (target\debug\deps\cluster_load_stability-bf21ee50ebccc360.exe)
+     Running tests\cluster_near_cache_repair.rs (target\debug\deps\cluster_near_cache_repair-4ed04733ccfc2663.exe)
+     Running tests\cluster_ownership_stamp.rs (target\debug\deps\cluster_ownership_stamp-b98b7a9c36eeb0da.exe)
+     Running tests\cluster_pilot_observability.rs (target\debug\deps\cluster_pilot_observability-2013f695bf5762e0.exe)
+     Running tests\cluster_pilot_readiness.rs (target\debug\deps\cluster_pilot_readiness-d6ad6c9acced13ec.exe)
+     Running tests\cluster_pilot_soak.rs (target\debug\deps\cluster_pilot_soak-9edc9984a31fb4ec.exe)
+     Running tests\cluster_quorum_barrier.rs (target\debug\deps\cluster_quorum_barrier-4bd26f9fd7eee559.exe)
+     Running tests\cluster_restart_rejoin_property.rs (target\debug\deps\cluster_restart_rejoin_property-102cf7ddc894f32e.exe)
+     Running tests\cluster_rollback_bypass.rs (target\debug\deps\cluster_rollback_bypass-e804bab5547b017f.exe)
+     Running tests\cluster_routing_mode.rs (target\debug\deps\cluster_routing_mode-58c65df91889ebf1.exe)
+     Running tests\cluster_staging_gate.rs (target\debug\deps\cluster_staging_gate-db497ce48d6baa55.exe)
+     Running tests\cluster_topology_fence.rs (target\debug\deps\cluster_topology_fence-352f3f49873e98f8.exe)
+     Running tests\conditional_tombstone.rs (target\debug\deps\conditional_tombstone-b1b9a552214ad07a.exe)
+     Running tests\conditional_writes.rs (target\debug\deps\conditional_writes-5d229abd427dd9c5.exe)
+     Running tests\consistency_levels.rs (target\debug\deps\consistency_levels-cfb02d870d4c4377.exe)
+     Running tests\consistency_modes.rs (target\debug\deps\consistency_modes-43941a0391609672.exe)
+     Running tests\convergence_staleness.rs (target\debug\deps\convergence_staleness-5a722a5eeabb9774.exe)
+     Running tests\crdt.rs (target\debug\deps\crdt-5e8d144841b10433.exe)
+     Running tests\durability_default.rs (target\debug\deps\durability_default-cf99dfc031cffc83.exe)
+     Running tests\durability_write_path.rs (target\debug\deps\durability_write_path-179ef08405da282c.exe)
+     Running tests\durable_inspect.rs (target\debug\deps\durable_inspect-2ce2a68a228fd70d.exe)
+     Running tests\durable_maintenance.rs (target\debug\deps\durable_maintenance-3395a3f39c1924af.exe)
+     Running tests\durable_replicated_values.rs (target\debug\deps\durable_replicated_values-275cf85926d8112f.exe)
+     Running tests\durable_scrub.rs (target\debug\deps\durable_scrub-df454e6dc1c78ba7.exe)
+     Running tests\durable_value_store.rs (target\debug\deps\durable_value_store-4429aaab1b3d5d8f.exe)
+     Running tests\failover.rs (target\debug\deps\failover-a8a5957385c0e53e.exe)
+     Running tests\failure_detector.rs (target\debug\deps\failure_detector-088965cfd2d83bf3.exe)
+     Running tests\fault_injector_selftest.rs (target\debug\deps\fault_injector_selftest-a48e624e6bf4c76e.exe)
+     Running tests\hinted_handoff.rs (target\debug\deps\hinted_handoff-44e3d39bf8147917.exe)
+     Running tests\hot_cache_invalidation.rs (target\debug\deps\hot_cache_invalidation-a2c5c6f9822f8d6c.exe)
+     Running tests\invalidation_backpressure.rs (target\debug\deps\invalidation_backpressure-7f6df26d94f03252.exe)
+     Running tests\invalidation_ring.rs (target\debug\deps\invalidation_ring-ac975268df0e1c63.exe)
+     Running tests\invalidation_transport.rs (target\debug\deps\invalidation_transport-a72994dde949aea8.exe)
+     Running tests\load_breaker.rs (target\debug\deps\load_breaker-c9fda995a6d8ce22.exe)
+     Running tests\locality_reads.rs (target\debug\deps\locality_reads-1ae440eba0529f06.exe)
+     Running tests\lock_lease.rs (target\debug\deps\lock_lease-52982b4077396363.exe)
+     Running tests\lock_reentrancy.rs (target\debug\deps\lock_reentrancy-e1d75f88027c24c2.exe)
+     Running tests\loom_invalidation_model.rs (target\debug\deps\loom_invalidation_model-afb70637bb1ef788.exe)
+     Running tests\memory_accounting_071.rs (target\debug\deps\memory_accounting_071-146ae5a0a712b25d.exe)
+     Running tests\memory_footprint_071.rs (target\debug\deps\memory_footprint_071-3fb0b2e1bd24bbea.exe)
+     Running tests\merkle_repair.rs (target\debug\deps\merkle_repair-45662eb55ac39e17.exe)
+     Running tests\multitenancy.rs (target\debug\deps\multitenancy-6735481bba5d56de.exe)
+     Running tests\native_event_listeners.rs (target\debug\deps\native_event_listeners-a821ac8954cb43e1.exe)
+     Running tests\near_cache_repair.rs (target\debug\deps\near_cache_repair-906e6a6c55b5f82c.exe)
+     Running tests\online_reshard.rs (target\debug\deps\online_reshard-8dec0b7ae8c08b52.exe)
+     Running tests\performance_smoke.rs (target\debug\deps\performance_smoke-93cb7ec5c05eb54f.exe)
+     Running tests\persistence_config.rs (target\debug\deps\persistence_config-9a1b99f4f18fa0f0.exe)
+     Running tests\persistence_memory_071.rs (target\debug\deps\persistence_memory_071-b4727a61e94ab346.exe)
+     Running tests\persistence_policy.rs (target\debug\deps\persistence_policy-ec17f7be5c24cb1b.exe)
+     Running tests\persistence_recovery.rs (target\debug\deps\persistence_recovery-7ae3462dbab25004.exe)
+     Running tests\placement.rs (target\debug\deps\placement-da68db6fb421edd6.exe)
+     Running tests\read_your_writes.rs (target\debug\deps\read_your_writes-220f12c3c83ebeb7.exe)
+     Running tests\read_your_writes_live.rs (target\debug\deps\read_your_writes_live-b7eac9e69b0053a3.exe)
+     Running tests\rebalance.rs (target\debug\deps\rebalance-328bee3c84a9b004.exe)
+     Running tests\reclamation_071.rs (target\debug\deps\reclamation_071-61c66b8908d70a07.exe)
+     Running tests\refresh_correctness.rs (target\debug\deps\refresh_correctness-4f5b2396dd55c030.exe)
+     Running tests\region_failover.rs (target\debug\deps\region_failover-e04693d7bf156e57.exe)
+     Running tests\region_link.rs (target\debug\deps\region_link-30b942f705736516.exe)
+     Running tests\region_persistence.rs (target\debug\deps\region_persistence-5de1c9a38bf11268.exe)
+     Running tests\replicated_store_ext.rs (target\debug\deps\replicated_store_ext-c05dd1161940445f.exe)
+     Running tests\replication.rs (target\debug\deps\replication-228b58182840c280.exe)
+     Running tests\replication_data_protection.rs (target\debug\deps\replication_data_protection-ed26616a5eb7df25.exe)
+     Running tests\replication_under_load.rs (target\debug\deps\replication_under_load-66f972368146d86e.exe)
+     Running tests\replication_under_load_live.rs (target\debug\deps\replication_under_load_live-1bd0605dc1622401.exe)
+     Running tests\representation_071.rs (target\debug\deps\representation_071-ac7f14dc0139570f.exe)
+     Running tests\residency.rs (target\debug\deps\residency-f4bd7cfa910eebb6.exe)
+     Running tests\sans_io_seam.rs (target\debug\deps\sans_io_seam-ab6004c89b60292e.exe)
+     Running tests\scrubber.rs (target\debug\deps\scrubber-6d2fbc9b23674bda.exe)
+     Running tests\security_lifecycle.rs (target\debug\deps\security_lifecycle-f8c019eadf84f485.exe)
+     Running tests\self_heal.rs (target\debug\deps\self_heal-887c7608aaffa617.exe)
+     Running tests\session_context.rs (target\debug\deps\session_context-1fd943b05aacf847.exe)
+     Running tests\session_lifecycle.rs (target\debug\deps\session_lifecycle-6c9d291598f686ce.exe)
+     Running tests\session_monotonic.rs (target\debug\deps\session_monotonic-b3b2681d6ab959ed.exe)
+     Running tests\session_ryw.rs (target\debug\deps\session_ryw-9b408624c2343faa.exe)
+     Running tests\split_brain.rs (target\debug\deps\split_brain-c9749257661453ee.exe)
+     Running tests\split_brain_live.rs (target\debug\deps\split_brain_live-3fd22f4a0aab7517.exe)
+     Running tests\sustained_overload.rs (target\debug\deps\sustained_overload-221246f5748e8e49.exe)
+     Running tests\tag_index_model_071.rs (target\debug\deps\tag_index_model_071-b1d933ccdf94886e.exe)
+     Running tests\tiered_values.rs (target\debug\deps\tiered_values-15b62929f33bffa3.exe)
+     Running tests\tombstone_replication.rs (target\debug\deps\tombstone_replication-ab8225ff8ae1f36a.exe)
+     Running tests\topology_fence.rs (target\debug\deps\topology_fence-0579abcaf9335db3.exe)
+     Running tests\transport_fault_matrix.rs (target\debug\deps\transport_fault_matrix-fd68973bded6880d.exe)
+     Running tests\transport_resume.rs (target\debug\deps\transport_resume-2532bbb4870f6cbf.exe)
+     Running tests\zone_placement.rs (target\debug\deps\zone_placement-5610171be8b39ae2.exe)

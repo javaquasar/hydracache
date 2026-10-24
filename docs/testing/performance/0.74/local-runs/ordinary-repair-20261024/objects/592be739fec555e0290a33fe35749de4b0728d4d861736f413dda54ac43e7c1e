@@ -1,0 +1,20 @@
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error: use of `writeln!(stdout(), ...).unwrap()`
+  --> tools/long-run-supervisor-074/tests/owned_case_controls.rs:78:9
+   |
+78 |         writeln!(std::io::stdout(), "OWNED-CHILD {}", child.id()).unwrap();
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: try: `println!("OWNED-CHILD {}", child.id())`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#explicit_write
+   = note: `-D clippy::explicit-write` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::explicit_write)]`
+
+error: use of `writeln!(stdout(), ...).unwrap()`
+  --> tools/long-run-supervisor-074/tests/owned_case_controls.rs:89:9
+   |
+89 |         writeln!(std::io::stdout(), "OWNED-CHILD {}", child.id()).unwrap();
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: try: `println!("OWNED-CHILD {}", child.id())`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#explicit_write
+
+error: could not compile `hydracache-long-run-supervisor-074` (test "owned_case_controls") due to 2 previous errors

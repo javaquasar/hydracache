@@ -1,0 +1,217 @@
+seed=0x0750 actual_owned_sigkill=1 outside_pipe_writer_blocks_eof=true late_bytes_reconciled=true production_cgroup_proof=false
+
+thread 'diagnostic_ipc::validation_trace::custody_boundaries::custody_boundary_capture_is_inactive_nested_thread_local_and_unwind_safe' (57136) panicked at tools/long-run-supervisor-074/src/../tests/support/custody_boundaries.rs:62:17:
+Box<dyn Any>
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'diagnostic_ipc::validation_trace::kernel_walk::tests::kernel_numeric_escaping_span_cannot_complete_capture' (57141) panicked at tools/long-run-supervisor-074/src/diagnostic_kernel_walk_trace.rs:61:5:
+unfinished kernel numeric span
+
+thread 'diagnostic_ipc::validation_trace::kernel_walk::tests::kernel_numeric_nested_capture_and_unwind_restore_original' (57142) panicked at tools/long-run-supervisor-074/src/diagnostic_kernel_walk_trace.rs:168:21:
+kernel numeric restoration canary
+
+thread 'diagnostic_ipc::validation_trace::live_walk::tests::nested_capture_and_panic_restore_original_frame' (57146) panicked at tools/long-run-supervisor-074/src/diagnostic_live_walk_trace.rs:119:21:
+numeric restoration canary
+
+thread 'diagnostic_ipc::validation_trace::round_cost::round_cost_deltas_preserve_parent_counts_errors_and_panic_identity' (57150) panicked at tools/long-run-supervisor-074/src/../tests/support/round_cost.rs:162:21:
+Box<dyn Any>
+
+thread 'diagnostic_ipc::validation_trace::round_cost::round_cost_escaping_span_cannot_complete_capture' (57151) panicked at tools/long-run-supervisor-074/src/../tests/support/round_cost.rs:37:9:
+assertion `left == right` failed: unfinished round observation
+  left: 1
+ right: 0
+
+thread 'diagnostic_ipc::validation_trace_tests::validation_trace_nested_unwind_and_ambient_scope_restore_original_frame' (57163) panicked at tools/long-run-supervisor-074/src/diagnostic_validation_trace_tests.rs:60:17:
+owned validation trace canary
+HC074-VALIDATION-COST Report { stages: [Stats { wall_ns: 49095, authentication_calls: 1, authentication_ns: 48773, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }], first_time: Some(TimeRefusal { stage: Unassigned, operation: Reserve, issued: 1, expires: 61, now: 0 }), time_refusals: 1 }
+
+thread 'diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_cpu::authority_cpu_rotation_covers_every_position_in_both_directions' (57191) panicked at tools/long-run-supervisor-074/src/../tests/support/authority_cpu.rs:43:5:
+assertion failed: sample < SAMPLES && slot < CASES.len()
+
+thread 'diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_cpu::authority_cpu_rotation_covers_every_position_in_both_directions' (57191) panicked at tools/long-run-supervisor-074/src/../tests/support/authority_cpu.rs:43:5:
+assertion failed: sample < SAMPLES && slot < CASES.len()
+
+thread 'diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_leaf_cpu::authority_leaf_cpu_clock_and_case_schedule_refuse_invalid_inputs' (57192) panicked at tools/long-run-supervisor-074/src/../tests/support/authority_leaf_cpu.rs:88:5:
+assertion failed: sample < SAMPLES && slot < CASES.len()
+
+thread 'diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_leaf_cpu::authority_leaf_cpu_clock_and_case_schedule_refuse_invalid_inputs' (57192) panicked at tools/long-run-supervisor-074/src/../tests/support/authority_leaf_cpu.rs:88:5:
+assertion failed: sample < SAMPLES && slot < CASES.len()
+
+thread 'diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_leaf_cpu::authority_leaf_cpu_clock_and_case_schedule_refuse_invalid_inputs' (57192) panicked at tools/long-run-supervisor-074/src/../tests/support/authority_leaf_cpu.rs:109:14:
+unknown case
+
+thread 'diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_leaf_cpu::authority_leaf_cpu_clock_and_case_schedule_refuse_invalid_inputs' (57192) panicked at tools/long-run-supervisor-074/src/../tests/support/authority_leaf_cpu.rs:101:14:
+unknown leaf kind
+
+thread 'diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_leaf_cpu::authority_leaf_cpu_selected_observer_preserves_values_errors_and_owner_lifetime' (57193) panicked at tools/long-run-supervisor-074/src/../tests/support/authority_leaf_cpu.rs:81:14:
+backwards selected CPU; no repair
+
+thread 'diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_leaf_cpu::authority_leaf_cpu_selected_observer_preserves_values_errors_and_owner_lifetime' (57193) panicked at tools/long-run-supervisor-074/src/../tests/support/authority_leaf_cpu.rs:82:48:
+selected CPU overflow
+
+thread 'diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_leaf_cpu::authority_leaf_cpu_selected_observer_preserves_values_errors_and_owner_lifetime' (57193) panicked at tools/long-run-supervisor-074/src/../tests/support/authority_leaf_cpu.rs:83:48:
+selected count overflow
+
+thread 'diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_leaf_cpu::authority_leaf_cpu_selected_observer_preserves_values_errors_and_owner_lifetime' (57193) panicked at tools/long-run-supervisor-074/src/../tests/support/authority_leaf_cpu.rs:61:9:
+assertion failed: (6..13).contains(&selected) || selected == usize::MAX
+
+thread 'diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::authority_cpu::authority_cpu_rotation_covers_every_position_in_both_directions' (57191) panicked at tools/long-run-supervisor-074/src/../tests/support/authority_cpu.rs:61:5:
+assertion failed: !COUNTS.with(|state| state.get().active)
+
+thread 'diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::boot_operations::boot_operations_clock_schedule_and_returned_owner_lifetime_are_checked' (57199) panicked at tools/long-run-supervisor-074/src/../tests/support/boot_operations.rs:126:5:
+assertion failed: sample < 16 && slot < 8
+
+thread 'diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::boot_operations::boot_operations_clock_schedule_and_returned_owner_lifetime_are_checked' (57199) panicked at tools/long-run-supervisor-074/src/../tests/support/boot_operations.rs:126:5:
+assertion failed: sample < 16 && slot < 8
+
+thread 'diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::boot_operations::boot_operations_clock_schedule_and_returned_owner_lifetime_are_checked' (57199) panicked at tools/long-run-supervisor-074/src/../tests/support/boot_operations.rs:151:14:
+unknown operation
+
+thread 'diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::boot_operations::boot_operations_clock_schedule_and_returned_owner_lifetime_are_checked' (57199) panicked at tools/long-run-supervisor-074/src/../tests/support/boot_operations.rs:109:49:
+backwards CPU
+
+thread 'diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::boot_operations::boot_operations_clock_schedule_and_returned_owner_lifetime_are_checked' (57199) panicked at tools/long-run-supervisor-074/src/../tests/support/boot_operations.rs:110:48:
+CPU overflow
+
+thread 'diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::boot_operations::boot_operations_clock_schedule_and_returned_owner_lifetime_are_checked' (57199) panicked at tools/long-run-supervisor-074/src/../tests/support/boot_operations.rs:111:48:
+count overflow
+
+thread 'diagnostic_kernel_admission::origin::fixed_leaf_path_tests::allocations::fixed_leaf_alloc_counter_restores_nested_unwind_and_thread_state' (57220) panicked at tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs:174:48:
+allocation capture unwind canary
+
+thread 'diagnostic_kernel_admission::refusal_trace::tests::kernel_refusal_capture_nested_and_unwind_restore_original_scope' (57270) panicked at tools/long-run-supervisor-074/src/diagnostic_kernel_refusal_trace.rs:104:21:
+owned trace unwind canary
+HC074-KERNEL-FIRST-REFUSAL Event { phase: "unwind", site: "unwinding", file: "tools/long-run-supervisor-074/src/diagnostic_kernel_refusal_trace.rs", line: 103, clock: [0, 0, 0, 0, 0, 0] }
+binding mutation seed=0x74b2026
+namespace binding mutation seed=0x7502026
+account mutation seed=0x74a2026
+seed=0x749
+seed=0x746
+seed=0x745
+namespace credential mutation seed=0x74f2026
+credential mutation seed=0x74c2026
+mount namespace mutation seed=0x7582026; mutations=256
+namespace mutation seed=0x74e2026
+task-set modeled seed=0x7612026; schedules=256
+task membership add=true: Err(Drift)
+task membership add=false: Err(Drift)
+task directory modeled seed=0x7622026; mutations=512
+seed=0x07403b24 fresh_process_observations=16 independent_originals=4 production_custody=false
+actual_same_inode_reexec=observed object_and_generation_match=true original_invocation_or_runtime_proved=false
+seed=0x07403b23 fresh_substitutions=32 independent_originals=4 actual_bootstrap=false
+root enrollment seed=0x74c2019
+
+thread 'diagnostic_worker_policy::authority_registry::context_controls::authority_context_bounded_fixtures_keep_prefix_and_context_failures_distinct' (63839) panicked at tools/long-run-supervisor-074/src/../tests/support/authority_context_controls.rs:70:18:
+unknown bounded binding fixture
+authority context equivalence seed=0x074c07e5 contexts=256 cases_per_context=17
+fd-path seed=0x074fd025 seeded=4096 decimal-boundaries=i32
+expected-name seed=0x074e1a9e depths=0..128 mutations=16/depth
+
+thread 'diagnostic_worker_policy::authority_registry::fixture::leaf_name_controls::authority_leaf_name_fault_classes_and_original_metadata_short_circuit_match' (63889) panicked at tools/long-run-supervisor-074/src/../tests/support/authority_leaf_name_controls.rs:150:18:
+unknown bounded leaf name case
+authority leaf seed=0x0741eaf5 names=64 includes-empty-and-full-budget
+name capacity seed=0x074ca9ac bounded-depths=0..128 seeded=256 suffixes=7
+inventory seed=0x07411e17 depths=0..128 mutations=16/depth
+open-name seed=0x07400a23 seeded=128 utf8-byte-boundaries=23/24
+short-directory seed=0x074d1a24 seeded=64 bytes=23/24 fixed-components=4
+
+thread 'diagnostic_worker_policy::authority_registry::fixture::publication_checkpoint::tests::authority_checkpoint_nested_scope_refuses_without_replacing_original' (63900) panicked at tools/long-run-supervisor-074/src/diagnostic_authority_checkpoint.rs:24:9:
+nested authority publication observer
+
+thread 'diagnostic_worker_policy::authority_registry::fixture::publication_checkpoint::tests::authority_checkpoint_panic_restores_empty_scope' (63901) panicked at tools/long-run-supervisor-074/src/diagnostic_authority_checkpoint.rs:49:17:
+expected observer failure
+authority hex equivalence seed=0x074a17e5 samples=256 all_nibbles=true
+authority journal seed=0x7642026; mutations=256
+attempt publication seed=0x074d
+early attempt seed=0x074d
+seed=0x74a
+seed=0x748
+seed=0x074c
+
+thread 'diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::tests::process_crash_tests::context_replay::diagnostic_context_replay_partial_tail_never_claims_binding_check' (70480) panicked at tools/long-run-supervisor-074/src/diagnostic_context_replay_tests.rs:87:14:
+unknown context-replay checkpoint
+seed=0x74b
+signed tasks seed=0x7632026; schedules=256
+signed mount mutation seed=0x7592026; mutations=256
+signed opening mutation seed=0x7572026; mutations=256
+policy credentials mutation seed=0x7562026; mutations=256
+consuming_held_join seed=0x0074c05e substitutions=128
+held material bootstrap seed=0x0740fd61 substitutions=256
+held unit projection seed=0x074051a7 cases=256
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::time_observation::closing::closing_age_storage_is_bounded_and_restores_nested_unwind_and_threads' (73368) panicked at tools/long-run-supervisor-074/src/diagnostic_closing_age_trace.rs:111:52:
+closing observer canary
+HC074-CLOSING-AGE Some(Report { sites: [Site { calls: 0, first: None, last: None, first_refusal: None }, Site { calls: 0, first: None, last: None, first_refusal: None }, Site { calls: 0, first: None, last: None, first_refusal: None }] })
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::time_observation::tests::causal_facts_first_refusal_and_nested_unwind_are_isolated' (73371) panicked at tools/long-run-supervisor-074/src/diagnostic_causal_time_observation.rs:123:56:
+trace restoration canary
+HC074-CAUSAL-FACTS Some(Report { observations: 0, first: None, last: None, first_refusal: None })
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::collector_reserved_publishes_frozen_state_under_same_original_fence' (73429) panicked at tools/long-run-supervisor-074/src/diagnostic_collector_reserved_tests.rs:53:18:
+called `Result::unwrap()` on an `Err` value: Attempt(Controller(Original(Input(Kernel(Invalid)))))
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::collector_progress_retains_both_owners_without_mutation_and_cross_refuses' (73444) panicked at tools/long-run-supervisor-074/src/diagnostic_collector_progress_tests.rs:113:54:
+called `Result::unwrap()` on an `Err` value: Attempt(Controller(Original(Input(Kernel(Invalid)))))
+HC074-KERNEL-FIRST-REFUSAL Event { phase: "callback", site: "clock-order", file: "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs", line: 259, clock: [52693208771011, 52698172592320, 1792805953018505519, 1792805951515593876, 1, 60000000000] }
+HC074-VALIDATION-COST Report { stages: [Stats { wall_ns: 5124723625, authentication_calls: 268, authentication_ns: 39820013, signature_calls: 268, signature_ns: 33723076, worker_policy_calls: 2, worker_policy_ns: 171916 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }], first_time: None, time_refusals: 0 }
+HC074-KERNEL-FIRST-REFUSAL Event { phase: "unassigned", site: "clock-order", file: "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs", line: 259, clock: [52695607302480, 52698172708068, 1792805955417036985, 1792805951515709608, 1, 60000000000] }
+HC074-VALIDATION-COST Report { stages: [Stats { wall_ns: 2804837573, authentication_calls: 121, authentication_ns: 19392677, signature_calls: 121, signature_ns: 7885739, worker_policy_calls: 2, worker_policy_ns: 218938 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }], first_time: None, time_refusals: 0 }
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::cgroup::held_live::consuming_held_trace_keeps_first_original_refusal_and_same_panic_without_retry' (73457) panicked at tools/long-run-supervisor-074/src/../tests/support/consuming_held_live.rs:153:9:
+Box<dyn Any>
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::cgroup::held_live::consuming_held_cost_observer_preserves_single_call_result_and_panic_identity' (73456) panicked at tools/long-run-supervisor-074/src/../tests/support/consuming_held_live.rs:60:13:
+Box<dyn Any>
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::cgroup::held_live::cost::preparation_cost_observer_failure_does_not_mask_original_panic_or_reuse_counts' (73458) panicked at tools/long-run-supervisor-074/src/../tests/support/consuming_held_cost.rs:89:13:
+Box<dyn Any>
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::owned_placement::preparation_trace::cost::tests::placement_cost_keeps_refusal_and_original_panic_payload' (73467) panicked at tools/long-run-supervisor-074/src/diagnostic_placement_preparation_cost.rs:87:13:
+Box<dyn Any>
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::owned_placement::preparation_trace::tests::preparation_trace_capture_resumes_the_same_panic_without_retry' (73469) panicked at tools/long-run-supervisor-074/src/diagnostic_placement_preparation_trace.rs:85:17:
+Box<dyn Any>
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::owned_placement::preparation_trace::tests::preparation_trace_retains_first_raw_refusal_and_original_panic_identity' (73473) panicked at tools/long-run-supervisor-074/src/diagnostic_placement_preparation_trace.rs:64:13:
+Box<dyn Any>
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::collector_reserved_acknowledged_object_and_source_drift_are_sticky' (73379) panicked at tools/long-run-supervisor-074/src/diagnostic_collector_reserved_tests.rs:315:22:
+called `Result::unwrap()` on an `Err` value: Original(Attempt(Controller(Original(Input(Kernel(Invalid))))))
+HC074-KERNEL-FIRST-REFUSAL Event { phase: "callback", site: "clock-order", file: "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs", line: 259, clock: [52694516116184, 52698182046695, 1792805954325850690, 1792805951525048229, 1, 60000000000] }
+HC074-VALIDATION-COST Report { stages: [Stats { wall_ns: 3845154326, authentication_calls: 190, authentication_ns: 20633443, signature_calls: 190, signature_ns: 15446743, worker_policy_calls: 2, worker_policy_ns: 172008 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }], first_time: None, time_refusals: 0 }
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::collector_reserved_seeded_all_logical_boundaries_retain_failure_and_lock' (73432) panicked at tools/long-run-supervisor-074/src/diagnostic_collector_reserved_tests.rs:118:17:
+assertion failed: matches!(failure.error(), CollectorReservedError::Interrupted(at) if *at ==
+    target)
+HC074-KERNEL-FIRST-REFUSAL Event { phase: "callback", site: "clock-order", file: "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs", line: 259, clock: [52693953178613, 52698183542297, 1792805953762913233, 1792805951526543828, 1, 60000000000] }
+HC074-VALIDATION-COST Report { stages: [Stats { wall_ns: 4345590021, authentication_calls: 233, authentication_ns: 40582270, signature_calls: 233, signature_ns: 36236746, worker_policy_calls: 2, worker_policy_ns: 247920 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }], first_time: None, time_refusals: 0 }
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::original_collector_seeded_signed_request_and_state_substitution_refuse' (73589) panicked at tools/long-run-supervisor-074/src/diagnostic_original_collector_tests.rs:110:22:
+called `Result::unwrap()` on an `Err` value: Controller(Original(Input(Kernel(Invalid))))
+HC074-KERNEL-FIRST-REFUSAL Event { phase: "callback", site: "clock-order", file: "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs", line: 259, clock: [52725944342261, 52728224069390, 1792805988469084527, 1792805984293351493, 1, 60000000000] }
+HC074-VALIDATION-COST Report { stages: [Stats { wall_ns: 2429538676, authentication_calls: 110, authentication_ns: 15086640, signature_calls: 110, signature_ns: 7830472, worker_policy_calls: 2, worker_policy_ns: 171568 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }], first_time: None, time_refusals: 0 }
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::controller_attempt_retains_original_request_and_lock' (73625) panicked at tools/long-run-supervisor-074/src/diagnostic_controller_attempt_tests.rs:90:58:
+called `Result::unwrap()` on an `Err` value: Controller(Source(Kernel(Invalid)))
+HC074-KERNEL-FIRST-REFUSAL Event { phase: "callback", site: "clock-order", file: "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs", line: 259, clock: [52726597213927, 52728224736946, 1792805989121956187, 1792805984294018965, 1, 60000000000] }
+HC074-VALIDATION-COST Report { stages: [Stats { wall_ns: 1899817145, authentication_calls: 87, authentication_ns: 35558926, signature_calls: 87, signature_ns: 33506508, worker_policy_calls: 2, worker_policy_ns: 169009 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }], first_time: None, time_refusals: 0 }
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::controller_attempt_late_owned_object_and_namespace_drift_stay_refused' (73610) panicked at tools/long-run-supervisor-074/src/diagnostic_controller_attempt_tests.rs:226:62:
+called `Result::unwrap()` on an `Err` value: Controller(Original(Input(Kernel(Invalid))))
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::controller_attempt_seeded_all_logical_write_faults_keep_lock_and_partial_context' (73626) panicked at tools/long-run-supervisor-074/src/diagnostic_controller_fence_preflight_tests.rs:98:62:
+called `Result::unwrap()` on an `Err` value: Original(Input(Kernel(Invalid)))
+HC074-KERNEL-FIRST-REFUSAL Event { phase: "oidc", site: "clock-order", file: "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs", line: 259, clock: [52728110625123, 52728225909615, 1792805990635367367, 1792805984295191620, 1, 60000000000] }
+HC074-VALIDATION-COST Report { stages: [Stats { wall_ns: 190808018, authentication_calls: 8, authentication_ns: 640714, signature_calls: 8, signature_ns: 477349, worker_policy_calls: 2, worker_policy_ns: 154047 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }], first_time: None, time_refusals: 0 }
+HC074-KERNEL-FIRST-REFUSAL Event { phase: "callback", site: "clock-order", file: "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs", line: 259, clock: [52727032210906, 52728225502259, 1792805989556953197, 1792805984294784266, 1, 60000000000] }
+HC074-VALIDATION-COST Report { stages: [Stats { wall_ns: 1442299113, authentication_calls: 61, authentication_ns: 13730444, signature_calls: 61, signature_ns: 3865308, worker_policy_calls: 2, worker_policy_ns: 148319 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }], first_time: None, time_refusals: 0 }
+HC074-CONSUMING-MISMATCH-TRACE sample=0 assertions_ok=true first=None
+held_runtime_trust seed=0x00747a57 corruptions=256
+HC074-CONSUMING-MISMATCH-TRACE sample=1 assertions_ok=true first=None
+HC074-CONSUMING-MISMATCH-TRACE sample=2 assertions_ok=true first=None
+HC074-CONSUMING-MISMATCH-TRACE sample=3 assertions_ok=true first=None
+HC074-CONSUMING-MISMATCH-TRACE sample=4 assertions_ok=true first=None
+HC074-CONSUMING-MISMATCH-TRACE sample=5 assertions_ok=true first=None
+HC074-CONSUMING-MISMATCH-TRACE sample=6 assertions_ok=true first=None
+HC074-CONSUMING-MISMATCH-TRACE sample=7 assertions_ok=true first=None
+seed=0x747

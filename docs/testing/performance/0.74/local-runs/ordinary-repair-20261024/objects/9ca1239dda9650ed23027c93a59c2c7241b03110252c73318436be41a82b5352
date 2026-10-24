@@ -1,0 +1,35 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.19s
+     Running tests\authority_runtime_074.rs (target\debug\deps\authority_runtime_074-b34664d35eca545a.exe)
+
+running 5 tests
+test full_contract_adapters_change_only_one_preservation_reader_per_module ... ok
+test legacy_adapters_preserve_complete_prior_test_bodies_and_assertions ... ok
+test baseline_partial_install_and_unrelated_effects_refuse_before_restoration ... ok
+test installed_runtime_is_the_exact_candidate_and_explicit_compatibility_set ... ok
+test approved_predecessor_views_do_not_replace_current_runtime_validation ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.52s
+
+     Running tests\historical_input_view_074.rs (target\debug\deps\historical_input_view_074-52402be9b85f3031.exe)
+
+running 3 tests
+test historical_input_reader_is_one_exact_additive_verified_branch ... FAILED
+test historical_input_list_covers_all_changed_old_files_except_the_existing_exact_authority_gate ... ok
+test historical_inputs_require_the_complete_reviewed_current_file_before_predecessor ... ok
+
+failures:
+
+---- historical_input_reader_is_one_exact_additive_verified_branch stdout ----
+
+thread 'historical_input_reader_is_one_exact_additive_verified_branch' (31348) panicked at crates\xtask\tests\historical_input_view_074.rs:19:5:
+assertion failed: bound_io::owned_case_view::accepts(path, &actual, &current)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    historical_input_reader_is_one_exact_additive_verified_branch
+
+test result: FAILED. 2 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.23s
+
+error: test failed, to rerun pass `-p xtask --test historical_input_view_074`

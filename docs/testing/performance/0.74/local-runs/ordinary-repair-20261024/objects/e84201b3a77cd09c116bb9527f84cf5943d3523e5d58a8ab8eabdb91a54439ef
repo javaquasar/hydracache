@@ -1,0 +1,7 @@
+
+running 2 tests
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::manager_channel::original_join::message_owner::watchdog_context::root_guardians::owned::placement::fixed_slice::held_join::unit_projection::material::kernel::tests::held_material_kernel_drop_closes_all_six_resources_and_partial_creation_is_raii ... ok
+test diagnostic_two_phase_launch::root_enrollment::kernel::transport::tests::cgroup_root_transport_every_bound_byte_refuses_and_closes_rights ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 1620 filtered out; finished in 0.01s
+

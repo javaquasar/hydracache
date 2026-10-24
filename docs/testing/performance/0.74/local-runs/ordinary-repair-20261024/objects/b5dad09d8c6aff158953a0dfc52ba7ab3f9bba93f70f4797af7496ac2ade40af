@@ -1,0 +1,348 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+warning: constant `BASE` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\gate.rs:11:11
+   |
+11 | pub const BASE: &str = storage::SOURCE;
+   |           ^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: constant `ARTIFACT` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\gate.rs:12:11
+   |
+12 | pub const ARTIFACT: &str = "f193fabae86c9bd7a2e778a9463a43984834deb5";
+   |           ^^^^^^^^
+
+warning: constant `HISTORY` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\gate.rs:13:11
+   |
+13 | pub const HISTORY: &str = "fe5ebda429d9ef1f3a9ccd059600d264936cc283";
+   |           ^^^^^^^
+
+warning: constant `FIXTURE` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\gate.rs:14:11
+   |
+14 | pub const FIXTURE: &str = storage::FIXTURE;
+   |           ^^^^^^^
+
+warning: constant `OBSERVER` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\gate.rs:15:11
+   |
+15 | pub const OBSERVER: &str = storage::OBSERVER;
+   |           ^^^^^^^^
+
+warning: constant `TESTS` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\gate.rs:16:11
+   |
+16 | pub const TESTS: &str = "tools/long-run-supervisor-074/src/diagnostic_authority_fixture_tests.rs";
+   |           ^^^^^
+
+warning: constant `SOURCE_TEST` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\gate.rs:17:11
+   |
+17 | pub const SOURCE_TEST: &str = "crates/xtask/tests/authority_storage_source_074.rs";
+   |           ^^^^^^^^^^^
+
+warning: constant `HISTORY_TEST` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\gate.rs:18:11
+   |
+18 | pub const HISTORY_TEST: &str = "crates/xtask/tests/authority_rust_history_074.rs";
+   |           ^^^^^^^^^^^^
+
+warning: constant `COMPAT` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\gate.rs:19:11
+   |
+19 | pub const COMPAT: [&str; 5] = [
+   |           ^^^^^^
+
+warning: constant `IMPORT` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\gate.rs:26:7
+   |
+26 | const IMPORT: &str = "#[path = \"../../../tools/authority-runtime-074/gate.rs\"]\nmod runtime;\n";
+   |       ^^^^^^
+
+warning: function `patch` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\gate.rs:52:4
+   |
+52 | fn patch(source: &str, old: &str, new: &str, count: usize) -> String {
+   |    ^^^^^
+
+warning: function `legacy_adapter` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\gate.rs:60:8
+   |
+60 | pub fn legacy_adapter(path: &str, original: &str) -> String {
+   |        ^^^^^^^^^^^^^^
+
+warning: function `expected` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\gate.rs:78:8
+   |
+78 | pub fn expected(path: &str) -> Option<String> {
+   |        ^^^^^^^^
+
+warning: function `accepts` is never used
+   --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\gate.rs:170:8
+    |
+170 | pub fn accepts(path: &str, raw: &str) -> bool {
+    |        ^^^^^^^
+
+warning: function `view` is never used
+   --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\gate.rs:181:8
+    |
+181 | pub fn view(path: &str, raw: String) -> String {
+    |        ^^^^
+
+warning: constant `MAIN` is never used
+ --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\performance.rs:2:11
+  |
+2 | pub const MAIN: &str = "crates/xtask/tests/performance_contract_074.rs";
+  |           ^^^^
+
+warning: constant `IMPORTS` is never used
+ --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\performance.rs:3:11
+  |
+3 | pub const IMPORTS: &str = "#[path = \"../../../tools/authority-runtime-074/gate.rs\"]\nmod runtime;\n#[path = \"../../../tools/author...
+  |           ^^^^^^^
+
+warning: constant `READERS` is never used
+ --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\performance.rs:4:11
+  |
+4 | pub const READERS: [(&str, &str); 58] = [
+  |           ^^^^^^^
+
+warning: function `reader` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\performance.rs:64:8
+   |
+64 | pub fn reader(original: &str, old: &str) -> String {
+   |        ^^^^^^
+
+warning: constant `SOURCE` is never used
+ --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\status-field-gate-074\contract.rs:3:11
+  |
+3 | pub const SOURCE: &str = "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs";
+  |           ^^^^^^
+
+warning: constant `HELPER` is never used
+ --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\status-field-gate-074\contract.rs:4:11
+  |
+4 | pub const HELPER: &str = "tools/long-run-supervisor-074/src/diagnostic_projection_fields.rs";
+  |           ^^^^^^
+
+warning: constant `LEGACY_TEST` is never used
+ --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\status-field-gate-074\contract.rs:5:11
+  |
+5 | pub const LEGACY_TEST: &str = "tools/long-run-supervisor-074/tests/support/projection_cost.rs";
+  |           ^^^^^^^^^^^
+
+warning: constant `HELPER_SHA256` is never used
+ --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\status-field-gate-074\contract.rs:6:11
+  |
+6 | pub const HELPER_SHA256: &str = "0bd6b4246b7d14151f378fda0090523fdc3485be254cc05df33eaa97264cd6ae";
+  |           ^^^^^^^^^^^^^
+
+warning: function `helper_is_pinned` is never used
+ --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\status-field-gate-074\contract.rs:7:8
+  |
+7 | pub fn helper_is_pinned(raw: &str) -> bool {
+  |        ^^^^^^^^^^^^^^^^
+
+warning: function `edit` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\status-field-gate-074\contract.rs:16:4
+   |
+16 | fn edit(raw: &str, before: &str, after: &str) -> String {
+   |    ^^^^
+
+warning: function `legacy_test` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\status-field-gate-074\contract.rs:24:8
+   |
+24 | pub fn legacy_test(baseline: &str) -> String {
+   |        ^^^^^^^^^^^
+
+warning: function `candidate` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\status-field-gate-074\contract.rs:29:8
+   |
+29 | pub fn candidate(baseline: &str) -> String {
+   |        ^^^^^^^^^
+
+warning: function `read_to_string` is never used
+ --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\io.rs:7:15
+  |
+7 | pub(crate) fn read_to_string(path: impl AsRef<Path>) -> io::Result<String> {
+  |               ^^^^^^^^^^^^^^
+
+warning: constant `REVIEWED` is never used
+ --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\historical-input-view-074\contract.rs:3:11
+  |
+3 | pub const REVIEWED: &str = "3c52c0aa34b8d00b2fac44375d5ba8fdf532bb9f";
+  |           ^^^^^^^^
+
+warning: constant `PREDECESSOR` is never used
+ --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\historical-input-view-074\contract.rs:4:11
+  |
+4 | pub const PREDECESSOR: &str = "33c54b0cda8c330b115009cdf092ad002077cedf";
+  |           ^^^^^^^^^^^
+
+warning: constant `PATHS` is never used
+ --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\historical-input-view-074\contract.rs:5:11
+  |
+5 | pub const PATHS: [&str; 18] = [
+  |           ^^^^^
+
+warning: function `root` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\historical-input-view-074\contract.rs:25:8
+   |
+25 | pub fn root() -> PathBuf {
+   |        ^^^^
+
+warning: function `frozen` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\historical-input-view-074\contract.rs:28:8
+   |
+28 | pub fn frozen(revision: &str, path: &str) -> String {
+   |        ^^^^^^
+
+warning: function `expected` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\historical-input-view-074\contract.rs:34:8
+   |
+34 | pub fn expected(path: &str) -> Option<String> {
+   |        ^^^^^^^^
+
+warning: function `accepts` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\historical-input-view-074\contract.rs:37:8
+   |
+37 | pub fn accepts(path: &str, raw: &str) -> bool {
+   |        ^^^^^^^
+
+warning: function `predecessor` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\historical-input-view-074\contract.rs:40:8
+   |
+40 | pub fn predecessor(path: &str, raw: &str) -> String {
+   |        ^^^^^^^^^^^
+
+warning: constant `SOURCE` is never used
+ --> crates\xtask\tests\..\..\..\tools\authority-storage-source-074\contract.rs:4:11
+  |
+4 | pub const SOURCE: &str = "33c54b0cda8c330b115009cdf092ad002077cedf";
+  |           ^^^^^^
+
+warning: constant `FIXTURE` is never used
+ --> crates\xtask\tests\..\..\..\tools\authority-storage-source-074\contract.rs:5:11
+  |
+5 | pub const FIXTURE: &str = "tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs";
+  |           ^^^^^^^
+
+warning: constant `OBSERVER` is never used
+ --> crates\xtask\tests\..\..\..\tools\authority-storage-source-074\contract.rs:6:11
+  |
+6 | pub const OBSERVER: &str =
+  |           ^^^^^^^^
+
+warning: function `replace` is never used
+ --> crates\xtask\tests\..\..\..\tools\authority-storage-source-074\contract.rs:9:4
+  |
+9 | fn replace(source: &str, old: &str, new: &str, count: usize) -> String {
+  |    ^^^^^^^
+
+warning: function `section` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-storage-source-074\contract.rs:17:4
+   |
+17 | fn section<'a>(source: &'a str, begin: &str, end: &str) -> &'a str {
+   |    ^^^^^^^
+
+warning: constant `SELECT` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-storage-source-074\contract.rs:25:7
+   |
+25 | const SELECT: &str = "match slot.take() {
+   |       ^^^^^^
+
+warning: constant `RETAIN` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-storage-source-074\contract.rs:32:7
+   |
+32 | const RETAIN: &str =
+   |       ^^^^^^
+
+warning: constant `WRAPPER` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-storage-source-074\contract.rs:37:7
+   |
+37 | const WRAPPER: &str = "        let result = self.validate(dir, uid, gid, budget);
+   |       ^^^^^^^
+
+warning: constant `EVICT` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-storage-source-074\contract.rs:44:7
+   |
+44 | const EVICT: &str = "    fn evict_scratch(&mut self) {
+   |       ^^^^^
+
+warning: constant `JOURNAL_EVICT` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-storage-source-074\contract.rs:48:7
+   |
+48 | const JOURNAL_EVICT: &str = "    pub(crate) fn latch_refusal(&mut self) {
+   |       ^^^^^^^^^^^^^
+
+warning: function `candidate` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-storage-source-074\contract.rs:60:8
+   |
+60 | pub fn candidate(baseline: &str) -> String {
+   |        ^^^^^^^^^
+
+warning: function `observer` is never used
+   --> crates\xtask\tests\..\..\..\tools\authority-storage-source-074\contract.rs:129:8
+    |
+129 | pub fn observer(baseline: &str) -> String {
+    |        ^^^^^^^^
+
+warning: function `accepts` is never used
+   --> crates\xtask\tests\..\..\..\tools\authority-storage-source-074\contract.rs:213:8
+    |
+213 | pub fn accepts(expected: &str, actual: &str) -> bool {
+    |        ^^^^^^^
+
+warning: `xtask` (test "bootstrap_installed_origin_074") generated 49 warnings
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 7.19s
+     Running tests\bootstrap_installed_origin_074.rs (target\debug\deps\bootstrap_installed_origin_074-2fb1221f97ae80bc.exe)
+
+running 22 tests
+test bootstrap_held_delivery_components_precede_execution_admission ... ok
+test bootstrap_held_entry_component_precedes_activation ... ok
+test bootstrap_installed_child_component_precedes_delivery ... ok
+test bootstrap_held_delivery_exact_additions_leave_old_frames_and_cli_closed ... ok
+test bootstrap_held_entry_additions_preserve_exact_old_modes_and_role_checks ... ok
+test bootstrap_installed_entry_component_precedes_runtime ... ok
+test bootstrap_installed_child_is_separate_consistency_not_authority_or_transport ... ok
+test bootstrap_installed_material_additive_compat_keeps_schema_and_qualification ... ok
+test bootstrap_installed_material_component_precedes_delivery ... ok
+test bootstrap_installed_entry_compat_is_exact_and_does_not_change_old_records ... ok
+test bootstrap_original_service_fixture_precedes_live_admission ... ok
+test bootstrap_installed_material_only_three_hooks_keep_whole_old_owner_and_kernel ... ok
+test bootstrap_installed_child_exact_hooks_preserve_every_old_mode_and_frame ... ok
+test bootstrap_sandbox_owner_component_precedes_admission ... ok
+test bootstrap_sandbox_only_four_exact_additions_preserve_old_frames_and_deadlines ... ok
+test bootstrap_sandbox_takes_no_caller_pid_or_manager_and_cannot_start_or_release ... ok
+test installed_origin_consumes_same_owner_and_cannot_recreate_retained_source_or_export_execution ... ok
+test installed_origin_exists_before_systemd_or_child_admission ... ok
+test bootstrap_installed_entry_only_one_codec_hook_no_owner_or_child_activation ... ok
+test bootstrap_original_service_keeps_old_fixture_and_production_frames_exact ... ok
+test installed_origin_compat_is_additive_and_qualification_inputs_stay_frozen ... ok
+test installed_origin_only_three_additive_hooks_preserve_old_live_frames_and_child_modes ... ok
+
+test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.10s
+
+     Running tests\owned_case_074.rs (target\debug\deps\owned_case_074-de09555906c37a73.exe)
+
+running 3 tests
+test owned_case_whole_helper_pins_reject_mutation_before_any_compatibility_view ... ok
+test owned_case_bootstrap_reader_changes_one_read_and_keeps_every_assertion ... FAILED
+test owned_case_exact_current_additions_preserve_every_old_body_and_reader ... ok
+
+failures:
+
+---- owned_case_bootstrap_reader_changes_one_read_and_keeps_every_assertion stdout ----
+
+thread 'owned_case_bootstrap_reader_changes_one_read_and_keeps_every_assertion' (37144) panicked at crates\xtask\tests\owned_case_074.rs:18:5:
+assertion failed: storage_contract::accepts(&expected, &current)
+
+
+failures:
+    owned_case_bootstrap_reader_changes_one_read_and_keeps_every_assertion
+
+test result: FAILED. 2 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.55s
+
+error: test failed, to rerun pass `-p xtask --test owned_case_074`

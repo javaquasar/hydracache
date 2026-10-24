@@ -1,0 +1,23 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 25.11s
+     Running tests\material_lock_fixture_074.rs (target\debug\deps\material_lock_fixture_074-d7a13455ba6280f4.exe)
+
+running 2 tests
+test synthetic_material_lock_current_source_is_exact_and_old_assertions_remain ... FAILED
+test synthetic_material_lock_delta_cannot_remove_old_checks_or_change_production_body ... ok
+
+failures:
+
+---- synthetic_material_lock_current_source_is_exact_and_old_assertions_remain stdout ----
+
+thread 'synthetic_material_lock_current_source_is_exact_and_old_assertions_remain' (23272) panicked at crates\xtask\tests\material_lock_fixture_074.rs:26:5:
+synthetic fixture correction is absent or drifted
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    synthetic_material_lock_current_source_is_exact_and_old_assertions_remain
+
+test result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.52s
+
+error: test failed, to rerun pass `-p xtask --test material_lock_fixture_074`

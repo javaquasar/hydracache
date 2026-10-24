@@ -1,0 +1,90 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+warning: constant `BASE` is never used
+ --> crates\xtask\tests\..\..\..\tools\owned-case-074\..\material-lock-fixture-074\contract.rs:4:11
+  |
+4 | pub const BASE: &str = "25faa7bb762aa229631e6f6cfc25cae33e16ff43";
+  |           ^^^^
+  |
+  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `accepts` is never used
+  --> crates\xtask\tests\..\..\..\tools\owned-case-074\..\material-lock-fixture-074\contract.rs:31:8
+   |
+31 | pub fn accepts(original: &str, actual: &str) -> bool {
+   |        ^^^^^^^
+
+warning: constant `BASE` is never used
+ --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\owned-case-074\..\material-lock-fixture-074\contract.rs:4:11
+  |
+4 | pub const BASE: &str = "25faa7bb762aa229631e6f6cfc25cae33e16ff43";
+  |           ^^^^
+  |
+  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `accepts` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\owned-case-074\..\material-lock-fixture-074\contract.rs:31:8
+   |
+31 | pub fn accepts(original: &str, actual: &str) -> bool {
+   |        ^^^^^^^
+
+warning: `xtask` (test "owned_case_074") generated 2 warnings
+warning: `xtask` (test "historical_source_cache_074") generated 2 warnings
+warning: `xtask` (test "historical_input_view_074") generated 2 warnings (2 duplicates)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 32.74s
+     Running tests\authority_runtime_074.rs (target\debug\deps\authority_runtime_074-b34664d35eca545a.exe)
+
+running 5 tests
+test full_contract_adapters_change_only_one_preservation_reader_per_module ... ok
+test legacy_adapters_preserve_complete_prior_test_bodies_and_assertions ... ok
+test baseline_partial_install_and_unrelated_effects_refuse_before_restoration ... ok
+test installed_runtime_is_the_exact_candidate_and_explicit_compatibility_set ... ok
+test approved_predecessor_views_do_not_replace_current_runtime_validation ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 7.19s
+
+     Running tests\historical_input_view_074.rs (target\debug\deps\historical_input_view_074-52402be9b85f3031.exe)
+
+running 3 tests
+test historical_input_list_covers_all_changed_old_files_except_the_existing_exact_authority_gate ... ok
+test historical_inputs_require_the_complete_reviewed_current_file_before_predecessor ... ok
+test historical_input_reader_is_one_exact_additive_verified_branch ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.51s
+
+     Running tests\historical_source_cache_074.rs (target\debug\deps\historical_source_cache_074-3a536e6e160af238.exe)
+
+running 7 tests
+test controls::tests::loader_can_read_another_key_without_holding_the_index_lock ... ok
+test controls::tests::revisions_paths_and_cache_instances_do_not_share_entries ... ok
+test controls::tests::failed_loader_never_publishes_partial_data_or_poisons_other_keys ... ok
+test controls::tests::same_immutable_key_loads_once_and_returned_strings_are_independent ... ok
+test controls::tests::concurrent_same_key_runs_one_complete_loader ... ok
+test reviewed_inputs_delegate_only_their_exact_frozen_lookup ... ok
+test immutable_source_cache_changes_only_the_historical_loader_not_current_validation ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.33s
+
+     Running tests\material_lock_fixture_074.rs (target\debug\deps\material_lock_fixture_074-d7a13455ba6280f4.exe)
+
+running 2 tests
+test synthetic_material_lock_current_source_is_exact_and_old_assertions_remain ... ok
+test synthetic_material_lock_delta_cannot_remove_old_checks_or_change_production_body ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.28s
+
+     Running tests\owned_case_074.rs (target\debug\deps\owned_case_074-8f02f7e8d8c5d19f.exe)
+
+running 2 tests
+test owned_case_whole_helper_pins_reject_mutation_before_any_compatibility_view ... ok
+test owned_case_exact_current_additions_preserve_every_old_body_and_reader ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.90s
+
+     Running tests\status_field_scan_074.rs (target\debug\deps\status_field_scan_074-cbd6d40f5f9defea.exe)
+
+running 2 tests
+test status_field_scan_exact_current_source_precedes_any_historical_view ... ok
+test status_field_scan_refuses_removed_guards_reads_order_and_helper_drift ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.51s
+

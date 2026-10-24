@@ -1,0 +1,6 @@
+{
+  "Command": "cargo +1.94.0 test --offline --locked -p hydracache-long-run-supervisor-074 --release --test owned_case_controls -- --nocapture --test-threads=4",
+  "Service": false,
+  "OriginalWindowsChanged": false,
+  "Server": false
+}

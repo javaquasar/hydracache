@@ -1,0 +1,218 @@
+{
+  "adjacent_event_to_test_attribution": false,
+  "admission": false,
+  "historical_failure_cause_proved": false,
+  "image": {
+    "bytes": 27239592,
+    "path": "/home/artur/.cache/hydracache-074-194-check/release/deps/hydracache_long_run_supervisor_074-c3c253bf49d23fef",
+    "sha256": "79984a8c8bf2ff5a3c451199b29922b2c08d7f6f1dd228a607f57cfd5ced268f"
+  },
+  "kernel_events": [
+    {
+      "clock": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "parsed": true,
+      "phase": "unwind",
+      "site": "unwinding",
+      "source": "tools/long-run-supervisor-074/src/diagnostic_kernel_refusal_trace.rs",
+      "source_line": 103,
+      "stderr_line": 84
+    },
+    {
+      "boottime_delta_ns": 4963821309,
+      "clock": [
+        52693208771011,
+        52698172592320,
+        1792805953018505519,
+        1792805951515593876,
+        1,
+        60000000000
+      ],
+      "failed_predicates": [
+        "realtime-backwards"
+      ],
+      "parsed": true,
+      "phase": "callback",
+      "realtime_backward_ns": 1502911643,
+      "site": "clock-order",
+      "source": "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs",
+      "source_line": 259,
+      "stderr_line": 155
+    },
+    {
+      "boottime_delta_ns": 2565405588,
+      "clock": [
+        52695607302480,
+        52698172708068,
+        1792805955417036985,
+        1792805951515709608,
+        1,
+        60000000000
+      ],
+      "failed_predicates": [
+        "realtime-backwards"
+      ],
+      "parsed": true,
+      "phase": "unassigned",
+      "realtime_backward_ns": 3901327377,
+      "site": "clock-order",
+      "source": "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs",
+      "source_line": 259,
+      "stderr_line": 157
+    },
+    {
+      "boottime_delta_ns": 3665930511,
+      "clock": [
+        52694516116184,
+        52698182046695,
+        1792805954325850690,
+        1792805951525048229,
+        1,
+        60000000000
+      ],
+      "failed_predicates": [
+        "realtime-backwards"
+      ],
+      "parsed": true,
+      "phase": "callback",
+      "realtime_backward_ns": 2800802461,
+      "site": "clock-order",
+      "source": "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs",
+      "source_line": 259,
+      "stderr_line": 180
+    },
+    {
+      "boottime_delta_ns": 4230363684,
+      "clock": [
+        52693953178613,
+        52698183542297,
+        1792805953762913233,
+        1792805951526543828,
+        1,
+        60000000000
+      ],
+      "failed_predicates": [
+        "realtime-backwards"
+      ],
+      "parsed": true,
+      "phase": "callback",
+      "realtime_backward_ns": 2236369405,
+      "site": "clock-order",
+      "source": "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs",
+      "source_line": 259,
+      "stderr_line": 186
+    },
+    {
+      "boottime_delta_ns": 2279727129,
+      "clock": [
+        52725944342261,
+        52728224069390,
+        1792805988469084527,
+        1792805984293351493,
+        1,
+        60000000000
+      ],
+      "failed_predicates": [
+        "realtime-backwards"
+      ],
+      "parsed": true,
+      "phase": "callback",
+      "realtime_backward_ns": 4175733034,
+      "site": "clock-order",
+      "source": "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs",
+      "source_line": 259,
+      "stderr_line": 191
+    },
+    {
+      "boottime_delta_ns": 1627523019,
+      "clock": [
+        52726597213927,
+        52728224736946,
+        1792805989121956187,
+        1792805984294018965,
+        1,
+        60000000000
+      ],
+      "failed_predicates": [
+        "realtime-backwards"
+      ],
+      "parsed": true,
+      "phase": "callback",
+      "realtime_backward_ns": 4827937222,
+      "site": "clock-order",
+      "source": "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs",
+      "source_line": 259,
+      "stderr_line": 196
+    },
+    {
+      "boottime_delta_ns": 115284492,
+      "clock": [
+        52728110625123,
+        52728225909615,
+        1792805990635367367,
+        1792805984295191620,
+        1,
+        60000000000
+      ],
+      "failed_predicates": [
+        "realtime-backwards"
+      ],
+      "parsed": true,
+      "phase": "oidc",
+      "realtime_backward_ns": 6340175747,
+      "site": "clock-order",
+      "source": "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs",
+      "source_line": 259,
+      "stderr_line": 204
+    },
+    {
+      "boottime_delta_ns": 1193291353,
+      "clock": [
+        52727032210906,
+        52728225502259,
+        1792805989556953197,
+        1792805984294784266,
+        1,
+        60000000000
+      ],
+      "failed_predicates": [
+        "realtime-backwards"
+      ],
+      "parsed": true,
+      "phase": "callback",
+      "realtime_backward_ns": 5262168931,
+      "site": "clock-order",
+      "source": "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs",
+      "source_line": 259,
+      "stderr_line": 206
+    }
+  ],
+  "ordinary": {
+    "elapsed_seconds": 250.3,
+    "failed": 8,
+    "failed_names": [
+      "diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::collector_reserved_publishes_frozen_state_under_same_original_fence",
+      "diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::collector_progress_retains_both_owners_without_mutation_and_cross_refuses",
+      "diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::collector_reserved_acknowledged_object_and_source_drift_are_sticky",
+      "diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::collector_reserved_seeded_all_logical_boundaries_retain_failure_and_lock",
+      "diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::original_collector_seeded_signed_request_and_state_substitution_refuse",
+      "diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::controller_attempt_retains_original_request_and_lock",
+      "diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::controller_attempt_seeded_all_logical_write_faults_keep_lock_and_partial_context",
+      "diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::controller_attempt_late_owned_object_and_namespace_drift_stay_refused"
+    ],
+    "filtered": 0,
+    "ignored": 141,
+    "passed": 1474,
+    "selected": 1623
+  },
+  "retained_failure": "First run refusal retained",
+  "retry": false,
+  "server": false,
+  "timing_speedup_claim": false
+}

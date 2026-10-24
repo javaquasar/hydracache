@@ -1,0 +1,11 @@
+
+running 6 tests
+test owned_case_exact_names_and_single_success_cannot_be_forged_by_empty_selection ... ok
+test owned_case_nonzero_child ... ok
+test owned_case_orphan_child ... ok
+test owned_case_timeout_child ... ok
+test owned_case_healthy_child ... ok
+test owned_case_fail_empty_timeout_and_live_descendant_are_never_positive_proof ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.01s
+

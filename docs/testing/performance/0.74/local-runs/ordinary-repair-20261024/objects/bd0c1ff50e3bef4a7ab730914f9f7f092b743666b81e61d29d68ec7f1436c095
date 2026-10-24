@@ -1,0 +1,37 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.63s
+     Running tests\owned_case_074.rs (target\debug\deps\owned_case_074-8f02f7e8d8c5d19f.exe)
+
+running 2 tests
+test owned_case_exact_current_additions_preserve_every_old_body_and_reader ... FAILED
+test owned_case_whole_helper_pins_reject_mutation_before_any_compatibility_view ... ok
+
+failures:
+
+---- owned_case_exact_current_additions_preserve_every_old_body_and_reader stdout ----
+
+thread 'owned_case_exact_current_additions_preserve_every_old_body_and_reader' (42940) panicked at crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\owned-case-074\contract.rs:60:5:
+assertion `left == right` failed: exact owned-case predecessor
+  left: "830a3c120a85010d740fc9019eb383f36595d0812bf9cee1869202a2d1dd3c67"
+ right: "1b4e852c40018bf6023d9e8e965e5debebc65b4689d556e2760b41c102952701"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'owned_case_exact_current_additions_preserve_every_old_body_and_reader' (42940) panicked at crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\owned-case-074\contract.rs:60:5:
+assertion `left == right` failed: exact owned-case predecessor
+  left: "22e0b5ee1d796d9c15124098085a8be2618df0e849a5e299a5d458197c08f5cb"
+ right: "70ca8141f1664f6e59664bbf02bf0695ddb48f69109d5e5551883c60e2048f81"
+
+thread 'owned_case_exact_current_additions_preserve_every_old_body_and_reader' (42940) panicked at crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\owned-case-074\contract.rs:60:5:
+assertion `left == right` failed: exact owned-case predecessor
+  left: "fc0baff14a299511360c32b623e25c3053e8e5ae810d9f7302e40f2ac1c7ec78"
+ right: "a3a5fd83f5f1c79945a8282adaac1b895f5f89d63a952365c538c15858bc1be2"
+
+thread 'owned_case_exact_current_additions_preserve_every_old_body_and_reader' (42940) panicked at crates\xtask\tests\owned_case_074.rs:14:9:
+tools/long-run-supervisor-074/src/diagnostic_cgroup_root_transport_tests.rs
+
+
+failures:
+    owned_case_exact_current_additions_preserve_every_old_body_and_reader
+
+test result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.59s
+
+error: test failed, to rerun pass `-p xtask --test owned_case_074`

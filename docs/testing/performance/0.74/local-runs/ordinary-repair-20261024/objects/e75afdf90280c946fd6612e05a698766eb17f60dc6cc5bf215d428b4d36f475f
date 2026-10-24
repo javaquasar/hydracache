@@ -1,0 +1,23 @@
+
+running 7 tests
+test diagnostic_artifacts::linux::io_binding_tests::checked_material_io_binding_is_fixture_explicit_and_refuses_state_or_process_drift ... FAILED
+test diagnostic_artifacts::linux::io_binding_tests::fixture_named_process_binding_refuses_replaced_path_while_inode_only_accepts ... FAILED
+test diagnostic_artifacts::linux::io_binding_tests::fixture_named_binding_refuses_state_mismatch_and_process_exit ... FAILED
+test diagnostic_artifacts::linux::io_binding_tests::fixture_named_binding_propagates_material_refusal_without_new_capability ... FAILED
+test diagnostic_artifacts::linux::io_binding_tests::fixture_execution_entry_refuses_before_manager_and_latches_all_original_inputs ... FAILED
+test diagnostic_artifacts::linux::io_binding_tests::synthetic_material_lock_receipt_binds_supplied_bytes_and_both_mismatches_refuse ... FAILED
+test diagnostic_artifacts::linux::io_binding_tests::synthetic_material_origin_and_exact_execution_state_cannot_drift ... FAILED
+
+failures:
+
+failures:
+    diagnostic_artifacts::linux::io_binding_tests::checked_material_io_binding_is_fixture_explicit_and_refuses_state_or_process_drift
+    diagnostic_artifacts::linux::io_binding_tests::fixture_execution_entry_refuses_before_manager_and_latches_all_original_inputs
+    diagnostic_artifacts::linux::io_binding_tests::fixture_named_binding_propagates_material_refusal_without_new_capability
+    diagnostic_artifacts::linux::io_binding_tests::fixture_named_binding_refuses_state_mismatch_and_process_exit
+    diagnostic_artifacts::linux::io_binding_tests::fixture_named_process_binding_refuses_replaced_path_while_inode_only_accepts
+    diagnostic_artifacts::linux::io_binding_tests::synthetic_material_lock_receipt_binds_supplied_bytes_and_both_mismatches_refuse
+    diagnostic_artifacts::linux::io_binding_tests::synthetic_material_origin_and_exact_execution_state_cannot_drift
+
+test result: FAILED. 0 passed; 7 failed; 0 ignored; 0 measured; 1616 filtered out; finished in 0.03s
+

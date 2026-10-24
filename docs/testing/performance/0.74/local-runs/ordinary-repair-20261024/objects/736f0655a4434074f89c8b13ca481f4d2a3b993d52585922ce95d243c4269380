@@ -1,0 +1,122 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 59.45s
+     Running tests\bootstrap_installed_origin_074.rs (target\debug\deps\bootstrap_installed_origin_074-2fb1221f97ae80bc.exe)
+
+running 22 tests
+test bootstrap_held_delivery_components_precede_execution_admission ... ok
+test bootstrap_held_entry_component_precedes_activation ... ok
+test bootstrap_installed_child_component_precedes_delivery ... ok
+test bootstrap_installed_child_is_separate_consistency_not_authority_or_transport ... FAILED
+test bootstrap_installed_entry_compat_is_exact_and_does_not_change_old_records ... FAILED
+test bootstrap_installed_entry_component_precedes_runtime ... ok
+test bootstrap_held_entry_additions_preserve_exact_old_modes_and_role_checks ... ok
+test bootstrap_held_delivery_exact_additions_leave_old_frames_and_cli_closed ... FAILED
+test bootstrap_installed_material_component_precedes_delivery ... ok
+test bootstrap_installed_material_additive_compat_keeps_schema_and_qualification ... FAILED
+test bootstrap_original_service_fixture_precedes_live_admission ... ok
+test bootstrap_installed_material_only_three_hooks_keep_whole_old_owner_and_kernel ... ok
+test bootstrap_original_service_keeps_old_fixture_and_production_frames_exact ... FAILED
+test bootstrap_sandbox_owner_component_precedes_admission ... ok
+test bootstrap_sandbox_takes_no_caller_pid_or_manager_and_cannot_start_or_release ... ok
+test installed_origin_compat_is_additive_and_qualification_inputs_stay_frozen ... FAILED
+test installed_origin_consumes_same_owner_and_cannot_recreate_retained_source_or_export_execution ... ok
+test installed_origin_exists_before_systemd_or_child_admission ... ok
+test bootstrap_sandbox_only_four_exact_additions_preserve_old_frames_and_deadlines ... FAILED
+test bootstrap_installed_entry_only_one_codec_hook_no_owner_or_child_activation ... ok
+test bootstrap_installed_child_exact_hooks_preserve_every_old_mode_and_frame ... ok
+test installed_origin_only_three_additive_hooks_preserve_old_live_frames_and_child_modes ... ok
+
+failures:
+
+---- bootstrap_installed_child_is_separate_consistency_not_authority_or_transport stdout ----
+
+thread 'bootstrap_installed_child_is_separate_consistency_not_authority_or_transport' (31884) panicked at crates\xtask\tests\support\bootstrap_held_entry_guard.rs:42:5:
+assertion `left == right` failed
+  left: 0
+ right: 1
+
+---- bootstrap_installed_entry_compat_is_exact_and_does_not_change_old_records stdout ----
+
+thread 'bootstrap_installed_entry_compat_is_exact_and_does_not_change_old_records' (13276) panicked at crates\xtask\tests\support\bootstrap_held_entry_guard.rs:42:5:
+assertion `left == right` failed
+  left: 0
+ right: 1
+
+---- bootstrap_held_delivery_exact_additions_leave_old_frames_and_cli_closed stdout ----
+
+thread 'bootstrap_held_delivery_exact_additions_leave_old_frames_and_cli_closed' (12076) panicked at crates\xtask\tests\support\bootstrap_held_delivery_guard.rs:64:9:
+assertion `left == right` failed
+  left: 0
+ right: 1
+
+thread 'bootstrap_held_delivery_exact_additions_leave_old_frames_and_cli_closed' (12076) panicked at crates\xtask\tests\support\bootstrap_held_delivery_guard.rs:64:9:
+assertion `left == right` failed
+  left: 2
+ right: 1
+
+thread 'bootstrap_held_delivery_exact_additions_leave_old_frames_and_cli_closed' (12076) panicked at crates\xtask\tests\support\bootstrap_held_delivery_guard.rs:64:9:
+assertion `left == right` failed
+  left: 0
+ right: 1
+
+thread 'bootstrap_held_delivery_exact_additions_leave_old_frames_and_cli_closed' (12076) panicked at crates\xtask\tests\support\bootstrap_held_delivery_guard.rs:64:9:
+assertion `left == right` failed
+  left: 2
+ right: 1
+
+thread 'bootstrap_held_delivery_exact_additions_leave_old_frames_and_cli_closed' (12076) panicked at crates\xtask\tests\support\bootstrap_held_delivery_guard.rs:64:9:
+assertion `left == right` failed
+  left: 0
+ right: 1
+
+---- bootstrap_installed_material_additive_compat_keeps_schema_and_qualification stdout ----
+
+thread 'bootstrap_installed_material_additive_compat_keeps_schema_and_qualification' (10824) panicked at crates\xtask\tests\support\bootstrap_held_entry_guard.rs:42:5:
+assertion `left == right` failed
+  left: 0
+ right: 1
+
+---- bootstrap_original_service_keeps_old_fixture_and_production_frames_exact stdout ----
+
+thread 'bootstrap_original_service_keeps_old_fixture_and_production_frames_exact' (41444) panicked at crates\xtask\tests\bootstrap_installed_origin_074.rs:66:13:
+assertion `left == right` failed
+  left: 0
+ right: 1
+
+---- installed_origin_compat_is_additive_and_qualification_inputs_stay_frozen stdout ----
+
+thread 'installed_origin_compat_is_additive_and_qualification_inputs_stay_frozen' (42612) panicked at crates\xtask\tests\support\bootstrap_held_entry_guard.rs:42:5:
+assertion `left == right` failed
+  left: 0
+ right: 1
+
+---- bootstrap_sandbox_only_four_exact_additions_preserve_old_frames_and_deadlines stdout ----
+
+thread 'bootstrap_sandbox_only_four_exact_additions_preserve_old_frames_and_deadlines' (26248) panicked at crates\xtask\tests\support\bootstrap_sandbox_guard.rs:17:9:
+assertion `left == right` failed
+  left: 0
+ right: 1
+
+thread 'bootstrap_sandbox_only_four_exact_additions_preserve_old_frames_and_deadlines' (26248) panicked at crates\xtask\tests\support\bootstrap_sandbox_guard.rs:17:9:
+assertion `left == right` failed
+  left: 2
+ right: 1
+
+thread 'bootstrap_sandbox_only_four_exact_additions_preserve_old_frames_and_deadlines' (26248) panicked at crates\xtask\tests\support\bootstrap_held_delivery_guard.rs:64:9:
+assertion `left == right` failed
+  left: 0
+ right: 1
+
+
+failures:
+    bootstrap_held_delivery_exact_additions_leave_old_frames_and_cli_closed
+    bootstrap_installed_child_is_separate_consistency_not_authority_or_transport
+    bootstrap_installed_entry_compat_is_exact_and_does_not_change_old_records
+    bootstrap_installed_material_additive_compat_keeps_schema_and_qualification
+    bootstrap_original_service_keeps_old_fixture_and_production_frames_exact
+    bootstrap_sandbox_only_four_exact_additions_preserve_old_frames_and_deadlines
+    installed_origin_compat_is_additive_and_qualification_inputs_stay_frozen
+
+test result: FAILED. 15 passed; 7 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.63s
+
+error: test failed, to rerun pass `-p xtask --test bootstrap_installed_origin_074`
