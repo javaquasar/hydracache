@@ -1,0 +1,18 @@
+{
+  "argv": [
+    "cargo",
+    "update",
+    "--offline",
+    "--dry-run",
+    "-p",
+    "tokio",
+    "--precise",
+    "1.53.3"
+  ],
+  "manifest_mutation": false,
+  "lockfile_mutation": false,
+  "build": false,
+  "execution": false,
+  "independent_preview": true,
+  "retry": false
+}

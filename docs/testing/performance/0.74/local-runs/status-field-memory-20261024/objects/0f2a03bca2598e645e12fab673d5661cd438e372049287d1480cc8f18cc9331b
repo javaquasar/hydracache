@@ -1,0 +1,12 @@
+{
+  "failure": "First 194-baseline build refusal retained",
+  "results": {},
+  "live": false,
+  "server": false,
+  "clocks": false,
+  "services": false,
+  "cpu_measurement": false,
+  "whole_runtime_memory_claim": false,
+  "admission": false,
+  "retry": false
+}

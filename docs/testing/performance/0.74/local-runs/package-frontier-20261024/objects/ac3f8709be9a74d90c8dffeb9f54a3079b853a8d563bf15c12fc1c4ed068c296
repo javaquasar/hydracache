@@ -1,0 +1,27 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+error[E0061]: this function takes 3 arguments but 2 arguments were supplied
+   --> crates\xtask\tests\owned_case_074.rs:37:14
+    |
+ 37 |       assert!(!contract::accepts(
+    |  ______________^^^^^^^^^^^^^^^^^-
+ 38 | |         registry,
+ 39 | |         &format!("{raw}\n# unreviewed gate")
+ 40 | |     ));
+    | |_____- argument #3 of type `&str` is missing
+    |
+note: function defined here
+   --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\owned-case-074\contract.rs:157:8
+    |
+157 | pub fn accepts(path: &str, original: &str, actual: &str) -> bool {
+    |        ^^^^^^^                             ------------
+help: provide the argument
+    |
+ 37 |     assert!(!contract::accepts(
+ 38 |         registry,
+ 39 ~         &format!("{raw}\n# unreviewed gate"),
+ 40 +         /* &str */,
+    |
+
+For more information about this error, try `rustc --explain E0061`.
+error: could not compile `xtask` (test "owned_case_074") due to 1 previous error
+warning: build failed, waiting for other jobs to finish...

@@ -1,0 +1,6 @@
+error: no matching package named `rustls-webpki` found
+location searched: crates.io index
+required by package `rustls v0.23.45`
+    ... which satisfies dependency `rustls = "^0.23.41"` (locked to 0.23.45) of package `hydracache-client-plane-spike v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-client-plane-spike)`
+    ... which satisfies path dependency `hydracache-client-plane-spike` (locked to 0.73.0) of package `hydracache-client-hc2 v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-client-hc2)`
+As a reminder, you're using offline mode (--offline) which can sometimes cause surprising resolution failures, if this error is too confusing you may wish to retry without `--offline`.

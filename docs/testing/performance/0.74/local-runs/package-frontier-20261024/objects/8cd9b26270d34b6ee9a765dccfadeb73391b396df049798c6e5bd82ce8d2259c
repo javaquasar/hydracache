@@ -1,0 +1,10 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4m 07s
+     Running unittests src\lib.rs (target\debug\deps\xtask-3c1584f2b95edf39.exe)
+     Running unittests src\main.rs (target\debug\deps\xtask-3a518eb23cd819f3.exe)
+     Running tests\allocation_copy_071.rs (target\debug\deps\allocation_copy_071-1bd52969ad6dc1f8.exe)
+     Running tests\allocation_retention_070.rs (target\debug\deps\allocation_retention_070-6568b134446e5460.exe)
+     Running tests\allocator_matrix_071.rs (target\debug\deps\allocator_matrix_071-ae8bc70f4857062c.exe)
+     Running tests\authority_breakdown_074.rs (target\debug\deps\authority_breakdown_074-8a1b60003ffc8cce.exe)
+     Running tests\authority_context_074.rs (target\debug\deps\authority_context_074-7bfa8ec9583d5044.exe)
+error: test failed, to rerun pass `-p xtask --test authority_context_074`

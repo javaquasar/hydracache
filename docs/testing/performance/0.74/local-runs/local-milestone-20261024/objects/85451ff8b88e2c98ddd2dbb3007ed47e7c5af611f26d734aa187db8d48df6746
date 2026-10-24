@@ -1,0 +1,151 @@
+{
+  "commit": "84d943a6deeb8cc6c6f632531aaf4f1c62275239",
+  "clean": true,
+  "preflight_pin_recorded": false,
+  "advisories": {
+    "RUSTSEC-2026-0346": {
+      "package": "rustls",
+      "title": "`Debug` impls for client session values expose TLS secrets",
+      "patched": [
+        ">= 0.23.46"
+      ],
+      "sha256": "f27e53da9f1d93c1ff8b319e7f0205c4fe228cb4933c49a97377fa8cf3a19860",
+      "informational": null,
+      "official_url": "https://rustsec.org/advisories/RUSTSEC-2026-0346.html"
+    },
+    "RUSTSEC-2026-0347": {
+      "package": "rustls",
+      "title": "Buffered application data sent to outer server after ECH rejection",
+      "patched": [
+        ">= 0.23.46"
+      ],
+      "sha256": "47e33367bd4ae3413e00b76be7c76c5d778735936a2f01f0a813c67e1b9bf18d",
+      "informational": null,
+      "official_url": "https://rustsec.org/advisories/RUSTSEC-2026-0347.html"
+    },
+    "RUSTSEC-2026-0348": {
+      "package": "rustls",
+      "title": "Brotli certificate decompression can allocate up to 1 GiB before authentication",
+      "patched": [
+        ">= 0.23.46"
+      ],
+      "sha256": "9e642900244ddb4fc15f18f1acb42b851f05a60db53475ea956d52a5148c882e",
+      "informational": null,
+      "official_url": "https://rustsec.org/advisories/RUSTSEC-2026-0348.html"
+    },
+    "RUSTSEC-2026-0349": {
+      "package": "rustls",
+      "title": "Unauthenticated ServerHello can downgrade later connections to classical key exchange",
+      "patched": [
+        ">= 0.23.46"
+      ],
+      "sha256": "d36fb6e4178fa04c70abf511f0360582212056c4e2c54be43f83dda340767a92",
+      "informational": null,
+      "official_url": "https://rustsec.org/advisories/RUSTSEC-2026-0349.html"
+    },
+    "RUSTSEC-2026-0382": {
+      "package": "rustls-webpki",
+      "title": "Certificate verification may accept distrusted intermediates",
+      "patched": [
+        ">= 0.103.16, < 0.104.0-alpha.1",
+        ">= 0.104.0-alpha.8"
+      ],
+      "sha256": "f46956695eb1ad3a51529d67a027db525cab45b19068962d60ce6233a9db0303",
+      "informational": null,
+      "official_url": "https://rustsec.org/advisories/RUSTSEC-2026-0382.html"
+    },
+    "RUSTSEC-2026-0386": {
+      "package": "tokio",
+      "title": "`AsyncFd::new` and related constructors violate I/O safety",
+      "patched": [
+        ">= 1.51.6, < 1.52.0",
+        ">= 1.53.3"
+      ],
+      "sha256": "8a55a0a105704fd1dd0808fd6c9c3da45d095dbf756736adf109d5d9c283d4f5",
+      "informational": "unsound",
+      "official_url": "https://rustsec.org/advisories/RUSTSEC-2026-0386.html"
+    },
+    "RUSTSEC-2024-0449": {
+      "package": "unsafe-libyaml",
+      "title": "unsafe-libyaml is unmaintained",
+      "patched": [],
+      "sha256": "feeebbf53cf12f85f8151c2696eb59f169cfa0c6fee1b51d9e15d97eadeee013",
+      "informational": "unmaintained",
+      "official_url": "https://rustsec.org/advisories/RUSTSEC-2024-0449.html"
+    },
+    "RUSTSEC-2026-0383": {
+      "package": "webpki-root-certs",
+      "title": "Bundled root certificates allow trust in distrusted emSign intermediates",
+      "patched": [
+        ">= 1.0.10"
+      ],
+      "sha256": "3a35ca5a55003331eb272dccfd56ce1edb7063a6e3a1038f5a0df61481260dac",
+      "informational": null,
+      "official_url": "https://rustsec.org/advisories/RUSTSEC-2026-0383.html"
+    },
+    "RUSTSEC-2026-0381": {
+      "package": "webpki-roots",
+      "title": "Bundled root certificates allow trust in distrusted emSign intermediates",
+      "patched": [
+        ">= 1.0.10"
+      ],
+      "sha256": "acea0a38007060f5ab858bccf12a9d66f79ba5717057c2d4413c5f69fb8c8af5",
+      "informational": null,
+      "official_url": "https://rustsec.org/advisories/RUSTSEC-2026-0381.html"
+    },
+    "RUSTSEC-2026-0371": {
+      "package": "zbus_names",
+      "title": "`zbus_names` is unmaintained",
+      "patched": [],
+      "sha256": "a8e9e77c6fd773c1d667a5f4bf3192cbf2e652e126d58dc48513fe917490b876",
+      "informational": "unmaintained",
+      "official_url": "https://rustsec.org/advisories/RUSTSEC-2026-0371.html"
+    },
+    "RUSTSEC-2026-0367": {
+      "package": "zip",
+      "title": " Insecure Preservation of SUID/SGID Bits during ZIP Extraction Leading to Potential Privilege Escalation",
+      "patched": [
+        ">= 9.0.0"
+      ],
+      "sha256": "e8d6a08897b7dd1c480a39268ec507b2de25e68a174a22d3fd1d6260ed6cbd28",
+      "informational": null,
+      "official_url": "https://rustsec.org/advisories/RUSTSEC-2026-0367.html"
+    },
+    "RUSTSEC-2026-0368": {
+      "package": "zip",
+      "title": "zip: `ZipArchive::extract` creates symbolic links whose attacker-controlled targets are outside the destination directory ",
+      "patched": [
+        ">= 9.0.0"
+      ],
+      "sha256": "aae3a3a2a2de7cfb5cfa22953da214b8bda1a362d108a79134de309984a5cc65",
+      "informational": null,
+      "official_url": "https://rustsec.org/advisories/RUSTSEC-2026-0368.html"
+    },
+    "RUSTSEC-2026-0369": {
+      "package": "zip",
+      "title": "ZipStreamReader::extract() and ZipArchive::extract() apply Unix permissions through symlinks without confining the target ",
+      "patched": [
+        ">= 9.0.0"
+      ],
+      "sha256": "d2c9b29a5090f8c4381a3fff241ba1366816ff25eb801acce34790d2feb32590",
+      "informational": null,
+      "official_url": "https://rustsec.org/advisories/RUSTSEC-2026-0369.html"
+    },
+    "RUSTSEC-2026-0370": {
+      "package": "zvariant",
+      "title": "`zvariant` is unmaintained",
+      "patched": [],
+      "sha256": "e2d28a7c6546f8849adc936e9f2afc1685e43b3b44446ffb3f4340a4e0df958e",
+      "informational": "unmaintained",
+      "official_url": "https://rustsec.org/advisories/RUSTSEC-2026-0370.html"
+    },
+    "RUSTSEC-2026-0372": {
+      "package": "zvariant_derive",
+      "title": "`zvariant_derive` is unmaintained",
+      "patched": [],
+      "sha256": "7d80f8b43712630b7704a8cc9e8b945fd28e2086e353a61e86a6d6ba14077bf3",
+      "informational": "unmaintained",
+      "official_url": "https://rustsec.org/advisories/RUSTSEC-2026-0372.html"
+    }
+  }
+}

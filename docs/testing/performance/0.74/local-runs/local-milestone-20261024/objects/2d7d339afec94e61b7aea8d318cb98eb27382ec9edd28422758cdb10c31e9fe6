@@ -1,0 +1,7 @@
+{
+  "Status": "preflight-failed-before-resolver",
+  "Failure": "UnicodeDecodeError: cp1252 cannot decode byte 0x81 at position 1026101",
+  "RawTraceLocation": "Codex exec tool output 242325",
+  "RawStderrFileCaptured": false,
+  "DependencyChangesApplied": false
+}

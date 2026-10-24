@@ -1,0 +1,6 @@
+error: no matching package named `webpki-root-certs` found
+location searched: crates.io index
+required by package `rustls-platform-verifier v0.7.0`
+    ... which satisfies dependency `rustls-platform-verifier = ">=0.6.0, <0.8.0"` (locked to 0.7.0) of package `reqwest v0.13.4`
+    ... which satisfies dependency `reqwest = "^0.13"` (locked to 0.13.4) of package `hydracache-client v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-client)`
+As a reminder, you're using offline mode (--offline) which can sometimes cause surprising resolution failures, if this error is too confusing you may wish to retry without `--offline`.

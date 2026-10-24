@@ -1,0 +1,78 @@
+{
+  "advisory_database_postflight_commit": "84d943a6deeb8cc6c6f632531aaf4f1c62275239",
+  "advisory_types": {
+    "unmaintained": 4,
+    "unsound": 1,
+    "vulnerability": 10
+  },
+  "cleanup": {
+    "compression_and_deletion_must_not_be_double_counted": true,
+    "debugging_symbols_can_be_rebuilt": true,
+    "exact_deleted_bytes_recoverable": false,
+    "files_removed": 986,
+    "free_after": 31191715840,
+    "free_before": 20548456448,
+    "logical_bytes": 27100012544,
+    "recursive": false,
+    "recycle_bin_copy": false,
+    "symbol_only": true
+  },
+  "dependency_advisories": [
+    "RUSTSEC-2026-0346",
+    "RUSTSEC-2026-0347",
+    "RUSTSEC-2026-0348",
+    "RUSTSEC-2026-0349",
+    "RUSTSEC-2026-0382",
+    "RUSTSEC-2026-0386",
+    "RUSTSEC-2024-0449",
+    "RUSTSEC-2026-0383",
+    "RUSTSEC-2026-0381",
+    "RUSTSEC-2026-0371",
+    "RUSTSEC-2026-0367",
+    "RUSTSEC-2026-0368",
+    "RUSTSEC-2026-0369",
+    "RUSTSEC-2026-0370",
+    "RUSTSEC-2026-0372"
+  ],
+  "exceptions_added": false,
+  "full_milestone": {
+    "admission": false,
+    "clocks": false,
+    "commit_unchanged": true,
+    "exit": 1,
+    "failure": "First milestone refusal retained",
+    "free_after": 30184452096,
+    "outer_refusal": null,
+    "qualification": false,
+    "retry": false,
+    "server": false,
+    "services": false,
+    "source_commit_after": "7e6c8ee8a63ad8596a73383686444b54da04b863",
+    "source_unchanged": true
+  },
+  "msrv_changed": false,
+  "new_server_action_after_cost_session": false,
+  "ordinary_windows": {
+    "failed": 0,
+    "filtered": 0,
+    "ignored": 0,
+    "passed": 350,
+    "source_unchanged": true,
+    "supplemental_source_inventory_matches": true,
+    "targets": 86
+  },
+  "preflight_database_pin_recorded": false,
+  "product_crates_changed_in_session": false,
+  "protected_sha256": {
+    "Cargo.lock": "d2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c",
+    "docs/testing/performance/0.74/qualification-manifest.toml": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+    "target/bootstrap-original-getunit-20261023/native-once/libtest": "ca5484aa951414b80aefd0148c7d8f5185a8fdf73bb197cf98a790de59b8cff1",
+    "target/status-field-scan-20261024/runtime-images/gnu194": "ae77d1bb99f339fc259e4cc6c9a664edc3e713c7da19c5475f582a16c7d26365",
+    "target/status-field-scan-20261024/runtime-images/msrv188": "ae33035a42392fe3f7fe7776c399e40a33198587786337643e7c6031a220d225",
+    "tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs": "4e18523c71b6b5bdf3a74d75e58df096f25c6f773067d013a07db2a8cfde5214"
+  },
+  "qualification": false,
+  "release_admission": false,
+  "security_updates_applied": false,
+  "source_clock_or_service_changed": false
+}

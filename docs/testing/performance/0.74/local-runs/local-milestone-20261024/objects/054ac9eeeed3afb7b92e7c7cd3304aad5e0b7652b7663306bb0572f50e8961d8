@@ -1,0 +1,114 @@
+"""Seal cleanup, independent Windows tests, failed full gate and security audit."""
+from pathlib import Path, PureWindowsPath
+import hashlib
+import json
+import re
+import subprocess
+ROOT=Path(__file__).resolve().parent.parent
+RAW=ROOT/'target/status-field-scan-20261024'
+DEST=ROOT/'docs/testing/performance/0.74/local-runs/local-milestone-20261024'
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+def read(path):return json.loads(path.read_bytes())
+full=read(RAW/'full-verify-first/result.json')
+if full['exit']!=1 or not full['source_unchanged'] or not full['commit_unchanged'] or full['outer_refusal'] is not None:
+    raise ValueError('First full milestone outcome differs')
+if full['source_commit_after']!='7e6c8ee8a63ad8596a73383686444b54da04b863':
+    raise ValueError('Unexpected tested source')
+stderr=(RAW/'full-verify-first/stderr.log').read_text(encoding='utf-8')
+ids=re.findall(r'ID: (RUSTSEC-[0-9-]+)',stderr)
+if len(ids)!=15 or len(set(ids))!=15 or 'advisories FAILED, bans ok, licenses ok, sources ok' not in (RAW/'full-verify-first/stdout.log').read_text(encoding='utf-8'):
+    raise ValueError('First dependency policy refusal differs')
+windows=RAW/'windows-supervisor-first';w=read(windows/'result.json');wi=read(windows/'intent.json')
+if w['exit'] or w['outer_refusal'] or not w['source_unchanged'] or wi['source']!=w['source_after'] or wi['opt_in_environment_names']:
+    raise ValueError('First ordinary Windows outcome incomplete')
+counts=[tuple(map(int,row)) for row in re.findall(r'test result: ok\. (\d+) passed; (\d+) failed; (\d+) ignored; (\d+) measured; (\d+) filtered out;', (windows/'stdout.log').read_text(encoding='utf-8'))]
+if len(counts)!=86 or tuple(sum(row[i] for row in counts) for i in range(5))!=(350,0,0,0,0):
+    raise ValueError('Ordinary Windows membership changed')
+actual={'Cargo.toml','Cargo.lock'}|{p.relative_to(ROOT).as_posix() for p in (ROOT/'tools/long-run-supervisor-074').rglob('*') if p.is_file()}
+if actual!=set(wi['source']):raise ValueError('Supplemental complete Windows source inventory differs')
+if any(sha((ROOT/name).read_bytes())!=digest for name,digest in wi['source'].items()):
+    raise ValueError('Recorded Windows source input changed')
+if read(RAW/'windows-supervisor-strict-result.json')!={'Check':0,'Clippy':0}:
+    raise ValueError('Windows strict checks incomplete')
+cleanup=RAW/'old-pdb-cleanup';ci=read(cleanup/'intent.json');cr=read(cleanup/'result.json')
+if ci['Recursive'] or ci['Count']!=986 or cr['RemovedCount']!=986 or cr['Skipped']:
+    raise ValueError('Cleanup scope or outcome differs')
+if len(set(cr['Removed']))!=986 or set(cr['Removed'])!={item['Path'] for item in ci['Items']}:
+    raise ValueError('Cleanup targets differ')
+for item in ci['Items']:
+    path=PureWindowsPath(item['Path'])
+    if path.parent!=PureWindowsPath(ci['Directory']) or path.suffix.lower()!='.pdb':
+        raise ValueError('Non-symbol cleanup target')
+pins={
+    'docs/testing/performance/0.74/qualification-manifest.toml':'11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc',
+    'Cargo.lock':'d2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c',
+    'target/bootstrap-original-getunit-20261023/native-once/libtest':'ca5484aa951414b80aefd0148c7d8f5185a8fdf73bb197cf98a790de59b8cff1',
+    'target/status-field-scan-20261024/runtime-images/gnu194':'ae77d1bb99f339fc259e4cc6c9a664edc3e713c7da19c5475f582a16c7d26365',
+    'target/status-field-scan-20261024/runtime-images/msrv188':'ae33035a42392fe3f7fe7776c399e40a33198587786337643e7c6031a220d225',
+    'tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs':'4e18523c71b6b5bdf3a74d75e58df096f25c6f773067d013a07db2a8cfde5214',
+}
+for name,digest in pins.items():
+    if sha((ROOT/name).read_bytes())!=digest:raise ValueError('Protected identity changed: '+name)
+products=subprocess.check_output(['git','diff','--name-only','d9a2b85c','--','crates'],cwd=ROOT,text=True).splitlines()
+if any(not path.startswith('crates/xtask/') for path in products):
+    raise ValueError('Product crate changed in this session')
+ship=read(RAW/'ship-boundary-first/result.json')
+if ship!={'Exit':1,'ExpectedRefusalObserved':True,'ImageUnchanged':True,'ReleaseAdmitted':False}:
+    raise ValueError('Closed ship boundary changed')
+previews=read(RAW/'security-previews-online-first/result.json')
+if not previews['source_unchanged'] or previews['dependency_changes_applied'] or previews['exceptions_added']:
+    raise ValueError('Audit changed dependencies or policy')
+db=read(RAW/'security-previews-online-first/postflight-database.json')
+if set(db['advisories'])!=set(ids):raise ValueError('Postflight advisory identity differs')
+scope=read(RAW/'dependency-scope-first/result.json')
+if not scope['source_unchanged'] or any(row['exit'] for row in scope['packages'].values()):
+    raise ValueError('Locked package ownership audit incomplete')
+facts=dict(full_milestone=full,dependency_advisories=ids,
+    advisory_types=dict(vulnerability=10,unsound=1,unmaintained=4),
+    advisory_database_postflight_commit=db['commit'],preflight_database_pin_recorded=False,
+    ordinary_windows=dict(targets=86,passed=350,failed=0,ignored=0,filtered=0,
+        source_unchanged=True,supplemental_source_inventory_matches=True),
+    cleanup=dict(files_removed=986,logical_bytes=sum(item['Bytes'] for item in ci['Items']),
+        free_before=ci['FreeBefore'],free_after=cr['FreeAfter'],symbol_only=True,
+        recursive=False,recycle_bin_copy=False,exact_deleted_bytes_recoverable=False,
+        debugging_symbols_can_be_rebuilt=True,compression_and_deletion_must_not_be_double_counted=True),
+    protected_sha256=pins,product_crates_changed_in_session=False,
+    security_updates_applied=False,exceptions_added=False,msrv_changed=False,
+    source_clock_or_service_changed=False,new_server_action_after_cost_session=False,
+    qualification=False,release_admission=False)
+DEST.mkdir();(DEST/'objects').mkdir();files={}
+def retain(name,raw):
+    digest=sha(raw);path=DEST/'objects'/digest
+    if not path.exists():
+        with path.open('xb') as stream:stream.write(raw)
+    elif path.read_bytes()!=raw:raise ValueError('Content collision')
+    files[name]=dict(bytes=len(raw),sha256=digest)
+folders=('full-verify-first','windows-supervisor-first','old-pdb-cleanup','ship-boundary-first',
+    'security-previews-first','security-previews-v2-utf8','security-previews-online-first',
+    'security-roots-qualified-first','dependency-scope-first')
+for name in folders:
+    for path in sorted((RAW/name).rglob('*')):
+        if path.is_file():retain('observation/'+path.relative_to(RAW).as_posix(),path.read_bytes())
+for pattern in ('incremental-compression*','pdb-compression*','ordinary-repair-meta-*',
+    'ordinary-repair-doc-*','ordinary-repair-performance-*','ordinary-repair-gated-*',
+    'ordinary-repair-format*','windows-supervisor-check*','windows-supervisor-clippy*',
+    'windows-supervisor-strict-*','security-registry-*','security-preview-*-launcher.log',
+    'dependency-scope-launcher.log','session-packet-reconciliation.json','remaining-validation-cost-offline.json'):
+    for path in sorted(RAW.glob(pattern)):
+        if path.is_file():retain('observation/'+path.name,path.read_bytes())
+for name in ('run-full-verify-bounded-20261024.py','run-supervisor-windows-ordinary-20261024.py',
+    'preview-security-updates-20261024.py','preview-security-updates-online-20261024.py',
+    'read-security-registry-metadata-20261024.py','capture-dependency-scope-20261024.py',
+    'verify-session-packets-20261024.py','audit-remaining-validation-cost-20261024.py'):
+    retain('coordinator/'+name,(ROOT/'target'/name).read_bytes())
+retain('coordinator/'+Path(__file__).name,Path(__file__).read_bytes())
+retain('analysis/facts.json',(json.dumps(facts,indent=2,sort_keys=True)+'\n').encode())
+index=dict(schema='hc074-local-cleanup-milestone-v1',files=files,facts=facts)
+with (DEST/'index.json').open('x',encoding='utf-8',newline='\n') as stream:
+    json.dump(index,stream,indent=2,sort_keys=True);stream.write('\n')
+with (DEST/'.gitattributes').open('x',encoding='ascii',newline='\n') as stream:
+    stream.write('index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n')
+for row in files.values():
+    raw=(DEST/'objects'/row['sha256']).read_bytes()
+    if len(raw)!=row['bytes'] or sha(raw)!=row['sha256']:raise ValueError('Retained object changed')
+print(dict(files=len(files),objects=len(list((DEST/'objects').iterdir())),index_sha256=sha((DEST/'index.json').read_bytes())))

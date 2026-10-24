@@ -1,0 +1,60 @@
+"""Independent offline resolver previews only; never update manifests/lockfile."""
+from pathlib import Path
+import hashlib
+import json
+import subprocess
+import re
+import tomllib
+ROOT=Path(__file__).resolve().parent.parent
+OUT=ROOT/'target/status-field-scan-20261024/security-previews-first';OUT.mkdir()
+DB=Path(r'C:\Users\ArturBuzov\.cargo\advisory-dbs\advisory-db-3157b0e258782691')
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+def snapshot():
+    return {name:sha((ROOT/name).read_bytes()) for name in ('Cargo.lock','Cargo.toml','deny.toml',
+        'tools/long-run-supervisor-074/Cargo.toml','crates/xtask/Cargo.toml',
+        'tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs')}
+before=snapshot();results={}
+(OUT/'source-before.json').write_text(json.dumps(before,indent=2),encoding='utf-8')
+head=subprocess.check_output(['git','-C',str(DB),'rev-parse','HEAD'],text=True).strip()
+dirty=subprocess.check_output(['git','-C',str(DB),'status','--short'],text=True)
+if dirty:raise ValueError('Postflight advisory database is dirty')
+log=(ROOT/'target/status-field-scan-20261024/full-verify-first/stderr.log').read_text()
+ids=re.findall(r'ID: (RUSTSEC-[0-9-]+)',log)
+if len(ids)!=15 or len(set(ids))!=15:raise ValueError('First advisory membership changed')
+catalog={path.stem:path for path in DB.glob('crates/*/RUSTSEC-*.md')}
+(OUT/'advisories').mkdir();advisories={}
+for identity in ids:
+    path=catalog[identity];raw=path.read_bytes()
+    data=tomllib.loads(raw.decode().split('```toml',1)[1].split('```',1)[0])
+    if data['advisory']['id']!=identity:raise ValueError('Advisory identity differs')
+    (OUT/'advisories'/(identity+'.md')).write_bytes(raw)
+    advisories[identity]=dict(package=data['advisory']['package'],title=data['advisory']['title'],
+        patched=data.get('versions',{}).get('patched',[]),sha256=sha(raw),
+        informational=data['advisory'].get('informational'),
+        official_url='https://rustsec.org/advisories/'+identity+'.html')
+(OUT/'postflight-database.json').write_text(json.dumps(dict(commit=head,clean=True,
+    preflight_pin_recorded=False,advisories=advisories),indent=2),encoding='utf-8')
+for package,version in (('rustls','0.23.46'),('rustls-webpki','0.103.16'),
+    ('webpki-roots','1.0.10'),('webpki-root-certs','1.0.10'),('tokio','1.53.3'),
+    ('zbus','6.0.0'),('zip','9.0.0')):
+    folder=OUT/package;folder.mkdir()
+    argv=['cargo','update','--offline','--dry-run','-p',package,'--precise',version]
+    (folder/'intent.json').write_text(json.dumps(dict(argv=argv,manifest_mutation=False,
+        lockfile_mutation=False,build=False,execution=False,independent_preview=True,retry=False),indent=2),encoding='utf-8')
+    with (folder/'stdout.log').open('xb') as stdout,(folder/'stderr.log').open('xb') as stderr:
+        process=subprocess.Popen(argv,cwd=ROOT,stdout=stdout,stderr=stderr)
+        try:code=process.wait(timeout=120)
+        except subprocess.TimeoutExpired:
+            with (folder/'owned-cleanup.log').open('xb') as output:
+                subprocess.run(['taskkill','/PID',str(process.pid),'/T','/F'],stdout=output,stderr=subprocess.STDOUT,check=False,timeout=30)
+            code=process.wait(timeout=30)
+    result=dict(exit=code,source_unchanged=snapshot()==before,implemented=False,build_passed=False,admission=False)
+    (folder/'result.json').write_text(json.dumps(result,indent=2),encoding='utf-8')
+    results[package]=result
+    if not result['source_unchanged']:raise ValueError('Offline dry-run mutated protected source input')
+after=snapshot()
+(OUT/'source-after.json').write_text(json.dumps(after,indent=2),encoding='utf-8')
+(OUT/'result.json').write_text(json.dumps(dict(previews=results,advisories=len(advisories),
+    source_unchanged=after==before,dependency_changes_applied=False,exceptions_added=False,
+    server=False,services=False,qualification=False,admission=False),indent=2),encoding='utf-8')
+print(dict(previews={key:value['exit'] for key,value in results.items()},advisories=len(advisories),source_unchanged=after==before))

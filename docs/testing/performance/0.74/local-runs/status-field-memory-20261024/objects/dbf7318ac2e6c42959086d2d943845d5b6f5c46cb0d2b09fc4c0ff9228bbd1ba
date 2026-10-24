@@ -1,0 +1,33 @@
+"""Strict standalone Clippy builds only; never repeat allocation execution."""
+from pathlib import Path
+import hashlib
+import json
+import subprocess
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/status-field-memory-20261024-v2-doc-placement'
+OUT=BASE/'strict';OUT.mkdir()
+results={}
+for compiler,version in (('194','1.94.0'),('188','1.88.0')):
+    for lane in ('baseline','candidate'):
+        folder=BASE/(compiler+'-'+lane)
+        intent=json.loads((folder/'intent.json').read_bytes())
+        for name,digest in intent['inputs'].items():
+            if hashlib.sha256((folder/name).read_bytes()).hexdigest()!=digest:
+                raise ValueError('Compiled resource source changed')
+        name=compiler+'-'+lane
+        guest='/mnt/'+folder.drive[0].lower()+folder.as_posix()[2:]
+        argv=['wsl.exe','-d','Ubuntu','-u','artur','--cd','/','--exec',
+              '/usr/bin/timeout','--signal=TERM','--kill-after=2s','120s',
+              '/usr/bin/env','RUSTUP_AUTO_INSTALL=0','/home/artur/.cargo/bin/rustup','run',version,
+              'clippy-driver','--edition=2021','-C','opt-level=3','--emit=metadata',
+              '-D','warnings',guest+'/main.rs','-o',guest+'/strict.rmeta']
+        (OUT/(name+'-intent.json')).write_text(json.dumps(dict(argv=argv,inputs=intent['inputs'],
+            execution=False,cpu_measurement=False,retry=False),indent=2),encoding='utf-8')
+        with (OUT/(name+'.stdout.log')).open('xb') as stdout,(OUT/(name+'.stderr.log')).open('xb') as stderr:
+            code=subprocess.run(argv,cwd=ROOT,stdout=stdout,stderr=stderr,check=False).returncode
+        results[name]=code
+        if code:break
+    if any(results.values()):break
+(OUT/'result.json').write_text(json.dumps(results,indent=2),encoding='utf-8')
+print(results)
+raise SystemExit(int(any(results.values())))

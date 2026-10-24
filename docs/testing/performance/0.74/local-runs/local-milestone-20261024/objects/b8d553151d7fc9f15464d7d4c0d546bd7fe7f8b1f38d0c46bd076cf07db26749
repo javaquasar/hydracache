@@ -1,0 +1,18 @@
+{
+  "argv": [
+    "cargo",
+    "update",
+    "--offline",
+    "--dry-run",
+    "-p",
+    "zbus",
+    "--precise",
+    "6.0.0"
+  ],
+  "manifest_mutation": false,
+  "lockfile_mutation": false,
+  "build": false,
+  "execution": false,
+  "independent_preview": true,
+  "retry": false
+}

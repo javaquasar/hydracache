@@ -1,0 +1,208 @@
+{
+  "admission": false,
+  "after_drop_requested_bytes": 0,
+  "allocation_non_regression": true,
+  "allocations_improved": false,
+  "case_executions": 1056,
+  "cases": {
+    "credentials": {
+      "after": {
+        "calls": 1,
+        "frees": 1,
+        "gross": 12,
+        "live": 0,
+        "peak": 12
+      },
+      "held": {
+        "calls": 1,
+        "frees": 1,
+        "gross": 12,
+        "live": 0,
+        "peak": 12
+      },
+      "site": "projection-credentials-or-groups"
+    },
+    "duplicate": {
+      "after": {
+        "calls": 0,
+        "frees": 0,
+        "gross": 0,
+        "live": 0,
+        "peak": 0
+      },
+      "held": {
+        "calls": 0,
+        "frees": 0,
+        "gross": 0,
+        "live": 0,
+        "peak": 0
+      },
+      "site": "projection-duplicate-field"
+    },
+    "early-scalar": {
+      "after": {
+        "calls": 0,
+        "frees": 0,
+        "gross": 0,
+        "live": 0,
+        "peak": 0
+      },
+      "held": {
+        "calls": 0,
+        "frees": 0,
+        "gross": 0,
+        "live": 0,
+        "peak": 0
+      },
+      "site": "proc-u32"
+    },
+    "group-token": {
+      "after": {
+        "calls": 0,
+        "frees": 0,
+        "gross": 0,
+        "live": 0,
+        "peak": 0
+      },
+      "held": {
+        "calls": 0,
+        "frees": 0,
+        "gross": 0,
+        "live": 0,
+        "peak": 0
+      },
+      "site": "proc-u32"
+    },
+    "groups-0": {
+      "after": {
+        "calls": 0,
+        "frees": 0,
+        "gross": 0,
+        "live": 0,
+        "peak": 0
+      },
+      "held": {
+        "calls": 0,
+        "frees": 0,
+        "gross": 0,
+        "live": 0,
+        "peak": 0
+      },
+      "site": "ok"
+    },
+    "groups-1": {
+      "after": {
+        "calls": 1,
+        "frees": 1,
+        "gross": 4,
+        "live": 0,
+        "peak": 4
+      },
+      "held": {
+        "calls": 1,
+        "frees": 0,
+        "gross": 4,
+        "live": 4,
+        "peak": 4
+      },
+      "site": "ok"
+    },
+    "groups-32": {
+      "after": {
+        "calls": 1,
+        "frees": 1,
+        "gross": 128,
+        "live": 0,
+        "peak": 128
+      },
+      "held": {
+        "calls": 1,
+        "frees": 0,
+        "gross": 128,
+        "live": 128,
+        "peak": 128
+      },
+      "site": "ok"
+    },
+    "groups-33": {
+      "after": {
+        "calls": 1,
+        "frees": 1,
+        "gross": 132,
+        "live": 0,
+        "peak": 132
+      },
+      "held": {
+        "calls": 1,
+        "frees": 1,
+        "gross": 132,
+        "live": 0,
+        "peak": 132
+      },
+      "site": "projection-group-budget"
+    },
+    "groups-4": {
+      "after": {
+        "calls": 1,
+        "frees": 1,
+        "gross": 16,
+        "live": 0,
+        "peak": 16
+      },
+      "held": {
+        "calls": 1,
+        "frees": 0,
+        "gross": 16,
+        "live": 16,
+        "peak": 16
+      },
+      "site": "ok"
+    },
+    "missing": {
+      "after": {
+        "calls": 0,
+        "frees": 0,
+        "gross": 0,
+        "live": 0,
+        "peak": 0
+      },
+      "held": {
+        "calls": 0,
+        "frees": 0,
+        "gross": 0,
+        "live": 0,
+        "peak": 0
+      },
+      "site": "projection-missing-field"
+    },
+    "valid": {
+      "after": {
+        "calls": 1,
+        "frees": 1,
+        "gross": 12,
+        "live": 0,
+        "peak": 12
+      },
+      "held": {
+        "calls": 1,
+        "frees": 0,
+        "gross": 12,
+        "live": 12,
+        "peak": 12
+      },
+      "site": "ok"
+    }
+  },
+  "cases_per_image": 264,
+  "clock_changes": false,
+  "cpu_repeated": false,
+  "exact_transcript_equal": true,
+  "first_build_refusal_retained": true,
+  "images": 4,
+  "live": false,
+  "native_or_product_memory_claim": false,
+  "rss_measured": false,
+  "server": false,
+  "services": false,
+  "transcript_sha256": "1b06d5c1f490dd20bf8f3649e176e7aea643738aea1558a4bf304445a7690232"
+}

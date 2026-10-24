@@ -1,0 +1,29 @@
+{
+  "failure": null,
+  "results": {
+    "194": {
+      "cases": 264,
+      "exact_transcript_equal": true,
+      "transcript_sha256": "1b06d5c1f490dd20bf8f3649e176e7aea643738aea1558a4bf304445a7690232",
+      "non_regression": true,
+      "after_drop_live_bytes": 0,
+      "rss": false
+    },
+    "188": {
+      "cases": 264,
+      "exact_transcript_equal": true,
+      "transcript_sha256": "1b06d5c1f490dd20bf8f3649e176e7aea643738aea1558a4bf304445a7690232",
+      "non_regression": true,
+      "after_drop_live_bytes": 0,
+      "rss": false
+    }
+  },
+  "live": false,
+  "server": false,
+  "clocks": false,
+  "services": false,
+  "cpu_measurement": false,
+  "whole_runtime_memory_claim": false,
+  "admission": false,
+  "retry": false
+}

@@ -1,0 +1,13 @@
+{
+  "Argv": [
+    "target/debug/xtask.exe",
+    "performance-contract-check",
+    "--release",
+    "0.74",
+    "--require-ship"
+  ],
+  "ImageSHA256": "62130C929B9B7CD167D16BE88D60599808B0AB706E92232F136098C6C1FA484B",
+  "ReadOnly": true,
+  "Qualification": false,
+  "Expected": "closed ship admission, not a successful release gate"
+}

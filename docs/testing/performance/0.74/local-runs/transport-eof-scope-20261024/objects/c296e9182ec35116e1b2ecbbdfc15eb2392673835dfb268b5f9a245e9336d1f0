@@ -1,0 +1,12 @@
+
+running 7 tests
+test diagnostic_two_phase_launch::root_enrollment::kernel::transport::tests::cgroup_root_transport_kernel_credentials_and_atomic_cloexec ... ok
+test diagnostic_two_phase_launch::root_enrollment::kernel::transport::tests::cgroup_root_transport_empty_read_consumes_attempt_and_late_packet_cannot_retry ... ok
+test diagnostic_two_phase_launch::root_enrollment::kernel::transport::tests::cgroup_root_transport_foreign_sender_process_is_not_the_pair_creator ... ok
+test diagnostic_two_phase_launch::root_enrollment::kernel::transport::tests::fault::cgroup_root_transport_role_matrix ... ignored, explicit isolated local-root cgroup2 fixture only
+test diagnostic_two_phase_launch::root_enrollment::kernel::transport::tests::cgroup_root_transport_rejected_right_counts_and_truncation_close_all_aliases ... ok
+test diagnostic_two_phase_launch::root_enrollment::kernel::transport::tests::cgroup_root_transport_every_bound_byte_refuses_and_closes_rights ... ok
+test diagnostic_two_phase_launch::root_enrollment::kernel::transport::tests::cgroup_root_transport_size_flags_missing_credentials_and_fake_roots_refuse ... ok
+
+test result: ok. 6 passed; 0 failed; 1 ignored; 0 measured; 1616 filtered out; finished in 0.02s
+

@@ -1,0 +1,66 @@
+"""Seal separate affected-package first outcomes without promoting partial coverage."""
+from pathlib import Path
+import hashlib
+import json
+import re
+import subprocess
+
+ROOT = Path(__file__).resolve().parent.parent
+RAW = ROOT / 'target/status-field-scan-20261024'
+DEST = ROOT / 'docs/testing/performance/0.74/local-runs/package-frontier-20261024'
+
+def sha(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+first = json.loads((RAW / 'xtask-package-first/result.json').read_bytes())
+changed = json.loads((RAW / 'xtask-package-corrected-first/result.json').read_bytes())
+if not all(r['source_unchanged'] and r['commit_unchanged'] and r['tracked_clean'] for r in (first, changed)):
+    raise ValueError('Package source provenance changed')
+focused = json.loads((RAW / 'authority-context-reader-verified-result.json').read_bytes())
+if focused != {'Test': 0, 'Check': 0, 'Clippy': 0}:
+    raise ValueError('Focused reader verification differs')
+log = (RAW / 'xtask-package-corrected-first/stdout.log').read_text(encoding='utf-8', errors='strict')
+failed = re.findall(r'^test (.*?) \.\.\. FAILED$', log, re.M)
+facts = dict(first_package=first, corrected_package=changed, focused=focused,
+             observed_failed_case_lines=failed, full_package_pass=False,
+             full_milestone_pass=False, runtime_acceptance=False, qualification=False,
+             source_commit=subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip(),
+             retry_to_pass=False, broader_failures_attributed=False)
+DEST.mkdir()
+(DEST / 'objects').mkdir()
+files = {}
+
+def retain(name, raw):
+    digest = sha(raw)
+    path = DEST / 'objects' / digest
+    if not path.exists():
+        with path.open('xb') as stream:
+            stream.write(raw)
+    elif path.read_bytes() != raw:
+        raise ValueError('Content collision')
+    files[name] = dict(bytes=len(raw), sha256=digest)
+
+for folder in ('xtask-package-first', 'xtask-package-corrected-first', 'authority-reader-rejected-source'):
+    for path in sorted((RAW / folder).rglob('*')):
+        if path.is_file():
+            retain('observation/' + path.relative_to(RAW).as_posix(), path.read_bytes())
+for path in sorted(RAW.glob('authority-context-reader*')):
+    if path.is_file():
+        retain('observation/' + path.name, path.read_bytes())
+for name in ('run-xtask-package-once-20261024.py', 'run-xtask-package-corrected-20261024.py'):
+    path = ROOT / 'target' / name
+    if path.exists():
+        retain('coordinator/' + name, path.read_bytes())
+for name in ('crates/xtask/tests/authority_context_074.rs', 'crates/xtask/tests/owned_case_074.rs'):
+    retain('source/' + name, (ROOT / name).read_bytes())
+retain('coordinator/' + Path(__file__).name, Path(__file__).read_bytes())
+retain('analysis/facts.json', (json.dumps(facts, indent=2, sort_keys=True) + '\n').encode())
+index = dict(schema='hc074-package-frontier-v1', files=files, facts=facts)
+with (DEST / 'index.json').open('x', encoding='utf-8', newline='\n') as stream:
+    json.dump(index, stream, indent=2, sort_keys=True)
+    stream.write('\n')
+with (DEST / '.gitattributes').open('x', encoding='ascii', newline='\n') as stream:
+    stream.write('index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n')
+print(dict(files=len(files), objects=len(list((DEST / 'objects').iterdir())),
+           index_sha256=sha((DEST / 'index.json').read_bytes()), failures=failed,
+           outer_refusal=changed['outer_refusal']))

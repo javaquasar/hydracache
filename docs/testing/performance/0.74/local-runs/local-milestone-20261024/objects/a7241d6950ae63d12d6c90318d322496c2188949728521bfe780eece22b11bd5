@@ -1,0 +1,50 @@
+{
+  "source_profile_index_sha256": "851905836b094874c0d34e9c150637dae47ba64bd3d60988dd4b75880e849fa0",
+  "observed_outputs": {
+    "wall_ns": 7155028000,
+    "process_cpu_ns": 7076617593,
+    "authentication_calls": 782,
+    "kernel_counts": {
+      "PacketContext": 8464,
+      "Sender": 19872,
+      "Alive": 39744,
+      "Projection": 39744,
+      "Origin": 76544,
+      "Boot": 153088,
+      "Namespace": 306176,
+      "Sample": 9936,
+      "WorkerOrigin": 8464,
+      "Document": 232576
+    }
+  },
+  "aggregate_count_consistency": {
+    "boot_is_two_per_origin": true,
+    "namespace_is_four_per_origin": true,
+    "alive_is_two_per_sender": true,
+    "projection_is_two_per_sender": true,
+    "document_is_boot_plus_alive_plus_projection": true,
+    "origin_matches_two_sender_sample_worker_origin": true
+  },
+  "projection_inclusive_ns": 138900023,
+  "projection_outside_children_ns": 138900023,
+  "projection_aggregate_wall_ratio": 0.01941292514858083,
+  "static_complete_origin_kernel_facing_operations": {
+    "named_proc_open_close": 2,
+    "root_file_fstatfs_and_metadata": 4,
+    "boot_paths_open_fstatfs_read_close": 26,
+    "retained_namespace_fstatfs_and_metadata": 8,
+    "fresh_namespace_open_fstatfs_metadata_close": 16
+  },
+  "static_complete_origin_nominal_total": 4286464,
+  "measured_syscall_count": false,
+  "per_event_lineage_proved": false,
+  "measured_new_preparation_margin": false,
+  "future_gain_projection": false,
+  "nested_spans_may_not_be_added": true,
+  "synthetic_allocations_scaled_to_native": false,
+  "live": false,
+  "server": false,
+  "services": false,
+  "clocks": false,
+  "admission": false
+}

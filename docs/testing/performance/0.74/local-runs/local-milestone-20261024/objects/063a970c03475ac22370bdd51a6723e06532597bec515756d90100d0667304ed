@@ -1,0 +1,18 @@
+{
+  "argv": [
+    "cargo",
+    "update",
+    "--dry-run",
+    "-p",
+    "rustls-webpki",
+    "--precise",
+    "0.103.16"
+  ],
+  "manifest_mutation": false,
+  "lockfile_mutation": false,
+  "build": false,
+  "execution": false,
+  "registry_network": true,
+  "independent_preview": true,
+  "retry": false
+}

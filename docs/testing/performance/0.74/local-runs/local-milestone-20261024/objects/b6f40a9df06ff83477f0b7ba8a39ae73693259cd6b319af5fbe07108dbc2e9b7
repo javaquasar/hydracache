@@ -1,0 +1,28 @@
+"""Read public registry cache release metadata, without choosing dependencies."""
+from pathlib import Path
+import hashlib
+import json
+import tomllib
+ROOT=Path(__file__).resolve().parent.parent
+base=Path(r'C:\Users\ArturBuzov\.cargo\registry\index')
+wanted={'rustls':'0.23.46','rustls-webpki':'0.103.16','webpki-roots':'1.0.10',
+        'webpki-root-certs':'1.0.10','tokio':'1.53.3','zbus':'6.0.0','zip':'9.0.0'}
+rows=[]
+for index in base.iterdir():
+    if not index.is_dir():continue
+    for name,version in wanted.items():
+        path=index/'.cache'/name[:2]/name[2:4]/name
+        if not path.is_file():continue
+        for raw in path.read_bytes().split(b'\0'):
+            if not raw.startswith(b'{'):continue
+            value=json.loads(raw)
+            if value.get('vers')!=version:continue
+            rows.append(dict(package=name,version=version,rust_version=value.get('rust_version'),
+                yanked=value['yanked'],checksum=value['cksum'],index=index.name,
+                metadata_sha256=hashlib.sha256(raw).hexdigest()))
+rust=tomllib.loads((ROOT/'Cargo.toml').read_text(encoding='utf-8'))['workspace']['package']['rust-version']
+out=ROOT/'target/status-field-scan-20261024/security-registry-release-metadata.json'
+with out.open('x',encoding='utf-8') as stream:
+    json.dump(dict(workspace_rust_version=rust,releases=rows,build_proof=False,
+        policy_changed=False,dependencies_changed=False),stream,indent=2)
+print(dict(workspace_rust_version=rust,releases=rows))

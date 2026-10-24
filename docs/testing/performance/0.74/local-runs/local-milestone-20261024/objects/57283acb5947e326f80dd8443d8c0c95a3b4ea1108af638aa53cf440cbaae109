@@ -1,0 +1,62 @@
+{
+  "workspace_rust_version": "1.88",
+  "releases": [
+    {
+      "package": "rustls",
+      "version": "0.23.46",
+      "rust_version": "1.71",
+      "yanked": false,
+      "checksum": "48e13bd8c0e9365c43cfa5c9e8f9ad49d3c8444926c9aac819e0e4dc503c8fdf",
+      "index": "index.crates.io-1949cf8c6b5b557f",
+      "metadata_sha256": "4c2d62447486dc05535b51c9ea5e7fbf3cace49764b3a4756d806c28203519ff"
+    },
+    {
+      "package": "rustls-webpki",
+      "version": "0.103.16",
+      "rust_version": "1.71",
+      "yanked": false,
+      "checksum": "4443b1b6d39d7c663139942cc4558262562d2c84123bb6282ef177009ca8b281",
+      "index": "index.crates.io-1949cf8c6b5b557f",
+      "metadata_sha256": "0763237088aaea363b4651272b64d94990c1308b4a1fe0c39d16dac9228c1c79"
+    },
+    {
+      "package": "webpki-roots",
+      "version": "1.0.10",
+      "rust_version": "1.71",
+      "yanked": false,
+      "checksum": "1c1c8e20c8a38fc7d65abfe74eb7280e4aa667e8eec8bc84996d2874810748d9",
+      "index": "index.crates.io-1949cf8c6b5b557f",
+      "metadata_sha256": "f43d8ea2b234913bb9064ab492d0340abf1f95a05bc3ba131d4a4873812a79aa"
+    },
+    {
+      "package": "webpki-root-certs",
+      "version": "1.0.10",
+      "rust_version": "1.71",
+      "yanked": false,
+      "checksum": "58ec80e73fd8baf57bf0d9615554c75348bda990d6d5bbeab964dd068319fecb",
+      "index": "index.crates.io-1949cf8c6b5b557f",
+      "metadata_sha256": "29106400075152b8d67e9ab567f03b335a4cc5f8a128823b02270c2289b28200"
+    },
+    {
+      "package": "tokio",
+      "version": "1.53.3",
+      "rust_version": "1.71",
+      "yanked": false,
+      "checksum": "ce3335fa71841cda333a58d7615b03901380ecf09d59b3296d21f8bbac0dde4e",
+      "index": "index.crates.io-1949cf8c6b5b557f",
+      "metadata_sha256": "cb669a74b615f70b16e33e13e944b64a9d5d1728a7fe8cef2cbfca54f0da74dc"
+    },
+    {
+      "package": "zbus",
+      "version": "6.0.0",
+      "rust_version": "1.89",
+      "yanked": false,
+      "checksum": "266223222c9d81e5966455a9da0783e35d56a7ccab79a03c2366b2d98f8fc8a9",
+      "index": "index.crates.io-1949cf8c6b5b557f",
+      "metadata_sha256": "41b185a5fe6369136a5954b29b9d9155b562424ac1cdcb896447bff81a065486"
+    }
+  ],
+  "build_proof": false,
+  "policy_changed": false,
+  "dependencies_changed": false
+}

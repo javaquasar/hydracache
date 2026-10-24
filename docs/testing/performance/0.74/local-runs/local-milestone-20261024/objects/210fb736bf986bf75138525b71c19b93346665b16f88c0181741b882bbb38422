@@ -1,0 +1,5 @@
+    Updating crates.io index
+error: failed to select a version for the requirement `zbus = "^5.19.0"`
+candidate versions found which didn't match: 6.0.0
+location searched: crates.io index
+required by package `hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)`

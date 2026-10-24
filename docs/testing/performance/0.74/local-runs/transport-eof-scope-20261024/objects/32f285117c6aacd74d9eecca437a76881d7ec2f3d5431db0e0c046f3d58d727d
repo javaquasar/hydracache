@@ -1,0 +1,32 @@
+"""Bounded native check/lint only, no test/service/server execution."""
+from pathlib import Path
+import importlib.util
+import json
+import subprocess
+import sys
+
+ROOT=Path(__file__).resolve().parent.parent
+SPEC=importlib.util.spec_from_file_location('owned_check', ROOT/'tools/owned-case-074/check.py')
+owned=importlib.util.module_from_spec(SPEC); SPEC.loader.exec_module(owned)
+lane=sys.argv[1]; version={'194':'1.94.0','188':'1.88.0'}[lane]
+tag=sys.argv[2] if len(sys.argv)>2 else 'bootstrap-isolation'
+if tag not in ('bootstrap-isolation','transport-eof'):raise ValueError('Reviewed native check tag required')
+out=ROOT/'target/status-field-scan-20261024'/(tag+'-native-strict-'+lane)
+out.mkdir(); before=owned.snapshot(); exits={}
+for stage in ('check','clippy'):
+    argv=['wsl.exe','-d','Ubuntu','-u','artur','--exec','/usr/bin/timeout','--signal=TERM','--kill-after=5s','1200s',
+          '/usr/bin/env','RUSTUP_AUTO_INSTALL=0','CARGO_INCREMENTAL=0',
+          'CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-'+lane+'-check',
+          '/home/artur/.cargo/bin/cargo','+'+version,stage,'--offline','--locked',
+          '-p','hydracache-long-run-supervisor-074','--release','--all-targets']
+    if stage=='clippy': argv+=['--all-features','--','-D','warnings']
+    (out/(stage+'-intent.json')).write_text(json.dumps(dict(argv=argv,source=before,server=False,
+        clocks=False,services=False,test_execution=False,retry=False),indent=2),encoding='utf-8')
+    with (out/(stage+'.stdout.log')).open('xb') as stdout,(out/(stage+'.stderr.log')).open('xb') as stderr:
+        exits[stage]=subprocess.run(argv,cwd=ROOT,stdout=stdout,stderr=stderr,check=False).returncode
+    if exits[stage]: break
+after=owned.snapshot()
+result=dict(exits=exits,source_unchanged=before==after,source_after=after,admission=False)
+(out/'result.json').write_text(json.dumps(result,indent=2),encoding='utf-8')
+print(dict(exits=exits,source_unchanged=before==after))
+raise SystemExit(int(any(exits.values()) or before!=after))

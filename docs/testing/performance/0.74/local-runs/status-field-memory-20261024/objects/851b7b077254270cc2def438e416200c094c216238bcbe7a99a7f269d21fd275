@@ -1,0 +1,87 @@
+"""Retain separate requested-heap controls including the first pre-execution refusal."""
+from pathlib import Path
+import hashlib
+import json
+import re
+ROOT=Path(__file__).resolve().parent.parent
+RAW=ROOT/'target/status-field-memory-20261024-v2-doc-placement'
+FIRST=ROOT/'target/status-field-memory-20261024'
+DEST=ROOT/'docs/testing/performance/0.74/local-runs/status-field-memory-20261024'
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+def read(path):return json.loads(path.read_bytes())
+result=read(RAW/'result.json')
+if result['failure'] or set(result['results'])!={'194','188'} or result['cpu_measurement']:
+    raise ValueError('Incomplete separate allocation cohort')
+if read(FIRST/'194-baseline/build-exit.json')['exit']==0 or (FIRST/'194-baseline/run-exit.json').exists():
+    raise ValueError('First compile refusal reclassified')
+if read(RAW/'strict/result.json')!={key:0 for key in ('194-baseline','194-candidate','188-baseline','188-candidate')}:
+    raise ValueError('Standalone strict Clippy incomplete')
+transcripts=[]
+for compiler in ('194','188'):
+    for lane in ('baseline','candidate'):
+        folder=RAW/(compiler+'-'+lane)
+        intent=read(folder/'intent.json')
+        if read(folder/'run-exit.json')['exit'] or read(folder/'build-exit.json')['exit']:
+            raise ValueError('First resource lane failed')
+        for name,digest in intent['inputs'].items():
+            if sha((folder/name).read_bytes())!=digest:
+                raise ValueError('Measured resource input changed')
+        if sha((folder/'probe').read_bytes())!=read(folder/'image.json')['sha256']:
+            raise ValueError('Measured resource image changed')
+        transcripts.append((folder/'run.stdout.log').read_bytes())
+if len(set(transcripts))!=1:raise ValueError('Exact source-paired resource/semantic transcripts differ')
+rows=[]
+pattern=re.compile(r'^case shape=(\d+) document=(\d+) name=([^ ]+) witness=([a-f0-9]{16}) result=\(Heap \{ calls: (\d+), gross: (\d+), frees: (\d+), live: (\d+), peak: (\d+) \}, Heap \{ calls: (\d+), gross: (\d+), frees: (\d+), live: (\d+), peak: (\d+) \}, Outcome \{ site: "([^"]+)"')
+for line in transcripts[0].decode().splitlines():
+    if not line.startswith('case '):continue
+    match=pattern.match(line)
+    if not match:raise ValueError('Unknown resource row shape')
+    shape,document,name,witness,*rest=match.groups()
+    numbers=list(map(int,rest[:10]));site=rest[10]
+    held=dict(zip(('calls','gross','frees','live','peak'),numbers[:5]))
+    after=dict(zip(('calls','gross','frees','live','peak'),numbers[5:]))
+    if after['live']!=0:raise ValueError('Retained requested bytes')
+    rows.append(dict(shape=int(shape),document=int(document),case=name,witness=witness,held=held,after=after,site=site))
+if len(rows)!=264 or len({(row['shape'],row['document'],row['case']) for row in rows})!=264:
+    raise ValueError('Incomplete resource membership')
+summary={}
+for name in sorted({row['case'] for row in rows}):
+    group=[row for row in rows if row['case']==name]
+    values={json.dumps({key:row[key] for key in ('held','after','site')},sort_keys=True) for row in group}
+    if len(group)!=24 or len(values)!=1:raise ValueError('Within-case resource observations differ')
+    summary[name]=json.loads(next(iter(values)))
+facts=dict(cases_per_image=264,images=4,case_executions=1056,exact_transcript_equal=True,
+    transcript_sha256=sha(transcripts[0]),cases=summary,allocations_improved=False,
+    allocation_non_regression=True,after_drop_requested_bytes=0,rss_measured=False,
+    native_or_product_memory_claim=False,cpu_repeated=False,live=False,server=False,
+    services=False,clock_changes=False,admission=False,first_build_refusal_retained=True)
+DEST.mkdir();(DEST/'objects').mkdir();files={}
+def retain(name,raw):
+    digest=sha(raw);path=DEST/'objects'/digest
+    if not path.exists():
+        with path.open('xb') as stream:stream.write(raw)
+    elif path.read_bytes()!=raw:raise ValueError('Content collision')
+    files[name]=dict(bytes=len(raw),sha256=digest)
+for scope in (FIRST,RAW):
+    for path in sorted(scope.rglob('*')):
+        if path.is_file() and path.name!='probe' and path.suffix!='.rmeta':
+            retain('observation/'+scope.name+'/'+path.relative_to(scope).as_posix(),path.read_bytes())
+for path in sorted((ROOT/'tools/status-field-memory-074').iterdir()):
+    if path.is_file():retain('source/'+path.name,path.read_bytes())
+for name in ('target/lint-status-memory-20261024.py',
+    'target/status-field-scan-20261024/status-memory-offline-controls-first.log',
+    'target/status-field-scan-20261024/status-memory-offline-controls-complete.log',
+    'docs/testing/performance/0.74/status-field-allocation-plan-20261024.md'):
+    retain('source/'+name,(ROOT/name).read_bytes())
+retain('coordinator/'+Path(__file__).name,Path(__file__).read_bytes())
+retain('analysis/facts.json',(json.dumps(facts,indent=2,sort_keys=True)+'\n').encode())
+index=dict(schema='hc074-status-parser-requested-memory-v1',files=files,facts=facts,
+    original_source_index_sha256='fa6cf67055f7e857ecee141e8ac32972684ca3d8d46558e5352904bac465e0fc')
+with (DEST/'index.json').open('x',encoding='utf-8',newline='\n') as stream:
+    json.dump(index,stream,indent=2,sort_keys=True);stream.write('\n')
+with (DEST/'.gitattributes').open('x',encoding='ascii',newline='\n') as stream:
+    stream.write('index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n')
+for row in files.values():
+    raw=(DEST/'objects'/row['sha256']).read_bytes()
+    if sha(raw)!=row['sha256'] or len(raw)!=row['bytes']:raise ValueError('Archive object differs')
+print(dict(files=len(files),objects=len(list((DEST/'objects').iterdir())),index_sha256=sha((DEST/'index.json').read_bytes()),cases=summary))

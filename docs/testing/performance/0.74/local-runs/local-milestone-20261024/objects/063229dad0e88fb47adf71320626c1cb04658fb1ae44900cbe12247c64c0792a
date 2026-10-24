@@ -1,0 +1,50 @@
+"""Offline count consistency and static call model, never a new timing run."""
+from pathlib import Path
+import hashlib
+import json
+import subprocess
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'docs/testing/performance/0.74/local-runs/native-preparation-cost-20261024'
+index_raw=(BASE/'index.json').read_bytes()
+if hashlib.sha256(index_raw).hexdigest()!='851905836b094874c0d34e9c150637dae47ba64bd3d60988dd4b75880e849fa0':
+    raise ValueError('Original profile identity changed')
+index=json.loads(index_raw);entry=index['files']['analysis/profile.json']
+raw=(BASE/'objects'/entry['sha256']).read_bytes()
+if hashlib.sha256(raw).hexdigest()!=entry['sha256'] or len(raw)!=entry['bytes']:
+    raise ValueError('Original parsed profile changed')
+profile=json.loads(raw);row=next(row for row in profile['phases'] if row['phase']=='outputs')
+kernel={item['kind']:item for item in row['kernel']};counts={key:value['calls'] for key,value in kernel.items()}
+relations={
+    'boot_is_two_per_origin':counts['Boot']==2*counts['Origin'],
+    'namespace_is_four_per_origin':counts['Namespace']==4*counts['Origin'],
+    'alive_is_two_per_sender':counts['Alive']==2*counts['Sender'],
+    'projection_is_two_per_sender':counts['Projection']==2*counts['Sender'],
+    'document_is_boot_plus_alive_plus_projection':counts['Document']==counts['Boot']+counts['Alive']+counts['Projection'],
+    'origin_matches_two_sender_sample_worker_origin':counts['Origin']==2*(counts['Sender']+counts['Sample']+counts['WorkerOrigin']),
+}
+if not all(relations.values()):raise ValueError('Static count consistency failed')
+origin='tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs'
+if subprocess.check_output(['git','diff','8fb0fb5a','--',origin],cwd=ROOT):
+    raise ValueError('Origin body changed since the native profile')
+model=dict(named_proc_open_close=2,root_file_fstatfs_and_metadata=4,
+    boot_paths_open_fstatfs_read_close=2*(4+4+1+4),
+    retained_namespace_fstatfs_and_metadata=8,
+    fresh_namespace_open_fstatfs_metadata_close=4*4)
+if sum(model.values())!=56:raise ValueError('Static complete-path model differs')
+result=dict(source_profile_index_sha256=hashlib.sha256(index_raw).hexdigest(),
+    observed_outputs=dict(wall_ns=row['wall_ns'],process_cpu_ns=row['process_cpu_ns'],
+        authentication_calls=row['authentication_calls'],kernel_counts=counts),
+    aggregate_count_consistency=relations,
+    projection_inclusive_ns=kernel['Projection']['inclusive_ns'],
+    projection_outside_children_ns=kernel['Projection']['outside_children_ns'],
+    projection_aggregate_wall_ratio=kernel['Projection']['inclusive_ns']/row['wall_ns'],
+    static_complete_origin_kernel_facing_operations=model,
+    static_complete_origin_nominal_total=56*counts['Origin'],
+    measured_syscall_count=False,per_event_lineage_proved=False,
+    measured_new_preparation_margin=False,future_gain_projection=False,
+    nested_spans_may_not_be_added=True,synthetic_allocations_scaled_to_native=False,
+    live=False,server=False,services=False,clocks=False,admission=False)
+out=ROOT/'target/status-field-scan-20261024/remaining-validation-cost-offline.json'
+with out.open('x',encoding='utf-8') as stream:json.dump(result,stream,indent=2)
+print(dict(count_consistency=relations,static_complete_origin_nominal_total=result['static_complete_origin_nominal_total'],
+    measured_syscalls=False,projection_aggregate_wall_ratio=result['projection_aggregate_wall_ratio']))

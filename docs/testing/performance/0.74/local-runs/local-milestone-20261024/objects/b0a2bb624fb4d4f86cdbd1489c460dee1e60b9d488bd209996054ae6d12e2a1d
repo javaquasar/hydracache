@@ -1,0 +1,8 @@
+{
+  "Cargo.lock": "d2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c",
+  "Cargo.toml": "18a8a27cf140a1d6eb31c8316ee39bb7d5832866a990346eee16cd0c30de344b",
+  "deny.toml": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930",
+  "tools/long-run-supervisor-074/Cargo.toml": "f38fc2c3e40b71fbac2aa2c54ed545828177860bed060d4c43981af796fd73e1",
+  "crates/xtask/Cargo.toml": "0b00525d41119bdb1215b1fb658ac66fa1bcd0d99428e9903cf1bb8ee8f4e0b5",
+  "tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": "9b87094f570bbe0bb9408cd9dc2c52ff20868503f7b7cc2e73fb7fab653cd5d6"
+}

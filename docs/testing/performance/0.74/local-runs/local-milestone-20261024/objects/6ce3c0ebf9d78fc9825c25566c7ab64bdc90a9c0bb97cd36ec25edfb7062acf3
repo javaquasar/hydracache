@@ -1,0 +1,18 @@
+{
+  "argv": [
+    "cargo",
+    "update",
+    "--dry-run",
+    "-p",
+    "rustls",
+    "--precise",
+    "0.23.46"
+  ],
+  "manifest_mutation": false,
+  "lockfile_mutation": false,
+  "build": false,
+  "execution": false,
+  "registry_network": true,
+  "independent_preview": true,
+  "retry": false
+}

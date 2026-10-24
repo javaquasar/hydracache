@@ -1,0 +1,4 @@
+zip v3.0.0
+[build-dependencies]
+└── utoipa-swagger-ui v9.0.2
+    └── hydracache-sandbox v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-sandbox)

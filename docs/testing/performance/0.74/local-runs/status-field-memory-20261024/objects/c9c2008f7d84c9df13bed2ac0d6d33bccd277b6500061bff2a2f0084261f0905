@@ -1,0 +1,17 @@
+error[E0753]: expected outer doc comment
+  --> /mnt/c/Workspace/prj/jq/cashe/hydracache-074/target/status-field-memory-20261024/194-baseline/main.rs:76:1
+   |
+76 | ...ive owner.
+   | ...^^^^^^^^^^
+77 | ..., System};
+   | ...---------- the inner doc comment doesn't annotate this `use` import
+   |
+help: to annotate the `use` import, change the doc comment from inner to outer style
+   |
+76 - //! Requested Rust heap accounting only; no clocks, procfs or native owner.
+76 + /// Requested Rust heap accounting only; no clocks, procfs or native owner.
+   |
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0753`.

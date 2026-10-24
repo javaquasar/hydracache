@@ -1,0 +1,18 @@
+{
+  "argv": [
+    "cargo",
+    "xtask",
+    "verify"
+  ],
+  "source_commit": "7e6c8ee8a63ad8596a73383686444b54da04b863",
+  "bound_seconds": 4800,
+  "disk_floor_bytes": 4294967296,
+  "free_before": 31189446656,
+  "opt_in_environment_names": [],
+  "qualification": false,
+  "product_candidate": false,
+  "server": false,
+  "services": false,
+  "clocks": false,
+  "retry": false
+}

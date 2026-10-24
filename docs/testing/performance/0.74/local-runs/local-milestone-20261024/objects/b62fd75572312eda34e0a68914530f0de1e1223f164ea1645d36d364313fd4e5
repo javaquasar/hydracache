@@ -1,0 +1,780 @@
+
+running 74 tests
+test diagnostic_builder::bootstrap_build::entry_format::tests::bootstrap_entry_format_refuses_length_padding_version_and_deadline_reset ... ok
+test diagnostic_builder::bootstrap_build::installed_entry_format::tests::bootstrap_installed_entry_canonical_forgery_is_not_authenticated ... ok
+test diagnostic_builder::bootstrap_build::installed_entry_format::tests::bootstrap_installed_entry_exact_layout_embeds_old_bytes_and_origins ... ok
+test diagnostic_builder::bootstrap_build::installed_entry_format::tests::bootstrap_installed_entry_no_old_reader_fallback_or_magic_reinterpretation ... ok
+test diagnostic_builder::bootstrap_build::installed_entry_format::tests::bootstrap_installed_entry_preserves_embedded_shape_and_deadline_refusals ... ok
+test diagnostic_builder::bootstrap_build::installed_entry_format::tests::bootstrap_installed_entry_refuses_alias_size_content_and_zero_identity ... ok
+test diagnostic_builder::bootstrap_build::entry_format::tests::bootstrap_entry_format_roundtrip_and_every_byte_is_canonical_not_authenticated ... ok
+test diagnostic_builder::bootstrap_build::installed_entry_format::tests::bootstrap_installed_entry_refuses_lengths_versions_padding_fixed_counts_and_hashes ... ok
+test diagnostic_artifacts::local_audit_tests::local_file_reader_enforces_exact_budget_and_regular_leaf ... ok
+test diagnostic_builder::bootstrap_build::tests::bootstrap_build_cargo_log_rejects_wrong_targets_features_duplicates_and_completion ... ok
+test diagnostic_builder::bootstrap_build::tests::bootstrap_build_policy_signatures_domains_keys_pins_and_claims_refuse ... ok
+test diagnostic_builder::bootstrap_build::tests::bootstrap_build_roundtrip_is_static_and_content_bound ... ok
+test diagnostic_controller_producer::tests::producer_retained_audience_and_internal_body_corruption_refuse ... ok
+test diagnostic_controller_producer::tests::producer_roundtrip_exact_request_domain_audience_and_synthetic_signature ... ok
+test diagnostic_builder::bootstrap_build::tests::bootstrap_build_canonical_shape_and_budgets_refuse ... ok
+test diagnostic_controller_producer::tests::producer_strict_request_schema_builder_identity_and_budget ... ok
+test diagnostic_builder::bootstrap_build::tests::bootstrap_build_valid_signatures_cannot_hide_false_observations_or_bounds ... ok
+test diagnostic_ipc::validation_trace_tests::validation_trace_actual_authentication_early_error_is_counted_without_signature ... ok
+test diagnostic_ipc::validation_trace_tests::validation_trace_actual_signed_window_and_signature_errors_are_distinct ... ok
+test diagnostic_ipc::validation_trace_tests::validation_trace_disabled_and_success_do_not_invent_time_refusals ... ok
+test diagnostic_ipc::validation_trace_tests::validation_trace_first_time_facts_are_not_replaced_or_authority ... ok
+test diagnostic_ipc::validation_trace_tests::validation_trace_independent_threads_keep_numeric_reports_separate ... ok
+test diagnostic_ipc::validation_trace_tests::validation_trace_nested_unwind_and_ambient_scope_restore_original_frame ... ok
+test diagnostic_lease::transition_tests::transition_completion_and_terminal_replay_never_skip_or_restart_cells ... ok
+test diagnostic_lease::transition_tests::transition_entire_stage_graph_is_explicit ... ok
+test diagnostic_controller_producer::tests::producer_wrong_selected_key_time_and_retained_identity_refuse ... ok
+test diagnostic_lease::transition_tests::transition_identity_revision_clock_and_cell_drift_refuse_without_mutation ... ok
+test diagnostic_lease::transition_tests::transition_original_inode_and_stop_reason_are_sticky ... ok
+test diagnostic_lease::transition_tests::transition_publisher_refuses_invalid_candidate_before_any_write ... ok
+test diagnostic_lease::transition_tests::transition_four_cells_seeded_histories_and_mutations ... ok
+test diagnostic_lease::transition_tests::transition_start_and_heartbeat_cannot_revive_expired_budgets ... ok
+test diagnostic_receipts::tests::pinned_hdr_projection_checks_bucket_edges_and_ceil_rank ... ok
+test diagnostic_receipts::tests::seeded_hdr_projection_preserves_rank_bounds_and_overflow_accounting ... ok
+test diagnostic_receipts::tests::strict_json_rejects_nested_duplicates_and_depth_without_tail_repair ... ok
+test diagnostic_two_phase_launch::root_enrollment::tests::root_enrollment_all_kinds_roundtrip_with_exact_offsets ... ok
+test diagnostic_two_phase_launch::root_enrollment::tests::root_enrollment_every_ack_byte_mutation_refuses_and_cannot_restore ... ok
+test diagnostic_two_phase_launch::root_enrollment::tests::root_enrollment_invalid_shapes_versions_fields_and_old_packets_refuse ... ok
+test diagnostic_two_phase_launch::root_enrollment::tests::root_enrollment_seeded_bindings_roundtrip_without_deadline_renewal ... ok
+test diagnostic_two_phase_launch::root_enrollment::tests::root_enrollment_send_uncertainty_and_ack_are_sticky_without_authority ... ok
+test diagnostic_builder::bootstrap_build::installed_entry_format::tests::bootstrap_installed_entry_every_single_bit_change_is_canonical_or_refused ... ok
+test diagnostic_two_phase_launch::tests::held_placement::held_placement_all_packet_kinds_zero_fields_and_foreign_attempt_refuse ... ok
+test diagnostic_lease::transition_tests::transition_publisher_refuses_stale_revision_without_replacing_state ... ok
+test diagnostic_two_phase_launch::tests::held_placement::held_placement_roundtrip_exact_root_and_data_only_scope ... ok
+test diagnostic_two_phase_launch::tests::held_placement::held_placement_unknown_duplicate_noncanonical_budget_and_hex_refuse ... ok
+test diagnostic_two_phase_launch::tests::held_placement::held_placement_versions_and_signature_domains_do_not_upgrade_old_claims ... ok
+test diagnostic_two_phase_launch::tests::two_phase_launch_digest_binds_every_consent_claim_and_artifact_role ... ok
+test diagnostic_two_phase_launch::tests::held_placement::held_placement_changed_signed_fields_digest_and_key_refuse ... ok
+test diagnostic_two_phase_launch::tests::two_phase_launch_domain_signature_and_digest_refuse_independent_drift ... ok
+test diagnostic_two_phase_launch::tests::two_phase_launch_inherits_old_consent_bounds_without_new_clock_or_renewal ... ok
+test diagnostic_two_phase_launch::tests::two_phase_launch_roundtrip_is_expected_bytes_not_start_authority ... ok
+test diagnostic_worker_policy::authority_registry::tests::authority_registry_canonical_record_and_independent_bindings_are_exact ... ok
+test diagnostic_controller_producer::tests::producer_seeded_valid_messages_and_independent_preparations ... ok
+test diagnostic_two_phase_launch::tests::held_placement::held_placement_seeded_names_and_identity_binding_are_deterministic ... ok
+test diagnostic_worker_policy::authority_registry::tests::authority_registry_rejects_malformed_future_duplicate_noncanonical_and_oversized_records ... ok
+test diagnostic_worker_policy::authority_registry::tests::authority_registry_refusal_and_higher_epoch_are_distinct_monotonic_transitions ... ok
+test diagnostic_worker_policy::proof_reuse_tests::worker_proof_reuse_independent_concurrent_owners_share_no_cached_authority ... ok
+test diagnostic_two_phase_launch::tests::two_phase_launch_document_bounds_and_unknown_shapes_refuse ... ok
+test diagnostic_worker_policy::authority_registry::tests::authority_registry_seeded_history_mutations_never_adopt_gaps_or_changed_refusals ... ok
+test diagnostic_worker_policy::proof_reuse_tests::worker_proof_reuse_two_constructors_are_not_one_shared_admission ... ok
+test diagnostic_worker_policy::proof_reuse_tests::worker_proof_reuse_verifies_once_and_retains_projection_integrity ... ok
+test host_receipt::tests::canonical_receipt_round_trips_and_detects_drift ... ok
+test host_receipt::tests::cpuset_parser_canonicalizes_ranges ... ok
+test host_receipt::tests::host_observation_v1_rejects_worker_authority_extensions ... ok
+test host_receipt::tests::installed_binary_identity_requires_every_manifest_field ... ok
+test host_receipt::tests::live_observation_ignores_only_namespace_local_mount_id ... ok
+test host_receipt::tests::partition_and_fixed_probe_set_are_fail_closed ... ok
+test host_receipt::tests::provisioning_source_is_strict_and_binary_bound ... ok
+test host_receipt::tests::provisioning_v1_rejects_worker_authority_extensions ... ok
+test host_receipt::tests::quarantine_recovery_allows_only_the_provisioned_supervisor_identity_to_change ... ok
+test start_evidence::tests::bounded_input_and_create_new_output_are_enforced ... ok
+test start_evidence::tests::rejects_non_start_and_invalid_campaign_before_touching_paths ... ok
+test diagnostic_worker_policy::authority_registry::tests::authority_registry_generation_capacity_is_finite_and_no_epoch_wrap_is_possible ... ok
+test diagnostic_worker_policy::proof_reuse_tests::worker_proof_reuse_reference_matches_every_retained_projection_field ... ok
+test diagnostic_worker_policy::proof_reuse_tests::worker_proof_reuse_reference_matches_seeded_input_trust_context_and_priority ... ok
+
+test result: ok. 74 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.63s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 11 tests
+test census_entry::tests::census_ingress_only_explicit_new_mode_with_unchanged_metadata ... ok
+test held_mode::activation::tests::held_entry_activation_exact_and_permutation ... ok
+test held_mode::activation::tests::held_entry_activation_missing_duplicate_foreign_and_noncanonical_refuse ... ok
+test census_entry::tests::census_ingress_cannot_repair_unknown_pid_or_environment ... ok
+test image_entry::tests::image_mode_requires_explicit_argument_and_unmodified_activation_assertions ... ok
+test image_entry::tests::image_mode_cannot_refresh_pid_or_ignore_additional_environment ... ok
+test ingress::tests::bootstrap_ingress_bad_argument_pid_unknown_duplicate_and_noncanonical_values_refuse ... ok
+test ingress::tests::bootstrap_ingress_exact_metadata_permutations_are_only_assertions ... ok
+test ingress::tests::bootstrap_ingress_every_activation_name_byte_refuses_mutation ... ok
+test installed_mode::tests::bootstrap_installed_mode_exact_activation_and_old_name_prefix ... ok
+test installed_mode::tests::bootstrap_installed_mode_refuses_pid_count_names_duplicate_and_foreign_environment ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 4 tests
+test hardlinked_input_is_rejected_without_creating_an_archive ... ok
+test create_new_limits_and_output_placement_fail_closed ... ok
+test archive_replay_verification_rejects_digest_and_extra_file_drift ... ok
+test archive_bytes_and_headers_are_deterministic ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.51s
+
+
+running 3 tests
+test exact_signed_authorization_is_accepted ... ok
+test digest_signature_and_request_binding_tamper_fail_closed ... ok
+test repository_actor_and_time_window_are_enforced ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 1 test
+test bootstrap_child_no_argument_future_mode_and_unknown_environment_never_start ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.34s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 6 tests
+test complete_json_without_terminal_newline_is_still_a_torn_record ... ok
+test rejects_middle_corruption_sequence_gap_hash_break_and_identity_drift ... ok
+test verifies_complete_chain_and_recovers_only_incomplete_tail ... ok
+test refuses_replaying_a_sequence_or_reusing_a_stale_head ... ok
+test append_refuses_to_write_after_a_torn_tail_without_explicit_recovery ... ok
+test append_syncs_chain_and_exact_head ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+
+running 7 tests
+test exact_chain_head_role_and_process_identity_are_required ... ok
+test live_observation_retries_a_journal_and_head_commit_window ... ok
+test live_chain_can_be_observed_before_a_controller_attaches_its_head ... ok
+test live_observation_retries_an_incomplete_appended_record ... ok
+test non_regular_checkpoint_journal_is_rejected_before_parsing ... ok
+test terminal_evidence_requires_the_final_phase_and_retains_role_identity ... ok
+test stale_head_and_non_live_state_fail_closed ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.45s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 17 tests
+test builder_policy_requires_external_pin_and_distinct_controller_key ... ok
+test builder_signing_checks_observation_and_contents_before_signing ... ok
+test cargo_local_path_accepts_exact_version_fragment_not_foreign_sources ... ok
+test diagnostic_build_attestation_has_a_separate_domain ... ok
+test checked_statement_binds_exact_model_intent_without_enrolling_execution ... ok
+test builder_signer_cli_refuses_missing_or_unknown_commands ... ok
+test every_artifact_is_hash_bound_and_p0_configs_cannot_drift ... ok
+test cargo_log_requires_one_unprofiled_binary_and_final_success ... ok
+test every_signed_top_level_field_refuses_unsigned_mutation ... ok
+test elf_checks_are_structural_only_and_refuse_truncated_or_wrong_architecture ... ok
+test even_resigned_source_toolchain_features_and_limits_cannot_drift ... ok
+test frozen_fixture_tests::frozen_fixture_moving_workspace_and_resigned_substitution_remain_refused ... ok
+test signed_receipt_is_strict_canonical_bounded_and_lease_bound ... ok
+test signed_build_statement_binds_all_fields_and_rejects_other_domains ... ok
+test unsigned_content_inspection_never_becomes_build_or_execution_authority ... ok
+test frozen_fixture_tests::frozen_fixture_exact_bytes_and_seeded_corruption_remain_bound ... ok
+test unsigned_file_audit_has_read_only_cli_and_refuses_changed_inputs ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.32s
+
+
+running 4 tests
+test fixed_boot_reader_uses_one_small_read ... ok
+test allocator_capture_restores_on_panic_and_refuses_nesting ... ok
+test allocator_capture_is_thread_local ... ok
+test fixed_boot_reader_allocation_pairs ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 21 tests
+test authorization_window_has_exclusive_expiry_and_no_future_skew ... ok
+test changed_request_and_cross_lease_nonce_reuse_are_refused ... ok
+test campaign_claim_refuses_diagnostic_reserve_without_backend_calls ... ok
+test backend_failure_is_cached_without_leaking_paths_or_releasing_marker ... ok
+test cancel_replay_after_terminal_release_never_stops_tree_again ... ok
+test diagnostic_signatures_have_a_separate_domain ... ok
+test completed_replay_is_cached_without_extending_heartbeat ... ok
+test concurrent_same_revision_has_at_most_one_mutation ... ok
+test foreign_or_missing_lease_and_reversed_clock_never_mutate ... ok
+test malformed_packets_unknown_fields_and_unsigned_overrides_are_rejected ... ok
+test peer_and_signed_principal_denials_do_not_create_ledger_or_lease ... ok
+test pending_intent_blocks_reexecution_and_new_requests ... ok
+test corrupt_future_noncanonical_or_pending_ledgers_fail_closed ... ok
+test persisted_heartbeat_crash_gap_does_not_repeat_mutation ... ok
+test producer_public_api_is_separate_from_receiver_and_host_execution ... ok
+test ledger_digest_duplicate_identity_and_invalid_response_are_rejected ... ok
+test signature_binds_every_request_field_and_rejects_campaign_domain ... ok
+test stale_revision_and_controller_takeover_are_refused_before_mutation ... ok
+test status_is_signed_and_never_refreshes_controller_liveness ... ok
+test producer_cli_unknown_or_incomplete_commands_refuse_without_echoing_inputs ... ok
+test ledger_capacity_never_evicts_replay_protection ... ok
+
+test result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 13.25s
+
+
+running 18 tests
+test cancel_before_start_never_needs_a_backend_or_spawns_work ... ok
+test boot_clock_and_lease_identity_drift_fail_without_backend_calls ... ok
+test diagnostic_and_campaign_reservations_share_one_short_transaction_lock ... ok
+test concurrent_campaign_and_diagnostic_admission_has_exactly_one_winner ... ok
+test durable_start_intent_is_never_replayed_as_a_second_spawn ... ok
+test existing_campaign_and_each_fixture_context_refuse_reservation ... ok
+test exited_leader_never_certifies_a_populated_child_tree ... ok
+test expired_controller_cannot_revive_or_extend_a_cell_deadline ... ok
+test malformed_or_ambiguous_diagnostic_markers_fail_closed ... ok
+test cleanup_failure_and_identity_drift_keep_host_claimed ... ok
+test overflowing_receipt_counters_stop_instead_of_wrapping_or_retrying ... ok
+test overflow_and_invalid_receipts_are_retained_without_retry ... ok
+test four_fixed_cells_finish_once_and_terminal_evidence_precedes_release ... ok
+test terminal_publication_gap_recovers_identical_receipt_without_spawn ... ok
+test terminal_receipt_conflict_does_not_release_the_marker ... ok
+test unknown_schema_fields_and_noncanonical_digest_drift_fail_closed ... ok
+test controller_loss_and_deadlines_stop_tree_before_release ... ok
+test remaining_total_budget_caps_the_fixed_unit_without_padding ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.23s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 8 tests
+test concurrent_offline_readers_return_identical_non_promotable_packets ... ok
+test failed_incomplete_and_cpu_unusable_attempts_remain_distinct ... ok
+test malformed_duplicate_unknown_missing_and_oversized_bytes_fail_closed ... ok
+test claim_flags_wrong_boundaries_and_uncertain_terminal_never_pass ... ok
+test packet_replay_recomputes_decision_and_binds_original_bytes ... ok
+test sample_accounting_latency_and_cpu_are_recomputed ... ok
+test resp_wire_requires_fifo_routing_and_byte_verified_success ... ok
+test all_four_p0_surfaces_bind_identity_and_reject_input_drift ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 54.94s
+
+
+running 8 tests
+test reviewed_trust_empty_oversized_noncanonical_and_future_fields_refuse ... ok
+test reviewed_trust_existing_public_policy_matches_independent_pins ... ok
+test reviewed_trust_controller_check_requires_exact_repository_and_key ... ok
+test reviewed_trust_retained_hosted_receipt_signature_verifies_without_execution ... ok
+test reviewed_trust_policy_mutations_and_shared_keys_never_choose_trust ... ok
+test reviewed_trust_independent_concurrent_verifiers_keep_fixed_pins ... ok
+test reviewed_trust_separate_worker_issuer_selfcheck_is_not_a_policy_or_enrollment ... ok
+test reviewed_trust_signature_mutation_refuses_even_with_recomputed_receipt_pin ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.04s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 7 tests
+test fixed_bootstrap_schema_is_statement_data_not_authority ... ok
+test matching_declared_context_checks_signature_and_all_content_without_enrollment ... ok
+test launcher_and_workflow_pins_are_bounded_assertions_not_discovered_authority ... ok
+test wrong_receipt_key_signature_and_unbound_content_cannot_gain_stronger_result ... ok
+test canonical_schema_unknown_duplicate_missing_types_and_budget_refuse ... ok
+test every_binding_fixed_profile_and_false_declaration_is_checked_even_after_resigning ... ok
+test seeded_signed_context_mutations_and_four_independent_models ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.34s
+
+
+running 9 tests
+test malformed_selection_profile_source_and_artifact_limits_refuse_before_verification ... ok
+test old_reviewed_key_roles_and_weak_issuer_cannot_select_signer_build_purpose ... ok
+test old_observer_and_new_signer_receipts_have_no_shared_reader_or_role ... ok
+test strict_json_canonical_lf_schema_duplicates_and_budget_refuse ... ok
+test every_statement_field_is_selected_and_even_valid_resigning_cannot_change_it ... ok
+test synthetic_signature_and_supplied_bytes_match_without_attesting_build_or_runtime ... ok
+test each_supplied_artifact_requires_exact_nonempty_bytes_and_length ... ok
+test wrong_issuer_domain_and_all_signature_positions_refuse ... ok
+test seeded_content_corruption_and_four_independent_concurrent_models ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.19s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 6 tests
+test search_paths_duplicate_needed_writable_exec_and_unknown_tags_refuse ... ok
+test roles_wrong_soname_and_missing_dependencies_refuse ... ok
+test synthetic_catalog_binds_each_role_and_bytes_without_authority ... ok
+test unchanged_declarations_still_record_changed_bytes ... ok
+test scripts_short_oversized_abi_and_interpreter_refuse ... ok
+test seeded_mutations_do_not_panic_and_independent_readers_agree ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+
+running 7 tests
+test ordinary_policy_architecture_and_x32_are_terminal ... ok
+test ordinary_policy_256_seeded_argument_mutations ... ok
+test ordinary_policy_has_exact_fixed_shape_and_closed_denial_set ... ok
+test ordinary_policy_four_independent_readers_and_malformed_model_inputs ... ok
+test ordinary_policy_prctl_tail_checks_both_full_width_arguments ... ok
+test ordinary_policy_all_native_numbers_and_argument_classes ... ok
+test ordinary_probe_cli_refuses_unknown_command_before_process_mutation ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.17s
+
+
+running 6 tests
+test approval_record_selects_key_only_without_installing_runtime_or_job ... ok
+test invalid_expected_profile_is_not_repaired_by_key_selection ... ok
+test selected_signer_issuer_matches_approved_raw_public_fingerprint ... ok
+test selected_key_is_stable_under_independent_concurrent_model_creation ... ok
+test caller_selected_synthetic_issuer_cannot_enter_selected_key_model ... ok
+test original_public_selfcheck_is_valid_without_becoming_a_receipt ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.49s
+
+
+running 1 test
+test ordinary_owned_probe_cli_refuses_unknown_path_pid_and_command_overrides ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.18s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 1 test
+test fixed_root_cli_has_no_caller_selected_inputs ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.80s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 7 tests
+test consent_contract_is_not_heartbeat_or_legacy_intent ... ok
+test consent_canonical_unknown_duplicate_partial_and_budget_refusals ... ok
+test consent_first_cell_time_epoch_and_integer_bounds_are_strict ... ok
+test consent_independent_concurrent_signature_checks_share_no_authority ... ok
+test consent_domains_and_old_messages_cannot_substitute ... ok
+test consent_roundtrip_signature_and_repeat_inspection_are_data_only ... ok
+test consent_seeded_all_signed_leaves_refuse_mutation ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 14 tests
+test authority_registry_api_is_inspection_not_start_authority ... ok
+test worker_policy_canonical_strict_json_and_budgets_refuse ... ok
+test worker_policy_concurrent_guards_share_no_refusal_or_authority ... ok
+test worker_policy_external_trust_rejects_weak_keys_and_invalid_pins ... ok
+test worker_policy_context_and_envelope_drift_latch_without_refresh ... ok
+test worker_policy_group_rules_preserve_exact_lists_and_union_bound ... ok
+test worker_policy_oversized_revalidation_and_key_pin_changes_latch ... ok
+test worker_policy_resigned_invalid_identity_and_context_refuse ... ok
+test worker_policy_asserted_host_boot_and_both_namespaces_match_exactly ... ok
+test worker_policy_roundtrip_is_idempotent_not_host_enrollment ... ok
+test worker_policy_revocation_is_first_error_and_cannot_restore ... ok
+test worker_policy_unsigned_field_changes_never_adopt_new_values ... ok
+test worker_policy_signatures_and_foreign_domains_refuse ... ok
+test worker_policy_seeded_valid_resigned_mutations_keep_original_pin ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.08s
+
+
+running 8 tests
+test rejects_invalid_response_binding_and_outcome ... ok
+test rejects_request_id_reuse_with_different_request_bytes ... ok
+test detects_middle_corruption_and_a_mismatched_head ... ok
+test lifecycle_transitions_share_the_chain_without_consuming_request_replay_identity ... ok
+test treats_a_complete_json_record_without_its_newline_as_a_torn_write ... ok
+test returns_the_original_response_for_an_identical_request_without_appending ... ok
+test appends_and_verifies_a_durable_event_chain ... ok
+test reports_a_torn_final_record_and_refuses_to_append_over_it ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+
+running 28 tests
+test cargo_exact_targets_package_sources_output_profiles_and_features_required ... ok
+test canonical_bounded_documents_signature_encoding_and_domains_are_strict ... ok
+test cargo_missing_duplicate_foreign_failure_and_trailing_events_refuse ... ok
+test cargo_raw_bounds_duplicates_and_nonterminated_records_refuse ... ok
+test changed_contents_and_each_expected_role_refuse_without_execution_authority ... ok
+test independent_pins_controller_epoch_and_three_distinct_nonweak_keys_required ... ok
+test cargo_dependencies_are_allowed_but_valid_oversized_and_duplicate_records_refuse ... ok
+test independent_policy_source_and_epoch_binding_prevents_receipt_reuse ... ok
+test legacy_policy_must_independently_authenticate_the_same_controller ... ok
+test repinned_invalid_policy_fields_and_unsigned_unknown_fields_refuse ... ok
+test role_binding::all_document_receipt_and_signing_budgets_refuse ... ok
+test all_observation_fields_checked_before_signing_and_after_signature ... ok
+test role_binding::another_valid_attempt_cannot_match_the_original_placement_bytes ... ok
+test role_binding::canonical_unknown_duplicate_nested_and_signature_encoding_are_strict ... ok
+test role_binding::new_domain_and_envelope_do_not_upgrade_any_old_signature ... ok
+test role_binding::checked_output_rejects_changed_contents_and_nonexact_placement_bytes ... ok
+test role_binding::every_unsigned_outer_and_nested_binding_mutation_refuses ... ok
+test role_binding::resigned_each_role_mismatch_refuses_even_with_valid_old_placement ... ok
+test role_binding::resigned_epoch_repository_and_digest_substitution_refuses ... ok
+test every_receipt_binding_refuses_unsigned_mutation_and_resigned_invalid_semantics ... ok
+test role_binding::signed_binding_checks_same_policy_receipt_epoch_roles_and_exact_placement_bytes ... ok
+test seeded_content_corruption_cannot_reuse_checked_receipt ... ok
+test separate_policy_signer_receipt_contents_and_three_roles_roundtrip ... ok
+test role_binding::valid_but_different_receipt_or_independently_checked_policy_refuses ... ok
+test signer_requires_distinct_valid_elf_and_exact_nonempty_root_lock ... ok
+test valid_but_noncanonical_or_duplicate_documents_and_worker_signed_body_refuse ... ok
+test role_binding::wrong_controller_or_builder_key_at_either_signature_refuses ... ok
+test role_binding::seeded_unsigned_bit_corruption_never_reuses_inspection ... ok
+
+test result: ok. 28 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.51s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 5 tests
+test recovery_never_creates_a_missing_active_campaign_marker ... ok
+test one_campaign_claim_survives_restart_and_blocks_every_other_campaign ... ok
+test active_recovery_returns_the_validated_marker_identity_under_the_host_lock ... ok
+test unsafe_marker_lock_and_campaign_identity_fail_closed ... ok
+test host_marker_is_released_only_after_a_clean_complete_seal ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 6 tests
+test exact_canonical_prepared_manifest_is_accepted ... ok
+test digest_identity_and_frozen_field_drift_fail_closed ... ok
+test execution_identity_and_nested_unknown_fields_fail_closed ... ok
+test unknown_float_secret_value_and_oversize_fail_closed ... ok
+test persistent_manifest_reconstructs_the_exact_frozen_identity ... ok
+test start_evidence_is_validated_then_atomically_imported_once ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 4 tests
+test same_revision_snapshot_drift_is_never_repaired_from_a_copy ... ok
+test rejected_attach_is_durable_and_does_not_change_state ... ok
+test accepted_attach_commits_event_before_state_and_replays_exact_response ... ok
+test recovery_finishes_state_commit_after_event_sync_crash_window ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 8 tests
+test rejects_oversized_truncated_unknown_duplicate_and_invalid_utf8_packets ... ok
+test rejects_path_traversal_and_cross_operation_fields ... ok
+test manifest_path_validation_is_structural_and_configuration_independent ... ok
+test host_observation_is_revision_zero_unsigned_and_pathless ... ok
+test subsequent_role_start_is_revision_bound_and_has_no_staging_path ... ok
+test strict_protocol_accepts_allowlisted_operations ... ok
+test response_digest_excludes_only_its_own_field ... ok
+test wire_envelope_requires_authorization_only_for_mutating_operations ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 5 tests
+test role_overhead_does_not_expand_the_fixed_root_entrypoint ... ok
+test private_storage_is_checked_before_installation_without_metadata_repair ... ok
+test service_is_detached_confined_and_exposes_no_workflow_shell ... ok
+test sudo_boundary_exposes_only_the_fixed_signed_bundle_installer ... ok
+test accounts_directories_and_unresolved_key_fail_closed ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+
+running 4 tests
+test builds_a_create_new_packet_bound_to_the_request_and_time_window ... ok
+test rejects_non_mutating_requests_time_drift_and_unsafe_key_files ... ok
+test provisioning_manifest_signature_binds_every_digest_byte ... ok
+test derives_only_the_public_verification_key_from_a_private_seed ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
+
+running 3 tests
+test completed_packet_and_archive_without_result_are_adopted_without_rebuild ... ok
+test complete_building_directories_are_recovered_but_conflicting_intent_is_rejected ... ok
+test durable_seal_artifact_is_exactly_replayed_and_tamper_fails_closed ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.29s
+
+
+running 4 tests
+test i74_plan_is_derived_only_from_the_strict_role_inventory ... ok
+test inventory_drift_unknown_fields_and_cross_role_paths_fail_closed ... ok
+test final_plan_rejects_missing_or_tampered_continuation_result ... ok
+test c74_plan_combines_explicit_inventories_and_binds_durable_i74_digest ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.19s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 9 tests
+test backend_error_type_need_only_be_displayable ... ok
+test crash_before_side_effect_records_absence_instead_of_starting_on_retry ... ok
+test conflicting_or_corrupt_intent_fails_closed ... ok
+test lost_start_response_is_recovered_by_observation_without_second_start ... ok
+test crash_after_side_effect_adopts_exact_existing_unit ... ok
+test mismatched_existing_unit_is_preserved_as_terminal_evidence ... ok
+test normal_start_is_durable_and_replay_never_calls_backend_again ... ok
+test roles_have_independent_evidence_and_deterministic_units ... ok
+test spawn_outcomes_advance_state_without_placeholder_processes_or_checkpoints ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+
+
+running 9 tests
+test accepted_start_response_is_durable_and_replayed_without_touching_backend ... ok
+test c74_starts_only_from_exact_i74_seal_and_has_independent_spawn_evidence ... ok
+test c74_rejects_unsealed_or_stale_predecessor_without_backend_effect ... ok
+test drives_prepared_start_to_running_once_and_replays_without_backend_calls ... ok
+test c74_accepted_response_is_durable_and_lost_side_effect_response_is_adopted ... ok
+test durable_intent_without_side_effect_fails_incomplete_and_never_starts_on_recovery ... ok
+test recovers_event_ahead_of_missing_or_stale_state_before_spawning ... ok
+test recovers_starting_event_ahead_of_prepared_snapshot_before_spawning ... ok
+test lost_backend_response_is_adopted_before_recording_success_response ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.38s
+
+
+running 7 tests
+test controller_resilience_expected_red_canary ... ok
+test exact_attach_only_changes_controller_revision_and_lease ... ok
+test attach_fails_closed_for_host_process_checkpoint_lease_and_failure_drift ... ok
+test future_useful_progress_timestamp_cannot_bypass_staleness ... ok
+test lease_expiry_is_terminal_and_never_restarts ... ok
+test request_replay_is_idempotent_only_for_identical_digest ... ok
+test state_machine_cannot_skip_roles_or_restart_terminal_work ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 5 tests
+test lock_is_exclusive_and_path_traversal_is_rejected ... ok
+test malformed_and_oversized_state_fail_closed ... ok
+test prepared_state_persists_without_placeholder_process_or_checkpoint_identity ... ok
+test stale_revision_and_identity_drift_do_not_mutate_state ... ok
+test initializes_and_compare_and_swaps_with_previous_snapshot ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 5 tests
+test identity_phase_sequence_and_counter_drift_fail_closed ... ok
+test measured_heartbeat_does_not_reset_the_useful_progress_deadline ... ok
+test measured_work_requires_operations_surface_accounting_and_cpu_to_advance ... ok
+test drain_and_intentional_idle_use_distinct_progress_signals ... ok
+test reconciliation_accepts_owner_convergence_in_either_direction ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

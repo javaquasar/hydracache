@@ -1,0 +1,18 @@
+{
+  "argv": [
+    "cargo",
+    "update",
+    "--offline",
+    "--dry-run",
+    "-p",
+    "webpki-root-certs",
+    "--precise",
+    "1.0.10"
+  ],
+  "manifest_mutation": false,
+  "lockfile_mutation": false,
+  "build": false,
+  "execution": false,
+  "independent_preview": true,
+  "retry": false
+}

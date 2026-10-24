@@ -1,0 +1,72 @@
+"""Retain the distinct EOF scope successor using unchanged common source objects."""
+from pathlib import Path
+import hashlib
+import json
+ROOT=Path(__file__).resolve().parent.parent
+RAW=ROOT/'target/status-field-scan-20261024'
+BASE=ROOT/'docs/testing/performance/0.74/local-runs/ordinary-repair-20261024'
+DEST=ROOT/'docs/testing/performance/0.74/local-runs/transport-eof-scope-20261024'
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+def read(path):return json.loads(path.read_bytes())
+base_raw=(BASE/'index.json').read_bytes()
+if sha(base_raw)!='5d32f67e9b2f36028750ed4fb67b581678dbba50ed19ad72f5ea0cab20ce1bf3':
+    raise ValueError('Exact predecessor packet differs')
+base=json.loads(base_raw)
+changed={'tools/long-run-supervisor-074/src/diagnostic_cgroup_root_transport_tests.rs',
+    'tools/owned-case-074/contract.rs','tools/owned-case-074/check.py','tools/owned-case-074/test_runner.py'}
+facts=dict(compilers={},source_changes=sorted(changed),old_full_ordinary_repeated=False,
+    original_windows_seconds=[300,60,10],live_predicates_changed=False,server=False,
+    services=False,clocks=False,product=False,admission=False,production_writer_retirement_proved=False)
+for lane in ('194','188'):
+    folder=RAW/('owned-case-'+lane+'-v10-transport-eof')
+    intent=read(folder/'run-intent.json');result=read(folder/'result.json')
+    if result['failure'] or not result['source_unchanged'] or result['source_after']!=intent['source']:
+        raise ValueError('First focused EOF result incomplete')
+    text=(folder/'run.stdout.log').read_text()
+    if '6 passed; 0 failed; 1 ignored; 0 measured; 1616 filtered out;' not in text:
+        raise ValueError('Transport module membership differs')
+    prior=read(RAW/('owned-case-'+lane+'-v9-full-ordinary/run-intent.json'))['source']
+    if set(prior)!=set(intent['source']) or {name for name in prior if prior[name]!=intent['source'][name]}!=changed:
+        raise ValueError('Unexpected source difference from retained ordinary cohort')
+    strict=read(RAW/('transport-eof-native-strict-'+lane)/'result.json')
+    if strict['exits']!={'check':0,'clippy':0} or not strict['source_unchanged']:
+        raise ValueError('Native strict gate incomplete')
+    facts['compilers'][lane]=dict(passed=6,failed=0,ignored=1,filtered=1616,image=result['image'])
+if read(RAW/'transport-eof-milestone-complete-result.json')['Exit'] or '321 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out;' not in (RAW/'transport-eof-milestone-complete.log').read_text():
+    raise ValueError('Complete source gate incomplete')
+if read(RAW/'transport-eof-xtask-strict-result.json')!={'Check':0,'Clippy':0}:
+    raise ValueError('Xtask strict gate incomplete')
+DEST.mkdir();(DEST/'objects').mkdir();files={};common={}
+def retain(name,raw):
+    digest=sha(raw);path=DEST/'objects'/digest
+    if not path.exists():
+        with path.open('xb') as stream:stream.write(raw)
+    elif path.read_bytes()!=raw:raise ValueError('Content collision')
+    files[name]=dict(bytes=len(raw),sha256=digest)
+for name,digest in intent['source'].items():
+    raw=(ROOT/name).read_bytes()
+    if sha(raw)!=digest:raise ValueError('Focused source changed')
+    if name in changed:retain('compiled-source/'+name,raw)
+    else:
+        member='compiled-source/v9/'+name
+        entry=base['files'][member]
+        old=(BASE/'objects'/entry['sha256']).read_bytes()
+        if entry['sha256']!=digest or old!=raw:raise ValueError('Unchanged predecessor object differs')
+        common[name]=dict(member=member,**entry)
+for lane in ('194','188'):
+    for folder in (RAW/('owned-case-'+lane+'-v10-transport-eof'),RAW/('transport-eof-native-strict-'+lane)):
+        for path in sorted(folder.iterdir()):
+            if path.is_file() and path.name!='image':retain('observation/'+folder.name+'/'+path.name,path.read_bytes())
+for pattern in ('transport-eof-source-*','transport-eof-milestone-*','transport-eof-xtask-*','transport-eof-runner-*'):
+    for path in sorted(RAW.glob(pattern)):
+        if path.is_file():retain('observation/'+path.name,path.read_bytes())
+for name in ('target/check-bootstrap-isolation-native-20261024.py','docs/testing/performance/0.74/transport-eof-scope-plan-20261024.md'):
+    retain('source/'+name,(ROOT/name).read_bytes())
+retain('coordinator/'+Path(__file__).name,Path(__file__).read_bytes())
+index=dict(schema='hc074-transport-eof-scope-v1',files=files,facts=facts,common_compiled_sources=common,
+    predecessor=dict(path=BASE.relative_to(ROOT).as_posix(),index_sha256=sha(base_raw)))
+with (DEST/'index.json').open('x',encoding='utf-8',newline='\n') as stream:
+    json.dump(index,stream,indent=2,sort_keys=True);stream.write('\n')
+with (DEST/'.gitattributes').open('x',encoding='ascii',newline='\n') as stream:
+    stream.write('index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n')
+print(dict(files=len(files),objects=len(list((DEST/'objects').iterdir())),common_sources=len(common),index_sha256=sha((DEST/'index.json').read_bytes())))

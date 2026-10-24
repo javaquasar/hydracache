@@ -1,0 +1,34 @@
+webpki-roots v1.0.8
+└── webpki-roots v0.26.11
+    └── sqlx-core v0.8.6
+        ├── sqlx v0.8.6
+        │   ├── hydracache-db v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-db)
+        │   │   ├── hydracache-cdc-postgres v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-cdc-postgres)
+        │   │   ├── hydracache-diesel v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-diesel)
+        │   │   │   └── hydracache-sandbox v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-sandbox)
+        │   │   │   [dev-dependencies]
+        │   │   │   └── hydracache-post-publish-consumer v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tests\post-publish-consumer)
+        │   │   ├── hydracache-seaorm v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-seaorm)
+        │   │   │   └── hydracache-sandbox v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-sandbox)
+        │   │   │   [dev-dependencies]
+        │   │   │   └── hydracache-post-publish-consumer v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tests\post-publish-consumer)
+        │   │   └── hydracache-sqlx v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-sqlx)
+        │   │       └── hydracache-sandbox v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-sandbox)
+        │   │       [dev-dependencies]
+        │   │       └── hydracache-post-publish-consumer v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tests\post-publish-consumer)
+        │   │   [dev-dependencies]
+        │   │   └── hydracache-post-publish-consumer v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tests\post-publish-consumer)
+        │   ├── hydracache-sandbox v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-sandbox)
+        │   ├── hydracache-sqlx v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-sqlx) (*)
+        │   ├── sea-orm v1.1.20
+        │   │   └── hydracache-seaorm v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-seaorm) (*)
+        │   │   [dev-dependencies]
+        │   │   └── hydracache-seaorm v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-seaorm) (*)
+        │   └── sea-query-binder v0.7.0
+        │       └── sea-orm v1.1.20 (*)
+        │   [dev-dependencies]
+        │   └── hydracache-sqlx v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-sqlx) (*)
+        ├── sqlx-postgres v0.8.6
+        │   └── sqlx v0.8.6 (*)
+        └── sqlx-sqlite v0.8.6
+            └── sqlx v0.8.6 (*)

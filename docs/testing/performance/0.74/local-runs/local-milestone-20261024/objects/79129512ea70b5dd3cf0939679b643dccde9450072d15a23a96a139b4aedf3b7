@@ -1,0 +1,24 @@
+{
+  "argv": [
+    "cargo",
+    "tree",
+    "--offline",
+    "--locked",
+    "--workspace",
+    "--target",
+    "all",
+    "--all-features",
+    "--invert",
+    "zip@3.0.0",
+    "--edges",
+    "normal,build,dev"
+  ],
+  "build": false,
+  "execution": false,
+  "exploitability_verdict": false,
+  "source": {
+    "Cargo.lock": "d2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c",
+    "Cargo.toml": "18a8a27cf140a1d6eb31c8316ee39bb7d5832866a990346eee16cd0c30de344b",
+    "deny.toml": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+  }
+}

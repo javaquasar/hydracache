@@ -1,0 +1,46 @@
+"""Separate affected-package ordinary coverage; full verify remains failed."""
+from pathlib import Path
+import datetime
+import hashlib
+import json
+import os
+import shutil
+import subprocess
+import time
+ROOT=Path(__file__).resolve().parent.parent
+OUT=ROOT/'target/status-field-scan-20261024/xtask-package-first';OUT.mkdir()
+reference=json.loads((ROOT/'target/status-field-scan-20261024/full-verify-first/source-after.json').read_bytes())
+def snapshot():return {name:hashlib.sha256((ROOT/name).read_bytes()).hexdigest() for name in reference}
+before=snapshot()
+head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()
+dirty=subprocess.check_output(['git','status','--porcelain','--untracked-files=no'],cwd=ROOT,text=True)
+bound=min(1800,int(datetime.datetime(2026,10,24,4,2,tzinfo=datetime.timezone.utc).timestamp()-time.time()-600))
+argv=['cargo','test','--offline','--locked','-p','xtask','--lib','--tests','--','--test-threads=4']
+intent=dict(argv=argv,source=before,source_commit=head,tracked_dirty=dirty,bound_seconds=bound,
+    full_milestone_pass=False,dependency_updates=False,qualification=False,server=False,
+    services=False,original_owner_manual_run=False,ignored_requested=False,retry=False)
+(OUT/'intent.json').write_text(json.dumps(intent,indent=2),encoding='utf-8')
+if dirty or before!=reference or bound<60 or shutil.disk_usage(ROOT).free<8*1024**3:
+    raise SystemExit('First affected-package preflight refused')
+reason=None
+with (OUT/'stdout.log').open('xb') as stdout,(OUT/'stderr.log').open('xb') as stderr:
+    process=subprocess.Popen(argv,cwd=ROOT,env=dict(os.environ,CARGO_INCREMENTAL='0'),stdout=stdout,stderr=stderr)
+    start=time.monotonic()
+    while process.poll() is None:
+        if time.monotonic()-start>=bound:reason='outer-timeout'
+        if shutil.disk_usage(ROOT).free<4*1024**3:reason='disk-floor'
+        if reason:
+            with (OUT/'owned-cleanup.log').open('xb') as log:
+                subprocess.run(['taskkill','/PID',str(process.pid),'/T','/F'],stdout=log,stderr=subprocess.STDOUT,check=False,timeout=30)
+            process.wait(timeout=30);break
+        try:process.wait(timeout=5)
+        except subprocess.TimeoutExpired:pass
+    code=process.wait()
+after=snapshot()
+result=dict(exit=code,outer_refusal=reason,source_unchanged=before==after,
+    source_after=after,commit_unchanged=head==subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
+    tracked_clean=not subprocess.check_output(['git','status','--porcelain','--untracked-files=no'],cwd=ROOT,text=True),
+    full_milestone_pass=False,qualification=False,server=False,admission=False,retry=False)
+(OUT/'result.json').write_text(json.dumps(result,indent=2),encoding='utf-8')
+print({key:value for key,value in result.items() if key!='source_after'},flush=True)
+raise SystemExit(int(code!=0 or reason is not None or before!=after or not result['commit_unchanged'] or not result['tracked_clean']))

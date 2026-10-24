@@ -1,0 +1,6 @@
+{
+  "Command": "cargo update --dry-run -p webpki-roots@1.0.8 --precise 1.0.10",
+  "LockBefore": "D2C7736EBAA8381CECE9162BBBF384DB60C46111051E4E78E51D4BAE12FEAF5C",
+  "IndependentPreview": true,
+  "Implemented": false
+}

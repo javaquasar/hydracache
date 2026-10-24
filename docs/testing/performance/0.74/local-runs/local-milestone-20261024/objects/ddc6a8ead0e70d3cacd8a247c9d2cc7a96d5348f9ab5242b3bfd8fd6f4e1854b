@@ -1,0 +1,59 @@
+"""One standard fast milestone gate, with outer time/disk guards only."""
+from pathlib import Path
+import datetime
+import hashlib
+import json
+import os
+import shutil
+import subprocess
+import time
+
+ROOT=Path(__file__).resolve().parent.parent
+OUT=ROOT/'target/status-field-scan-20261024/full-verify-first';OUT.mkdir()
+def snapshot():
+    raw=subprocess.check_output(['git','ls-files','-z'],cwd=ROOT)
+    names=[name.decode('utf-8') for name in raw.split(b'\0') if name]
+    selected=[name for name in names if (name.startswith(('crates/','tools/','console/','.cargo/','.github/','docs/plans/'))
+        or name in ('Cargo.toml','Cargo.lock','deny.toml','docs/COMPAT.md','docs/RULES.md','docs/GATES.md'))
+        and not '/node_modules/' in name]
+    return {name:hashlib.sha256((ROOT/name).read_bytes()).hexdigest() for name in selected}
+failure=None;code=None;before={};after={};reason=None;process=None
+deadline=datetime.datetime(2026,10,24,4,2,tzinfo=datetime.timezone.utc).timestamp()
+bound=min(4800,int(deadline-time.time()-900))
+flags=[name for name in os.environ if name.startswith(('HC074_','HYDRACACHE_RUN','HYDRACACHE_REQUIRE',
+    'HYDRACACHE_FORCE','HYDRACACHE_CANARY','HYDRACACHE_BENCH')) or name=='DOCKER_HOST']
+head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()
+intent=dict(argv=['cargo','xtask','verify'],source_commit=head,bound_seconds=bound,
+    disk_floor_bytes=4*1024**3,free_before=shutil.disk_usage(ROOT).free,opt_in_environment_names=flags,
+    qualification=False,product_candidate=False,server=False,services=False,clocks=False,retry=False)
+(OUT/'intent.json').write_text(json.dumps(intent,indent=2),encoding='utf-8')
+try:
+    if flags or bound<60 or intent['free_before']<16*1024**3:
+        raise ValueError('Preflight refused before any gate execution')
+    before=snapshot()
+    (OUT/'source-before.json').write_text(json.dumps(before,indent=2),encoding='utf-8')
+    with (OUT/'stdout.log').open('xb') as stdout,(OUT/'stderr.log').open('xb') as stderr:
+        process=subprocess.Popen(intent['argv'],cwd=ROOT,env=dict(os.environ,CARGO_INCREMENTAL='0'),stdout=stdout,stderr=stderr)
+        (OUT/'process.json').write_text(json.dumps(dict(pid=process.pid)),encoding='utf-8')
+        started=time.monotonic()
+        while process.poll() is None:
+            if time.monotonic()-started>=bound:reason='outer-timeout'
+            if shutil.disk_usage(ROOT).free<intent['disk_floor_bytes']:reason='disk-floor'
+            if reason:
+                with (OUT/'owned-cleanup.log').open('xb') as log:
+                    subprocess.run(['taskkill','/PID',str(process.pid),'/T','/F'],stdout=log,stderr=subprocess.STDOUT,check=False,timeout=30)
+                process.wait(timeout=30);break
+            try:process.wait(timeout=5)
+            except subprocess.TimeoutExpired:pass
+        code=process.wait()
+    if code or reason:failure='First milestone refusal retained'
+except Exception as error:failure=str(error)
+after=snapshot()
+end_head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()
+result=dict(exit=code,failure=failure,outer_refusal=reason,source_unchanged=before==after,
+    commit_unchanged=head==end_head,source_commit_after=end_head,free_after=shutil.disk_usage(ROOT).free,
+    qualification=False,server=False,services=False,clocks=False,admission=False,retry=False)
+(OUT/'source-after.json').write_text(json.dumps(after,indent=2),encoding='utf-8')
+(OUT/'result.json').write_text(json.dumps(result,indent=2),encoding='utf-8')
+print(json.dumps(result),flush=True)
+raise SystemExit(int(failure is not None or before!=after or head!=end_head))

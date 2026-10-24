@@ -1,0 +1,60 @@
+{
+  "packages": {
+    "rustls": {
+      "version": "0.23.45",
+      "exit": 0
+    },
+    "rustls-webpki": {
+      "version": "0.103.15",
+      "exit": 0
+    },
+    "tokio": {
+      "version": "1.52.3",
+      "exit": 0
+    },
+    "unsafe-libyaml": {
+      "version": "0.2.11",
+      "exit": 0
+    },
+    "webpki-root-certs": {
+      "version": "1.0.8",
+      "exit": 0
+    },
+    "webpki-roots": {
+      "version": "1.0.8",
+      "exit": 0
+    },
+    "zbus_names": {
+      "version": "4.3.4",
+      "exit": 0
+    },
+    "zip": {
+      "version": "3.0.0",
+      "exit": 0
+    },
+    "zvariant": {
+      "version": "5.15.0",
+      "exit": 0
+    },
+    "zvariant_derive": {
+      "version": "5.15.0",
+      "exit": 0
+    }
+  },
+  "source_unchanged": true,
+  "source_before": {
+    "Cargo.lock": "d2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c",
+    "Cargo.toml": "18a8a27cf140a1d6eb31c8316ee39bb7d5832866a990346eee16cd0c30de344b",
+    "deny.toml": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+  },
+  "source_after": {
+    "Cargo.lock": "d2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c",
+    "Cargo.toml": "18a8a27cf140a1d6eb31c8316ee39bb7d5832866a990346eee16cd0c30de344b",
+    "deny.toml": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+  },
+  "dependency_changes": false,
+  "server": false,
+  "services": false,
+  "product": false,
+  "admission": false
+}

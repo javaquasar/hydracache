@@ -1,0 +1,61 @@
+{
+  "previews": {
+    "rustls": {
+      "exit": 101,
+      "source_unchanged": true,
+      "implemented": false,
+      "build_passed": false,
+      "admission": false
+    },
+    "rustls-webpki": {
+      "exit": 101,
+      "source_unchanged": true,
+      "implemented": false,
+      "build_passed": false,
+      "admission": false
+    },
+    "webpki-roots": {
+      "exit": 101,
+      "source_unchanged": true,
+      "implemented": false,
+      "build_passed": false,
+      "admission": false
+    },
+    "webpki-root-certs": {
+      "exit": 101,
+      "source_unchanged": true,
+      "implemented": false,
+      "build_passed": false,
+      "admission": false
+    },
+    "tokio": {
+      "exit": 101,
+      "source_unchanged": true,
+      "implemented": false,
+      "build_passed": false,
+      "admission": false
+    },
+    "zbus": {
+      "exit": 101,
+      "source_unchanged": true,
+      "implemented": false,
+      "build_passed": false,
+      "admission": false
+    },
+    "zip": {
+      "exit": 101,
+      "source_unchanged": true,
+      "implemented": false,
+      "build_passed": false,
+      "admission": false
+    }
+  },
+  "advisories": 15,
+  "source_unchanged": true,
+  "dependency_changes_applied": false,
+  "exceptions_added": false,
+  "server": false,
+  "services": false,
+  "qualification": false,
+  "admission": false
+}

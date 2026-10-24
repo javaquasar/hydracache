@@ -1,0 +1,42 @@
+webpki-root-certs v1.0.8
+└── rustls-platform-verifier v0.7.0
+    └── reqwest v0.13.4
+        ├── hydracache-client v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-client)
+        ├── hydracache-cluster-transport-axum v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-cluster-transport-axum)
+        │   ├── hydracache-fuzz v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\fuzz)
+        │   ├── hydracache-sandbox v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-sandbox)
+        │   └── hydracache-server v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-server)
+        │       └── hydracache-fuzz v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\fuzz)
+        │   [dev-dependencies]
+        │   ├── hydracache-cluster-raft v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-cluster-raft)
+        │   │   ├── hydracache-cluster v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-cluster)
+        │   │   │   [dev-dependencies]
+        │   │   │   └── hydracache-post-publish-consumer v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tests\post-publish-consumer)
+        │   │   ├── hydracache-cluster-testkit v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-cluster-testkit)
+        │   │   │   [dev-dependencies]
+        │   │   │   ├── hydracache-client-transport-axum v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-client-transport-axum)
+        │   │   │   │   ├── hydracache-loadgen v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-loadgen)
+        │   │   │   │   │   └── xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+        │   │   │   │   ├── hydracache-redis-compat v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-redis-compat)
+        │   │   │   │   │   ├── hydracache-fuzz v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\fuzz)
+        │   │   │   │   │   ├── hydracache-loadgen v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-loadgen) (*)
+        │   │   │   │   │   └── hydracache-server v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-server) (*)
+        │   │   │   │   └── hydracache-server v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-server) (*)
+        │   │   │   │   [dev-dependencies]
+        │   │   │   │   └── hydracache-client v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-client)
+        │   │   │   ├── hydracache-cluster-raft v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-cluster-raft) (*)
+        │   │   │   ├── hydracache-server v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-server) (*)
+        │   │   │   └── hydracache-sim v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-sim)
+        │   │   │       ├── hydracache-sandbox v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-sandbox)
+        │   │   │       └── hydracache-sim-wasm v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-sim-wasm)
+        │   │   │       [dev-dependencies]
+        │   │   │       └── hydracache-server v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-server) (*)
+        │   │   ├── hydracache-fuzz v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\fuzz)
+        │   │   ├── hydracache-sandbox v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-sandbox)
+        │   │   ├── hydracache-server v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-server) (*)
+        │   │   └── hydracache-sim v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-sim) (*)
+        │   │   [dev-dependencies]
+        │   │   └── hydracache-post-publish-consumer v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tests\post-publish-consumer)
+        │   └── hydracache-post-publish-consumer v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tests\post-publish-consumer)
+        ├── hydracache-operator v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-operator)
+        └── hydracache-server v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-server) (*)

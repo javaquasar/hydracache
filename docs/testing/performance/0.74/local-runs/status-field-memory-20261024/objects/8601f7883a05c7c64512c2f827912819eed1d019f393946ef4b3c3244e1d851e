@@ -1,0 +1,39 @@
+{
+  "argv": [
+    "wsl.exe",
+    "-d",
+    "Ubuntu",
+    "-u",
+    "artur",
+    "--cd",
+    "/",
+    "--exec",
+    "/usr/bin/timeout",
+    "--signal=TERM",
+    "--kill-after=2s",
+    "120s",
+    "/usr/bin/env",
+    "RUSTUP_AUTO_INSTALL=0",
+    "/home/artur/.cargo/bin/rustup",
+    "run",
+    "1.94.0",
+    "clippy-driver",
+    "--edition=2021",
+    "-C",
+    "opt-level=3",
+    "--emit=metadata",
+    "-D",
+    "warnings",
+    "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/target/status-field-memory-20261024-v2-doc-placement/194-baseline/main.rs",
+    "-o",
+    "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/target/status-field-memory-20261024-v2-doc-placement/194-baseline/strict.rmeta"
+  ],
+  "inputs": {
+    "main.rs": "1d470d3bfeb07415957460c282972ddfd40b52ef2d95674622cd5de20b883cb3",
+    "projection.rs": "fb77cd5dae690c838652f358e7520d7d454ba202b8526bfd1678ca0315d20b97",
+    "projection_groups.rs": "d6d46a710c664d9eb1a8a9a9ef09a515522aa5d47b4a4d7752d1e02825ff620a"
+  },
+  "execution": false,
+  "cpu_measurement": false,
+  "retry": false
+}

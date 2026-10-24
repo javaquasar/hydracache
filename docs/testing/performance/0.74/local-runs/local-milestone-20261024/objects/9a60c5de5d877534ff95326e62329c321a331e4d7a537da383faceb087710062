@@ -1,0 +1,34 @@
+"""Locked all-target dependency ownership, not an exploitability verdict."""
+from pathlib import Path
+import hashlib
+import json
+import subprocess
+import tomllib
+ROOT=Path(__file__).resolve().parent.parent
+OUT=ROOT/'target/status-field-scan-20261024/dependency-scope-first';OUT.mkdir()
+def sha(path):return hashlib.sha256(path.read_bytes()).hexdigest()
+before={name:sha(ROOT/name) for name in ('Cargo.lock','Cargo.toml','deny.toml')}
+lock=tomllib.loads((ROOT/'Cargo.lock').read_text(encoding='utf-8'))
+names=('rustls','rustls-webpki','tokio','unsafe-libyaml','webpki-root-certs','webpki-roots','zbus_names','zip','zvariant','zvariant_derive')
+versions={}
+for package in lock['package']:
+    if package['name'] in names:versions.setdefault(package['name'],[]).append(package['version'])
+results={}
+for name in names:
+    version=next(version for version in versions[name] if name!='webpki-roots' or version=='1.0.8')
+    argv=['cargo','tree','--offline','--locked','--workspace','--target','all','--all-features',
+        '--invert',name+'@'+version,'--edges','normal,build,dev']
+    (OUT/(name+'-intent.json')).write_text(json.dumps(dict(argv=argv,build=False,execution=False,
+        exploitability_verdict=False,source=before),indent=2),encoding='utf-8')
+    with (OUT/(name+'.stdout.log')).open('xb') as stdout,(OUT/(name+'.stderr.log')).open('xb') as stderr:
+        process=subprocess.Popen(argv,cwd=ROOT,stdout=stdout,stderr=stderr)
+        try:code=process.wait(timeout=120)
+        except subprocess.TimeoutExpired:
+            process.kill();process.wait();code=124
+    results[name]=dict(version=version,exit=code)
+after={name:sha(ROOT/name) for name in before}
+result=dict(packages=results,source_unchanged=before==after,source_before=before,source_after=after,
+    dependency_changes=False,server=False,services=False,product=False,admission=False)
+(OUT/'result.json').write_text(json.dumps(result,indent=2),encoding='utf-8')
+print(dict(packages=results,source_unchanged=before==after))
+raise SystemExit(int(before!=after or any(row['exit'] for row in results.values())))

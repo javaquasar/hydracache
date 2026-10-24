@@ -1,0 +1,42 @@
+"""First ordinary Windows supervisor cohort; no Linux/manual/server retry."""
+from pathlib import Path
+import hashlib
+import json
+import os
+import shutil
+import subprocess
+import time
+ROOT=Path(__file__).resolve().parent.parent
+OUT=ROOT/'target/status-field-scan-20261024/windows-supervisor-first';OUT.mkdir()
+paths=[ROOT/'Cargo.lock',ROOT/'Cargo.toml']
+paths+=sorted(p for p in (ROOT/'tools/long-run-supervisor-074').rglob('*') if p.is_file())
+def snapshot():return {p.relative_to(ROOT).as_posix():hashlib.sha256(p.read_bytes()).hexdigest() for p in paths}
+before=snapshot()
+argv=['cargo','test','--offline','--locked','-p','hydracache-long-run-supervisor-074','--lib','--tests','--','--test-threads=4']
+flags=[name for name in os.environ if name.startswith(('HC074_','HYDRACACHE_RUN','HYDRACACHE_REQUIRE',
+    'HYDRACACHE_FORCE','HYDRACACHE_CANARY','HYDRACACHE_BENCH')) or name=='DOCKER_HOST']
+intent=dict(argv=argv,source=before,source_commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
+    timeout_seconds=1200,free_disk_before=shutil.disk_usage(ROOT).free,opt_in_environment_names=flags,
+    benchmark=False,original_owner_manual_run=False,services=False,server=False,ignored_requested=False,retry=False)
+(OUT/'intent.json').write_text(json.dumps(intent,indent=2),encoding='utf-8')
+if flags or intent['free_disk_before']<8*1024**3:raise SystemExit('Read-only preflight refused')
+env=dict(os.environ,CARGO_INCREMENTAL='0');reason=None
+with (OUT/'stdout.log').open('xb') as stdout,(OUT/'stderr.log').open('xb') as stderr:
+    process=subprocess.Popen(argv,cwd=ROOT,env=env,stdout=stdout,stderr=stderr)
+    start=time.monotonic()
+    while process.poll() is None:
+        if time.monotonic()-start>=1200:reason='outer-timeout'
+        if shutil.disk_usage(ROOT).free<4*1024**3:reason='disk-floor'
+        if reason:
+            with (OUT/'owned-cleanup.log').open('xb') as log:
+                subprocess.run(['taskkill','/PID',str(process.pid),'/T','/F'],stdout=log,stderr=subprocess.STDOUT,check=False,timeout=30)
+            process.wait(timeout=30);break
+        try:process.wait(timeout=5)
+        except subprocess.TimeoutExpired:pass
+    code=process.wait()
+after=snapshot()
+result=dict(exit=code,outer_refusal=reason,source_unchanged=before==after,source_after=after,
+    free_disk_after=shutil.disk_usage(ROOT).free,server=False,services=False,benchmark=False,admission=False)
+(OUT/'result.json').write_text(json.dumps(result,indent=2),encoding='utf-8')
+print({key:value for key,value in result.items() if key!='source_after'})
+raise SystemExit(int(code!=0 or reason is not None or before!=after))

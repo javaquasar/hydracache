@@ -1,0 +1,332 @@
+//! Pure byte-parser control. No proc read, admission, process launch or guard clock.
+use std::hint::black_box;
+
+#[allow(non_camel_case_types)]
+mod libc {
+    #[derive(Clone, Copy)]
+    pub struct ucred {
+        pub pid: i32,
+        pub uid: u32,
+        pub gid: u32,
+    }
+}
+#[derive(Debug, PartialEq, Eq)]
+enum KernelError {
+    Invalid(&'static str),
+}
+macro_rules! kernel_invalid {
+    ($site:literal) => {
+        KernelError::Invalid($site)
+    };
+}
+macro_rules! kernel_required {
+    ($value:expr, $site:literal) => {
+        ($value).ok_or_else(|| kernel_invalid!($site))
+    };
+}
+#[path = "projection_groups.rs"]
+mod projection_groups;
+// The build helper copies the exact runtime struct/function here. cfg(test)
+// observers are absent, as in an ordinary runtime image.
+include!("projection.rs");
+
+const SHAPES: [usize; 3] = [512, 2048, 8192];
+const SEED: u64 = 0x0740_5ca1;
+
+fn dataset(shape: usize) -> Vec<Vec<u8>> {
+    (0..8)
+        .map(|case| {
+            let mut lines = vec![
+                "Pid:\t4242\n".to_owned(),
+                "Tgid:\t4242\n".to_owned(),
+                "Uid:\t1000\t1000\t1000\t1000\n".to_owned(),
+                "Gid:\t1001\t1001\t1001\t1001\n".to_owned(),
+                "Groups:\t4 27 1001\n".to_owned(),
+            ];
+            while lines.iter().map(String::len).sum::<usize>() < shape {
+                lines.push(format!("Noise{}:\t{}\n", lines.len(), "x".repeat(48)));
+            }
+            let mut seed = SEED ^ (case + shape) as u64;
+            for slot in (1..lines.len()).rev() {
+                seed ^= seed << 13;
+                seed ^= seed >> 7;
+                seed ^= seed << 17;
+                lines.swap(slot, seed as usize % (slot + 1));
+            }
+            lines.concat().into_bytes()
+        })
+        .collect()
+}
+fn credentials() -> libc::ucred {
+    libc::ucred {
+        pid: 4242,
+        uid: 1000,
+        gid: 1001,
+    }
+}
+fn fingerprint(inputs: &[Vec<u8>]) -> u64 {
+    // A workload witness, not a cryptographic identity or authority input.
+    inputs.iter().fold(0xcbf2_9ce4_8422_2325, |hash, input| {
+        input.iter().fold(hash, |hash, byte| {
+            (hash ^ u64::from(*byte)).wrapping_mul(0x100_0000_01b3)
+        })
+    })
+}
+
+//! Requested Rust heap accounting only; no clocks, procfs or native owner.
+use std::alloc::{GlobalAlloc, Layout, System};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering::SeqCst};
+
+struct Meter;
+#[global_allocator]
+static ALLOCATOR: Meter = Meter;
+static ENABLED: AtomicBool = AtomicBool::new(false);
+static CALLS: AtomicU64 = AtomicU64::new(0);
+static GROSS: AtomicU64 = AtomicU64::new(0);
+static FREES: AtomicU64 = AtomicU64::new(0);
+static LIVE: AtomicU64 = AtomicU64::new(0);
+static PEAK: AtomicU64 = AtomicU64::new(0);
+static CORRUPT: AtomicBool = AtomicBool::new(false);
+
+fn add(bytes: usize) {
+    CALLS.fetch_add(1, SeqCst);
+    GROSS.fetch_add(bytes as u64, SeqCst);
+    let live = LIVE.fetch_add(bytes as u64, SeqCst) + bytes as u64;
+    PEAK.fetch_max(live, SeqCst);
+}
+fn subtract(bytes: usize) {
+    if LIVE
+        .fetch_update(SeqCst, SeqCst, |live| live.checked_sub(bytes as u64))
+        .is_err()
+    {
+        CORRUPT.store(true, SeqCst);
+    }
+}
+unsafe impl GlobalAlloc for Meter {
+    unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
+        let pointer = unsafe { System.alloc(layout) };
+        if !pointer.is_null() && ENABLED.load(SeqCst) {
+            add(layout.size());
+        }
+        pointer
+    }
+    unsafe fn alloc_zeroed(&self, layout: Layout) -> *mut u8 {
+        let pointer = unsafe { System.alloc_zeroed(layout) };
+        if !pointer.is_null() && ENABLED.load(SeqCst) {
+            add(layout.size());
+        }
+        pointer
+    }
+    unsafe fn realloc(&self, pointer: *mut u8, layout: Layout, size: usize) -> *mut u8 {
+        let result = unsafe { System.realloc(pointer, layout, size) };
+        if !result.is_null() && ENABLED.load(SeqCst) {
+            subtract(layout.size());
+            add(size);
+        }
+        result
+    }
+    unsafe fn dealloc(&self, pointer: *mut u8, layout: Layout) {
+        unsafe {
+            System.dealloc(pointer, layout);
+        }
+        if ENABLED.load(SeqCst) {
+            FREES.fetch_add(1, SeqCst);
+            subtract(layout.size());
+        }
+    }
+}
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+struct Heap {
+    calls: u64,
+    gross: u64,
+    frees: u64,
+    live: u64,
+    peak: u64,
+}
+fn sample() -> Heap {
+    Heap {
+        calls: CALLS.load(SeqCst),
+        gross: GROSS.load(SeqCst),
+        frees: FREES.load(SeqCst),
+        live: LIVE.load(SeqCst),
+        peak: PEAK.load(SeqCst),
+    }
+}
+fn begin() {
+    assert!(!ENABLED.load(SeqCst));
+    assert_eq!(LIVE.load(SeqCst), 0);
+    for counter in [&CALLS, &GROSS, &FREES, &LIVE, &PEAK] {
+        counter.store(0, SeqCst);
+    }
+    CORRUPT.store(false, SeqCst);
+    ENABLED.store(true, SeqCst);
+}
+fn end() -> Heap {
+    let result = sample();
+    ENABLED.store(false, SeqCst);
+    assert!(
+        !CORRUPT.load(SeqCst),
+        "unowned deallocation inside interval"
+    );
+    assert_eq!(result.live, 0, "requested bytes retained after owned drop");
+    result
+}
+fn accounting_control() {
+    let a = Layout::from_size_align(16, 8).unwrap();
+    let b = Layout::from_size_align(8, 8).unwrap();
+    begin();
+    let first = unsafe { ALLOCATOR.alloc(a) };
+    let zeroed = unsafe { ALLOCATOR.alloc_zeroed(b) };
+    if first.is_null() || zeroed.is_null() {
+        std::process::abort();
+    }
+    let zeros_match = unsafe { std::slice::from_raw_parts(zeroed, 8) }
+        .iter()
+        .all(|v| *v == 0);
+    unsafe {
+        first.write(17);
+    }
+    let resized = unsafe { ALLOCATOR.realloc(first, a, 32) };
+    if resized.is_null() {
+        std::process::abort();
+    }
+    let content_matches = unsafe { resized.read() } == 17;
+    let held = sample();
+    unsafe {
+        ALLOCATOR.dealloc(resized, Layout::from_size_align(32, 8).unwrap());
+        ALLOCATOR.dealloc(zeroed, b);
+    }
+    let after = end();
+    assert!(zeros_match && content_matches);
+    assert_eq!(
+        held,
+        Heap {
+            calls: 3,
+            gross: 56,
+            frees: 0,
+            live: 40,
+            peak: 40
+        }
+    );
+    assert_eq!(
+        after,
+        Heap {
+            calls: 3,
+            gross: 56,
+            frees: 2,
+            live: 0,
+            peak: 40
+        }
+    );
+    println!("allocator-control held={held:?} after={after:?}");
+}
+fn replace_field(raw: &[u8], prefix: &str, body: Option<&str>) -> Vec<u8> {
+    let mut result = String::new();
+    let mut matches = 0;
+    for line in std::str::from_utf8(raw).unwrap().lines() {
+        if line.starts_with(prefix) {
+            matches += 1;
+            if let Some(body) = body {
+                result.push_str(prefix);
+                result.push_str(body);
+                result.push('\n');
+            }
+        } else {
+            result.push_str(line);
+            result.push('\n');
+        }
+    }
+    assert_eq!(matches, 1);
+    result.into_bytes()
+}
+#[derive(Debug, Clone, Copy)]
+struct Outcome {
+    site: &'static str,
+    uid: [u32; 4],
+    gid: [u32; 4],
+    groups: [u32; 32],
+    group_len: usize,
+}
+fn examine(bytes: &[u8], credentials: &libc::ucred) -> (Heap, Heap, Outcome) {
+    begin();
+    let result = projection(black_box(bytes), black_box(credentials));
+    let held = sample();
+    let mut semantic = Outcome {
+        site: "ok",
+        uid: [0; 4],
+        gid: [0; 4],
+        groups: [0; 32],
+        group_len: 0,
+    };
+    match &result {
+        Ok(value) => {
+            semantic.uid = value.uid;
+            semantic.gid = value.gid;
+            semantic.group_len = value.groups.len();
+            semantic.groups[..value.groups.len()].copy_from_slice(&value.groups);
+        }
+        Err(KernelError::Invalid(site)) => semantic.site = site,
+    };
+    drop(black_box(result));
+    let after = end();
+    (held, after, semantic)
+}
+fn main() {
+    accounting_control();
+    let mut total = 0;
+    for shape in SHAPES {
+        let inputs = dataset(shape);
+        println!(
+            "workload shape={shape} witness={:016x} seed={SEED}",
+            fingerprint(&inputs)
+        );
+        for (document, raw) in inputs.iter().enumerate() {
+            let normal = credentials();
+            let mut wrong = normal;
+            wrong.uid += 1;
+            let mut duplicate = raw.clone();
+            duplicate.extend_from_slice(b"Pid:\t4242\n");
+            let mut cases = vec![
+                ("valid".to_owned(), raw.clone(), normal),
+                (
+                    "early-scalar".to_owned(),
+                    replace_field(raw, "Pid:", Some("\tbad")),
+                    normal,
+                ),
+                ("duplicate".to_owned(), duplicate, normal),
+                (
+                    "missing".to_owned(),
+                    replace_field(raw, "Groups:", None),
+                    normal,
+                ),
+                (
+                    "group-token".to_owned(),
+                    replace_field(raw, "Groups:", Some("\tbad")),
+                    normal,
+                ),
+                ("credentials".to_owned(), raw.clone(), wrong),
+            ];
+            for width in [0, 1, 4, 32, 33] {
+                let groups = (1..=width)
+                    .map(|v| v.to_string())
+                    .collect::<Vec<_>>()
+                    .join(" ");
+                cases.push((
+                    format!("groups-{width}"),
+                    replace_field(raw, "Groups:", Some(&groups)),
+                    normal,
+                ));
+            }
+            for (name, bytes, credentials) in cases {
+                let witness = fingerprint(std::slice::from_ref(&bytes));
+                let result = examine(&bytes, &credentials);
+                println!("case shape={shape} document={document} name={name} witness={witness:016x} result={result:?}");
+                total += 1;
+            }
+        }
+    }
+    assert_eq!(total, 264);
+    println!(
+        "complete cases={total} clocks=false procfs=false admission=false product=false rss=false"
+    );
+}
