@@ -1,3 +1,44 @@
+#[test]
+fn authority_context_reader_adapts_only_the_exact_reviewed_registry_input() {
+    let base = "7e6c8ee8a63ad8596a73383686444b54da04b863";
+    let file = "crates/xtask/tests/authority_context_074.rs";
+    let old = runtime::frozen(base, file);
+    assert_eq!(
+        old,
+        runtime::frozen("d9a2b85c9a35ac8799f927f07e248e958918a7b5", file)
+    );
+    let imports = "#[path = \"../../../tools/authority-runtime-074/gate.rs\"]\nmod runtime;\n#[path = \"../../../tools/authority-runtime-074/io.rs\"]\nmod runtime_io;\n#[path = \"../../../tools/authority-storage-source-074/contract.rs\"]\nmod storage_contract;\n";
+    let before = "fn read(path: &str) -> String {";
+    assert_eq!(old.matches(before).count(), 1);
+    let after = "fn read(path: &str) -> String {\n    if path == \"docs/testing/gated-test-registry.toml\" {\n        return runtime_io::read_to_string(\n            std::path::Path::new(env!(\"CARGO_MANIFEST_DIR\"))\n                .join(\"../..\")\n                .join(path),\n        )\n        .unwrap();\n    }";
+    let guard = "#[path = \"support/document_scratch_guard.rs\"]\nmod guard;\n";
+    assert_eq!(old.matches(guard).count(), 1);
+    let expected = old
+        .replacen(guard, &format!("{guard}{imports}"), 1)
+        .replacen(before, after, 1);
+    let current = std::fs::read_to_string(runtime::root().join(file)).unwrap();
+    assert!(storage_contract::accepts(&expected, &current));
+    for changed in [
+        current.replace(
+            "if path == \"docs/testing/gated-test-registry.toml\"",
+            "if true",
+        ),
+        format!("{current}\nfn unrelated_effect() {{}}"),
+    ] {
+        assert!(!storage_contract::accepts(&expected, &changed));
+    }
+    let registry = "docs/testing/gated-test-registry.toml";
+    let raw = std::fs::read_to_string(runtime::root().join(registry)).unwrap();
+    assert_eq!(
+        raw.replace("\r\n", "\n"),
+        runtime::frozen("d9a2b85c9a35ac8799f927f07e248e958918a7b5", registry)
+    );
+    assert!(bound_io::reviewed_inputs::accepts(registry, &raw));
+    assert!(!bound_io::reviewed_inputs::accepts(
+        registry,
+        &format!("{raw}\n# unreviewed gate")
+    ));
+}
 #[path = "../../../tools/authority-runtime-074/io.rs"]
 mod bound_io;
 use bound_io::owned_case_view as contract;
