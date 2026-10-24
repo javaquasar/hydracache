@@ -1,8 +1,19 @@
 #[path = "support/fresh_status_guard.rs"]
 mod guard;
+#[path = "../../../tools/authority-runtime-074/gate.rs"]
+mod runtime;
+#[path = "../../../tools/authority-runtime-074/io.rs"]
+mod runtime_io;
+#[path = "../../../tools/authority-storage-source-074/contract.rs"]
+mod storage_contract;
 const BASE: &str = "94e53f29bab80734862673063bb3e9e114838ef0";
 fn read(path: &str) -> String {
-    let raw = std::fs::read_to_string(
+    let loader = if path == runtime::status_fields::SOURCE {
+        runtime_io::read_to_string
+    } else {
+        std::fs::read_to_string
+    };
+    let raw = loader(
         std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("../..")
             .join(path),
