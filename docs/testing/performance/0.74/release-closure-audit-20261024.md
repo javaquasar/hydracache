@@ -210,3 +210,12 @@ is incomplete despite its separate focused pass; one case there has an `ok`
 line. No retry or wider timeout is used. A full package pass remains unproved,
 and no comparison of these single-run wall durations is a causal performance
 result. The exact source repair does not waive that coverage boundary.
+
+The [offline log review](package-log-attribution-result-20261024.md) accounts
+for the exact remaining coverage: one incomplete target and eleven not started
+in the 130-target catalog. Completed libtest spans sum to 734.60 seconds, led
+by `performance_contract_074` at 361.33 seconds. Their rounded wall spans cannot
+identify CPU, child Git or parser cost, and the nominal 45.40-second remainder
+is not an attributed interval. Nineteen offline-reader controls pass; no package
+or measurement is rerun. Further diagnostic instrumentation must be separate
+from a cache candidate and must preserve every assertion and original bound.

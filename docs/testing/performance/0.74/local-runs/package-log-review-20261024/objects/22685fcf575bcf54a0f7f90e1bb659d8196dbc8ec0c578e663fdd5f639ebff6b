@@ -1,0 +1,14 @@
+...F...............
+======================================================================
+FAIL: test_reader_has_no_process_network_or_file_write_path (test_review.EvidenceTests.test_reader_has_no_process_network_or_file_write_path)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\xtask-package-attribution-074\test_review.py", line 156, in test_reader_has_no_process_network_or_file_write_path
+    self.assertNotIn(node.func.attr, {"write_text", "write_bytes", "open", "unlink", "mkdir", "rmdir", "rename", "replace", "system", "popen", "exec"})
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'replace' unexpectedly found in {'rmdir', 'mkdir', 'write_text', 'system', 'rename', 'unlink', 'popen', 'open', 'write_bytes', 'replace', 'exec'}
+
+----------------------------------------------------------------------
+Ran 19 tests in 0.036s
+
+FAILED (failures=1)

@@ -6846,3 +6846,12 @@ ignored/filtered cases. The remaining-preparation body loop is incomplete;
 one further case has already passed there. The package is not declared green,
 and there is no retry or enlarged bound. This timeout is separate from the
 fifty passing focused checks and the prior complete three-failure result.
+
+The [offline package attribution](package-log-attribution-result-20261024.md)
+reproduces both first outcomes from verified evidence without a package rerun.
+Reported completed-target spans total 734.60 seconds in the interrupted run;
+`performance_contract_074` accounts for 361.33 seconds. One unfinished and eleven
+unstarted targets remain distinct from the 118 complete verdicts. Nineteen
+reader controls pass. The logs support target wall-time ranking, not per-test
+CPU/Git/I/O attribution or a causal performance claim; the next diagnostic
+protocol is prepared but not executed.

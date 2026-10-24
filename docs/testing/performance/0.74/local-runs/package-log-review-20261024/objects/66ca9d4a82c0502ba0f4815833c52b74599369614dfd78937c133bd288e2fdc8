@@ -1,0 +1,79 @@
+"""Seal offline derivations and self-checks, leaving original evidence intact."""
+from pathlib import Path
+import hashlib
+import json
+import subprocess
+
+ROOT = Path(__file__).resolve().parent.parent
+OUT = ROOT/'docs/testing/performance/0.74/local-runs/package-log-review-20261024'
+BASE = 'd9731116b1640558eca94bcf362f6d666125f3cf'
+paths = ['tools/xtask-package-attribution-074/'+name for name in ['review.py','test_review.py','README.md']]
+phases = ['package-log-review-baseline','package-log-review-first','package-log-review-analysis',
+    'package-log-review-final-tests','package-log-review-syntax','package-log-review-indent',
+    'package-log-review-controls','package-log-review-final-analysis',
+    'package-log-review-final-syntax','package-log-review-final-indent']
+expected = {'package-log-review-baseline':1, 'package-log-review-final-tests':1}
+results = {}
+for phase in phases:
+    directory = ROOT/'target/source-continuation-20261024'/phase
+    value = json.loads((directory/'result.json').read_text())
+    assert value['exit'] == expected.get(phase,0) and value['outer_refusal'] is None, phase
+    assert value['source_unchanged'] and value['head_unchanged'], phase
+    results[phase] = {key:value[key] for key in ['exit','outer_refusal','source_unchanged','head_unchanged']}
+assert subprocess.check_output(['git','diff','--name-only',BASE,'--','crates','tools','Cargo.toml','Cargo.lock','deny.toml','.cargo'],cwd=ROOT,text=True).splitlines() == sorted(paths)
+protected = {'Cargo.toml':'18a8a27cf140a1d6eb31c8316ee39bb7d5832866a990346eee16cd0c30de344b',
+    'Cargo.lock':'d2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c',
+    'docs/testing/performance/0.74/qualification-manifest.toml':'11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc'}
+for path,digest in protected.items(): assert hashlib.sha256((ROOT/path).read_bytes()).hexdigest() == digest
+report = (ROOT/'target/source-continuation-20261024/package-log-review-final-analysis/stdout.log').read_bytes()
+assert report == (ROOT/'target/source-continuation-20261024/package-log-review-analysis/stdout.log').read_bytes()
+parsed = json.loads(report)
+assert [run['completed_targets'] for run in parsed['runs']] == [128,118]
+assert [run['package_pass'] for run in parsed['runs']] == [False,False]
+assert len(parsed['runs'][1]['unstarted_targets']) == 11
+
+OUT.mkdir(parents=True,exist_ok=False)
+(OUT/'objects').mkdir()
+(OUT/'.gitattributes').write_text('index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n',encoding='utf-8',newline='\n')
+members = {}
+def put(name,raw):
+    digest = hashlib.sha256(raw).hexdigest()
+    path = OUT/'objects'/digest
+    if path.exists(): assert path.read_bytes() == raw
+    else:
+        with path.open('xb') as stream: stream.write(raw)
+    assert name not in members
+    members[name] = dict(bytes=len(raw),sha256=digest)
+
+for phase in phases:
+    for name in ['intent.json','result.json','stdout.log','stderr.log']:
+        put(f'observation/{phase}/{name}',(ROOT/'target/source-continuation-20261024'/phase/name).read_bytes())
+for path in paths: put('source/current/'+path,(ROOT/path).read_bytes())
+for folder,phase in [('package-log-first-20261024','package-log-review-first'),
+                     ('package-log-ast-20261024','package-log-review-final-tests')]:
+    intent = json.loads((ROOT/'target/source-continuation-20261024'/phase/'intent.json').read_text())
+    for path in paths[:2]:
+        raw = (ROOT/'target'/folder/Path(path).name).read_bytes()
+        assert hashlib.sha256(raw).hexdigest() == intent['source'][path]
+        put('source/intermediate/'+folder+'/'+path,raw)
+initial = (ROOT/'target/package-log-first-20261024/test_review.py').read_bytes()
+intent = json.loads((ROOT/'target/source-continuation-20261024/package-log-review-baseline/intent.json').read_text())
+assert hashlib.sha256(initial).hexdigest() == intent['source'][paths[1]]
+assert paths[0] not in intent['source']
+put('source/initial/'+paths[1],initial)
+put('analysis/report.json',report)
+put('source/xtask-manifest-input',(ROOT/'crates/xtask/Cargo.toml').read_bytes())
+for name in ['run-source-step-20261024.py','run-fresh-reader-20261024.py','seal-package-log-review-20261024.py']:
+    put('coordinator/'+name,(ROOT/'target'/name).read_bytes())
+facts = dict(baseline=BASE,code_commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
+    source_paths=paths,results=results,protected_sha256=protected,self_tests=19,
+    package_rerun=False,new_measurements=False,causal_attribution=False,
+    per_test_or_cpu_attribution=False,rust_inputs_changed=False,dependencies_changed=False,
+    observation_frequency_changed=False,deadlines_changed=False,server=False,
+    services_or_clocks=False,qualification=False,performance_gain_claim=False,
+    input_packet_sha256=[run['index_sha256'] for run in parsed['runs']],
+    report_sha256=hashlib.sha256(report).hexdigest())
+raw = (json.dumps(dict(schema='hc074-package-log-review-packet-v1',facts=facts,members=members),indent=2,sort_keys=True)+'\n').encode()
+with (OUT/'index.json').open('xb') as stream: stream.write(raw)
+print(json.dumps(dict(index_sha256=hashlib.sha256(raw).hexdigest(),members=len(members),
+    objects=len(list((OUT/'objects').iterdir())),report_sha256=hashlib.sha256(report).hexdigest()),indent=2))

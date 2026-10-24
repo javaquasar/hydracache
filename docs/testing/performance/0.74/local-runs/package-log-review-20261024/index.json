@@ -1,0 +1,311 @@
+{
+  "facts": {
+    "baseline": "d9731116b1640558eca94bcf362f6d666125f3cf",
+    "causal_attribution": false,
+    "code_commit": "9e057a3684ac7c8c059932722ef5c2df391a867b",
+    "deadlines_changed": false,
+    "dependencies_changed": false,
+    "input_packet_sha256": [
+      "e93e5fcfe733d5e0dfca90660f1b98a2a749775f431de9886b1cad309cb8b23f",
+      "ab6c73cdf85675786ab6f39b43365b06d3fa781fc8526fad1a167a5b81614ce2"
+    ],
+    "new_measurements": false,
+    "observation_frequency_changed": false,
+    "package_rerun": false,
+    "per_test_or_cpu_attribution": false,
+    "performance_gain_claim": false,
+    "protected_sha256": {
+      "Cargo.lock": "d2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c",
+      "Cargo.toml": "18a8a27cf140a1d6eb31c8316ee39bb7d5832866a990346eee16cd0c30de344b",
+      "docs/testing/performance/0.74/qualification-manifest.toml": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "qualification": false,
+    "report_sha256": "29437883bdf695027b7ece579ca0d1559a6816522453f3e73bc886f9297dca26",
+    "results": {
+      "package-log-review-analysis": {
+        "exit": 0,
+        "head_unchanged": true,
+        "outer_refusal": null,
+        "source_unchanged": true
+      },
+      "package-log-review-baseline": {
+        "exit": 1,
+        "head_unchanged": true,
+        "outer_refusal": null,
+        "source_unchanged": true
+      },
+      "package-log-review-controls": {
+        "exit": 0,
+        "head_unchanged": true,
+        "outer_refusal": null,
+        "source_unchanged": true
+      },
+      "package-log-review-final-analysis": {
+        "exit": 0,
+        "head_unchanged": true,
+        "outer_refusal": null,
+        "source_unchanged": true
+      },
+      "package-log-review-final-indent": {
+        "exit": 0,
+        "head_unchanged": true,
+        "outer_refusal": null,
+        "source_unchanged": true
+      },
+      "package-log-review-final-syntax": {
+        "exit": 0,
+        "head_unchanged": true,
+        "outer_refusal": null,
+        "source_unchanged": true
+      },
+      "package-log-review-final-tests": {
+        "exit": 1,
+        "head_unchanged": true,
+        "outer_refusal": null,
+        "source_unchanged": true
+      },
+      "package-log-review-first": {
+        "exit": 0,
+        "head_unchanged": true,
+        "outer_refusal": null,
+        "source_unchanged": true
+      },
+      "package-log-review-indent": {
+        "exit": 0,
+        "head_unchanged": true,
+        "outer_refusal": null,
+        "source_unchanged": true
+      },
+      "package-log-review-syntax": {
+        "exit": 0,
+        "head_unchanged": true,
+        "outer_refusal": null,
+        "source_unchanged": true
+      }
+    },
+    "rust_inputs_changed": false,
+    "self_tests": 19,
+    "server": false,
+    "services_or_clocks": false,
+    "source_paths": [
+      "tools/xtask-package-attribution-074/review.py",
+      "tools/xtask-package-attribution-074/test_review.py",
+      "tools/xtask-package-attribution-074/README.md"
+    ]
+  },
+  "members": {
+    "analysis/report.json": {
+      "bytes": 536438,
+      "sha256": "29437883bdf695027b7ece579ca0d1559a6816522453f3e73bc886f9297dca26"
+    },
+    "coordinator/run-fresh-reader-20261024.py": {
+      "bytes": 544,
+      "sha256": "851631e846ec7d3696a0e2fa550b6f87e8f07e8412f5dafc0530c0bc70c597ed"
+    },
+    "coordinator/run-source-step-20261024.py": {
+      "bytes": 2596,
+      "sha256": "a92482cabcfcf8f6440e95972bee8d204bb9c59c8805c45c7b57363dcc3ab430"
+    },
+    "coordinator/seal-package-log-review-20261024.py": {
+      "bytes": 5351,
+      "sha256": "66ca9d4a82c0502ba0f4815833c52b74599369614dfd78937c133bd288e2fdc8"
+    },
+    "observation/package-log-review-analysis/intent.json": {
+      "bytes": 312592,
+      "sha256": "0faa546da84e54c0723b7c4be877af922610383badc7456b87d6f6f1b2690e4e"
+    },
+    "observation/package-log-review-analysis/result.json": {
+      "bytes": 312340,
+      "sha256": "9f8fec6f9a7c026c910f46823dd439c991eb4c18e97bfaea2aa39eb77f2d0d49"
+    },
+    "observation/package-log-review-analysis/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/package-log-review-analysis/stdout.log": {
+      "bytes": 536438,
+      "sha256": "29437883bdf695027b7ece579ca0d1559a6816522453f3e73bc886f9297dca26"
+    },
+    "observation/package-log-review-baseline/intent.json": {
+      "bytes": 312550,
+      "sha256": "500820cfa65860ace84a641385e66880ee75bd6ef49daf1eb23c141862afe233"
+    },
+    "observation/package-log-review-baseline/result.json": {
+      "bytes": 312218,
+      "sha256": "c379ca6727f7b41fe1cbcff958ffe21c9807ecacd04859c7faa65f7b17b92cf0"
+    },
+    "observation/package-log-review-baseline/stderr.log": {
+      "bytes": 858,
+      "sha256": "28e254e3d90d59c3751a8b7a18cf5893084686a2f30162dd9bda4bc97eb0f3d0"
+    },
+    "observation/package-log-review-baseline/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/package-log-review-controls/intent.json": {
+      "bytes": 312672,
+      "sha256": "bfb9b907203932d55ff09b20150dc62cee93ab6a046bdb09dadd81ce0a486260"
+    },
+    "observation/package-log-review-controls/result.json": {
+      "bytes": 312340,
+      "sha256": "de0b950e4c45c1acd9491d07cc7ca8723ca36ecc29093bef6f8f2f88be70b45a"
+    },
+    "observation/package-log-review-controls/stderr.log": {
+      "bytes": 123,
+      "sha256": "198a016ab3d8641cdde91d9431aea155372b9ac4ead136158a06b590eb073fb4"
+    },
+    "observation/package-log-review-controls/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/package-log-review-final-analysis/intent.json": {
+      "bytes": 312592,
+      "sha256": "14e8cfa3586ec8216bbabce9bfd5013bb22d512653213d296719508b2695f758"
+    },
+    "observation/package-log-review-final-analysis/result.json": {
+      "bytes": 312340,
+      "sha256": "de0b950e4c45c1acd9491d07cc7ca8723ca36ecc29093bef6f8f2f88be70b45a"
+    },
+    "observation/package-log-review-final-analysis/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/package-log-review-final-analysis/stdout.log": {
+      "bytes": 536438,
+      "sha256": "29437883bdf695027b7ece579ca0d1559a6816522453f3e73bc886f9297dca26"
+    },
+    "observation/package-log-review-final-indent/intent.json": {
+      "bytes": 312732,
+      "sha256": "fd43284a7d23604573e083b4c7fe3c3f73346ebc52d57a97ac18b73d0709639f"
+    },
+    "observation/package-log-review-final-indent/result.json": {
+      "bytes": 312462,
+      "sha256": "176c9b30da0ce0bcad223e956bfaa3b3c5054486ac3cb3e9a2fe70040673c1ea"
+    },
+    "observation/package-log-review-final-indent/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/package-log-review-final-indent/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/package-log-review-final-syntax/intent.json": {
+      "bytes": 312745,
+      "sha256": "63d766dcb0b12e3632f20a475ff0a1adb65213f2d0004232d20e80c5d8f05be0"
+    },
+    "observation/package-log-review-final-syntax/result.json": {
+      "bytes": 312462,
+      "sha256": "176c9b30da0ce0bcad223e956bfaa3b3c5054486ac3cb3e9a2fe70040673c1ea"
+    },
+    "observation/package-log-review-final-syntax/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/package-log-review-final-syntax/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/package-log-review-final-tests/intent.json": {
+      "bytes": 312672,
+      "sha256": "61995e990375821a4c8b8fe35ff239dab132de21840a21a8ed48b6527922fa3e"
+    },
+    "observation/package-log-review-final-tests/result.json": {
+      "bytes": 312340,
+      "sha256": "e86b15ece58157d265425ff39ae5d117f35a356c4b2cd526f8570dd54f7e58a5"
+    },
+    "observation/package-log-review-final-tests/stderr.log": {
+      "bytes": 1104,
+      "sha256": "22685fcf575bcf54a0f7f90e1bb659d8196dbc8ec0c578e663fdd5f639ebff6b"
+    },
+    "observation/package-log-review-final-tests/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/package-log-review-first/intent.json": {
+      "bytes": 312672,
+      "sha256": "37559f597d9ac751c499111af97a19a91ebe7ce7bb1deb69ef90f573150c318f"
+    },
+    "observation/package-log-review-first/result.json": {
+      "bytes": 312340,
+      "sha256": "9f8fec6f9a7c026c910f46823dd439c991eb4c18e97bfaea2aa39eb77f2d0d49"
+    },
+    "observation/package-log-review-first/stderr.log": {
+      "bytes": 121,
+      "sha256": "8c0320ee3e26391737ceb6725ce822ab9b5f59d5b840c82a219eccb4b4e75ee8"
+    },
+    "observation/package-log-review-first/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/package-log-review-indent/intent.json": {
+      "bytes": 312610,
+      "sha256": "16906a001cc187a202a0000276d5e54dce3592517457b1ab14c690fd77ed16a7"
+    },
+    "observation/package-log-review-indent/result.json": {
+      "bytes": 312340,
+      "sha256": "fe91cfc80d32042776f2c9bde6e00cf9a60657e1ff41dcf116ddfb4ee94f7fb6"
+    },
+    "observation/package-log-review-indent/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/package-log-review-indent/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/package-log-review-syntax/intent.json": {
+      "bytes": 312623,
+      "sha256": "a455dc22bb36817f3032a0c1a4b630db3ad1ece3348c020d61b6abf4d600e76e"
+    },
+    "observation/package-log-review-syntax/result.json": {
+      "bytes": 312340,
+      "sha256": "fe91cfc80d32042776f2c9bde6e00cf9a60657e1ff41dcf116ddfb4ee94f7fb6"
+    },
+    "observation/package-log-review-syntax/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/package-log-review-syntax/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "source/current/tools/xtask-package-attribution-074/README.md": {
+      "bytes": 3495,
+      "sha256": "7e07d882bc51c5fc5f5e9766b8254cfb26bc99e13bc805e0afd9bf009a837826"
+    },
+    "source/current/tools/xtask-package-attribution-074/review.py": {
+      "bytes": 10937,
+      "sha256": "0229d4067fffd0d0b5acee7d864efc64aadfb201de1ea3f17944a2f8dddf3c4d"
+    },
+    "source/current/tools/xtask-package-attribution-074/test_review.py": {
+      "bytes": 10330,
+      "sha256": "a670c99e55550611e4feea0a1b0469741b100035a3483e4d6949b59174f43bd4"
+    },
+    "source/initial/tools/xtask-package-attribution-074/test_review.py": {
+      "bytes": 8656,
+      "sha256": "116b3de5f0cf6a09045de914a483bd5af0782554c7ce3d67bc9e98d5d79f23db"
+    },
+    "source/intermediate/package-log-ast-20261024/tools/xtask-package-attribution-074/review.py": {
+      "bytes": 10937,
+      "sha256": "0229d4067fffd0d0b5acee7d864efc64aadfb201de1ea3f17944a2f8dddf3c4d"
+    },
+    "source/intermediate/package-log-ast-20261024/tools/xtask-package-attribution-074/test_review.py": {
+      "bytes": 9975,
+      "sha256": "ac5afc22cd58acf7fcc3c86c7efcd0d515a89ed72faeba1453a45ddcd358d996"
+    },
+    "source/intermediate/package-log-first-20261024/tools/xtask-package-attribution-074/review.py": {
+      "bytes": 10641,
+      "sha256": "0c1f5b9d8213c3e6100ffe34066cde283dc2cbe0b0c575abb2ce189b5c6fc23c"
+    },
+    "source/intermediate/package-log-first-20261024/tools/xtask-package-attribution-074/test_review.py": {
+      "bytes": 8656,
+      "sha256": "116b3de5f0cf6a09045de914a483bd5af0782554c7ce3d67bc9e98d5d79f23db"
+    },
+    "source/xtask-manifest-input": {
+      "bytes": 1201,
+      "sha256": "0b00525d41119bdb1215b1fb658ac66fa1bcd0d99428e9903cf1bb8ee8f4e0b5"
+    }
+  },
+  "schema": "hc074-package-log-review-packet-v1"
+}

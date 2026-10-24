@@ -19132,3 +19132,21 @@ body loop is still running. The same loop passes in the focused cohort, but
 that does not turn an interrupted whole-package attempt into a pass. Both first
 outcomes remain available; a duration difference between single runs cannot
 identify a regression or justify increasing a bound.
+
+An [offline reader](../testing/performance/0.74/package-log-attribution-result-20261024.md)
+now makes that limit auditable. It verifies retained bytes, reconstructs the
+captured target catalog and checks Cargo's schedule against every libtest block,
+case count, verdict and exit. The interrupted run has exactly one unfinished
+target and eleven that never started; neither old results nor a focused pass
+can fill that suffix. Nineteen controls cover corrupted evidence, inconsistent
+streams and incomplete outcomes, with no package or product rerun.
+
+The useful finding is target-level, not operation-level: the completed spans
+sum to 734.60 seconds, including 361.33 for `performance_contract_074`, 88.16 for
+`diagnostic_artifact_fixture_074` and 50.10 for `held_preparation_cost_074`.
+Those rounded wall spans do not distinguish Git child work from parsing, CPU
+or waiting. Even the nominal 45.40 seconds left from the outer bound cannot
+be assigned wholesale to the interrupted test. The next hypothesis therefore
+needs separate observation of immutable-source lookup and token/AST work,
+without caching fresh checks or changing their frequency. A cache optimization
+is not justified by this target ranking alone.

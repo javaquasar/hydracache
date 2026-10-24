@@ -1,0 +1,189 @@
+"""Synthetic transcript controls; never execute Cargo or product workloads."""
+import copy
+import hashlib
+import json
+from pathlib import Path
+import tempfile
+import unittest
+
+import review
+
+
+CATALOG = ["unittests src/lib.rs", "unittests src/main.rs", "tests/a.rs"]
+
+
+def block(names=(), failed=(), seconds="0.00"):
+    cases = [(name, "ok") for name in names] + [(name, "FAILED") for name in failed]
+    lines = [f"running {len(cases)} tests"]
+    lines += [f"test {name} ... {verdict}" for name, verdict in cases]
+    status = "FAILED" if failed else "ok"
+    lines += [
+        f"test result: {status}. {len(names)} passed; {len(failed)} failed; "
+        f"0 ignored; 0 measured; 0 filtered out; finished in {seconds}s"
+    ]
+    return "\n".join(lines) + "\n"
+
+
+def stderr(names=CATALOG):
+    lines = ["    Finished `test` profile [unoptimized] target(s) in 1.25s"]
+    return "\n".join(lines + [f"     Running {name} (target/debug/example.exe)" for name in names])
+
+
+def parse(stdout=None, err=None, code=0, outer=None):
+    return review.parse_transcript(
+        block() + block() + block(["one"], seconds="2.50") if stdout is None else stdout,
+        stderr() if err is None else err,
+        CATALOG,
+        code,
+        outer,
+        780,
+    )
+
+
+class TranscriptTests(unittest.TestCase):
+    def test_complete_pass_and_reported_spans(self):
+        value = parse()
+        self.assertTrue(value["complete"])
+        self.assertTrue(value["package_pass"])
+        self.assertEqual(value["reported_completed_target_spans_ns"], 2_500_000_000)
+        self.assertEqual(value["reported_build_span_ns"], 1_250_000_000)
+        self.assertEqual(value["ranking"][0]["target"], "tests/a.rs")
+        self.assertEqual(value["unstarted_targets"], [])
+
+    def test_complete_failed_case_is_not_a_pass(self):
+        value = parse(block() + block() + block(failed=["bad"], seconds="1.00"), code=101)
+        self.assertTrue(value["complete"])
+        self.assertFalse(value["package_pass"])
+        self.assertEqual(value["failed"], 1)
+
+    def test_timeout_keeps_incomplete_target_and_observed_case(self):
+        value = parse(block() + "running 2 tests\ntest partial ... ok\n",
+                      stderr(CATALOG[:2]), code=1, outer="outer-timeout")
+        self.assertFalse(value["complete"])
+        self.assertFalse(value["package_pass"])
+        self.assertEqual(value["completed_targets"], 1)
+        self.assertEqual(value["individual_passed"], 1)
+        self.assertEqual(value["incomplete_target"]["declared"], 2)
+        self.assertIsNone(value["incomplete_target"]["reported_seconds"])
+        self.assertEqual(value["unstarted_targets"], ["tests/a.rs"])
+
+    def test_timeout_between_targets_is_not_complete(self):
+        value = parse(block(), stderr(CATALOG[:1]), code=1, outer="outer-timeout")
+        self.assertIsNone(value["incomplete_target"])
+        self.assertFalse(value["complete"])
+        self.assertEqual(len(value["unstarted_targets"]), 2)
+
+    def test_timeout_after_all_verdicts_still_is_not_a_pass(self):
+        value = parse(code=1, outer="outer-timeout")
+        self.assertTrue(value["complete"])
+        self.assertFalse(value["package_pass"])
+
+    def test_unknown_duplicate_or_reordered_targets_refuse(self):
+        for names in [CATALOG[::-1], CATALOG + ["tests/unknown.rs"], [CATALOG[0]] * 3]:
+            with self.subTest(names=names), self.assertRaises(ValueError):
+                parse(err=stderr(names))
+
+    def test_stream_target_count_mismatch_refuses(self):
+        with self.assertRaises(ValueError):
+            parse(err=stderr(CATALOG[:2]))
+
+    def test_nested_start_duplicate_case_and_missing_summary_refuse(self):
+        for body in [
+            "running 1 tests\nrunning 0 tests\n",
+            block(["same", "same"]),
+            "running 1 tests\ntest missing ... ok\n",
+        ]:
+            with self.subTest(body=body), self.assertRaises(ValueError):
+                parse(block() + block() + body)
+
+    def test_summary_and_case_verdict_mutations_refuse(self):
+        good = block() + block() + block(["one"], seconds="2.50")
+        for before, after in [
+            ("1 passed", "2 passed"),
+            ("0 filtered out", "1 filtered out"),
+            ("0 measured", "1 measured"),
+            ("running 1 tests", "running 2 tests"),
+            ("test one ... ok", "test one ... FAILED"),
+            ("finished in 2.50s", "finished in NaNs"),
+        ]:
+            with self.subTest(before=before), self.assertRaises(ValueError):
+                parse(good.replace(before, after))
+
+    def test_exit_or_outer_refusal_disagreement_refuses(self):
+        for code, outer in [(101, None), (1, None), (0, "outer-timeout"), (1, "disk-floor")]:
+            with self.subTest(code=code, outer=outer), self.assertRaises(ValueError):
+                parse(code=code, outer=outer)
+
+    def test_ignored_is_preserved_but_never_silently_filtered(self):
+        body = ("running 1 tests\ntest gated ... ignored, explicit fixture reason\n"
+                "test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; "
+                "0 filtered out; finished in 0.00s\n")
+        value = parse(block() + block() + body)
+        self.assertEqual(value["ignored"], 1)
+        self.assertFalse(value["package_pass"])
+
+    def test_zero_duration_and_compilation_minutes_are_exact(self):
+        value = parse(err=stderr().replace("1.25s", "1m 2.50s"))
+        self.assertEqual(value["reported_build_span_ns"], 62_500_000_000)
+        self.assertEqual(value["targets"][0]["reported_seconds"], "0.00")
+
+    def test_missing_or_duplicate_build_duration_refuses(self):
+        for err in [stderr().split("\n", 1)[1], stderr() + "\n" + stderr().splitlines()[0]]:
+            with self.assertRaises(ValueError):
+                parse(err=err)
+
+
+class EvidenceTests(unittest.TestCase):
+    def test_json_duplicate_keys_and_nonfinite_numbers_refuse(self):
+        for raw in ['{"a":1,"a":2}', '{"a":NaN}', '{"a":Infinity}']:
+            with self.assertRaises(ValueError):
+                review.decode_json(raw)
+
+    def test_catalog_uses_only_snapshot_top_level_tests(self):
+        source = {"crates/xtask/src/lib.rs": "x", "crates/xtask/src/main.rs": "x",
+                  "crates/xtask/tests/a.rs": "x", "crates/xtask/tests/support/helper.rs": "x"}
+        self.assertEqual(review.catalog(source, {"package": {"name": "xtask"}}), CATALOG)
+        for manifest in [
+            {"package": {"name": "xtask", "autotests": False}},
+            {"package": {"name": "xtask"}, "test": []},
+            {"package": {"name": "other"}},
+        ]:
+            with self.assertRaises(ValueError):
+                review.catalog(source, manifest)
+
+    def test_member_requires_exact_digest_size_and_known_path(self):
+        with tempfile.TemporaryDirectory() as temp:
+            folder = Path(temp)
+            (folder / "objects").mkdir()
+            raw = b"retained fixture\n"
+            digest = hashlib.sha256(raw).hexdigest()
+            (folder / "objects" / digest).write_bytes(raw)
+            index = {"members": {"kept": {"bytes": len(raw), "sha256": digest}}}
+            self.assertEqual(review.member(folder, index, "kept"), raw)
+            for field, value in [("bytes", 0), ("sha256", "../escape")]:
+                bad = copy.deepcopy(index)
+                bad["members"]["kept"][field] = value
+                with self.assertRaises(ValueError):
+                    review.member(folder, bad, "kept")
+            with self.assertRaises(ValueError):
+                review.member(folder, index, "missing")
+            (folder / "objects" / digest).write_bytes(b"changed")
+            with self.assertRaises(ValueError):
+                review.member(folder, index, "kept")
+
+    def test_retained_inputs_reproduce_both_first_outcomes(self):
+        result = review.analyze(Path(__file__).resolve().parents[2])
+        before, after = result["runs"]
+        self.assertEqual((before["completed_targets"], before["passed"], before["failed"]), (128, 1173, 3))
+        self.assertEqual((after["completed_targets"], after["passed"], after["failed"]), (118, 1153, 0))
+        self.assertEqual(after["individual_passed"], 1154)
+        self.assertEqual(after["incomplete_target"]["target"], "tests/remaining_preparation_cost_074.rs")
+        self.assertEqual(len(after["unstarted_targets"]), 11)
+        self.assertEqual(after["reported_completed_target_spans_ns"], 734_600_000_000)
+        self.assertFalse(before["package_pass"])
+        self.assertFalse(after["package_pass"])
+        self.assertFalse(result["causal_attribution"])
+
+
+if __name__ == "__main__":
+    unittest.main()
