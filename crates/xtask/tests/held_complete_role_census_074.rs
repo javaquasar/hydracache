@@ -4,15 +4,18 @@ mod build_guard;
 mod entry_guard;
 #[path = "support/held_role_census_guard.rs"]
 mod guard;
+#[path = "support/census_provider_input.rs"]
+mod provider_input;
 
 fn read(name: &str) -> String {
-    std::fs::read_to_string(
+    let raw = std::fs::read_to_string(
         std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("../../tools/long-run-supervisor-074/src")
             .join(name),
     )
     .unwrap()
-    .replace('\r', "")
+    .replace('\r', "");
+    provider_input::view(name, &raw)
 }
 
 fn baseline(name: &str) -> String {
