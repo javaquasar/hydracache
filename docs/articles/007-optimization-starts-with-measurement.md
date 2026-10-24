@@ -18989,3 +18989,23 @@ into readiness. The [six-hour handoff](../testing/performance/0.74/six-hour-deve
 links exact evidence and the next dependency order: preparation fit, original
 delivery, worker/watchdog/retirement, durable completion and crash/reconnect,
 actual trust, then separately authorized server admission and qualification.
+
+## Security fixes require a new build identity
+
+The next isolated change is not another throughput hypothesis. Rustls 0.23.46
+fixes four upstream advisories. The manifest raises the minimum version as well
+as the lock, so a lock regeneration cannot silently return to the former declared
+floor. No unrelated dependency changes with it.
+
+A public-API session-store regression first establishes full and resumed TLS 1.2
+and TLS 1.3 handshakes and delivery of binary bytes. Only then does it examine
+session Debug redaction, retaining counters rather than printing the secrets it
+is checking. The corrected fixture fails at that secrecy oracle on 0.23.45 and
+passes with identical source on 0.23.46, including MSRV 1.88. Its first small-cache
+resumption failure remains a fixture finding, not evidence of the security bug.
+
+RESP mTLS and native-daemon correctness also pass, but dependency policy still
+finds eleven other advisories. The [security result](../testing/performance/0.74/rustls-security-result-20261024.md)
+keeps that red boundary visible. Even a necessary security fix changes the
+dependency/build identity: old performance comparisons, signed receipts and
+qualification results cannot be transferred to the new binary by assertion.

@@ -106,3 +106,13 @@ This security package is separate from the pending ReservedLive observation-
 frequency experiment. Neither permits weaker live checks, enlarged deadlines,
 server installation/supervisor maintenance, real production enrollment, product
 load or expensive qualification. The release remains unadmitted.
+
+## Subsequent implementation after local approval
+
+The [isolated rustls patch](rustls-security-result-20261024.md), commit
+`e02448617c7073e499c1d6ddbf7d3330518db0ae`, raises its declared minimum and
+locked version to 0.23.46. Windows Rust 1.94/MSRV 1.88 session-redaction/resumption
+controls and focused RESP/server gates pass. The same advisory DB now reports
+eleven remaining findings, not a full policy pass. This subsequent changed
+candidate does not alter the first fifteen-finding result, old Cargo.lock hash,
+signed inputs or rejected attempts described above.

@@ -6762,3 +6762,16 @@ separate dependency/MSRV decisions; no waivers or updates are applied. The
 after its original outer bound, despite the narrow context-reader gate passing.
 See the [six-hour handoff](six-hour-development-result-20261024.md) for exact
 scope, source commits, measurements and remaining release dependencies.
+
+The subsequent [rustls security update](rustls-security-result-20261024.md)
+raises the declared/locked version to 0.23.46. An exact-source regression fails
+on 0.23.45's session Debug fields after successful full/resumed handshakes and
+passes on Windows Rust 1.94/MSRV 1.88 after the patch. Ordinary RESP, server mTLS,
+real HC1/HC2 daemon and focused strict checks pass. Policy still refuses eleven
+other advisories; new candidate/build identity and all original launch/admission
+boundaries remain required. Historical fifteen-finding and six-hour packets stay
+immutable.
+
+The same changed three-test regression also passes separately on local Linux
+GNU Rust 1.94. Its packet retains compiler/command/source identity; this is not
+an old-version Linux comparison, original-owner run or dedicated-server admission.

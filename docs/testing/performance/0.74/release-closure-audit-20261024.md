@@ -119,3 +119,21 @@ independent boundaries; none is waived by the focused repairs above:
 Finish these local frontiers without retry-to-pass. The original execution,
 all-writer cessation, completion/cells, reconnect, production enrollment and
 compatible-manager gates above remain necessary before any final server gate.
+
+## Approved security continuation
+
+The [rustls security patch](rustls-security-result-20261024.md), source
+`e02448617c7073e499c1d6ddbf7d3330518db0ae`, raises its manifest floor and locked
+version to 0.23.46 without another resolved package change. The exact regression
+first fails session Debug secrecy on 0.23.45 after successful full/resumed
+handshakes, then passes on Windows MSVC 1.94/MSRV 1.88 and local Linux GNU 1.94.
+RESP/server strict checks and mTLS/native-daemon correctness pass. This does not
+test all four upstream exploit paths or replace full workspace/native performance
+and original execution gates.
+
+On the same clean advisory database, the focused full dependency-policy check
+still refuses eleven other findings. The previous fifteen-finding milestone
+remains immutable. New dependency/build identity invalidates automatic reuse of
+old build/measurement receipts; qualification remains prepared-not-authorized.
+The security continuation authorizes neither a higher MSRV nor host/service,
+clock, original observation-frequency or release-admission changes.

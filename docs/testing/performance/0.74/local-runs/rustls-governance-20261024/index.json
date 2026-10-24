@@ -1,0 +1,56 @@
+{
+  "facts": {
+    "full_verify_pass": false,
+    "qualification": false,
+    "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+    "release_admission": false,
+    "working_lock_sha256": "552f8c1fbb9fb06aadefca3fffb4f90cc1b78f4aed3e2c001cdf399b9b6bf0b1"
+  },
+  "files": {
+    "coordinator/retain-rustls-governance-20261024.py": {
+      "bytes": 1932,
+      "sha256": "dc72fc61e653a40fea7c1b6f05374c668dd2b23e702caa97530499e50768d59f"
+    },
+    "observation/rustls-doc-check/intent.json": {
+      "bytes": 310183,
+      "sha256": "ab2c3e24ce3af974689deb68125a5c48e5fe9e2d735b3729804bdda5698dc82d"
+    },
+    "observation/rustls-doc-check/process.json": {
+      "bytes": 14,
+      "sha256": "dfbfa44767a6205a083c4ce4f91aafd28ba6634bf7dfb06ecdcb234c1f108cc0"
+    },
+    "observation/rustls-doc-check/result.json": {
+      "bytes": 310113,
+      "sha256": "2afa9278166c1b0fca8467ed875e77983d19416120544e41217a3f2071c7df40"
+    },
+    "observation/rustls-doc-check/stderr.log": {
+      "bytes": 682,
+      "sha256": "8f4dc63790c7884cc882cfc966ba13d43b73126c264a9236560964b7f5e7597a"
+    },
+    "observation/rustls-doc-check/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "observation/rustls-local-contract/intent.json": {
+      "bytes": 310231,
+      "sha256": "abe6e42543b61426b68a95d078aa62a0b966cc0f31054b1d47d43940a9065719"
+    },
+    "observation/rustls-local-contract/process.json": {
+      "bytes": 14,
+      "sha256": "4aba0f4971e907095b55622d91be9f61481373bc6824ce4dbabd1587017dc2af"
+    },
+    "observation/rustls-local-contract/result.json": {
+      "bytes": 310113,
+      "sha256": "e6087d0b233e88b19c0241315dc937188ea4cf6f6a0c3f54a4471a0a85119d08"
+    },
+    "observation/rustls-local-contract/stderr.log": {
+      "bytes": 152,
+      "sha256": "f628eb57fc69ff32184980997b960c9e7cc3b27d700afb9db5b0eaed9dcd5f07"
+    },
+    "observation/rustls-local-contract/stdout.log": {
+      "bytes": 60,
+      "sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+    }
+  },
+  "schema": "hc074-rustls-structural-v1"
+}
