@@ -1,0 +1,40 @@
+"""Exact offline installation diff, not an additional read in any live guard."""
+from pathlib import Path
+import hashlib
+import json
+import subprocess
+ROOT = Path(__file__).resolve().parent.parent
+BASE = '59e133f445291fc13397889f9c828f5d559b9e2c'
+def old(name):
+    return subprocess.check_output(['git', 'show', BASE + ':' + name], cwd=ROOT).decode().replace('\r\n', '\n')
+def now(name):
+    return (ROOT / name).read_text().replace('\r\n', '\n')
+name = 'tools/authority-runtime-074/gate.rs'
+before = old(name)
+import_before = '#[path = "../historical-source-cache-074/library.rs"]'
+import_after = '#[path = "../guard-path-comparison-074/contract.rs"]\npub mod guard_path;\n' + import_before
+line = '        return Some(performance::reader(&frozen(BASE, path), read));'
+after = '''        let current = performance::reader(&frozen(BASE, path), read);
+        return Some(if path == guard_path::SOURCE {
+            guard_path::candidate(&current)
+        } else {
+            current
+        });'''
+assert before.count(import_before) == before.count(line) == 1
+assert now(name) == before.replace(import_before, import_after, 1).replace(line, after, 1)
+assert before.count('frozen(') == now(name).count('frozen(')
+source = 'crates/xtask/tests/support/performance_contract_074_fixed_slice.rs'
+before_source = old(source)
+assert before_source == now('tools/guard-path-comparison-074/fixed-slice-before.txt')
+comparison = 'if path == format!("{PREFIX}{file}") {'
+assert before_source.count(comparison) == 1
+assert now(source) == before_source.replace(comparison, 'if path.strip_prefix(PREFIX) == Some(*file) {', 1)
+for path in ('Cargo.toml', 'Cargo.lock', 'deny.toml', 'docs/testing/performance/0.74/qualification-manifest.toml',
+    'tools/authority-runtime-074/io.rs', 'tools/authority-runtime-074/performance.rs',
+    'crates/xtask/tests/support/census_provider_input.rs', 'tools/historical-blob-batch-074/transport.rs'):
+    assert now(path) == old(path)
+print(json.dumps(dict(exact_gate_and_predicate_delta=True, new_git_reads_in_guard=0,
+    historical_reader_and_transport_unchanged=True, live_sources_changed=False,
+    original_predicates_order_and_windows_changed=False, baseline=BASE,
+    source_sha256={path: hashlib.sha256((ROOT/path).read_bytes()).hexdigest()
+        for path in (name, source)}, server=False, qualification=False)))

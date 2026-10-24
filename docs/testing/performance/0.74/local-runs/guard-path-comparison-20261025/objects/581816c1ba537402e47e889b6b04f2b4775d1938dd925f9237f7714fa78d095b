@@ -1,0 +1,34 @@
+    Checking xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+warning: function `accepts` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\guard-path-comparison-074\contract.rs:16:8
+   |
+16 | pub fn accepts(original: &str, current: &str) -> bool {
+   |        ^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `xtask` (test "custody_reader_074") generated 1 warning (1 duplicate)
+warning: `xtask` (test "authority_hex_reader_074") generated 1 warning
+warning: `xtask` (test "fresh_status_reader_074") generated 1 warning (1 duplicate)
+warning: `xtask` (test "authority_runtime_074") generated 1 warning (1 duplicate)
+warning: `xtask` (test "authority_key_hex_074") generated 1 warning (1 duplicate)
+warning: `xtask` (test "authority_storage_source_074") generated 1 warning (1 duplicate)
+warning: `xtask` (test "bootstrap_installed_origin_074") generated 1 warning (1 duplicate)
+warning: `xtask` (test "authority_rust_history_074") generated 1 warning (1 duplicate)
+warning: `xtask` (test "cost_phase_reader_074") generated 1 warning (1 duplicate)
+warning: `xtask` (test "document_scratch_cost_074") generated 1 warning (1 duplicate)
+warning: `xtask` (test "document_scratch_reader_074") generated 1 warning (1 duplicate)
+warning: `xtask` (test "pid_path_reader_074") generated 1 warning (1 duplicate)
+warning: `xtask` (test "validation_leaf_reader_074") generated 1 warning (1 duplicate)
+warning: `xtask` (test "current_tree_input_audit_074") generated 1 warning (1 duplicate)
+warning: `xtask` (test "owned_case_074") generated 1 warning (1 duplicate)
+warning: `xtask` (test "diagnostic_artifact_fixture_074") generated 1 warning (1 duplicate)
+warning: `xtask` (test "fresh_kernel_cost_074") generated 1 warning (1 duplicate)
+warning: `xtask` (test "remaining_preparation_cost_074") generated 1 warning (1 duplicate)
+warning: `xtask` (test "validation_leaf_requests_074") generated 1 warning (1 duplicate)
+warning: `xtask` (test "custody_preparation_cost_074") generated 1 warning (1 duplicate)
+warning: `xtask` (test "validation_round_cost_074") generated 1 warning (1 duplicate)
+warning: `xtask` (test "pid_path_cost_074") generated 1 warning (1 duplicate)
+warning: `xtask` (test "current_tree_reader_074") generated 1 warning (1 duplicate)
+warning: `xtask` (test "performance_contract_074") generated 1 warning (1 duplicate)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 8.35s

@@ -1,0 +1,935 @@
+{
+  "code_commit": "04285f6b3d8d572ef291fa5e688d5e305d088f7a",
+  "facts": {
+    "allocation_cohorts": 1,
+    "clocks_changed": false,
+    "comparisons_per_sample": 13312,
+    "dependency_changes": false,
+    "first_test_and_lint_failures_retained": true,
+    "focused_xtask_per_toolchain": 8,
+    "historical_reads_added": 0,
+    "live_frequency_or_windows_changed": false,
+    "old_effect_review_refused": true,
+    "old_package_pass": false,
+    "package_replayed": false,
+    "phases": [
+      {
+        "exit": 0,
+        "phase": "guard-path-20261025-build",
+        "rust_passes": []
+      },
+      {
+        "exit": 0,
+        "phase": "guard-path-20261025-build-final",
+        "rust_passes": []
+      },
+      {
+        "exit": 0,
+        "phase": "guard-path-20261025-capture-first",
+        "rust_passes": []
+      },
+      {
+        "exit": 0,
+        "phase": "guard-path-20261025-check",
+        "rust_passes": []
+      },
+      {
+        "exit": 0,
+        "phase": "guard-path-20261025-check-final",
+        "rust_passes": []
+      },
+      {
+        "exit": 101,
+        "phase": "guard-path-20261025-clippy",
+        "rust_passes": []
+      },
+      {
+        "exit": 0,
+        "phase": "guard-path-20261025-clippy-fixed",
+        "rust_passes": []
+      },
+      {
+        "exit": 0,
+        "phase": "guard-path-20261025-controls",
+        "rust_passes": [
+          4
+        ]
+      },
+      {
+        "exit": 0,
+        "phase": "guard-path-20261025-controls-final",
+        "rust_passes": [
+          4
+        ]
+      },
+      {
+        "exit": 0,
+        "phase": "guard-path-20261025-doc-check",
+        "rust_passes": []
+      },
+      {
+        "exit": 0,
+        "phase": "guard-path-20261025-exact-delta",
+        "rust_passes": []
+      },
+      {
+        "exit": 0,
+        "phase": "guard-path-20261025-existing-fixed-slice",
+        "rust_passes": [
+          3
+        ]
+      },
+      {
+        "exit": 0,
+        "phase": "guard-path-20261025-existing-fixed-slice-final",
+        "rust_passes": [
+          3
+        ]
+      },
+      {
+        "exit": 0,
+        "phase": "guard-path-20261025-format",
+        "rust_passes": []
+      },
+      {
+        "exit": 101,
+        "phase": "guard-path-20261025-integration-current",
+        "rust_passes": []
+      },
+      {
+        "exit": 0,
+        "phase": "guard-path-20261025-integration-current-final",
+        "rust_passes": [
+          5
+        ]
+      },
+      {
+        "exit": 0,
+        "phase": "guard-path-20261025-integration-current-fixed",
+        "rust_passes": [
+          5
+        ]
+      },
+      {
+        "exit": 0,
+        "phase": "guard-path-20261025-integration-msrv",
+        "rust_passes": [
+          5
+        ]
+      },
+      {
+        "exit": 0,
+        "phase": "guard-path-20261025-integration-msrv-final",
+        "rust_passes": [
+          5
+        ]
+      },
+      {
+        "exit": 0,
+        "phase": "guard-path-20261025-msrv-build",
+        "rust_passes": []
+      },
+      {
+        "exit": 0,
+        "phase": "guard-path-20261025-msrv-controls",
+        "rust_passes": [
+          4
+        ]
+      },
+      {
+        "exit": 0,
+        "phase": "guard-path-20261025-msrv-fixed-slice",
+        "rust_passes": [
+          3
+        ]
+      },
+      {
+        "exit": 0,
+        "phase": "guard-path-20261025-old-review",
+        "rust_passes": []
+      },
+      {
+        "exit": 0,
+        "phase": "guard-path-20261025-performance-contract",
+        "rust_passes": []
+      },
+      {
+        "exit": 0,
+        "phase": "guard-path-20261025-probe-clippy",
+        "rust_passes": []
+      },
+      {
+        "exit": 0,
+        "phase": "guard-path-20261025-probe-final",
+        "rust_passes": [
+          4
+        ]
+      },
+      {
+        "exit": 0,
+        "phase": "guard-path-20261025-probe-final-build",
+        "rust_passes": []
+      },
+      {
+        "exit": 0,
+        "phase": "guard-path-20261025-probe-msrv-final",
+        "rust_passes": [
+          4
+        ]
+      },
+      {
+        "exit": 0,
+        "phase": "guard-path-20261025-probe-msrv-final-build",
+        "rust_passes": []
+      },
+      {
+        "exit": 0,
+        "phase": "guard-path-20261025-py-indent",
+        "rust_passes": []
+      },
+      {
+        "exit": 0,
+        "phase": "guard-path-20261025-py-syntax",
+        "rust_passes": []
+      },
+      {
+        "exit": 0,
+        "phase": "guard-path-20261025-python",
+        "rust_passes": []
+      },
+      {
+        "exit": 0,
+        "phase": "guard-path-20261025-python-final",
+        "rust_passes": []
+      },
+      {
+        "exit": 0,
+        "phase": "guard-path-20261025-python-final-integrated",
+        "rust_passes": []
+      },
+      {
+        "exit": 0,
+        "phase": "guard-path-20261025-python-integrated",
+        "rust_passes": []
+      }
+    ],
+    "production_candidate": false,
+    "protected_sha256": {
+      "Cargo.lock": "d2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c",
+      "Cargo.toml": "18a8a27cf140a1d6eb31c8316ee39bb7d5832866a990346eee16cd0c30de344b",
+      "docs/testing/performance/0.74/qualification-manifest.toml": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "python_controls": 3,
+    "qualification": false,
+    "rss_or_retention_claim": false,
+    "samples": 24,
+    "server": false,
+    "services": false,
+    "source_gate_comment_policy_changed": false,
+    "standalone_per_toolchain": 4,
+    "timing": false
+  },
+  "members": {
+    "capture/first/intent.json": {
+      "bytes": 204,
+      "sha256": "8e88e49dd2fa5b504c6a1cc376ecffc5aa6874aea14a0ce6705108727615a15b"
+    },
+    "capture/first/preflight.json": {
+      "bytes": 979,
+      "sha256": "66f4c85c4daeb6a0bf28536d88270f86825a6bf429b65bcd490ff34cc1bf0e1d"
+    },
+    "capture/first/result.json": {
+      "bytes": 7715,
+      "sha256": "9768812aaed74d35ad7983e6f026d921c1310322c95741ae514b62e4f776ccd0"
+    },
+    "capture/first/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/first/stdout.log": {
+      "bytes": 5104,
+      "sha256": "860ff7ba28b333b41ac73eb678076daff982e0bf7605fb6d28258b821a3a050b"
+    },
+    "checks/guard-path-20261025-build-final/intent.json": {
+      "bytes": 319202,
+      "sha256": "94ddf48c8c848a1ebb5f0414774eeff46f1983a57ab78f37a7f40e8a6dd14624"
+    },
+    "checks/guard-path-20261025-build-final/result.json": {
+      "bytes": 318838,
+      "sha256": "24e959da60bbd61fdf86f5e76e37067537546d809f58b422d4eff244d64e6fbe"
+    },
+    "checks/guard-path-20261025-build-final/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/guard-path-20261025-build-final/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/guard-path-20261025-build/intent.json": {
+      "bytes": 318959,
+      "sha256": "93711c52c626842fbbe259ce2abd865bc32504fcf147c43ac63cad632d01674e"
+    },
+    "checks/guard-path-20261025-build/result.json": {
+      "bytes": 318595,
+      "sha256": "e54aeb238b83c4025b7643b8368f95674c1b99e003c40dad792954a66d7bdd49"
+    },
+    "checks/guard-path-20261025-build/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/guard-path-20261025-build/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/guard-path-20261025-capture-first/intent.json": {
+      "bytes": 319204,
+      "sha256": "89bfd5b0e81536b407f02b1ac292226e2b30930e5e047246fd4938adec0079a5"
+    },
+    "checks/guard-path-20261025-capture-first/result.json": {
+      "bytes": 318838,
+      "sha256": "24e959da60bbd61fdf86f5e76e37067537546d809f58b422d4eff244d64e6fbe"
+    },
+    "checks/guard-path-20261025-capture-first/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/guard-path-20261025-capture-first/stdout.log": {
+      "bytes": 76,
+      "sha256": "4d1ffb4be1628f605612769bc3f520c6fa683f03c5af12f4c0b0a5c08130c6fe"
+    },
+    "checks/guard-path-20261025-check-final/intent.json": {
+      "bytes": 319388,
+      "sha256": "a2fee0ecd658f437785c3fa342e822303370fb8df9a6546aa7b143d44f588705"
+    },
+    "checks/guard-path-20261025-check-final/result.json": {
+      "bytes": 319079,
+      "sha256": "ecc64af38cf9bb9ebb712c44eaf25283d243aa8b621cc190935cbf7216443db2"
+    },
+    "checks/guard-path-20261025-check-final/stderr.log": {
+      "bytes": 155,
+      "sha256": "d89bb284ddc616bd91b49bb6e199b2fbc2e24ccccf5478b3ae16211385751ac7"
+    },
+    "checks/guard-path-20261025-check-final/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/guard-path-20261025-check/intent.json": {
+      "bytes": 319388,
+      "sha256": "22a0b42ab61db2d095ceab6c21f010ea853739e3e5c5fe19df74d6418e3f3bc9"
+    },
+    "checks/guard-path-20261025-check/result.json": {
+      "bytes": 319079,
+      "sha256": "93adf495a768bd19cf1a6d8de32bcf9c108117511988349b38d2c4e15c6d747e"
+    },
+    "checks/guard-path-20261025-check/stderr.log": {
+      "bytes": 2499,
+      "sha256": "581816c1ba537402e47e889b6b04f2b4775d1938dd925f9237f7714fa78d095b"
+    },
+    "checks/guard-path-20261025-check/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/guard-path-20261025-clippy-fixed/intent.json": {
+      "bytes": 319451,
+      "sha256": "f140dada59ac0dadd69d5da55901f78949a0348f71b955d698805c8da84feb59"
+    },
+    "checks/guard-path-20261025-clippy-fixed/result.json": {
+      "bytes": 319079,
+      "sha256": "ecc64af38cf9bb9ebb712c44eaf25283d243aa8b621cc190935cbf7216443db2"
+    },
+    "checks/guard-path-20261025-clippy-fixed/stderr.log": {
+      "bytes": 155,
+      "sha256": "ef7502e7b316492b57386e6f1292b22e52eeb8064283ca79e8b38329ea548f05"
+    },
+    "checks/guard-path-20261025-clippy-fixed/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/guard-path-20261025-clippy/contract.rs.raw": {
+      "bytes": 672,
+      "sha256": "4ed5d3a148563fdd6a4486cac44f705d6139c8e7c3d129943a3d31365bbefe47"
+    },
+    "checks/guard-path-20261025-clippy/intent.json": {
+      "bytes": 319451,
+      "sha256": "7656a3249ca60cc035af348ce952186aaf6fd4902d05f973c4e11c3a65591646"
+    },
+    "checks/guard-path-20261025-clippy/probe.rs.raw": {
+      "bytes": 9105,
+      "sha256": "0fab170ce9ec407133aa72082b2e1513e9bddfedeac2dbd2b2a69d14b7454261"
+    },
+    "checks/guard-path-20261025-clippy/result.json": {
+      "bytes": 319081,
+      "sha256": "02e67774fed872d0d8228512f4feed045d9f5d41bca526bd957f34dc8385920b"
+    },
+    "checks/guard-path-20261025-clippy/stderr.log": {
+      "bytes": 695,
+      "sha256": "932d070b92f3cb20a8aa2a184b6e6e2caf5e29bcc2f05f823ec2d436b20a1c1d"
+    },
+    "checks/guard-path-20261025-clippy/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/guard-path-20261025-controls-final/intent.json": {
+      "bytes": 319091,
+      "sha256": "516dcb7ce8a043825119ec09671769cf877821ee5951e6dc2e5e60effce17512"
+    },
+    "checks/guard-path-20261025-controls-final/result.json": {
+      "bytes": 318838,
+      "sha256": "24e959da60bbd61fdf86f5e76e37067537546d809f58b422d4eff244d64e6fbe"
+    },
+    "checks/guard-path-20261025-controls-final/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/guard-path-20261025-controls-final/stdout.log": {
+      "bytes": 343,
+      "sha256": "0606065df6b4923a1a444b6e9cf7aeed633ad89044c4a7cc0925105e3f894113"
+    },
+    "checks/guard-path-20261025-controls/intent.json": {
+      "bytes": 319091,
+      "sha256": "f12c4fef5c78613a80b2e8806003d630f509b01b31b636949f9753ec1078c723"
+    },
+    "checks/guard-path-20261025-controls/result.json": {
+      "bytes": 318838,
+      "sha256": "f1d8b7d2b070b253023c0e164912b247c95296a62b353c0bc741ead8756792c2"
+    },
+    "checks/guard-path-20261025-controls/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/guard-path-20261025-controls/stdout.log": {
+      "bytes": 343,
+      "sha256": "76d3ed0d168431a0d5954b012418ef7c1218c65b26e497bd762c1f223b9a6ddd"
+    },
+    "checks/guard-path-20261025-doc-check/intent.json": {
+      "bytes": 319393,
+      "sha256": "3027f811b7411e4c5b05e5f4a440ff6849173fff9a4f986dec212fa4d72290d9"
+    },
+    "checks/guard-path-20261025-doc-check/result.json": {
+      "bytes": 319079,
+      "sha256": "ecc64af38cf9bb9ebb712c44eaf25283d243aa8b621cc190935cbf7216443db2"
+    },
+    "checks/guard-path-20261025-doc-check/stderr.log": {
+      "bytes": 203,
+      "sha256": "bcb5f8f7355fa8380af9b250441a2a10d2ecdaf7502e1149900c8ad07d84c2be"
+    },
+    "checks/guard-path-20261025-doc-check/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "checks/guard-path-20261025-exact-delta/intent.json": {
+      "bytes": 319321,
+      "sha256": "304356b7b91a84c4ffaab8b13fd90c6e73f30a5aa0e74b3f2828e2e3d6ea4cb6"
+    },
+    "checks/guard-path-20261025-exact-delta/result.json": {
+      "bytes": 319079,
+      "sha256": "ecc64af38cf9bb9ebb712c44eaf25283d243aa8b621cc190935cbf7216443db2"
+    },
+    "checks/guard-path-20261025-exact-delta/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/guard-path-20261025-exact-delta/stdout.log": {
+      "bytes": 570,
+      "sha256": "96520e7cd27f658b454546cdd872e930eda9051aab69404e9e4324bbf0548fc3"
+    },
+    "checks/guard-path-20261025-existing-fixed-slice-final/intent.json": {
+      "bytes": 319470,
+      "sha256": "4e470c8d0ceed0bf8f8fe68f6d54c838b0207f6fae5a5de448ece586fb9b1d80"
+    },
+    "checks/guard-path-20261025-existing-fixed-slice-final/result.json": {
+      "bytes": 319079,
+      "sha256": "ecc64af38cf9bb9ebb712c44eaf25283d243aa8b621cc190935cbf7216443db2"
+    },
+    "checks/guard-path-20261025-existing-fixed-slice-final/stderr.log": {
+      "bytes": 270,
+      "sha256": "cb793a8727901390a98578478624021c04059523a878d30799f20704f85f42f5"
+    },
+    "checks/guard-path-20261025-existing-fixed-slice-final/stdout.log": {
+      "bytes": 1497,
+      "sha256": "9f5d0fdf0ac1d5f727ed6405a734f39fc18812a574f79c93a567d349c18c0f48"
+    },
+    "checks/guard-path-20261025-existing-fixed-slice/intent.json": {
+      "bytes": 319470,
+      "sha256": "8aba662d961052a53851f2bea75492c539f044945bfb8cc535222a87ce656fdd"
+    },
+    "checks/guard-path-20261025-existing-fixed-slice/result.json": {
+      "bytes": 319079,
+      "sha256": "93adf495a768bd19cf1a6d8de32bcf9c108117511988349b38d2c4e15c6d747e"
+    },
+    "checks/guard-path-20261025-existing-fixed-slice/stderr.log": {
+      "bytes": 657,
+      "sha256": "4bf3117502dea9ad1b3786a29a6e05a91f1b97e9d98bc4887d39aa1e77cf0c57"
+    },
+    "checks/guard-path-20261025-existing-fixed-slice/stdout.log": {
+      "bytes": 1497,
+      "sha256": "d4f7262bf8e2b73991d20321b979826399953f2591a99fd66b08d46cab1539c0"
+    },
+    "checks/guard-path-20261025-format/intent.json": {
+      "bytes": 319657,
+      "sha256": "46e9d4f787834d79fbd4f50a8f2004a74ab413c1a9f6dab518b4ff0ae135be62"
+    },
+    "checks/guard-path-20261025-format/result.json": {
+      "bytes": 319079,
+      "sha256": "ecc64af38cf9bb9ebb712c44eaf25283d243aa8b621cc190935cbf7216443db2"
+    },
+    "checks/guard-path-20261025-format/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/guard-path-20261025-format/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/guard-path-20261025-integration-current-final/intent.json": {
+      "bytes": 319446,
+      "sha256": "add4527e7da61d49d07bfa73f6bbb849ae4c07d3fdc4ca37f98b8265b5291b41"
+    },
+    "checks/guard-path-20261025-integration-current-final/result.json": {
+      "bytes": 319079,
+      "sha256": "ecc64af38cf9bb9ebb712c44eaf25283d243aa8b621cc190935cbf7216443db2"
+    },
+    "checks/guard-path-20261025-integration-current-final/stderr.log": {
+      "bytes": 263,
+      "sha256": "8ee56b51d486c2bf1cd0c74d9c5354a436980ec78ba498eba7f2217167ca4858"
+    },
+    "checks/guard-path-20261025-integration-current-final/stdout.log": {
+      "bytes": 524,
+      "sha256": "28c130050646fd4bba00df3621048fae130b8fac4d612f12ac74decb7acdeecd"
+    },
+    "checks/guard-path-20261025-integration-current-fixed/intent.json": {
+      "bytes": 319446,
+      "sha256": "cedc905f7a09db54f74f0e47a6d09a2a4cc56b6b1bfd7210eebe28d5c1e2feef"
+    },
+    "checks/guard-path-20261025-integration-current-fixed/result.json": {
+      "bytes": 319079,
+      "sha256": "93adf495a768bd19cf1a6d8de32bcf9c108117511988349b38d2c4e15c6d747e"
+    },
+    "checks/guard-path-20261025-integration-current-fixed/stderr.log": {
+      "bytes": 263,
+      "sha256": "dbaa6fb28efa7eb36a1e5a8315a6cb01f2eaad39bc7faf703cbb5cc5fb70dbac"
+    },
+    "checks/guard-path-20261025-integration-current-fixed/stdout.log": {
+      "bytes": 524,
+      "sha256": "459141edec0bd54cc1a775f337b5463881085452855dfe9c10e59166862310d6"
+    },
+    "checks/guard-path-20261025-integration-current/authority_context_074.rs.raw": {
+      "bytes": 6359,
+      "sha256": "6d5411b6b392c967a5105e7200289fa2163c7ea1ab295f3a0956f758092f36a5"
+    },
+    "checks/guard-path-20261025-integration-current/intent.json": {
+      "bytes": 319446,
+      "sha256": "fffd15d5403ccbaf39d1a989756a66fd6b1e8fa42db3f001d0f286eb213c2253"
+    },
+    "checks/guard-path-20261025-integration-current/result.json": {
+      "bytes": 319081,
+      "sha256": "a3e7b9e7c3321de2cf0730295a747dde4300d41298839c868364e12d2ff8723e"
+    },
+    "checks/guard-path-20261025-integration-current/stderr.log": {
+      "bytes": 337,
+      "sha256": "cc2cba3cc2453504b95c00d1de8ddd051d6450afec36831ab8fea0dc9b33a72f"
+    },
+    "checks/guard-path-20261025-integration-current/stdout.log": {
+      "bytes": 923,
+      "sha256": "99d80409c2bc28aaf0e198ddf740041db12f638f55f03aac88961401cec4c37c"
+    },
+    "checks/guard-path-20261025-integration-msrv-final/intent.json": {
+      "bytes": 319446,
+      "sha256": "551495519709182f555bf00356f26f03111f08e67dd7dd9d2b24d98ba0a605b7"
+    },
+    "checks/guard-path-20261025-integration-msrv-final/result.json": {
+      "bytes": 319079,
+      "sha256": "ecc64af38cf9bb9ebb712c44eaf25283d243aa8b621cc190935cbf7216443db2"
+    },
+    "checks/guard-path-20261025-integration-msrv-final/stderr.log": {
+      "bytes": 263,
+      "sha256": "961115e0fbb0621bf403e74f8120e2321312e94dc0e804214e06a8303d61b249"
+    },
+    "checks/guard-path-20261025-integration-msrv-final/stdout.log": {
+      "bytes": 524,
+      "sha256": "ca6ddec9979d2501b549e0e0a8c1edfbde33a950c8c0c36d53803aee780a107a"
+    },
+    "checks/guard-path-20261025-integration-msrv/intent.json": {
+      "bytes": 319446,
+      "sha256": "45bb9d4fdd4363d0f8ace1dac124aba5195bdb1389272b239f21cf484be40957"
+    },
+    "checks/guard-path-20261025-integration-msrv/result.json": {
+      "bytes": 319079,
+      "sha256": "93adf495a768bd19cf1a6d8de32bcf9c108117511988349b38d2c4e15c6d747e"
+    },
+    "checks/guard-path-20261025-integration-msrv/stderr.log": {
+      "bytes": 263,
+      "sha256": "d4b3048ec5ca7c22cb0785ab8bc659f82adf3779254f7ef98f3b48f9f2a368e2"
+    },
+    "checks/guard-path-20261025-integration-msrv/stdout.log": {
+      "bytes": 524,
+      "sha256": "c9abd96078dd1e73e7a7945bff32d62226e6ef776a78ce1adf5f31e1d5b1d21e"
+    },
+    "checks/guard-path-20261025-msrv-build/intent.json": {
+      "bytes": 319229,
+      "sha256": "e0d819b11767fd3ff52705a1fb27b4a7f457731efcf93915259a9dcd3a2b127f"
+    },
+    "checks/guard-path-20261025-msrv-build/result.json": {
+      "bytes": 318838,
+      "sha256": "24e959da60bbd61fdf86f5e76e37067537546d809f58b422d4eff244d64e6fbe"
+    },
+    "checks/guard-path-20261025-msrv-build/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/guard-path-20261025-msrv-build/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/guard-path-20261025-msrv-controls/intent.json": {
+      "bytes": 319090,
+      "sha256": "36ee441b1bc01f79b1a453f51f8f5873a81efde4127c8dff766f241901d930a4"
+    },
+    "checks/guard-path-20261025-msrv-controls/result.json": {
+      "bytes": 318838,
+      "sha256": "24e959da60bbd61fdf86f5e76e37067537546d809f58b422d4eff244d64e6fbe"
+    },
+    "checks/guard-path-20261025-msrv-controls/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/guard-path-20261025-msrv-controls/stdout.log": {
+      "bytes": 343,
+      "sha256": "76d3ed0d168431a0d5954b012418ef7c1218c65b26e497bd762c1f223b9a6ddd"
+    },
+    "checks/guard-path-20261025-msrv-fixed-slice/intent.json": {
+      "bytes": 319470,
+      "sha256": "c27cff69f2c5433d3130528f67e50b0689525197643627f852eb69af7a81b863"
+    },
+    "checks/guard-path-20261025-msrv-fixed-slice/result.json": {
+      "bytes": 319079,
+      "sha256": "ecc64af38cf9bb9ebb712c44eaf25283d243aa8b621cc190935cbf7216443db2"
+    },
+    "checks/guard-path-20261025-msrv-fixed-slice/stderr.log": {
+      "bytes": 270,
+      "sha256": "a285f9e7acdbcf63e5dfd18e54d0d37b26ec822ad3a50adde5f215c73796ba97"
+    },
+    "checks/guard-path-20261025-msrv-fixed-slice/stdout.log": {
+      "bytes": 1497,
+      "sha256": "063899f9abac56d3ffa826006a771b9eb6a20637b456c9f6c8d5cee87594d252"
+    },
+    "checks/guard-path-20261025-old-review/intent.json": {
+      "bytes": 319326,
+      "sha256": "ddfe1156a43c2e967ade4589ad2e67b57def38909f5f8910308c625a1978317e"
+    },
+    "checks/guard-path-20261025-old-review/result.json": {
+      "bytes": 319079,
+      "sha256": "93adf495a768bd19cf1a6d8de32bcf9c108117511988349b38d2c4e15c6d747e"
+    },
+    "checks/guard-path-20261025-old-review/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/guard-path-20261025-old-review/stdout.log": {
+      "bytes": 153,
+      "sha256": "46c4c705082a9b85a02b69c0d0820634c482d1e71e28cf6db40adb4d8c3aa3d7"
+    },
+    "checks/guard-path-20261025-performance-contract/intent.json": {
+      "bytes": 319441,
+      "sha256": "77fc0e92af6b5a2e79b82725d5af887b69fe33d52e2a09fb9bfa588add0ded5b"
+    },
+    "checks/guard-path-20261025-performance-contract/result.json": {
+      "bytes": 319079,
+      "sha256": "ecc64af38cf9bb9ebb712c44eaf25283d243aa8b621cc190935cbf7216443db2"
+    },
+    "checks/guard-path-20261025-performance-contract/stderr.log": {
+      "bytes": 152,
+      "sha256": "7032ac72e9dd627058ec3b856ec81eed77644981da5e0727d9c8e6455a72e175"
+    },
+    "checks/guard-path-20261025-performance-contract/stdout.log": {
+      "bytes": 60,
+      "sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+    },
+    "checks/guard-path-20261025-probe-clippy/intent.json": {
+      "bytes": 319265,
+      "sha256": "33f380ec7f2e77f7f57fdd4fb1736cdd177ded1126cfa2095259f656b2c5c249"
+    },
+    "checks/guard-path-20261025-probe-clippy/result.json": {
+      "bytes": 318838,
+      "sha256": "24e959da60bbd61fdf86f5e76e37067537546d809f58b422d4eff244d64e6fbe"
+    },
+    "checks/guard-path-20261025-probe-clippy/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/guard-path-20261025-probe-clippy/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/guard-path-20261025-probe-final-build/intent.json": {
+      "bytes": 319505,
+      "sha256": "a2ea00b58911a74619d5a9ba6f8ed8808669fc565098ea5ddcbf99357d0aa21c"
+    },
+    "checks/guard-path-20261025-probe-final-build/result.json": {
+      "bytes": 319079,
+      "sha256": "ecc64af38cf9bb9ebb712c44eaf25283d243aa8b621cc190935cbf7216443db2"
+    },
+    "checks/guard-path-20261025-probe-final-build/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/guard-path-20261025-probe-final-build/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/guard-path-20261025-probe-final/intent.json": {
+      "bytes": 319332,
+      "sha256": "537c4ddfa3f152a134d55eec2c2f61ff0a9c9b2735bb5ffd2cc28c1dbb2bde21"
+    },
+    "checks/guard-path-20261025-probe-final/result.json": {
+      "bytes": 319079,
+      "sha256": "ecc64af38cf9bb9ebb712c44eaf25283d243aa8b621cc190935cbf7216443db2"
+    },
+    "checks/guard-path-20261025-probe-final/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/guard-path-20261025-probe-final/stdout.log": {
+      "bytes": 343,
+      "sha256": "76d3ed0d168431a0d5954b012418ef7c1218c65b26e497bd762c1f223b9a6ddd"
+    },
+    "checks/guard-path-20261025-probe-msrv-final-build/intent.json": {
+      "bytes": 319476,
+      "sha256": "43e96bf77842d4762dcb5b1ae8adc224df16f84fe47f5dd950489b2a0f948303"
+    },
+    "checks/guard-path-20261025-probe-msrv-final-build/result.json": {
+      "bytes": 319079,
+      "sha256": "ecc64af38cf9bb9ebb712c44eaf25283d243aa8b621cc190935cbf7216443db2"
+    },
+    "checks/guard-path-20261025-probe-msrv-final-build/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/guard-path-20261025-probe-msrv-final-build/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/guard-path-20261025-probe-msrv-final/intent.json": {
+      "bytes": 319337,
+      "sha256": "303d9d98559a5aed638c6b707892f32bf9e60969e7803b9c34de47236d87ca98"
+    },
+    "checks/guard-path-20261025-probe-msrv-final/result.json": {
+      "bytes": 319079,
+      "sha256": "ecc64af38cf9bb9ebb712c44eaf25283d243aa8b621cc190935cbf7216443db2"
+    },
+    "checks/guard-path-20261025-probe-msrv-final/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/guard-path-20261025-probe-msrv-final/stdout.log": {
+      "bytes": 343,
+      "sha256": "76d3ed0d168431a0d5954b012418ef7c1218c65b26e497bd762c1f223b9a6ddd"
+    },
+    "checks/guard-path-20261025-py-indent/intent.json": {
+      "bytes": 319345,
+      "sha256": "395bc8ec11d48a1bae914f532fc0eafce8b04bab060fb2b9522636ce9f4a24fc"
+    },
+    "checks/guard-path-20261025-py-indent/result.json": {
+      "bytes": 319079,
+      "sha256": "ecc64af38cf9bb9ebb712c44eaf25283d243aa8b621cc190935cbf7216443db2"
+    },
+    "checks/guard-path-20261025-py-indent/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/guard-path-20261025-py-indent/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/guard-path-20261025-py-syntax/intent.json": {
+      "bytes": 319358,
+      "sha256": "9d91c07c6275c924f8a55373647e960be98101c476fe7b4c59e383e5970c5bc0"
+    },
+    "checks/guard-path-20261025-py-syntax/result.json": {
+      "bytes": 319079,
+      "sha256": "ecc64af38cf9bb9ebb712c44eaf25283d243aa8b621cc190935cbf7216443db2"
+    },
+    "checks/guard-path-20261025-py-syntax/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/guard-path-20261025-py-syntax/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/guard-path-20261025-python-final-integrated/intent.json": {
+      "bytes": 319408,
+      "sha256": "698395a14b83a0601e2d1176cc23adee12ac5c7f77275449244dba3217ce10e1"
+    },
+    "checks/guard-path-20261025-python-final-integrated/result.json": {
+      "bytes": 319079,
+      "sha256": "ecc64af38cf9bb9ebb712c44eaf25283d243aa8b621cc190935cbf7216443db2"
+    },
+    "checks/guard-path-20261025-python-final-integrated/stderr.log": {
+      "bytes": 106,
+      "sha256": "41e6ab9078ba7aff324838af7874b68bdc5f3e187f616cb40e0a1110220d5afa"
+    },
+    "checks/guard-path-20261025-python-final-integrated/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/guard-path-20261025-python-final/intent.json": {
+      "bytes": 319408,
+      "sha256": "c5cf59b6c49ced212c342d263e3cef1740f4eb1cecab389a2060d32b573a5c3e"
+    },
+    "checks/guard-path-20261025-python-final/result.json": {
+      "bytes": 319079,
+      "sha256": "5d4709231157afc20b0d66262b36ce8e189c4d93b90d9f03368f320e19bb105c"
+    },
+    "checks/guard-path-20261025-python-final/stderr.log": {
+      "bytes": 106,
+      "sha256": "41e6ab9078ba7aff324838af7874b68bdc5f3e187f616cb40e0a1110220d5afa"
+    },
+    "checks/guard-path-20261025-python-final/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/guard-path-20261025-python-integrated/intent.json": {
+      "bytes": 319408,
+      "sha256": "4da9232c0280d89451529c49704ace18b9b50a13536c292e6e66bc9122e318cd"
+    },
+    "checks/guard-path-20261025-python-integrated/result.json": {
+      "bytes": 319079,
+      "sha256": "f557edac13e5be400abbc4eba65defd5b5974052f84db45037ce3db7c13232e7"
+    },
+    "checks/guard-path-20261025-python-integrated/stderr.log": {
+      "bytes": 106,
+      "sha256": "1ca786c8ec369888e9a340ec0ed1fd94dc016fba15d7112c6d24e1374519db2f"
+    },
+    "checks/guard-path-20261025-python-integrated/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/guard-path-20261025-python/intent.json": {
+      "bytes": 319167,
+      "sha256": "9ff7878cde39a0dd81452adc334034cb53ceae692a0870d9e55720276391da7b"
+    },
+    "checks/guard-path-20261025-python/result.json": {
+      "bytes": 318838,
+      "sha256": "f1d8b7d2b070b253023c0e164912b247c95296a62b353c0bc741ead8756792c2"
+    },
+    "checks/guard-path-20261025-python/stderr.log": {
+      "bytes": 106,
+      "sha256": "7d4980533fb9ded4fe611c54f097468c3583a27125b4c3362d7bfb3a3b399d3c"
+    },
+    "checks/guard-path-20261025-python/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "coordinators/guard-path-delta-20261025.py": {
+      "bytes": 2345,
+      "sha256": "87f12f958c3ee1ad2342f4037b9246d935ea94150a4fb93f2487cb8b986271b1"
+    },
+    "coordinators/guard-path-old-review-20261025.py": {
+      "bytes": 1178,
+      "sha256": "cff333babc40c5f9a1f262a67a62cbfca128b01b92050d7c649cb1bc6847c946"
+    },
+    "coordinators/run-fresh-reader-20261024.py": {
+      "bytes": 544,
+      "sha256": "851631e846ec7d3696a0e2fa550b6f87e8f07e8412f5dafc0530c0bc70c597ed"
+    },
+    "coordinators/run-source-step-20261024.py": {
+      "bytes": 2596,
+      "sha256": "a92482cabcfcf8f6440e95972bee8d204bb9c59c8805c45c7b57363dcc3ab430"
+    },
+    "coordinators/seal-guard-path-20261025.py": {
+      "bytes": 6500,
+      "sha256": "6650181bf6b7d27be6303b3e873340c74ee106bac9083ff5b9508c3a90be8434"
+    },
+    "coordinators/verify-guard-path-staged-20261025.py": {
+      "bytes": 2947,
+      "sha256": "e25df59f719f8d9db2cf13885bafc9f5a5668436b19dc4102e356397c4ca111a"
+    },
+    "measured-source/contract.rs": {
+      "bytes": 672,
+      "sha256": "4ed5d3a148563fdd6a4486cac44f705d6139c8e7c3d129943a3d31365bbefe47"
+    },
+    "measured-source/fixed-slice-before.txt": {
+      "bytes": 5726,
+      "sha256": "5bf7b3618f2cf80143a28c8bf56e368faa59d8d8d8517771e3998feab51888ec"
+    },
+    "measured-source/probe.rs": {
+      "bytes": 9105,
+      "sha256": "0fab170ce9ec407133aa72082b2e1513e9bddfedeac2dbd2b2a69d14b7454261"
+    },
+    "protected/Cargo.lock": {
+      "bytes": 175330,
+      "sha256": "d2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c"
+    },
+    "protected/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "18a8a27cf140a1d6eb31c8316ee39bb7d5832866a990346eee16cd0c30de344b"
+    },
+    "protected/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "reconstructed-measured-coordinator/capture.py": {
+      "bytes": 6656,
+      "sha256": "759d14663df30d19dd9e6d1f5f730aaa25fe163d93c8b3c80e19e643766a2914"
+    },
+    "source/crates/xtask/tests/authority_context_074.rs": {
+      "bytes": 6582,
+      "sha256": "d02b638dd960f7cd2581b5a21f7f983129cec48ead4cbe798b32c84c1bdb150c"
+    },
+    "source/crates/xtask/tests/support/performance_contract_074_fixed_slice.rs": {
+      "bytes": 5733,
+      "sha256": "c1dbcc165b17c4fd4c345436ee415fe4650b23ae34b02ae88c118c54e0283edf"
+    },
+    "source/tools/authority-runtime-074/gate.rs": {
+      "bytes": 7578,
+      "sha256": "549ecf4ba7ac352b705fa618471b84a85db4a421afaf2bd97196769a46cc5a8e"
+    },
+    "source/tools/authority-runtime-074/io.rs": {
+      "bytes": 1429,
+      "sha256": "9d24652cdabe794b1d2be458c3b71880a98530045c3a17f2577a4573bb718202"
+    },
+    "source/tools/authority-runtime-074/performance.rs": {
+      "bytes": 12987,
+      "sha256": "04a02636d2513454c26b086031f9beeb3cac010132ed56621c078765adf90850"
+    },
+    "source/tools/authority-storage-source-074/contract.rs": {
+      "bytes": 6943,
+      "sha256": "aefcd4f6a9ed0acc1e072225ea3ed4dda82d2d1ccda0ba4f22ca74459efa64c2"
+    },
+    "source/tools/guard-path-comparison-074/.gitattributes": {
+      "bytes": 78,
+      "sha256": "687c1b504d1cdf57b3a7e82df631ba45599de03109a3ebc39057a8ad31cecb25"
+    },
+    "source/tools/guard-path-comparison-074/README.md": {
+      "bytes": 1775,
+      "sha256": "d6bc6f209512311362156be46f91375624f8191599c57ba0e0eec80b1282e68c"
+    },
+    "source/tools/guard-path-comparison-074/capture.py": {
+      "bytes": 6891,
+      "sha256": "2be31d3e9a2a5a679c1fb46365356114fcfd849b9dc2a001bdd197fe55dedf2e"
+    },
+    "source/tools/guard-path-comparison-074/contract.rs": {
+      "bytes": 578,
+      "sha256": "b24e9938aa5af4c9f45f1a542d21aac22da6adb168465df490d48c8c32d084c5"
+    },
+    "source/tools/guard-path-comparison-074/fixed-slice-before.txt": {
+      "bytes": 5726,
+      "sha256": "5bf7b3618f2cf80143a28c8bf56e368faa59d8d8d8517771e3998feab51888ec"
+    },
+    "source/tools/guard-path-comparison-074/probe.rs": {
+      "bytes": 9110,
+      "sha256": "4e371144430fd497324a1865decdb8ac6b13cfdcc52221a9587c09abdd90cc27"
+    },
+    "source/tools/guard-path-comparison-074/proposal.toml": {
+      "bytes": 1118,
+      "sha256": "7ad9dfcf07a5371cc3bbfc2da4b0076c25454812d9029929be2cf84a3871c2c5"
+    },
+    "source/tools/guard-path-comparison-074/test_capture.py": {
+      "bytes": 2542,
+      "sha256": "a24f7dabbe8227c7e0a3764738943999371cd46450b85dd4681c4fffe6de5062"
+    }
+  },
+  "schema": "hc074-guard-path-comparison-v1"
+}

@@ -362,3 +362,13 @@ qualification. The current-source audit confirms default-off GET-owner and no
 accepted performance composition; optional RESP mTLS is not a performance win.
 The explicit dependency audit-only restriction, original readiness boundary,
 manager/clock prerequisites and prepared-not-authorized manifest remain unchanged.
+
+The [subsequent fixed-slice path comparison](guard-path-comparison-result-20261025.md)
+is installed only in test-source preservation. It removes four temporary formatted
+paths per guard invocation, with one allocation/reallocation per old predicate
+versus zero in a sole 24-sample allocation cohort. Exact hook order/assertions,
+old token-based admission and live schedule remain; 12 focused cases per Windows
+compiler and three Python controls pass. The first mutation-oracle and strict-lint
+failures survive. This is not full-normalizer CPU, package green or product gain.
+The old effect review refuses source drift, so no previous replay clearance is
+inherited. Every original execution/security/qualification barrier above remains.

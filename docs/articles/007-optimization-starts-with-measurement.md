@@ -19512,3 +19512,27 @@ kill requests from cessation of all writers, snapshots from same-process reconne
 synthetic signatures from production enrollment and a scoped audit from expensive
 qualification permission. Those joins need implementations and direct evidence;
 more successful component tests cannot construct them by implication.
+
+### Removing one measured guard allocation without removing checks
+
+The [fixed slice comparison experiment](../testing/performance/0.74/guard-path-comparison-result-20261025.md)
+isolates a smaller owner inside source preservation. Four hook checks build
+temporary formatted paths even when the current file is unrelated. Replacing
+only that equality with borrowed prefix/suffix comparison retains every loop
+position, assertion, hook transformation and namespace delegate. It does not
+cache files or historical responses, reduce validation rounds or move a deadline.
+
+An allocation-only image records one allocation and one reallocation per old
+predicate versus zero for the borrowed expression. All 24 first samples agree;
+the four-comparison loop removes 410 gross requested bytes. Scope requested-live
+returns to zero on both sides. These are Rust allocation requests, not RSS or
+retained memory, and they do not establish a package CPU or wall-time improvement.
+The counter image is deliberately not used to claim unprofiled timing.
+
+Integration retains the old whole-Rust-token admission rule. A first mutation
+test incorrectly expects a comment to fail that rule; preserving the failure and
+correcting the oracle avoids silently changing source policy to satisfy a test.
+Existing hook-damage and 432-source preservation checks pass on both compilers.
+The old package effect receipt now correctly refuses changed source, rather than
+granting a new build its predecessor's clearance. A useful local allocation
+reduction can coexist with a red package gate and an unadmitted product release.

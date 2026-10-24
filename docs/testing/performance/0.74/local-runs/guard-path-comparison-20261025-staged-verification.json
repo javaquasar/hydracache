@@ -1,0 +1,13 @@
+{
+  "schema": "hc074-guard-path-staged-verification-v1",
+  "index_sha256": "a22199ba4dfda1dfb9f57a21f5785061313fde68cb77cdabfa69d649ec5fcbae",
+  "members": 175,
+  "objects": 108,
+  "allocation_samples": 24,
+  "raw_record_counts_verified": true,
+  "protected_unchanged": true,
+  "no_package_or_measured_child_rerun": true,
+  "verifier": "coordinators/verify-guard-path-staged-20261025.py",
+  "tool_output_chunk": "944d2c",
+  "server_or_qualification_admission": false
+}

@@ -42,6 +42,13 @@ removing tests, refreshing source pins from responses or changing conditional
 reads. A separate candidate needs its own baseline and unchanged-bound proof;
 do not retry the same source to pass or splice focused suffix results into it.
 
+The [first isolated comparison candidate](guard-path-comparison-result-20261025.md)
+removes temporary path allocations in one fixed-slice source guard. Exact source
+delta, old-token admission, seeded positions and existing hook/432-source tests
+pass locally. It is not measured full-path CPU or package completion. The previous
+effect receipt refuses changed source; a new reviewed scope is required before
+another complete replay, with the original 780-second limit and first timeout intact.
+
 The last full milestone stopped on fifteen dependency advisories. The explicit
 audit-only decision in [the security plan](dependency-security-plan-20261024.md)
 still applies: do not restore the reverted TLS experiment, change dependencies,

@@ -1,0 +1,105 @@
+"""Seal one allocation cohort and the exact test-only integration, not a package pass."""
+from pathlib import Path
+import hashlib
+import json
+import re
+import subprocess
+import sys
+ROOT = Path(__file__).resolve().parent.parent
+CODE = '04285f6b3d8d572ef291fa5e688d5e305d088f7a'
+BASE = 'docs/testing/performance/0.74/local-runs/guard-path-comparison-20261025'
+PROTECTED = {
+    'Cargo.toml': '18a8a27cf140a1d6eb31c8316ee39bb7d5832866a990346eee16cd0c30de344b',
+    'Cargo.lock': 'd2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c',
+    'docs/testing/performance/0.74/qualification-manifest.toml': '11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc',
+}
+sys.path.insert(0, str(ROOT / 'tools/guard-path-comparison-074'))
+import capture
+def sha(raw):
+    return hashlib.sha256(raw).hexdigest()
+members, objects, phases = {}, {}, []
+def add(name, raw):
+    assert name not in members
+    digest = sha(raw)
+    members[name] = dict(sha256=digest, bytes=len(raw))
+    objects[digest] = raw
+def tree(folder, prefix):
+    for path in sorted(folder.iterdir()):
+        assert path.is_file()
+        add(prefix + '/' + path.name, path.read_bytes())
+assert subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT).decode().strip() == CODE
+checks = ROOT / 'target/source-continuation-20261024'
+failures = {'guard-path-20261025-integration-current': 101, 'guard-path-20261025-clippy': 101}
+expected_passes = {'integration-current-final': 5, 'integration-msrv-final': 5,
+    'existing-fixed-slice-final': 3, 'msrv-fixed-slice': 3, 'probe-final': 4, 'probe-msrv-final': 4}
+for folder in sorted(checks.glob('guard-path-20261025-*')):
+    intent = json.loads((folder / 'intent.json').read_bytes())
+    result = json.loads((folder / 'result.json').read_bytes())
+    assert result['exit'] == failures.get(folder.name, 0) and result['outer_refusal'] is None, folder
+    assert result['source_unchanged'] and result['head_unchanged'] and intent['source'] == result['source_after']
+    tree(folder, 'checks/' + folder.name)
+    passed = list(map(int, re.findall(r'test result: ok\. (\d+) passed; 0 failed;',
+        (folder / 'stdout.log').read_text())))
+    suffix = folder.name[len('guard-path-20261025-'):]
+    if suffix in expected_passes:
+        assert passed == [expected_passes[suffix]]
+    phases.append(dict(phase=folder.name, exit=result['exit'], rust_passes=passed))
+folder = ROOT / 'target/guard-path-20261025/first'
+tree(folder, 'capture/first')
+report = capture.review((folder / 'stdout.log').read_bytes())
+assert report == json.loads((folder / 'result.json').read_bytes())
+assert {row['requested'] for row in report['samples'] if not row['candidate']} == {1364480}
+assert {row['reallocations'] for row in report['samples'] if not row['candidate']} == {13312}
+preflight = json.loads((folder / 'preflight.json').read_bytes())
+for name in ('probe.rs', 'contract.rs'):
+    raw = (checks / 'guard-path-20261025-clippy' / (name + '.raw')).read_bytes()
+    assert sha(raw) == preflight['source']['tools/guard-path-comparison-074/' + name]
+    add('measured-source/' + name, raw)
+raw = (ROOT / 'tools/guard-path-comparison-074/fixed-slice-before.txt').read_bytes()
+assert sha(raw) == capture.BASELINE
+add('measured-source/fixed-slice-before.txt', raw)
+
+# Reconstruct only the known post-capture parser hardening delta. Require the
+# pre-effect digest; label reconstruction rather than inventing raw capture.
+raw = subprocess.check_output(['git', 'show', '59e133f4:tools/guard-path-comparison-074/capture.py'], cwd=ROOT).decode()
+raw = raw.replace("    require(type(done[0]['samples']) is int and all(done[0][key] is False\n            for key in ('warmup', 'product', 'package_replay')), 'completion types')\n", '')
+raw = raw.replace("('block', 'slot', 'loops', 'paths'", "('loops', 'paths'")
+raw = raw.replace("        require(row.get('timing') is False, 'timing type')\n", '')
+assert sha(raw.encode()) == preflight['source']['tools/guard-path-comparison-074/capture.py']
+add('reconstructed-measured-coordinator/capture.py', raw.encode())
+
+for path in sorted((ROOT / 'tools/guard-path-comparison-074').iterdir()):
+    if path.is_file():
+        add('source/tools/guard-path-comparison-074/' + path.name, path.read_bytes())
+for name in ('crates/xtask/tests/authority_context_074.rs',
+    'crates/xtask/tests/support/performance_contract_074_fixed_slice.rs',
+    'tools/authority-runtime-074/gate.rs', 'tools/authority-runtime-074/performance.rs',
+    'tools/authority-runtime-074/io.rs', 'tools/authority-storage-source-074/contract.rs'):
+    add('source/' + name, (ROOT / name).read_bytes())
+for name, digest in PROTECTED.items():
+    raw = (ROOT / name).read_bytes()
+    assert sha(raw) == digest
+    add('protected/' + name, raw)
+for name in ('run-source-step-20261024.py', 'run-fresh-reader-20261024.py',
+    'guard-path-old-review-20261025.py', 'guard-path-delta-20261025.py',
+    'seal-guard-path-20261025.py', 'verify-guard-path-staged-20261025.py'):
+    add('coordinators/' + name, (ROOT / 'target' / name).read_bytes())
+old = ROOT / 'docs/testing/performance/0.74/local-runs/transport-package-20261025/index.json'
+assert sha(old.read_bytes()) == 'e9b8a923723360bce644c9de558113bf084630d1c4a72916dd0bfd3d418fc553'
+index = dict(schema='hc074-guard-path-comparison-v1', code_commit=CODE, members=members,
+    facts=dict(phases=phases, protected_sha256=PROTECTED, allocation_cohorts=1, samples=24,
+        comparisons_per_sample=13312, focused_xtask_per_toolchain=8, standalone_per_toolchain=4,
+        python_controls=3, source_gate_comment_policy_changed=False, historical_reads_added=0,
+        live_frequency_or_windows_changed=False, package_replayed=False, old_package_pass=False,
+        old_effect_review_refused=True, first_test_and_lint_failures_retained=True,
+        timing=False, rss_or_retention_claim=False, production_candidate=False,
+        server=False, services=False, clocks_changed=False, dependency_changes=False, qualification=False))
+out = ROOT / BASE
+out.mkdir(parents=True, exist_ok=False)
+(out / 'objects').mkdir()
+(out / '.gitattributes').write_bytes(b'index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n')
+for digest, raw in objects.items():
+    (out / 'objects' / digest).write_bytes(raw)
+raw = (json.dumps(index, indent=2, sort_keys=True) + '\n').encode()
+(out / 'index.json').write_bytes(raw)
+print(json.dumps(dict(index_sha256=sha(raw), members=len(members), objects=len(objects), phases=len(phases))))

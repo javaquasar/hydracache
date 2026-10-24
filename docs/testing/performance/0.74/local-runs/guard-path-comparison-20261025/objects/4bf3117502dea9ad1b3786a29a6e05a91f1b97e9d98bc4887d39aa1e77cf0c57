@@ -1,0 +1,12 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+warning: function `accepts` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\guard-path-comparison-074\contract.rs:16:8
+   |
+16 | pub fn accepts(original: &str, current: &str) -> bool {
+   |        ^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `xtask` (test "performance_contract_074") generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 12.11s
+     Running tests\performance_contract_074.rs (target\debug\deps\performance_contract_074-6e7177044aaa8c23.exe)

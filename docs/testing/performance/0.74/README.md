@@ -6999,3 +6999,13 @@ dependency order. GET-owner remains default off with full D3 incomplete, accepte
 performance proposals zero and C74 unresolved. Security updates remain audit-only;
 original delivery still ends at readiness. No services, clocks, server, product
 workload, qualification permission or frozen manifest changes follow.
+
+The [isolated fixed-slice comparison](guard-path-comparison-result-20261025.md)
+now removes four formatted path Strings from that test guard without changing
+its loop, assertions, reads or live schedule. A sole 24-sample allocation cohort
+records one allocation/reallocation per old predicate versus zero; this is 410
+gross requested bytes per four-comparison loop, not a cache or full-package gain.
+Eight focused xtask and four standalone controls pass per Windows compiler, plus
+three Python controls and strict local checks. First mutation-oracle/lint failures
+remain. The old effect receipt correctly refuses source drift; package timeout,
+production gates and qualification manifest remain unchanged.

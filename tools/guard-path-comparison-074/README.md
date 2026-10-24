@@ -21,7 +21,10 @@ directory, verifies the frozen current baseline before any measured child, and
 enables only `allocation_child`. A changed installed source refuses a new capture;
 the first raw output can still be reviewed offline after integration.
 
-This component result cannot close the 780-second full-package timeout. Source
-integration additionally requires whole-file expected-byte binding and mutation,
-property, existing-guard and current/MSRV gates. The preceding default-Windows
-effect-review digest does not automatically cover any changed source.
+The one-line source change is now integrated with an exact expected-source delta
+under the existing whole-Rust-token gate. Comments/formatting remain permitted;
+hook/assertion or other executable drift refuses. Mutation/property, existing
+432-source preservation and current/MSRV gates pass. The component result cannot
+close the 780-second full-package timeout, and the preceding default-Windows
+effect-review digest correctly refuses changed source. See the
+[result and limitations](../../docs/testing/performance/0.74/guard-path-comparison-result-20261025.md).

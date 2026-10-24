@@ -1,0 +1,9 @@
+
+running 4 tests
+test allocation_child ... ok
+test source_delta_is_exact_and_keeps_all_assertions ... ok
+test allocator_restores_after_unwind_and_separates_threads ... ok
+test literal_paths_and_seeded_unicode_mutations_keep_exact_positions ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+

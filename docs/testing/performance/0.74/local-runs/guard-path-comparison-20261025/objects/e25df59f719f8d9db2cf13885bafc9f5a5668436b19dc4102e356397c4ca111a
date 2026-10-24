@@ -1,0 +1,45 @@
+"""Independent staged CAS and raw allocation record readback; no measured execution."""
+from pathlib import Path
+import hashlib
+import json
+import subprocess
+ROOT = Path(__file__).resolve().parent.parent
+BASE = 'docs/testing/performance/0.74/local-runs/guard-path-comparison-20261025'
+def staged(name):
+    return subprocess.check_output(['git', 'show', ':' + BASE + '/' + name], cwd=ROOT)
+raw = staged('index.json')
+index = json.loads(raw)
+assert index['schema'] == 'hc074-guard-path-comparison-v1'
+objects = {}
+for name, entry in index['members'].items():
+    digest = entry['sha256']
+    assert len(digest) == 64 and all(c in '0123456789abcdef' for c in digest)
+    if digest not in objects: objects[digest] = staged('objects/' + digest)
+    assert hashlib.sha256(objects[digest]).hexdigest() == digest and len(objects[digest]) == entry['bytes']
+def member(name):
+    return objects[index['members'][name]['sha256']]
+rows = [json.loads(line[len('HC074_GUARD_PATH '):]) for line in member('capture/first/stdout.log').decode().splitlines()
+    if line.startswith('HC074_GUARD_PATH ')]
+assert len(rows) == 24 and rows == json.loads(member('capture/first/result.json'))['samples']
+for i, row in enumerate(rows):
+    block, slot = divmod(i, 4)
+    order = (False, True, True, False) if block % 2 == 0 else (True, False, False, True)
+    assert (row['block'], row['slot'], row['candidate']) == (block, slot, order[slot])
+    assert row['comparisons'] == 13312 and row['matched'] == 1024 and row['live'] == 0 and row['timing'] is False
+    assert (row['allocations'], row['reallocations'], row['requested'], row['peak']) == (
+        (0, 0, 0, 0) if row['candidate'] else (13312, 13312, 1364480, 70))
+preflight = json.loads(member('capture/first/preflight.json'))
+for name in ('probe.rs', 'contract.rs'):
+    assert hashlib.sha256(member('measured-source/' + name)).hexdigest() == preflight['source']['tools/guard-path-comparison-074/' + name]
+assert hashlib.sha256(member('reconstructed-measured-coordinator/capture.py')).hexdigest() == preflight['source']['tools/guard-path-comparison-074/capture.py']
+for phase in index['facts']['phases']:
+    result = json.loads(member('checks/' + phase['phase'] + '/result.json'))
+    assert result['exit'] == phase['exit'] and result['source_unchanged'] and result['head_unchanged']
+for name, digest in index['facts']['protected_sha256'].items():
+    assert hashlib.sha256(member('protected/' + name)).hexdigest() == digest
+    assert hashlib.sha256((ROOT / name).read_bytes()).hexdigest() == digest
+assert not index['facts']['package_replayed'] and index['facts']['old_effect_review_refused']
+assert not index['facts']['live_frequency_or_windows_changed']
+print(json.dumps(dict(index_sha256=hashlib.sha256(raw).hexdigest(), members=len(index['members']),
+    objects=len(objects), allocation_samples=24, raw_record_counts_verified=True,
+    protected_unchanged=True, no_package_or_measured_child_rerun=True)))

@@ -1,0 +1,55 @@
+
+running 1 test
+test allocation_child ... 
+HC074_GUARD_PATH {"block":0,"slot":0,"candidate":false,"loops":256,"paths":13,"comparisons":13312,"matched":1024,"allocations":13312,"reallocations":13312,"requested":1364480,"live":0,"peak":70,"timing":false}
+
+HC074_GUARD_PATH {"block":0,"slot":1,"candidate":true,"loops":256,"paths":13,"comparisons":13312,"matched":1024,"allocations":0,"reallocations":0,"requested":0,"live":0,"peak":0,"timing":false}
+
+HC074_GUARD_PATH {"block":0,"slot":2,"candidate":true,"loops":256,"paths":13,"comparisons":13312,"matched":1024,"allocations":0,"reallocations":0,"requested":0,"live":0,"peak":0,"timing":false}
+
+HC074_GUARD_PATH {"block":0,"slot":3,"candidate":false,"loops":256,"paths":13,"comparisons":13312,"matched":1024,"allocations":13312,"reallocations":13312,"requested":1364480,"live":0,"peak":70,"timing":false}
+
+HC074_GUARD_PATH {"block":1,"slot":0,"candidate":true,"loops":256,"paths":13,"comparisons":13312,"matched":1024,"allocations":0,"reallocations":0,"requested":0,"live":0,"peak":0,"timing":false}
+
+HC074_GUARD_PATH {"block":1,"slot":1,"candidate":false,"loops":256,"paths":13,"comparisons":13312,"matched":1024,"allocations":13312,"reallocations":13312,"requested":1364480,"live":0,"peak":70,"timing":false}
+
+HC074_GUARD_PATH {"block":1,"slot":2,"candidate":false,"loops":256,"paths":13,"comparisons":13312,"matched":1024,"allocations":13312,"reallocations":13312,"requested":1364480,"live":0,"peak":70,"timing":false}
+
+HC074_GUARD_PATH {"block":1,"slot":3,"candidate":true,"loops":256,"paths":13,"comparisons":13312,"matched":1024,"allocations":0,"reallocations":0,"requested":0,"live":0,"peak":0,"timing":false}
+
+HC074_GUARD_PATH {"block":2,"slot":0,"candidate":false,"loops":256,"paths":13,"comparisons":13312,"matched":1024,"allocations":13312,"reallocations":13312,"requested":1364480,"live":0,"peak":70,"timing":false}
+
+HC074_GUARD_PATH {"block":2,"slot":1,"candidate":true,"loops":256,"paths":13,"comparisons":13312,"matched":1024,"allocations":0,"reallocations":0,"requested":0,"live":0,"peak":0,"timing":false}
+
+HC074_GUARD_PATH {"block":2,"slot":2,"candidate":true,"loops":256,"paths":13,"comparisons":13312,"matched":1024,"allocations":0,"reallocations":0,"requested":0,"live":0,"peak":0,"timing":false}
+
+HC074_GUARD_PATH {"block":2,"slot":3,"candidate":false,"loops":256,"paths":13,"comparisons":13312,"matched":1024,"allocations":13312,"reallocations":13312,"requested":1364480,"live":0,"peak":70,"timing":false}
+
+HC074_GUARD_PATH {"block":3,"slot":0,"candidate":true,"loops":256,"paths":13,"comparisons":13312,"matched":1024,"allocations":0,"reallocations":0,"requested":0,"live":0,"peak":0,"timing":false}
+
+HC074_GUARD_PATH {"block":3,"slot":1,"candidate":false,"loops":256,"paths":13,"comparisons":13312,"matched":1024,"allocations":13312,"reallocations":13312,"requested":1364480,"live":0,"peak":70,"timing":false}
+
+HC074_GUARD_PATH {"block":3,"slot":2,"candidate":false,"loops":256,"paths":13,"comparisons":13312,"matched":1024,"allocations":13312,"reallocations":13312,"requested":1364480,"live":0,"peak":70,"timing":false}
+
+HC074_GUARD_PATH {"block":3,"slot":3,"candidate":true,"loops":256,"paths":13,"comparisons":13312,"matched":1024,"allocations":0,"reallocations":0,"requested":0,"live":0,"peak":0,"timing":false}
+
+HC074_GUARD_PATH {"block":4,"slot":0,"candidate":false,"loops":256,"paths":13,"comparisons":13312,"matched":1024,"allocations":13312,"reallocations":13312,"requested":1364480,"live":0,"peak":70,"timing":false}
+
+HC074_GUARD_PATH {"block":4,"slot":1,"candidate":true,"loops":256,"paths":13,"comparisons":13312,"matched":1024,"allocations":0,"reallocations":0,"requested":0,"live":0,"peak":0,"timing":false}
+
+HC074_GUARD_PATH {"block":4,"slot":2,"candidate":true,"loops":256,"paths":13,"comparisons":13312,"matched":1024,"allocations":0,"reallocations":0,"requested":0,"live":0,"peak":0,"timing":false}
+
+HC074_GUARD_PATH {"block":4,"slot":3,"candidate":false,"loops":256,"paths":13,"comparisons":13312,"matched":1024,"allocations":13312,"reallocations":13312,"requested":1364480,"live":0,"peak":70,"timing":false}
+
+HC074_GUARD_PATH {"block":5,"slot":0,"candidate":true,"loops":256,"paths":13,"comparisons":13312,"matched":1024,"allocations":0,"reallocations":0,"requested":0,"live":0,"peak":0,"timing":false}
+
+HC074_GUARD_PATH {"block":5,"slot":1,"candidate":false,"loops":256,"paths":13,"comparisons":13312,"matched":1024,"allocations":13312,"reallocations":13312,"requested":1364480,"live":0,"peak":70,"timing":false}
+
+HC074_GUARD_PATH {"block":5,"slot":2,"candidate":false,"loops":256,"paths":13,"comparisons":13312,"matched":1024,"allocations":13312,"reallocations":13312,"requested":1364480,"live":0,"peak":70,"timing":false}
+
+HC074_GUARD_PATH {"block":5,"slot":3,"candidate":true,"loops":256,"paths":13,"comparisons":13312,"matched":1024,"allocations":0,"reallocations":0,"requested":0,"live":0,"peak":0,"timing":false}
+HC074_GUARD_PATH_DONE {"samples":24,"warmup":false,"product":false,"package_replay":false}
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.04s
+

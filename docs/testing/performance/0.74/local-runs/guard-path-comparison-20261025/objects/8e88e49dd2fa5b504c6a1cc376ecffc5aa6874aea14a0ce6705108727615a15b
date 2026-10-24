@@ -1,0 +1,13 @@
+{
+  "blocks": 6,
+  "bound_seconds": 60,
+  "clocks": false,
+  "loops": 256,
+  "paths": 13,
+  "retry": false,
+  "samples": 24,
+  "server": false,
+  "services": false,
+  "timing": false,
+  "warmup": false
+}

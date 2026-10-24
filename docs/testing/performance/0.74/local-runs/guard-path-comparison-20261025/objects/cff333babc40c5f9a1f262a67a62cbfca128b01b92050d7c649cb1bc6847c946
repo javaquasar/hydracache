@@ -1,0 +1,23 @@
+"""Expect the preceding default-package source receipt to refuse changed code."""
+from pathlib import Path
+import hashlib
+import json
+import sys
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / 'tools/historical-blob-batch-074'))
+import package_effects_review
+folder = ROOT / 'docs/testing/performance/0.74/local-runs/transport-package-20261025'
+raw = (folder / 'index.json').read_bytes()
+assert hashlib.sha256(raw).hexdigest() == 'e9b8a923723360bce644c9de558113bf084630d1c4a72916dd0bfd3d418fc553'
+index = json.loads(raw)
+entry = index['members']['syntax/final-closure/result.json']
+raw = (folder / 'objects' / entry['sha256']).read_bytes()
+assert len(raw) == entry['bytes'] and hashlib.sha256(raw).hexdigest() == entry['sha256']
+try:
+    package_effects_review.source_review(ROOT, json.loads(raw))
+except ValueError as error:
+    assert str(error) in ('source drift', 'module graph not closed')
+    print(json.dumps(dict(old_receipt_refused=True, reason=str(error), package_replayed=False,
+        old_digest_updated=False, original_results_reclassified=False)))
+else:
+    raise AssertionError('changed source must not inherit old effect admission')
