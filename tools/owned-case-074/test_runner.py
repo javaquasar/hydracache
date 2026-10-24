@@ -54,6 +54,8 @@ class RunnerControls(unittest.TestCase):
         self.assertEqual(len(runner.selection('v4-fd')[2]), 2)
         self.assertEqual(runner.selection('v7-frozen-input')[2],
                          ['diagnostic_artifacts::linux::io_binding_tests::'])
+        self.assertEqual(runner.selection('v10-transport-eof')[2],
+                         ['diagnostic_two_phase_launch::root_enrollment::kernel::transport::'])
         for tag in runner.TAGS:
             self.assertFalse(any(value.startswith('--') for value in runner.selection(tag)[2]))
 

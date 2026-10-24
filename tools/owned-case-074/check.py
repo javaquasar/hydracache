@@ -10,7 +10,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[2]
 
 TAGS = ('v3-output', 'v4-fd', 'v5-material', 'v6-material-bytes',
-        'v7-frozen-input', 'v8-bootstrap-isolation', 'v9-full-ordinary')
+        'v7-frozen-input', 'v8-bootstrap-isolation', 'v9-full-ordinary', 'v10-transport-eof')
 
 def selected_artifact(lines, name, target):
     artifacts = []
@@ -28,7 +28,7 @@ def selected_artifact(lines, name, target):
 def selection(tag):
     if tag not in TAGS:
         raise ValueError('Distinct reviewed candidate required')
-    lib = tag in ('v4-fd', 'v5-material', 'v6-material-bytes', 'v7-frozen-input', 'v9-full-ordinary')
+    lib = tag in ('v4-fd', 'v5-material', 'v6-material-bytes', 'v7-frozen-input', 'v9-full-ordinary', 'v10-transport-eof')
     name = 'hydracache_long_run_supervisor_074' if lib else 'held_launcher'
     selectors = ['owned_case_controls::']
     if tag == 'v4-fd':
@@ -36,6 +36,8 @@ def selection(tag):
                      'held_material_kernel_drop_closes_all_six_resources_and_partial_creation_is_raii']
     elif tag in ('v5-material', 'v6-material-bytes', 'v7-frozen-input'):
         selectors = ['diagnostic_artifacts::linux::io_binding_tests::']
+    elif tag == 'v10-transport-eof':
+        selectors = ['diagnostic_two_phase_launch::root_enrollment::kernel::transport::']
     elif tag in ('v8-bootstrap-isolation', 'v9-full-ordinary'):
         selectors = []
     if tag == 'v8-bootstrap-isolation':

@@ -137,13 +137,21 @@ pub fn candidate(path: &str, original: &str) -> Option<String> {
         }
         raw
     } else {
-        let name = if path == PATHS[3] {
-            "cgroup_root_transport_every_bound_byte_refuses_and_closes_rights"
+        let names: &[&str] = if path == PATHS[3] {
+            &[
+                "cgroup_root_transport_rejected_right_counts_and_truncation_close_all_aliases",
+                "cgroup_root_transport_size_flags_missing_credentials_and_fake_roots_refuse",
+                "cgroup_root_transport_every_bound_byte_refuses_and_closes_rights",
+            ]
         } else {
-            "held_material_kernel_drop_closes_all_six_resources_and_partial_creation_is_raii"
+            &["held_material_kernel_drop_closes_all_six_resources_and_partial_creation_is_raii"]
         };
-        let signature = format!("fn {name}() {{");
-        replace(&raw, &signature, &format!("{signature}\n    if crate::diagnostic_ipc::validation_trace::owned_case::isolate(module_path!(), \"{name}\",) {{ return; }}"))
+        let mut raw = raw;
+        for name in names {
+            let signature = format!("fn {name}() {{");
+            raw = replace(&raw, &signature, &format!("{signature}\n    if crate::diagnostic_ipc::validation_trace::owned_case::isolate(module_path!(), \"{name}\",) {{ return; }}"));
+        }
+        raw
     })
 }
 pub fn accepts(path: &str, original: &str, actual: &str) -> bool {

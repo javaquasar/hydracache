@@ -69,6 +69,12 @@ fn cgroup_root_transport_kernel_credentials_and_atomic_cloexec() {
 }
 #[test]
 fn cgroup_root_transport_rejected_right_counts_and_truncation_close_all_aliases() {
+    if crate::diagnostic_ipc::validation_trace::owned_case::isolate(
+        module_path!(),
+        "cgroup_root_transport_rejected_right_counts_and_truncation_close_all_aliases",
+    ) {
+        return;
+    }
     for count in [0, 1, 2, 4, 32, 64, 253] {
         let [reader, writer] = pipe();
         let [a, b] = socket_pair(Creator::current()).unwrap();
@@ -80,6 +86,12 @@ fn cgroup_root_transport_rejected_right_counts_and_truncation_close_all_aliases(
 }
 #[test]
 fn cgroup_root_transport_size_flags_missing_credentials_and_fake_roots_refuse() {
+    if crate::diagnostic_ipc::validation_trace::owned_case::isolate(
+        module_path!(),
+        "cgroup_root_transport_size_flags_missing_credentials_and_fake_roots_refuse",
+    ) {
+        return;
+    }
     use std::os::unix::fs::OpenOptionsExt;
     let regular = tempfile::NamedTempFile::new().unwrap();
     let valid = std::fs::OpenOptions::new()

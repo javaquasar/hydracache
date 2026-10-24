@@ -29,3 +29,10 @@ manual original owner, service fixture, server action, clock modification,
 product workload, all-writer cessation claim or enlarged live window follows.
 Record the first candidate outcome even if it fails. A further complete ordinary
 cohort needs its own changed-candidate rationale, not retry-to-pass.
+
+The first v10 transport-module run passes six cases per compiler; the unchanged
+manual case remains ignored and 1616 unrelated cases are filtered by this
+focused selector. These are not full ordinary cohort results. The source map
+stays unchanged. Both compilers pass all-target check and strict all-feature
+Clippy; current source/mutation controls and xtask check/strict Clippy pass.
+The complete earlier v9 ordinary refusals remain unchanged and authoritative.
