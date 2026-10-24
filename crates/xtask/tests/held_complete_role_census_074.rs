@@ -1,11 +1,20 @@
 #[path = "support/bootstrap_build_guard.rs"]
 mod build_guard;
+#[path = "../../../tools/historical-blob-batch-074/mod.rs"]
+pub mod census_runtime;
 #[path = "support/bootstrap_entry_guard.rs"]
 mod entry_guard;
 #[path = "support/held_role_census_guard.rs"]
 mod guard;
 #[path = "support/census_provider_input.rs"]
 mod provider_input;
+
+#[test]
+fn census_standalone_panic_api_signatures_do_not_add_source_reads() {
+    let _: fn() -> String = provider_input::original;
+    let _: fn(&str, &str) -> bool = provider_input::accepts;
+    let _: fn(&str, &str) -> String = provider_input::view;
+}
 
 fn read(name: &str) -> String {
     let raw = std::fs::read_to_string(

@@ -1,12 +1,11 @@
-//! Shadow audit of an unchanged real source caller; not an integration switch.
-#[path = "support/census_provider_input.rs"]
+//! Frozen legacy differential reference plus the narrowly integrated caller.
+#[path = "support/census_provider_input_legacy.rs"]
 mod caller;
-#[path = "../../../tools/historical-blob-batch-074/census_caller.rs"]
-mod census;
-#[path = "../../../tools/historical-blob-batch-074/decoder.rs"]
-mod decoder;
-#[path = "../../../tools/historical-blob-batch-074/transport.rs"]
-mod transport;
+#[path = "../../../tools/historical-blob-batch-074/mod.rs"]
+pub mod census_runtime;
+#[path = "support/census_provider_input.rs"]
+mod integrated;
+use census_runtime::{census_caller as census, decoder, transport};
 use serde_json::{json, Value};
 use std::fs;
 use std::io::Write;
@@ -60,7 +59,7 @@ fn real_census_caller_shadow_preserves_the_logging_counterexample_before_integra
     retain(
         &evidence,
         "intent.json",
-        br#"{"caller_integrated":false,"server":false,"measurement":false}"#,
+        br#"{"scope":"frozen-legacy-batch-canary","caller_integrated":false,"server":false,"measurement":false}"#,
     );
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
     let mut producer = Command::new(if cfg!(windows) { "python" } else { "python3" });
@@ -122,7 +121,7 @@ fn real_census_caller_shadow_preserves_the_logging_counterexample_before_integra
         assert_eq!(result.code, Some(0), "first caller {mode} outcome");
         assert!(result.stderr.is_empty());
     }
-    retain(&evidence,"result.json",br#"{"fixture_pin_integrity":true,"clean_shadow_match":true,"trace_counterexample":true,"caller_admitted":false,"caller_integrated":false}"#);
+    retain(&evidence,"result.json",br#"{"scope":"frozen-legacy-batch-canary","fixture_pin_integrity":true,"clean_shadow_match":true,"trace_counterexample":true,"caller_admitted":false,"caller_integrated":false}"#);
 }
 
 #[test]
@@ -140,7 +139,7 @@ fn caller_child_fixture() {
             .unwrap()
             .replace("\r\n", "\n")
     };
-    // Invoke the actual unchanged caller, including its conditional view/helper
+    // Invoke the exact archived legacy caller, including its conditional view/helper
     // checks. Git tracing is child-local and its stderr is ignored by that caller.
     let original = caller::original();
     let accepted = caller::accepts(&original, &source(1));
@@ -206,6 +205,26 @@ fn shadow_cannot_use_an_unbound_missing_reference() {
         ),
         Err(Refusal::FallbackRequired)
     );
+}
+
+#[test]
+fn static_census_reference_keeps_exact_revision_and_path_allowlist() {
+    use census_runtime::census_reference as references;
+    assert_eq!(references::BASE, integrated::contract::BASE);
+    assert_eq!(references::SOURCE, integrated::contract::SOURCE);
+    for revision in [references::BASE, references::REVIEWED] {
+        assert!(references::reference(revision, references::SOURCE).is_ok());
+    }
+    for (revision, path) in [
+        ("HEAD", references::SOURCE),
+        ("25faa7bb", references::SOURCE),
+        (references::BASE, "other.rs"),
+        (references::REVIEWED, "../source.rs"),
+    ] {
+        let failure = references::reference(revision, path).unwrap_err();
+        assert_eq!(failure.reason, census::Reason::Reference);
+        assert!(failure.output.is_none());
+    }
 }
 
 fn output(code: Option<i32>, stdout: &[u8], stderr: &[u8]) -> Output {
@@ -682,7 +701,7 @@ fn census_inherited_environment_and_error_compatibility_profiles() {
     retain(
         &evidence,
         "intent.json",
-        br#"{"caller_integrated":false,"batch_changed":false,"server":false,"retry":false}"#,
+        br#"{"caller_integrated":true,"batch_changed":false,"server":false,"retry":false}"#,
     );
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
     let mut producer = Command::new(if cfg!(windows) { "python" } else { "python3" });
@@ -766,7 +785,7 @@ fn census_inherited_environment_and_error_compatibility_profiles() {
         assert_eq!(result.code, Some(0), "first census contract {mode}");
         assert!(result.stderr.is_empty());
     }
-    retain(&evidence, "result.json", br#"{"finite_profile_compatibility":true,"conditional_schedule":true,"caller_integrated":false,"general_unbounded_equivalence":false,"production_authority":false}"#);
+    retain(&evidence, "result.json", br#"{"finite_profile_compatibility":true,"conditional_schedule":true,"caller_integrated":true,"general_unbounded_equivalence":false,"production_authority":false}"#);
 }
 
 #[test]
@@ -876,6 +895,26 @@ fn census_contract_child_fixture() {
         if let Ok(value) = &old {
             assert_eq!(facade.as_ref().unwrap(), value);
         }
+        let before = starts(&trace).len();
+        let previous_hook = std::panic::take_hook();
+        std::panic::set_hook(Box::new(|_| {}));
+        let current = std::panic::catch_unwind(|| match operation {
+            "original" => integrated::original(),
+            "accepts" => integrated::accepts(&base, &raw).to_string(),
+            "view" => integrated::view("diagnostic_artifacts_linux.rs", &raw),
+            "unrelated" => integrated::view("other.rs", "untouched"),
+            _ => integrated::accepts(&base, "mismatch").to_string(),
+        });
+        std::panic::set_hook(previous_hook);
+        let current_error = current.as_ref().err().map(|e| panic_text(e.as_ref()));
+        let current_kind = current.as_ref().err().map(|e| panic_kind(e.as_ref()));
+        let current_starts = starts(&trace)[before..].to_vec();
+        assert_eq!(current_starts, old_starts, "no extra guard Git reads");
+        assert_eq!(current_error, old_error);
+        assert_eq!(current_kind, old_kind);
+        if let Ok(value) = &old {
+            assert_eq!(current.as_ref().unwrap(), value);
+        }
         if failed && operation != "unrelated" {
             assert_eq!(
                 old_error.as_deref(),
@@ -899,7 +938,9 @@ fn census_contract_child_fixture() {
             "candidate":new,"old_git_argv":old_starts,"candidate_git_argv":new_starts,
             "candidate_events":inputs.events,"retained_stderr_bytes":inputs.diagnostics,"outputs":inputs.outputs,
             "facade_success":facade.is_ok(),"facade_error":facade_error,"facade_git_argv":facade_starts,
-            "old_panic_kind":old_kind,"facade_panic_kind":facade_kind}),
+            "old_panic_kind":old_kind,"facade_panic_kind":facade_kind,
+            "integrated_success":current.is_ok(),"integrated_error":current_error,"integrated_panic_kind":current_kind,
+            "integrated_git_argv":current_starts}),
         );
     }
     // A content pin is an extra guard, never refreshed from the new command.
@@ -919,6 +960,6 @@ fn census_contract_child_fixture() {
     }
     println!(
         "{}",
-        json!({"mode":mode,"operations":receipts,"caller_integrated":false})
+        json!({"mode":mode,"operations":receipts,"caller_integrated":true})
     );
 }

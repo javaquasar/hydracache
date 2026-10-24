@@ -5,6 +5,7 @@ from pathlib import Path
 import re
 import subprocess
 import sys
+import caller_integration
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = 'tools/long-run-supervisor-074/src/diagnostic_artifacts_linux.rs'
@@ -67,10 +68,8 @@ def prepare(root=ROOT):
     audit = decode(audit_raw)
     if audit['pinned_current_source'] != REVIEWED:
         raise ValueError('reviewed revision drift')
-    caller = (root / CALLER).read_bytes().replace(b'\r\n', b'\n')
     archived = member(folder, index, 'source/current/' + CALLER).replace(b'\r\n', b'\n')
-    if caller != archived:
-        raise ValueError('selected caller changed')
+    caller_integration.audit(root, archived.decode('utf-8'))
     # The literal BASE hash is authoritative only inside the exact contract
     # whose whole-file identity was retained before this candidate existed.
     intent = decode(member(folder, index, 'observation/census-exact-candidate/intent.json'))
@@ -103,7 +102,7 @@ def prepare(root=ROOT):
     return dict(schema='hc074-census-caller-pins-v1', caller=CALLER, cases=cases,
         reference_packet_sha256=PACKET_SHA, inventory_sha256=AUDIT_SHA,
         test_fixture_pin_integrity=True, production_pin_authority=False,
-        caller_integrated=False, caller_admitted=False, live_checks_or_deadlines_changed=False,
+        caller_integrated=True, caller_admitted=False, live_checks_or_deadlines_changed=False,
         server=False, services_or_clocks=False, measurement=False)
 
 

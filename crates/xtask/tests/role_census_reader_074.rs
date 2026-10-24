@@ -1,4 +1,6 @@
 //! Exact single-provider fixture view, never a whole phase rollback.
+#[path = "../../../tools/historical-blob-batch-074/mod.rs"]
+pub mod census_runtime;
 #[path = "support/census_provider_input.rs"]
 mod provider_input;
 
@@ -29,6 +31,8 @@ fn census_reader_preserves_every_original_assertion_and_only_adapts_one_provider
     assert_eq!(old.matches(hook).count(), 1);
     assert_eq!(old.matches(before).count(), 1);
     assert_eq!(old.matches(end).count(), 1);
+    let runtime =
+        "#[path = \"../../../tools/historical-blob-batch-074/mod.rs\"]\npub mod census_runtime;\n";
     let expected = old
         .replacen(hook, &format!("{hook}{imports}"), 1)
         .replacen(before, after, 1)
@@ -40,7 +44,15 @@ fn census_reader_preserves_every_original_assertion_and_only_adapts_one_provider
     let current = std::fs::read_to_string(root().join(FILE))
         .unwrap()
         .replace("\r\n", "\n");
-    assert_eq!(expected, current);
+    let build = "#[path = \"support/bootstrap_build_guard.rs\"]\nmod build_guard;\n";
+    assert_eq!(expected.matches(build).count(), 1);
+    let expected = expected.replacen(build, &format!("{build}{runtime}"), 1);
+    let signature_test = "\n#[test]\nfn census_standalone_panic_api_signatures_do_not_add_source_reads() {\n    let _: fn() -> String = provider_input::original;\n    let _: fn(&str, &str) -> bool = provider_input::accepts;\n    let _: fn(&str, &str) -> String = provider_input::view;\n}\n";
+    assert_eq!(expected.matches(imports).count(), 1);
+    assert_eq!(
+        expected.replacen(imports, &format!("{imports}{signature_test}"), 1),
+        current
+    );
 }
 
 #[test]
