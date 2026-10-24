@@ -1,5 +1,16 @@
 # Separate dependency security gate discovered by the full milestone
 
+## Current authority
+
+The operator's explicit asynchronous reply permits **audit and planning only**:
+do not update dependencies or add deny.toml exceptions. The experimental rustls
+change `e0244861`, made under the earlier general continuation permission, is
+reverted, including its newly added ordinary regression target. The exact
+original manifests/lock are restored; candidate tests and evidence remain in Git.
+The original fifteen-advisory baseline is still the active red gate. The
+[experiment report](rustls-security-result-20261024.md) is historical evidence,
+not permission to apply that patch or the remaining migrations.
+
 ## First result, not a waiver
 
 The one bounded standard `cargo xtask verify` at source `7e6c8ee8` exits 1 at
@@ -102,17 +113,19 @@ records and hashes. This is postflight identity, not a claimed preflight DB pin.
    no old qualification, signed receipt, performance result or root-input pin
    is rewritten or automatically promoted.
 
-This security package is separate from the pending ReservedLive observation-
-frequency experiment. Neither permits weaker live checks, enlarged deadlines,
+This security package is separate from the ReservedLive observation-frequency
+proposal, which the operator has not authorized: preserve its previous frequency.
+Neither permits weaker live checks, enlarged deadlines,
 server installation/supervisor maintenance, real production enrollment, product
 load or expensive qualification. The release remains unadmitted.
 
-## Subsequent implementation after local approval
+## Retained experiment before the explicit audit-only reply
 
-The [isolated rustls patch](rustls-security-result-20261024.md), commit
+The subsequently reverted [isolated rustls patch](rustls-security-result-20261024.md), commit
 `e02448617c7073e499c1d6ddbf7d3330518db0ae`, raises its declared minimum and
 locked version to 0.23.46. Windows Rust 1.94/MSRV 1.88 session-redaction/resumption
 controls and focused RESP/server gates pass. The same advisory DB now reports
 eleven remaining findings, not a full policy pass. This subsequent changed
 candidate does not alter the first fifteen-finding result, old Cargo.lock hash,
-signed inputs or rejected attempts described above.
+signed inputs or rejected attempts described above. Its eleven-finding result
+belongs only to that experimental dependency graph, not the restored baseline.

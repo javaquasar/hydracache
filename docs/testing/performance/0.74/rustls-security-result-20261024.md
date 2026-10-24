@@ -1,9 +1,18 @@
-# Rustls security update and session redaction regression
+# Rustls security experiment retained after dependency rollback
 
-Commit `e02448617c7073e499c1d6ddbf7d3330518db0ae` raises the workspace rustls
-minimum to 0.23.46 and updates only that resolved package from 0.23.45. The
-first changed Windows MSVC checks pass, including Rust 1.88. Dependency policy
-still refuses on eleven other advisories; release admission remains closed.
+Current disposition: **not applied**. The operator's explicit asynchronous reply
+authorizes dependency audit and planning only, superseding the earlier broad
+continuation permission. The code delta from `e0244861` is reverted: the rustls
+manifest minimum returns to 0.23.41 and its locked version to 0.23.45. Manifests
+and lock bytes match the saved pre-experiment inputs. The active security gate
+therefore retains its original fifteen findings; release admission stays closed.
+
+The following results describe the retained experimental candidate, not the
+current dependency baseline. Its newly added ordinary regression target is
+removed with the code rollback so an intentionally failing security oracle is
+not silently left in the old-version suite. Exact test source remains in commit
+`e02448617c7073e499c1d6ddbf7d3330518db0ae` and the immutable evidence objects.
+No experimental result, first refusal or archive is deleted or rewritten.
 
 ## Baseline and isolated change
 
@@ -24,7 +33,7 @@ resolved package record remains equal. No dependency exception, crypto-provider
 selection, MSRV, tenant policy, expiry rule, wire format, original live check or
 deadline changes. This dependency delta requires a new eventual candidate/build
 identity; old performance, signed build or qualification receipts are not reused.
-The new working Cargo.lock SHA256 is
+The experimental working Cargo.lock SHA256 was
 `552f8c1fbb9fb06aadefca3fffb4f90cc1b78f4aed3e2c001cdf399b9b6bf0b1`;
 the earlier baseline lock bytes and their hash remain in the first-result packet.
 
@@ -108,9 +117,9 @@ has eleven objects, index SHA256
 Code commit: `e0244861`. The preceding Windows/Linux packets are committed
 separately in `ec044bd0`; no prior archive or release receipt is rewritten.
 
-Next isolate WebPKI/trust-root updates from Tokio and major YAML/ZIP/D-Bus
-migrations. The zbus 6/Rust 1.89 conflict remains an explicit decision; the project
-stays on Rust 1.88. Exact-source contract failures, complete preparation fit,
+Further WebPKI/trust-root, Tokio and major YAML/ZIP/D-Bus work is audit/planning
+only until separately authorized. The zbus 6/Rust 1.89 conflict remains an explicit
+decision; the project stays on Rust 1.88. Exact-source contract failures, complete preparation fit,
 original manager delivery, execution/watchdog/all-writer retirement, completion,
 crash/reconnect and real enrollment remain in the
 [closure audit](release-closure-audit-20261024.md).

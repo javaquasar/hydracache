@@ -6763,15 +6763,30 @@ after its original outer bound, despite the narrow context-reader gate passing.
 See the [six-hour handoff](six-hour-development-result-20261024.md) for exact
 scope, source commits, measurements and remaining release dependencies.
 
-The subsequent [rustls security update](rustls-security-result-20261024.md)
-raises the declared/locked version to 0.23.46. An exact-source regression fails
+The retained [rustls security experiment](rustls-security-result-20261024.md)
+tested declared/locked version 0.23.46 but is **reverted** after the explicit
+audit-and-plan-only operator reply. The original manifests/lock and fifteen-
+advisory baseline are restored. In the experiment, an exact-source regression fails
 on 0.23.45's session Debug fields after successful full/resumed handshakes and
 passes on Windows Rust 1.94/MSRV 1.88 after the patch. Ordinary RESP, server mTLS,
-real HC1/HC2 daemon and focused strict checks pass. Policy still refuses eleven
-other advisories; new candidate/build identity and all original launch/admission
+real HC1/HC2 daemon and focused strict checks pass. Its policy result refuses eleven
+other advisories, not the active baseline's result; new candidate/build identity and all original launch/admission
 boundaries remain required. Historical fifteen-finding and six-hour packets stay
 immutable.
 
 The same changed three-test regression also passes separately on local Linux
 GNU Rust 1.94. Its packet retains compiler/command/source identity; this is not
 an old-version Linux comparison, original-owner run or dedicated-server admission.
+
+The operator also requires the original ReservedLive observation frequency.
+Constant-depth observation coalescing is not authorized; retain every original
+live check, its order and deadline. The incremental directory was removed by
+the operator; later checks must not infer permission to delete more build data.
+
+The [operator-boundary and hex-reader continuation](operator-boundaries-and-hex-reader-result-20261024.md)
+records the exact dependency rollback (`b30c0999`) and the next isolated test-only
+repair (`5161b50b`). Its first reader canary refuses before implementation; twenty
+selected cases and xtask strict checks pass afterwards. Every old assertion and
+unknown-registry refusal remains. The original dependency baseline again has
+fifteen advisories; neither dependency updates nor ReservedLive coalescing is
+authorized. Wider package/runtime/server admission is still unproved.

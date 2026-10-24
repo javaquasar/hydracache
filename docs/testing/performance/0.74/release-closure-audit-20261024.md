@@ -120,9 +120,17 @@ Finish these local frontiers without retry-to-pass. The original execution,
 all-writer cessation, completion/cells, reconnect, production enrollment and
 compatible-manager gates above remain necessary before any final server gate.
 
-## Approved security continuation
+## Security experiment and subsequent operator limits
 
-The [rustls security patch](rustls-security-result-20261024.md), source
+The later explicit asynchronous reply restricts dependencies to audit/planning.
+The code delta described below is reverted, including its ordinary test target;
+raw evidence and history remain immutable. Original manifest/lock bytes and the
+fifteen-advisory security baseline are restored. Do not continue dependency
+updates from the earlier broad permission. The operator separately rejects a
+ReservedLive observation-frequency change: all intermediate observations,
+their ordering and original deadlines must remain, not only entry/exit frames.
+
+The historical [rustls security experiment](rustls-security-result-20261024.md), source
 `e02448617c7073e499c1d6ddbf7d3330518db0ae`, raises its manifest floor and locked
 version to 0.23.46 without another resolved package change. The exact regression
 first fails session Debug secrecy on 0.23.45 after successful full/resumed
@@ -135,5 +143,5 @@ On the same clean advisory database, the focused full dependency-policy check
 still refuses eleven other findings. The previous fifteen-finding milestone
 remains immutable. New dependency/build identity invalidates automatic reuse of
 old build/measurement receipts; qualification remains prepared-not-authorized.
-The security continuation authorizes neither a higher MSRV nor host/service,
-clock, original observation-frequency or release-admission changes.
+Its recorded continuation authorizes no current dependency change, higher MSRV,
+host/service, clock, observation-frequency or release-admission change.

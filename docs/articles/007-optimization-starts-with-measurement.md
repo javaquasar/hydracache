@@ -18992,10 +18992,9 @@ actual trust, then separately authorized server admission and qualification.
 
 ## Security fixes require a new build identity
 
-The next isolated change is not another throughput hypothesis. Rustls 0.23.46
-fixes four upstream advisories. The manifest raises the minimum version as well
-as the lock, so a lock regeneration cannot silently return to the former declared
-floor. No unrelated dependency changes with it.
+An isolated rustls experiment is not another throughput hypothesis. Version
+0.23.46 fixes four upstream advisories. The experimental manifest raised the
+minimum version as well as the lock, without another dependency change.
 
 A public-API session-store regression first establishes full and resumed TLS 1.2
 and TLS 1.3 handshakes and delivery of binary bytes. Only then does it examine
@@ -19004,8 +19003,25 @@ is checking. The corrected fixture fails at that secrecy oracle on 0.23.45 and
 passes with identical source on 0.23.46, including MSRV 1.88. Its first small-cache
 resumption failure remains a fixture finding, not evidence of the security bug.
 
-RESP mTLS and native-daemon correctness also pass, but dependency policy still
-finds eleven other advisories. The [security result](../testing/performance/0.74/rustls-security-result-20261024.md)
-keeps that red boundary visible. Even a necessary security fix changes the
+RESP mTLS and native-daemon correctness also passed for that candidate, with
+eleven other advisories still open. The later explicit operator reply permits
+only dependency audit and planning, so the code patch and its ordinary test target
+are reverted. Exact original manifests/lock and their fifteen-finding baseline
+are restored; the successful experiment and first refusals remain in history and
+evidence. A technically passing candidate is not authority to apply it.
+
+The [security result](../testing/performance/0.74/rustls-security-result-20261024.md)
+keeps both boundaries visible. Even a necessary security fix changes the
 dependency/build identity: old performance comparisons, signed receipts and
 qualification results cannot be transferred to the new binary by assertion.
+
+The next step respects the narrower authority: restore exact dependency inputs,
+retain every ReservedLive observation, then repair one source-test reader rather
+than suppress its assertion. The authority-hex reader now verifies the complete
+current registry before exposing its known historical view; other paths and all
+old assertions stay intact. Its independent canary first refuses the old reader,
+then twenty selected cases pass with rejection controls for broad branches,
+pathname substitution, changed assertions and unknown registry bytes. The
+[continuation result](../testing/performance/0.74/operator-boundaries-and-hex-reader-result-20261024.md)
+keeps this targeted repair separate from the still-red wider package and release
+admission.
