@@ -240,3 +240,13 @@ first failure and exact input sources remain retained. This Python reader is
 not imported by any runtime or existing guard. Rust extraction, call-site
 eligibility and unchanged-bound package verification remain open; none of the
 original execution, retirement, lifecycle or trust barriers is waived.
+
+The [Rust decoder/eligibility step](historical-blob-rust-audit-result-20261024.md)
+is green only for the extracted synthetic protocol controls: eight on both
+1.94/1.88, current all-target check/strict Clippy and twenty-four Python controls.
+It provides no native transport or historical-pin authority. Only 45 of 12383
+captured `show` calls have full IDs plus explicit replacement disabling; 1839
+full-ID and 10499 short-ID calls retain default replacement semantics. Six
+manual sites remain unadmitted. These counts are not timing attribution or proof
+that the narrow prototype fixes the full package. All original execution and
+release barriers above remain unchanged.

@@ -1,0 +1,408 @@
+{
+  "code_commits": [
+    "0fdb897d7fa3565eed7b842ef94886c8f8f175a4",
+    "1aefe13a07d763e6d7392c393b6634ed30d2ad70"
+  ],
+  "facts": {
+    "admission": false,
+    "audit": {
+      "admission": false,
+      "archive_sha256": "b099bbeea3272ef9dea3018e1b28514172867be7deaa0523d4d54c8db7673fdf",
+      "input_index_sha256": "11e89b85754443b1c5ff818ebfa4e5fcd2e896d812a85065cac2ffe70389e085",
+      "live_frequency_or_deadlines_changed": false,
+      "measurement": false,
+      "package_retry": false,
+      "parser_sha256": "a37d2dee8b201cccb198dbbd7bd43e2c50943dba72d076b175d380b85d399eec",
+      "revision_resolution": false,
+      "root_sessions": 12424,
+      "runtime_integrated": false,
+      "schema": "hc074-historical-batch-eligibility-v1",
+      "server": false,
+      "show_shapes": {
+        "full40_default_replacements": 1839,
+        "full40_no_replace": 45,
+        "short_default_replacements": 10499
+      },
+      "site_ledger_exhaustive": false,
+      "sites": [
+        {
+          "admitted": false,
+          "excerpt": "fn load_frozen(revision: &str, path: &str) -> String {\n    let output = std::process::Command::new(\"git\")\n        .arg(\"--no-replace-objects\")\n        .args([\"show\", &format!(\"{revision}:{path}\")])\n        .current_dir(root())\n        .output()\n        .unwrap();\n    assert!(\n        output.status.success(),\n        \"missing exact runtime gate predecessor {path}\"\n    );\n    String::from_utf8(output.stdout)\n        .unwrap()\n        .replace(\"\\r\\n\", \"\\n\")\n}",
+          "integration_barrier": "conditional cached lookup; no preplanned batch; uppercase assertion broader than candidate",
+          "line": 37,
+          "path": "tools/authority-runtime-074/gate.rs",
+          "reviewed_shape": "full40_asserted_no_replace",
+          "source_sha256": "0c539c0c44d90f4e62d566db1b141a6982042b58378f236f5134126df266671d"
+        },
+        {
+          "admitted": false,
+          "excerpt": "fn frozen(revision: &str) -> String {\n    assert!(revision == REVIEWED || revision == contract::BASE);\n    let output = std::process::Command::new(\"git\")\n        .arg(\"--no-replace-objects\")\n        .args([\"show\", &format!(\"{revision}:{}\", contract::SOURCE)])\n        .current_dir(std::path::Path::new(env!(\"CARGO_MANIFEST_DIR\")).join(\"../..\"))\n        .output()\n        .unwrap();\n    assert!(\n        output.status.success(),\n        \"missing exact material fixture source\"\n    );\n    String::from_utf8(output.stdout)\n        .unwrap()\n        .replace(\"\\r\\n\", \"\\n\")\n}",
+          "integration_barrier": "conditional original/accepts/view calls; compare and error schedule must remain",
+          "line": 7,
+          "path": "crates/xtask/tests/support/census_provider_input.rs",
+          "reviewed_shape": "two_full_constants_no_replace",
+          "source_sha256": "6097f17dee5896641528276094afbf41e8b4d393ea5f7162126af7eae7867fb3"
+        },
+        {
+          "admitted": false,
+          "excerpt": "fn git(args: &[&str]) -> String {\n    let result = std::process::Command::new(\"git\")\n        .args(args)\n        .current_dir(root())\n        .output()\n        .unwrap();\n    assert!(result.status.success());\n    String::from_utf8(result.stdout).unwrap().replace('\\r', \"\")\n}",
+          "integration_barrier": "418-source loop plus extras; preserve short resolution, replacement and current-read order",
+          "line": 34,
+          "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+          "reviewed_shape": "short_literal_default_replacements",
+          "source_sha256": "280426cf9a526f4df611b0331e7308a4b74684fba86140f2e272886fb8e85bc6"
+        },
+        {
+          "admitted": false,
+          "excerpt": "fn collector_notice_tests_preserve_the_entire_ordinary_kernel_and_join() {\n    let prefix = \"tools/long-run-supervisor-074/src/\";\n    for name in [\n        \"diagnostic_original_barred_collector_kernel.rs\",\n        \"diagnostic_original_barred_collector.rs\",\n        \"diagnostic_original_barred_collector_test_api.rs\",\n        \"diagnostic_original_barred_collector_tests.rs\",\n    ] {\n        let path = format!(\"{prefix}{name}\");\n        let out = std::process::Command::new(\"git\")\n            .args([\"show\", &format!(\"1c56d4a3:{path}\")])\n            .current_dir(root())\n            .output()\n            .unwrap();\n        assert!(out.status.success());\n        let frozen = String::from_utf8(out.stdout).unwrap().replace('\\r', \"\");\n        let raw = enrollment_frame::normalize(&path, &read(&path));\n        let current = if name.ends_with(\"_kernel.rs\") {\n            let registration = \"\\n#[cfg(test)]\\n#[path = \\\"diagnostic_original_collector_notice_tests.rs\\\"]\\nmod notice_tests;\\n\";\n            assert_eq!(raw.matches(registration).count(), 1);\n            raw.replacen(registration, \"\", 1)\n        } else {\n            raw\n        };\n        assert_eq!(current, frozen, \"{path}\");\n    }\n}",
+          "integration_barrier": "four fixed sources; different Git identity/flag semantics",
+          "line": 16,
+          "path": "crates/xtask/tests/support/performance_contract_074_collector_notices.rs",
+          "reviewed_shape": "short_literal_default_replacements",
+          "source_sha256": "de3b1f050464603e5b6773074e3645e653f387da5e329f1816eea54c3306ee21"
+        },
+        {
+          "admitted": false,
+          "excerpt": "fn old(path: &str) -> String {\n    let out = std::process::Command::new(\"git\")\n        .args([\"show\", &format!(\"{BASE}:{path}\")])\n        .current_dir(root())\n        .output()\n        .unwrap();\n    assert!(out.status.success());\n    String::from_utf8(out.stdout).unwrap().replace('\\r', \"\")\n}",
+          "integration_barrier": "353-source loop; no disabling of replacements in the original loader",
+          "line": 114,
+          "path": "crates/xtask/tests/support/performance_contract_074_boot_buffer.rs",
+          "reviewed_shape": "full_constant_default_replacements",
+          "source_sha256": "c7d8cb15637a31db3010a7a9e13eaeca2e3cc5a674bbac2d102df485fd117ed6"
+        },
+        {
+          "admitted": false,
+          "excerpt": "fn frozen(path: &str) -> String {\n    let out = std::process::Command::new(\"git\")\n        .args([\"show\", &format!(\"8193e642:{path}\")])\n        .current_dir(super::root())\n        .output()\n        .unwrap();\n    assert!(out.status.success(), \"{path}\");\n    String::from_utf8(out.stdout).unwrap().replace('\\r', \"\")\n}",
+          "integration_barrier": "conditional source comparisons and mutation controls; no silent short-ID expansion",
+          "line": 311,
+          "path": "crates/xtask/tests/support/performance_contract_074_fixed_grouped.rs",
+          "reviewed_shape": "short_literal_default_replacements",
+          "source_sha256": "c9a360a42751035643fbb72ff1fc73e9549889734a0636b86ba72a05fee8f74a"
+        }
+      ],
+      "trace_shapes_prove_eligibility": false,
+      "verified_raw_members": 12425
+    },
+    "dependency_changes": false,
+    "full_package_retry": false,
+    "independently_admitted_pin_producer": false,
+    "live_frequency_or_original_windows_changed": false,
+    "ordinary_old_guards_changed": false,
+    "original_owner": false,
+    "phases": [
+      {
+        "exit": 0,
+        "head_unchanged": true,
+        "phase": "blob-rust-decoder-tests",
+        "source_unchanged": true,
+        "tests": 8
+      },
+      {
+        "exit": 0,
+        "head_unchanged": true,
+        "phase": "blob-rust-decoder-check",
+        "source_unchanged": true,
+        "tests": null
+      },
+      {
+        "exit": 0,
+        "head_unchanged": true,
+        "phase": "blob-rust-decoder-clippy",
+        "source_unchanged": true,
+        "tests": null
+      },
+      {
+        "exit": 0,
+        "head_unchanged": true,
+        "phase": "blob-rust-decoder-msrv",
+        "source_unchanged": true,
+        "tests": 8
+      },
+      {
+        "exit": 0,
+        "head_unchanged": true,
+        "phase": "blob-eligibility-controls",
+        "source_unchanged": true,
+        "tests": 4
+      },
+      {
+        "exit": 0,
+        "head_unchanged": true,
+        "phase": "blob-eligibility-offline",
+        "source_unchanged": true,
+        "tests": null
+      },
+      {
+        "exit": 0,
+        "head_unchanged": true,
+        "phase": "blob-eligibility-python-regression",
+        "source_unchanged": true,
+        "tests": 24
+      },
+      {
+        "exit": 0,
+        "head_unchanged": true,
+        "phase": "blob-eligibility-syntax",
+        "source_unchanged": true,
+        "tests": null
+      },
+      {
+        "exit": 0,
+        "head_unchanged": true,
+        "phase": "blob-eligibility-indentation",
+        "source_unchanged": true,
+        "tests": null
+      },
+      {
+        "exit": 0,
+        "head_unchanged": true,
+        "phase": "blob-rust-decoder-format",
+        "source_unchanged": true,
+        "tests": null
+      }
+    ],
+    "product_workload": false,
+    "protected_sha256": {
+      "Cargo.lock": "d2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c",
+      "Cargo.toml": "18a8a27cf140a1d6eb31c8316ee39bb7d5832866a990346eee16cd0c30de344b",
+      "docs/testing/performance/0.74/qualification-manifest.toml": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "python_sha1_prototype_unchanged": true,
+    "qualification": false,
+    "rust_component": "pinned decoder only; no transport",
+    "rust_recomputes_git_sha1": false,
+    "server": false,
+    "service_or_clock": false
+  },
+  "members": {
+    "checks/blob-eligibility-controls/intent.json": {
+      "bytes": 314243,
+      "sha256": "96f18af3b9eaec41b957c6a2f7a4af84f0839d5f7b9b67e6b7b1ae55e90c2666"
+    },
+    "checks/blob-eligibility-controls/result.json": {
+      "bytes": 313899,
+      "sha256": "2d1b37727b3929e86e52bf9678adce1c9fd381da98507eabd47a8d0f1516eea4"
+    },
+    "checks/blob-eligibility-controls/stderr.log": {
+      "bytes": 603,
+      "sha256": "bd8c0eacfc33d25b116ef13ee662c7b2a55e79675df766501f2721b6150c2f2f"
+    },
+    "checks/blob-eligibility-controls/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/blob-eligibility-indentation/intent.json": {
+      "bytes": 314165,
+      "sha256": "be397e3b26d70c84506f8d760b57dac61be6294b60c1786ec81575b4a041ffe2"
+    },
+    "checks/blob-eligibility-indentation/result.json": {
+      "bytes": 313899,
+      "sha256": "2d1b37727b3929e86e52bf9678adce1c9fd381da98507eabd47a8d0f1516eea4"
+    },
+    "checks/blob-eligibility-indentation/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/blob-eligibility-indentation/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/blob-eligibility-offline/intent.json": {
+      "bytes": 314152,
+      "sha256": "d1e54f46c6f81320c420ae9268db0e8c25fdc5070090257a57c7098482d963bb"
+    },
+    "checks/blob-eligibility-offline/result.json": {
+      "bytes": 313899,
+      "sha256": "2d1b37727b3929e86e52bf9678adce1c9fd381da98507eabd47a8d0f1516eea4"
+    },
+    "checks/blob-eligibility-offline/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/blob-eligibility-offline/stdout.log": {
+      "bytes": 6675,
+      "sha256": "9b4f4a1cc21d6a339009cdc165a681f73cbd906103126c7b167bd2c314fde777"
+    },
+    "checks/blob-eligibility-python-regression/intent.json": {
+      "bytes": 314233,
+      "sha256": "3f1f548647a9473e18cde9acb1cdf5825a4120180a486d2697df03e5db2252de"
+    },
+    "checks/blob-eligibility-python-regression/result.json": {
+      "bytes": 313899,
+      "sha256": "2d1b37727b3929e86e52bf9678adce1c9fd381da98507eabd47a8d0f1516eea4"
+    },
+    "checks/blob-eligibility-python-regression/stderr.log": {
+      "bytes": 3426,
+      "sha256": "c88621b935b372794b38d5f717cdc46d45860c3c81e6b9af874539e88e085a31"
+    },
+    "checks/blob-eligibility-python-regression/stdout.log": {
+      "bytes": 82,
+      "sha256": "f632472212663717a16f350315529b24ff21bcf9c34eaaa70ce866ff6e87b6b2"
+    },
+    "checks/blob-eligibility-syntax/intent.json": {
+      "bytes": 314178,
+      "sha256": "63df94357cae96d13bf0cffbf64f94e039672504bb6cc754d4c1b25c6507e5d3"
+    },
+    "checks/blob-eligibility-syntax/result.json": {
+      "bytes": 313899,
+      "sha256": "2d1b37727b3929e86e52bf9678adce1c9fd381da98507eabd47a8d0f1516eea4"
+    },
+    "checks/blob-eligibility-syntax/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/blob-eligibility-syntax/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/blob-rust-decoder-check/intent.json": {
+      "bytes": 313957,
+      "sha256": "30092b29e184d4a0a53f85c58728895e58d2bcd4c746ca0faa12916240b3dd07"
+    },
+    "checks/blob-rust-decoder-check/result.json": {
+      "bytes": 313648,
+      "sha256": "3faf5d7a73e2e079e72a3e5ab3f856fa4db0cff971552bfb83fe6348c20d20d8"
+    },
+    "checks/blob-rust-decoder-check/stderr.log": {
+      "bytes": 155,
+      "sha256": "7dfb77f4416a31b33febdbe45d83cf07c5b24152e1b717320c51b4093ca9e00d"
+    },
+    "checks/blob-rust-decoder-check/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/blob-rust-decoder-clippy/intent.json": {
+      "bytes": 314020,
+      "sha256": "0b5acff8537d73c1bb19401a13ac1c9b405fdb340fbc546fe5ef510ab934763c"
+    },
+    "checks/blob-rust-decoder-clippy/result.json": {
+      "bytes": 313648,
+      "sha256": "3faf5d7a73e2e079e72a3e5ab3f856fa4db0cff971552bfb83fe6348c20d20d8"
+    },
+    "checks/blob-rust-decoder-clippy/stderr.log": {
+      "bytes": 155,
+      "sha256": "a64d4e893a7d82f35b7b7a78ba77d52a504c0c06c31c2f981691b4f6771569a7"
+    },
+    "checks/blob-rust-decoder-clippy/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/blob-rust-decoder-format/intent.json": {
+      "bytes": 314268,
+      "sha256": "76bcd3190f4a7ea0a484be5a2a86ced07224b19e937f46607417b4f63990a820"
+    },
+    "checks/blob-rust-decoder-format/result.json": {
+      "bytes": 313899,
+      "sha256": "2d1b37727b3929e86e52bf9678adce1c9fd381da98507eabd47a8d0f1516eea4"
+    },
+    "checks/blob-rust-decoder-format/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/blob-rust-decoder-format/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/blob-rust-decoder-msrv/intent.json": {
+      "bytes": 314234,
+      "sha256": "4ef9046086ea583c30576cce5aee1112d09269ef5738aad5d1e87d00ae3a1bd8"
+    },
+    "checks/blob-rust-decoder-msrv/result.json": {
+      "bytes": 313899,
+      "sha256": "2d1b37727b3929e86e52bf9678adce1c9fd381da98507eabd47a8d0f1516eea4"
+    },
+    "checks/blob-rust-decoder-msrv/stderr.log": {
+      "bytes": 1673,
+      "sha256": "ffecabcb6a21b04d398516935f569014742fd24a9773775abbce53e7ce790d2a"
+    },
+    "checks/blob-rust-decoder-msrv/stdout.log": {
+      "bytes": 671,
+      "sha256": "f94d87ecd443230627339e62e78c11ddc5627a3c839588e9363504810dd651ea"
+    },
+    "checks/blob-rust-decoder-tests/intent.json": {
+      "bytes": 313983,
+      "sha256": "788de0bc83ce793c006bcc2d29e9648d9044ec0a14cba1df48fe4619a931a04c"
+    },
+    "checks/blob-rust-decoder-tests/result.json": {
+      "bytes": 313648,
+      "sha256": "3faf5d7a73e2e079e72a3e5ab3f856fa4db0cff971552bfb83fe6348c20d20d8"
+    },
+    "checks/blob-rust-decoder-tests/stderr.log": {
+      "bytes": 272,
+      "sha256": "735b0c59b571f5f8d8d4620f19af02966181629580985e05bd977295fb2d53b8"
+    },
+    "checks/blob-rust-decoder-tests/stdout.log": {
+      "bytes": 671,
+      "sha256": "9334892328df1d7edbffb19746b8864721146c71b8d107aee22497703059895f"
+    },
+    "coordinators/run-fresh-reader-20261024.py": {
+      "bytes": 544,
+      "sha256": "851631e846ec7d3696a0e2fa550b6f87e8f07e8412f5dafc0530c0bc70c597ed"
+    },
+    "coordinators/run-source-step-20261024.py": {
+      "bytes": 2596,
+      "sha256": "a92482cabcfcf8f6440e95972bee8d204bb9c59c8805c45c7b57363dcc3ab430"
+    },
+    "coordinators/seal-blob-rust-audit-20261024.py": {
+      "bytes": 5239,
+      "sha256": "ed92609fcbb71a2aa01955ef6fe07d6eee6dfbb7d57899ddd7c035e367731287"
+    },
+    "reviewed-sites/crates/xtask/tests/support/census_provider_input.rs": {
+      "bytes": 1568,
+      "sha256": "6097f17dee5896641528276094afbf41e8b4d393ea5f7162126af7eae7867fb3"
+    },
+    "reviewed-sites/crates/xtask/tests/support/performance_contract_074_boot_buffer.rs": {
+      "bytes": 6422,
+      "sha256": "c7d8cb15637a31db3010a7a9e13eaeca2e3cc5a674bbac2d102df485fd117ed6"
+    },
+    "reviewed-sites/crates/xtask/tests/support/performance_contract_074_closing_validation.rs": {
+      "bytes": 4487,
+      "sha256": "280426cf9a526f4df611b0331e7308a4b74684fba86140f2e272886fb8e85bc6"
+    },
+    "reviewed-sites/crates/xtask/tests/support/performance_contract_074_collector_notices.rs": {
+      "bytes": 2318,
+      "sha256": "de3b1f050464603e5b6773074e3645e653f387da5e329f1816eea54c3306ee21"
+    },
+    "reviewed-sites/crates/xtask/tests/support/performance_contract_074_fixed_grouped.rs": {
+      "bytes": 24839,
+      "sha256": "c9a360a42751035643fbb72ff1fc73e9549889734a0636b86ba72a05fee8f74a"
+    },
+    "reviewed-sites/tools/authority-runtime-074/gate.rs": {
+      "bytes": 7359,
+      "sha256": "0c539c0c44d90f4e62d566db1b141a6982042b58378f236f5134126df266671d"
+    },
+    "sources/crates/xtask/tests/historical_blob_batch_074.rs": {
+      "bytes": 6710,
+      "sha256": "c9652cb0a30a693f90d96cd2bac0527627bc7c19187c75790a34c26006b5f639"
+    },
+    "sources/tools/historical-blob-batch-074/README.md": {
+      "bytes": 5956,
+      "sha256": "adc9565d9ec2b30dac5d28cd14bda74dfbe438086e2f3c7d385f61dbc6e981dc"
+    },
+    "sources/tools/historical-blob-batch-074/decoder.rs": {
+      "bytes": 3950,
+      "sha256": "efa514dfba7413d692fe50d4968a974c08c14c2cb32299b129b885f9ddba8458"
+    },
+    "sources/tools/historical-blob-batch-074/eligibility.py": {
+      "bytes": 5851,
+      "sha256": "1bcb7d15cd663b58a026ead5db82e21c68a417c64c3271486e70eb1794d2076b"
+    },
+    "sources/tools/historical-blob-batch-074/reader.py": {
+      "bytes": 7242,
+      "sha256": "71207da9f35a2b3458092e761c9a86ce9c47d07b8e99db3743bd430c2bd57470"
+    },
+    "sources/tools/historical-blob-batch-074/test_eligibility.py": {
+      "bytes": 1522,
+      "sha256": "388b690c1c2a46afaa072e8cddb18d30b992882676a1dbc873920cb29c252e4e"
+    },
+    "sources/tools/historical-blob-batch-074/test_reader.py": {
+      "bytes": 14543,
+      "sha256": "f259d0b04eba25412491e57a662e3b4ca3127fcd71ce8648beb0137a141a58c5"
+    },
+    "sources/tools/xtask-git-trace-074/trace_review.py": {
+      "bytes": 5963,
+      "sha256": "a37d2dee8b201cccb198dbbd7bd43e2c50943dba72d076b175d380b85d399eec"
+    }
+  },
+  "schema": "hc074-historical-blob-rust-audit-evidence-v1"
+}

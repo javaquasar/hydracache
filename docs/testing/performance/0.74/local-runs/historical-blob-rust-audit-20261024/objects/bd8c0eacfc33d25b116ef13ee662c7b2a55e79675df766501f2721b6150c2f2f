@@ -1,0 +1,9 @@
+test_full_and_short_flags_are_not_folded (test_eligibility.Shapes.test_full_and_short_flags_are_not_folded) ... ok
+test_invalid_argv_refuses (test_eligibility.Shapes.test_invalid_argv_refuses) ... ok
+test_six_manual_anchors_exist_but_none_is_admitted (test_eligibility.Shapes.test_six_manual_anchors_exist_but_none_is_admitted) ... ok
+test_unknown_flags_missing_paths_and_injection_are_not_admitted (test_eligibility.Shapes.test_unknown_flags_missing_paths_and_injection_are_not_admitted) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.002s
+
+OK

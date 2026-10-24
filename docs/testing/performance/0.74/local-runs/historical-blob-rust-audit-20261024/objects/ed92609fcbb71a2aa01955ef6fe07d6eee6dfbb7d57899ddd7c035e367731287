@@ -1,0 +1,94 @@
+"""Seal local decoder gates and the offline eligibility derivation; no replay."""
+from pathlib import Path
+import hashlib
+import json
+import re
+import subprocess
+
+ROOT = Path(__file__).resolve().parent.parent
+OUT = ROOT / 'docs/testing/performance/0.74/local-runs/historical-blob-rust-audit-20261024'
+PHASES = ('blob-rust-decoder-tests', 'blob-rust-decoder-check', 'blob-rust-decoder-clippy',
+          'blob-rust-decoder-msrv', 'blob-eligibility-controls', 'blob-eligibility-offline',
+          'blob-eligibility-python-regression', 'blob-eligibility-syntax',
+          'blob-eligibility-indentation', 'blob-rust-decoder-format')
+CODE = ('crates/xtask/tests/historical_blob_batch_074.rs',
+        'tools/historical-blob-batch-074/decoder.rs',
+        'tools/historical-blob-batch-074/eligibility.py',
+        'tools/historical-blob-batch-074/test_eligibility.py',
+        'tools/historical-blob-batch-074/reader.py',
+        'tools/historical-blob-batch-074/test_reader.py')
+PROTECTED = {
+    'Cargo.toml': '18a8a27cf140a1d6eb31c8316ee39bb7d5832866a990346eee16cd0c30de344b',
+    'Cargo.lock': 'd2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c',
+    'docs/testing/performance/0.74/qualification-manifest.toml':
+        '11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc',
+}
+
+
+def sha(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+
+assert subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT).decode().strip() == \
+    '1aefe13a07d763e6d7392c393b6634ed30d2ad70'
+assert all(sha((ROOT / path).read_bytes()) == digest for path, digest in PROTECTED.items())
+members, objects, phases = {}, {}, []
+
+
+def add(name, raw):
+    assert name not in members
+    digest = sha(raw)
+    members[name] = dict(sha256=digest, bytes=len(raw))
+    objects[digest] = raw
+
+
+for phase in PHASES:
+    folder = ROOT / 'target/source-continuation-20261024' / phase
+    intent = json.loads((folder / 'intent.json').read_bytes())
+    result = json.loads((folder / 'result.json').read_bytes())
+    assert result['exit'] == 0 and result['outer_refusal'] is None
+    assert result['source_unchanged'] and result['head_unchanged']
+    assert intent['source'] == result['source_after']
+    assert not result['admission'] and not result['qualification']
+    for path in CODE:
+        if path in intent['source']:
+            assert sha((ROOT / path).read_bytes()) == intent['source'][path]
+    for name in ('intent.json', 'stdout.log', 'stderr.log', 'result.json'):
+        add(f'checks/{phase}/{name}', (folder / name).read_bytes())
+    out, err = [(folder / name).read_text() for name in ('stdout.log', 'stderr.log')]
+    rust = re.search(r'test result: ok\. (\d+) passed; 0 failed;', out)
+    python = re.search(r'Ran (\d+) tests in ', err)
+    phases.append(dict(phase=phase, exit=0, tests=int(rust[1]) if rust else int(python[1]) if python else None,
+                       source_unchanged=True, head_unchanged=True))
+assert [phase['tests'] for phase in phases if phase['tests']] == [8, 8, 4, 24]
+audit = json.loads((ROOT / 'target/source-continuation-20261024/blob-eligibility-offline/stdout.log').read_bytes())
+assert audit['show_shapes'] == dict(full40_no_replace=45, full40_default_replacements=1839,
+                                   short_default_replacements=10499)
+assert len(audit['sites']) == 6 and all(not site['admitted'] for site in audit['sites'])
+assert audit['verified_raw_members'] == 12425 and not audit['runtime_integrated']
+for site in audit['sites']:
+    body = (ROOT / site['path']).read_bytes()
+    assert sha(body) == site['source_sha256']
+    add('reviewed-sites/' + site['path'], body)
+for path in (*CODE, 'tools/historical-blob-batch-074/README.md', 'tools/xtask-git-trace-074/trace_review.py'):
+    add('sources/' + path, (ROOT / path).read_bytes())
+for path in ('target/run-source-step-20261024.py', 'target/run-fresh-reader-20261024.py',
+             'target/seal-blob-rust-audit-20261024.py'):
+    add('coordinators/' + Path(path).name, (ROOT / path).read_bytes())
+index = dict(schema='hc074-historical-blob-rust-audit-evidence-v1',
+    code_commits=['0fdb897d7fa3565eed7b842ef94886c8f8f175a4', '1aefe13a07d763e6d7392c393b6634ed30d2ad70'],
+    members=members, facts=dict(phases=phases, audit=audit, protected_sha256=PROTECTED,
+        python_sha1_prototype_unchanged=True, rust_component='pinned decoder only; no transport',
+        independently_admitted_pin_producer=False, rust_recomputes_git_sha1=False,
+        ordinary_old_guards_changed=False, dependency_changes=False, full_package_retry=False,
+        server=False, original_owner=False, service_or_clock=False, product_workload=False,
+        live_frequency_or_original_windows_changed=False, admission=False, qualification=False))
+OUT.mkdir(parents=True, exist_ok=False)
+(OUT / 'objects').mkdir()
+(OUT / '.gitattributes').write_bytes(
+    b'index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n')
+for digest, raw in objects.items():
+    (OUT / 'objects' / digest).write_bytes(raw)
+raw = (json.dumps(index, sort_keys=True, indent=2) + '\n').encode()
+(OUT / 'index.json').write_bytes(raw)
+print(json.dumps(dict(index_sha256=sha(raw), members=len(members), objects=len(objects), phases=phases)))

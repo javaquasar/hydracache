@@ -6874,3 +6874,13 @@ and missing/tree fallbacks. This is not a timing result. The first extended
 fixture failure remains retained; its correction leaves the reader unchanged.
 Rust extraction, call-site eligibility, short-revision semantics and the old
 incomplete package gate remain before integration or a performance claim.
+
+The [Rust decoder and call-site audit](historical-blob-rust-audit-result-20261024.md)
+add eight pinned-protocol controls passing on Rust 1.94 and 1.88, all-target check,
+strict Clippy and a combined 24-control Python pass. The decoder has no transport
+or independent source authority. Offline review partitions the retained `show`
+calls into 45 full-ID/no-replace, 1839 full-ID/default-replacement and 10499
+short-ID/default-replacement invocations. None of six manually reviewed sites is
+admitted. Matching argv shapes do not justify a silent flag/revision change or
+establish timing benefit; native transport, provenance and real-Git/Python parity
+remain before integration. The old interrupted package is still incomplete.

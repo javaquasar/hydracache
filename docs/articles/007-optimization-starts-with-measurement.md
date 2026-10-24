@@ -19194,3 +19194,21 @@ or unflagged loaders. Rust extraction and exact call-site eligibility must come
 before integration, with current-file observations and all source comparisons
 preserved. The prototype therefore advances semantic feasibility while leaving
 the earlier incomplete package gate and release execution barriers open.
+
+The [Rust extraction and flag audit](../testing/performance/0.74/historical-blob-rust-audit-result-20261024.md)
+then narrow that feasibility result. Eight decoder controls pass on current Rust
+and MSRV, with all-target check and strict Clippy green. Independent SHA256 byte
+pins detect body drift without changing dependencies, but these asserted test
+pins are not historical-source authority. The decoder is neither a native Git
+transport nor a port of the Python SHA1 verification; connecting it by hashing
+the same observed bytes would prove nothing about reference identity.
+
+The preserved trace contains only 45 full-ID `show` calls with explicit
+replacement disabling. Another 1839 full-ID calls and 10499 short-ID calls retain
+default replacement semantics. This partitions invocation counts, not elapsed
+cost: the small group could still be expensive. It does prevent treating the
+full-ID/no-replace prototype as broad coverage. Six reviewed source sites retain
+separate barriers for flags, conditional reads, interleaved current observations
+and reference identity. None is admitted. The next native transport/differential
+gate must preserve those distinctions rather than turning an argv match or a
+passing decoder into an integrated speedup claim.
