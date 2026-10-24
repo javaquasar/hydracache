@@ -6798,3 +6798,9 @@ selected cases, all-targets check and strict Clippy pass on the final source.
 First baseline and lint refusals remain archived; this does not make the wider
 package green or change dependencies, live-check frequency, deadlines or server
 admission.
+
+The [custody and document-scratch reader result](custody-scratch-reader-result-20261024.md)
+restores targeted 469-file and 473-file preservation checks without deleting any
+old assertion or changing runtime validation. Twenty-three selected cases and
+strict checks pass; first canary refusals remain archived. Artifact inventories,
+held-build/role-census comparisons and the full-package gate remain separate.

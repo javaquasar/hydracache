@@ -1,0 +1,9 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.71s
+     Running tests\custody_preparation_cost_074.rs (target\debug\deps\custody_preparation_cost_074-9cf5d34a7aea0a6d.exe)
+     Running tests\custody_reader_074.rs (target\debug\deps\custody_reader_074-73adf2d682286a9a.exe)
+     Running tests\fresh_kernel_cost_074.rs (target\debug\deps\fresh_kernel_cost_074-b7d065423f52a828.exe)
+     Running tests\fresh_status_reader_074.rs (target\debug\deps\fresh_status_reader_074-3087550c9b324258.exe)
+     Running tests\historical_input_view_074.rs (target\debug\deps\historical_input_view_074-52402be9b85f3031.exe)
+     Running tests\pid_path_cost_074.rs (target\debug\deps\pid_path_cost_074-4ab00fd131db9384.exe)
+     Running tests\pid_path_reader_074.rs (target\debug\deps\pid_path_reader_074-4e52d18a22b71f35.exe)

@@ -1,0 +1,91 @@
+"""Seal first local correctness results separately from older immutable packets."""
+from pathlib import Path
+import hashlib
+import json
+import re
+import shutil
+import subprocess
+
+ROOT = Path(__file__).resolve().parent.parent
+OUT = ROOT / 'docs/testing/performance/0.74/local-runs/custody-scratch-readers-20261024'
+OUT.mkdir(parents=True, exist_ok=False)
+(OUT / 'objects').mkdir()
+(OUT / '.gitattributes').write_text(
+    'index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n',
+    encoding='utf-8', newline='\n')
+members = {}
+def put(name, raw):
+    digest = hashlib.sha256(raw).hexdigest()
+    target = OUT / 'objects' / digest
+    if target.exists():
+        assert target.read_bytes() == raw
+    else:
+        with target.open('xb') as stream:
+            stream.write(raw)
+    assert name not in members
+    members[name] = dict(bytes=len(raw), sha256=digest)
+
+phases = [
+    'custody-reader-baseline', 'custody-reader-candidate', 'custody-reader-check',
+    'custody-reader-clippy', 'scratch-reader-baseline', 'scratch-reader-candidate',
+    'scratch-reader-check', 'scratch-reader-clippy', 'custody-scratch-doc',
+    'custody-scratch-contract', 'custody-scratch-gated', 'custody-scratch-format',
+    'custody-scratch-inventory',
+]
+results = {}
+for phase in phases:
+    directory = ROOT / 'target/source-continuation-20261024' / phase
+    result = json.loads((directory / 'result.json').read_text())
+    expected = 101 if phase.endswith('-baseline') else 0
+    assert result['exit'] == expected, phase
+    assert result['source_unchanged'] and result['head_unchanged']
+    assert result['outer_refusal'] is None
+    counts = [tuple(map(int, match)) for match in re.findall(
+        r'test result: \w+\. (\d+) passed; (\d+) failed; (\d+) ignored; (\d+) measured; (\d+) filtered out',
+        (directory / 'stdout.log').read_text(encoding='utf-8'))]
+    results[phase] = dict(exit=result['exit'], target_verdicts=len(counts),
+        passed=sum(c[0] for c in counts), failed=sum(c[1] for c in counts),
+        ignored=sum(c[2] for c in counts), filtered=sum(c[4] for c in counts))
+    for name in ['intent.json', 'result.json', 'stdout.log', 'stderr.log']:
+        put(f'observation/{phase}/{name}', (directory / name).read_bytes())
+
+base = 'b0e7fcac2ef33974df1633ada55457478c624498'
+paths = ['crates/xtask/tests/' + name for name in [
+    'custody_preparation_cost_074.rs', 'custody_reader_074.rs',
+    'document_scratch_cost_074.rs', 'document_scratch_reader_074.rs',
+    'support/document_scratch_inputs.rs']]
+changed = subprocess.check_output(['git', 'diff', '--name-only', base, '--', 'crates', 'tools', 'Cargo.toml', 'Cargo.lock', 'deny.toml'], cwd=ROOT, text=True).splitlines()
+assert sorted(changed) == sorted(paths)
+for path in paths:
+    put('source/current/' + path, (ROOT / path).read_bytes())
+for path in [paths[0], paths[2]]:
+    put('source/baseline/' + path, subprocess.check_output(['git', '--no-replace-objects', 'show', f'{base}:{path}'], cwd=ROOT))
+for name in ['run-source-step-20261024.py', 'run-fresh-reader-20261024.py', 'seal-custody-scratch-20261024.py']:
+    put('coordinator/' + name, (ROOT / 'target' / name).read_bytes())
+put('source/committed-code.diff', subprocess.check_output(['git', 'diff', base, '--', *paths], cwd=ROOT))
+for phase, path in [('custody-reader-baseline', paths[1]), ('scratch-reader-baseline', paths[3])]:
+    intent = json.loads((ROOT / 'target/source-continuation-20261024' / phase / 'intent.json').read_text())
+    assert intent['source'][path] == hashlib.sha256((ROOT / path).read_bytes()).hexdigest()
+protected = {
+    'Cargo.toml': '18a8a27cf140a1d6eb31c8316ee39bb7d5832866a990346eee16cd0c30de344b',
+    'Cargo.lock': 'd2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c',
+    'docs/testing/performance/0.74/qualification-manifest.toml': '11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc',
+}
+for path, digest in protected.items():
+    assert hashlib.sha256((ROOT / path).read_bytes()).hexdigest() == digest
+inventory = (ROOT / 'target/source-continuation-20261024/custody-scratch-inventory/stdout.log').read_text().splitlines()
+assert len(inventory) == len(set(inventory)) == 530
+facts = dict(baseline=base, final_code_commit=subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip(),
+    results=results, protected_sha256=protected, code_paths=paths,
+    unchanged_canaries_since_baseline=True, current_runtime_source_inventory=530,
+    old_inventory_failures_not_reexecuted=True, dependency_changes=False,
+    observation_frequency_changed=False, deadlines_changed=False,
+    runtime_changes=False, server=False, services_or_clocks=False, qualification=False,
+    original_owner=False, performance_measurements=False, full_package_rerun=False,
+    no_lint_waivers=True, free_bytes_at_capture=shutil.disk_usage(ROOT).free)
+index = dict(schema='hc074-custody-scratch-readers-v1', facts=facts, members=members)
+raw = (json.dumps(index, indent=2, sort_keys=True) + '\n').encode()
+with (OUT / 'index.json').open('xb') as stream:
+    stream.write(raw)
+print(json.dumps(dict(index_sha256=hashlib.sha256(raw).hexdigest(),
+    members=len(members), objects=len(list((OUT / 'objects').iterdir())), results=results), indent=2))

@@ -1,0 +1,4 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.81s
+     Running tests\document_scratch_reader_074.rs (target\debug\deps\document_scratch_reader_074-a06e22265a13169e.exe)
+error: test failed, to rerun pass `-p xtask --test document_scratch_reader_074`

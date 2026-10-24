@@ -19036,3 +19036,14 @@ strict checks pass; the first canary and lint refusals remain in the
 [reader result](../testing/performance/0.74/fresh-status-pid-reader-result-20261024.md).
 This repairs test compatibility without changing runtime observation frequency,
 and supplies no throughput or server-readiness claim.
+
+The custody and document-scratch follow-up separates three test input causes:
+a newer launcher activation entry, a bounded pidfd-path constructor inside the
+scratch block, and later IO adapters in five historical test readers. Exact
+current-source checks precede reconstruction in each case. The original 469-file
+and 473-file comparisons and their assertions remain, while independent
+controls reject unreviewed source or assertion changes. Twenty-three selected
+cases and strict checks pass. The
+[follow-up result](../testing/performance/0.74/custody-scratch-reader-result-20261024.md)
+keeps these source-contract repairs separate from actual original delivery,
+all-writer cessation and the remaining server-admission gates.

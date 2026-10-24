@@ -1,0 +1,19 @@
+
+running 2 tests
+test scratch_reader_preserves_every_original_assertion_and_both_old_counts ... FAILED
+test scratch_five_reader_inputs_differ_only_by_known_io_not_old_assertions ... ok
+
+failures:
+
+---- scratch_reader_preserves_every_original_assertion_and_both_old_counts stdout ----
+
+thread 'scratch_reader_preserves_every_original_assertion_and_both_old_counts' (46352) panicked at crates\xtask\tests\document_scratch_reader_074.rs:32:5:
+assertion failed: storage_contract::accepts(&expected, &current)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    scratch_reader_preserves_every_original_assertion_and_both_old_counts
+
+test result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.53s
+

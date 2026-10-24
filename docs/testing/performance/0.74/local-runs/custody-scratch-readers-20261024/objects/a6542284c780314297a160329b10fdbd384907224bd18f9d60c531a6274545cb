@@ -1,0 +1,51 @@
+
+running 2 tests
+test custody_observer_adapter_refuses_missing_duplicate_and_preserves_unrelated_drift ... ok
+test custody_observation_hooks_reconstruct_all_preceding_469_bodies ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 24.85s
+
+
+running 2 tests
+test custody_reader_preserves_entire_old_test_except_exact_gateway_io ... ok
+test custody_launcher_view_requires_exact_reviewed_current_bytes ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+
+
+running 2 tests
+test fresh_status_reconstructs_all_changed_old_bodies_and_hooks ... ok
+test fresh_status_adapter_refuses_missing_duplicate_and_other_validation_drift ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.50s
+
+
+running 2 tests
+test fresh_status_reader_changes_only_admission_input_before_original_normalizers ... ok
+test fresh_status_admission_requires_exact_source_and_helper_before_old_input ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.18s
+
+
+running 3 tests
+test historical_input_list_covers_all_changed_old_files_except_the_existing_exact_authority_gate ... ok
+test historical_inputs_require_the_complete_reviewed_current_file_before_predecessor ... ok
+test historical_input_reader_is_one_exact_additive_verified_branch ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.12s
+
+
+running 3 tests
+test pid_path_adopted_formatter_is_exactly_the_measured_frozen_prototype ... ok
+test pid_path_reconstructs_every_changed_old_body_and_test_hook ... ok
+test pid_path_adapter_refuses_missing_duplicate_and_unrelated_live_drift ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.36s
+
+
+running 2 tests
+test pid_path_reader_preserves_all_old_assertions_and_normalizer_order ... ok
+test pid_path_admission_view_requires_the_exact_current_candidate ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+

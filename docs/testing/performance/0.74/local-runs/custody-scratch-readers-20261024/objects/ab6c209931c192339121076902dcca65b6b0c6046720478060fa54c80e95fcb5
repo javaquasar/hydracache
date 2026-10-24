@@ -1,0 +1,4 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.27s
+     Running tests\custody_reader_074.rs (target\debug\deps\custody_reader_074-73adf2d682286a9a.exe)
+error: test failed, to rerun pass `-p xtask --test custody_reader_074`
