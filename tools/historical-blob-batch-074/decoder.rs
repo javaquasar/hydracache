@@ -35,6 +35,10 @@ pub enum Expected {
     Missing {
         spec: String,
     },
+    /// Explicit legacy-query syntax, not expansion to immutable identity.
+    ShortMissing {
+        spec: String,
+    },
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -60,18 +64,29 @@ fn oid(value: &str) -> bool {
             .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
 }
 
+fn missing_spec(spec: &str, short: bool) -> bool {
+    spec.split_once(':').is_some_and(|(id, path)| {
+        (if short {
+            (4..40).contains(&id.len())
+                && id
+                    .bytes()
+                    .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+        } else {
+            oid(id)
+        }) && !path.is_empty()
+            && path.len() <= 4096
+            && !path
+                .bytes()
+                .any(|b| matches!(b, b'\0' | b'\r' | b'\n' | b'\\'))
+            && path.split('/').all(|part| !matches!(part, "" | "." | ".."))
+    })
+}
+
 fn valid_reference(reference: &Expected) -> bool {
     match reference {
         Expected::Object { oid: id, bytes, .. } => oid(id) && *bytes <= MAX_STREAM,
-        Expected::Missing { spec } => spec.split_once(':').is_some_and(|(id, path)| {
-            oid(id)
-                && !path.is_empty()
-                && path.len() <= 4096
-                && !path
-                    .bytes()
-                    .any(|b| matches!(b, b'\0' | b'\r' | b'\n' | b'\\'))
-                && path.split('/').all(|part| !matches!(part, "" | "." | ".."))
-        }),
+        Expected::Missing { spec } => missing_spec(spec, false),
+        Expected::ShortMissing { spec } => missing_spec(spec, true),
     }
 }
 
@@ -81,9 +96,7 @@ pub fn decode<'a>(stream: &'a [u8], reference: &[Expected]) -> Result<Vec<Record
     if stream.len() > MAX_STREAM || reference.len() > MAX_RECORDS {
         return Err(Refusal::Budget);
     }
-    if !reference.iter().all(valid_reference) {
-        return Err(Refusal::Reference);
-    }
+    validate(reference)?;
     let mut offset = 0;
     let mut records = Vec::with_capacity(reference.len());
     for expected in reference {
@@ -96,7 +109,7 @@ pub fn decode<'a>(stream: &'a [u8], reference: &[Expected]) -> Result<Vec<Record
         let header = &tail[..header_len];
         offset += header_len + 1;
         match expected {
-            Expected::Missing { spec } => {
+            Expected::Missing { spec } | Expected::ShortMissing { spec } => {
                 if header != format!("{spec} missing").as_bytes() {
                     return Err(Refusal::Header);
                 }
@@ -131,4 +144,14 @@ pub fn decode<'a>(stream: &'a [u8], reference: &[Expected]) -> Result<Vec<Record
         return Err(Refusal::Extra);
     }
     Ok(records)
+}
+
+pub fn validate(reference: &[Expected]) -> Result<(), Refusal> {
+    if reference.len() > MAX_RECORDS {
+        return Err(Refusal::Budget);
+    }
+    if !reference.iter().all(valid_reference) {
+        return Err(Refusal::Reference);
+    }
+    Ok(())
 }

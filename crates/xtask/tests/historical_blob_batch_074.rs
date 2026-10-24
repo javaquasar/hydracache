@@ -209,3 +209,30 @@ fn independent_threads_and_observations_cannot_share_stale_records() {
         }
     });
 }
+
+#[test]
+fn short_missing_requires_explicit_syntax_and_never_expands_or_changes_old_missing() {
+    let spec = "abcd:folder/path".to_owned();
+    let raw = format!("{spec} missing\n");
+    assert_eq!(
+        decoder::decode(raw.as_bytes(), &[Expected::Missing { spec: spec.clone() }]),
+        Err(Refusal::Reference)
+    );
+    assert_eq!(
+        decoder::decode(raw.as_bytes(), &[Expected::ShortMissing { spec }]),
+        Ok(vec![Record::Missing])
+    );
+    for spec in [
+        "HEAD:path",
+        "abc:path",
+        "ABCD:path",
+        "abcd:../path",
+        "abcd:path\n",
+        "1111111111111111111111111111111111111111:path",
+    ] {
+        assert_eq!(
+            decoder::decode(&[], &[Expected::ShortMissing { spec: spec.into() }]),
+            Err(Refusal::Reference)
+        );
+    }
+}
