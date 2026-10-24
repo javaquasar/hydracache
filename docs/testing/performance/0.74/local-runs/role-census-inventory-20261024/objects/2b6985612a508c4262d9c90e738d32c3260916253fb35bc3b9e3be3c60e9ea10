@@ -1,0 +1,25 @@
+
+running 2 tests
+test census_reader_keeps_complete_prior_assertions_and_inventory_checks ... FAILED
+test census_provider_rejects_unreviewed_current_bytes_before_predecessor ... FAILED
+
+failures:
+
+---- census_reader_keeps_complete_prior_assertions_and_inventory_checks stdout ----
+
+thread 'census_reader_keeps_complete_prior_assertions_and_inventory_checks' (52100) panicked at crates\xtask\tests\role_census_reader_074.rs:25:5:
+assertion failed: storage_contract::accepts(&expected, &current)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- census_provider_rejects_unreviewed_current_bytes_before_predecessor stdout ----
+
+thread 'census_provider_rejects_unreviewed_current_bytes_before_predecessor' (36456) panicked at crates\xtask\tests\role_census_reader_074.rs:49:5:
+assertion failed: runtime_io::reviewed_inputs::accepts(path, &raw)
+
+
+failures:
+    census_provider_rejects_unreviewed_current_bytes_before_predecessor
+    census_reader_keeps_complete_prior_assertions_and_inventory_checks
+
+test result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+

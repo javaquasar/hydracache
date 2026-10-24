@@ -1,0 +1,66 @@
+//! Current-source proof before historical provider comparison, not execution authority.
+#[path = "../../../tools/authority-runtime-074/gate.rs"]
+mod runtime;
+#[path = "../../../tools/authority-runtime-074/io.rs"]
+mod runtime_io;
+#[path = "../../../tools/authority-storage-source-074/contract.rs"]
+mod storage_contract;
+
+const BASE: &str = "c91068bfa8b297bb075b63457da235aaa9c6232e";
+const FILE: &str = "crates/xtask/tests/held_complete_role_census_074.rs";
+
+#[test]
+fn census_reader_keeps_complete_prior_assertions_and_inventory_checks() {
+    let old = runtime::frozen(BASE, FILE);
+    let hook = "#[path = \"support/held_role_census_guard.rs\"]\nmod guard;\n";
+    let imports = "#[path = \"../../../tools/authority-runtime-074/gate.rs\"]\nmod runtime;\n#[path = \"../../../tools/authority-runtime-074/io.rs\"]\nmod runtime_io;\n#[path = \"../../../tools/authority-storage-source-074/contract.rs\"]\nmod storage_contract;\n";
+    let before = "    std::fs::read_to_string(\n";
+    let after = "    runtime_io::read_to_string(\n";
+    assert_eq!(old.matches(hook).count(), 1);
+    assert_eq!(old.matches(before).count(), 1);
+    let expected = old
+        .replacen(hook, &format!("{hook}{imports}"), 1)
+        .replacen(before, after, 1);
+    let current = std::fs::read_to_string(runtime::root().join(FILE)).unwrap();
+    assert!(storage_contract::accepts(&expected, &current));
+    for bad in [
+        current.replace(".join(name),", ".join(\"another-file\"),"),
+        current.replace("baseline(file)", "String::new()"),
+        current.replace(
+            "source.matches(\"owner.full_frame()?;\").count(), 2",
+            "0, 0",
+        ),
+        current.replace(
+            "assert_eq!(source.matches(\"pub(crate) fn \").count(), 4);",
+            "",
+        ),
+        format!("{current}\nfn unrelated_effect() {{}}"),
+    ] {
+        assert_ne!(bad, current);
+        assert!(!storage_contract::accepts(&expected, &bad));
+    }
+}
+
+#[test]
+fn census_provider_rejects_unreviewed_current_bytes_before_predecessor() {
+    let path = "tools/long-run-supervisor-074/src/diagnostic_artifacts_linux.rs";
+    let raw = std::fs::read_to_string(runtime::root().join(path)).unwrap();
+    assert_eq!(raw.replace("\r\n", "\n"), runtime::frozen(BASE, path));
+    assert!(runtime_io::reviewed_inputs::accepts(path, &raw));
+    assert_eq!(
+        runtime_io::read_to_string(runtime::root().join(path)).unwrap(),
+        runtime::frozen(runtime_io::reviewed_inputs::PREDECESSOR, path)
+    );
+    for bad in [
+        String::new(),
+        format!("{raw}\n// unreviewed provider"),
+        raw.replacen("held_role_census", "foreign_census", 1),
+    ] {
+        assert_ne!(bad, raw);
+        assert!(!runtime_io::reviewed_inputs::accepts(path, &bad));
+        assert!(
+            std::panic::catch_unwind(|| runtime_io::reviewed_inputs::predecessor(path, &bad))
+                .is_err()
+        );
+    }
+}

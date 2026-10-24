@@ -1,0 +1,51 @@
+
+running 2 tests
+test custody_reader_preserves_entire_old_test_except_exact_gateway_io ... ok
+test custody_launcher_view_requires_exact_reviewed_current_bytes ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+
+
+running 2 tests
+test scratch_reader_preserves_every_original_assertion_and_both_old_counts ... ok
+test scratch_five_reader_inputs_differ_only_by_known_io_not_old_assertions ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.56s
+
+
+running 2 tests
+test fresh_status_reader_changes_only_admission_input_before_original_normalizers ... ok
+test fresh_status_admission_requires_exact_source_and_helper_before_old_input ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.24s
+
+
+running 3 tests
+test complete_role_census_is_inside_the_same_original_material_inventory ... ok
+test complete_role_census_uses_owned_contributions_before_the_existing_closing_owner_check ... ok
+test complete_role_census_keeps_prior_owner_and_provider_bodies_exact_after_additive_hooks ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.90s
+
+
+running 3 tests
+test historical_input_list_covers_all_changed_old_files_except_the_existing_exact_authority_gate ... ok
+test historical_inputs_require_the_complete_reviewed_current_file_before_predecessor ... ok
+test historical_input_reader_is_one_exact_additive_verified_branch ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.09s
+
+
+running 2 tests
+test pid_path_reader_preserves_all_old_assertions_and_normalizer_order ... ok
+test pid_path_admission_view_requires_the_exact_current_candidate ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
+
+
+running 2 tests
+test census_reader_preserves_every_original_assertion_and_only_adapts_one_provider ... ok
+test census_provider_requires_complete_known_fixture_delta_and_pinned_helper ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.78s
+

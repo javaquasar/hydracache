@@ -145,3 +145,16 @@ remains immutable. New dependency/build identity invalidates automatic reuse of
 old build/measurement receipts; qualification remains prepared-not-authorized.
 Its recorded continuation authorizes no current dependency change, higher MSRV,
 host/service, clock, observation-frequency or release-admission change.
+
+## Targeted source preservation followups
+
+The [fresh and PID readers](fresh-status-pid-reader-result-20261024.md),
+[custody and scratch readers](custody-scratch-reader-result-20261024.md) and
+[role-census reader](role-census-and-inventory-result-20261024.md) have passing
+focused checks with original assertions retained. Their first refusals and
+rejected candidates remain archived; these results do not replace the original
+partial/red wider-package result. The inventory audit accounts for 530 current
+paths, including 84 additions and 31 changed old files relative to the 446-file
+phase. Exact inventory projection, old held-build compatibility and the
+independent current-tree history gate remain open. Runtime admission and the
+fifteen-advisory dependency boundary are unchanged.

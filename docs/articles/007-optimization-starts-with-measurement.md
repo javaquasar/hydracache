@@ -19047,3 +19047,18 @@ cases and strict checks pass. The
 [follow-up result](../testing/performance/0.74/custody-scratch-reader-result-20261024.md)
 keeps these source-contract repairs separate from actual original delivery,
 all-writer cessation and the remaining server-admission gates.
+
+An adapter must also return the right historical phase. A generic gateway
+removed census fields that the provider test still needed, so that candidate
+was rejected. The accepted repair scopes reconstruction to one synthetic
+lock-fixture delta and pins both current provider bytes and its control helper.
+The original census assertions and counts remain intact; sixteen selected cases
+and strict checks pass. First rejected variants remain in the
+[census and inventory result](../testing/performance/0.74/role-census-and-inventory-result-20261024.md).
+
+Source counts alone are insufficient for the next repair. The inventory audit
+finds 530 current paths against the old 446-file phase: 84 additions, but also
+31 changed old bodies. A filename filter would hide the latter obligations.
+The exact path/blob/byte ledger is therefore an observation baseline, not a
+passing historical comparison or permission to execute. Each changed body still
+needs an explicit attributable delta, and the original launch gates stay closed.

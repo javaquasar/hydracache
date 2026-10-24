@@ -6804,3 +6804,11 @@ restores targeted 469-file and 473-file preservation checks without deleting any
 old assertion or changing runtime validation. Twenty-three selected cases and
 strict checks pass; first canary refusals remain archived. Artifact inventories,
 held-build/role-census comparisons and the full-package gate remain separate.
+
+The [role-census and inventory result](role-census-and-inventory-result-20261024.md)
+repairs the census provider comparison with a single-file exact fixture view,
+after rejecting a general gateway that returned the wrong phase. Sixteen cases
+and strict checks pass. A separate read-only audit records all 530 current paths:
+the 446-file phase has 84 additions and 31 changed old bodies, with no removals.
+Inventory/held-build comparisons remain open; observed source identity is not
+permission to filter unknown names or admit production execution.

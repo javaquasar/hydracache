@@ -1,0 +1,7 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.46s
+     Running tests\custody_reader_074.rs (target\debug\deps\custody_reader_074-73adf2d682286a9a.exe)
+     Running tests\document_scratch_reader_074.rs (target\debug\deps\document_scratch_reader_074-a06e22265a13169e.exe)
+     Running tests\fresh_status_reader_074.rs (target\debug\deps\fresh_status_reader_074-3087550c9b324258.exe)
+     Running tests\held_complete_role_census_074.rs (target\debug\deps\held_complete_role_census_074-8d8652a4de24ccda.exe)
+error: test failed, to rerun pass `-p xtask --test held_complete_role_census_074`

@@ -1,0 +1,55 @@
+
+running 2 tests
+test custody_reader_preserves_entire_old_test_except_exact_gateway_io ... ok
+test custody_launcher_view_requires_exact_reviewed_current_bytes ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s
+
+
+running 2 tests
+test scratch_reader_preserves_every_original_assertion_and_both_old_counts ... ok
+test scratch_five_reader_inputs_differ_only_by_known_io_not_old_assertions ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.56s
+
+
+running 2 tests
+test fresh_status_reader_changes_only_admission_input_before_original_normalizers ... ok
+test fresh_status_admission_requires_exact_source_and_helper_before_old_input ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.27s
+
+
+running 3 tests
+test complete_role_census_uses_owned_contributions_before_the_existing_closing_owner_check ... FAILED
+test complete_role_census_keeps_prior_owner_and_provider_bodies_exact_after_additive_hooks ... FAILED
+test complete_role_census_is_inside_the_same_original_material_inventory ... FAILED
+
+failures:
+
+---- complete_role_census_uses_owned_contributions_before_the_existing_closing_owner_check stdout ----
+
+thread 'complete_role_census_uses_owned_contributions_before_the_existing_closing_owner_check' (39228) panicked at crates\xtask\tests\held_complete_role_census_074.rs:98:10:
+called `Option::unwrap()` on a `None` value
+
+---- complete_role_census_keeps_prior_owner_and_provider_bodies_exact_after_additive_hooks stdout ----
+
+thread 'complete_role_census_keeps_prior_owner_and_provider_bodies_exact_after_additive_hooks' (17844) panicked at crates\xtask\tests\support\bootstrap_build_guard.rs:49:5:
+assertion `left == right` failed
+  left: 0
+ right: 1
+
+---- complete_role_census_is_inside_the_same_original_material_inventory stdout ----
+
+thread 'complete_role_census_is_inside_the_same_original_material_inventory' (53540) panicked at crates\xtask\tests\held_complete_role_census_074.rs:145:5:
+assertion failed: source.contains("retained_roles: role_census::CompleteBindings")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    complete_role_census_is_inside_the_same_original_material_inventory
+    complete_role_census_keeps_prior_owner_and_provider_bodies_exact_after_additive_hooks
+    complete_role_census_uses_owned_contributions_before_the_existing_closing_owner_check
+
+test result: FAILED. 0 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+

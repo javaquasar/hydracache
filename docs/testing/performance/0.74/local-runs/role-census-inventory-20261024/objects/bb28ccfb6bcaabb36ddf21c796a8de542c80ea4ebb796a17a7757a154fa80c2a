@@ -1,0 +1,84 @@
+"""Retain rejected source variants, final checks and the read-only source ledger."""
+from pathlib import Path
+import hashlib
+import json
+import re
+import shutil
+import subprocess
+ROOT = Path(__file__).resolve().parent.parent
+OUT = ROOT / 'docs/testing/performance/0.74/local-runs/role-census-inventory-20261024'
+OUT.mkdir(parents=True, exist_ok=False)
+(OUT / 'objects').mkdir()
+(OUT / '.gitattributes').write_text('index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n', encoding='utf-8', newline='\n')
+members = {}
+def put(name, raw):
+    digest = hashlib.sha256(raw).hexdigest()
+    path = OUT / 'objects' / digest
+    if path.exists():
+        assert path.read_bytes() == raw
+    else:
+        with path.open('xb') as stream:
+            stream.write(raw)
+    assert name not in members
+    members[name] = dict(bytes=len(raw), sha256=digest)
+phases = ['census-reader-baseline', 'census-reader-candidate', 'census-narrow-baseline',
+    'census-narrow-candidate', 'census-exact-candidate', 'census-exact-check',
+    'census-exact-clippy', 'artifact-inventory-audit', 'census-inventory-doc',
+    'census-inventory-contract', 'census-inventory-gated', 'census-inventory-format']
+results = {}
+for phase in phases:
+    directory = ROOT / 'target/source-continuation-20261024' / phase
+    result = json.loads((directory / 'result.json').read_text())
+    assert result['exit'] == (101 if phase in phases[:4] else 0), phase
+    assert result['source_unchanged'] and result['head_unchanged'] and result['outer_refusal'] is None
+    counts = [tuple(map(int, values)) for values in re.findall(
+        r'test result: \w+\. (\d+) passed; (\d+) failed; (\d+) ignored; (\d+) measured; (\d+) filtered out',
+        (directory / 'stdout.log').read_text(encoding='utf-8'))]
+    results[phase] = dict(exit=result['exit'], target_verdicts=len(counts),
+        passed=sum(c[0] for c in counts), failed=sum(c[1] for c in counts),
+        ignored=sum(c[2] for c in counts), filtered=sum(c[4] for c in counts))
+    for name in ['intent.json', 'result.json', 'stdout.log', 'stderr.log']:
+        put(f'observation/{phase}/{name}', (directory / name).read_bytes())
+base = 'c91068bfa8b297bb075b63457da235aaa9c6232e'
+paths = ['crates/xtask/tests/' + name for name in [
+    'held_complete_role_census_074.rs', 'role_census_reader_074.rs', 'support/census_provider_input.rs']]
+changed = subprocess.check_output(['git', 'diff', '--name-only', base, '--', 'crates', 'tools', 'Cargo.toml', 'Cargo.lock', 'deny.toml'], cwd=ROOT, text=True).splitlines()
+assert sorted(changed) == sorted(paths)
+for path in paths:
+    put('source/current/' + path, (ROOT / path).read_bytes())
+put('source/baseline/' + paths[0], subprocess.check_output(['git', '--no-replace-objects', 'show', f'{base}:{paths[0]}'], cwd=ROOT))
+for directory, variant_paths, phase in [
+    ('census-rejected-generic-20261024', paths[:2], 'census-reader-candidate'),
+    ('census-narrow-comment-oracle-20261024', paths, 'census-narrow-candidate'),
+]:
+    intent = json.loads((ROOT / 'target/source-continuation-20261024' / phase / 'intent.json').read_text())
+    for path in variant_paths:
+        raw = (ROOT / 'target' / directory / Path(path).name).read_bytes()
+        assert hashlib.sha256(raw).hexdigest() == intent['source'][path]
+        put(f'source/rejected/{directory}/{path}', raw)
+for name in ['run-source-step-20261024.py', 'run-fresh-reader-20261024.py',
+             'audit-artifact-inventory-20261024.py', 'seal-census-inventory-20261024.py']:
+    put('coordinator/' + name, (ROOT / 'target' / name).read_bytes())
+put('source/committed-code.diff', subprocess.check_output(['git', 'diff', base, '--', *paths], cwd=ROOT))
+report = (ROOT / 'target/artifact-inventory-audit-20261024/inventory.json').read_bytes()
+assert hashlib.sha256(report).hexdigest() == 'cfd5e7f1c153f5214dd71da196dfdbac2d1c05806fa14865605e9ce0776bc9c0'
+put('audit/inventory.json', report)
+protected = {
+    'Cargo.toml': '18a8a27cf140a1d6eb31c8316ee39bb7d5832866a990346eee16cd0c30de344b',
+    'Cargo.lock': 'd2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c',
+    'docs/testing/performance/0.74/qualification-manifest.toml': '11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc'}
+for path, digest in protected.items():
+    assert hashlib.sha256((ROOT / path).read_bytes()).hexdigest() == digest
+facts = dict(baseline=base, final_code_commit=subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip(),
+    results=results, code_paths=paths, protected_sha256=protected,
+    rejected_variants_retained=True, inventory_bridge_admitted=False,
+    old_inventory_and_held_build_tests_changed=False, historical_inventory_tests_rerun=False,
+    dependency_changes=False, observation_frequency_changed=False, deadlines_changed=False,
+    runtime_changes=False, server=False, services_or_clocks=False, qualification=False,
+    original_owner=False, performance_measurements=False, full_package_rerun=False,
+    free_bytes_at_capture=shutil.disk_usage(ROOT).free)
+raw = (json.dumps(dict(schema='hc074-role-census-inventory-v1', facts=facts, members=members), indent=2, sort_keys=True) + '\n').encode()
+with (OUT / 'index.json').open('xb') as stream:
+    stream.write(raw)
+print(json.dumps(dict(index_sha256=hashlib.sha256(raw).hexdigest(), members=len(members),
+                     objects=len(list((OUT / 'objects').iterdir())), results=results), indent=2))

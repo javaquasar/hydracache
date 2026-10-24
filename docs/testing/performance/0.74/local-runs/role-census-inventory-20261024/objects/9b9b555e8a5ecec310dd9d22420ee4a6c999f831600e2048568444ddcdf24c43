@@ -1,0 +1,100 @@
+"""Read-only source census; observations are not historical-test admission."""
+from pathlib import Path
+import hashlib
+import json
+import stat
+import subprocess
+
+ROOT = Path(__file__).resolve().parent.parent
+SCOPE = 'tools/long-run-supervisor-074/src'
+REVIEWED = 'c91068bfa8b297bb075b63457da235aaa9c6232e'
+OUT = ROOT / 'target/artifact-inventory-audit-20261024'
+OUT.mkdir(exist_ok=False)
+commands = []
+def git(*args, payload=None):
+    commands.append(['git', '--no-replace-objects', *args])
+    result = subprocess.run(commands[-1], cwd=ROOT, input=payload, capture_output=True, check=True)
+    assert not result.stderr, result.stderr.decode(errors='replace')
+    return result.stdout
+def tree(revision):
+    raw = git('ls-tree', '-r', revision, '--', SCOPE).decode()
+    entries = {}
+    for line in raw.splitlines():
+        descriptor, path = line.split('\t')
+        mode, kind, blob = descriptor.split()
+        assert path not in entries and mode == '100644' and kind == 'blob'
+        assert path.startswith(SCOPE + '/') and '..' not in path.split('/')
+        entries[path] = dict(mode=mode, blob=blob)
+    return entries
+current = tree(REVIEWED)
+assert len(current) == 530
+index = {}
+for line in git('ls-files', '--stage', '--', SCOPE).decode().splitlines():
+    descriptor, path = line.split('\t')
+    mode, blob, stage = descriptor.split()
+    assert path not in index and stage == '0'
+    index[path] = dict(mode=mode, blob=blob)
+assert index == current, 'current index is not the captured source tree'
+blobs = git('cat-file', '--batch', payload=('\n'.join(e['blob'] for e in current.values()) + '\n').encode())
+position = 0
+for path, entry in current.items():
+    end = blobs.index(b'\n', position)
+    blob, kind, length = blobs[position:end].decode().split()
+    assert blob == entry['blob'] and kind == 'blob'
+    length = int(length)
+    assert 0 < length <= 1024 * 1024
+    position = end + 1
+    expected = blobs[position:position + length]
+    position += length
+    assert blobs[position:position + 1] == b'\n'
+    position += 1
+    file = ROOT / path
+    metadata = file.lstat()
+    assert stat.S_ISREG(metadata.st_mode) and not file.is_symlink()
+    assert not getattr(metadata, 'st_file_attributes', 0) & 0x400, 'reparse point'
+    raw = file.read_bytes()
+    assert raw.replace(b'\r\n', b'\n') == expected, path
+    entry.update(canonical_sha256=hashlib.sha256(expected).hexdigest(),
+                 working_sha256=hashlib.sha256(raw).hexdigest(), bytes=len(expected))
+assert position == len(blobs)
+actual_files = set()
+for file in (ROOT / SCOPE).rglob('*'):
+    metadata = file.lstat()
+    assert not file.is_symlink() and not getattr(metadata, 'st_file_attributes', 0) & 0x400
+    if stat.S_ISREG(metadata.st_mode):
+        actual_files.add(file.relative_to(ROOT).as_posix())
+    else:
+        assert stat.S_ISDIR(metadata.st_mode)
+assert actual_files == set(current), 'missing or extra filesystem inventory'
+phases = {}
+for revision, count in [
+    ('23c57b77523ad1cc16b1a79fc90b02a125f8d9b8', 437),
+    ('2a86c1fd', 438), ('773e6bf0', 440), ('697a911a', 441),
+    ('792900c87d295e2895fca2da9f8d502275624cf4', 442),
+    ('6e709b5da057e3e94bb12646e4d47071f8fb7750', 443),
+    ('6c6e47ee5dd3504d0be064b28af5a3e3ac087c9e', 446),
+]:
+    resolved = git('rev-parse', revision).decode().strip()
+    old = tree(resolved)
+    assert len(old) == count
+    removed = sorted(set(old) - set(current))
+    added = {path: entry for path, entry in current.items() if path not in old}
+    changed = {path: dict(previous=entry, current=current[path])
+               for path, entry in old.items() if path in current and entry['blob'] != current[path]['blob']}
+    phases[str(count)] = dict(revision=resolved, old_count=count,
+        added_count=len(added), changed_old_count=len(changed),
+        retained_unchanged_count=count - len(removed) - len(changed),
+        removed=removed, added=added, changed_old=changed,
+        inventory_bridge_admitted=False, old_assertions_changed=False)
+report = dict(schema='hc074-artifact-inventory-observation-v1',
+    pinned_current_source=REVIEWED, current_count=len(current), current=current,
+    working_tree_and_index_match=True, no_extra_files_or_reparse_points=True,
+    phases=phases, commands=commands, historical_tests_rerun=False,
+    server=False, services_or_clocks=False, runtime_changes=False,
+    qualification=False, disposition='observed-only-not-a-historical-input-bridge')
+raw = (json.dumps(report, indent=2, sort_keys=True) + '\n').encode()
+with (OUT / 'inventory.json').open('xb') as stream:
+    stream.write(raw)
+print(json.dumps(dict(report_sha256=hashlib.sha256(raw).hexdigest(), current_count=len(current),
+    phases={key:{name:value[name] for name in ['old_count','added_count','changed_old_count','retained_unchanged_count','removed']}
+            for key,value in phases.items()}), indent=2))
