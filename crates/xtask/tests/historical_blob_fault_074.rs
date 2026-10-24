@@ -150,10 +150,32 @@ impl Evidence {
             },
         );
     }
+    fn read_bound(
+        &self,
+        name: &str,
+        root: &Path,
+        request: (&str, Expected),
+        policy: Replacements,
+        reference: &Output,
+    ) -> Result<Vec<Output>, Refusal> {
+        let fallback =
+            transport::FallbackPin::from_reference(request.0, &request.1, policy, reference)
+                .unwrap();
+        let result = transport::read_pinned(
+            root,
+            &[request.0.to_owned()],
+            &[request.1],
+            &[Some(fallback)],
+            policy,
+            Instant::now() + transport::BOUND,
+        );
+        self.read_result(name, &result);
+        result
+    }
 }
 
 #[test]
-fn stale_pins_refs_config_and_fallback_aba_are_characterized_before_caller_admission() {
+fn stale_pins_refs_config_and_fallback_aba_refuse_before_caller_admission() {
     let e = Evidence::new();
     let root = tempfile::tempdir().unwrap();
     let sources = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
@@ -277,22 +299,22 @@ fn stale_pins_refs_config_and_fallback_aba_are_characterized_before_caller_admis
         format!("tree {tree}\nauthor Fixture <fixture@example.invalid> 946684800 +0000\ncommitter Fixture <fixture@example.invalid> 946684800 +0000\n\nsynthetic replacement\n").as_bytes());
     e.checked(&plain, &["replace", first, &commit], &[]);
     assert_eq!(
-        e.read(
+        e.read_bound(
             "stale-absence",
             &plain,
-            missing_spec,
-            missing_pin(),
-            Replacements::Default
+            (missing_spec, missing_pin()),
+            Replacements::Default,
+            &missing_output()
         ),
         Err(Refusal::Protocol(decoder::Refusal::Header))
     );
     assert_eq!(
-        e.read(
+        e.read_bound(
             "disabled-absence-control",
             &plain,
-            missing_spec,
-            missing_pin(),
-            Replacements::Disabled
+            (missing_spec, missing_pin()),
+            Replacements::Disabled,
+            &missing_output()
         )
         .unwrap(),
         vec![missing_output()]
@@ -311,15 +333,23 @@ fn stale_pins_refs_config_and_fallback_aba_are_characterized_before_caller_admis
         &[],
     );
 
-    // Expected-red admission counterexample: an ABA mutation after validation.
-    // A green characterization test must not be reported as a green fault gate.
+    // Preserve the old cut sequence; the original unsafe result is sealed in
+    // historical-blob-fault-20261024. Pinned output must now refuse that ABA.
     for policy in [Replacements::Default, Replacements::Disabled] {
         let deadline = Instant::now() + transport::BOUND;
         let mut cuts = vec![];
-        let result = transport::read_observed(
+        let fallback = transport::FallbackPin::from_reference(
+            missing_spec,
+            &missing_pin(),
+            policy,
+            &missing_output(),
+        )
+        .unwrap();
+        let result = transport::read_pinned_observed(
             &plain,
-            &[missing_spec.to_owned()],
-            &[missing_pin()],
+            &[spec.to_owned(), missing_spec.to_owned()],
+            &[old_pin(), missing_pin()],
+            &[None, Some(fallback)],
             policy,
             deadline,
             |point| {
@@ -347,26 +377,71 @@ fn stale_pins_refs_config_and_fallback_aba_are_characterized_before_caller_admis
             json!({"policy":format!("{policy:?}"),"cuts":cuts,"admission":false}),
         );
         assert_eq!(cuts, ["BatchValidated", "BeforeFallback", "AfterFallback"]);
-        let expected = if matches!(policy, Replacements::Default) {
-            output(&fresh_missing)
+        if matches!(policy, Replacements::Default) {
+            assert_eq!(result, Err(Refusal::FallbackOutput));
         } else {
-            output(&missing_output())
-        };
-        let result = result.unwrap();
-        assert_eq!(result.len(), 1);
-        assert_eq!(output(&result[0]), expected);
+            assert_eq!(result.unwrap(), vec![old_output(), missing_output()]);
+        }
         assert_eq!(
-            e.read(
+            e.read_bound(
                 "after-aba-absence",
                 &plain,
-                missing_spec,
-                missing_pin(),
-                Replacements::Default
+                (missing_spec, missing_pin()),
+                Replacements::Default,
+                &missing_output()
             )
             .unwrap(),
             vec![missing_output()]
         );
     }
+
+    // A later mismatched fallback publishes neither an earlier blob nor an
+    // earlier successful fallback. Retain duplicate order on the healthy path.
+    let good = transport::FallbackPin::from_reference(
+        missing_spec,
+        &missing_pin(),
+        Replacements::Default,
+        &missing_output(),
+    )
+    .unwrap();
+    let mut wrong_reference = missing_output();
+    wrong_reference.stderr[0] ^= 1;
+    let wrong = transport::FallbackPin::from_reference(
+        missing_spec,
+        &missing_pin(),
+        Replacements::Default,
+        &wrong_reference,
+    )
+    .unwrap();
+    let duplicate_specs = [
+        spec.to_owned(),
+        missing_spec.to_owned(),
+        missing_spec.to_owned(),
+    ];
+    let duplicate_pins = [old_pin(), missing_pin(), missing_pin()];
+    let duplicates = transport::read_pinned(
+        &plain,
+        &duplicate_specs,
+        &duplicate_pins,
+        &[None, Some(good.clone()), Some(good.clone())],
+        Replacements::Default,
+        Instant::now() + transport::BOUND,
+    );
+    e.read_result("duplicate-fallback-control", &duplicates);
+    assert_eq!(
+        duplicates.unwrap(),
+        vec![old_output(), missing_output(), missing_output()]
+    );
+    let partial = transport::read_pinned(
+        &plain,
+        &duplicate_specs,
+        &duplicate_pins,
+        &[None, Some(good), Some(wrong)],
+        Replacements::Default,
+        Instant::now() + transport::BOUND,
+    );
+    e.read_result("late-wrong-fallback-no-prefix", &partial);
+    assert_eq!(partial, Err(Refusal::FallbackOutput));
 
     // Installed Git's tree `show` does not quote this Unicode name according to
     // core.quotePath. Keep this negative config hypothesis, not a drift claim.
@@ -407,10 +482,18 @@ fn stale_pins_refs_config_and_fallback_aba_are_characterized_before_caller_admis
         Instant::now() + transport::BOUND,
     );
     let deadline = Instant::now() + transport::BOUND;
-    let rendered = transport::read_observed(
+    let fallback = transport::FallbackPin::from_reference(
+        &tree_spec,
+        &tree_pin(),
+        Replacements::Default,
+        &quoted,
+    )
+    .unwrap();
+    let rendered = transport::read_pinned_observed(
         &plain,
         std::slice::from_ref(&tree_spec),
         &[tree_pin()],
+        &[Some(fallback)],
         Replacements::Default,
         deadline,
         |point| {
@@ -442,6 +525,122 @@ fn stale_pins_refs_config_and_fallback_aba_are_characterized_before_caller_admis
     );
     assert_eq!(fresh, quoted);
     assert_eq!(rendered.unwrap(), vec![fresh]);
+
+    // Tree rendering ABA after raw tree validation: pin the original rendered
+    // bytes, not just the tree body. Both ref and config mutations must refuse.
+    let alternate_tree = e.checked(
+        &plain,
+        &["mktree"],
+        format!("100644 blob {changed}\tother\n").as_bytes(),
+    );
+    for policy in [Replacements::Default, Replacements::Disabled] {
+        let fallback =
+            transport::FallbackPin::from_reference(&tree_spec, &tree_pin(), policy, &quoted)
+                .unwrap();
+        let deadline = Instant::now() + transport::BOUND;
+        let tree_aba = transport::read_pinned_observed(
+            &plain,
+            std::slice::from_ref(&tree_spec),
+            &[tree_pin()],
+            &[Some(fallback)],
+            policy,
+            deadline,
+            |point| {
+                let args = match point {
+                    Point::BatchValidated => return,
+                    Point::BeforeFallback => vec![
+                        "replace".to_owned(),
+                        unicode_tree.clone(),
+                        alternate_tree.clone(),
+                    ],
+                    Point::AfterFallback => vec![
+                        "update-ref".to_owned(),
+                        "-d".to_owned(),
+                        format!("refs/replace/{unicode_tree}"),
+                    ],
+                };
+                let args: Vec<_> = args.iter().map(String::as_str).collect();
+                assert_eq!(
+                    e.git(&plain, Replacements::Disabled, &args, &[], deadline)
+                        .code,
+                    Some(0)
+                );
+            },
+        );
+        e.read_result(&format!("tree-ref-aba-{policy:?}"), &tree_aba);
+        if policy == Replacements::Default {
+            assert_eq!(tree_aba, Err(Refusal::FallbackOutput));
+        } else {
+            let values = tree_aba.unwrap();
+            assert_eq!(values.len(), 1);
+            assert_eq!(values[0], quoted);
+        }
+    }
+    e.checked(&plain, &["replace", &unicode_tree, &alternate_tree], &[]);
+    let alternate_raw = e.git(
+        &plain,
+        Replacements::Disabled,
+        &["cat-file", "tree", &alternate_tree],
+        &[],
+        Instant::now() + transport::BOUND,
+    );
+    assert_eq!(alternate_raw.code, Some(0));
+    let replaced_pin = Expected::Object {
+        oid: unicode_tree.clone(),
+        kind: Kind::Tree,
+        bytes: alternate_raw.stdout.len(),
+        sha256: Sha256::digest(&alternate_raw.stdout).into(),
+    };
+    let replacement_output = e.git(
+        &plain,
+        Replacements::Default,
+        &["show", &tree_spec],
+        &[],
+        Instant::now() + transport::BOUND,
+    );
+    assert_eq!(replacement_output.code, Some(0));
+    assert_ne!(replacement_output.stdout, quoted.stdout);
+    let fallback = transport::FallbackPin::from_reference(
+        &tree_spec,
+        &replaced_pin,
+        Replacements::Default,
+        &replacement_output,
+    )
+    .unwrap();
+    let deadline = Instant::now() + transport::BOUND;
+    let config_aba = transport::read_pinned_observed(
+        &plain,
+        std::slice::from_ref(&tree_spec),
+        &[replaced_pin],
+        &[Some(fallback)],
+        Replacements::Default,
+        deadline,
+        |point| {
+            let flag = match point {
+                Point::BatchValidated => return,
+                Point::BeforeFallback => "false",
+                Point::AfterFallback => "true",
+            };
+            assert_eq!(
+                e.git(
+                    &plain,
+                    Replacements::Disabled,
+                    &["config", "core.useReplaceRefs", flag],
+                    &[],
+                    deadline
+                )
+                .code,
+                Some(0)
+            );
+        },
+    );
+    e.read_result("tree-config-aba", &config_aba);
+    assert_eq!(config_aba, Err(Refusal::FallbackOutput));
+    e.checked(
+        &plain,
+        &["update-ref", "-d", &format!("refs/replace/{unicode_tree}")],
+        &[],
+    );
 
     // One deterministic bounded search introduces a second COMMIT with the prefix.
     let short = &first[..4];
@@ -585,10 +784,18 @@ fn stale_pins_refs_config_and_fallback_aba_are_characterized_before_caller_admis
     // The observer cannot grant a new deadline after it consumes the old one.
     let deadline = Instant::now() + std::time::Duration::from_secs(2);
     let mut cuts = vec![];
-    let expired = transport::read_observed(
+    let fallback = transport::FallbackPin::from_reference(
+        missing_spec,
+        &missing_pin(),
+        Replacements::Default,
+        &missing_output(),
+    )
+    .unwrap();
+    let expired = transport::read_pinned_observed(
         &plain,
         &[missing_spec.to_owned()],
         &[missing_pin()],
+        &[Some(fallback)],
         Replacements::Default,
         deadline,
         |point| {
@@ -605,7 +812,305 @@ fn stale_pins_refs_config_and_fallback_aba_are_characterized_before_caller_admis
     assert_eq!(cuts, ["BatchValidated"]);
     assert_eq!(expired, Err(Refusal::Deadline));
     e.save("result", json!({"characterization_passed":true,"stale_pin_refusals":5,
-        "fallback_absence_aba_counterexample":true,"quote_path_rendering_hypothesis_confirmed":false,
-        "fault_admission_gate":false,"old_loader_integrated":false,"measurement":false,
+        "fallback_absence_aba_refused":true,"quote_path_rendering_hypothesis_confirmed":false,
+        "pinned_output_component_gate":true,"caller_admission_gate":false,"old_loader_integrated":false,"measurement":false,
         "source_authority":false,"server":false,"live_checks_or_deadlines_changed":false}));
+}
+
+fn synthetic_reference() -> (String, Expected, Output) {
+    (
+        format!("{}:tree", "a".repeat(40)),
+        Expected::Object {
+            oid: "b".repeat(40),
+            kind: Kind::Tree,
+            bytes: 0,
+            sha256: [0; 32],
+        },
+        Output {
+            stdout: b"tree\0\r\nbytes".to_vec(),
+            stderr: b"diagnostic\xff\0".to_vec(),
+            code: Some(0),
+        },
+    )
+}
+
+#[test]
+fn exact_output_pin_binds_each_stream_length_bytes_and_terminal_code() {
+    let (spec, original, reference) = synthetic_reference();
+    let binding =
+        transport::FallbackPin::from_reference(&spec, &original, Replacements::Default, &reference)
+            .unwrap();
+    assert_eq!(
+        binding.verify_output(&reference, Instant::now() + transport::BOUND),
+        Ok(())
+    );
+    for mutation in 0..7 {
+        let mut value = Output {
+            stdout: reference.stdout.clone(),
+            stderr: reference.stderr.clone(),
+            code: reference.code,
+        };
+        match mutation {
+            0 => value.stdout[0] ^= 1,
+            1 => value.stderr[0] ^= 1,
+            2 => value.stdout.push(0),
+            3 => {
+                value.stderr.pop();
+            }
+            4 => value.code = Some(1),
+            5 => value.code = None,
+            6 => std::mem::swap(&mut value.stdout, &mut value.stderr),
+            _ => unreachable!(),
+        }
+        assert_eq!(
+            binding.verify_output(&value, Instant::now() + transport::BOUND),
+            Err(Refusal::FallbackOutput),
+            "mutation {mutation}"
+        );
+    }
+    assert_eq!(
+        binding.verify_output(&reference, Instant::now()),
+        Err(Refusal::Deadline)
+    );
+}
+
+#[test]
+fn missing_or_misaligned_fallback_bindings_refuse_before_git_or_observer() {
+    let absent = Path::new("nonexistent-fallback-binding-fixture-must-not-be-opened");
+    let (spec, original, reference) = synthetic_reference();
+    let binding =
+        transport::FallbackPin::from_reference(&spec, &original, Replacements::Default, &reference)
+            .unwrap();
+    let read = |specs: &[String],
+                pins: &[Expected],
+                fallbacks: &[Option<transport::FallbackPin>],
+                policy| {
+        transport::read_pinned_observed(
+            absent,
+            specs,
+            pins,
+            fallbacks,
+            policy,
+            Instant::now() + transport::BOUND,
+            |_| panic!("preflight must precede observation"),
+        )
+    };
+    assert_eq!(
+        transport::read(
+            absent,
+            std::slice::from_ref(&spec),
+            std::slice::from_ref(&original),
+            Replacements::Default,
+            Instant::now() + transport::BOUND
+        ),
+        Err(Refusal::FallbackRequired)
+    );
+    assert_eq!(
+        transport::read_observed(
+            absent,
+            std::slice::from_ref(&spec),
+            std::slice::from_ref(&original),
+            Replacements::Default,
+            Instant::now() + transport::BOUND,
+            |_| panic!("unbound fallback must not start")
+        ),
+        Err(Refusal::FallbackRequired)
+    );
+    assert_eq!(
+        read(
+            std::slice::from_ref(&spec),
+            std::slice::from_ref(&original),
+            &[None],
+            Replacements::Default
+        ),
+        Err(Refusal::FallbackRequired)
+    );
+    assert_eq!(
+        read(
+            std::slice::from_ref(&spec),
+            std::slice::from_ref(&original),
+            &[],
+            Replacements::Default
+        ),
+        Err(Refusal::FallbackIdentity)
+    );
+    assert_eq!(
+        read(
+            &[format!("{}:other", "a".repeat(40))],
+            std::slice::from_ref(&original),
+            &[Some(binding.clone())],
+            Replacements::Default
+        ),
+        Err(Refusal::FallbackIdentity)
+    );
+    assert_eq!(
+        read(
+            std::slice::from_ref(&spec),
+            std::slice::from_ref(&original),
+            &[Some(binding.clone())],
+            Replacements::Disabled
+        ),
+        Err(Refusal::FallbackIdentity)
+    );
+    for field in 0..4 {
+        let mut changed = original.clone();
+        if let Expected::Object {
+            oid,
+            kind,
+            bytes,
+            sha256,
+        } = &mut changed
+        {
+            match field {
+                0 => *oid = "c".repeat(40),
+                1 => *kind = Kind::Tag,
+                2 => *bytes = 1,
+                3 => sha256[0] ^= 1,
+                _ => unreachable!(),
+            }
+        }
+        assert_eq!(
+            read(
+                std::slice::from_ref(&spec),
+                &[changed],
+                &[Some(binding.clone())],
+                Replacements::Default
+            ),
+            Err(Refusal::FallbackIdentity)
+        );
+    }
+    let mut blob = original.clone();
+    if let Expected::Object { kind, .. } = &mut blob {
+        *kind = Kind::Blob;
+    }
+    assert_eq!(
+        read(
+            std::slice::from_ref(&spec),
+            &[blob],
+            &[Some(binding)],
+            Replacements::Default
+        ),
+        Err(Refusal::FallbackIdentity)
+    );
+}
+
+#[test]
+fn invalid_output_references_and_original_identity_are_not_admitted() {
+    let (spec, original, mut reference) = synthetic_reference();
+    for kind in [Kind::Tree, Kind::Commit, Kind::Tag] {
+        let mut raw = original.clone();
+        if let Expected::Object { kind: field, .. } = &mut raw {
+            *field = kind;
+        }
+        assert!(transport::FallbackPin::from_reference(
+            &spec,
+            &raw,
+            Replacements::Default,
+            &reference
+        )
+        .is_ok());
+    }
+    for code in [None, Some(-1), Some(256)] {
+        reference.code = code;
+        assert!(matches!(
+            transport::FallbackPin::from_reference(
+                &spec,
+                &original,
+                Replacements::Default,
+                &reference
+            ),
+            Err(Refusal::FallbackIdentity)
+        ));
+    }
+    reference.code = Some(0);
+    let missing = Expected::Missing { spec: spec.clone() };
+    assert!(matches!(
+        transport::FallbackPin::from_reference(&spec, &missing, Replacements::Default, &reference),
+        Err(Refusal::FallbackIdentity)
+    ));
+    reference.code = Some(128);
+    assert!(transport::FallbackPin::from_reference(
+        &spec,
+        &missing,
+        Replacements::Default,
+        &reference
+    )
+    .is_ok());
+    assert!(matches!(
+        transport::FallbackPin::from_reference(
+            &format!("{}:other", "a".repeat(40)),
+            &missing,
+            Replacements::Default,
+            &reference
+        ),
+        Err(Refusal::FallbackIdentity)
+    ));
+    assert!(matches!(
+        transport::FallbackPin::from_reference(
+            "HEAD:p",
+            &original,
+            Replacements::Default,
+            &reference
+        ),
+        Err(Refusal::FallbackIdentity)
+    ));
+    let mut blob = original.clone();
+    if let Expected::Object { kind, .. } = &mut blob {
+        *kind = Kind::Blob;
+    }
+    assert!(matches!(
+        transport::FallbackPin::from_reference(&spec, &blob, Replacements::Default, &reference),
+        Err(Refusal::FallbackIdentity)
+    ));
+    let mut corrupt = original;
+    if let Expected::Object { oid, .. } = &mut corrupt {
+        *oid = "bad".to_owned();
+    }
+    assert!(matches!(
+        transport::FallbackPin::from_reference(&spec, &corrupt, Replacements::Default, &reference),
+        Err(Refusal::Protocol(decoder::Refusal::Reference))
+    ));
+}
+
+#[test]
+fn fallback_reference_and_aggregate_budgets_refuse_before_git() {
+    let (spec, original, mut reference) = synthetic_reference();
+    reference.stdout = vec![0; decoder::MAX_STREAM + 1];
+    assert!(matches!(
+        transport::FallbackPin::from_reference(&spec, &original, Replacements::Default, &reference),
+        Err(Refusal::Budget)
+    ));
+    reference.stdout.clear();
+    reference.stderr = vec![0; 64 * 1024 + 1];
+    assert!(matches!(
+        transport::FallbackPin::from_reference(&spec, &original, Replacements::Default, &reference),
+        Err(Refusal::Budget)
+    ));
+    for stream in ["stdout", "stderr"] {
+        reference.stdout.clear();
+        reference.stderr.clear();
+        if stream == "stdout" {
+            reference.stdout = vec![0; decoder::MAX_STREAM / 2 + 1];
+        } else {
+            reference.stderr = vec![0; 32 * 1024 + 1];
+        }
+        let binding = transport::FallbackPin::from_reference(
+            &spec,
+            &original,
+            Replacements::Default,
+            &reference,
+        )
+        .unwrap();
+        assert_eq!(
+            transport::read_pinned(
+                Path::new("nonexistent-budget-fixture"),
+                &[spec.clone(), spec.clone()],
+                &[original.clone(), original.clone()],
+                &[Some(binding.clone()), Some(binding)],
+                Replacements::Default,
+                Instant::now() + transport::BOUND
+            ),
+            Err(Refusal::Budget)
+        );
+    }
 }

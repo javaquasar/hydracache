@@ -24,7 +24,7 @@ impl Kind {
 }
 
 /// A separate reference observation. Constructing this type is not authority.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Expected {
     Object {
         oid: String,

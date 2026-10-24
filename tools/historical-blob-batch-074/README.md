@@ -143,22 +143,21 @@ Before integration, test mutation/ambiguity/config/provenance refusals, supporte
 platforms and the cost of reference preparation and spooling. No integrated
 speedup or complete-package pass is claimed.
 
-## Mutation controls before caller integration
+## First mutation controls before caller integration
 
-`historical_blob_fault_074` characterizes stale pins and deterministic mutation
-cuts on disposable repositories. `read_observed` adds test-only cuts after batch
-validation and around fallback; ordinary `read` supplies an empty observer. All
-existing checks, ordering and deadlines remain; observer time consumes that same
-deadline. Expiry at the first cut prevents fallback and returns `Deadline`.
+The first `historical_blob_fault_074` version characterized stale pins and
+deterministic mutation cuts on disposable repositories. Its original source and
+all first outcomes remain in the linked fault report and content-addressed packet.
 
-The admission gate is **false**. Under default replacement policy, a missing pin
-can validate, a replacement commit can introduce the path immediately before
-fallback, and the unchecked `show` result can return those new bytes successfully.
+The first admission gate was **false**. Under default replacement policy, a missing
+pin could validate, a replacement commit could introduce the path immediately
+before fallback, and the unchecked `show` result returned the new bytes successfully.
 Removing the replacement immediately afterward restores the initial ref state
 but does not undo the returned bytes. Explicit replacement disabling withstands
 this particular control; it does not establish general config/ref authority.
-The passing characterization test deliberately reproduces this counterexample,
-not a safe refusal. No old source loader imports this component.
+The old passing characterization deliberately reproduced the counterexample,
+not a safe refusal. The following candidate closes this output gap; it does not
+admit an old source loader.
 
 Pre-batch stale blob content, changed replacement configuration, stale absence,
 ambiguous short commits and missing objects produce exact refusal classes.
@@ -183,7 +182,46 @@ Those combined runs are red and are not retried or relabeled as complete passes.
 The earlier current-Rust complete 9/1/6 pass remains a separate first outcome.
 See the retained [fault report](../../docs/testing/performance/0.74/historical-blob-fault-result-20261024.md).
 
-Before integration, choose and prove how mutable fallback results are bound to
-the requested reference view. A final ref/config comparison alone cannot detect
-the demonstrated ABA. Do not silently disable replacements, expand short IDs,
-refresh pins from observed bytes or drop an old guard's fresh observations.
+## Pinned fallback candidate
+
+`read_pinned` and `read_pinned_observed` require a positional optional
+`FallbackPin` beside every original decoder pin. Blob entries use `None`.
+Missing/non-blob entries require a binding prepared from an independent `show`
+reference **before** reading: exact raw query, original object/missing pin,
+replacement policy, stdout/stderr lengths and SHA256 digests, and terminal exit
+code. Private fields keep the binding immutable during the read. Constructing
+this type asserts a reference; it is not source enrollment or authority.
+
+The batch still checks the original object pins. Fallback still executes the
+original `show` spelling/policy, with every existing check and the same shared
+deadline. After the effect, output verification must match the pre-supplied pin
+before any result escapes. A byte, length, diagnostic or status change returns
+`FallbackOutput`, even if the ref/config is restored in the after-fallback cut.
+An error on a later item returns no earlier blob/fallback prefix. No pin is
+refreshed from observed output, no revision is expanded and no replacement policy
+is silently changed. This proves pinned output identity, not continuously stable
+repository configuration.
+
+The old raw-pin-only `read`/`read_observed` paths remain usable for blob-only
+requests. Missing/non-blob requests without output bindings now fail before Git
+or observer effects with `FallbackRequired`. Mismatched binding count, query,
+original pin or policy returns `FallbackIdentity`. Reference and aggregate
+output budgets remain bounded. Unknown/signal/abnormal reference statuses outside
+0..255 refuse; absence cannot be enrolled with a successful status.
+
+The updated fault target preserves all original stale-pin controls and the old
+ABA cuts, now asserting safe refusal. Added controls cover tree-ref ABA, local
+replacement-config ABA, binary stream/status drift, identity swaps, duplicate
+fallback order, no prefix publication, budgets and the original deadline.
+Current Rust and MSRV each pass 9 decoder, 5 fault and 6 transport cases, including
+the unchanged six-profile/54-result reference corpus. The current run uses
+separate sequential commands; MSRV runs all three targets in one command. Earlier
+deadline/fixture refusals remain historical first outcomes, not overwritten by
+these passes. Thirty-one Python controls and current check/strict lint pass.
+
+The [pinned fallback report](../../docs/testing/performance/0.74/historical-blob-pinned-fallback-result-20261024.md)
+records the candidate and exact evidence. The output-binding component gate is
+green; real caller admission, independent production pin provenance, Linux
+coverage, preparation cost and the old incomplete package/release gates remain
+open. A final ref/config comparison alone still cannot exclude ABA, and fresh
+live observations must not be removed during any later integration.

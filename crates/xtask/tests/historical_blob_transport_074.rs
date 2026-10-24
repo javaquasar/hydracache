@@ -134,10 +134,29 @@ fn real_git_python_and_native_outputs_match_in_six_isolated_cases() {
             .iter()
             .map(expected)
             .collect();
-        let actual = transport::read(
+        let fallbacks: Vec<_> = pins
+            .iter()
+            .zip(&specs)
+            .zip(&expected)
+            .map(|((pin, spec), value)| {
+                if matches!(
+                    pin,
+                    Expected::Object {
+                        kind: Kind::Blob,
+                        ..
+                    }
+                ) {
+                    None
+                } else {
+                    Some(transport::FallbackPin::from_reference(spec, pin, policy, value).unwrap())
+                }
+            })
+            .collect();
+        let actual = transport::read_pinned(
             &root.path().join(name),
             &specs,
             &pins,
+            &fallbacks,
             policy,
             Instant::now() + transport::BOUND,
         );
@@ -410,11 +429,25 @@ fn failed_batch_is_not_retried_as_show_or_published_as_empty_source() {
     let root = tempfile::tempdir().unwrap();
     let spec = "abcd:path".to_owned();
     let pins = [Expected::ShortMissing { spec: spec.clone() }];
+    // Supply the new preflight requirement, but this synthetic reference must
+    // never be reached: the non-repository batch itself must still fail first.
+    let fallback = transport::FallbackPin::from_reference(
+        &spec,
+        &pins[0],
+        Replacements::Default,
+        &Output {
+            stdout: vec![],
+            stderr: vec![],
+            code: Some(128),
+        },
+    )
+    .unwrap();
     assert_eq!(
-        transport::read(
+        transport::read_pinned(
             root.path(),
             &[spec],
             &pins,
+            &[Some(fallback)],
             Replacements::Default,
             Instant::now() + transport::BOUND
         ),
