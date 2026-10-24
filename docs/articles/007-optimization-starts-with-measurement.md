@@ -19170,3 +19170,27 @@ The next isolated candidate should examine batching distinct immutable reads,
 with exact byte/error/ref and concurrency controls, while keeping every source
 comparison and fresh observation. No such optimization or product gain is
 claimed yet, and the interrupted full-package check remains incomplete.
+
+The subsequent [finite batch prototype](../testing/performance/0.74/historical-blob-batch-result-20261024.md)
+tests that process-amortization hypothesis on synthetic repositories before any
+existing source guard changes. Ten distinct full-commit/path keys and three
+duplicate requests preserve thirteen ordered results through one batch Git
+invocation. This demonstrates a smaller invocation graph, not a measured wall,
+CPU or memory benefit. Commit metadata and every returned object's type, length,
+content hash and framing are checked; a missing path or non-blob uses the exact
+original `show` command rather than inventing equivalent diagnostics.
+
+Twenty final controls pass, covering raw binary/empty/CRLF/large/symlink bytes,
+multiple commits, replacement refs, moving HEAD, concurrent batches and bounded
+failure. The first extended suite exposed a misplaced fixture assertion; its
+failed output and exact sources remain retained, and the correction leaves the
+reader bytes unchanged. A separate closing check refuses a final fallback that
+finishes after the shared diagnostic deadline. These are different claims from
+production retirement or original-window admission.
+
+The extraction also makes the integration limit concrete. A full-commit-only,
+replacement-disabled, local-only reader cannot silently replace short-revision
+or unflagged loaders. Rust extraction and exact call-site eligibility must come
+before integration, with current-file observations and all source comparisons
+preserved. The prototype therefore advances semantic feasibility while leaving
+the earlier incomplete package gate and release execution barriers open.

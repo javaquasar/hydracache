@@ -1,0 +1,33 @@
+test_exact_bytes_and_empty_batch (test_reader.Protocol.test_exact_bytes_and_empty_batch) ... ok
+test_expired_deadline_and_oversized_mock_output_refuse (test_reader.Protocol.test_expired_deadline_and_oversized_mock_output_refuse) ... ok
+test_fallback_exception_and_aggregate_budget_never_publish_partial_results (test_reader.Protocol.test_fallback_exception_and_aggregate_budget_never_publish_partial_results) ... ok
+test_invalid_and_dynamic_requests_refuse_before_spawn (test_reader.Protocol.test_invalid_and_dynamic_requests_refuse_before_spawn) ... ok
+test_missing_or_wrong_commit_and_batch_diagnostics_refuse (test_reader.Protocol.test_missing_or_wrong_commit_and_batch_diagnostics_refuse) ... ok
+test_missing_record_must_name_the_exact_request (test_reader.Protocol.test_missing_record_must_name_the_exact_request) ... ok
+test_non_directory_root_refuses_before_process (test_reader.Protocol.test_non_directory_root_refuses_before_process) ... ok
+test_process_failure_propagates_without_retry (test_reader.Protocol.test_process_failure_propagates_without_retry) ... ok
+test_protocol_corruption_is_not_retried_or_published (test_reader.Protocol.test_protocol_corruption_is_not_retried_or_published) ... ok
+test_runner_refuses_expired_deadline_or_root_override_before_launch (test_reader.Protocol.test_runner_refuses_expired_deadline_or_root_override_before_launch) ... ok
+test_runner_timeout_and_budget_kill_and_wait_exact_child (test_reader.Protocol.test_runner_timeout_and_budget_kill_and_wait_exact_child) ... ok
+test_shared_deadline_is_not_renewed_for_fallback (test_reader.Protocol.test_shared_deadline_is_not_renewed_for_fallback) ... ok
+test_bytes_order_duplicates_and_multiple_revisions_use_one_process (test_reader.SyntheticGit.test_bytes_order_duplicates_and_multiple_revisions_use_one_process) ... ok
+test_concurrent_batches_do_not_share_state (test_reader.SyntheticGit.test_concurrent_batches_do_not_share_state) ... ok
+test_current_files_are_neither_read_nor_normalized (test_reader.SyntheticGit.test_current_files_are_neither_read_nor_normalized) ... ok
+test_distinct_roots_do_not_share_negative_or_positive_results (test_reader.SyntheticGit.test_distinct_roots_do_not_share_negative_or_positive_results) ... ok
+test_missing_and_tree_keep_exact_original_output_and_status (test_reader.SyntheticGit.test_missing_and_tree_keep_exact_original_output_and_status) ... ok
+test_replacements_and_moving_head_do_not_change_original_commit (test_reader.SyntheticGit.test_replacements_and_moving_head_do_not_change_original_commit) ... ok
+test_symlink_object_is_not_followed_or_converted (test_reader.SyntheticGit.test_symlink_object_is_not_followed_or_converted) ... FAIL
+
+======================================================================
+FAIL: test_symlink_object_is_not_followed_or_converted (test_reader.SyntheticGit.test_symlink_object_is_not_followed_or_converted)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\historical-blob-batch-074\test_reader.py", line 235, in test_symlink_object_is_not_followed_or_converted
+    self.assertEqual(reader.read_batch(self.root, [request])[0].stdout, bytes(range(256)))
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: b'folder/large' != b'\x00\x01\x02\x03\x04\x05\x06\x07\x08\t\n\[690 chars]\xff'
+
+----------------------------------------------------------------------
+Ran 19 tests in 7.827s
+
+FAILED (failures=1)

@@ -230,3 +230,13 @@ not supported as the main fix; isolated immutable-blob batching needs its own
 byte/error/ref/concurrency controls. No reader optimization, original execution
 or qualification is admitted, and this target pass does not complete the old
 interrupted full-package attempt.
+
+The [isolated historical batch prototype](historical-blob-batch-result-20261024.md)
+adds twenty local semantic controls, including exact byte/error results,
+replacement/moving-ref separation, concurrency, bounded refusal and closing
+deadline behavior. One synthetic thirteen-lookup comparison uses a single
+batch invocation; it is not a timing or product claim. The extended fixture's
+first failure and exact input sources remain retained. This Python reader is
+not imported by any runtime or existing guard. Rust extraction, call-site
+eligibility and unchanged-bound package verification remain open; none of the
+original execution, retirement, lifecycle or trust barriers is waived.

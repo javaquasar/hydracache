@@ -6865,3 +6865,12 @@ a broad memoization cache as the principal fix. Distinct immutable-blob batching
 is the next extracted hypothesis, not an implemented optimization. Git spans
 overlap, parsing and observer overhead remain unattributed, and the full package
 and production admission remain open.
+
+The [historical blob batch prototype](historical-blob-batch-result-20261024.md)
+passes twenty local semantic controls without integration into a source guard.
+Its thirteen-request synthetic comparison preserves ten distinct keys and three
+duplicates through one batch invocation, with exact reference results for bytes
+and missing/tree fallbacks. This is not a timing result. The first extended
+fixture failure remains retained; its correction leaves the reader unchanged.
+Rust extraction, call-site eligibility, short-revision semantics and the old
+incomplete package gate remain before integration or a performance claim.

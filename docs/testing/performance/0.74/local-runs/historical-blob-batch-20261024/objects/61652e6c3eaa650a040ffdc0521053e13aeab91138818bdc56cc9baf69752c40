@@ -1,0 +1,255 @@
+"""Synthetic disposable repositories only; no timing or product measurements."""
+from concurrent.futures import ThreadPoolExecutor
+import hashlib
+import os
+from pathlib import Path
+import subprocess
+import tempfile
+import time
+import unittest
+from unittest import mock
+
+import reader
+
+
+def record(kind, body):
+    prefix = kind + b" " + str(len(body)).encode("ascii")
+    oid = hashlib.sha1(prefix + b"\0" + body).hexdigest().encode("ascii")
+    return oid, oid + b" " + prefix + b"\n" + body + b"\n"
+
+
+class Protocol(unittest.TestCase):
+    def setUp(self):
+        self.revision, self.commit = record(b"commit", b"synthetic commit")
+        self.request = reader.Request(self.revision.decode(), "source.rs")
+        _, self.blob = record(b"blob", b"a\0b\r\n\xff\n")
+
+    def run_raw(self, raw, **kwargs):
+        return reader.read_batch(Path(__file__).parent, [self.request],
+                                 run=lambda *args: reader.Output(raw, **kwargs))
+
+    def test_exact_bytes_and_empty_batch(self):
+        self.assertEqual(self.run_raw(self.commit + self.blob, stderr=b"", returncode=0),
+                         [reader.Output(b"a\0b\r\n\xff\n", b"", 0)])
+        self.assertEqual(reader.read_batch("absent", [], run=lambda *a: self.fail()), [])
+
+    def test_invalid_and_dynamic_requests_refuse_before_spawn(self):
+        revision = self.revision.decode()
+        invalid = [reader.Request(r, "a") for r in ("HEAD", "abcd", revision.upper(), "x" * 40)]
+        invalid += [reader.Request(revision, p) for p in
+                    ("", "/a", "./a", "a/../b", "a//b", "a\nfoo", "a\0b", "a\rb", "a\\b", "\ud800")]
+        for request in invalid:
+            with self.subTest(request=request), self.assertRaises(reader.Refused):
+                reader.read_batch("absent", [request], run=lambda *a: self.fail())
+        for requests in ([None], [self.request] * (reader.MAX_REQUESTS + 1),
+                         iter([self.request]), [reader.Request(revision, "x" * 4097)],
+                         [reader.Request(revision, "x" * 4096)] * 100):
+            with self.assertRaises(reader.Refused):
+                reader.read_batch("absent", requests, run=lambda *a: self.fail())
+
+    def test_protocol_corruption_is_not_retried_or_published(self):
+        wrong_oid = self.blob.replace(self.blob[:40], b"0" * 40, 1)
+        bad = [b"", self.commit, self.commit + self.blob[:-1],
+               self.commit + wrong_oid, self.commit + self.blob + b"junk\n",
+               self.commit + b"0" * 40 + b" blob 01\nx\n",
+               self.commit + b"0" * 40 + b" blob 999999999\n",
+               self.commit + b"0" * 40 + b" blob -1\n",
+               self.commit + self.request.spec() + b" ambiguous\n",
+               self.commit + self.request.spec() + b" excluded\n"]
+        for raw in bad:
+            run = mock.Mock(return_value=reader.Output(raw, b"", 0))
+            with self.subTest(raw=raw[:70]), self.assertRaises(reader.Refused):
+                reader.read_batch(Path(__file__).parent, [self.request], run=run)
+            self.assertEqual(run.call_count, 1)
+
+    def test_missing_or_wrong_commit_and_batch_diagnostics_refuse(self):
+        for raw, err, code in [(self.revision + b" missing\n", b"", 0),
+                               (self.blob + self.blob, b"", 0),
+                               (record(b"commit", b"other")[1] + self.blob, b"", 0),
+                               (self.commit + self.blob, b"warning", 0),
+                               (self.commit + self.blob, b"", 128)]:
+            with self.assertRaises(reader.Refused):
+                self.run_raw(raw, stderr=err, returncode=code)
+
+    def test_process_failure_propagates_without_retry(self):
+        run = mock.Mock(side_effect=OSError("cannot launch"))
+        with self.assertRaises(OSError):
+            reader.read_batch(Path(__file__).parent, [self.request], run=run)
+        self.assertEqual(run.call_count, 1)
+
+    def test_missing_record_must_name_the_exact_request(self):
+        raw = self.commit + b"other missing\n"
+        with self.assertRaises(reader.Refused):
+            self.run_raw(raw, stderr=b"", returncode=0)
+
+    def test_shared_deadline_is_not_renewed_for_fallback(self):
+        seen = []
+
+        def run(root, args, data, deadline):
+            seen.append(deadline)
+            if len(seen) == 1:
+                return reader.Output(self.commit + self.request.spec() + b" missing\n", b"", 0)
+            return reader.Output(b"", b"exact show failure", 128)
+
+        result = reader.read_batch(Path(__file__).parent, [self.request], run=run)
+        self.assertEqual(result, [reader.Output(b"", b"exact show failure", 128)])
+        self.assertEqual(seen[0], seen[1])
+
+    def test_fallback_exception_and_aggregate_budget_never_publish_partial_results(self):
+        for failed in (OSError("first failure retained"), reader.Output(b"x" * 200, b"", 0),
+                       reader.Output(b"", b"x" * 200, 128)):
+            run = mock.Mock(side_effect=[reader.Output(self.commit + self.request.spec() + b" missing\n", b"", 0), failed])
+            with mock.patch.object(reader, "MAX_OUTPUT", 150), mock.patch.object(reader, "MAX_STDERR", 100):
+                with self.assertRaises((OSError, reader.Refused)):
+                    reader.read_batch(Path(__file__).parent, [self.request], run=run)
+            self.assertEqual(run.call_count, 2)
+
+    def test_non_directory_root_refuses_before_process(self):
+        with self.assertRaises(reader.Refused):
+            reader.read_batch(Path(__file__), [self.request], run=lambda *a: self.fail())
+
+    def test_runner_refuses_expired_deadline_or_root_override_before_launch(self):
+        with mock.patch.object(reader.subprocess, "Popen") as launch:
+            with self.assertRaises(reader.Refused):
+                reader.run_git(Path(__file__).parent, ["version"], b"", 0)
+            with mock.patch.dict(os.environ, GIT_DIR="must-not-be-used"):
+                with self.assertRaises(reader.Refused):
+                    reader.run_git(Path(__file__).parent, ["version"], b"", time.monotonic() + 1)
+            launch.assert_not_called()
+
+    def test_expired_deadline_and_oversized_mock_output_refuse(self):
+        with mock.patch.object(reader.time, "monotonic", side_effect=[0, 31]):
+            with self.assertRaises(reader.Refused):
+                self.run_raw(self.commit + self.blob, stderr=b"", returncode=0)
+        with mock.patch.object(reader, "MAX_OUTPUT", 1):
+            with self.assertRaises(reader.Refused):
+                self.run_raw(self.commit + self.blob, stderr=b"", returncode=0)
+
+    def test_runner_timeout_and_budget_kill_and_wait_exact_child(self):
+        child = mock.Mock()
+        child.poll.return_value = None
+        with mock.patch.object(reader.subprocess, "Popen", return_value=child):
+            with mock.patch.object(reader.time, "monotonic", side_effect=[0, 2]):
+                with self.assertRaises(reader.Refused):
+                    reader.run_git(Path(__file__).parent, ["version"], b"", 1)
+        child.kill.assert_called_once()
+        child.wait.assert_called_once_with(timeout=5)
+        child.reset_mock()
+        with mock.patch.object(reader.subprocess, "Popen", return_value=child):
+            with mock.patch.object(reader.os, "fstat", return_value=mock.Mock(st_size=reader.MAX_OUTPUT + 1)):
+                with self.assertRaises(reader.Refused):
+                    reader.run_git(Path(__file__).parent, ["version"], b"", time.monotonic() + 2)
+        child.kill.assert_called_once()
+        child.wait.assert_called_once_with(timeout=5)
+
+
+class SyntheticGit(unittest.TestCase):
+    def setUp(self):
+        environment = {name: value for name, value in os.environ.items() if not name.startswith("GIT_")}
+        environment.update(GIT_CONFIG_NOSYSTEM="1", GIT_CONFIG_GLOBAL=os.devnull,
+                           GIT_ATTR_NOSYSTEM="1", GIT_NO_LAZY_FETCH="1")
+        patch = mock.patch.dict(os.environ, environment, clear=True)
+        patch.start()
+        self.addCleanup(patch.stop)
+        self.temp = tempfile.TemporaryDirectory(prefix="hydracache-074-blob-control-")
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        self.git("init", "--object-format=sha1", "--initial-branch=fixture")
+        self.git("config", "user.name", "Synthetic control")
+        self.git("config", "user.email", "fixture@example.invalid")
+        self.git("config", "core.autocrlf", "false")
+        self.git("config", "commit.gpgsign", "false")
+        self.files = {"empty": b"", "binary": bytes(range(256)),
+                      "space name": b"a\r\nb\n", "unicode-λ": b"not normalized\r\n",
+                      "folder/large": b"a\0\xff\n" * 65536}
+        for name, body in self.files.items():
+            path = self.root / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(body)
+        self.git("add", "--all")
+        self.git("commit", "--no-verify", "-m", "synthetic one")
+        self.first = self.git("rev-parse", "HEAD").decode().strip()
+        (self.root / "binary").write_bytes(b"changed")
+        self.git("add", "binary")
+        self.git("commit", "--no-verify", "-m", "synthetic two")
+        self.second = self.git("rev-parse", "HEAD").decode().strip()
+        self.calls = []
+
+    def git(self, *args, data=None):
+        return subprocess.run(["git", "--no-replace-objects", *args], cwd=self.root,
+                              input=data, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                              timeout=10, check=True).stdout
+
+    def counted(self, root, args, data, deadline):
+        self.calls.append((root, tuple(args), data))
+        return reader.run_git(root, args, data, deadline)
+
+    def baseline(self, requests):
+        outputs = []
+        for request in requests:
+            value = subprocess.run(["git", "--no-replace-objects", "show", request.spec().decode()],
+                                   cwd=self.root, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=10)
+            outputs.append(reader.Output(value.stdout, value.stderr, value.returncode))
+        return outputs
+
+    def test_bytes_order_duplicates_and_multiple_revisions_use_one_process(self):
+        requests = [reader.Request(rev, name) for rev in (self.first, self.second)
+                    for name in reversed(self.files)]
+        requests += requests[:3]
+        self.assertEqual(reader.read_batch(self.root, requests, run=self.counted), self.baseline(requests))
+        self.assertEqual(len(self.calls), 1)
+        self.assertEqual(self.calls[0][1], ("cat-file", "--batch"))
+        self.assertEqual(self.calls[0][2].splitlines(),
+                         [self.first.encode(), self.second.encode(), *[r.spec() for r in requests]])
+        print(f"synthetic_distinct_read_control requests={len(requests)} batch_processes=1 timing_claim=false")
+
+    def test_missing_and_tree_keep_exact_original_output_and_status(self):
+        requests = [reader.Request(self.first, name) for name in ("binary", "absent", "folder", "empty")]
+        expected = self.baseline(requests)
+        self.assertNotEqual(expected[1].returncode, 0)
+        self.assertEqual(reader.read_batch(self.root, requests, run=self.counted), expected)
+        self.assertEqual([args[0] for _, args, _ in self.calls], ["cat-file", "show", "show"])
+
+    def test_current_files_are_neither_read_nor_normalized(self):
+        request = reader.Request(self.first, "binary")
+        (self.root / "binary").write_bytes(b"current bytes must remain fresh elsewhere")
+        self.assertEqual(reader.read_batch(self.root, [request])[0].stdout, bytes(range(256)))
+        self.assertEqual((self.root / "binary").read_bytes(), b"current bytes must remain fresh elsewhere")
+
+    def test_replacements_and_moving_head_do_not_change_original_commit(self):
+        self.git("replace", self.first, self.second)
+        request = reader.Request(self.first, "binary")
+        self.assertEqual(reader.read_batch(self.root, [request]), self.baseline([request]))
+        self.assertEqual(reader.read_batch(self.root, [request])[0].stdout, bytes(range(256)))
+        self.git("symbolic-ref", "HEAD", "refs/heads/missing-fixture")
+        self.assertEqual(reader.read_batch(self.root, [request])[0].stdout, bytes(range(256)))
+
+    def test_symlink_object_is_not_followed_or_converted(self):
+        target = b"folder/large"
+        oid = self.git("hash-object", "-w", "--stdin", data=target).decode().strip()
+        self.git("update-index", "--add", "--cacheinfo", f"120000,{oid},link")
+        self.git("commit", "--no-verify", "-m", "synthetic symlink object")
+        revision = self.git("rev-parse", "HEAD").decode().strip()
+        request = reader.Request(revision, "link")
+        self.assertEqual(reader.read_batch(self.root, [request]), self.baseline([request]))
+        self.assertEqual(reader.read_batch(self.root, [request])[0].stdout, target)
+
+    def test_concurrent_batches_do_not_share_state(self):
+        requests = [reader.Request(self.first, name) for name in self.files]
+        expected = self.baseline(requests)
+        with ThreadPoolExecutor(max_workers=4) as pool:
+            results = list(pool.map(lambda _: reader.read_batch(self.root, requests), range(8)))
+        self.assertEqual(results, [expected] * 8)
+
+    def test_distinct_roots_do_not_share_negative_or_positive_results(self):
+        request = reader.Request(self.first, "binary")
+        with tempfile.TemporaryDirectory(prefix="hydracache-074-empty-control-") as directory:
+            subprocess.run(["git", "init", "--object-format=sha1", directory], check=True,
+                           stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=10)
+            with self.assertRaises(reader.Refused):
+                reader.read_batch(directory, [request])
+        self.assertEqual(reader.read_batch(self.root, [request])[0].stdout, bytes(range(256)))
+
+
+if __name__ == "__main__":
+    unittest.main()

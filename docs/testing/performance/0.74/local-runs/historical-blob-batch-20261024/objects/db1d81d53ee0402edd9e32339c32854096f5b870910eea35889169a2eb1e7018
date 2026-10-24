@@ -1,0 +1,16 @@
+"""Retain exact failing control sources before correcting the fixture placement."""
+from pathlib import Path
+import hashlib
+import json
+
+root = Path(__file__).resolve().parent.parent
+phase = root / 'target/source-continuation-20261024/blob-batch-controls-v2'
+intent = json.loads((phase / 'intent.json').read_text())
+out = root / 'target/blob-batch-retained-20261024/controls-v2'
+out.mkdir(parents=True, exist_ok=False)
+for name in ('reader.py', 'test_reader.py'):
+    relative = f'tools/historical-blob-batch-074/{name}'
+    raw = (root / relative).read_bytes()
+    assert hashlib.sha256(raw).hexdigest() == intent['source'][relative]
+    (out / name).write_bytes(raw)
+print('Exact v2 sources retained; first failure remains unchanged')

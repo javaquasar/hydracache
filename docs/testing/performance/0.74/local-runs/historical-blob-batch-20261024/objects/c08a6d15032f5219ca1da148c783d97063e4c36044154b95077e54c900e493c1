@@ -1,0 +1,101 @@
+"""Seal exact semantic-control outputs. Does not execute the candidate or Git workload."""
+from pathlib import Path
+import hashlib
+import json
+import re
+import subprocess
+
+ROOT = Path(__file__).resolve().parent.parent
+OUT = ROOT / 'docs/testing/performance/0.74/local-runs/historical-blob-batch-20261024'
+PHASES = ('blob-batch-controls-v1', 'blob-batch-controls-v2', 'blob-batch-controls-v3',
+          'blob-batch-syntax', 'blob-batch-indentation', 'blob-batch-closing-controls',
+          'blob-batch-closing-syntax', 'blob-batch-closing-indentation')
+EXPECTED = (0, 1, 0, 0, 0, 0, 0, 0)
+PROTECTED = {
+    'Cargo.toml': '18a8a27cf140a1d6eb31c8316ee39bb7d5832866a990346eee16cd0c30de344b',
+    'Cargo.lock': 'd2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c',
+    'docs/testing/performance/0.74/qualification-manifest.toml':
+        '11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc',
+}
+
+
+def sha(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+
+assert all(sha((ROOT / path).read_bytes()) == digest for path, digest in PROTECTED.items())
+assert subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT).decode().strip() == \
+    '2707ddea8bca9507e571eeacd139f814ee103c36'
+members = {}
+objects = {}
+
+
+def add(name, raw):
+    assert name not in members
+    digest = sha(raw)
+    members[name] = dict(sha256=digest, bytes=len(raw))
+    objects[digest] = raw
+
+
+facts = []
+intents = {}
+for phase, expected in zip(PHASES, EXPECTED):
+    folder = ROOT / 'target/source-continuation-20261024' / phase
+    intent = json.loads((folder / 'intent.json').read_bytes())
+    result = json.loads((folder / 'result.json').read_bytes())
+    assert result['exit'] == expected and result['outer_refusal'] is None
+    assert result['source_unchanged'] and result['head_unchanged']
+    assert intent['source'] == result['source_after']
+    assert not result['admission'] and not result['qualification']
+    intents[phase] = intent
+    for name in ('intent.json', 'stdout.log', 'stderr.log', 'result.json'):
+        add(f'checks/{phase}/{name}', (folder / name).read_bytes())
+    log = (folder / 'stderr.log').read_text()
+    count = re.search(r'Ran (\d+) tests in ', log)
+    facts.append(dict(phase=phase, exit=expected, tests=int(count[1]) if count else None,
+                      source_unchanged=True, head_unchanged=True, retry=False))
+assert [fact['tests'] for fact in facts if fact['tests']] == [15, 19, 19, 20]
+assert 'FAILED (failures=1)' in (ROOT / 'target/source-continuation-20261024/blob-batch-controls-v2/stderr.log').read_text()
+
+for name in ('reader.py', 'test_reader.py'):
+    relative = f'tools/historical-blob-batch-074/{name}'
+    before = (ROOT / 'target/blob-batch-retained-20261024/controls-v2' / name).read_bytes()
+    assert sha(before) == intents['blob-batch-controls-v2']['source'][relative]
+    add(f'sources/controls-v2/{name}', before)
+    v3 = subprocess.check_output(['git', 'show', f'840e4b8306b4b3825b95072c3d9dfeee0960cc32:{relative}'], cwd=ROOT)
+    assert sha(v3) == intents['blob-batch-controls-v3']['source'][relative]
+    add(f'sources/controls-v3/{name}', v3)
+    final = (ROOT / relative).read_bytes()
+    assert sha(final) == intents['blob-batch-closing-controls']['source'][relative]
+    add(f'sources/final/{name}', final)
+assert members['sources/controls-v2/reader.py'] == members['sources/controls-v3/reader.py']
+add('sources/final/README.md', (ROOT / 'tools/historical-blob-batch-074/README.md').read_bytes())
+for path in ('target/run-source-step-20261024.py', 'target/run-fresh-reader-20261024.py',
+             'target/retain-blob-batch-v2-20261024.py', 'target/seal-blob-batch-20261024.py'):
+    add('coordinators/' + Path(path).name, (ROOT / path).read_bytes())
+for name in ('git.html', 'git-cat-file.html'):
+    add('git-docs/' + name, (Path('C:/Program Files/Git/mingw64/share/doc/git-doc') / name).read_bytes())
+add('git-version.txt', subprocess.check_output(['git', '--version'], cwd=ROOT))
+
+index = dict(schema='historical-blob-batch-semantic-control-v1',
+    code_commits=['840e4b8306b4b3825b95072c3d9dfeee0960cc32', '2707ddea8bca9507e571eeacd139f814ee103c36'],
+    members=members, facts=dict(phases=facts, final_tests=20,
+        synthetic_user_requests=13, synthetic_distinct_request_keys=10,
+        synthetic_duplicate_requests=3, synthetic_batch_invocations=1,
+        original_comparison_invocations=13, timing_claim=False,
+        v1_source_digests_retained=True, v1_complete_sources_retained=False,
+        v2_first_failure='moving-HEAD assertion misplaced into symlink control',
+        v2_to_v3_reader_unchanged=True, v2_sources_verified=True,
+        final_closing_deadline_control=True, protected_sha256=PROTECTED,
+        runtime_integrated=False, source_guards_modified=False,
+        live_observation_frequency_changed=False, original_windows_changed=False,
+        package_retry=False, dependencies_changed=False, server=False, clock_or_service=False,
+        original_owner=False, product_workload=False, qualification=False, admission=False))
+OUT.mkdir(parents=True, exist_ok=False)
+(OUT / 'objects').mkdir()
+(OUT / '.gitattributes').write_text('* -text\n', encoding='ascii', newline='\n')
+for digest, raw in objects.items():
+    (OUT / 'objects' / digest).write_bytes(raw)
+raw = (json.dumps(index, indent=2, sort_keys=True) + '\n').encode()
+(OUT / 'index.json').write_bytes(raw)
+print(json.dumps(dict(index_sha256=sha(raw), members=len(members), objects=len(objects), facts=facts)))

@@ -1,0 +1,291 @@
+{
+  "code_commits": [
+    "840e4b8306b4b3825b95072c3d9dfeee0960cc32",
+    "2707ddea8bca9507e571eeacd139f814ee103c36"
+  ],
+  "facts": {
+    "admission": false,
+    "clock_or_service": false,
+    "dependencies_changed": false,
+    "final_closing_deadline_control": true,
+    "final_tests": 20,
+    "live_observation_frequency_changed": false,
+    "original_comparison_invocations": 13,
+    "original_owner": false,
+    "original_windows_changed": false,
+    "package_retry": false,
+    "phases": [
+      {
+        "exit": 0,
+        "head_unchanged": true,
+        "phase": "blob-batch-controls-v1",
+        "retry": false,
+        "source_unchanged": true,
+        "tests": 15
+      },
+      {
+        "exit": 1,
+        "head_unchanged": true,
+        "phase": "blob-batch-controls-v2",
+        "retry": false,
+        "source_unchanged": true,
+        "tests": 19
+      },
+      {
+        "exit": 0,
+        "head_unchanged": true,
+        "phase": "blob-batch-controls-v3",
+        "retry": false,
+        "source_unchanged": true,
+        "tests": 19
+      },
+      {
+        "exit": 0,
+        "head_unchanged": true,
+        "phase": "blob-batch-syntax",
+        "retry": false,
+        "source_unchanged": true,
+        "tests": null
+      },
+      {
+        "exit": 0,
+        "head_unchanged": true,
+        "phase": "blob-batch-indentation",
+        "retry": false,
+        "source_unchanged": true,
+        "tests": null
+      },
+      {
+        "exit": 0,
+        "head_unchanged": true,
+        "phase": "blob-batch-closing-controls",
+        "retry": false,
+        "source_unchanged": true,
+        "tests": 20
+      },
+      {
+        "exit": 0,
+        "head_unchanged": true,
+        "phase": "blob-batch-closing-syntax",
+        "retry": false,
+        "source_unchanged": true,
+        "tests": null
+      },
+      {
+        "exit": 0,
+        "head_unchanged": true,
+        "phase": "blob-batch-closing-indentation",
+        "retry": false,
+        "source_unchanged": true,
+        "tests": null
+      }
+    ],
+    "product_workload": false,
+    "protected_sha256": {
+      "Cargo.lock": "d2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c",
+      "Cargo.toml": "18a8a27cf140a1d6eb31c8316ee39bb7d5832866a990346eee16cd0c30de344b",
+      "docs/testing/performance/0.74/qualification-manifest.toml": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "qualification": false,
+    "runtime_integrated": false,
+    "server": false,
+    "source_guards_modified": false,
+    "synthetic_batch_invocations": 1,
+    "synthetic_distinct_request_keys": 10,
+    "synthetic_duplicate_requests": 3,
+    "synthetic_user_requests": 13,
+    "timing_claim": false,
+    "v1_complete_sources_retained": false,
+    "v1_source_digests_retained": true,
+    "v2_first_failure": "moving-HEAD assertion misplaced into symlink control",
+    "v2_sources_verified": true,
+    "v2_to_v3_reader_unchanged": true
+  },
+  "members": {
+    "checks/blob-batch-closing-controls/intent.json": {
+      "bytes": 313739,
+      "sha256": "5c45bf4288720285068b2400bbb5b2480fe9ad6990d5b371d823db1832cacdae"
+    },
+    "checks/blob-batch-closing-controls/result.json": {
+      "bytes": 313405,
+      "sha256": "6856b820da206f9b6369b8509ab0914d3f6c66121b5405203e9e56c01f207176"
+    },
+    "checks/blob-batch-closing-controls/stderr.log": {
+      "bytes": 2926,
+      "sha256": "19ef79d0b4c92637bd18f7564c3cec6ea7206d377e39d6652f5ef2d2e187c731"
+    },
+    "checks/blob-batch-closing-controls/stdout.log": {
+      "bytes": 82,
+      "sha256": "f632472212663717a16f350315529b24ff21bcf9c34eaaa70ce866ff6e87b6b2"
+    },
+    "checks/blob-batch-closing-indentation/intent.json": {
+      "bytes": 313671,
+      "sha256": "f327b598de623428832a65943ea9ea1741d1c6866961fb32c9154ae1d197dc50"
+    },
+    "checks/blob-batch-closing-indentation/result.json": {
+      "bytes": 313405,
+      "sha256": "6856b820da206f9b6369b8509ab0914d3f6c66121b5405203e9e56c01f207176"
+    },
+    "checks/blob-batch-closing-indentation/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/blob-batch-closing-indentation/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/blob-batch-closing-syntax/intent.json": {
+      "bytes": 313684,
+      "sha256": "6d89d6f825dcc207b8f497f2af324879559d4b1abeafa49a582038e6698b9914"
+    },
+    "checks/blob-batch-closing-syntax/result.json": {
+      "bytes": 313405,
+      "sha256": "6856b820da206f9b6369b8509ab0914d3f6c66121b5405203e9e56c01f207176"
+    },
+    "checks/blob-batch-closing-syntax/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/blob-batch-closing-syntax/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/blob-batch-controls-v1/intent.json": {
+      "bytes": 313621,
+      "sha256": "b60f40dd7111a200232f9f5c03400688848a50c2d362cf0d7d6fead0769e15a5"
+    },
+    "checks/blob-batch-controls-v1/result.json": {
+      "bytes": 313287,
+      "sha256": "1b3add652399479a8c22c3d91b09dc5938ec8126d4a79a60b73400d958ecbf0e"
+    },
+    "checks/blob-batch-controls-v1/stderr.log": {
+      "bytes": 2193,
+      "sha256": "3980d42bccec4dee42a0928d94640de54e721d4079177e2ca9f20f6c56620d41"
+    },
+    "checks/blob-batch-controls-v1/stdout.log": {
+      "bytes": 82,
+      "sha256": "f632472212663717a16f350315529b24ff21bcf9c34eaaa70ce866ff6e87b6b2"
+    },
+    "checks/blob-batch-controls-v2/intent.json": {
+      "bytes": 313621,
+      "sha256": "cb0fe041f65e407c8457789639c53e8d7cbdcbd8d9f82b0cce653cca937c43ce"
+    },
+    "checks/blob-batch-controls-v2/result.json": {
+      "bytes": 313287,
+      "sha256": "5c50a7420e09112f04e59578d5bf2a498ec18fad3786b4c7e5f4bf1206979db8"
+    },
+    "checks/blob-batch-controls-v2/stderr.log": {
+      "bytes": 3573,
+      "sha256": "b264c3ef99d12ccc3417f0af2de7d2e2901af80b590dbd251e31cf5386b2292b"
+    },
+    "checks/blob-batch-controls-v2/stdout.log": {
+      "bytes": 82,
+      "sha256": "f632472212663717a16f350315529b24ff21bcf9c34eaaa70ce866ff6e87b6b2"
+    },
+    "checks/blob-batch-controls-v3/intent.json": {
+      "bytes": 313621,
+      "sha256": "18ac5e26e2cc946a9a9da686c331c350cb0db2a86fcd108077919363fa65d449"
+    },
+    "checks/blob-batch-controls-v3/result.json": {
+      "bytes": 313287,
+      "sha256": "f7f2b3e4f7e00c8092141ec84881e81d8b4aac6e5dc8ac9fb693987ed3e05802"
+    },
+    "checks/blob-batch-controls-v3/stderr.log": {
+      "bytes": 2799,
+      "sha256": "b89ba4e961398558ab81be50a16d7f24e1aa370982602f3b2510df69d416b473"
+    },
+    "checks/blob-batch-controls-v3/stdout.log": {
+      "bytes": 82,
+      "sha256": "f632472212663717a16f350315529b24ff21bcf9c34eaaa70ce866ff6e87b6b2"
+    },
+    "checks/blob-batch-indentation/intent.json": {
+      "bytes": 313671,
+      "sha256": "d32b5c2c7ef7c433b284c1c7f336e7a8d516ec2ffce807452fabfb37b5c08d1d"
+    },
+    "checks/blob-batch-indentation/result.json": {
+      "bytes": 313405,
+      "sha256": "2522c40338f770fbd9574d866cff78566d86e4f2f7048f843451e0bc7b76f5d9"
+    },
+    "checks/blob-batch-indentation/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/blob-batch-indentation/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/blob-batch-syntax/intent.json": {
+      "bytes": 313684,
+      "sha256": "07557b7f8b6f3d4b5116c697d26e31044a6da5055e71be77b65cf1ef409cd07d"
+    },
+    "checks/blob-batch-syntax/result.json": {
+      "bytes": 313405,
+      "sha256": "2522c40338f770fbd9574d866cff78566d86e4f2f7048f843451e0bc7b76f5d9"
+    },
+    "checks/blob-batch-syntax/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/blob-batch-syntax/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "coordinators/retain-blob-batch-v2-20261024.py": {
+      "bytes": 737,
+      "sha256": "db1d81d53ee0402edd9e32339c32854096f5b870910eea35889169a2eb1e7018"
+    },
+    "coordinators/run-fresh-reader-20261024.py": {
+      "bytes": 544,
+      "sha256": "851631e846ec7d3696a0e2fa550b6f87e8f07e8412f5dafc0530c0bc70c597ed"
+    },
+    "coordinators/run-source-step-20261024.py": {
+      "bytes": 2596,
+      "sha256": "a92482cabcfcf8f6440e95972bee8d204bb9c59c8805c45c7b57363dcc3ab430"
+    },
+    "coordinators/seal-blob-batch-20261024.py": {
+      "bytes": 5480,
+      "sha256": "c08a6d15032f5219ca1da148c783d97063e4c36044154b95077e54c900e493c1"
+    },
+    "git-docs/git-cat-file.html": {
+      "bytes": 52369,
+      "sha256": "7b09345e302818c2aabafc47ace9eb5174d87aafd8f8bd9413ecd6ea1c1db36e"
+    },
+    "git-docs/git.html": {
+      "bytes": 117133,
+      "sha256": "af293b38b280974c6de9734715e3894e9a7cc0c19f3fc8c1af9ede86382f70f6"
+    },
+    "git-version.txt": {
+      "bytes": 29,
+      "sha256": "4da3730b40b406c0459b3eeb08ee0d1177d4aa1ce08c67f2c8162b2544e1616c"
+    },
+    "sources/controls-v2/reader.py": {
+      "bytes": 7072,
+      "sha256": "f54dc978dc2b3b8773617e9ee578ab9eac062a62d18c52df12a95aae90888535"
+    },
+    "sources/controls-v2/test_reader.py": {
+      "bytes": 14020,
+      "sha256": "bb81ec12c7963c8caf01a1c581b462a2fc1fe11b91238f01df7c28635d3f22e0"
+    },
+    "sources/controls-v3/reader.py": {
+      "bytes": 7072,
+      "sha256": "f54dc978dc2b3b8773617e9ee578ab9eac062a62d18c52df12a95aae90888535"
+    },
+    "sources/controls-v3/test_reader.py": {
+      "bytes": 14020,
+      "sha256": "61652e6c3eaa650a040ffdc0521053e13aeab91138818bdc56cc9baf69752c40"
+    },
+    "sources/final/README.md": {
+      "bytes": 3813,
+      "sha256": "f18bec68ec355f8f5353c4a999b9ba7a91d89e553cf362a84ef5b367ad82eef7"
+    },
+    "sources/final/reader.py": {
+      "bytes": 7242,
+      "sha256": "71207da9f35a2b3458092e761c9a86ce9c47d07b8e99db3743bd430c2bd57470"
+    },
+    "sources/final/test_reader.py": {
+      "bytes": 14543,
+      "sha256": "f259d0b04eba25412491e57a662e3b4ca3127fcd71ce8648beb0137a141a58c5"
+    }
+  },
+  "schema": "historical-blob-batch-semantic-control-v1"
+}
