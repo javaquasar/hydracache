@@ -250,3 +250,13 @@ full-ID and 10499 short-ID calls retain default replacement semantics. Six
 manual sites remain unadmitted. These counts are not timing attribution or proof
 that the narrow prototype fixes the full package. All original execution and
 release barriers above remain unchanged.
+
+The [native Git component gate](historical-blob-native-result-20261024.md)
+adds a bounded fixture-only transport and independent oracle: 54 exact results
+across six full/short/replacement-policy cases, nine decoder and six transport
+tests on current/MSRV, twenty-six Python controls and strict local check/lint.
+Owned leaf-child timeout/output-budget refusal preserves a same-image unrelated
+child; it is not original process-tree or writer-alias revocation. No existing
+loader is redirected. Mutable input/config/ambiguity and production pin provenance,
+supported-platform proof and whole preparation cost remain before integration.
+No old interrupted-package verdict or original release barrier changes.

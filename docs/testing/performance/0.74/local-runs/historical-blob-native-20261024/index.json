@@ -1,0 +1,1531 @@
+{
+  "code_commit": "da762d686ec585f872438b19d441ba01d2e5562a",
+  "facts": {
+    "all_writer_authority": false,
+    "dependency_changes": false,
+    "first_versions_retained": true,
+    "matrices": [
+      {
+        "cases": 6,
+        "matched_results": 54,
+        "phase": "blob-native-controls-v1",
+        "python_prototype_results": 18
+      },
+      {
+        "cases": 6,
+        "matched_results": 54,
+        "phase": "blob-native-controls-v2",
+        "python_prototype_results": 18
+      },
+      {
+        "cases": 6,
+        "matched_results": 54,
+        "phase": "blob-native-final-controls",
+        "python_prototype_results": 18
+      },
+      {
+        "cases": 6,
+        "matched_results": 54,
+        "phase": "blob-native-msrv-controls",
+        "python_prototype_results": 18
+      },
+      {
+        "cases": 6,
+        "matched_results": 54,
+        "phase": "blob-native-no-expansion-controls",
+        "python_prototype_results": 18
+      },
+      {
+        "cases": 6,
+        "matched_results": 54,
+        "phase": "blob-native-no-expansion-msrv",
+        "python_prototype_results": 18
+      }
+    ],
+    "measurement": false,
+    "mutable_refs_or_config_between_observations_proved": false,
+    "old_full_missing_strictness_preserved": true,
+    "old_loader_integrated": false,
+    "ordinary_package_pass": false,
+    "original_owner": false,
+    "original_windows_or_live_frequency_changed": false,
+    "phases": [
+      {
+        "exit": 0,
+        "head_unchanged": true,
+        "phase": "blob-native-build-v1",
+        "python_passes": null,
+        "rust_target_passes": [],
+        "source_unchanged": true
+      },
+      {
+        "exit": 0,
+        "head_unchanged": true,
+        "phase": "blob-native-controls-v1",
+        "python_passes": null,
+        "rust_target_passes": [
+          9,
+          6
+        ],
+        "source_unchanged": true
+      },
+      {
+        "exit": 0,
+        "head_unchanged": true,
+        "phase": "blob-native-controls-v2",
+        "python_passes": null,
+        "rust_target_passes": [
+          9,
+          6
+        ],
+        "source_unchanged": true
+      },
+      {
+        "exit": 0,
+        "head_unchanged": true,
+        "phase": "blob-native-check",
+        "python_passes": null,
+        "rust_target_passes": [],
+        "source_unchanged": true
+      },
+      {
+        "exit": 0,
+        "head_unchanged": true,
+        "phase": "blob-native-clippy",
+        "python_passes": null,
+        "rust_target_passes": [],
+        "source_unchanged": true
+      },
+      {
+        "exit": 0,
+        "head_unchanged": true,
+        "phase": "blob-native-final-controls",
+        "python_passes": null,
+        "rust_target_passes": [
+          9,
+          6
+        ],
+        "source_unchanged": true
+      },
+      {
+        "exit": 0,
+        "head_unchanged": true,
+        "phase": "blob-native-msrv-controls",
+        "python_passes": null,
+        "rust_target_passes": [
+          9,
+          6
+        ],
+        "source_unchanged": true
+      },
+      {
+        "exit": 0,
+        "head_unchanged": true,
+        "phase": "blob-native-python-controls",
+        "python_passes": 26,
+        "rust_target_passes": [],
+        "source_unchanged": true
+      },
+      {
+        "exit": 0,
+        "head_unchanged": true,
+        "phase": "blob-native-python-syntax",
+        "python_passes": null,
+        "rust_target_passes": [],
+        "source_unchanged": true
+      },
+      {
+        "exit": 0,
+        "head_unchanged": true,
+        "phase": "blob-native-python-indentation",
+        "python_passes": null,
+        "rust_target_passes": [],
+        "source_unchanged": true
+      },
+      {
+        "exit": 0,
+        "head_unchanged": true,
+        "phase": "blob-native-format",
+        "python_passes": null,
+        "rust_target_passes": [],
+        "source_unchanged": true
+      },
+      {
+        "exit": 0,
+        "head_unchanged": true,
+        "phase": "blob-native-no-expansion-controls",
+        "python_passes": null,
+        "rust_target_passes": [
+          9,
+          6
+        ],
+        "source_unchanged": true
+      },
+      {
+        "exit": 0,
+        "head_unchanged": true,
+        "phase": "blob-native-no-expansion-msrv",
+        "python_passes": null,
+        "rust_target_passes": [
+          9,
+          6
+        ],
+        "source_unchanged": true
+      },
+      {
+        "exit": 0,
+        "head_unchanged": true,
+        "phase": "blob-native-no-expansion-check",
+        "python_passes": null,
+        "rust_target_passes": [],
+        "source_unchanged": true
+      },
+      {
+        "exit": 0,
+        "head_unchanged": true,
+        "phase": "blob-native-no-expansion-clippy",
+        "python_passes": null,
+        "rust_target_passes": [],
+        "source_unchanged": true
+      },
+      {
+        "exit": 0,
+        "head_unchanged": true,
+        "phase": "blob-native-no-expansion-format",
+        "python_passes": null,
+        "rust_target_passes": [],
+        "source_unchanged": true
+      }
+    ],
+    "policy_explicit": true,
+    "product_workload": false,
+    "production_pin_authority": false,
+    "protected_sha256": {
+      "Cargo.lock": "d2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c",
+      "Cargo.toml": "18a8a27cf140a1d6eb31c8316ee39bb7d5832866a990346eee16cd0c30de344b",
+      "docs/testing/performance/0.74/qualification-manifest.toml": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "push": false,
+    "qualification": false,
+    "semantic_repeats_are_not_speedup_samples": true,
+    "server": false,
+    "service_or_clock": false,
+    "short_queries_expanded": false,
+    "synthetic_config_isolation": true
+  },
+  "members": {
+    "checks/blob-native-build-v1/intent.json": {
+      "bytes": 314671,
+      "sha256": "2a8df3d26f5416a808f400598422c001b745e4c875c2bfdb9dcfe9fc2a73c76f"
+    },
+    "checks/blob-native-build-v1/result.json": {
+      "bytes": 314266,
+      "sha256": "707770bbca198d1b9aba07b3d303aea1a8aaf27f226c776de181d8995da94294"
+    },
+    "checks/blob-native-build-v1/stderr.log": {
+      "bytes": 395,
+      "sha256": "76792ecacb6eb7fc357ae365545defc1d655e1a47e1a1267d28efec5452521e0"
+    },
+    "checks/blob-native-build-v1/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/blob-native-check/intent.json": {
+      "bytes": 314698,
+      "sha256": "5d2f84cee40e371a1208b3d5d3e1e1d3289f01e2a02a9fbc55af0745c9ac4b84"
+    },
+    "checks/blob-native-check/result.json": {
+      "bytes": 314389,
+      "sha256": "2895cd0a2e6678313726464b3564e028c234720084d2771d85e3061c3c78bcce"
+    },
+    "checks/blob-native-check/stderr.log": {
+      "bytes": 155,
+      "sha256": "099f81a362ec2d15d2aa0b2d933b6cb7521fdb5a7b9784f0ed1cde1b7151ef59"
+    },
+    "checks/blob-native-check/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/blob-native-clippy/intent.json": {
+      "bytes": 314761,
+      "sha256": "bf6cb5c6673655155693b62719a08d7486dcb68dfb0bd78960f19873c780c541"
+    },
+    "checks/blob-native-clippy/result.json": {
+      "bytes": 314389,
+      "sha256": "2895cd0a2e6678313726464b3564e028c234720084d2771d85e3061c3c78bcce"
+    },
+    "checks/blob-native-clippy/stderr.log": {
+      "bytes": 155,
+      "sha256": "5074b7bdb31c80ae740485690aabfb7fb93d9dd77d9b2b87c03f1d67a85dafdc"
+    },
+    "checks/blob-native-clippy/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/blob-native-controls-v1/intent.json": {
+      "bytes": 314654,
+      "sha256": "0f21da2d4183030391ec2ad1dbc5766474c77de27a8e9009a8c0d8e4eb5939be"
+    },
+    "checks/blob-native-controls-v1/result.json": {
+      "bytes": 314266,
+      "sha256": "707770bbca198d1b9aba07b3d303aea1a8aaf27f226c776de181d8995da94294"
+    },
+    "checks/blob-native-controls-v1/stderr.log": {
+      "bytes": 311,
+      "sha256": "0a0e9e0492e8aefcbecb67aa1c6ef6f332e712fcbb3bc3f2f555e0c22c0c081b"
+    },
+    "checks/blob-native-controls-v1/stdout.log": {
+      "bytes": 1307,
+      "sha256": "3fd7a27fe38cfc8f274739635040326edcc0cad436533325e5443c820d8afb11"
+    },
+    "checks/blob-native-controls-v2/intent.json": {
+      "bytes": 314654,
+      "sha256": "41c0b2fd27aba6f63babbccf0e63a70cabaec9bab8a1970a5c35d525478c223e"
+    },
+    "checks/blob-native-controls-v2/result.json": {
+      "bytes": 314266,
+      "sha256": "b5f42e010d42a57270b3cebdef8d2072371fa34887e2d2d119286a31bb73ede8"
+    },
+    "checks/blob-native-controls-v2/stderr.log": {
+      "bytes": 394,
+      "sha256": "7c5fe4620109130cb6b0c9cbc17cde77af0f414ee50d3e77ac4acdb63675bbeb"
+    },
+    "checks/blob-native-controls-v2/stdout.log": {
+      "bytes": 1307,
+      "sha256": "f94d86335ed6210591589c740fe5651048ef5a533f7be517e4bd5473640cda74"
+    },
+    "checks/blob-native-final-controls/intent.json": {
+      "bytes": 314777,
+      "sha256": "ffae827852b48d79d8e6aa521d5624f8e283cf0e0b7ad087ff9c658171b40184"
+    },
+    "checks/blob-native-final-controls/result.json": {
+      "bytes": 314389,
+      "sha256": "2895cd0a2e6678313726464b3564e028c234720084d2771d85e3061c3c78bcce"
+    },
+    "checks/blob-native-final-controls/stderr.log": {
+      "bytes": 394,
+      "sha256": "bbd628772cf03bc689124e1b4ff301d7640ebfe96c56af33c6fdb1c711913ed9"
+    },
+    "checks/blob-native-final-controls/stdout.log": {
+      "bytes": 1307,
+      "sha256": "339ac3acf88f6bdf02a59b2f8cc70d5b415058952442c0cbfa2a726f375c8852"
+    },
+    "checks/blob-native-format/intent.json": {
+      "bytes": 314871,
+      "sha256": "1caa3df9bb013bf24a140ba7b103b6a6aa3ead3e69c9c094c52ba15c7e13d338"
+    },
+    "checks/blob-native-format/result.json": {
+      "bytes": 314389,
+      "sha256": "2895cd0a2e6678313726464b3564e028c234720084d2771d85e3061c3c78bcce"
+    },
+    "checks/blob-native-format/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/blob-native-format/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/blob-native-msrv-controls/intent.json": {
+      "bytes": 314777,
+      "sha256": "0b0be2f6ffb7c9c665ae47d65b6ecb5a8b7c2573ddd950e5916aa64f44b422d5"
+    },
+    "checks/blob-native-msrv-controls/result.json": {
+      "bytes": 314389,
+      "sha256": "2895cd0a2e6678313726464b3564e028c234720084d2771d85e3061c3c78bcce"
+    },
+    "checks/blob-native-msrv-controls/stderr.log": {
+      "bytes": 394,
+      "sha256": "63fcd713236f580e8d75565b1b7eee21774c95ccb287b67b7181f6e8ee555976"
+    },
+    "checks/blob-native-msrv-controls/stdout.log": {
+      "bytes": 1307,
+      "sha256": "75ec640e8388845a6aa717c17bc2e1e546f8073e8f06e74b969954f8296e43f2"
+    },
+    "checks/blob-native-no-expansion-check/intent.json": {
+      "bytes": 314698,
+      "sha256": "a185001f7814ac545484933eb1fb94ee037e24ac1aac279dd3795ac325ca1597"
+    },
+    "checks/blob-native-no-expansion-check/result.json": {
+      "bytes": 314389,
+      "sha256": "830faa8711270df58622b04c44e36351351acf9e4f741c773bd95fc598e53298"
+    },
+    "checks/blob-native-no-expansion-check/stderr.log": {
+      "bytes": 155,
+      "sha256": "4c8a3f3d3e2cf09dbfc97a9e910593cd65a435858c43969475660efb9b304662"
+    },
+    "checks/blob-native-no-expansion-check/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/blob-native-no-expansion-clippy/intent.json": {
+      "bytes": 314761,
+      "sha256": "c0702996663e8ff47c95308ad19d67e16f26f6813b14dc9b1e4b1813ce1bc6e1"
+    },
+    "checks/blob-native-no-expansion-clippy/result.json": {
+      "bytes": 314389,
+      "sha256": "830faa8711270df58622b04c44e36351351acf9e4f741c773bd95fc598e53298"
+    },
+    "checks/blob-native-no-expansion-clippy/stderr.log": {
+      "bytes": 155,
+      "sha256": "55cd65e00c81bf6889ed72adb4df0a31ea66a0b9f9f0d3814baeb5f50f3b792e"
+    },
+    "checks/blob-native-no-expansion-clippy/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/blob-native-no-expansion-controls/intent.json": {
+      "bytes": 314777,
+      "sha256": "08da7040a1e3f5909e80dc28e2599d9dd2af2e10440aabaa46c13b7dab5a355a"
+    },
+    "checks/blob-native-no-expansion-controls/result.json": {
+      "bytes": 314389,
+      "sha256": "830faa8711270df58622b04c44e36351351acf9e4f741c773bd95fc598e53298"
+    },
+    "checks/blob-native-no-expansion-controls/stderr.log": {
+      "bytes": 394,
+      "sha256": "ef560b1b35139d8ee6090d8a1794c0a708f98142f013872cad54ff7b1ea4f665"
+    },
+    "checks/blob-native-no-expansion-controls/stdout.log": {
+      "bytes": 1307,
+      "sha256": "d8e3d51f368493b61cc71c67ac6d73fbd48b9f94fb0c92812fcc4ce522fcc64b"
+    },
+    "checks/blob-native-no-expansion-format/intent.json": {
+      "bytes": 314871,
+      "sha256": "eeb810d57b8f69c2756dffd73d83bfb27a966eefa668d5c24ca932fc8c4c8568"
+    },
+    "checks/blob-native-no-expansion-format/result.json": {
+      "bytes": 314389,
+      "sha256": "830faa8711270df58622b04c44e36351351acf9e4f741c773bd95fc598e53298"
+    },
+    "checks/blob-native-no-expansion-format/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/blob-native-no-expansion-format/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/blob-native-no-expansion-msrv/intent.json": {
+      "bytes": 314777,
+      "sha256": "08fd959e048490c29fda4789054d88afd5b848c78f25f41f0f9b9467b56a6221"
+    },
+    "checks/blob-native-no-expansion-msrv/result.json": {
+      "bytes": 314389,
+      "sha256": "830faa8711270df58622b04c44e36351351acf9e4f741c773bd95fc598e53298"
+    },
+    "checks/blob-native-no-expansion-msrv/stderr.log": {
+      "bytes": 394,
+      "sha256": "4159941fe1779a020f2f477757b7ecb50a5b8097cb78e19678c2bf1361d0d62b"
+    },
+    "checks/blob-native-no-expansion-msrv/stdout.log": {
+      "bytes": 1307,
+      "sha256": "c06e53a7166245fbbef06cdb8badd892aa4e8c5630a245cb8a2ac016f39181aa"
+    },
+    "checks/blob-native-python-controls/intent.json": {
+      "bytes": 314723,
+      "sha256": "1e9ea92cf6d0e6891b236a27a0a68ef8b1489e7de60cad3e7050a7d570e0520a"
+    },
+    "checks/blob-native-python-controls/result.json": {
+      "bytes": 314389,
+      "sha256": "2895cd0a2e6678313726464b3564e028c234720084d2771d85e3061c3c78bcce"
+    },
+    "checks/blob-native-python-controls/stderr.log": {
+      "bytes": 3726,
+      "sha256": "bcd8639a6d0dde789099cc27b015e029f835c170087560a3d4f2c877e303db2f"
+    },
+    "checks/blob-native-python-controls/stdout.log": {
+      "bytes": 82,
+      "sha256": "f632472212663717a16f350315529b24ff21bcf9c34eaaa70ce866ff6e87b6b2"
+    },
+    "checks/blob-native-python-indentation/intent.json": {
+      "bytes": 314655,
+      "sha256": "8c8d6a832000e897b5cb7222a130db346ea58f9ae14da72773a2738a469aa458"
+    },
+    "checks/blob-native-python-indentation/result.json": {
+      "bytes": 314389,
+      "sha256": "2895cd0a2e6678313726464b3564e028c234720084d2771d85e3061c3c78bcce"
+    },
+    "checks/blob-native-python-indentation/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/blob-native-python-indentation/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/blob-native-python-syntax/intent.json": {
+      "bytes": 314668,
+      "sha256": "34cb5675b6c806508f0580bd7ca02b2243a2cf15a153fe66516e57945ab587cc"
+    },
+    "checks/blob-native-python-syntax/result.json": {
+      "bytes": 314389,
+      "sha256": "2895cd0a2e6678313726464b3564e028c234720084d2771d85e3061c3c78bcce"
+    },
+    "checks/blob-native-python-syntax/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/blob-native-python-syntax/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "coordinators/run-blob-transport-step-20261024.py": {
+      "bytes": 1214,
+      "sha256": "c621c398e711792c756e200878202ee89c6b44ff9d55d91cedd0ba6420fc37cc"
+    },
+    "coordinators/run-fresh-reader-20261024.py": {
+      "bytes": 544,
+      "sha256": "851631e846ec7d3696a0e2fa550b6f87e8f07e8412f5dafc0530c0bc70c597ed"
+    },
+    "coordinators/run-source-step-20261024.py": {
+      "bytes": 2596,
+      "sha256": "a92482cabcfcf8f6440e95972bee8d204bb9c59c8805c45c7b57363dcc3ab430"
+    },
+    "coordinators/seal-blob-native-20261024.py": {
+      "bytes": 7360,
+      "sha256": "014a6bfe469113fc89c6bff81c1dc014991d3720a7b8787ad1934f5d386bb14d"
+    },
+    "native/blob-native-controls-v1/intent.json": {
+      "bytes": 62,
+      "sha256": "04706cc2e27f1630d6c026cb14e87eda2297a14aaa75738637712b9610a05a5b"
+    },
+    "native/blob-native-controls-v1/native-case-0.json": {
+      "bytes": 526093,
+      "sha256": "123a3428b3d83233ce7c7a68f2d6ba83dbd0d50028df531d01a25bccebefa65c"
+    },
+    "native/blob-native-controls-v1/native-case-1.json": {
+      "bytes": 526093,
+      "sha256": "da815a812efba5ed367e4740624df010ed34e899d7336cb3ae02355f5c67714f"
+    },
+    "native/blob-native-controls-v1/native-case-2.json": {
+      "bytes": 525965,
+      "sha256": "8df1bfbcde36f3d21682c71720fdc1c96ac8bc3556eafabd6ba73219cebb796e"
+    },
+    "native/blob-native-controls-v1/native-case-3.json": {
+      "bytes": 526093,
+      "sha256": "5cfaaf7218b240ff5d0b2b56cd924612169654dea730c4f0c9eaf8f1a356e761"
+    },
+    "native/blob-native-controls-v1/native-case-4.json": {
+      "bytes": 525137,
+      "sha256": "e4a52a5b3efe5888eda8aabee23e0e1be5a91cfc36794333bc660fbe97b59af5"
+    },
+    "native/blob-native-controls-v1/native-case-5.json": {
+      "bytes": 525009,
+      "sha256": "2db94acb74ccd29f5b543079208478e9a31fe6be25285cd6f0002024c8d1e5c2"
+    },
+    "native/blob-native-controls-v1/oracle-process.txt": {
+      "bytes": 25,
+      "sha256": "8ba34fc07242175dde9a737f9c3fb75c562fd6ad0fcdc7dd10deee310791d0a1"
+    },
+    "native/blob-native-controls-v1/oracle.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "native/blob-native-controls-v1/oracle.stdout.json": {
+      "bytes": 4218300,
+      "sha256": "c996353612d8700f3b2789a7459596942feca984abd3ef4d7894eadfae316488"
+    },
+    "native/blob-native-controls-v1/result.json": {
+      "bytes": 977,
+      "sha256": "8d9f0b3a09ce77f9afabddb50b4b859b1ea380a9a7cec4bc608735ef28c9a4b7"
+    },
+    "native/blob-native-controls-v2-owned-cleanup/overflow.json": {
+      "bytes": 138,
+      "sha256": "3738be30ba623b714468bed77e7651a171770eebe384e04002e48554f3518a1e"
+    },
+    "native/blob-native-controls-v2-owned-cleanup/park.json": {
+      "bytes": 136,
+      "sha256": "f85a13003f404edcf11d1a29330e51edc70fc13f769d170749304b03a091420d"
+    },
+    "native/blob-native-controls-v2-owned-cleanup/stdout-overflow.json": {
+      "bytes": 145,
+      "sha256": "f783e1c8db37100febbc5c300a5b65b1152ac356c8340fce00b30c7047b242f4"
+    },
+    "native/blob-native-controls-v2/intent.json": {
+      "bytes": 62,
+      "sha256": "04706cc2e27f1630d6c026cb14e87eda2297a14aaa75738637712b9610a05a5b"
+    },
+    "native/blob-native-controls-v2/native-case-0.json": {
+      "bytes": 526093,
+      "sha256": "123a3428b3d83233ce7c7a68f2d6ba83dbd0d50028df531d01a25bccebefa65c"
+    },
+    "native/blob-native-controls-v2/native-case-1.json": {
+      "bytes": 526093,
+      "sha256": "da815a812efba5ed367e4740624df010ed34e899d7336cb3ae02355f5c67714f"
+    },
+    "native/blob-native-controls-v2/native-case-2.json": {
+      "bytes": 525965,
+      "sha256": "8df1bfbcde36f3d21682c71720fdc1c96ac8bc3556eafabd6ba73219cebb796e"
+    },
+    "native/blob-native-controls-v2/native-case-3.json": {
+      "bytes": 526093,
+      "sha256": "5cfaaf7218b240ff5d0b2b56cd924612169654dea730c4f0c9eaf8f1a356e761"
+    },
+    "native/blob-native-controls-v2/native-case-4.json": {
+      "bytes": 525137,
+      "sha256": "e4a52a5b3efe5888eda8aabee23e0e1be5a91cfc36794333bc660fbe97b59af5"
+    },
+    "native/blob-native-controls-v2/native-case-5.json": {
+      "bytes": 525009,
+      "sha256": "2db94acb74ccd29f5b543079208478e9a31fe6be25285cd6f0002024c8d1e5c2"
+    },
+    "native/blob-native-controls-v2/oracle-process.txt": {
+      "bytes": 25,
+      "sha256": "8045b9a892a6e7f5f640a16d605505a10d93d10bc2f823e8da743389a0aaecc3"
+    },
+    "native/blob-native-controls-v2/oracle.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "native/blob-native-controls-v2/oracle.stdout.json": {
+      "bytes": 4218492,
+      "sha256": "719671750a0b0d859e66ccfd71e070ad5c7303dd4ff9221f92137530a7ef36ac"
+    },
+    "native/blob-native-controls-v2/result.json": {
+      "bytes": 977,
+      "sha256": "8d9f0b3a09ce77f9afabddb50b4b859b1ea380a9a7cec4bc608735ef28c9a4b7"
+    },
+    "native/blob-native-controls-v2/wrong-native-pin.json": {
+      "bytes": 35,
+      "sha256": "5d4c3dc91cddccc11e692132d9f7d29b28e4d4864b4777f9512b0a47b3d75cc9"
+    },
+    "native/blob-native-final-controls-owned-cleanup/overflow.json": {
+      "bytes": 138,
+      "sha256": "c20cb0bd43bfd6ba69a6727e35c5f75033a3b45bd5a97e5f0401c2c6090f6b0c"
+    },
+    "native/blob-native-final-controls-owned-cleanup/park.json": {
+      "bytes": 136,
+      "sha256": "987e999e6fa61f27350cc731dd6ab69083bd3e1b78db26de8da4c4ea180936d9"
+    },
+    "native/blob-native-final-controls-owned-cleanup/stdout-overflow.json": {
+      "bytes": 144,
+      "sha256": "e162a79149d81edb418be98d8168f69947b3f43a848c17a02219ec80e8df127e"
+    },
+    "native/blob-native-final-controls/intent.json": {
+      "bytes": 62,
+      "sha256": "04706cc2e27f1630d6c026cb14e87eda2297a14aaa75738637712b9610a05a5b"
+    },
+    "native/blob-native-final-controls/native-case-0.json": {
+      "bytes": 526093,
+      "sha256": "123a3428b3d83233ce7c7a68f2d6ba83dbd0d50028df531d01a25bccebefa65c"
+    },
+    "native/blob-native-final-controls/native-case-1.json": {
+      "bytes": 526093,
+      "sha256": "da815a812efba5ed367e4740624df010ed34e899d7336cb3ae02355f5c67714f"
+    },
+    "native/blob-native-final-controls/native-case-2.json": {
+      "bytes": 525965,
+      "sha256": "8df1bfbcde36f3d21682c71720fdc1c96ac8bc3556eafabd6ba73219cebb796e"
+    },
+    "native/blob-native-final-controls/native-case-3.json": {
+      "bytes": 526093,
+      "sha256": "5cfaaf7218b240ff5d0b2b56cd924612169654dea730c4f0c9eaf8f1a356e761"
+    },
+    "native/blob-native-final-controls/native-case-4.json": {
+      "bytes": 525137,
+      "sha256": "e4a52a5b3efe5888eda8aabee23e0e1be5a91cfc36794333bc660fbe97b59af5"
+    },
+    "native/blob-native-final-controls/native-case-5.json": {
+      "bytes": 525009,
+      "sha256": "2db94acb74ccd29f5b543079208478e9a31fe6be25285cd6f0002024c8d1e5c2"
+    },
+    "native/blob-native-final-controls/oracle-process.txt": {
+      "bytes": 25,
+      "sha256": "8045b9a892a6e7f5f640a16d605505a10d93d10bc2f823e8da743389a0aaecc3"
+    },
+    "native/blob-native-final-controls/oracle.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "native/blob-native-final-controls/oracle.stdout.json": {
+      "bytes": 4218492,
+      "sha256": "719671750a0b0d859e66ccfd71e070ad5c7303dd4ff9221f92137530a7ef36ac"
+    },
+    "native/blob-native-final-controls/result.json": {
+      "bytes": 977,
+      "sha256": "8d9f0b3a09ce77f9afabddb50b4b859b1ea380a9a7cec4bc608735ef28c9a4b7"
+    },
+    "native/blob-native-final-controls/wrong-native-pin.json": {
+      "bytes": 35,
+      "sha256": "5d4c3dc91cddccc11e692132d9f7d29b28e4d4864b4777f9512b0a47b3d75cc9"
+    },
+    "native/blob-native-msrv-controls-owned-cleanup/overflow.json": {
+      "bytes": 138,
+      "sha256": "03eb34b9cfb44b948c6b8cee9f8c10c582e5c4a93b71c305f661270f6a8d335a"
+    },
+    "native/blob-native-msrv-controls-owned-cleanup/park.json": {
+      "bytes": 136,
+      "sha256": "4d3fbb47282a53d246653588f058d0b2252a9321808268344c4fe9410e8dee1c"
+    },
+    "native/blob-native-msrv-controls-owned-cleanup/stdout-overflow.json": {
+      "bytes": 144,
+      "sha256": "4218d92ebf19a3dbb0c21df88660c7a3c6e1acc7dddbb1b3001b686dc597fcf3"
+    },
+    "native/blob-native-msrv-controls/intent.json": {
+      "bytes": 62,
+      "sha256": "04706cc2e27f1630d6c026cb14e87eda2297a14aaa75738637712b9610a05a5b"
+    },
+    "native/blob-native-msrv-controls/native-case-0.json": {
+      "bytes": 526093,
+      "sha256": "123a3428b3d83233ce7c7a68f2d6ba83dbd0d50028df531d01a25bccebefa65c"
+    },
+    "native/blob-native-msrv-controls/native-case-1.json": {
+      "bytes": 526093,
+      "sha256": "da815a812efba5ed367e4740624df010ed34e899d7336cb3ae02355f5c67714f"
+    },
+    "native/blob-native-msrv-controls/native-case-2.json": {
+      "bytes": 525965,
+      "sha256": "8df1bfbcde36f3d21682c71720fdc1c96ac8bc3556eafabd6ba73219cebb796e"
+    },
+    "native/blob-native-msrv-controls/native-case-3.json": {
+      "bytes": 526093,
+      "sha256": "5cfaaf7218b240ff5d0b2b56cd924612169654dea730c4f0c9eaf8f1a356e761"
+    },
+    "native/blob-native-msrv-controls/native-case-4.json": {
+      "bytes": 525137,
+      "sha256": "e4a52a5b3efe5888eda8aabee23e0e1be5a91cfc36794333bc660fbe97b59af5"
+    },
+    "native/blob-native-msrv-controls/native-case-5.json": {
+      "bytes": 525009,
+      "sha256": "2db94acb74ccd29f5b543079208478e9a31fe6be25285cd6f0002024c8d1e5c2"
+    },
+    "native/blob-native-msrv-controls/oracle-process.txt": {
+      "bytes": 25,
+      "sha256": "8045b9a892a6e7f5f640a16d605505a10d93d10bc2f823e8da743389a0aaecc3"
+    },
+    "native/blob-native-msrv-controls/oracle.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "native/blob-native-msrv-controls/oracle.stdout.json": {
+      "bytes": 4218492,
+      "sha256": "719671750a0b0d859e66ccfd71e070ad5c7303dd4ff9221f92137530a7ef36ac"
+    },
+    "native/blob-native-msrv-controls/result.json": {
+      "bytes": 977,
+      "sha256": "8d9f0b3a09ce77f9afabddb50b4b859b1ea380a9a7cec4bc608735ef28c9a4b7"
+    },
+    "native/blob-native-msrv-controls/wrong-native-pin.json": {
+      "bytes": 35,
+      "sha256": "5d4c3dc91cddccc11e692132d9f7d29b28e4d4864b4777f9512b0a47b3d75cc9"
+    },
+    "native/blob-native-no-expansion-controls-owned-cleanup/overflow.json": {
+      "bytes": 137,
+      "sha256": "ab66645d6cd0635e37ac589959c1690021075621df039e04d8ed5a07ae869d55"
+    },
+    "native/blob-native-no-expansion-controls-owned-cleanup/park.json": {
+      "bytes": 135,
+      "sha256": "f9d5901570896ae9827b05eda4089e2ed03cb9595f7107cd4a2130f5d927e545"
+    },
+    "native/blob-native-no-expansion-controls-owned-cleanup/stdout-overflow.json": {
+      "bytes": 143,
+      "sha256": "52efb9edbff39986204b99a047691f278c96dc58e7ba759b5a37ea3f12a34537"
+    },
+    "native/blob-native-no-expansion-controls/intent.json": {
+      "bytes": 62,
+      "sha256": "04706cc2e27f1630d6c026cb14e87eda2297a14aaa75738637712b9610a05a5b"
+    },
+    "native/blob-native-no-expansion-controls/native-case-0.json": {
+      "bytes": 526093,
+      "sha256": "123a3428b3d83233ce7c7a68f2d6ba83dbd0d50028df531d01a25bccebefa65c"
+    },
+    "native/blob-native-no-expansion-controls/native-case-1.json": {
+      "bytes": 526093,
+      "sha256": "da815a812efba5ed367e4740624df010ed34e899d7336cb3ae02355f5c67714f"
+    },
+    "native/blob-native-no-expansion-controls/native-case-2.json": {
+      "bytes": 525965,
+      "sha256": "8df1bfbcde36f3d21682c71720fdc1c96ac8bc3556eafabd6ba73219cebb796e"
+    },
+    "native/blob-native-no-expansion-controls/native-case-3.json": {
+      "bytes": 526093,
+      "sha256": "5cfaaf7218b240ff5d0b2b56cd924612169654dea730c4f0c9eaf8f1a356e761"
+    },
+    "native/blob-native-no-expansion-controls/native-case-4.json": {
+      "bytes": 525137,
+      "sha256": "e4a52a5b3efe5888eda8aabee23e0e1be5a91cfc36794333bc660fbe97b59af5"
+    },
+    "native/blob-native-no-expansion-controls/native-case-5.json": {
+      "bytes": 525009,
+      "sha256": "2db94acb74ccd29f5b543079208478e9a31fe6be25285cd6f0002024c8d1e5c2"
+    },
+    "native/blob-native-no-expansion-controls/oracle-process.txt": {
+      "bytes": 25,
+      "sha256": "8045b9a892a6e7f5f640a16d605505a10d93d10bc2f823e8da743389a0aaecc3"
+    },
+    "native/blob-native-no-expansion-controls/oracle.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "native/blob-native-no-expansion-controls/oracle.stdout.json": {
+      "bytes": 4218492,
+      "sha256": "719671750a0b0d859e66ccfd71e070ad5c7303dd4ff9221f92137530a7ef36ac"
+    },
+    "native/blob-native-no-expansion-controls/result.json": {
+      "bytes": 977,
+      "sha256": "8d9f0b3a09ce77f9afabddb50b4b859b1ea380a9a7cec4bc608735ef28c9a4b7"
+    },
+    "native/blob-native-no-expansion-controls/wrong-native-pin.json": {
+      "bytes": 35,
+      "sha256": "5d4c3dc91cddccc11e692132d9f7d29b28e4d4864b4777f9512b0a47b3d75cc9"
+    },
+    "native/blob-native-no-expansion-msrv-owned-cleanup/overflow.json": {
+      "bytes": 138,
+      "sha256": "4282fec7f6f5218a56cb10589955103d12d6d6284e85c145574d8258d270f226"
+    },
+    "native/blob-native-no-expansion-msrv-owned-cleanup/park.json": {
+      "bytes": 136,
+      "sha256": "47a63a952ed8a77d835c7e5503d8759e5a3fa2d52e8197973e49ec9ad0a933e6"
+    },
+    "native/blob-native-no-expansion-msrv-owned-cleanup/stdout-overflow.json": {
+      "bytes": 145,
+      "sha256": "6c2f5588fac469328b272cdcb5142decb46a3a148a3b030cb3c28b7f6ae8691c"
+    },
+    "native/blob-native-no-expansion-msrv/intent.json": {
+      "bytes": 62,
+      "sha256": "04706cc2e27f1630d6c026cb14e87eda2297a14aaa75738637712b9610a05a5b"
+    },
+    "native/blob-native-no-expansion-msrv/native-case-0.json": {
+      "bytes": 526093,
+      "sha256": "123a3428b3d83233ce7c7a68f2d6ba83dbd0d50028df531d01a25bccebefa65c"
+    },
+    "native/blob-native-no-expansion-msrv/native-case-1.json": {
+      "bytes": 526093,
+      "sha256": "da815a812efba5ed367e4740624df010ed34e899d7336cb3ae02355f5c67714f"
+    },
+    "native/blob-native-no-expansion-msrv/native-case-2.json": {
+      "bytes": 525965,
+      "sha256": "8df1bfbcde36f3d21682c71720fdc1c96ac8bc3556eafabd6ba73219cebb796e"
+    },
+    "native/blob-native-no-expansion-msrv/native-case-3.json": {
+      "bytes": 526093,
+      "sha256": "5cfaaf7218b240ff5d0b2b56cd924612169654dea730c4f0c9eaf8f1a356e761"
+    },
+    "native/blob-native-no-expansion-msrv/native-case-4.json": {
+      "bytes": 525137,
+      "sha256": "e4a52a5b3efe5888eda8aabee23e0e1be5a91cfc36794333bc660fbe97b59af5"
+    },
+    "native/blob-native-no-expansion-msrv/native-case-5.json": {
+      "bytes": 525009,
+      "sha256": "2db94acb74ccd29f5b543079208478e9a31fe6be25285cd6f0002024c8d1e5c2"
+    },
+    "native/blob-native-no-expansion-msrv/oracle-process.txt": {
+      "bytes": 25,
+      "sha256": "8045b9a892a6e7f5f640a16d605505a10d93d10bc2f823e8da743389a0aaecc3"
+    },
+    "native/blob-native-no-expansion-msrv/oracle.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "native/blob-native-no-expansion-msrv/oracle.stdout.json": {
+      "bytes": 4218492,
+      "sha256": "719671750a0b0d859e66ccfd71e070ad5c7303dd4ff9221f92137530a7ef36ac"
+    },
+    "native/blob-native-no-expansion-msrv/result.json": {
+      "bytes": 977,
+      "sha256": "8d9f0b3a09ce77f9afabddb50b4b859b1ea380a9a7cec4bc608735ef28c9a4b7"
+    },
+    "native/blob-native-no-expansion-msrv/wrong-native-pin.json": {
+      "bytes": 35,
+      "sha256": "5d4c3dc91cddccc11e692132d9f7d29b28e4d4864b4777f9512b0a47b3d75cc9"
+    },
+    "phase-sources/blob-native-build-v1/crates/xtask/tests/historical_blob_batch_074.rs": {
+      "bytes": 7520,
+      "sha256": "01c4c8504c74aa00e22fa02348e78e9fffe75668a04a56f126de5e2751c390b2"
+    },
+    "phase-sources/blob-native-build-v1/crates/xtask/tests/historical_blob_transport_074.rs": {
+      "bytes": 13224,
+      "sha256": "b56f5c7ae1fcddf17f505f7a2a6f223254805a09eae9779c949e79fe5baf4d62"
+    },
+    "phase-sources/blob-native-build-v1/index.json": {
+      "bytes": 1089,
+      "sha256": "1782a190fb6092925665adfce2111ffbfcba45a417a044fa60d72799ff37e089"
+    },
+    "phase-sources/blob-native-build-v1/tools/historical-blob-batch-074/decoder.rs": {
+      "bytes": 4525,
+      "sha256": "3449e149419a6d41eab1b1ee1dcfe5b0e794d5002c6882cda44ea643332c74d6"
+    },
+    "phase-sources/blob-native-build-v1/tools/historical-blob-batch-074/eligibility.py": {
+      "bytes": 5851,
+      "sha256": "1bcb7d15cd663b58a026ead5db82e21c68a417c64c3271486e70eb1794d2076b"
+    },
+    "phase-sources/blob-native-build-v1/tools/historical-blob-batch-074/oracle.py": {
+      "bytes": 5793,
+      "sha256": "aa4c115a595ee4b0b308a58ab05a5945d20ab13c4bbcd7ba5686b56653bbb8ee"
+    },
+    "phase-sources/blob-native-build-v1/tools/historical-blob-batch-074/reader.py": {
+      "bytes": 7242,
+      "sha256": "71207da9f35a2b3458092e761c9a86ce9c47d07b8e99db3743bd430c2bd57470"
+    },
+    "phase-sources/blob-native-build-v1/tools/historical-blob-batch-074/test_eligibility.py": {
+      "bytes": 1522,
+      "sha256": "388b690c1c2a46afaa072e8cddb18d30b992882676a1dbc873920cb29c252e4e"
+    },
+    "phase-sources/blob-native-build-v1/tools/historical-blob-batch-074/test_reader.py": {
+      "bytes": 14543,
+      "sha256": "f259d0b04eba25412491e57a662e3b4ca3127fcd71ce8648beb0137a141a58c5"
+    },
+    "phase-sources/blob-native-build-v1/tools/historical-blob-batch-074/transport.rs": {
+      "bytes": 7946,
+      "sha256": "9df61a76e345b1a2334fda35940320d89f2a013810dc6c3a627fd79d978ad99f"
+    },
+    "phase-sources/blob-native-check/crates/xtask/tests/historical_blob_batch_074.rs": {
+      "bytes": 7520,
+      "sha256": "01c4c8504c74aa00e22fa02348e78e9fffe75668a04a56f126de5e2751c390b2"
+    },
+    "phase-sources/blob-native-check/crates/xtask/tests/historical_blob_transport_074.rs": {
+      "bytes": 15201,
+      "sha256": "3b497a9fff7202b5e9f0677dd166f3099cd63080a0b129f379a03e8c38725f0f"
+    },
+    "phase-sources/blob-native-check/index.json": {
+      "bytes": 1210,
+      "sha256": "827df031732272ac51c861a7950d7db9ac932e1360963446e73b36b4e19d831b"
+    },
+    "phase-sources/blob-native-check/tools/historical-blob-batch-074/decoder.rs": {
+      "bytes": 4525,
+      "sha256": "3449e149419a6d41eab1b1ee1dcfe5b0e794d5002c6882cda44ea643332c74d6"
+    },
+    "phase-sources/blob-native-check/tools/historical-blob-batch-074/eligibility.py": {
+      "bytes": 5851,
+      "sha256": "1bcb7d15cd663b58a026ead5db82e21c68a417c64c3271486e70eb1794d2076b"
+    },
+    "phase-sources/blob-native-check/tools/historical-blob-batch-074/oracle.py": {
+      "bytes": 6080,
+      "sha256": "8efcc36b829c54c23037f2589adce78e5ee00219983e669073b348cbd2fc3c2d"
+    },
+    "phase-sources/blob-native-check/tools/historical-blob-batch-074/reader.py": {
+      "bytes": 7242,
+      "sha256": "71207da9f35a2b3458092e761c9a86ce9c47d07b8e99db3743bd430c2bd57470"
+    },
+    "phase-sources/blob-native-check/tools/historical-blob-batch-074/test_eligibility.py": {
+      "bytes": 1522,
+      "sha256": "388b690c1c2a46afaa072e8cddb18d30b992882676a1dbc873920cb29c252e4e"
+    },
+    "phase-sources/blob-native-check/tools/historical-blob-batch-074/test_oracle.py": {
+      "bytes": 1296,
+      "sha256": "b20732ff7b36f063a90b2e0f3d72fbdb77ed4ec8fc866fac61062dca78b1f0a2"
+    },
+    "phase-sources/blob-native-check/tools/historical-blob-batch-074/test_reader.py": {
+      "bytes": 14543,
+      "sha256": "f259d0b04eba25412491e57a662e3b4ca3127fcd71ce8648beb0137a141a58c5"
+    },
+    "phase-sources/blob-native-check/tools/historical-blob-batch-074/transport.rs": {
+      "bytes": 7946,
+      "sha256": "9df61a76e345b1a2334fda35940320d89f2a013810dc6c3a627fd79d978ad99f"
+    },
+    "phase-sources/blob-native-clippy/crates/xtask/tests/historical_blob_batch_074.rs": {
+      "bytes": 7520,
+      "sha256": "01c4c8504c74aa00e22fa02348e78e9fffe75668a04a56f126de5e2751c390b2"
+    },
+    "phase-sources/blob-native-clippy/crates/xtask/tests/historical_blob_transport_074.rs": {
+      "bytes": 15201,
+      "sha256": "3b497a9fff7202b5e9f0677dd166f3099cd63080a0b129f379a03e8c38725f0f"
+    },
+    "phase-sources/blob-native-clippy/index.json": {
+      "bytes": 1210,
+      "sha256": "827df031732272ac51c861a7950d7db9ac932e1360963446e73b36b4e19d831b"
+    },
+    "phase-sources/blob-native-clippy/tools/historical-blob-batch-074/decoder.rs": {
+      "bytes": 4525,
+      "sha256": "3449e149419a6d41eab1b1ee1dcfe5b0e794d5002c6882cda44ea643332c74d6"
+    },
+    "phase-sources/blob-native-clippy/tools/historical-blob-batch-074/eligibility.py": {
+      "bytes": 5851,
+      "sha256": "1bcb7d15cd663b58a026ead5db82e21c68a417c64c3271486e70eb1794d2076b"
+    },
+    "phase-sources/blob-native-clippy/tools/historical-blob-batch-074/oracle.py": {
+      "bytes": 6080,
+      "sha256": "8efcc36b829c54c23037f2589adce78e5ee00219983e669073b348cbd2fc3c2d"
+    },
+    "phase-sources/blob-native-clippy/tools/historical-blob-batch-074/reader.py": {
+      "bytes": 7242,
+      "sha256": "71207da9f35a2b3458092e761c9a86ce9c47d07b8e99db3743bd430c2bd57470"
+    },
+    "phase-sources/blob-native-clippy/tools/historical-blob-batch-074/test_eligibility.py": {
+      "bytes": 1522,
+      "sha256": "388b690c1c2a46afaa072e8cddb18d30b992882676a1dbc873920cb29c252e4e"
+    },
+    "phase-sources/blob-native-clippy/tools/historical-blob-batch-074/test_oracle.py": {
+      "bytes": 1296,
+      "sha256": "b20732ff7b36f063a90b2e0f3d72fbdb77ed4ec8fc866fac61062dca78b1f0a2"
+    },
+    "phase-sources/blob-native-clippy/tools/historical-blob-batch-074/test_reader.py": {
+      "bytes": 14543,
+      "sha256": "f259d0b04eba25412491e57a662e3b4ca3127fcd71ce8648beb0137a141a58c5"
+    },
+    "phase-sources/blob-native-clippy/tools/historical-blob-batch-074/transport.rs": {
+      "bytes": 7946,
+      "sha256": "9df61a76e345b1a2334fda35940320d89f2a013810dc6c3a627fd79d978ad99f"
+    },
+    "phase-sources/blob-native-controls-v1/crates/xtask/tests/historical_blob_batch_074.rs": {
+      "bytes": 7520,
+      "sha256": "01c4c8504c74aa00e22fa02348e78e9fffe75668a04a56f126de5e2751c390b2"
+    },
+    "phase-sources/blob-native-controls-v1/crates/xtask/tests/historical_blob_transport_074.rs": {
+      "bytes": 13224,
+      "sha256": "b56f5c7ae1fcddf17f505f7a2a6f223254805a09eae9779c949e79fe5baf4d62"
+    },
+    "phase-sources/blob-native-controls-v1/index.json": {
+      "bytes": 1089,
+      "sha256": "1782a190fb6092925665adfce2111ffbfcba45a417a044fa60d72799ff37e089"
+    },
+    "phase-sources/blob-native-controls-v1/tools/historical-blob-batch-074/decoder.rs": {
+      "bytes": 4525,
+      "sha256": "3449e149419a6d41eab1b1ee1dcfe5b0e794d5002c6882cda44ea643332c74d6"
+    },
+    "phase-sources/blob-native-controls-v1/tools/historical-blob-batch-074/eligibility.py": {
+      "bytes": 5851,
+      "sha256": "1bcb7d15cd663b58a026ead5db82e21c68a417c64c3271486e70eb1794d2076b"
+    },
+    "phase-sources/blob-native-controls-v1/tools/historical-blob-batch-074/oracle.py": {
+      "bytes": 5793,
+      "sha256": "aa4c115a595ee4b0b308a58ab05a5945d20ab13c4bbcd7ba5686b56653bbb8ee"
+    },
+    "phase-sources/blob-native-controls-v1/tools/historical-blob-batch-074/reader.py": {
+      "bytes": 7242,
+      "sha256": "71207da9f35a2b3458092e761c9a86ce9c47d07b8e99db3743bd430c2bd57470"
+    },
+    "phase-sources/blob-native-controls-v1/tools/historical-blob-batch-074/test_eligibility.py": {
+      "bytes": 1522,
+      "sha256": "388b690c1c2a46afaa072e8cddb18d30b992882676a1dbc873920cb29c252e4e"
+    },
+    "phase-sources/blob-native-controls-v1/tools/historical-blob-batch-074/test_reader.py": {
+      "bytes": 14543,
+      "sha256": "f259d0b04eba25412491e57a662e3b4ca3127fcd71ce8648beb0137a141a58c5"
+    },
+    "phase-sources/blob-native-controls-v1/tools/historical-blob-batch-074/transport.rs": {
+      "bytes": 7946,
+      "sha256": "9df61a76e345b1a2334fda35940320d89f2a013810dc6c3a627fd79d978ad99f"
+    },
+    "phase-sources/blob-native-controls-v2/crates/xtask/tests/historical_blob_batch_074.rs": {
+      "bytes": 7520,
+      "sha256": "01c4c8504c74aa00e22fa02348e78e9fffe75668a04a56f126de5e2751c390b2"
+    },
+    "phase-sources/blob-native-controls-v2/crates/xtask/tests/historical_blob_transport_074.rs": {
+      "bytes": 15161,
+      "sha256": "c909278f559f82ca3beac8763c8969e05293ed6cbe45376cfcc9b352ad26674f"
+    },
+    "phase-sources/blob-native-controls-v2/index.json": {
+      "bytes": 1089,
+      "sha256": "9ad746ea8fd297f6236ffe4fdad2bfb0952d7dcd8edf97e49dffc07f50c0e839"
+    },
+    "phase-sources/blob-native-controls-v2/tools/historical-blob-batch-074/decoder.rs": {
+      "bytes": 4525,
+      "sha256": "3449e149419a6d41eab1b1ee1dcfe5b0e794d5002c6882cda44ea643332c74d6"
+    },
+    "phase-sources/blob-native-controls-v2/tools/historical-blob-batch-074/eligibility.py": {
+      "bytes": 5851,
+      "sha256": "1bcb7d15cd663b58a026ead5db82e21c68a417c64c3271486e70eb1794d2076b"
+    },
+    "phase-sources/blob-native-controls-v2/tools/historical-blob-batch-074/oracle.py": {
+      "bytes": 6080,
+      "sha256": "8efcc36b829c54c23037f2589adce78e5ee00219983e669073b348cbd2fc3c2d"
+    },
+    "phase-sources/blob-native-controls-v2/tools/historical-blob-batch-074/reader.py": {
+      "bytes": 7242,
+      "sha256": "71207da9f35a2b3458092e761c9a86ce9c47d07b8e99db3743bd430c2bd57470"
+    },
+    "phase-sources/blob-native-controls-v2/tools/historical-blob-batch-074/test_eligibility.py": {
+      "bytes": 1522,
+      "sha256": "388b690c1c2a46afaa072e8cddb18d30b992882676a1dbc873920cb29c252e4e"
+    },
+    "phase-sources/blob-native-controls-v2/tools/historical-blob-batch-074/test_reader.py": {
+      "bytes": 14543,
+      "sha256": "f259d0b04eba25412491e57a662e3b4ca3127fcd71ce8648beb0137a141a58c5"
+    },
+    "phase-sources/blob-native-controls-v2/tools/historical-blob-batch-074/transport.rs": {
+      "bytes": 7946,
+      "sha256": "9df61a76e345b1a2334fda35940320d89f2a013810dc6c3a627fd79d978ad99f"
+    },
+    "phase-sources/blob-native-final-controls/crates/xtask/tests/historical_blob_batch_074.rs": {
+      "bytes": 7520,
+      "sha256": "01c4c8504c74aa00e22fa02348e78e9fffe75668a04a56f126de5e2751c390b2"
+    },
+    "phase-sources/blob-native-final-controls/crates/xtask/tests/historical_blob_transport_074.rs": {
+      "bytes": 15201,
+      "sha256": "3b497a9fff7202b5e9f0677dd166f3099cd63080a0b129f379a03e8c38725f0f"
+    },
+    "phase-sources/blob-native-final-controls/index.json": {
+      "bytes": 1210,
+      "sha256": "827df031732272ac51c861a7950d7db9ac932e1360963446e73b36b4e19d831b"
+    },
+    "phase-sources/blob-native-final-controls/tools/historical-blob-batch-074/decoder.rs": {
+      "bytes": 4525,
+      "sha256": "3449e149419a6d41eab1b1ee1dcfe5b0e794d5002c6882cda44ea643332c74d6"
+    },
+    "phase-sources/blob-native-final-controls/tools/historical-blob-batch-074/eligibility.py": {
+      "bytes": 5851,
+      "sha256": "1bcb7d15cd663b58a026ead5db82e21c68a417c64c3271486e70eb1794d2076b"
+    },
+    "phase-sources/blob-native-final-controls/tools/historical-blob-batch-074/oracle.py": {
+      "bytes": 6080,
+      "sha256": "8efcc36b829c54c23037f2589adce78e5ee00219983e669073b348cbd2fc3c2d"
+    },
+    "phase-sources/blob-native-final-controls/tools/historical-blob-batch-074/reader.py": {
+      "bytes": 7242,
+      "sha256": "71207da9f35a2b3458092e761c9a86ce9c47d07b8e99db3743bd430c2bd57470"
+    },
+    "phase-sources/blob-native-final-controls/tools/historical-blob-batch-074/test_eligibility.py": {
+      "bytes": 1522,
+      "sha256": "388b690c1c2a46afaa072e8cddb18d30b992882676a1dbc873920cb29c252e4e"
+    },
+    "phase-sources/blob-native-final-controls/tools/historical-blob-batch-074/test_oracle.py": {
+      "bytes": 1296,
+      "sha256": "b20732ff7b36f063a90b2e0f3d72fbdb77ed4ec8fc866fac61062dca78b1f0a2"
+    },
+    "phase-sources/blob-native-final-controls/tools/historical-blob-batch-074/test_reader.py": {
+      "bytes": 14543,
+      "sha256": "f259d0b04eba25412491e57a662e3b4ca3127fcd71ce8648beb0137a141a58c5"
+    },
+    "phase-sources/blob-native-final-controls/tools/historical-blob-batch-074/transport.rs": {
+      "bytes": 7946,
+      "sha256": "9df61a76e345b1a2334fda35940320d89f2a013810dc6c3a627fd79d978ad99f"
+    },
+    "phase-sources/blob-native-format/crates/xtask/tests/historical_blob_batch_074.rs": {
+      "bytes": 7520,
+      "sha256": "01c4c8504c74aa00e22fa02348e78e9fffe75668a04a56f126de5e2751c390b2"
+    },
+    "phase-sources/blob-native-format/crates/xtask/tests/historical_blob_transport_074.rs": {
+      "bytes": 15201,
+      "sha256": "3b497a9fff7202b5e9f0677dd166f3099cd63080a0b129f379a03e8c38725f0f"
+    },
+    "phase-sources/blob-native-format/index.json": {
+      "bytes": 1210,
+      "sha256": "827df031732272ac51c861a7950d7db9ac932e1360963446e73b36b4e19d831b"
+    },
+    "phase-sources/blob-native-format/tools/historical-blob-batch-074/decoder.rs": {
+      "bytes": 4525,
+      "sha256": "3449e149419a6d41eab1b1ee1dcfe5b0e794d5002c6882cda44ea643332c74d6"
+    },
+    "phase-sources/blob-native-format/tools/historical-blob-batch-074/eligibility.py": {
+      "bytes": 5851,
+      "sha256": "1bcb7d15cd663b58a026ead5db82e21c68a417c64c3271486e70eb1794d2076b"
+    },
+    "phase-sources/blob-native-format/tools/historical-blob-batch-074/oracle.py": {
+      "bytes": 6080,
+      "sha256": "8efcc36b829c54c23037f2589adce78e5ee00219983e669073b348cbd2fc3c2d"
+    },
+    "phase-sources/blob-native-format/tools/historical-blob-batch-074/reader.py": {
+      "bytes": 7242,
+      "sha256": "71207da9f35a2b3458092e761c9a86ce9c47d07b8e99db3743bd430c2bd57470"
+    },
+    "phase-sources/blob-native-format/tools/historical-blob-batch-074/test_eligibility.py": {
+      "bytes": 1522,
+      "sha256": "388b690c1c2a46afaa072e8cddb18d30b992882676a1dbc873920cb29c252e4e"
+    },
+    "phase-sources/blob-native-format/tools/historical-blob-batch-074/test_oracle.py": {
+      "bytes": 1296,
+      "sha256": "b20732ff7b36f063a90b2e0f3d72fbdb77ed4ec8fc866fac61062dca78b1f0a2"
+    },
+    "phase-sources/blob-native-format/tools/historical-blob-batch-074/test_reader.py": {
+      "bytes": 14543,
+      "sha256": "f259d0b04eba25412491e57a662e3b4ca3127fcd71ce8648beb0137a141a58c5"
+    },
+    "phase-sources/blob-native-format/tools/historical-blob-batch-074/transport.rs": {
+      "bytes": 7946,
+      "sha256": "9df61a76e345b1a2334fda35940320d89f2a013810dc6c3a627fd79d978ad99f"
+    },
+    "phase-sources/blob-native-msrv-controls/crates/xtask/tests/historical_blob_batch_074.rs": {
+      "bytes": 7520,
+      "sha256": "01c4c8504c74aa00e22fa02348e78e9fffe75668a04a56f126de5e2751c390b2"
+    },
+    "phase-sources/blob-native-msrv-controls/crates/xtask/tests/historical_blob_transport_074.rs": {
+      "bytes": 15201,
+      "sha256": "3b497a9fff7202b5e9f0677dd166f3099cd63080a0b129f379a03e8c38725f0f"
+    },
+    "phase-sources/blob-native-msrv-controls/index.json": {
+      "bytes": 1210,
+      "sha256": "827df031732272ac51c861a7950d7db9ac932e1360963446e73b36b4e19d831b"
+    },
+    "phase-sources/blob-native-msrv-controls/tools/historical-blob-batch-074/decoder.rs": {
+      "bytes": 4525,
+      "sha256": "3449e149419a6d41eab1b1ee1dcfe5b0e794d5002c6882cda44ea643332c74d6"
+    },
+    "phase-sources/blob-native-msrv-controls/tools/historical-blob-batch-074/eligibility.py": {
+      "bytes": 5851,
+      "sha256": "1bcb7d15cd663b58a026ead5db82e21c68a417c64c3271486e70eb1794d2076b"
+    },
+    "phase-sources/blob-native-msrv-controls/tools/historical-blob-batch-074/oracle.py": {
+      "bytes": 6080,
+      "sha256": "8efcc36b829c54c23037f2589adce78e5ee00219983e669073b348cbd2fc3c2d"
+    },
+    "phase-sources/blob-native-msrv-controls/tools/historical-blob-batch-074/reader.py": {
+      "bytes": 7242,
+      "sha256": "71207da9f35a2b3458092e761c9a86ce9c47d07b8e99db3743bd430c2bd57470"
+    },
+    "phase-sources/blob-native-msrv-controls/tools/historical-blob-batch-074/test_eligibility.py": {
+      "bytes": 1522,
+      "sha256": "388b690c1c2a46afaa072e8cddb18d30b992882676a1dbc873920cb29c252e4e"
+    },
+    "phase-sources/blob-native-msrv-controls/tools/historical-blob-batch-074/test_oracle.py": {
+      "bytes": 1296,
+      "sha256": "b20732ff7b36f063a90b2e0f3d72fbdb77ed4ec8fc866fac61062dca78b1f0a2"
+    },
+    "phase-sources/blob-native-msrv-controls/tools/historical-blob-batch-074/test_reader.py": {
+      "bytes": 14543,
+      "sha256": "f259d0b04eba25412491e57a662e3b4ca3127fcd71ce8648beb0137a141a58c5"
+    },
+    "phase-sources/blob-native-msrv-controls/tools/historical-blob-batch-074/transport.rs": {
+      "bytes": 7946,
+      "sha256": "9df61a76e345b1a2334fda35940320d89f2a013810dc6c3a627fd79d978ad99f"
+    },
+    "phase-sources/blob-native-no-expansion-check/crates/xtask/tests/historical_blob_batch_074.rs": {
+      "bytes": 7520,
+      "sha256": "01c4c8504c74aa00e22fa02348e78e9fffe75668a04a56f126de5e2751c390b2"
+    },
+    "phase-sources/blob-native-no-expansion-check/crates/xtask/tests/historical_blob_transport_074.rs": {
+      "bytes": 15201,
+      "sha256": "3b497a9fff7202b5e9f0677dd166f3099cd63080a0b129f379a03e8c38725f0f"
+    },
+    "phase-sources/blob-native-no-expansion-check/index.json": {
+      "bytes": 1210,
+      "sha256": "d606a93d8fd8f0062c937f0e22a9f35b87ef202760058907f84298771d6aa9bf"
+    },
+    "phase-sources/blob-native-no-expansion-check/tools/historical-blob-batch-074/decoder.rs": {
+      "bytes": 4625,
+      "sha256": "903b217439e4a22729f6832e452cad6d52f3e23b248a7c92bf80f68a3436f929"
+    },
+    "phase-sources/blob-native-no-expansion-check/tools/historical-blob-batch-074/eligibility.py": {
+      "bytes": 5851,
+      "sha256": "1bcb7d15cd663b58a026ead5db82e21c68a417c64c3271486e70eb1794d2076b"
+    },
+    "phase-sources/blob-native-no-expansion-check/tools/historical-blob-batch-074/oracle.py": {
+      "bytes": 6080,
+      "sha256": "8efcc36b829c54c23037f2589adce78e5ee00219983e669073b348cbd2fc3c2d"
+    },
+    "phase-sources/blob-native-no-expansion-check/tools/historical-blob-batch-074/reader.py": {
+      "bytes": 7242,
+      "sha256": "71207da9f35a2b3458092e761c9a86ce9c47d07b8e99db3743bd430c2bd57470"
+    },
+    "phase-sources/blob-native-no-expansion-check/tools/historical-blob-batch-074/test_eligibility.py": {
+      "bytes": 1522,
+      "sha256": "388b690c1c2a46afaa072e8cddb18d30b992882676a1dbc873920cb29c252e4e"
+    },
+    "phase-sources/blob-native-no-expansion-check/tools/historical-blob-batch-074/test_oracle.py": {
+      "bytes": 1296,
+      "sha256": "b20732ff7b36f063a90b2e0f3d72fbdb77ed4ec8fc866fac61062dca78b1f0a2"
+    },
+    "phase-sources/blob-native-no-expansion-check/tools/historical-blob-batch-074/test_reader.py": {
+      "bytes": 14543,
+      "sha256": "f259d0b04eba25412491e57a662e3b4ca3127fcd71ce8648beb0137a141a58c5"
+    },
+    "phase-sources/blob-native-no-expansion-check/tools/historical-blob-batch-074/transport.rs": {
+      "bytes": 7946,
+      "sha256": "9df61a76e345b1a2334fda35940320d89f2a013810dc6c3a627fd79d978ad99f"
+    },
+    "phase-sources/blob-native-no-expansion-clippy/crates/xtask/tests/historical_blob_batch_074.rs": {
+      "bytes": 7520,
+      "sha256": "01c4c8504c74aa00e22fa02348e78e9fffe75668a04a56f126de5e2751c390b2"
+    },
+    "phase-sources/blob-native-no-expansion-clippy/crates/xtask/tests/historical_blob_transport_074.rs": {
+      "bytes": 15201,
+      "sha256": "3b497a9fff7202b5e9f0677dd166f3099cd63080a0b129f379a03e8c38725f0f"
+    },
+    "phase-sources/blob-native-no-expansion-clippy/index.json": {
+      "bytes": 1210,
+      "sha256": "d606a93d8fd8f0062c937f0e22a9f35b87ef202760058907f84298771d6aa9bf"
+    },
+    "phase-sources/blob-native-no-expansion-clippy/tools/historical-blob-batch-074/decoder.rs": {
+      "bytes": 4625,
+      "sha256": "903b217439e4a22729f6832e452cad6d52f3e23b248a7c92bf80f68a3436f929"
+    },
+    "phase-sources/blob-native-no-expansion-clippy/tools/historical-blob-batch-074/eligibility.py": {
+      "bytes": 5851,
+      "sha256": "1bcb7d15cd663b58a026ead5db82e21c68a417c64c3271486e70eb1794d2076b"
+    },
+    "phase-sources/blob-native-no-expansion-clippy/tools/historical-blob-batch-074/oracle.py": {
+      "bytes": 6080,
+      "sha256": "8efcc36b829c54c23037f2589adce78e5ee00219983e669073b348cbd2fc3c2d"
+    },
+    "phase-sources/blob-native-no-expansion-clippy/tools/historical-blob-batch-074/reader.py": {
+      "bytes": 7242,
+      "sha256": "71207da9f35a2b3458092e761c9a86ce9c47d07b8e99db3743bd430c2bd57470"
+    },
+    "phase-sources/blob-native-no-expansion-clippy/tools/historical-blob-batch-074/test_eligibility.py": {
+      "bytes": 1522,
+      "sha256": "388b690c1c2a46afaa072e8cddb18d30b992882676a1dbc873920cb29c252e4e"
+    },
+    "phase-sources/blob-native-no-expansion-clippy/tools/historical-blob-batch-074/test_oracle.py": {
+      "bytes": 1296,
+      "sha256": "b20732ff7b36f063a90b2e0f3d72fbdb77ed4ec8fc866fac61062dca78b1f0a2"
+    },
+    "phase-sources/blob-native-no-expansion-clippy/tools/historical-blob-batch-074/test_reader.py": {
+      "bytes": 14543,
+      "sha256": "f259d0b04eba25412491e57a662e3b4ca3127fcd71ce8648beb0137a141a58c5"
+    },
+    "phase-sources/blob-native-no-expansion-clippy/tools/historical-blob-batch-074/transport.rs": {
+      "bytes": 7946,
+      "sha256": "9df61a76e345b1a2334fda35940320d89f2a013810dc6c3a627fd79d978ad99f"
+    },
+    "phase-sources/blob-native-no-expansion-controls/crates/xtask/tests/historical_blob_batch_074.rs": {
+      "bytes": 7520,
+      "sha256": "01c4c8504c74aa00e22fa02348e78e9fffe75668a04a56f126de5e2751c390b2"
+    },
+    "phase-sources/blob-native-no-expansion-controls/crates/xtask/tests/historical_blob_transport_074.rs": {
+      "bytes": 15201,
+      "sha256": "3b497a9fff7202b5e9f0677dd166f3099cd63080a0b129f379a03e8c38725f0f"
+    },
+    "phase-sources/blob-native-no-expansion-controls/index.json": {
+      "bytes": 1210,
+      "sha256": "d606a93d8fd8f0062c937f0e22a9f35b87ef202760058907f84298771d6aa9bf"
+    },
+    "phase-sources/blob-native-no-expansion-controls/tools/historical-blob-batch-074/decoder.rs": {
+      "bytes": 4625,
+      "sha256": "903b217439e4a22729f6832e452cad6d52f3e23b248a7c92bf80f68a3436f929"
+    },
+    "phase-sources/blob-native-no-expansion-controls/tools/historical-blob-batch-074/eligibility.py": {
+      "bytes": 5851,
+      "sha256": "1bcb7d15cd663b58a026ead5db82e21c68a417c64c3271486e70eb1794d2076b"
+    },
+    "phase-sources/blob-native-no-expansion-controls/tools/historical-blob-batch-074/oracle.py": {
+      "bytes": 6080,
+      "sha256": "8efcc36b829c54c23037f2589adce78e5ee00219983e669073b348cbd2fc3c2d"
+    },
+    "phase-sources/blob-native-no-expansion-controls/tools/historical-blob-batch-074/reader.py": {
+      "bytes": 7242,
+      "sha256": "71207da9f35a2b3458092e761c9a86ce9c47d07b8e99db3743bd430c2bd57470"
+    },
+    "phase-sources/blob-native-no-expansion-controls/tools/historical-blob-batch-074/test_eligibility.py": {
+      "bytes": 1522,
+      "sha256": "388b690c1c2a46afaa072e8cddb18d30b992882676a1dbc873920cb29c252e4e"
+    },
+    "phase-sources/blob-native-no-expansion-controls/tools/historical-blob-batch-074/test_oracle.py": {
+      "bytes": 1296,
+      "sha256": "b20732ff7b36f063a90b2e0f3d72fbdb77ed4ec8fc866fac61062dca78b1f0a2"
+    },
+    "phase-sources/blob-native-no-expansion-controls/tools/historical-blob-batch-074/test_reader.py": {
+      "bytes": 14543,
+      "sha256": "f259d0b04eba25412491e57a662e3b4ca3127fcd71ce8648beb0137a141a58c5"
+    },
+    "phase-sources/blob-native-no-expansion-controls/tools/historical-blob-batch-074/transport.rs": {
+      "bytes": 7946,
+      "sha256": "9df61a76e345b1a2334fda35940320d89f2a013810dc6c3a627fd79d978ad99f"
+    },
+    "phase-sources/blob-native-no-expansion-format/crates/xtask/tests/historical_blob_batch_074.rs": {
+      "bytes": 7520,
+      "sha256": "01c4c8504c74aa00e22fa02348e78e9fffe75668a04a56f126de5e2751c390b2"
+    },
+    "phase-sources/blob-native-no-expansion-format/crates/xtask/tests/historical_blob_transport_074.rs": {
+      "bytes": 15201,
+      "sha256": "3b497a9fff7202b5e9f0677dd166f3099cd63080a0b129f379a03e8c38725f0f"
+    },
+    "phase-sources/blob-native-no-expansion-format/index.json": {
+      "bytes": 1210,
+      "sha256": "d606a93d8fd8f0062c937f0e22a9f35b87ef202760058907f84298771d6aa9bf"
+    },
+    "phase-sources/blob-native-no-expansion-format/tools/historical-blob-batch-074/decoder.rs": {
+      "bytes": 4625,
+      "sha256": "903b217439e4a22729f6832e452cad6d52f3e23b248a7c92bf80f68a3436f929"
+    },
+    "phase-sources/blob-native-no-expansion-format/tools/historical-blob-batch-074/eligibility.py": {
+      "bytes": 5851,
+      "sha256": "1bcb7d15cd663b58a026ead5db82e21c68a417c64c3271486e70eb1794d2076b"
+    },
+    "phase-sources/blob-native-no-expansion-format/tools/historical-blob-batch-074/oracle.py": {
+      "bytes": 6080,
+      "sha256": "8efcc36b829c54c23037f2589adce78e5ee00219983e669073b348cbd2fc3c2d"
+    },
+    "phase-sources/blob-native-no-expansion-format/tools/historical-blob-batch-074/reader.py": {
+      "bytes": 7242,
+      "sha256": "71207da9f35a2b3458092e761c9a86ce9c47d07b8e99db3743bd430c2bd57470"
+    },
+    "phase-sources/blob-native-no-expansion-format/tools/historical-blob-batch-074/test_eligibility.py": {
+      "bytes": 1522,
+      "sha256": "388b690c1c2a46afaa072e8cddb18d30b992882676a1dbc873920cb29c252e4e"
+    },
+    "phase-sources/blob-native-no-expansion-format/tools/historical-blob-batch-074/test_oracle.py": {
+      "bytes": 1296,
+      "sha256": "b20732ff7b36f063a90b2e0f3d72fbdb77ed4ec8fc866fac61062dca78b1f0a2"
+    },
+    "phase-sources/blob-native-no-expansion-format/tools/historical-blob-batch-074/test_reader.py": {
+      "bytes": 14543,
+      "sha256": "f259d0b04eba25412491e57a662e3b4ca3127fcd71ce8648beb0137a141a58c5"
+    },
+    "phase-sources/blob-native-no-expansion-format/tools/historical-blob-batch-074/transport.rs": {
+      "bytes": 7946,
+      "sha256": "9df61a76e345b1a2334fda35940320d89f2a013810dc6c3a627fd79d978ad99f"
+    },
+    "phase-sources/blob-native-no-expansion-msrv/crates/xtask/tests/historical_blob_batch_074.rs": {
+      "bytes": 7520,
+      "sha256": "01c4c8504c74aa00e22fa02348e78e9fffe75668a04a56f126de5e2751c390b2"
+    },
+    "phase-sources/blob-native-no-expansion-msrv/crates/xtask/tests/historical_blob_transport_074.rs": {
+      "bytes": 15201,
+      "sha256": "3b497a9fff7202b5e9f0677dd166f3099cd63080a0b129f379a03e8c38725f0f"
+    },
+    "phase-sources/blob-native-no-expansion-msrv/index.json": {
+      "bytes": 1210,
+      "sha256": "d606a93d8fd8f0062c937f0e22a9f35b87ef202760058907f84298771d6aa9bf"
+    },
+    "phase-sources/blob-native-no-expansion-msrv/tools/historical-blob-batch-074/decoder.rs": {
+      "bytes": 4625,
+      "sha256": "903b217439e4a22729f6832e452cad6d52f3e23b248a7c92bf80f68a3436f929"
+    },
+    "phase-sources/blob-native-no-expansion-msrv/tools/historical-blob-batch-074/eligibility.py": {
+      "bytes": 5851,
+      "sha256": "1bcb7d15cd663b58a026ead5db82e21c68a417c64c3271486e70eb1794d2076b"
+    },
+    "phase-sources/blob-native-no-expansion-msrv/tools/historical-blob-batch-074/oracle.py": {
+      "bytes": 6080,
+      "sha256": "8efcc36b829c54c23037f2589adce78e5ee00219983e669073b348cbd2fc3c2d"
+    },
+    "phase-sources/blob-native-no-expansion-msrv/tools/historical-blob-batch-074/reader.py": {
+      "bytes": 7242,
+      "sha256": "71207da9f35a2b3458092e761c9a86ce9c47d07b8e99db3743bd430c2bd57470"
+    },
+    "phase-sources/blob-native-no-expansion-msrv/tools/historical-blob-batch-074/test_eligibility.py": {
+      "bytes": 1522,
+      "sha256": "388b690c1c2a46afaa072e8cddb18d30b992882676a1dbc873920cb29c252e4e"
+    },
+    "phase-sources/blob-native-no-expansion-msrv/tools/historical-blob-batch-074/test_oracle.py": {
+      "bytes": 1296,
+      "sha256": "b20732ff7b36f063a90b2e0f3d72fbdb77ed4ec8fc866fac61062dca78b1f0a2"
+    },
+    "phase-sources/blob-native-no-expansion-msrv/tools/historical-blob-batch-074/test_reader.py": {
+      "bytes": 14543,
+      "sha256": "f259d0b04eba25412491e57a662e3b4ca3127fcd71ce8648beb0137a141a58c5"
+    },
+    "phase-sources/blob-native-no-expansion-msrv/tools/historical-blob-batch-074/transport.rs": {
+      "bytes": 7946,
+      "sha256": "9df61a76e345b1a2334fda35940320d89f2a013810dc6c3a627fd79d978ad99f"
+    },
+    "phase-sources/blob-native-python-controls/crates/xtask/tests/historical_blob_batch_074.rs": {
+      "bytes": 7520,
+      "sha256": "01c4c8504c74aa00e22fa02348e78e9fffe75668a04a56f126de5e2751c390b2"
+    },
+    "phase-sources/blob-native-python-controls/crates/xtask/tests/historical_blob_transport_074.rs": {
+      "bytes": 15201,
+      "sha256": "3b497a9fff7202b5e9f0677dd166f3099cd63080a0b129f379a03e8c38725f0f"
+    },
+    "phase-sources/blob-native-python-controls/index.json": {
+      "bytes": 1210,
+      "sha256": "827df031732272ac51c861a7950d7db9ac932e1360963446e73b36b4e19d831b"
+    },
+    "phase-sources/blob-native-python-controls/tools/historical-blob-batch-074/decoder.rs": {
+      "bytes": 4525,
+      "sha256": "3449e149419a6d41eab1b1ee1dcfe5b0e794d5002c6882cda44ea643332c74d6"
+    },
+    "phase-sources/blob-native-python-controls/tools/historical-blob-batch-074/eligibility.py": {
+      "bytes": 5851,
+      "sha256": "1bcb7d15cd663b58a026ead5db82e21c68a417c64c3271486e70eb1794d2076b"
+    },
+    "phase-sources/blob-native-python-controls/tools/historical-blob-batch-074/oracle.py": {
+      "bytes": 6080,
+      "sha256": "8efcc36b829c54c23037f2589adce78e5ee00219983e669073b348cbd2fc3c2d"
+    },
+    "phase-sources/blob-native-python-controls/tools/historical-blob-batch-074/reader.py": {
+      "bytes": 7242,
+      "sha256": "71207da9f35a2b3458092e761c9a86ce9c47d07b8e99db3743bd430c2bd57470"
+    },
+    "phase-sources/blob-native-python-controls/tools/historical-blob-batch-074/test_eligibility.py": {
+      "bytes": 1522,
+      "sha256": "388b690c1c2a46afaa072e8cddb18d30b992882676a1dbc873920cb29c252e4e"
+    },
+    "phase-sources/blob-native-python-controls/tools/historical-blob-batch-074/test_oracle.py": {
+      "bytes": 1296,
+      "sha256": "b20732ff7b36f063a90b2e0f3d72fbdb77ed4ec8fc866fac61062dca78b1f0a2"
+    },
+    "phase-sources/blob-native-python-controls/tools/historical-blob-batch-074/test_reader.py": {
+      "bytes": 14543,
+      "sha256": "f259d0b04eba25412491e57a662e3b4ca3127fcd71ce8648beb0137a141a58c5"
+    },
+    "phase-sources/blob-native-python-controls/tools/historical-blob-batch-074/transport.rs": {
+      "bytes": 7946,
+      "sha256": "9df61a76e345b1a2334fda35940320d89f2a013810dc6c3a627fd79d978ad99f"
+    },
+    "phase-sources/blob-native-python-indentation/crates/xtask/tests/historical_blob_batch_074.rs": {
+      "bytes": 7520,
+      "sha256": "01c4c8504c74aa00e22fa02348e78e9fffe75668a04a56f126de5e2751c390b2"
+    },
+    "phase-sources/blob-native-python-indentation/crates/xtask/tests/historical_blob_transport_074.rs": {
+      "bytes": 15201,
+      "sha256": "3b497a9fff7202b5e9f0677dd166f3099cd63080a0b129f379a03e8c38725f0f"
+    },
+    "phase-sources/blob-native-python-indentation/index.json": {
+      "bytes": 1210,
+      "sha256": "827df031732272ac51c861a7950d7db9ac932e1360963446e73b36b4e19d831b"
+    },
+    "phase-sources/blob-native-python-indentation/tools/historical-blob-batch-074/decoder.rs": {
+      "bytes": 4525,
+      "sha256": "3449e149419a6d41eab1b1ee1dcfe5b0e794d5002c6882cda44ea643332c74d6"
+    },
+    "phase-sources/blob-native-python-indentation/tools/historical-blob-batch-074/eligibility.py": {
+      "bytes": 5851,
+      "sha256": "1bcb7d15cd663b58a026ead5db82e21c68a417c64c3271486e70eb1794d2076b"
+    },
+    "phase-sources/blob-native-python-indentation/tools/historical-blob-batch-074/oracle.py": {
+      "bytes": 6080,
+      "sha256": "8efcc36b829c54c23037f2589adce78e5ee00219983e669073b348cbd2fc3c2d"
+    },
+    "phase-sources/blob-native-python-indentation/tools/historical-blob-batch-074/reader.py": {
+      "bytes": 7242,
+      "sha256": "71207da9f35a2b3458092e761c9a86ce9c47d07b8e99db3743bd430c2bd57470"
+    },
+    "phase-sources/blob-native-python-indentation/tools/historical-blob-batch-074/test_eligibility.py": {
+      "bytes": 1522,
+      "sha256": "388b690c1c2a46afaa072e8cddb18d30b992882676a1dbc873920cb29c252e4e"
+    },
+    "phase-sources/blob-native-python-indentation/tools/historical-blob-batch-074/test_oracle.py": {
+      "bytes": 1296,
+      "sha256": "b20732ff7b36f063a90b2e0f3d72fbdb77ed4ec8fc866fac61062dca78b1f0a2"
+    },
+    "phase-sources/blob-native-python-indentation/tools/historical-blob-batch-074/test_reader.py": {
+      "bytes": 14543,
+      "sha256": "f259d0b04eba25412491e57a662e3b4ca3127fcd71ce8648beb0137a141a58c5"
+    },
+    "phase-sources/blob-native-python-indentation/tools/historical-blob-batch-074/transport.rs": {
+      "bytes": 7946,
+      "sha256": "9df61a76e345b1a2334fda35940320d89f2a013810dc6c3a627fd79d978ad99f"
+    },
+    "phase-sources/blob-native-python-syntax/crates/xtask/tests/historical_blob_batch_074.rs": {
+      "bytes": 7520,
+      "sha256": "01c4c8504c74aa00e22fa02348e78e9fffe75668a04a56f126de5e2751c390b2"
+    },
+    "phase-sources/blob-native-python-syntax/crates/xtask/tests/historical_blob_transport_074.rs": {
+      "bytes": 15201,
+      "sha256": "3b497a9fff7202b5e9f0677dd166f3099cd63080a0b129f379a03e8c38725f0f"
+    },
+    "phase-sources/blob-native-python-syntax/index.json": {
+      "bytes": 1210,
+      "sha256": "827df031732272ac51c861a7950d7db9ac932e1360963446e73b36b4e19d831b"
+    },
+    "phase-sources/blob-native-python-syntax/tools/historical-blob-batch-074/decoder.rs": {
+      "bytes": 4525,
+      "sha256": "3449e149419a6d41eab1b1ee1dcfe5b0e794d5002c6882cda44ea643332c74d6"
+    },
+    "phase-sources/blob-native-python-syntax/tools/historical-blob-batch-074/eligibility.py": {
+      "bytes": 5851,
+      "sha256": "1bcb7d15cd663b58a026ead5db82e21c68a417c64c3271486e70eb1794d2076b"
+    },
+    "phase-sources/blob-native-python-syntax/tools/historical-blob-batch-074/oracle.py": {
+      "bytes": 6080,
+      "sha256": "8efcc36b829c54c23037f2589adce78e5ee00219983e669073b348cbd2fc3c2d"
+    },
+    "phase-sources/blob-native-python-syntax/tools/historical-blob-batch-074/reader.py": {
+      "bytes": 7242,
+      "sha256": "71207da9f35a2b3458092e761c9a86ce9c47d07b8e99db3743bd430c2bd57470"
+    },
+    "phase-sources/blob-native-python-syntax/tools/historical-blob-batch-074/test_eligibility.py": {
+      "bytes": 1522,
+      "sha256": "388b690c1c2a46afaa072e8cddb18d30b992882676a1dbc873920cb29c252e4e"
+    },
+    "phase-sources/blob-native-python-syntax/tools/historical-blob-batch-074/test_oracle.py": {
+      "bytes": 1296,
+      "sha256": "b20732ff7b36f063a90b2e0f3d72fbdb77ed4ec8fc866fac61062dca78b1f0a2"
+    },
+    "phase-sources/blob-native-python-syntax/tools/historical-blob-batch-074/test_reader.py": {
+      "bytes": 14543,
+      "sha256": "f259d0b04eba25412491e57a662e3b4ca3127fcd71ce8648beb0137a141a58c5"
+    },
+    "phase-sources/blob-native-python-syntax/tools/historical-blob-batch-074/transport.rs": {
+      "bytes": 7946,
+      "sha256": "9df61a76e345b1a2334fda35940320d89f2a013810dc6c3a627fd79d978ad99f"
+    },
+    "sources/final/README.md": {
+      "bytes": 9009,
+      "sha256": "2bfc6c08adafa8e9df4facb7f2e02c43640757ceba600f0b28d5bad4679fb5ca"
+    }
+  },
+  "schema": "hc074-blob-native-differential-evidence-v1"
+}

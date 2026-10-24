@@ -19212,3 +19212,36 @@ separate barriers for flags, conditional reads, interleaved current observations
 and reference identity. None is admitted. The next native transport/differential
 gate must preserve those distinctions rather than turning an argv match or a
 passing decoder into an integrated speedup claim.
+
+The [native Git transport experiment](../testing/performance/0.74/historical-blob-native-result-20261024.md)
+then tests the missing process boundary with an independent oracle. The oracle
+creates only empty-root synthetic repositories and obtains per-object reference
+bytes through separate Git commands before the Rust batch. Six cases preserve
+54 exact stdout/stderr/status results on current Rust and MSRV, including short
+query spelling, default replacement behavior and explicit replacement disabling.
+Active blob replacement must change the default result while the disabled case
+must retain original bytes. The unchanged Python SHA1 reader supplies an
+additional control only for the two full-ID/no-replace cases.
+
+The distinction matters: replacing ordinary Git semantics with a convenient
+immutable lookup is not an optimization if it changes the reference behavior.
+The native component uses independent SHA256 byte pins for this controlled corpus,
+not self-generated pins from the observed batch or production source authority.
+An explicit short-missing variant preserves raw short queries; the old full-only
+variant retains its rejection boundary. Neither a matching fixture nor a caller
+assertion enrolls a real historical source.
+
+File-backed streams avoid pipe-drain deadlock and bound in-memory capture, while
+one caller deadline covers validation and fallbacks. Actual timeout and output
+overflow controls stop and reap only the owned leaf child, leaving a same-image
+unrelated child alive. Those Windows controls are not proof of Linux SIGKILL,
+descendant/FD-alias retirement or the original qualification fence. The first
+source versions, outputs and cleanup receipts remain retained.
+
+The component gate is green, but its performance hypothesis is still open.
+Owned result vectors copy bytes, spooling has a cost, and the oracle deliberately
+executes extra reference commands. Preparing trusted pins cannot be priced at
+zero. Changing refs/configuration, ambiguous abbreviations, real pin provenance
+and original caller observation order must be checked before integration, then
+the complete path must be measured inside unchanged bounds. No native API,
+product throughput or complete-package gain follows from these controls alone.

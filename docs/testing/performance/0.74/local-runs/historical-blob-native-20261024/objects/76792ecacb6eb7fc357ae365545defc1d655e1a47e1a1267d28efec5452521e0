@@ -1,0 +1,4 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 10.93s
+  Executable tests\historical_blob_batch_074.rs (target\debug\deps\historical_blob_batch_074-325fbdab9a8ae138.exe)
+  Executable tests\historical_blob_transport_074.rs (target\debug\deps\historical_blob_transport_074-5949e4684e666041.exe)

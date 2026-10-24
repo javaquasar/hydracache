@@ -1,0 +1,28 @@
+"""Retain exact source before every bounded native component check."""
+from pathlib import Path
+import hashlib
+import json
+import os
+import runpy
+import sys
+
+root = Path(__file__).resolve().parent.parent
+label = sys.argv[1]
+if not label.replace('-', '').isalnum():
+    raise SystemExit('invalid label')
+out = root / 'target/blob-native-source-snapshots-20261024' / label
+out.mkdir(parents=True, exist_ok=False)
+sources = [*sorted((root / 'tools/historical-blob-batch-074').glob('*.py')),
+           *sorted((root / 'tools/historical-blob-batch-074').glob('*.rs')),
+           root / 'crates/xtask/tests/historical_blob_batch_074.rs',
+           root / 'crates/xtask/tests/historical_blob_transport_074.rs']
+index = {}
+for path in sources:
+    if path.exists():
+        raw = path.read_bytes()
+        digest = hashlib.sha256(raw).hexdigest()
+        (out / digest).write_bytes(raw)
+        index[str(path.relative_to(root)).replace('\\', '/')] = digest
+(out / 'index.json').write_text(json.dumps(index, indent=2) + '\n')
+os.environ['HC074_BLOB_TRANSPORT_EVIDENCE'] = str(root / 'target/blob-native-transport-20261024' / label)
+runpy.run_path(str(root / 'target/run-fresh-reader-20261024.py'), run_name='__main__')

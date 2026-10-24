@@ -6884,3 +6884,13 @@ short-ID/default-replacement invocations. None of six manually reviewed sites is
 admitted. Matching argv shapes do not justify a silent flag/revision change or
 establish timing benefit; native transport, provenance and real-Git/Python parity
 remain before integration. The old interrupted package is still incomplete.
+
+The [native Git transport controls](historical-blob-native-result-20261024.md)
+pass nine decoder and six transport tests on both Rust 1.94 and 1.88, twenty-six
+Python controls, all-target check and strict Clippy. Six synthetic cases compare
+54 exact native/reference results, including full/short queries, default/disabled
+replacement policy and active blob replacement. Actual timeout/output overflow
+reap only owned leaf children while a same-image unrelated child survives.
+This is not all-writer authority, production pin enrollment or a performance
+result. Mutation/ambiguity/config/provenance and reference-preparation cost remain
+before any real caller integration; the old package/release barriers remain open.

@@ -1,0 +1,420 @@
+//! Real disposable Git/Python controls, never an original-owner or product run.
+#[path = "../../../tools/historical-blob-batch-074/decoder.rs"]
+mod decoder;
+#[path = "../../../tools/historical-blob-batch-074/transport.rs"]
+mod transport;
+use decoder::{Expected, Kind};
+use serde_json::{json, Value};
+use std::fs;
+use std::io::{Read, Write};
+use std::path::{Path, PathBuf};
+use std::process::{Child, Command, Stdio};
+use std::time::{Duration, Instant};
+use transport::{Output, Refusal, Replacements};
+
+fn hex(value: &str) -> Vec<u8> {
+    assert_eq!(value.len() % 2, 0);
+    (0..value.len())
+        .step_by(2)
+        .map(|at| u8::from_str_radix(&value[at..at + 2], 16).unwrap())
+        .collect()
+}
+fn pin(value: &Value) -> Expected {
+    if value["kind"] == "missing" {
+        let spec = value["spec"].as_str().unwrap().to_owned();
+        return if value["short"] == true {
+            Expected::ShortMissing { spec }
+        } else {
+            Expected::Missing { spec }
+        };
+    }
+    let kind = match value["kind"].as_str().unwrap() {
+        "blob" => Kind::Blob,
+        "tree" => Kind::Tree,
+        "commit" => Kind::Commit,
+        "tag" => Kind::Tag,
+        _ => panic!("unknown oracle kind"),
+    };
+    Expected::Object {
+        oid: value["oid"].as_str().unwrap().to_owned(),
+        kind,
+        bytes: value["bytes"].as_u64().unwrap().try_into().unwrap(),
+        sha256: hex(value["sha256"].as_str().unwrap()).try_into().unwrap(),
+    }
+}
+fn expected(value: &Value) -> Output {
+    Output {
+        stdout: hex(value["stdout_hex"].as_str().unwrap()),
+        stderr: hex(value["stderr_hex"].as_str().unwrap()),
+        code: value["code"].as_i64().map(|v| v.try_into().unwrap()),
+    }
+}
+fn output(value: &Output) -> Value {
+    json!({"stdout_hex": value.stdout.iter().map(|b| format!("{b:02x}")).collect::<String>(),
+           "stderr_hex": value.stderr.iter().map(|b| format!("{b:02x}")).collect::<String>(), "code": value.code})
+}
+fn retain(folder: &Option<PathBuf>, name: &str, raw: &[u8]) {
+    if let Some(folder) = folder {
+        let mut file = fs::File::create_new(folder.join(name)).unwrap();
+        file.write_all(raw).unwrap();
+    }
+}
+
+#[test]
+fn real_git_python_and_native_outputs_match_in_six_isolated_cases() {
+    let evidence = std::env::var_os("HC074_BLOB_TRANSPORT_EVIDENCE").map(PathBuf::from);
+    if let Some(folder) = &evidence {
+        fs::create_dir_all(folder.parent().unwrap()).unwrap();
+        fs::create_dir(folder).expect("first native attempt evidence already exists");
+    }
+    retain(
+        &evidence,
+        "intent.json",
+        br#"{"scope":"synthetic Git only","admission":false,"retry":false}"#,
+    );
+    let root = tempfile::tempdir().unwrap();
+    let repo = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let mut command = Command::new("python");
+    command
+        .arg(repo.join("tools/historical-blob-batch-074/oracle.py"))
+        .arg(root.path());
+    let result = transport::run_owned(&mut command, &[], Instant::now() + transport::BOUND);
+    retain(
+        &evidence,
+        "oracle-process.txt",
+        format!(
+            "{:?}",
+            result
+                .as_ref()
+                .map(|v| (v.code, v.stdout.len(), v.stderr.len()))
+        )
+        .as_bytes(),
+    );
+    let result = result.unwrap();
+    retain(&evidence, "oracle.stdout.json", &result.stdout);
+    retain(&evidence, "oracle.stderr.log", &result.stderr);
+    assert_eq!(result.code, Some(0));
+    assert!(result.stderr.is_empty());
+    let oracle: Value = serde_json::from_slice(&result.stdout).unwrap();
+    assert_eq!(oracle["source_authority"], false);
+    let cases = oracle["cases"].as_array().unwrap();
+    assert_eq!(cases.len(), 6);
+    let mut receipts = vec![];
+    for (index, case) in cases.iter().enumerate() {
+        let name = case["root"].as_str().unwrap();
+        assert!(matches!(name, "plain" | "replaced"));
+        let policy = match case["policy"].as_str().unwrap() {
+            "default" => Replacements::Default,
+            "disabled" => Replacements::Disabled,
+            _ => panic!("policy"),
+        };
+        let specs: Vec<_> = case["specs"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|v| v.as_str().unwrap().to_owned())
+            .collect();
+        let pins: Vec<_> = case["pins"].as_array().unwrap().iter().map(pin).collect();
+        let expected: Vec<_> = case["expected"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(expected)
+            .collect();
+        let actual = transport::read(
+            &root.path().join(name),
+            &specs,
+            &pins,
+            policy,
+            Instant::now() + transport::BOUND,
+        );
+        let record = match &actual {
+            Ok(values) => {
+                json!({"case":index, "outputs":values.iter().map(output).collect::<Vec<_>>() })
+            }
+            Err(error) => json!({"case":index, "refusal":format!("{error:?}")}),
+        };
+        retain(
+            &evidence,
+            &format!("native-case-{index}.json"),
+            &serde_json::to_vec(&record).unwrap(),
+        );
+        assert_eq!(
+            actual.unwrap(),
+            expected,
+            "first native mismatch in case {index}"
+        );
+        if !case["python_prototype"].is_null() {
+            let python: Vec<_> = case["python_prototype"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(expected_output)
+                .collect();
+            assert_eq!(python, expected);
+        }
+        receipts.push(json!({"case":index,"requests":specs.len(),"policy":case["policy"],"short":case["short"],"replaced":case["replaced"],"matched":true}));
+    }
+    // Same original query, not a normalized alias: default replacement changes
+    // bytes and explicit disabling restores original bytes on the replaced root.
+    assert_ne!(
+        cases[3]["expected"][0]["stdout_hex"],
+        cases[4]["expected"][0]["stdout_hex"]
+    );
+    assert_eq!(
+        cases[0]["expected"][0]["stdout_hex"],
+        cases[3]["expected"][0]["stdout_hex"]
+    );
+    let result = json!({"cases":receipts,"first_result_retained":true,"measurement":false,"admission":false});
+    retain(
+        &evidence,
+        "result.json",
+        &serde_json::to_vec_pretty(&result).unwrap(),
+    );
+}
+fn expected_output(value: &Value) -> Output {
+    expected(value)
+}
+
+#[test]
+fn preflight_refuses_invalid_queries_deadlines_and_pin_identity_before_effects() {
+    let absent = Path::new("nonexistent-native-fixture-must-not-be-opened");
+    for spec in [
+        "HEAD:p",
+        "abc:p",
+        "abcd:",
+        "abcd:/p",
+        "abcd:./p",
+        "abcd:a\nb",
+        "abcd:a\0b",
+        "abcd:a\\b",
+        "abcd:a/../b",
+    ] {
+        let pins = [Expected::ShortMissing {
+            spec: spec.to_owned(),
+        }];
+        assert_eq!(
+            transport::read(
+                absent,
+                &[spec.into()],
+                &pins,
+                Replacements::Default,
+                Instant::now() + transport::BOUND
+            ),
+            Err(Refusal::Input)
+        );
+    }
+    let pins = [Expected::ShortMissing {
+        spec: "abcd:other".into(),
+    }];
+    assert_eq!(
+        transport::read(
+            absent,
+            &["abcd:p".into()],
+            &pins,
+            Replacements::Default,
+            Instant::now() + transport::BOUND
+        ),
+        Err(Refusal::Input)
+    );
+    assert_eq!(
+        transport::read(
+            absent,
+            &[],
+            &[],
+            Replacements::Default,
+            Instant::now() + transport::BOUND
+        ),
+        Err(Refusal::Input)
+    );
+    assert_eq!(
+        transport::read(absent, &[], &[], Replacements::Default, Instant::now()),
+        Err(Refusal::Deadline)
+    );
+    let specs = vec!["abcd:p".to_owned(); 257];
+    let pins = vec![
+        Expected::ShortMissing {
+            spec: "abcd:p".into()
+        };
+        257
+    ];
+    assert_eq!(
+        transport::read(
+            absent,
+            &specs,
+            &pins,
+            Replacements::Default,
+            Instant::now() + transport::BOUND
+        ),
+        Err(Refusal::Input)
+    );
+    let invalid_pin = Expected::Object {
+        oid: "wrong".into(),
+        kind: Kind::Blob,
+        bytes: 0,
+        sha256: [0; 32],
+    };
+    assert_eq!(
+        transport::read(
+            absent,
+            &["abcd:p".into()],
+            &[invalid_pin],
+            Replacements::Default,
+            Instant::now() + transport::BOUND
+        ),
+        Err(Refusal::Protocol(decoder::Refusal::Reference))
+    );
+}
+
+fn child(mode: &str, marker: &Path) -> Command {
+    let mut command = Command::new(std::env::current_exe().unwrap());
+    command
+        .args([
+            "--exact",
+            "transport_child_fixture",
+            "--nocapture",
+            "--test-threads=1",
+        ])
+        .env("HC074_BLOB_CHILD", mode)
+        .env("HC074_BLOB_CHILD_MARKER", marker);
+    command
+}
+struct Unrelated(Child);
+impl Drop for Unrelated {
+    fn drop(&mut self) {
+        let _ = self.0.kill();
+        let _ = self.0.wait();
+    }
+}
+
+#[test]
+fn actual_timeout_and_stderr_budget_reap_only_the_owned_child() {
+    let root = tempfile::tempdir().unwrap();
+    let mut other = Unrelated(
+        child("park", &root.path().join("unrelated"))
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .spawn()
+            .unwrap(),
+    );
+    for (mode, failure) in [("park", Refusal::Deadline), ("overflow", Refusal::Budget)] {
+        let marker = root.path().join(mode);
+        let actual = transport::run_owned(
+            &mut child(mode, &marker),
+            &[],
+            Instant::now() + Duration::from_secs(2),
+        );
+        assert_eq!(actual, Err(failure));
+        assert!(
+            marker.exists(),
+            "child never reached its logical start marker"
+        );
+        assert!(
+            other.0.try_wait().unwrap().is_none(),
+            "same-image unrelated child was stopped"
+        );
+    }
+}
+
+#[test]
+fn direct_nonzero_exit_stdin_and_missing_executable_keep_explicit_results() {
+    let root = tempfile::tempdir().unwrap();
+    let result = transport::run_owned(
+        &mut child("exit", &root.path().join("exit")),
+        &[],
+        Instant::now() + transport::BOUND,
+    )
+    .unwrap();
+    assert_eq!(result.code, Some(7));
+    let result = transport::run_owned(
+        &mut child("stdin", &root.path().join("stdin")),
+        b"raw-input\0\r\n",
+        Instant::now() + transport::BOUND,
+    )
+    .unwrap();
+    assert_eq!(result.code, Some(0));
+    assert!(result
+        .stdout
+        .windows(b"raw-input\0\r\n".len())
+        .any(|v| v == b"raw-input\0\r\n"));
+    assert!(matches!(
+        transport::run_owned(
+            &mut Command::new("nonexistent-074-native-executable"),
+            &[],
+            Instant::now() + transport::BOUND
+        ),
+        Err(Refusal::Io(_))
+    ));
+    assert_eq!(
+        transport::run_owned(
+            &mut Command::new("must-not-spawn"),
+            &vec![0; 256 * 1024 + 1],
+            Instant::now() + transport::BOUND
+        ),
+        Err(Refusal::Input)
+    );
+    let mut command = child("environment", &root.path().join("environment"));
+    command.env("GIT_DIR", "must-not-be-used");
+    assert_eq!(
+        transport::run_owned(&mut command, &[], Instant::now() + transport::BOUND)
+            .unwrap()
+            .code,
+        Some(0)
+    );
+}
+
+#[test]
+fn failed_batch_is_not_retried_as_show_or_published_as_empty_source() {
+    let root = tempfile::tempdir().unwrap();
+    let spec = "abcd:path".to_owned();
+    let pins = [Expected::ShortMissing { spec: spec.clone() }];
+    assert_eq!(
+        transport::read(
+            root.path(),
+            &[spec],
+            &pins,
+            Replacements::Default,
+            Instant::now() + transport::BOUND
+        ),
+        Err(Refusal::Process)
+    );
+}
+
+#[test]
+fn transport_child_fixture() {
+    let Some(mode) = std::env::var_os("HC074_BLOB_CHILD") else {
+        return;
+    };
+    let marker = std::env::var_os("HC074_BLOB_CHILD_MARKER").unwrap();
+    fs::write(marker, std::process::id().to_string()).unwrap();
+    match mode.to_str().unwrap() {
+        "exit" => std::process::exit(7),
+        "stdin" => {
+            let mut raw = vec![];
+            std::io::stdin().read_to_end(&mut raw).unwrap();
+            std::io::stdout().write_all(&raw).unwrap();
+        }
+        "environment" => assert_eq!(
+            transport::git(
+                Path::new("unused"),
+                Replacements::Default,
+                &["version"],
+                &[],
+                Instant::now() + transport::BOUND
+            ),
+            Err(Refusal::Environment)
+        ),
+        "overflow" => {
+            std::io::stderr()
+                .write_all(&vec![b'x'; 64 * 1024 + 1])
+                .unwrap();
+            loop {
+                std::thread::park();
+            }
+        }
+        "park" => loop {
+            std::thread::park();
+        },
+        _ => panic!("fixture mode"),
+    }
+}
