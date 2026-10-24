@@ -1,7 +1,17 @@
+#[path = "../../../tools/normalization-attribution-074/stream_candidate.rs"]
+mod canonical_candidate;
 #[path = "support/document_scratch_guard.rs"]
 mod guard;
 #[path = "../../../tools/normalization-attribution-074/probe.rs"]
 mod normalization_profile;
+
+#[test]
+fn normalization_candidate_child() {
+    let Some(input) = std::env::var_os("HC074_CANONICAL_INPUT") else {
+        return;
+    };
+    canonical_candidate::run(std::path::Path::new(&input));
+}
 #[path = "../../../tools/authority-runtime-074/gate.rs"]
 mod runtime;
 #[path = "../../../tools/authority-runtime-074/io.rs"]
