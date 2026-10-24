@@ -1,12 +1,31 @@
 #[path = "../../../tools/historical-source-cache-074/cache.rs"]
 mod controls;
+#[path = "../../../tools/owned-case-074/contract.rs"]
+mod owned_case;
 fn root() -> std::path::PathBuf {
     std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
 }
 fn read(path: &str) -> String {
-    std::fs::read_to_string(root().join(path))
+    let raw = std::fs::read_to_string(root().join(path))
         .unwrap()
-        .replace("\r\n", "\n")
+        .replace("\r\n", "\n");
+    if path == "tools/authority-runtime-074/io.rs" {
+        let out = std::process::Command::new("git")
+            .args([
+                "--no-replace-objects",
+                "show",
+                &format!("{}:{path}", owned_case::BASE),
+            ])
+            .current_dir(root())
+            .output()
+            .unwrap();
+        assert!(out.status.success());
+        let original = String::from_utf8(out.stdout).unwrap().replace("\r\n", "\n");
+        owned_case::require_helpers(&root());
+        assert!(owned_case::accepts(path, &original, &raw));
+        return original;
+    }
+    raw
 }
 fn old(path: &str) -> String {
     let output = std::process::Command::new("git")

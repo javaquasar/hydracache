@@ -13,7 +13,10 @@ fn historical_input_reader_is_one_exact_additive_verified_branch() {
     let old = runtime::frozen("81f4add2d8abd9fecdfc15b8e93dfc47779c570d", path);
     let expected = old.replacen("use std::{io, path::Path};", "use std::{io, path::Path};\n#[path = \"../historical-input-view-074/contract.rs\"]\npub(crate) mod reviewed_inputs;", 1)
         .replacen("    Ok(super::runtime::view(&relative, raw))", "    if reviewed_inputs::PATHS.contains(&relative.as_str()) {\n        return Ok(reviewed_inputs::predecessor(&relative, &raw));\n    }\n    Ok(super::runtime::view(&relative, raw))", 1);
-    let actual = std::fs::read_to_string(runtime::root().join(path)).unwrap();
+    let current = std::fs::read_to_string(runtime::root().join(path)).unwrap();
+    bound_io::owned_case_view::require_helpers(&runtime::root());
+    let actual = runtime::frozen(bound_io::owned_case_view::BASE, path);
+    assert!(bound_io::owned_case_view::accepts(path, &actual, &current));
     assert!(storage_contract::accepts(&expected, &actual));
     assert_ne!(expected, old);
     for file in contract::PATHS {
@@ -41,7 +44,15 @@ fn historical_input_reader_is_one_exact_additive_verified_branch() {
 #[test]
 fn historical_inputs_require_the_complete_reviewed_current_file_before_predecessor() {
     for path in contract::PATHS {
-        let current = std::fs::read_to_string(contract::root().join(path)).unwrap();
+        let mut current = std::fs::read_to_string(contract::root().join(path)).unwrap();
+        if bound_io::owned_case_view::PATHS.contains(&path) {
+            let original = runtime::frozen(bound_io::owned_case_view::BASE, path);
+            bound_io::owned_case_view::require_helpers(&runtime::root());
+            assert!(bound_io::owned_case_view::accepts(
+                path, &original, &current
+            ));
+            current = original;
+        }
         assert!(
             contract::accepts(path, &current),
             "raw current input: {path}"

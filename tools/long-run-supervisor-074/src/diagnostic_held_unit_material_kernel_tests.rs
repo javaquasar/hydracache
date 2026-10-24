@@ -339,6 +339,12 @@ fn held_material_kernel_inventory_refuses_duplicate_negative_new_alias_and_origi
 
 #[test]
 fn held_material_kernel_drop_closes_all_six_resources_and_partial_creation_is_raii() {
+    if crate::diagnostic_ipc::validation_trace::owned_case::isolate(
+        module_path!(),
+        "held_material_kernel_drop_closes_all_six_resources_and_partial_creation_is_raii",
+    ) {
+        return;
+    }
     let b = bindings();
     let r = Resources::create(&b, b"config\n").unwrap();
     let fds = r.fds();

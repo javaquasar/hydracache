@@ -1,5 +1,14 @@
 # HydraCache — Enforcement Gates
 
+The ordinary Linux `held_launcher` target also includes six owned-case isolation
+controls: exact selection, positive child, nonzero/empty selection, timeout and
+a successful leader leaving a live descendant. Run
+`cargo test -p hydracache-long-run-supervisor-074 --test held_launcher owned_case_controls --locked`.
+They are included by the existing supervisor CI/package test and never run its
+ignored launcher matrix. Cleanup cannot count as success; these are test-oracle
+controls, not original-start or all-writer retirement authority. See the
+[scope and first refusals](testing/performance/0.74/owned-case-isolation-plan-20261024.md).
+
 Private negotiated D-Bus delivery uses the manual registered
 `tool.hydracache-long-run-supervisor-074.negotiated-dispatch` gate. Run its exact
 ignored libtest with `/usr/bin/dbus-daemon` available as nonroot. Nine private

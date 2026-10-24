@@ -15,3 +15,6 @@ fn held_activation_environment_ingress_reaches_only_unchanged_core_refusal() {
 fn owned_launcher_process_fault_matrix() {
     process::matrix();
 }
+
+#[path = "../../owned-case-074/controls.rs"]
+mod owned_case_controls;

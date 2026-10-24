@@ -197,3 +197,7 @@ pub(crate) fn time_refusal(operation: DiagnosticOperation, issued: u64, expires:
         }
     });
 }
+
+#[cfg(target_os = "linux")]
+#[path = "../../owned-case-074/library.rs"]
+pub(crate) mod owned_case;

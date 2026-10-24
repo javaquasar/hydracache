@@ -142,6 +142,12 @@ fn cgroup_root_transport_size_flags_missing_credentials_and_fake_roots_refuse() 
 }
 #[test]
 fn cgroup_root_transport_every_bound_byte_refuses_and_closes_rights() {
+    if crate::diagnostic_ipc::validation_trace::owned_case::isolate(
+        module_path!(),
+        "cgroup_root_transport_every_bound_byte_refuses_and_closes_rights",
+    ) {
+        return;
+    }
     for offset in 0..PACKET_BYTES {
         let [reader, writer] = pipe();
         let [a, b] = socket_pair(Creator::current()).unwrap();

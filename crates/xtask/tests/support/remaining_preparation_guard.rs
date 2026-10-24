@@ -25,6 +25,13 @@ macro_rules! hc074_round_cost_view {
     ($path:expr, $source:expr) => {{
         let path: &str = $path;
         let mut raw: String = $crate::hc074_leaf_requests_view!(path, $source);
+        if path == "tools/long-run-supervisor-074/src/diagnostic_validation_trace.rs"
+            && raw.contains("pub(crate) mod owned_case;")
+        {
+            let hook = "\n#[cfg(target_os = \"linux\")]\n#[path = \"../../owned-case-074/library.rs\"]\npub(crate) mod owned_case;\n";
+            assert_eq!(raw.matches(hook).count(), 1, "exact test-only owned-case hook");
+            raw = raw.replacen(hook, "", 1);
+        }
         for (file, hooks) in [
             ("tools/long-run-supervisor-074/src/diagnostic_validation_trace.rs", &[
                 "#[cfg(target_os = \"linux\")]\n#[path = \"../tests/support/round_cost.rs\"]\npub(crate) mod round_cost;\n\n",
