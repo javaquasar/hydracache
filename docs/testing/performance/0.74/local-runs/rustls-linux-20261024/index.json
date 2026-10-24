@@ -1,0 +1,111 @@
+{
+  "facts": {
+    "filtered": 0,
+    "first_metadata_label": "rustls-linux ran Windows cargo --version only; not a Linux test",
+    "ignored": 0,
+    "kill_grace_seconds": 10,
+    "linux_old_version_baseline_rerun": false,
+    "native_timeout_seconds": 900,
+    "original_owner": false,
+    "passed": 3,
+    "platform": "local Ubuntu WSL, GNU Rust 1.94.0",
+    "qualification": false,
+    "release_admission": false,
+    "server": false,
+    "services_or_clocks_changed": false,
+    "source_commit": "e02448617c7073e499c1d6ddbf7d3330518db0ae",
+    "windows_outer_bound_seconds": 1200,
+    "windows_packet_sha256": "ed6fd42ee402c6f59f2b803097bed32ce9fa94b6d4550aa90fe47f6efa82a296"
+  },
+  "files": {
+    "coordinator/retain-rustls-linux-20261024.py": {
+      "bytes": 2831,
+      "sha256": "f040690e929fd473a947abf76a401be65e55af3dd7ff2e62d14f02fdfb277b0a"
+    },
+    "coordinator/verify-rustls-packet-20261024.py": {
+      "bytes": 1686,
+      "sha256": "1c3f57ff9fd74811e4c0a57acd34f123470b97c5c78800f38f84c0a1ba8f739a"
+    },
+    "observation/rustls-gnu194-metadata/intent.json": {
+      "bytes": 310319,
+      "sha256": "a7053e627f77614d1445f8bfce1ffef771e16ec1bf8077348b3533e4a48d0182"
+    },
+    "observation/rustls-gnu194-metadata/process.json": {
+      "bytes": 14,
+      "sha256": "b10ecfa12e5d634684fcfde9ee7fdb6fa458723a1ae903131767d8f9803db586"
+    },
+    "observation/rustls-gnu194-metadata/result.json": {
+      "bytes": 310113,
+      "sha256": "97b0ef0ee68cbfe988d8624ce7fc4ee0aca11455e49665821184854418b9886a"
+    },
+    "observation/rustls-gnu194-metadata/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/rustls-gnu194-metadata/stdout.log": {
+      "bytes": 196,
+      "sha256": "b75985398e5509a90a7d5d68f8ec6690675f703c5cfa11893b04fc9c3fceca69"
+    },
+    "observation/rustls-linux-gnu194/intent.json": {
+      "bytes": 310748,
+      "sha256": "0017138581de63bdb7cb4d49928363a23d3ad35812e709e574a07991e2e20b40"
+    },
+    "observation/rustls-linux-gnu194/process.json": {
+      "bytes": 14,
+      "sha256": "1cc60867325e6670d0216ab06090cb7bb9620c0bd633c3636f088b4d054eabc2"
+    },
+    "observation/rustls-linux-gnu194/result.json": {
+      "bytes": 310113,
+      "sha256": "628e48484c1fd19c002440c15bf68e0e8f1db3557f9745965aa67655ea982cb3"
+    },
+    "observation/rustls-linux-gnu194/stderr.log": {
+      "bytes": 6726,
+      "sha256": "45e111956a4437e49c5b264e5b2e11f57495b5791382130533d81027eb8aaf3b"
+    },
+    "observation/rustls-linux-gnu194/stdout.log": {
+      "bytes": 351,
+      "sha256": "cbeba2aad3069c77eda68fb2d10209be5b1aaf3f53c9e60677ebd9e75e7d3c10"
+    },
+    "observation/rustls-linux/intent.json": {
+      "bytes": 310153,
+      "sha256": "f930f55592949b5ccf596851b4fcda10447ef166b8270a1e8314d348c57c6a9e"
+    },
+    "observation/rustls-linux/process.json": {
+      "bytes": 14,
+      "sha256": "8a814500d1bc41640b13a32fb4be0827bd214637e25f89a41a5137d6aabb7644"
+    },
+    "observation/rustls-linux/result.json": {
+      "bytes": 310113,
+      "sha256": "d2ffb2c08ae1472e4fc127c6d979cd7e5b0c728f9f80c468abdf8b27b48e894c"
+    },
+    "observation/rustls-linux/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/rustls-linux/stdout.log": {
+      "bytes": 36,
+      "sha256": "6a36a8bf8bd42aa197681c3cbafaf785b3a6cf5ed0361cc7240a31c458d10db9"
+    },
+    "observation/rustls-packet-verification/intent.json": {
+      "bytes": 310184,
+      "sha256": "33d51e976048421a8a5f321e01c4e46394614a693483fee4d58cbaf56a0f9997"
+    },
+    "observation/rustls-packet-verification/process.json": {
+      "bytes": 14,
+      "sha256": "b6cc0314110a101aa08f31042d3926046a50d8d314cdc4c5e2b5617e758fa1e5"
+    },
+    "observation/rustls-packet-verification/result.json": {
+      "bytes": 310113,
+      "sha256": "12f056c862ecd7db3e43de85f729856940516e79779fae1b6fe70ff75ea7499a"
+    },
+    "observation/rustls-packet-verification/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "observation/rustls-packet-verification/stdout.log": {
+      "bytes": 427,
+      "sha256": "5fc18d10dd618e2e3ced4319df44c91f90b0c6e85e33d771dd4bda91343ad4d3"
+    }
+  },
+  "schema": "hc074-rustls-linux-check-v1"
+}

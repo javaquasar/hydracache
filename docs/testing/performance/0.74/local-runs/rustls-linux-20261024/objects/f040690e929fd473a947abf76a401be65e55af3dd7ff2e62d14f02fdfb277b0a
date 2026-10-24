@@ -1,0 +1,44 @@
+"""Retain Linux changed control separately from the Windows first packet."""
+from pathlib import Path
+import hashlib
+import json
+ROOT=Path(__file__).resolve().parent.parent
+RAW=ROOT/'target/security-patch-20261024'
+DEST=ROOT/'docs/testing/performance/0.74/local-runs/rustls-linux-20261024'
+phases=('rustls-linux','rustls-linux-gnu194','rustls-gnu194-metadata','rustls-packet-verification')
+for phase in phases:
+    result=json.loads((RAW/phase/'result.json').read_bytes())
+    if result['exit'] or result['outer_refusal'] or not result['source_unchanged'] or not result['commit_unchanged']:
+        raise ValueError('Separate first result differs: '+phase)
+metadata=(RAW/'rustls-gnu194-metadata/stdout.log').read_text(encoding='utf-8')
+if 'rustc 1.94.0' not in metadata or 'host: x86_64-unknown-linux-gnu' not in metadata:
+    raise ValueError('Compiler identity differs')
+out=(RAW/'rustls-linux-gnu194/stdout.log').read_text(encoding='utf-8')
+if '3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out' not in out:
+    raise ValueError('Linux selected membership differs')
+files={}
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+DEST.mkdir();(DEST/'objects').mkdir()
+def retain(name,raw):
+    key=sha(raw);path=DEST/'objects'/key
+    if not path.exists():
+        with path.open('xb') as stream:stream.write(raw)
+    elif path.read_bytes()!=raw:raise ValueError('Collision')
+    files[name]=dict(bytes=len(raw),sha256=key)
+for phase in phases:
+    for path in sorted((RAW/phase).iterdir()):
+        if path.is_file():retain('observation/'+phase+'/'+path.name,path.read_bytes())
+for name in ('verify-rustls-packet-20261024.py',Path(__file__).name):
+    retain('coordinator/'+name,(ROOT/'target'/name).read_bytes())
+facts=dict(source_commit='e02448617c7073e499c1d6ddbf7d3330518db0ae',
+    platform='local Ubuntu WSL, GNU Rust 1.94.0',passed=3,ignored=0,filtered=0,
+    native_timeout_seconds=900,kill_grace_seconds=10,windows_outer_bound_seconds=1200,
+    linux_old_version_baseline_rerun=False,original_owner=False,server=False,
+    services_or_clocks_changed=False,qualification=False,release_admission=False,
+    first_metadata_label='rustls-linux ran Windows cargo --version only; not a Linux test',
+    windows_packet_sha256='ed6fd42ee402c6f59f2b803097bed32ce9fa94b6d4550aa90fe47f6efa82a296')
+with (DEST/'index.json').open('x',encoding='utf-8',newline='\n') as stream:
+    json.dump(dict(schema='hc074-rustls-linux-check-v1',files=files,facts=facts),stream,indent=2,sort_keys=True);stream.write('\n')
+with (DEST/'.gitattributes').open('x',encoding='ascii',newline='\n') as stream:
+    stream.write('index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n')
+print(dict(files=len(files),objects=len(list((DEST/'objects').iterdir())),index_sha256=sha((DEST/'index.json').read_bytes())))

@@ -1,0 +1,30 @@
+
+running 3 tests
+test debug_oracle_rejects_payloads_and_accepts_only_absent_or_redacted_secrets ... ok
+test tls12_session_debug_redacts_secrets_without_breaking_resumption ... FAILED
+test tls13_session_debug_redacts_secrets_without_breaking_resumption ... FAILED
+
+failures:
+
+---- tls12_session_debug_redacts_secrets_without_breaking_resumption stdout ----
+
+thread 'tls12_session_debug_redacts_secrets_without_breaking_resumption' (43888) panicked at crates\hydracache-redis-compat\tests\tls_session_security_074.rs:195:5:
+assertion `left == right` failed: session Debug exposed a secret field; values deliberately not logged
+  left: 2
+ right: 0
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- tls13_session_debug_redacts_secrets_without_breaking_resumption stdout ----
+
+thread 'tls13_session_debug_redacts_secrets_without_breaking_resumption' (27248) panicked at crates\hydracache-redis-compat\tests\tls_session_security_074.rs:195:5:
+assertion `left == right` failed: session Debug exposed a secret field; values deliberately not logged
+  left: 4
+ right: 0
+
+
+failures:
+    tls12_session_debug_redacts_secrets_without_breaking_resumption
+    tls13_session_debug_redacts_secrets_without_breaking_resumption
+
+test result: FAILED. 1 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+

@@ -1,0 +1,28 @@
+"""Independent byte and exact padded advisory-ID verification."""
+from pathlib import Path
+import hashlib
+import json
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'docs/testing/performance/0.74/local-runs'
+folder=BASE/'rustls-security-20261024'
+raw=(folder/'index.json').read_bytes()
+if hashlib.sha256(raw).hexdigest()!='ed6fd42ee402c6f59f2b803097bed32ce9fa94b6d4550aa90fe47f6efa82a296':
+    raise ValueError('Sealed security index differs')
+index=json.loads(raw)
+for row in index['files'].values():
+    value=(folder/'objects'/row['sha256']).read_bytes()
+    if len(value)!=row['bytes'] or hashlib.sha256(value).hexdigest()!=row['sha256']:
+        raise ValueError('Sealed object differs')
+old=(BASE/'local-milestone-20261024/index.json').read_bytes()
+if hashlib.sha256(old).hexdigest()!='77fbc293a2f9dc4c10cea302375af693f9331fea422b4b10e39350d3aa785e8a':
+    raise ValueError('Baseline policy index differs')
+removed={f'RUSTSEC-2026-{number:04d}' for number in (346,347,348,349)}
+expected=set(json.loads(old)['facts']['dependency_advisories'])-removed
+def accepts(ids): return isinstance(ids,list) and len(ids)==11 and len(set(ids))==11 and set(ids)==expected
+actual=index['facts']['remaining_advisories']
+if not accepts(actual): raise ValueError('Exact remaining ID set differs')
+for bad in [actual[:-1],actual+[actual[0]],['RUSTSEC-2026-0346']+actual[1:],
+            ['RUSTSEC-2026-346']+actual[1:]]:
+    if accepts(bad): raise ValueError('ID mutation accepted')
+print(dict(members=len(index['files']),objects=len({row['sha256'] for row in index['files'].values()}),
+    exact_remaining_advisories=sorted(expected),removed_advisories=sorted(removed),negative_controls=4))

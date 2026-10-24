@@ -1,0 +1,86 @@
+"""Seal an isolated security delta and first results; no release admission."""
+from pathlib import Path
+import hashlib
+import json
+import re
+import subprocess
+import tomllib
+
+ROOT=Path(__file__).resolve().parent.parent
+RAW=ROOT/'target/security-patch-20261024'
+DEST=ROOT/'docs/testing/performance/0.74/local-runs/rustls-security-20261024'
+def read(path): return json.loads(path.read_bytes())
+def sha(raw): return hashlib.sha256(raw).hexdigest()
+phases=('rustls-baseline','rustls-baseline-cache32','rustls-update','rustls-candidate',
+    'rustls-resp-regression','rustls-msrv','rustls-policy','rustls-server-mtls',
+    'rustls-strict-check','rustls-strict-clippy','rustls-native-daemon')
+results={name:read(RAW/name/'result.json') for name in phases}
+for name,result in results.items():
+    expected=101 if name.startswith('rustls-baseline') else 1 if name=='rustls-policy' else 0
+    if result['exit']!=expected or result['outer_refusal'] is not None or not result['commit_unchanged']:
+        raise ValueError('Unexpected first outcome: '+name)
+    if name!='rustls-update' and not result['source_unchanged']:
+        raise ValueError('Source drift: '+name)
+old_lock=tomllib.loads((RAW/'rustls-baseline-cache32/Cargo.lock').read_text(encoding='utf-8'))
+new_lock=tomllib.loads((ROOT/'Cargo.lock').read_text(encoding='utf-8'))
+old_node=next(row for row in old_lock['package'] if row['name']=='rustls')
+new_node=next(row for row in new_lock['package'] if row['name']=='rustls')
+if (old_node['version'],new_node['version'])!=('0.23.45','0.23.46'):
+    raise ValueError('Unexpected rustls versions')
+old_node.update(version=new_node['version'],checksum=new_node['checksum'])
+if old_lock!=new_lock: raise ValueError('Unrelated dependency delta')
+manifest_before=(RAW/'rustls-baseline-cache32/Cargo.toml').read_text(encoding='utf-8')
+manifest_after=(ROOT/'Cargo.toml').read_text(encoding='utf-8')
+if manifest_before.replace('rustls = "0.23.41"','rustls = "0.23.46"',1)!=manifest_after:
+    raise ValueError('Unrelated manifest delta')
+source=ROOT/'crates/hydracache-redis-compat/tests/tls_session_security_074.rs'
+if source.read_bytes()!=(RAW/'rustls-baseline-cache32/test-source.rs').read_bytes():
+    raise ValueError('Baseline/candidate oracle drift')
+proper=(RAW/'rustls-baseline-cache32/stdout.log').read_text(encoding='utf-8')
+if proper.count('session Debug exposed a secret field; values deliberately not logged')!=2:
+    raise ValueError('Baseline did not reach both secrecy oracles')
+policy=(RAW/'rustls-policy/stderr.log').read_text(encoding='utf-8')
+ids=re.findall(r'ID: (RUSTSEC-[0-9-]+)',policy)
+if len(ids)!=11 or any('RUSTSEC-2026-'+str(num) in ids for num in (346,347,348,349)):
+    raise ValueError('Policy outcome differs')
+db=Path('C:/Users/ArturBuzov/.cargo/advisory-dbs/advisory-db-3157b0e258782691')
+db_commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=db,text=True).strip()
+if db_commit!='84d943a6deeb8cc6c6f632531aaf4f1c62275239' or subprocess.check_output(['git','status','--porcelain'],cwd=db):
+    raise ValueError('Advisory database identity changed')
+counts={}
+for name in ('rustls-candidate','rustls-resp-regression','rustls-msrv','rustls-server-mtls','rustls-native-daemon'):
+    text=(RAW/name/'stdout.log').read_text(encoding='utf-8')
+    rows=[tuple(map(int,row)) for row in re.findall(r'test result: ok\. (\d+) passed; (\d+) failed; (\d+) ignored; (\d+) measured; (\d+) filtered out;',text)]
+    counts[name]=dict(target_results=len(rows),totals=[sum(row[i] for row in rows) for i in range(5)])
+    if not rows or counts[name]['totals'][1]: raise ValueError('Missing passing verdict: '+name)
+if sha((ROOT/'docs/testing/performance/0.74/qualification-manifest.toml').read_bytes())!='11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc':
+    raise ValueError('Admission identity changed')
+facts=dict(source_commit='e02448617c7073e499c1d6ddbf7d3330518db0ae',
+    old_version='0.23.45',new_version='0.23.46',unrelated_lock_delta=False,
+    msrv='1.88',platform='x86_64-pc-windows-msvc',counts=counts,
+    remaining_advisories=ids,advisory_database_commit=db_commit,
+    full_policy_pass=False,full_verify_pass=False,release_admission=False,
+    server_actions=False,services_or_clocks_changed=False,qualification=False,
+    earlier_baseline_fixture_refusal_preserved=True,
+    coordinator_retained='final variant; pre-lock-mutation variant not separately captured',
+    baseline_and_candidate_oracle_bytes_identical=True)
+DEST.mkdir();(DEST/'objects').mkdir();files={}
+def retain(name,raw):
+    digest=sha(raw);path=DEST/'objects'/digest
+    if not path.exists():
+        with path.open('xb') as stream:stream.write(raw)
+    elif path.read_bytes()!=raw:raise ValueError('Content collision')
+    files[name]=dict(bytes=len(raw),sha256=digest)
+for name in phases:
+    for path in sorted((RAW/name).iterdir()):
+        if path.is_file():retain('observation/'+name+'/'+path.name,path.read_bytes())
+for name in ('Cargo.toml','Cargo.lock','deny.toml',source.relative_to(ROOT).as_posix()):
+    retain('candidate/'+name,(ROOT/name).read_bytes())
+for name in ('run-security-step-20261024.py',Path(__file__).name):
+    retain('coordinator/'+name,(ROOT/'target'/name).read_bytes())
+retain('analysis/facts.json',(json.dumps(facts,indent=2,sort_keys=True)+'\n').encode())
+with (DEST/'index.json').open('x',encoding='utf-8',newline='\n') as stream:
+    json.dump(dict(schema='hc074-rustls-security-v1',files=files,facts=facts),stream,indent=2,sort_keys=True);stream.write('\n')
+with (DEST/'.gitattributes').open('x',encoding='ascii',newline='\n') as stream:
+    stream.write('index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n')
+print(dict(files=len(files),objects=len(list((DEST/'objects').iterdir())),index_sha256=sha((DEST/'index.json').read_bytes()),counts=counts))

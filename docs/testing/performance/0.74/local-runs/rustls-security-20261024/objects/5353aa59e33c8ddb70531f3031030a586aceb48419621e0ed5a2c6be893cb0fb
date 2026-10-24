@@ -1,0 +1,4 @@
+    Blocking waiting for file lock on artifact directory
+   Compiling hydracache-server v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-server)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2m 52s
+     Running tests\hc2_daemon_process.rs (target\debug\deps\hc2_daemon_process-a8ca9ee8840cdb57.exe)

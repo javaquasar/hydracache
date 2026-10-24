@@ -1,0 +1,83 @@
+{
+  "advisory_database_commit": "84d943a6deeb8cc6c6f632531aaf4f1c62275239",
+  "baseline_and_candidate_oracle_bytes_identical": true,
+  "coordinator_retained": "final variant; pre-lock-mutation variant not separately captured",
+  "counts": {
+    "rustls-candidate": {
+      "target_results": 1,
+      "totals": [
+        3,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "rustls-msrv": {
+      "target_results": 1,
+      "totals": [
+        3,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "rustls-native-daemon": {
+      "target_results": 1,
+      "totals": [
+        4,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "rustls-resp-regression": {
+      "target_results": 15,
+      "totals": [
+        181,
+        0,
+        23,
+        0,
+        0
+      ]
+    },
+    "rustls-server-mtls": {
+      "target_results": 1,
+      "totals": [
+        11,
+        0,
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  "earlier_baseline_fixture_refusal_preserved": true,
+  "full_policy_pass": false,
+  "full_verify_pass": false,
+  "msrv": "1.88",
+  "new_version": "0.23.46",
+  "old_version": "0.23.45",
+  "platform": "x86_64-pc-windows-msvc",
+  "qualification": false,
+  "release_admission": false,
+  "remaining_advisories": [
+    "RUSTSEC-2026-0382",
+    "RUSTSEC-2026-0386",
+    "RUSTSEC-2024-0449",
+    "RUSTSEC-2026-0383",
+    "RUSTSEC-2026-0381",
+    "RUSTSEC-2026-0371",
+    "RUSTSEC-2026-0367",
+    "RUSTSEC-2026-0368",
+    "RUSTSEC-2026-0369",
+    "RUSTSEC-2026-0370",
+    "RUSTSEC-2026-0372"
+  ],
+  "server_actions": false,
+  "services_or_clocks_changed": false,
+  "source_commit": "e02448617c7073e499c1d6ddbf7d3330518db0ae",
+  "unrelated_lock_delta": false
+}

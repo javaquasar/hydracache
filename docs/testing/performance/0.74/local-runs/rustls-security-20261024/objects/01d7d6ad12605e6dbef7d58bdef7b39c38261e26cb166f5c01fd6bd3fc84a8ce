@@ -1,0 +1,8 @@
+ Downloading crates ...
+  Downloaded rustls v0.23.46
+   Compiling rustls v0.23.46
+   Compiling tokio-rustls v0.26.4
+   Compiling redis v1.3.0
+   Compiling hydracache-redis-compat v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-redis-compat)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 24.41s
+     Running tests\tls_session_security_074.rs (target\debug\deps\tls_session_security_074-bbbf63dfaf0720f9.exe)

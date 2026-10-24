@@ -1,0 +1,9 @@
+
+running 4 tests
+test port_conflict_fails_before_any_listener_accepts ... ok
+test real_daemon_shares_hc1_hc2_dispatch_and_exits_on_drain ... ok
+test reserved_listener_addresses_are_distinct_and_held ... ok
+test unreadable_hc2_tls_fails_before_readiness_or_listener_startup ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.80s
+
