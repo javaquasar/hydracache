@@ -225,3 +225,45 @@ green; real caller admission, independent production pin provenance, Linux
 coverage, preparation cost and the old incomplete package/release gates remain
 open. A final ref/config comparison alone still cannot exclude ABA, and fresh
 live observations must not be removed during any later integration.
+
+## Census caller provenance and local Linux checks
+
+`caller_pins.py` prepares only the two blob pins used by the unchanged
+`census_provider_input::frozen`. BASE uses the existing normalized SHA256 contract
+only after proving raw bytes are canonical LF; the complete contract identity is
+checked against the earlier sealed census intent. REVIEWED uses the earlier
+sealed inventory's exact blob ID, length and canonical SHA256. The packet/index,
+inventory and caller are verified before Git. A raw blob ID is derived only after
+the independent byte hash matches. These are existing test-source trust anchors,
+not production issuer keys or server enrollment.
+
+`historical_blob_caller_074` invokes the actual old caller in disposable child
+processes, without editing or redirecting it. Clean-profile native reads match
+both pinned bodies, and original/acceptance/view behavior remains exact. But
+child-local `GIT_TRACE=1` is a counterexample: the old caller accepts success and
+ignores captured stderr, while native batch admission returns `Process`.
+Characterization passes on current/MSRV; **caller admission remains false**.
+Conditional read order, ambient environment/config and error compatibility must
+be addressed explicitly before any integration or preplanned batching.
+
+`linux_session.py` checks exact copied component sources in a private temporary
+fixture using already installed GNU 1.94/1.88 toolchains and offline packages.
+Its minimal `linux-fixture.toml` is not the workspace manifest or package gate.
+All 33 resolved package identities/checksums must belong to the existing root
+lock. The first `generate-lockfile` attempt correctly refused a foreign bitflags
+resolution before building; the corrected seed uses ordinary metadata resolution
+from the old lock with the same strict subset gate. Both first outcomes remain
+retained. No dependency is fetched or installed and the root lock is untouched.
+
+The local WSL session passes all 20 component cases per toolchain, including both
+six-profile/54-result oracles. It records clocks/boot, exact inputs, phase outputs
+and cleanup; both own temporary roots are removed. No stopped distro, service,
+clock or server is changed. WSL's MONOTONIC/RAW disagreement remains recorded:
+these are Linux byte/process semantics, not fresh-clock or production admission.
+The concrete caller audit runs separately in the real Windows checkout; a Linux
+component pass does not prove Linux caller/environment equivalence.
+
+See the [caller and Linux report](../../docs/testing/performance/0.74/historical-blob-caller-linux-result-20261024.md)
+for exact sources and first refusals. The new Python suite has 39 controls;
+current check/strict lint and the unchanged caller's regression controls pass.
+No runtime loader is integrated or numerical performance claim made.

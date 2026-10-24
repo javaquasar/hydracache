@@ -1,0 +1,26 @@
+# Generated fixture uses only versions already selected by the repository lock.
+# It is not a replacement workspace/package gate or a dependency-baseline update.
+[package]
+name = "hc074-historical-blob-linux-fixture"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[workspace]
+
+[dependencies]
+sha2 = "=0.10.9"
+serde_json = "=1.0.150"
+tempfile = "=3.27.0"
+
+[[test]]
+name = "historical_blob_batch_074"
+path = "tests/historical_blob_batch_074.rs"
+
+[[test]]
+name = "historical_blob_fault_074"
+path = "tests/historical_blob_fault_074.rs"
+
+[[test]]
+name = "historical_blob_transport_074"
+path = "tests/historical_blob_transport_074.rs"
