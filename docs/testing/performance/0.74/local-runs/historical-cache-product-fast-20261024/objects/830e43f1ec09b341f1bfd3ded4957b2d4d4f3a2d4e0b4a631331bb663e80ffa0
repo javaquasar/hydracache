@@ -1,0 +1,64 @@
+"""Seal immutable source-cache controls and ordinary product correctness logs."""
+from pathlib import Path
+import hashlib
+import json
+import re
+import subprocess
+
+ROOT=Path(__file__).resolve().parent.parent
+RAW=ROOT/'target/status-field-scan-20261024'
+DEST=ROOT/'docs/testing/performance/0.74/local-runs/historical-cache-product-fast-20261024'
+def sha(raw): return hashlib.sha256(raw).hexdigest()
+def read(path): return json.loads(path.read_bytes())
+if read(RAW/'historical-cache-complete-result.json')['Exit'] or read(RAW/'historical-cache-lint-result.json')['Exit']:
+    raise ValueError('Historical/current source gate incomplete')
+source=(RAW/'historical-cache-complete.log').read_text()
+if '321 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out;' not in source:
+    raise ValueError('Old source-cohort membership changed')
+product=RAW/'product-fast-first'
+result=read(product/'result.json')
+if result['exit'] or result['timed_out'] or read(product/'intent.json')['opt_in_environment_names']:
+    raise ValueError('Ordinary product gate incomplete or opted into external work')
+counts=[tuple(map(int,row)) for row in re.findall(r'test result: ok\. (\d+) passed; (\d+) failed; (\d+) ignored; (\d+) measured; (\d+) filtered out;', (product/'stdout.log').read_text())]
+if len(counts)!=23 or tuple(sum(row[i] for row in counts) for i in range(5))!=(251,0,25,0,0):
+    raise ValueError('Ordinary first product membership changed')
+if subprocess.check_output(['git','diff','8fb0fb5a','--','Cargo.lock','crates/hydracache',
+    'crates/hydracache-redis-compat','crates/hydracache-client-transport-axum'],cwd=ROOT):
+    raise ValueError('Unrelated product or lock changed')
+facts=dict(source_cache_commit='25faa7bb', old_source_cohort=dict(passed=321,failed=0,ignored=0,filtered=0),
+    standalone_controls=5,integrated_extra_controls=17, immutable_key_loader_calls=1,
+    same_key_sequential_lookups=64, same_key_concurrent_callers=16, current_files_cached=False,
+    preliminary_elapsed_seconds=dict(predecessor=537.81,candidate=505.35,paired=False,repeatable_speedup_claim=False),
+    ordinary_product=dict(target_results=counts,targets=23,passed=251,ignored=25,failed=0,filtered=0,
+        real_external_opt_ins=False,benchmark=False),
+    runtime_observation_frequency_changed=False,windows_changed=False,server=False,services=False,
+    clocks_changed=False,original_owner_manual_run=False,admission=False,release_ready=False)
+DEST.mkdir(); (DEST/'objects').mkdir(); files={}
+def retain(name,raw):
+    digest=sha(raw); target=DEST/'objects'/digest
+    if not target.exists():
+        with target.open('xb') as stream: stream.write(raw)
+    elif target.read_bytes()!=raw: raise ValueError('Collision')
+    files[name]=dict(bytes=len(raw),sha256=digest)
+for path in sorted(RAW.glob('historical-cache-*')):
+    if path.is_file() and path.suffix!='.exe': retain('observation/'+path.name,path.read_bytes())
+for path in sorted(product.iterdir()):
+    if path.is_file(): retain('observation/product-fast-first/'+path.name,path.read_bytes())
+for scope in ('tools/historical-source-cache-074','tools/historical-input-view-074'):
+    for path in sorted((ROOT/scope).rglob('*')):
+        if path.is_file(): retain('source/'+path.relative_to(ROOT).as_posix(),path.read_bytes())
+for name in ('tools/authority-runtime-074/gate.rs','crates/xtask/tests/historical_source_cache_074.rs',
+    'crates/xtask/tests/historical_input_view_074.rs','docs/testing/performance/0.74/historical-source-cache-plan-20261024.md',
+    'target/status-field-scan-20261024/run-product-fast-once.py'):
+    retain('source/'+name,(ROOT/name).read_bytes())
+retain('coordinator/'+Path(__file__).name,Path(__file__).read_bytes())
+retain('analysis/facts.json',(json.dumps(facts,indent=2,sort_keys=True)+'\n').encode())
+index=dict(schema='hc074-historical-cache-product-fast-v1',files=files,facts=facts)
+with (DEST/'index.json').open('x',encoding='utf-8',newline='\n') as stream:
+    json.dump(index,stream,indent=2,sort_keys=True); stream.write('\n')
+with (DEST/'.gitattributes').open('x',encoding='ascii',newline='\n') as stream:
+    stream.write('index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n')
+for row in files.values():
+    raw=(DEST/'objects'/row['sha256']).read_bytes()
+    if len(raw)!=row['bytes'] or sha(raw)!=row['sha256']: raise ValueError('Retained object mismatch')
+print(dict(files=len(files),objects=len(list((DEST/'objects').iterdir())),index_sha256=sha((DEST/'index.json').read_bytes())))

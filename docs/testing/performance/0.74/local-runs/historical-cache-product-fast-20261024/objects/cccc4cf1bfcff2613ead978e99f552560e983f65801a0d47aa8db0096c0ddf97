@@ -1,0 +1,37 @@
+"""Ordinary local product correctness only, no benchmark or external opt-in."""
+from pathlib import Path
+import json
+import os
+import subprocess
+import time
+
+ROOT = Path(__file__).resolve().parents[2]
+OUT = Path(__file__).parent / 'product-fast-first'
+OUT.mkdir()
+argv = ['cargo', 'test', '--offline', '--locked', '-p', 'hydracache-redis-compat',
+        '-p', 'hydracache-client-transport-axum', '--lib', '--tests', '--', '--test-threads=4']
+flags = [name for name in os.environ if name.startswith(('HYDRACACHE_RUN', 'HYDRACACHE_REQUIRE',
+         'HYDRACACHE_FORCE', 'HYDRACACHE_CANARY', 'HYDRACACHE_BENCH')) or name == 'DOCKER_HOST']
+(OUT / 'intent.json').write_text(json.dumps(dict(argv=argv, opt_in_environment_names=flags,
+    timeout_seconds=1800, benchmark=False, expensive_opt_in=False, server=False,
+    started_unix=time.time(), source_commit=subprocess.check_output(
+        ['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()), indent=2), encoding='utf-8')
+if flags:
+    raise SystemExit('External opt-in environment present; refuse without changing it')
+env = dict(os.environ, CARGO_INCREMENTAL='0')
+with (OUT / 'stdout.log').open('xb') as stdout, (OUT / 'stderr.log').open('xb') as stderr:
+    process = subprocess.Popen(argv, cwd=ROOT, env=env, stdout=stdout, stderr=stderr)
+    timed_out = False
+    try:
+        code = process.wait(timeout=1800)
+    except subprocess.TimeoutExpired:
+        timed_out = True
+        with (OUT / 'owned-timeout-cleanup.log').open('xb') as log:
+            subprocess.run(['taskkill', '/PID', str(process.pid), '/T', '/F'],
+                stdout=log, stderr=subprocess.STDOUT, check=False, timeout=30)
+        code = process.wait(timeout=30)
+receipt = dict(exit=code, timed_out=timed_out, ended_unix=time.time(),
+               original_owner_manual_run=False, benchmark=False, server=False, admission=False)
+(OUT / 'result.json').write_text(json.dumps(receipt, indent=2), encoding='utf-8')
+print(json.dumps(receipt), flush=True)
+raise SystemExit(code or int(timed_out))

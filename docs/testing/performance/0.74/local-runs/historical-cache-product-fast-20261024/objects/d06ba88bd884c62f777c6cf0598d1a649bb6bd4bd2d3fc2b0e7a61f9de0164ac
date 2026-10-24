@@ -1,0 +1,118 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+warning: constant `SOURCE` is never used
+ --> crates\xtask\tests\..\..\..\tools\authority-storage-source-074\contract.rs:4:11
+  |
+4 | pub const SOURCE: &str = "33c54b0cda8c330b115009cdf092ad002077cedf";
+  |           ^^^^^^
+  |
+  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: constant `FIXTURE` is never used
+ --> crates\xtask\tests\..\..\..\tools\authority-storage-source-074\contract.rs:5:11
+  |
+5 | pub const FIXTURE: &str = "tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs";
+  |           ^^^^^^^
+
+warning: constant `OBSERVER` is never used
+ --> crates\xtask\tests\..\..\..\tools\authority-storage-source-074\contract.rs:6:11
+  |
+6 | pub const OBSERVER: &str =
+  |           ^^^^^^^^
+
+warning: function `replace` is never used
+ --> crates\xtask\tests\..\..\..\tools\authority-storage-source-074\contract.rs:9:4
+  |
+9 | fn replace(source: &str, old: &str, new: &str, count: usize) -> String {
+  |    ^^^^^^^
+
+warning: function `section` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-storage-source-074\contract.rs:17:4
+   |
+17 | fn section<'a>(source: &'a str, begin: &str, end: &str) -> &'a str {
+   |    ^^^^^^^
+
+warning: constant `SELECT` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-storage-source-074\contract.rs:25:7
+   |
+25 | const SELECT: &str = "match slot.take() {
+   |       ^^^^^^
+
+warning: constant `RETAIN` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-storage-source-074\contract.rs:32:7
+   |
+32 | const RETAIN: &str =
+   |       ^^^^^^
+
+warning: constant `WRAPPER` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-storage-source-074\contract.rs:37:7
+   |
+37 | const WRAPPER: &str = "        let result = self.validate(dir, uid, gid, budget);
+   |       ^^^^^^^
+
+warning: constant `EVICT` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-storage-source-074\contract.rs:44:7
+   |
+44 | const EVICT: &str = "    fn evict_scratch(&mut self) {
+   |       ^^^^^
+
+warning: constant `JOURNAL_EVICT` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-storage-source-074\contract.rs:48:7
+   |
+48 | const JOURNAL_EVICT: &str = "    pub(crate) fn latch_refusal(&mut self) {
+   |       ^^^^^^^^^^^^^
+
+warning: function `candidate` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-storage-source-074\contract.rs:60:8
+   |
+60 | pub fn candidate(baseline: &str) -> String {
+   |        ^^^^^^^^^
+
+warning: function `observer` is never used
+   --> crates\xtask\tests\..\..\..\tools\authority-storage-source-074\contract.rs:129:8
+    |
+129 | pub fn observer(baseline: &str) -> String {
+    |        ^^^^^^^^
+
+warning: `xtask` (test "historical_source_cache_074") generated 12 warnings
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.39s
+     Running tests\authority_runtime_074.rs (target\debug\deps\authority_runtime_074-b34664d35eca545a.exe)
+
+running 5 tests
+test full_contract_adapters_change_only_one_preservation_reader_per_module ... ok
+test legacy_adapters_preserve_complete_prior_test_bodies_and_assertions ... ok
+test baseline_partial_install_and_unrelated_effects_refuse_before_restoration ... ok
+test installed_runtime_is_the_exact_candidate_and_explicit_compatibility_set ... ok
+test approved_predecessor_views_do_not_replace_current_runtime_validation ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.55s
+
+     Running tests\historical_input_view_074.rs (target\debug\deps\historical_input_view_074-52402be9b85f3031.exe)
+
+running 3 tests
+test historical_input_list_covers_all_changed_old_files_except_the_existing_exact_authority_gate ... ok
+test historical_inputs_require_the_complete_reviewed_current_file_before_predecessor ... ok
+test historical_input_reader_is_one_exact_additive_verified_branch ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.19s
+
+     Running tests\historical_source_cache_074.rs (target\debug\deps\historical_source_cache_074-3a536e6e160af238.exe)
+
+running 7 tests
+test controls::tests::loader_can_read_another_key_without_holding_the_index_lock ... ok
+test controls::tests::revisions_paths_and_cache_instances_do_not_share_entries ... ok
+test controls::tests::failed_loader_never_publishes_partial_data_or_poisons_other_keys ... ok
+test controls::tests::same_immutable_key_loads_once_and_returned_strings_are_independent ... ok
+test controls::tests::concurrent_same_key_runs_one_complete_loader ... ok
+test reviewed_inputs_delegate_only_their_exact_frozen_lookup ... ok
+test immutable_source_cache_changes_only_the_historical_loader_not_current_validation ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s
+
+     Running tests\status_field_scan_074.rs (target\debug\deps\status_field_scan_074-cbd6d40f5f9defea.exe)
+
+running 2 tests
+test status_field_scan_exact_current_source_precedes_any_historical_view ... ok
+test status_field_scan_refuses_removed_guards_reads_order_and_helper_drift ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.42s
+

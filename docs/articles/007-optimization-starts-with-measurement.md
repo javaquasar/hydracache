@@ -18896,3 +18896,19 @@ the oracle's scope. The next candidate must isolate only the FD-sensitive case,
 preserve its actual assertions and deadlines, and prove exact child selection,
 bounded owned cleanup and no retry. Kernel/time failures remain separately open;
 a test-harness correction must not be presented as production writer retirement.
+
+### Reuse immutable history without caching live observations
+
+A separate [source-test cache](../testing/performance/0.74/historical-source-cache-result-20261024.md)
+retains complete blobs by full Git commit ID and path. Its controlled loader
+runs once for repeated or concurrent same-key callers, while every current file
+is still read and validated anew. It cannot cache credentials, policy or kernel
+facts, and lives in the source-test process rather than a measured process.
+All 321 old assertions remain selected and passing. Two unpaired suite times
+are retained as observations, not advertised as a repeatable speedup.
+
+The ordinary RESP/client-surface tests also pass independently. That establishes
+their checked correctness, not a throughput floor or acceptance of any rejected
+product hypothesis. Source checks, fixture corrections, performance evidence and
+actual launch authority remain different gates even when all are needed for the
+same release.

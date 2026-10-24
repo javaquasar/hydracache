@@ -1,0 +1,201 @@
+{
+  "admission": false,
+  "clocks_changed": false,
+  "current_files_cached": false,
+  "immutable_key_loader_calls": 1,
+  "integrated_extra_controls": 17,
+  "old_source_cohort": {
+    "failed": 0,
+    "filtered": 0,
+    "ignored": 0,
+    "passed": 321
+  },
+  "ordinary_product": {
+    "benchmark": false,
+    "failed": 0,
+    "filtered": 0,
+    "ignored": 25,
+    "passed": 251,
+    "real_external_opt_ins": false,
+    "target_results": [
+      [
+        10,
+        0,
+        1,
+        0,
+        0
+      ],
+      [
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        18,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        24,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        3,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        3,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        3,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        5,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        3,
+        0,
+        1,
+        0,
+        0
+      ],
+      [
+        104,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        4,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        5,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        2,
+        0,
+        21,
+        0,
+        0
+      ],
+      [
+        16,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        3,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        11,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        5,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        5,
+        0,
+        2,
+        0,
+        0
+      ],
+      [
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        19,
+        0,
+        0,
+        0,
+        0
+      ]
+    ],
+    "targets": 23
+  },
+  "original_owner_manual_run": false,
+  "preliminary_elapsed_seconds": {
+    "candidate": 505.35,
+    "paired": false,
+    "predecessor": 537.81,
+    "repeatable_speedup_claim": false
+  },
+  "release_ready": false,
+  "runtime_observation_frequency_changed": false,
+  "same_key_concurrent_callers": 16,
+  "same_key_sequential_lookups": 64,
+  "server": false,
+  "services": false,
+  "source_cache_commit": "25faa7bb",
+  "standalone_controls": 5,
+  "windows_changed": false
+}

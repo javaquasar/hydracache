@@ -1,0 +1,23 @@
+{
+  "argv": [
+    "cargo",
+    "test",
+    "--offline",
+    "--locked",
+    "-p",
+    "hydracache-redis-compat",
+    "-p",
+    "hydracache-client-transport-axum",
+    "--lib",
+    "--tests",
+    "--",
+    "--test-threads=4"
+  ],
+  "opt_in_environment_names": [],
+  "timeout_seconds": 1800,
+  "benchmark": false,
+  "expensive_opt_in": false,
+  "server": false,
+  "started_unix": 1792799407.598559,
+  "source_commit": "11ad3be93313644c53cd6fdd20a98a3909763bd3"
+}

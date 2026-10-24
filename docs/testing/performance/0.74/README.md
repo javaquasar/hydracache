@@ -6724,3 +6724,11 @@ entry/API targets. These remain separate from original-start, retirement and
 release admission. Two owned FD counterexamples support a narrowly isolated
 oracle repair, not a recovered pass. Additional reversible PDB compression leaves
 about 30 GiB free while preserving files and pinned images.
+
+The [immutable historical lookup cache](historical-source-cache-result-20261024.md)
+deduplicates only pinned Git blobs, not current files or live observations. Its
+source-delta/mutation controls and all 321 old source assertions pass. Separate
+ordinary Windows RESP/client-surface checks pass 251 cases across 23 targets;
+25 ignored cases stay ignored. The retained single source-gate times are not a
+repeatable speedup claim, and none of these results opens original delivery or
+changes the still-red supervisor entry/lifecycle status.

@@ -1,0 +1,50 @@
+   Compiling hydracache-macros v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-macros)
+   Compiling hydracache-core v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-core)
+   Compiling hydra-moka v0.12.15-hydra.1
+   Compiling tower v0.5.3
+   Compiling hydracache-client-protocol v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-client-protocol)
+   Compiling regex-automata v0.4.14
+   Compiling axum v0.8.9
+   Compiling hydracache v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache)
+   Compiling tempfile v3.27.0
+   Compiling bytes-utils v0.1.4
+   Compiling regex v1.12.4
+   Compiling rusty-fork v0.3.1
+   Compiling redis-protocol v6.0.0
+   Compiling rand_chacha v0.9.0
+   Compiling proptest v1.11.0
+   Compiling protobuf-build v0.14.1
+   Compiling rcgen v0.14.8
+   Compiling tokio-stream v0.1.18
+   Compiling raft-proto v0.7.0
+   Compiling chitchat v0.11.1
+   Compiling raft v0.7.0
+   Compiling hydracache-observability v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-observability)
+   Compiling hydracache-cluster-raft v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-cluster-raft)
+   Compiling hydracache-cluster-testkit v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-cluster-testkit)
+   Compiling hydracache-client-transport-axum v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-client-transport-axum)
+   Compiling hydracache-redis-compat v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-redis-compat)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 13s
+     Running unittests src\lib.rs (target\debug\deps\hydracache_client_transport_axum-8941040e30b2a948.exe)
+     Running tests\cancellation_safety.rs (target\debug\deps\cancellation_safety-2ccb743ba664a1c5.exe)
+     Running tests\client_surface.rs (target\debug\deps\client_surface-2e55f0df2de055c4.exe)
+     Running tests\client_surface_conformance.rs (target\debug\deps\client_surface_conformance-e5a25c22cdb998fd.exe)
+     Running tests\memory_admission_071.rs (target\debug\deps\memory_admission_071-a933477e754bea10.exe)
+     Running tests\mutation_events.rs (target\debug\deps\mutation_events-f37a884a6d115cee.exe)
+     Running tests\native_hot_path_074.rs (target\debug\deps\native_hot_path_074-873aa7545f576f05.exe)
+     Running tests\native_semantic_concurrency_074.rs (target\debug\deps\native_semantic_concurrency_074-e906435b380a6ddb.exe)
+     Running tests\protocol_compat.rs (target\debug\deps\protocol_compat-9eccb91db774634a.exe)
+     Running tests\retention_bounds_071.rs (target\debug\deps\retention_bounds_071-a1cb2e7c33983696.exe)
+     Running unittests src\lib.rs (target\debug\deps\hydracache_redis_compat-920969397d14f70b.exe)
+     Running tests\connection_chaos.rs (target\debug\deps\connection_chaos-c22317efeff522a5.exe)
+     Running tests\redis_batch_execution_074.rs (target\debug\deps\redis_batch_execution_074-3ca559e16abce3b5.exe)
+     Running tests\redis_clients.rs (target\debug\deps\redis_clients-67842b0710f1b24f.exe)
+     Running tests\redis_event_listeners.rs (target\debug\deps\redis_event_listeners-9982875367c75cfd.exe)
+     Running tests\redis_mined_edge_corpus.rs (target\debug\deps\redis_mined_edge_corpus-5d6b03f31b2b06b8.exe)
+     Running tests\resp_adaptive_coalescing_074.rs (target\debug\deps\resp_adaptive_coalescing_074-27b72f764003e5ad.exe)
+     Running tests\resp_boundaries.rs (target\debug\deps\resp_boundaries-5f0501912b7b6d4d.exe)
+     Running tests\resp_get_owner_074.rs (target\debug\deps\resp_get_owner_074-8fc9eca4711175a8.exe)
+     Running tests\resp_pipeline_attribution_074.rs (target\debug\deps\resp_pipeline_attribution_074-9e596859d5ce742b.exe)
+     Running tests\resp_resource_smoke.rs (target\debug\deps\resp_resource_smoke-9568daf0070b5856.exe)
+     Running tests\resp_staged_order_model_074.rs (target\debug\deps\resp_staged_order_model_074-7c86ee2dae5a9fab.exe)
+     Running tests\resp_transport_adversarial_074.rs (target\debug\deps\resp_transport_adversarial_074-1264c8387e079848.exe)

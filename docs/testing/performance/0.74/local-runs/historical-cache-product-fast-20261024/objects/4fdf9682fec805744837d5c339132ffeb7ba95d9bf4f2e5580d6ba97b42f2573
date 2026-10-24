@@ -1,0 +1,10 @@
+
+running 5 tests
+test tests::loader_can_read_another_key_without_holding_the_index_lock ... ok
+test tests::failed_loader_never_publishes_partial_data_or_poisons_other_keys ... ok
+test tests::revisions_paths_and_cache_instances_do_not_share_entries ... ok
+test tests::same_immutable_key_loads_once_and_returned_strings_are_independent ... ok
+test tests::concurrent_same_key_runs_one_complete_loader ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
