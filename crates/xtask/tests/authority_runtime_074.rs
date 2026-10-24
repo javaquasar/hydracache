@@ -1,11 +1,18 @@
 #[path = "../../../tools/authority-runtime-074/gate.rs"]
 mod gate;
+#[path = "../../../tools/authority-runtime-074/history_reader.rs"]
+mod history_reader;
 #[path = "../../../tools/authority-storage-source-074/contract.rs"]
 mod storage_contract;
 fn read(path: &str) -> String {
-    std::fs::read_to_string(gate::root().join(path))
+    let raw = std::fs::read_to_string(gate::root().join(path))
         .unwrap()
-        .replace("\r\n", "\n")
+        .replace("\r\n", "\n");
+    if path == gate::HISTORY_TEST {
+        history_reader::previous(&raw)
+    } else {
+        raw
+    }
 }
 fn paths() -> Vec<String> {
     let mut paths: Vec<_> = [

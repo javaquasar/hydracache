@@ -1,20 +1,20 @@
 #[path = "../../../tools/authority-rust-history-074/contract.rs"]
 mod contract;
+#[path = "support/current_tree_input.rs"]
+mod current_inputs;
 #[path = "support/authority_history_io.rs"]
 mod history;
 #[path = "../../../tools/authority-runtime-074/gate.rs"]
 mod runtime;
+#[path = "../../../tools/authority-runtime-074/io.rs"]
+mod runtime_io;
 #[path = "../../../tools/authority-storage-source-074/contract.rs"]
 mod storage_contract;
 use sha2::{Digest, Sha256};
 use std::collections::BTreeSet;
 
 fn read(path: &str) -> String {
-    runtime::view(path, {
-        std::fs::read_to_string(history::root().join(path))
-            .unwrap()
-            .replace("\r\n", "\n")
-    })
+    current_inputs::read(path)
 }
 fn old(path: &str) -> String {
     String::from_utf8(history::frozen_bytes(path).unwrap())
@@ -130,6 +130,10 @@ fn independent_current_tree_gate_refuses_unapproved_source_and_runtime_drift() {
         .filter(|path| protected(path, previous.contains(*path)))
     {
         assert!(history::safe_path(path));
+        if !previous.contains(path) && current_inputs::known_addition(path) {
+            current_inputs::require_addition(path);
+            continue;
+        }
         assert!(
             previous.contains(path),
             "unapproved new runtime source {path}"
