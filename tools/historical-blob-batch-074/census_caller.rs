@@ -19,16 +19,18 @@ pub enum Reason {
 }
 
 /// Keep successful diagnostics and failed command output, not only a boolean.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug)]
 pub struct Failure {
     pub reason: Reason,
     pub output: Option<transport::Output>,
+    pub original_io: Option<std::io::Error>,
 }
 impl Failure {
     fn before(reason: Reason) -> Self {
         Self {
             reason,
             output: None,
+            original_io: None,
         }
     }
 }
@@ -94,6 +96,7 @@ pub fn interpret(output: transport::Output) -> Result<Loaded, Failure> {
         return Err(Failure {
             reason,
             output: Some(output),
+            original_io: None,
         });
     }
     let text = std::str::from_utf8(&output.stdout)
@@ -123,8 +126,12 @@ pub fn read(
         .arg("--no-replace-objects")
         .args(["show", spec])
         .current_dir(root);
-    let output = transport::run_owned(&mut command, &[], deadline)
-        .map_err(|error| Failure::before(Reason::Transport(error)))?;
+    let output =
+        transport::run_owned_with_io(&mut command, &[], deadline).map_err(|failure| Failure {
+            reason: Reason::Transport(failure.refusal),
+            output: None,
+            original_io: failure.original_io,
+        })?;
     let loaded = interpret(output)?;
     let reason = if loaded.output.stdout.len() != reference.bytes
         || <[u8; 32]>::from(Sha256::digest(&loaded.output.stdout)) != reference.sha256
@@ -139,6 +146,7 @@ pub fn read(
         return Err(Failure {
             reason,
             output: Some(loaded.output),
+            original_io: None,
         });
     }
     Ok(loaded)
@@ -190,4 +198,84 @@ pub fn view<I: Inputs>(
         return Err(ViewError::Provider);
     }
     Ok(original)
+}
+
+/// Errors retain their original phase until the old panic boundary is reached.
+#[derive(Debug)]
+pub enum InputError {
+    Helper(std::io::Error),
+    Frozen(Failure),
+}
+
+/// Compatibility facade only. New pin/budget/deadline/cleanup refusals must stay
+/// explicit, never be mislabeled as a legacy process failure or retried.
+pub mod panic_api {
+    use super::transport::Refusal;
+    use super::{Failure, InputError, Inputs, Loaded, Reason, Revision, ViewError};
+
+    // Keep std's actual unwrap payload instead of rebuilding its text. The same
+    // boundary handles both original IO errors and FromUtf8Error values.
+    fn legacy_unwrap<T, E: std::fmt::Debug>(value: Result<T, E>) -> T {
+        value.unwrap()
+    }
+
+    fn unwrap_input<T>(value: Result<T, InputError>) -> T {
+        match value {
+            Ok(value) => value,
+            Err(InputError::Helper(error)) => legacy_unwrap(Err(error)),
+            Err(InputError::Frozen(failure)) => frozen_failure(failure),
+        }
+    }
+
+    fn frozen_failure(failure: Failure) -> ! {
+        match failure {
+            Failure {
+                reason: Reason::Process,
+                ..
+            } => panic!("missing exact material fixture source"),
+            Failure {
+                reason: Reason::Utf8,
+                output: Some(output),
+                ..
+            } => {
+                // Use the same FromUtf8Error Debug representation as the old unwrap.
+                legacy_unwrap(String::from_utf8(output.stdout));
+                unreachable!("Utf8 failure must contain invalid bytes")
+            }
+            Failure {
+                reason: Reason::Transport(Refusal::Io(_)),
+                original_io: Some(error),
+                ..
+            } => {
+                legacy_unwrap::<(), _>(Err(error));
+                unreachable!("IO failure cannot succeed")
+            }
+            failure => panic!("census adapter refusal: {failure:?}"),
+        }
+    }
+
+    pub fn frozen(value: Result<Loaded, Failure>) -> String {
+        match value {
+            Ok(value) => value.text,
+            Err(failure) => frozen_failure(failure),
+        }
+    }
+    pub fn original<I: Inputs<Error = InputError>>(inputs: &mut I) -> String {
+        unwrap_input(inputs.frozen(Revision::Base))
+    }
+    pub fn accepts<I: Inputs<Error = InputError>>(
+        inputs: &mut I,
+        original: &str,
+        raw: &str,
+    ) -> bool {
+        unwrap_input(super::accepts(inputs, original, raw))
+    }
+    pub fn view<I: Inputs<Error = InputError>>(inputs: &mut I, name: &str, raw: &str) -> String {
+        match super::view(inputs, name, raw) {
+            Ok(value) => value,
+            Err(ViewError::Input(error)) => unwrap_input(Err(error)),
+            Err(ViewError::Helper) => panic!("unreviewed fixture control"),
+            Err(ViewError::Provider) => panic!("unreviewed provider body"),
+        }
+    }
 }

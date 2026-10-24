@@ -46,6 +46,30 @@ impl From<std::io::Error> for Refusal {
     }
 }
 
+/// Original IO cause for a caller's legacy unwrap boundary. Generic transport
+/// still exposes exactly Refusal; this sidecar does not change any observation.
+#[derive(Debug)]
+pub struct CommandFailure {
+    pub refusal: Refusal,
+    pub original_io: Option<std::io::Error>,
+}
+impl From<Refusal> for CommandFailure {
+    fn from(refusal: Refusal) -> Self {
+        Self {
+            refusal,
+            original_io: None,
+        }
+    }
+}
+impl From<std::io::Error> for CommandFailure {
+    fn from(error: std::io::Error) -> Self {
+        Self {
+            refusal: Refusal::Io(error.to_string()),
+            original_io: Some(error),
+        }
+    }
+}
+
 #[derive(Clone, Debug)]
 struct BytePin {
     bytes: usize,
@@ -202,12 +226,12 @@ fn timely(deadline: Instant) -> Result<(), Refusal> {
         Ok(())
     }
 }
-fn bytes(file: &mut File, limit: usize) -> Result<Vec<u8>, Refusal> {
+fn bytes(file: &mut File, limit: usize) -> Result<Vec<u8>, CommandFailure> {
     file.seek(SeekFrom::Start(0))?;
     let mut raw = Vec::new();
     file.take((limit + 1) as u64).read_to_end(&mut raw)?;
     if raw.len() > limit {
-        return Err(Refusal::Budget);
+        return Err(Refusal::Budget.into());
     }
     Ok(raw)
 }
@@ -219,9 +243,20 @@ pub fn run_owned(
     input: &[u8],
     deadline: Instant,
 ) -> Result<Output, Refusal> {
+    run_owned_with_io(command, input, deadline).map_err(|failure| {
+        drop(failure.original_io);
+        failure.refusal
+    })
+}
+
+pub fn run_owned_with_io(
+    command: &mut Command,
+    input: &[u8],
+    deadline: Instant,
+) -> Result<Output, CommandFailure> {
     timely(deadline)?;
     if input.len() > INPUT {
-        return Err(Refusal::Input);
+        return Err(Refusal::Input.into());
     }
     let mut source = tempfile::tempfile()?;
     source.write_all(input)?;
@@ -243,7 +278,7 @@ pub fn run_owned(
         if stdout.metadata()?.len() > decoder::MAX_STREAM as u64
             || stderr.metadata()?.len() > STDERR as u64
         {
-            return Err(Refusal::Budget);
+            return Err(Refusal::Budget.into());
         }
         if let Some(status) = owned.child.try_wait()? {
             let result = Output {
@@ -257,9 +292,14 @@ pub fn run_owned(
         std::thread::sleep(Duration::from_millis(5));
     })();
     if let Err(error) = owned.stop() {
-        return Err(Refusal::Cleanup {
-            primary: result.err().map(Box::new),
-            reason: error.to_string(),
+        return Err(CommandFailure {
+            refusal: Refusal::Cleanup {
+                primary: result
+                    .err()
+                    .map(|failure: CommandFailure| Box::new(failure.refusal)),
+                reason: error.to_string(),
+            },
+            original_io: Some(error),
         });
     }
     result

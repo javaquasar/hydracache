@@ -216,6 +216,198 @@ fn output(code: Option<i32>, stdout: &[u8], stderr: &[u8]) -> Output {
     }
 }
 
+fn panic_text(value: &(dyn std::any::Any + Send)) -> String {
+    value
+        .downcast_ref::<String>()
+        .map(String::as_str)
+        .or_else(|| value.downcast_ref::<&str>().copied())
+        .expect("string panic payload")
+        .to_owned()
+}
+fn panic_kind(value: &(dyn std::any::Any + Send)) -> &'static str {
+    if value.is::<String>() {
+        "String"
+    } else if value.is::<&str>() {
+        "str"
+    } else {
+        "other"
+    }
+}
+fn caught(call: impl FnOnce() -> String) -> Result<String, String> {
+    std::panic::catch_unwind(std::panic::AssertUnwindSafe(call))
+        .map_err(|value| panic_text(value.as_ref()))
+}
+
+// Independent model of the old caller's unwrap boundary, including payload.
+fn old_unwrap<T, E: std::fmt::Debug>(value: Result<T, E>) -> T {
+    value.unwrap()
+}
+
+#[test]
+fn census_panic_facade_preserves_payloads_and_keeps_new_refusals_explicit() {
+    let legacy = |value: Output| {
+        assert_eq!(value.code, Some(0), "unused test-only status check");
+        String::from_utf8(value.stdout)
+            .unwrap()
+            .replace("\r\n", "\n")
+    };
+    for value in [
+        output(Some(0), b"x\r\ny\r", b"trace"),
+        output(Some(0), &[0xff, 0, 0xfe], b"trace"),
+    ] {
+        let copy = output(value.code, &value.stdout, &value.stderr);
+        assert_eq!(
+            caught(|| census::panic_api::frozen(census::interpret(value))),
+            caught(|| legacy(copy))
+        );
+    }
+    for code in [Some(1), Some(128), None] {
+        let expected = caught(|| panic!("missing exact material fixture source"));
+        assert_eq!(
+            caught(|| census::panic_api::frozen(census::interpret(output(
+                code,
+                &[0xff],
+                b"error"
+            )))),
+            expected
+        );
+    }
+    for code in [2, 13] {
+        let failure = census::Failure {
+            reason: census::Reason::Transport(Refusal::Io("not reconstructed".to_owned())),
+            output: None,
+            original_io: Some(std::io::Error::from_raw_os_error(code)),
+        };
+        let expected = caught(|| old_unwrap(Err(std::io::Error::from_raw_os_error(code))));
+        assert_eq!(caught(|| census::panic_api::frozen(Err(failure))), expected);
+    }
+    for reason in [
+        census::Reason::Reference,
+        census::Reason::Content,
+        census::Reason::Transport(Refusal::Deadline),
+        census::Reason::Transport(Refusal::Budget),
+        census::Reason::Transport(Refusal::Cleanup {
+            primary: Some(Box::new(Refusal::Deadline)),
+            reason: "owned".to_owned(),
+        }),
+    ] {
+        let failure = census::Failure {
+            reason,
+            output: None,
+            original_io: None,
+        };
+        assert!(caught(|| census::panic_api::frozen(Err(failure)))
+            .unwrap_err()
+            .starts_with("census adapter refusal:"));
+    }
+    // Actual spawn/current-dir failure: preserve the original IO cause, not its Display text.
+    let root = Path::new("nonexistent-census-panic-root");
+    let spec = format!("{}:source.rs", "a".repeat(40));
+    let pin = decoder::Expected::Object {
+        oid: "b".repeat(40),
+        kind: decoder::Kind::Blob,
+        bytes: 0,
+        sha256: [0; 32],
+    };
+    let reference = census::Reference::new(&spec, &pin).unwrap();
+    let old = caught(|| {
+        Command::new("git")
+            .arg("--no-replace-objects")
+            .args(["show", &spec])
+            .current_dir(root)
+            .output()
+            .unwrap();
+        unreachable!()
+    });
+    let new = caught(|| {
+        census::panic_api::frozen(census::read(
+            root,
+            &spec,
+            &reference,
+            Instant::now() + transport::BOUND,
+        ))
+    });
+    assert_eq!(new, old);
+}
+
+struct PanicSchedule(Schedule);
+impl census::Inputs for PanicSchedule {
+    type Error = census::InputError;
+    fn helper(&mut self) -> Result<String, Self::Error> {
+        self.0
+            .helper()
+            .map_err(|e| census::InputError::Helper(std::io::Error::other(e)))
+    }
+    fn helper_matches(&mut self, raw: &str) -> bool {
+        self.0.helper_matches(raw)
+    }
+    fn frozen(&mut self, revision: census::Revision) -> Result<String, Self::Error> {
+        self.0.frozen(revision).map_err(|_| {
+            census::InputError::Frozen(census::Failure {
+                reason: census::Reason::Process,
+                output: Some(output(Some(128), b"", b"failed")),
+                original_io: None,
+            })
+        })
+    }
+    fn body_matches(&mut self, original: &str, raw: &str) -> bool {
+        self.0.body_matches(original, raw)
+    }
+}
+
+#[test]
+fn census_panic_schedule_preserves_each_guard_message_and_short_circuit() {
+    for (stop, expected, events) in [
+        (
+            "helper",
+            caught(|| old_unwrap(Err(std::io::Error::other("helper")))).unwrap_err(),
+            vec!["helper"],
+        ),
+        (
+            "helper-check",
+            "unreviewed fixture control".to_owned(),
+            vec!["helper", "helper-check"],
+        ),
+        (
+            "base",
+            "missing exact material fixture source".to_owned(),
+            vec!["helper", "helper-check", "base"],
+        ),
+        (
+            "reviewed",
+            "missing exact material fixture source".to_owned(),
+            vec!["helper", "helper-check", "base", "reviewed"],
+        ),
+        (
+            "body-check",
+            "unreviewed provider body".to_owned(),
+            vec!["helper", "helper-check", "base", "reviewed", "body-check"],
+        ),
+    ] {
+        let mut source = PanicSchedule(Schedule {
+            stop: Some(stop),
+            ..Schedule::default()
+        });
+        assert_eq!(
+            caught(|| census::panic_api::view(
+                &mut source,
+                "diagnostic_artifacts_linux.rs",
+                "reviewed"
+            )),
+            Err(expected)
+        );
+        assert_eq!(source.0.events, events);
+    }
+    let mut source = PanicSchedule(Schedule::default());
+    assert_eq!(
+        census::panic_api::view(&mut source, "other.rs", "untouched"),
+        "untouched"
+    );
+    assert!(source.0.events.is_empty());
+    assert!(!census::panic_api::accepts(&mut source, "base", "drift"));
+    assert_eq!(source.0.events, ["reviewed"]);
+}
+
 #[test]
 fn census_error_contract_preserves_status_before_utf8_and_successful_stderr() {
     for code in [Some(1), Some(128), None] {
@@ -415,16 +607,17 @@ struct RealInputs<'a> {
     outputs: Vec<Value>,
 }
 impl census::Inputs for RealInputs<'_> {
-    type Error = String;
-    fn helper(&mut self) -> Result<String, String> {
+    type Error = census::InputError;
+    fn helper(&mut self) -> Result<String, Self::Error> {
         self.events.push("helper".to_owned());
-        fs::read_to_string(self.root.join(caller::contract::CONTROL)).map_err(|e| e.to_string())
+        fs::read_to_string(self.root.join(caller::contract::CONTROL))
+            .map_err(census::InputError::Helper)
     }
     fn helper_matches(&mut self, helper: &str) -> bool {
         self.events.push("helper-check".to_owned());
         caller::contract::helper_matches(helper)
     }
-    fn frozen(&mut self, revision: census::Revision) -> Result<String, String> {
+    fn frozen(&mut self, revision: census::Revision) -> Result<String, Self::Error> {
         let index = usize::from(revision == census::Revision::Reviewed);
         self.events.push(format!("{revision:?}"));
         let value = &self.cases[index];
@@ -442,7 +635,7 @@ impl census::Inputs for RealInputs<'_> {
             Err(value) => {
                 self.outputs.push(json!({"reason":format!("{:?}",value.reason),"output":value.output.as_ref().map(|v|
                     json!({"code":v.code,"stdout_hex":hex_bytes(&v.stdout),"stderr_hex":hex_bytes(&v.stderr)}))}));
-                Err(format!("{:?}", value.reason))
+                Err(census::InputError::Frozen(value))
             }
         }
     }
@@ -624,14 +817,20 @@ fn census_contract_child_fixture() {
             outputs: vec![],
         };
         let new = match operation {
-            "original" => inputs.frozen(census::Revision::Base),
-            "accepts" => census::accepts(&mut inputs, &base, &raw).map(|v| v.to_string()),
+            "original" => inputs
+                .frozen(census::Revision::Base)
+                .map_err(|e| format!("{e:?}")),
+            "accepts" => census::accepts(&mut inputs, &base, &raw)
+                .map(|v| v.to_string())
+                .map_err(|e| format!("{e:?}")),
             "view" => census::view(&mut inputs, "diagnostic_artifacts_linux.rs", &raw)
                 .map_err(|e| format!("{e:?}")),
             "unrelated" => {
                 census::view(&mut inputs, "other.rs", "untouched").map_err(|e| format!("{e:?}"))
             }
-            _ => census::accepts(&mut inputs, &base, "mismatch").map(|v| v.to_string()),
+            _ => census::accepts(&mut inputs, &base, "mismatch")
+                .map(|v| v.to_string())
+                .map_err(|e| format!("{e:?}")),
         };
         let new_starts = starts(&trace)[before..].to_vec();
         assert_eq!(
@@ -645,6 +844,38 @@ fn census_contract_child_fixture() {
                 .unwrap_or("non-string panic")
                 .to_owned()
         });
+        let before = starts(&trace).len();
+        let mut facade_inputs = RealInputs {
+            root: &root,
+            cases,
+            deadline,
+            events: vec![],
+            diagnostics: vec![],
+            outputs: vec![],
+        };
+        let previous_hook = std::panic::take_hook();
+        std::panic::set_hook(Box::new(|_| {}));
+        let facade = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| match operation {
+            "original" => census::panic_api::original(&mut facade_inputs),
+            "accepts" => census::panic_api::accepts(&mut facade_inputs, &base, &raw).to_string(),
+            "view" => {
+                census::panic_api::view(&mut facade_inputs, "diagnostic_artifacts_linux.rs", &raw)
+            }
+            "unrelated" => census::panic_api::view(&mut facade_inputs, "other.rs", "untouched"),
+            _ => census::panic_api::accepts(&mut facade_inputs, &base, "mismatch").to_string(),
+        }));
+        std::panic::set_hook(previous_hook);
+        let facade_error = facade.as_ref().err().map(|e| panic_text(e.as_ref()));
+        let old_kind = old.as_ref().err().map(|e| panic_kind(e.as_ref()));
+        let facade_kind = facade.as_ref().err().map(|e| panic_kind(e.as_ref()));
+        let facade_starts = starts(&trace)[before..].to_vec();
+        assert_eq!(facade_starts, old_starts);
+        assert_eq!(facade_inputs.events, inputs.events);
+        assert_eq!(facade_error, old_error);
+        assert_eq!(facade_kind, old_kind);
+        if let Ok(value) = &old {
+            assert_eq!(facade.as_ref().unwrap(), value);
+        }
         if failed && operation != "unrelated" {
             assert_eq!(
                 old_error.as_deref(),
@@ -666,7 +897,9 @@ fn census_contract_child_fixture() {
         receipts.push(
             json!({"operation":operation,"old_success":old.is_ok(),"old_error":old_error,
             "candidate":new,"old_git_argv":old_starts,"candidate_git_argv":new_starts,
-            "candidate_events":inputs.events,"retained_stderr_bytes":inputs.diagnostics,"outputs":inputs.outputs}),
+            "candidate_events":inputs.events,"retained_stderr_bytes":inputs.diagnostics,"outputs":inputs.outputs,
+            "facade_success":facade.is_ok(),"facade_error":facade_error,"facade_git_argv":facade_starts,
+            "old_panic_kind":old_kind,"facade_panic_kind":facade_kind}),
         );
     }
     // A content pin is an extra guard, never refreshed from the new command.

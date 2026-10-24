@@ -36,6 +36,16 @@ def lock_subset(original, resolved):
     return len(packages)
 
 
+def targets(profile):
+    components = ('historical_blob_batch_074', 'historical_blob_fault_074',
+                  'historical_blob_transport_074')
+    if profile is None:
+        return components
+    if profile == 'census':
+        return (*components, 'historical_blob_caller_074', 'role_census_reader_074')
+    raise ValueError('unknown local Linux profile')
+
+
 def session(payload):
     os.umask(0o077)
     base = Path(tempfile.mkdtemp(prefix='hc074-blob-linux-20261024-')).resolve()
@@ -47,6 +57,9 @@ def session(payload):
         uname=list(os.uname()), boot_before=boot, clocks_before=before, phases=[], sources={},
         server=False, clocks_or_services_changed=False, package_gate=False, admission=False)
     active_groups = set()
+    # Leave the unchanged outer coordinator bound enough time for owned cleanup
+    # and receipt export; this never extends a component or original live window.
+    session_until = time.monotonic() + 1000 if payload.get('profile') == 'census' else None
     original = base / 'repo/Cargo.lock'
     project = base / 'repo/crates/xtask'
 
@@ -54,12 +67,15 @@ def session(payload):
         out, err = base / (name + '.stdout'), base / (name + '.stderr')
         started = time.monotonic()
         reason = None
+        effective_bound = bound if session_until is None else min(bound, session_until - started)
+        if effective_bound <= 0:
+            raise ValueError('local Linux session deadline before effect: ' + name)
         with out.open('xb') as stdout, err.open('xb') as stderr:
             child = subprocess.Popen(argv, cwd=project, env=env, stdout=stdout, stderr=stderr,
                                      start_new_session=True)
             active_groups.add(child.pid)
             try:
-                child.wait(timeout=bound)
+                child.wait(timeout=effective_bound)
             except subprocess.TimeoutExpired:
                 reason = 'owned-group-timeout'
                 os.killpg(child.pid, signal.SIGKILL)
@@ -68,7 +84,7 @@ def session(payload):
                 os.killpg(child.pid, 0)
             except ProcessLookupError:
                 active_groups.remove(child.pid)
-            value = dict(name=name, argv=argv, bound=bound, code=child.returncode, reason=reason,
+            value = dict(name=name, argv=argv, bound=bound, effective_bound=effective_bound, code=child.returncode, reason=reason,
                 elapsed=time.monotonic()-started,
                 stdout_b64=base64.b64encode(out.read_bytes()).decode(),
                 stderr_b64=base64.b64encode(err.read_bytes()).decode())
@@ -77,6 +93,7 @@ def session(payload):
                 raise ValueError('first phase refusal: ' + name)
 
     try:
+        selected_targets = targets(payload.get('profile'))
         for name, item in payload['files'].items():
             if not safe_relative(name):
                 raise ValueError('source path')
@@ -97,6 +114,16 @@ def session(payload):
                 CARGO_HOME='/home/artur/.cargo', CARGO_BUILD_JOBS='2', CARGO_INCREMENTAL='0',
                 CARGO_TARGET_DIR=str(base / 'build'),
                 HC074_BLOB_TRANSPORT_EVIDENCE=str(base / 'evidence' / version))
+            if payload.get('profile') == 'census':
+                # A new disposable repository, never the Windows checkout or a
+                # mounted real Git directory. Both old/candidate inherit this.
+                env = {key:value for key,value in env.items() if not key.upper().startswith('GIT_')}
+                # Do not inject GIT_CONFIG_* into the generic component targets:
+                # their original preflight must reject any such ambient override.
+                env.update(GIT_NO_LAZY_FETCH='1')
+                if index == 0:
+                    run('git-fixture-init', ['/usr/bin/git', '-C', str(base / 'repo'),
+                        'init', '--quiet', '--template='], env, 30)
             if shutil.disk_usage(base).free < 4 * 1024**3:
                 raise ValueError('local Linux disk floor')
             cargo = str(toolchain / 'cargo')
@@ -108,7 +135,7 @@ def session(payload):
                 receipt['resolved_lock_b64'] = base64.b64encode((project / 'Cargo.lock').read_bytes()).decode()
                 receipt['locked_packages'] = lock_subset(original_lock, (project / 'Cargo.lock').read_bytes())
             run(version+'-build', [cargo,'test','--offline','--locked','--no-run'], env, 300)
-            for target in ('historical_blob_batch_074','historical_blob_fault_074','historical_blob_transport_074'):
+            for target in selected_targets:
                 run(version+'-'+target, [cargo,'test','--offline','--locked','--test',target], env, 90)
         receipt['component_tests_passed'] = True
     except Exception as error:
