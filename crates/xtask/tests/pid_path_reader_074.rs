@@ -35,3 +35,18 @@ fn pid_path_reader_preserves_all_old_assertions_and_normalizer_order() {
         assert!(!storage_contract::accepts(&expected, &bad));
     }
 }
+
+#[test]
+fn pid_path_admission_view_requires_the_exact_current_candidate() {
+    let path = runtime::status_fields::SOURCE;
+    let raw = std::fs::read_to_string(runtime::root().join(path)).unwrap();
+    assert!(runtime::accepts(path, &raw));
+    assert_eq!(
+        runtime::view(path, raw.clone()),
+        runtime::frozen(runtime::BASE, path)
+    );
+    let changed = raw.replace("origin.revalidate()?;", "/* removed live check */");
+    assert_ne!(changed, raw);
+    assert!(!runtime::accepts(path, &changed));
+    assert!(std::panic::catch_unwind(|| runtime::view(path, changed)).is_err());
+}
