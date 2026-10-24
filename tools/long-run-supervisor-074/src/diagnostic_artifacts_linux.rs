@@ -546,7 +546,7 @@ mod io_binding_tests {
                 ("build-receipt-v1.json", signed.as_slice()),
                 (
                     "Cargo.lock.root",
-                    include_bytes!("../../../Cargo.lock").as_slice(),
+                    include_bytes!("../../../docs/testing/performance/0.74/local-runs/material-lock-frozen-input-20261024/objects/be46eaf8e97e507bda5e3f2b671d0d622e6a639ce1d4613769a4693723d62b19").as_slice(),
                 ),
                 (
                     "Cargo.lock.observer",
@@ -693,6 +693,11 @@ mod io_binding_tests {
             (cell, outputs)
         }
     }
+    include!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../material-lock-fixture-074/controls.rs"
+    ));
+
     #[test]
     fn synthetic_material_origin_and_exact_execution_state_cannot_drift() {
         let f = Fixture::new();

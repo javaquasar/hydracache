@@ -1,0 +1,16 @@
+{
+  "admission": false,
+  "files": {
+    "Cargo.lock.root": {
+      "bytes": 175300,
+      "sha256": "be46eaf8e97e507bda5e3f2b671d0d622e6a639ce1d4613769a4693723d62b19"
+    }
+  },
+  "fixture_only": true,
+  "production_pin_modified": false,
+  "receipt_modified": false,
+  "schema": "hc074-frozen-material-lock-fixture-v1",
+  "server": false,
+  "source_commit": "62114be0f5da3218706e30d7424acfb5d0579d07",
+  "source_path": "Cargo.lock"
+}

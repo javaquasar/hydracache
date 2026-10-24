@@ -1,20 +1,24 @@
 //! Exact test-only additions; never runtime admission or production source masking.
 use sha2::{Digest, Sha256};
 use std::path::Path;
+#[path = "../material-lock-fixture-074/contract.rs"]
+mod material_lock;
 pub const BASE: &str = "25faa7bb762aa229631e6f6cfc25cae33e16ff43";
-pub const PATHS: [&str; 5] = [
+pub const PATHS: [&str; 6] = [
     "tools/authority-runtime-074/io.rs",
     "tools/long-run-supervisor-074/tests/held_launcher.rs",
     "tools/long-run-supervisor-074/src/diagnostic_validation_trace.rs",
     "tools/long-run-supervisor-074/src/diagnostic_cgroup_root_transport_tests.rs",
     "tools/long-run-supervisor-074/src/diagnostic_held_unit_material_kernel_tests.rs",
+    material_lock::SOURCE,
 ];
-const BASE_HASHES: [&str; 5] = [
+const BASE_HASHES: [&str; 6] = [
     "1b4e852c40018bf6023d9e8e965e5debebc65b4689d556e2760b41c102952701",
     "70ca8141f1664f6e59664bbf02bf0695ddb48f69109d5e5551883c60e2048f81",
     "a3a5fd83f5f1c79945a8282adaac1b895f5f89d63a952365c538c15858bc1be2",
     "33732600eb4fa3c8e436a68caa3a24d2741c4daac92d7e6965b1282873b45554",
     "b603700b10f2284777c89108e973a1720c9896b0668cf2b17c40f3c2becd7b1e",
+    "ede23782d4ff6a5ae052ca542998c3ebd8968af2ad678f67b179af4fdb05d828",
 ];
 pub const HELPERS: [(&str, &str); 2] = [
     (
@@ -50,6 +54,12 @@ pub fn require_helpers(root: &Path) {
             "unreviewed test helper {path}"
         );
     }
+    assert!(
+        material_lock::helper_matches(
+            &std::fs::read_to_string(root.join(material_lock::CONTROL)).unwrap()
+        ),
+        "unreviewed synthetic material control"
+    );
 }
 fn replace(raw: &str, before: &str, after: &str) -> String {
     assert_eq!(raw.matches(before).count(), 1, "one exact owned-case edit");
@@ -80,6 +90,9 @@ pub fn candidate(path: &str, original: &str) -> Option<String> {
         format!("{raw}{CONTROLS}")
     } else if path == PATHS[2] {
         format!("{raw}\n#[cfg(target_os = \"linux\")]\n#[path = \"../../owned-case-074/library.rs\"]\npub(crate) mod owned_case;\n")
+    } else if path == material_lock::SOURCE {
+        assert_eq!(BASE, material_lock::BASE, "same exact fixture predecessor");
+        material_lock::candidate(&raw)
     } else {
         let name = if path == PATHS[3] {
             "cgroup_root_transport_every_bound_byte_refuses_and_closes_rights"
