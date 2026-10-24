@@ -1,0 +1,35 @@
+"""Retain earlier scoped inputs only after matching their first-run source hashes."""
+from pathlib import Path
+import hashlib
+import json
+ROOT = Path(__file__).resolve().parent.parent
+OUT = ROOT / 'target/current-tree-first-scoped-20261024'
+OUT.mkdir(exist_ok=False)
+intent = json.loads((ROOT / 'target/source-continuation-20261024/current-tree-scoped-candidate/intent.json').read_text())
+path = 'crates/xtask/tests/current_tree_reader_074.rs'
+source = (ROOT / path).read_text(encoding='utf-8')
+start = source.index('#[test]\nfn runtime_contract_reader_changes_only_the_current_history_input()')
+end = source.index('#[test]\nfn all_nine_current_inputs', start)
+source = source[:start] + source[end:]
+line = '        assert!(std::panic::catch_unwind(|| history_reader::previous(&bad)).is_err());\n'
+assert source.count(line) == 1
+source = source.replace(line, '', 1)
+variants = {path:source}
+path = 'tools/authority-runtime-074/history_reader.rs'
+source = (ROOT / path).read_text(encoding='utf-8')
+before = '''    assert!(
+        raw.replace("\\r\\n", "\\n") == extend(&old),
+        "unreviewed current history gate"
+    );'''
+after = '''    assert_eq!(
+        raw.replace("\\r\\n", "\\n"),
+        extend(&old),
+        "unreviewed current history gate"
+    );'''
+assert source.count(before) == 1
+variants[path] = source.replace(before, after, 1)
+for path, source in variants.items():
+    raw = source.encode()
+    assert hashlib.sha256(raw).hexdigest() == intent['source'][path], path
+    with (OUT / Path(path).name).open('xb') as stream: stream.write(raw)
+print('Retained two earlier scoped variants with exact intent hashes')

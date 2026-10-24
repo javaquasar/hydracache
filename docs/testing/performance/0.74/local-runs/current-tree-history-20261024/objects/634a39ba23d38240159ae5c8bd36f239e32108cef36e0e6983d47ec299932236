@@ -1,0 +1,13 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.83s
+     Running tests\authority_key_hex_074.rs (target\debug\deps\authority_key_hex_074-cd6937e62036ede2.exe)
+     Running tests\authority_runtime_074.rs (target\debug\deps\authority_runtime_074-b34664d35eca545a.exe)
+     Running tests\authority_rust_history_074.rs (target\debug\deps\authority_rust_history_074-4c9fed59f38331dc.exe)
+     Running tests\current_tree_input_audit_074.rs (target\debug\deps\current_tree_input_audit_074-c3765a3eaa3bd40a.exe)
+     Running tests\current_tree_reader_074.rs (target\debug\deps\current_tree_reader_074-5e0026a4ef1e7069.exe)
+     Running tests\custody_preparation_cost_074.rs (target\debug\deps\custody_preparation_cost_074-9cf5d34a7aea0a6d.exe)
+     Running tests\diagnostic_artifact_fixture_074.rs (target\debug\deps\diagnostic_artifact_fixture_074-0f5571a089bacb49.exe)
+     Running tests\document_scratch_cost_074.rs (target\debug\deps\document_scratch_cost_074-bfd87b7eb8eef06c.exe)
+     Running tests\fresh_kernel_cost_074.rs (target\debug\deps\fresh_kernel_cost_074-b7d065423f52a828.exe)
+     Running tests\held_complete_role_census_074.rs (target\debug\deps\held_complete_role_census_074-8d8652a4de24ccda.exe)
+     Running tests\pid_path_cost_074.rs (target\debug\deps\pid_path_cost_074-4ab00fd131db9384.exe)

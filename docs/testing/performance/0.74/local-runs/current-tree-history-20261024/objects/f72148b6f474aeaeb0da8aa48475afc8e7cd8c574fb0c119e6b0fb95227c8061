@@ -1,0 +1,26 @@
+"""Reconstruct the first diagnostic-only variant and require its recorded hash."""
+from pathlib import Path
+import hashlib
+import json
+ROOT = Path(__file__).resolve().parent.parent
+source = (ROOT / 'target/current-tree-first-candidate-20261024/current_tree_input_audit_074.rs').read_text(encoding='utf-8')
+hook = '#[path = "support/current_tree_input.rs"]\nmod current_inputs;\n'
+assert source.count(hook) == 1
+source = source.replace(hook, '', 1)
+start = source.index('        if !previous.contains(path) {')
+end = source.index('        let Ok(current)', start)
+source = source[:start] + '''        if !previous.contains(path) {
+            refused.push(format!("new runtime: {path}"));
+            continue;
+        }
+        let current = std::panic::catch_unwind(|| {
+            runtime_io::read_to_string(runtime::root().join(path)).unwrap()
+        });
+''' + source[end:]
+raw = source.encode()
+intent = json.loads((ROOT / 'target/source-continuation-20261024/current-tree-input-baseline/intent.json').read_text())
+expected = intent['source']['crates/xtask/tests/current_tree_input_audit_074.rs']
+assert hashlib.sha256(raw).hexdigest() == expected, 'reconstructed variant is not the first input'
+with (ROOT / 'target/current-tree-input-initial-20261024.rs').open('xb') as stream:
+    stream.write(raw)
+print('Verified retained first audit:', expected)

@@ -1,0 +1,3 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.81s
+     Running tests\historical_source_cache_074.rs (target\debug\deps\historical_source_cache_074-3a536e6e160af238.exe)
+error: test failed, to rerun pass `-p xtask --test historical_source_cache_074`

@@ -167,3 +167,20 @@ filesystem entry and canonical source digest against the pinned 530-file ledger.
 The focused cohort has thirty-three passes and strict checks are green. This
 does not close the independent current-tree history gate, the wider package or
 any original execution/retirement/admission prerequisite.
+
+The [current-tree history followup](current-tree-history-result-20261024.md)
+also passes its independent source gate and all ten original history tests.
+It retains the thirty-guard/seventy-nine-test historical contract, proves nine
+known input deltas and checks eighty-one declared additions by exact source and
+index identity. A rejected common-gateway change remains archived; the accepted
+compatibility readers leave that gateway and its immutable-cache contract intact.
+The final focused cohort has thirty-six passes and strict checks are green.
+This closes source compatibility only, not product/runtime admission or the
+remaining execution, retirement, lifecycle, crash/reconnect and enrollment work.
+
+The first wider check on that committed source finishes naturally inside the
+unchanged 780-second limit: 128 target verdicts, 1173 passed cases, three failed,
+none ignored/filtered. The earlier incomplete/red result remains immutable.
+Remaining-preparation and validation-round source comparisons plus the
+validation-leaf registry comparison now define the ordinary package frontier.
+No rerun, enlarged timeout or assertion waiver is used to conceal those failures.

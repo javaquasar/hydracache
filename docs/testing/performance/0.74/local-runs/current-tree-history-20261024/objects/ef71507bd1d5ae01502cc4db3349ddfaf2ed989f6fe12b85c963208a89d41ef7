@@ -1,0 +1,60 @@
+
+running 5 tests
+test baseline_partial_install_and_unrelated_effects_refuse_before_restoration ... FAILED
+test approved_predecessor_views_do_not_replace_current_runtime_validation ... FAILED
+test installed_runtime_is_the_exact_candidate_and_explicit_compatibility_set ... FAILED
+test legacy_adapters_preserve_complete_prior_test_bodies_and_assertions ... FAILED
+test full_contract_adapters_change_only_one_preservation_reader_per_module ... ok
+
+failures:
+
+---- baseline_partial_install_and_unrelated_effects_refuse_before_restoration stdout ----
+
+thread 'baseline_partial_install_and_unrelated_effects_refuse_before_restoration' (39496) panicked at crates\xtask\tests\..\..\..\tools\authority-runtime-074\gate.rs:191:5:
+current runtime file refused before historical view: tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'baseline_partial_install_and_unrelated_effects_refuse_before_restoration' (39496) panicked at crates\xtask\tests\..\..\..\tools\authority-runtime-074\gate.rs:191:5:
+current runtime file refused before historical view: tools/long-run-supervisor-074/tests/support/authority_owners_controls.rs
+
+thread 'baseline_partial_install_and_unrelated_effects_refuse_before_restoration' (39496) panicked at crates\xtask\tests\..\..\..\tools\authority-runtime-074\gate.rs:191:5:
+current runtime file refused before historical view: tools/long-run-supervisor-074/src/diagnostic_authority_fixture_tests.rs
+
+thread 'baseline_partial_install_and_unrelated_effects_refuse_before_restoration' (39496) panicked at crates\xtask\tests\..\..\..\tools\authority-runtime-074\gate.rs:191:5:
+current runtime file refused before historical view: crates/xtask/tests/authority_storage_source_074.rs
+
+thread 'baseline_partial_install_and_unrelated_effects_refuse_before_restoration' (39496) panicked at crates\xtask\tests\..\..\..\tools\authority-runtime-074\history_reader.rs:4:9:
+assertion `left == right` failed: one exact history gate edit
+  left: 0
+ right: 1
+
+---- approved_predecessor_views_do_not_replace_current_runtime_validation stdout ----
+
+thread 'approved_predecessor_views_do_not_replace_current_runtime_validation' (21948) panicked at crates\xtask\tests\..\..\..\tools\authority-runtime-074\history_reader.rs:4:9:
+assertion `left == right` failed: one exact history gate edit
+  left: 0
+ right: 1
+
+---- installed_runtime_is_the_exact_candidate_and_explicit_compatibility_set stdout ----
+
+thread 'installed_runtime_is_the_exact_candidate_and_explicit_compatibility_set' (10824) panicked at crates\xtask\tests\..\..\..\tools\authority-runtime-074\history_reader.rs:4:9:
+assertion `left == right` failed: one exact history gate edit
+  left: 0
+ right: 1
+
+---- legacy_adapters_preserve_complete_prior_test_bodies_and_assertions stdout ----
+
+thread 'legacy_adapters_preserve_complete_prior_test_bodies_and_assertions' (53420) panicked at crates\xtask\tests\..\..\..\tools\authority-runtime-074\history_reader.rs:4:9:
+assertion `left == right` failed: one exact history gate edit
+  left: 0
+ right: 1
+
+
+failures:
+    approved_predecessor_views_do_not_replace_current_runtime_validation
+    baseline_partial_install_and_unrelated_effects_refuse_before_restoration
+    installed_runtime_is_the_exact_candidate_and_explicit_compatibility_set
+    legacy_adapters_preserve_complete_prior_test_bodies_and_assertions
+
+test result: FAILED. 1 passed; 4 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.59s
+

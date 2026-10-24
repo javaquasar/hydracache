@@ -1,0 +1,48 @@
+"""Emit only the explicitly inspected compatibility deltas and fixed additions."""
+import difflib
+import hashlib
+import json
+import subprocess
+from pathlib import Path
+ROOT = Path(__file__).resolve().parent.parent
+SOURCE = '33c54b0cda8c330b115009cdf092ad002077cedf'
+REVIEWED = 'b571bef2bcd2ceb3ed044c9e31bce4f670cfafdd'
+def git(*args):
+    return subprocess.check_output(['git', '--no-replace-objects', *args], cwd=ROOT)
+def frozen(revision, path):
+    return git('show', f'{revision}:{path}').decode().replace('\r\n', '\n')
+paths = ['crates/xtask/tests/' + name for name in [
+    'authority_context_074.rs', 'authority_key_hex_074.rs', 'custody_preparation_cost_074.rs',
+    'diagnostic_artifact_fixture_074.rs', 'document_scratch_cost_074.rs', 'fresh_kernel_cost_074.rs',
+    'pid_path_cost_074.rs', 'support/held_material_live_guard.rs', 'support/remaining_preparation_guard.rs']]
+patches = {}
+for path in paths:
+    old = frozen(SOURCE, path)
+    current = frozen(REVIEWED, path)
+    old_lines, new_lines = old.splitlines(keepends=True), current.splitlines(keepends=True)
+    groups = difflib.SequenceMatcher(None, old_lines, new_lines, autojunk=False).get_grouped_opcodes(3)
+    edits = []
+    reconstructed = old
+    for group in groups:
+        before = ''.join(old_lines[group[0][1]:group[-1][2]])
+        after = ''.join(new_lines[group[0][3]:group[-1][4]])
+        assert before and before != after and reconstructed.count(before) == 1, path
+        edits.append(dict(before=before, after=after))
+        reconstructed = reconstructed.replace(before, after, 1)
+    assert reconstructed == current and edits
+    patches[path] = dict(edits=edits, source_sha256=hashlib.sha256(old.encode()).hexdigest(),
+                         current_sha256=hashlib.sha256(current.encode()).hexdigest())
+scope = ['tools/long-run-supervisor-074/src', 'tools/long-run-supervisor-074/tests']
+old = set(git('ls-tree', '-r', '--name-only', SOURCE, '--', *scope).decode().splitlines())
+additions = {}
+for line in git('ls-tree', '-r', REVIEWED, '--', *scope).decode().splitlines():
+    descriptor, path = line.split('\t')
+    mode, kind, blob = descriptor.split()
+    if path in old: continue
+    assert mode == '100644' and kind == 'blob'
+    raw = frozen(REVIEWED, path).encode()
+    additions[path] = dict(mode=mode, blob=blob, sha256=hashlib.sha256(raw).hexdigest(), bytes=len(raw))
+assert len(additions) == 81
+print(json.dumps(dict(schema='hc074-current-tree-test-input-v1', source=SOURCE,
+    reviewed=REVIEWED, purpose='test-source-compatibility-only', execution_admitted=False,
+    patches=patches, additions=additions), indent=2, sort_keys=True))

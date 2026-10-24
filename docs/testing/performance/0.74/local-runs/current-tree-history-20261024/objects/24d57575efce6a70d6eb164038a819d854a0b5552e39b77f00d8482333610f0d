@@ -1,0 +1,23 @@
+
+running 7 tests
+test controls::tests::failed_loader_never_publishes_partial_data_or_poisons_other_keys ... ok
+test controls::tests::loader_can_read_another_key_without_holding_the_index_lock ... ok
+test controls::tests::revisions_paths_and_cache_instances_do_not_share_entries ... ok
+test controls::tests::same_immutable_key_loads_once_and_returned_strings_are_independent ... ok
+test controls::tests::concurrent_same_key_runs_one_complete_loader ... ok
+test reviewed_inputs_delegate_only_their_exact_frozen_lookup ... ok
+test immutable_source_cache_changes_only_the_historical_loader_not_current_validation ... FAILED
+
+failures:
+
+---- immutable_source_cache_changes_only_the_historical_loader_not_current_validation stdout ----
+
+thread 'immutable_source_cache_changes_only_the_historical_loader_not_current_validation' (32128) panicked at crates\xtask\tests\historical_source_cache_074.rs:69:5:
+assertion failed: same(&expected, &actual)
+
+
+failures:
+    immutable_source_cache_changes_only_the_historical_loader_not_current_validation
+
+test result: FAILED. 6 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+

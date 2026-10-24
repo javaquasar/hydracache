@@ -1,0 +1,104 @@
+"""Retain the entire source-gate sequence, including rejected global changes."""
+from pathlib import Path
+import hashlib
+import json
+import re
+import shutil
+import subprocess
+ROOT = Path(__file__).resolve().parent.parent
+OUT = ROOT / 'docs/testing/performance/0.74/local-runs/current-tree-history-20261024'
+OUT.mkdir(parents=True, exist_ok=False)
+(OUT / 'objects').mkdir()
+(OUT / '.gitattributes').write_text('index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n', encoding='utf-8', newline='\n')
+members = {}
+def put(name, raw):
+    digest = hashlib.sha256(raw).hexdigest()
+    path = OUT / 'objects' / digest
+    if path.exists(): assert path.read_bytes() == raw
+    else:
+        with path.open('xb') as stream: stream.write(raw)
+    assert name not in members
+    members[name] = dict(bytes=len(raw), sha256=digest)
+phases = ['current-tree-input-baseline', 'current-tree-reader-baseline',
+    'current-tree-input-candidate', 'current-tree-format-candidate',
+    'current-tree-step-check', 'current-tree-step-clippy', 'current-tree-known-failures',
+    'current-tree-cache-diagnostic', 'current-tree-scoped-candidate',
+    'current-tree-final-focused', 'current-tree-final-check', 'current-tree-final-clippy',
+    'current-tree-final-format', 'current-tree-package-first',
+    'current-tree-doc', 'current-tree-contract', 'current-tree-gated']
+failures = {'current-tree-input-baseline', 'current-tree-reader-baseline',
+    'current-tree-input-candidate', 'current-tree-step-clippy', 'current-tree-cache-diagnostic'}
+results = {}
+for phase in phases:
+    directory = ROOT / 'target/source-continuation-20261024' / phase
+    result = json.loads((directory / 'result.json').read_text())
+    if phase != 'current-tree-package-first':
+        assert result['exit'] == (101 if phase in failures else 0), phase
+        assert result['outer_refusal'] is None
+    else:
+        assert result['outer_refusal'] in {None, 'outer-timeout'}
+        if result['outer_refusal'] is None: assert result['exit'] in {0,101}
+    assert result['source_unchanged'] and result['head_unchanged']
+    counts = [tuple(map(int, values)) for values in re.findall(
+        r'test result: \w+\. (\d+) passed; (\d+) failed; (\d+) ignored; (\d+) measured; (\d+) filtered out',
+        (directory / 'stdout.log').read_text(encoding='utf-8'))]
+    results[phase] = dict(exit=result['exit'], outer_refusal=result['outer_refusal'],
+        target_verdicts=len(counts), passed=sum(c[0] for c in counts),
+        failed=sum(c[1] for c in counts), ignored=sum(c[2] for c in counts),
+        filtered=sum(c[4] for c in counts))
+    for name in ['intent.json', 'result.json', 'stdout.log', 'stderr.log']:
+        put(f'observation/{phase}/{name}', (directory / name).read_bytes())
+    if (directory / 'owned-cleanup.log').exists():
+        put(f'observation/{phase}/owned-cleanup.log', (directory / 'owned-cleanup.log').read_bytes())
+base = 'b571bef2bcd2ceb3ed044c9e31bce4f670cfafdd'
+paths = ['crates/xtask/tests/' + name for name in [
+    'authority_rust_history_074.rs', 'authority_runtime_074.rs',
+    'current_tree_input_audit_074.rs', 'current_tree_reader_074.rs',
+    'support/current_tree_input.rs', 'support/current_tree_input_rules_074.json']]
+paths += ['tools/authority-runtime-074/history_reader.rs']
+changed = subprocess.check_output(['git','diff','--name-only',base,'--','crates','tools','Cargo.toml','Cargo.lock','deny.toml'], cwd=ROOT,text=True).splitlines()
+assert sorted(changed) == sorted(paths)
+for path in paths: put('source/current/' + path, (ROOT / path).read_bytes())
+for path in paths[:2] + ['tools/authority-runtime-074/gate.rs']:
+    put('source/baseline/' + path, subprocess.check_output(['git','--no-replace-objects','show',f'{base}:{path}'], cwd=ROOT))
+generic_paths = [paths[0], 'tools/authority-runtime-074/gate.rs', paths[-1], paths[4], paths[5], paths[3], paths[2]]
+for folder, phase in [('current-tree-first-candidate-20261024','current-tree-input-candidate'),
+                      ('current-tree-generic-gateway-20261024','current-tree-format-candidate')]:
+    intent = json.loads((ROOT / 'target/source-continuation-20261024' / phase / 'intent.json').read_text())
+    for path in generic_paths:
+        raw = (ROOT / 'target' / folder / Path(path).name).read_bytes()
+        assert hashlib.sha256(raw).hexdigest() == intent['source'][path], path
+        put(f'source/rejected/{folder}/{path}', raw)
+intent = json.loads((ROOT / 'target/source-continuation-20261024/current-tree-scoped-candidate/intent.json').read_text())
+for path in [paths[3], paths[-1]]:
+    raw = (ROOT / 'target/current-tree-first-scoped-20261024' / Path(path).name).read_bytes()
+    assert hashlib.sha256(raw).hexdigest() == intent['source'][path]
+    put('source/first-scoped/' + path, raw)
+initial = (ROOT / 'target/current-tree-input-initial-20261024.rs').read_bytes()
+intent = json.loads((ROOT / 'target/source-continuation-20261024/current-tree-input-baseline/intent.json').read_text())
+assert hashlib.sha256(initial).hexdigest() == intent['source'][paths[2]]
+put('source/first-audit/' + paths[2], initial)
+for name in ['run-source-step-20261024.py','run-fresh-reader-20261024.py',
+    'run-xtask-package-780-20261024.py','emit-current-tree-rules-20261024.py',
+    'retain-initial-current-tree-audit-20261024.py','retain-scoped-current-tree-20261024.py',
+    'seal-current-tree-20261024.py']:
+    put('coordinator/' + name, (ROOT / 'target' / name).read_bytes())
+put('source/committed-code.diff', subprocess.check_output(['git','diff',base,'--',*paths], cwd=ROOT))
+protected = {'Cargo.toml':'18a8a27cf140a1d6eb31c8316ee39bb7d5832866a990346eee16cd0c30de344b',
+    'Cargo.lock':'d2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c',
+    'docs/testing/performance/0.74/qualification-manifest.toml':'11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc'}
+for path, expected in protected.items(): assert hashlib.sha256((ROOT/path).read_bytes()).hexdigest() == expected
+assert not subprocess.check_output(['git','diff',base,'--','tools/authority-runtime-074/gate.rs'], cwd=ROOT)
+facts = dict(baseline=base, final_code_commit=subprocess.check_output(['git','rev-parse','HEAD'], cwd=ROOT,text=True).strip(),
+    results=results, code_paths=paths, protected_sha256=protected, unchanged_common_gateway=True,
+    known_input_patches=9, declared_source_additions=81, original_history_tests=10,
+    original_historical_guards=30, original_historical_assertion_tests=79,
+    initial_frontier_refusals=90, rejected_global_gateway_retained=True,
+    dependency_changes=False, observation_frequency_changed=False, deadlines_changed=False,
+    runtime_changes=False, server=False, services_or_clocks=False, qualification=False,
+    original_owner=False, performance_measurements=False, package_outer_bound_seconds=780,
+    package_retry=False, free_bytes_at_capture=shutil.disk_usage(ROOT).free)
+raw = (json.dumps(dict(schema='hc074-current-tree-history-v1',facts=facts,members=members),indent=2,sort_keys=True)+'\n').encode()
+with (OUT/'index.json').open('xb') as stream: stream.write(raw)
+print(json.dumps(dict(index_sha256=hashlib.sha256(raw).hexdigest(),members=len(members),
+                     objects=len(list((OUT/'objects').iterdir())),results=results),indent=2))

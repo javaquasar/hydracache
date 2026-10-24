@@ -6819,3 +6819,15 @@ and canonical bytes before exposing the known 446-file inventory. All twenty
 old artifact cases and their whole-body comparisons pass without assertion or
 count changes; the final focused cohort has thirty-three passing cases. The
 independent current-tree history gate and actual execution admission stay open.
+
+The [current-tree history result](current-tree-history-result-20261024.md) closes
+that focused source gate with nine exact old-input patches and a fixed catalogue
+of eighty-one declared additions. Thirty-six cases and strict checks pass; the
+common runtime gateway/cache contract remains unchanged after a rejected broad
+extension. Source compatibility still grants no execution or server authority.
+
+Its first changed-source whole-package check now finishes within the original
+780-second bound: 1173 pass, three fail, none ignored/filtered, across 128
+targets. The new frontier is remaining-preparation and validation-round launcher
+source views plus the validation-leaf historical gate registry. No retry follows;
+the original partial timeout and all first failures remain retained.

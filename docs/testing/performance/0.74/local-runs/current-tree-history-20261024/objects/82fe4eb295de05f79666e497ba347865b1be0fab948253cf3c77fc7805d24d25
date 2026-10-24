@@ -1,0 +1,108 @@
+
+running 1 test
+test current_tree_input_frontier_is_fully_accounted_without_path_exclusions ... FAILED
+
+failures:
+
+---- current_tree_input_frontier_is_fully_accounted_without_path_exclusions stdout ----
+CURRENT_TREE_FRONTIER body: crates/xtask/tests/authority_context_074.rs
+CURRENT_TREE_FRONTIER body: crates/xtask/tests/authority_key_hex_074.rs
+CURRENT_TREE_FRONTIER body: crates/xtask/tests/custody_preparation_cost_074.rs
+CURRENT_TREE_FRONTIER body: crates/xtask/tests/diagnostic_artifact_fixture_074.rs
+CURRENT_TREE_FRONTIER body: crates/xtask/tests/document_scratch_cost_074.rs
+CURRENT_TREE_FRONTIER body: crates/xtask/tests/fresh_kernel_cost_074.rs
+CURRENT_TREE_FRONTIER body: crates/xtask/tests/pid_path_cost_074.rs
+CURRENT_TREE_FRONTIER body: crates/xtask/tests/support/held_material_live_guard.rs
+CURRENT_TREE_FRONTIER body: crates/xtask/tests/support/remaining_preparation_guard.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/bin/diagnostic_held_bootstrap.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_build.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_build_tests.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_census_entry.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_child_ingress.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_child_reader.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_child_reader_tests.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_child_role_kernel.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_child_roles.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_child_roles_tests.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_closed_inventory.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_current_image.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_enrollment.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_enrollment_tests.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_entry_binding.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_entry_binding_tests.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_entry_census.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_entry_format.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_entry_resource.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_held_child.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_held_inventory.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_held_mode.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_held_transport.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_image_census.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_image_census_tests.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_image_entry.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_image_provider.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_installed_census.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_installed_census_tests.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_installed_child.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_installed_child_tests.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_installed_entry_census.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_installed_entry_census_tests.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_installed_entry_format.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_installed_entry_format_tests.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_installed_entry_owner.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_installed_entry_owner_tests.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_installed_entry_resource.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_installed_entry_resource_tests.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_installed_executable.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_installed_inventory.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_installed_mode.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_installed_owner.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_installed_owner_tests.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_installed_source.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_installed_source_tests.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_original_inventory.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_owner.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_owner_tests.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_sandbox_owner.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_sealed.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_selected_build.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bootstrap_selected_build_tests.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_bundle_role_census.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_guardian_role_census.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_held_activation.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_held_activation_ingress.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_held_child_exchange.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_held_child_exchange_tests.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_held_delivery_wire.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_held_delivery_wire_tests.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_held_role_census.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_held_role_census_tests.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_manager_held_delivery.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_manager_sandbox_query.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_material_role_census.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_original_held_delivery.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_projection_fields.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_projection_fields_tests.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_sandbox_process.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/tests/bootstrap_child_census.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/tests/bootstrap_child_reader.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/tests/bootstrap_current_image.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/tests/support/bootstrap_census_material.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/tests/support/bootstrap_child_material.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/tests/support/bootstrap_held_entry_controls.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/tests/support/bootstrap_installed_controls.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/tests/support/held_activation_process.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/tests/support/held_original_service_documents.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/tests/support/held_original_service_live.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/tests/support/held_original_service_scope.rs
+
+thread 'current_tree_input_frontier_is_fully_accounted_without_path_exclusions' (17584) panicked at crates\xtask\tests\current_tree_input_audit_074.rs:88:5:
+90 current-tree inputs remain
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    current_tree_input_frontier_is_fully_accounted_without_path_exclusions
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 9.11s
+

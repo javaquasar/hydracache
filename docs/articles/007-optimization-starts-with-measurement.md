@@ -19075,3 +19075,27 @@ passes and strict checks are green; the
 [projection result](../testing/performance/0.74/artifact-phase-projection-result-20261024.md)
 retains first compiler/baseline refusals and separates source compatibility from
 the still-open execution and full-package gates.
+
+The independent history gate exposed a broader distinction: nine known changes
+to historical test inputs and eighty-one later bootstrap/census source additions.
+The accepted source-only catalogue binds exact paths, bytes and index identities;
+it is explicitly not execution enrollment. Unknown additions and altered bodies
+still refuse. Thirty-six focused cases pass with the original ten history tests,
+thirty guard definitions and seventy-nine historical assertion-test names intact.
+
+Direct-dependent checks also prevented an overly broad repair. A common gateway
+extension passed the immediate cohort but broke the immutable-cache preservation
+contract. It was rejected; compatibility now lives in two specific test readers,
+and the common gateway remains unchanged. The
+[history result](../testing/performance/0.74/current-tree-history-result-20261024.md)
+retains both that negative result and the accepted scoped checks. Passing a source
+compatibility gate must not become a claim about original process authentication,
+writer revocation or server readiness.
+
+The first full package check on the repaired source finishes inside its original
+780-second bound: 1173 cases pass and three fail across 128 target verdicts,
+without ignored or filtered cases. This is a complete diagnostic result, not a
+green package: remaining-preparation/validation-round historical launcher views
+and a validation-leaf registry view still refuse. Preserve the old timeout and
+these first failures, then attribute the exact remaining differences. Changing
+the deadline or suppressing an assertion would answer a different question.

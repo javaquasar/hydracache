@@ -1,0 +1,4 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 7.60s
+     Running tests\current_tree_input_audit_074.rs (target\debug\deps\current_tree_input_audit_074-c3765a3eaa3bd40a.exe)
+error: test failed, to rerun pass `-p xtask --test current_tree_input_audit_074`
