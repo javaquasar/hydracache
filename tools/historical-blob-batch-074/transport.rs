@@ -213,6 +213,26 @@ pub fn read(
     policy: Replacements,
     deadline: Instant,
 ) -> Result<Vec<Output>, Refusal> {
+    read_observed(root, specs, pins, policy, deadline, |_| {})
+}
+
+/// Logical cuts for deterministic mutation controls in this isolated experiment.
+/// Observer work uses the original deadline; it is not a validation authority.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Point {
+    BatchValidated,
+    BeforeFallback,
+    AfterFallback,
+}
+
+pub fn read_observed(
+    root: &Path,
+    specs: &[String],
+    pins: &[Expected],
+    policy: Replacements,
+    deadline: Instant,
+    mut observe: impl FnMut(Point),
+) -> Result<Vec<Output>, Refusal> {
     timely(deadline)?;
     if specs.is_empty()
         || specs.len() > 256
@@ -246,6 +266,7 @@ pub fn read(
         return Err(Refusal::Process);
     }
     let records = decoder::decode(&batch.stdout, pins).map_err(Refusal::Protocol)?;
+    observe(Point::BatchValidated);
     let mut outputs = Vec::with_capacity(specs.len());
     let (mut out_bytes, mut err_bytes) = (0, 0);
     for (spec, record) in specs.iter().zip(records) {
@@ -259,7 +280,12 @@ pub fn read(
                 stderr: vec![],
                 code: Some(0),
             },
-            _ => git(root, policy, &["show", spec], &[], deadline)?,
+            _ => {
+                observe(Point::BeforeFallback);
+                let result = git(root, policy, &["show", spec], &[], deadline)?;
+                observe(Point::AfterFallback);
+                result
+            }
         };
         out_bytes += output.stdout.len();
         err_bytes += output.stderr.len();

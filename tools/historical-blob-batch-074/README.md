@@ -142,3 +142,48 @@ cross-test ordering dependencies. Source snapshots precede every captured phase.
 Before integration, test mutation/ambiguity/config/provenance refusals, supported
 platforms and the cost of reference preparation and spooling. No integrated
 speedup or complete-package pass is claimed.
+
+## Mutation controls before caller integration
+
+`historical_blob_fault_074` characterizes stale pins and deterministic mutation
+cuts on disposable repositories. `read_observed` adds test-only cuts after batch
+validation and around fallback; ordinary `read` supplies an empty observer. All
+existing checks, ordering and deadlines remain; observer time consumes that same
+deadline. Expiry at the first cut prevents fallback and returns `Deadline`.
+
+The admission gate is **false**. Under default replacement policy, a missing pin
+can validate, a replacement commit can introduce the path immediately before
+fallback, and the unchecked `show` result can return those new bytes successfully.
+Removing the replacement immediately afterward restores the initial ref state
+but does not undo the returned bytes. Explicit replacement disabling withstands
+this particular control; it does not establish general config/ref authority.
+The passing characterization test deliberately reproduces this counterexample,
+not a safe refusal. No old source loader imports this component.
+
+Pre-batch stale blob content, changed replacement configuration, stale absence,
+ambiguous short commits and missing objects produce exact refusal classes.
+An unrelated branch/HEAD change leaves full-ID bytes unchanged. The installed
+Git's Unicode tree `show` output did not change with `core.quotePath`; the first
+opposite expectation is retained as a negative fixture hypothesis. Likewise,
+missing loose objects yield a batch `missing` record and `Protocol(Header)`, not
+the initially expected `Process`. Neither correction changes the reader.
+
+```powershell
+cargo +1.94.0 test --offline --locked -p xtask --test historical_blob_fault_074
+cargo +1.88.0 test --offline --locked -p xtask --test historical_blob_fault_074
+```
+
+The fault oracle's explicit `--fault-controls` mode prepares only its two needed
+reference profiles (18 results); the default six-profile/54-result oracle is
+unchanged. Both fault targets pass on current/MSRV. The first MSRV attempt using
+the full preparation hit its unchanged 30-second bound before fault controls.
+Later concurrent current/MSRV combined runs pass the new fault target but hit
+that bound in the old full-oracle target (five other transport cases pass).
+Those combined runs are red and are not retried or relabeled as complete passes.
+The earlier current-Rust complete 9/1/6 pass remains a separate first outcome.
+See the retained [fault report](../../docs/testing/performance/0.74/historical-blob-fault-result-20261024.md).
+
+Before integration, choose and prove how mutable fallback results are bound to
+the requested reference view. A final ref/config comparison alone cannot detect
+the demonstrated ABA. Do not silently disable replacements, expand short IDs,
+refresh pins from observed bytes or drop an old guard's fresh observations.

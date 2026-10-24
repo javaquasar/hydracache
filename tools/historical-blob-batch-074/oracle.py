@@ -10,7 +10,16 @@ import sys
 import reader
 
 
-def prepare(root):
+def profiles(fault_controls, replaced):
+    if not isinstance(fault_controls, bool) or not isinstance(replaced, bool):
+        raise ValueError('explicit fixture modes required')
+    if fault_controls:
+        return [('default' if replaced else 'disabled', False)]
+    return [('disabled', False), ('default', False), ('default', True)]
+
+
+def prepare(root, *, fault_controls=False):
+    profiles(fault_controls, False)  # Refuse invalid mode before fixture effects.
     root = Path(root).resolve(strict=True)
     if not root.is_dir() or any(root.iterdir()):
         raise ValueError('existing empty fixture root required')
@@ -70,7 +79,7 @@ def prepare(root):
     cases = []
     for name, replaced in [('plain', False), ('replaced', True)]:
         repo, first, second = build(name, replaced)
-        for policy, short in [('disabled', False), ('default', False), ('default', True)]:
+        for policy, short in profiles(fault_controls, replaced):
             revision = first[:8] if short else first
             specs = [revision + ':' + path for path in
                      ('binary', 'empty', 'space-λ', 'folder/large', 'link', 'missing', 'folder', 'binary')]
@@ -95,13 +104,14 @@ def prepare(root):
             cases.append(dict(root=name, policy=policy, short=short, replaced=replaced,
                               specs=specs, pins=pins, expected=outputs, python_prototype=python_prototype))
     git_path = Path(shutil.which('git')).resolve(strict=True)
-    return dict(schema='hc074-blob-native-synthetic-oracle-v1', cases=cases,
+    return dict(schema=('hc074-blob-fault-synthetic-oracle-v1' if fault_controls
+                        else 'hc074-blob-native-synthetic-oracle-v1'), cases=cases,
                 git_version=git(root / 'plain', 'disabled', '--version').stdout.decode().strip(),
                 git_path=str(git_path), git_executable_sha256=hashlib.sha256(git_path.read_bytes()).hexdigest(),
                 source_authority=False, measurement=False, server=False)
 
 
 if __name__ == '__main__':
-    if len(sys.argv) != 2:
+    if len(sys.argv) not in (2, 3) or (len(sys.argv) == 3 and sys.argv[2] != '--fault-controls'):
         raise SystemExit('one existing empty fixture root required')
-    print(json.dumps(prepare(sys.argv[1]), sort_keys=True))
+    print(json.dumps(prepare(sys.argv[1], fault_controls=len(sys.argv) == 3), sort_keys=True))
