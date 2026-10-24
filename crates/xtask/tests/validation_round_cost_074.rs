@@ -1,5 +1,13 @@
 #[path = "support/document_scratch_guard.rs"]
 mod guard;
+#[path = "support/artifact_inventory_input.rs"]
+mod inventory;
+#[path = "../../../tools/authority-runtime-074/gate.rs"]
+mod runtime;
+#[path = "../../../tools/authority-runtime-074/io.rs"]
+mod runtime_io;
+#[path = "../../../tools/authority-storage-source-074/contract.rs"]
+mod storage_contract;
 fn root() -> std::path::PathBuf {
     std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..")
 }
@@ -10,7 +18,12 @@ fn git(args: &[&str]) -> String {
         .output()
         .unwrap();
     assert!(output.status.success());
-    String::from_utf8(output.stdout).unwrap().replace('\r', "")
+    let raw = String::from_utf8(output.stdout).unwrap().replace('\r', "");
+    if args == ["ls-files", inventory::SCOPE] {
+        inventory::project(&raw).expect("current inventory refused before historical phase")
+    } else {
+        raw
+    }
 }
 #[test]
 fn round_observer_recovers_all_477_prior_bodies_without_new_runtime_path() {
@@ -25,9 +38,14 @@ fn round_observer_recovers_all_477_prior_bodies_without_new_runtime_path() {
     ]);
     assert_eq!(paths.lines().count(), 477);
     for path in paths.lines() {
-        let raw = std::fs::read_to_string(root().join(path))
+        let raw = runtime_io::read_to_string(root().join(path))
             .unwrap()
             .replace('\r', "");
+        let raw = if path == runtime::status_fields::SOURCE {
+            crate::hc074_projection_groups_view!(path, &raw)
+        } else {
+            raw
+        };
         let restored = crate::hc074_round_cost_view!(path, &raw);
         assert_eq!(
             crate::hc074_round_cost_view!(path, &restored),

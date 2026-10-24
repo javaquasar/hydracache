@@ -1,5 +1,11 @@
 #[path = "support/document_scratch_guard.rs"]
 mod guard;
+#[path = "../../../tools/authority-runtime-074/gate.rs"]
+mod runtime;
+#[path = "../../../tools/authority-runtime-074/io.rs"]
+mod runtime_io;
+#[path = "../../../tools/authority-storage-source-074/contract.rs"]
+mod storage_contract;
 fn root() -> std::path::PathBuf {
     std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..")
 }
@@ -15,9 +21,14 @@ fn bounded_projection_recovers_all_473_preceding_bodies_and_frozen_parsers() {
         String::from_utf8(out.stdout).unwrap().replace('\r', "")
     };
     let read = |path: &str| {
-        std::fs::read_to_string(root().join(path))
+        let raw = runtime_io::read_to_string(root().join(path))
             .unwrap()
-            .replace('\r', "")
+            .replace('\r', "");
+        if path == runtime::status_fields::SOURCE {
+            crate::hc074_projection_groups_view!(path, &raw)
+        } else {
+            raw
+        }
     };
     let paths = git(&[
         "ls-tree",

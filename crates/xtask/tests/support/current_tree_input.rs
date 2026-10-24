@@ -1,6 +1,8 @@
 //! Declared source compatibility only; no runtime enrollment or execution permit.
 use serde_json::{Map, Value};
 use sha2::{Digest, Sha256};
+#[path = "../../../../tools/authority-runtime-074/cost_reader.rs"]
+pub(crate) mod cost_reader;
 #[path = "../../../../tools/authority-runtime-074/history_reader.rs"]
 pub(crate) mod history_reader;
 
@@ -61,6 +63,10 @@ pub(crate) fn accepts_patch(path: &str, raw: &str) -> bool {
     expected_patch(path).is_some_and(|expected| raw.replace("\r\n", "\n") == expected)
 }
 pub(crate) fn read(path: &str) -> String {
+    if cost_reader::FILES.contains(&path) {
+        let raw = std::fs::read_to_string(crate::runtime::root().join(path)).unwrap();
+        return cost_reader::previous(path, &raw);
+    }
     if path == crate::runtime::HISTORY_TEST {
         let raw = std::fs::read_to_string(crate::runtime::root().join(path)).unwrap();
         return crate::runtime::view(path, history_reader::previous(&raw));

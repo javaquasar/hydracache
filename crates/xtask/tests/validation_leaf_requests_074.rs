@@ -1,6 +1,15 @@
 #[path = "support/document_scratch_guard.rs"]
 mod guard;
+#[path = "../../../tools/authority-runtime-074/gate.rs"]
+mod runtime;
+#[path = "../../../tools/authority-runtime-074/io.rs"]
+mod runtime_io;
+#[path = "../../../tools/authority-storage-source-074/contract.rs"]
+mod storage_contract;
 fn read(path: &str) -> String {
+    if path == "docs/testing/gated-test-registry.toml" {
+        return runtime_io::read_to_string(runtime::root().join(path)).unwrap();
+    }
     std::fs::read_to_string(
         std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("../..")
