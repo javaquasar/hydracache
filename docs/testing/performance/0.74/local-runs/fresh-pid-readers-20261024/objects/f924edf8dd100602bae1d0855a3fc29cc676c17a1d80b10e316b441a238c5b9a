@@ -1,0 +1,49 @@
+
+running 2 tests
+test hex_reader_changes_only_registry_input_and_preserves_every_old_assertion ... ok
+test hex_registry_view_requires_exact_current_bytes_before_the_old_view ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.17s
+
+
+running 2 tests
+test authority_hex_current_candidate_is_exact_and_reference_is_frozen ... ok
+test authority_hex_restores_preceding_bodies_and_rejects_unknown_encoder ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.34s
+
+
+running 2 tests
+test fresh_status_reconstructs_all_changed_old_bodies_and_hooks ... ok
+test fresh_status_adapter_refuses_missing_duplicate_and_other_validation_drift ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.42s
+
+
+running 2 tests
+test fresh_status_reader_changes_only_admission_input_before_original_normalizers ... ok
+test fresh_status_admission_requires_exact_source_and_helper_before_old_input ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.19s
+
+
+running 3 tests
+test pid_path_adopted_formatter_is_exactly_the_measured_frozen_prototype ... ok
+test pid_path_reconstructs_every_changed_old_body_and_test_hook ... ok
+test pid_path_adapter_refuses_missing_duplicate_and_unrelated_live_drift ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.37s
+
+
+running 1 test
+test pid_path_reader_preserves_all_old_assertions_and_normalizer_order ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+
+running 2 tests
+test status_field_scan_exact_current_source_precedes_any_historical_view ... ok
+test status_field_scan_refuses_removed_guards_reads_order_and_helper_drift ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.28s
+

@@ -6790,3 +6790,11 @@ selected cases and xtask strict checks pass afterwards. Every old assertion and
 unknown-registry refusal remains. The original dependency baseline again has
 fifteen advisories; neither dependency updates nor ReservedLive coalescing is
 authorized. Wider package/runtime/server admission is still unproved.
+
+The [fresh-status and PID-path reader result](fresh-status-pid-reader-result-20261024.md)
+repairs two further retained whole-body comparisons through the existing exact
+status-source gateway, before their unchanged normalization chains. Fifteen
+selected cases, all-targets check and strict Clippy pass on the final source.
+First baseline and lint refusals remain archived; this does not make the wider
+package green or change dependencies, live-check frequency, deadlines or server
+admission.

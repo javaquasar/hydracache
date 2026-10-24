@@ -1,0 +1,19 @@
+
+running 2 tests
+test fresh_status_reader_changes_only_admission_input_before_original_normalizers ... FAILED
+test fresh_status_admission_requires_exact_source_and_helper_before_old_input ... ok
+
+failures:
+
+---- fresh_status_reader_changes_only_admission_input_before_original_normalizers stdout ----
+
+thread 'fresh_status_reader_changes_only_admission_input_before_original_normalizers' (37092) panicked at crates\xtask\tests\fresh_status_reader_074.rs:28:5:
+assertion failed: storage_contract::accepts(&expected, &current)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    fresh_status_reader_changes_only_admission_input_before_original_normalizers
+
+test result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.21s
+

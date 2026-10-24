@@ -1,0 +1,18 @@
+
+running 1 test
+test pid_path_reader_preserves_all_old_assertions_and_normalizer_order ... FAILED
+
+failures:
+
+---- pid_path_reader_preserves_all_old_assertions_and_normalizer_order stdout ----
+
+thread 'pid_path_reader_preserves_all_old_assertions_and_normalizer_order' (30128) panicked at crates\xtask\tests\pid_path_reader_074.rs:23:5:
+assertion failed: storage_contract::accepts(&expected, &current)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    pid_path_reader_preserves_all_old_assertions_and_normalizer_order
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+

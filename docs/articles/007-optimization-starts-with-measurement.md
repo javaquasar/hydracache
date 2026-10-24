@@ -19025,3 +19025,14 @@ pathname substitution, changed assertions and unknown registry bytes. The
 [continuation result](../testing/performance/0.74/operator-boundaries-and-hex-reader-result-20261024.md)
 keeps this targeted repair separate from the still-red wider package and release
 admission.
+
+Two further historical comparisons exposed the same boundary at a different
+input: fresh-status and PID-path tests expected bodies from before the accepted
+status-field parser. Their readers now verify the exact current admission file
+and parser helper, then pass the known predecessor through every original
+normalizer and assertion. Independent canaries reject a widened path selection,
+normalizer bypass and unknown source drift. The final fifteen selected cases and
+strict checks pass; the first canary and lint refusals remain in the
+[reader result](../testing/performance/0.74/fresh-status-pid-reader-result-20261024.md).
+This repairs test compatibility without changing runtime observation frequency,
+and supplies no throughput or server-readiness claim.
