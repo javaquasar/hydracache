@@ -19460,3 +19460,55 @@ A lexical inventory is not expanded-macro or indirect-call reachability proof.
 The full replay stays unproven until that effect closure and the unchanged-bound
 execution are complete. Focused tests and a source-reader cost cohort cannot fill
 an incomplete package suffix or open production delivery and writer retirement.
+
+### Waiting is an observation, not an optimization budget
+
+The [next capture attribution](../testing/performance/0.74/transport-package-result-20261025.md)
+tests the process/capture hypothesis without replacing installed transport. A
+diagnostic mirror must erase to the exact original function, including cleanup,
+limits and deadline checks. One six-block ABBA/BAAB cohort retains 24 first calls,
+with matching independently pinned output. The profile records flat phases and
+reads CPU from the same held child handle, rather than reopening a PID that could
+refer to another process. Final child CPU includes work before the spawn observer.
+
+Unobserved capture has a 48.794-ms wall median; the observed mirror has 49.337 ms.
+In the profile, setup/spawn takes 5.883 ms, accumulated sleep 42.616 ms and result
+reading 0.085 ms. Source/output temporary-file medians are 0.285/0.357 ms. These
+are medians of per-call totals, not additive slices of one median request. Useful
+Git work runs while the parent sleeps. Calling all 42.616 ms waste would convert
+an observation into an unsupported promised speedup. The same caution applies
+to quantized parent/child CPU: a zero parent delta does not mean zero work.
+
+The result does not support a file-copy optimization as the main owner. It does
+not justify shortening waits, weakening live checks or silently amortizing reads
+whose old failure path would never reach. No transport candidate is installed;
+observer overhead is not subtracted and within-process samples are not independent
+host replications. A negative attribution is a useful stopping point for that
+specific hypothesis, not a reason to lower its acceptance criteria.
+
+### A safe replay and a passing replay are different facts
+
+The package review moves beyond lexical strings to actual syntax and module
+edges, finding two default census modules the first scanner omitted. The closed
+inventory has 334 Rust files and 21 pinned auxiliary inputs. Standard macro
+operands and indirect API entry points receive scoped review; quoted service
+commands remain source data. The receipt is tied to literal reviewed hashes,
+so changed inputs cannot approve themselves. This is default-Windows source
+review, not a formal compiler-expansion theorem or Linux execution admission.
+
+That clearance permits one full ordinary package attempt, not a passing verdict.
+The unchanged command reaches its original 780 seconds with 111 of 135 targets
+complete and 801 passing cases. A further 171 cases pass in the incomplete
+321-case `performance_contract_074`; 23 targets never start. Reporting zero
+observed failures as a green package would erase the untested suffix. Increasing
+the bound or rerunning until the host is faster would answer a different question.
+The first timeout, raw cleanup output and clean limited postflight remain evidence.
+
+Finally, preparation tools are not the product release. The
+[six-step continuation](../testing/performance/0.74/release-six-step-continuation-20261025.md)
+keeps the default-off GET-owner's partial allocation result separate from full D3
+and C74 acceptance. It also keeps readiness separate from executable release,
+kill requests from cessation of all writers, snapshots from same-process reconnect,
+synthetic signatures from production enrollment and a scoped audit from expensive
+qualification permission. Those joins need implementations and direct evidence;
+more successful component tests cannot construct them by implication.

@@ -1,0 +1,15 @@
+# Read-only follow-up for the exact taskkill error PIDs; absence is not identity proof.
+$taskLogPath = Join-Path $PSScriptRoot 'source-continuation-20261024/transport-audit-20261025-package-first/owned-cleanup.log'
+$taskLog = Get-Content -LiteralPath $taskLogPath -Raw
+$taskMatches = [regex]::Matches($taskLog, 'ERROR: The process with PID (\d+) \(child process of PID (\d+)\) could not be terminated\.')
+if ($taskMatches.Count -ne 2) { throw 'Unexpected first cleanup transcript; review before acting' }
+$taskIds = @($taskMatches | ForEach-Object { [uint32]$_.Groups[1].Value })
+$taskCurrent = @(Get-CimInstance Win32_Process -ErrorAction Stop)
+$taskRemaining = @($taskCurrent | Where-Object { [uint32]$_.ProcessId -in $taskIds } |
+    ForEach-Object { [ordered]@{pid=[uint32]$_.ProcessId; parent=[uint32]$_.ParentProcessId;
+        name=$_.Name; created=$_.CreationDate.ToUniversalTime().ToString('o')} })
+[ordered]@{schema='hc074-cleanup-error-postflight-v1'; read_only=$true;
+    cleanup_sha256=(Get-FileHash -LiteralPath $taskLogPath -Algorithm SHA256).Hash.ToLowerInvariant();
+    error_pids=$taskIds; currently_present=$taskRemaining;
+    actions_or_signals=$false; unobserved_or_escaped_processes_certified=$false} | ConvertTo-Json -Depth 5
+if ($taskRemaining.Count -ne 0) { throw 'Cleanup PID still present; requires identity review, no signal sent' }

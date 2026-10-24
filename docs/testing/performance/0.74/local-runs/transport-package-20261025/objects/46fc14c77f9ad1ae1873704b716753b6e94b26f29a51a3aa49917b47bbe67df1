@@ -1,0 +1,11 @@
+
+running 6 tests
+test attribution_order_is_balanced_and_not_a_package_measurement ... ok
+test census_cost_child ... ok
+test package_syntax_child ... ok
+test package_syntax_distinguishes_quoted_code_and_macro_effects ... ok
+test profiled_capture_keeps_output_and_early_refusals ... ok
+test transport_capture_child ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.19s
+

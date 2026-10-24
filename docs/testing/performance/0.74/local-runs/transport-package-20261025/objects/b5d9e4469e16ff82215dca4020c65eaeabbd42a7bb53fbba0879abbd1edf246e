@@ -1,0 +1,30 @@
+"""Offline derivation of the first package result; never starts a package or child."""
+from pathlib import Path
+import hashlib
+import json
+import sys
+import tomllib
+
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / 'tools/xtask-package-attribution-074'))
+import review
+
+folder = ROOT / 'target/source-continuation-20261024/transport-audit-20261025-package-first'
+intent = review.decode_json((folder / 'intent.json').read_bytes())
+result = review.decode_json((folder / 'result.json').read_bytes())
+assert intent['head'] == '3e9bcc06ebce3439495200162cb0c1900b8eda53'
+assert intent['argv'] == review.ARGV and intent['bound_seconds'] == 780 and not intent['retry']
+assert result['source_unchanged'] and result['head_unchanged']
+assert intent['source'] == result['source_after']
+assert not result['admission'] and not result['qualification']
+manifest = (ROOT / 'crates/xtask/Cargo.toml').read_bytes()
+assert hashlib.sha256(manifest).hexdigest() == intent['source']['crates/xtask/Cargo.toml']
+catalog = review.catalog(intent['source'], tomllib.loads(manifest.decode()))
+assert len(catalog) == 135
+report = review.parse_transcript((folder / 'stdout.log').read_text(),
+    (folder / 'stderr.log').read_text(), catalog, result['exit'], result['outer_refusal'], 780)
+report['code_commit'] = intent['head']
+report['source_unchanged'] = True
+report['input_sha256'] = {name: hashlib.sha256((folder / name).read_bytes()).hexdigest()
+    for name in ('intent.json', 'result.json', 'stdout.log', 'stderr.log')}
+print(json.dumps(report, indent=2, sort_keys=True))

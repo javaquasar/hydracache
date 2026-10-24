@@ -6975,3 +6975,27 @@ source-only service assertions before full replay. No package dispatch or timeou
 extension occurs. Thirty-nine Windows cases pass on each toolchain, with 54
 Python controls and strict local gates. Full package, original delivery/writer/
 lifecycle, trust/time, security and server admission remain separate.
+
+The [transport/process attribution and reviewed package replay](transport-package-result-20261025.md)
+retain one 24-capture Windows/debug cohort. Installed/profile-mirror wall medians
+are 48.794/49.337 ms; profile sleep totals have median 42.616 ms and overlap useful
+Git work, while setup/spawn is 5.883 ms and result reading 0.085 ms. These are not
+removable-cost estimates or an accepted transport/product optimization. Installed
+capture, fresh checks, conditional reads and deadlines remain unchanged.
+
+The source-bound effect review now closes the default Windows scope over 334 Rust
+files and 21 pinned auxiliary inputs, not formal compiler expansion or Linux/
+all-feature clearance. One full 135-target replay on `3e9bcc06` reaches the original
+780-second guard: 111 targets complete with 801 passing cases; another 171 cases
+pass inside incomplete `performance_contract_074`, and 23 targets never start.
+The package remains red without a retry. Source/HEAD and protected files stay
+unchanged; postflight finds a clean tree and no retained mid-run process identities,
+not a proof of all-writer retirement. Focused Windows/current/MSRV cases are 43
+each, Python controls 63. Raw first build/lint refusals and old failures survive.
+
+The [six-step continuation](release-six-step-continuation-20261025.md) starts the
+requested composition/checks/execution/lifecycle/trust/qualification audit in
+dependency order. GET-owner remains default off with full D3 incomplete, accepted
+performance proposals zero and C74 unresolved. Security updates remain audit-only;
+original delivery still ends at readiness. No services, clocks, server, product
+workload, qualification permission or frozen manifest changes follow.

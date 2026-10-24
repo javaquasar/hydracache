@@ -1,0 +1,140 @@
+"""Seal the first capture cohort, scoped review and unchanged-bound package attempt."""
+from pathlib import Path
+import hashlib
+import json
+import re
+import subprocess
+import sys
+
+ROOT = Path(__file__).resolve().parent.parent
+BASE = 'docs/testing/performance/0.74/local-runs/transport-package-20261025'
+CODE = '3e9bcc06ebce3439495200162cb0c1900b8eda53'
+PROTECTED = {
+    'Cargo.toml': '18a8a27cf140a1d6eb31c8316ee39bb7d5832866a990346eee16cd0c30de344b',
+    'Cargo.lock': 'd2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c',
+    'docs/testing/performance/0.74/qualification-manifest.toml': '11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc',
+}
+sys.path.insert(0, str(ROOT / 'tools/historical-blob-batch-074'))
+import transport_attribution
+import package_effects_review
+
+def sha(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+members, objects, phases = {}, {}, []
+def add(name, raw):
+    assert name not in members, name
+    digest = sha(raw)
+    members[name] = dict(sha256=digest, bytes=len(raw))
+    objects[digest] = raw
+
+def tree(folder, prefix):
+    assert folder.is_dir(), folder
+    for file in sorted(folder.rglob('*')):
+        if file.is_file():
+            add(prefix + '/' + file.relative_to(folder).as_posix(), file.read_bytes())
+
+assert subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT).decode().strip() == CODE
+checks = ROOT / 'target/source-continuation-20261024'
+for folder in sorted(checks.glob('transport-audit-20261025-*')):
+    intent = json.loads((folder / 'intent.json').read_bytes())
+    result = json.loads((folder / 'result.json').read_bytes())
+    if folder.name in ('transport-audit-20261025-build-v1', 'transport-audit-20261025-clippy-v1'):
+        assert result['exit'] == 101 and result['outer_refusal'] is None
+    elif folder.name.endswith('package-first'):
+        assert intent['bound_seconds'] == 780
+    else:
+        assert result['exit'] == 0 and result['outer_refusal'] is None, folder
+    assert result['source_unchanged'] and result['head_unchanged']
+    assert intent['source'] == result['source_after']
+    tree(folder, 'checks/' + folder.name)
+    passed = list(map(int, re.findall(r'test result: ok\. (\d+) passed; 0 failed;',
+        (folder / 'stdout.log').read_text())))
+    if folder.name.endswith(('current-final', 'msrv-final')):
+        assert passed == [6, 4, 9, 11, 5, 6, 2]
+    phases.append(dict(phase=folder.name, exit=result['exit'], outer_refusal=result['outer_refusal'],
+        rust_passes=passed))
+
+capture = ROOT / 'target/transport-capture-20261025/first'
+derived = transport_attribution.review((capture / 'stdout.log').read_bytes())
+assert derived == json.loads((capture / 'result.json').read_bytes())
+tree(capture, 'capture/first')
+for folder in sorted((ROOT / 'target/package-syntax-20261025').iterdir()):
+    tree(folder, 'syntax/' + folder.name)
+tree(ROOT / 'target/reviewed-package-20261025/first', 'package-gate/first')
+
+review = package_effects_review.source_review(ROOT, json.loads(
+    (ROOT / 'target/package-syntax-20261025/final-closure/result.json').read_bytes()))
+assert review['source_effect_review_complete'] and not review['formal_whole_program_proof']
+add('derived/source-review.json', (json.dumps(review, indent=2, sort_keys=True) + '\n').encode())
+for name, digest in {**review['sources'], **review['auxiliary']}.items():
+    raw = (ROOT / name).read_bytes()
+    assert sha(raw) == digest
+    add('reviewed-source/' + name, raw)
+
+package_raw = (checks / 'transport-audit-20261025-package-derived/stdout.log').read_bytes()
+package = json.loads(package_raw)
+assert package['code_commit'] == CODE and package['expected_targets'] == 135
+assert package['outer_bound_seconds'] == 780 and package['source_unchanged']
+add('derived/package.json', package_raw)
+frontier_raw = (checks / 'transport-audit-20261025-six-frontier/stdout.log').read_bytes()
+frontier = json.loads(frontier_raw)
+assert frontier['head'] == CODE and not frontier['freeze_allowed']
+add('derived/six-frontier.json', frontier_raw)
+for name, digest in frontier['sources'].items():
+    raw = (ROOT / name).read_bytes()
+    assert sha(raw) == digest
+    add('frontier-source/' + name, raw)
+
+compiled = json.loads((checks / 'transport-audit-20261025-build-v2/intent.json').read_bytes())['source']
+measured = json.loads((checks / 'transport-audit-20261025-capture-first/intent.json').read_bytes())['source']
+assert all(measured.get(name) == value for name, value in compiled.items()
+    if name.endswith(('.rs', '.toml', '.lock')))
+inner = json.loads((capture / 'intent.json').read_bytes())['source']
+assert all(measured.get(name) == value for name, value in inner.items()
+    if name.endswith(('.rs', '.toml', '.lock')))
+for name in ('crates/xtask/tests/census_cost_074.rs',
+             'tools/historical-blob-batch-074/transport_profile.rs'):
+    file = (checks / 'transport-audit-20261025-clippy-v1/census_cost_074.rs.raw') if name.endswith('census_cost_074.rs') else ROOT / name
+    raw = file.read_bytes()
+    assert sha(raw) == compiled[name] == measured[name]
+    add('measured-source/' + name, raw)
+transport_attribution.mirror_check((ROOT / 'tools/historical-blob-batch-074/transport.rs').read_text(),
+    (ROOT / 'tools/historical-blob-batch-074/transport_profile.rs').read_text())
+
+for name, digest in PROTECTED.items():
+    raw = (ROOT / name).read_bytes()
+    assert sha(raw) == digest
+    add('protected/' + name, raw)
+for name in ('run-source-step-20261024.py', 'run-fresh-reader-20261024.py',
+             'run-xtask-package-780-20261024.py', 'run-reviewed-package-20261025.py',
+             'package-process-observe-20261025.ps1', 'package-postflight-20261025.ps1',
+             'package-cleanup-postflight-20261025.ps1',
+             'analyze-transport-package-20261025.py', 'seal-transport-package-20261025.py',
+             'seal-transport-package-20261025-first.py', 'seal-transport-package-20261025-first-observation.json',
+             'seal-transport-package-20261025-second.py', 'seal-transport-package-20261025-second-observation.json',
+             'release-frontier-20261025.py',
+             'verify-transport-package-staged-20261025.py'):
+    add('coordinators/' + name, (ROOT / 'target' / name).read_bytes())
+for name in ('transport_attribution.py', 'test_transport_attribution.py', 'package_effects_review.py',
+             'test_package_effects_review.py', 'syntax_audit.py', 'test_syntax_audit.py', 'effect_syntax.rs', 'README.md'):
+    add('tool-source/' + name, (ROOT / 'tools/historical-blob-batch-074' / name).read_bytes())
+index = dict(schema='hc074-transport-package-v1', code_commit=CODE, members=members,
+    facts=dict(phases=phases, protected_sha256=PROTECTED, measured_cohorts=1, transport_samples=24,
+        windows_tests_per_toolchain=43, python_controls=63, source_review_files=334,
+        auxiliary_files=21, formal_whole_program_proof=False, linux_effect_admission=False,
+        package_expected_targets=135, package_pass=package['package_pass'],
+        package_completed_targets=package['completed_targets'], package_outer_seconds=780,
+        first_refusals_retained=True, measured_child_repeated=False, product_candidate=False,
+        original_checks_or_deadlines_changed=False, dependency_baseline_changed=False,
+        server=False, services=False, clocks_changed=False, product_workload=False,
+        qualification=False, production_admission=False))
+out = ROOT / BASE
+out.mkdir(parents=True, exist_ok=False)
+(out / 'objects').mkdir()
+(out / '.gitattributes').write_bytes(b'index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n')
+for digest, raw in objects.items():
+    (out / 'objects' / digest).write_bytes(raw)
+raw = (json.dumps(index, indent=2, sort_keys=True) + '\n').encode()
+(out / 'index.json').write_bytes(raw)
+print(json.dumps(dict(index_sha256=sha(raw), members=len(members), objects=len(objects), phases=len(phases))))

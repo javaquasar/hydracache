@@ -1,0 +1,496 @@
+//! Opt-in source-reader attribution; ordinary package execution only checks the protocol.
+#[path = "support/census_provider_input_legacy.rs"]
+mod caller;
+#[path = "../../../tools/historical-blob-batch-074/mod.rs"]
+pub mod census_runtime;
+#[path = "../../../tools/historical-blob-batch-074/effect_syntax.rs"]
+mod effect_syntax;
+#[path = "support/census_provider_input.rs"]
+mod integrated;
+#[path = "../../../tools/historical-blob-batch-074/transport_profile.rs"]
+mod transport_profile;
+
+const OPERATIONS: [&str; 5] = ["original", "accepts", "view", "mismatch", "unrelated"];
+const BLOCKS: usize = 6;
+
+#[test]
+fn package_syntax_distinguishes_quoted_code_and_macro_effects() {
+    let raw = r##"
+        const TEXT: &str = r#"#[path = "absent.rs"] mod absent; Command::new("ssh").spawn()"#;
+        #[path = "real.rs"] mod real;
+        #[test] fn control() { Command::new("git").output(); }
+        macro_rules! spawn_git { () => { Command::new("git").output() }; }
+    "##;
+    let sites = effect_syntax::inventory(raw).unwrap();
+    assert_eq!(
+        sites
+            .iter()
+            .filter(|v| v["kind"] == "command-constructor")
+            .count(),
+        1
+    );
+    assert_eq!(
+        sites
+            .iter()
+            .filter(|v| v["kind"] == "macro-command-constructor")
+            .count(),
+        1
+    );
+    assert_eq!(sites.iter().filter(|v| v["kind"] == "module").count(), 1);
+    assert!(!sites
+        .iter()
+        .any(|v| v["detail"] == "literal:ssh" || v["detail"] == "literal:absent.rs"));
+    assert!(effect_syntax::inventory("fn invalid(").is_err());
+}
+
+#[test]
+fn package_syntax_child() {
+    let Some(input) = std::env::var_os("HC074_PACKAGE_SYNTAX_INPUT") else {
+        return;
+    };
+    use sha2::{Digest, Sha256};
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .canonicalize()
+        .unwrap();
+    let request: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(input).unwrap()).unwrap();
+    let mut rows = vec![];
+    for (name, expected) in request["sources"].as_object().unwrap() {
+        let path = root.join(name).canonicalize().unwrap();
+        assert!(path.starts_with(&root) && path.extension().unwrap() == "rs");
+        let raw = std::fs::read(path).unwrap();
+        let digest: String = Sha256::digest(&raw)
+            .iter()
+            .map(|v| format!("{v:02x}"))
+            .collect();
+        assert_eq!(expected.as_str().unwrap(), digest);
+        let text = std::str::from_utf8(&raw).unwrap();
+        rows.push(serde_json::json!({"source":name,"sha256":digest,"sites":effect_syntax::inventory(text).unwrap()}));
+    }
+    println!(
+        "HC074_SYNTAX {}",
+        serde_json::json!({"sources":rows,"executed_input_code":false,"compiler_expansion":false})
+    );
+}
+
+fn order(block: usize) -> [&'static str; 4] {
+    if block.is_multiple_of(2) {
+        ["legacy", "current", "current", "legacy"]
+    } else {
+        ["current", "legacy", "legacy", "current"]
+    }
+}
+
+#[test]
+fn attribution_order_is_balanced_and_not_a_package_measurement() {
+    for block in 0..BLOCKS {
+        let row = order(block);
+        assert_eq!(row.iter().filter(|v| **v == "legacy").count(), 2);
+        assert_eq!(row.iter().filter(|v| **v == "current").count(), 2);
+        assert_ne!(row[0], row[1]);
+        assert_eq!(row[0], row[3]);
+    }
+    assert_eq!(OPERATIONS.len(), 5);
+    // Keep the old public surface compiled even outside the opt-in Windows runner.
+    let _: fn() -> String = caller::original;
+    let _: fn(&str, &str) -> bool = caller::accepts;
+    let _: fn(&str, &str) -> String = caller::view;
+    let _: fn() -> String = integrated::original;
+    let _: fn(&str, &str) -> bool = integrated::accepts;
+    let _: fn(&str, &str) -> String = integrated::view;
+}
+
+#[test]
+fn census_cost_child() {
+    let Some(input) = std::env::var_os("HC074_CENSUS_COST_INPUT") else {
+        return;
+    };
+    #[cfg(windows)]
+    windows::run(std::path::Path::new(&input));
+    #[cfg(not(windows))]
+    panic!("Windows attribution only: {input:?}");
+}
+
+#[test]
+fn profiled_capture_keeps_output_and_early_refusals() {
+    use census_runtime::transport::{self, Refusal};
+    use std::process::Command;
+    use std::time::Instant;
+    let mut marks = vec![];
+    let actual = transport_profile::run_profiled(
+        &mut Command::new("git").arg("--version"),
+        &[],
+        Instant::now() + transport::BOUND,
+        &mut |event| match event {
+            transport_profile::CaptureEvent::Enter(name) => marks.push((name, true)),
+            transport_profile::CaptureEvent::Leave(name) => marks.push((name, false)),
+            transport_profile::CaptureEvent::Spawned(child)
+            | transport_profile::CaptureEvent::Reaped(child) => assert!(child.id() > 0),
+        },
+    )
+    .unwrap();
+    let expected = transport::run_owned(
+        &mut Command::new("git").arg("--version"),
+        &[],
+        Instant::now() + transport::BOUND,
+    )
+    .unwrap();
+    assert_eq!(actual, expected);
+    let mut pending = None;
+    for (name, enter) in marks {
+        if enter {
+            assert!(pending.replace(name).is_none());
+        } else {
+            assert_eq!(pending.take(), Some(name));
+        }
+    }
+    assert!(pending.is_none());
+    for (input, deadline, expected) in [
+        (&[][..], Instant::now(), Refusal::Deadline),
+        (
+            &vec![0; 256 * 1024 + 1][..],
+            Instant::now() + transport::BOUND,
+            Refusal::Input,
+        ),
+    ] {
+        assert_eq!(
+            transport_profile::run_profiled(
+                &mut Command::new("must-not-spawn"),
+                input,
+                deadline,
+                &mut |_| panic!("no event before early refusal")
+            )
+            .unwrap_err()
+            .refusal,
+            expected
+        );
+    }
+}
+
+#[test]
+fn transport_capture_child() {
+    let Some(input) = std::env::var_os("HC074_TRANSPORT_CAPTURE_INPUT") else {
+        return;
+    };
+    #[cfg(windows)]
+    windows::run_transport(std::path::Path::new(&input));
+    #[cfg(not(windows))]
+    panic!("Windows capture attribution only: {input:?}");
+}
+
+#[cfg(windows)]
+mod windows {
+    use super::{caller, census_runtime, integrated, order, BLOCKS, OPERATIONS};
+    use census_runtime::{census_reference as reference, transport};
+    use serde_json::{json, Value};
+    use sha2::{Digest, Sha256};
+    use std::hint::black_box;
+    use std::path::Path;
+    use std::process::Command;
+    use std::time::Instant;
+    use windows_sys::Win32::Foundation::FILETIME;
+    use windows_sys::Win32::System::Threading::{GetCurrentProcess, GetProcessTimes};
+
+    fn child_times(child: &std::process::Child) -> Value {
+        use std::os::windows::io::AsRawHandle;
+        let [mut created, mut exited, mut kernel, mut user] = [FILETIME {
+            dwLowDateTime: 0,
+            dwHighDateTime: 0,
+        }; 4];
+        // SAFETY: Child owns this live process handle during both observations;
+        // output pointers address distinct FILETIME values. No PID reopening.
+        let result = unsafe {
+            GetProcessTimes(
+                child.as_raw_handle(),
+                &mut created,
+                &mut exited,
+                &mut kernel,
+                &mut user,
+            )
+        };
+        assert_ne!(result, 0);
+        let ticks = |v: &FILETIME| (u64::from(v.dwHighDateTime) << 32) | u64::from(v.dwLowDateTime);
+        json!({"pid":child.id(),"created_100ns":ticks(&created),"exited_100ns":ticks(&exited),
+               "kernel_ns":ticks(&kernel)*100,"user_ns":ticks(&user)*100})
+    }
+
+    pub fn run_transport(input: &Path) {
+        use super::transport_profile::{self, CaptureEvent};
+        let document: Value = serde_json::from_slice(&std::fs::read(input).unwrap()).unwrap();
+        assert_eq!(document["test_fixture_pin_integrity"], true);
+        assert_eq!(document["production_pin_authority"], false);
+        let body = raw(&document["cases"][0]);
+        assert_eq!(body.len(), reference::ROWS[0].1);
+        let digest: String = Sha256::digest(&body)
+            .iter()
+            .map(|v| format!("{v:02x}"))
+            .collect();
+        assert_eq!(digest, reference::ROWS[0].2);
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+        for block in 0..BLOCKS {
+            for (slot, variant) in order(block).iter().enumerate() {
+                let mut spans = vec![];
+                let mut pending = None;
+                let mut child = vec![];
+                let mut observe = |event| match event {
+                    CaptureEvent::Enter(name) => {
+                        assert!(pending.replace((name, Instant::now())).is_none());
+                    }
+                    CaptureEvent::Leave(name) => {
+                        let (original, start) = pending.take().unwrap();
+                        assert_eq!(name, original);
+                        spans.push(json!({"phase":name,"wall_ns":start.elapsed().as_nanos()}));
+                    }
+                    CaptureEvent::Spawned(value) | CaptureEvent::Reaped(value) => {
+                        child.push(child_times(value))
+                    }
+                };
+                let mut command = Command::new("git");
+                command
+                    .arg("--no-replace-objects")
+                    .args([
+                        "show",
+                        &format!("{}:{}", reference::BASE, reference::SOURCE),
+                    ])
+                    .current_dir(&root);
+                let deadline = Instant::now() + transport::BOUND;
+                let (output, wall, parent_cpu) = measure(|| {
+                    if *variant == "legacy" {
+                        transport::run_owned_with_io(&mut command, &[], deadline)
+                    } else {
+                        transport_profile::run_profiled(&mut command, &[], deadline, &mut observe)
+                    }
+                });
+                let output = output.unwrap();
+                assert_eq!(output.code, Some(0));
+                assert_eq!(output.stdout, body);
+                assert!(pending.is_none());
+                if *variant == "current" {
+                    assert_eq!(child.len(), 2);
+                    assert_eq!(child[0]["pid"], child[1]["pid"]);
+                    assert_eq!(child[0]["created_100ns"], child[1]["created_100ns"]);
+                    assert!(child[1]["exited_100ns"].as_u64().unwrap() > 0);
+                } else {
+                    assert!(child.is_empty() && spans.is_empty());
+                }
+                println!(
+                    "\nHC074_TRANSPORT {}",
+                    json!({"block":block,"slot":slot,"variant":variant,
+                    "wall_ns":wall,"parent_cpu_ns":parent_cpu,"spans":spans,"child":child,
+                    "stdout_bytes":output.stdout.len(),"stderr_bytes":output.stderr.len()})
+                );
+            }
+        }
+        println!(
+            "HC074_TRANSPORT_DONE {}",
+            json!({"blocks":BLOCKS,"samples":BLOCKS*4,
+            "legacy_is_unobserved_installed_transport":true,"current_is_profile_mirror":true,
+            "product_candidate":false,"checks_or_deadlines_changed":false})
+        );
+    }
+
+    fn cpu() -> u64 {
+        let [mut created, mut exited, mut kernel, mut user] = [FILETIME {
+            dwLowDateTime: 0,
+            dwHighDateTime: 0,
+        }; 4];
+        // SAFETY: the pseudo-handle is valid for this process and every out-pointer
+        // addresses a distinct, initialized FILETIME for the duration of the call.
+        let result = unsafe {
+            GetProcessTimes(
+                GetCurrentProcess(),
+                &mut created,
+                &mut exited,
+                &mut kernel,
+                &mut user,
+            )
+        };
+        assert_ne!(result, 0, "GetProcessTimes refused");
+        let ticks = |v: &FILETIME| (u64::from(v.dwHighDateTime) << 32) | u64::from(v.dwLowDateTime);
+        (ticks(&kernel) + ticks(&user)) * 100
+    }
+
+    fn measure<T>(call: impl FnOnce() -> T) -> (T, u128, u64) {
+        let before = cpu();
+        let start = Instant::now();
+        let value = black_box(call());
+        let wall = start.elapsed().as_nanos();
+        (value, wall, cpu() - before)
+    }
+
+    fn raw(case: &Value) -> Vec<u8> {
+        let value = case["stdout_hex"].as_str().unwrap();
+        assert_eq!(value.len() % 2, 0);
+        (0..value.len())
+            .step_by(2)
+            .map(|i| u8::from_str_radix(&value[i..i + 2], 16).unwrap())
+            .collect()
+    }
+
+    fn invoke(variant: &str, operation: &str, base: &str, reviewed: &str) -> String {
+        match (variant, operation) {
+            ("legacy", "original") => caller::original(),
+            ("current", "original") => integrated::original(),
+            ("legacy", "accepts") => caller::accepts(base, reviewed).to_string(),
+            ("current", "accepts") => integrated::accepts(base, reviewed).to_string(),
+            ("legacy", "view") => caller::view("diagnostic_artifacts_linux.rs", reviewed),
+            ("current", "view") => integrated::view("diagnostic_artifacts_linux.rs", reviewed),
+            ("legacy", "mismatch") => caller::accepts(base, "mismatch").to_string(),
+            ("current", "mismatch") => integrated::accepts(base, "mismatch").to_string(),
+            ("legacy", "unrelated") => caller::view("other.rs", "untouched"),
+            ("current", "unrelated") => integrated::view("other.rs", "untouched"),
+            _ => panic!("unknown fixed scenario"),
+        }
+    }
+
+    pub fn run(input: &Path) {
+        let document: Value = serde_json::from_slice(&std::fs::read(input).unwrap()).unwrap();
+        assert_eq!(document["test_fixture_pin_integrity"], true);
+        assert_eq!(document["production_pin_authority"], false);
+        let cases = document["cases"].as_array().unwrap();
+        assert_eq!(cases.len(), 2);
+        let mut bodies = vec![];
+        for (index, revision) in [reference::BASE, reference::REVIEWED].iter().enumerate() {
+            let bytes = raw(&cases[index]);
+            assert_eq!(
+                cases[index]["spec"],
+                format!("{revision}:{}", reference::SOURCE)
+            );
+            assert_eq!(bytes.len(), reference::ROWS[index].1);
+            let digest: String = Sha256::digest(&bytes)
+                .iter()
+                .map(|v| format!("{v:02x}"))
+                .collect();
+            assert_eq!(digest, reference::ROWS[index].2);
+            let body = String::from_utf8(bytes).unwrap();
+            assert!(!body.contains("\r\n"));
+            bodies.push(body);
+        }
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+        let helper = std::fs::read_to_string(root.join(integrated::contract::CONTROL)).unwrap();
+        assert!(integrated::contract::helper_matches(&helper));
+        assert!(integrated::contract::accepts(&bodies[0], &bodies[1]));
+        let mut samples = vec![];
+        for block in 0..BLOCKS {
+            for operation in OPERATIONS {
+                for (slot, variant) in order(block).iter().enumerate() {
+                    let (value, wall, parent_cpu) =
+                        measure(|| invoke(variant, operation, &bodies[0], &bodies[1]));
+                    let expected = match operation {
+                        "original" | "view" => &bodies[0],
+                        "accepts" => "true",
+                        "mismatch" => "false",
+                        "unrelated" => "untouched",
+                        _ => unreachable!(),
+                    };
+                    assert_eq!(value, expected);
+                    println!(
+                        "HC074_COST {}",
+                        json!({"phase":"e2e","block":block,"slot":slot,
+                        "operation":operation,"variant":variant,"iterations":1,"wall_ns":wall,"parent_cpu_ns":parent_cpu,
+                        "result_bytes":value.len()})
+                    );
+                    samples.push(wall);
+                }
+            }
+        }
+        assert_eq!(samples.len(), BLOCKS * OPERATIONS.len() * 4);
+        // Separate component diagnostics, NOT subtracted phases of a full call.
+        for block in 0..BLOCKS {
+            for component in [
+                "observer",
+                "reference",
+                "sha256",
+                "interpret",
+                "helper-read-hash",
+                "body-predicate",
+                "pipe",
+                "owned",
+            ] {
+                let iterations = match component {
+                    "pipe" | "owned" => 1,
+                    "body-predicate" => 4,
+                    _ => 128,
+                };
+                let (_, wall, parent_cpu) = measure(|| {
+                    for _ in 0..iterations {
+                        match component {
+                            "observer" => {
+                                black_box(&bodies[0]);
+                            }
+                            "reference" => {
+                                black_box(
+                                    reference::reference(reference::BASE, reference::SOURCE)
+                                        .unwrap(),
+                                );
+                            }
+                            "sha256" => {
+                                black_box(Sha256::digest(black_box(bodies[0].as_bytes())));
+                            }
+                            "interpret" => {
+                                let output = transport::Output {
+                                    code: Some(0),
+                                    stdout: bodies[0].as_bytes().to_vec(),
+                                    stderr: vec![],
+                                };
+                                black_box(
+                                    census_runtime::census_caller::interpret(output).unwrap(),
+                                );
+                            }
+                            "helper-read-hash" => {
+                                let current = std::fs::read_to_string(
+                                    root.join(integrated::contract::CONTROL),
+                                )
+                                .unwrap();
+                                assert!(integrated::contract::helper_matches(&current));
+                            }
+                            "body-predicate" => {
+                                assert!(integrated::contract::accepts(&bodies[0], &bodies[1]));
+                            }
+                            "pipe" | "owned" => {
+                                let mut command = Command::new("git");
+                                command
+                                    .arg("--no-replace-objects")
+                                    .args([
+                                        "show",
+                                        &format!("{}:{}", reference::BASE, reference::SOURCE),
+                                    ])
+                                    .current_dir(&root);
+                                let value = if component == "pipe" {
+                                    let value = command.output().unwrap();
+                                    transport::Output {
+                                        code: value.status.code(),
+                                        stdout: value.stdout,
+                                        stderr: value.stderr,
+                                    }
+                                } else {
+                                    transport::run_owned(
+                                        &mut command,
+                                        &[],
+                                        Instant::now() + transport::BOUND,
+                                    )
+                                    .unwrap()
+                                };
+                                assert_eq!(value.code, Some(0));
+                                assert_eq!(value.stdout, bodies[0].as_bytes());
+                            }
+                            _ => unreachable!(),
+                        }
+                    }
+                });
+                println!(
+                    "HC074_COST {}",
+                    json!({"phase":"component","block":block,"component":component,
+                    "iterations":iterations,"wall_ns":wall,"parent_cpu_ns":parent_cpu})
+                );
+            }
+        }
+        println!(
+            "HC074_COST_DONE {}",
+            json!({"e2e_samples":samples.len(),"component_samples":BLOCKS*8,
+            "git_reads_expected_e2e":BLOCKS*4*5,"git_reads_expected_components":BLOCKS*2,
+            "first_samples_retained":true,"warmup":false,"package_replay":false,"production_authority":false})
+        );
+    }
+}

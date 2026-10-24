@@ -1,0 +1,20 @@
+    Checking xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+error: this expression creates a reference which is immediately dereferenced by the compiler
+   --> crates\xtask\tests\census_cost_074.rs:122:9
+    |
+122 |         &mut Command::new("git").arg("--version"),
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: change this to: `Command::new("git").arg("--version")`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_borrow
+    = note: `-D clippy::needless-borrow` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::needless_borrow)]`
+
+error: this expression creates a reference which is immediately dereferenced by the compiler
+   --> crates\xtask\tests\census_cost_074.rs:134:9
+    |
+134 |         &mut Command::new("git").arg("--version"),
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: change this to: `Command::new("git").arg("--version")`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_borrow
+
+error: could not compile `xtask` (test "census_cost_074") due to 2 previous errors

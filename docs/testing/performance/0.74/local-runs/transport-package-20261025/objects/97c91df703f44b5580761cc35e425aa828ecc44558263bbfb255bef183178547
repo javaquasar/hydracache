@@ -1,0 +1,44 @@
+"""Single reviewed changed-source Windows package attempt; exact old 780s wrapper."""
+from pathlib import Path
+import hashlib
+import json
+import runpy
+import subprocess
+import sys
+
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / 'tools/historical-blob-batch-074'))
+import package_effects_review as review
+LABEL = 'transport-audit-20261025-package-first'
+ARGV = ['cargo', '+1.94.0', 'test', '--offline', '--locked', '--no-fail-fast',
+        '-p', 'xtask', '--lib', '--tests', '--', '--test-threads=4']
+out = ROOT / 'target/reviewed-package-20261025/first'
+out.mkdir(parents=True, exist_ok=False)
+
+
+def write(name, value):
+    with (out / name).open('x', encoding='utf-8', newline='\n') as stream:
+        json.dump(value, stream, sort_keys=True, indent=2)
+        stream.write('\n')
+
+
+write('intent.json', dict(argv=ARGV, package_bound_seconds=780, retry=False,
+    services=False, clocks_changed=False, server=False, qualification=False,
+    expected_syntax_sha256=review.REVIEWED_AST_SHA256))
+try:
+    document = json.loads((ROOT / 'target/package-syntax-20261025/final-closure/result.json').read_bytes())
+    gate = review.source_review(ROOT, document)
+    gate['environment'] = review.environment_preflight(ROOT)
+    gate['head'] = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT).decode().strip()
+    gate['source_dirty'] = subprocess.check_output(['git', 'status', '--porcelain', '--untracked-files=no',
+        '--', 'Cargo.toml', 'Cargo.lock', '.cargo', 'crates', 'tools'], cwd=ROOT).decode()
+    assert not gate['source_dirty']
+    write('gate.json', gate)
+except BaseException as error:
+    write('preflight-refusal.json', dict(type=type(error).__name__, reason=str(error)))
+    raise
+runner = ROOT / 'target/run-xtask-package-780-20261024.py'
+write('coordinator.json', dict(wrapper_sha256=hashlib.sha256(runner.read_bytes()).hexdigest(),
+    base_wrapper_sha256=hashlib.sha256((ROOT / 'target/run-source-step-20261024.py').read_bytes()).hexdigest()))
+sys.argv = [str(runner), LABEL, *ARGV]
+runpy.run_path(str(runner), run_name='__main__')

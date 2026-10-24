@@ -1,0 +1,63 @@
+//! Literal extension of the current-tree test; never changes its old assertions.
+pub fn previous(raw: &str) -> String {
+    let output = std::process::Command::new("git")
+        .arg("--no-replace-objects")
+        .args(["show", "b571bef2bcd2ceb3ed044c9e31bce4f670cfafdd:crates/xtask/tests/authority_rust_history_074.rs"])
+        .current_dir(std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../.."))
+        .output().unwrap();
+    assert!(output.status.success());
+    let old = String::from_utf8(output.stdout)
+        .unwrap()
+        .replace("\r\n", "\n");
+    assert!(
+        raw.replace("\r\n", "\n") == extend(&old),
+        "unreviewed current history gate"
+    );
+    old
+}
+pub fn extend(original: &str) -> String {
+    let replace = |raw: &str, before: &str, after: &str| {
+        assert_eq!(
+            raw.matches(before).count(),
+            1,
+            "one exact history gate edit"
+        );
+        raw.replacen(before, after, 1)
+    };
+    let raw = replace(
+        original,
+        "mod contract;\n",
+        "mod contract;\n#[path = \"support/current_tree_input.rs\"]\nmod current_inputs;\n",
+    );
+    let raw = replace(
+        &raw,
+        "mod runtime;\n",
+        "mod runtime;\n#[path = \"../../../tools/authority-runtime-074/io.rs\"]\nmod runtime_io;\n",
+    );
+    let before = "fn read(path: &str) -> String {\n    runtime::view(path, {\n        std::fs::read_to_string(history::root().join(path))\n            .unwrap()\n            .replace(\"\\r\\n\", \"\\n\")\n    })\n}";
+    // The original literal gate emits an unformatted wrapper; the checked-in
+    // predecessor is rustfmt-formatted. These are the only two accepted shapes.
+    let unformatted = before
+        .replace(
+            "        std::fs::read_to_string",
+            "    std::fs::read_to_string",
+        )
+        .replace("            .unwrap()", "        .unwrap()")
+        .replace("            .replace(", "        .replace(");
+    assert_eq!(
+        raw.matches(before).count() + raw.matches(&unformatted).count(),
+        1
+    );
+    let selected = if raw.contains(before) {
+        before
+    } else {
+        &unformatted
+    };
+    let raw = replace(
+        &raw,
+        selected,
+        "fn read(path: &str) -> String {\n    current_inputs::read(path)\n}",
+    );
+    let before = "        assert!(history::safe_path(path));\n";
+    replace(&raw, before, &format!("{before}        if !previous.contains(path) && current_inputs::known_addition(path) {{\n            current_inputs::require_addition(path);\n            continue;\n        }}\n"))
+}

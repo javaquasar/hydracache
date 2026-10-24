@@ -1,0 +1,67 @@
+"""Independent staged byte readback and raw-record checks; no test execution."""
+from pathlib import Path
+import hashlib
+import json
+import statistics
+import subprocess
+
+ROOT = Path(__file__).resolve().parent.parent
+BASE = 'docs/testing/performance/0.74/local-runs/transport-package-20261025'
+def staged(name):
+    return subprocess.check_output(['git', 'show', ':' + BASE + '/' + name], cwd=ROOT)
+raw = staged('index.json')
+index = json.loads(raw)
+assert index['schema'] == 'hc074-transport-package-v1'
+objects = {}
+for name, item in index['members'].items():
+    digest = item['sha256']
+    assert len(digest) == 64 and all(v in '0123456789abcdef' for v in digest)
+    if digest not in objects:
+        objects[digest] = staged('objects/' + digest)
+    assert hashlib.sha256(objects[digest]).hexdigest() == digest
+    assert len(objects[digest]) == item['bytes']
+def member(name):
+    return objects[index['members'][name]['sha256']]
+rows = [json.loads(line[len('HC074_TRANSPORT '):])
+    for line in member('capture/first/stdout.log').decode().splitlines()
+    if line.startswith('HC074_TRANSPORT ')]
+result = json.loads(member('capture/first/result.json'))
+assert rows == result['samples'] and len(rows) == 24
+for i, row in enumerate(rows):
+    block, slot = divmod(i, 4)
+    order = ('legacy', 'current', 'current', 'legacy') if block % 2 == 0 else ('current', 'legacy', 'legacy', 'current')
+    assert (row['block'], row['slot'], row['variant']) == (block, slot, order[slot])
+    assert row['stdout_bytes'] == 34850 and row['stderr_bytes'] == 0
+for label, variant in [('unobserved', 'legacy'), ('profiled', 'current')]:
+    group = [row['wall_ns'] for row in rows if row['variant'] == variant]
+    assert statistics.median(group) == result['summary'][label]['wall_ns']['median']
+for phase in result['phase_totals_ns']:
+    group = [sum(span['wall_ns'] for span in row['spans'] if span['phase'] == phase)
+        for row in rows if row['variant'] == 'current']
+    assert statistics.median(group) == result['phase_totals_ns'][phase]['median']
+review = json.loads(member('derived/source-review.json'))
+assert len(review['sources']) == 334 and len(review['auxiliary']) == 21
+assert review['source_effect_review_complete'] and not review['formal_whole_program_proof']
+for name, digest in {**review['sources'], **review['auxiliary']}.items():
+    assert hashlib.sha256(member('reviewed-source/' + name)).hexdigest() == digest
+package = json.loads(member('derived/package.json'))
+prefix = 'checks/transport-audit-20261025-package-first/'
+intent, outcome = (json.loads(member(prefix + name)) for name in ('intent.json', 'result.json'))
+assert intent['bound_seconds'] == 780 and not intent['retry']
+assert outcome['source_unchanged'] and outcome['head_unchanged']
+assert intent['source'] == outcome['source_after']
+for name, digest in package['input_sha256'].items():
+    assert hashlib.sha256(member(prefix + name)).hexdigest() == digest
+assert package['expected_targets'] == 135
+assert package['completed_targets'] == sum(row['reported_seconds'] is not None for row in package['targets'])
+assert package['passed'] == sum(row.get('passed', 0) for row in package['targets'])
+assert package['failed'] == sum(row.get('failed', 0) for row in package['targets'])
+for name, digest in index['facts']['protected_sha256'].items():
+    assert hashlib.sha256(member('protected/' + name)).hexdigest() == digest
+    assert hashlib.sha256((ROOT / name).read_bytes()).hexdigest() == digest
+assert not index['facts']['original_checks_or_deadlines_changed']
+assert not index['facts']['product_candidate'] and not index['facts']['production_admission']
+print(json.dumps(dict(index_sha256=hashlib.sha256(raw).hexdigest(), members=len(index['members']),
+    objects=len(objects), transport_samples=24, source_review_files=334,
+    package_completed_targets=package['completed_targets'], package_pass=package['package_pass'],
+    protected_unchanged=True, offline_only=True)))

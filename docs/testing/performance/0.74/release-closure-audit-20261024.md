@@ -339,3 +339,26 @@ is used. The first old failures/timeouts, original 300/60/10 windows and every
 production delivery/writer/lifecycle/trust/security barrier remain open. Local
 Windows/current/MSRV pass 39 focused cases each, 54 Python controls, check/strict
 Clippy and focused formatting; these do not complete the full package.
+
+## Reviewed package and six-step continuation, 2026-10-25
+
+The [transport capture packet](transport-package-result-20261025.md) closes the
+scoped default-Windows effect review, not the package or release gate. It retains
+334 reviewed Rust files, 21 auxiliary pins and one 24-sample diagnostic cohort.
+Unobserved/profile wall medians are 48.794/49.337 ms. Sleep overlaps useful child
+work; no transport candidate is accepted or installed and no live schedule changes.
+
+One full replay on exact `3e9bcc06` reaches the unchanged 780-second limit. Only
+111/135 targets complete (801 passing cases); `performance_contract_074` retains
+171 passing of 321 declared cases without a target verdict, and 23 targets never
+start. No completed/individual failure is observed, which is not a package pass.
+Raw owned-tree cleanup output, a mid-run identity sample and clean postflight are
+retained with their limited scope; none proves original writer cessation.
+
+The [six-step intermediate plan](release-six-step-continuation-20261025.md)
+separates exact composition/full D3, complete checks/security, original execution/
+retirement, completion/crash/reconnect, real enrollment and exact-candidate release
+qualification. The current-source audit confirms default-off GET-owner and no
+accepted performance composition; optional RESP mTLS is not a performance win.
+The explicit dependency audit-only restriction, original readiness boundary,
+manager/clock prerequisites and prepared-not-authorized manifest remain unchanged.

@@ -1,0 +1,39 @@
+{
+    "schema":  "hc074-midrun-process-sample-v1",
+    "preflight":  false,
+    "read_only":  true,
+    "root":  34920,
+    "processes":  [
+                      {
+                          "pid":  34920,
+                          "parent":  43108,
+                          "name":  "python.exe",
+                          "created":  "2026-10-24T22:57:40.4910670Z"
+                      },
+                      {
+                          "pid":  32744,
+                          "parent":  34920,
+                          "name":  "cargo.exe",
+                          "created":  "2026-10-24T22:57:41.5302260Z"
+                      },
+                      {
+                          "pid":  47836,
+                          "parent":  32744,
+                          "name":  "cargo.exe",
+                          "created":  "2026-10-24T22:57:41.5683870Z"
+                      },
+                      {
+                          "pid":  9984,
+                          "parent":  47836,
+                          "name":  "held_preparation_cost_074-09c83508cbe30096.exe",
+                          "created":  "2026-10-24T23:03:30.3399550Z"
+                      },
+                      {
+                          "pid":  45772,
+                          "parent":  9984,
+                          "name":  "git.exe",
+                          "created":  "2026-10-24T23:03:51.1244340Z"
+                      }
+                  ],
+    "commands_or_secrets_captured":  false
+}

@@ -1,0 +1,23 @@
+# Read-only, mid-run ownership inventory. Do not infer a preflight from this sample.
+$taskProcesses = @(Get-CimInstance Win32_Process -ErrorAction Stop)
+$taskRoots = @($taskProcesses | Where-Object {
+    $_.Name -match '^python(?:\.exe)?$' -and
+    $_.CommandLine -match '(?:^|[\\/\s])run-reviewed-package-20261025\.py(?:\s|$)'
+})
+if ($taskRoots.Count -ne 1) { throw 'Expected one exact reviewed-package coordinator' }
+$taskIds = [System.Collections.Generic.HashSet[uint32]]::new()
+[void]$taskIds.Add([uint32]$taskRoots[0].ProcessId)
+do {
+    $taskAdded = $false
+    foreach ($taskProcess in $taskProcesses) {
+        if ($taskIds.Contains([uint32]$taskProcess.ParentProcessId)) {
+            if ($taskIds.Add([uint32]$taskProcess.ProcessId)) { $taskAdded = $true }
+        }
+    }
+} while ($taskAdded)
+$taskOwned = @($taskProcesses | Where-Object { $taskIds.Contains([uint32]$_.ProcessId) } |
+    ForEach-Object { [ordered]@{pid=[uint32]$_.ProcessId; parent=[uint32]$_.ParentProcessId;
+        name=$_.Name; created=$_.CreationDate.ToUniversalTime().ToString('o')} })
+[ordered]@{schema='hc074-midrun-process-sample-v1'; preflight=$false; read_only=$true;
+    root=[uint32]$taskRoots[0].ProcessId; processes=$taskOwned; commands_or_secrets_captured=$false} |
+    ConvertTo-Json -Depth 5

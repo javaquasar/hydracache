@@ -1,0 +1,45 @@
+"""Read-only prerequisites of the six closure steps, not an admission producer."""
+from pathlib import Path
+import hashlib
+import json
+import subprocess
+import tomllib
+
+ROOT = Path(__file__).resolve().parent.parent
+BASE = '16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b'
+PREFIX = 'docs/testing/performance/0.74/'
+def load(name):
+    return tomllib.loads((ROOT / PREFIX / name).read_text())
+ledger = load('composition-ledger.toml')
+registry = load('proposal-registry.toml')
+assert ledger['baseline_product_sha'] == BASE
+assert ledger['accepted_candidate_count'] == 0 and not ledger['freeze_c74_allowed']
+proposal, = [row for row in registry['followup_proposals'] if row['id'] == 'p74-get-response-owner-v1']
+assert not proposal['default_enabled'] and not proposal['accepted_product_change'] and not proposal['promotable']
+security = registry['security_extensions']['resp_mtls_074']
+assert security['production_implemented'] and not security['accepted_performance_change']
+assert not security['matched_security_cohort_completed'] and not security['qualification_completed']
+delivery = ROOT / 'tools/long-run-supervisor-074/src/diagnostic_original_held_delivery.rs'
+stage = delivery.read_text().split('enum Stage {', 1)[1].split('}', 1)[0].strip().split()
+assert stage == ['Preparing,', 'Prepared,', 'Uncertain,', 'Delivered,', 'AwaitingChild,', 'ReadyObserved,', 'Refused,']
+paths = subprocess.check_output(['git', 'diff', '--name-only', BASE, 'HEAD', '--',
+    'crates/hydracache/src', 'crates/hydracache-client-transport-axum/src',
+    'crates/hydracache-redis-compat/src', 'crates/hydracache-server/src'], cwd=ROOT).decode().splitlines()
+assert len(paths) == 8
+sources = [PREFIX + name for name in ('composition-ledger.toml', 'proposal-registry.toml',
+    'qualification-manifest.toml', 'dependency-security-plan-20261024.md')]
+sources += [delivery.relative_to(ROOT).as_posix(),
+    'tools/long-run-supervisor-074/src/bin/diagnostic_held_bootstrap.rs'] + paths
+print(json.dumps(dict(schema='hc074-six-step-frontier-v1',
+    head=subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT).decode().strip(),
+    measured_baseline=BASE, runtime_source_delta=paths,
+    sources={name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest() for name in sources},
+    accepted_performance_candidates=0, freeze_allowed=False,
+    get_owner=dict(state=proposal['state'], default_enabled=False, accepted=False,
+        full_d3_still_required=True),
+    resp_mtls=dict(implemented=True, accepted_performance_change=False,
+        matched_security_cohort_completed=False),
+    held_delivery_stages=[name.rstrip(',') for name in stage],
+    inspection_is_runtime_or_kernel_proof=False, dependencies_changed=False,
+    original_checks_or_deadlines_changed=False, server=False, services=False,
+    clocks_changed=False, qualification=False, production_admission=False), indent=2, sort_keys=True))

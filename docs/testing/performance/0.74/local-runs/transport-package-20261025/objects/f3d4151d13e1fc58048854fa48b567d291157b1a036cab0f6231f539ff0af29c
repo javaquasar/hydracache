@@ -1,0 +1,7 @@
+ERROR: The process with PID 22896 (child process of PID 26988) could not be terminated.
+Reason: The operation attempted is not supported.
+ERROR: The process with PID 45320 (child process of PID 26988) could not be terminated.
+Reason: The operation attempted is not supported.
+SUCCESS: The process with PID 26988 (child process of PID 47836) has been terminated.
+SUCCESS: The process with PID 47836 (child process of PID 32744) has been terminated.
+SUCCESS: The process with PID 32744 (child process of PID 34920) has been terminated.

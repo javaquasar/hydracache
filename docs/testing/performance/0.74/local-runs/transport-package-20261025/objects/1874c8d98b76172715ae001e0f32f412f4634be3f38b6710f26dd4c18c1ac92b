@@ -1,0 +1,24 @@
+# Exact recorded identities only; never signal a process or inspect services.
+$taskRoot = Split-Path -Parent $PSScriptRoot
+$taskSamplePath = Join-Path $PSScriptRoot 'source-continuation-20261024/transport-audit-20261025-midrun-process/stdout.log'
+$taskSample = Get-Content -LiteralPath $taskSamplePath -Raw | ConvertFrom-Json
+$taskCurrent = @(Get-CimInstance Win32_Process -ErrorAction Stop)
+$taskRemaining = @()
+foreach ($taskRecorded in $taskSample.processes) {
+    foreach ($taskNow in $taskCurrent) {
+        if ([uint32]$taskRecorded.pid -eq [uint32]$taskNow.ProcessId -and
+            $taskRecorded.created -eq $taskNow.CreationDate.ToUniversalTime().ToString('o')) {
+            $taskRemaining += [ordered]@{pid=[uint32]$taskNow.ProcessId; name=$taskNow.Name;
+                created=$taskNow.CreationDate.ToUniversalTime().ToString('o')}
+        }
+    }
+}
+$taskStatus = @(& git -C $taskRoot status --porcelain=v1 --untracked-files=all)
+if ($LASTEXITCODE -ne 0) { throw 'Git status failed' }
+& git -C $taskRoot diff --exit-code -- Cargo.toml Cargo.lock deny.toml docs/testing/performance/0.74/qualification-manifest.toml
+if ($LASTEXITCODE -ne 0) { throw 'Protected baseline changed' }
+[ordered]@{schema='hc074-package-postflight-v1'; read_only=$true; tracked_or_untracked_source_status=$taskStatus;
+    recorded_midrun_identities_remaining=$taskRemaining; services_or_clocks_queried=$false;
+    actions_or_signals=$false; escaped_or_unobserved_processes_certified=$false;
+    protected_diff_empty=$true} | ConvertTo-Json -Depth 5
+if ($taskStatus.Count -ne 0 -or $taskRemaining.Count -ne 0) { throw 'Postflight requires review; no cleanup performed' }

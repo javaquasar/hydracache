@@ -1,0 +1,61 @@
+{
+  "accepted_performance_candidates": 0,
+  "clocks_changed": false,
+  "dependencies_changed": false,
+  "freeze_allowed": false,
+  "get_owner": {
+    "accepted": false,
+    "default_enabled": false,
+    "full_d3_still_required": true,
+    "state": "d3a-screen-passed-full-d3-controls-pending"
+  },
+  "head": "3e9bcc06ebce3439495200162cb0c1900b8eda53",
+  "held_delivery_stages": [
+    "Preparing",
+    "Prepared",
+    "Uncertain",
+    "Delivered",
+    "AwaitingChild",
+    "ReadyObserved",
+    "Refused"
+  ],
+  "inspection_is_runtime_or_kernel_proof": false,
+  "measured_baseline": "16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b",
+  "original_checks_or_deadlines_changed": false,
+  "production_admission": false,
+  "qualification": false,
+  "resp_mtls": {
+    "accepted_performance_change": false,
+    "implemented": true,
+    "matched_security_cohort_completed": false
+  },
+  "runtime_source_delta": [
+    "crates/hydracache-client-transport-axum/src/lib.rs",
+    "crates/hydracache-redis-compat/src/get_response_owner_074.rs",
+    "crates/hydracache-redis-compat/src/lib.rs",
+    "crates/hydracache-server/src/bootstrap.rs",
+    "crates/hydracache-server/src/config.rs",
+    "crates/hydracache-server/src/redis_tcp.rs",
+    "crates/hydracache/src/grid/conditional.rs",
+    "crates/hydracache/src/tests/local_cache.rs"
+  ],
+  "schema": "hc074-six-step-frontier-v1",
+  "server": false,
+  "services": false,
+  "sources": {
+    "crates/hydracache-client-transport-axum/src/lib.rs": "98dea1b2c299825669fc0ab0e75891f25de4fa796cb6f313f0a49f00deff58e1",
+    "crates/hydracache-redis-compat/src/get_response_owner_074.rs": "76f105e44cae98bc742681409edcebbd7467e06aa15fe208104b3f68ed538d9f",
+    "crates/hydracache-redis-compat/src/lib.rs": "8ce15adb039180000a9a558c234ec46ba40dab6a60ee326d3d9cb3dce8a00498",
+    "crates/hydracache-server/src/bootstrap.rs": "80d8a6693b2f81ea406e097e95488ef9a6f3fae36a2d6c04f42fcfaa508bf353",
+    "crates/hydracache-server/src/config.rs": "bc42b7d9b1f6ae756bffc0d9dbc6e5b14cd7c8133e900157b4179b8cb95fd1c2",
+    "crates/hydracache-server/src/redis_tcp.rs": "88413a6779a88c2f2531da06558bad66d62713d0adbf94fd960ce2cdcd79ec49",
+    "crates/hydracache/src/grid/conditional.rs": "410854bab17a23c2afbd6c79bd1c110962feee10e678948359870871963d592e",
+    "crates/hydracache/src/tests/local_cache.rs": "aefb9249ed2b251f0e38be3be5409c8fc12313f7b62a05f1df538dd971eeee2d",
+    "docs/testing/performance/0.74/composition-ledger.toml": "ff0409570f76bc709ae61846e40b91975b0bf02a8d53374d447c87991e61ec96",
+    "docs/testing/performance/0.74/dependency-security-plan-20261024.md": "7c3fa68ab20c9465f2ebee1400d474fde671c97dfaee8019924cd4f0bd5318d1",
+    "docs/testing/performance/0.74/proposal-registry.toml": "64f568bcf9056c3a1c51ed5d314764fd1e402ed55e494f1a6a26daf3c48b0347",
+    "docs/testing/performance/0.74/qualification-manifest.toml": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+    "tools/long-run-supervisor-074/src/bin/diagnostic_held_bootstrap.rs": "251c8460288c593d4a89ad903aa94f2194d1729e6c8fa5ec15ec50c2eae21b51",
+    "tools/long-run-supervisor-074/src/diagnostic_original_held_delivery.rs": "0ffeab6cc93898b4e37a6453521122166e492e8bbfad477232381669dc2ed87d"
+  }
+}

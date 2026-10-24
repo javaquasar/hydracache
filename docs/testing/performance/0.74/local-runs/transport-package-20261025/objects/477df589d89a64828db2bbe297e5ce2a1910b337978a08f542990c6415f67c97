@@ -1,0 +1,12 @@
+{
+  "schema": "hc074-first-sealer-coordinator-observation-v1",
+  "exit": 1,
+  "stderr_captured_as_raw_file": false,
+  "observation_origin": "exec_command tool output, chunk 40c330",
+  "observed_error": "AssertionError at line 43: assert result['exit'] == 101 and result['outer_refusal'] is None",
+  "cause": "Suffix match build-v1 also matched the successful syntax-build-v1 phase; use exact phase identities",
+  "first_source": "seal-transport-package-20261025-first.py",
+  "packet_directory_created": false,
+  "measurements_or_package_repeated": false,
+  "old_phase_results_reclassified": false
+}

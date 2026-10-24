@@ -1,0 +1,14 @@
+{
+    "schema":  "hc074-package-postflight-v1",
+    "read_only":  true,
+    "tracked_or_untracked_source_status":  [
+
+                                           ],
+    "recorded_midrun_identities_remaining":  [
+
+                                             ],
+    "services_or_clocks_queried":  false,
+    "actions_or_signals":  false,
+    "escaped_or_unobserved_processes_certified":  false,
+    "protected_diff_empty":  true
+}

@@ -1,0 +1,13 @@
+{
+  "schema": "hc074-sealer-coordinator-observation-v1",
+  "attempt": 3,
+  "exit": 1,
+  "stderr_captured_as_raw_file": false,
+  "observation_origin": "exec_command tool output, chunk 3c63d5",
+  "observed_error": "AssertionError at line 94: outer-to-inner source map comparison",
+  "cause": "The inner map additionally pins the qualification manifest outside the outer crates/tools scope; verify its exact independent protected digest too",
+  "source": "seal-transport-package-20261025-third.py",
+  "packet_directory_created": false,
+  "measurements_or_package_repeated": false,
+  "source_hashes_or_original_results_changed": false
+}

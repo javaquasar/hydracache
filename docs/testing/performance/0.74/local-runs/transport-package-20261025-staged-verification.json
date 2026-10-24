@@ -1,0 +1,16 @@
+{
+  "schema": "hc074-transport-package-staged-verification-v1",
+  "index_sha256": "e9b8a923723360bce644c9de558113bf084630d1c4a72916dd0bfd3d418fc553",
+  "members": 578,
+  "objects": 518,
+  "transport_samples": 24,
+  "source_review_files": 334,
+  "package_completed_targets": 111,
+  "package_pass": false,
+  "protected_unchanged": true,
+  "offline_only": true,
+  "verifier": "coordinators/verify-transport-package-staged-20261025.py",
+  "verifier_tool_output_chunk": "df6751",
+  "measured_child_or_package_rerun": false,
+  "qualification_or_server_admission": false
+}

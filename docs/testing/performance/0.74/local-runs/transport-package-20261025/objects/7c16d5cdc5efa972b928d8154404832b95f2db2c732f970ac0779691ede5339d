@@ -1,0 +1,13 @@
+{
+  "schema": "hc074-sealer-coordinator-observation-v1",
+  "attempt": 2,
+  "exit": 1,
+  "stderr_captured_as_raw_file": false,
+  "observation_origin": "exec_command tool output, chunk 27517a",
+  "observed_error": "AssertionError at line 91: compiled-to-measured source map comparison",
+  "cause": "Compared the full 2421-input build map to the inner 351-input capture scope; use the already retained complete outer capture map and verify both the full build and inner compiled subset",
+  "source": "seal-transport-package-20261025-second.py",
+  "packet_directory_created": false,
+  "measurements_or_package_repeated": false,
+  "source_hashes_or_original_results_changed": false
+}
