@@ -61,6 +61,19 @@ Several tests intentionally catch panics from mutated counterexamples; individua
 panic lines are therefore not additional failed cases. Only final `FAILED` case
 lines supply the sixteen observations above.
 
+One inventory assertion has an additional read-only baseline proof. The test
+`actual_consuming_fixture_preserves_all_446_preceding_sources_and_formats`
+directly compares the 446-path `6c6e47ee` source tree to raw current `git ls-files`.
+Its test file, including the unadapted `git` helper, has the same Git blob
+`e0ac74524bbb1f43624a6204dea8a7ac0ffd9b28` at the start `d9a2b85c` and final
+documentation source `387d1e85`. Immutable `git ls-tree` counts are 446 at
+`6c6e47ee`, 528 at `d9a2b85c`, and 530 at `387d1e85`. Thus that direct inventory
+equality already conflicts with the starting tree; the candidate's two added
+parser-control source files are not its sole cause. This is static source/Git
+inspection, **not an executed baseline test**. Removing only those two filenames
+would still leave 528 unequal to 446. No source-list filtering or assertion
+change is applied. It does not attribute the remaining fifteen failed cases.
+
 Do not infer a common historical cause for all sixteen failures from the one
 registry diagnosis. Next inspect each retained first assertion against its exact
 reviewed predecessor, establish baseline provenance without live reruns, and
