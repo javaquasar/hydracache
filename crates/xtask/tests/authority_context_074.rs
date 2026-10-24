@@ -1,9 +1,32 @@
 #[path = "support/document_scratch_guard.rs"]
 mod guard;
+#[path = "../../../tools/normalization-attribution-074/probe.rs"]
+mod normalization_profile;
 #[path = "../../../tools/authority-runtime-074/gate.rs"]
 mod runtime;
 #[path = "../../../tools/authority-runtime-074/io.rs"]
 mod runtime_io;
+
+#[test]
+fn normalization_cost_protocol_keeps_separate_scopes() {
+    assert_eq!(normalization_profile::PATHS.len(), 3);
+    assert_eq!(normalization_profile::OPERATIONS.len(), 8);
+    assert_eq!(
+        normalization_profile::order(0),
+        normalization_profile::OPERATIONS
+    );
+    let mut reverse = normalization_profile::order(1);
+    reverse.reverse();
+    assert_eq!(reverse, normalization_profile::order(0));
+}
+
+#[test]
+fn normalization_cost_child() {
+    let Some(input) = std::env::var_os("HC074_NORMALIZATION_INPUT") else {
+        return;
+    };
+    normalization_profile::run(std::path::Path::new(&input));
+}
 
 #[test]
 fn guard_path_comparison_current_source_is_one_exact_predicate_edit() {
