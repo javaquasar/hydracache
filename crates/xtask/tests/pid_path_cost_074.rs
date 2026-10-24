@@ -1,8 +1,19 @@
 #[path = "support/pid_path_guard.rs"]
 mod guard;
+#[path = "../../../tools/authority-runtime-074/gate.rs"]
+mod runtime;
+#[path = "../../../tools/authority-runtime-074/io.rs"]
+mod runtime_io;
+#[path = "../../../tools/authority-storage-source-074/contract.rs"]
+mod storage_contract;
 const BASE: &str = "b63a0e81ad808d6f65e8c8d818ee4c090c3718ff";
 fn read(path: &str) -> String {
-    let raw = std::fs::read_to_string(
+    let loader = if path == runtime::status_fields::SOURCE {
+        runtime_io::read_to_string
+    } else {
+        std::fs::read_to_string
+    };
+    let raw = loader(
         std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("../..")
             .join(path),
