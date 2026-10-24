@@ -1,0 +1,393 @@
+diff --git a/crates/xtask/tests/cost_phase_reader_074.rs b/crates/xtask/tests/cost_phase_reader_074.rs
+new file mode 100644
+index 00000000..ef4f9c17
+--- /dev/null
++++ b/crates/xtask/tests/cost_phase_reader_074.rs
+@@ -0,0 +1,137 @@
++//! Whole-body reader controls; historical counts and runtime checks stay fixed.
++#[path = "../../../tools/authority-runtime-074/cost_reader.rs"]
++mod readers;
++#[path = "../../../tools/authority-runtime-074/gate.rs"]
++mod runtime;
++#[path = "../../../tools/authority-runtime-074/io.rs"]
++mod runtime_io;
++#[path = "../../../tools/authority-storage-source-074/contract.rs"]
++mod storage_contract;
++
++#[test]
++fn cost_readers_preserve_every_original_assertion_and_limit() {
++    assert_eq!(readers::FILES.len(), 3);
++    for path in readers::FILES {
++        let raw = std::fs::read_to_string(runtime::root().join(path)).unwrap();
++        assert!(readers::accepts(path, &raw), "{path}");
++        assert_eq!(
++            runtime::frozen(readers::BASE, path),
++            runtime::frozen(runtime::BASE, path)
++        );
++        assert_eq!(
++            readers::previous(path, &raw),
++            runtime::frozen(runtime::BASE, path)
++        );
++        for bad in [
++            String::new(),
++            raw.replacen("assert_eq!", "assert_ne!", 1),
++            format!("{raw}\n// unknown source change"),
++            format!("{raw}\nfn unrelated_effect() {{}}"),
++        ] {
++            assert_ne!(bad, raw);
++            assert!(!readers::accepts(path, &bad), "{path}");
++            assert!(std::panic::catch_unwind(|| readers::previous(path, &bad)).is_err());
++        }
++    }
++    assert!(readers::expected("unrelated.rs").is_none());
++    assert!(!readers::accepts("unrelated.rs", "anything"));
++    assert!(std::panic::catch_unwind(|| readers::previous("unrelated.rs", "anything")).is_err());
++}
++
++#[test]
++fn cost_readers_cannot_broaden_sources_change_counts_or_relax_original_limits() {
++    let cases = [
++        (
++            readers::FILES[0],
++            vec![
++                ("if path == runtime::status_fields::SOURCE", "if true"),
++                (
++                    "assert_eq!(paths.lines().count(), 473);",
++                    "assert_eq!(paths.lines().count(), 472);",
++                ),
++                (
++                    "unchanged measured prototype/reference",
++                    "skip measured reference",
++                ),
++                ("mandatory current test hook", "skip current test hook"),
++            ],
++        ),
++        (
++            readers::FILES[1],
++            vec![
++                ("if path == runtime::status_fields::SOURCE", "if true"),
++                ("if args == [\"ls-files\", inventory::SCOPE]", "if true"),
++                (
++                    "inventory::project(&raw).expect",
++                    "Some(raw.clone()).expect",
++                ),
++                (
++                    "assert_eq!(paths.lines().count(), 477);",
++                    "assert_eq!(paths.lines().count(), 476);",
++                ),
++                (
++                    "assert_eq!(current.lines().count(), 446);",
++                    "assert_eq!(current.lines().count(), 530);",
++                ),
++            ],
++        ),
++        (
++            readers::FILES[2],
++            vec![
++                (
++                    "if path == \"docs/testing/gated-test-registry.toml\"",
++                    "if true",
++                ),
++                ("timeout_seconds = 1200", "timeout_seconds = 2400"),
++                (
++                    "const ITERATIONS: usize = 1024;",
++                    "const ITERATIONS: usize = 512;",
++                ),
++                (
++                    "assert_eq!(observed.syscw, 0);",
++                    "assert_eq!(observed.syscw, 1);",
++                ),
++            ],
++        ),
++    ];
++    for (path, changes) in cases {
++        let raw = std::fs::read_to_string(runtime::root().join(path)).unwrap();
++        assert!(readers::accepts(path, &raw));
++        for (before, after) in changes {
++            assert_eq!(
++                raw.matches(before).count(),
++                1,
++                "required mutation control {path}: {before}"
++            );
++            let bad = raw.replacen(before, after, 1);
++            assert_ne!(bad, raw);
++            assert!(!readers::accepts(path, &bad), "{path}");
++            assert!(std::panic::catch_unwind(|| readers::previous(path, &bad)).is_err());
++        }
++    }
++}
++
++#[test]
++fn cost_reader_parser_inputs_validate_current_runtime_and_pinned_helper_first() {
++    for path in [
++        runtime::status_fields::SOURCE,
++        runtime::status_fields::LEGACY_TEST,
++    ] {
++        let raw = std::fs::read_to_string(runtime::root().join(path)).unwrap();
++        assert!(runtime::accepts(path, &raw));
++        assert_eq!(
++            runtime_io::read_to_string(runtime::root().join(path)).unwrap(),
++            runtime::frozen(runtime::BASE, path)
++        );
++        for bad in [String::new(), format!("{raw}\nfn unrelated_effect() {{}}")] {
++            assert!(!runtime::accepts(path, &bad));
++            assert!(std::panic::catch_unwind(|| runtime::view(path, bad)).is_err());
++        }
++    }
++    let helper =
++        std::fs::read_to_string(runtime::root().join(runtime::status_fields::HELPER)).unwrap();
++    assert!(runtime::status_fields::helper_is_pinned(&helper));
++    assert!(!runtime::status_fields::helper_is_pinned(&format!(
++        "{helper}\n// unknown helper"
++    )));
++}
+diff --git a/crates/xtask/tests/remaining_preparation_cost_074.rs b/crates/xtask/tests/remaining_preparation_cost_074.rs
+index ff952f59..978b5165 100644
+--- a/crates/xtask/tests/remaining_preparation_cost_074.rs
++++ b/crates/xtask/tests/remaining_preparation_cost_074.rs
+@@ -1,5 +1,11 @@
+ #[path = "support/document_scratch_guard.rs"]
+ mod guard;
++#[path = "../../../tools/authority-runtime-074/gate.rs"]
++mod runtime;
++#[path = "../../../tools/authority-runtime-074/io.rs"]
++mod runtime_io;
++#[path = "../../../tools/authority-storage-source-074/contract.rs"]
++mod storage_contract;
+ fn root() -> std::path::PathBuf {
+     std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..")
+ }
+@@ -15,9 +21,14 @@ fn bounded_projection_recovers_all_473_preceding_bodies_and_frozen_parsers() {
+         String::from_utf8(out.stdout).unwrap().replace('\r', "")
+     };
+     let read = |path: &str| {
+-        std::fs::read_to_string(root().join(path))
++        let raw = runtime_io::read_to_string(root().join(path))
+             .unwrap()
+-            .replace('\r', "")
++            .replace('\r', "");
++        if path == runtime::status_fields::SOURCE {
++            crate::hc074_projection_groups_view!(path, &raw)
++        } else {
++            raw
++        }
+     };
+     let paths = git(&[
+         "ls-tree",
+diff --git a/crates/xtask/tests/support/current_tree_input.rs b/crates/xtask/tests/support/current_tree_input.rs
+index dd2f15d3..63c77cf8 100644
+--- a/crates/xtask/tests/support/current_tree_input.rs
++++ b/crates/xtask/tests/support/current_tree_input.rs
+@@ -1,6 +1,8 @@
+ //! Declared source compatibility only; no runtime enrollment or execution permit.
+ use serde_json::{Map, Value};
+ use sha2::{Digest, Sha256};
++#[path = "../../../../tools/authority-runtime-074/cost_reader.rs"]
++pub(crate) mod cost_reader;
+ #[path = "../../../../tools/authority-runtime-074/history_reader.rs"]
+ pub(crate) mod history_reader;
+ 
+@@ -61,6 +63,10 @@ pub(crate) fn accepts_patch(path: &str, raw: &str) -> bool {
+     expected_patch(path).is_some_and(|expected| raw.replace("\r\n", "\n") == expected)
+ }
+ pub(crate) fn read(path: &str) -> String {
++    if cost_reader::FILES.contains(&path) {
++        let raw = std::fs::read_to_string(crate::runtime::root().join(path)).unwrap();
++        return cost_reader::previous(path, &raw);
++    }
+     if path == crate::runtime::HISTORY_TEST {
+         let raw = std::fs::read_to_string(crate::runtime::root().join(path)).unwrap();
+         return crate::runtime::view(path, history_reader::previous(&raw));
+diff --git a/crates/xtask/tests/validation_leaf_reader_074.rs b/crates/xtask/tests/validation_leaf_reader_074.rs
+new file mode 100644
+index 00000000..f6bc5c10
+--- /dev/null
++++ b/crates/xtask/tests/validation_leaf_reader_074.rs
+@@ -0,0 +1,69 @@
++//! Registry compatibility only; no changed measurement or runtime predicate.
++#[path = "../../../tools/authority-runtime-074/gate.rs"]
++mod runtime;
++#[path = "../../../tools/authority-runtime-074/io.rs"]
++mod runtime_io;
++#[path = "../../../tools/authority-storage-source-074/contract.rs"]
++mod storage_contract;
++
++const BASE: &str = "a329cac91784d79d9e5b925c22d882cb0d327283";
++const FILE: &str = "crates/xtask/tests/validation_leaf_requests_074.rs";
++const REGISTRY: &str = "docs/testing/gated-test-registry.toml";
++
++fn expected() -> String {
++    let old = runtime::frozen(BASE, FILE);
++    let hook = "#[path = \"support/document_scratch_guard.rs\"]\nmod guard;\n";
++    let imports = "#[path = \"../../../tools/authority-runtime-074/gate.rs\"]\nmod runtime;\n#[path = \"../../../tools/authority-runtime-074/io.rs\"]\nmod runtime_io;\n#[path = \"../../../tools/authority-storage-source-074/contract.rs\"]\nmod storage_contract;\n";
++    let before = "fn read(path: &str) -> String {";
++    let after = "fn read(path: &str) -> String {\n    if path == \"docs/testing/gated-test-registry.toml\" {\n        return runtime_io::read_to_string(runtime::root().join(path)).unwrap();\n    }";
++    assert_eq!(old.matches(hook).count(), 1);
++    assert_eq!(old.matches(before).count(), 1);
++    old.replacen(hook, &format!("{hook}{imports}"), 1)
++        .replacen(before, after, 1)
++}
++
++#[test]
++fn leaf_reader_preserves_entire_original_test_and_exact_registry_selection() {
++    let raw = std::fs::read_to_string(runtime::root().join(FILE)).unwrap();
++    let expected = expected();
++    assert!(storage_contract::accepts(&expected, &raw));
++    for bad in [
++        raw.replace(
++            "if path == \"docs/testing/gated-test-registry.toml\"",
++            "if true",
++        ),
++        raw.replace(
++            "runtime::root().join(path)",
++            "runtime::root().join(\"other\")",
++        ),
++        raw.replacen("assert_eq!(restored, before);", "", 1),
++        raw.replacen("timeout_seconds = 1200", "timeout_seconds = 2400", 1),
++        format!("{raw}\nfn unrelated_effect() {{}}"),
++    ] {
++        assert_ne!(bad, raw);
++        assert!(!storage_contract::accepts(&expected, &bad));
++    }
++}
++
++#[test]
++fn leaf_registry_input_checks_current_bytes_before_returning_predecessor() {
++    let raw = std::fs::read_to_string(runtime::root().join(REGISTRY)).unwrap();
++    assert_eq!(raw.replace("\r\n", "\n"), runtime::frozen(BASE, REGISTRY));
++    assert!(runtime_io::reviewed_inputs::accepts(REGISTRY, &raw));
++    assert_eq!(
++        runtime_io::read_to_string(runtime::root().join(REGISTRY)).unwrap(),
++        runtime::frozen(runtime_io::reviewed_inputs::PREDECESSOR, REGISTRY)
++    );
++    for bad in [
++        String::new(),
++        format!("{raw}\n# unknown registration"),
++        raw.replacen("timeout_seconds = 180", "timeout_seconds = 181", 1),
++    ] {
++        assert_ne!(bad, raw);
++        assert!(!runtime_io::reviewed_inputs::accepts(REGISTRY, &bad));
++        assert!(
++            std::panic::catch_unwind(|| runtime_io::reviewed_inputs::predecessor(REGISTRY, &bad))
++                .is_err()
++        );
++    }
++}
+diff --git a/crates/xtask/tests/validation_leaf_requests_074.rs b/crates/xtask/tests/validation_leaf_requests_074.rs
+index d7438e7a..971d55bb 100644
+--- a/crates/xtask/tests/validation_leaf_requests_074.rs
++++ b/crates/xtask/tests/validation_leaf_requests_074.rs
+@@ -1,6 +1,15 @@
+ #[path = "support/document_scratch_guard.rs"]
+ mod guard;
++#[path = "../../../tools/authority-runtime-074/gate.rs"]
++mod runtime;
++#[path = "../../../tools/authority-runtime-074/io.rs"]
++mod runtime_io;
++#[path = "../../../tools/authority-storage-source-074/contract.rs"]
++mod storage_contract;
+ fn read(path: &str) -> String {
++    if path == "docs/testing/gated-test-registry.toml" {
++        return runtime_io::read_to_string(runtime::root().join(path)).unwrap();
++    }
+     std::fs::read_to_string(
+         std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+             .join("../..")
+diff --git a/crates/xtask/tests/validation_round_cost_074.rs b/crates/xtask/tests/validation_round_cost_074.rs
+index df65b11b..6c089a33 100644
+--- a/crates/xtask/tests/validation_round_cost_074.rs
++++ b/crates/xtask/tests/validation_round_cost_074.rs
+@@ -1,5 +1,13 @@
+ #[path = "support/document_scratch_guard.rs"]
+ mod guard;
++#[path = "support/artifact_inventory_input.rs"]
++mod inventory;
++#[path = "../../../tools/authority-runtime-074/gate.rs"]
++mod runtime;
++#[path = "../../../tools/authority-runtime-074/io.rs"]
++mod runtime_io;
++#[path = "../../../tools/authority-storage-source-074/contract.rs"]
++mod storage_contract;
+ fn root() -> std::path::PathBuf {
+     std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..")
+ }
+@@ -10,7 +18,12 @@ fn git(args: &[&str]) -> String {
+         .output()
+         .unwrap();
+     assert!(output.status.success());
+-    String::from_utf8(output.stdout).unwrap().replace('\r', "")
++    let raw = String::from_utf8(output.stdout).unwrap().replace('\r', "");
++    if args == ["ls-files", inventory::SCOPE] {
++        inventory::project(&raw).expect("current inventory refused before historical phase")
++    } else {
++        raw
++    }
+ }
+ #[test]
+ fn round_observer_recovers_all_477_prior_bodies_without_new_runtime_path() {
+@@ -25,9 +38,14 @@ fn round_observer_recovers_all_477_prior_bodies_without_new_runtime_path() {
+     ]);
+     assert_eq!(paths.lines().count(), 477);
+     for path in paths.lines() {
+-        let raw = std::fs::read_to_string(root().join(path))
++        let raw = runtime_io::read_to_string(root().join(path))
+             .unwrap()
+             .replace('\r', "");
++        let raw = if path == runtime::status_fields::SOURCE {
++            crate::hc074_projection_groups_view!(path, &raw)
++        } else {
++            raw
++        };
+         let restored = crate::hc074_round_cost_view!(path, &raw);
+         assert_eq!(
+             crate::hc074_round_cost_view!(path, &restored),
+diff --git a/tools/authority-runtime-074/cost_reader.rs b/tools/authority-runtime-074/cost_reader.rs
+new file mode 100644
+index 00000000..232620db
+--- /dev/null
++++ b/tools/authority-runtime-074/cost_reader.rs
+@@ -0,0 +1,44 @@
++//! Exact test-reader edits only; no production enrollment or execution permit.
++pub const BASE: &str = "a329cac91784d79d9e5b925c22d882cb0d327283";
++pub const FILES: [&str; 3] = [
++    "crates/xtask/tests/remaining_preparation_cost_074.rs",
++    "crates/xtask/tests/validation_round_cost_074.rs",
++    "crates/xtask/tests/validation_leaf_requests_074.rs",
++];
++const IMPORTS: &str = "#[path = \"../../../tools/authority-runtime-074/gate.rs\"]\nmod runtime;\n#[path = \"../../../tools/authority-runtime-074/io.rs\"]\nmod runtime_io;\n#[path = \"../../../tools/authority-storage-source-074/contract.rs\"]\nmod storage_contract;\n";
++fn edit(raw: &str, before: &str, after: &str) -> String {
++    assert_eq!(raw.matches(before).count(), 1, "one exact cost reader edit");
++    raw.replacen(before, after, 1)
++}
++pub fn expected(path: &str) -> Option<String> {
++    let index = FILES.iter().position(|file| *file == path)?;
++    let old = crate::runtime::frozen(BASE, path);
++    let hook = "#[path = \"support/document_scratch_guard.rs\"]\nmod guard;\n";
++    let mut current = edit(&old, hook, &format!("{hook}{IMPORTS}"));
++    current = match index {
++        0 => edit(&current,
++            "    let read = |path: &str| {\n        std::fs::read_to_string(root().join(path))\n            .unwrap()\n            .replace('\\r', \"\")\n    };",
++            "    let read = |path: &str| {\n        let raw = runtime_io::read_to_string(root().join(path))\n            .unwrap()\n            .replace('\\r', \"\");\n        if path == runtime::status_fields::SOURCE {\n            crate::hc074_projection_groups_view!(path, &raw)\n        } else {\n            raw\n        }\n    };"),
++        1 => {
++            let current = edit(&current, IMPORTS, &format!("#[path = \"support/artifact_inventory_input.rs\"]\nmod inventory;\n{IMPORTS}"));
++            let current = edit(&current,
++                "        let raw = std::fs::read_to_string(root().join(path))\n            .unwrap()\n            .replace('\\r', \"\");",
++                "        let raw = runtime_io::read_to_string(root().join(path))\n            .unwrap()\n            .replace('\\r', \"\");\n        let raw = if path == runtime::status_fields::SOURCE {\n            crate::hc074_projection_groups_view!(path, &raw)\n        } else {\n            raw\n        };" );
++            edit(&current,
++                "    String::from_utf8(output.stdout).unwrap().replace('\\r', \"\")\n}",
++                "    let raw = String::from_utf8(output.stdout).unwrap().replace('\\r', \"\");\n    if args == [\"ls-files\", inventory::SCOPE] {\n        inventory::project(&raw).expect(\"current inventory refused before historical phase\")\n    } else {\n        raw\n    }\n}")
++        }
++        2 => edit(&current,
++            "fn read(path: &str) -> String {",
++            "fn read(path: &str) -> String {\n    if path == \"docs/testing/gated-test-registry.toml\" {\n        return runtime_io::read_to_string(runtime::root().join(path)).unwrap();\n    }"),
++        _ => unreachable!(),
++    };
++    Some(current)
++}
++pub fn accepts(path: &str, raw: &str) -> bool {
++    expected(path).is_some_and(|expected| raw.replace("\r\n", "\n") == expected)
++}
++pub fn previous(path: &str, raw: &str) -> String {
++    assert!(accepts(path, raw), "unreviewed cost test reader: {path}");
++    crate::runtime::frozen(crate::runtime::BASE, path)
++}

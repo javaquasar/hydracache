@@ -1,0 +1,34 @@
+
+running 2 tests
+test hex_reader_changes_only_registry_input_and_preserves_every_old_assertion ... ok
+test hex_registry_view_requires_exact_current_bytes_before_the_old_view ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.18s
+
+
+running 10 tests
+test diff_translation_adds_only_fixed_rhs_and_retains_all_paths_and_flags ... ok
+test archived_success_does_not_admit_a_current_candidate_or_unrelated_mutation ... ok
+test historical_reads_are_fixed_and_never_fall_back_to_current_artifacts ... ok
+test every_allowed_replacement_is_an_actual_io_call_not_a_literal_or_assertion ... ok
+test all_thirty_guards_preserve_complete_assertions_under_exact_io_substitutions ... ok
+test unsafe_names_outside_paths_and_missing_inputs_do_not_open_current_files ... ok
+test unsupported_commands_revisions_scopes_and_cwd_refuse_before_execution ... ok
+test qualification_raw_identity_and_previous_candidate_guard_remain_independent ... ok
+test guard_assertion_test_and_io_mutations_cannot_hide_behind_history ... ok
+test independent_current_tree_gate_refuses_unapproved_source_and_runtime_drift ... FAILED
+
+failures:
+
+---- independent_current_tree_gate_refuses_unapproved_source_and_runtime_drift stdout ----
+
+thread 'independent_current_tree_gate_refuses_unapproved_source_and_runtime_drift' (52164) panicked at crates\xtask\tests\authority_rust_history_074.rs:143:9:
+current source drift crates/xtask/tests/validation_leaf_requests_074.rs
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    independent_current_tree_gate_refuses_unapproved_source_and_runtime_drift
+
+test result: FAILED. 9 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 11.49s
+

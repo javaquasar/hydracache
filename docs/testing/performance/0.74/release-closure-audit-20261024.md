@@ -184,3 +184,29 @@ none ignored/filtered. The earlier incomplete/red result remains immutable.
 Remaining-preparation and validation-round source comparisons plus the
 validation-leaf registry comparison now define the ordinary package frontier.
 No rerun, enlarged timeout or assertion waiver is used to conceal those failures.
+
+The later [cost phase reader repair](cost-phase-readers-result-20261024.md)
+passes all six original cases at that frontier, retaining the exact 473/477
+body comparisons, historical 446-file census and every prior assertion.
+It validates current bytes and all 530 current source entries before the
+specific historical views. Fifty focused cases, strict checks and Rust 1.88
+compilation pass. These local results do not replace the wider package result
+or any original execution, retirement, lifecycle, enrollment or dependency gate.
+
+A read-only source review on `798ca4fa` confirms the next integration boundary:
+`diagnostic_original_held_delivery.rs` has `ReadyObserved` but no worker-released
+or completed stage. Its `try_child_ack` validates before and after the child
+exchange, then records readiness; Drop refuses custody rather than publishing
+completion. `bin/diagnostic_held_bootstrap.rs` invokes the held mode and then
+exits 2, explicitly without worker release or executable handoff. These are
+intentional closed paths, not implementation supplied by the source-reader
+repairs. Preparation, supported original delivery and all-writer retirement
+must be proved before adding a release/completion transition.
+
+The new committed-source whole-package attempt stops at its unchanged
+780-second outer guard: 118 target verdicts, 1153 passed cases, no failed,
+ignored or filtered cases in completed targets. The remaining-preparation loop
+is incomplete despite its separate focused pass; one case there has an `ok`
+line. No retry or wider timeout is used. A full package pass remains unproved,
+and no comparison of these single-run wall durations is a causal performance
+result. The exact source repair does not waive that coverage boundary.

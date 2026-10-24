@@ -1,0 +1,43 @@
+//! Whole-body reader controls; historical counts and runtime checks stay fixed.
+#[path = "../../../tools/authority-runtime-074/cost_reader.rs"]
+mod readers;
+#[path = "../../../tools/authority-runtime-074/gate.rs"]
+mod runtime;
+#[path = "../../../tools/authority-storage-source-074/contract.rs"]
+mod storage_contract;
+
+#[test]
+fn cost_readers_preserve_every_original_assertion_and_limit() {
+    assert_eq!(readers::FILES.len(), 3);
+    for path in readers::FILES {
+        let raw = std::fs::read_to_string(runtime::root().join(path)).unwrap();
+        assert!(readers::accepts(path, &raw), "{path}");
+        assert_eq!(
+            readers::previous(path, &raw),
+            runtime::frozen(runtime::BASE, path)
+        );
+        for bad in [
+            String::new(),
+            raw.replacen("assert_eq!", "assert_ne!", 1),
+            raw.replace("if path == runtime::status_fields::SOURCE", "if true"),
+            raw.replace("if args == [\"ls-files\", inventory::SCOPE]", "if true"),
+            raw.replace(
+                "if path == \"docs/testing/gated-test-registry.toml\"",
+                "if true",
+            ),
+            raw.replace("473", "472")
+                .replace("477", "476")
+                .replace("1200", "2400"),
+            format!("{raw}\nfn unrelated_effect() {{}}"),
+        ] {
+            if bad == raw {
+                continue;
+            }
+            assert!(!readers::accepts(path, &bad), "{path}");
+            assert!(std::panic::catch_unwind(|| readers::previous(path, &bad)).is_err());
+        }
+    }
+    assert!(readers::expected("unrelated.rs").is_none());
+    assert!(!readers::accepts("unrelated.rs", "anything"));
+    assert!(std::panic::catch_unwind(|| readers::previous("unrelated.rs", "anything")).is_err());
+}

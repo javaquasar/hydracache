@@ -1,0 +1,4 @@
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.81s
+     Running `target\debug\xtask.exe gated-tests check`
+Error: "unsupported xtask command: gated-tests"
+error: process didn't exit successfully: `target\debug\xtask.exe gated-tests check` (exit code: 1)

@@ -1,0 +1,14 @@
+
+running 2 tests
+test cost_readers_cannot_broaden_sources_change_counts_or_relax_original_limits ... ok
+test cost_readers_preserve_every_original_assertion_and_limit ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.36s
+
+
+running 2 tests
+test leaf_reader_preserves_entire_original_test_and_exact_registry_selection ... ok
+test leaf_registry_input_checks_current_bytes_before_returning_predecessor ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.18s
+

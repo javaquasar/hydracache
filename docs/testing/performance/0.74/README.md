@@ -6831,3 +6831,18 @@ Its first changed-source whole-package check now finishes within the original
 targets. The new frontier is remaining-preparation and validation-round launcher
 source views plus the validation-leaf historical gate registry. No retry follows;
 the original partial timeout and all first failures remain retained.
+
+The [cost phase reader followup](cost-phase-readers-result-20261024.md) passes
+all six original cases of those three targets without changing their 473/477
+body counts, 446-file historical census, assertions or measurement limits.
+Current source and inventory are verified before exact predecessor views are
+exposed. Fifty focused cases, strict checks and MSRV compilation pass; first
+reader, formatting and lint refusals remain retained. This is a source-test
+repair, not execution or server admission.
+
+The first wider check on `798ca4fa` reaches the unchanged 780-second outer
+guard with 118 completed targets and 1153 passing cases, no failures or
+ignored/filtered cases. The remaining-preparation body loop is incomplete;
+one further case has already passed there. The package is not declared green,
+and there is no retry or enlarged bound. This timeout is separate from the
+fifty passing focused checks and the prior complete three-failure result.

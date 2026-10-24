@@ -1,0 +1,27 @@
+{
+  "all_queried_pids_absent": true,
+  "cleanup_log_sha256": "fc63d8d1704620f51a49238d786386ae76cc915cc3821832ba3d7741e55b0b78",
+  "coordinator": "\"\"\"Read-only postflight of exact owned PIDs; never terminate a process.\"\"\"\nfrom pathlib import Path\nimport datetime\nimport hashlib\nimport json\nimport re\nimport subprocess\n\nROOT = Path(__file__).resolve().parent.parent\nfolder = ROOT/'docs/testing/performance/0.74/local-runs/cost-phase-readers-20261024'\nindex = json.loads((folder/'index.json').read_text())\nmember = index['members']['observation/cost-readers-package-first/owned-cleanup.log']\nraw = (ROOT/'target/source-continuation-20261024/cost-readers-package-first/owned-cleanup.log').read_bytes()\nassert hashlib.sha256(raw).hexdigest() == member['sha256']\ntext = raw.decode()\ntargets = sorted(set(map(int, re.findall(r'The process with PID (\\d+)', text))))\nassert targets == [10704, 15228, 31908, 33496, 50792]\nquery = \"$watched = @(\"+','.join(map(str, targets))+\"); @((Get-CimInstance Win32_Process | Where-Object { $_.ProcessId -in $watched -or $_.Name -like 'remaining_preparation_cost_074*' -or $_.Name -like 'performance_contract_074*' }) | Select-Object ProcessId,ParentProcessId,Name,CreationDate,ExecutablePath) | ConvertTo-Json -AsArray -Compress\"\nstarted = datetime.datetime.now(datetime.timezone.utc).isoformat()\nresult = subprocess.run(['pwsh','-NoProfile','-NonInteractive','-Command',query],cwd=ROOT,capture_output=True,text=True,encoding='utf-8',timeout=30,check=False)\nassert result.returncode == 0\nobserved = json.loads(result.stdout or '[]')\nassert not observed, observed\nrecord = dict(schema='hc074-read-only-owned-cleanup-postflight-v1',\n    started_utc=started, finished_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),\n    source_commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),\n    packet_index_sha256=hashlib.sha256((folder/'index.json').read_bytes()).hexdigest(),\n    cleanup_log_sha256=member['sha256'], queried_pids=targets, query=query,\n    exit=result.returncode, stdout=result.stdout, stderr=result.stderr, observed=observed,\n    all_queried_pids_absent=True, matching_test_images_absent=True,\n    process_mutation=False, services_or_clocks=False, server=False,\n    product_writer_retirement_proof=False, coordinator=Path(__file__).read_text())\ndata = (json.dumps(record,indent=2,sort_keys=True)+'\\n').encode()\nout = ROOT/'docs/testing/performance/0.74/local-runs/cost-phase-readers-cleanup-postflight-20261024.json'\nwith out.open('xb') as stream: stream.write(data)\nprint(json.dumps(dict(path=str(out),sha256=hashlib.sha256(data).hexdigest(),absent_pids=targets)))\n",
+  "exit": 0,
+  "finished_utc": "2026-10-24T08:59:45.204890+00:00",
+  "matching_test_images_absent": true,
+  "observed": [],
+  "packet_index_sha256": "ab6c73cdf85675786ab6f39b43365b06d3fa781fc8526fad1a167a5b81614ce2",
+  "process_mutation": false,
+  "product_writer_retirement_proof": false,
+  "queried_pids": [
+    10704,
+    15228,
+    31908,
+    33496,
+    50792
+  ],
+  "query": "$watched = @(10704,15228,31908,33496,50792); @((Get-CimInstance Win32_Process | Where-Object { $_.ProcessId -in $watched -or $_.Name -like 'remaining_preparation_cost_074*' -or $_.Name -like 'performance_contract_074*' }) | Select-Object ProcessId,ParentProcessId,Name,CreationDate,ExecutablePath) | ConvertTo-Json -AsArray -Compress",
+  "schema": "hc074-read-only-owned-cleanup-postflight-v1",
+  "server": false,
+  "services_or_clocks": false,
+  "source_commit": "798ca4fa3563519eb631a90bf12195af37c89c8f",
+  "started_utc": "2026-10-24T08:59:44.315001+00:00",
+  "stderr": "",
+  "stdout": ""
+}

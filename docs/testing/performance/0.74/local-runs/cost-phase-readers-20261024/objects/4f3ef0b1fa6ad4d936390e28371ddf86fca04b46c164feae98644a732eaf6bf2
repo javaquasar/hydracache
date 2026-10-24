@@ -1,0 +1,119 @@
+
+running 10 tests
+test diff_translation_adds_only_fixed_rhs_and_retains_all_paths_and_flags ... ok
+test archived_success_does_not_admit_a_current_candidate_or_unrelated_mutation ... ok
+test historical_reads_are_fixed_and_never_fall_back_to_current_artifacts ... ok
+test every_allowed_replacement_is_an_actual_io_call_not_a_literal_or_assertion ... ok
+test all_thirty_guards_preserve_complete_assertions_under_exact_io_substitutions ... ok
+test unsafe_names_outside_paths_and_missing_inputs_do_not_open_current_files ... ok
+test unsupported_commands_revisions_scopes_and_cwd_refuse_before_execution ... ok
+test qualification_raw_identity_and_previous_candidate_guard_remain_independent ... ok
+test guard_assertion_test_and_io_mutations_cannot_hide_behind_history ... ok
+test independent_current_tree_gate_refuses_unapproved_source_and_runtime_drift ... FAILED
+
+failures:
+
+---- independent_current_tree_gate_refuses_unapproved_source_and_runtime_drift stdout ----
+
+thread 'independent_current_tree_gate_refuses_unapproved_source_and_runtime_drift' (19840) panicked at crates\xtask\tests\support\..\..\..\..\tools\authority-runtime-074\cost_reader.rs:42:5:
+unreviewed cost test reader: crates/xtask/tests/validation_round_cost_074.rs
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    independent_current_tree_gate_refuses_unapproved_source_and_runtime_drift
+
+test result: FAILED. 9 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 12.04s
+
+
+running 1 test
+test cost_readers_preserve_every_original_assertion_and_limit ... FAILED
+
+failures:
+
+---- cost_readers_preserve_every_original_assertion_and_limit stdout ----
+
+thread 'cost_readers_preserve_every_original_assertion_and_limit' (20756) panicked at crates\xtask\tests\..\..\..\tools\authority-runtime-074\cost_reader.rs:42:5:
+unreviewed cost test reader: crates/xtask/tests/remaining_preparation_cost_074.rs
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'cost_readers_preserve_every_original_assertion_and_limit' (20756) panicked at crates\xtask\tests\..\..\..\tools\authority-runtime-074\cost_reader.rs:42:5:
+unreviewed cost test reader: crates/xtask/tests/remaining_preparation_cost_074.rs
+
+thread 'cost_readers_preserve_every_original_assertion_and_limit' (20756) panicked at crates\xtask\tests\..\..\..\tools\authority-runtime-074\cost_reader.rs:42:5:
+unreviewed cost test reader: crates/xtask/tests/remaining_preparation_cost_074.rs
+
+thread 'cost_readers_preserve_every_original_assertion_and_limit' (20756) panicked at crates\xtask\tests\..\..\..\tools\authority-runtime-074\cost_reader.rs:42:5:
+unreviewed cost test reader: crates/xtask/tests/remaining_preparation_cost_074.rs
+
+thread 'cost_readers_preserve_every_original_assertion_and_limit' (20756) panicked at crates\xtask\tests\..\..\..\tools\authority-runtime-074\cost_reader.rs:42:5:
+unreviewed cost test reader: crates/xtask/tests/remaining_preparation_cost_074.rs
+
+thread 'cost_readers_preserve_every_original_assertion_and_limit' (20756) panicked at crates\xtask\tests\cost_phase_reader_074.rs:14:9:
+crates/xtask/tests/validation_round_cost_074.rs
+
+
+failures:
+    cost_readers_preserve_every_original_assertion_and_limit
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.18s
+
+
+running 1 test
+test current_tree_input_frontier_is_fully_accounted_without_path_exclusions ... FAILED
+
+failures:
+
+---- current_tree_input_frontier_is_fully_accounted_without_path_exclusions stdout ----
+
+thread 'current_tree_input_frontier_is_fully_accounted_without_path_exclusions' (46148) panicked at crates\xtask\tests\support\..\..\..\..\tools\authority-runtime-074\cost_reader.rs:42:5:
+unreviewed cost test reader: crates/xtask/tests/validation_round_cost_074.rs
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+CURRENT_TREE_FRONTIER input refused: crates/xtask/tests/validation_round_cost_074.rs
+
+thread 'current_tree_input_frontier_is_fully_accounted_without_path_exclusions' (46148) panicked at crates\xtask\tests\current_tree_input_audit_074.rs:94:5:
+1 current-tree inputs remain
+
+
+failures:
+    current_tree_input_frontier_is_fully_accounted_without_path_exclusions
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 18.41s
+
+
+running 4 tests
+test runtime_contract_reader_changes_only_the_current_history_input ... ok
+test current_tree_reader_retains_entire_prior_gate_and_unknown_source_assertions ... ok
+test all_nine_current_inputs_are_exact_declared_patches_not_assertion_waivers ... ok
+test all_eighty_one_declared_sources_require_exact_bytes_index_and_regular_files ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 9.12s
+
+
+running 2 tests
+test remaining_preparation_marks_restore_exact_preceding_bodies_and_reject_drift ... ok
+test bounded_projection_recovers_all_473_preceding_bodies_and_frozen_parsers ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 26.03s
+
+
+running 2 tests
+test leaf_reader_preserves_entire_original_test_and_exact_registry_selection ... ok
+test leaf_registry_input_checks_current_bytes_before_returning_predecessor ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.29s
+
+
+running 2 tests
+test validation_leaf_requests_keep_measurement_scopes_and_limits_explicit ... ok
+test validation_leaf_requests_only_add_exact_test_hook_and_registered_manual_gate ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.31s
+
+
+running 2 tests
+test round_observer_rejects_missing_duplicate_and_changed_hooks_and_preserves_guards ... ok
+test round_observer_recovers_all_477_prior_bodies_without_new_runtime_path ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 25.71s
+

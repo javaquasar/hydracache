@@ -1,0 +1,19 @@
+
+running 2 tests
+test leaf_reader_preserves_entire_original_test_and_exact_registry_selection ... FAILED
+test leaf_registry_input_checks_current_bytes_before_returning_predecessor ... ok
+
+failures:
+
+---- leaf_reader_preserves_entire_original_test_and_exact_registry_selection stdout ----
+
+thread 'leaf_reader_preserves_entire_original_test_and_exact_registry_selection' (11328) panicked at crates\xtask\tests\validation_leaf_reader_074.rs:29:5:
+assertion failed: storage_contract::accepts(&expected, &raw)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    leaf_reader_preserves_entire_original_test_and_exact_registry_selection
+
+test result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.18s
+

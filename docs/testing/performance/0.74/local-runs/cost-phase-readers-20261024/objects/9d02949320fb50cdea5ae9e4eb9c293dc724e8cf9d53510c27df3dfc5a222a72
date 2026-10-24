@@ -1,0 +1,4 @@
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.88s
+     Running `target\debug\xtask.exe performance-contract-0.74`
+Error: "unsupported xtask command: performance-contract-0.74"
+error: process didn't exit successfully: `target\debug\xtask.exe performance-contract-0.74` (exit code: 1)

@@ -19099,3 +19099,36 @@ green package: remaining-preparation/validation-round historical launcher views
 and a validation-leaf registry view still refuse. Preserve the old timeout and
 these first failures, then attribute the exact remaining differences. Changing
 the deadline or suppressing an assertion would answer a different question.
+
+The next [reader repair](../testing/performance/0.74/cost-phase-readers-result-20261024.md)
+separates current input validation from historical comparison. Two old body
+loops were seeing the later activation ingress; a registry comparison was seeing
+two later bootstrap gates. The repair first verifies the complete approved
+current input, then exposes the exact predecessor that each old assertion was
+written to compare. It does not return old files indiscriminately: current
+parser/helper identity, source-path selection and inventory membership remain
+independent obligations.
+
+The remaining-preparation test still compares 473 bodies and its measured
+prototype/reference. The validation-round test still compares 477 bodies and
+expects its historical 446-file source list. That list is available only after
+all 530 current files, index identities, filesystem entries and canonical bytes
+pass their existing exact validator. The leaf-cost test retains its iterations,
+zero-write assertion and original timeout. All six original cases pass; the
+final fifty-case cohort also checks attempts to alter those limits or broaden
+reader scope. Strict checks and MSRV compilation pass.
+
+Preservation tests also constrained this repair itself. The independent gate
+first refused the unregistered reader change, then rejected a literal import
+reconstruction that did not match rustfmt. Strict Clippy exposed an unused
+gateway import; an actual parser-input refusal control made that dependency
+useful without a waiver. These are test-source findings, not CPU/goodput gains
+or proof that the original worker can start and retire safely.
+
+The full-package check still supplies a limit, not a completion claim. Its first
+run on the repaired source stops at the unchanged 780-second outer guard after
+118 complete target verdicts and 1153 passing cases, with no failures. An old
+body loop is still running. The same loop passes in the focused cohort, but
+that does not turn an interrupted whole-package attempt into a pass. Both first
+outcomes remain available; a duration difference between single runs cannot
+identify a regression or justify increasing a bound.

@@ -1,0 +1,116 @@
+"""Retain exact reader candidates and first outcomes without runtime admission."""
+from pathlib import Path
+import hashlib
+import json
+import re
+import shutil
+import subprocess
+
+ROOT = Path(__file__).resolve().parent.parent
+OUT = ROOT / 'docs/testing/performance/0.74/local-runs/cost-phase-readers-20261024'
+BASE = subprocess.check_output(['git','rev-parse','43aa73b2'], cwd=ROOT, text=True).strip()
+phases = [
+    'leaf-reader-baseline', 'leaf-reader-candidate', 'cost-readers-first',
+    'cost-readers-import-candidate', 'cost-readers-byte-controls',
+    'cost-readers-check', 'cost-readers-clippy', 'cost-readers-final-check',
+    'cost-readers-final-clippy', 'cost-readers-format', 'cost-readers-final-focused',
+    'cost-readers-msrv-check', 'cost-readers-package-first', 'cost-readers-doc',
+    'cost-readers-contract', 'cost-readers-gated',
+    'cost-readers-contract-corrected', 'cost-readers-gated-corrected',
+]
+failures = {'leaf-reader-baseline', 'leaf-reader-candidate', 'cost-readers-first', 'cost-readers-clippy'}
+paths = ['tools/authority-runtime-074/cost_reader.rs',
+    'crates/xtask/tests/cost_phase_reader_074.rs', 'crates/xtask/tests/validation_leaf_reader_074.rs',
+    'crates/xtask/tests/remaining_preparation_cost_074.rs',
+    'crates/xtask/tests/validation_round_cost_074.rs',
+    'crates/xtask/tests/validation_leaf_requests_074.rs',
+    'crates/xtask/tests/support/current_tree_input.rs']
+protected = {
+    'Cargo.toml':'18a8a27cf140a1d6eb31c8316ee39bb7d5832866a990346eee16cd0c30de344b',
+    'Cargo.lock':'d2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c',
+    'docs/testing/performance/0.74/qualification-manifest.toml':'11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc',
+}
+for path, expected in protected.items():
+    assert hashlib.sha256((ROOT/path).read_bytes()).hexdigest() == expected
+assert not subprocess.check_output(['git','diff',BASE,'--','tools/authority-runtime-074/gate.rs','deny.toml'], cwd=ROOT)
+changed = subprocess.check_output(['git','diff','--name-only',BASE,'--','crates','tools','Cargo.toml','Cargo.lock','deny.toml'], cwd=ROOT,text=True).splitlines()
+assert sorted(changed) == sorted(paths)
+old_index = ROOT/'docs/testing/performance/0.74/local-runs/current-tree-history-20261024/index.json'
+assert hashlib.sha256(old_index.read_bytes()).hexdigest() == 'e93e5fcfe733d5e0dfca90660f1b98a2a749775f431de9886b1cad309cb8b23f'
+# Validate every completion before creating the append-only destination.
+results = {}
+for phase in phases:
+    directory = ROOT/'target/source-continuation-20261024'/phase
+    result = json.loads((directory/'result.json').read_text())
+    assert result['source_unchanged'] and result['head_unchanged'], phase
+    if phase != 'cost-readers-package-first':
+        expected_exit = 101 if phase in failures else 1 if phase in {'cost-readers-contract','cost-readers-gated'} else 0
+        assert result['exit'] == expected_exit, phase
+        assert result['outer_refusal'] is None, phase
+    else:
+        assert result['outer_refusal'] in {None, 'outer-timeout'}
+        if result['outer_refusal'] is None: assert result['exit'] in {0,101}
+    counts = [tuple(map(int, values)) for values in re.findall(
+        r'test result: \w+\. (\d+) passed; (\d+) failed; (\d+) ignored; (\d+) measured; (\d+) filtered out',
+        (directory/'stdout.log').read_text(encoding='utf-8'))]
+    observed = re.findall(r'^test .* \.\.\. (ok|FAILED|ignored)\s*$', (directory/'stdout.log').read_text(encoding='utf-8'), re.M)
+    results[phase] = dict(exit=result['exit'], outer_refusal=result['outer_refusal'],
+        targets=len(counts), passed=sum(c[0] for c in counts), failed=sum(c[1] for c in counts),
+        ignored=sum(c[2] for c in counts), filtered=sum(c[4] for c in counts),
+        individual_ok_lines=observed.count('ok'), individual_failed_lines=observed.count('FAILED'),
+        individual_ignored_lines=observed.count('ignored'))
+
+OUT.mkdir(parents=True, exist_ok=False)
+(OUT/'objects').mkdir()
+(OUT/'.gitattributes').write_text('index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n', encoding='utf-8', newline='\n')
+members = {}
+def put(name, raw):
+    digest = hashlib.sha256(raw).hexdigest()
+    target = OUT/'objects'/digest
+    if target.exists(): assert target.read_bytes() == raw
+    else:
+        with target.open('xb') as stream: stream.write(raw)
+    assert name not in members
+    members[name] = dict(bytes=len(raw), sha256=digest)
+
+for phase in phases:
+    directory = ROOT/'target/source-continuation-20261024'/phase
+    for name in ['intent.json', 'result.json', 'stdout.log', 'stderr.log']:
+        put(f'observation/{phase}/{name}', (directory/name).read_bytes())
+    if (directory/'owned-cleanup.log').exists():
+        put(f'observation/{phase}/owned-cleanup.log', (directory/'owned-cleanup.log').read_bytes())
+for path in paths: put('source/current/'+path, (ROOT/path).read_bytes())
+for path in paths[3:]+['tools/authority-runtime-074/gate.rs']:
+    put('source/baseline/'+path, subprocess.check_output(['git','--no-replace-objects','show',f'{BASE}:{path}'], cwd=ROOT))
+for folder, phase, selected in [
+    ('cost-reader-first-20261024', 'cost-readers-first', paths),
+    ('cost-reader-import-20261024', 'cost-readers-import-candidate', paths),
+    ('cost-reader-byte-20261024', 'cost-readers-clippy', paths[:2]),
+]:
+    intent = json.loads((ROOT/'target/source-continuation-20261024'/phase/'intent.json').read_text())
+    for path in selected:
+        raw = (ROOT/'target'/folder/Path(path).name).read_bytes()
+        assert hashlib.sha256(raw).hexdigest() == intent['source'][path], path
+        put(f'source/candidate/{folder}/{path}', raw)
+initial = (ROOT/'target/leaf-reader-initial-20261024.rs').read_bytes()
+intent = json.loads((ROOT/'target/source-continuation-20261024/leaf-reader-baseline/intent.json').read_text())
+assert hashlib.sha256(initial).hexdigest() == intent['source'][paths[2]]
+put('source/initial-canary/'+paths[2], initial)
+for name in ['run-source-step-20261024.py', 'run-fresh-reader-20261024.py',
+    'run-xtask-package-780-20261024.py', 'seal-cost-readers-20261024.py']:
+    put('coordinator/'+name, (ROOT/'target'/name).read_bytes())
+put('source/committed-code.diff', subprocess.check_output(['git','diff',BASE,'--',*paths], cwd=ROOT))
+facts = dict(baseline=BASE, code_commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
+    paths=paths, results=results, protected_sha256=protected,
+    prior_package_index_sha256=hashlib.sha256(old_index.read_bytes()).hexdigest(),
+    original_remaining_body_count=473, original_round_body_count=477, original_round_src_count=446,
+    validated_current_source_count=530, exact_cost_reader_count=3, original_cost_tests=6,
+    observation_frequency_changed=False, observation_order_changed=False, deadlines_changed=False,
+    dependencies_changed=False, common_gateway_changed=False, runtime_changed=False,
+    original_owner=False, server=False, services_or_clocks=False, product_workload=False,
+    performance_measurements=False, qualification=False, package_outer_bound_seconds=780,
+    package_retry=False, free_bytes_at_capture=shutil.disk_usage(ROOT).free)
+raw = (json.dumps(dict(schema='hc074-cost-phase-readers-v1',facts=facts,members=members), indent=2, sort_keys=True)+'\n').encode()
+with (OUT/'index.json').open('xb') as stream: stream.write(raw)
+print(json.dumps(dict(index_sha256=hashlib.sha256(raw).hexdigest(), members=len(members),
+    objects=len(list((OUT/'objects').iterdir())), results=results), indent=2))
