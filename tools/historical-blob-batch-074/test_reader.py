@@ -95,6 +95,16 @@ class Protocol(unittest.TestCase):
         self.assertEqual(result, [reader.Output(b"", b"exact show failure", 128)])
         self.assertEqual(seen[0], seen[1])
 
+    def test_late_final_fallback_cannot_publish_success(self):
+        run = mock.Mock(side_effect=[
+            reader.Output(self.commit + self.request.spec() + b" missing\n", b"", 0),
+            reader.Output(b"", b"exact failure but late", 128),
+        ])
+        with mock.patch.object(reader.time, "monotonic", side_effect=[0, 0, 31]):
+            with self.assertRaises(reader.Refused):
+                reader.read_batch(Path(__file__).parent, [self.request], run=run)
+        self.assertEqual(run.call_count, 2)
+
     def test_fallback_exception_and_aggregate_budget_never_publish_partial_results(self):
         for failed in (OSError("first failure retained"), reader.Output(b"x" * 200, b"", 0),
                        reader.Output(b"", b"x" * 200, 128)):

@@ -19,7 +19,7 @@ stderr and exit status. A failed/diagnostic batch process, corrupt record or mis
 commit refuses the entire call, without retry or partial results. SHA1 checks
 establish the local Git object representation, not a new trust/enrollment scheme.
 
-The entire call shares a 30-second diagnostic bound, including fallbacks; it
+The Git and parsing phase shares a 30-second diagnostic bound, including fallbacks; it
 never extends an original 300/60/10-second admission window. Input is limited to
 256 KiB; captured batch/result stdout to 16 MiB and stderr to 64 KiB. Temporary
 files avoid pipe-drain deadlock and unbounded in-memory subprocess capture. File

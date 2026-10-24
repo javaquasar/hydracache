@@ -87,6 +87,8 @@ def run_git(root, args, data, deadline):
             out, err = stdout.read(MAX_OUTPUT + 1), stderr.read(MAX_STDERR + 1)
             if len(out) > MAX_OUTPUT or len(err) > MAX_STDERR:
                 raise Refused("Git output budget")
+            if time.monotonic() >= deadline:
+                raise Refused("batch deadline")
             return Output(out, err, child.returncode)
         finally:
             if child.poll() is None:
@@ -172,4 +174,6 @@ def read_batch(root, requests, *, run=run_git):
         if output_bytes > MAX_OUTPUT or error_bytes > MAX_STDERR:
             raise Refused("aggregate result budget")
         outputs.append(output)
+    if time.monotonic() >= deadline:
+        raise Refused("batch deadline")
     return outputs
