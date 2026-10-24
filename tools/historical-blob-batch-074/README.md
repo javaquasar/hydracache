@@ -59,3 +59,38 @@ exact source comparisons, and pass focused/package gates in the original bound.
 Most captured historical calls use short revisions, which this prototype rejects;
 their coverage cannot be inferred from the full-commit controls. Throughput, CPU,
 retained memory, parser cost and observer overhead are not measured here.
+
+## Rust decoder and eligibility audit
+
+`decoder.rs` is a separate protocol component, imported only by the new ordinary
+`crates/xtask/tests/historical_blob_batch_074.rs` target. It consumes a bounded
+stream against ordered, independently supplied SHA256 byte pins. It checks exact
+object ID/type/length headers, complete bodies, delimiters, content, missing
+identity and complete stream consumption; errors publish no prefix. This is not
+a Git transport or a port of Python's SHA1 recomputation. Its synthetic OIDs and
+caller-created pins carry no original-source/trust authority. There is no default
+pin producer, cache, source reader or integration into an old guard. Existing
+`sha2` is reused; Cargo manifests/lockfile do not change.
+
+```powershell
+cargo +1.94.0 test --offline --locked -p xtask --test historical_blob_batch_074
+cargo +1.88.0 test --offline --locked -p xtask --test historical_blob_batch_074
+python -m unittest discover -s tools/historical-blob-batch-074 -p test_eligibility.py
+python tools/historical-blob-batch-074/eligibility.py
+```
+
+`eligibility.py` verifies the previously sealed Trace2 archive and reports command
+shapes without running Git or resolving a revision. Of 12383 `show` calls, 45
+have full IDs plus explicit replacement disabling, 1839 have full IDs with default
+replacements, and 10499 use short IDs with default replacements. These are counts,
+not timing attribution or admission. Six manually reviewed source sites retain
+exact file hashes/anchors/excerpts and individual barriers; that site ledger is
+not exhaustive and none of its entries is admitted. A matching command shape
+does not establish a preplanned batch, unchanged observation order, trusted byte
+pins or full error/environment compatibility.
+
+Do not connect the decoder by deriving its pin from the same observed body, or
+equate a caller assertion with verified historical identity. A bounded native
+transport, independent real-Git/Python differential corpus, reference provenance,
+and default-replacement/short-ID semantics remain separate gates. No integrated
+speedup is claimed by either the decoder or the offline eligibility audit.
