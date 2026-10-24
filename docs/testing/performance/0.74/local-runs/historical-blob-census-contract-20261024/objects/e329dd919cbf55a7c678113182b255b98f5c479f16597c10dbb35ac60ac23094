@@ -1,0 +1,4 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.13s
+     Running tests\historical_blob_caller_074.rs (target\debug\deps\historical_blob_caller_074-0b145296431064c2.exe)
+     Running tests\role_census_reader_074.rs (target\debug\deps\role_census_reader_074-e8c3f359ebe987ed.exe)

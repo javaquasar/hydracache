@@ -6927,3 +6927,13 @@ caller shadows on current/MSRV, old caller regression tests and check/strict lin
 pass. General caller admission is still false: child-local `GIT_TRACE=1` is
 accepted by the old success-only caller but rejected by native batch stderr
 admission. WSL time disagreement is not waived, and no real caller is redirected.
+
+The [census environment and error contract](historical-blob-census-contract-result-20261024.md)
+adds a separate inherited-environment, one-read-at-a-time adapter. Successful
+stderr is retained, status precedes UTF8, and lazy helper/BASE/REVIEWED ordering
+and early failures are preserved. Five Windows profiles compare 25 operation
+pairs per toolchain; eight caller and two old regression cases pass on both
+current/MSRV, with check/strict lint green. The first invalid-input fixture remains
+retained. The generic batch, actual caller and all original live windows remain
+unchanged. Typed/bounded errors are not the old unbounded panic API; Linux caller
+proof, the error facade and integration remain separate gates, without a timing claim.

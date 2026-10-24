@@ -118,3 +118,8 @@ All original live checks, order/frequency, 300/60/10 windows, the old 780-second
 package bound and first failures remain. Cargo manifests/lockfile, dependency
 policy and qualification manifest are unchanged. No clocks, services, server,
 product workload, original-owner run, qualification, installation or push occurs.
+
+The subsequent [environment and error contract candidate](historical-blob-census-contract-result-20261024.md)
+preserves successful stderr in an isolated caller adapter and tests the original
+conditional read schedule. Its finite Windows profiles do not erase this batch
+counterexample or imply Linux caller, arbitrary environment or real-loader admission.

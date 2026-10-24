@@ -1,0 +1,106 @@
+"""Seal first census fixture refusal and finite-profile candidate checks."""
+from pathlib import Path
+import hashlib
+import json
+import re
+import subprocess
+
+ROOT = Path(__file__).resolve().parent.parent
+BASE = 'docs/testing/performance/0.74/local-runs/historical-blob-census-contract-20261024'
+CODE = 'a9095e56fb052dff2cab169bf6195b0eb7884d6f'
+PHASES = ('census-contract-v1', 'census-contract-v2', 'census-contract-msrv',
+          'census-contract-check', 'census-contract-clippy', 'census-contract-format',
+          'census-contract-doc-check', 'census-contract-performance-contract')
+PROTECTED = {
+    'Cargo.toml': '18a8a27cf140a1d6eb31c8316ee39bb7d5832866a990346eee16cd0c30de344b',
+    'Cargo.lock': 'd2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c',
+    'docs/testing/performance/0.74/qualification-manifest.toml':
+        '11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc',
+}
+DOCS = ('tools/historical-blob-batch-074/README.md',
+        'docs/articles/007-optimization-starts-with-measurement.md',
+        'docs/testing/performance/0.74/README.md',
+        'docs/testing/performance/0.74/release-closure-audit-20261024.md',
+        'docs/testing/performance/0.74/historical-blob-caller-linux-result-20261024.md',
+        'docs/testing/performance/0.74/historical-blob-census-contract-result-20261024.md')
+
+
+def sha(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+
+members, objects, summaries = {}, {}, []
+
+
+def add(name, raw):
+    assert name not in members
+    digest = sha(raw)
+    members[name] = dict(sha256=digest, bytes=len(raw))
+    objects[digest] = raw
+
+
+assert subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT).decode().strip() == CODE
+for phase in PHASES:
+    folder = ROOT / 'target/source-continuation-20261024' / phase
+    intent = json.loads((folder / 'intent.json').read_bytes())
+    result = json.loads((folder / 'result.json').read_bytes())
+    expected = 101 if phase == 'census-contract-v1' else 0
+    assert result['exit'] == expected and result['outer_refusal'] is None
+    assert result['source_unchanged'] and result['head_unchanged']
+    assert intent['source'] == result['source_after']
+    for name in ('intent.json', 'stdout.log', 'stderr.log', 'result.json'):
+        add(f'checks/{phase}/{name}', (folder / name).read_bytes())
+    sources = ROOT / 'target/blob-fault-source-snapshots-20261024' / phase
+    raw_index = (sources / 'index.json').read_bytes()
+    add(f'phase-sources/{phase}/index.json', raw_index)
+    for path, digest in json.loads(raw_index).items():
+        raw = (sources / digest).read_bytes()
+        assert sha(raw) == digest == intent['source'][path]
+        add(f'phase-sources/{phase}/{path}', raw)
+    stdout = (folder / 'stdout.log').read_text()
+    passes = list(map(int, re.findall(r'test result: ok\. (\d+) passed; 0 failed;', stdout)))
+    if phase in ('census-contract-v2', 'census-contract-msrv'):
+        assert passes == [8, 2]
+    if expected:
+        assert '7 passed; 1 failed;' in stdout and 'first census contract clean' in stdout
+    summaries.append(dict(phase=phase, exit=expected, rust_passes=passes))
+    for suffix in ('caller', 'census-contract'):
+        capture = ROOT / 'target/blob-fault-20261024' / (phase + '-' + suffix)
+        if capture.is_dir():
+            for path in sorted(capture.iterdir()):
+                assert path.is_file()
+                add(f'observations/{phase}/{suffix}/{path.name}', path.read_bytes())
+
+for path, digest in PROTECTED.items():
+    assert sha((ROOT / path).read_bytes()) == digest
+for path in DOCS:
+    add('final/' + path, (ROOT / path).read_bytes())
+for path in ('crates/xtask/tests/support/census_provider_input.rs',
+             'tools/material-lock-fixture-074/contract.rs'):
+    add('unchanged-caller/' + path, (ROOT / path).read_bytes())
+for name in ('run-blob-fault-step-20261024.py', 'run-fresh-reader-20261024.py',
+             'run-source-step-20261024.py', 'seal-census-contract-20261024.py',
+             'verify-census-contract-staged-20261024.py'):
+    add('coordinators/' + name, (ROOT / 'target' / name).read_bytes())
+index = dict(schema='hc074-census-environment-error-contract-v1', code_commit=CODE,
+    members=members, facts=dict(phases=summaries, protected_sha256=PROTECTED,
+        finite_windows_profile_gate=True, profiles=5, operation_pairs_per_toolchain=25,
+        toolchains=['1.94.0', '1.88.0'], caller_cases=8, old_regression_cases=2,
+        first_fixture_refusal_retained=True, first_inner_panic_payload_captured=False,
+        generic_batch_counterexample_retained=True, original_caller_changed=False,
+        generic_transport_changed=False, caller_integrated=False,
+        unbounded_panic_api_equivalence=False, new_linux_caller_admitted=False,
+        production_authority=False, full_package_pass=False, measurement=False,
+        source_observation_frequency_changed=False, original_deadlines_changed=False,
+        dependency_baseline_changed=False, server=False, services_or_clocks=False,
+        product_workload=False, qualification=False, installation=False, push=False))
+out = ROOT / BASE
+out.mkdir(parents=True, exist_ok=False)
+(out / 'objects').mkdir()
+(out / '.gitattributes').write_bytes(
+    b'index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n')
+for digest, raw in objects.items():
+    (out / 'objects' / digest).write_bytes(raw)
+raw = (json.dumps(index, sort_keys=True, indent=2) + '\n').encode()
+(out / 'index.json').write_bytes(raw)
+print(json.dumps(dict(index_sha256=sha(raw), members=len(members), objects=len(objects), phases=len(PHASES))))

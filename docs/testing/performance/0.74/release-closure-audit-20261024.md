@@ -291,3 +291,13 @@ per toolchain and strict local gates. Production trust/enrollment, actual caller
 environment/error/scheduling compatibility and original clock authority remain
 distinct. The first Linux lock-seed refusal and WSL clock observations are
 preserved; no service, clock, server or original release barrier changes.
+
+The [census contract candidate](historical-blob-census-contract-result-20261024.md)
+now preserves successful diagnostic stderr in a caller-specific adapter without
+loosening native batch admission. Conditional helper/BASE/REVIEWED reads and
+first-error stops match; five Windows profiles pass on current/MSRV, as do eight
+caller cases, two old regression cases and strict local checks. Its first
+invalid-original fixture is retained, not retried unchanged. Actual caller
+integration stays false: bounded typed errors require an explicit old-API facade,
+Linux caller proof and a separately justified integration decision. This is not
+a batching/performance result or progress through original delivery/lifecycle gates.

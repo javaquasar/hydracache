@@ -19335,3 +19335,34 @@ semantic change. The passing shadow test therefore retains a false admission
 gate rather than discarding stderr globally. A caller-specific error/environment
 contract and unchanged conditional observation schedule must be proved before
 integration; a source-integrity or Linux component pass cannot supply them.
+
+The next [census caller contract](../testing/performance/0.74/historical-blob-census-contract-result-20261024.md)
+separates caller compatibility from batch protocol admission. An isolated adapter
+executes the original `show` command at each reached input, inheriting environment
+and config rather than applying the batch fixture's isolation policy. A successful
+diagnostic stream is retained without invalidating stdout. Failed status precedes
+UTF8 decoding, and normalization changes only CRLF. The generic batch remains
+strict; its tracing counterexample is still a passing characterization of a real
+substitution barrier.
+
+Laziness is part of that contract. Unrelated views perform no helper or historical
+read. Selected views check the helper, read BASE, then REVIEWED, and run the body
+contract only after exact normalized equality. Fault controls stop at each boundary;
+Trace2 compares the literal Git argv and reached read order against the unchanged
+caller. Five Windows profiles cover clean output, trace diagnostics, valid config,
+invalid config and repository overrides on current Rust and MSRV. Eight caller
+cases and two old regressions pass per toolchain, with strict package checks.
+
+The first new fixture supplied an invalid original body to the existing contract
+and failed. Its raw output and source remain retained; the corrected fixture uses
+the independently pinned BASE and narrows suppression to expected old-caller
+panics. The correction does not relax the contract or a deadline. This is also why
+a later green control is not a replacement for the first result.
+
+This adapter establishes a finite semantic contract, not process amortization.
+It deliberately retains the number and position of old reads. File-backed capture,
+budgets, deadlines, raw pin validation and typed errors add refusal boundaries to
+an old unbounded panic API; those differences cannot be relabeled equivalence.
+Linux caller behavior and an explicit old-error facade remain before integration.
+No measured speedup, production environment authority or release readiness follows
+from these controls.

@@ -267,3 +267,22 @@ See the [caller and Linux report](../../docs/testing/performance/0.74/historical
 for exact sources and first refusals. The new Python suite has 39 controls;
 current check/strict lint and the unchanged caller's regression controls pass.
 No runtime loader is integrated or numerical performance claim made.
+
+## Census inherited environment and error adapter
+
+`census_caller.rs` is a separate, test-only compatibility candidate. Each reached
+read issues the original literal `show` command with inherited environment/config
+and disabled replacements. It keeps successful stderr, status-before-UTF8 error
+ordering, exact raw source pins and CRLF-only normalization. Typed failures retain
+completed command output; there is no native-to-old retry or eager second read.
+The lazy helper/BASE/REVIEWED/body schedule and all its early stops are tested.
+
+Five Windows child profiles compare 25 old/candidate operation pairs per
+toolchain; eight caller cases and two unchanged regression cases pass on current
+Rust/MSRV. The first fixture's invalid-original panic remains retained. The
+generic batch reader still refuses successful tracing stderr as before.
+The [contract report](../../docs/testing/performance/0.74/historical-blob-census-contract-result-20261024.md)
+distinguishes these finite-profile results from integration: the bounded,
+file-backed, typed-error adapter is not arbitrary unbounded/panic-API equivalence
+or production environment admission. The old caller is not redirected. Linux
+caller proof and the error facade remain before a switch; no speedup is claimed.

@@ -1,0 +1,131 @@
+"""Independently read exact staged CAS bytes and check each semantic receipt."""
+from pathlib import Path
+import hashlib
+import json
+import subprocess
+
+ROOT = Path(__file__).resolve().parent.parent
+BASE = 'docs/testing/performance/0.74/local-runs/historical-blob-census-contract-20261024'
+
+
+def git(args, raw=None):
+    return subprocess.check_output(['git', *args], cwd=ROOT, input=raw)
+
+
+def staged(path):
+    return git(['show', ':' + path])
+
+
+def sha(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+
+index_raw = staged(BASE + '/index.json')
+assert index_raw == (ROOT / BASE / 'index.json').read_bytes()
+index = json.loads(index_raw)
+assert index['code_commit'] == 'a9095e56fb052dff2cab169bf6195b0eb7884d6f'
+objects = {}
+for item in index['members'].values():
+    digest = item['sha256']
+    if digest not in objects:
+        path = BASE + '/objects/' + digest
+        objects[digest] = staged(path)
+        assert objects[digest] == (ROOT / path).read_bytes()
+    assert sha(objects[digest]) == digest and len(objects[digest]) == item['bytes']
+
+
+def member(name):
+    return objects[index['members'][name]['sha256']]
+
+
+def observation(phase, suffix, name):
+    return member(f'observations/{phase}/{suffix}/{name}')
+
+
+for phase in ('census-contract-v2', 'census-contract-msrv'):
+    pins = json.loads(observation(phase, 'census-contract', 'producer.stdout.json'))
+    assert pins['test_fixture_pin_integrity'] and not pins['production_pin_authority']
+    specs = [v['spec'] for v in pins['cases']]
+    for v in pins['cases']:
+        raw = bytes.fromhex(v['stdout_hex'])
+        assert sha(raw) == v['pin']['sha256'] and len(raw) == v['pin']['bytes']
+        assert hashlib.sha1(b'blob ' + str(len(raw)).encode() + b'\0' + raw).hexdigest() == v['pin']['oid']
+    count = 0
+    for mode in ('clean', 'trace', 'config', 'config-error', 'repository-error'):
+        raw = observation(phase, 'census-contract', mode + '.stdout.log').decode()
+        line = next(v for v in raw.splitlines() if '"operations"' in v)
+        value = json.loads(line[line.index('{'):])
+        assert value['mode'] == mode and not value['caller_integrated']
+        assert len(value['operations']) == 5
+        trace = observation(phase, 'census-contract', mode + '.trace.jsonl').decode()
+        starts = [json.loads(v)['argv'] for v in trace.splitlines() if json.loads(v)['event'] == 'start']
+        expected_total = 0
+        for op in value['operations']:
+            name = op['operation']
+            failed = mode.endswith('error') and name != 'unrelated'
+            expected = {'original': [specs[0]], 'accepts': [specs[1]],
+                'view': [specs[0]] if failed else specs, 'unrelated': [], 'mismatch': [specs[1]]}[name]
+            assert op['old_git_argv'] == op['candidate_git_argv']
+            assert [v[3] for v in op['old_git_argv']] == expected
+            for argv in op['old_git_argv']:
+                assert argv[1:3] == ['--no-replace-objects', 'show'] and len(argv) == 4
+            expected_total += 2 * len(expected)
+            if failed:
+                assert not op['old_success'] and op['old_error'] == 'missing exact material fixture source'
+                assert 'Process' in op['candidate']['Err'] and len(op['outputs']) == 1
+                output = op['outputs'][0]['output']
+                assert output['code'] == 128 and output['stdout_hex'] == ''
+                assert bytes.fromhex(output['stderr_hex'])
+                expected_events = ['helper', 'helper-check', 'Base'] if name == 'view' else [
+                    'Base' if name == 'original' else 'Reviewed']
+                assert op['candidate_events'] == expected_events
+            else:
+                assert op['old_success'] and 'Ok' in op['candidate'] and op['old_error'] is None
+                if name == 'unrelated':
+                    assert op['candidate_events'] == [] and op['outputs'] == []
+                    assert op['candidate']['Ok'] == 'untouched'
+                if name == 'mismatch':
+                    assert op['candidate']['Ok'] == 'false' and op['candidate_events'] == ['Reviewed']
+                if name == 'accepts':
+                    assert op['candidate']['Ok'] == 'true'
+                if name == 'view':
+                    assert op['candidate_events'] == ['helper', 'helper-check', 'Base', 'Reviewed', 'body-check']
+                if mode == 'trace':
+                    assert all(v > 0 for v in op['retained_stderr_bytes'])
+                    assert all(bytes.fromhex(v['stderr_hex']) for v in op['outputs'])
+            count += 1
+        # Three success profiles also perform one deliberately stale-pin command.
+        assert len(starts) == expected_total + (0 if mode.endswith('error') else 1)
+    assert count == 25
+    # Preserve the old strict batch mismatch, not just the new adapter successes.
+    raw = observation(phase, 'caller', 'trace.stdout.log').decode()
+    line = next(v for v in raw.splitlines() if '"old_original_exact"' in v)
+    old = json.loads(line[line.index('{'):])
+    assert old['native'] == [{'refusal': 'Process'}] * 2 and old['old_original_exact']
+    assert not old['caller_integrated'] and not old['caller_admitted']
+
+first = member('checks/census-contract-v1/stdout.log').decode()
+assert '7 passed; 1 failed;' in first and 'first census contract clean' in first
+first_source = member('phase-sources/census-contract-v1/crates/xtask/tests/historical_blob_caller_074.rs')
+assert b'caller::accepts("unused", &raw)' in first_source
+assert 'FAILED' in observation('census-contract-v1', 'census-contract', 'clean.stdout.log').decode()
+assert 'observations/census-contract-v1/census-contract/result.json' not in index['members']
+for name in index['members']:
+    prefix = 'phase-sources/census-contract-msrv/'
+    if name.startswith(prefix) and not name.endswith('/index.json'):
+        assert member(name) == (ROOT / name[len(prefix):]).read_bytes()
+    if name.startswith(('final/', 'unchanged-caller/')):
+        path = name.split('/', 1)[1]
+        body = member(name)
+        assert body == (ROOT / path).read_bytes()
+        assert git(['hash-object', '--stdin', '--path', path], body).strip() == git(['rev-parse', ':' + path]).strip()
+for path, digest in index['facts']['protected_sha256'].items():
+    assert sha((ROOT / path).read_bytes()) == digest
+for path in ('crates/xtask/tests/support/census_provider_input.rs',
+             'tools/historical-blob-batch-074/transport.rs',
+             'tools/historical-blob-batch-074/decoder.rs'):
+    assert git(['diff', '5ed0f8cc12c183dd1f7295c0e32d27956ed3f677', '--', path]) == b''
+assert staged(BASE + '/.gitattributes') == b'index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n'
+print(json.dumps(dict(index_sha256=sha(index_raw), verified_members=len(index['members']),
+    raw_objects=len(objects), operation_pairs=50, first_refusal_retained=True,
+    caller_integrated=False, server=False)))
