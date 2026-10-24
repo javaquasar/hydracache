@@ -3,11 +3,76 @@
 mod caller;
 #[path = "../../../tools/historical-blob-batch-074/mod.rs"]
 pub mod census_runtime;
+#[path = "../../../tools/historical-blob-batch-074/effect_syntax.rs"]
+mod effect_syntax;
 #[path = "support/census_provider_input.rs"]
 mod integrated;
+#[path = "../../../tools/historical-blob-batch-074/transport_profile.rs"]
+mod transport_profile;
 
 const OPERATIONS: [&str; 5] = ["original", "accepts", "view", "mismatch", "unrelated"];
 const BLOCKS: usize = 6;
+
+#[test]
+fn package_syntax_distinguishes_quoted_code_and_macro_effects() {
+    let raw = r##"
+        const TEXT: &str = r#"#[path = "absent.rs"] mod absent; Command::new("ssh").spawn()"#;
+        #[path = "real.rs"] mod real;
+        #[test] fn control() { Command::new("git").output(); }
+        macro_rules! spawn_git { () => { Command::new("git").output() }; }
+    "##;
+    let sites = effect_syntax::inventory(raw).unwrap();
+    assert_eq!(
+        sites
+            .iter()
+            .filter(|v| v["kind"] == "command-constructor")
+            .count(),
+        1
+    );
+    assert_eq!(
+        sites
+            .iter()
+            .filter(|v| v["kind"] == "macro-command-constructor")
+            .count(),
+        1
+    );
+    assert_eq!(sites.iter().filter(|v| v["kind"] == "module").count(), 1);
+    assert!(!sites
+        .iter()
+        .any(|v| v["detail"] == "literal:ssh" || v["detail"] == "literal:absent.rs"));
+    assert!(effect_syntax::inventory("fn invalid(").is_err());
+}
+
+#[test]
+fn package_syntax_child() {
+    let Some(input) = std::env::var_os("HC074_PACKAGE_SYNTAX_INPUT") else {
+        return;
+    };
+    use sha2::{Digest, Sha256};
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .canonicalize()
+        .unwrap();
+    let request: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(input).unwrap()).unwrap();
+    let mut rows = vec![];
+    for (name, expected) in request["sources"].as_object().unwrap() {
+        let path = root.join(name).canonicalize().unwrap();
+        assert!(path.starts_with(&root) && path.extension().unwrap() == "rs");
+        let raw = std::fs::read(path).unwrap();
+        let digest: String = Sha256::digest(&raw)
+            .iter()
+            .map(|v| format!("{v:02x}"))
+            .collect();
+        assert_eq!(expected.as_str().unwrap(), digest);
+        let text = std::str::from_utf8(&raw).unwrap();
+        rows.push(serde_json::json!({"source":name,"sha256":digest,"sites":effect_syntax::inventory(text).unwrap()}));
+    }
+    println!(
+        "HC074_SYNTAX {}",
+        serde_json::json!({"sources":rows,"executed_input_code":false,"compiler_expansion":false})
+    );
+}
 
 fn order(block: usize) -> [&'static str; 4] {
     if block.is_multiple_of(2) {
@@ -47,6 +112,73 @@ fn census_cost_child() {
     panic!("Windows attribution only: {input:?}");
 }
 
+#[test]
+fn profiled_capture_keeps_output_and_early_refusals() {
+    use census_runtime::transport::{self, Refusal};
+    use std::process::Command;
+    use std::time::Instant;
+    let mut marks = vec![];
+    let actual = transport_profile::run_profiled(
+        Command::new("git").arg("--version"),
+        &[],
+        Instant::now() + transport::BOUND,
+        &mut |event| match event {
+            transport_profile::CaptureEvent::Enter(name) => marks.push((name, true)),
+            transport_profile::CaptureEvent::Leave(name) => marks.push((name, false)),
+            transport_profile::CaptureEvent::Spawned(child)
+            | transport_profile::CaptureEvent::Reaped(child) => assert!(child.id() > 0),
+        },
+    )
+    .unwrap();
+    let expected = transport::run_owned(
+        Command::new("git").arg("--version"),
+        &[],
+        Instant::now() + transport::BOUND,
+    )
+    .unwrap();
+    assert_eq!(actual, expected);
+    let mut pending = None;
+    for (name, enter) in marks {
+        if enter {
+            assert!(pending.replace(name).is_none());
+        } else {
+            assert_eq!(pending.take(), Some(name));
+        }
+    }
+    assert!(pending.is_none());
+    for (input, deadline, expected) in [
+        (&[][..], Instant::now(), Refusal::Deadline),
+        (
+            &vec![0; 256 * 1024 + 1][..],
+            Instant::now() + transport::BOUND,
+            Refusal::Input,
+        ),
+    ] {
+        assert_eq!(
+            transport_profile::run_profiled(
+                &mut Command::new("must-not-spawn"),
+                input,
+                deadline,
+                &mut |_| panic!("no event before early refusal")
+            )
+            .unwrap_err()
+            .refusal,
+            expected
+        );
+    }
+}
+
+#[test]
+fn transport_capture_child() {
+    let Some(input) = std::env::var_os("HC074_TRANSPORT_CAPTURE_INPUT") else {
+        return;
+    };
+    #[cfg(windows)]
+    windows::run_transport(std::path::Path::new(&input));
+    #[cfg(not(windows))]
+    panic!("Windows capture attribution only: {input:?}");
+}
+
 #[cfg(windows)]
 mod windows {
     use super::{caller, census_runtime, integrated, order, BLOCKS, OPERATIONS};
@@ -59,6 +191,104 @@ mod windows {
     use std::time::Instant;
     use windows_sys::Win32::Foundation::FILETIME;
     use windows_sys::Win32::System::Threading::{GetCurrentProcess, GetProcessTimes};
+
+    fn child_times(child: &std::process::Child) -> Value {
+        use std::os::windows::io::AsRawHandle;
+        let [mut created, mut exited, mut kernel, mut user] = [FILETIME {
+            dwLowDateTime: 0,
+            dwHighDateTime: 0,
+        }; 4];
+        // SAFETY: Child owns this live process handle during both observations;
+        // output pointers address distinct FILETIME values. No PID reopening.
+        let result = unsafe {
+            GetProcessTimes(
+                child.as_raw_handle(),
+                &mut created,
+                &mut exited,
+                &mut kernel,
+                &mut user,
+            )
+        };
+        assert_ne!(result, 0);
+        let ticks = |v: &FILETIME| (u64::from(v.dwHighDateTime) << 32) | u64::from(v.dwLowDateTime);
+        json!({"pid":child.id(),"created_100ns":ticks(&created),"exited_100ns":ticks(&exited),
+               "kernel_ns":ticks(&kernel)*100,"user_ns":ticks(&user)*100})
+    }
+
+    pub fn run_transport(input: &Path) {
+        use super::transport_profile::{self, CaptureEvent};
+        let document: Value = serde_json::from_slice(&std::fs::read(input).unwrap()).unwrap();
+        assert_eq!(document["test_fixture_pin_integrity"], true);
+        assert_eq!(document["production_pin_authority"], false);
+        let body = raw(&document["cases"][0]);
+        assert_eq!(body.len(), reference::ROWS[0].1);
+        let digest: String = Sha256::digest(&body)
+            .iter()
+            .map(|v| format!("{v:02x}"))
+            .collect();
+        assert_eq!(digest, reference::ROWS[0].2);
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+        for block in 0..BLOCKS {
+            for (slot, variant) in order(block).iter().enumerate() {
+                let mut spans = vec![];
+                let mut pending = None;
+                let mut child = vec![];
+                let mut observe = |event: CaptureEvent<'_>| match event {
+                    CaptureEvent::Enter(name) => {
+                        assert!(pending.replace((name, Instant::now())).is_none());
+                    }
+                    CaptureEvent::Leave(name) => {
+                        let (original, start) = pending.take().unwrap();
+                        assert_eq!(name, original);
+                        spans.push(json!({"phase":name,"wall_ns":start.elapsed().as_nanos()}));
+                    }
+                    CaptureEvent::Spawned(value) | CaptureEvent::Reaped(value) => {
+                        child.push(child_times(value))
+                    }
+                };
+                let mut command = Command::new("git");
+                command
+                    .arg("--no-replace-objects")
+                    .args([
+                        "show",
+                        &format!("{}:{}", reference::BASE, reference::SOURCE),
+                    ])
+                    .current_dir(&root);
+                let deadline = Instant::now() + transport::BOUND;
+                let (output, wall, parent_cpu) = measure(|| {
+                    if *variant == "legacy" {
+                        transport::run_owned_with_io(&mut command, &[], deadline)
+                    } else {
+                        transport_profile::run_profiled(&mut command, &[], deadline, &mut observe)
+                    }
+                });
+                let output = output.unwrap();
+                assert_eq!(output.code, Some(0));
+                assert_eq!(output.stdout, body);
+                assert!(pending.is_none());
+                if *variant == "current" {
+                    assert_eq!(child.len(), 2);
+                    assert_eq!(child[0]["pid"], child[1]["pid"]);
+                    assert_eq!(child[0]["created_100ns"], child[1]["created_100ns"]);
+                    assert!(child[1]["exited_100ns"].as_u64().unwrap() > 0);
+                } else {
+                    assert!(child.is_empty() && spans.is_empty());
+                }
+                println!(
+                    "\nHC074_TRANSPORT {}",
+                    json!({"block":block,"slot":slot,"variant":variant,
+                    "wall_ns":wall,"parent_cpu_ns":parent_cpu,"spans":spans,"child":child,
+                    "stdout_bytes":output.stdout.len(),"stderr_bytes":output.stderr.len()})
+                );
+            }
+        }
+        println!(
+            "HC074_TRANSPORT_DONE {}",
+            json!({"blocks":BLOCKS,"samples":BLOCKS*4,
+            "legacy_is_unobserved_installed_transport":true,"current_is_profile_mirror":true,
+            "product_candidate":false,"checks_or_deadlines_changed":false})
+        );
+    }
 
     fn cpu() -> u64 {
         let [mut created, mut exited, mut kernel, mut user] = [FILETIME {

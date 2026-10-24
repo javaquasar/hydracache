@@ -363,3 +363,33 @@ The result explicitly leaves execution-effect clearance false. The package
 command still has its original 780-second bound and four case threads; this
 inventory does not run it, filter targets or fill an earlier incomplete suffix.
 See the [cost and audit report](../../docs/testing/performance/0.74/census-cost-package-audit-result-20261024.md).
+
+## Transport capture and default Windows effect review
+
+`transport_profile.rs` is a diagnostic mirror, not an installed transport change.
+`transport_attribution.mirror_check` erases observer lines to the exact original
+function and checks private helpers/constants separately. Actual `transport.rs`,
+census pins/read order and the 30-second deadline/5-second cleanup stay unchanged.
+One six-block ABBA/BAAB cohort compares twelve unobserved installed captures with
+twelve mirror profiles. Flat stage clocks and the original held child handle
+separate temporary-file setup, spawn, metadata/wait, sleep, read and terminal CPU.
+Sleep overlaps useful child work; its duration is not an avoidable-cost estimate.
+There is no candidate acceptance or observer-overhead subtraction.
+
+`effect_syntax.rs` parses actual Rust items and standard assert/format operands;
+quoted source is data. `syntax_audit.py` follows both literal and default module
+edges to a bounded closure. The first lexical catalog omitted two default census
+modules; the 334-file closed inventory retains those inputs too. This is syntax
+and source review, not arbitrary compiler/procedural-macro expansion.
+
+`package_effects_review.py` records a manual entry-point review scoped only to
+the default Windows package/four case threads/no ignored cases. It requires a
+literal reviewed AST digest, exact source hashes and 21 independently pinned
+script/API inputs. It cannot automatically approve a changed inventory. Its
+environment preflight rejects inherited fixture controls, executable/lazy-fetch
+Git settings and reparse scratch roots. Registry executors, self/Python fixtures,
+protoc scratch generation, current Git reads and dependency API slices have
+explicit classifications; service names in source assertions are not dispatches.
+The receipt is not Linux/all-feature clearance, security-policy green or product,
+server, installation or qualification admission. Full replay still needs its own
+complete verdict under the original 780-second bound.
