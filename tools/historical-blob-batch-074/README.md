@@ -327,3 +327,39 @@ old/typed/facade/connected argv, read order and panic payloads. Python has 45
 controls; strict local gates pass. First source-expectation/lint refusals remain
 retained. No extra Git command enters the guard; no speedup or production admission
 is claimed. Full package replay and complete-path attribution remain separate.
+
+## Connected caller cost and package inventory
+
+`crates/xtask/tests/census_cost_074.rs` is an opt-in Windows/debug source-reader
+diagnostic, not a product benchmark. Without `HC074_CENSUS_COST_INPUT` its child
+case performs no measurements. Its ordinary protocol case checks the fixed
+six-block ABBA/BAAB ordering and compiles both old public surfaces. Five complete
+operations retain the actual legacy/current implementations and all predicates;
+separate components measure reference construction, SHA256, interpretation,
+helper read/hash, body predicate and pipe/owned Git capture. Component intervals
+are not disjoint phases of a complete call. `observer` is an empty-loop control,
+not a measurement or subtraction of every clock/CPU-observer instruction.
+
+`census_cost.py BUILD_RECEIPT NEW_DIRECTORY` requires an append-only destination,
+a successful source-bound no-run build, earlier independently sealed body pins,
+the unchanged qualification digest and a 4-GiB free-space floor. It inherits the
+same environment for both paths. Only the app's literal `GIT_PAGER=cat` is
+permitted among Git overrides; no variable is removed or rewritten. Each original
+caller deadline remains 30 seconds; the separate diagnostic has a 180-second
+outer bound. A refusal is retained, not retried automatically. CPU is current
+process `GetProcessTimes`, excluding Git children, and may be coarsely quantized.
+
+`--review-saved CAPTURE OUTER_RECEIPT` only reads the saved first child outcome.
+It permits the exact original libtest status prefix on the first sample, checks
+the complete 120/48 schedule and preserves the initial parser refusal. This does
+not dispatch or reclassify the original wrapper as successful. The first cohort
+is slower on the connected path in this local debug observation; it is not a
+release throughput claim or an admitted transport optimization.
+
+`package_replay_audit.py` reads the default target catalog, literal path
+candidates, source hashes and earlier sealed package outcomes. Its sightings are
+lexical, including strings/comments, not expanded Rust AST or effect reachability.
+The result explicitly leaves execution-effect clearance false. The package
+command still has its original 780-second bound and four case threads; this
+inventory does not run it, filter targets or fill an earlier incomplete suffix.
+See the [cost and audit report](../../docs/testing/performance/0.74/census-cost-package-audit-result-20261024.md).
