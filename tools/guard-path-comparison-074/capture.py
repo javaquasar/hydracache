@@ -1,0 +1,116 @@
+"""One allocation-only leaf cohort; no installed guard or product execution."""
+import hashlib
+import json
+import os
+from pathlib import Path
+import statistics
+import subprocess
+import sys
+import tomllib
+
+ROOT = Path(__file__).resolve().parents[2]
+SOURCE = 'crates/xtask/tests/support/performance_contract_074_fixed_slice.rs'
+BASELINE = '5bf7b3618f2cf80143a28c8bf56e368faa59d8d8d8517771e3998feab51888ec'
+PREFIX = 'tools/long-run-supervisor-074/src/'
+FILES = ('diagnostic_root_enrollment.rs', 'diagnostic_cgroup_root.rs',
+         'diagnostic_root_placement_binding.rs', 'diagnostic_owned_placement.rs')
+
+
+def require(value, reason):
+    if not value:
+        raise ValueError(reason)
+
+
+def sha(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+
+def review(raw):
+    lines = raw.decode().splitlines()
+    rows = [json.loads(line[len('HC074_GUARD_PATH '):]) for line in lines
+            if line.startswith('HC074_GUARD_PATH ')]
+    done = [json.loads(line[len('HC074_GUARD_PATH_DONE '):]) for line in lines
+            if line.startswith('HC074_GUARD_PATH_DONE ')]
+    require(done == [dict(samples=24, warmup=False, product=False, package_replay=False)]
+            and len(rows) == 24, 'complete fixed cohort')
+    require(type(done[0]['samples']) is int and all(done[0][key] is False
+            for key in ('warmup', 'product', 'package_replay')), 'completion types')
+    groups = {'baseline': [], 'candidate': []}
+    for i, row in enumerate(rows):
+        block, slot = divmod(i, 4)
+        order = (False, True, True, False) if block % 2 == 0 else (True, False, False, True)
+        require(type(row.get('candidate')) is bool and
+                (row.get('block'), row.get('slot'), row['candidate']) == (block, slot, order[slot]), 'sample order')
+        require(all(type(row.get(k)) is int and row[k] >= 0 for k in
+                    ('block', 'slot', 'loops', 'paths', 'comparisons', 'matched', 'allocations', 'reallocations', 'requested', 'live', 'peak')), 'counts')
+        require((row['loops'], row['paths'], row['comparisons'], row['matched'], row['live'], row.get('timing')) ==
+                (256, 13, 13312, 1024, 0, False), 'workload or retained bytes')
+        require(row.get('timing') is False, 'timing type')
+        if row['candidate']:
+            require(all(row[k] == 0 for k in ('allocations', 'reallocations', 'requested', 'peak')), 'candidate allocation')
+        else:
+            require(row['allocations'] == 13312 and row['requested'] > 0 and row['peak'] > 0, 'baseline allocation')
+        groups['candidate' if row['candidate'] else 'baseline'].append(row)
+    summary = {name: {metric: statistics.median(row[metric] / row['comparisons'] for row in group)
+                     for metric in ('allocations', 'reallocations', 'requested', 'peak')}
+               for name, group in groups.items()}
+    # Peak is a scope maximum, not additive bytes per predicate.
+    for name, group in groups.items():
+        summary[name]['peak_scope_bytes'] = statistics.median(row['peak'] for row in group)
+        del summary[name]['peak']
+    return dict(samples=rows, per_predicate=summary, timing=False, rss_or_allocator_retention=False,
+                requested_live_at_return_zero=True, full_normalizer=False,
+                package_pass=False, product_candidate=False, checks_or_deadlines_changed=False)
+
+
+def capture(build, out):
+    out.mkdir(parents=True, exist_ok=False)
+    def write(name, value):
+        with (out / name).open('x', encoding='utf-8', newline='\n') as stream:
+            json.dump(value, stream, indent=2, sort_keys=True)
+            stream.write('\n')
+    write('intent.json', dict(blocks=6, samples=24, loops=256, paths=13, bound_seconds=60,
+        retry=False, warmup=False, timing=False, server=False, services=False, clocks=False))
+    process = None
+    try:
+        require(os.name == 'nt', 'this fixed binary is Windows only')
+        require(not any(key.startswith('HC074_GUARD_PATH_') for key in os.environ), 'inherited fixture control')
+        folder = ROOT / 'tools/guard-path-comparison-074'
+        proposal = tomllib.loads((folder / 'proposal.toml').read_text())
+        require(proposal['baseline_raw_sha256'] == BASELINE and not proposal['timing_claim'], 'proposal drift')
+        baseline = (folder / 'fixed-slice-before.txt').read_bytes()
+        require(sha(baseline) == BASELINE and sha((ROOT / SOURCE).read_bytes()) == BASELINE, 'baseline source drift')
+        text = baseline.decode().replace('\r\n', '\n')
+        require(text.count('if ' + proposal['old'] + ' {') == 1, 'exact old predicate')
+        require(text.count('const PREFIX: &str = "' + PREFIX + '";') == 1, 'prefix drift')
+        require([name for name in FILES if text.count('("' + name + '",') == 1] == list(FILES), 'four ordered hooks')
+        probe = (folder / 'probe.rs').read_text()
+        require(probe.count(proposal['old']) == 1 and probe.count(proposal['new']) == 1, 'probe predicate drift')
+        before = {p.relative_to(ROOT).as_posix(): sha(p.read_bytes()) for p in folder.iterdir() if p.is_file()}
+        receipt = json.loads((build / 'result.json').read_bytes())
+        compiled = json.loads((build / 'intent.json').read_bytes())['source']
+        require(receipt['exit'] == 0 and receipt['source_unchanged'] and receipt['head_unchanged'], 'build refused')
+        require(all(compiled.get(name) == value for name, value in before.items()
+                    if name.endswith(('.rs', '.toml', '.txt'))), 'compiled source drift')
+        binary = ROOT / 'target/guard-path-20261025-probe.exe'
+        write('preflight.json', dict(source=before, baseline_sha256=BASELINE,
+            binary_sha256=sha(binary.read_bytes()), production_authority=False, installed=False))
+        with (out / 'stdout.log').open('xb') as stdout, (out / 'stderr.log').open('xb') as stderr:
+            process = subprocess.Popen([str(binary), '--exact', 'allocation_child', '--nocapture', '--test-threads=1'],
+                cwd=ROOT, stdout=stdout, stderr=stderr, env=dict(os.environ, HC074_GUARD_PATH_ALLOCATION='1'))
+            process.wait(timeout=60)
+        require(process.returncode == 0, 'first measured child refused')
+        require(before == {p.relative_to(ROOT).as_posix(): sha(p.read_bytes()) for p in folder.iterdir() if p.is_file()}, 'source changed')
+        write('result.json', review((out / 'stdout.log').read_bytes()))
+        print(json.dumps(dict(samples=24, allocation_only=True, measured_child_repeated=False)))
+    except Exception as error:
+        write('refusal.json', dict(type=type(error).__name__, reason=str(error),
+            exit=None if process is None else process.poll()))
+        if process is not None and process.poll() is None:
+            process.kill()
+            process.wait(timeout=5)
+        raise
+
+
+if __name__ == '__main__':
+    capture(Path(sys.argv[1]).resolve(), Path(sys.argv[2]).resolve())
