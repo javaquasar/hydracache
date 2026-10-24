@@ -34,3 +34,9 @@ arena retention, RSS, stack high-water use, whole-runtime allocation counts or
 product memory evidence. No native API, original preparation margin, server or
 release admission follows. Existing live predicates/count/order/windows and
 first failures remain unchanged; no clocks, services or server actions occur.
+
+The first resource harness does not run a parser: rustc refuses its inner doc
+comment after the exact generated dataset/context items (E0753). Preserve the
+first generated inputs, coordinator and error. The separate v2 correction changes
+only that probe comment to an ordinary comment; accounting, dataset, semantic
+and zero-after-drop oracles remain unchanged. Use a new exclusive output root.
