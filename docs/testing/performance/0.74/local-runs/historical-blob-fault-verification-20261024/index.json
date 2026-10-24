@@ -1,0 +1,58 @@
+{
+  "admission": false,
+  "code_commit": "44a3f7b120e352a259279bf9c72e39a74ab22a12",
+  "doc_check_passed": true,
+  "members": {
+    "doc-check/intent.json": {
+      "bytes": 315005,
+      "sha256": "fe50cae6d9701704265990bc06af9852623623f9d106797218f600d49485668c"
+    },
+    "doc-check/result.json": {
+      "bytes": 314760,
+      "sha256": "11fb3aaf9b5cda3692652a19eb8d817b86f05ea0f066367fe3d55a7f7a16135b"
+    },
+    "doc-check/stderr.log": {
+      "bytes": 204,
+      "sha256": "ec0663134b51c80d7a4239df088a02dd58518c6b0592b07c2c5d8054edd9d48e"
+    },
+    "doc-check/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "sources/docs/articles/007-optimization-starts-with-measurement.md": {
+      "bytes": 1320604,
+      "sha256": "1c2486ecc815ba27dcee1d7672011b5ea124fe576755c753551c9e134b38b073"
+    },
+    "sources/docs/testing/performance/0.74/README.md": {
+      "bytes": 469580,
+      "sha256": "aba36432cdaf21d098eefc355966b9c582bbfa6d33e4fb42eea5bdae90ac1394"
+    },
+    "sources/docs/testing/performance/0.74/historical-blob-fault-result-20261024.md": {
+      "bytes": 6180,
+      "sha256": "f5d018bc8c5f8819c072966f62252eda748f769d5f5f7b5f854f93d3f7f7cfcb"
+    },
+    "sources/docs/testing/performance/0.74/historical-blob-native-result-20261024.md": {
+      "bytes": 8030,
+      "sha256": "5efe3ba29adb7c89da72be2196280865e27b54a4a9f23d4be707e0687aafb492"
+    },
+    "sources/docs/testing/performance/0.74/release-closure-audit-20261024.md": {
+      "bytes": 18724,
+      "sha256": "a488a55fb9ff438fd061c577c3c011201496e051b5fe334e4f185d0aa4f2e5de"
+    },
+    "staged-verification/source.py": {
+      "bytes": 3588,
+      "sha256": "75466d9f5c1d6018aac7263cb13d9b32d12e361f67796848ad1f0c72a0b22df6"
+    },
+    "staged-verification/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "staged-verification/stdout.log": {
+      "bytes": 99,
+      "sha256": "acef651e469a41197f4770b0bd0c8b04e79893ebb566b469aaabe09990649122"
+    }
+  },
+  "primary_index_sha256": "37d771195efc42b8757d32b4b9634fdb114f97d8c13747b7b3ee4a9094a8b3a3",
+  "schema": "hc074-blob-fault-staged-documentation-check-v1",
+  "staged_primary_verified": true
+}

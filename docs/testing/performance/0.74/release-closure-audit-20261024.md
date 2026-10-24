@@ -260,3 +260,13 @@ child; it is not original process-tree or writer-alias revocation. No existing
 loader is redirected. Mutable input/config/ambiguity and production pin provenance,
 supported-platform proof and whole preparation cost remain before integration.
 No old interrupted-package verdict or original release barrier changes.
+
+The [subsequent mutation gate](historical-blob-fault-result-20261024.md) remains
+false: default replacement refs can introduce an unpinned blob after an absence
+pin validates and restore the original ref immediately after fallback. This ABA
+counterexample prevents caller integration despite correct pre-batch refusals
+and current/MSRV characterization passes. The selected fault oracle is separate
+from the unchanged six-profile oracle; latest combined regression attempts fail
+the latter's original deadline and remain red, with all first outcomes retained.
+Thirty-one Python controls and current check/strict lint pass. No runtime source
+guard, live observation, original window or release admission changes.

@@ -1,0 +1,1 @@
+{"args":["update-ref","-d","refs/replace/c86626638e0bc8cf47ca49bb1525b40e9737ee64"],"input_hex":"","policy":"Disabled","result":{"code":0,"stderr_hex":"","stdout_hex":""}}

@@ -1,0 +1,119 @@
+"""Seal first fault characterizations and exact source versions, including failures."""
+from pathlib import Path
+import hashlib
+import json
+import re
+import subprocess
+
+ROOT = Path(__file__).resolve().parent.parent
+BASE = 'docs/testing/performance/0.74/local-runs/historical-blob-fault-20261024'
+PHASES = ('blob-fault-build-v1', 'blob-fault-controls-v1', 'blob-fault-controls-v2',
+          'blob-fault-controls-v3', 'blob-fault-python-controls', 'blob-fault-msrv-controls',
+          'blob-fault-check', 'blob-fault-clippy', 'blob-fault-format',
+          'blob-fault-python-syntax', 'blob-fault-python-indentation',
+          'blob-fault-selected-controls', 'blob-fault-selected-msrv',
+          'blob-fault-final-check', 'blob-fault-final-clippy', 'blob-fault-final-python',
+          'blob-fault-final-format', 'blob-fault-final-syntax', 'blob-fault-final-indentation')
+PROTECTED = {
+    'Cargo.toml': '18a8a27cf140a1d6eb31c8316ee39bb7d5832866a990346eee16cd0c30de344b',
+    'Cargo.lock': 'd2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c',
+    'docs/testing/performance/0.74/qualification-manifest.toml':
+        '11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc',
+}
+
+
+def sha(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+
+members, objects, phases = {}, {}, []
+
+
+def add(name, raw):
+    assert name not in members
+    digest = sha(raw)
+    members[name] = dict(sha256=digest, bytes=len(raw))
+    objects[digest] = raw
+
+
+for phase in PHASES:
+    folder = ROOT / 'target/source-continuation-20261024' / phase
+    intent = json.loads((folder / 'intent.json').read_bytes())
+    result = json.loads((folder / 'result.json').read_bytes())
+    expected = 101 if phase in ('blob-fault-controls-v1', 'blob-fault-controls-v2',
+                                'blob-fault-msrv-controls', 'blob-fault-selected-controls',
+                                'blob-fault-selected-msrv') else 0
+    assert result['exit'] == expected and result['outer_refusal'] is None
+    assert result['source_unchanged'] and result['head_unchanged']
+    assert intent['source'] == result['source_after']
+    assert not result['admission'] and not result['qualification']
+    for name in ('intent.json', 'stdout.log', 'stderr.log', 'result.json'):
+        add(f'checks/{phase}/{name}', (folder / name).read_bytes())
+    source = ROOT / 'target/blob-fault-source-snapshots-20261024' / phase
+    add(f'phase-sources/{phase}/index.json', (source / 'index.json').read_bytes())
+    for path, digest in json.loads((source / 'index.json').read_bytes()).items():
+        raw = (source / digest).read_bytes()
+        assert sha(raw) == digest == intent['source'][path]
+        add(f'phase-sources/{phase}/{path}', raw)
+    stdout = (folder / 'stdout.log').read_text()
+    stderr = (folder / 'stderr.log').read_text()
+    phases.append(dict(phase=phase, exit=expected,
+        rust_target_passes=list(map(int, re.findall(r'test result: ok\. (\d+) passed; 0 failed;', stdout))),
+        python_passes=int(match[1]) if (match := re.search(r'Ran (\d+) tests in ', stderr)) else None))
+    for suffix in ('', '-mutations', '-owned-cleanup'):
+        capture = ROOT / 'target/blob-fault-20261024' / (phase + suffix)
+        if capture.is_dir():
+            for path in sorted(capture.iterdir()):
+                assert path.is_file()
+                add(f'observations/{phase}{suffix}/{path.name}', path.read_bytes())
+
+for phase in ('blob-fault-controls-v3', 'blob-fault-selected-controls', 'blob-fault-selected-msrv'):
+    expected_passes = [9, 1, 6] if phase == 'blob-fault-controls-v3' else [9, 1]
+    assert next(p for p in phases if p['phase'] == phase)['rust_target_passes'] == expected_passes
+    if phase != 'blob-fault-controls-v3':
+        stdout = (ROOT / 'target/source-continuation-20261024' / phase / 'stdout.log').read_text()
+        assert '5 passed; 1 failed;' in stdout
+    folder = ROOT / 'target/blob-fault-20261024' / (phase + '-mutations')
+    values = {p.name.split('-', 1)[1]: json.loads(p.read_bytes()) for p in folder.iterdir()}
+    assert values['stale-blob.json']['refusal'] == 'Protocol(Content)'
+    for name in ('stale-config.json', 'stale-absence.json', 'missing-object-stale-pin.json'):
+        assert values[name]['refusal'] == 'Protocol(Header)'
+    assert values['ambiguous-stale-short-pin.json']['refusal'] == 'Process'
+    assert values['observer-original-deadline.json']['refusal'] == 'Deadline'
+    assert values['fallback-aba-Default.json']['outputs'][0]['code'] == 0
+    assert values['fallback-aba-Disabled.json']['outputs'][0]['code'] != 0
+    assert values['quote-path-negative-control.json']['rendering_changed'] is False
+    assert values['result.json']['fallback_absence_aba_counterexample'] is True
+    assert values['result.json']['fault_admission_gate'] is False
+assert next(p for p in phases if p['phase'] == 'blob-fault-python-controls')['python_passes'] == 29
+assert next(p for p in phases if p['phase'] == 'blob-fault-final-python')['python_passes'] == 31
+final = ROOT / 'target/blob-fault-source-snapshots-20261024/blob-fault-selected-controls'
+for path, digest in json.loads((final / 'index.json').read_bytes()).items():
+    assert sha((ROOT / path).read_bytes()) == digest
+for path, digest in PROTECTED.items():
+    assert sha((ROOT / path).read_bytes()) == digest
+for path in ('target/run-blob-fault-step-20261024.py', 'target/run-fresh-reader-20261024.py',
+             'target/run-source-step-20261024.py', 'target/seal-blob-fault-20261024.py'):
+    add('coordinators/' + Path(path).name, (ROOT / path).read_bytes())
+add('sources/final/README.md', (ROOT / 'tools/historical-blob-batch-074/README.md').read_bytes())
+index = dict(schema='hc074-blob-mutation-characterization-v1',
+    code_commit=subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT).decode().strip(),
+    members=members, facts=dict(phases=phases, protected_sha256=PROTECTED,
+        first_wrong_expectations_retained=['quotePath changed tree show', 'missing object yields Process'],
+        first_msrv_full_oracle_deadline_retained=True,
+        concurrent_full_oracle_deadlines_retained=True, final_combined_regression_gate=False,
+        selected_fixture_references=18, unchanged_full_fixture_references=54,
+        replacement_absence_aba_counterexample=True, fault_admission_gate=False,
+        production_pin_authority=False, old_loader_integrated=False, ordinary_package_pass=False,
+        live_frequency_or_original_windows_changed=False, dependency_changes=False,
+        server=False, service_or_clock=False, product_workload=False, measurement=False,
+        qualification=False, push=False))
+out = ROOT / BASE
+out.mkdir(parents=True, exist_ok=False)
+(out / 'objects').mkdir()
+(out / '.gitattributes').write_bytes(b'index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n')
+for digest, raw in objects.items():
+    (out / 'objects' / digest).write_bytes(raw)
+raw = (json.dumps(index, indent=2, sort_keys=True) + '\n').encode()
+(out / 'index.json').write_bytes(raw)
+print(json.dumps(dict(index_sha256=sha(raw), members=len(members), objects=len(objects), phases=phases)))

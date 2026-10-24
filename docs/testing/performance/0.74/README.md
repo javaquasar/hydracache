@@ -6894,3 +6894,14 @@ reap only owned leaf children while a same-image unrelated child survives.
 This is not all-writer authority, production pin enrollment or a performance
 result. Mutation/ambiguity/config/provenance and reference-preparation cost remain
 before any real caller integration; the old package/release barriers remain open.
+
+The [Git mutation fault controls](historical-blob-fault-result-20261024.md) expose
+a blocking fallback ABA: a path pinned absent can become present after batch
+validation and return unpinned bytes under default replacements, even if the ref
+is restored before return. Five pre-batch stale-pin faults refuse precisely;
+the new characterization target passes on current/MSRV, not its admission gate.
+Thirty-one Python controls, current check/lint and formatting pass. The first
+fixture expectation failures and all deadline refusals remain retained; latest
+combined transport commands are red at full-oracle preparation and are not
+retried. No real caller is connected, and no original live checks or deadlines
+change. A proved fallback/reference-view contract is required before integration.

@@ -1,0 +1,78 @@
+"""Independent staged CAS readback, semantic receipts and final-source binding."""
+from pathlib import Path
+import hashlib
+import json
+import subprocess
+
+ROOT = Path(__file__).resolve().parent.parent
+BASE = 'docs/testing/performance/0.74/local-runs/historical-blob-fault-20261024'
+
+
+def staged(path):
+    return subprocess.check_output(['git', 'show', ':' + path], cwd=ROOT)
+
+
+def sha(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+
+raw = staged(BASE + '/index.json')
+assert sha(raw) == '37d771195efc42b8757d32b4b9634fdb114f97d8c13747b7b3ee4a9094a8b3a3'
+assert raw == (ROOT / BASE / 'index.json').read_bytes()
+index = json.loads(raw)
+assert index['code_commit'] == '44a3f7b120e352a259279bf9c72e39a74ab22a12'
+objects = {}
+for value in index['members'].values():
+    digest = value['sha256']
+    if digest not in objects:
+        path = BASE + '/objects/' + digest
+        objects[digest] = staged(path)
+        assert objects[digest] == (ROOT / path).read_bytes()
+    assert sha(objects[digest]) == digest and len(objects[digest]) == value['bytes']
+
+
+def member(name):
+    return objects[index['members'][name]['sha256']]
+
+
+def observations(phase):
+    prefix = 'observations/' + phase + '-mutations/'
+    return {name[len(prefix):].split('-', 1)[1]: json.loads(member(name))
+            for name in index['members'] if name.startswith(prefix)}
+
+
+for phase in ('blob-fault-controls-v3', 'blob-fault-selected-controls', 'blob-fault-selected-msrv'):
+    values = observations(phase)
+    assert values['stale-blob.json']['refusal'] == 'Protocol(Content)'
+    assert values['stale-config.json']['refusal'] == 'Protocol(Header)'
+    assert values['stale-absence.json']['refusal'] == 'Protocol(Header)'
+    assert values['ambiguous-stale-short-pin.json']['refusal'] == 'Process'
+    assert values['missing-object-stale-pin.json']['refusal'] == 'Protocol(Header)'
+    assert values['observer-original-deadline.json']['refusal'] == 'Deadline'
+    assert values['fallback-aba-Default.json']['outputs'][0]['code'] == 0
+    assert values['fallback-aba-Disabled.json']['outputs'][0]['code'] != 0
+    assert values['result.json']['fault_admission_gate'] is False
+    oracle = json.loads(bytes.fromhex(values['oracle.json']['stdout_hex']))
+    assert len(oracle['cases']) == (6 if phase.endswith('v3') else 2)
+    if phase.endswith('v3'):
+        prefix = 'observations/' + phase + '/'
+        original = json.loads(member(prefix + 'oracle.stdout.json'))
+        for number, case in enumerate(original['cases']):
+            assert json.loads(member(prefix + f'native-case-{number}.json'))['outputs'] == case['expected']
+    else:
+        summary = json.loads(member('checks/' + phase + '/result.json'))
+        assert summary['exit'] == 101
+        assert member('observations/' + phase + '/oracle-process.txt') == b'Err(Deadline)'
+
+prefix = 'phase-sources/blob-fault-selected-controls/'
+for name in index['members']:
+    if name.startswith(prefix) and not name.endswith('/index.json'):
+        assert member(name) == staged(name[len(prefix):]), name
+for path, digest in index['facts']['protected_sha256'].items():
+    assert sha((ROOT / path).read_bytes()) == digest
+assert index['facts']['fault_admission_gate'] is False
+assert index['facts']['final_combined_regression_gate'] is False
+assert staged(BASE + '/.gitattributes') == (
+    b'index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n')
+assert len(index['members']) == 633 and len(objects) == 137
+print('Verified staged packet: 633 members / 137 raw objects; first refusals, ABA and final source match')

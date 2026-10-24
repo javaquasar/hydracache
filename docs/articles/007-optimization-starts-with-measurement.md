@@ -19245,3 +19245,40 @@ zero. Changing refs/configuration, ambiguous abbreviations, real pin provenance
 and original caller observation order must be checked before integration, then
 the complete path must be measured inside unchanged bounds. No native API,
 product throughput or complete-package gain follows from these controls alone.
+
+The next [mutation controls](../testing/performance/0.74/historical-blob-fault-result-20261024.md)
+expose why a correct batch decoder is not yet a correct replacement for the whole
+loader. A stale blob replacement, stale absence, changed replacement config,
+ambiguous short commit and removed object all refuse before a batch result can
+be published. But a later fallback is a new observation. The test validates a
+missing path, introduces it through a replacement commit just before `show`, and
+removes that replacement immediately afterward. Default policy successfully
+returns the newly introduced bytes, although the original absence pin validated
+and the final ref state again matches the initial state.
+
+This is an ABA interval: checking context only before and after an operation
+cannot prove that context stayed fixed in between. Explicit replacement disabling
+avoids this particular example, but silently applying it to a caller that uses
+default Git semantics would change the contract rather than optimize it. The
+reader therefore remains disconnected from real callers. Its passing fault test
+records the counterexample and an explicit false admission gate; green test
+execution does not mean the demonstrated unsafe behavior is accepted.
+
+The experiment also rejects an attractive but incorrect test assumption:
+`core.quotePath` did not alter this Git's Unicode tree `show` output. The original
+failed expectation remains retained. A second expectation incorrectly classified
+a removed object as a process failure; the actual batch emits `missing`, and the
+object pin correctly rejects its header. Recording the exact refusal matters:
+changing every expected failure into an undifferentiated error would hide changes
+in the diagnostic and error contract.
+
+The new fault case passes on current Rust and MSRV, alongside 31 Python controls,
+current all-target check and strict Clippy. Preparation still matters: a first
+MSRV attempt exhausts the original oracle deadline, and later concurrent combined
+runs also fail the existing full-oracle case. Those red results remain separate
+from the passing fault case and earlier complete component run. A dedicated
+fault mode prepares only the two reference profiles it consumes; the default
+six-profile oracle and all bounds remain intact. Neither this fixture separation
+nor invocation counts establish a speedup. The next implementation must bind
+fallback output to its admitted reference view before any caller integration,
+without removing fresh checks or deriving trust from the observed bytes.

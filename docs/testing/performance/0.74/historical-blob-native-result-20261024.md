@@ -124,3 +124,9 @@ windows, frozen 0.73 and qualification manifest digest
 `11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc` are unchanged.
 There is no server, service, clock, original-owner, product workload, installation,
 qualification, numerical performance claim or push action.
+
+The later [mutation controls](historical-blob-fault-result-20261024.md) preserve
+these first outcomes but expose a fallback ABA after successful batch validation.
+Its consistent-view admission gate is false. Latest combined regression commands
+also retain full-oracle deadline failures; this earlier complete component pass
+must not substitute for those later verdicts or admit a real caller.
