@@ -18946,3 +18946,46 @@ do not establish full preparation fit, authenticated worker execution, cessation
 of every writer, durable completion or production trust. Local correctness,
 ownership proof, performance acceptance and authority to operate the host are
 separate gates. Moving one forward must not silently waive the others.
+
+## A CPU win can preserve exactly the same allocation cost
+
+The follow-up did not infer memory behavior from faster parsing. It registered
+a separate allocation-only method, rebuilt exact baseline and candidate parser
+sources for GNU Rust 1.94 and MSRV 1.88, and checked 1056 case executions. The
+allocator counted requests, gross requested bytes, peak/live requested bytes,
+held results and after-drop state only inside the parser interval. Dataset
+construction and output formatting remained outside it.
+
+The semantic and allocation transcripts are byte-identical. Ordinary input with
+three groups still makes one twelve-byte allocation; after dropping a result,
+no tracked requested bytes remain. Early scalar refusals make no allocation;
+late credential refusal can allocate and then free the group vector. The fresh
+field index therefore confirms a parser CPU improvement without an allocation
+improvement. These counters do not measure allocator arenas, RSS, physical page
+retention, stack memory or full native preparation. The complete
+[memory result](../testing/performance/0.74/status-field-memory-result-20261024.md)
+keeps those claims separate.
+
+## A broader gate can invalidate an apparently comfortable stopping point
+
+Targeted source contracts, strict checks and ordinary product tests passed, but
+the standard milestone still stopped: dependency policy found fifteen advisories
+in ten packages. Compatible security updates, a YAML migration, the Swagger ZIP
+build chain and a zbus/MSRV conflict are different changes with different proof
+obligations. A dry-run resolution is neither an applied fix nor a passing build.
+Raising MSRV, disabling shipped capability or adding exclusions to obtain a green
+summary would change the contract rather than discharge it.
+
+Wider xtask coverage also exposes more exact-source preservation frontiers than
+the 321 passing selected performance contracts. One registry reader has a narrow,
+independently checked repair; its changed full-package invocation still retains
+sixteen failed case lines and reaches its predeclared outer timeout before
+coverage completes. It remains partial and red. Meanwhile the isolated EOF
+oracle follow-up passes its six focused cases on both compilers, without making
+the previous complete Linux cohorts green or proving production writer custody.
+
+These are useful development outcomes precisely because they are not promoted
+into readiness. The [six-hour handoff](../testing/performance/0.74/six-hour-development-result-20261024.md)
+links exact evidence and the next dependency order: preparation fit, original
+delivery, worker/watchdog/retirement, durable completion and crash/reconnect,
+actual trust, then separately authorized server admission and qualification.

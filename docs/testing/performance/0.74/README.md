@@ -6744,3 +6744,21 @@ results, not retry candidates. Embedded correctness separately passes 686 cases.
 See the [closure audit](release-closure-audit-20261024.md) for the remaining
 original execution, all-writer retirement, completion, reconnect, trust and
 manager-compatibility gates. No server/release admission changes.
+
+The separate [allocation control](status-field-memory-result-20261024.md) now
+proves requested-heap parity of the exact baseline/candidate parser sources:
+1056 case executions, ordinary three-group input one allocation/12 bytes and
+zero tracked bytes after drop. This is not reduced allocation, RSS or whole
+preparation memory. The [EOF scope successor](transport-eof-scope-result-20261024.md)
+passes six focused cases per compiler; it does not replace the retained red
+complete ordinary Linux results.
+
+The [local milestone](local-milestone-result-20261024.md) retains actual symbol
+cleanup, 350 passing ordinary Windows supervisor tests and the first standard
+verify refusal: fifteen dependency advisories, with later milestone gates not
+executed. The [security package](dependency-security-plan-20261024.md) requires
+separate dependency/MSRV decisions; no waivers or updates are applied. The
+[wider xtask package](package-frontier-result-20261024.md) remains partial/red
+after its original outer bound, despite the narrow context-reader gate passing.
+See the [six-hour handoff](six-hour-development-result-20261024.md) for exact
+scope, source commits, measurements and remaining release dependencies.

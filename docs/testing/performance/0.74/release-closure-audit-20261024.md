@@ -95,3 +95,27 @@ expensive runs disabled and SHA256
 `11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc`.
 No six-hour/24-hour qualification, accepted product gain or release-ready claim
 is made by this ledger.
+
+## Wider milestone frontier after the ordinary repairs
+
+The [six-hour handoff](six-hour-development-result-20261024.md) adds three
+independent boundaries; none is waived by the focused repairs above:
+
+- The standard full milestone stops on fifteen dependency advisories. Later
+  gates do not execute. The [separate security plan](dependency-security-plan-20261024.md)
+  requires reviewed updates/migrations, with the current Rust 1.88 contract
+  explicitly conflicting with zbus 6's declared Rust 1.89. No new exception,
+  dependency update or MSRV change is applied.
+- The [wider xtask package](package-frontier-result-20261024.md) remains red and
+  incomplete at its original 780-second outer bound. Its retained sixteen
+  failed case lines need individual exact-source attribution and rejection
+  controls; the narrowly repaired registry reader and 321 selected passing
+  performance contracts do not establish all-package correctness.
+- The [requested-heap comparison](status-field-memory-result-20261024.md) confirms
+  parity, not reduced allocations or complete preparation fit. The focused
+  [EOF oracle repair](transport-eof-scope-result-20261024.md) does not replace
+  the earlier red complete ordinary Linux cohorts or production retirement proof.
+
+Finish these local frontiers without retry-to-pass. The original execution,
+all-writer cessation, completion/cells, reconnect, production enrollment and
+compatible-manager gates above remain necessary before any final server gate.
