@@ -1,0 +1,35 @@
+{
+  "active_groups_after": [],
+  "admission": false,
+  "boot_after": "cf222c07-5476-4f70-9a32-455e99204d0a",
+  "boot_before": "cf222c07-5476-4f70-9a32-455e99204d0a",
+  "clocks_after": {
+    "CLOCK_BOOTTIME": 90274570795780,
+    "CLOCK_MONOTONIC": 90274570795026,
+    "CLOCK_MONOTONIC_RAW": 99077253262542,
+    "CLOCK_REALTIME": 1792847186103545735
+  },
+  "clocks_before": {
+    "CLOCK_BOOTTIME": 90271643307705,
+    "CLOCK_MONOTONIC": 90271643306272,
+    "CLOCK_MONOTONIC_RAW": 99074059637983,
+    "CLOCK_REALTIME": 1792847183176055969
+  },
+  "clocks_or_services_changed": false,
+  "first_refusal": "ValueError: resolved package outside existing lock: bitflags",
+  "owned_root_removed": true,
+  "package_gate": false,
+  "root": "/tmp/hc074-blob-linux-20261024-nuyb2m1o",
+  "schema": "hc074-local-linux-blob-session-v1",
+  "server": false,
+  "source_unchanged": true,
+  "uid": 1000,
+  "uname": [
+    "Linux",
+    "LT-TCH-12",
+    "6.6.87.2-microsoft-standard-WSL2",
+    "#1 SMP PREEMPT_DYNAMIC Thu Jun  5 18:30:46 UTC 2025",
+    "x86_64"
+  ]
+}
+[{"name": "lock-seed", "code": 0, "reason": null}]

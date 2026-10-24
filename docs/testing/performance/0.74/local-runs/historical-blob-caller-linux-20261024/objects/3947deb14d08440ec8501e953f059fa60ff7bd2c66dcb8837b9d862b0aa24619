@@ -1,0 +1,3 @@
+     Locking 32 packages to latest compatible versions
+      Adding serde_json v1.0.150 (available: v1.0.151)
+      Adding sha2 v0.10.9 (available: v0.11.0)

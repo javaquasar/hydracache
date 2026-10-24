@@ -6916,3 +6916,14 @@ corpus, plus 31 Python controls and current check/strict lint. Earlier refusals
 remain immutable. This green output-binding gate does not admit a real caller:
 trust/provenance, Linux, preparation cost and unchanged-bound package/release gates
 remain open, with every original live check and deadline retained.
+
+The [census caller and Linux audit](historical-blob-caller-linux-result-20261024.md)
+confirms the two existing test-source pins against earlier sealed contract and
+inventory anchors. Local GNU/WSL 1.94/1.88 passes all twenty component cases each,
+including both 54-result oracles, with unchanged source/boot and own-root cleanup.
+The first foreign-lock resolution refusal remains retained; the corrected seed
+passes the unchanged dependency subset gate. Thirty-nine Python controls, new
+caller shadows on current/MSRV, old caller regression tests and check/strict lint
+pass. General caller admission is still false: child-local `GIT_TRACE=1` is
+accepted by the old success-only caller but rejected by native batch stderr
+admission. WSL time disagreement is not waived, and no real caller is redirected.

@@ -1,0 +1,24 @@
+"""Read existing Linux toolchain/cache locations; no installation or service calls."""
+import subprocess
+script = r'''
+import json, os, pathlib
+paths = ('/root/.rustup/toolchains','/root/.cargo','/root/.cargo/bin',
+         '/home/artur/.rustup/toolchains','/home/artur/.cargo/bin','/opt/rust','/tmp')
+result = {}
+for value in paths:
+    path = pathlib.Path(value)
+    if path.is_dir():
+        names = sorted(p.name for p in path.iterdir())
+        if value == '/tmp':
+            names = [v for v in names if any(key in v.lower() for key in ('hc074','hydra','cargo','rust','authority'))]
+        result[value] = names[:80]
+    else:
+        result[value] = None
+print(json.dumps(dict(uid=os.getuid(),locations=result,read_only=True,server=False)))
+'''
+result = subprocess.run(['wsl.exe','-d','Ubuntu','-u','root','--exec','python3','-c',script],
+                        capture_output=True,timeout=20)
+print(result.stdout.decode(errors='replace'))
+if result.stderr:
+    print(result.stderr.decode(errors='replace'))
+raise SystemExit(result.returncode)

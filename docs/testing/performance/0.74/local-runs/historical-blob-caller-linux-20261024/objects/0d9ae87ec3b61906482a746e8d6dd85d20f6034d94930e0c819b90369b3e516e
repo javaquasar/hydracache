@@ -1,0 +1,42 @@
+"""Bounded local WSL source transfer; exact files only, no install or server calls."""
+from pathlib import Path
+import base64
+import hashlib
+import json
+import subprocess
+
+root = Path(__file__).resolve().parent.parent
+out = root / 'target/blob-caller-linux-session-v2-20261024'
+out.mkdir(exist_ok=False)
+(out / 'intent.json').write_text(json.dumps(dict(distro='Ubuntu', must_already_be_running=True,
+    native_component_only=True, network=False, server=False, clocks_or_services=False)) + '\n')
+running = subprocess.run(['wsl.exe','--list','--running','--quiet'],capture_output=True,timeout=15)
+(out / 'running.stdout.raw').write_bytes(running.stdout)
+(out / 'running.stderr.raw').write_bytes(running.stderr)
+assert running.returncode == 0
+assert 'Ubuntu' in [v.strip() for v in running.stdout.decode('utf-16-le').replace('\x00','').splitlines()]
+files = {}
+
+
+def add(name, raw):
+    files[name] = dict(sha256=hashlib.sha256(raw).hexdigest(),base64=base64.b64encode(raw).decode())
+
+
+for path in sorted((root / 'tools/historical-blob-batch-074').iterdir()):
+    if path.suffix in ('.py','.rs'):
+        add('repo/tools/historical-blob-batch-074/' + path.name, path.read_bytes())
+for name in ('historical_blob_batch_074.rs','historical_blob_fault_074.rs','historical_blob_transport_074.rs'):
+    add('repo/crates/xtask/tests/' + name, (root / 'crates/xtask/tests' / name).read_bytes())
+add('repo/crates/xtask/Cargo.toml', (root / 'tools/historical-blob-batch-074/linux-fixture.toml').read_bytes())
+add('repo/Cargo.lock', (root / 'Cargo.lock').read_bytes())
+payload = json.dumps(dict(files=files)).encode()
+(out / 'input.json').write_bytes(payload)
+script = (root / 'tools/historical-blob-batch-074/linux_session.py').read_text(encoding='utf-8')
+with (out / 'stdout.json').open('xb') as stdout, (out / 'stderr.log').open('xb') as stderr:
+    process = subprocess.run(['wsl.exe','-d','Ubuntu','--exec','python3','-c',script],
+        input=payload,stdout=stdout,stderr=stderr,timeout=1100)
+(out / 'result.json').write_text(json.dumps(dict(exit=process.returncode,server=False)) + '\n')
+receipt = json.loads((out / 'stdout.json').read_bytes())
+print(json.dumps({key:value for key,value in receipt.items() if key not in ('evidence','resolved_lock_b64','sources','phases')},indent=2))
+print(json.dumps([dict(name=p['name'],code=p['code'],reason=p['reason']) for p in receipt['phases']]))
+raise SystemExit(process.returncode)

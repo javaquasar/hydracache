@@ -96,3 +96,8 @@ All old live predicates and their observation order/frequency, original
 attempt, product workload, installation or qualification is used. The next step
 is to establish an independently trusted pin producer and one exact caller's
 eligibility before integration, not to treat this component pass as enrollment.
+
+The subsequent [caller/Linux audit](historical-blob-caller-linux-result-20261024.md)
+confirms existing census test-source anchors and local GNU component controls.
+It also retains a real successful-stderr compatibility counterexample, so caller
+admission remains closed. This is not production pin enrollment or clock admission.

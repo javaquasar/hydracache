@@ -1,0 +1,10 @@
+
+running 5 tests
+test exact_output_pin_binds_each_stream_length_bytes_and_terminal_code ... ok
+test invalid_output_references_and_original_identity_are_not_admitted ... ok
+test missing_or_misaligned_fallback_bindings_refuse_before_git_or_observer ... ok
+test fallback_reference_and_aggregate_budgets_refuse_before_git ... ok
+test stale_pins_refs_config_and_fallback_aba_refuse_before_caller_admission ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.25s
+

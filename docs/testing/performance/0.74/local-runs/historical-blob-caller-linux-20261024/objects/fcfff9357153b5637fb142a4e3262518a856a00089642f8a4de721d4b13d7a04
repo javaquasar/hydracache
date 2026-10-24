@@ -1,0 +1,145 @@
+"""Retain provenance, real-caller mismatch and both first local Linux sessions."""
+from pathlib import Path
+import base64
+import hashlib
+import json
+import re
+import subprocess
+
+ROOT = Path(__file__).resolve().parent.parent
+BASE = 'docs/testing/performance/0.74/local-runs/historical-blob-caller-linux-20261024'
+CODE = 'acbbcbf98247f615255d07e35445eab2486a7e90'
+PHASES = ('blob-caller-linux-preflight-v1','blob-caller-linux-tools-v1','blob-caller-pins-v1',
+    'blob-caller-python-v1','blob-caller-build-v1','blob-caller-linux-session-v1',
+    'blob-caller-linux-session-v2','blob-caller-controls-v1','blob-caller-msrv-v1',
+    'blob-caller-check','blob-caller-clippy','blob-caller-python-final','blob-caller-format',
+    'blob-caller-python-syntax','blob-caller-python-indentation','blob-caller-doc-check')
+PROTECTED = {
+    'Cargo.toml':'18a8a27cf140a1d6eb31c8316ee39bb7d5832866a990346eee16cd0c30de344b',
+    'Cargo.lock':'d2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c',
+    'docs/testing/performance/0.74/qualification-manifest.toml':'11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc',
+}
+
+
+def sha(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+
+members, objects, summaries = {}, {}, []
+
+
+def add(name, raw):
+    assert name not in members
+    digest = sha(raw)
+    members[name] = dict(sha256=digest, bytes=len(raw))
+    objects[digest] = raw
+
+
+assert subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip() == CODE
+for phase in PHASES:
+    folder = ROOT / 'target/source-continuation-20261024' / phase
+    intent = json.loads((folder / 'intent.json').read_bytes())
+    result = json.loads((folder / 'result.json').read_bytes())
+    expected = 1 if phase == 'blob-caller-linux-session-v1' else 0
+    assert result['exit'] == expected and result['outer_refusal'] is None
+    assert result['source_unchanged'] and result['head_unchanged']
+    assert intent['source'] == result['source_after']
+    for name in ('intent.json','stdout.log','stderr.log','result.json'):
+        add(f'checks/{phase}/{name}',(folder / name).read_bytes())
+    source = ROOT / 'target/blob-fault-source-snapshots-20261024' / phase
+    add(f'phase-sources/{phase}/index.json',(source / 'index.json').read_bytes())
+    for path,digest in json.loads((source / 'index.json').read_bytes()).items():
+        raw = (source / digest).read_bytes()
+        assert sha(raw) == digest == intent['source'][path]
+        add(f'phase-sources/{phase}/{path}',raw)
+    stdout = (folder / 'stdout.log').read_text()
+    stderr = (folder / 'stderr.log').read_text()
+    summary = dict(phase=phase,exit=expected,
+        rust_passes=list(map(int,re.findall(r'test result: ok\. (\d+) passed; 0 failed;',stdout))))
+    if match := re.search(r'Ran (\d+) tests in ',stderr):
+        summary['python_passes'] = int(match[1])
+    summaries.append(summary)
+    capture = ROOT / 'target/blob-fault-20261024' / (phase + '-caller')
+    if capture.is_dir():
+        for path in sorted(capture.iterdir()):
+            assert path.is_file()
+            add(f'caller/{phase}/{path.name}',path.read_bytes())
+        produced = json.loads((capture / 'producer.stdout.json').read_bytes())
+        assert len(produced['cases']) == 2 and produced['test_fixture_pin_integrity']
+        assert not produced['production_pin_authority']
+        for mode in ('clean','trace'):
+            body = (capture / f'{mode}.stdout.log').read_text()
+            line = next(line for line in body.splitlines() if '"old_original_exact"' in line)
+            observed = json.loads(line[line.index('{'):])
+            assert all(observed[name] for name in ('old_original_exact','old_accepts','old_view_exact','old_unrelated_exact'))
+            assert not observed['caller_admitted'] and not observed['caller_integrated']
+            assert observed['native'] == ([{'exact':True}]*2 if mode=='clean' else [{'refusal':'Process'}]*2)
+
+assert next(v for v in summaries if v['phase']=='blob-caller-controls-v1')['rust_passes'] == [3]
+assert next(v for v in summaries if v['phase']=='blob-caller-msrv-v1')['rust_passes'] == [3,2]
+assert next(v for v in summaries if v['phase']=='blob-caller-python-final')['python_passes'] == 39
+for folder_name in ('blob-caller-linux-preflight-20261024','blob-caller-linux-session-20261024',
+                    'blob-caller-linux-session-v2-20261024'):
+    folder = ROOT / 'target' / folder_name
+    for path in sorted(folder.iterdir()):
+        assert path.is_file()
+        add(f'linux/{folder_name}/{path.name}',path.read_bytes())
+    if 'session' in folder_name:
+        value = json.loads((folder / 'stdout.json').read_bytes())
+        assert value['uid'] == 1000 and value['source_unchanged'] and value['owned_root_removed']
+        assert value['active_groups_after'] == [] and value['boot_before'] == value['boot_after']
+        payload = json.loads((folder / 'input.json').read_bytes())
+        for name,entry in payload['files'].items():
+            raw = base64.b64decode(entry['base64'],validate=True)
+            assert sha(raw) == entry['sha256'] == value['sources'][name]
+            add(f'linux-input-sources/{folder_name}/{name}',raw)
+        for phase in value['phases']:
+            for stream in ('stdout','stderr'):
+                add(f'linux-checks/{folder_name}/{phase["name"]}.{stream}',base64.b64decode(phase[stream+'_b64'],validate=True))
+        for name,raw in value['evidence'].items():
+            add(f'linux-observations/{folder_name}/{name}',base64.b64decode(raw,validate=True))
+        if 'v2-' in folder_name:
+            assert value['component_tests_passed'] and value['locked_packages'] == 33
+            add('linux/resolved-Cargo.lock',base64.b64decode(value['resolved_lock_b64'],validate=True))
+            for version in ('1.94.0','1.88.0'):
+                tests = [p for p in value['phases'] if p['name'].startswith(version+'-historical_')]
+                assert len(tests) == 3 and all(p['code']==0 and p['reason'] is None for p in tests)
+                for phase,count in zip(tests,(9,5,6)):
+                    assert f'test result: ok. {count} passed; 0 failed;' in base64.b64decode(phase['stdout_b64']).decode()
+        else:
+            assert value['first_refusal'] == 'ValueError: resolved package outside existing lock: bitflags'
+            assert len(value['phases']) == 1
+
+for path,digest in PROTECTED.items():
+    assert sha((ROOT / path).read_bytes()) == digest
+final = ROOT / 'target/blob-fault-source-snapshots-20261024/blob-caller-msrv-v1'
+for path,digest in json.loads((final / 'index.json').read_bytes()).items():
+    assert sha((ROOT / path).read_bytes()) == digest
+for path in ('target/run-blob-fault-step-20261024.py','target/run-fresh-reader-20261024.py',
+             'target/run-source-step-20261024.py','target/run-blob-linux-20261024.py',
+             'target/preflight-blob-linux-20261024.py','target/probe-blob-linux-tools-20261024.py',
+             'target/seal-blob-caller-linux-20261024.py'):
+    add('coordinators/'+Path(path).name,(ROOT / path).read_bytes())
+for path in ('tools/historical-blob-batch-074/linux-fixture.toml','tools/historical-blob-batch-074/README.md',
+             'docs/articles/007-optimization-starts-with-measurement.md','docs/testing/performance/0.74/README.md',
+             'docs/testing/performance/0.74/release-closure-audit-20261024.md',
+             'docs/testing/performance/0.74/historical-blob-caller-linux-result-20261024.md',
+             'docs/testing/performance/0.74/historical-blob-pinned-fallback-result-20261024.md'):
+    add('final/'+path,(ROOT / path).read_bytes())
+index = dict(schema='hc074-census-pin-linux-caller-audit-v1',code_commit=CODE,members=members,
+    facts=dict(phases=summaries,protected_sha256=PROTECTED,fixture_pin_integrity=True,
+        linux_wsl_component_tests_per_toolchain=20,linux_toolchains=['1.94.0','1.88.0'],
+        locked_packages=33,first_linux_seed_refusal_retained=True,rejected_v1_lock_bytes_retained=False,
+        clean_caller_shadow_matches=True,trace_counterexample=True,caller_admitted=False,
+        caller_integrated=False,production_pin_authority=False,original_clock_admitted=False,
+        full_package_pass=False,dependency_baseline_changed=False,server=False,
+        service_or_clock_change=False,product_workload=False,measurement=False,qualification=False,push=False))
+out = ROOT / BASE
+out.mkdir(parents=True,exist_ok=False)
+(out/'objects').mkdir()
+(out/'.gitattributes').write_bytes(b'index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n')
+for digest,raw in objects.items():
+    (out/'objects'/digest).write_bytes(raw)
+raw = (json.dumps(index,sort_keys=True,indent=2)+'\n').encode()
+(out/'index.json').write_bytes(raw)
+print(json.dumps(dict(index_sha256=sha(raw),members=len(members),objects=len(objects),phases=len(summaries))))

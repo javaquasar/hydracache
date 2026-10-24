@@ -281,3 +281,13 @@ check/strict lint green. These new sequential candidate passes do not erase old
 first failures. Actual pin authority, caller eligibility, Linux and preparation
 cost remain before integration; whole-package and original release barriers are
 unchanged. This is not an original delivery, all-writer or lifecycle admission.
+
+The [specific caller audit](historical-blob-caller-linux-result-20261024.md)
+confirms existing census source-pin integrity and local GNU/WSL component
+semantics, but does not admit integration. The original caller accepts successful
+Git output with tracing on stderr; native batch admission rejects it. This exact
+counterexample remains despite clean-profile parity, twenty GNU component cases
+per toolchain and strict local gates. Production trust/enrollment, actual caller
+environment/error/scheduling compatibility and original clock authority remain
+distinct. The first Linux lock-seed refusal and WSL clock observations are
+preserved; no service, clock, server or original release barrier changes.

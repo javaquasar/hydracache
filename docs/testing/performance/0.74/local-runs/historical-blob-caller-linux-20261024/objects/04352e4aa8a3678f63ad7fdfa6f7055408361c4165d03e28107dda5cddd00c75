@@ -1,0 +1,8 @@
+
+running 3 tests
+test shadow_cannot_use_an_unbound_missing_reference ... ok
+test caller_child_fixture ... ok
+test real_census_caller_shadow_preserves_the_logging_counterexample_before_integration ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.12s
+

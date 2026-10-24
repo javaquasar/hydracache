@@ -19309,3 +19309,29 @@ correctness result, not a performance gain or a trusted production pin source.
 Reference preparation, hashing, spooling and copies must still be measured on
 the complete path. No real caller is connected until its authority, environment,
 fresh-observation order and error contract are separately admitted.
+
+The [specific caller and Linux audit](../testing/performance/0.74/historical-blob-caller-linux-result-20261024.md)
+then establishes independent pins for the unchanged census reader. Its BASE hash
+comes from the existing whole-file-pinned contract; its REVIEWED blob identity,
+length and SHA256 come from an earlier sealed inventory. A normalized contract
+hash becomes a raw byte pin only after canonical LF is separately required.
+Verifying those anchors before reading prevents the observed batch from declaring
+its own reference valid. This is trust in existing test-source evidence, not
+production signer enrollment.
+
+The same component sources pass all twenty cases per toolchain in a private GNU
+Linux/WSL fixture on Rust 1.94 and 1.88. The first attempt stops before compilation
+when lock regeneration selects a foreign package identity. The corrected seed
+uses the old lock and the same strict subset check; all 33 selected identities
+match it. Neither a dependency-baseline change nor a wider deadline is used to
+obtain the pass. WSL's clock disagreement stays recorded, so Linux byte/process
+semantics are not presented as original clock authority or host qualification.
+
+Finally, invoking the actual caller exposes another integration boundary.
+Clean reads match, but child-local Git tracing writes stderr that the old caller
+ignores after success. The native batch rejects that diagnostic stream. Both
+behaviors are internally consistent; substituting one for the other is still a
+semantic change. The passing shadow test therefore retains a false admission
+gate rather than discarding stderr globally. A caller-specific error/environment
+contract and unchanged conditional observation schedule must be proved before
+integration; a source-integrity or Linux component pass cannot supply them.

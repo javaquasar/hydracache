@@ -1,0 +1,37 @@
+"""Read-only preflight of an already-running local WSL, never start a stopped one."""
+from pathlib import Path
+import json
+import subprocess
+
+root = Path(__file__).resolve().parent.parent
+out = root / 'target/blob-caller-linux-preflight-20261024'
+out.mkdir(exist_ok=False)
+(out / 'intent.json').write_text(json.dumps(dict(distro='Ubuntu', must_already_be_running=True,
+    read_only=True, clocks_or_services=False, server=False)) + '\n')
+listing = subprocess.run(['wsl.exe', '--list', '--running', '--quiet'], capture_output=True, timeout=15)
+(out / 'running.stdout.raw').write_bytes(listing.stdout)
+(out / 'running.stderr.raw').write_bytes(listing.stderr)
+assert listing.returncode == 0
+names = listing.stdout.decode('utf-16-le').replace('\x00', '').splitlines()
+assert 'Ubuntu' in [name.strip() for name in names], 'Ubuntu must already be running'
+script = r'''
+import json, os, pathlib, shutil, subprocess, time
+names = ('CLOCK_REALTIME', 'CLOCK_MONOTONIC', 'CLOCK_MONOTONIC_RAW', 'CLOCK_BOOTTIME')
+clocks = lambda: {name:time.clock_gettime_ns(getattr(time,name)) for name in names}
+before = clocks()
+rustup = shutil.which('rustup')
+toolchains = subprocess.run([rustup,'toolchain','list'],capture_output=True,timeout=10) if rustup else None
+print(json.dumps(dict(uname=list(os.uname()),uid=os.getuid(),gid=os.getgid(),
+    tools={name:shutil.which(name) for name in ('cargo','rustc','rustup','git','python3')},
+    toolchains=None if toolchains is None else dict(code=toolchains.returncode,
+        stdout=toolchains.stdout.decode(),stderr=toolchains.stderr.decode()),
+    tmp_free=shutil.disk_usage('/tmp').free,boot=pathlib.Path('/proc/sys/kernel/random/boot_id').read_text().strip(),
+    clocks_before=before,clocks_after=clocks(),services_or_clocks_changed=False,server=False)))
+'''
+result = subprocess.run(['wsl.exe', '-d', 'Ubuntu', '--exec', 'python3', '-c', script],
+                        capture_output=True, timeout=30)
+(out / 'preflight.stdout.json').write_bytes(result.stdout)
+(out / 'preflight.stderr.log').write_bytes(result.stderr)
+(out / 'result.json').write_text(json.dumps(dict(exit=result.returncode, server=False)) + '\n')
+print(result.stdout.decode(errors='replace'))
+assert result.returncode == 0 and not result.stderr

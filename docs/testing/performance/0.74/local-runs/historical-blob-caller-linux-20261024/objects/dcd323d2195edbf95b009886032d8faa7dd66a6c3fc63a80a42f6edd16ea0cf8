@@ -1,0 +1,1 @@
+{"distro": "Ubuntu", "must_already_be_running": true, "native_component_only": true, "network": false, "server": false, "clocks_or_services": false}
