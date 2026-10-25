@@ -1,0 +1,67 @@
+RUN_TAG="authority-before-installed-first"
+PHASE="installed"
+BUILD_TAG="authority-before-runtime-build-first"
+SOURCE_TAG="source-authority-before-runtime-first"
+IMAGE_SHA='92fb7f268cf08b86b5989b8c21460e8f7feab5c600fc5df6046340dd4814df10'
+MANIFEST_SHA='b6130d4402113f3de455d4b13e7dbda6e09ef221cda6eedd1d6970d03acf6ed5'
+SOURCE_COMMIT='bac965b92a64d1f042fa6094b261dcdb614407da'
+PROTOCOL_B64='ewogICJzY2hlbWEiOiAiaGMwNzQtYXV0aG9yaXR5LWJlZm9yZS1jb3N0LXYxIiwKICAiYmFzZWxpbmVfcnVudGltZV9jb21taXQiOiAiNjRmMTg0ZDliYTY0MmZmNTA0YWExOTQzYjQ3MjQ4NTg5NDRiOWFkZSIsCiAgImh5cG90aGVzaXMiOiAicmVwbGFjZSBvbmx5IHRoZSBiZWZvcmUtcmVhZCBmaWxlIG1ldGFkYXRhIHByb2plY3Rpb24gd2l0aCBhIGZyZXNoIGNoZWNrZWQgU3RhbXA7IGtlZXAgcGFyZW50LWRldmljZSBtZXRhZGF0YSB1bmNoYW5nZWQiLAogICJwcm9jZXNzZXMiOiA4LAogICJzYW1wbGVzX3Blcl9wYXlsb2FkIjogMTYsCiAgIml0ZXJhdGlvbnNfcGVyX3NhbXBsZSI6IDEwMjQsCiAgIndhcm11cHNfcGVyX2FybSI6IDMyLAogICJhcm1zIjogWyJyZWZlcmVuY2UiLCAicmVmZXJlbmNlLWNvbnRyb2wiLCAicnVudGltZSIsICJwcm90b3R5cGUiXSwKICAib3JkZXIiOiAiZWlnaHQgZm9yd2FyZC9yZXZlcnNlIGN5Y2xpYyBmb3VyLWFybSBwZXJtdXRhdGlvbnMsIHR3aWNlLCByb3RhdGVkIGJ5IGNvaG9ydCIsCiAgInBheWxvYWRfb3JkZXIiOiBbIm1hcmtlciIsICJyZWNvcmQiXSwKICAicGF5bG9hZHMiOiB7Im1hcmtlciI6IHsiYnl0ZXMiOiA2NSwgImJ1ZGdldCI6IDY1fSwgInJlY29yZCI6IHsiYnl0ZXMiOiAxMDI0LCAiYnVkZ2V0IjogMjA0OH19LAogICJmcmVzaF9tZXRhZGF0YV9vYnNlcnZhdGlvbnNfcGVyX2NhbGwiOiA0LAogICJjcHVfYWZmaW5pdHkiOiBbNV0sCiAgInVpZCI6IDEwMDAsCiAgImNvbXBpbGVyIjogIlJ1c3QgMS45NCBHTlUgcmVsZWFzZSBkZWZhdWx0IGZlYXR1cmVzIiwKICAiZXN0aW1hdG9yIjogIm1lZGlhbiBvdmVyIGVpZ2h0IHByb2Nlc3MgbWVkaWFucyBvZiBzaXh0ZWVuIHBhaXJlZCBsb2cgcHJvY2Vzcy1DUFUgcmF0aW9zIHBlciBwYXlsb2FkIiwKICAiYm9vdHN0cmFwIjogIjIwMDAwIHByb2Nlc3MgcmVzYW1wbGVzLCBzZWVkIDB4MDc0ZDFhMDUsIHBlcmNlbnRpbGUgOTUlIiwKICAiaWRlbnRpY2FsX3JlZmVyZW5jZV9jb250cm9sX2ludGVydmFsIjogWzAuOTcsIDEuMDNdLAogICJiYXNlbGluZV9ydW50aW1lX3JlZmVyZW5jZV9jb250cm9sX2ludGVydmFsIjogWzAuOTcsIDEuMDNdLAogICJwcm90b3R5cGVfcmVmZXJlbmNlX3VwcGVyX21heCI6IDAuOTgsCiAgImluc3RhbGxlZF9ydW50aW1lX3JlZmVyZW5jZV91cHBlcl9tYXgiOiAwLjk4LAogICJpbnN0YWxsZWRfcnVudGltZV9wcm90b3R5cGVfY29udHJvbF9pbnRlcnZhbCI6IFswLjk3LCAxLjAzXSwKICAib3V0ZXJfc2Vjb25kcyI6IDMwMCwKICAicGVyX3Byb2Nlc3Nfc2Vjb25kcyI6IDMwLAogICJjb25kaXRpb25hbF9yZWFkX29yZGVyX2NvdW50X2FuZF9vcmlnaW5hbF93aW5kb3dzX3VuY2hhbmdlZCI6IHRydWUsCiAgImZpcnN0X3JlZnVzYWxzX3ByZXNlcnZlZCI6IHRydWUsCiAgInJldHJ5IjogZmFsc2UsCiAgImZ1bGxfcHJlcGFyYXRpb25faW1wcm92ZW1lbnRfcHJvdmVuIjogZmFsc2UsCiAgInByb2R1Y3QiOiBmYWxzZSwKICAiYWRtaXNzaW9uIjogZmFsc2UKfQo='
+"""One frozen finite directory CPU cohort, never a preparation retry or admission."""
+from pathlib import Path
+import base64,hashlib,json,os,signal,subprocess,sys,time
+base=Path('/tmp/hc074-server-gate-root-20261025.0k0xbdah')
+upload=Path('/tmp/hc074-server-gate-upload-20261025.pvdj0f6c')
+root=base/RUN_TAG
+raw=(base/'server-fault-worker-20261025.py').read_bytes()
+assert hashlib.sha256(raw).hexdigest()=='af1e9926e1ad40bc49c1c225d79f5fffc788c715a7889743decea129ec4b17a3'
+scope={};exec(compile(raw.decode().split('started=time.monotonic_ns()\n')[0],'<pinned-preflight>','exec'),scope)
+preflight=scope['preflight']
+def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+def publish(name,value):
+ with (root/name).open('x') as f:json.dump(value,f,indent=2);f.flush();os.fsync(f.fileno())
+def limited():
+ os.sched_setaffinity(0,{5});os.setgroups([]);os.setgid(1000);os.setuid(1000)
+protocol=json.loads(base64.b64decode(PROTOCOL_B64))
+publish('consumed.json',dict(protocol=protocol,phase=PHASE,image_sha256=IMAGE_SHA,source_manifest_sha256=MANIFEST_SHA,
+ source_commit=SOURCE_COMMIT,overlapping_builds_by_this_session=False,retry=False,product=False,admission=False))
+selector='diagnostic_worker_policy::authority_registry::fixture::before_cost::fresh_authority_before_'+PHASE+'_cpu_screen'
+result=dict(cases=[],first_refusal=None,postflight_refusal=None,passed=False,product=False,admission=False)
+before=None
+try:
+ assert PHASE in ['prototype','installed']
+ before=preflight();publish('preflight.json',before)
+ build=json.loads((base/BUILD_TAG/'result.json').read_bytes());assert build['passed'] and build['source_unchanged']
+ assert sha(base/BUILD_TAG/'source-manifest.json')==MANIFEST_SHA
+ manifest=json.loads((base/BUILD_TAG/'source-manifest.json').read_bytes())
+ test=Path(build['libtest_path']);assert sha(test)==build['libtest_sha256']==IMAGE_SHA
+ assert sha(base/BUILD_TAG/'libtest')==IMAGE_SHA
+ source=upload/SOURCE_TAG
+ def verify():
+  for name,digest in manifest.items():assert sha(source/name)==digest,name
+ verify()
+ scratch=upload/RUN_TAG;scratch.mkdir(mode=0o700);os.chown(scratch,1000,1000)
+ start=time.monotonic_ns()
+ for cohort in range(8):
+  assert time.monotonic_ns()-start<300_000_000_000
+  env=dict(PATH='/usr/bin:/bin',TMPDIR=str(scratch),HOME=str(upload/'signer-home-first'),HC074_BEFORE_COHORT=str(cohort))
+  argv=[str(test),selector,'--ignored','--exact','--nocapture','--test-threads=1']
+  publish(f'cohort-{cohort}-command.json',dict(argv=argv,env=env,cwd=str(source),outer_seconds=30))
+  with (root/f'cohort-{cohort}.stdout.log').open('xb') as stdout,(root/f'cohort-{cohort}.stderr.log').open('xb') as stderr:
+   child=subprocess.Popen(argv,cwd=source,env=env,preexec_fn=limited,stdout=stdout,stderr=stderr,start_new_session=True)
+   publish(f'cohort-{cohort}-child.json',dict(pid=child.pid,start_ticks=scope['ticks'](child.pid),affinity=sorted(os.sched_getaffinity(child.pid))))
+   try:code=child.wait(timeout=30)
+   except subprocess.TimeoutExpired:
+    os.killpg(child.pid,signal.SIGKILL);child.wait();raise RuntimeError('first directory cost child timed out; no retry')
+  result['cases'].append(dict(cohort=cohort,exit=code))
+  text=(root/f'cohort-{cohort}.stdout.log').read_text()
+  assert code==0 and text.count('HC074-BEFORE-COST ')==128 and text.count('test result: ok. 1 passed; 0 failed; 0 ignored;')==1
+ verify();assert sha(test)==IMAGE_SHA
+ result['passed']=True;result['source_unchanged']=True
+except BaseException as error:result['first_refusal']=f'{type(error).__name__}: {error}'
+finally:
+ try:
+  after=preflight();assert before is not None and before==after;publish('postflight.json',after)
+ except BaseException as error:result['postflight_refusal']=f'{type(error).__name__}: {error}';result['passed']=False
+ publish('result.json',result)
+
+# All source is frozen in WORKER_PREFIX by the renderer.

@@ -1,0 +1,382 @@
+{
+  "admission": false,
+  "authority_tests_passed": 61,
+  "estimates": {
+    "installed": {
+      "admission": false,
+      "cpu_screen_passed": true,
+      "full_preparation_improvement_proven": false,
+      "parent_device_metadata_changed": false,
+      "payloads": {
+        "marker": {
+          "controls_passed": true,
+          "cpu_screen_passed": true,
+          "process_log_estimates": {
+            "prototype": [
+              -0.05733798695660523,
+              -0.05493509025688956,
+              -0.05588191707406537,
+              -0.05649720567118495,
+              -0.05885923741302322,
+              -0.05824746578160564,
+              -0.05782979913094326,
+              -0.05744399933982816
+            ],
+            "reference-control": [
+              -0.00034088504029400476,
+              0.00032685664227144945,
+              -0.0006599136553865834,
+              0.00041877753195845814,
+              -0.0007838631703196792,
+              -0.0008898978773919068,
+              1.4052940967873925e-05,
+              6.035738341015392e-05
+            ],
+            "runtime": [
+              -0.058784913208682524,
+              -0.05583367801292384,
+              -0.05879580723479711,
+              -0.05949902691385361,
+              -0.05774944620505118,
+              -0.058217119903515996,
+              -0.059934480798931,
+              -0.058886746422491275
+            ]
+          },
+          "ratios": {
+            "prototype": {
+              "lower": 0.9434164552568479,
+              "ratio": 0.9442248117508579,
+              "upper": 0.9456507945105065
+            },
+            "reference-control": {
+              "lower": 0.999216443970158,
+              "ratio": 0.9998365973020122,
+              "upper": 1.0003269100657242
+            },
+            "runtime": {
+              "lower": 0.9422364504680205,
+              "ratio": 0.9429044187120308,
+              "upper": 0.9438864121345587
+            }
+          },
+          "reference_cpu_ns_per_call": 5946.5625,
+          "runtime_to_prototype": {
+            "lower": 0.9971715601061819,
+            "ratio": 0.9991292432692898,
+            "upper": 0.9992677517200529
+          }
+        },
+        "record": {
+          "controls_passed": true,
+          "cpu_screen_passed": true,
+          "process_log_estimates": {
+            "prototype": [
+              -0.05635073617578332,
+              -0.05632342242947243,
+              -0.05666140772235454,
+              -0.056665626561612045,
+              -0.0574829710956679,
+              -0.05870678570234344,
+              -0.05679097254385271,
+              -0.05729616633754328
+            ],
+            "reference-control": [
+              -0.00010064758365648969,
+              -0.0005871461568006305,
+              0.00024719967106846927,
+              0.000730758039937161,
+              -0.0011783138984682903,
+              -0.0004264509972332805,
+              0.0006918857510530386,
+              -0.00014399596114908687
+            ],
+            "runtime": [
+              -0.058651672997525314,
+              -0.05729346294607446,
+              -0.058904937043508285,
+              -0.05888342127901817,
+              -0.05995167246771227,
+              -0.058937481480992725,
+              -0.05941285420310277,
+              -0.05852251229853055
+            ]
+          },
+          "ratios": {
+            "prototype": {
+              "lower": 0.9441379678846621,
+              "ratio": 0.9448507508663166,
+              "upper": 0.9452075592611792
+            },
+            "reference-control": {
+              "lower": 0.9994130261797736,
+              "ratio": 0.9998776857086001,
+              "upper": 1.0006921251592105
+            },
+            "runtime": {
+              "lower": 0.9423176490356258,
+              "ratio": 0.9428065324565197,
+              "upper": 0.9431570075285525
+            }
+          },
+          "reference_cpu_ns_per_call": 5971.63330078125,
+          "runtime_to_prototype": {
+            "lower": 0.997901147245224,
+            "ratio": 0.9981569136986992,
+            "upper": 0.9992306723788774
+          }
+        }
+      },
+      "phase": "installed",
+      "product": false
+    },
+    "prototype": {
+      "admission": false,
+      "cpu_screen_passed": true,
+      "full_preparation_improvement_proven": false,
+      "parent_device_metadata_changed": false,
+      "payloads": {
+        "marker": {
+          "controls_passed": true,
+          "cpu_screen_passed": true,
+          "process_log_estimates": {
+            "prototype": [
+              -0.05668894386571617,
+              -0.05865881809906304,
+              -0.05844523322802414,
+              -0.058603450415759234,
+              -0.056620176482939114,
+              -0.05660109998018242,
+              -0.056099308102704776,
+              -0.0557122139078474
+            ],
+            "reference-control": [
+              -0.0005926067154520496,
+              -0.0002906663202157657,
+              0.0003124729549505834,
+              0.00015844891208485816,
+              7.38180541430326e-06,
+              0.0010460720348640703,
+              2.767662664079327e-05,
+              -0.00016743595943397385
+            ],
+            "runtime": [
+              0.0011868010225061982,
+              -0.0014979753115579775,
+              -0.002095688132069901,
+              0.00045452132883564393,
+              -0.0004797392516006778,
+              -7.53237923356826e-05,
+              -0.0007611119098963526,
+              -0.0018628827057290784
+            ]
+          },
+          "ratios": {
+            "prototype": {
+              "lower": 0.9430806732653295,
+              "ratio": 0.944920426142245,
+              "upper": 0.9454452408551239
+            },
+            "reference-control": {
+              "lower": 0.9997093759191464,
+              "ratio": 1.0000175293696651,
+              "upper": 1.0003125217797098
+            },
+            "runtime": {
+              "lower": 0.99813885138329,
+              "ratio": 0.9993797668434051,
+              "upper": 1.0004546246393065
+            }
+          },
+          "reference_cpu_ns_per_call": 5979.37744140625,
+          "runtime_to_prototype": {
+            "lower": 1.0576587062615246,
+            "ratio": 1.0581491313819573,
+            "upper": 1.0588417387149018
+          }
+        },
+        "record": {
+          "controls_passed": true,
+          "cpu_screen_passed": true,
+          "process_log_estimates": {
+            "prototype": [
+              -0.057359781305441185,
+              -0.058650329828793354,
+              -0.057578974743246567,
+              -0.05680143964992351,
+              -0.05548972292391572,
+              -0.05600033909697186,
+              -0.057104514242440285,
+              -0.05586181836610007
+            ],
+            "reference-control": [
+              -0.0006208474554182786,
+              0.000355620276131993,
+              0.00018887338105666012,
+              0.0007195815308763525,
+              0.0009040412590080092,
+              -0.0004386888809520791,
+              -0.0005792279557849411,
+              -0.0002929778907258165
+            ],
+            "runtime": [
+              0.0007749134961348942,
+              -0.00025526831646277505,
+              0.0005106384588148296,
+              0.0022009557294956927,
+              0.0017434536726693305,
+              -0.0003711884942319638,
+              -0.0013229009587571135,
+              -0.0005204833077635526
+            ]
+          },
+          "ratios": {
+            "prototype": {
+              "lower": 0.9440473315467068,
+              "ratio": 0.9446384881086277,
+              "upper": 0.9456698010606653
+            },
+            "reference-control": {
+              "lower": 0.9994209397643431,
+              "ratio": 0.9999479490998605,
+              "upper": 1.000719840491777
+            },
+            "runtime": {
+              "lower": 0.9994796521201763,
+              "ratio": 1.0001276932232617,
+              "upper": 1.0017449743716513
+            }
+          },
+          "reference_cpu_ns_per_call": 6001.29150390625,
+          "runtime_to_prototype": {
+            "lower": 1.0571832401960752,
+            "ratio": 1.0586905602819856,
+            "upper": 1.0598155406066314
+          }
+        }
+      },
+      "phase": "prototype",
+      "product": false
+    }
+  },
+  "first_fixture_failure_preserved": true,
+  "first_full_refusal": {
+    "age": {
+      "sites": [
+        {
+          "calls": 72,
+          "first": {
+            "age_ns": 8396688276,
+            "file": "tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs",
+            "issued_ns": 1655423526468721,
+            "line": 121,
+            "now_ns": 1655431923156997,
+            "reason": "within-window"
+          },
+          "first_refusal": null,
+          "last": {
+            "age_ns": 9818290711,
+            "file": "tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs",
+            "issued_ns": 1655423526468721,
+            "line": 121,
+            "now_ns": 1655433344759432,
+            "reason": "within-window"
+          }
+        },
+        {
+          "calls": 67,
+          "first": {
+            "age_ns": 244349232,
+            "file": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+            "issued_ns": 1655423526468721,
+            "line": 109,
+            "now_ns": 1655423770817953,
+            "reason": "within-window"
+          },
+          "first_refusal": {
+            "age_ns": 10100156571,
+            "file": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+            "issued_ns": 1655423526468721,
+            "line": 109,
+            "now_ns": 1655433626625292,
+            "reason": "expired"
+          },
+          "last": {
+            "age_ns": 10100156571,
+            "file": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+            "issued_ns": 1655423526468721,
+            "line": 109,
+            "now_ns": 1655433626625292,
+            "reason": "expired"
+          }
+        },
+        {
+          "calls": 63,
+          "first": {
+            "age_ns": 871725087,
+            "file": "tools/long-run-supervisor-074/src/diagnostic_preconsent_frame.rs",
+            "issued_ns": 1655423526468721,
+            "line": 188,
+            "now_ns": 1655424398193808,
+            "reason": "within-window"
+          },
+          "first_refusal": null,
+          "last": {
+            "age_ns": 9958178069,
+            "file": "tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs",
+            "issued_ns": 1655423526468721,
+            "line": 139,
+            "now_ns": 1655433484646790,
+            "reason": "within-window"
+          }
+        }
+      ]
+    },
+    "case": "healthy",
+    "causal": {
+      "first": {
+        "age_ns": 244349232,
+        "diagnostic_reason": "within-window",
+        "issued_boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+        "issued_ns": 1655423526468721,
+        "now_boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+        "now_ns": 1655423770817953,
+        "site": "window"
+      },
+      "first_refusal": {
+        "age_ns": 10100156571,
+        "diagnostic_reason": "expired",
+        "issued_boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+        "issued_ns": 1655423526468721,
+        "now_boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+        "now_ns": 1655433626625292,
+        "site": "window"
+      },
+      "last": {
+        "age_ns": 10100156571,
+        "diagnostic_reason": "expired",
+        "issued_boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+        "issued_ns": 1655423526468721,
+        "now_boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+        "now_ns": 1655433626625292,
+        "site": "window"
+      },
+      "observations": 126
+    },
+    "deadline_changed": false,
+    "guard_clock_added": false,
+    "kernel": null,
+    "product": false,
+    "returned": false,
+    "server": false
+  },
+  "full_holder_passed": false,
+  "product": false,
+  "source_proof": {
+    "before_read_sites": 2,
+    "metadata_observations_per_full_leaf": 4,
+    "other_architectures_keep_original_metadata": true,
+    "parent_device_metadata_unchanged": true,
+    "short_circuit_and_fd_lifetimes_unchanged": true
+  }
+}

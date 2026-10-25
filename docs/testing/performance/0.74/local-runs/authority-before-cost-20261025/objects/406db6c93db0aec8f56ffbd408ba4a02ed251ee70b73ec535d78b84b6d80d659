@@ -1,0 +1,10 @@
+from pathlib import Path
+old=Path('target/prepare-authority-before-prototype-20261025.py').read_text()
+changes=[('authority-before-probe-v2-export-second','authority-before-runtime-build-export-second'),
+ ('authority-before-probe-build-v2','authority-before-runtime-build-first'),
+ ('authority-before-prototype-first','authority-before-installed-first'),
+ ('PHASE="prototype"','PHASE="installed"'),('source-authority-before-probe-v2','source-authority-before-runtime-first')]
+for a,b in changes:
+ expected=2 if a in ['authority-before-prototype-first','authority-before-probe-build-v2'] else 1
+ assert old.count(a)==expected,(a,old.count(a));old=old.replace(a,b)
+exec(compile(old,'<installed-renderer>','exec'))

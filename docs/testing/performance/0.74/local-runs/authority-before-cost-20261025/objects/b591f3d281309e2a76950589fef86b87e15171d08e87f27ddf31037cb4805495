@@ -1,0 +1,18 @@
+{
+  "overlay_names": [
+    "diagnostic_authority_before_tests.rs",
+    "diagnostic_authority_fixture.rs",
+    "diagnostic_authority_stamp.rs"
+  ],
+  "hypothesis": "before-read regular Stamp only; parent metadata and original count/order/lifetimes/windows unchanged",
+  "baseline_commit": "3da3c31201b8593dfd938140c4c069e7e05b30ed",
+  "original_windows": [
+    300,
+    60,
+    10
+  ],
+  "original_check_frequency_and_order": true,
+  "retry": false,
+  "product": false,
+  "admission": false
+}

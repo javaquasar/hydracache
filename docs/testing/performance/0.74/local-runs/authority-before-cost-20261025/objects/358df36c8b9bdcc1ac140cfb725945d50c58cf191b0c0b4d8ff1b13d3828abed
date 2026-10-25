@@ -1,0 +1,17 @@
+from pathlib import Path
+import base64,json,runpy,subprocess
+export=json.loads(Path('target/authorized-server-session-20261025/authority-before-probe-v2-export-second/stdout.log').read_bytes())
+assert export['complete']
+group='authority-before-probe-build-v2/'
+result=json.loads(base64.b64decode(export['members'][group+'result.json']['base64']))
+assert result['passed'] and result['source_unchanged']
+head=subprocess.check_output(['git','rev-parse','HEAD']).decode().strip()
+worker=Path('target/server-authority-directory-cost-worker-20261025.py').read_text()
+changes=[('fixture::fixed::directory_cost::fresh_authority_directory_','fixture::before_cost::fresh_authority_before_'),('HC074_DIRECTORY_COHORT','HC074_BEFORE_COHORT'),('HC074-DIR-COST ','HC074-BEFORE-COST ')]
+for a,b in changes:
+ assert worker.count(a)==1
+ worker=worker.replace(a,b)
+prefix=f'RUN_TAG="authority-before-prototype-first"\nPHASE="prototype"\nBUILD_TAG="authority-before-probe-build-v2"\nSOURCE_TAG="source-authority-before-probe-v2"\n'
+prefix+=f'IMAGE_SHA={result["libtest_sha256"]!r}\nMANIFEST_SHA={export["members"][group+"source-manifest.json"]["sha256"]!r}\nSOURCE_COMMIT={head!r}\n'
+prefix+='PROTOCOL_B64='+repr(base64.b64encode(Path('tools/authority-before-cost-074/protocol.json').read_bytes()).decode())+'\n'
+runpy.run_path('target/prepare-capacity-checks-20261025.py',init_globals=dict(WORKER_FILE='target/empty-worker-20261025.py',WORKER_DIR='authority-before-prototype-first',WORKER_PREFIX=prefix+worker+'\n'))

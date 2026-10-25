@@ -1,0 +1,101 @@
+"""Offline audit of frozen before-read source, first failures and raw CPU cohorts."""
+from pathlib import Path
+import ast,base64,hashlib,json,runpy,subprocess
+ROOT=Path(__file__).resolve().parent.parent
+cpu=runpy.run_path(str(ROOT/'tools/authority-before-cost-074/review.py'))
+records=runpy.run_path(str(ROOT/'tools/native-server-control-074/profile_review.py'))['records']
+NAMES=['diagnostic_authority_fixture.rs','diagnostic_authority_stamp.rs','diagnostic_authority_before_tests.rs']
+BASELINE='3da3c31201b8593dfd938140c4c069e7e05b30ed'
+GROUPS=['authority-before-probe-build-first','authority-before-probe-build-v2','authority-before-prototype-first',
+ 'authority-before-runtime-build-first','authority-before-installed-first','authority-before-holder-first']
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+def load():
+ export=json.loads((ROOT/'target/authorized-server-session-20261025/authority-before-final-export/stdout.log').read_bytes());assert export['complete']
+ files={}
+ for name,item in export['members'].items():
+  raw=base64.b64decode(item['base64']);assert len(raw)==item['bytes'] and sha(raw)==item['sha256'];files[name]=raw
+ return files,export['final_frame']
+def baseline():
+ return {n:subprocess.check_output(['git','show',BASELINE+':tools/long-run-supervisor-074/src/'+n],cwd=ROOT) for n in NAMES}
+def overlay(files,group):
+ parsed=ast.parse(files[group+'/worker.py'].decode())
+ rows=[ast.literal_eval(n.value) for n in parsed.body if isinstance(n,ast.Assign) and any(isinstance(t,ast.Name) and t.id=='OVERLAY' for t in n.targets)]
+ assert len(rows)==1
+ return {k:base64.b64decode(v) for k,v in rows[0].items()}
+def source_proof(sources,old):
+ norm=lambda b:b.decode().replace('\r\n','\n')
+ fixture=norm(sources[NAMES[0]])
+ a='        let stamp = Stamp::fresh_regular(&file, uid, gid, 0o400)?;\n        if stamp.dev != dir.metadata()?.dev() || stamp.len > budget as u64 {'
+ b='        let before = file.metadata()?;\n        regular(&before, uid, gid, 0o400)?;\n        if before.dev() != dir.metadata()?.dev() || before.len() > budget as u64 {'
+ assert fixture.count(a)==2;fixture=fixture.replace(a,b)
+ a='        let mut raw = Vec::with_capacity(stamp.len as usize);'
+ assert fixture.count(a)==1;fixture=fixture.replace(a,'        let stamp = Stamp::of(&before);\n        let mut raw = Vec::with_capacity(before.len() as usize);')
+ a='        let mut raw = match slot.take() {'
+ assert fixture.count(a)==1;fixture=fixture.replace(a,'        let stamp = Stamp::of(&before);\n'+a)
+ for a,b in [('raw.capacity() == stamp.len as usize','raw.capacity() == before.len() as usize'),('_ => Vec::with_capacity(stamp.len as usize)','_ => Vec::with_capacity(before.len() as usize)')]:
+  assert fixture.count(a)==1;fixture=fixture.replace(a,b)
+ assert fixture==norm(old[NAMES[0]]),'Unrelated open/parent/content/scratch/order change'
+ stamp=norm(sources[NAMES[1]])
+ begin=stamp.index('    pub(super) fn fresh_regular(');end=stamp.index('    pub(super) fn directory_matches_file(',begin)
+ method=stamp[begin:end]
+ for predicate in ['self.mode & libc::S_IFMT != libc::S_IFREG','self.uid != uid','self.gid != gid','self.mode & 0o7777 != mode','self.links != 1']:
+  assert method.count(predicate)==1
+ assert method.count('Self::fresh(file)?')==1 and method.count('file.metadata()?')==1
+ assert 'super::regular(&metadata, uid, gid, mode)?;' in method and 'Ok(Self::of(&metadata))' in method
+ stamp=(stamp[:begin]+stamp[end:]).replace('use super::{AuthorityError, Stamp};','use super::Stamp;')
+ assert stamp==norm(old[NAMES[1]]),'Changed existing fstat/directory logic'
+ tests=norm(sources[NAMES[2]])
+ additions=[
+ '        assert_eq!(\n            class(regular(&m, uid, gid, mode)),\n            class(Stamp::fresh_regular(file, uid, gid, mode))\n        );\n',
+ '        assert_eq!(\n            result,\n            class(stamp.require_regular(m.uid(), m.gid(), 0o400))\n        );\n',
+ '    assert_eq!(\n        class(regular(&m, m.uid(), m.gid(), 0o700)),\n        class(Stamp::fresh_regular(&held, m.uid(), m.gid(), 0o700))\n    );\n']
+ for addition in additions:assert tests.count(addition)==1;tests=tests.replace(addition,'')
+ assert tests==norm(old[NAMES[2]]),'Frozen benchmark/reference/prototype changed'
+ return dict(before_read_sites=2,metadata_observations_per_full_leaf=4,parent_device_metadata_unchanged=True,
+  short_circuit_and_fd_lifetimes_unchanged=True,other_architectures_keep_original_metadata=True)
+def review(files,frame,sources,old):
+ def get(group,name):return json.loads(files[group+'/'+name])
+ for group in GROUPS:
+  result=get(group,'result.json');assert result['postflight_refusal'] is None
+  assert get(group,'preflight.json')==get(group,'postflight.json')==frame
+  if group!=GROUPS[0]:assert result['first_refusal'] is None
+ first=get(GROUPS[0],'result.json');assert not first['passed'] and not first['source_unchanged']
+ assert get(GROUPS[0],'authority-tests-result.json')['exit']==101
+ assert b'60 passed; 1 failed; 5 ignored;' in files[GROUPS[0]+'/authority-tests.stdout.log']
+ one=overlay(files,GROUPS[0]);two=overlay(files,GROUPS[1])
+ assert one[NAMES[0]]==two[NAMES[0]]
+ fixed=one[NAMES[2]].decode().replace('    let file = tempfile::tempfile().unwrap();','    let named = tempfile::NamedTempFile::new().unwrap();\n    let file = named.as_file();')
+ fixed=fixed.replace('    let original = Stamp::of(&m);','    let original = Stamp::of(&m);\n    regular(&m, m.uid(), m.gid(), 0o400).unwrap();')
+ assert fixed==two[NAMES[2]].decode()
+ for name,raw in two.items():assert raw.decode().replace('\r\n','\n')==old[name].decode().replace('\r\n','\n')
+ for group,src in [(GROUPS[1],old),(GROUPS[3],sources)]:
+  result=get(group,'result.json');assert result['passed'] and result['source_unchanged']
+  assert [(r['name'],r['exit']) for r in result['cases']]==[('build',0),('check',0),('clippy',0),('authority-tests',0)]
+  assert b'61 passed; 0 failed; 5 ignored;' in files[group+'/authority-tests.stdout.log']
+  manifest=get(group,'source-manifest.json');assert len(manifest)==2564
+  for name,raw in src.items():assert manifest['tools/long-run-supervisor-074/src/'+name]==sha(raw),name
+  for check in ['check','clippy']:
+   argv=get(group,check+'-command.json')['argv'];assert '--all-targets' in argv and '--all-features' in argv and '--locked' in argv
+   if check=='clippy':assert argv[-3:]==['--','-D','warnings']
+ proof=source_proof(sources,old);estimates={};identities=[]
+ for phase,group,build in [('prototype',GROUPS[2],GROUPS[1]),('installed',GROUPS[4],GROUPS[3])]:
+  result=get(group,'result.json');assert result['passed'] and result['source_unchanged'] and result['cases']==[dict(cohort=i,exit=0) for i in range(8)]
+  estimates[phase]=cpu['review']([files[group+f'/cohort-{i}.stdout.log'] for i in range(8)],phase)
+  assert estimates[phase]['cpu_screen_passed']
+  intent=get(group,'consumed.json');assert intent['phase']==phase and not intent['retry']
+  assert intent['protocol']==json.loads((ROOT/'tools/authority-before-cost-074/protocol.json').read_bytes())
+  assert intent['image_sha256']==get(build,'result.json')['libtest_sha256']
+  assert intent['source_manifest_sha256']==sha(files[build+'/source-manifest.json'])
+  for i in range(8):
+   child=get(group,f'cohort-{i}-child.json');assert child['affinity']==[5];identities.append((child['pid'],child['start_ticks']))
+ assert len(set(identities))==16
+ holder=get(GROUPS[5],'result.json');assert holder['exit']==101 and not holder['passed'] and holder['completed_cases']==[]
+ intent=get(GROUPS[5],'consumed.json');assert intent['image_sha256']==get(GROUPS[3],'result.json')['libtest_sha256'] and intent['original_windows']==[300,60,10]
+ assert intent['first_candidate_attempt'] and not intent['retry'] and not intent['case_override'] and not intent['cost_override']
+ assert 'HC074_HELD_MATERIAL_LIVE' not in get(GROUPS[5],'command.json')['env']
+ originals=records(files[GROUPS[5]+'/holder.stdout.log'],'HC074-HELD-LIVE-ORIGINAL ');assert len(originals)==1
+ original=originals[0];assert not original['returned'] and not original['guard_clock_added'] and not original['deadline_changed']
+ return dict(source_proof=proof,estimates=estimates,first_fixture_failure_preserved=True,full_holder_passed=False,
+  first_full_refusal=original,authority_tests_passed=61,product=False,admission=False)
+if __name__=='__main__':
+ files,frame=load();print(json.dumps(review(files,frame,{n:(ROOT/'tools/long-run-supervisor-074/src'/n).read_bytes() for n in NAMES},baseline()),sort_keys=True,indent=2))

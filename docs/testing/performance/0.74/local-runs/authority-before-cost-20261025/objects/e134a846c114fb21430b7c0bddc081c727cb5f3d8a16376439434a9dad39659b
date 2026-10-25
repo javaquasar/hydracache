@@ -1,0 +1,5 @@
+from pathlib import Path
+old=Path('target/prepare-authority-before-probe-build-20261025.py').read_text()
+assert old.count('authority-before-probe-build-first')==2
+assert old.count('source-authority-before-probe-first')==1
+exec(compile(old.replace('authority-before-probe-build-first','authority-before-probe-build-v2').replace('source-authority-before-probe-first','source-authority-before-probe-v2'),'<corrected-fixture-renderer>','exec'))

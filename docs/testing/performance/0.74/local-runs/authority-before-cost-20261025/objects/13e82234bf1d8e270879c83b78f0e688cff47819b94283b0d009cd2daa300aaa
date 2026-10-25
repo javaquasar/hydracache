@@ -1,0 +1,23 @@
+
+thread 'diagnostic_worker_policy::authority_registry::context_controls::authority_context_bounded_fixtures_keep_prefix_and_context_failures_distinct' (341244) panicked at tools/long-run-supervisor-074/src/../tests/support/authority_context_controls.rs:70:18:
+unknown bounded binding fixture
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+authority context equivalence seed=0x074c07e5 contexts=256 cases_per_context=17
+expected-name seed=0x074e1a9e depths=0..128 mutations=16/depth
+fd-path seed=0x074fd025 seeded=4096 decimal-boundaries=i32
+inventory seed=0x07411e17 depths=0..128 mutations=16/depth
+
+thread 'diagnostic_worker_policy::authority_registry::fixture::leaf_name_controls::authority_leaf_name_fault_classes_and_original_metadata_short_circuit_match' (341269) panicked at tools/long-run-supervisor-074/src/../tests/support/authority_leaf_name_controls.rs:150:18:
+unknown bounded leaf name case
+authority leaf seed=0x0741eaf5 names=64 includes-empty-and-full-budget
+name capacity seed=0x074ca9ac bounded-depths=0..128 seeded=256 suffixes=7
+open-name seed=0x07400a23 seeded=128 utf8-byte-boundaries=23/24
+short-directory seed=0x074d1a24 seeded=64 bytes=23/24 fixed-components=4
+
+thread 'diagnostic_worker_policy::authority_registry::fixture::publication_checkpoint::tests::authority_checkpoint_nested_scope_refuses_without_replacing_original' (341280) panicked at tools/long-run-supervisor-074/src/diagnostic_authority_checkpoint.rs:24:9:
+nested authority publication observer
+
+thread 'diagnostic_worker_policy::authority_registry::fixture::publication_checkpoint::tests::authority_checkpoint_panic_restores_empty_scope' (341281) panicked at tools/long-run-supervisor-074/src/diagnostic_authority_checkpoint.rs:49:17:
+expected observer failure
+authority hex equivalence seed=0x074a17e5 samples=256 all_nibbles=true
+authority journal seed=0x7642026; mutations=256

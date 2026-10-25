@@ -1,0 +1,76 @@
+
+running 66 tests
+test diagnostic_worker_policy::authority_registry::context_controls::authority_context_bounded_fixtures_keep_prefix_and_context_failures_distinct ... ok
+test diagnostic_worker_policy::authority_registry::context_controls::authority_context_seeded_fields_pins_and_refusal_classes_match_owned_reference ... ok
+test diagnostic_worker_policy::authority_registry::fixture::before_cost::fresh_authority_before_full_leaf_faults_preserve_precedence_and_scratch ... ok
+test diagnostic_worker_policy::authority_registry::fixture::before_cost::fresh_authority_before_installed_cpu_screen ... ignored, manual finite installed before-read CPU attribution; no admission or preparation retry
+test diagnostic_worker_policy::authority_registry::fixture::before_cost::fresh_authority_before_prototype_cpu_screen ... ignored, manual finite baseline before-read CPU attribution; no admission or preparation retry
+test diagnostic_worker_policy::authority_registry::fixture::before_cost::fresh_authority_before_regular_fields_match_original_contract ... FAILED
+test diagnostic_worker_policy::authority_registry::fixture::breakdown_controls::authority_breakdown_actual_phases_are_healthy_and_stale_expected_is_not_admission ... ok
+test diagnostic_worker_policy::authority_registry::fixture::expected_name_controls::authority_expected_name_differential_depths_mutations_and_cardinality ... ok
+test diagnostic_worker_policy::authority_registry::fixture::expected_name_controls::authority_expected_name_stack_capacity_matches_owned_formatter ... ok
+test diagnostic_worker_policy::authority_registry::fixture::fd_path_controls::authority_fd_path_decimal_boundaries_seeded_bytes_and_capacity ... ok
+test diagnostic_worker_policy::authority_registry::fixture::fd_path_controls::authority_fd_path_retains_descriptor_and_observes_fresh_inventory_mutations ... ok
+test diagnostic_worker_policy::authority_registry::fixture::fixed::directory_cost::fresh_authority_directory_installed_cpu_screen ... ignored, manual finite installed directory CPU attribution; no admission or preparation retry
+test diagnostic_worker_policy::authority_registry::fixture::fixed::directory_cost::fresh_authority_directory_order_faults_and_runtime_match_frozen_reference ... ok
+test diagnostic_worker_policy::authority_registry::fixture::fixed::directory_cost::fresh_authority_directory_predicates_and_benign_fields_are_differential ... ok
+test diagnostic_worker_policy::authority_registry::fixture::fixed::directory_cost::fresh_authority_directory_prototype_cpu_screen ... ignored, manual finite baseline directory CPU attribution; no admission or preparation retry
+test diagnostic_worker_policy::authority_registry::fixture::fixed::tests::authority_fixed_every_original_ancestor_and_root_drift_latches_without_new_record ... ok
+test diagnostic_worker_policy::authority_registry::fixture::fixed::tests::authority_fixed_guard_is_not_send_sync_or_fixture_conversion ... ok
+test diagnostic_worker_policy::authority_registry::fixture::fixed::tests::authority_fixed_leaf_and_parent_alias_drift_latch_but_benign_parent_entries_do_not ... ok
+test diagnostic_worker_policy::authority_registry::fixture::fixed::tests::authority_fixed_metadata_requires_root_owner_safe_ancestors_and_private_leaf ... ok
+test diagnostic_worker_policy::authority_registry::fixture::fixed::tests::authority_fixed_modeled_publication_faults_do_not_repair_partial_tail ... ok
+test diagnostic_worker_policy::authority_registry::fixture::fixed::tests::authority_fixed_modeled_writer_persists_and_exclusively_locks_shared_engine ... ok
+test diagnostic_worker_policy::authority_registry::fixture::fixed::tests::authority_fixed_named_ancestor_replacement_is_not_adopted ... ok
+test diagnostic_worker_policy::authority_registry::fixture::fixed::tests::authority_fixed_named_root_replacement_is_not_hidden_by_original_descriptor ... ok
+test diagnostic_worker_policy::authority_registry::fixture::fixed::tests::authority_fixed_parent_group_policy_matches_nonwritable_provisioning ... ok
+test diagnostic_worker_policy::authority_registry::fixture::fixed::tests::authority_fixed_walker_rejects_symlinks_missing_unsafe_and_wrong_owner_components ... ok
+test diagnostic_worker_policy::authority_registry::fixture::fresh_stamp::tests::fresh_authority_stamp_fields_changes_unlink_and_errors_are_differential ... ok
+test diagnostic_worker_policy::authority_registry::fixture::fresh_stamp::tests::fresh_authority_stamp_installed_leaf_cpu_screen ... ignored, manual finite authority leaf CPU screen; not admission or a preparation retry
+test diagnostic_worker_policy::authority_registry::fixture::fresh_stamp::tests::fresh_authority_stamp_leaf_faults_preserve_results_scratch_and_short_circuit ... ok
+test diagnostic_worker_policy::authority_registry::fixture::inventory_controls::authority_inventory_actual_filesystem_matches_frozen_scan_and_refusals ... ok
+test diagnostic_worker_policy::authority_registry::fixture::inventory_controls::authority_inventory_expected_names_seeded_mutations_and_exact_cardinality ... ok
+test diagnostic_worker_policy::authority_registry::fixture::leaf_name_controls::authority_leaf_name_fault_classes_and_original_metadata_short_circuit_match ... ok
+test diagnostic_worker_policy::authority_registry::fixture::leaf_name_controls::authority_leaf_name_seeded_names_payloads_and_open_results_match_frozen_reference ... ok
+test diagnostic_worker_policy::authority_registry::fixture::name_capacity_controls::authority_name_capacity_seeded_boundaries_and_arbitrary_suffixes_preserve_exact_bytes ... ok
+test diagnostic_worker_policy::authority_registry::fixture::open_name_controls::authority_open_name_differential_boundaries_utf8_seeded_and_nul ... ok
+test diagnostic_worker_policy::authority_registry::fixture::open_name_controls::authority_open_name_differential_symlink_fifo_and_retained_parent ... ok
+test diagnostic_worker_policy::authority_registry::fixture::open_name_controls::authority_short_directory_differential_valid_utf8_boundaries_and_fixed_components ... ok
+test diagnostic_worker_policy::authority_registry::fixture::owners_controls::authority_owners_inventory_matches_actual_scan_and_fresh_refusals ... ok
+test diagnostic_worker_policy::authority_registry::fixture::owners_controls::authority_owners_leaf_read_and_revalidate_match_bytes_stamps_and_refusals ... ok
+test diagnostic_worker_policy::authority_registry::fixture::publication_checkpoint::tests::authority_checkpoint_concurrent_threads_have_independent_scopes ... ok
+test diagnostic_worker_policy::authority_registry::fixture::publication_checkpoint::tests::authority_checkpoint_nested_scope_refuses_without_replacing_original ... ok
+test diagnostic_worker_policy::authority_registry::fixture::publication_checkpoint::tests::authority_checkpoint_panic_restores_empty_scope ... ok
+test diagnostic_worker_policy::authority_registry::fixture::tests::authority_fixture_bounded_inventory_and_invalid_transition_make_no_new_generation ... ok
+test diagnostic_worker_policy::authority_registry::fixture::tests::authority_fixture_close_reopen_refusal_and_explicit_higher_epoch_are_persistent ... ok
+test diagnostic_worker_policy::authority_registry::fixture::tests::authority_fixture_exclusive_writer_and_thread_local_origin_cannot_be_duplicated ... ok
+test diagnostic_worker_policy::authority_registry::fixture::tests::authority_fixture_logical_faults_retain_partial_tail_or_committed_refusal_without_replay ... ok
+test diagnostic_worker_policy::authority_registry::fixture::tests::authority_fixture_original_path_file_and_descriptor_drift_latch_without_refresh ... ok
+test diagnostic_worker_policy::authority_registry::fixture::tests::authority_fixture_owner_drop_unlocks_with_inherited_description_still_open ... ok
+test diagnostic_worker_policy::authority_registry::fixture::tests::authority_fixture_partial_write_errors_preserve_bytes_and_do_not_complete_a_marker ... ok
+test diagnostic_worker_policy::authority_registry::fixture::tests::authority_fixture_unsafe_linked_special_and_oversized_records_refuse ... ok
+test diagnostic_worker_policy::authority_registry::fixture::tests::authority_fixture_wrong_owner_path_and_external_pins_never_choose_authority ... ok
+test diagnostic_worker_policy::authority_registry::fixture::tests::authority_publication_checkpoint_order_matches_original_refusal_protocol ... ok
+test diagnostic_worker_policy::authority_registry::fixture::tests::authority_publication_checkpoint_preserves_fault_and_scope ... ok
+test diagnostic_worker_policy::authority_registry::fixture::tests::authority_runtime_all_five_journal_refusals_evict_every_leaf ... ok
+test diagnostic_worker_policy::authority_registry::fixture::tests::authority_runtime_closing_publication_refusal_evicts_new_and_old_entries ... ok
+test diagnostic_worker_policy::authority_registry::fixture::tests::authority_runtime_leaf_cold_fresh_storage_and_bounds ... ok
+test diagnostic_worker_policy::authority_registry::fixture::tests::authority_runtime_leaf_refusals_evict_and_retain_original_objects ... ok
+test diagnostic_worker_policy::authority_registry::fixture::tests::authority_runtime_publication_cuts_clear_cache_and_never_repair_tail ... ok
+test diagnostic_worker_policy::authority_registry::fixture::tests::authority_runtime_reopen_does_not_transfer_scratch ... ok
+test diagnostic_worker_policy::authority_registry::fixture::tests::authority_runtime_successful_epoch_transitions_keep_bounded_original_history ... ok
+test diagnostic_worker_policy::authority_registry::hex_controls::authority_hex_preserves_independent_pin_and_context_binding_refusals ... ok
+test diagnostic_worker_policy::authority_registry::hex_controls::authority_hex_seeded_keys_preserve_lowercase_bytes_canonical_records_and_digests ... ok
+test diagnostic_worker_policy::authority_registry::tests::authority_registry_canonical_record_and_independent_bindings_are_exact ... ok
+test diagnostic_worker_policy::authority_registry::tests::authority_registry_generation_capacity_is_finite_and_no_epoch_wrap_is_possible ... ok
+test diagnostic_worker_policy::authority_registry::tests::authority_registry_refusal_and_higher_epoch_are_distinct_monotonic_transitions ... ok
+test diagnostic_worker_policy::authority_registry::tests::authority_registry_rejects_malformed_future_duplicate_noncanonical_and_oversized_records ... ok
+test diagnostic_worker_policy::authority_registry::tests::authority_registry_seeded_history_mutations_never_adopt_gaps_or_changed_refusals ... ok
+
+failures:
+
+failures:
+    diagnostic_worker_policy::authority_registry::fixture::before_cost::fresh_authority_before_regular_fields_match_original_contract
+
+test result: FAILED. 60 passed; 1 failed; 5 ignored; 0 measured; 1501 filtered out; finished in 2.86s
+

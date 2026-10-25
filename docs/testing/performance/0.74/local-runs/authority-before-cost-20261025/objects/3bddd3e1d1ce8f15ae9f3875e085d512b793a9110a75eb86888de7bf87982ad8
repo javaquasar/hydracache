@@ -1,0 +1,1 @@
+{"stage":"local renderer before SSH or intent directory creation","refusal":"AssertionError: ('authority-before-probe-build-v2', 2)","cause":"one source label occurs both as group and BUILD_TAG; renderer expected one match","remote_dispatched":false,"measurement_attempted":false,"fixed_expected_occurrences":2,"thresholds_changed":false}
