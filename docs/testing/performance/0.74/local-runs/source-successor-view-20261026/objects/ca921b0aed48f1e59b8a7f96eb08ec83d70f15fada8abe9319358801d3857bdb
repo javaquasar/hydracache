@@ -1,0 +1,128 @@
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs b/tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs
+index 58b05c76f..a1f4d803b 100644
+--- a/tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs
++++ b/tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs
+@@ -19,6 +19,9 @@ use std::rc::Rc;
+ #[path = "diagnostic_authority_fixed.rs"]
+ pub mod fixed;
+ 
++#[path = "diagnostic_authority_stamp.rs"]
++mod fresh_stamp;
++
+ #[derive(Clone, PartialEq, Eq)]
+ struct Stamp {
+     dev: u64,
+@@ -49,6 +52,7 @@ impl Stamp {
+             ctime_ns: m.ctime_nsec(),
+         }
+     }
++    #[cfg(any(test, not(target_arch = "x86_64")))]
+     fn directory_matches(&self, m: &Metadata) -> bool {
+         m.is_dir()
+             && self.dev == m.dev()
+@@ -90,15 +94,13 @@ impl Leaf {
+         budget: usize,
+     ) -> Result<(File, Stamp, Vec<u8>), AuthorityError> {
+         let mut file = open_at(dir, name, false)?;
+-        let before = file.metadata()?;
+-        regular(&before, uid, gid, 0o400)?;
+-        if before.dev() != dir.metadata()?.dev() || before.len() > budget as u64 {
++        let stamp = Stamp::fresh_regular(&file, uid, gid, 0o400)?;
++        if stamp.dev != Stamp::fresh_device(dir)? || stamp.len > budget as u64 {
+             return Err(AuthorityError::Budget);
+         }
+-        let stamp = Stamp::of(&before);
+-        let mut raw = Vec::with_capacity(before.len() as usize);
++        let mut raw = Vec::with_capacity(stamp.len as usize);
+         (&mut file).take(budget as u64 + 1).read_to_end(&mut raw)?;
+-        if Stamp::of(&file.metadata()?) != stamp || raw.len() as u64 != stamp.len {
++        if Stamp::fresh(&file)? != stamp || raw.len() as u64 != stamp.len {
+             return Err(AuthorityError::Invalid);
+         }
+         Ok((file, stamp, raw))
+@@ -112,21 +114,19 @@ impl Leaf {
+         slot: &mut Option<Vec<u8>>,
+     ) -> Result<(File, Stamp, Vec<u8>), AuthorityError> {
+         let mut file = open_at(dir, name, false)?;
+-        let before = file.metadata()?;
+-        regular(&before, uid, gid, 0o400)?;
+-        if before.dev() != dir.metadata()?.dev() || before.len() > budget as u64 {
++        let stamp = Stamp::fresh_regular(&file, uid, gid, 0o400)?;
++        if stamp.dev != Stamp::fresh_device(dir)? || stamp.len > budget as u64 {
+             return Err(AuthorityError::Budget);
+         }
+-        let stamp = Stamp::of(&before);
+         let mut raw = match slot.take() {
+-            Some(mut raw) if raw.capacity() == before.len() as usize => {
++            Some(mut raw) if raw.capacity() == stamp.len as usize => {
+                 raw.clear();
+                 raw
+             }
+-            _ => Vec::with_capacity(before.len() as usize),
++            _ => Vec::with_capacity(stamp.len as usize),
+         };
+         (&mut file).take(budget as u64 + 1).read_to_end(&mut raw)?;
+-        if Stamp::of(&file.metadata()?) != stamp || raw.len() as u64 != stamp.len {
++        if Stamp::fresh(&file)? != stamp || raw.len() as u64 != stamp.len {
+             return Err(AuthorityError::Invalid);
+         }
+         Ok((file, stamp, raw))
+@@ -151,7 +151,7 @@ impl Leaf {
+         gid: u32,
+         budget: usize,
+     ) -> Result<(), AuthorityError> {
+-        if Stamp::of(&self.file.metadata()?) != self.stamp {
++        if Stamp::fresh(&self.file)? != self.stamp {
+             return Err(AuthorityError::Invalid);
+         }
+         // Keep the fresh File (tuple field zero) alive through both comparisons.
+@@ -262,27 +262,25 @@ impl Directory {
+             let named = open_at(&self.temporary, &self.leaf_name, true)?;
+             if !self
+                 .temporary_stamp
+-                .directory_matches(&self.temporary.metadata()?)
+-                || !self.leaf_stamp.directory_matches(&named.metadata()?)
+-                || !self.leaf_stamp.directory_matches(&self.leaf.metadata()?)
++                .directory_matches_file(&self.temporary)?
++                || !self.leaf_stamp.directory_matches_file(&named)?
++                || !self.leaf_stamp.directory_matches_file(&self.leaf)?
+             {
+                 return Err(AuthorityError::Invalid);
+             }
+             return Ok(());
+         }
+         let temporary = open_at(&self.root, "tmp", true)?;
+-        if !self
+-            .temporary_stamp
+-            .directory_matches(&temporary.metadata()?)
++        if !self.temporary_stamp.directory_matches_file(&temporary)?
+             || !self
+                 .temporary_stamp
+-                .directory_matches(&self.temporary.metadata()?)
++                .directory_matches_file(&self.temporary)?
+         {
+             return Err(AuthorityError::Invalid);
+         }
+         let named = open_at(&temporary, &self.leaf_name, true)?;
+-        if !self.leaf_stamp.directory_matches(&named.metadata()?)
+-            || !self.leaf_stamp.directory_matches(&self.leaf.metadata()?)
++        if !self.leaf_stamp.directory_matches_file(&named)?
++            || !self.leaf_stamp.directory_matches_file(&self.leaf)?
+         {
+             return Err(AuthorityError::Invalid);
+         }
+@@ -682,6 +680,14 @@ impl FixtureAuthorityRegistry {
+ #[path = "diagnostic_authority_fixture_tests.rs"]
+ mod tests;
+ 
++#[cfg(all(test, target_arch = "x86_64"))]
++#[path = "diagnostic_authority_before_tests.rs"]
++mod before_cost;
++
++#[cfg(all(test, target_arch = "x86_64"))]
++#[path = "diagnostic_authority_parent_tests.rs"]
++mod parent_cost;
++
+ #[cfg(test)]
+ #[path = "../tests/support/authority_leaf_name_controls.rs"]
+ pub(crate) mod leaf_name_controls;

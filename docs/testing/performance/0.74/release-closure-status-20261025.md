@@ -75,9 +75,12 @@ red. Its exact repair frontier and raw/offline replay are linked in that report.
 
 The [separate inventory phase repair](inventory544-phase-result-20261026.md)
 closes the 544→530→446 inventory boundary with 14 targeted cases per compiler.
-The changed-source twenty-case integration still has thirteen failures at its
-downstream body/COMPAT views; old ledgers/assertions and the first package stay
-unchanged. Complete those views and a new source review before another package.
+Its first changed-source twenty-case integration has thirteen failures at its
+downstream body/COMPAT views. The [subsequent exact source successor](source-successor-view-result-20261026.md)
+closes those failures: all twenty unchanged artifact cases pass, with separate
+whole-body reconstruction and refusal controls. Old ledgers/assertions and the
+first red package remain unchanged. Complete the other authority/current-tree and
+bootstrap boundaries and a new source review before another package.
 
 Complete a newly reviewed whole-package replay within the unchanged
 780-second/four-thread guard, including the previously unstarted suffix. The

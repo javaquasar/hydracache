@@ -1,0 +1,2 @@
+64f184d9ba642ff504aa1943b4724858944b9ade perf: retain fresh authority directory checks with fstat projection
+96b6f5511ce6e0220c73b2582fb762b66c0f00c0 test: freeze directory metadata attribution and calibrated baseline

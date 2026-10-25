@@ -1,0 +1,19 @@
+"""Fixed local source-only checks; no retry, service or clock operations."""
+from pathlib import Path
+import subprocess
+import sys
+
+ROOT = Path(__file__).resolve().parent.parent
+RUNNER = ROOT / 'target/run-fresh-reader-20261024.py'
+CASES = [
+    ('successor-view-current-final', ['cargo', '+1.94.0', 'test', '--offline', '--locked', '-p', 'xtask',
+     '--test', 'source_successor_view_074', '--test', 'artifact_inventory_phase_544_074',
+     '--test', 'artifact_inventory_reader_074', '--', '--test-threads=4']),
+    ('successor-view-fmt-first', ['cargo', '+1.94.0', 'fmt', '-p', 'xtask', '--', '--check']),
+    ('successor-view-doc-check-first', ['cargo', 'xtask', 'doc-check']),
+    ('successor-view-contract-check-first', ['cargo', 'xtask', 'performance-contract-check', '--release', '0.74']),
+]
+for label, argv in CASES:
+    result = subprocess.run([sys.executable, str(RUNNER), label, *argv], cwd=ROOT, check=False)
+    if result.returncode:
+        raise SystemExit(result.returncode)

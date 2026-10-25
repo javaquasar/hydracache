@@ -1,0 +1,3 @@
+a67a5299ab335424e9b11330dc06bd749ea9b859 perf(redis): retire GET-owner after failed mandatory mTLS D3 floor
+be0499a8cb0a2ad0b7328d6ac0cf6227114cebcc test(perf): separate D3 socket placement and verify wire overlap
+352b0cc9cc7eda9525ea5f86491cb1e0be62c915 docs(perf): retain GET-owner D3 material and GNU provider controls

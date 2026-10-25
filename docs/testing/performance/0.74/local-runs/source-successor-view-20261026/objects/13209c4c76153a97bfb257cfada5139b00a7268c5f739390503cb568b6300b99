@@ -1,0 +1,6 @@
+e5284749e84a1a025ea1ef47f2b20e744a72bed1 perf: project fresh parent device at original authority query sites
+68d4b89e516c3350e70d164b18dc9813f91f9980 test: freeze calibrated parent-device authority CPU baseline
+bac965b92a64d1f042fa6094b261dcdb614407da perf: use fresh checked Stamp at authority before-read sites
+3da3c31201b8593dfd938140c4c069e7e05b30ed test: freeze calibrated before-read authority CPU baseline
+64f184d9ba642ff504aa1943b4724858944b9ade perf: retain fresh authority directory checks with fstat projection
+317f8a727f80b93663d705c661338d8761da7dba perf: project fresh authority leaf stamps with fstat

@@ -1,0 +1,4 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 11.22s
+     Running tests\source_successor_view_074.rs (target\debug\deps\source_successor_view_074-3fb9ce8d0a81b4ca.exe)
+error: test failed, to rerun pass `-p xtask --test source_successor_view_074`

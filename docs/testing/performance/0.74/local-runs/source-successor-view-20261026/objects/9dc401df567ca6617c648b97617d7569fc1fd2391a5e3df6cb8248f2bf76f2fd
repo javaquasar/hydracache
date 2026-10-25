@@ -1,0 +1,18 @@
+
+running 1 test
+test exact_successor_inputs_reach_unchanged_historical_chain ... FAILED
+
+failures:
+
+---- exact_successor_inputs_reach_unchanged_historical_chain stdout ----
+
+thread 'exact_successor_inputs_reach_unchanged_historical_chain' (44492) panicked at crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\historical-input-view-074\contract.rs:41:5:
+unreviewed input cannot enter historical assertions: docs/COMPAT.md
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    exact_successor_inputs_reach_unchanged_historical_chain
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.78s
+

@@ -14,7 +14,10 @@ available without another test run.
 The [separate 544→530→446 inventory repair](inventory544-phase-result-20261026.md)
 now passes nine new/five original cases on current/MSRV and preserves all old
 physical checks and ledgers. The first changed-source artifact integration stays
-7 passed/13 failed at body/COMPAT views. This closes the inventory boundary only;
+7 passed/13 failed at body/COMPAT views. That first outcome remains intact.
+The [subsequent exact source successor](source-successor-view-result-20261026.md)
+closes those thirteen failures with five fixed-input projections: the unchanged
+twenty-case artifact target now passes. This remains a focused boundary repair;
 v4 correctly refuses changed source before dispatch and no full package is repeated.
 
 The [original start material prerequisite](local-runs/original-collector-start-material-20261017/README.md)

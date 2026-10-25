@@ -1,0 +1,401 @@
+diff --git a/docs/testing/gated-test-registry.toml b/docs/testing/gated-test-registry.toml
+index 4e597f20f..418c14604 100644
+--- a/docs/testing/gated-test-registry.toml
++++ b/docs/testing/gated-test-registry.toml
+@@ -1,6 +1,396 @@
+ schema_version = 1
+ release = "0.64.0"
+ 
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.filesystem-projection-prototype-cpu"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_filesystem_projection_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "filesystem_projection_prototype_cpu_screen"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64" , target_env = "gnu")'
++env = ""
++reason = "manual finite baseline filesystem projection screen; no preparation retry or admission"
++tier = "manual"
++required_features = []
++required_env = ["HC074_FILESYSTEM_COHORT"]
++required_tools = ["cargo"]
++timeout_seconds = 300
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++[gate.command]
++program = "cargo"
++args = ["test","--release","--locked","-p","hydracache-long-run-supervisor-074","--lib","filesystem_projection_prototype_cpu_screen","--","--ignored","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++[gate.command.env]
++HC074_FILESYSTEM_COHORT = "0"
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.filesystem-projection-installed-cpu"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_filesystem_projection_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "filesystem_projection_installed_cpu_screen"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64" , target_env = "gnu")'
++env = ""
++reason = "manual finite integrated filesystem projection screen; no preparation retry or admission"
++tier = "manual"
++required_features = []
++required_env = ["HC074_FILESYSTEM_COHORT"]
++required_tools = ["cargo"]
++timeout_seconds = 300
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++[gate.command]
++program = "cargo"
++args = ["test","--release","--locked","-p","hydracache-long-run-supervisor-074","--lib","filesystem_projection_installed_cpu_screen","--","--ignored","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++[gate.command.env]
++HC074_FILESYSTEM_COHORT = "0"
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.namespace-open-prototype-cpu"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_namespace_open_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "namespace_open_prototype_cpu_screen"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64" , target_env = "gnu")'
++env = ""
++reason = "manual finite baseline Namespace open CPU screen; no preparation retry or admission"
++tier = "manual"
++required_features = []
++required_env = ["HC074_NAMESPACE_OPEN_COHORT"]
++required_tools = ["cargo"]
++timeout_seconds = 300
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++[gate.command]
++program = "cargo"
++args = ["test","--release","--locked","-p","hydracache-long-run-supervisor-074","--lib","namespace_open_prototype_cpu_screen","--","--ignored","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++[gate.command.env]
++HC074_NAMESPACE_OPEN_COHORT = "0"
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.namespace-open-installed-cpu"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_namespace_open_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "namespace_open_installed_cpu_screen"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64" , target_env = "gnu")'
++env = ""
++reason = "manual finite integrated Namespace open CPU screen; no preparation retry or admission"
++tier = "manual"
++required_features = []
++required_env = ["HC074_NAMESPACE_OPEN_COHORT"]
++required_tools = ["cargo"]
++timeout_seconds = 300
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++[gate.command]
++program = "cargo"
++args = ["test","--release","--locked","-p","hydracache-long-run-supervisor-074","--lib","namespace_open_installed_cpu_screen","--","--ignored","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++[gate.command.env]
++HC074_NAMESPACE_OPEN_COHORT = "0"
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.kernel-operation-cpu"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_kernel_operation_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "fresh_kernel_operation_cpu_screen"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "manual finite Boot Namespace operation attribution; no preparation retry or admission"
++tier = "manual"
++required_features = []
++required_env = ["HC074_KERNEL_OPERATION_COHORT"]
++required_tools = ["cargo"]
++timeout_seconds = 300
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++[gate.command]
++program = "cargo"
++args = ["test","--release","--locked","-p","hydracache-long-run-supervisor-074","--lib","fresh_kernel_operation_cpu_screen","--","--ignored","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++[gate.command.env]
++HC074_KERNEL_OPERATION_COHORT = "0"
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.parent-prototype-cpu"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_authority_parent_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "fresh_authority_parent_prototype_cpu_screen"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "manual finite baseline parent-device CPU attribution; no admission or preparation retry"
++tier = "manual"
++required_features = []
++required_env = ["HC074_PARENT_COHORT"]
++required_tools = ["cargo"]
++timeout_seconds = 300
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++[gate.command]
++program = "cargo"
++args = ["test","--release","--locked","-p","hydracache-long-run-supervisor-074","--lib","fresh_authority_parent_prototype_cpu_screen","--","--ignored","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++[gate.command.env]
++HC074_PARENT_COHORT = "0"
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.parent-installed-cpu"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_authority_parent_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "fresh_authority_parent_installed_cpu_screen"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "manual finite installed parent-device CPU attribution; no admission or preparation retry"
++tier = "manual"
++required_features = []
++required_env = ["HC074_PARENT_COHORT"]
++required_tools = ["cargo"]
++timeout_seconds = 300
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++[gate.command]
++program = "cargo"
++args = ["test","--release","--locked","-p","hydracache-long-run-supervisor-074","--lib","fresh_authority_parent_installed_cpu_screen","--","--ignored","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++[gate.command.env]
++HC074_PARENT_COHORT = "0"
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.before-prototype-cpu"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_authority_before_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "fresh_authority_before_prototype_cpu_screen"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "manual finite baseline before-read CPU attribution; no admission or preparation retry"
++tier = "manual"
++required_features = []
++required_env = ["HC074_BEFORE_COHORT"]
++required_tools = ["cargo"]
++timeout_seconds = 300
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++[gate.command]
++program = "cargo"
++args = ["test","--release","--locked","-p","hydracache-long-run-supervisor-074","--lib","fresh_authority_before_prototype_cpu_screen","--","--ignored","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++[gate.command.env]
++HC074_BEFORE_COHORT = "0"
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.before-installed-cpu"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_authority_before_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "fresh_authority_before_installed_cpu_screen"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "manual finite installed before-read CPU attribution; no admission or preparation retry"
++tier = "manual"
++required_features = []
++required_env = ["HC074_BEFORE_COHORT"]
++required_tools = ["cargo"]
++timeout_seconds = 300
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++[gate.command]
++program = "cargo"
++args = ["test","--release","--locked","-p","hydracache-long-run-supervisor-074","--lib","fresh_authority_before_installed_cpu_screen","--","--ignored","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++[gate.command.env]
++HC074_BEFORE_COHORT = "0"
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.directory-prototype-cpu"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_authority_directory_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "fresh_authority_directory_prototype_cpu_screen"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "manual finite baseline directory CPU attribution; no admission or preparation retry"
++tier = "manual"
++required_features = []
++required_env = ["HC074_DIRECTORY_COHORT"]
++required_tools = ["cargo"]
++timeout_seconds = 300
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++[gate.command]
++program = "cargo"
++args = ["test","--release","--locked","-p","hydracache-long-run-supervisor-074","--lib","fresh_authority_directory_prototype_cpu_screen","--","--ignored","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++[gate.command.env]
++HC074_DIRECTORY_COHORT = "0"
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.directory-installed-cpu"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_authority_directory_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "fresh_authority_directory_installed_cpu_screen"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "manual finite installed directory CPU attribution; no admission or preparation retry"
++tier = "manual"
++required_features = []
++required_env = ["HC074_DIRECTORY_COHORT"]
++required_tools = ["cargo"]
++timeout_seconds = 300
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++[gate.command]
++program = "cargo"
++args = ["test","--release","--locked","-p","hydracache-long-run-supervisor-074","--lib","fresh_authority_directory_installed_cpu_screen","--","--ignored","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++[gate.command.env]
++HC074_DIRECTORY_COHORT = "0"
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.fresh-authority-stamp-leaf"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_authority_stamp_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "fresh_authority_stamp_installed_leaf_cpu_screen"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "manual finite authority leaf CPU screen; not admission or a preparation retry"
++tier = "manual"
++required_features = []
++required_env = ["HC074_STAMP_COHORT"]
++required_tools = ["cargo"]
++timeout_seconds = 300
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++[gate.command]
++program = "cargo"
++args = ["test","--release","--locked","-p","hydracache-long-run-supervisor-074","--lib","fresh_authority_stamp_installed_leaf_cpu_screen","--","--ignored","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++[gate.command.env]
++HC074_STAMP_COHORT = "0"
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.fresh-fd-identity-origin"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_kernel_fd_identity_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "fresh_fd_identity_original_origin_cpu_screen"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "manual finite installed-origin CPU screen; not admission or a live preparation retry"
++tier = "manual"
++required_features = []
++required_env = ["HC074_FD_IDENTITY_COHORT"]
++required_tools = ["cargo"]
++timeout_seconds = 300
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++[gate.command]
++program = "cargo"
++args = ["test","--release","--locked","-p","hydracache-long-run-supervisor-074","--lib","fresh_fd_identity_original_origin_cpu_screen","--","--ignored","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++[gate.command.env]
++HC074_FD_IDENTITY_COHORT = "0"
++
+ [[gate]]
+ id = "tool.hydracache-long-run-supervisor-074.controller-attempt-process-crash-all-stages-and-lost-ack"
+ kind = "external_tool"

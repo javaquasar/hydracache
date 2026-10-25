@@ -1,0 +1,34 @@
+
+running 9 tests
+test every_544_name_is_required_before_any_body_observation ... ok
+test extension_changes_exactly_three_old_entries_and_adds_fourteen ... ok
+test current_mode_blob_and_stage_are_pinned_to_independent_producer_tree ... ok
+test every_late_body_or_read_error_blocks_both_predecessor_projections ... ok
+test successful_projection_never_caches_a_current_observation ... ok
+test phase_chain_observes_every_current_body_before_releasing_old_names ... ok
+test the_frozen_530_phase_is_not_accepted_as_the_live_544_phase ... ok
+test current_phase_requires_all_544_sources_before_446_projection ... ok
+test physical_checks_and_all_five_original_tests_are_byte_preserved ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.37s
+
+
+running 5 tests
+test inventory_projection_rejects_every_missing_duplicate_unknown_and_reordered_path ... ok
+test inventory_reader_preserves_every_old_assertion_and_comparison_count ... ok
+test inventory_projection_rejects_each_changed_old_or_new_body_and_read_failure ... ok
+test inventory_projection_requires_all_current_source_files_before_old_list ... ok
+test inventory_index_requires_exact_mode_blob_stage_and_path_for_every_entry ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.49s
+
+
+running 5 tests
+test stale_partial_duplicate_and_unrelated_edits_refuse_before_projection ... ok
+test old_gates_and_assertions_survive_exact_entry_edits ... ok
+test exact_successor_inputs_reach_unchanged_historical_chain ... ok
+test whole_body_projection_matches_independent_fixed_producers ... ok
+test wrong_path_cannot_borrow_another_files_approval_and_unknowns_stay_unchanged ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.30s
+

@@ -20381,3 +20381,30 @@ failures: a valid inventory does not prove the historical body/COMPAT views.
 The unchanged v4 source review also refuses the changed graph before dispatch.
 Both refusals stay visible. Completing the dependency chain means proving each
 next boundary, not allowing a passing inventory model to certify the package.
+
+### Check exact source changes before replaying historical bodies
+
+The [next compatibility repair](../testing/performance/0.74/source-successor-view-result-20261026.md)
+addresses those thirteen artifact failures without changing the old twenty test
+bodies. A separate five-path description comes from fixed historical producers:
+three authority/kernel changes, the additive manual gate registrations, and
+COMPAT's diagnostic TLS/allocation/rollback entries. The existing owned-case
+layer already checks the launcher test addition, so no second projection is
+added for it.
+
+For each known input, the reader checks the complete current SHA256, applies
+exact inverse edits at fixed offsets, and checks the complete predecessor SHA256
+before the old assertions run. It cannot learn approval from the observed
+worktree, accept a stale predecessor as current, or hide an unrelated edit
+outside a selected hunk. The description is immutable; observations are not
+cached. The original IO, census guards, byte comparisons and timing windows
+remain unchanged.
+
+The canary first refuses COMPAT. The first implementation also exposes a real
+compiler error in hexadecimal formatting; its raw failure is retained before
+the small correction. The first compiling candidate passes all twenty original
+artifact cases and five new reconstruction/refusal controls. This closes a
+specific source-preservation boundary, not runtime semantic equivalence, the
+interrupted package or release admission. It is important to distinguish those
+results: compatibility machinery must explain an approved delta, not manufacture
+a green release by showing every old test a convenient snapshot.

@@ -1,0 +1,36 @@
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_authority_fixed.rs b/tools/long-run-supervisor-074/src/diagnostic_authority_fixed.rs
+index 457443354..c24b03892 100644
+--- a/tools/long-run-supervisor-074/src/diagnostic_authority_fixed.rs
++++ b/tools/long-run-supervisor-074/src/diagnostic_authority_fixed.rs
+@@ -21,16 +21,16 @@ impl Ancestry {
+             .read(true)
+             .custom_flags(libc::O_DIRECTORY | libc::O_NOFOLLOW | libc::O_CLOEXEC)
+             .open(&self.root_name)?;
+-        if !self.root_stamp.directory_matches(&root.metadata()?)
+-            || !self.root_stamp.directory_matches(&named_root.metadata()?)
++        if !self.root_stamp.directory_matches_file(root)?
++            || !self.root_stamp.directory_matches_file(&named_root)?
+         {
+             return Err(AuthorityError::Invalid);
+         }
+         let mut parent = root;
+         for ancestor in &self.ancestors {
+             let named = open_at(parent, &ancestor.name, true)?;
+-            if !ancestor.stamp.directory_matches(&named.metadata()?)
+-                || !ancestor.stamp.directory_matches(&ancestor.file.metadata()?)
++            if !ancestor.stamp.directory_matches_file(&named)?
++                || !ancestor.stamp.directory_matches_file(&ancestor.file)?
+             {
+                 return Err(AuthorityError::Invalid);
+             }
+@@ -187,6 +187,10 @@ pub(crate) fn modeled_registry_for_test(
+ #[path = "diagnostic_authority_fixed_tests.rs"]
+ mod tests;
+ 
++#[cfg(all(test, target_arch = "x86_64"))]
++#[path = "diagnostic_authority_directory_tests.rs"]
++mod directory_cost;
++
+ #[cfg(test)]
+ #[path = "diagnostic_privileged_authority_fixture.rs"]
+ pub(crate) mod privileged_fixture;

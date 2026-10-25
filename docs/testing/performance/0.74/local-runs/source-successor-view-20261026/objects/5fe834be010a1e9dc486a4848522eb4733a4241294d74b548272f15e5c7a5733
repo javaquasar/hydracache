@@ -1,0 +1,8 @@
+958b3135a15c00b9f6aad41522cef9d1f6608d3a test: freeze fresh filesystem projection candidate and fault controls
+284808a69f4fbce76a68e73b60eaac42198dc8ce test: freeze fixed Namespace open experiment and fault controls
+ed0707328a3e77f08ca2f63dfadaa0d1bde119c2 test: freeze selected Boot Namespace operation attribution
+68d4b89e516c3350e70d164b18dc9813f91f9980 test: freeze calibrated parent-device authority CPU baseline
+3da3c31201b8593dfd938140c4c069e7e05b30ed test: freeze calibrated before-read authority CPU baseline
+96b6f5511ce6e0220c73b2582fb762b66c0f00c0 test: freeze directory metadata attribution and calibrated baseline
+317f8a727f80b93663d705c661338d8761da7dba perf: project fresh authority leaf stamps with fstat
+8862986662063b329f17547f61458f08832767e2 perf: use fresh fstat identity in kernel origin checks
