@@ -45,3 +45,7 @@ The manual Rust selectors are registered as non-shipping gates. Invocation
 requires the protected-source/image coordinator and the phase's exact test
 selector; do not run them as an unbounded preparation retry. The 300/60/10 live
 windows, original checks and first preparation refusals are unchanged.
+
+The [first result](../../docs/testing/performance/0.74/namespace-open-cost-result-20261025.md)
+is negative: all four baseline calibrations pass, but no Namespace case meets
+the frozen 2% floor. The candidate stays test-only and is not integrated.

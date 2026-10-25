@@ -223,6 +223,15 @@ host manager is still 255; no upgrade, original service send or product run occu
 
 ## 4. Completion, cells 2–4, crashes and reconnect
 
+The [fixed Namespace open experiment](namespace-open-cost-result-20261025.md)
+passes differential controls, including real targeted FIFO interruption, and
+47 origin tests with native check/strict lint. Its first eight-process cohort
+passes all calibration controls but misses the frozen 2% floor in all four
+cases: CPU point ratios are 0.994172–0.995562. The candidate stays test-only;
+production statements remain unchanged. No integration or full-preparation retry
+follows. Filesystem/identity wrapper attribution is a separate next hypothesis,
+not permission to reduce live observations or extend the original deadlines.
+
 The [Boot Namespace operation attribution](kernel-operation-cost-result-20261025.md)
 adds test-only selected CPU spans, with all 35 baseline calibration combinations
 passing in one eight-process cohort. Forty-three origin tests, native check and

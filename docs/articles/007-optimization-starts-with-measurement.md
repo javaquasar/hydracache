@@ -20166,3 +20166,36 @@ kernel time from wrapper work within those spans. No runtime optimization,
 preparation retry or production gain is claimed here. The first enrollment expiry
 from the previous candidate remains the enclosing gate result, and the original
 deadlines and all live checks remain in place.
+
+### An expensive open span does not imply an expensive open wrapper
+
+The [fixed Namespace open experiment](../testing/performance/0.74/namespace-open-cost-result-20261025.md)
+tests the wrapper rather than interpreting the selected span as pure kernel time.
+Its test-only candidate replaces `OpenOptions` conversion for four terminated
+Namespace literals with GNU `open64`, while still projecting the original path
+once and retaining the dynamic fallback. Flags, immediate errno capture, EINTR
+retry, filesystem validation, identity and FD lifetime all stay intact.
+
+Behavioral equivalence includes an actual interruption. A dedicated child blocks
+in FIFO open; the parent targets that exact child thread with SIGUSR1, observes
+the handler acknowledgement and the blocked open again, then releases it. Both
+reference and candidate report the same syscall and FD flags. Scripted terminal
+errors and fallback controls accompany it. Forty-seven origin tests, native check
+and strict lint pass. The initial lint refusal stays retained rather than being
+replaced by the corrected image's success.
+
+Eight fresh processes then compare four whole-method arms with an inactive
+operation observer. All baseline calibrations pass, but candidate/reference CPU
+ratios are only 0.995562 for user, 0.995114 for mount, 0.995336 for PID and
+0.994172 for time Namespace. Every 95% upper bound exceeds the preregistered
+0.98 maximum. A small point reduction is not enough to accept the candidate by
+that rule: it stays outside production, without an installed-image cohort or
+another full-preparation attempt.
+
+The negative result narrows the search. Open was the largest selected span, yet
+removing this conversion does not deliver the required whole-method benefit.
+It does not establish a precise kernel/wrapper split, nor justify reducing fresh
+observations. Filesystem/identity wrappers or another measured preparation cost
+need separate hypotheses and controls. The original ten-second gate remains red;
+an honest rejected micro-optimization is preferable to adding unsafe code for a
+claim the frozen experiment does not support.
