@@ -1,5 +1,11 @@
 # Six-step release continuation after capture attribution
 
+Current closure status and preserved source branches are indexed in
+[release closure and server launch status](release-closure-status-20261025.md).
+GET-owner has a terminal negative D3 verdict; its acceptance work is closed.
+The detailed chronology below retains prior first results, not a pending request
+to repeat that candidate or permission to install/run qualification.
+
 This is the intermediate execution order requested after the transport/package
 audit, not a new release policy or a claim that all six steps are implemented.
 The [first reviewed replay](transport-package-result-20261025.md) remains red at
@@ -16,19 +22,19 @@ opt-in RESP mTLS, tests and formatting; a source diff is not eight optimizations
 The measured B73 identity and separately pinned published tag remain distinct
 and runtime-equivalent as already recorded in `baseline-identities.toml`.
 
-The GET-owner feature remains off. Its D3a allocation screen passed, but full
-D3 timing/native/memory/security-matched guards did not: the first B0 attempt
-was refused before measurement and is not erased. RESP mTLS is an implemented
-security prerequisite, not an accepted performance proposal. The composition
-ledger correctly retains zero accepted candidates and `freeze_c74_allowed=false`.
+The GET-owner runtime selector is now retired after the
+[full real-network D3 allocation stage](get-owner-full-d3-terminal-result-20261025.md).
+All 240 processes finish, but every mandatory mTLS cell misses the original 20%
+floor. D3a success and the first B0 refusal remain retained; later acceptance-only
+timing/full-retention gates are not run or labeled passed. RESP mTLS is an
+implemented security prerequisite, not an accepted performance proposal. The
+composition ledger retains zero accepted candidates and `freeze_c74_allowed=false`.
 
-Next: complete that existing proposal's missing controls under a separately
-sealed finite measurement protocol; do not resurrect terminal W2–W9 candidates
-or equate a local allocation screen with D3. Review the whole runtime, dependency
-and feature delta before composing. Freeze only an evidenced composition. If no
-proposal clears its original gates, follow the plan's defer-and-publish rule;
-shipping a tooling-only substitute requires an explicit scope decision, not a
-silent C74 assignment.
+Next: obtain the explicit scope decision required by the plan's defer-and-publish
+rule. Do not resurrect terminal W2–W9/GET-owner candidates or buy further
+GET-owner acceptance runs after a mandatory rejection. Review the whole runtime,
+dependency and feature delta before composing; freeze only an evidenced product
+under an approved scope. A tooling-only substitute is not a silent C74 assignment.
 
 ## 2. Complete checks and dependency policy
 

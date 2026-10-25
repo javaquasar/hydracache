@@ -20324,3 +20324,14 @@ the exact stable supervisor is restored and its installed image verified. That
 manual, operator-approved diagnostic route does not claim production enrollment,
 original-start or general lifecycle readiness. GET-owner is closed for 0.74;
 the rest of the release still has its own gates.
+
+The [release closure index](../testing/performance/0.74/release-closure-status-20261025.md)
+keeps the measured active GET-owner implementation reachable through archive
+branch `archive/0.74-get-owner-d3-measured-be0499a8c`, at exact source
+`be0499a8cb0a2ad0b7328d6ac0cf6227114cebcc`. The development branch retains the
+raw evidence, offline verifier and test-only algorithm; it does not activate the
+retired runtime. The separately reverted rustls security experiment likewise has
+an explicit source archive. Preserving a failed idea means retaining its code,
+method and negative evidence together, not silently shipping it. The same index
+separates unfinished release/security gates from original execution, writer
+retirement, crash/reconnect and real server enrollment work.

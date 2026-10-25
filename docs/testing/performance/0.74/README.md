@@ -1,5 +1,10 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+Current entry point: [release closure and server launch status](release-closure-status-20261025.md).
+It lists the six remaining gates and archived implementations, including the
+terminal GET-owner D3 rejection. Historical stage reports below retain their
+original scope; they are not a current production admission verdict.
+
 The [original start material prerequisite](local-runs/original-collector-start-material-20261017/README.md)
 now retains the original reviewed bundle with Starting/pipes/sinks/fence.
 The framed successor passes six healthy chains and twenty-six exact refusals

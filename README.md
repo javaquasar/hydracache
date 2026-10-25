@@ -108,4 +108,9 @@ See [`Quality Gate`](https://javaquasar.github.io/hydracache/reference/quality-g
 
 HydraCache is in early development. The current public documentation lives in `docs-site`; older long-form plans and release notes remain under `docs/` as project history and operational detail.
 
+Release 0.74 development: [remaining release and server gates, preserved experiment code and evidence](docs/testing/performance/0.74/release-closure-status-20261025.md).
+GET-owner is rejected by its full-D3 mTLS allocation gate; its measured implementation
+is archived, not lost or enabled in the runtime. This development branch is not a
+release-ready candidate.
+
 The Medium article series is linked from the docs home page as background, but the docs site is intended to be self-contained.
