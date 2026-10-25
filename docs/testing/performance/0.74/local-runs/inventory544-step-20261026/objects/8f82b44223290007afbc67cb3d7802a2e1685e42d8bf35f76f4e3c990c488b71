@@ -1,0 +1,20 @@
+
+running 1 test
+test current_phase_requires_all_544_sources_before_446_projection ... FAILED
+
+failures:
+
+---- current_phase_requires_all_544_sources_before_446_projection stdout ----
+
+thread 'current_phase_requires_all_544_sources_before_446_projection' (22844) panicked at crates\xtask\tests\artifact_inventory_phase_544_074.rs:7:5:
+assertion `left == right` failed
+  left: 530
+ right: 544
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    current_phase_requires_all_544_sources_before_446_projection
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+

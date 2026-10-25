@@ -73,6 +73,12 @@ is retained: unchanged 780-second/four-thread run, 114/138 targets completed,
 adds 104 passing/30 failing observations; 23 targets are unstarted. This is still
 red. Its exact repair frontier and raw/offline replay are linked in that report.
 
+The [separate inventory phase repair](inventory544-phase-result-20261026.md)
+closes the 544→530→446 inventory boundary with 14 targeted cases per compiler.
+The changed-source twenty-case integration still has thirteen failures at its
+downstream body/COMPAT views; old ledgers/assertions and the first package stay
+unchanged. Complete those views and a new source review before another package.
+
 Complete a newly reviewed whole-package replay within the unchanged
 780-second/four-thread guard, including the previously unstarted suffix. The
 separate 321-case performance-contract pass and repaired focused cohorts do not

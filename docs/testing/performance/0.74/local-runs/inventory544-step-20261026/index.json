@@ -1,0 +1,245 @@
+{
+  "artifact_integration_failed": 13,
+  "artifact_integration_passed": 7,
+  "current_and_msrv_tests_each": 14,
+  "expected_exit": {
+    "inventory544-artifact-integration-first": 101,
+    "inventory544-check-first": 0,
+    "inventory544-clippy-first": 0,
+    "inventory544-contract-check-first": 0,
+    "inventory544-current-final": 0,
+    "inventory544-doc-check-first": 0,
+    "inventory544-first-candidate": 0,
+    "inventory544-first-red": 101,
+    "inventory544-fmt-first": 0,
+    "inventory544-msrv-first": 0,
+    "inventory544-provenance-controls-first": 0
+  },
+  "full_package_rerun": false,
+  "members": {
+    "checks/inventory544-artifact-integration-first/intent.json": {
+      "bytes": 337949,
+      "sha256": "6245a7ff536cbb9f6ceb35c39faa9fb6c7b5d1a3e5959b25ae0f3bb6af4c495b"
+    },
+    "checks/inventory544-artifact-integration-first/result.json": {
+      "bytes": 337574,
+      "sha256": "b780d4893a3bc742c1e07a20bb86494e79803ad451e1087e88bca20107a7cc0e"
+    },
+    "checks/inventory544-artifact-integration-first/stderr.log": {
+      "bytes": 367,
+      "sha256": "b346a2bc6421670578e71227e2bf32d9a9e2ce354799813f1c76c635395271d1"
+    },
+    "checks/inventory544-artifact-integration-first/stdout.log": {
+      "bytes": 108332,
+      "sha256": "344c8c3d7f56fe2b81bcefcc5f8aafccc81a667e6f79f436837812a50fda6b1b"
+    },
+    "checks/inventory544-check-first/intent.json": {
+      "bytes": 337847,
+      "sha256": "702dd6a2c03934ac61155db46e6033e42811d79b54f6c6cc06a668a6cd6b810a"
+    },
+    "checks/inventory544-check-first/result.json": {
+      "bytes": 337572,
+      "sha256": "f8d4efdf71c328af2c7e9b178529e1361b9d75bb7c56a7e35dd9d05825b809ab"
+    },
+    "checks/inventory544-check-first/stderr.log": {
+      "bytes": 156,
+      "sha256": "7f484849aa98b6e11207002b7a9fe96c8296b44a3c7b8cd48f08d03cfa07c229"
+    },
+    "checks/inventory544-check-first/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/inventory544-clippy-first/intent.json": {
+      "bytes": 337910,
+      "sha256": "66a2cd9afd91ec1fc2ba569819a7542b5491d6579d69cad5e570660885a1a953"
+    },
+    "checks/inventory544-clippy-first/result.json": {
+      "bytes": 337572,
+      "sha256": "f8d4efdf71c328af2c7e9b178529e1361b9d75bb7c56a7e35dd9d05825b809ab"
+    },
+    "checks/inventory544-clippy-first/stderr.log": {
+      "bytes": 155,
+      "sha256": "4ba95d55390aab8a146ac9547f132c0dd2c272a28a5ef92557176e586138f200"
+    },
+    "checks/inventory544-clippy-first/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/inventory544-contract-check-first/intent.json": {
+      "bytes": 337849,
+      "sha256": "daec153dfc2237f0f72a3ba0cac8d15d2ccd0d5f4adb7842a5e35e9b6f47331d"
+    },
+    "checks/inventory544-contract-check-first/result.json": {
+      "bytes": 337572,
+      "sha256": "f8d4efdf71c328af2c7e9b178529e1361b9d75bb7c56a7e35dd9d05825b809ab"
+    },
+    "checks/inventory544-contract-check-first/stderr.log": {
+      "bytes": 209,
+      "sha256": "8db4665da993733371426936e7ab75638f678aefabf4cceaf60ec5f668c15de9"
+    },
+    "checks/inventory544-contract-check-first/stdout.log": {
+      "bytes": 60,
+      "sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+    },
+    "checks/inventory544-current-final/intent.json": {
+      "bytes": 338003,
+      "sha256": "4bfb938af73127f817b81dc9a1f8d5e3041150f5f30dcc96fc5c2982ae8fa132"
+    },
+    "checks/inventory544-current-final/result.json": {
+      "bytes": 337572,
+      "sha256": "f8d4efdf71c328af2c7e9b178529e1361b9d75bb7c56a7e35dd9d05825b809ab"
+    },
+    "checks/inventory544-current-final/stderr.log": {
+      "bytes": 408,
+      "sha256": "f8d209f9920b71ca15892603313e2d7be987caf2f0d3a1e7d01bedfd76953465"
+    },
+    "checks/inventory544-current-final/stdout.log": {
+      "bytes": 1318,
+      "sha256": "b408bc89afcdd37eed8d46cad34287364cc557b790c05708c4fa5f602e8ca70c"
+    },
+    "checks/inventory544-doc-check-first/intent.json": {
+      "bytes": 337801,
+      "sha256": "a5ca39556fc832f9ab86e0fad917780cdbded165ca4d27063e1ae8bab5a7acf1"
+    },
+    "checks/inventory544-doc-check-first/result.json": {
+      "bytes": 337572,
+      "sha256": "f8d4efdf71c328af2c7e9b178529e1361b9d75bb7c56a7e35dd9d05825b809ab"
+    },
+    "checks/inventory544-doc-check-first/stderr.log": {
+      "bytes": 204,
+      "sha256": "ecb77b2ac59f8cfb1bf83e0ed1763a3a432e863ef21d904ccf1410242f0fe047"
+    },
+    "checks/inventory544-doc-check-first/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "checks/inventory544-first-candidate/intent.json": {
+      "bytes": 338003,
+      "sha256": "c919e9cba5a97dc0bb34c1bfc8d773880f95d7ec1a92387a83665c490894606d"
+    },
+    "checks/inventory544-first-candidate/result.json": {
+      "bytes": 337572,
+      "sha256": "afd1f44754edfa11a93d723d5b72abbc8a0da91815f8cb303407721e9cdf8ffc"
+    },
+    "checks/inventory544-first-candidate/stderr.log": {
+      "bytes": 408,
+      "sha256": "24f8364f02a351168781c691d11cf44c0b12121b17a5a11471615fcbd49eb363"
+    },
+    "checks/inventory544-first-candidate/stdout.log": {
+      "bytes": 1249,
+      "sha256": "6a21134f4225b6c6b4eb548452b6b4042f4b649693ced293649676012d7f75d2"
+    },
+    "checks/inventory544-first-red/intent.json": {
+      "bytes": 337815,
+      "sha256": "152d3123624cf2166e5573df2cd79a27c272b1a6053e118d5a94ad3be0ee00a8"
+    },
+    "checks/inventory544-first-red/result.json": {
+      "bytes": 337439,
+      "sha256": "dfda38cc5e64acaf5a6b52e95d8ccaff81833b02f2a3830f0384741cd5f76ec5"
+    },
+    "checks/inventory544-first-red/stderr.log": {
+      "bytes": 371,
+      "sha256": "a201dc8e566fe292505b71dc36c25baccede3e75e7e09ad02d4a2c675a47ab5e"
+    },
+    "checks/inventory544-first-red/stdout.log": {
+      "bytes": 646,
+      "sha256": "8f82b44223290007afbc67cb3d7802a2e1685e42d8bf35f76f4e3c990c488b71"
+    },
+    "checks/inventory544-fmt-first/intent.json": {
+      "bytes": 337833,
+      "sha256": "49a6de919d229065f2fb75874ac0ebc06bb45c048622db1b285525a38eedb694"
+    },
+    "checks/inventory544-fmt-first/result.json": {
+      "bytes": 337572,
+      "sha256": "f8d4efdf71c328af2c7e9b178529e1361b9d75bb7c56a7e35dd9d05825b809ab"
+    },
+    "checks/inventory544-fmt-first/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/inventory544-fmt-first/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/inventory544-msrv-first/intent.json": {
+      "bytes": 338003,
+      "sha256": "c9c6e9fd6f64075c086e7079c04c7e7335e00da7841df129547ef0cefd90fe04"
+    },
+    "checks/inventory544-msrv-first/result.json": {
+      "bytes": 337572,
+      "sha256": "f8d4efdf71c328af2c7e9b178529e1361b9d75bb7c56a7e35dd9d05825b809ab"
+    },
+    "checks/inventory544-msrv-first/stderr.log": {
+      "bytes": 637,
+      "sha256": "46f8bdc2793fa2d1adb0ad49ab1e73ef79f846e06a128d2ac68e6edb2055c14a"
+    },
+    "checks/inventory544-msrv-first/stdout.log": {
+      "bytes": 1318,
+      "sha256": "f5da2fb28e6483ac46bf07e04d799ef12d5ac47a781190e50b341b779b0b99f6"
+    },
+    "checks/inventory544-provenance-controls-first/intent.json": {
+      "bytes": 337895,
+      "sha256": "31137a66b2866738411f9b3c22d4e06a194ab526dc2d2ce3fd93a8f19f56e8e5"
+    },
+    "checks/inventory544-provenance-controls-first/result.json": {
+      "bytes": 337572,
+      "sha256": "f8d4efdf71c328af2c7e9b178529e1361b9d75bb7c56a7e35dd9d05825b809ab"
+    },
+    "checks/inventory544-provenance-controls-first/stderr.log": {
+      "bytes": 797,
+      "sha256": "b4ed11cd116e7233f1f82218d0bae13b63d82dd85520723b1967f1db203afabf"
+    },
+    "checks/inventory544-provenance-controls-first/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "coordinators/retain-inventory544-step.py": {
+      "bytes": 4915,
+      "sha256": "b724ccf7f87808c087903bad005ddd0b4462704aa464545dab4f0b39ccaece56"
+    },
+    "coordinators/run-fresh-reader-20261024.py": {
+      "bytes": 544,
+      "sha256": "851631e846ec7d3696a0e2fa550b6f87e8f07e8412f5dafc0530c0bc70c597ed"
+    },
+    "coordinators/run-source-step-20261024.py": {
+      "bytes": 2596,
+      "sha256": "a92482cabcfcf8f6440e95972bee8d204bb9c59c8805c45c7b57363dcc3ab430"
+    },
+    "source-final/crates/xtask/tests/artifact_inventory_phase_544_074.rs": {
+      "bytes": 10697,
+      "sha256": "83b801e8f21b5d20ef1d92649450f364438ea9a7259d37b14e7cc2ace04b4344"
+    },
+    "source-final/crates/xtask/tests/support/artifact_inventory_input.rs": {
+      "bytes": 7049,
+      "sha256": "050bec3b7dcdc169ceedbb4a6933c6f52c6f5d39aea4c241180380cbf8327605"
+    },
+    "source-final/crates/xtask/tests/support/artifact_inventory_phase_544.rs": {
+      "bytes": 3610,
+      "sha256": "592a3e359201323501f87301bce55e385c516527097db4220ea517dfc0318df9"
+    },
+    "source-first-candidate/artifact_inventory_phase_544_074.rs": {
+      "bytes": 9971,
+      "sha256": "9d3610a51f1894e8e380bfe4e3c41f0d62b25cde14fd9e5ea4715001b554cfa4"
+    },
+    "source-first-red/artifact_inventory_input.rs": {
+      "bytes": 6377,
+      "sha256": "536cb02654d3b2bb21328a0b3dc81726d6f7bef8f1b19994168f247b0ec0d56b"
+    },
+    "source-first-red/artifact_inventory_phase_544_074.rs": {
+      "bytes": 451,
+      "sha256": "eff30ae1700113df4880f80da4818e632f76ec93bb87846093dae91ed8cc4a31"
+    },
+    "stale-v4-review/intent.json": {
+      "bytes": 396,
+      "sha256": "bb34646578330e3e094b96ace9477581a356ecd0f7f141723c2a636262fbeb22"
+    },
+    "stale-v4-review/preflight-refusal.json": {
+      "bytes": 97,
+      "sha256": "b45cb8174875c6b3bba1db0ae374621dc4cab36e61c947620ade099ff78cc006"
+    }
+  },
+  "product_or_qualification_admission": false,
+  "provenance_index_sha256": "cf14d72fa0637ef5aeab50ca96ff2cfa69a9e331da3e358c779ff0f830d807d7",
+  "schema": "hc074-inventory544-repair-evidence-v1",
+  "source_only": true
+}

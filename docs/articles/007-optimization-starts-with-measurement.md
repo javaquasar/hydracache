@@ -20359,3 +20359,25 @@ the unchanged historical view; replacing expected bytes from observed output
 would erase the property being tested. The raw first outcome, independent
 accounting and mutation-controlled offline reader remain available without a
 second run or a more permissive timeout. No new optimization hypothesis follows.
+
+### Validate the new inventory without changing the old assertions
+
+The [separate source phase repair](../testing/performance/0.74/inventory544-phase-result-20261026.md)
+uses a fixed historical producer, not the failed test's observed worktree, to
+describe fourteen additions and three changes. It preserves the old 530-file
+ledger and validates all 544 current names, index records, filesystem entries
+and canonical bodies before returning the original 530 and then 446 names.
+Only expected descriptions are cached; repeated successful projections still
+repeat all body observations and a subsequent read failure still refuses.
+
+The new canary first fails at 530 versus 544. The repair passes nine new and five
+unchanged inventory tests on current/MSRV, including exhaustive drift/refusal
+controls and a byte comparison of the old physical-check code. This fixes a
+source compatibility boundary without changing the monitored runtime or timing
+windows. It is not another performance candidate.
+
+The first broader artifact integration remains seven passes and thirteen
+failures: a valid inventory does not prove the historical body/COMPAT views.
+The unchanged v4 source review also refuses the changed graph before dispatch.
+Both refusals stay visible. Completing the dependency chain means proving each
+next boundary, not allowing a passing inventory model to certify the package.

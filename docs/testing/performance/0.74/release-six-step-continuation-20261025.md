@@ -46,6 +46,12 @@ all raw results and the exact 530-to-544 source census delta are retained. Repai
 the independently reviewed current phase and source/registration projections
 before a new changed-source gate; do not repeat this source or splice old passes.
 
+The [new inventory phase](inventory544-phase-result-20261026.md) separately
+validates the fixed historical 544-source producer before projecting through
+unchanged 530/446 ledgers. Fourteen current/MSRV cases pass per compiler, but
+the first artifact integration remains 7/13 at body/registration compatibility.
+The v4 reviewer remains unchanged and refuses this changed graph before dispatch.
+
 Implemented: exact transport diagnostics, the 334-file/21-auxiliary scoped effect
 gate and first unchanged-bound package replay. The latter completes 111/135
 targets; its incomplete target and 23-target suffix stay unverified. Forty-three

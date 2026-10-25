@@ -11,6 +11,12 @@ failures plus 30 failed observations in the incomplete target, 23 unstarted
 targets. The gate remains red; raw logs, census delta and offline replay stay
 available without another test run.
 
+The [separate 544→530→446 inventory repair](inventory544-phase-result-20261026.md)
+now passes nine new/five original cases on current/MSRV and preserves all old
+physical checks and ledgers. The first changed-source artifact integration stays
+7 passed/13 failed at body/COMPAT views. This closes the inventory boundary only;
+v4 correctly refuses changed source before dispatch and no full package is repeated.
+
 The [original start material prerequisite](local-runs/original-collector-start-material-20261017/README.md)
 now retains the original reviewed bundle with Starting/pipes/sinks/fence.
 The framed successor passes six healthy chains and twenty-six exact refusals

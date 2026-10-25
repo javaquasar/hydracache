@@ -1,0 +1,4 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.87s
+     Running tests\artifact_inventory_phase_544_074.rs (target\debug\deps\artifact_inventory_phase_544_074-982330693c7ab609.exe)
+     Running tests\artifact_inventory_reader_074.rs (target\debug\deps\artifact_inventory_reader_074-81312be1991ba5ce.exe)

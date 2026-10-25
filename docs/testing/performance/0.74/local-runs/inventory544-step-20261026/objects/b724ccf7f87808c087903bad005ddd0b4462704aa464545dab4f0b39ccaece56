@@ -1,0 +1,89 @@
+"""Seal fixed source-only inventory repair, including every first refusal."""
+from pathlib import Path
+import hashlib
+import json
+
+ROOT = Path(__file__).resolve().parent.parent
+sha = lambda raw: hashlib.sha256(raw).hexdigest()
+members, objects = {}, {}
+def add(name, raw):
+    assert name not in members
+    digest = sha(raw)
+    members[name] = dict(sha256=digest, bytes=len(raw))
+    objects[digest] = raw
+def tree(folder, prefix):
+    for path in sorted(folder.iterdir()):
+        assert path.is_file()
+        add(prefix+'/'+path.name, path.read_bytes())
+labels = {'inventory544-first-red':101, 'inventory544-first-candidate':0,
+          'inventory544-artifact-integration-first':101, 'inventory544-current-final':0,
+          'inventory544-msrv-first':0, 'inventory544-provenance-controls-first':0,
+          'inventory544-check-first':0, 'inventory544-clippy-first':0,
+          'inventory544-fmt-first':0, 'inventory544-doc-check-first':0,
+          'inventory544-contract-check-first':0}
+checks = {}
+for label, expected in labels.items():
+    folder = ROOT/'target/source-continuation-20261024'/label
+    intent = json.loads((folder/'intent.json').read_bytes())
+    result = json.loads((folder/'result.json').read_bytes())
+    assert result['exit'] == expected and result['outer_refusal'] is None
+    assert result['source_unchanged'] and result['head_unchanged'] and intent['source'] == result['source_after']
+    checks[label] = intent
+    tree(folder,'checks/'+label)
+for name in ('crates/xtask/tests/support/artifact_inventory_input.rs',
+             'crates/xtask/tests/support/artifact_inventory_phase_544.rs',
+             'crates/xtask/tests/artifact_inventory_phase_544_074.rs'):
+    raw = (ROOT/name).read_bytes()
+    assert sha(raw) == checks['inventory544-current-final']['source'][name]
+    add('source-final/'+name,raw)
+new_test = 'crates/xtask/tests/artifact_inventory_phase_544_074.rs'
+current = (ROOT/new_test).read_bytes()
+newline = b'\r\n' if b'\r\n' in current else b'\n'
+marker = newline+b'#[test]'+newline+b'fn successful_projection_never_caches_a_current_observation()'
+start = current.index(marker)
+end = current.index(newline+b'#[test]'+newline,start+len(marker))
+first_candidate = current[:start]+current[end:]
+assert sha(first_candidate) == checks['inventory544-first-candidate']['source'][new_test]
+add('source-first-candidate/artifact_inventory_phase_544_074.rs',first_candidate)
+first_red = b'''//! A new current source phase cannot weaken either frozen predecessor inventory.
+#[path = "support/artifact_inventory_input.rs"]
+mod inventory;
+
+#[test]
+fn current_phase_requires_all_544_sources_before_446_projection() {
+    assert_eq!(inventory::current().lines().count(), 544);
+    assert_eq!(inventory::entries().len(), 544);
+    let projected = inventory::project(inventory::current()).unwrap();
+    assert_eq!(projected.lines().count(), 446);
+}
+'''
+assert sha(first_red) == checks['inventory544-first-red']['source'][new_test]
+add('source-first-red/artifact_inventory_phase_544_074.rs', first_red)
+prior = ROOT/'docs/testing/performance/0.74/local-runs/inventory544-provenance-20261026'
+prior_raw = (prior/'index.json').read_bytes()
+assert sha(prior_raw) == 'cf14d72fa0637ef5aeab50ca96ff2cfa69a9e331da3e358c779ff0f830d807d7'
+row = json.loads(prior_raw)['members']['baseline-reader.rs']
+baseline = (prior/'objects'/row['sha256']).read_bytes()
+assert sha(baseline) == checks['inventory544-first-red']['source']['crates/xtask/tests/support/artifact_inventory_input.rs']
+add('source-first-red/artifact_inventory_input.rs',baseline)
+stale = ROOT/'target/reviewed-package-v4-closure-20261025/inventory544-stale-preflight'
+refusal = json.loads((stale/'preflight-refusal.json').read_bytes())
+assert refusal['package_dispatched'] is False and refusal['reason'] == 'source bytes/path drift'
+tree(stale,'stale-v4-review')
+for name in ('run-fresh-reader-20261024.py','run-source-step-20261024.py','retain-inventory544-step.py'):
+    add('coordinators/'+name,(ROOT/'target'/name).read_bytes())
+out = ROOT/'docs/testing/performance/0.74/local-runs/inventory544-step-20261026'
+out.mkdir(exist_ok=False)
+(out/'objects').mkdir()
+for digest,raw in objects.items():
+    with (out/'objects'/digest).open('xb') as stream:
+        stream.write(raw)
+index = dict(schema='hc074-inventory544-repair-evidence-v1', members=members,
+             expected_exit=labels, source_only=True, current_and_msrv_tests_each=14,
+             artifact_integration_passed=7,artifact_integration_failed=13,
+             full_package_rerun=False, product_or_qualification_admission=False,
+             provenance_index_sha256=sha(prior_raw))
+with (out/'index.json').open('x',encoding='utf-8',newline='\n') as stream:
+    json.dump(index,stream,indent=2,sort_keys=True)
+    stream.write('\n')
+print(json.dumps(dict(members=len(members),objects=len(objects),index_sha256=sha((out/'index.json').read_bytes())),indent=2))

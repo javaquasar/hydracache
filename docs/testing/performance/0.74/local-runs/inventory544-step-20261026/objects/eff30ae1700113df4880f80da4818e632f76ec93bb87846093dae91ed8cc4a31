@@ -1,0 +1,11 @@
+//! A new current source phase cannot weaken either frozen predecessor inventory.
+#[path = "support/artifact_inventory_input.rs"]
+mod inventory;
+
+#[test]
+fn current_phase_requires_all_544_sources_before_446_projection() {
+    assert_eq!(inventory::current().lines().count(), 544);
+    assert_eq!(inventory::entries().len(), 544);
+    let projected = inventory::project(inventory::current()).unwrap();
+    assert_eq!(projected.lines().count(), 446);
+}

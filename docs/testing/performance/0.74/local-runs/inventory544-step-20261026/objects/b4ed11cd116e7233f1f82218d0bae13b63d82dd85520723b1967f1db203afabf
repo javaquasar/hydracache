@@ -1,0 +1,11 @@
+test_exact_historical_data_replays_without_code_execution (__main__.Controls.test_exact_historical_data_replays_without_code_execution) ... ok
+test_index_cannot_self_refresh (__main__.Controls.test_index_cannot_self_refresh) ... ok
+test_ledger_pin_is_independent_of_rehashed_index (__main__.Controls.test_ledger_pin_is_independent_of_rehashed_index) ... ok
+test_pinned_source_cannot_be_replaced_by_a_worktree_claim (__main__.Controls.test_pinned_source_cannot_be_replaced_by_a_worktree_claim) ... ok
+test_raw_corruption_refuses (__main__.Controls.test_raw_corruption_refuses) ... ok
+test_stale_index_cannot_be_substituted (__main__.Controls.test_stale_index_cannot_be_substituted) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 3.237s
+
+OK
