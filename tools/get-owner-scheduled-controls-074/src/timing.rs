@@ -1,5 +1,6 @@
 //! Bounded unprofiled instrumentation. Never an admission/cohort coordinator.
 mod cpu;
+pub mod requested;
 
 use crate::{
     embedded::EmbeddedControl,
@@ -461,7 +462,7 @@ async fn run_inner(input: Input, material: Option<&MtlsFixture>) -> Report {
 #[cfg(test)]
 mod tests {
     use super::*;
-    fn input() -> Input {
+    pub(super) fn input() -> Input {
         Input {
             schema_version: 1,
             profile_id: PROFILE.to_owned(),

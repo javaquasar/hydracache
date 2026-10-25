@@ -20,6 +20,11 @@ required-features = ["allocation-diagnostics"]
 name = "timing-controls-074"
 path = "src/bin/timing_controls.rs"
 
+[[bin]]
+name = "full-d3-allocation-074"
+path = "src/bin/full_d3_allocation.rs"
+required-features = ["allocation-diagnostics"]
+
 [dependencies]
 async-trait = "0.1"
 axum = "0.8"
