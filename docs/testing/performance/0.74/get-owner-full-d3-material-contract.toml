@@ -1,0 +1,36 @@
+schema_version = 1
+contract_id = "get-owner-full-d3-fixed-fixture-material-074-v1"
+state = "preregistered-before-material-reader-implementation"
+baseline_source = "5fc6197bf753f454bc209752da02d65bfd16931c"
+purpose = "Close fresh-process mTLS fixture-material parity before sealing a numerical full-D3 cohort; not a new product hypothesis."
+product_changes_allowed = false
+dependency_changes_allowed = false
+numerical_execution_authorized_by_this_contract = false
+admission_allowed = false
+qualification_allowed = false
+original_b0_failure_preserved = true
+original_v1_inputs_bounds_deadlines_and_quality_checks_unchanged = true
+all_inherited_d3_thresholds_unchanged = true
+secret_material_in_receipts_or_logs_allowed = false
+maximum_material_bytes = 65536
+material_schema_version = 1
+unknown_material_fields_allowed = false
+exclusive_creation_required = true
+unix_group_or_other_permissions_allowed = false
+raw_material_sha256_required_before_parse_or_fixture = true
+server_and_client_certificate_key_consistency_required = true
+material_validation_starts_a_fixture = false
+legacy_ephemeral_api_preserved = true
+legacy_cli_preserved = true
+fixed_material_required_only_by_explicit_new_mode = true
+plaintext_fixed_material_mismatch_must_refuse_before_fixture = true
+standalone_material_receipt_certifies_cross_process_parity = false
+coordinator_must_compare_exact_material_and_dataset_receipts = true
+production_trust_or_enrollment_claim_allowed = false
+
+[tests]
+roundtrip = "two independent reads retain identical raw digest and public transport receipts"
+refusals = ["wrong digest", "oversized", "unknown schema or fields", "malformed certificate", "wrong private key", "existing output", "symlink or nonregular input", "Unix public permissions", "plaintext surface"]
+cli = "legacy argument grammar retained; new generate/validate modes start no fixture and never print private material"
+semantic = "fresh-process secure RESP2, RESP3 and HC2 controls consume the same pinned fixture; normal AUTH and byte oracles retained"
+checks = "standalone focused tests, formatting, all-target/all-feature check and strict Clippy"
