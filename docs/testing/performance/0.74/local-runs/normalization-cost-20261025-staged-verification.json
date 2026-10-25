@@ -1,0 +1,15 @@
+{
+  "schema": "hc074-normalization-staged-verification-v1",
+  "index_sha256": "047866b72279b254fde894edb801a75ddd2e39fb0bdb64b982711940be947c78",
+  "members": 160,
+  "objects": 111,
+  "attribution_samples": 144,
+  "candidate_samples": 72,
+  "raw_records_verified": true,
+  "prototype_withdrawn": true,
+  "protected_unchanged": true,
+  "no_measured_rerun": true,
+  "verifier": "coordinators/verify-normalization-staged-20261025.py",
+  "tool_output_chunk": "2b13c7",
+  "server_or_qualification_admission": false
+}

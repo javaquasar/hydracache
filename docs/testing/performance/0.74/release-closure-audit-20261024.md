@@ -372,3 +372,12 @@ compiler and three Python controls pass. The first mutation-oracle and strict-li
 failures survive. This is not full-normalizer CPU, package green or product gain.
 The old effect review refuses source drift, so no previous replay clearance is
 inherited. Every original execution/security/qualification barrier above remains.
+
+The [current source IO/gate study](normalization-cost-result-20261025.md) retains
+144 attribution calls, three first historical preparation spans and a separate
+72-sample uninstalled canonical-stream candidate. Expected construction is small
+in the prepared-cache scope; fresh parsing remains significant. Mixed local wall
+observations do not admit the prototype, whose active code is withdrawn with
+sources/results retained. Seven final active cases pass per Windows compiler,
+with strict checks. This is not every historical normalizer, package completion,
+allocation/RSS evidence, a changed production gate or a newly accepted C74 proposal.

@@ -1,0 +1,14 @@
+{
+  "blocks": 6,
+  "clocks": false,
+  "disk_floor_bytes": 4294967296,
+  "installed": false,
+  "iterations": 32,
+  "paths": 3,
+  "retry": false,
+  "samples": 72,
+  "server": false,
+  "services": false,
+  "timeout_seconds": 180,
+  "warmup": false
+}

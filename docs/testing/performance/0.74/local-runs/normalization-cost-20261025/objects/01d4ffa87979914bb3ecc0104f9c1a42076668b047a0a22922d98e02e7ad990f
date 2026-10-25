@@ -1,0 +1,51 @@
+"""Independent staged bytes and both raw first cohorts, without measured execution."""
+from pathlib import Path
+import hashlib
+import json
+import statistics
+import subprocess
+ROOT=Path(__file__).resolve().parent.parent
+BASE='docs/testing/performance/0.74/local-runs/normalization-cost-20261025'
+def staged(name):return subprocess.check_output(['git','show',':'+BASE+'/'+name],cwd=ROOT)
+raw=staged('index.json');index=json.loads(raw);objects={}
+assert index['schema']=='hc074-normalization-cost-v1'
+for entry in index['members'].values():
+ digest=entry['sha256'];assert len(digest)==64 and all(c in '0123456789abcdef' for c in digest)
+ if digest not in objects:objects[digest]=staged('objects/'+digest)
+ assert hashlib.sha256(objects[digest]).hexdigest()==digest and len(objects[digest])==entry['bytes']
+def member(name):return objects[index['members'][name]['sha256']]
+for label,marker,count in [('attribution','HC074_NORMALIZATION ',144),('candidate','HC074_CANONICAL ',72)]:
+ rows=[json.loads(line[len(marker):]) for line in member('capture/'+label+'/stdout.log').decode().splitlines() if line.startswith(marker)]
+ report=json.loads(member('capture/'+label+'/result.json'))
+ assert len(rows)==count and rows==report['samples']
+ groups={}
+ for row in rows:
+  assert row['wall_ns']>=0 and row['parent_cpu_ns']>=0
+  if label=='attribution':
+   key=row['path']+'/'+row['operation'];value=row['wall_ns']
+   assert row['iterations']==1
+  else:
+   key=row['path']+'/'+('candidate' if row['candidate'] else 'baseline');value=row['wall_ns']/32
+   assert row['accepted']==row['iterations']==32
+  groups.setdefault(key,[]).append(value)
+ for key,values in groups.items():
+  expected=report['summary'][key]['wall_ns']['median'] if label=='attribution' else report['per_call'][key]['wall_ns']['median']
+  assert statistics.median(values)==expected
+normal=json.loads(member('capture/attribution/preflight.json'))['compiled_source']
+assert hashlib.sha256(member('measured-attribution-source/probe.rs')).hexdigest()==normal['tools/normalization-attribution-074/probe.rs']
+candidate=json.loads(member('capture/candidate/preflight.json'))['compiled_source']
+for name,entry in index['members'].items():
+ if name.startswith('prototype-source/'):
+  assert entry['sha256']==candidate[name[len('prototype-source/'):]]
+for name,digest in index['facts']['protected_sha256'].items():
+ assert hashlib.sha256(member('protected/'+name)).hexdigest()==digest
+ assert hashlib.sha256((ROOT/name).read_bytes()).hexdigest()==digest
+for phase in index['facts']['phases']:
+ if phase.get('cargo_started') is False:continue
+ result=json.loads(member('checks/'+phase['phase']+'/result.json'))
+ assert result['exit']==phase['exit'] and result['source_unchanged'] and result['head_unchanged']
+assert index['facts']['prototype_withdrawn'] and not index['facts']['source_gate_changed']
+assert not index['facts']['package_replayed']
+print(json.dumps(dict(index_sha256=hashlib.sha256(raw).hexdigest(),members=len(index['members']),objects=len(objects),
+ attribution_samples=144,candidate_samples=72,raw_records_verified=True,prototype_withdrawn=True,
+ protected_unchanged=True,no_measured_rerun=True)))

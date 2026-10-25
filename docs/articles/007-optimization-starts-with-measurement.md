@@ -19536,3 +19536,27 @@ Existing hook-damage and 432-source preservation checks pass on both compilers.
 The old package effect receipt now correctly refuses changed source, rather than
 granting a new build its predecessor's clearance. A useful local allocation
 reduction can coexist with a red package gate and an unadmitted product release.
+
+### Expected construction is not the dominant prepared gate cost
+
+The [next source IO attribution](../testing/performance/0.74/normalization-cost-result-20261025.md)
+calls the real IO, view and admission functions on three committed inputs. The
+first historical preparation spans are retained separately at roughly 46–49 ms.
+With that explicitly prepared historical cache, median IO is 2.321–2.639 ms while
+expected construction is 0.014–0.036 ms. Fresh syntax controls take 1.319–1.457 ms.
+Independent component intervals are not additive slices of those IO measurements,
+but the observations do not support expected construction as the main owner in
+this scope. Current files are still read and validated afresh.
+
+A separate prototype preserves all three parse checks and their order, including
+invalid-expected panic and actual-token default-empty behavior. It replaces only
+the final actual canonical String with a full streaming byte comparison. Source
+appearance suggests less temporary storage, but the first unprofiled-allocator
+cohort gives mixed wall observations: one cell improves, one is nearly flat and
+one worsens slightly. No allocation or independent CPU/tail proof exists.
+
+The prototype is therefore not installed. Its active hookup and candidate tests
+are withdrawn after twelve semantic cases pass on both compilers; code and first
+measurements remain recoverable from Git and evidence. The original gate never
+changes. Rejecting integration despite a plausible local mechanism prevents the
+profiling work from silently changing source admission or the release's risk.

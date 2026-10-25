@@ -1,0 +1,160 @@
+//! Opt-in diagnostic of actual test-source IO/gates and separate parser costs.
+pub const PATHS: [&str; 3] = [
+    "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+    "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+    "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+];
+pub const OPERATIONS: [&str; 8] = [
+    "io-e2e",
+    "view",
+    "expected",
+    "accepts",
+    "storage",
+    "syntax",
+    "expected-tokens",
+    "actual-tokens",
+];
+pub fn order(block: usize) -> Vec<&'static str> {
+    let mut operations = OPERATIONS.to_vec();
+    if block % 2 != 0 {
+        operations.reverse();
+    }
+    operations
+}
+#[cfg(windows)]
+pub fn run(input: &std::path::Path) {
+    use serde_json::{json, Value};
+    use sha2::{Digest, Sha256};
+    use std::hint::black_box;
+    use std::time::Instant;
+    use windows_sys::Win32::Foundation::FILETIME;
+    use windows_sys::Win32::System::Threading::{GetCurrentProcess, GetProcessTimes};
+    fn cpu() -> u64 {
+        let [mut created, mut exited, mut kernel, mut user] = [FILETIME {
+            dwLowDateTime: 0,
+            dwHighDateTime: 0,
+        }; 4];
+        // SAFETY: current process pseudo-handle, four distinct valid output pointers.
+        assert_ne!(
+            unsafe {
+                GetProcessTimes(
+                    GetCurrentProcess(),
+                    &mut created,
+                    &mut exited,
+                    &mut kernel,
+                    &mut user,
+                )
+            },
+            0
+        );
+        let ticks = |v: FILETIME| (u64::from(v.dwHighDateTime) << 32) | u64::from(v.dwLowDateTime);
+        (ticks(kernel) + ticks(user)) * 100
+    }
+    fn measured(f: impl FnOnce()) -> (u128, u64) {
+        let before = cpu();
+        let start = Instant::now();
+        f();
+        (start.elapsed().as_nanos(), cpu() - before)
+    }
+    let request: Value = serde_json::from_slice(&std::fs::read(input).unwrap()).unwrap();
+    assert_eq!(request["production_authority"], false);
+    assert_eq!(request["paths"].as_array().unwrap().len(), PATHS.len());
+    let mut cases = vec![];
+    for (index, path) in PATHS.iter().enumerate() {
+        assert_eq!(request["paths"][index]["path"], *path);
+        let raw = std::fs::read(crate::runtime::root().join(path)).unwrap();
+        let digest: String = Sha256::digest(&raw)
+            .iter()
+            .map(|v| format!("{v:02x}"))
+            .collect();
+        assert_eq!(request["paths"][index]["sha256"], digest);
+        let actual = String::from_utf8(raw).unwrap().replace("\r\n", "\n");
+        // Explicit input preparation, not a warmup call to IO/view/accepts.
+        // Historical-cache misses and expected construction are retained here.
+        let mut expected = None;
+        let (wall, parent_cpu) = measured(|| expected = crate::runtime::expected(path));
+        let expected = expected.unwrap();
+        println!(
+            "\nHC074_NORMALIZATION_PREP {}",
+            json!({"path":path,"wall_ns":wall,"parent_cpu_ns":parent_cpu,
+            "historical_cache_prepared":true,"warmup":false})
+        );
+        let previous = crate::runtime::frozen(crate::runtime::BASE, path);
+        cases.push((path, actual, expected, previous));
+    }
+    for block in 0..6 {
+        for (path, actual, expected, previous) in &cases {
+            for operation in order(block) {
+                let (wall, parent_cpu) = measured(|| match operation {
+                    "io-e2e" => {
+                        let result =
+                            crate::runtime_io::read_to_string(crate::runtime::root().join(path))
+                                .unwrap();
+                        assert_eq!(&result, previous);
+                        black_box(result);
+                    }
+                    "view" => {
+                        let result = crate::runtime::view(path, actual.clone());
+                        assert_eq!(&result, previous);
+                        black_box(result);
+                    }
+                    "expected" => {
+                        assert_eq!(&crate::runtime::expected(path).unwrap(), expected);
+                    }
+                    "accepts" => {
+                        assert!(crate::runtime::accepts(path, black_box(actual)));
+                    }
+                    "storage" => {
+                        assert!(crate::storage_contract::accepts(
+                            black_box(expected),
+                            black_box(actual)
+                        ));
+                    }
+                    "syntax" => {
+                        black_box(syn::parse_file(black_box(actual)).unwrap());
+                    }
+                    "expected-tokens" => {
+                        black_box(
+                            black_box(expected)
+                                .parse::<proc_macro2::TokenStream>()
+                                .unwrap()
+                                .to_string(),
+                        );
+                    }
+                    "actual-tokens" => {
+                        black_box(
+                            black_box(actual)
+                                .parse::<proc_macro2::TokenStream>()
+                                .unwrap()
+                                .to_string(),
+                        );
+                    }
+                    _ => panic!("unknown fixed operation"),
+                });
+                println!(
+                    "HC074_NORMALIZATION {}",
+                    json!({"block":block,"path":path,"operation":operation,
+                    "wall_ns":wall,"parent_cpu_ns":parent_cpu,"iterations":1,
+                    "actual_bytes":actual.len(),"expected_bytes":expected.len()})
+                );
+            }
+        }
+        let (wall, parent_cpu) = measured(|| {
+            black_box(block);
+        });
+        println!(
+            "HC074_NORMALIZATION_OBSERVER {}",
+            json!({"block":block,"wall_ns":wall,"parent_cpu_ns":parent_cpu})
+        );
+    }
+    println!(
+        "HC074_NORMALIZATION_DONE {}",
+        json!({"blocks":6,"samples":144,"observer_samples":6,
+        "preparation_samples":3,"historical_cache_prepared":true,"warmup":false,
+        "component_intervals_are_disjoint":false,"product":false,"package_replay":false})
+    );
+}
+#[cfg(not(windows))]
+pub fn run(_: &std::path::Path) {
+    panic!("fixed diagnostic requires Windows");
+}

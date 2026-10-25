@@ -1,0 +1,151 @@
+
+running 1 test
+test normalization_candidate_child ... 
+HC074_CANONICAL {"accepted":32,"block":0,"candidate":false,"iterations":32,"parent_cpu_ns":78125000,"path":"crates/xtask/tests/support/performance_contract_074_fixed_slice.rs","slot":0,"wall_ns":73398600}
+
+HC074_CANONICAL {"accepted":32,"block":0,"candidate":true,"iterations":32,"parent_cpu_ns":62500000,"path":"crates/xtask/tests/support/performance_contract_074_fixed_slice.rs","slot":1,"wall_ns":71810700}
+
+HC074_CANONICAL {"accepted":32,"block":0,"candidate":true,"iterations":32,"parent_cpu_ns":78125000,"path":"crates/xtask/tests/support/performance_contract_074_fixed_slice.rs","slot":2,"wall_ns":70147600}
+
+HC074_CANONICAL {"accepted":32,"block":0,"candidate":false,"iterations":32,"parent_cpu_ns":78125000,"path":"crates/xtask/tests/support/performance_contract_074_fixed_slice.rs","slot":3,"wall_ns":73675400}
+
+HC074_CANONICAL {"accepted":32,"block":0,"candidate":false,"iterations":32,"parent_cpu_ns":62500000,"path":"crates/xtask/tests/support/performance_contract_074_closing_validation.rs","slot":0,"wall_ns":67801400}
+
+HC074_CANONICAL {"accepted":32,"block":0,"candidate":true,"iterations":32,"parent_cpu_ns":62500000,"path":"crates/xtask/tests/support/performance_contract_074_closing_validation.rs","slot":1,"wall_ns":67738300}
+
+HC074_CANONICAL {"accepted":32,"block":0,"candidate":true,"iterations":32,"parent_cpu_ns":78125000,"path":"crates/xtask/tests/support/performance_contract_074_closing_validation.rs","slot":2,"wall_ns":68485700}
+
+HC074_CANONICAL {"accepted":32,"block":0,"candidate":false,"iterations":32,"parent_cpu_ns":62500000,"path":"crates/xtask/tests/support/performance_contract_074_closing_validation.rs","slot":3,"wall_ns":69585900}
+
+HC074_CANONICAL {"accepted":32,"block":0,"candidate":false,"iterations":32,"parent_cpu_ns":78125000,"path":"crates/xtask/tests/support/performance_contract_074_held_placement.rs","slot":0,"wall_ns":72450100}
+
+HC074_CANONICAL {"accepted":32,"block":0,"candidate":true,"iterations":32,"parent_cpu_ns":46875000,"path":"crates/xtask/tests/support/performance_contract_074_held_placement.rs","slot":1,"wall_ns":71608300}
+
+HC074_CANONICAL {"accepted":32,"block":0,"candidate":true,"iterations":32,"parent_cpu_ns":78125000,"path":"crates/xtask/tests/support/performance_contract_074_held_placement.rs","slot":2,"wall_ns":71707700}
+
+HC074_CANONICAL {"accepted":32,"block":0,"candidate":false,"iterations":32,"parent_cpu_ns":78125000,"path":"crates/xtask/tests/support/performance_contract_074_held_placement.rs","slot":3,"wall_ns":72795900}
+
+HC074_CANONICAL {"accepted":32,"block":1,"candidate":true,"iterations":32,"parent_cpu_ns":62500000,"path":"crates/xtask/tests/support/performance_contract_074_fixed_slice.rs","slot":0,"wall_ns":73681400}
+
+HC074_CANONICAL {"accepted":32,"block":1,"candidate":false,"iterations":32,"parent_cpu_ns":78125000,"path":"crates/xtask/tests/support/performance_contract_074_fixed_slice.rs","slot":1,"wall_ns":72273400}
+
+HC074_CANONICAL {"accepted":32,"block":1,"candidate":false,"iterations":32,"parent_cpu_ns":78125000,"path":"crates/xtask/tests/support/performance_contract_074_fixed_slice.rs","slot":2,"wall_ns":72415400}
+
+HC074_CANONICAL {"accepted":32,"block":1,"candidate":true,"iterations":32,"parent_cpu_ns":62500000,"path":"crates/xtask/tests/support/performance_contract_074_fixed_slice.rs","slot":3,"wall_ns":72671700}
+
+HC074_CANONICAL {"accepted":32,"block":1,"candidate":true,"iterations":32,"parent_cpu_ns":62500000,"path":"crates/xtask/tests/support/performance_contract_074_closing_validation.rs","slot":0,"wall_ns":64710700}
+
+HC074_CANONICAL {"accepted":32,"block":1,"candidate":false,"iterations":32,"parent_cpu_ns":78125000,"path":"crates/xtask/tests/support/performance_contract_074_closing_validation.rs","slot":1,"wall_ns":65908100}
+
+HC074_CANONICAL {"accepted":32,"block":1,"candidate":false,"iterations":32,"parent_cpu_ns":62500000,"path":"crates/xtask/tests/support/performance_contract_074_closing_validation.rs","slot":2,"wall_ns":67051100}
+
+HC074_CANONICAL {"accepted":32,"block":1,"candidate":true,"iterations":32,"parent_cpu_ns":62500000,"path":"crates/xtask/tests/support/performance_contract_074_closing_validation.rs","slot":3,"wall_ns":65233800}
+
+HC074_CANONICAL {"accepted":32,"block":1,"candidate":true,"iterations":32,"parent_cpu_ns":62500000,"path":"crates/xtask/tests/support/performance_contract_074_held_placement.rs","slot":0,"wall_ns":75984200}
+
+HC074_CANONICAL {"accepted":32,"block":1,"candidate":false,"iterations":32,"parent_cpu_ns":62500000,"path":"crates/xtask/tests/support/performance_contract_074_held_placement.rs","slot":1,"wall_ns":69399900}
+
+HC074_CANONICAL {"accepted":32,"block":1,"candidate":false,"iterations":32,"parent_cpu_ns":78125000,"path":"crates/xtask/tests/support/performance_contract_074_held_placement.rs","slot":2,"wall_ns":70308900}
+
+HC074_CANONICAL {"accepted":32,"block":1,"candidate":true,"iterations":32,"parent_cpu_ns":62500000,"path":"crates/xtask/tests/support/performance_contract_074_held_placement.rs","slot":3,"wall_ns":69478600}
+
+HC074_CANONICAL {"accepted":32,"block":2,"candidate":false,"iterations":32,"parent_cpu_ns":62500000,"path":"crates/xtask/tests/support/performance_contract_074_fixed_slice.rs","slot":0,"wall_ns":71133700}
+
+HC074_CANONICAL {"accepted":32,"block":2,"candidate":true,"iterations":32,"parent_cpu_ns":78125000,"path":"crates/xtask/tests/support/performance_contract_074_fixed_slice.rs","slot":1,"wall_ns":71550400}
+
+HC074_CANONICAL {"accepted":32,"block":2,"candidate":true,"iterations":32,"parent_cpu_ns":62500000,"path":"crates/xtask/tests/support/performance_contract_074_fixed_slice.rs","slot":2,"wall_ns":71310700}
+
+HC074_CANONICAL {"accepted":32,"block":2,"candidate":false,"iterations":32,"parent_cpu_ns":78125000,"path":"crates/xtask/tests/support/performance_contract_074_fixed_slice.rs","slot":3,"wall_ns":71942900}
+
+HC074_CANONICAL {"accepted":32,"block":2,"candidate":false,"iterations":32,"parent_cpu_ns":62500000,"path":"crates/xtask/tests/support/performance_contract_074_closing_validation.rs","slot":0,"wall_ns":65233100}
+
+HC074_CANONICAL {"accepted":32,"block":2,"candidate":true,"iterations":32,"parent_cpu_ns":62500000,"path":"crates/xtask/tests/support/performance_contract_074_closing_validation.rs","slot":1,"wall_ns":65959000}
+
+HC074_CANONICAL {"accepted":32,"block":2,"candidate":true,"iterations":32,"parent_cpu_ns":62500000,"path":"crates/xtask/tests/support/performance_contract_074_closing_validation.rs","slot":2,"wall_ns":64603200}
+
+HC074_CANONICAL {"accepted":32,"block":2,"candidate":false,"iterations":32,"parent_cpu_ns":46875000,"path":"crates/xtask/tests/support/performance_contract_074_closing_validation.rs","slot":3,"wall_ns":64748100}
+
+HC074_CANONICAL {"accepted":32,"block":2,"candidate":false,"iterations":32,"parent_cpu_ns":78125000,"path":"crates/xtask/tests/support/performance_contract_074_held_placement.rs","slot":0,"wall_ns":69898800}
+
+HC074_CANONICAL {"accepted":32,"block":2,"candidate":true,"iterations":32,"parent_cpu_ns":62500000,"path":"crates/xtask/tests/support/performance_contract_074_held_placement.rs","slot":1,"wall_ns":70579800}
+
+HC074_CANONICAL {"accepted":32,"block":2,"candidate":true,"iterations":32,"parent_cpu_ns":78125000,"path":"crates/xtask/tests/support/performance_contract_074_held_placement.rs","slot":2,"wall_ns":72260700}
+
+HC074_CANONICAL {"accepted":32,"block":2,"candidate":false,"iterations":32,"parent_cpu_ns":78125000,"path":"crates/xtask/tests/support/performance_contract_074_held_placement.rs","slot":3,"wall_ns":70098300}
+
+HC074_CANONICAL {"accepted":32,"block":3,"candidate":true,"iterations":32,"parent_cpu_ns":62500000,"path":"crates/xtask/tests/support/performance_contract_074_fixed_slice.rs","slot":0,"wall_ns":69821000}
+
+HC074_CANONICAL {"accepted":32,"block":3,"candidate":false,"iterations":32,"parent_cpu_ns":78125000,"path":"crates/xtask/tests/support/performance_contract_074_fixed_slice.rs","slot":1,"wall_ns":72074200}
+
+HC074_CANONICAL {"accepted":32,"block":3,"candidate":false,"iterations":32,"parent_cpu_ns":62500000,"path":"crates/xtask/tests/support/performance_contract_074_fixed_slice.rs","slot":2,"wall_ns":70738200}
+
+HC074_CANONICAL {"accepted":32,"block":3,"candidate":true,"iterations":32,"parent_cpu_ns":78125000,"path":"crates/xtask/tests/support/performance_contract_074_fixed_slice.rs","slot":3,"wall_ns":70274400}
+
+HC074_CANONICAL {"accepted":32,"block":3,"candidate":true,"iterations":32,"parent_cpu_ns":78125000,"path":"crates/xtask/tests/support/performance_contract_074_closing_validation.rs","slot":0,"wall_ns":91374700}
+
+HC074_CANONICAL {"accepted":32,"block":3,"candidate":false,"iterations":32,"parent_cpu_ns":140625000,"path":"crates/xtask/tests/support/performance_contract_074_closing_validation.rs","slot":1,"wall_ns":126818100}
+
+HC074_CANONICAL {"accepted":32,"block":3,"candidate":false,"iterations":32,"parent_cpu_ns":125000000,"path":"crates/xtask/tests/support/performance_contract_074_closing_validation.rs","slot":2,"wall_ns":126138800}
+
+HC074_CANONICAL {"accepted":32,"block":3,"candidate":true,"iterations":32,"parent_cpu_ns":125000000,"path":"crates/xtask/tests/support/performance_contract_074_closing_validation.rs","slot":3,"wall_ns":125255800}
+
+HC074_CANONICAL {"accepted":32,"block":3,"candidate":true,"iterations":32,"parent_cpu_ns":140625000,"path":"crates/xtask/tests/support/performance_contract_074_held_placement.rs","slot":0,"wall_ns":137570300}
+
+HC074_CANONICAL {"accepted":32,"block":3,"candidate":false,"iterations":32,"parent_cpu_ns":140625000,"path":"crates/xtask/tests/support/performance_contract_074_held_placement.rs","slot":1,"wall_ns":142497400}
+
+HC074_CANONICAL {"accepted":32,"block":3,"candidate":false,"iterations":32,"parent_cpu_ns":140625000,"path":"crates/xtask/tests/support/performance_contract_074_held_placement.rs","slot":2,"wall_ns":140031600}
+
+HC074_CANONICAL {"accepted":32,"block":3,"candidate":true,"iterations":32,"parent_cpu_ns":125000000,"path":"crates/xtask/tests/support/performance_contract_074_held_placement.rs","slot":3,"wall_ns":137660800}
+
+HC074_CANONICAL {"accepted":32,"block":4,"candidate":false,"iterations":32,"parent_cpu_ns":140625000,"path":"crates/xtask/tests/support/performance_contract_074_fixed_slice.rs","slot":0,"wall_ns":141049400}
+
+HC074_CANONICAL {"accepted":32,"block":4,"candidate":true,"iterations":32,"parent_cpu_ns":125000000,"path":"crates/xtask/tests/support/performance_contract_074_fixed_slice.rs","slot":1,"wall_ns":139328300}
+
+HC074_CANONICAL {"accepted":32,"block":4,"candidate":true,"iterations":32,"parent_cpu_ns":140625000,"path":"crates/xtask/tests/support/performance_contract_074_fixed_slice.rs","slot":2,"wall_ns":138195700}
+
+HC074_CANONICAL {"accepted":32,"block":4,"candidate":false,"iterations":32,"parent_cpu_ns":125000000,"path":"crates/xtask/tests/support/performance_contract_074_fixed_slice.rs","slot":3,"wall_ns":139340000}
+
+HC074_CANONICAL {"accepted":32,"block":4,"candidate":false,"iterations":32,"parent_cpu_ns":125000000,"path":"crates/xtask/tests/support/performance_contract_074_closing_validation.rs","slot":0,"wall_ns":120050300}
+
+HC074_CANONICAL {"accepted":32,"block":4,"candidate":true,"iterations":32,"parent_cpu_ns":109375000,"path":"crates/xtask/tests/support/performance_contract_074_closing_validation.rs","slot":1,"wall_ns":120847400}
+
+HC074_CANONICAL {"accepted":32,"block":4,"candidate":true,"iterations":32,"parent_cpu_ns":125000000,"path":"crates/xtask/tests/support/performance_contract_074_closing_validation.rs","slot":2,"wall_ns":127274500}
+
+HC074_CANONICAL {"accepted":32,"block":4,"candidate":false,"iterations":32,"parent_cpu_ns":125000000,"path":"crates/xtask/tests/support/performance_contract_074_closing_validation.rs","slot":3,"wall_ns":125451300}
+
+HC074_CANONICAL {"accepted":32,"block":4,"candidate":false,"iterations":32,"parent_cpu_ns":125000000,"path":"crates/xtask/tests/support/performance_contract_074_held_placement.rs","slot":0,"wall_ns":132021800}
+
+HC074_CANONICAL {"accepted":32,"block":4,"candidate":true,"iterations":32,"parent_cpu_ns":140625000,"path":"crates/xtask/tests/support/performance_contract_074_held_placement.rs","slot":1,"wall_ns":131979600}
+
+HC074_CANONICAL {"accepted":32,"block":4,"candidate":true,"iterations":32,"parent_cpu_ns":125000000,"path":"crates/xtask/tests/support/performance_contract_074_held_placement.rs","slot":2,"wall_ns":131785500}
+
+HC074_CANONICAL {"accepted":32,"block":4,"candidate":false,"iterations":32,"parent_cpu_ns":140625000,"path":"crates/xtask/tests/support/performance_contract_074_held_placement.rs","slot":3,"wall_ns":137428900}
+
+HC074_CANONICAL {"accepted":32,"block":5,"candidate":true,"iterations":32,"parent_cpu_ns":125000000,"path":"crates/xtask/tests/support/performance_contract_074_fixed_slice.rs","slot":0,"wall_ns":132062800}
+
+HC074_CANONICAL {"accepted":32,"block":5,"candidate":false,"iterations":32,"parent_cpu_ns":140625000,"path":"crates/xtask/tests/support/performance_contract_074_fixed_slice.rs","slot":1,"wall_ns":139772500}
+
+HC074_CANONICAL {"accepted":32,"block":5,"candidate":false,"iterations":32,"parent_cpu_ns":140625000,"path":"crates/xtask/tests/support/performance_contract_074_fixed_slice.rs","slot":2,"wall_ns":133139300}
+
+HC074_CANONICAL {"accepted":32,"block":5,"candidate":true,"iterations":32,"parent_cpu_ns":125000000,"path":"crates/xtask/tests/support/performance_contract_074_fixed_slice.rs","slot":3,"wall_ns":139165700}
+
+HC074_CANONICAL {"accepted":32,"block":5,"candidate":true,"iterations":32,"parent_cpu_ns":125000000,"path":"crates/xtask/tests/support/performance_contract_074_closing_validation.rs","slot":0,"wall_ns":121831700}
+
+HC074_CANONICAL {"accepted":32,"block":5,"candidate":false,"iterations":32,"parent_cpu_ns":109375000,"path":"crates/xtask/tests/support/performance_contract_074_closing_validation.rs","slot":1,"wall_ns":120358600}
+
+HC074_CANONICAL {"accepted":32,"block":5,"candidate":false,"iterations":32,"parent_cpu_ns":125000000,"path":"crates/xtask/tests/support/performance_contract_074_closing_validation.rs","slot":2,"wall_ns":125665300}
+
+HC074_CANONICAL {"accepted":32,"block":5,"candidate":true,"iterations":32,"parent_cpu_ns":125000000,"path":"crates/xtask/tests/support/performance_contract_074_closing_validation.rs","slot":3,"wall_ns":118362200}
+
+HC074_CANONICAL {"accepted":32,"block":5,"candidate":true,"iterations":32,"parent_cpu_ns":125000000,"path":"crates/xtask/tests/support/performance_contract_074_held_placement.rs","slot":0,"wall_ns":131708400}
+
+HC074_CANONICAL {"accepted":32,"block":5,"candidate":false,"iterations":32,"parent_cpu_ns":140625000,"path":"crates/xtask/tests/support/performance_contract_074_held_placement.rs","slot":1,"wall_ns":132616800}
+
+HC074_CANONICAL {"accepted":32,"block":5,"candidate":false,"iterations":32,"parent_cpu_ns":140625000,"path":"crates/xtask/tests/support/performance_contract_074_held_placement.rs","slot":2,"wall_ns":140917600}
+
+HC074_CANONICAL {"accepted":32,"block":5,"candidate":true,"iterations":32,"parent_cpu_ns":140625000,"path":"crates/xtask/tests/support/performance_contract_074_held_placement.rs","slot":3,"wall_ns":138916300}
+HC074_CANONICAL_DONE {"allocator_interposition":false,"blocks":6,"installed":false,"package_replay":false,"product":false,"samples":72,"warmup":false}
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 11 filtered out; finished in 7.15s
+

@@ -7009,3 +7009,14 @@ Eight focused xtask and four standalone controls pass per Windows compiler, plus
 three Python controls and strict local checks. First mutation-oracle/lint failures
 remain. The old effect receipt correctly refuses source drift; package timeout,
 production gates and qualification manifest remain unchanged.
+
+The [current source IO/gate attribution](normalization-cost-result-20261025.md)
+retains 144 calls and three first historical preparation spans. Prepared-cache IO
+medians are 2.321–2.639 ms, expected construction 0.014–0.036 ms, and independent
+syntax controls 1.319–1.457 ms. These intervals are not additive full-call phases.
+A separately preregistered 72-sample canonical-stream prototype keeps parse order
+and semantics but has mixed local wall observations; no allocation or independent
+CPU/tail evidence admits it. Only that active prototype is withdrawn, with exact
+source and first results retained. The installed source gate and prior fixed-slice
+optimization remain. Seven final active cases pass per Windows compiler, with
+strict checks; this does not close the package or original production barriers.

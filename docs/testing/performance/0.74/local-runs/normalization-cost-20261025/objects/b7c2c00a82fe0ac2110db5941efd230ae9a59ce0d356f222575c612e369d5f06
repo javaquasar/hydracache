@@ -1,0 +1,12 @@
+{
+  "schema": "hc074-withdrawal-preflight-observation-v1",
+  "origin": "exec_command tool output, chunk 84df10",
+  "raw_stderr_file_captured": false,
+  "phases": ["normalization-withdraw-20261025-current", "normalization-withdraw-20261025-msrv", "normalization-withdraw-20261025-check", "normalization-withdraw-20261025-clippy"],
+  "result": "All four coordinators exit before intent or Cargo launch: FileNotFoundError for the intentionally deleted but still indexed candidate_capture.py",
+  "cause": "Snapshot reads cached Git inventory; stage exact removals before checks so the inventory describes the intended source tree",
+  "empty_phase_directories_retained": true,
+  "cargo_or_measured_child_started": false,
+  "old_results_reclassified": false,
+  "measured_workload_repeated": false
+}

@@ -1,0 +1,816 @@
+{
+  "accepted_for_integration": false,
+  "allocation_measured": false,
+  "independent_process_replicates": false,
+  "installed": false,
+  "package_replayed": false,
+  "per_call": {
+    "crates/xtask/tests/support/performance_contract_074_closing_validation.rs/baseline": {
+      "parent_cpu_ns": {
+        "mean": 2929687.5,
+        "median": 2929687.5,
+        "samples": 12,
+        "total": 1125000000
+      },
+      "wall_ns": {
+        "mean": 2981276.3020833335,
+        "median": 2963065.625,
+        "samples": 12,
+        "total": 1144810100
+      }
+    },
+    "crates/xtask/tests/support/performance_contract_074_closing_validation.rs/candidate": {
+      "parent_cpu_ns": {
+        "mean": 2807617.1875,
+        "median": 2441406.25,
+        "samples": 12,
+        "total": 1078125000
+      },
+      "wall_ns": {
+        "mean": 2868950.5208333335,
+        "median": 2497818.75,
+        "samples": 12,
+        "total": 1101677000
+      }
+    },
+    "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs/baseline": {
+      "parent_cpu_ns": {
+        "mean": 2970377.6041666665,
+        "median": 2441406.25,
+        "samples": 12,
+        "total": 1140625000
+      },
+      "wall_ns": {
+        "mean": 2945190.1041666665,
+        "median": 2278343.75,
+        "samples": 12,
+        "total": 1130953000
+      }
+    },
+    "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs/candidate": {
+      "parent_cpu_ns": {
+        "mean": 2766927.0833333335,
+        "median": 2441406.25,
+        "samples": 12,
+        "total": 1062500000
+      },
+      "wall_ns": {
+        "mean": 2916719.7916666665,
+        "median": 2257537.5,
+        "samples": 12,
+        "total": 1120020400
+      }
+    },
+    "crates/xtask/tests/support/performance_contract_074_held_placement.rs/baseline": {
+      "parent_cpu_ns": {
+        "mean": 3336588.5416666665,
+        "median": 3173828.125,
+        "samples": 12,
+        "total": 1281250000
+      },
+      "wall_ns": {
+        "mean": 3256421.875,
+        "median": 3200276.5625,
+        "samples": 12,
+        "total": 1250466000
+      }
+    },
+    "crates/xtask/tests/support/performance_contract_074_held_placement.rs/candidate": {
+      "parent_cpu_ns": {
+        "mean": 3092447.9166666665,
+        "median": 3173828.125,
+        "samples": 12,
+        "total": 1187500000
+      },
+      "wall_ns": {
+        "mean": 3232396.3541666665,
+        "median": 3245196.875,
+        "samples": 12,
+        "total": 1241240200
+      }
+    }
+  },
+  "product_candidate": false,
+  "samples": [
+    {
+      "accepted": 32,
+      "block": 0,
+      "candidate": false,
+      "iterations": 32,
+      "parent_cpu_ns": 78125000,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "slot": 0,
+      "wall_ns": 73398600
+    },
+    {
+      "accepted": 32,
+      "block": 0,
+      "candidate": true,
+      "iterations": 32,
+      "parent_cpu_ns": 62500000,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "slot": 1,
+      "wall_ns": 71810700
+    },
+    {
+      "accepted": 32,
+      "block": 0,
+      "candidate": true,
+      "iterations": 32,
+      "parent_cpu_ns": 78125000,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "slot": 2,
+      "wall_ns": 70147600
+    },
+    {
+      "accepted": 32,
+      "block": 0,
+      "candidate": false,
+      "iterations": 32,
+      "parent_cpu_ns": 78125000,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "slot": 3,
+      "wall_ns": 73675400
+    },
+    {
+      "accepted": 32,
+      "block": 0,
+      "candidate": false,
+      "iterations": 32,
+      "parent_cpu_ns": 62500000,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "slot": 0,
+      "wall_ns": 67801400
+    },
+    {
+      "accepted": 32,
+      "block": 0,
+      "candidate": true,
+      "iterations": 32,
+      "parent_cpu_ns": 62500000,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "slot": 1,
+      "wall_ns": 67738300
+    },
+    {
+      "accepted": 32,
+      "block": 0,
+      "candidate": true,
+      "iterations": 32,
+      "parent_cpu_ns": 78125000,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "slot": 2,
+      "wall_ns": 68485700
+    },
+    {
+      "accepted": 32,
+      "block": 0,
+      "candidate": false,
+      "iterations": 32,
+      "parent_cpu_ns": 62500000,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "slot": 3,
+      "wall_ns": 69585900
+    },
+    {
+      "accepted": 32,
+      "block": 0,
+      "candidate": false,
+      "iterations": 32,
+      "parent_cpu_ns": 78125000,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "slot": 0,
+      "wall_ns": 72450100
+    },
+    {
+      "accepted": 32,
+      "block": 0,
+      "candidate": true,
+      "iterations": 32,
+      "parent_cpu_ns": 46875000,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "slot": 1,
+      "wall_ns": 71608300
+    },
+    {
+      "accepted": 32,
+      "block": 0,
+      "candidate": true,
+      "iterations": 32,
+      "parent_cpu_ns": 78125000,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "slot": 2,
+      "wall_ns": 71707700
+    },
+    {
+      "accepted": 32,
+      "block": 0,
+      "candidate": false,
+      "iterations": 32,
+      "parent_cpu_ns": 78125000,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "slot": 3,
+      "wall_ns": 72795900
+    },
+    {
+      "accepted": 32,
+      "block": 1,
+      "candidate": true,
+      "iterations": 32,
+      "parent_cpu_ns": 62500000,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "slot": 0,
+      "wall_ns": 73681400
+    },
+    {
+      "accepted": 32,
+      "block": 1,
+      "candidate": false,
+      "iterations": 32,
+      "parent_cpu_ns": 78125000,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "slot": 1,
+      "wall_ns": 72273400
+    },
+    {
+      "accepted": 32,
+      "block": 1,
+      "candidate": false,
+      "iterations": 32,
+      "parent_cpu_ns": 78125000,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "slot": 2,
+      "wall_ns": 72415400
+    },
+    {
+      "accepted": 32,
+      "block": 1,
+      "candidate": true,
+      "iterations": 32,
+      "parent_cpu_ns": 62500000,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "slot": 3,
+      "wall_ns": 72671700
+    },
+    {
+      "accepted": 32,
+      "block": 1,
+      "candidate": true,
+      "iterations": 32,
+      "parent_cpu_ns": 62500000,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "slot": 0,
+      "wall_ns": 64710700
+    },
+    {
+      "accepted": 32,
+      "block": 1,
+      "candidate": false,
+      "iterations": 32,
+      "parent_cpu_ns": 78125000,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "slot": 1,
+      "wall_ns": 65908100
+    },
+    {
+      "accepted": 32,
+      "block": 1,
+      "candidate": false,
+      "iterations": 32,
+      "parent_cpu_ns": 62500000,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "slot": 2,
+      "wall_ns": 67051100
+    },
+    {
+      "accepted": 32,
+      "block": 1,
+      "candidate": true,
+      "iterations": 32,
+      "parent_cpu_ns": 62500000,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "slot": 3,
+      "wall_ns": 65233800
+    },
+    {
+      "accepted": 32,
+      "block": 1,
+      "candidate": true,
+      "iterations": 32,
+      "parent_cpu_ns": 62500000,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "slot": 0,
+      "wall_ns": 75984200
+    },
+    {
+      "accepted": 32,
+      "block": 1,
+      "candidate": false,
+      "iterations": 32,
+      "parent_cpu_ns": 62500000,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "slot": 1,
+      "wall_ns": 69399900
+    },
+    {
+      "accepted": 32,
+      "block": 1,
+      "candidate": false,
+      "iterations": 32,
+      "parent_cpu_ns": 78125000,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "slot": 2,
+      "wall_ns": 70308900
+    },
+    {
+      "accepted": 32,
+      "block": 1,
+      "candidate": true,
+      "iterations": 32,
+      "parent_cpu_ns": 62500000,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "slot": 3,
+      "wall_ns": 69478600
+    },
+    {
+      "accepted": 32,
+      "block": 2,
+      "candidate": false,
+      "iterations": 32,
+      "parent_cpu_ns": 62500000,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "slot": 0,
+      "wall_ns": 71133700
+    },
+    {
+      "accepted": 32,
+      "block": 2,
+      "candidate": true,
+      "iterations": 32,
+      "parent_cpu_ns": 78125000,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "slot": 1,
+      "wall_ns": 71550400
+    },
+    {
+      "accepted": 32,
+      "block": 2,
+      "candidate": true,
+      "iterations": 32,
+      "parent_cpu_ns": 62500000,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "slot": 2,
+      "wall_ns": 71310700
+    },
+    {
+      "accepted": 32,
+      "block": 2,
+      "candidate": false,
+      "iterations": 32,
+      "parent_cpu_ns": 78125000,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "slot": 3,
+      "wall_ns": 71942900
+    },
+    {
+      "accepted": 32,
+      "block": 2,
+      "candidate": false,
+      "iterations": 32,
+      "parent_cpu_ns": 62500000,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "slot": 0,
+      "wall_ns": 65233100
+    },
+    {
+      "accepted": 32,
+      "block": 2,
+      "candidate": true,
+      "iterations": 32,
+      "parent_cpu_ns": 62500000,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "slot": 1,
+      "wall_ns": 65959000
+    },
+    {
+      "accepted": 32,
+      "block": 2,
+      "candidate": true,
+      "iterations": 32,
+      "parent_cpu_ns": 62500000,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "slot": 2,
+      "wall_ns": 64603200
+    },
+    {
+      "accepted": 32,
+      "block": 2,
+      "candidate": false,
+      "iterations": 32,
+      "parent_cpu_ns": 46875000,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "slot": 3,
+      "wall_ns": 64748100
+    },
+    {
+      "accepted": 32,
+      "block": 2,
+      "candidate": false,
+      "iterations": 32,
+      "parent_cpu_ns": 78125000,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "slot": 0,
+      "wall_ns": 69898800
+    },
+    {
+      "accepted": 32,
+      "block": 2,
+      "candidate": true,
+      "iterations": 32,
+      "parent_cpu_ns": 62500000,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "slot": 1,
+      "wall_ns": 70579800
+    },
+    {
+      "accepted": 32,
+      "block": 2,
+      "candidate": true,
+      "iterations": 32,
+      "parent_cpu_ns": 78125000,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "slot": 2,
+      "wall_ns": 72260700
+    },
+    {
+      "accepted": 32,
+      "block": 2,
+      "candidate": false,
+      "iterations": 32,
+      "parent_cpu_ns": 78125000,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "slot": 3,
+      "wall_ns": 70098300
+    },
+    {
+      "accepted": 32,
+      "block": 3,
+      "candidate": true,
+      "iterations": 32,
+      "parent_cpu_ns": 62500000,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "slot": 0,
+      "wall_ns": 69821000
+    },
+    {
+      "accepted": 32,
+      "block": 3,
+      "candidate": false,
+      "iterations": 32,
+      "parent_cpu_ns": 78125000,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "slot": 1,
+      "wall_ns": 72074200
+    },
+    {
+      "accepted": 32,
+      "block": 3,
+      "candidate": false,
+      "iterations": 32,
+      "parent_cpu_ns": 62500000,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "slot": 2,
+      "wall_ns": 70738200
+    },
+    {
+      "accepted": 32,
+      "block": 3,
+      "candidate": true,
+      "iterations": 32,
+      "parent_cpu_ns": 78125000,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "slot": 3,
+      "wall_ns": 70274400
+    },
+    {
+      "accepted": 32,
+      "block": 3,
+      "candidate": true,
+      "iterations": 32,
+      "parent_cpu_ns": 78125000,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "slot": 0,
+      "wall_ns": 91374700
+    },
+    {
+      "accepted": 32,
+      "block": 3,
+      "candidate": false,
+      "iterations": 32,
+      "parent_cpu_ns": 140625000,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "slot": 1,
+      "wall_ns": 126818100
+    },
+    {
+      "accepted": 32,
+      "block": 3,
+      "candidate": false,
+      "iterations": 32,
+      "parent_cpu_ns": 125000000,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "slot": 2,
+      "wall_ns": 126138800
+    },
+    {
+      "accepted": 32,
+      "block": 3,
+      "candidate": true,
+      "iterations": 32,
+      "parent_cpu_ns": 125000000,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "slot": 3,
+      "wall_ns": 125255800
+    },
+    {
+      "accepted": 32,
+      "block": 3,
+      "candidate": true,
+      "iterations": 32,
+      "parent_cpu_ns": 140625000,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "slot": 0,
+      "wall_ns": 137570300
+    },
+    {
+      "accepted": 32,
+      "block": 3,
+      "candidate": false,
+      "iterations": 32,
+      "parent_cpu_ns": 140625000,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "slot": 1,
+      "wall_ns": 142497400
+    },
+    {
+      "accepted": 32,
+      "block": 3,
+      "candidate": false,
+      "iterations": 32,
+      "parent_cpu_ns": 140625000,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "slot": 2,
+      "wall_ns": 140031600
+    },
+    {
+      "accepted": 32,
+      "block": 3,
+      "candidate": true,
+      "iterations": 32,
+      "parent_cpu_ns": 125000000,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "slot": 3,
+      "wall_ns": 137660800
+    },
+    {
+      "accepted": 32,
+      "block": 4,
+      "candidate": false,
+      "iterations": 32,
+      "parent_cpu_ns": 140625000,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "slot": 0,
+      "wall_ns": 141049400
+    },
+    {
+      "accepted": 32,
+      "block": 4,
+      "candidate": true,
+      "iterations": 32,
+      "parent_cpu_ns": 125000000,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "slot": 1,
+      "wall_ns": 139328300
+    },
+    {
+      "accepted": 32,
+      "block": 4,
+      "candidate": true,
+      "iterations": 32,
+      "parent_cpu_ns": 140625000,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "slot": 2,
+      "wall_ns": 138195700
+    },
+    {
+      "accepted": 32,
+      "block": 4,
+      "candidate": false,
+      "iterations": 32,
+      "parent_cpu_ns": 125000000,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "slot": 3,
+      "wall_ns": 139340000
+    },
+    {
+      "accepted": 32,
+      "block": 4,
+      "candidate": false,
+      "iterations": 32,
+      "parent_cpu_ns": 125000000,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "slot": 0,
+      "wall_ns": 120050300
+    },
+    {
+      "accepted": 32,
+      "block": 4,
+      "candidate": true,
+      "iterations": 32,
+      "parent_cpu_ns": 109375000,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "slot": 1,
+      "wall_ns": 120847400
+    },
+    {
+      "accepted": 32,
+      "block": 4,
+      "candidate": true,
+      "iterations": 32,
+      "parent_cpu_ns": 125000000,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "slot": 2,
+      "wall_ns": 127274500
+    },
+    {
+      "accepted": 32,
+      "block": 4,
+      "candidate": false,
+      "iterations": 32,
+      "parent_cpu_ns": 125000000,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "slot": 3,
+      "wall_ns": 125451300
+    },
+    {
+      "accepted": 32,
+      "block": 4,
+      "candidate": false,
+      "iterations": 32,
+      "parent_cpu_ns": 125000000,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "slot": 0,
+      "wall_ns": 132021800
+    },
+    {
+      "accepted": 32,
+      "block": 4,
+      "candidate": true,
+      "iterations": 32,
+      "parent_cpu_ns": 140625000,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "slot": 1,
+      "wall_ns": 131979600
+    },
+    {
+      "accepted": 32,
+      "block": 4,
+      "candidate": true,
+      "iterations": 32,
+      "parent_cpu_ns": 125000000,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "slot": 2,
+      "wall_ns": 131785500
+    },
+    {
+      "accepted": 32,
+      "block": 4,
+      "candidate": false,
+      "iterations": 32,
+      "parent_cpu_ns": 140625000,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "slot": 3,
+      "wall_ns": 137428900
+    },
+    {
+      "accepted": 32,
+      "block": 5,
+      "candidate": true,
+      "iterations": 32,
+      "parent_cpu_ns": 125000000,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "slot": 0,
+      "wall_ns": 132062800
+    },
+    {
+      "accepted": 32,
+      "block": 5,
+      "candidate": false,
+      "iterations": 32,
+      "parent_cpu_ns": 140625000,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "slot": 1,
+      "wall_ns": 139772500
+    },
+    {
+      "accepted": 32,
+      "block": 5,
+      "candidate": false,
+      "iterations": 32,
+      "parent_cpu_ns": 140625000,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "slot": 2,
+      "wall_ns": 133139300
+    },
+    {
+      "accepted": 32,
+      "block": 5,
+      "candidate": true,
+      "iterations": 32,
+      "parent_cpu_ns": 125000000,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "slot": 3,
+      "wall_ns": 139165700
+    },
+    {
+      "accepted": 32,
+      "block": 5,
+      "candidate": true,
+      "iterations": 32,
+      "parent_cpu_ns": 125000000,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "slot": 0,
+      "wall_ns": 121831700
+    },
+    {
+      "accepted": 32,
+      "block": 5,
+      "candidate": false,
+      "iterations": 32,
+      "parent_cpu_ns": 109375000,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "slot": 1,
+      "wall_ns": 120358600
+    },
+    {
+      "accepted": 32,
+      "block": 5,
+      "candidate": false,
+      "iterations": 32,
+      "parent_cpu_ns": 125000000,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "slot": 2,
+      "wall_ns": 125665300
+    },
+    {
+      "accepted": 32,
+      "block": 5,
+      "candidate": true,
+      "iterations": 32,
+      "parent_cpu_ns": 125000000,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "slot": 3,
+      "wall_ns": 118362200
+    },
+    {
+      "accepted": 32,
+      "block": 5,
+      "candidate": true,
+      "iterations": 32,
+      "parent_cpu_ns": 125000000,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "slot": 0,
+      "wall_ns": 131708400
+    },
+    {
+      "accepted": 32,
+      "block": 5,
+      "candidate": false,
+      "iterations": 32,
+      "parent_cpu_ns": 140625000,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "slot": 1,
+      "wall_ns": 132616800
+    },
+    {
+      "accepted": 32,
+      "block": 5,
+      "candidate": false,
+      "iterations": 32,
+      "parent_cpu_ns": 140625000,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "slot": 2,
+      "wall_ns": 140917600
+    },
+    {
+      "accepted": 32,
+      "block": 5,
+      "candidate": true,
+      "iterations": 32,
+      "parent_cpu_ns": 140625000,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "slot": 3,
+      "wall_ns": 138916300
+    }
+  ]
+}

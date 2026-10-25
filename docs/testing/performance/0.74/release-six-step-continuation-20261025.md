@@ -49,6 +49,13 @@ pass locally. It is not measured full-path CPU or package completion. The previo
 effect receipt refuses changed source; a new reviewed scope is required before
 another complete replay, with the original 780-second limit and first timeout intact.
 
+The [next IO/gate attribution](normalization-cost-result-20261025.md) finds expected
+construction small relative to fresh parsing for three prepared-cache inputs.
+Its separate canonical-stream prototype is not admitted after mixed local wall
+observations and is withdrawn without changing the source gate. Both first cohorts
+remain evidence; the rest of the historical normalization graph and full package
+still require their own proof. No live check is memoized or removed to obtain a pass.
+
 The last full milestone stopped on fifteen dependency advisories. The explicit
 audit-only decision in [the security plan](dependency-security-plan-20261024.md)
 still applies: do not restore the reverted TLS experiment, change dependencies,

@@ -1,0 +1,1894 @@
+{
+  "actual_runtime_io_and_gate": true,
+  "component_intervals_are_disjoint": false,
+  "full_historical_normalizer_chain": false,
+  "historical_cache_prepared": true,
+  "observer_overhead_subtracted": false,
+  "observers": [
+    {
+      "block": 0,
+      "parent_cpu_ns": 0,
+      "wall_ns": 100
+    },
+    {
+      "block": 1,
+      "parent_cpu_ns": 0,
+      "wall_ns": 0
+    },
+    {
+      "block": 2,
+      "parent_cpu_ns": 0,
+      "wall_ns": 0
+    },
+    {
+      "block": 3,
+      "parent_cpu_ns": 0,
+      "wall_ns": 100
+    },
+    {
+      "block": 4,
+      "parent_cpu_ns": 0,
+      "wall_ns": 100
+    },
+    {
+      "block": 5,
+      "parent_cpu_ns": 0,
+      "wall_ns": 100
+    }
+  ],
+  "package_replayed": false,
+  "parent_cpu_excludes_git": true,
+  "preparation": [
+    {
+      "historical_cache_prepared": true,
+      "parent_cpu_ns": 15625000,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "wall_ns": 48584500,
+      "warmup": false
+    },
+    {
+      "historical_cache_prepared": true,
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "wall_ns": 47793600,
+      "warmup": false
+    },
+    {
+      "historical_cache_prepared": true,
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "wall_ns": 46058500,
+      "warmup": false
+    }
+  ],
+  "product_candidate": false,
+  "production_admission": false,
+  "samples": [
+    {
+      "actual_bytes": 5733,
+      "block": 0,
+      "expected_bytes": 5733,
+      "iterations": 1,
+      "operation": "io-e2e",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "wall_ns": 3135700
+    },
+    {
+      "actual_bytes": 5733,
+      "block": 0,
+      "expected_bytes": 5733,
+      "iterations": 1,
+      "operation": "view",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "wall_ns": 2414900
+    },
+    {
+      "actual_bytes": 5733,
+      "block": 0,
+      "expected_bytes": 5733,
+      "iterations": 1,
+      "operation": "expected",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "wall_ns": 22100
+    },
+    {
+      "actual_bytes": 5733,
+      "block": 0,
+      "expected_bytes": 5733,
+      "iterations": 1,
+      "operation": "accepts",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "wall_ns": 2269500
+    },
+    {
+      "actual_bytes": 5733,
+      "block": 0,
+      "expected_bytes": 5733,
+      "iterations": 1,
+      "operation": "storage",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "wall_ns": 2242600
+    },
+    {
+      "actual_bytes": 5733,
+      "block": 0,
+      "expected_bytes": 5733,
+      "iterations": 1,
+      "operation": "syntax",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "wall_ns": 1420100
+    },
+    {
+      "actual_bytes": 5733,
+      "block": 0,
+      "expected_bytes": 5733,
+      "iterations": 1,
+      "operation": "expected-tokens",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "wall_ns": 366000
+    },
+    {
+      "actual_bytes": 5733,
+      "block": 0,
+      "expected_bytes": 5733,
+      "iterations": 1,
+      "operation": "actual-tokens",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "wall_ns": 405600
+    },
+    {
+      "actual_bytes": 4487,
+      "block": 0,
+      "expected_bytes": 4487,
+      "iterations": 1,
+      "operation": "io-e2e",
+      "parent_cpu_ns": 15625000,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "wall_ns": 2413900
+    },
+    {
+      "actual_bytes": 4487,
+      "block": 0,
+      "expected_bytes": 4487,
+      "iterations": 1,
+      "operation": "view",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "wall_ns": 2032300
+    },
+    {
+      "actual_bytes": 4487,
+      "block": 0,
+      "expected_bytes": 4487,
+      "iterations": 1,
+      "operation": "expected",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "wall_ns": 17200
+    },
+    {
+      "actual_bytes": 4487,
+      "block": 0,
+      "expected_bytes": 4487,
+      "iterations": 1,
+      "operation": "accepts",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "wall_ns": 2006700
+    },
+    {
+      "actual_bytes": 4487,
+      "block": 0,
+      "expected_bytes": 4487,
+      "iterations": 1,
+      "operation": "storage",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "wall_ns": 2024100
+    },
+    {
+      "actual_bytes": 4487,
+      "block": 0,
+      "expected_bytes": 4487,
+      "iterations": 1,
+      "operation": "syntax",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "wall_ns": 1316000
+    },
+    {
+      "actual_bytes": 4487,
+      "block": 0,
+      "expected_bytes": 4487,
+      "iterations": 1,
+      "operation": "expected-tokens",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "wall_ns": 364200
+    },
+    {
+      "actual_bytes": 4487,
+      "block": 0,
+      "expected_bytes": 4487,
+      "iterations": 1,
+      "operation": "actual-tokens",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "wall_ns": 352300
+    },
+    {
+      "actual_bytes": 6422,
+      "block": 0,
+      "expected_bytes": 6422,
+      "iterations": 1,
+      "operation": "io-e2e",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "wall_ns": 2962100
+    },
+    {
+      "actual_bytes": 6422,
+      "block": 0,
+      "expected_bytes": 6422,
+      "iterations": 1,
+      "operation": "view",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "wall_ns": 2180300
+    },
+    {
+      "actual_bytes": 6422,
+      "block": 0,
+      "expected_bytes": 6422,
+      "iterations": 1,
+      "operation": "expected",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "wall_ns": 21800
+    },
+    {
+      "actual_bytes": 6422,
+      "block": 0,
+      "expected_bytes": 6422,
+      "iterations": 1,
+      "operation": "accepts",
+      "parent_cpu_ns": 15625000,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "wall_ns": 2203400
+    },
+    {
+      "actual_bytes": 6422,
+      "block": 0,
+      "expected_bytes": 6422,
+      "iterations": 1,
+      "operation": "storage",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "wall_ns": 2160000
+    },
+    {
+      "actual_bytes": 6422,
+      "block": 0,
+      "expected_bytes": 6422,
+      "iterations": 1,
+      "operation": "syntax",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "wall_ns": 1465500
+    },
+    {
+      "actual_bytes": 6422,
+      "block": 0,
+      "expected_bytes": 6422,
+      "iterations": 1,
+      "operation": "expected-tokens",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "wall_ns": 390000
+    },
+    {
+      "actual_bytes": 6422,
+      "block": 0,
+      "expected_bytes": 6422,
+      "iterations": 1,
+      "operation": "actual-tokens",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "wall_ns": 382300
+    },
+    {
+      "actual_bytes": 5733,
+      "block": 1,
+      "expected_bytes": 5733,
+      "iterations": 1,
+      "operation": "actual-tokens",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "wall_ns": 361000
+    },
+    {
+      "actual_bytes": 5733,
+      "block": 1,
+      "expected_bytes": 5733,
+      "iterations": 1,
+      "operation": "expected-tokens",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "wall_ns": 354300
+    },
+    {
+      "actual_bytes": 5733,
+      "block": 1,
+      "expected_bytes": 5733,
+      "iterations": 1,
+      "operation": "syntax",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "wall_ns": 1407900
+    },
+    {
+      "actual_bytes": 5733,
+      "block": 1,
+      "expected_bytes": 5733,
+      "iterations": 1,
+      "operation": "storage",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "wall_ns": 2373000
+    },
+    {
+      "actual_bytes": 5733,
+      "block": 1,
+      "expected_bytes": 5733,
+      "iterations": 1,
+      "operation": "accepts",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "wall_ns": 3152700
+    },
+    {
+      "actual_bytes": 5733,
+      "block": 1,
+      "expected_bytes": 5733,
+      "iterations": 1,
+      "operation": "expected",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "wall_ns": 51100
+    },
+    {
+      "actual_bytes": 5733,
+      "block": 1,
+      "expected_bytes": 5733,
+      "iterations": 1,
+      "operation": "view",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "wall_ns": 2501500
+    },
+    {
+      "actual_bytes": 5733,
+      "block": 1,
+      "expected_bytes": 5733,
+      "iterations": 1,
+      "operation": "io-e2e",
+      "parent_cpu_ns": 15625000,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "wall_ns": 2553100
+    },
+    {
+      "actual_bytes": 4487,
+      "block": 1,
+      "expected_bytes": 4487,
+      "iterations": 1,
+      "operation": "actual-tokens",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "wall_ns": 359900
+    },
+    {
+      "actual_bytes": 4487,
+      "block": 1,
+      "expected_bytes": 4487,
+      "iterations": 1,
+      "operation": "expected-tokens",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "wall_ns": 343900
+    },
+    {
+      "actual_bytes": 4487,
+      "block": 1,
+      "expected_bytes": 4487,
+      "iterations": 1,
+      "operation": "syntax",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "wall_ns": 1320800
+    },
+    {
+      "actual_bytes": 4487,
+      "block": 1,
+      "expected_bytes": 4487,
+      "iterations": 1,
+      "operation": "storage",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "wall_ns": 2118000
+    },
+    {
+      "actual_bytes": 4487,
+      "block": 1,
+      "expected_bytes": 4487,
+      "iterations": 1,
+      "operation": "accepts",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "wall_ns": 2007300
+    },
+    {
+      "actual_bytes": 4487,
+      "block": 1,
+      "expected_bytes": 4487,
+      "iterations": 1,
+      "operation": "expected",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "wall_ns": 10500
+    },
+    {
+      "actual_bytes": 4487,
+      "block": 1,
+      "expected_bytes": 4487,
+      "iterations": 1,
+      "operation": "view",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "wall_ns": 2009800
+    },
+    {
+      "actual_bytes": 4487,
+      "block": 1,
+      "expected_bytes": 4487,
+      "iterations": 1,
+      "operation": "io-e2e",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "wall_ns": 2326100
+    },
+    {
+      "actual_bytes": 6422,
+      "block": 1,
+      "expected_bytes": 6422,
+      "iterations": 1,
+      "operation": "actual-tokens",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "wall_ns": 358600
+    },
+    {
+      "actual_bytes": 6422,
+      "block": 1,
+      "expected_bytes": 6422,
+      "iterations": 1,
+      "operation": "expected-tokens",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "wall_ns": 358800
+    },
+    {
+      "actual_bytes": 6422,
+      "block": 1,
+      "expected_bytes": 6422,
+      "iterations": 1,
+      "operation": "syntax",
+      "parent_cpu_ns": 15625000,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "wall_ns": 1404700
+    },
+    {
+      "actual_bytes": 6422,
+      "block": 1,
+      "expected_bytes": 6422,
+      "iterations": 1,
+      "operation": "storage",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "wall_ns": 2139200
+    },
+    {
+      "actual_bytes": 6422,
+      "block": 1,
+      "expected_bytes": 6422,
+      "iterations": 1,
+      "operation": "accepts",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "wall_ns": 2457000
+    },
+    {
+      "actual_bytes": 6422,
+      "block": 1,
+      "expected_bytes": 6422,
+      "iterations": 1,
+      "operation": "expected",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "wall_ns": 15500
+    },
+    {
+      "actual_bytes": 6422,
+      "block": 1,
+      "expected_bytes": 6422,
+      "iterations": 1,
+      "operation": "view",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "wall_ns": 2414400
+    },
+    {
+      "actual_bytes": 6422,
+      "block": 1,
+      "expected_bytes": 6422,
+      "iterations": 1,
+      "operation": "io-e2e",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "wall_ns": 2631200
+    },
+    {
+      "actual_bytes": 5733,
+      "block": 2,
+      "expected_bytes": 5733,
+      "iterations": 1,
+      "operation": "io-e2e",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "wall_ns": 3573900
+    },
+    {
+      "actual_bytes": 5733,
+      "block": 2,
+      "expected_bytes": 5733,
+      "iterations": 1,
+      "operation": "view",
+      "parent_cpu_ns": 15625000,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "wall_ns": 2550300
+    },
+    {
+      "actual_bytes": 5733,
+      "block": 2,
+      "expected_bytes": 5733,
+      "iterations": 1,
+      "operation": "expected",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "wall_ns": 38900
+    },
+    {
+      "actual_bytes": 5733,
+      "block": 2,
+      "expected_bytes": 5733,
+      "iterations": 1,
+      "operation": "accepts",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "wall_ns": 2450900
+    },
+    {
+      "actual_bytes": 5733,
+      "block": 2,
+      "expected_bytes": 5733,
+      "iterations": 1,
+      "operation": "storage",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "wall_ns": 2493100
+    },
+    {
+      "actual_bytes": 5733,
+      "block": 2,
+      "expected_bytes": 5733,
+      "iterations": 1,
+      "operation": "syntax",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "wall_ns": 1879100
+    },
+    {
+      "actual_bytes": 5733,
+      "block": 2,
+      "expected_bytes": 5733,
+      "iterations": 1,
+      "operation": "expected-tokens",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "wall_ns": 437000
+    },
+    {
+      "actual_bytes": 5733,
+      "block": 2,
+      "expected_bytes": 5733,
+      "iterations": 1,
+      "operation": "actual-tokens",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "wall_ns": 412200
+    },
+    {
+      "actual_bytes": 4487,
+      "block": 2,
+      "expected_bytes": 4487,
+      "iterations": 1,
+      "operation": "io-e2e",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "wall_ns": 2464600
+    },
+    {
+      "actual_bytes": 4487,
+      "block": 2,
+      "expected_bytes": 4487,
+      "iterations": 1,
+      "operation": "view",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "wall_ns": 1987100
+    },
+    {
+      "actual_bytes": 4487,
+      "block": 2,
+      "expected_bytes": 4487,
+      "iterations": 1,
+      "operation": "expected",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "wall_ns": 19200
+    },
+    {
+      "actual_bytes": 4487,
+      "block": 2,
+      "expected_bytes": 4487,
+      "iterations": 1,
+      "operation": "accepts",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "wall_ns": 2233300
+    },
+    {
+      "actual_bytes": 4487,
+      "block": 2,
+      "expected_bytes": 4487,
+      "iterations": 1,
+      "operation": "storage",
+      "parent_cpu_ns": 15625000,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "wall_ns": 2127100
+    },
+    {
+      "actual_bytes": 4487,
+      "block": 2,
+      "expected_bytes": 4487,
+      "iterations": 1,
+      "operation": "syntax",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "wall_ns": 1317300
+    },
+    {
+      "actual_bytes": 4487,
+      "block": 2,
+      "expected_bytes": 4487,
+      "iterations": 1,
+      "operation": "expected-tokens",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "wall_ns": 359200
+    },
+    {
+      "actual_bytes": 4487,
+      "block": 2,
+      "expected_bytes": 4487,
+      "iterations": 1,
+      "operation": "actual-tokens",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "wall_ns": 326600
+    },
+    {
+      "actual_bytes": 6422,
+      "block": 2,
+      "expected_bytes": 6422,
+      "iterations": 1,
+      "operation": "io-e2e",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "wall_ns": 2560800
+    },
+    {
+      "actual_bytes": 6422,
+      "block": 2,
+      "expected_bytes": 6422,
+      "iterations": 1,
+      "operation": "view",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "wall_ns": 2147100
+    },
+    {
+      "actual_bytes": 6422,
+      "block": 2,
+      "expected_bytes": 6422,
+      "iterations": 1,
+      "operation": "expected",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "wall_ns": 11300
+    },
+    {
+      "actual_bytes": 6422,
+      "block": 2,
+      "expected_bytes": 6422,
+      "iterations": 1,
+      "operation": "accepts",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "wall_ns": 2161800
+    },
+    {
+      "actual_bytes": 6422,
+      "block": 2,
+      "expected_bytes": 6422,
+      "iterations": 1,
+      "operation": "storage",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "wall_ns": 2181300
+    },
+    {
+      "actual_bytes": 6422,
+      "block": 2,
+      "expected_bytes": 6422,
+      "iterations": 1,
+      "operation": "syntax",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "wall_ns": 1483200
+    },
+    {
+      "actual_bytes": 6422,
+      "block": 2,
+      "expected_bytes": 6422,
+      "iterations": 1,
+      "operation": "expected-tokens",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "wall_ns": 377500
+    },
+    {
+      "actual_bytes": 6422,
+      "block": 2,
+      "expected_bytes": 6422,
+      "iterations": 1,
+      "operation": "actual-tokens",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "wall_ns": 367500
+    },
+    {
+      "actual_bytes": 5733,
+      "block": 3,
+      "expected_bytes": 5733,
+      "iterations": 1,
+      "operation": "actual-tokens",
+      "parent_cpu_ns": 15625000,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "wall_ns": 521500
+    },
+    {
+      "actual_bytes": 5733,
+      "block": 3,
+      "expected_bytes": 5733,
+      "iterations": 1,
+      "operation": "expected-tokens",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "wall_ns": 515300
+    },
+    {
+      "actual_bytes": 5733,
+      "block": 3,
+      "expected_bytes": 5733,
+      "iterations": 1,
+      "operation": "syntax",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "wall_ns": 1485100
+    },
+    {
+      "actual_bytes": 5733,
+      "block": 3,
+      "expected_bytes": 5733,
+      "iterations": 1,
+      "operation": "storage",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "wall_ns": 2144100
+    },
+    {
+      "actual_bytes": 5733,
+      "block": 3,
+      "expected_bytes": 5733,
+      "iterations": 1,
+      "operation": "accepts",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "wall_ns": 2302500
+    },
+    {
+      "actual_bytes": 5733,
+      "block": 3,
+      "expected_bytes": 5733,
+      "iterations": 1,
+      "operation": "expected",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "wall_ns": 33900
+    },
+    {
+      "actual_bytes": 5733,
+      "block": 3,
+      "expected_bytes": 5733,
+      "iterations": 1,
+      "operation": "view",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "wall_ns": 2232800
+    },
+    {
+      "actual_bytes": 5733,
+      "block": 3,
+      "expected_bytes": 5733,
+      "iterations": 1,
+      "operation": "io-e2e",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "wall_ns": 2621100
+    },
+    {
+      "actual_bytes": 4487,
+      "block": 3,
+      "expected_bytes": 4487,
+      "iterations": 1,
+      "operation": "actual-tokens",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "wall_ns": 351800
+    },
+    {
+      "actual_bytes": 4487,
+      "block": 3,
+      "expected_bytes": 4487,
+      "iterations": 1,
+      "operation": "expected-tokens",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "wall_ns": 341100
+    },
+    {
+      "actual_bytes": 4487,
+      "block": 3,
+      "expected_bytes": 4487,
+      "iterations": 1,
+      "operation": "syntax",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "wall_ns": 1313600
+    },
+    {
+      "actual_bytes": 4487,
+      "block": 3,
+      "expected_bytes": 4487,
+      "iterations": 1,
+      "operation": "storage",
+      "parent_cpu_ns": 15625000,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "wall_ns": 2090900
+    },
+    {
+      "actual_bytes": 4487,
+      "block": 3,
+      "expected_bytes": 4487,
+      "iterations": 1,
+      "operation": "accepts",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "wall_ns": 2184200
+    },
+    {
+      "actual_bytes": 4487,
+      "block": 3,
+      "expected_bytes": 4487,
+      "iterations": 1,
+      "operation": "expected",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "wall_ns": 15400
+    },
+    {
+      "actual_bytes": 4487,
+      "block": 3,
+      "expected_bytes": 4487,
+      "iterations": 1,
+      "operation": "view",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "wall_ns": 1995400
+    },
+    {
+      "actual_bytes": 4487,
+      "block": 3,
+      "expected_bytes": 4487,
+      "iterations": 1,
+      "operation": "io-e2e",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "wall_ns": 2314500
+    },
+    {
+      "actual_bytes": 6422,
+      "block": 3,
+      "expected_bytes": 6422,
+      "iterations": 1,
+      "operation": "actual-tokens",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "wall_ns": 367900
+    },
+    {
+      "actual_bytes": 6422,
+      "block": 3,
+      "expected_bytes": 6422,
+      "iterations": 1,
+      "operation": "expected-tokens",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "wall_ns": 352700
+    },
+    {
+      "actual_bytes": 6422,
+      "block": 3,
+      "expected_bytes": 6422,
+      "iterations": 1,
+      "operation": "syntax",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "wall_ns": 1448500
+    },
+    {
+      "actual_bytes": 6422,
+      "block": 3,
+      "expected_bytes": 6422,
+      "iterations": 1,
+      "operation": "storage",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "wall_ns": 2563600
+    },
+    {
+      "actual_bytes": 6422,
+      "block": 3,
+      "expected_bytes": 6422,
+      "iterations": 1,
+      "operation": "accepts",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "wall_ns": 2316600
+    },
+    {
+      "actual_bytes": 6422,
+      "block": 3,
+      "expected_bytes": 6422,
+      "iterations": 1,
+      "operation": "expected",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "wall_ns": 13000
+    },
+    {
+      "actual_bytes": 6422,
+      "block": 3,
+      "expected_bytes": 6422,
+      "iterations": 1,
+      "operation": "view",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "wall_ns": 2167600
+    },
+    {
+      "actual_bytes": 6422,
+      "block": 3,
+      "expected_bytes": 6422,
+      "iterations": 1,
+      "operation": "io-e2e",
+      "parent_cpu_ns": 15625000,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "wall_ns": 2872300
+    },
+    {
+      "actual_bytes": 5733,
+      "block": 4,
+      "expected_bytes": 5733,
+      "iterations": 1,
+      "operation": "io-e2e",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "wall_ns": 2657000
+    },
+    {
+      "actual_bytes": 5733,
+      "block": 4,
+      "expected_bytes": 5733,
+      "iterations": 1,
+      "operation": "view",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "wall_ns": 2269100
+    },
+    {
+      "actual_bytes": 5733,
+      "block": 4,
+      "expected_bytes": 5733,
+      "iterations": 1,
+      "operation": "expected",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "wall_ns": 25000
+    },
+    {
+      "actual_bytes": 5733,
+      "block": 4,
+      "expected_bytes": 5733,
+      "iterations": 1,
+      "operation": "accepts",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "wall_ns": 2165000
+    },
+    {
+      "actual_bytes": 5733,
+      "block": 4,
+      "expected_bytes": 5733,
+      "iterations": 1,
+      "operation": "storage",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "wall_ns": 2331600
+    },
+    {
+      "actual_bytes": 5733,
+      "block": 4,
+      "expected_bytes": 5733,
+      "iterations": 1,
+      "operation": "syntax",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "wall_ns": 1666400
+    },
+    {
+      "actual_bytes": 5733,
+      "block": 4,
+      "expected_bytes": 5733,
+      "iterations": 1,
+      "operation": "expected-tokens",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "wall_ns": 374600
+    },
+    {
+      "actual_bytes": 5733,
+      "block": 4,
+      "expected_bytes": 5733,
+      "iterations": 1,
+      "operation": "actual-tokens",
+      "parent_cpu_ns": 15625000,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "wall_ns": 370300
+    },
+    {
+      "actual_bytes": 4487,
+      "block": 4,
+      "expected_bytes": 4487,
+      "iterations": 1,
+      "operation": "io-e2e",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "wall_ns": 2316100
+    },
+    {
+      "actual_bytes": 4487,
+      "block": 4,
+      "expected_bytes": 4487,
+      "iterations": 1,
+      "operation": "view",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "wall_ns": 2368400
+    },
+    {
+      "actual_bytes": 4487,
+      "block": 4,
+      "expected_bytes": 4487,
+      "iterations": 1,
+      "operation": "expected",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "wall_ns": 12500
+    },
+    {
+      "actual_bytes": 4487,
+      "block": 4,
+      "expected_bytes": 4487,
+      "iterations": 1,
+      "operation": "accepts",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "wall_ns": 1965200
+    },
+    {
+      "actual_bytes": 4487,
+      "block": 4,
+      "expected_bytes": 4487,
+      "iterations": 1,
+      "operation": "storage",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "wall_ns": 2007600
+    },
+    {
+      "actual_bytes": 4487,
+      "block": 4,
+      "expected_bytes": 4487,
+      "iterations": 1,
+      "operation": "syntax",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "wall_ns": 1356600
+    },
+    {
+      "actual_bytes": 4487,
+      "block": 4,
+      "expected_bytes": 4487,
+      "iterations": 1,
+      "operation": "expected-tokens",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "wall_ns": 341300
+    },
+    {
+      "actual_bytes": 4487,
+      "block": 4,
+      "expected_bytes": 4487,
+      "iterations": 1,
+      "operation": "actual-tokens",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "wall_ns": 322500
+    },
+    {
+      "actual_bytes": 6422,
+      "block": 4,
+      "expected_bytes": 6422,
+      "iterations": 1,
+      "operation": "io-e2e",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "wall_ns": 2482300
+    },
+    {
+      "actual_bytes": 6422,
+      "block": 4,
+      "expected_bytes": 6422,
+      "iterations": 1,
+      "operation": "view",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "wall_ns": 2169300
+    },
+    {
+      "actual_bytes": 6422,
+      "block": 4,
+      "expected_bytes": 6422,
+      "iterations": 1,
+      "operation": "expected",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "wall_ns": 9500
+    },
+    {
+      "actual_bytes": 6422,
+      "block": 4,
+      "expected_bytes": 6422,
+      "iterations": 1,
+      "operation": "accepts",
+      "parent_cpu_ns": 15625000,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "wall_ns": 2124600
+    },
+    {
+      "actual_bytes": 6422,
+      "block": 4,
+      "expected_bytes": 6422,
+      "iterations": 1,
+      "operation": "storage",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "wall_ns": 2467800
+    },
+    {
+      "actual_bytes": 6422,
+      "block": 4,
+      "expected_bytes": 6422,
+      "iterations": 1,
+      "operation": "syntax",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "wall_ns": 1522500
+    },
+    {
+      "actual_bytes": 6422,
+      "block": 4,
+      "expected_bytes": 6422,
+      "iterations": 1,
+      "operation": "expected-tokens",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "wall_ns": 373900
+    },
+    {
+      "actual_bytes": 6422,
+      "block": 4,
+      "expected_bytes": 6422,
+      "iterations": 1,
+      "operation": "actual-tokens",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "wall_ns": 363100
+    },
+    {
+      "actual_bytes": 5733,
+      "block": 5,
+      "expected_bytes": 5733,
+      "iterations": 1,
+      "operation": "actual-tokens",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "wall_ns": 370500
+    },
+    {
+      "actual_bytes": 5733,
+      "block": 5,
+      "expected_bytes": 5733,
+      "iterations": 1,
+      "operation": "expected-tokens",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "wall_ns": 361600
+    },
+    {
+      "actual_bytes": 5733,
+      "block": 5,
+      "expected_bytes": 5733,
+      "iterations": 1,
+      "operation": "syntax",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "wall_ns": 1417800
+    },
+    {
+      "actual_bytes": 5733,
+      "block": 5,
+      "expected_bytes": 5733,
+      "iterations": 1,
+      "operation": "storage",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "wall_ns": 2384500
+    },
+    {
+      "actual_bytes": 5733,
+      "block": 5,
+      "expected_bytes": 5733,
+      "iterations": 1,
+      "operation": "accepts",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "wall_ns": 2433500
+    },
+    {
+      "actual_bytes": 5733,
+      "block": 5,
+      "expected_bytes": 5733,
+      "iterations": 1,
+      "operation": "expected",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "wall_ns": 48200
+    },
+    {
+      "actual_bytes": 5733,
+      "block": 5,
+      "expected_bytes": 5733,
+      "iterations": 1,
+      "operation": "view",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "wall_ns": 2234600
+    },
+    {
+      "actual_bytes": 5733,
+      "block": 5,
+      "expected_bytes": 5733,
+      "iterations": 1,
+      "operation": "io-e2e",
+      "parent_cpu_ns": 15625000,
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "wall_ns": 2519200
+    },
+    {
+      "actual_bytes": 4487,
+      "block": 5,
+      "expected_bytes": 4487,
+      "iterations": 1,
+      "operation": "actual-tokens",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "wall_ns": 357900
+    },
+    {
+      "actual_bytes": 4487,
+      "block": 5,
+      "expected_bytes": 4487,
+      "iterations": 1,
+      "operation": "expected-tokens",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "wall_ns": 331900
+    },
+    {
+      "actual_bytes": 4487,
+      "block": 5,
+      "expected_bytes": 4487,
+      "iterations": 1,
+      "operation": "syntax",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "wall_ns": 1431200
+    },
+    {
+      "actual_bytes": 4487,
+      "block": 5,
+      "expected_bytes": 4487,
+      "iterations": 1,
+      "operation": "storage",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "wall_ns": 2013700
+    },
+    {
+      "actual_bytes": 4487,
+      "block": 5,
+      "expected_bytes": 4487,
+      "iterations": 1,
+      "operation": "accepts",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "wall_ns": 2133900
+    },
+    {
+      "actual_bytes": 4487,
+      "block": 5,
+      "expected_bytes": 4487,
+      "iterations": 1,
+      "operation": "expected",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "wall_ns": 11700
+    },
+    {
+      "actual_bytes": 4487,
+      "block": 5,
+      "expected_bytes": 4487,
+      "iterations": 1,
+      "operation": "view",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "wall_ns": 2005300
+    },
+    {
+      "actual_bytes": 4487,
+      "block": 5,
+      "expected_bytes": 4487,
+      "iterations": 1,
+      "operation": "io-e2e",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "wall_ns": 2298800
+    },
+    {
+      "actual_bytes": 6422,
+      "block": 5,
+      "expected_bytes": 6422,
+      "iterations": 1,
+      "operation": "actual-tokens",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "wall_ns": 356400
+    },
+    {
+      "actual_bytes": 6422,
+      "block": 5,
+      "expected_bytes": 6422,
+      "iterations": 1,
+      "operation": "expected-tokens",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "wall_ns": 356900
+    },
+    {
+      "actual_bytes": 6422,
+      "block": 5,
+      "expected_bytes": 6422,
+      "iterations": 1,
+      "operation": "syntax",
+      "parent_cpu_ns": 15625000,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "wall_ns": 1405200
+    },
+    {
+      "actual_bytes": 6422,
+      "block": 5,
+      "expected_bytes": 6422,
+      "iterations": 1,
+      "operation": "storage",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "wall_ns": 2353500
+    },
+    {
+      "actual_bytes": 6422,
+      "block": 5,
+      "expected_bytes": 6422,
+      "iterations": 1,
+      "operation": "accepts",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "wall_ns": 2286900
+    },
+    {
+      "actual_bytes": 6422,
+      "block": 5,
+      "expected_bytes": 6422,
+      "iterations": 1,
+      "operation": "expected",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "wall_ns": 16100
+    },
+    {
+      "actual_bytes": 6422,
+      "block": 5,
+      "expected_bytes": 6422,
+      "iterations": 1,
+      "operation": "view",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "wall_ns": 2696000
+    },
+    {
+      "actual_bytes": 6422,
+      "block": 5,
+      "expected_bytes": 6422,
+      "iterations": 1,
+      "operation": "io-e2e",
+      "parent_cpu_ns": 0,
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "wall_ns": 2596900
+    }
+  ],
+  "summary": {
+    "crates/xtask/tests/support/performance_contract_074_closing_validation.rs/accepts": {
+      "parent_cpu_ns": {
+        "max": 0,
+        "mean": 0,
+        "median": 0.0,
+        "min": 0,
+        "samples": 6
+      },
+      "wall_ns": {
+        "max": 2233300,
+        "mean": 2088433.3333333333,
+        "median": 2070600.0,
+        "min": 1965200,
+        "samples": 6
+      }
+    },
+    "crates/xtask/tests/support/performance_contract_074_closing_validation.rs/actual-tokens": {
+      "parent_cpu_ns": {
+        "max": 0,
+        "mean": 0,
+        "median": 0.0,
+        "min": 0,
+        "samples": 6
+      },
+      "wall_ns": {
+        "max": 359900,
+        "mean": 345166.6666666667,
+        "median": 352050.0,
+        "min": 322500,
+        "samples": 6
+      }
+    },
+    "crates/xtask/tests/support/performance_contract_074_closing_validation.rs/expected": {
+      "parent_cpu_ns": {
+        "max": 0,
+        "mean": 0,
+        "median": 0.0,
+        "min": 0,
+        "samples": 6
+      },
+      "wall_ns": {
+        "max": 19200,
+        "mean": 14416.666666666666,
+        "median": 13950.0,
+        "min": 10500,
+        "samples": 6
+      }
+    },
+    "crates/xtask/tests/support/performance_contract_074_closing_validation.rs/expected-tokens": {
+      "parent_cpu_ns": {
+        "max": 0,
+        "mean": 0,
+        "median": 0.0,
+        "min": 0,
+        "samples": 6
+      },
+      "wall_ns": {
+        "max": 364200,
+        "mean": 346933.3333333333,
+        "median": 342600.0,
+        "min": 331900,
+        "samples": 6
+      }
+    },
+    "crates/xtask/tests/support/performance_contract_074_closing_validation.rs/io-e2e": {
+      "parent_cpu_ns": {
+        "max": 15625000,
+        "mean": 2604166.6666666665,
+        "median": 0.0,
+        "min": 0,
+        "samples": 6
+      },
+      "wall_ns": {
+        "max": 2464600,
+        "mean": 2355666.6666666665,
+        "median": 2321100.0,
+        "min": 2298800,
+        "samples": 6
+      }
+    },
+    "crates/xtask/tests/support/performance_contract_074_closing_validation.rs/storage": {
+      "parent_cpu_ns": {
+        "max": 15625000,
+        "mean": 5208333.333333333,
+        "median": 0.0,
+        "min": 0,
+        "samples": 6
+      },
+      "wall_ns": {
+        "max": 2127100,
+        "mean": 2063566.6666666667,
+        "median": 2057500.0,
+        "min": 2007600,
+        "samples": 6
+      }
+    },
+    "crates/xtask/tests/support/performance_contract_074_closing_validation.rs/syntax": {
+      "parent_cpu_ns": {
+        "max": 0,
+        "mean": 0,
+        "median": 0.0,
+        "min": 0,
+        "samples": 6
+      },
+      "wall_ns": {
+        "max": 1431200,
+        "mean": 1342583.3333333333,
+        "median": 1319050.0,
+        "min": 1313600,
+        "samples": 6
+      }
+    },
+    "crates/xtask/tests/support/performance_contract_074_closing_validation.rs/view": {
+      "parent_cpu_ns": {
+        "max": 0,
+        "mean": 0,
+        "median": 0.0,
+        "min": 0,
+        "samples": 6
+      },
+      "wall_ns": {
+        "max": 2368400,
+        "mean": 2066383.3333333333,
+        "median": 2007550.0,
+        "min": 1987100,
+        "samples": 6
+      }
+    },
+    "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs/accepts": {
+      "parent_cpu_ns": {
+        "max": 0,
+        "mean": 0,
+        "median": 0.0,
+        "min": 0,
+        "samples": 6
+      },
+      "wall_ns": {
+        "max": 3152700,
+        "mean": 2462350,
+        "median": 2368000.0,
+        "min": 2165000,
+        "samples": 6
+      }
+    },
+    "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs/actual-tokens": {
+      "parent_cpu_ns": {
+        "max": 15625000,
+        "mean": 5208333.333333333,
+        "median": 0.0,
+        "min": 0,
+        "samples": 6
+      },
+      "wall_ns": {
+        "max": 521500,
+        "mean": 406850,
+        "median": 388050.0,
+        "min": 361000,
+        "samples": 6
+      }
+    },
+    "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs/expected": {
+      "parent_cpu_ns": {
+        "max": 0,
+        "mean": 0,
+        "median": 0.0,
+        "min": 0,
+        "samples": 6
+      },
+      "wall_ns": {
+        "max": 51100,
+        "mean": 36533.333333333336,
+        "median": 36400.0,
+        "min": 22100,
+        "samples": 6
+      }
+    },
+    "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs/expected-tokens": {
+      "parent_cpu_ns": {
+        "max": 0,
+        "mean": 0,
+        "median": 0.0,
+        "min": 0,
+        "samples": 6
+      },
+      "wall_ns": {
+        "max": 515300,
+        "mean": 401466.6666666667,
+        "median": 370300.0,
+        "min": 354300,
+        "samples": 6
+      }
+    },
+    "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs/io-e2e": {
+      "parent_cpu_ns": {
+        "max": 15625000,
+        "mean": 5208333.333333333,
+        "median": 0.0,
+        "min": 0,
+        "samples": 6
+      },
+      "wall_ns": {
+        "max": 3573900,
+        "mean": 2843333.3333333335,
+        "median": 2639050.0,
+        "min": 2519200,
+        "samples": 6
+      }
+    },
+    "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs/storage": {
+      "parent_cpu_ns": {
+        "max": 0,
+        "mean": 0,
+        "median": 0.0,
+        "min": 0,
+        "samples": 6
+      },
+      "wall_ns": {
+        "max": 2493100,
+        "mean": 2328150,
+        "median": 2352300.0,
+        "min": 2144100,
+        "samples": 6
+      }
+    },
+    "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs/syntax": {
+      "parent_cpu_ns": {
+        "max": 0,
+        "mean": 0,
+        "median": 0.0,
+        "min": 0,
+        "samples": 6
+      },
+      "wall_ns": {
+        "max": 1879100,
+        "mean": 1546066.6666666667,
+        "median": 1452600.0,
+        "min": 1407900,
+        "samples": 6
+      }
+    },
+    "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs/view": {
+      "parent_cpu_ns": {
+        "max": 15625000,
+        "mean": 2604166.6666666665,
+        "median": 0.0,
+        "min": 0,
+        "samples": 6
+      },
+      "wall_ns": {
+        "max": 2550300,
+        "mean": 2367200,
+        "median": 2342000.0,
+        "min": 2232800,
+        "samples": 6
+      }
+    },
+    "crates/xtask/tests/support/performance_contract_074_held_placement.rs/accepts": {
+      "parent_cpu_ns": {
+        "max": 15625000,
+        "mean": 5208333.333333333,
+        "median": 0.0,
+        "min": 0,
+        "samples": 6
+      },
+      "wall_ns": {
+        "max": 2457000,
+        "mean": 2258383.3333333335,
+        "median": 2245150.0,
+        "min": 2124600,
+        "samples": 6
+      }
+    },
+    "crates/xtask/tests/support/performance_contract_074_held_placement.rs/actual-tokens": {
+      "parent_cpu_ns": {
+        "max": 0,
+        "mean": 0,
+        "median": 0.0,
+        "min": 0,
+        "samples": 6
+      },
+      "wall_ns": {
+        "max": 382300,
+        "mean": 365966.6666666667,
+        "median": 365300.0,
+        "min": 356400,
+        "samples": 6
+      }
+    },
+    "crates/xtask/tests/support/performance_contract_074_held_placement.rs/expected": {
+      "parent_cpu_ns": {
+        "max": 0,
+        "mean": 0,
+        "median": 0.0,
+        "min": 0,
+        "samples": 6
+      },
+      "wall_ns": {
+        "max": 21800,
+        "mean": 14533.333333333334,
+        "median": 14250.0,
+        "min": 9500,
+        "samples": 6
+      }
+    },
+    "crates/xtask/tests/support/performance_contract_074_held_placement.rs/expected-tokens": {
+      "parent_cpu_ns": {
+        "max": 0,
+        "mean": 0,
+        "median": 0.0,
+        "min": 0,
+        "samples": 6
+      },
+      "wall_ns": {
+        "max": 390000,
+        "mean": 368300,
+        "median": 366350.0,
+        "min": 352700,
+        "samples": 6
+      }
+    },
+    "crates/xtask/tests/support/performance_contract_074_held_placement.rs/io-e2e": {
+      "parent_cpu_ns": {
+        "max": 15625000,
+        "mean": 2604166.6666666665,
+        "median": 0.0,
+        "min": 0,
+        "samples": 6
+      },
+      "wall_ns": {
+        "max": 2962100,
+        "mean": 2684266.6666666665,
+        "median": 2614050.0,
+        "min": 2482300,
+        "samples": 6
+      }
+    },
+    "crates/xtask/tests/support/performance_contract_074_held_placement.rs/storage": {
+      "parent_cpu_ns": {
+        "max": 0,
+        "mean": 0,
+        "median": 0.0,
+        "min": 0,
+        "samples": 6
+      },
+      "wall_ns": {
+        "max": 2563600,
+        "mean": 2310900,
+        "median": 2267400.0,
+        "min": 2139200,
+        "samples": 6
+      }
+    },
+    "crates/xtask/tests/support/performance_contract_074_held_placement.rs/syntax": {
+      "parent_cpu_ns": {
+        "max": 15625000,
+        "mean": 5208333.333333333,
+        "median": 0.0,
+        "min": 0,
+        "samples": 6
+      },
+      "wall_ns": {
+        "max": 1522500,
+        "mean": 1454933.3333333333,
+        "median": 1457000.0,
+        "min": 1404700,
+        "samples": 6
+      }
+    },
+    "crates/xtask/tests/support/performance_contract_074_held_placement.rs/view": {
+      "parent_cpu_ns": {
+        "max": 0,
+        "mean": 0,
+        "median": 0.0,
+        "min": 0,
+        "samples": 6
+      },
+      "wall_ns": {
+        "max": 2696000,
+        "mean": 2295783.3333333335,
+        "median": 2174800.0,
+        "min": 2147100,
+        "samples": 6
+      }
+    }
+  }
+}

@@ -1,0 +1,17 @@
+
+running 12 tests
+test authority_context_candidate_matches_contract_and_frozen_prefix_order ... ok
+test canonical_candidate::streaming_candidate_retains_syntax_expected_panic_and_default_empty_order ... ok
+test canonical_candidate::streaming_matcher_checks_chunks_final_length_unicode_and_sticky_mismatch ... ok
+test guard_path_comparison_current_source_is_one_exact_predicate_edit ... ok
+test guard_path_comparison_leaves_other_reader_expectations_unchanged ... ok
+test guard_path_comparison_refuses_missing_duplicate_and_already_changed_baselines ... ok
+test normalization_candidate_child ... ok
+test normalization_cost_child ... ok
+test normalization_cost_protocol_keeps_separate_scopes ... ok
+test canonical_candidate::streaming_candidate_keeps_real_selected_source_and_fault_results ... ok
+test authority_context_restores_preceding_sources_without_changing_key_encoder ... ok
+test canonical_candidate::streaming_candidate_matches_seeded_tokens_comments_and_literal_mutations ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.87s
+

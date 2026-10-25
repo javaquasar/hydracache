@@ -1,0 +1,17 @@
+{
+  "paths": [
+    {
+      "path": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+      "sha256": "c1dbcc165b17c4fd4c345436ee415fe4650b23ae34b02ae88c118c54e0283edf"
+    },
+    {
+      "path": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+      "sha256": "280426cf9a526f4df611b0331e7308a4b74684fba86140f2e272886fb8e85bc6"
+    },
+    {
+      "path": "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+      "sha256": "e38db289161def76316d7e499344d0d9190b25875822fd74f34718a1d596ee90"
+    }
+  ],
+  "production_authority": false
+}
