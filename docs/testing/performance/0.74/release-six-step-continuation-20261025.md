@@ -223,6 +223,14 @@ host manager is still 255; no upgrade, original service send or product run occu
 
 ## 4. Completion, cells 2–4, crashes and reconnect
 
+The separate [directory validation experiment](authority-directory-cost-result-20261025.md)
+keeps all eleven fixed-ancestry/four fixture metadata observations. Installed
+method CPU ratios are 0.802622 and 0.814115 against frozen references; native
+check, strict lint and 59 authority cases pass. The first new full holder attempt
+still expires in `enroll_once`, causal age 10086211570 ns, with zero completed
+cases. The initial fault-injection fixture error is retained and corrected
+without changing production predicates. This does not open completion or cells.
+
 The next [residual preparation and authority Stamp experiment](authority-fresh-stamp-result-20261025.md)
 keeps all observation counts and windows while replacing only three fresh
 held/after metadata projections. Eight-process installed-leaf CPU ratio is

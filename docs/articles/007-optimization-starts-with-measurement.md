@@ -20022,3 +20022,37 @@ frontier is useful diagnostic evidence, but one failed frontier cannot establish
 an end-to-end speedup. The measured local optimization stays separate from the
 still-red admission gate. Host AppArmor, installed artifacts, clocks and the
 running supervisor remain untouched.
+
+### Calibrate the copied directory baseline against actual runtime
+
+The next [directory experiment](../testing/performance/0.74/authority-directory-cost-result-20261025.md)
+isolates a different consumer of fresh metadata. Directory validation compares
+type, identity, ownership and complete mode, but intentionally ignores mutable
+timestamps and link counts. Replacing that rule with whole-Stamp equality would
+be a semantic regression: an unrelated entry could revoke a valid directory.
+The new adapter keeps exactly the existing predicates and all four or eleven
+fresh observations, including every named reopen and original FD lifetime.
+
+An original-looking copy is not automatically a performance baseline. The
+four-arm protocol therefore compares frozen reference, identical-reference
+control, actual runtime and prototype before integration. Actual baseline runtime
+agrees with the copied method inside the frozen control interval. After
+integration, a separate cohort checks that actual runtime agrees with the
+prototype. Eight independent processes per phase retain every balanced sample.
+Both layouts pass: installed runtime/reference CPU ratios are 0.814 for fixture
+and 0.803 for modeled fixed ancestry. The roughly 18.6% and 19.7% reductions
+belong to complete directory methods, not all preparation or cache requests.
+
+The fault controls also expose a useful distinction between an intended mutation
+and a real one. The first fixture attempts to replace its parent with another FD
+for `/tmp`, which is already its parent. The new test correctly reports that no
+refusal occurs. The corrected fixture uses a distinct owned directory, preserving
+the expected refusal and first failed record. No timing run uses the faulty
+image. Current native check, strict lint and 59 authority cases pass.
+
+The first full preparation of the directory candidate still expires during
+enrollment, at 10.086211570 seconds of its unchanged causal window. Comparing
+that single expiry with another candidate's expiry would not measure a speedup.
+The local CPU gain is retained, while the complete admission gate remains red
+and later cases stay unexecuted. AppArmor, clocks, installed release and the
+running supervisor are unchanged.
