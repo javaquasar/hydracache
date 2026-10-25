@@ -1,0 +1,11 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 24.46s
+     Running tests\artifact_inventory_reader_074.rs (target\debug\deps\artifact_inventory_reader_074-63d49a16261a4ebf.exe)
+     Running tests\authority_context_074.rs (target\debug\deps\authority_context_074-932906b32858a4f8.exe)
+     Running tests\authority_runtime_074.rs (target\debug\deps\authority_runtime_074-14ff19326d863428.exe)
+     Running tests\authority_rust_history_074.rs (target\debug\deps\authority_rust_history_074-3089dd08dd6a0280.exe)
+     Running tests\current_tree_input_audit_074.rs (target\debug\deps\current_tree_input_audit_074-16a772dc9d252250.exe)
+     Running tests\current_tree_reader_074.rs (target\debug\deps\current_tree_reader_074-91747549f467a4bb.exe)
+     Running tests\historical_source_cache_074.rs (target\debug\deps\historical_source_cache_074-6dfdae8c5d8d22e5.exe)
+     Running tests\owned_case_074.rs (target\debug\deps\owned_case_074-78ec09457543336a.exe)
+     Running tests\package_diagnostics_074.rs (target\debug\deps\package_diagnostics_074-41f3df83937f0241.exe)

@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\target\seal-compat-isolation-20261025.py", line 78, in <module>
+    assert len(unchanged) == 12 and len(alias_only) == 2
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

@@ -432,3 +432,20 @@ One real full-command replay on `baffe6000` remains red: 112/136 targets complet
 performance target before the original timeout. Its seven test-source view
 mismatches and 23-target unstarted suffix are not repaired or waived by effect
 clearance. No replay, server, dependency or release gate is promoted.
+
+## Frozen source compatibility repair, 2026-10-25
+
+The [next focused repair](package-compatibility-isolation-result-20261025.md)
+restores four complete predecessor sources and isolates all sixteen diagnostic
+tests in a new target. All seven previously failing cases pass within the same
+54-case inventory on Rust 1.94 and MSRV 1.88; the restored artifact target passes
+all twenty cases. Eighty-two historical-tool and fifty-four attribution Python
+controls, both compiler checks/strict Clippy and focused formatting pass.
+
+The installed allocation leaf and helper observers are withdrawn, not admitted
+through weaker old guards. Their original sources/measurements remain evidence.
+V2 still refuses the repaired graph; its positive unit fixture uses archived
+bytes without executing retained sources. The eleven-phase packet preserves two
+retention-accounting refusals and independent staged verification. No full replay
+or measurement is repeated. The incomplete package, dependency decisions and
+every original execution/lifecycle/trust/qualification barrier remain open.

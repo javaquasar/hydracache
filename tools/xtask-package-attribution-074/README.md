@@ -142,7 +142,8 @@ the similar medians do not establish overhead acceptance or a product speedup.
 ## Offline reuse boundary audit
 
 `preservation_reuse_audit.py` joins the saved complete helper trace to its original
-source/AST and exact current-helper erasure. No Git or workload is run. It retains
+source/AST and exact retained measured-helper erasure. The installed helper must
+separately equal its original uninstrumented baseline. No Git or workload is run. It retains
 literal short/full query spellings, counts repeats without claiming actual cache
 hits, and separates current inventory/file/attribute observations. Unknown shapes
 and missing coverage refuse rather than being silently classified as immutable.
@@ -155,3 +156,15 @@ include explicit logical ABA/prefetch countermodels; these are not new real-Git
 measurements. Neither small literal reuse nor equal blob addresses admit a cache,
 eager batch or persistent process. Refresh the independent package-effect review
 next; do not spend another cohort tuning this unadmitted exact-key hypothesis.
+
+## Diagnostic isolation after package compatibility failure
+
+All sixteen additive controls now live in `package_diagnostics_074`, leaving
+the two original authority-context tests and complete artifact helper unchanged.
+Observer construction/erasure and mutation controls remain pure source tests;
+the artifact's original twenty-case body no longer imports the observer.
+The old capture recipes/compiled-source receipts remain historical and are not
+silently retargeted. `helper_capture.py` still refuses an uninstrumented helper.
+The [focused repair and evidence](../../docs/testing/performance/0.74/package-compatibility-isolation-result-20261025.md)
+close seven source-view failures without admitting a full package or repeating
+any attribution cohort.

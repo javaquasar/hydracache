@@ -1,0 +1,11 @@
+{
+  "admission": false,
+  "artifact_cases": 20,
+  "focused_cases_per_compiler": 54,
+  "full_package_pass": false,
+  "index_sha256": "a1d7b2450970748b10f47660938e399b3601965e043911159816565c17325086",
+  "members": 78,
+  "phases": 11,
+  "producer_repeated": false,
+  "schema": "hc074-package-compatibility-isolation-staged-verification-v1"
+}

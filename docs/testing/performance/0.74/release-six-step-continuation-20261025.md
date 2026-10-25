@@ -81,13 +81,15 @@ with 815 passed/seven failed cases, then stops in `performance_contract_074`
 after 171/321 observed passes. Twenty-three targets remain unstarted. No focused
 or old result completes this red package.
 
-Next bounded repair: isolate diagnostic additions from frozen-source readers,
-or use narrowly declared exact construction/erasure where necessary. Address all
-seven located compatibility failures with independent missing/duplicate/assertion
-drift controls; do not broaden accepted source, exclude paths or change old pins
-from observed responses. Focused passes must precede a new manually reviewed
-changed-source replay. Preserve every 780-second first result; compatibility
-repair is not evidence that the remaining target fits the window.
+The [bounded compatibility repair](package-compatibility-isolation-result-20261025.md)
+now restores four exact old sources and moves all sixteen diagnostic tests into
+a separate ordinary target. All seven previously failing cases pass among 54
+focused cases on Rust 1.94 and MSRV 1.88; the restored twenty-case artifact target
+also passes. No old source gate/pin is broadened. Historical source/trace reviews
+use sealed measured bytes, while v2 correctly refuses the changed current tree.
+Next independently review this new graph before another full replay. Preserve
+every 780-second first result; compatibility repair is not evidence that the
+remaining target fits the window.
 
 Next: use saved target/call attribution to isolate the cost owner without
 removing tests, refreshing source pins from responses or changing conditional
@@ -95,11 +97,12 @@ reads. A separate candidate needs its own baseline and unchanged-bound proof;
 do not retry the same source to pass or splice focused suffix results into it.
 
 The [first isolated comparison candidate](guard-path-comparison-result-20261025.md)
-removes temporary path allocations in one fixed-slice source guard. Exact source
-delta, old-token admission, seeded positions and existing hook/432-source tests
-pass locally. It is not measured full-path CPU or package completion. The previous
-effect receipt refuses changed source; a new reviewed scope is required before
-another complete replay, with the original 780-second limit and first timeout intact.
+removed temporary path allocations in one fixed-slice source guard, but its
+installation is withdrawn by the compatibility repair. The isolated allocation
+measurement/probe and mutation controls remain valid and retained. Complete-source
+integration failed; no full-path CPU benefit or package completion was established.
+A new reviewed scope is required before another complete replay, with the original
+780-second limit and first timeout intact.
 
 The [next IO/gate attribution](normalization-cost-result-20261025.md) finds expected
 construction small relative to fresh parsing for three prepared-cache inputs.

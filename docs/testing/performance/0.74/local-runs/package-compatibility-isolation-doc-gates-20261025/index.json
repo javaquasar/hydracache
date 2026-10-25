@@ -1,0 +1,57 @@
+{
+  "admission": false,
+  "checks_repeated": false,
+  "full_package_pass": false,
+  "members": {
+    "compat-doc-check-20261025/intent.json": {
+      "bytes": 324403,
+      "sha256": "1eda2060ded825c02420cfc64c360bc43e9ce03daae03528a0b4e41a31ee6eea"
+    },
+    "compat-doc-check-20261025/result.json": {
+      "bytes": 324089,
+      "sha256": "22e8f19de474536df2ef7d5c17affbeec6b4fc2fd9cc2e9ecd7d6b86b3e6154d"
+    },
+    "compat-doc-check-20261025/stderr.log": {
+      "bytes": 333,
+      "sha256": "20a46a0f5a21a57174095141af47fce977b27aff02d393e6efb1bcc1dc9deec8"
+    },
+    "compat-doc-check-20261025/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "compat-performance-contract-20261025/intent.json": {
+      "bytes": 324451,
+      "sha256": "9799a591d9a1bbcb47f9e46fc9f824f46feeef3e5b79c9c74b1ad1b9a1bdfea4"
+    },
+    "compat-performance-contract-20261025/result.json": {
+      "bytes": 324089,
+      "sha256": "22e8f19de474536df2ef7d5c17affbeec6b4fc2fd9cc2e9ecd7d6b86b3e6154d"
+    },
+    "compat-performance-contract-20261025/stderr.log": {
+      "bytes": 391,
+      "sha256": "9df096003abf4ad37b813876789a311629ffb79961a627a6aa5d4eada4e4a7ad"
+    },
+    "compat-performance-contract-20261025/stdout.log": {
+      "bytes": 60,
+      "sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+    },
+    "compat-python-indent-20261025/intent.json": {
+      "bytes": 324399,
+      "sha256": "503a08d03f30b9a9c242354991e36915f651dad8839c015ea86d3d46ce07289d"
+    },
+    "compat-python-indent-20261025/result.json": {
+      "bytes": 324089,
+      "sha256": "22e8f19de474536df2ef7d5c17affbeec6b4fc2fd9cc2e9ecd7d6b86b3e6154d"
+    },
+    "compat-python-indent-20261025/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "compat-python-indent-20261025/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "schema": "hc074-compatibility-isolation-doc-gates-v1",
+  "upstream_index_sha256": "a1d7b2450970748b10f47660938e399b3601965e043911159816565c17325086"
+}

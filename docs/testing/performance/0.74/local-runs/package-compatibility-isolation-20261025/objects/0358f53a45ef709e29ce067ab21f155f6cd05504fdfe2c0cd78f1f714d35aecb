@@ -1,0 +1,36 @@
+{
+  "authority_before": 18,
+  "authority_restored": 2,
+  "changed_cases": [
+    "helper_instrumentation_erases_only_exact_observers_and_preserves_twenty_cases",
+    "guard_path_comparison_is_isolated_and_original_installation_stays_exact"
+  ],
+  "diagnostic_cases": 16,
+  "module_alias_only_bodies": [
+    "guard_path_comparison_refuses_missing_duplicate_and_already_changed_baselines"
+  ],
+  "observer_installed": false,
+  "old_assertions_or_gates_weakened": false,
+  "path_candidate_installed": false,
+  "restored_sources": [
+    "crates/xtask/tests/authority_context_074.rs",
+    "crates/xtask/tests/diagnostic_artifact_fixture_074.rs",
+    "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs",
+    "tools/authority-runtime-074/gate.rs"
+  ],
+  "unchanged_diagnostic_bodies": [
+    "guard_path_comparison_leaves_other_reader_expectations_unchanged",
+    "helper_model_preserves_nested_order_bytes_and_unwind_without_additive_claims",
+    "helper_model_refuses_unknown_operations_budgets_reverse_time_and_bad_retirement",
+    "helper_observer_fixture_child",
+    "helper_observer_is_default_off_and_does_not_read_fixture_inputs",
+    "history_namespace_cost_child",
+    "history_namespace_matches_independent_frozen_sources_and_keeps_body_drift",
+    "history_namespace_protocol_and_unrelated_input_are_exact",
+    "history_namespace_still_refuses_missing_and_duplicate_namespace_hook",
+    "history_prefix_cost_child",
+    "history_prefix_protocol_and_unrelated_input_are_exact",
+    "normalization_cost_child",
+    "normalization_cost_protocol_keeps_separate_scopes"
+  ]
+}

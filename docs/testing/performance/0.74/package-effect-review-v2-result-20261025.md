@@ -6,6 +6,11 @@ and the original 780-second guard interrupts `performance_contract_074` again.
 Effect clearance is not semantic compatibility, package completion or release
 admission. No package or performance cohort is retried.
 
+Subsequent [focused compatibility repair](package-compatibility-isolation-result-20261025.md)
+restores four old sources and closes the seven cases on current/MSRV compilers.
+It leaves this first replay red and the v2 admission pins unchanged; v2 refuses
+the repaired current tree until a new source review.
+
 ## Separate reviewed scope
 
 Code commit `baffe6000f747ea6bc830f338f2673b0874129b7` adds

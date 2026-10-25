@@ -19722,3 +19722,41 @@ refuse. Compatibility fixes also cannot be advertised as a cure for the separate
 unfinished target's cost. The first timeout, seven failures and cleanup error
 remain evidence; no suffix rerun or process-absence snapshot turns them into
 completion or all-writer retirement proof.
+
+### Isolate diagnostics from frozen source contracts
+
+The [compatibility repair](../testing/performance/0.74/package-compatibility-isolation-result-20261025.md)
+chooses to restore four complete old sources rather than expand seven guards to
+accept the diagnostic edits. The two original authority-context tests stay in
+their target; all sixteen diagnostic cases move into a separate ordinary target.
+Default discovery gains a target, not a filter or an exemption. The original
+twenty-case artifact helper regains its exact uninstrumented body.
+
+Historical attribution still has a verifiable owner. The offline audit removes
+observers from the sealed source that actually produced the trace, then checks
+the installed helper independently against its original baseline. An unchanged
+old capture recipe cannot become a new measurement protocol merely because its
+child entry moved. The old source-bound runner must refuse mismatched inputs.
+
+This also changes the disposition of the allocation leaf. The borrowed path
+comparison removed the measured temporary requests in its standalone scope,
+but installing it broke older complete-source expectations. Its installation
+and expected-source adapter are withdrawn, while the probe and first results
+remain. A real component improvement can be an unsuccessful integration
+candidate; without full-path benefit it does not justify complicating every
+predecessor guard. This is a compatibility decision, not a claim that the
+allocation measurements were wrong.
+
+All seven failed cases now pass among 54 focused cases on both current Rust and
+MSRV, and all twenty restored artifact cases pass. Source/mutation checks and
+strict linting remain intact. The admission reviewer keeps its old literal pins:
+positive unit tests use archived data, while the changed live tree is explicitly
+rejected until another independent review. Updating test fixtures is not a
+license to refresh production admission from whatever source is present.
+
+The repair closes a concrete correctness gap, not the package's separate time
+budget. The first 780-second timeout still stands, no measurement cohort or full
+package is repeated, and the unfinished target still needs causal attribution.
+Even the retention tooling's initial body-count and nested-test-catalog mistakes
+remain in the evidence; corrected accounting reuses saved results rather than
+rerunning successful-looking subsets.

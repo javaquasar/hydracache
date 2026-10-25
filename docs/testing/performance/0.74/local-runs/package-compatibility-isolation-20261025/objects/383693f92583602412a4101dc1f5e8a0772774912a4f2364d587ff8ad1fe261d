@@ -1,0 +1,74 @@
+"""Read back staged source/evidence and focused coverage without producer replay."""
+from pathlib import Path
+import hashlib
+import json
+import re
+import subprocess
+import sys
+
+ROOT = Path(__file__).resolve().parent.parent
+BASE = 'docs/testing/performance/0.74/local-runs/package-compatibility-isolation-20261025'
+def staged(path): return subprocess.check_output(['git','show',':'+path],cwd=ROOT)
+def sha(raw): return hashlib.sha256(raw).hexdigest()
+def normalized(raw): return raw.decode().replace('\r\n','\n')
+index_raw = staged(BASE+'/index.json')
+index = json.loads(index_raw)
+values = {}
+for name, row in index['members'].items():
+    raw = staged(BASE+'/objects/'+row['sha256'])
+    assert sha(raw) == row['sha256'] and len(raw) == row['bytes']
+    values[name] = raw
+for path, digest in index['upstream_indexes'].items(): assert sha(staged(path)) == digest
+for name, raw in values.items():
+    if name.startswith('changed-source/'):
+        path = name.removeprefix('changed-source/')
+        assert normalized(raw) == normalized(subprocess.check_output(
+            ['git','--no-replace-objects','show',index['code_commit']+':'+path],cwd=ROOT))
+        for phase in index['phases']:
+            before = json.loads(values['checks/'+phase['name']+'/intent.json'])
+            assert before['source'][path] == sha(raw)
+    if name.startswith('protected/'):
+        path = name.removeprefix('protected/')
+        assert sha(raw) == index['protected_sha256'][path] == sha((ROOT/path).read_bytes())
+for phase in index['phases']:
+    before = json.loads(values['checks/'+phase['name']+'/intent.json'])
+    after = json.loads(values['checks/'+phase['name']+'/result.json'])
+    assert after['exit'] == 0 and after['outer_refusal'] is None
+    assert after['source_unchanged'] and after['head_unchanged']
+    assert before['source'] == after['source_after'] and before['head'] == phase['source_head']
+restoration = json.loads(values['derived/migration.json'])
+assert len(restoration['restored_sources']) == 4 and len(restoration['unchanged_diagnostic_bodies']) == 13
+assert len(restoration['module_alias_only_bodies']) == 1
+assert restoration['authority_before'] == restoration['authority_restored']+restoration['diagnostic_cases'] == 18
+for path in restoration['restored_sources']:
+    assert normalized(values['restored-predecessor/'+path]) == normalized(values['changed-source/'+path])
+sys.path.insert(0,str(ROOT/'tools/xtask-package-attribution-074'))
+import helper_capture
+outcomes = json.loads(values['derived/focused-outcomes.json'])
+for phase, targets in outcomes.items():
+    raw = values['checks/compat-isolation-20261025-'+phase+'/stdout.log'].decode()
+    chunks = [v for v in re.split(r'(?m)^(?=running \d+ tests?$)',raw) if v.strip()]
+    assert len(chunks) == len(targets)
+    # JSON keys are sorted; Cargo's observed order is recovered independently.
+    stderr = values['checks/compat-isolation-20261025-'+phase+'/stderr.log'].decode()
+    schedule = re.findall(r'(?m)^\s+Running tests[\\/](\w+)\.rs ',stderr)
+    assert set(schedule) == set(targets) and len(schedule) == len(targets)
+    for target, chunk in zip(schedule,chunks):
+        path = 'crates/xtask/tests/'+target+'.rs'
+        source = subprocess.check_output(['git','--no-replace-objects','show',index['code_commit']+':'+path],cwd=ROOT)
+        cases = re.findall(r'(?m)^#\[test\]\nfn (\w+)\(',normalized(source))
+        if target == 'historical_source_cache_074':
+            cache = values['catalog-source/tools/historical-source-cache-074/cache.rs']
+            cases += ['controls::tests::'+name for name in re.findall(
+                r'(?m)^    #\[test\]\n    fn (\w+)\(',normalized(cache))]
+        assert helper_capture.target_result(chunk.encode(),cases) == targets[target]
+    assert sum(len(v['cases']) for v in targets.values()) == (20 if phase == 'artifact' else 54)
+assert not index['full_package_repeated'] and not index['full_package_pass']
+assert index['old_v2_review_not_refreshed'] is True
+receipt = dict(schema='hc074-package-compatibility-isolation-staged-verification-v1',
+    index_sha256=sha(index_raw),members=len(values),phases=len(index['phases']),
+    focused_cases_per_compiler=54,artifact_cases=20,full_package_pass=False,
+    producer_repeated=False,admission=False)
+with (ROOT/(BASE+'-staged-verification.json')).open('x',encoding='utf-8') as stream:
+    json.dump(receipt,stream,indent=2,sort_keys=True); stream.write('\n')
+print(json.dumps(receipt,indent=2))

@@ -39,3 +39,10 @@ not additive or exclusive phase attribution. All first inputs/preparation spans,
 outputs and compiled-source pins are retained in the
 [historical normalization report](../../docs/testing/performance/0.74/history-normalization-result-20261025.md).
 No normalization candidate or fresh-check cache is installed.
+
+The [source-compatibility repair](../../docs/testing/performance/0.74/package-compatibility-isolation-result-20261025.md)
+moves these added controls and opt-in child entries into `package_diagnostics_074`
+without copying the original authority-context tests. Existing capture protocols
+and source/build receipts tied to `authority_context_074` remain historical;
+they are not authorization or ready-to-run recipes for the new target. No
+measurement is repeated or capture guard relaxed by this move.

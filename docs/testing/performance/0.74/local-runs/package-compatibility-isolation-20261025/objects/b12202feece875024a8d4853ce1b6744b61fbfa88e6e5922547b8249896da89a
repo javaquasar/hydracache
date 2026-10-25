@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\target\seal-compat-isolation-20261025.py", line 116, in <module>
+    rows[target] = helper_capture.target_result(chunk.encode(), expected)
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\xtask-package-attribution-074\helper_capture.py", line 43, in target_result
+    review.require(len(starts) == len(ends) == 1 and int(starts[0][1]) == len(expected), 'complete target header')
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\xtask-package-attribution-074\review.py", line 31, in require
+    raise ValueError(message)
+ValueError: complete target header

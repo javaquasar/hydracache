@@ -416,3 +416,11 @@ original timeout with 171/321 cases observed in the incomplete target. There is
 no package pass, suffix retry, new product result or server admission. The seven
 test-source compatibility failures and incomplete suffix require separate repair;
 effect clearance does not waive them.
+
+The [subsequent focused repair](../../docs/testing/performance/0.74/package-compatibility-isolation-result-20261025.md)
+restores four frozen sources and isolates sixteen diagnostic cases. All seven
+compatibility failures pass on both compilers, without a new package replay.
+V2's production source pins remain unchanged and reject this repaired graph.
+Its positive unit fixture materializes the exact retained v2 data; a substituted
+catalog avoids executing archived Python, and current-tree refusal stays a
+separate negative control. This fixture is not current-source effect clearance.

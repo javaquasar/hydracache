@@ -1,5 +1,10 @@
 # Fixed slice guard path allocation result
 
+Subsequent disposition: the [compatibility repair](package-compatibility-isolation-result-20261025.md)
+withdraws the installed predicate and gate adapter after complete-source tests
+fail. The isolated allocation result/probe remains retained; the following
+sections describe the original experiment and its earlier focused checks.
+
 One test-source guard now compares borrowed prefix/suffix slices instead of
 constructing four temporary path Strings per invocation. The isolated allocation
 cohort confirms the removed requests; it does not measure full-normalizer CPU or
