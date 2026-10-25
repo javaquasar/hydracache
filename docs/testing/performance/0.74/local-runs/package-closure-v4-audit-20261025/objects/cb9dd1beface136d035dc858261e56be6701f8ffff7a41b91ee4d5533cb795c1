@@ -1,0 +1,81 @@
+"""Read-only source census and bounded first-failure excerpts; never rerun tests."""
+from pathlib import Path
+import hashlib
+import json
+import subprocess
+
+ROOT = Path(__file__).resolve().parent.parent
+packet = ROOT / 'docs/testing/performance/0.74/local-runs/package-closure-v4-first-20261025'
+raw = (packet / 'index.json').read_bytes()
+sha = lambda body: hashlib.sha256(body).hexdigest()
+assert sha(raw) == '0b0b568cc495e0a24f21f6684dbc6d471e3e3d1c1240fce002958975ebd31a9a'
+index = json.loads(raw)
+def member(name):
+    row = index['members'][name]
+    body = (packet / 'objects' / row['sha256']).read_bytes()
+    assert sha(body) == row['sha256'] and len(body) == row['bytes']
+    return body
+analysis = json.loads(member('analysis-first.json'))
+lines = member('package/stdout.log').decode('utf-8').splitlines()
+failures = []
+for target in analysis['targets']:
+    section = lines[target['start_line']-1:target.get('end_line', len(lines))]
+    for case in target['cases']:
+        if case['verdict'] != 'FAILED':
+            continue
+        header = '---- ' + case['name'] + ' stdout ----'
+        start = section.index(header) + 1 if header in section else None
+        excerpt = []
+        if start is not None:
+            for line in section[start:]:
+                if line.startswith('---- ') or line == 'failures:':
+                    break
+                if line.strip():
+                    excerpt.append(line[:240])
+                if len(excerpt) == 7:
+                    break
+        failures.append(dict(target=target['target'], case=case['name'],
+                             target_complete=target['reported_seconds'] is not None,
+                             bounded_derived_excerpt=excerpt))
+old_path = 'docs/testing/performance/0.74/local-runs/role-census-inventory-20261024/objects/cfd5e7f1c153f5214dd71da196dfdbac2d1c05806fa14865605e9ce0776bc9c0'
+old_raw = (ROOT / old_path).read_bytes()
+assert sha(old_raw) == Path(old_path).name
+old = json.loads(old_raw)['current']
+scope = 'tools/long-run-supervisor-074/src'
+observed = subprocess.check_output(['git', '--no-replace-objects', 'ls-files', '--stage', '--', scope], cwd=ROOT)
+current = {}
+for line in observed.decode().splitlines():
+    metadata, name = line.split('\t')
+    mode, blob, stage = metadata.split()
+    assert mode == '100644' and stage == '0' and name not in current
+    current[name] = dict(mode=mode, blob=blob)
+delta = dict(scope=scope, old_count=len(old), current_count=len(current),
+             added=sorted(current.keys()-old.keys()), removed=sorted(old.keys()-current.keys()),
+             changed={name:dict(old_blob=old[name]['blob'], current_blob=current[name]['blob'])
+                      for name in sorted(old.keys() & current.keys()) if old[name]['blob'] != current[name]['blob']},
+             fresh_approval_pins=False, source_or_guard_modified=False, tests_rerun=False)
+out = ROOT / 'docs/testing/performance/0.74/local-runs/package-closure-v4-audit-20261025'
+out.mkdir(exist_ok=False)
+(out/'objects').mkdir()
+members = {}
+def add(name, body):
+    digest = sha(body)
+    members[name] = dict(sha256=digest, bytes=len(body))
+    path = out/'objects'/digest
+    if not path.exists():
+        with path.open('xb') as stream:
+            stream.write(body)
+add('audit-source.py', Path(__file__).read_bytes())
+add('git-index.raw', observed)
+add('inventory-delta-first.json', (json.dumps(delta, indent=2, sort_keys=True)+'\n').encode())
+add('failure-frontier-first.json', (json.dumps(failures, indent=2, sort_keys=True)+'\n').encode())
+add('read-only-cleanup-query-source.ps1', (ROOT/'target/package-closure-v4-postflight.ps1').read_bytes())
+add('read-only-cleanup-query-first.json', (ROOT/'target/package-closure-v4-postflight-first.json').read_bytes())
+value = dict(schema='hc074-package-closure-v4-offline-audit-v1', members=members,
+             original_packet_index_sha256=sha(raw), observed_failed_cases=len(failures),
+             tests_rerun=False, guards_or_deadlines_changed=False, admission=False)
+with (out/'index.json').open('x', encoding='utf-8', newline='\n') as stream:
+    json.dump(value, stream, indent=2, sort_keys=True)
+    stream.write('\n')
+print(json.dumps(dict(index_sha256=sha((out/'index.json').read_bytes()), failed=len(failures),
+                      added=len(delta['added']), changed=len(delta['changed'])), indent=2))

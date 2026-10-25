@@ -1,0 +1,9 @@
+"""One changed-source package check, retaining the original 780-second bound."""
+from pathlib import Path
+runner = Path(__file__).with_name('run-source-step-20261024.py')
+source = runner.read_text(encoding='utf-8')
+assert source.count('bound_seconds=1200') == 1
+assert source.count('time.monotonic()-started>=1200') == 1
+source = source.replace('bound_seconds=1200', 'bound_seconds=780')
+source = source.replace('time.monotonic()-started>=1200', 'time.monotonic()-started>=780')
+exec(compile(source, str(runner), 'exec'), {'__name__':'__main__', '__file__':str(runner)})

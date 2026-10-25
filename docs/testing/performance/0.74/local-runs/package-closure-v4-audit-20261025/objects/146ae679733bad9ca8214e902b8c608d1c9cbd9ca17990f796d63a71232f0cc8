@@ -1,0 +1,17 @@
+$ErrorActionPreference = 'Stop'
+$packageObservedPids = @(45960,10164,27524,53948,23732,19748,52064,36056)
+$packageFilter = ($packageObservedPids | ForEach-Object { "ProcessId = $_" }) -join ' OR '
+$packagePresent = @(Get-CimInstance Win32_Process -Filter $packageFilter | Select-Object ProcessId,ParentProcessId,Name,CreationDate,ExecutablePath)
+$packagePostflight = [ordered]@{
+    checked_at_utc = [datetime]::UtcNow.ToString('o')
+    queried_pids_from_original_cleanup_log = $packageObservedPids
+    present = $packagePresent
+    process_or_service_stopped = $false
+    original_creation_identities_recorded = $false
+    absence_proves_original_writer_retirement = $false
+}
+$packageOutput = Join-Path $PSScriptRoot 'package-closure-v4-postflight-first.json'
+$packageBytes = [System.Text.UTF8Encoding]::new($false).GetBytes(($packagePostflight | ConvertTo-Json -Depth 6) + "`n")
+$packageStream = [System.IO.File]::Open($packageOutput,[System.IO.FileMode]::CreateNew,[System.IO.FileAccess]::Write,[System.IO.FileShare]::Read)
+try { $packageStream.Write($packageBytes,0,$packageBytes.Length) } finally { $packageStream.Dispose() }
+$packagePostflight | ConvertTo-Json -Depth 6

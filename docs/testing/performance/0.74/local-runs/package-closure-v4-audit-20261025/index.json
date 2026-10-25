@@ -1,0 +1,34 @@
+{
+  "admission": false,
+  "guards_or_deadlines_changed": false,
+  "members": {
+    "audit-source.py": {
+      "bytes": 4359,
+      "sha256": "cb9dd1beface136d035dc858261e56be6701f8ffff7a41b91ee4d5533cb795c1"
+    },
+    "failure-frontier-first.json": {
+      "bytes": 45950,
+      "sha256": "c7abaf1ee282124d9e2af297b54d8b7b6b441e7f0dc0f156466a718c32b02bcd"
+    },
+    "git-index.raw": {
+      "bytes": 65236,
+      "sha256": "b5c87dcd8f36a109b501304ffbc59bed2b8435cf7a825288bc91ea4b4acfa19f"
+    },
+    "inventory-delta-first.json": {
+      "bytes": 1944,
+      "sha256": "111398e60a14f3269af057b70e2af1aa176f303c87cf6d2d3ac0eb130c0af7a5"
+    },
+    "read-only-cleanup-query-first.json": {
+      "bytes": 828,
+      "sha256": "50441b16fad3780090748ea7f335cf70946441d85d750e6a81d5972cec9e72e3"
+    },
+    "read-only-cleanup-query-source.ps1": {
+      "bytes": 1176,
+      "sha256": "146ae679733bad9ca8214e902b8c608d1c9cbd9ca17990f796d63a71232f0cc8"
+    }
+  },
+  "observed_failed_cases": 76,
+  "original_packet_index_sha256": "0b0b568cc495e0a24f21f6684dbc6d471e3e3d1c1240fce002958975ebd31a9a",
+  "schema": "hc074-package-closure-v4-offline-audit-v1",
+  "tests_rerun": false
+}

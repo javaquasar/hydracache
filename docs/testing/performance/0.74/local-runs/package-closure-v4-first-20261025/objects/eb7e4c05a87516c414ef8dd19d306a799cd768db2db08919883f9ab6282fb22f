@@ -1,0 +1,18 @@
+{
+  "argv": [
+    "cargo",
+    "+1.94.0",
+    "test",
+    "--offline",
+    "--locked",
+    "--no-fail-fast",
+    "-p",
+    "xtask",
+    "--lib",
+    "--tests",
+    "--",
+    "--test-threads=4"
+  ],
+  "automatic_retry": false,
+  "label": "package-v4-full-package-first"
+}

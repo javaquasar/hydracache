@@ -1,0 +1,19 @@
+{
+    "checked_at_utc":  "2026-10-25T22:40:57.6176622Z",
+    "queried_pids_from_original_cleanup_log":  [
+                                                   45960,
+                                                   10164,
+                                                   27524,
+                                                   53948,
+                                                   23732,
+                                                   19748,
+                                                   52064,
+                                                   36056
+                                               ],
+    "present":  [
+
+                ],
+    "process_or_service_stopped":  false,
+    "original_creation_identities_recorded":  false,
+    "absence_proves_original_writer_retirement":  false
+}

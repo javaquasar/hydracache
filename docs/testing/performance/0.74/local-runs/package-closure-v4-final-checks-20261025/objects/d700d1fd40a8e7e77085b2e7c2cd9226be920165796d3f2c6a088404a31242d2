@@ -1,0 +1,12 @@
+test_changed_source_cannot_be_hidden_by_boolean (__main__.Controls.test_changed_source_cannot_be_hidden_by_boolean) ... ok
+test_first_index_cannot_self_refresh (__main__.Controls.test_first_index_cannot_self_refresh) ... ok
+test_forged_analysis_refuses_even_with_rehashed_objects (__main__.Controls.test_forged_analysis_refuses_even_with_rehashed_objects) ... ok
+test_original_incomplete_result_replays (__main__.Controls.test_original_incomplete_result_replays) ... ok
+test_raw_mutation_refuses (__main__.Controls.test_raw_mutation_refuses) ... ok
+test_shortened_catalog_refuses (__main__.Controls.test_shortened_catalog_refuses) ... ok
+test_timeout_cannot_be_rewritten_as_successful_natural_exit (__main__.Controls.test_timeout_cannot_be_rewritten_as_successful_natural_exit) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 2.526s
+
+OK

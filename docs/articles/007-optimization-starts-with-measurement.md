@@ -20335,3 +20335,27 @@ an explicit source archive. Preserving a failed idea means retaining its code,
 method and negative evidence together, not silently shipping it. The same index
 separates unfinished release/security gates from original execution, writer
 retirement, crash/reconnect and real server enrollment work.
+
+### Preserve the complete package failure before repairing historical views
+
+The [first current-source full package attempt](../testing/performance/0.74/package-closure-v4-result-20261025.md)
+keeps the original 780-second window, including Cargo compilation, and four case
+threads. Its independently reviewed graph has 344 sources and 138 targets; the
+new review does not update the old review's pins. This matters because source
+effect clearance answers what may execute, not whether its tests are compatible
+or whether the package can finish.
+
+The run stops in `performance_contract_074`: 114 targets complete with 777 passed
+and 46 failed cases; the incomplete target has another 104 passing and 30 failing
+observations, with 23 targets not started. Its absent final panic section cannot
+be reconstructed from case names. Neither a prior 321-case pass nor the 104 green
+review controls fills those gaps.
+
+One located cause is precise: a frozen census expects 530 supervisor sources,
+while the current index has 544, with fourteen additions and three changed old
+bodies. Existing exact guards are right to reject an unaccounted phase. The next
+repair must validate that separately reviewed current inventory before recovering
+the unchanged historical view; replacing expected bytes from observed output
+would erase the property being tested. The raw first outcome, independent
+accounting and mutation-controlled offline reader remain available without a
+second run or a more permissive timeout. No new optimization hypothesis follows.

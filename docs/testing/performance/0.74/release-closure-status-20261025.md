@@ -67,6 +67,12 @@ identity. Do not reopen rejected hypotheses merely to populate a release.
 
 ### 2 Obtain a complete green package and security milestone
 
+The [first current-source full package gate](package-closure-v4-result-20261025.md)
+is retained: unchanged 780-second/four-thread run, 114/138 targets completed,
+777 passed/46 failed cases in completed targets. The incomplete performance target
+adds 104 passing/30 failing observations; 23 targets are unstarted. This is still
+red. Its exact repair frontier and raw/offline replay are linked in that report.
+
 Complete a newly reviewed whole-package replay within the unchanged
 780-second/four-thread guard, including the previously unstarted suffix. The
 separate 321-case performance-contract pass and repaired focused cohorts do not

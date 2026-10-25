@@ -1,0 +1,80 @@
+"""Retain the first fixed package outcome and replay it without another test run."""
+from pathlib import Path
+import hashlib
+import json
+import sys
+
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / 'tools/xtask-package-attribution-074'))
+import review as transcript
+
+def sha(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+members, objects = {}, {}
+
+def add(name, body):
+    assert name not in members
+    digest = sha(body)
+    members[name] = dict(sha256=digest, bytes=len(body))
+    objects[digest] = body
+
+def tree(folder, prefix):
+    for path in sorted(folder.iterdir()):
+        assert path.is_file(), path
+        add(prefix + '/' + path.name, path.read_bytes())
+
+run = ROOT / 'target/source-continuation-20261024/package-v4-full-package-first'
+coordinator = ROOT / 'target/reviewed-package-v4-closure-20261025/full-package-first'
+intent = json.loads((run / 'intent.json').read_bytes())
+result = json.loads((run / 'result.json').read_bytes())
+assert intent['head'] == 'b0f627fec0d592485233b527c61014128b4d689a'
+assert intent['argv'] == transcript.ARGV and intent['bound_seconds'] == 780 and intent['retry'] is False
+assert result['source_unchanged'] and result['head_unchanged']
+assert intent['source'] == result['source_after']
+tree(run, 'package')
+tree(coordinator, 'preflight')
+for label in ('package-closure-v4-python-controls-first', 'package-closure-v4-check-first',
+              'package-closure-v4-clippy-first'):
+    folder = ROOT / 'target/source-continuation-20261024' / label
+    value = json.loads((folder / 'result.json').read_bytes())
+    assert value['exit'] == 0 and value['outer_refusal'] is None and value['source_unchanged'] and value['head_unchanged']
+    tree(folder, 'checks/' + label)
+for name in ('run-source-step-20261024.py', 'run-xtask-package-780-20261024.py',
+             'retain-package-closure-v4-first.py'):
+    add('coordinators/' + name, (ROOT / 'target' / name).read_bytes())
+for name in ('tools/xtask-package-attribution-074/review.py',
+             'tools/historical-blob-batch-074/package_effects_review_v4.py',
+             'tools/historical-blob-batch-074/package_replay_v4.py',
+             'tools/historical-blob-batch-074/test_package_effects_review_v4.py',
+             'tools/historical-blob-batch-074/test_package_replay_v4.py'):
+    add('source/' + name, (ROOT / name).read_bytes())
+catalog = json.loads((coordinator / 'gate.json').read_bytes())['targets']
+assert len(set(catalog)) == len(catalog) == 138
+outcome = transcript.parse_transcript((run / 'stdout.log').read_text(encoding='utf-8'),
+    (run / 'stderr.log').read_text(encoding='utf-8'), catalog,
+    result['exit'], result['outer_refusal'], intent['bound_seconds'])
+add('analysis-first.json', (json.dumps(outcome, indent=2, sort_keys=True) + '\n').encode())
+packet = ROOT / 'docs/testing/performance/0.74/local-runs/package-closure-v4-first-20261025'
+packet.mkdir(exist_ok=False)
+(packet / 'objects').mkdir()
+for digest, body in objects.items():
+    with (packet / 'objects' / digest).open('xb') as stream:
+        stream.write(body)
+index = dict(schema='hc074-package-closure-v4-first-evidence-v1', members=members,
+             source_commit=intent['head'], syntax_packet_index_sha256=
+             'e46b334397fcb7ef6ffe36335fbe86a908be481dc12832109bf1da99b93ea6fb',
+             package_complete=outcome['complete'], package_pass=outcome['package_pass'],
+             retry=False, product_or_qualification_admission=False)
+with (packet / 'index.json').open('x', encoding='utf-8', newline='\n') as stream:
+    json.dump(index, stream, indent=2, sort_keys=True)
+    stream.write('\n')
+print(json.dumps(dict(index_sha256=sha((packet / 'index.json').read_bytes()),
+                     members=len(members), objects=len(objects),
+                     complete=outcome['complete'], package_pass=outcome['package_pass'],
+                     completed_targets=outcome['completed_targets'],
+                     expected_targets=outcome['expected_targets'],
+                     passed=outcome['passed'], failed=outcome['failed'],
+                     ignored=outcome['ignored'], outer_refusal=outcome['outer_refusal'],
+                     incomplete=outcome['incomplete_target']['target'] if outcome['incomplete_target'] else None,
+                     unstarted=outcome['unstarted_targets']), indent=2))

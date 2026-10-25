@@ -5,6 +5,12 @@ It lists the six remaining gates and archived implementations, including the
 terminal GET-owner D3 rejection. Historical stage reports below retain their
 original scope; they are not a current production admission verdict.
 
+The [first current-source full package gate](package-closure-v4-result-20261025.md)
+retains the unchanged 780-second run: 114/138 targets completed, 46 completed-case
+failures plus 30 failed observations in the incomplete target, 23 unstarted
+targets. The gate remains red; raw logs, census delta and offline replay stay
+available without another test run.
+
 The [original start material prerequisite](local-runs/original-collector-start-material-20261017/README.md)
 now retains the original reviewed bundle with Starting/pipes/sinks/fence.
 The framed successor passes six healthy chains and twenty-six exact refusals

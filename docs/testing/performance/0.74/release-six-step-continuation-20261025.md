@@ -38,6 +38,14 @@ under an approved scope. A tooling-only substitute is not a silent C74 assignmen
 
 ## 2. Complete checks and dependency policy
 
+Current full-package frontier: the [v4 first run](package-closure-v4-result-20261025.md)
+finishes 114/138 targets with 777 passed/46 failed cases before the unchanged
+780-second guard. The incomplete performance target records 104 passing/30
+failing observations, with 23 later targets unstarted. Source/HEAD are unchanged;
+all raw results and the exact 530-to-544 source census delta are retained. Repair
+the independently reviewed current phase and source/registration projections
+before a new changed-source gate; do not repeat this source or splice old passes.
+
 Implemented: exact transport diagnostics, the 334-file/21-auxiliary scoped effect
 gate and first unchanged-bound package replay. The latter completes 111/135
 targets; its incomplete target and 23-target suffix stay unverified. Forty-three

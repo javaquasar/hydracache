@@ -1,0 +1,693 @@
+[
+  {
+    "bounded_derived_excerpt": [
+      "thread 'inventory_projection_requires_all_current_source_files_before_old_list' (44652) panicked at crates\\xtask\\tests\\artifact_inventory_reader_074.rs:39:62:",
+      "called `Result::unwrap()` on an `Err` value: \"source index drift\"",
+      "note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+    ],
+    "case": "inventory_projection_requires_all_current_source_files_before_old_list",
+    "target": "tests/artifact_inventory_reader_074.rs",
+    "target_complete": true
+  },
+  {
+    "bounded_derived_excerpt": [
+      "thread 'authority_context_restores_preceding_sources_without_changing_key_encoder' (40624) panicked at crates\\xtask\\tests\\authority_context_074.rs:59:45:",
+      "assertion `left == right` failed: exact authority context hook",
+      "  left: 0",
+      " right: 1",
+      "note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace",
+      "thread 'authority_context_restores_preceding_sources_without_changing_key_encoder' (40624) panicked at crates\\xtask\\tests\\authority_context_074.rs:59:45:",
+      "assertion `left == right` failed: exact authority context hook"
+    ],
+    "case": "authority_context_restores_preceding_sources_without_changing_key_encoder",
+    "target": "tests/authority_context_074.rs",
+    "target_complete": true
+  },
+  {
+    "bounded_derived_excerpt": [
+      "thread 'hex_registry_view_requires_exact_current_bytes_before_the_old_view' (50760) panicked at crates\\xtask\\tests\\authority_hex_reader_074.rs:55:5:",
+      "assertion `left == right` failed",
+      "  left: \"schema_version = 1\\nrelease = \\\"0.64.0\\\"\\n\\n[[gate]]\\nid = \\\"tool.hydracache-long-run-supervisor-074.filesystem-projection-prototype-cpu\\\"\\nkind = \\\"external_tool\\\"\\nsource = \\\"tools/long-run-supervisor-074/src/diagnostic_filesyste",
+      " right: \"schema_version = 1\\nrelease = \\\"0.64.0\\\"\\n\\n[[gate]]\\nid = \\\"tool.hydracache-long-run-supervisor-074.controller-attempt-process-crash-all-stages-and-lost-ack\\\"\\nkind = \\\"external_tool\\\"\\nsource = \\\"tools/long-run-supervisor-074/src",
+      "note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+    ],
+    "case": "hex_registry_view_requires_exact_current_bytes_before_the_old_view",
+    "target": "tests/authority_hex_reader_074.rs",
+    "target_complete": true
+  },
+  {
+    "bounded_derived_excerpt": [
+      "thread 'authority_hex_restores_preceding_bodies_and_rejects_unknown_encoder' (16624) panicked at crates\\xtask\\tests\\authority_key_hex_074.rs:64:45:",
+      "assertion `left == right` failed: exact authority hex hook",
+      "  left: 0",
+      " right: 1",
+      "note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace",
+      "thread 'authority_hex_restores_preceding_bodies_and_rejects_unknown_encoder' (16624) panicked at crates\\xtask\\tests\\authority_key_hex_074.rs:64:45:",
+      "assertion `left == right` failed: exact authority context hook"
+    ],
+    "case": "authority_hex_restores_preceding_bodies_and_rejects_unknown_encoder",
+    "target": "tests/authority_key_hex_074.rs",
+    "target_complete": true
+  },
+  {
+    "bounded_derived_excerpt": [
+      "thread 'installed_runtime_is_the_exact_candidate_and_explicit_compatibility_set' (53664) panicked at crates\\xtask\\tests\\authority_runtime_074.rs:45:9:",
+      "exact installed file tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs",
+      "note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+    ],
+    "case": "installed_runtime_is_the_exact_candidate_and_explicit_compatibility_set",
+    "target": "tests/authority_runtime_074.rs",
+    "target_complete": true
+  },
+  {
+    "bounded_derived_excerpt": [
+      "thread 'approved_predecessor_views_do_not_replace_current_runtime_validation' (52996) panicked at crates\\xtask\\tests\\..\\..\\..\\tools\\authority-runtime-074\\gate.rs:185:5:",
+      "current runtime file refused before historical view: tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs"
+    ],
+    "case": "approved_predecessor_views_do_not_replace_current_runtime_validation",
+    "target": "tests/authority_runtime_074.rs",
+    "target_complete": true
+  },
+  {
+    "bounded_derived_excerpt": [
+      "thread 'independent_current_tree_gate_refuses_unapproved_source_and_runtime_drift' (41952) panicked at crates\\xtask\\tests\\authority_rust_history_074.rs:143:9:",
+      "current source drift crates/hydracache-redis-compat/Cargo.toml",
+      "note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+    ],
+    "case": "independent_current_tree_gate_refuses_unapproved_source_and_runtime_drift",
+    "target": "tests/authority_rust_history_074.rs",
+    "target_complete": true
+  },
+  {
+    "bounded_derived_excerpt": [
+      "thread 'exact_unapplied_files_match_pinned_patch_and_unchanged_runtime' (21044) panicked at crates\\xtask\\tests\\..\\..\\..\\tools\\authority-runtime-074\\gate.rs:185:5:",
+      "current runtime file refused before historical view: tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs",
+      "note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+    ],
+    "case": "exact_unapplied_files_match_pinned_patch_and_unchanged_runtime",
+    "target": "tests/authority_storage_source_074.rs",
+    "target_complete": true
+  },
+  {
+    "bounded_derived_excerpt": [
+      "thread 'bootstrap_hooks_restore_entire_old_bodies_and_compatibility_bytes' (29500) panicked at crates\\xtask\\tests\\bootstrap_build_owner_074.rs:62:5:",
+      "assertion `left == right` failed",
+      "  left: \"# HydraCache Compatibility Register\\n\\nThe opt-in joined original collector output layout v1 creates\\n`diagnostic-collector-output-074-<sha256 of original Reserved LF bytes>/collector-attempt-v1/{collector-stdout.bin,collector-stde",
+      " right: \"# HydraCache Compatibility Register\\n\\nThe opt-in joined original collector output layout v1 creates\\n`diagnostic-collector-output-074-<sha256 of original Reserved LF bytes>/collector-attempt-v1/{collector-stdout.bin,collector-stde",
+      "note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+    ],
+    "case": "bootstrap_hooks_restore_entire_old_bodies_and_compatibility_bytes",
+    "target": "tests/bootstrap_build_owner_074.rs",
+    "target_complete": true
+  },
+  {
+    "bounded_derived_excerpt": [
+      "thread 'bootstrap_owner_adds_no_execution_or_clock_capability_and_keeps_exact_original_context' (50976) panicked at crates\\xtask\\tests\\bootstrap_build_owner_074.rs:143:9:",
+      "assertion `left == right` failed",
+      "  left: \"schema_version = 1\\nrelease = \\\"0.64.0\\\"\\n\\n[[gate]]\\nid = \\\"tool.hydracache-long-run-supervisor-074.filesystem-projection-prototype-cpu\\\"\\nkind = \\\"external_tool\\\"\\nsource = \\\"tools/long-run-supervisor-074/src/diagnostic_filesyste",
+      " right: \"schema_version = 1\\nrelease = \\\"0.64.0\\\"\\n\\n[[gate]]\\nid = \\\"tool.hydracache-long-run-supervisor-074.controller-attempt-process-crash-all-stages-and-lost-ack\\\"\\nkind = \\\"external_tool\\\"\\nsource = \\\"tools/long-run-supervisor-074/src"
+    ],
+    "case": "bootstrap_owner_adds_no_execution_or_clock_capability_and_keeps_exact_original_context",
+    "target": "tests/bootstrap_build_owner_074.rs",
+    "target_complete": true
+  },
+  {
+    "bounded_derived_excerpt": [
+      "thread 'boundary_audit_preserves_entire_runtime_and_frozen_qualification' (42848) panicked at crates\\xtask\\tests\\bootstrap_child_boundary_074.rs:132:9:",
+      "assertion `left == right` failed: docs/COMPAT.md",
+      "  left: \"# HydraCache Compatibility Register\\n\\nThe opt-in joined original collector output layout v1 creates\\n`diagnostic-collector-output-074-<sha256 of original Reserved LF bytes>/collector-attempt-v1/{collector-stdout.bin,collector-stde",
+      " right: \"# HydraCache Compatibility Register\\n\\nThe opt-in joined original collector output layout v1 creates\\n`diagnostic-collector-output-074-<sha256 of original Reserved LF bytes>/collector-attempt-v1/{collector-stdout.bin,collector-stde",
+      "note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+    ],
+    "case": "boundary_audit_preserves_entire_runtime_and_frozen_qualification",
+    "target": "tests/bootstrap_child_boundary_074.rs",
+    "target_complete": true
+  },
+  {
+    "bounded_derived_excerpt": [
+      "thread 'bootstrap_roles_additive_compat_and_qualification_are_exact' (51556) panicked at crates\\xtask\\tests\\bootstrap_child_census_074.rs:68:5:",
+      "assertion `left == right` failed",
+      "  left: \"# HydraCache Compatibility Register\\n\\nThe opt-in joined original collector output layout v1 creates\\n`diagnostic-collector-output-074-<sha256 of original Reserved LF bytes>/collector-attempt-v1/{collector-stdout.bin,collector-stde",
+      " right: \"# HydraCache Compatibility Register\\n\\nThe opt-in joined original collector output layout v1 creates\\n`diagnostic-collector-output-074-<sha256 of original Reserved LF bytes>/collector-attempt-v1/{collector-stdout.bin,collector-stde"
+    ],
+    "case": "bootstrap_roles_additive_compat_and_qualification_are_exact",
+    "target": "tests/bootstrap_child_census_074.rs",
+    "target_complete": true
+  },
+  {
+    "bounded_derived_excerpt": [
+      "thread 'bootstrap_child_compares_exact_additive_compatibility_and_refuses_mutation' (14600) panicked at crates\\xtask\\tests\\bootstrap_child_reader_074.rs:85:5:",
+      "assertion `left == right` failed",
+      "  left: \"# HydraCache Compatibility Register\\n\\nThe opt-in joined original collector output layout v1 creates\\n`diagnostic-collector-output-074-<sha256 of original Reserved LF bytes>/collector-attempt-v1/{collector-stdout.bin,collector-stde",
+      " right: \"# HydraCache Compatibility Register\\n\\nThe opt-in joined original collector output layout v1 creates\\n`diagnostic-collector-output-074-<sha256 of original Reserved LF bytes>/collector-attempt-v1/{collector-stdout.bin,collector-stde",
+      "note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+    ],
+    "case": "bootstrap_child_compares_exact_additive_compatibility_and_refuses_mutation",
+    "target": "tests/bootstrap_child_reader_074.rs",
+    "target_complete": true
+  },
+  {
+    "bounded_derived_excerpt": [
+      "thread 'bootstrap_child_keeps_entire_original_runtime_and_qualification_bytes' (38008) panicked at crates\\xtask\\tests\\bootstrap_child_reader_074.rs:68:9:",
+      "assertion `left == right` failed",
+      "  left: \"schema_version = 1\\nrelease = \\\"0.64.0\\\"\\n\\n[[gate]]\\nid = \\\"tool.hydracache-long-run-supervisor-074.filesystem-projection-prototype-cpu\\\"\\nkind = \\\"external_tool\\\"\\nsource = \\\"tools/long-run-supervisor-074/src/diagnostic_filesyste",
+      " right: \"schema_version = 1\\nrelease = \\\"0.64.0\\\"\\n\\n[[gate]]\\nid = \\\"tool.hydracache-long-run-supervisor-074.controller-attempt-process-crash-all-stages-and-lost-ack\\\"\\nkind = \\\"external_tool\\\"\\nsource = \\\"tools/long-run-supervisor-074/src"
+    ],
+    "case": "bootstrap_child_keeps_entire_original_runtime_and_qualification_bytes",
+    "target": "tests/bootstrap_child_reader_074.rs",
+    "target_complete": true
+  },
+  {
+    "bounded_derived_excerpt": [
+      "thread 'current_image_compat_registry_and_qualification_remain_exact' (27740) panicked at crates\\xtask\\tests\\bootstrap_current_image_074.rs:86:9:",
+      "assertion `left == right` failed",
+      "  left: \"# HydraCache Compatibility Register\\n\\nThe opt-in joined original collector output layout v1 creates\\n`diagnostic-collector-output-074-<sha256 of original Reserved LF bytes>/collector-attempt-v1/{collector-stdout.bin,collector-stde",
+      " right: \"# HydraCache Compatibility Register\\n\\nThe opt-in joined original collector output layout v1 creates\\n`diagnostic-collector-output-074-<sha256 of original Reserved LF bytes>/collector-attempt-v1/{collector-stdout.bin,collector-stde"
+    ],
+    "case": "current_image_compat_registry_and_qualification_remain_exact",
+    "target": "tests/bootstrap_current_image_074.rs",
+    "target_complete": true
+  },
+  {
+    "bounded_derived_excerpt": [
+      "thread 'bootstrap_selection_compatibility_is_exactly_additive_and_mutations_refuse' (28992) panicked at crates\\xtask\\tests\\bootstrap_enrollment_074.rs:27:5:",
+      "assertion `left == right` failed",
+      "  left: \"# HydraCache Compatibility Register\\n\\nThe opt-in joined original collector output layout v1 creates\\n`diagnostic-collector-output-074-<sha256 of original Reserved LF bytes>/collector-attempt-v1/{collector-stdout.bin,collector-stde",
+      " right: \"# HydraCache Compatibility Register\\n\\nThe opt-in joined original collector output layout v1 creates\\n`diagnostic-collector-output-074-<sha256 of original Reserved LF bytes>/collector-attempt-v1/{collector-stdout.bin,collector-stde",
+      "note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+    ],
+    "case": "bootstrap_selection_compatibility_is_exactly_additive_and_mutations_refuse",
+    "target": "tests/bootstrap_enrollment_074.rs",
+    "target_complete": true
+  },
+  {
+    "bounded_derived_excerpt": [
+      "thread 'bootstrap_entry_compat_is_exact_additive_and_qualification_stays_frozen' (25944) panicked at crates\\xtask\\tests\\bootstrap_entry_binding_074.rs:70:5:",
+      "assertion `left == right` failed",
+      "  left: \"# HydraCache Compatibility Register\\n\\nThe opt-in joined original collector output layout v1 creates\\n`diagnostic-collector-output-074-<sha256 of original Reserved LF bytes>/collector-attempt-v1/{collector-stdout.bin,collector-stde",
+      " right: \"# HydraCache Compatibility Register\\n\\nThe opt-in joined original collector output layout v1 creates\\n`diagnostic-collector-output-074-<sha256 of original Reserved LF bytes>/collector-attempt-v1/{collector-stdout.bin,collector-stde"
+    ],
+    "case": "bootstrap_entry_compat_is_exact_additive_and_qualification_stays_frozen",
+    "target": "tests/bootstrap_entry_binding_074.rs",
+    "target_complete": true
+  },
+  {
+    "bounded_derived_excerpt": [
+      "thread 'bootstrap_image_census_exports_no_fd_mapping_transport_or_new_clock' (21484) panicked at crates\\xtask\\tests\\bootstrap_image_census_074.rs:152:9:",
+      "assertion `left == right` failed",
+      "  left: \"# HydraCache Compatibility Register\\n\\nThe opt-in joined original collector output layout v1 creates\\n`diagnostic-collector-output-074-<sha256 of original Reserved LF bytes>/collector-attempt-v1/{collector-stdout.bin,collector-stde",
+      " right: \"# HydraCache Compatibility Register\\n\\nThe opt-in joined original collector output layout v1 creates\\n`diagnostic-collector-output-074-<sha256 of original Reserved LF bytes>/collector-attempt-v1/{collector-stdout.bin,collector-stde"
+    ],
+    "case": "bootstrap_image_census_exports_no_fd_mapping_transport_or_new_clock",
+    "target": "tests/bootstrap_image_census_074.rs",
+    "target_complete": true
+  },
+  {
+    "bounded_derived_excerpt": [
+      "thread 'bootstrap_installed_child_is_separate_consistency_not_authority_or_transport' (6440) panicked at crates\\xtask\\tests\\bootstrap_installed_origin_074.rs:644:5:",
+      "assertion `left == right` failed",
+      "  left: \"# HydraCache Compatibility Register\\n\\nThe opt-in joined original collector output layout v1 creates\\n`diagnostic-collector-output-074-<sha256 of original Reserved LF bytes>/collector-attempt-v1/{collector-stdout.bin,collector-stde",
+      " right: \"# HydraCache Compatibility Register\\n\\nThe opt-in joined original collector output layout v1 creates\\n`diagnostic-collector-output-074-<sha256 of original Reserved LF bytes>/collector-attempt-v1/{collector-stdout.bin,collector-stde"
+    ],
+    "case": "bootstrap_installed_child_is_separate_consistency_not_authority_or_transport",
+    "target": "tests/bootstrap_installed_origin_074.rs",
+    "target_complete": true
+  },
+  {
+    "bounded_derived_excerpt": [
+      "thread 'bootstrap_installed_entry_compat_is_exact_and_does_not_change_old_records' (9624) panicked at crates\\xtask\\tests\\bootstrap_installed_origin_074.rs:476:5:",
+      "assertion `left == right` failed",
+      "  left: \"# HydraCache Compatibility Register\\n\\nThe opt-in joined original collector output layout v1 creates\\n`diagnostic-collector-output-074-<sha256 of original Reserved LF bytes>/collector-attempt-v1/{collector-stdout.bin,collector-stde",
+      " right: \"# HydraCache Compatibility Register\\n\\nThe opt-in joined original collector output layout v1 creates\\n`diagnostic-collector-output-074-<sha256 of original Reserved LF bytes>/collector-attempt-v1/{collector-stdout.bin,collector-stde"
+    ],
+    "case": "bootstrap_installed_entry_compat_is_exact_and_does_not_change_old_records",
+    "target": "tests/bootstrap_installed_origin_074.rs",
+    "target_complete": true
+  },
+  {
+    "bounded_derived_excerpt": [
+      "thread 'bootstrap_held_delivery_exact_additions_leave_old_frames_and_cli_closed' (7092) panicked at crates\\xtask\\tests\\support\\bootstrap_held_delivery_guard.rs:64:9:",
+      "assertion `left == right` failed",
+      "  left: 0",
+      " right: 1",
+      "thread 'bootstrap_held_delivery_exact_additions_leave_old_frames_and_cli_closed' (7092) panicked at crates\\xtask\\tests\\support\\bootstrap_held_delivery_guard.rs:64:9:",
+      "assertion `left == right` failed",
+      "  left: 2"
+    ],
+    "case": "bootstrap_held_delivery_exact_additions_leave_old_frames_and_cli_closed",
+    "target": "tests/bootstrap_installed_origin_074.rs",
+    "target_complete": true
+  },
+  {
+    "bounded_derived_excerpt": [
+      "thread 'bootstrap_installed_material_additive_compat_keeps_schema_and_qualification' (45980) panicked at crates\\xtask\\tests\\bootstrap_installed_origin_074.rs:571:5:",
+      "assertion `left == right` failed",
+      "  left: \"# HydraCache Compatibility Register\\n\\nThe opt-in joined original collector output layout v1 creates\\n`diagnostic-collector-output-074-<sha256 of original Reserved LF bytes>/collector-attempt-v1/{collector-stdout.bin,collector-stde",
+      " right: \"# HydraCache Compatibility Register\\n\\nThe opt-in joined original collector output layout v1 creates\\n`diagnostic-collector-output-074-<sha256 of original Reserved LF bytes>/collector-attempt-v1/{collector-stdout.bin,collector-stde"
+    ],
+    "case": "bootstrap_installed_material_additive_compat_keeps_schema_and_qualification",
+    "target": "tests/bootstrap_installed_origin_074.rs",
+    "target_complete": true
+  },
+  {
+    "bounded_derived_excerpt": [
+      "thread 'installed_origin_compat_is_additive_and_qualification_inputs_stay_frozen' (40160) panicked at crates\\xtask\\tests\\bootstrap_installed_origin_074.rs:338:5:",
+      "assertion `left == right` failed",
+      "  left: \"# HydraCache Compatibility Register\\n\\nThe opt-in joined original collector output layout v1 creates\\n`diagnostic-collector-output-074-<sha256 of original Reserved LF bytes>/collector-attempt-v1/{collector-stdout.bin,collector-stde",
+      " right: \"# HydraCache Compatibility Register\\n\\nThe opt-in joined original collector output layout v1 creates\\n`diagnostic-collector-output-074-<sha256 of original Reserved LF bytes>/collector-attempt-v1/{collector-stdout.bin,collector-stde"
+    ],
+    "case": "installed_origin_compat_is_additive_and_qualification_inputs_stay_frozen",
+    "target": "tests/bootstrap_installed_origin_074.rs",
+    "target_complete": true
+  },
+  {
+    "bounded_derived_excerpt": [
+      "thread 'current_tree_input_frontier_is_fully_accounted_without_path_exclusions' (2224) panicked at crates\\xtask\\tests\\..\\..\\..\\tools\\authority-runtime-074\\gate.rs:185:5:",
+      "current runtime file refused before historical view: crates/xtask/tests/performance_contract_074.rs",
+      "note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace",
+      "thread 'current_tree_input_frontier_is_fully_accounted_without_path_exclusions' (2224) panicked at crates\\xtask\\tests\\..\\..\\..\\tools\\authority-runtime-074\\..\\historical-input-view-074\\contract.rs:41:5:",
+      "unreviewed input cannot enter historical assertions: docs/COMPAT.md",
+      "thread 'current_tree_input_frontier_is_fully_accounted_without_path_exclusions' (2224) panicked at crates\\xtask\\tests\\..\\..\\..\\tools\\authority-runtime-074\\..\\historical-input-view-074\\contract.rs:41:5:",
+      "unreviewed input cannot enter historical assertions: docs/testing/gated-test-registry.toml"
+    ],
+    "case": "current_tree_input_frontier_is_fully_accounted_without_path_exclusions",
+    "target": "tests/current_tree_input_audit_074.rs",
+    "target_complete": true
+  },
+  {
+    "bounded_derived_excerpt": [
+      "thread 'all_nine_current_inputs_are_exact_declared_patches_not_assertion_waivers' (53536) panicked at crates\\xtask\\tests\\..\\..\\..\\tools\\authority-runtime-074\\gate.rs:185:5:",
+      "current runtime file refused before historical view: tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs"
+    ],
+    "case": "all_nine_current_inputs_are_exact_declared_patches_not_assertion_waivers",
+    "target": "tests/current_tree_reader_074.rs",
+    "target_complete": true
+  },
+  {
+    "bounded_derived_excerpt": [
+      "thread 'custody_observation_hooks_reconstruct_all_preceding_469_bodies' (44348) panicked at crates\\xtask\\tests\\custody_preparation_cost_074.rs:45:9:",
+      "assertion `left == right` failed: tools/long-run-supervisor-074/src/diagnostic_authority_fixed.rs",
+      "  left: \"//! Fixed root-owned journal backend. Neither enrollment nor a signed start guard.\\nuse super::*;\\n\\npub const FIXED_AUTHORITY_PATH: &str = \\\"/var/lib/hydracache-performance/worker-authority-074\\\";\\nconst ANCESTORS: [&str; 3] = [\\\"",
+      " right: \"//! Fixed root-owned journal backend. Neither enrollment nor a signed start guard.\\nuse super::*;\\n\\npub const FIXED_AUTHORITY_PATH: &str = \\\"/var/lib/hydracache-performance/worker-authority-074\\\";\\nconst ANCESTORS: [&str; 3] = [\\\""
+    ],
+    "case": "custody_observation_hooks_reconstruct_all_preceding_469_bodies",
+    "target": "tests/custody_preparation_cost_074.rs",
+    "target_complete": true
+  },
+  {
+    "bounded_derived_excerpt": [
+      "thread 'consuming_held_join_preserves_all_443_old_sources_and_formats' (19376) panicked at crates\\xtask\\tests\\diagnostic_artifact_fixture_074.rs:154:34:",
+      "current inventory refused before historical phase: \"source list drift\""
+    ],
+    "case": "consuming_held_join_preserves_all_443_old_sources_and_formats",
+    "target": "tests/diagnostic_artifact_fixture_074.rs",
+    "target_complete": true
+  },
+  {
+    "bounded_derived_excerpt": [
+      "thread 'actual_consuming_fixture_preserves_all_446_preceding_sources_and_formats' (50080) panicked at crates\\xtask\\tests\\diagnostic_artifact_fixture_074.rs:154:34:",
+      "current inventory refused before historical phase: \"source list drift\""
+    ],
+    "case": "actual_consuming_fixture_preserves_all_446_preceding_sources_and_formats",
+    "target": "tests/diagnostic_artifact_fixture_074.rs",
+    "target_complete": true
+  },
+  {
+    "bounded_derived_excerpt": [
+      "thread 'held_trust_adapter_refuses_missing_duplicate_extra_and_unrelated_drift' (23844) panicked at crates\\xtask\\tests\\support\\held_runtime_trust_guard.rs:54:5:",
+      "assertion `left == right` failed: exact held runtime trust addition: tools/long-run-supervisor-074/src/diagnostic_controller_trust_input.rs",
+      "  left: 0",
+      " right: 1",
+      "thread 'held_trust_adapter_refuses_missing_duplicate_extra_and_unrelated_drift' (23844) panicked at crates\\xtask\\tests\\support\\held_runtime_trust_guard.rs:54:5:",
+      "assertion `left == right` failed: exact held runtime trust addition: tools/long-run-supervisor-074/src/diagnostic_controller_trust_input.rs",
+      "  left: 2"
+    ],
+    "case": "held_trust_adapter_refuses_missing_duplicate_extra_and_unrelated_drift",
+    "target": "tests/diagnostic_artifact_fixture_074.rs",
+    "target_complete": true
+  },
+  {
+    "bounded_derived_excerpt": [
+      "thread 'actual_consuming_adapter_refuses_missing_duplicate_hook_and_unrelated_drift' (40216) panicked at crates\\xtask\\tests\\support\\consuming_held_live_guard.rs:51:5:",
+      "assertion `left == right` failed: exact actual consuming test hook: tools/long-run-supervisor-074/src/diagnostic_privileged_root_cgroup_fixture.rs",
+      "  left: 0",
+      " right: 1",
+      "note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace",
+      "thread 'actual_consuming_adapter_refuses_missing_duplicate_hook_and_unrelated_drift' (40216) panicked at crates\\xtask\\tests\\support\\consuming_held_live_guard.rs:51:5:",
+      "assertion `left == right` failed: exact actual consuming test hook: tools/long-run-supervisor-074/src/diagnostic_privileged_root_cgroup_fixture.rs"
+    ],
+    "case": "actual_consuming_adapter_refuses_missing_duplicate_hook_and_unrelated_drift",
+    "target": "tests/diagnostic_artifact_fixture_074.rs",
+    "target_complete": true
+  },
+  {
+    "bounded_derived_excerpt": [
+      "thread 'held_trust_preserves_all_442_preceding_sources_and_production_inputs' (53280) panicked at crates\\xtask\\tests\\diagnostic_artifact_fixture_074.rs:154:34:",
+      "current inventory refused before historical phase: \"source list drift\""
+    ],
+    "case": "held_trust_preserves_all_442_preceding_sources_and_production_inputs",
+    "target": "tests/diagnostic_artifact_fixture_074.rs",
+    "target_complete": true
+  },
+  {
+    "bounded_derived_excerpt": [
+      "thread 'held_build_adapter_rejects_missing_duplicate_and_unrelated_old_drift' (40380) panicked at crates\\xtask\\tests\\support\\held_build_guard.rs:51:5:",
+      "assertion `left == right` failed: exact held build addition: tools/long-run-supervisor-074/src/diagnostic_builder.rs",
+      "  left: 0",
+      " right: 1",
+      "thread 'held_build_adapter_rejects_missing_duplicate_and_unrelated_old_drift' (40380) panicked at crates\\xtask\\tests\\support\\held_build_guard.rs:51:5:",
+      "assertion `left == right` failed: exact held build addition: tools/long-run-supervisor-074/src/diagnostic_builder.rs",
+      "  left: 2"
+    ],
+    "case": "held_build_adapter_rejects_missing_duplicate_and_unrelated_old_drift",
+    "target": "tests/diagnostic_artifact_fixture_074.rs",
+    "target_complete": true
+  },
+  {
+    "bounded_derived_excerpt": [
+      "thread 'launcher_adapter_refuses_missing_duplicate_and_unrelated_drift' (27048) panicked at crates\\xtask\\tests\\..\\..\\..\\tools\\authority-runtime-074\\..\\historical-input-view-074\\contract.rs:41:5:",
+      "unreviewed input cannot enter historical assertions: docs/COMPAT.md"
+    ],
+    "case": "launcher_adapter_refuses_missing_duplicate_and_unrelated_drift",
+    "target": "tests/diagnostic_artifact_fixture_074.rs",
+    "target_complete": true
+  },
+  {
+    "bounded_derived_excerpt": [
+      "thread 'immutable_fixture_preserves_all_437_runtime_sources_and_production_inputs' (53944) panicked at crates\\xtask\\tests\\diagnostic_artifact_fixture_074.rs:154:34:",
+      "current inventory refused before historical phase: \"source list drift\""
+    ],
+    "case": "immutable_fixture_preserves_all_437_runtime_sources_and_production_inputs",
+    "target": "tests/diagnostic_artifact_fixture_074.rs",
+    "target_complete": true
+  },
+  {
+    "bounded_derived_excerpt": [
+      "thread 'role_binding_adapter_refuses_missing_duplicate_and_unrelated_drift' (36296) panicked at crates\\xtask\\tests\\support\\held_role_binding_guard.rs:47:5:",
+      "assertion `left == right` failed: exact role binding addition: tools/long-run-supervisor-074/src/diagnostic_held_build.rs",
+      "  left: 0",
+      " right: 1",
+      "thread 'role_binding_adapter_refuses_missing_duplicate_and_unrelated_drift' (36296) panicked at crates\\xtask\\tests\\support\\held_role_binding_guard.rs:47:5:",
+      "assertion `left == right` failed: exact role binding addition: tools/long-run-supervisor-074/src/diagnostic_held_build.rs",
+      "  left: 2"
+    ],
+    "case": "role_binding_adapter_refuses_missing_duplicate_and_unrelated_drift",
+    "target": "tests/diagnostic_artifact_fixture_074.rs",
+    "target_complete": true
+  },
+  {
+    "bounded_derived_excerpt": [
+      "thread 'namespace_adapter_refuses_missing_duplicate_and_unrelated_drift' (14580) panicked at crates\\xtask\\tests\\support\\fixed_slice_namespace_guard.rs:48:5:",
+      "assertion `left == right` failed: exact namespace test hook: tools/long-run-supervisor-074/src/diagnostic_fixed_slice_tests.rs",
+      "  left: 0",
+      " right: 1",
+      "thread 'namespace_adapter_refuses_missing_duplicate_and_unrelated_drift' (14580) panicked at crates\\xtask\\tests\\support\\fixed_slice_namespace_guard.rs:48:5:",
+      "assertion `left == right` failed: exact namespace test hook: tools/long-run-supervisor-074/src/diagnostic_fixed_slice_tests.rs",
+      "  left: 2"
+    ],
+    "case": "namespace_adapter_refuses_missing_duplicate_and_unrelated_drift",
+    "target": "tests/diagnostic_artifact_fixture_074.rs",
+    "target_complete": true
+  },
+  {
+    "bounded_derived_excerpt": [
+      "thread 'launcher_preserves_all_438_preceding_sources_and_exact_old_formats' (10592) panicked at crates\\xtask\\tests\\diagnostic_artifact_fixture_074.rs:154:34:",
+      "current inventory refused before historical phase: \"source list drift\""
+    ],
+    "case": "launcher_preserves_all_438_preceding_sources_and_exact_old_formats",
+    "target": "tests/diagnostic_artifact_fixture_074.rs",
+    "target_complete": true
+  },
+  {
+    "bounded_derived_excerpt": [
+      "thread 'role_binding_preserves_all_441_preceding_runtime_sources_and_inputs' (44844) panicked at crates\\xtask\\tests\\diagnostic_artifact_fixture_074.rs:154:34:",
+      "current inventory refused before historical phase: \"source list drift\""
+    ],
+    "case": "role_binding_preserves_all_441_preceding_runtime_sources_and_inputs",
+    "target": "tests/diagnostic_artifact_fixture_074.rs",
+    "target_complete": true
+  },
+  {
+    "bounded_derived_excerpt": [
+      "thread 'role_files_preserve_all_440_previous_runtime_sources_and_inputs' (37200) panicked at crates\\xtask\\tests\\diagnostic_artifact_fixture_074.rs:154:34:",
+      "current inventory refused before historical phase: \"source list drift\""
+    ],
+    "case": "role_files_preserve_all_440_previous_runtime_sources_and_inputs",
+    "target": "tests/diagnostic_artifact_fixture_074.rs",
+    "target_complete": true
+  },
+  {
+    "bounded_derived_excerpt": [
+      "thread 'document_scratch_adoption_is_the_frozen_helper_and_reconstructs_all_473_old_bodies' (47900) panicked at crates\\xtask\\tests\\document_scratch_cost_074.rs:136:9:",
+      "assertion `left == right` failed: tools/long-run-supervisor-074/src/diagnostic_authority_fixed.rs",
+      "  left: \"//! Fixed root-owned journal backend. Neither enrollment nor a signed start guard.\\nuse super::*;\\n\\npub const FIXED_AUTHORITY_PATH: &str = \\\"/var/lib/hydracache-performance/worker-authority-074\\\";\\nconst ANCESTORS: [&str; 3] = [\\\"",
+      " right: \"//! Fixed root-owned journal backend. Neither enrollment nor a signed start guard.\\nuse super::*;\\n\\npub const FIXED_AUTHORITY_PATH: &str = \\\"/var/lib/hydracache-performance/worker-authority-074\\\";\\nconst ANCESTORS: [&str; 3] = [\\\"",
+      "note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+    ],
+    "case": "document_scratch_adoption_is_the_frozen_helper_and_reconstructs_all_473_old_bodies",
+    "target": "tests/document_scratch_cost_074.rs",
+    "target_complete": true
+  },
+  {
+    "bounded_derived_excerpt": [
+      "thread 'fresh_status_reconstructs_all_changed_old_bodies_and_hooks' (37864) panicked at crates\\xtask\\tests\\fresh_kernel_cost_074.rs:40:9:",
+      "assertion `left == right` failed: tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs",
+      "  left: \"use super::*;\\nuse std::ffi::CString;\\nuse std::os::fd::FromRawFd;\\n\\n#[path = \\\"diagnostic_kernel_fd_identity.rs\\\"]\\nmod fd_identity;\\n\\n#[cfg(test)]\\n#[path = \\\"diagnostic_kernel_operation_cost.rs\\\"]\\nmod operation_cost;\\n\\n#[cfg",
+      " right: \"use super::*;\\nuse std::ffi::CString;\\nuse std::os::fd::FromRawFd;\\n\\n#[derive(Debug, Clone)]\\npub struct KernelTimePoint {\\n    boot: String,\\n    boottime: u64,\\n    pub(super) realtime_ns: u64,\\n}\\npub(super) type TimePoint = Ke"
+    ],
+    "case": "fresh_status_reconstructs_all_changed_old_bodies_and_hooks",
+    "target": "tests/fresh_kernel_cost_074.rs",
+    "target_complete": true
+  },
+  {
+    "bounded_derived_excerpt": [
+      "thread 'activation_ingress_compatibility_registration_preserves_every_old_format_byte' (53128) panicked at crates\\xtask\\tests\\held_activation_ingress_074.rs:126:5:",
+      "assertion failed: raw.ends_with(\"<!-- END HELD ACTIVATION INGRESS V1 -->\\n\")",
+      "note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+    ],
+    "case": "activation_ingress_compatibility_registration_preserves_every_old_format_byte",
+    "target": "tests/held_activation_ingress_074.rs",
+    "target_complete": true
+  },
+  {
+    "bounded_derived_excerpt": [
+      "thread 'historical_inputs_require_the_complete_reviewed_current_file_before_predecessor' (24472) panicked at crates\\xtask\\tests\\historical_input_view_074.rs:56:9:",
+      "raw current input: docs/COMPAT.md",
+      "note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+    ],
+    "case": "historical_inputs_require_the_complete_reviewed_current_file_before_predecessor",
+    "target": "tests/historical_input_view_074.rs",
+    "target_complete": true
+  },
+  {
+    "bounded_derived_excerpt": [
+      "thread 'historical_input_reader_is_one_exact_additive_verified_branch' (54204) panicked at crates\\xtask\\tests\\..\\..\\..\\tools\\authority-runtime-074\\..\\historical-input-view-074\\contract.rs:41:5:",
+      "unreviewed input cannot enter historical assertions: docs/COMPAT.md"
+    ],
+    "case": "historical_input_reader_is_one_exact_additive_verified_branch",
+    "target": "tests/historical_input_view_074.rs",
+    "target_complete": true
+  },
+  {
+    "bounded_derived_excerpt": [
+      "thread 'authority_context_reader_adapts_only_the_exact_reviewed_registry_input' (32240) panicked at crates\\xtask\\tests\\owned_case_074.rs:32:5:",
+      "assertion `left == right` failed",
+      "  left: \"schema_version = 1\\nrelease = \\\"0.64.0\\\"\\n\\n[[gate]]\\nid = \\\"tool.hydracache-long-run-supervisor-074.filesystem-projection-prototype-cpu\\\"\\nkind = \\\"external_tool\\\"\\nsource = \\\"tools/long-run-supervisor-074/src/diagnostic_filesyste",
+      " right: \"schema_version = 1\\nrelease = \\\"0.64.0\\\"\\n\\n[[gate]]\\nid = \\\"tool.hydracache-long-run-supervisor-074.controller-attempt-process-crash-all-stages-and-lost-ack\\\"\\nkind = \\\"external_tool\\\"\\nsource = \\\"tools/long-run-supervisor-074/src"
+    ],
+    "case": "authority_context_reader_adapts_only_the_exact_reviewed_registry_input",
+    "target": "tests/owned_case_074.rs",
+    "target_complete": true
+  },
+  {
+    "bounded_derived_excerpt": [
+      "thread 'history_namespace_matches_independent_frozen_sources_and_keeps_body_drift' (26068) panicked at crates\\xtask\\tests\\package_diagnostics_074.rs:196:9:",
+      "assertion `left == right` failed",
+      "  left: \"use super::*;\\nuse std::ffi::CString;\\nuse std::os::fd::FromRawFd;\\n\\n#[path = \\\"diagnostic_kernel_fd_identity.rs\\\"]\\nmod fd_identity;\\n\\n#[cfg(test)]\\n#[path = \\\"diagnostic_kernel_operation_cost.rs\\\"]\\nmod operation_cost;\\n\\n#[cfg",
+      " right: \"use super::*;\\nuse std::ffi::CString;\\nuse std::os::fd::FromRawFd;\\n\\n#[derive(Debug, Clone)]\\npub struct KernelTimePoint {\\n    boot: String,\\n    boottime: u64,\\n    pub(super) realtime_ns: u64,\\n}\\npub(super) type TimePoint = Ke"
+    ],
+    "case": "history_namespace_matches_independent_frozen_sources_and_keeps_body_drift",
+    "target": "tests/package_diagnostics_074.rs",
+    "target_complete": true
+  },
+  {
+    "bounded_derived_excerpt": [],
+    "case": "collector_causal::collector_causal_requires_original_post_ack_challenge_and_no_admission_renewal",
+    "target": "tests/performance_contract_074.rs",
+    "target_complete": false
+  },
+  {
+    "bounded_derived_excerpt": [],
+    "case": "collector_intent::collector_intent_keeps_legacy_bytes_and_execution_boundary_closed",
+    "target": "tests/performance_contract_074.rs",
+    "target_complete": false
+  },
+  {
+    "bounded_derived_excerpt": [],
+    "case": "collector_progress::collector_progress_requires_fresh_original_receiver_without_start_or_renewal",
+    "target": "tests/performance_contract_074.rs",
+    "target_complete": false
+  },
+  {
+    "bounded_derived_excerpt": [],
+    "case": "claim_construction::campaign_claim_construction_preserves_admission_markers_and_successful_owner",
+    "target": "tests/performance_contract_074.rs",
+    "target_complete": false
+  },
+  {
+    "bounded_derived_excerpt": [],
+    "case": "collector_reserved::collector_reserved_requires_original_owned_publication_not_recovered_start",
+    "target": "tests/performance_contract_074.rs",
+    "target_complete": false
+  },
+  {
+    "bounded_derived_excerpt": [],
+    "case": "fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::barred_custody_raw_continuation_has_no_output_or_activation_and_pins_atomically",
+    "target": "tests/performance_contract_074.rs",
+    "target_complete": false
+  },
+  {
+    "bounded_derived_excerpt": [],
+    "case": "consent_budget::consent_budget_is_additive_and_keeps_original_runtime_and_deadlines",
+    "target": "tests/performance_contract_074.rs",
+    "target_complete": false
+  },
+  {
+    "bounded_derived_excerpt": [],
+    "case": "fixed_grouped::fence_custody::custody_join::custody_join_preserves_every_old_runtime_body_and_guard",
+    "target": "tests/performance_contract_074.rs",
+    "target_complete": false
+  },
+  {
+    "bounded_derived_excerpt": [],
+    "case": "fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::dispatch_exchange::manager_channel::manager_channel_has_no_execution_exports_fixture_promotion_or_caller_route",
+    "target": "tests/performance_contract_074.rs",
+    "target_complete": false
+  },
+  {
+    "bounded_derived_excerpt": [],
+    "case": "fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::dispatch_exchange::manager_channel::manager_channel_manual_root_and_nonroot_observations_are_not_product_admission",
+    "target": "tests/performance_contract_074.rs",
+    "target_complete": false
+  },
+  {
+    "bounded_derived_excerpt": [],
+    "case": "fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::dispatch_exchange::manager_channel::reply_flags::dispatch_reply_flag_exception_is_exactly_one_original_predicate",
+    "target": "tests/performance_contract_074.rs",
+    "target_complete": false
+  },
+  {
+    "bounded_derived_excerpt": [],
+    "case": "fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::dispatch_exchange::manager_channel::manager_channel_preserves_old_authority_versions_workloads_and_sender_boundaries",
+    "target": "tests/performance_contract_074.rs",
+    "target_complete": false
+  },
+  {
+    "bounded_derived_excerpt": [],
+    "case": "fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::dispatch_exchange::manager_channel::reply_flags::original_manager_join::original_manager_join_receiver_uses_retained_origin_and_all_four_typed_objects",
+    "target": "tests/performance_contract_074.rs",
+    "target_complete": false
+  },
+  {
+    "bounded_derived_excerpt": [],
+    "case": "fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::dispatch_exchange::manager_channel::reply_flags::original_manager_join::original_manager_join_preserves_every_original_predicate_and_execution_boundary",
+    "target": "tests/performance_contract_074.rs",
+    "target_complete": false
+  },
+  {
+    "bounded_derived_excerpt": [],
+    "case": "fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::dispatch_exchange::manager_channel::reply_flags::original_manager_message::original_grouped_message_round_body_alias_order_and_refusal_have_canaries",
+    "target": "tests/performance_contract_074.rs",
+    "target_complete": false
+  },
+  {
+    "bounded_derived_excerpt": [],
+    "case": "fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::barred_custody_preserves_all_old_frames_timer_origins_and_engine_bodies",
+    "target": "tests/performance_contract_074.rs",
+    "target_complete": false
+  },
+  {
+    "bounded_derived_excerpt": [],
+    "case": "fixed_grouped::fence_custody::original_custody_changes_only_one_shot_ownership_not_admission_or_old_guards",
+    "target": "tests/performance_contract_074.rs",
+    "target_complete": false
+  },
+  {
+    "bounded_derived_excerpt": [],
+    "case": "fixed_grouped::fence_custody::custody_join::original_descriptors::original_descriptor_plan_preserves_all_old_bodies_and_generic_guardian",
+    "target": "tests/performance_contract_074.rs",
+    "target_complete": false
+  },
+  {
+    "bounded_derived_excerpt": [],
+    "case": "fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::original_barrier_freezes_all_original_runtime_and_existing_holder_bodies",
+    "target": "tests/performance_contract_074.rs",
+    "target_complete": false
+  },
+  {
+    "bounded_derived_excerpt": [],
+    "case": "fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::dispatch_exchange::manager_channel::reply_flags::preparation_budget::preparation_budget_preserves_all_existing_rust_sources_and_registered_frame",
+    "target": "tests/performance_contract_074.rs",
+    "target_complete": false
+  },
+  {
+    "bounded_derived_excerpt": [],
+    "case": "live_walk::kernel_walk::boot_buffer::boot_buffer_adapter_cannot_hide_changed_read_guard_or_schedule",
+    "target": "tests/performance_contract_074.rs",
+    "target_complete": false
+  },
+  {
+    "bounded_derived_excerpt": [],
+    "case": "fixed_grouped::fixed_grouped_process_matrix_preserves_runtime_and_exact_owned_harness",
+    "target": "tests/performance_contract_074.rs",
+    "target_complete": false
+  },
+  {
+    "bounded_derived_excerpt": [],
+    "case": "kernel_refusal::kernel_refusal_test_instrumentation_preserves_every_non_test_guard",
+    "target": "tests/performance_contract_074.rs",
+    "target_complete": false
+  },
+  {
+    "bounded_derived_excerpt": [],
+    "case": "live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::original_reply_binding_exact_adapter_rejects_mutated_guards_or_registration",
+    "target": "tests/performance_contract_074.rs",
+    "target_complete": false
+  },
+  {
+    "bounded_derived_excerpt": [],
+    "case": "live_walk::kernel_walk::boot_buffer::boot_buffer_exact_substitution_preserves_all_other_old_runtime_sources",
+    "target": "tests/performance_contract_074.rs",
+    "target_complete": false
+  },
+  {
+    "bounded_derived_excerpt": [],
+    "case": "live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::prearmed::prearmed_exact_adapter_rejects_registration_and_old_predicate_mutations",
+    "target": "tests/performance_contract_074.rs",
+    "target_complete": false
+  },
+  {
+    "bounded_derived_excerpt": [],
+    "case": "live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::negotiated_dispatch_preserves_all_old_runtime_and_test_bodies",
+    "target": "tests/performance_contract_074.rs",
+    "target_complete": false
+  },
+  {
+    "bounded_derived_excerpt": [],
+    "case": "live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::original_reply_binding_preserves_every_prior_runtime_and_test_body",
+    "target": "tests/performance_contract_074.rs",
+    "target_complete": false
+  },
+  {
+    "bounded_derived_excerpt": [],
+    "case": "live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::prearmed::redundant::original_context::original_watchdog_context_adapter_refuses_old_predicate_or_registration_mutations",
+    "target": "tests/performance_contract_074.rs",
+    "target_complete": false
+  },
+  {
+    "bounded_derived_excerpt": [],
+    "case": "live_walk::kernel_walk::boot_buffer::plain_worker::negotiated_dispatch::reply_state::original_reply_binding::two_phase_launch::prearmed::redundant::original_context::pending::original_pending_watchdog_adapter_refuses_removed_duplicate_and_old_body_mutations",
+    "target": "tests/performance_contract_074.rs",
+    "target_complete": false
+  }
+]

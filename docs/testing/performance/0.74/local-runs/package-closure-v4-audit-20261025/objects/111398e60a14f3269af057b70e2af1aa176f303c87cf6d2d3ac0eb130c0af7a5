@@ -1,0 +1,39 @@
+{
+  "added": [
+    "tools/long-run-supervisor-074/src/diagnostic_authority_before_tests.rs",
+    "tools/long-run-supervisor-074/src/diagnostic_authority_directory_tests.rs",
+    "tools/long-run-supervisor-074/src/diagnostic_authority_parent_tests.rs",
+    "tools/long-run-supervisor-074/src/diagnostic_authority_stamp.rs",
+    "tools/long-run-supervisor-074/src/diagnostic_authority_stamp_tests.rs",
+    "tools/long-run-supervisor-074/src/diagnostic_filesystem_projection.rs",
+    "tools/long-run-supervisor-074/src/diagnostic_filesystem_projection_tests.rs",
+    "tools/long-run-supervisor-074/src/diagnostic_kernel_fd_identity.rs",
+    "tools/long-run-supervisor-074/src/diagnostic_kernel_fd_identity_tests.rs",
+    "tools/long-run-supervisor-074/src/diagnostic_kernel_operation_cost.rs",
+    "tools/long-run-supervisor-074/src/diagnostic_kernel_operation_reference.rs",
+    "tools/long-run-supervisor-074/src/diagnostic_kernel_operation_tests.rs",
+    "tools/long-run-supervisor-074/src/diagnostic_namespace_open.rs",
+    "tools/long-run-supervisor-074/src/diagnostic_namespace_open_tests.rs"
+  ],
+  "changed": {
+    "tools/long-run-supervisor-074/src/diagnostic_authority_fixed.rs": {
+      "current_blob": "c24b038928729d0a6240364ea69e6df2768fb4f6",
+      "old_blob": "457443354c043afe8d171a695cc5abdabf5bc3bd"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs": {
+      "current_blob": "a1f4d803bbfefbd3c2f50847eb6f1f0c34f444e5",
+      "old_blob": "58b05c76fe8e3ed48c937322bfcb6ea2bd07e6cd"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs": {
+      "current_blob": "57ab5957fd13de59679770d620bbda9c313840ac",
+      "old_blob": "1f1e6adae5c749eff3f8a5a3ddc76ab16da3c4ff"
+    }
+  },
+  "current_count": 544,
+  "fresh_approval_pins": false,
+  "old_count": 530,
+  "removed": [],
+  "scope": "tools/long-run-supervisor-074/src",
+  "source_or_guard_modified": false,
+  "tests_rerun": false
+}
