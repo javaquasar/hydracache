@@ -1,0 +1,80 @@
+"""Independent staged hashes, arithmetic and frozen outputs; no measured child."""
+from pathlib import Path
+import hashlib
+import json
+import statistics
+import subprocess
+
+ROOT = Path(__file__).resolve().parent.parent
+BASE = 'docs/testing/performance/0.74/local-runs/history-normalization-20261025'
+def staged(name):
+    return subprocess.check_output(['git', 'show', ':' + BASE + '/' + name], cwd=ROOT)
+
+
+raw = staged('index.json')
+index = json.loads(raw)
+assert index['schema'] == 'hc074-history-normalization-v1'
+objects = {}
+for entry in index['members'].values():
+    digest = entry['sha256']
+    assert len(digest) == 64 and all(c in '0123456789abcdef' for c in digest)
+    if digest not in objects:
+        objects[digest] = staged('objects/' + digest)
+    assert hashlib.sha256(objects[digest]).hexdigest() == digest and len(objects[digest]) == entry['bytes']
+
+
+def member(name):
+    return objects[index['members'][name]['sha256']]
+
+
+paths = ['tools/long-run-supervisor-074/src/diagnostic_' + stem + '.rs'
+         for stem in ('authority_registry', 'kernel_origin', 'kernel_admission')]
+for label, count, operations in [('prefix', 72, ['authority-context-prefix', 'authority-hex-prefix', 'remaining-preparation-prefix', 'document-scratch-prefix']),
+                                 ('namespace', 18, ['namespace-chain'])]:
+    stdout = member('capture/' + label + '/stdout.log').decode().splitlines()
+    rows = [json.loads(line[len('HC074_HISTORY '):]) for line in stdout if line.startswith('HC074_HISTORY ')]
+    done = [json.loads(line[len('HC074_HISTORY_DONE '):]) for line in stdout if line.startswith('HC074_HISTORY_DONE ')]
+    report = json.loads(member('capture/' + label + '/result.json'))
+    assert len(rows) == count and rows == report['samples']
+    assert done == [dict(samples=count, blocks=6, iterations=16, prefix_warmup=False,
+        disjoint_intervals=False, full_fixed_slice_chain=False, product=False, package_replay=False)]
+    expected_order = [(block, path, op) for block in range(6) for path in paths
+                      for op in (operations if block % 2 == 0 else operations[::-1])]
+    assert [(row['block'], row['path'], row['operation']) for row in rows] == expected_order
+    groups = {}
+    for row in rows:
+        assert row['iterations'] == 16 and row['wall_ns'] >= 0 and row['parent_cpu_ns'] >= 0
+        key = row['path'] + '/' + row['operation']
+        groups.setdefault(key, []).append(row)
+        if label == 'namespace':
+            golden = member('independent-golden/' + row['path'])
+            from_git = subprocess.check_output(['git', 'show', index['golden_commit'] + ':' + row['path']], cwd=ROOT)
+            assert golden == from_git
+            assert row['output_bytes'] == len(golden) and row['output_sha256'] == hashlib.sha256(golden).hexdigest()
+    for key, group in groups.items():
+        for metric in ('wall_ns', 'parent_cpu_ns'):
+            values = [row[metric] / 16 for row in group]
+            assert report['summary'][key][metric] == dict(samples=6, median_per_call=statistics.median(values),
+                min_per_call=min(values), max_per_call=max(values))
+    compiled = json.loads(member('capture/' + label + '/preflight.json'))['compiled_source']
+    for name, entry in index['members'].items():
+        if name.startswith('measured-source/' + label + '/'):
+            filename = name.rsplit('/', 1)[1]
+            source = ('crates/xtask/tests/' if filename == 'authority_context_074.rs' else 'tools/normalization-attribution-074/') + filename
+            assert entry['sha256'] == compiled[source]
+        if name.startswith('inputs/'):
+            assert entry['sha256'] == compiled[name[len('inputs/'):]]
+for name, digest in index['facts']['protected_sha256'].items():
+    assert hashlib.sha256(member('protected/' + name)).hexdigest() == digest
+    assert hashlib.sha256((ROOT / name).read_bytes()).hexdigest() == digest
+for phase in index['facts']['phases']:
+    result = json.loads(member('checks/' + phase['phase'] + '/result.json'))
+    assert result['exit'] == 0 and result['outer_refusal'] is None and result['source_unchanged'] and result['head_unchanged']
+for name in ('normalizers_changed', 'source_admission_changed', 'package_replayed', 'first_measured_results_repeated',
+             'original_checks_frequency_order_or_windows_changed', 'server', 'services', 'clocks', 'dependencies_changed', 'qualification'):
+    assert index['facts'][name] is False
+print(json.dumps(dict(schema='hc074-history-normalization-staged-verification-v1',
+    index_sha256=hashlib.sha256(raw).hexdigest(), members=len(index['members']), objects=len(objects),
+    prefix_records=72, namespace_records=18, raw_records_and_arithmetic_verified=True,
+    measured_sources_verified=True, independent_golden_verified=True, protected_unchanged=True,
+    no_measured_rerun=True, server_or_qualification_admission=False)))

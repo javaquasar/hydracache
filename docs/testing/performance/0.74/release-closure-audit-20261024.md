@@ -381,3 +381,12 @@ observations do not admit the prototype, whose active code is withdrawn with
 sources/results retained. Seven final active cases pass per Windows compiler,
 with strict checks. This is not every historical normalizer, package completion,
 allocation/RSS evidence, a changed production gate or a newly accepted C74 proposal.
+
+The [historical normalization continuation](history-normalization-result-20261025.md)
+retains separate first 72-record prefix and 18-record namespace cohorts. The
+namespace outputs match independent frozen sources; thirteen final cases pass
+per Windows compiler with strict checks and five Python controls. Median selected
+namespace calls take 0.291–0.862 ms in debug, without a measured frequency-weighted
+package contribution. No normalizer candidate is installed; the full package,
+product composition and all original execution/security/qualification barriers
+remain open.

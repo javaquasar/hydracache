@@ -1,0 +1,21 @@
+{
+  "blocks": 6,
+  "clocks": false,
+  "disk_floor_bytes": 4294967296,
+  "iterations": 16,
+  "namespace_chain": true,
+  "operations": [
+    "namespace-chain"
+  ],
+  "paths": [
+    "tools/long-run-supervisor-074/src/diagnostic_authority_registry.rs",
+    "tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs",
+    "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs"
+  ],
+  "prefix_warmup": false,
+  "retry": false,
+  "samples": 18,
+  "server": false,
+  "services": false,
+  "timeout_seconds": 180
+}

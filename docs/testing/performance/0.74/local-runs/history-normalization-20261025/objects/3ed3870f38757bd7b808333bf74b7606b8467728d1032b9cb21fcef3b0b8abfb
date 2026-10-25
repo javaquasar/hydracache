@@ -1,0 +1,21 @@
+{
+  "namespace_chain": true,
+  "paths": [
+    {
+      "committed_sha256": "1e936fe855eedad6d0e5dacbd76d534a45cc8df11cd30f06f8e2ed77258bc53e",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_authority_registry.rs",
+      "sha256": "1e936fe855eedad6d0e5dacbd76d534a45cc8df11cd30f06f8e2ed77258bc53e"
+    },
+    {
+      "committed_sha256": "4e18523c71b6b5bdf3a74d75e58df096f25c6f773067d013a07db2a8cfde5214",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs",
+      "sha256": "4e18523c71b6b5bdf3a74d75e58df096f25c6f773067d013a07db2a8cfde5214"
+    },
+    {
+      "committed_sha256": "f5a362becbccfe9575a36d08362109bf007e757265ae05a84d01b2fcfffdea93",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs",
+      "sha256": "f5a362becbccfe9575a36d08362109bf007e757265ae05a84d01b2fcfffdea93"
+    }
+  ],
+  "production_authority": false
+}

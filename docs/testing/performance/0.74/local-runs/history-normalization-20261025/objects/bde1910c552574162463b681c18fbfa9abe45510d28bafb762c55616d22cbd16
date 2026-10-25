@@ -1,0 +1,14 @@
+
+running 9 tests
+test authority_context_candidate_matches_contract_and_frozen_prefix_order ... ok
+test authority_context_restores_preceding_sources_without_changing_key_encoder ... ok
+test guard_path_comparison_current_source_is_one_exact_predicate_edit ... ok
+test guard_path_comparison_leaves_other_reader_expectations_unchanged ... ok
+test guard_path_comparison_refuses_missing_duplicate_and_already_changed_baselines ... ok
+test history_prefix_cost_child ... ok
+test history_prefix_protocol_and_unrelated_input_are_exact ... ok
+test normalization_cost_child ... ok
+test normalization_cost_protocol_keeps_separate_scopes ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.49s
+

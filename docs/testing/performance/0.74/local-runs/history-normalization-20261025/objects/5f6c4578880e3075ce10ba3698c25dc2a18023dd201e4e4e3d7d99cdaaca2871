@@ -1,0 +1,8 @@
+{
+  "tool_output_chunk": "1690ef",
+  "command": "cargo +1.94.0 fmt --all",
+  "observed_text": "The filename or extension is too long. (os error 206)",
+  "dedicated_raw_stderr_available": false,
+  "individual_exit_status_not_captured": true,
+  "resolution": "focused rustfmt with skip_children=true; exact measured source retained; no measured retry"
+}

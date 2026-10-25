@@ -1,0 +1,273 @@
+#[path = "support/fixed_slice_namespace_guard.rs"]
+mod history_namespace;
+// The same existing document module, through its original parent chain. Do not
+// import it twice: that would duplicate the exported historical macros.
+use history_namespace::held_build::launcher::roles::binding::trust::consuming::live::prefix::fresh_status::pid_path::custody_cost::document_scratch as guard;
+#[path = "../../../tools/normalization-attribution-074/history_probe.rs"]
+mod history_profile;
+#[path = "../../../tools/normalization-attribution-074/probe.rs"]
+mod normalization_profile;
+#[path = "../../../tools/authority-runtime-074/gate.rs"]
+mod runtime;
+#[path = "../../../tools/authority-runtime-074/io.rs"]
+mod runtime_io;
+
+#[test]
+fn history_prefix_protocol_and_unrelated_input_are_exact() {
+    assert_eq!(history_profile::PATHS.len(), 3);
+    assert_eq!(history_profile::ITERATIONS, 16);
+    assert_eq!(history_profile::order(0), history_profile::OPERATIONS);
+    let mut reverse = history_profile::order(1);
+    reverse.reverse();
+    assert_eq!(reverse, history_profile::order(0));
+    for operation in history_profile::OPERATIONS {
+        for raw in ["", "unchanged", "\u{0}λ\r\n// unmatched hook"] {
+            assert_eq!(history_profile::normalize(operation, "unrelated", raw), raw);
+        }
+    }
+    assert!(
+        std::panic::catch_unwind(|| history_profile::normalize("unknown", "unrelated", ""))
+            .is_err()
+    );
+}
+
+#[test]
+fn history_prefix_cost_child() {
+    let Some(input) = std::env::var_os("HC074_HISTORY_CHAIN_INPUT") else {
+        return;
+    };
+    history_profile::run(std::path::Path::new(&input));
+}
+
+#[test]
+fn history_namespace_protocol_and_unrelated_input_are_exact() {
+    for block in 0..6 {
+        assert_eq!(history_profile::namespace_order(block), ["namespace-chain"]);
+    }
+    for raw in ["", "unchanged", "\u{0}λ\r\n// unmatched hook"] {
+        assert_eq!(
+            history_profile::normalize("namespace-chain", "unrelated", raw),
+            raw
+        );
+    }
+}
+
+#[test]
+fn history_namespace_matches_independent_frozen_sources_and_keeps_body_drift() {
+    for path in history_profile::PATHS {
+        let raw = runtime_io::read_to_string(runtime::root().join(path))
+            .unwrap()
+            .replace('\r', "");
+        let expected = runtime::frozen("a33bd9a4d0e910ec71b78f640f19b8404517ce2f", path);
+        assert_eq!(history_namespace::normalize(path, &raw), expected);
+        let changed = format!("{raw}\nfn hc074_unreviewed_body() {{ panic!(\"drift\"); }}\n");
+        assert_ne!(history_namespace::normalize(path, &changed), expected);
+    }
+}
+
+#[test]
+fn history_namespace_still_refuses_missing_and_duplicate_namespace_hook() {
+    let path = "tools/long-run-supervisor-074/src/diagnostic_fixed_slice_tests.rs";
+    let raw = runtime_io::read_to_string(runtime::root().join(path))
+        .unwrap()
+        .replace('\r', "");
+    let hook = "\n#[path = \"../tests/support/fixed_slice_namespace.rs\"]\nmod namespace;\n";
+    assert_eq!(raw.matches(hook).count(), 1);
+    let delegated = history_namespace::held_build::normalize(path, &raw);
+    assert_eq!(
+        history_namespace::normalize(path, &raw),
+        delegated.replacen(hook, "", 1)
+    );
+    for bad in [raw.replacen(hook, "", 1), format!("{raw}{hook}")] {
+        assert!(std::panic::catch_unwind(|| history_namespace::normalize(path, &bad)).is_err());
+    }
+}
+
+#[test]
+fn history_namespace_cost_child() {
+    let Some(input) = std::env::var_os("HC074_HISTORY_CHAIN_INPUT") else {
+        return;
+    };
+    history_profile::run_namespace(std::path::Path::new(&input));
+}
+
+#[test]
+fn normalization_cost_protocol_keeps_separate_scopes() {
+    assert_eq!(normalization_profile::PATHS.len(), 3);
+    assert_eq!(normalization_profile::OPERATIONS.len(), 8);
+    assert_eq!(
+        normalization_profile::order(0),
+        normalization_profile::OPERATIONS
+    );
+    let mut reverse = normalization_profile::order(1);
+    reverse.reverse();
+    assert_eq!(reverse, normalization_profile::order(0));
+}
+
+#[test]
+fn normalization_cost_child() {
+    let Some(input) = std::env::var_os("HC074_NORMALIZATION_INPUT") else {
+        return;
+    };
+    normalization_profile::run(std::path::Path::new(&input));
+}
+
+#[test]
+fn guard_path_comparison_current_source_is_one_exact_predicate_edit() {
+    let before = include_str!("../../../tools/guard-path-comparison-074/fixed-slice-before.txt")
+        .replace("\r\n", "\n");
+    let current = std::fs::read_to_string(runtime::root().join(runtime::guard_path::SOURCE))
+        .unwrap()
+        .replace("\r\n", "\n");
+    assert_eq!(runtime::guard_path::candidate(&before), current);
+    assert_eq!(
+        runtime::expected(runtime::guard_path::SOURCE),
+        Some(current.clone())
+    );
+    assert!(runtime::accepts(runtime::guard_path::SOURCE, &current));
+    for bad in [
+        current.replace(runtime::guard_path::NEW, ""),
+        format!("{current}{}", runtime::guard_path::NEW),
+        current.replace("assert_eq!", "assert_ne!"),
+        format!("{current}\nconst UNRELATED: bool = true;\n"),
+    ] {
+        assert!(!runtime::accepts(runtime::guard_path::SOURCE, &bad));
+    }
+    // The pre-existing source gate compares Rust tokens, not comments/formatting.
+    assert!(runtime::accepts(
+        runtime::guard_path::SOURCE,
+        &format!("{current}\n// comment\n")
+    ));
+}
+
+#[test]
+fn guard_path_comparison_refuses_missing_duplicate_and_already_changed_baselines() {
+    let before = include_str!("../../../tools/guard-path-comparison-074/fixed-slice-before.txt")
+        .replace("\r\n", "\n");
+    for bad in [
+        before.replace(runtime::guard_path::OLD, ""),
+        format!("{before}{}", runtime::guard_path::OLD),
+        runtime::guard_path::candidate(&before),
+    ] {
+        assert!(std::panic::catch_unwind(|| runtime::guard_path::candidate(&bad)).is_err());
+    }
+}
+
+#[test]
+fn guard_path_comparison_leaves_other_reader_expectations_unchanged() {
+    for path in [
+        "crates/xtask/tests/support/performance_contract_074_closing_validation.rs",
+        "crates/xtask/tests/support/performance_contract_074_held_placement.rs",
+    ] {
+        let (_, read) = runtime::performance::READERS
+            .iter()
+            .find(|(file, _)| *file == path)
+            .unwrap();
+        let original = runtime::frozen(runtime::BASE, path);
+        assert_eq!(
+            runtime::expected(path),
+            Some(runtime::performance::reader(&original, read))
+        );
+    }
+    assert!(runtime::expected("not/an/approved/source.rs").is_none());
+}
+#[path = "../../../tools/authority-storage-source-074/contract.rs"]
+mod storage_contract;
+fn read(path: &str) -> String {
+    if path == "docs/testing/gated-test-registry.toml" {
+        return runtime_io::read_to_string(
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("../..")
+                .join(path),
+        )
+        .unwrap();
+    }
+    std::fs::read_to_string(
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../..")
+            .join(path),
+    )
+    .unwrap()
+    .replace('\r', "")
+}
+#[test]
+fn authority_context_restores_preceding_sources_without_changing_key_encoder() {
+    for path in [
+        "tools/long-run-supervisor-074/src/diagnostic_authority_registry.rs",
+        "tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs",
+        "docs/testing/gated-test-registry.toml",
+    ] {
+        let raw = read(path);
+        let marker = if path.ends_with("registry.rs") {
+            "pub(crate) mod context_controls;"
+        } else if path.ends_with(".rs") {
+            "mod authority_context_alloc;"
+        } else {
+            "test = \"authority_context_allocation_attribution\""
+        };
+        assert_eq!(raw.matches(marker).count(), 1);
+        let output = std::process::Command::new("git")
+            .args([
+                "show",
+                &format!("a0209ce87c72d6553ad152d49f88abb61a10696e:{path}"),
+            ])
+            .output()
+            .unwrap();
+        assert!(output.status.success());
+        let before = String::from_utf8(output.stdout).unwrap().replace('\r', "");
+        let restored = crate::hc074_authority_context_view!(path, &raw);
+        assert_eq!(restored, before);
+        assert_eq!(
+            crate::hc074_authority_context_view!(path, &restored),
+            restored
+        );
+        for changed in [raw.replacen(marker, "changed", 1), format!("{raw}{raw}")] {
+            assert!(
+                std::panic::catch_unwind(|| crate::hc074_authority_context_view!(path, &changed))
+                    .is_err()
+            );
+        }
+    }
+    assert_eq!(guard::normalize("unrelated", "unchanged"), "unchanged");
+}
+#[test]
+fn authority_context_candidate_matches_contract_and_frozen_prefix_order() {
+    let contract: toml::Value = toml::from_str(&read(
+        "docs/testing/performance/0.74/authority-context-contract.toml",
+    ))
+    .unwrap();
+    for flag in [
+        "server_admitted",
+        "latency_gain_claimed",
+        "fresh_checks_changed",
+        "deadlines_changed",
+    ] {
+        assert_eq!(contract[flag].as_bool(), Some(false));
+    }
+    let raw = read("tools/long-run-supervisor-074/src/diagnostic_authority_registry.rs");
+    let old = "            || self.context() != *host\n";
+    let new = "            || self.machine_id != host.machine_id\n            || self.boot_id != host.boot_id\n            || self.user_namespace != host.user_namespace\n            || self.mount_namespace != host.mount_namespace\n";
+    let selected = if contract["candidate_enabled"].as_bool().unwrap() {
+        new
+    } else {
+        old
+    };
+    assert_eq!(raw.matches(selected).count(), 1);
+    let prefix = "        if self.issuer_key_hex != key_hex(trust)\n            || self.policy_sha256 != trust.policy_sha256\n            || self.policy_epoch != trust.epoch\n";
+    assert!(raw.contains(&format!("{prefix}{selected}")));
+    assert!(raw.contains("fn key_hex(trust: &WorkerPolicyTrust) -> String {\n    crate::hex(trust.key.as_bytes())\n}"));
+    let reference =
+        read("tools/long-run-supervisor-074/tests/support/authority_context_controls.rs");
+    let ref_prefix = prefix
+        .lines()
+        .map(|line| line[4..].replace("self.", "record."))
+        .collect::<Vec<_>>()
+        .join("\n")
+        + "\n";
+    assert!(reference.contains(&format!(
+        "{ref_prefix}{}",
+        old[4..].replace("self.", "record.")
+    )));
+    assert!(reference.contains("let mut seed = 0x074c_07e5_u64;"));
+    assert!(reference.contains("for case in 0..17"));
+}

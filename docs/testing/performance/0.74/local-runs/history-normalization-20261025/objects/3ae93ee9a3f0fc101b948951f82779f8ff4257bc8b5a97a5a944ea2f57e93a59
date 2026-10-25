@@ -1,0 +1,278 @@
+{
+  "full_fixed_slice_chain": false,
+  "independent_host_replications": false,
+  "namespace_chain": true,
+  "nested_prefixes_not_disjoint": true,
+  "observer_subtracted": false,
+  "package_replay": false,
+  "preparation": [
+    {
+      "input_bytes": 9659,
+      "input_sha256": "1e936fe855eedad6d0e5dacbd76d534a45cc8df11cd30f06f8e2ed77258bc53e",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_authority_registry.rs",
+      "prefix_warmup": false,
+      "wall_ns": 333300
+    },
+    {
+      "input_bytes": 22126,
+      "input_sha256": "4e18523c71b6b5bdf3a74d75e58df096f25c6f773067d013a07db2a8cfde5214",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs",
+      "prefix_warmup": false,
+      "wall_ns": 170800
+    },
+    {
+      "input_bytes": 15567,
+      "input_sha256": "5f77f86c3c29a42156d63ffa913583f8a8c6419562f6c2bea5c34e75937260fa",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs",
+      "prefix_warmup": false,
+      "wall_ns": 56593400
+    }
+  ],
+  "product": false,
+  "production_admission": false,
+  "samples": [
+    {
+      "block": 0,
+      "input_bytes": 9659,
+      "iterations": 16,
+      "operation": "namespace-chain",
+      "output_bytes": 9308,
+      "output_sha256": "45873848cafd559e038e1f8cec0e3c0266d98de70e7dc4fd8f2ada00a0e038fc",
+      "parent_cpu_ns": 15625000,
+      "path": "tools/long-run-supervisor-074/src/diagnostic_authority_registry.rs",
+      "wall_ns": 4481800
+    },
+    {
+      "block": 0,
+      "input_bytes": 22126,
+      "iterations": 16,
+      "operation": "namespace-chain",
+      "output_bytes": 17032,
+      "output_sha256": "2a1bd8631df4dcbeaff704a3e3d4d75b4789bb9f78571883b5aec7a6a6f2f30b",
+      "parent_cpu_ns": 0,
+      "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs",
+      "wall_ns": 10320000
+    },
+    {
+      "block": 0,
+      "input_bytes": 15567,
+      "iterations": 16,
+      "operation": "namespace-chain",
+      "output_bytes": 15573,
+      "output_sha256": "0b97e15abc884710dbc4f8976bb4a184d9835849de28d14c6c987387c5d7aa1c",
+      "parent_cpu_ns": 15625000,
+      "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs",
+      "wall_ns": 14205100
+    },
+    {
+      "block": 1,
+      "input_bytes": 9659,
+      "iterations": 16,
+      "operation": "namespace-chain",
+      "output_bytes": 9308,
+      "output_sha256": "45873848cafd559e038e1f8cec0e3c0266d98de70e7dc4fd8f2ada00a0e038fc",
+      "parent_cpu_ns": 15625000,
+      "path": "tools/long-run-supervisor-074/src/diagnostic_authority_registry.rs",
+      "wall_ns": 4672000
+    },
+    {
+      "block": 1,
+      "input_bytes": 22126,
+      "iterations": 16,
+      "operation": "namespace-chain",
+      "output_bytes": 17032,
+      "output_sha256": "2a1bd8631df4dcbeaff704a3e3d4d75b4789bb9f78571883b5aec7a6a6f2f30b",
+      "parent_cpu_ns": 0,
+      "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs",
+      "wall_ns": 9448700
+    },
+    {
+      "block": 1,
+      "input_bytes": 15567,
+      "iterations": 16,
+      "operation": "namespace-chain",
+      "output_bytes": 15573,
+      "output_sha256": "0b97e15abc884710dbc4f8976bb4a184d9835849de28d14c6c987387c5d7aa1c",
+      "parent_cpu_ns": 15625000,
+      "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs",
+      "wall_ns": 13773200
+    },
+    {
+      "block": 2,
+      "input_bytes": 9659,
+      "iterations": 16,
+      "operation": "namespace-chain",
+      "output_bytes": 9308,
+      "output_sha256": "45873848cafd559e038e1f8cec0e3c0266d98de70e7dc4fd8f2ada00a0e038fc",
+      "parent_cpu_ns": 0,
+      "path": "tools/long-run-supervisor-074/src/diagnostic_authority_registry.rs",
+      "wall_ns": 4637900
+    },
+    {
+      "block": 2,
+      "input_bytes": 22126,
+      "iterations": 16,
+      "operation": "namespace-chain",
+      "output_bytes": 17032,
+      "output_sha256": "2a1bd8631df4dcbeaff704a3e3d4d75b4789bb9f78571883b5aec7a6a6f2f30b",
+      "parent_cpu_ns": 15625000,
+      "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs",
+      "wall_ns": 9305100
+    },
+    {
+      "block": 2,
+      "input_bytes": 15567,
+      "iterations": 16,
+      "operation": "namespace-chain",
+      "output_bytes": 15573,
+      "output_sha256": "0b97e15abc884710dbc4f8976bb4a184d9835849de28d14c6c987387c5d7aa1c",
+      "parent_cpu_ns": 15625000,
+      "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs",
+      "wall_ns": 13812400
+    },
+    {
+      "block": 3,
+      "input_bytes": 9659,
+      "iterations": 16,
+      "operation": "namespace-chain",
+      "output_bytes": 9308,
+      "output_sha256": "45873848cafd559e038e1f8cec0e3c0266d98de70e7dc4fd8f2ada00a0e038fc",
+      "parent_cpu_ns": 0,
+      "path": "tools/long-run-supervisor-074/src/diagnostic_authority_registry.rs",
+      "wall_ns": 4432500
+    },
+    {
+      "block": 3,
+      "input_bytes": 22126,
+      "iterations": 16,
+      "operation": "namespace-chain",
+      "output_bytes": 17032,
+      "output_sha256": "2a1bd8631df4dcbeaff704a3e3d4d75b4789bb9f78571883b5aec7a6a6f2f30b",
+      "parent_cpu_ns": 15625000,
+      "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs",
+      "wall_ns": 9445100
+    },
+    {
+      "block": 3,
+      "input_bytes": 15567,
+      "iterations": 16,
+      "operation": "namespace-chain",
+      "output_bytes": 15573,
+      "output_sha256": "0b97e15abc884710dbc4f8976bb4a184d9835849de28d14c6c987387c5d7aa1c",
+      "parent_cpu_ns": 15625000,
+      "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs",
+      "wall_ns": 13589600
+    },
+    {
+      "block": 4,
+      "input_bytes": 9659,
+      "iterations": 16,
+      "operation": "namespace-chain",
+      "output_bytes": 9308,
+      "output_sha256": "45873848cafd559e038e1f8cec0e3c0266d98de70e7dc4fd8f2ada00a0e038fc",
+      "parent_cpu_ns": 0,
+      "path": "tools/long-run-supervisor-074/src/diagnostic_authority_registry.rs",
+      "wall_ns": 4878000
+    },
+    {
+      "block": 4,
+      "input_bytes": 22126,
+      "iterations": 16,
+      "operation": "namespace-chain",
+      "output_bytes": 17032,
+      "output_sha256": "2a1bd8631df4dcbeaff704a3e3d4d75b4789bb9f78571883b5aec7a6a6f2f30b",
+      "parent_cpu_ns": 15625000,
+      "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs",
+      "wall_ns": 9292500
+    },
+    {
+      "block": 4,
+      "input_bytes": 15567,
+      "iterations": 16,
+      "operation": "namespace-chain",
+      "output_bytes": 15573,
+      "output_sha256": "0b97e15abc884710dbc4f8976bb4a184d9835849de28d14c6c987387c5d7aa1c",
+      "parent_cpu_ns": 15625000,
+      "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs",
+      "wall_ns": 15858000
+    },
+    {
+      "block": 5,
+      "input_bytes": 9659,
+      "iterations": 16,
+      "operation": "namespace-chain",
+      "output_bytes": 9308,
+      "output_sha256": "45873848cafd559e038e1f8cec0e3c0266d98de70e7dc4fd8f2ada00a0e038fc",
+      "parent_cpu_ns": 0,
+      "path": "tools/long-run-supervisor-074/src/diagnostic_authority_registry.rs",
+      "wall_ns": 4938400
+    },
+    {
+      "block": 5,
+      "input_bytes": 22126,
+      "iterations": 16,
+      "operation": "namespace-chain",
+      "output_bytes": 17032,
+      "output_sha256": "2a1bd8631df4dcbeaff704a3e3d4d75b4789bb9f78571883b5aec7a6a6f2f30b",
+      "parent_cpu_ns": 0,
+      "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs",
+      "wall_ns": 9153100
+    },
+    {
+      "block": 5,
+      "input_bytes": 15567,
+      "iterations": 16,
+      "operation": "namespace-chain",
+      "output_bytes": 15573,
+      "output_sha256": "0b97e15abc884710dbc4f8976bb4a184d9835849de28d14c6c987387c5d7aa1c",
+      "parent_cpu_ns": 15625000,
+      "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs",
+      "wall_ns": 13400800
+    }
+  ],
+  "semantic_equivalence_of_different_prefixes_claimed": false,
+  "summary": {
+    "tools/long-run-supervisor-074/src/diagnostic_authority_registry.rs/namespace-chain": {
+      "parent_cpu_ns": {
+        "max_per_call": 976562.5,
+        "median_per_call": 0.0,
+        "min_per_call": 0.0,
+        "samples": 6
+      },
+      "wall_ns": {
+        "max_per_call": 308650.0,
+        "median_per_call": 290934.375,
+        "min_per_call": 277031.25,
+        "samples": 6
+      }
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs/namespace-chain": {
+      "parent_cpu_ns": {
+        "max_per_call": 976562.5,
+        "median_per_call": 976562.5,
+        "min_per_call": 976562.5,
+        "samples": 6
+      },
+      "wall_ns": {
+        "max_per_call": 991125.0,
+        "median_per_call": 862050.0,
+        "min_per_call": 837550.0,
+        "samples": 6
+      }
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs/namespace-chain": {
+      "parent_cpu_ns": {
+        "max_per_call": 976562.5,
+        "median_per_call": 488281.25,
+        "min_per_call": 0.0,
+        "samples": 6
+      },
+      "wall_ns": {
+        "max_per_call": 645000.0,
+        "median_per_call": 585943.75,
+        "min_per_call": 572068.75,
+        "samples": 6
+      }
+    }
+  }
+}

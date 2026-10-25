@@ -1,0 +1,17 @@
+schema = "hc074-canonical-stream-outcome-v1"
+state = "not-admitted-active-prototype-withdrawn"
+proposal = "candidate-protocol.toml"
+prototype_commit = "2568f1115d9da4c84aac197da91c797831469919"
+samples = 72
+measured_processes = 1
+reason = "mixed within-process wall observations; no measured allocation or independent CPU/end-to-end nonregression proof"
+allocation_measured = false
+independent_process_replicates = false
+installed_in_source_guard = false
+prototype_and_driver_removed_from_active_tree = true
+prototype_retained_in_git_and_evidence = true
+measured_child_repeated = false
+baseline_source_guard_changed = false
+live_checks_or_origins_changed = false
+product_candidate = false
+package_replayed = false

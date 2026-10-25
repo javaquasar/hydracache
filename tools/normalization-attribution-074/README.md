@@ -23,4 +23,19 @@ wall observations and no allocation/independent CPU proof. Its hookup, source an
 driver are removed from the active tree but recoverable from commit `2568f111`
 and the [evidence packet and report](../../docs/testing/performance/0.74/normalization-cost-result-20261025.md).
 `candidate-outcome.toml` records the withdrawal. The installed source gate never
-uses the candidate; seven active tests and the attribution remain.
+uses the candidate; the original seven tests and attribution remain.
+
+`history_probe.rs` and `history_capture.py` add two distinct opt-in protocols:
+`history-protocol.toml` fixes 72 observations of four nested historical prefixes;
+`namespace-protocol.toml` fixes 18 observations of the actual namespace adapter
+and all its predecessor delegates. The second scope does not repeat the first.
+The module import aliases the original document normalizer rather than copying
+it or duplicating the existing 432-source test in this target. Thirteen active
+tests now cover protocol, frozen-output and refusal preservation.
+
+The outermost fixed-slice adapter, every other package path and product execution
+remain outside these scopes. Nested prefixes and separate-process intervals are
+not additive or exclusive phase attribution. All first inputs/preparation spans,
+outputs and compiled-source pins are retained in the
+[historical normalization report](../../docs/testing/performance/0.74/history-normalization-result-20261025.md).
+No normalization candidate or fresh-check cache is installed.

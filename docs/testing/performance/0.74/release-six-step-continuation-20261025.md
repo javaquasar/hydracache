@@ -37,6 +37,12 @@ gate and first unchanged-bound package replay. The latter completes 111/135
 targets; its incomplete target and 23-target suffix stay unverified. Forty-three
 focused cases per Windows compiler and 63 Python controls do not replace it.
 
+The [historical normalization study](history-normalization-result-20261025.md)
+adds exact selected-prefix/namespace observations and frozen-output controls,
+not a package verdict or an accepted performance candidate. Its thirteen final
+cases per Windows compiler are a separate focused inventory, not an updated
+count for the preceding package replay.
+
 Next: use saved target/call attribution to isolate the cost owner without
 removing tests, refreshing source pins from responses or changing conditional
 reads. A separate candidate needs its own baseline and unchanged-bound proof;

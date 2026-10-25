@@ -111,6 +111,7 @@ both sole cohorts, exact measured and archived prototype sources, first refusals
 withdrawal, final gates and independent staged byte/record verification. Cargo
 manifests/lock, security policy, qualification digest and 300/60/10 origins/windows
 remain unchanged. No dependency, service, clock, server or product operation occurs.
-Further work needs attribution of the remaining historical normalization graph
-and a separately evidenced candidate, not caching fresh current-input validation
-or reopening this prototype until it passes.
+The subsequent [historical prefix and namespace study](history-normalization-result-20261025.md)
+extends attribution to selected original normalizer delegates, without reopening
+this prototype or caching fresh current-input validation. Complete-test frequency
+and cost ownership still need evidence before a package-level optimization.

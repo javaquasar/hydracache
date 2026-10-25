@@ -1,0 +1,139 @@
+"""Retain two distinct first historical-chain studies, without executing them."""
+from pathlib import Path
+import hashlib
+import json
+import re
+import subprocess
+import sys
+
+ROOT = Path(__file__).resolve().parent.parent
+BASE = 'docs/testing/performance/0.74/local-runs/history-normalization-20261025'
+CODE = '3fc437d3d59419ae9e95bb7e5209675ca01ba9dd'
+GOLDEN = 'a33bd9a4d0e910ec71b78f640f19b8404517ce2f'
+PROTECTED = {
+    'Cargo.toml': '18a8a27cf140a1d6eb31c8316ee39bb7d5832866a990346eee16cd0c30de344b',
+    'Cargo.lock': 'd2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c',
+    'docs/testing/performance/0.74/qualification-manifest.toml': '11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc',
+    'tools/authority-storage-source-074/contract.rs': 'aefcd4f6a9ed0acc1e072225ea3ed4dda82d2d1ccda0ba4f22ca74459efa64c2',
+}
+sys.path.insert(0, str(ROOT / 'tools/normalization-attribution-074'))
+import history_capture
+
+
+def sha(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+
+members, objects, phases = {}, {}, []
+def add(name, raw):
+    assert name not in members
+    digest = sha(raw)
+    members[name] = dict(sha256=digest, bytes=len(raw))
+    objects[digest] = raw
+
+
+def tree(folder, prefix):
+    for path in sorted(folder.rglob('*')):
+        if path.is_file():
+            add(prefix + '/' + path.relative_to(folder).as_posix(), path.read_bytes())
+
+
+assert subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT).decode().strip() == CODE
+checks = ROOT / 'target/source-continuation-20261024'
+for folder in sorted(checks.iterdir()):
+    if not folder.is_dir() or not folder.name.startswith(('history-prefix-20261025-', 'history-namespace-20261025-', 'history-finish-20261025-')):
+        continue
+    intent = json.loads((folder / 'intent.json').read_bytes())
+    result = json.loads((folder / 'result.json').read_bytes())
+    assert result['exit'] == 0 and result['outer_refusal'] is None, folder
+    assert result['source_unchanged'] and result['head_unchanged'] and intent['source'] == result['source_after']
+    tree(folder, 'checks/' + folder.name)
+    passes = list(map(int, re.findall(r'test result: ok\. (\d+) passed; 0 failed;', (folder / 'stdout.log').read_text())))
+    expected = 13 if folder.name in ('history-namespace-20261025-current-final', 'history-namespace-20261025-msrv-final') else None
+    if expected is not None:
+        assert passes == [expected]
+    phases.append(dict(phase=folder.name, exit=0, rust_passes=passes))
+
+for label, stem, namespace in [('prefix', 'history-prefix', False), ('namespace', 'history-namespace', True)]:
+    folder = ROOT / ('target/' + stem + '-20261025')
+    tree(folder / 'first', 'capture/' + label)
+    report = json.loads((folder / 'first/result.json').read_bytes())
+    assert history_capture.review((folder / 'first/stdout.log').read_bytes(), namespace=namespace) == report
+    compiled = json.loads((folder / 'first/preflight.json').read_bytes())['compiled_source']
+    for path in sorted((folder / 'measured-source').iterdir()):
+        name = ('crates/xtask/tests/' if path.name == 'authority_context_074.rs' else 'tools/normalization-attribution-074/') + path.name
+        raw = path.read_bytes()
+        assert sha(raw) == compiled[name], name
+        add('measured-source/' + label + '/' + path.name, raw)
+    if label == 'prefix':
+        raw = subprocess.check_output(['git', 'show', '6ade8faaf34ee9bc1091942b9e9fdbcce0c8e3a3:tools/normalization-attribution-074/history_capture.py'], cwd=ROOT)
+        assert sha(raw) == compiled['tools/normalization-attribution-074/history_capture.py']
+        add('measured-source/prefix/history_capture.py', raw)
+    for name in history_capture.PATHS:
+        raw = (ROOT / name).read_bytes()
+        assert sha(raw) == compiled[name]
+        key = 'inputs/' + name
+        if key not in members:
+            add(key, raw)
+
+report = json.loads((ROOT / 'target/history-namespace-20261025/first/result.json').read_bytes())
+for name in history_capture.PATHS:
+    raw = subprocess.check_output(['git', 'show', GOLDEN + ':' + name], cwd=ROOT)
+    assert all(row['output_sha256'] == sha(raw) and row['output_bytes'] == len(raw)
+               for row in report['samples'] if row['path'] == name)
+    add('independent-golden/' + name, raw)
+
+# Exact predecessor modules, with no modification to any existing normalizer.
+path = ROOT / 'crates/xtask/tests/support/performance_contract_074_fixed_slice.rs'
+seen = set()
+while path not in seen:
+    seen.add(path)
+    name = path.relative_to(ROOT).as_posix()
+    raw = path.read_bytes()
+    old = subprocess.check_output(['git', 'show', 'd2984650:' + name], cwd=ROOT)
+    assert raw.replace(b'\r\n', b'\n') == old.replace(b'\r\n', b'\n')
+    add('unchanged-delegates/' + name, raw)
+    link = re.search(rb'#\[path = "([^"\r\n]+\.rs)"\]', raw)
+    if link is None:
+        break
+    path = (path.parent / link[1].decode()).resolve()
+
+for path in sorted((ROOT / 'tools/normalization-attribution-074').iterdir()):
+    if path.is_file():
+        add('final-source/tools/normalization-attribution-074/' + path.name, path.read_bytes())
+add('final-source/crates/xtask/tests/authority_context_074.rs', (ROOT / 'crates/xtask/tests/authority_context_074.rs').read_bytes())
+for name, digest in PROTECTED.items():
+    raw = (ROOT / name).read_bytes()
+    assert sha(raw) == digest
+    add('protected/' + name, raw)
+for name in ('tools/authority-runtime-074/gate.rs', 'tools/authority-runtime-074/io.rs', 'tools/authority-runtime-074/performance.rs', 'deny.toml'):
+    raw = (ROOT / name).read_bytes()
+    old = subprocess.check_output(['git', 'show', 'd2984650:' + name], cwd=ROOT)
+    assert raw.replace(b'\r\n', b'\n') == old.replace(b'\r\n', b'\n')
+    add('unchanged-source/' + name, raw)
+for name in ('run-source-step-20261024.py', 'run-fresh-reader-20261024.py', 'seal-history-normalization-20261025.py', 'verify-history-normalization-staged-20261025.py'):
+    add('coordinators/' + name, (ROOT / 'target' / name).read_bytes())
+observation = dict(tool_output_chunk='1690ef', command='cargo +1.94.0 fmt --all',
+    observed_text='The filename or extension is too long. (os error 206)',
+    dedicated_raw_stderr_available=False, individual_exit_status_not_captured=True,
+    resolution='focused rustfmt with skip_children=true; exact measured source retained; no measured retry')
+add('first-format-observation.json', (json.dumps(observation, indent=2) + '\n').encode())
+index = dict(schema='hc074-history-normalization-v1', code_commit=CODE, golden_commit=GOLDEN, members=members,
+    facts=dict(phases=phases, protected_sha256=PROTECTED, prefix_processes=1, prefix_records=72,
+        namespace_processes=1, namespace_records=18, iterations_per_record=16,
+        final_rust_cases_per_toolchain=13, final_python_controls=5,
+        first_measured_results_repeated=False, golden_outputs_exact=True,
+        normalizers_changed=False, source_admission_changed=False,
+        namespace_not_outermost_fixed_slice=True, independent_host_replications=False,
+        allocation_or_rss_measured=False, package_replayed=False, product_candidate=False,
+        original_checks_frequency_order_or_windows_changed=False,
+        server=False, services=False, clocks=False, dependencies_changed=False, qualification=False))
+out = ROOT / BASE
+out.mkdir(parents=True, exist_ok=False)
+(out / 'objects').mkdir()
+(out / '.gitattributes').write_bytes(b'index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n')
+for digest, raw in objects.items():
+    (out / 'objects' / digest).write_bytes(raw)
+raw = (json.dumps(index, indent=2, sort_keys=True) + '\n').encode()
+(out / 'index.json').write_bytes(raw)
+print(json.dumps(dict(index_sha256=sha(raw), members=len(members), objects=len(objects), phases=len(phases))))

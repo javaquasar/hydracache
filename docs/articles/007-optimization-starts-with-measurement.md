@@ -19560,3 +19560,29 @@ are withdrawn after twelve semantic cases pass on both compilers; code and first
 measurements remain recoverable from Git and evidence. The original gate never
 changes. Rejecting integration despite a plausible local mechanism prevents the
 profiling work from silently changing source admission or the release's risk.
+
+### Historical normalizers need frequency attribution as well as timings
+
+The [historical chain continuation](../testing/performance/0.74/history-normalization-result-20261025.md)
+measures actual normalization functions rather than a rewritten approximation.
+Four existing nested prefixes produce one first 72-record cohort. A separate
+18-record cohort follows the original namespace adapter and all its predecessor
+delegates, without repeating the four prefix operations. Reusing the same module
+chain avoids duplicating exported macros or importing another copy of the
+432-source preservation test into the default package.
+
+Each cell contains six observations of sixteen calls. Inputs, first preparation
+spans, compiled sources, executable digests and outputs survive separately.
+Selected namespace medians are 0.291 ms for authority registry, 0.586 ms for
+kernel origin and 0.862 ms for kernel admission in Windows debug. Every namespace
+output matches an independently frozen historical source; executable-body drift
+and missing/duplicated hooks still fail preservation. Thirteen final focused
+cases pass on current Rust and MSRV. No normalizer implementation changes.
+
+These timings do not explain a 780-second package timeout by themselves.
+Nested prefixes overlap, the namespace cohort is a different process, and the
+number and distribution of complete-test calls are not established by this
+microbenchmark. Adding intervals or multiplying a selected file's timing by a
+guessed call count would create unsupported attribution. The useful next target
+is frequency-weighted complete-test ownership. Fresh validation, its original
+schedule and the retained first refusals stay fixed while that owner is found.

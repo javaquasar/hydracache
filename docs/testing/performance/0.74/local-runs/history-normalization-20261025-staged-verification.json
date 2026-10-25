@@ -1,0 +1,16 @@
+{
+  "schema": "hc074-history-normalization-staged-verification-v1",
+  "index_sha256": "b6431cf10d669e2f53b3c7aaef5bfb7cabac9432ea09e12df9fb6393efca09f0",
+  "members": 185,
+  "objects": 147,
+  "prefix_records": 72,
+  "namespace_records": 18,
+  "raw_records_and_arithmetic_verified": true,
+  "measured_sources_verified": true,
+  "independent_golden_verified": true,
+  "protected_unchanged": true,
+  "no_measured_rerun": true,
+  "server_or_qualification_admission": false,
+  "verifier": "coordinators/verify-history-normalization-staged-20261025.py",
+  "tool_output_chunk": "b24c19"
+}
