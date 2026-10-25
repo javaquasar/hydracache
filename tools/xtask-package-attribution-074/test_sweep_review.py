@@ -4,6 +4,7 @@ import copy
 import json
 from pathlib import Path
 import unittest
+import tomllib
 
 import sweep_review as sweep
 
@@ -23,6 +24,19 @@ class SweepControls(unittest.TestCase):
         self.assertEqual((result['completed_targets'], result['expected_targets'], result['unstarted_targets']), (111, 135, 23))
         self.assertFalse(result['elapsed_time_attributed'])
         self.assertFalse(result['multiplied_by_other_cohort_timing'])
+
+    def test_prepared_helper_protocol_preserves_original_scope_and_bounds(self):
+        path = Path(sweep.__file__).with_name('helper-attribution-protocol.toml')
+        protocol = tomllib.loads(path.read_text())
+        self.assertEqual(protocol['status'], 'prepared-not-executed')
+        self.assertEqual(protocol['target_source_sha256'], sweep.SOURCE_SHA256)
+        self.assertEqual((protocol['case_threads'], protocol['outer_bound_seconds']), (4, 780))
+        for key in ('fresh_checks_cached', 'lookup_key_cache_candidate', 'object_cache_candidate',
+                    'persistent_git_candidate', 'original_conditional_reads_or_pins_changed',
+                    'live_frequency_order_or_deadlines_changed', 'retry_to_pass', 'package_replay',
+                    'package_gate_completed_by_target_result', 'product', 'server', 'services',
+                    'clocks', 'dependencies_changed', 'qualification'):
+            self.assertIs(protocol[key], False, key)
 
     def test_source_drift_and_changed_bounds_refuse_before_proof(self):
         for replacement in (b'// comment drift\n', b'fn replacement() {}\n'):
