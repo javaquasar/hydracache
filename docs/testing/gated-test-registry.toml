@@ -2,6 +2,66 @@ schema_version = 1
 release = "0.64.0"
 
 [[gate]]
+id = "tool.hydracache-long-run-supervisor-074.before-prototype-cpu"
+kind = "external_tool"
+source = "tools/long-run-supervisor-074/src/diagnostic_authority_before_tests.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "hydracache_long_run_supervisor_074"
+test = "fresh_authority_before_prototype_cpu_screen"
+cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
+env = ""
+reason = "manual finite baseline before-read CPU attribution; no admission or preparation retry"
+tier = "manual"
+required_features = []
+required_env = ["HC074_BEFORE_COHORT"]
+required_tools = ["cargo"]
+timeout_seconds = 300
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+[gate.command]
+program = "cargo"
+args = ["test","--release","--locked","-p","hydracache-long-run-supervisor-074","--lib","fresh_authority_before_prototype_cpu_screen","--","--ignored","--nocapture","--test-threads=1"]
+cwd = "."
+platform = "linux"
+[gate.command.env]
+HC074_BEFORE_COHORT = "0"
+
+[[gate]]
+id = "tool.hydracache-long-run-supervisor-074.before-installed-cpu"
+kind = "external_tool"
+source = "tools/long-run-supervisor-074/src/diagnostic_authority_before_tests.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "hydracache_long_run_supervisor_074"
+test = "fresh_authority_before_installed_cpu_screen"
+cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
+env = ""
+reason = "manual finite installed before-read CPU attribution; no admission or preparation retry"
+tier = "manual"
+required_features = []
+required_env = ["HC074_BEFORE_COHORT"]
+required_tools = ["cargo"]
+timeout_seconds = 300
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+[gate.command]
+program = "cargo"
+args = ["test","--release","--locked","-p","hydracache-long-run-supervisor-074","--lib","fresh_authority_before_installed_cpu_screen","--","--ignored","--nocapture","--test-threads=1"]
+cwd = "."
+platform = "linux"
+[gate.command.env]
+HC074_BEFORE_COHORT = "0"
+
+[[gate]]
 id = "tool.hydracache-long-run-supervisor-074.directory-prototype-cpu"
 kind = "external_tool"
 source = "tools/long-run-supervisor-074/src/diagnostic_authority_directory_tests.rs"
