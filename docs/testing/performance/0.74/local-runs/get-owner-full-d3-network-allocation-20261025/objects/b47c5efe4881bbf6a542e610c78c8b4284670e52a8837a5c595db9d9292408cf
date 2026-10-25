@@ -1,0 +1,21 @@
+{
+  "attempt": {
+    "argv": [
+      "/usr/bin/python3",
+      "-I",
+      "-B",
+      "-c",
+      "import os,sys,time\npath=sys.argv[1];fds=[]\nfor name in os.listdir('/proc/self/fd'):\n try:\n  if os.readlink('/proc/self/fd/'+name)==path:fds.append(int(name))\n except FileNotFoundError:pass\nassert len(fds)==1 and os.getuid()==1000 and os.getgid()==1000\ncopy=os.dup(fds[0]);pid=os.fork()\nend=time.monotonic()+(.2 if sys.argv[2]=='healthy' else 90)\nwhile time.monotonic()<end:os.write(1,b'owned-writer'+bytes([10]));time.sleep(.01)\nos._exit(0)\n",
+      "/tmp/hc074-get-owner-d3-fixture-7b1d447483944a1eac16bb270849b211/private.lock",
+      "healthy"
+    ]
+  },
+  "boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+  "deadline_ns": 1675722488443004,
+  "group": "/sys/fs/cgroup/system.slice/hc074-get-owner-d3-fixture-7b1d447483944a1eac16bb270849b211.service/writers-0",
+  "group_identity": [
+    29,
+    352268
+  ],
+  "quiet": null
+}

@@ -1,0 +1,6 @@
+{
+  "path": "/sys/fs/cgroup/system.slice/hc074-get-owner-held-881ed769590b484cb54c005a07a00155.service/writers",
+  "dev": 29,
+  "ino": 343894,
+  "boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f\n"
+}

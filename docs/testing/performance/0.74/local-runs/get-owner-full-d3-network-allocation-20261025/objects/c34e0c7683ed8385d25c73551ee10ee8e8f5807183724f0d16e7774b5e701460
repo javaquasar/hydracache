@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "<stdin>", line 69, in <module>
+  File "<stdin>", line 15, in run
+AssertionError: (['/usr/bin/systemctl', 'stop', 'hc074-get-owner-d3-fixture-8cfacefb1bf94e4091446448fbd89a4c.service', 'hc074-get-owner-d3-fixture-8cfacefb1bf94e4091446448fbd89a4c-standin.service'], 'Failed to stop hc074-get-owner-d3-fixture-8cfacefb1bf94e4091446448fbd89a4c-standin.service: Unit hc074-get-owner-d3-fixture-8cfacefb1bf94e4091446448fbd89a4c-standin.service not loaded.\n')

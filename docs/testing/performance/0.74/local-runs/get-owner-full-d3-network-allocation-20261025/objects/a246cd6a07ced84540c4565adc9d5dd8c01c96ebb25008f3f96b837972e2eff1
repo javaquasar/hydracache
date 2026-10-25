@@ -1,0 +1,24 @@
+from pathlib import Path
+import hashlib,io,json,os,subprocess,sys,tarfile
+base=Path('/tmp/hc074-server-gate-root-20261025.0k0xbdah')
+pointer=json.loads((base/'get-owner-allocation-v2-stage-first.json').read_bytes());root=Path(pointer['root'])
+assert (root/'restored.json').is_file(),'wait for terminal restoration; never reexecute'
+plan=json.loads((root/'plan.json').read_bytes());assert hashlib.sha256((root/'plan.json').read_bytes()).hexdigest()==pointer['plan_sha256']
+ns={'__name__':'readonly_export'};exec(compile((root/'coordinator.py').read_bytes(),'<sealed-coordinator>','exec'),ns)
+ns['static_frame'](plan)
+stable=ns['service_state'](plan['supervisor']);assert stable['ActiveState']=='active' and stable['SubState']=='running' and stable['MainPID']!='0'
+pid=stable['MainPID'];assert os.readlink('/proc/'+pid+'/exe')=='/opt/hydracache-perf/bin/hydracache-long-run-supervisor-074'
+assert ns['digest']('/proc/'+pid+'/exe')==plan['protected_files']['/opt/hydracache-perf/bin/hydracache-long-run-supervisor-074']
+snapshot=dict(supervisor=stable,boot=ns['BOOT'].read_text().strip(),cgroup=Path('/proc/'+pid+'/cgroup').read_text(),start_ticks=Path('/proc/'+pid+'/stat').read_text().rsplit(')',1)[1].split()[19],installed_and_markers_verified=True,qualification=False,read_only=True)
+journal=subprocess.run(['/usr/bin/journalctl','--no-pager','-u',plan['unit'],'-o','short-monotonic'],capture_output=True,timeout=10);assert journal.returncode==0
+with tarfile.open(fileobj=sys.stdout.buffer,mode='w|gz',compresslevel=6) as archive:
+ def add(name,raw):
+  assert len(raw)<=16*1024**2
+  assert b'-----BEGIN PRIVATE KEY-----' not in raw and b'-----BEGIN EC PRIVATE KEY-----' not in raw
+  info=tarfile.TarInfo(name);info.size=len(raw);info.mode=0o400;archive.addfile(info,io.BytesIO(raw))
+ for p in sorted(root.iterdir()):
+  if p.name in ['private-material.json','allocation-off','allocation-on']:continue
+  assert p.is_file() and not p.is_symlink()
+  add('stage/'+p.name,p.read_bytes())
+ add('stage/journal.snapshot.log',journal.stdout)
+ add('stage/host-final.snapshot.json',json.dumps(snapshot,sort_keys=True).encode())

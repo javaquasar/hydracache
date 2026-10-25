@@ -1,0 +1,147 @@
+schema_version = 1
+profile_id = "get-owner-full-d3-allocation-074-v1"
+proposal_id = "p74-get-response-owner-v1"
+state = "preregistered-before-allocation-stage-implementation-and-measurement"
+baseline_source = "352b0cc9cc7eda9525ea5f86491cb1e0be62c915"
+product_hypothesis = "Only the existing successful nonempty length-sized RESP GET Vec transfer; no new product mutation."
+instrumentation = "Separate requested-layout System counting executable around the canonical scheduled measurement; no timing claims."
+baseline = "same clean instrumentation source/locks/toolchain, get-owner off"
+candidate = "same clean instrumentation source/locks/toolchain, get-owner on"
+product_or_dependency_changes_allowed = false
+admission_allowed = false
+timing_or_retention_acceptance_allowed = false
+historical_b0_or_d3a_retry_allowed = false
+numerical_execution_without_final_clean_seal_allowed = false
+new_optimization_hypotheses_allowed = false
+
+[workload]
+seed = 740074
+keyspace = 16
+slots = 8
+operations = 128
+offered_rate_per_second = 10000
+maximum_queued = 128
+warmup_calls = 64
+operation_timeout_ns = 5000000000
+drain_timeout_ns = 5000000000
+slo_ns = 5000000000
+highest_trackable_ns = 10000000000
+maximum_attempt_seconds = 60
+maximum_receipt_bytes = 16777216
+scope = "decode/dispatch/reduce/encode/write/flush plus colocated scheduled client, byte oracles, wire/task drain and observation projection; exclude startup/preload/PKI/warmup/final verification/shutdown/JSON"
+all_config_dataset_material_source_binary_and_lock_pins_checked = true
+secure_material = "one private diagnostic PKI file for the entire sealed stage; compare raw hash and public transport receipts"
+plain_material = "absent; no accidental TLS fallback or fake secure receipt"
+ttl = "none; canonical clocks and product semantics unchanged"
+
+[matrix]
+independent_aa_pairs_per_cell = 5
+independent_ab_pairs_per_cell = 5
+total_fresh_process_attempts = 240
+order = "AA then AB, pair-major/cell-major, off-on for odd pairs and on-off for even; AA both roles execute off"
+maximum_aa_gross_allocation_relative_noise = 0.01
+maximum_affected_gross_allocation_ratio = 0.80
+maximum_native_gross_allocation_ratio = 1.05
+estimator = "all five on/off paired log ratios, fixed two-sided 95% t(4)=2.7764451051977987; upper cost bound must meet ceiling"
+zero_errors_timeouts_rejections_incomplete_or_overflows_required = true
+all_offers_exactly_once_and_explicit_shutdown_required = true
+requested_peak_and_live_data_certifies_full_memory_lane = false
+on_invalid = "retain original intent, complete or bounded-prefix streams and first refusal; stop; no automatic retry, threshold/workload repair or best-pair selection"
+on_valid_red = "finish this finite allocation stage, retain every pair and reject GET-owner for 0.74 on the failed mandatory practical-effect/native-allocation gate; never label unrun CPU/retention gates passed"
+on_green = "only allocation-stage pass; continue the remaining full-D3 timing/native/memory/semantic gates before any admission"
+
+[host_execution]
+authority = "operator-approved dedicated-host short maintenance; not production enrollment or installed release execution"
+service = "hydracache-performance-supervisor-074.service"
+preconditions = "exact installed binary/receipt, same boot/service generation and no active campaign or lifecycle marker"
+external_host_fence_only_after_exact_service_inactive = true
+owned_cgroup_autonomous_watchdog_required = true
+all_writers_keep_host_fence_until_stopped = true
+controller_disconnect_does_not_orphan_or_retry = true
+restoration_and_verified_supervisor_required = true
+installation_clock_apparmor_or_other_service_changes_allowed = false
+maximum_stage_seconds = 1200
+target = "x86_64-unknown-linux-gnu"
+toolchain = "1.94.0"
+build_profile = "release"
+runtime = "current-thread; identical colocated client/server topology"
+measurement_cpus = [1, 2, 3, 4]
+coordinator_cpus = [0, 5, 6, 7]
+quiet_sample_milliseconds = 500
+maximum_background_cpu_percent = 10.0
+quiet_guard_or_placement_failure_is_invalid_not_retry = true
+workload_execution_before_coordinator_fault_gate_allowed = false
+six_hour_or_24_hour_qualification_allowed = false
+
+[[cell]]
+id = "resp2-get-4k-p50"
+surface = "resp2"
+payload_bytes = 4096
+pipeline_depth = 50
+affected = true
+[[cell]]
+id = "resp2-get-1m-p10"
+surface = "resp2"
+payload_bytes = 1048576
+pipeline_depth = 10
+affected = true
+[[cell]]
+id = "resp3-get-4k-p50"
+surface = "resp3"
+payload_bytes = 4096
+pipeline_depth = 50
+affected = true
+[[cell]]
+id = "resp3-get-1m-p10"
+surface = "resp3"
+payload_bytes = 1048576
+pipeline_depth = 10
+affected = true
+[[cell]]
+id = "resp2-mtls-get-4k-p50"
+surface = "resp2-mtls"
+payload_bytes = 4096
+pipeline_depth = 50
+affected = true
+[[cell]]
+id = "resp2-mtls-get-1m-p10"
+surface = "resp2-mtls"
+payload_bytes = 1048576
+pipeline_depth = 10
+affected = true
+[[cell]]
+id = "resp3-mtls-get-4k-p50"
+surface = "resp3-mtls"
+payload_bytes = 4096
+pipeline_depth = 50
+affected = true
+[[cell]]
+id = "resp3-mtls-get-1m-p10"
+surface = "resp3-mtls"
+payload_bytes = 1048576
+pipeline_depth = 10
+affected = true
+[[cell]]
+id = "embedded-get-4k"
+surface = "embedded"
+payload_bytes = 4096
+pipeline_depth = 0
+affected = false
+[[cell]]
+id = "direct-get-4k"
+surface = "direct"
+payload_bytes = 4096
+pipeline_depth = 0
+affected = false
+[[cell]]
+id = "hc1-get-4k"
+surface = "hc1"
+payload_bytes = 4096
+pipeline_depth = 0
+affected = false
+[[cell]]
+id = "hc2-mtls-get-4k"
+surface = "hc2-mtls"
+payload_bytes = 4096
+pipeline_depth = 0
+affected = false

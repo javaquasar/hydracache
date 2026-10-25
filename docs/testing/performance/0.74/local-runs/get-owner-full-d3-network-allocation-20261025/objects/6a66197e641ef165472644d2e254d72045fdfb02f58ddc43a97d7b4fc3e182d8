@@ -1,0 +1,24 @@
+
+running 8 tests
+test memory::tests::allocation_zeroed_reallocation_and_drop_preserve_live_accounting ... ok
+test memory::tests::epoch_counts_gross_calls_peak_and_owner_release_without_oracle_allocation ... ok
+test tests::argument_grammar_requires_exact_pins_and_no_fallback_or_retry ... ok
+test tests::deadline_is_created_inside_the_runtime_without_starting_a_fixture ... ok
+test tests::exact_stage_cells_and_identity_bounds_without_workloads ... ok
+test tests::physical_placement_is_required_strict_and_part_of_identity ... ok
+test tests::semantic_wire_control_reaches_each_required_depth_without_counting ... semantic-only surface=Resp2 payload=4096 configured=50 observed=Some(50) error=None shutdown=true
+semantic-only surface=Resp2 payload=1048576 configured=10 observed=Some(10) error=None shutdown=true
+semantic-only surface=Resp3 payload=4096 configured=50 observed=Some(50) error=None shutdown=true
+semantic-only surface=Resp3 payload=1048576 configured=10 observed=Some(10) error=None shutdown=true
+semantic-only surface=Resp2Mtls payload=4096 configured=50 observed=Some(50) error=None shutdown=true
+semantic-only surface=Resp2Mtls payload=1048576 configured=10 observed=Some(10) error=Some("allocation observation contains errors, incomplete owners or overflow") shutdown=true
+FAILED
+test tests::wire_intervals_do_not_invent_overlap_at_equal_timestamps ... ok
+
+failures:
+
+failures:
+    tests::semantic_wire_control_reaches_each_required_depth_without_counting
+
+test result: FAILED. 7 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 27.84s
+

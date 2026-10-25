@@ -1,0 +1,29 @@
+{
+  "argv": [
+    "/usr/bin/systemd-run",
+    "--no-ask-password",
+    "--quiet",
+    "--unit=hc074-get-owner-d3-fixture-8cfacefb1bf94e4091446448fbd89a4c.service",
+    "--service-type=exec",
+    "--property=Delegate=yes",
+    "--property=DelegateSubgroup=control",
+    "--property=RuntimeMaxSec=30",
+    "--property=KillMode=control-group",
+    "--property=KillSignal=SIGKILL",
+    "--property=SendSIGKILL=yes",
+    "--property=Restart=no",
+    "--property=TimeoutStopSec=30",
+    "--property=NoNewPrivileges=yes",
+    "--property=ExecStopPost=/usr/bin/python3 -I -B /tmp/hc074-get-owner-d3-fixture-8cfacefb1bf94e4091446448fbd89a4c/coordinator.py post /tmp/hc074-get-owner-d3-fixture-8cfacefb1bf94e4091446448fbd89a4c",
+    "/usr/bin/python3",
+    "-I",
+    "-B",
+    "/tmp/hc074-get-owner-d3-fixture-8cfacefb1bf94e4091446448fbd89a4c/coordinator.py",
+    "main",
+    "/tmp/hc074-get-owner-d3-fixture-8cfacefb1bf94e4091446448fbd89a4c"
+  ],
+  "fixture": "healthy",
+  "shared_host_fence": false,
+  "stable_supervisor_stop": false,
+  "retry": false
+}

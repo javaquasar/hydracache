@@ -1,0 +1,7 @@
+{
+  "synthetic": true,
+  "product": false,
+  "shared_host_fence": false,
+  "service_stop": false,
+  "retry": false
+}

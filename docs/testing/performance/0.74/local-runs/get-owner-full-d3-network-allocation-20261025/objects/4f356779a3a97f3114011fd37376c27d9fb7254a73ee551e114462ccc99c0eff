@@ -1,0 +1,30 @@
+[1675039.395204] Ubuntu-noble-latest-amd64-base.zst systemd[1]: Starting hc074-get-owner-d3-fixture-8cfacefb1bf94e4091446448fbd89a4c.service - /usr/bin/python3 -I -B /tmp/hc074-get-owner-d3-fixture-8cfacefb1bf94e4091446448fbd89a4c/coordinator.py main /tmp/hc074-get-owner-d3-fixture-8cfacefb1bf94e4091446448fbd89a4c...
+[1675039.395773] Ubuntu-noble-latest-amd64-base.zst systemd[1]: Started hc074-get-owner-d3-fixture-8cfacefb1bf94e4091446448fbd89a4c.service - /usr/bin/python3 -I -B /tmp/hc074-get-owner-d3-fixture-8cfacefb1bf94e4091446448fbd89a4c/coordinator.py main /tmp/hc074-get-owner-d3-fixture-8cfacefb1bf94e4091446448fbd89a4c.
+[1675039.588104] Ubuntu-noble-latest-amd64-base.zst python3[371188]: Traceback (most recent call last):
+[1675039.588104] Ubuntu-noble-latest-amd64-base.zst python3[371188]:   File "/tmp/hc074-get-owner-d3-fixture-8cfacefb1bf94e4091446448fbd89a4c/coordinator.py", line 335, in <module>
+[1675039.588413] Ubuntu-noble-latest-amd64-base.zst python3[371188]:     entry()
+[1675039.588413] Ubuntu-noble-latest-amd64-base.zst python3[371188]:   File "/tmp/hc074-get-owner-d3-fixture-8cfacefb1bf94e4091446448fbd89a4c/coordinator.py", line 325, in entry
+[1675039.588413] Ubuntu-noble-latest-amd64-base.zst python3[371188]:     main(plan, root)
+[1675039.588413] Ubuntu-noble-latest-amd64-base.zst python3[371188]:   File "/tmp/hc074-get-owner-d3-fixture-8cfacefb1bf94e4091446448fbd89a4c/coordinator.py", line 252, in main
+[1675039.588413] Ubuntu-noble-latest-amd64-base.zst python3[371188]:     timer_stop(plan, sequence)
+[1675039.588413] Ubuntu-noble-latest-amd64-base.zst python3[371188]:   File "/tmp/hc074-get-owner-d3-fixture-8cfacefb1bf94e4091446448fbd89a4c/coordinator.py", line 160, in timer_stop
+[1675039.588413] Ubuntu-noble-latest-amd64-base.zst python3[371188]:     command(['/usr/bin/systemctl', 'stop', name + '.timer', name + '.service'])
+[1675039.588413] Ubuntu-noble-latest-amd64-base.zst python3[371188]:   File "/tmp/hc074-get-owner-d3-fixture-8cfacefb1bf94e4091446448fbd89a4c/coordinator.py", line 53, in command
+[1675039.588413] Ubuntu-noble-latest-amd64-base.zst python3[371188]:     raise RuntimeError(f'command refusal: {argv!r}: {p.returncode}: {p.stderr.decode(errors="replace")}')
+[1675039.588413] Ubuntu-noble-latest-amd64-base.zst python3[371188]: RuntimeError: command refusal: ['/usr/bin/systemctl', 'stop', 'hc074-get-owner-d3-fixture-8cfacefb1bf94e4091446448fbd89a4c-deadline-0.timer', 'hc074-get-owner-d3-fixture-8cfacefb1bf94e4091446448fbd89a4c-deadline-0.service']: 5: Failed to stop hc074-get-owner-d3-fixture-8cfacefb1bf94e4091446448fbd89a4c-deadline-0.service: Unit hc074-get-owner-d3-fixture-8cfacefb1bf94e4091446448fbd89a4c-deadline-0.service not loaded.
+[1675039.597815] Ubuntu-noble-latest-amd64-base.zst systemd[1]: hc074-get-owner-d3-fixture-8cfacefb1bf94e4091446448fbd89a4c.service: Main process exited, code=exited, status=1/FAILURE
+[1675039.672632] Ubuntu-noble-latest-amd64-base.zst python3[371200]: Traceback (most recent call last):
+[1675039.672632] Ubuntu-noble-latest-amd64-base.zst python3[371200]:   File "/tmp/hc074-get-owner-d3-fixture-8cfacefb1bf94e4091446448fbd89a4c/coordinator.py", line 335, in <module>
+[1675039.672973] Ubuntu-noble-latest-amd64-base.zst python3[371200]:     entry()
+[1675039.672973] Ubuntu-noble-latest-amd64-base.zst python3[371200]:   File "/tmp/hc074-get-owner-d3-fixture-8cfacefb1bf94e4091446448fbd89a4c/coordinator.py", line 327, in entry
+[1675039.672973] Ubuntu-noble-latest-amd64-base.zst python3[371200]:     post(plan, root)
+[1675039.672973] Ubuntu-noble-latest-amd64-base.zst python3[371200]:   File "/tmp/hc074-get-owner-d3-fixture-8cfacefb1bf94e4091446448fbd89a4c/coordinator.py", line 294, in post
+[1675039.672973] Ubuntu-noble-latest-amd64-base.zst python3[371200]:     timer_stop(plan, sequence)
+[1675039.672973] Ubuntu-noble-latest-amd64-base.zst python3[371200]:   File "/tmp/hc074-get-owner-d3-fixture-8cfacefb1bf94e4091446448fbd89a4c/coordinator.py", line 160, in timer_stop
+[1675039.672973] Ubuntu-noble-latest-amd64-base.zst python3[371200]:     command(['/usr/bin/systemctl', 'stop', name + '.timer', name + '.service'])
+[1675039.672973] Ubuntu-noble-latest-amd64-base.zst python3[371200]:   File "/tmp/hc074-get-owner-d3-fixture-8cfacefb1bf94e4091446448fbd89a4c/coordinator.py", line 53, in command
+[1675039.672973] Ubuntu-noble-latest-amd64-base.zst python3[371200]:     raise RuntimeError(f'command refusal: {argv!r}: {p.returncode}: {p.stderr.decode(errors="replace")}')
+[1675039.672973] Ubuntu-noble-latest-amd64-base.zst python3[371200]: RuntimeError: command refusal: ['/usr/bin/systemctl', 'stop', 'hc074-get-owner-d3-fixture-8cfacefb1bf94e4091446448fbd89a4c-deadline-0.timer', 'hc074-get-owner-d3-fixture-8cfacefb1bf94e4091446448fbd89a4c-deadline-0.service']: 5: Failed to stop hc074-get-owner-d3-fixture-8cfacefb1bf94e4091446448fbd89a4c-deadline-0.timer: Unit hc074-get-owner-d3-fixture-8cfacefb1bf94e4091446448fbd89a4c-deadline-0.timer not loaded.
+[1675039.672973] Ubuntu-noble-latest-amd64-base.zst python3[371200]: Failed to stop hc074-get-owner-d3-fixture-8cfacefb1bf94e4091446448fbd89a4c-deadline-0.service: Unit hc074-get-owner-d3-fixture-8cfacefb1bf94e4091446448fbd89a4c-deadline-0.service not loaded.
+[1675039.682510] Ubuntu-noble-latest-amd64-base.zst systemd[1]: hc074-get-owner-d3-fixture-8cfacefb1bf94e4091446448fbd89a4c.service: Control process exited, code=exited, status=1/FAILURE
+[1675039.682717] Ubuntu-noble-latest-amd64-base.zst systemd[1]: hc074-get-owner-d3-fixture-8cfacefb1bf94e4091446448fbd89a4c.service: Failed with result 'exit-code'.

@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "synthetic": true,
+  "synthetic_deadline_seconds": 2,
+  "unit": "hc074-get-owner-d3-fixture-e376fbec914b49e480c68678d4704632.service",
+  "supervisor": "hc074-get-owner-d3-fixture-e376fbec914b49e480c68678d4704632-standin.service",
+  "supervisor_before": {
+    "MainPID": "374088",
+    "NRestarts": "0",
+    "ActiveState": "active",
+    "SubState": "running"
+  },
+  "boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+  "fence": "/tmp/hc074-get-owner-d3-fixture-e376fbec914b49e480c68678d4704632/private.lock",
+  "fence_identity": [
+    2306,
+    11962252
+  ],
+  "protected_files": {
+    "/opt/hydracache-perf/bin/hydracache-long-run-supervisor-074": "f797629f65385ebfd4d94577a43a2d1d020f71c1e841028dad7d02a51b47ad62",
+    "/var/lib/hydracache-performance/provisioning-receipt-074.json": "b314953d4deedaeaade3e24468da4844b7f13d348a5d77b8e8f41c672ff44525"
+  },
+  "inputs": {
+    "/tmp/hc074-get-owner-d3-fixture-e376fbec914b49e480c68678d4704632/coordinator.py": "fcb8a53eba5ebc7e1364cbfa0d2bcb9e0ad1098f75b4e53dae56b7503c02ed38"
+  },
+  "child_env": {
+    "PATH": "/usr/bin:/bin"
+  },
+  "attempts": [
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "-I",
+        "-B",
+        "-c",
+        "import os,sys,time\npath=sys.argv[1];fds=[]\nfor name in os.listdir('/proc/self/fd'):\n try:\n  if os.readlink('/proc/self/fd/'+name)==path:fds.append(int(name))\n except FileNotFoundError:pass\nassert len(fds)==1 and os.getuid()==1000 and os.getgid()==1000\ncopy=os.dup(fds[0]);pid=os.fork()\nend=time.monotonic()+(.2 if sys.argv[2]=='healthy' else 90)\nwhile time.monotonic()<end:os.write(1,b'owned-writer'+bytes([10]));time.sleep(.01)\nos._exit(0)\n",
+        "/tmp/hc074-get-owner-d3-fixture-e376fbec914b49e480c68678d4704632/private.lock",
+        "deadline"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,91 @@
+"""Private-fence synthetic scope test. Never acquire the shared host lock."""
+from pathlib import Path
+import fcntl, hashlib, json, os, select, subprocess, sys, time, uuid
+
+base = Path('/tmp/hc074-server-gate-root-20261025.0k0xbdah')
+raw = (base/'server-fault-worker-20261025.py').read_bytes()
+assert hashlib.sha256(raw).hexdigest() == 'af1e9926e1ad40bc49c1c225d79f5fffc788c715a7889743decea129ec4b17a3'
+sys.argv = ['readonly','6640e1b9b31ae7c87137b335be4f2665d729ea7b4324ee0e874bdbedc346c520']
+scope = {}; exec(compile(raw.decode().split('started=time.monotonic_ns()\n')[0], '<pinned-preflight>', 'exec'), scope)
+before = scope['preflight']()
+root = base/'get-owner-scope-fd-fixture-first'; root.mkdir(mode=0o700)
+def publish(name,value):
+    with (root/name).open('x') as f: json.dump(value,f,indent=2); f.flush(); os.fsync(f.fileno())
+publish('intent.json',dict(synthetic=True, product=False, shared_host_fence=False, service_stop=False, retry=False))
+publish('preflight.json',before)
+tag = 'hc074-get-owner-scope-' + uuid.uuid4().hex
+unit = tag+'.scope'
+code = r'''
+import ctypes,fcntl,json,os,signal,sys,time
+lock,sink,dev,ino=map(int,sys.argv[1:])
+assert os.fstat(lock).st_dev==dev and os.fstat(lock).st_ino==ino
+assert fcntl.fcntl(lock,fcntl.F_GETFL)&os.O_ACCMODE==os.O_RDONLY
+assert fcntl.fcntl(lock,fcntl.F_GETFD)&fcntl.FD_CLOEXEC==0
+libc=ctypes.CDLL(None,use_errno=True)
+assert libc.prctl(38,1,0,0,0)==0
+os.setgroups([]);os.setgid(1000);os.setuid(1000)
+assert os.getuid()==1000 and os.getgid()==1000
+copy= os.dup(lock)
+child=os.fork()
+if child==0:
+ signal.signal(signal.SIGTERM,signal.SIG_IGN)
+ while True: os.write(sink,b'x');time.sleep(.01)
+print(json.dumps(dict(pid=os.getpid(),child=child,uid=os.getuid(),gid=os.getgid(),fd_preserved=True,
+ cgroup=open('/proc/self/cgroup').read().strip())),flush=True)
+os._exit(0)
+'''
+publish('source.json',dict(code=code))
+lock = os.open(root/'private-fixture.lock',os.O_CREAT|os.O_EXCL|os.O_WRONLY,0o600);os.close(lock)
+lock = os.open(root/'private-fixture.lock',os.O_RDONLY|os.O_NOFOLLOW)
+fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB); stamp=os.fstat(lock)
+sink=os.open(root/'writer.bin',os.O_CREAT|os.O_EXCL|os.O_WRONLY,0o600)
+argv=['/usr/bin/systemd-run','--scope','--no-ask-password','--quiet','--unit='+unit,
+ '--property=RuntimeMaxSec=3','--property=RuntimeRandomizedExtraSec=0','--property=KillMode=control-group',
+ '--property=KillSignal=SIGKILL','--property=SendSIGKILL=yes','--property=TimeoutStopSec=1',
+ '/usr/bin/python3','-I','-B','-c',code,str(lock),str(sink),str(stamp.st_dev),str(stamp.st_ino)]
+publish('command.json',dict(argv=argv,env=dict(PATH='/usr/bin:/bin',LANG='C')))
+result=dict(passed=False,first_refusal=None,postflight_refusal=None,product=False)
+child=None;events=None
+try:
+    child=subprocess.Popen(argv,env=dict(PATH='/usr/bin:/bin',LANG='C'),pass_fds=(lock,sink),stdout=subprocess.PIPE,stderr=(root/'scope.stderr.log').open('xb'),start_new_session=True)
+    assert select.select([child.stdout],[],[],5)[0], 'ready deadline'
+    ready=json.loads(child.stdout.readline(65537));publish('ready.json',ready)
+    assert ready['fd_preserved'] is True and ready['uid']==1000 and ready['cgroup'].endswith('/'+unit)
+    props=subprocess.check_output(['/usr/bin/systemctl','show',unit,'-p','ControlGroup','-p','RuntimeMaxUSec','-p','KillMode','-p','KillSignal','-p','LoadState'],timeout=5).decode()
+    publish('properties.json',dict(raw=props))
+    fields=dict(line.split('=',1) for line in props.splitlines())
+    assert fields['RuntimeMaxUSec']=='3s' and fields['KillMode']=='control-group' and fields['KillSignal']=='9'
+    cg=Path('/sys/fs/cgroup')/fields['ControlGroup'].lstrip('/')
+    events=os.open(cg/'cgroup.events',os.O_RDONLY|os.O_NOFOLLOW)
+    assert child.wait(timeout=5)==0, 'scope leader refusal'
+    os.close(lock);lock=None;os.close(sink);sink=None
+    probe=os.open(root/'private-fixture.lock',os.O_RDONLY|os.O_NOFOLLOW)
+    try:
+        try:fcntl.flock(probe,fcntl.LOCK_EX|fcntl.LOCK_NB)
+        except BlockingIOError:pass
+        else:raise AssertionError('fence released while forked writer active')
+        began=time.monotonic()
+        while time.monotonic()-began<8:
+            os.lseek(events,0,os.SEEK_SET);state=os.read(events,4096).decode()
+            if 'populated 0' in state:break
+            time.sleep(.05)
+        else:raise AssertionError('autonomous scope cleanup deadline')
+        fcntl.flock(probe,fcntl.LOCK_EX|fcntl.LOCK_NB)
+        size=(root/'writer.bin').stat().st_size;time.sleep(.1)
+        assert (root/'writer.bin').stat().st_size==size and size>0
+        publish('cessation.json',dict(cgroup_events=state,fence_acquired=True,writer_bytes=size,stable_after_exit=True,leader_exited_before_scope_deadline=True))
+    finally:os.close(probe)
+    result['passed']=True
+except BaseException as error:result['first_refusal']=f'{type(error).__name__}: {error}'
+finally:
+    if lock is not None:os.close(lock)
+    if sink is not None:os.close(sink)
+    if events is not None:os.close(events)
+    # Stop only the unique transient fixture scope, never the stable service.
+    cleanup=subprocess.run(['/usr/bin/systemctl','stop',unit],capture_output=True,timeout=10)
+    publish('cleanup.json',dict(exit=cleanup.returncode,stderr=cleanup.stderr.decode(),unit=unit))
+    try:
+        after=scope['preflight']();assert before==after;publish('postflight.json',after)
+    except BaseException as error:result['postflight_refusal']=f'{type(error).__name__}: {error}';result['passed']=False
+    publish('result.json',result)
+print(json.dumps(result))

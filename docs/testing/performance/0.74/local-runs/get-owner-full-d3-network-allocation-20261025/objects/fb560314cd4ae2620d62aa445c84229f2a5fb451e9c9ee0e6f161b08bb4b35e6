@@ -1,0 +1,65 @@
+schema_version = 2
+profile_id = "get-owner-full-d3-allocation-074-v2"
+state = "preregistered-before-independent-placement-implementation-or-numerical-observation"
+supersedes_unexecuted_v1_method = true
+v1_numerical_attempts = 0
+v1_images_must_not_be_used_for_v2 = true
+reason = "v1 coupled execution slots to physical sockets; a configured outstanding limit is not evidence of a deep pipeline, and one offer is one GET, never a pipeline-sized batch."
+registry_and_unchanged_effect_estimator_host_and_noise_guards = "get-owner-full-d3-allocation-contract.toml"
+all_twelve_cell_id_surface_payload_and_limit_tuples_unchanged = true
+minimum_affected_reduction = 0.20
+maximum_native_gross_ratio = 1.05
+maximum_aa_gross_relative_noise = 0.01
+independent_aa_pairs = 5
+independent_ab_pairs = 5
+total_attempts = 240
+admission_allowed = false
+timing_or_retention_claims_allowed = false
+product_changes_allowed = false
+dependency_changes_allowed = false
+all_v1_timing_api_bounds_checks_and_deadlines_unchanged = true
+all_first_results_preserved = true
+automatic_retry_or_after_observation_workload_repair_allowed = false
+
+[resp]
+physical_connections = 1
+execution_slots = 128
+operations = 1000
+offered_rate_per_second = 1000000
+maximum_queued = 1024
+warmup_calls = 64
+one_offer_one_get_one_reply = true
+response_paced_batch_driver_allowed = false
+configured_limits_are_not_batch_multipliers = true
+actual_wire_overlap_must_be_reconstructed = true
+required_wire_inflight_high_water = "exactly the configured 50 or 10; otherwise invalid, never a deep-pipeline result"
+semantic_control_without_allocation_or_timing_measurement_required_before_seal = true
+
+[native]
+resp_connections_field = 0
+execution_slots = 8
+operations = 128
+offered_rate_per_second = 10000
+maximum_queued = 128
+warmup_calls = 64
+four_independent_surfaces = ["embedded", "direct", "hc1", "hc2-mtls"]
+
+[input]
+schema_version = 2
+profile_id = "get-owner-full-d3-allocation-074-v2"
+required_fields = ["schema_version", "profile_id", "workload", "resp_connections"]
+base_workload = "unchanged strict unprofiled-timing-controls-074-v1 schema; slots denotes execution concurrency, resp_connections separately binds RESP socket count"
+full_workload_hash_includes_physical_placement = true
+unknown_missing_duplicate_or_future_fields_allowed = false
+seed = 740074
+keyspace = 16
+operation = "get"
+minimum_usable_cpu_ns = 1000000000
+minimum_usable_wall_ns = 1000000000
+cpu_fields_do_not_certify_profiled_timing = true
+operation_timeout_ns = 5000000000
+drain_timeout_ns = 5000000000
+slo_ns = 5000000000
+highest_trackable_ns = 10000000000
+maximum_process_seconds = 60
+maximum_receipt_bytes = 16777216

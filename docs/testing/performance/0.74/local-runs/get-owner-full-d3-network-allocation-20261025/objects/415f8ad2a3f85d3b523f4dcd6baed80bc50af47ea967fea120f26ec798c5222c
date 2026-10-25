@@ -1,0 +1,10 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.98s
+     Running tests\get_owner_terminal_074.rs (target\debug\deps\get_owner_terminal_074-c5695dab60237c56.exe)
+
+thread 'get_response_owner_full_d3_terminal_rejection_disables_only_candidate' (43352) panicked at crates\xtask\tests\get_owner_terminal_074.rs:25:5:
+assertion `left == right` failed
+  left: Some("d3a-screen-passed-full-d3-controls-pending")
+ right: Some("rejected-full-d3-mtls-allocation-floor-runtime-disabled")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: test failed, to rerun pass `-p xtask --test get_owner_terminal_074`

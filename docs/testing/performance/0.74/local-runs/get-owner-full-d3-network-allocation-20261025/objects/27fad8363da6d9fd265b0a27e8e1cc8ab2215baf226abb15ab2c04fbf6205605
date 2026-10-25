@@ -1,0 +1,10 @@
+
+running 5 tests
+test w9b_serial_scratch_proposal_preserves_independent_semantic_and_numerical_gates ... ok
+test w9b_d3_screen_seals_memory_rejection_without_native_or_timing_waivers ... ok
+test w9b_large_response_attribution_is_bounded_and_does_not_reopen_product_candidates ... ok
+test w9b_rejected_serial_scratch_is_removed_and_negative_receipts_retained ... ok
+test w9b_owner_receipts_preserve_all_registered_cells_without_product_claims ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 316 filtered out; finished in 0.19s
+

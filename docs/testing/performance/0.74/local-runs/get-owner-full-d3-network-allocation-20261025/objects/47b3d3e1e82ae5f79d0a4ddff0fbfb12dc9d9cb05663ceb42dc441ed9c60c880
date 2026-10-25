@@ -1,0 +1,4 @@
+  File "<string>", line 10
+    while time.monotonic()<end:os.write(1,b'owned-writer
+                                          ^
+SyntaxError: unterminated string literal (detected at line 10)

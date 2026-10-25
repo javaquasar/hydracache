@@ -1,0 +1,4 @@
+[1675261.095208] Ubuntu-noble-latest-amd64-base.zst systemd[1]: Starting hc074-get-owner-d3-fixture-8be11efd819249d394e4c20222829d6d.service - /usr/bin/python3 -I -B /tmp/hc074-get-owner-d3-fixture-8be11efd819249d394e4c20222829d6d/coordinator.py main /tmp/hc074-get-owner-d3-fixture-8be11efd819249d394e4c20222829d6d...
+[1675261.095760] Ubuntu-noble-latest-amd64-base.zst systemd[1]: Started hc074-get-owner-d3-fixture-8be11efd819249d394e4c20222829d6d.service - /usr/bin/python3 -I -B /tmp/hc074-get-owner-d3-fixture-8be11efd819249d394e4c20222829d6d/coordinator.py main /tmp/hc074-get-owner-d3-fixture-8be11efd819249d394e4c20222829d6d.
+[1675261.202793] Ubuntu-noble-latest-amd64-base.zst systemd[1]: hc074-get-owner-d3-fixture-8be11efd819249d394e4c20222829d6d.service: Main process exited, code=killed, status=9/KILL
+[1675261.294484] Ubuntu-noble-latest-amd64-base.zst systemd[1]: hc074-get-owner-d3-fixture-8be11efd819249d394e4c20222829d6d.service: Failed with result 'signal'.

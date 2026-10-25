@@ -1,0 +1,9 @@
+
+running 4 tests
+test get_response_owner_d2_preserves_one_hypothesis_and_future_guards ... ok
+test get_response_owner_d3a_is_finite_isolated_and_cannot_admit_a_candidate ... ok
+test get_response_owner_runtime_is_off_by_default_and_feature_semantics_are_enrolled_in_ci ... ok
+test get_response_owner_d3a_retains_all_raw_hashes_without_acceptance ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 317 filtered out; finished in 3.37s
+

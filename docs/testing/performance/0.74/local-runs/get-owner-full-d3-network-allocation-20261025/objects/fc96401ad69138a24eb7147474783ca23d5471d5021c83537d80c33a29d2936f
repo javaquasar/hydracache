@@ -1,0 +1,335 @@
+"""Finite operator-authorized D3 maintenance, not production enrollment.
+
+Executed only from an immutable root-owned plan in a new delegated unit. The
+same postflight restores a synthetic stand-in in the fault gate and the exact
+stable supervisor in the separately authorized numerical stage.
+"""
+from pathlib import Path
+import fcntl
+import hashlib
+import json
+import math
+import os
+import selectors
+import signal
+import stat
+import subprocess
+import sys
+import time
+
+STABLE = 'hydracache-performance-supervisor-074.service'
+BOOT = Path('/proc/sys/kernel/random/boot_id')
+CGROOT = Path('/sys/fs/cgroup')
+MARKERS = [Path('/var/lib/hydracache-performance') / name for name in (
+    'campaigns/active-campaign', 'campaigns/active-diagnostic.json',
+    'campaigns/.active-diagnostic.pending', 'campaigns/diagnostic-requests.json',
+    'campaigns/.diagnostic-requests.pending', 'campaign-lifecycle-smoke-v1.json',
+    'controller-loss-smoke-v1.json', 'diagnostic-intents-074', 'worker-authority-074')]
+
+
+def digest(path):
+    h = hashlib.sha256()
+    with Path(path).open('rb') as stream:
+        for block in iter(lambda: stream.read(65536), b''):
+            h.update(block)
+    return h.hexdigest()
+
+
+def publish(root, name, value):
+    with (root / name).open('x') as stream:
+        json.dump(value, stream, sort_keys=True, indent=2)
+        stream.flush()
+        os.fsync(stream.fileno())
+    fd = os.open(root, os.O_DIRECTORY | os.O_RDONLY | os.O_NOFOLLOW)
+    try:
+        os.fsync(fd)
+    finally:
+        os.close(fd)
+
+
+def command(argv, seconds=10):
+    p = subprocess.run(argv, capture_output=True, timeout=seconds, check=False)
+    if p.returncode:
+        raise RuntimeError(f'command refusal: {argv!r}: {p.returncode}: {p.stderr.decode(errors="replace")}')
+    return p.stdout.decode()
+
+
+def service_state(unit):
+    text = command(['/usr/bin/systemctl', 'show', unit, '-p', 'MainPID', '-p', 'ActiveState', '-p', 'SubState', '-p', 'NRestarts'])
+    return dict(line.split('=', 1) for line in text.splitlines())
+
+
+def static_frame(plan):
+    if BOOT.read_text().strip() != plan['boot']:
+        raise RuntimeError('boot identity changed')
+    if any(path.exists() or path.is_symlink() for path in MARKERS):
+        raise RuntimeError('active campaign/lifecycle marker')
+    for name, expected in plan['protected_files'].items():
+        if digest(name) != expected:
+            raise RuntimeError('protected file changed: ' + name)
+    for name, expected in plan['inputs'].items():
+        p = Path(name)
+        s = p.lstat()
+        if not stat.S_ISREG(s.st_mode) or s.st_uid != 0 or s.st_mode & 0o022 or digest(p) != expected:
+            raise RuntimeError('immutable input changed: ' + name)
+
+
+def own_group(unit, phase):
+    raw = Path('/proc/self/cgroup').read_text().strip()
+    if not raw.startswith('0::/') or '\n' in raw:
+        raise RuntimeError('unsupported cgroup context')
+    group = CGROOT / raw[4:]
+    if group.name != ('control' if phase == 'main' else '.control') or group.parent.name != unit:
+        raise RuntimeError('wrong delegated execution context: ' + str(group))
+    return group.parent
+
+
+def open_fence(plan):
+    fd = os.open(plan['fence'], os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC)
+    s = os.fstat(fd)
+    if not stat.S_ISREG(s.st_mode) or [s.st_dev, s.st_ino] != plan['fence_identity']:
+        os.close(fd)
+        raise RuntimeError('original fence inode changed')
+    try:
+        fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BaseException:
+        os.close(fd)
+        raise
+    return fd
+
+
+def group_identity(path):
+    s = path.stat(follow_symlinks=False)
+    if not stat.S_ISDIR(s.st_mode):
+        raise RuntimeError('not an owned cgroup directory')
+    return [s.st_dev, s.st_ino]
+
+
+def empty_group(path, identity):
+    if group_identity(path) != identity:
+        raise RuntimeError('owned cgroup inode changed')
+    states = dict(line.split() for line in (path / 'cgroup.events').read_text().splitlines())
+    if states.get('populated') != '0':
+        raise RuntimeError('writers remain populated')
+    return states
+
+
+def cpu_totals():
+    values = []
+    for line in Path('/proc/stat').read_text().splitlines():
+        key, *fields = line.split()
+        if key in ('cpu1', 'cpu2', 'cpu3', 'cpu4'):
+            n = list(map(int, fields))
+            values.append((key, sum(n[:8]), n[3] + n[4]))
+    if len(values) != 4:
+        raise RuntimeError('measurement CPUs absent')
+    return values
+
+
+def quiet_guard():
+    a = cpu_totals()
+    time.sleep(.5)
+    b = cpu_totals()
+    total = sum(y[1] - x[1] for x, y in zip(a, b))
+    idle = sum(y[2] - x[2] for x, y in zip(a, b))
+    if total <= 0 or idle < 0 or idle > total:
+        raise RuntimeError('invalid background CPU interval')
+    busy = 100 * (total - idle) / total
+    if busy > 10:
+        raise RuntimeError(f'first quiet guard refusal: {busy}; no retry')
+    return dict(sample_milliseconds=500, busy_percent=busy, maximum_percent=10)
+
+
+def timer_name(plan, sequence):
+    return plan['unit'].removesuffix('.service') + '-deadline-' + str(sequence)
+
+
+def timer_install(plan, sequence, root, deadline):
+    name = timer_name(plan, sequence)
+    # Absolute monotonic-since-boot deadline: launch never rebases allowance.
+    command(['/usr/bin/systemd-run', '--quiet', '--no-ask-password', '--unit=' + name,
+             '--on-boot=' + f'{deadline / 1e9:.9f}s',
+             '--timer-property=AccuracySec=1us', '--timer-property=RandomizedDelaySec=0',
+             '--property=Type=exec', '--property=RuntimeMaxSec=10',
+             '/usr/bin/python3', '-I', '-B', str(root / 'coordinator.py'), 'expire', str(root), str(sequence)])
+
+
+def timer_stop(plan, sequence):
+    name = timer_name(plan, sequence)
+    # Stopping an inactive unit is idempotent; failure/unknown is not ignored.
+    command(['/usr/bin/systemctl', 'stop', name + '.timer', name + '.service'])
+
+
+def capture(root, name, child, maximum):
+    sel = selectors.DefaultSelector()
+    streams = []
+    overflow = False
+    try:
+        for label, pipe in [('stdout', child.stdout), ('stderr', child.stderr)]:
+            f = (root / (name + '.' + label + '.log')).open('xb')
+            streams.append(f)
+            sel.register(pipe, selectors.EVENT_READ, (f, 0))
+        while sel.get_map():
+            for key, _ in sel.select(timeout=.2):
+                block = os.read(key.fileobj.fileno(), 65536)
+                if not block:
+                    sel.unregister(key.fileobj)
+                    key.fileobj.close()
+                    continue
+                f, seen = key.data
+                f.write(block[:max(0, maximum - seen)])
+                seen += len(block)
+                overflow |= seen > maximum
+                sel.modify(key.fileobj, selectors.EVENT_READ, (f, seen))
+        child.wait()
+        if overflow:
+            raise RuntimeError('bounded stream overflow; retained prefix; no retry')
+        return child.returncode
+    finally:
+        sel.close()
+        for f in streams:
+            f.flush()
+            os.fsync(f.fileno())
+            f.close()
+
+
+def expire(plan, root, sequence):
+    # No path accepted from a timer: consume the durable original record.
+    record = json.loads((root / (str(sequence) + '.intent.json')).read_bytes())
+    static_frame(plan)
+    target = Path(record['group'])
+    if target.name != 'writers-' + str(sequence) or target.parent.name != plan['unit']:
+        raise RuntimeError('deadline target escapes original owned group')
+    if group_identity(target) != record['group_identity']:
+        raise RuntimeError('deadline original cgroup identity changed')
+    (target / 'cgroup.kill').write_text('1')
+    publish(root, str(sequence) + '.deadline.json', dict(expired=True, monotonic_ns=time.monotonic_ns()))
+
+
+def main(plan, root):
+    unit_group = own_group(plan['unit'], 'main')
+    static_frame(plan)
+    before = service_state(plan['supervisor'])
+    if before != plan['supervisor_before'] or before['ActiveState'] != 'active':
+        raise RuntimeError('original supervisor generation changed')
+    publish(root, 'before-stop.json', before)
+    command(['/usr/bin/systemctl', 'stop', plan['supervisor']], 30)
+    inactive = service_state(plan['supervisor'])
+    if inactive['ActiveState'] != 'inactive' or inactive['MainPID'] != '0':
+        raise RuntimeError('supervisor not inactive before external fence')
+    publish(root, 'inactive.json', inactive)
+    fence = open_fence(plan)
+    static_frame(plan)
+    os.sched_setaffinity(0, {0, 5, 6, 7})
+    try:
+        for sequence, attempt in enumerate(plan['attempts']):
+            static_frame(plan)
+            if service_state(plan['supervisor'])['ActiveState'] != 'inactive':
+                raise RuntimeError('supervisor unexpectedly restarted')
+            quiet = quiet_guard() if not plan['synthetic'] else None
+            group = unit_group / ('writers-' + str(sequence))
+            group.mkdir()
+            identity = group_identity(group)
+            seconds = plan['synthetic_deadline_seconds'] if plan['synthetic'] else 60
+            deadline = time.monotonic_ns() + seconds * 10**9
+            record = dict(attempt=attempt, group=str(group), group_identity=identity,
+                          deadline_ns=deadline, quiet=quiet, boot=plan['boot'])
+            publish(root, str(sequence) + '.intent.json', record)
+            timer_install(plan, sequence, root, deadline)
+            def enter():
+                (group / 'cgroup.procs').write_text(str(os.getpid()))
+                os.sched_setaffinity(0, {1, 2, 3, 4})
+                os.setgroups([])
+                os.setgid(1000)
+                os.setuid(1000)
+            child = subprocess.Popen(attempt['argv'], stdin=subprocess.DEVNULL,
+                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                     pass_fds=(fence,), preexec_fn=enter, env=plan['child_env'])
+            publish(root, str(sequence) + '.child.json', dict(pid=child.pid, fence_fd=fence,
+                    start_ticks=Path(f'/proc/{child.pid}/stat').read_text().rsplit(')',1)[1].split()[19]))
+            code = capture(root, str(sequence), child, 16 * 1024**2)
+            states = empty_group(group, identity)
+            timer_stop(plan, sequence)
+            publish(root, str(sequence) + '.retired.json', dict(exit=code, events=states,
+                    all_original_writers_stopped=True))
+            if code:
+                raise RuntimeError(f'first child refusal {sequence}: {code}; no retry')
+            if not plan['synthetic']:
+                receipt = json.loads((root / (str(sequence) + '.stdout.log')).read_bytes())
+                validate_receipt(receipt, attempt)
+        publish(root, 'cohort-complete.json', dict(attempts=len(plan['attempts']), complete=True,
+                                                 admission=False))
+    finally:
+        # On exception the unit's KillMode kills every remaining descendant
+        # before ExecStopPost. Never restore here or erase an uncertain intent.
+        os.close(fence)
+
+
+def validate_receipt(receipt, attempt):
+    for key, expected in attempt['receipt_pins'].items():
+        if receipt.get(key) != expected:
+            raise RuntimeError('worker receipt pin mismatch: ' + key)
+    report = receipt.get('report') or {}
+    if receipt.get('error') is not None or report.get('error') is not None or \
+            report.get('final_dataset_verified') is not True or report.get('shutdown_verified') is not True:
+        raise RuntimeError('invalid allocation receipt')
+    layouts = report.get('requested_layouts')
+    if not isinstance(layouts, dict) or not layouts:
+        raise RuntimeError('requested layout measurement missing')
+
+
+def post(plan, root):
+    own = own_group(plan['unit'], 'post')
+    static_frame(plan)
+    # Unit main and every owned writer must be empty, not absent/ENODEV.
+    main_group = own / 'control'
+    empty_group(main_group, group_identity(main_group))
+    for intent in sorted(root.glob('[0-9]*.intent.json')):
+        sequence = int(intent.name.split('.')[0])
+        record = json.loads(intent.read_bytes())
+        target = Path(record['group'])
+        if target != own / ('writers-' + str(sequence)):
+            raise RuntimeError('postflight group escapes owned unit')
+        empty_group(target, record['group_identity'])
+        timer_stop(plan, sequence)
+    fence = open_fence(plan)  # Exclusive acquisition proves no inherited copy remains.
+    try:
+        publish(root, 'all-writers-stopped.json', dict(original_groups_empty=True,
+                    original_fence_acquired=True, cohort_complete=(root/'cohort-complete.json').exists()))
+    finally:
+        os.close(fence)
+    # Never release/start while any unproven writer or timer survives.
+    state = service_state(plan['supervisor'])
+    if state['ActiveState'] == 'inactive' and state['MainPID'] == '0':
+        command(['/usr/bin/systemctl', 'start', plan['supervisor']], 30)
+    restored = service_state(plan['supervisor'])
+    if restored['ActiveState'] != 'active' or restored['SubState'] != 'running' or restored['MainPID'] == '0':
+        raise RuntimeError('supervisor restoration failed')
+    static_frame(plan)
+    publish(root, 'restored.json', dict(supervisor=restored, verified=True, installation=False))
+
+
+def entry():
+    mode, folder, *extra = sys.argv[1:]
+    root = Path(folder).resolve(strict=True)
+    if not root.name.startswith('hc074-get-owner-d3-') or root.parent != Path('/tmp'):
+        raise RuntimeError('root outside exact temporary namespace')
+    plan = json.loads((root / 'plan.json').read_bytes())
+    if plan['schema_version'] != 1 or plan['unit'] != root.name + '.service':
+        raise RuntimeError('plan unit/schema mismatch')
+    if not plan['synthetic'] and plan['supervisor'] != STABLE:
+        raise RuntimeError('only exact approved supervisor may be stopped')
+    if plan['synthetic'] and not plan['supervisor'].startswith(root.name + '-standin.'):
+        raise RuntimeError('synthetic fixture cannot address stable services')
+    if mode == 'main' and not extra:
+        main(plan, root)
+    elif mode == 'post' and not extra:
+        post(plan, root)
+    elif mode == 'expire' and len(extra) == 1 and extra[0].isdigit():
+        expire(plan, root, int(extra[0]))
+    else:
+        raise RuntimeError('unsupported phase')
+
+
+if __name__ == '__main__':
+    entry()

@@ -1,0 +1,9 @@
+{
+  "sha256": "caeebb49656bc2c33130f2fcae4b605e94210ef8ad3726bdc8b4d2a549a472d5",
+  "bytes": 26646592,
+  "source_commit": "8c5d4810837f91483625dff119edd5513c605e04",
+  "features": [
+    "allocation-diagnostics"
+  ],
+  "executed": false
+}

@@ -1,0 +1,11 @@
+from pathlib import Path
+import hashlib, json, sys
+base = Path('/tmp/hc074-server-gate-root-20261025.0k0xbdah'); root = base/'get-owner-allocation-v2-build-first'
+raw = (base/'server-fault-worker-20261025.py').read_bytes()
+assert hashlib.sha256(raw).hexdigest() == 'af1e9926e1ad40bc49c1c225d79f5fffc788c715a7889743decea129ec4b17a3'
+sys.argv = ['readonly', '6640e1b9b31ae7c87137b335be4f2665d729ea7b4324ee0e874bdbedc346c520']
+scope = {}; exec(compile(raw.decode().split('started=time.monotonic_ns()\n')[0], '<pinned-preflight>', 'exec'), scope)
+results = {p.name:json.loads(p.read_bytes()) for p in root.iterdir() if p.name.endswith('-result.json') or p.name=='result.json'}
+logs = {p.name:p.read_text()[-3000:] for p in root.iterdir() if p.name.endswith('.stderr.log') or p.name.endswith('.stdout.log')}
+print(json.dumps(dict(complete=(root/'result.json').is_file(), results=results, tails=logs, frame=scope['preflight']())))
+

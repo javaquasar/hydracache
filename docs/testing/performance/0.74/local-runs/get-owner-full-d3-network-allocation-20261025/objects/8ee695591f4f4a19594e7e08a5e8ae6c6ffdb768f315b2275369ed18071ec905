@@ -1,0 +1,22 @@
+
+running 1 test
+test tests::semantic_wire_control_reaches_each_required_depth_without_counting ... semantic-only offered=1000 successes=1000 errors=0 timeouts=0 queue_timeouts=0 admission_rejections=0 target_rejections=0 incomplete=0 scheduled_overflows=0 service_overflows=0
+semantic-only surface=Resp2 payload=4096 configured=50 observed=Some(50) error=None shutdown=true
+semantic-only offered=1000 successes=1000 errors=0 timeouts=0 queue_timeouts=0 admission_rejections=0 target_rejections=0 incomplete=0 scheduled_overflows=0 service_overflows=0
+semantic-only surface=Resp2 payload=1048576 configured=10 observed=Some(10) error=None shutdown=true
+semantic-only offered=1000 successes=1000 errors=0 timeouts=0 queue_timeouts=0 admission_rejections=0 target_rejections=0 incomplete=0 scheduled_overflows=0 service_overflows=0
+semantic-only surface=Resp3 payload=4096 configured=50 observed=Some(50) error=None shutdown=true
+semantic-only offered=1000 successes=1000 errors=0 timeouts=0 queue_timeouts=0 admission_rejections=0 target_rejections=0 incomplete=0 scheduled_overflows=0 service_overflows=0
+semantic-only surface=Resp3 payload=1048576 configured=10 observed=Some(10) error=None shutdown=true
+semantic-only offered=1000 successes=1000 errors=0 timeouts=0 queue_timeouts=0 admission_rejections=0 target_rejections=0 incomplete=0 scheduled_overflows=0 service_overflows=0
+semantic-only surface=Resp2Mtls payload=4096 configured=50 observed=Some(50) error=None shutdown=true
+semantic-only offered=1000 successes=1000 errors=0 timeouts=0 queue_timeouts=0 admission_rejections=0 target_rejections=0 incomplete=0 scheduled_overflows=0 service_overflows=0
+semantic-only surface=Resp2Mtls payload=1048576 configured=10 observed=Some(10) error=None shutdown=true
+semantic-only offered=1000 successes=1000 errors=0 timeouts=0 queue_timeouts=0 admission_rejections=0 target_rejections=0 incomplete=0 scheduled_overflows=0 service_overflows=0
+semantic-only surface=Resp3Mtls payload=4096 configured=50 observed=Some(50) error=None shutdown=true
+semantic-only offered=1000 successes=1000 errors=0 timeouts=0 queue_timeouts=0 admission_rejections=0 target_rejections=0 incomplete=0 scheduled_overflows=0 service_overflows=0
+semantic-only surface=Resp3Mtls payload=1048576 configured=10 observed=Some(10) error=None shutdown=true
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 7 filtered out; finished in 3.02s
+

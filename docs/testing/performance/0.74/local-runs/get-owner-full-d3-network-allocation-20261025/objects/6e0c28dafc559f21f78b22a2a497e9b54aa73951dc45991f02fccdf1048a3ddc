@@ -1,0 +1,7 @@
+from pathlib import Path
+source=Path(__file__).with_name('get-owner-d3-build-export-20261025.py').read_text()
+source=source.replace("group = 'get-owner-d3-build-first'", "group = 'get-owner-allocation-v2-build-first'")
+source=source.replace("('timing-off', 'timing-on')", "('allocation-off', 'allocation-on')")
+source=source.replace("p.name[7:]", "p.name.rsplit('-',1)[1]")
+print(source)
+

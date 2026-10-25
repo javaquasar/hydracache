@@ -1,0 +1,15 @@
+from pathlib import Path
+import base64, hashlib, json
+base=Path('/tmp/hc074-server-gate-root-20261025.0k0xbdah')
+roots=[p for p in Path('/tmp').glob('hc074-get-owner-d3-fixture-*') if p.is_dir()]
+roots += [base/name for name in ['get-owner-maintenance-fixtures-first','get-owner-maintenance-fixtures-corrected','get-owner-maintenance-fixtures-worker-corrected','get-owner-maintenance-fixtures-remaining-first','get-owner-maintenance-fixtures-owner-kill-first','get-owner-maintenance-fixtures-final']]
+members={}
+for root in roots:
+    assert root.stat().st_uid==0 and not root.is_symlink()
+    for p in sorted(root.iterdir()):
+        if not p.is_file():continue
+        assert not p.is_symlink() and p.stat().st_size<=16*1024**2
+        raw=p.read_bytes()
+        assert b'BEGIN PRIVATE KEY' not in raw
+        members[root.name+'/'+p.name]=dict(sha256=hashlib.sha256(raw).hexdigest(),bytes=len(raw),base64=base64.b64encode(raw).decode())
+print(json.dumps(dict(complete=True,members=members)))

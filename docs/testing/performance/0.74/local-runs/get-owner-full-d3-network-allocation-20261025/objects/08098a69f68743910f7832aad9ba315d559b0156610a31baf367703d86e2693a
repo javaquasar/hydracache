@@ -1,0 +1,9 @@
+
+running 4 tests
+test timing::requested::tests::cancelling_a_started_window_drops_scope_without_claiming_completion ... ok
+test timing::requested::tests::counting_window_runs_once_without_timing_or_retention_admission ... ok
+test timing::requested::tests::independent_placement_refuses_wrong_boundary_before_counting ... ok
+test timing::requested::tests::invalid_input_and_missing_secure_material_never_start_counting ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 40 filtered out; finished in 0.02s
+

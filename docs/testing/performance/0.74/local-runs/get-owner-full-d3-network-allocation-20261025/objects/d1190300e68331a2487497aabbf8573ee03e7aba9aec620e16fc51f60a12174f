@@ -1,0 +1,58 @@
+{
+  "cases": [
+    {
+      "name": "build-off",
+      "exit": 0,
+      "wall_ns": 40784160080
+    },
+    {
+      "name": "off-requested",
+      "exit": 0,
+      "wall_ns": 41086034770
+    },
+    {
+      "name": "off-worker",
+      "exit": 0,
+      "wall_ns": 12995332416
+    },
+    {
+      "name": "off-wire-semantic",
+      "exit": 0,
+      "wall_ns": 3074673120
+    },
+    {
+      "name": "build-on",
+      "exit": 0,
+      "wall_ns": 25977611822
+    },
+    {
+      "name": "on-requested",
+      "exit": 0,
+      "wall_ns": 27238371655
+    },
+    {
+      "name": "on-worker",
+      "exit": 0,
+      "wall_ns": 12678025289
+    },
+    {
+      "name": "on-wire-semantic",
+      "exit": 0,
+      "wall_ns": 3179135020
+    },
+    {
+      "name": "check",
+      "exit": 0,
+      "wall_ns": 7692390800
+    },
+    {
+      "name": "clippy",
+      "exit": 0,
+      "wall_ns": 1879484062
+    }
+  ],
+  "passed": true,
+  "first_refusal": null,
+  "postflight_refusal": null,
+  "measured_fixture_started": false
+}

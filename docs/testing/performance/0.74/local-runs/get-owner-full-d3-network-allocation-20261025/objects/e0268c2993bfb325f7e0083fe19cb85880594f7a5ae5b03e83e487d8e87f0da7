@@ -1,0 +1,23 @@
+from pathlib import Path
+import hashlib,json,subprocess
+base=Path('/tmp/hc074-server-gate-root-20261025.0k0xbdah')
+pointer=json.loads((base/'get-owner-allocation-v2-stage-first.json').read_bytes())
+root=Path(pointer['root']);unit=pointer['unit']
+assert root.parent==Path('/tmp') and root.name.startswith('hc074-get-owner-d3-allocation-v2-') and unit==root.name+'.service'
+assert hashlib.sha256((root/'plan.json').read_bytes()).hexdigest()==pointer['plan_sha256']
+assert hashlib.sha256((root/'coordinator.py').read_bytes()).hexdigest()==pointer['coordinator_sha256']
+assert not (root/'launch-intent.json').exists(),'never repeat a sealed launch'
+plan=json.loads((root/'plan.json').read_bytes());assert not plan['synthetic'] and len(plan['attempts'])==240
+argv=['/usr/bin/systemd-run','--quiet','--no-ask-password','--unit='+unit,'--service-type=exec',
+ '--property=Delegate=yes','--property=DelegateSubgroup=control','--property=RuntimeMaxSec=1080',
+ '--property=RuntimeRandomizedExtraSec=0','--property=KillMode=control-group','--property=KillSignal=SIGKILL',
+ '--property=SendSIGKILL=yes','--property=Restart=no','--property=TimeoutStopSec=120','--property=NoNewPrivileges=yes',
+ '--property=ExecStopPost=/usr/bin/python3 -I -B '+str(root/'coordinator.py')+' post '+str(root),
+ '/usr/bin/python3','-I','-B',str(root/'coordinator.py'),'main',str(root)]
+with (root/'launch-intent.json').open('x') as f:
+ json.dump(dict(argv=argv,pointer=pointer,operator_approved_exact_supervisor_maintenance=True,maximum_main_seconds=1080,maximum_stop_seconds=120,maximum_total_seconds=1200,qualified_release_install=False,retry=False),f,indent=2);f.flush()
+ import os;os.fsync(f.fileno())
+p=subprocess.run(argv,capture_output=True,timeout=15)
+with (root/'launch-result.json').open('x') as f:json.dump(dict(exit=p.returncode,stdout=p.stdout.decode(),stderr=p.stderr.decode()),f);f.flush();os.fsync(f.fileno())
+assert p.returncode==0,p.stderr.decode()
+print(json.dumps(dict(root=str(root),unit=unit,launched=True,qualification=False,ssh_controller_may_disconnect=True,retry=False)))

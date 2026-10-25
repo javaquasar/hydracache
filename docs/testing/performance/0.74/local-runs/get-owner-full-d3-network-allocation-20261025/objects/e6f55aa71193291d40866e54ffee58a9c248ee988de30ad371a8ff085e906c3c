@@ -1,0 +1,11 @@
+from pathlib import Path
+import json,subprocess
+base=Path('/tmp/hc074-server-gate-root-20261025.0k0xbdah')
+pointer=json.loads((base/'get-owner-allocation-v2-stage-first.json').read_bytes());root=Path(pointer['root'])
+records={p.name:json.loads(p.read_bytes()) for p in root.iterdir() if p.name in ['inactive.json','restored.json','all-writers-stopped.json','cohort-complete.json','launch-result.json']}
+retired=sorted(root.glob('*.retired.json'),key=lambda p:int(p.name.split('.')[0]))
+last=[dict(name=p.name,record=json.loads(p.read_bytes())) for p in retired[-3:]]
+unit=subprocess.run(['/usr/bin/systemctl','show',pointer['unit'],'-p','MainPID','-p','ActiveState','-p','SubState','-p','Result'],capture_output=True,timeout=10)
+stable=subprocess.run(['/usr/bin/systemctl','show','hydracache-performance-supervisor-074.service','-p','MainPID','-p','ActiveState','-p','SubState','-p','NRestarts'],capture_output=True,timeout=10)
+journal=subprocess.run(['/usr/bin/journalctl','--no-pager','-u',pointer['unit'],'-n','30','-o','short-monotonic'],capture_output=True,timeout=10)
+print(json.dumps(dict(root=str(root),retired=len(retired),intents=len(list(root.glob('*.intent.json'))),last=last,records=records,unit=unit.stdout.decode(),supervisor=stable.stdout.decode(),journal_tail=journal.stdout.decode(),read_only=True)))

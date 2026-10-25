@@ -1,0 +1,1 @@
+{"boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f", "cgroup": "0::/system.slice/hydracache-performance-supervisor-074.service\n", "installed_and_markers_verified": true, "qualification": false, "read_only": true, "start_ticks": "167612698", "supervisor": {"ActiveState": "active", "MainPID": "377415", "NRestarts": "0", "SubState": "running"}}

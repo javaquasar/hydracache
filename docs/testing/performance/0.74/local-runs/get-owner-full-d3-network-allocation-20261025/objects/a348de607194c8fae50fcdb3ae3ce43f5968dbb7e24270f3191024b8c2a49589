@@ -1,0 +1,11 @@
+[1671512.211058] Ubuntu-noble-latest-amd64-base.zst systemd[1]: Starting hc074-get-owner-held-881ed769590b484cb54c005a07a00155.service - /usr/bin/python3 -I -B /tmp/hc074-server-gate-root-20261025.0k0xbdah/get-owner-held-cgroup-fixture-first/fixture.py main /tmp/hc074-server-gate-root-20261025.0k0xbdah/get-owner-held-cgroup-fixture-first hc074-get-owner-held-881ed769590b484cb54c005a07a00155.service...
+[1671512.217277] Ubuntu-noble-latest-amd64-base.zst systemd[1]: Started hc074-get-owner-held-881ed769590b484cb54c005a07a00155.service - /usr/bin/python3 -I -B /tmp/hc074-server-gate-root-20261025.0k0xbdah/get-owner-held-cgroup-fixture-first/fixture.py main /tmp/hc074-server-gate-root-20261025.0k0xbdah/get-owner-held-cgroup-fixture-first hc074-get-owner-held-881ed769590b484cb54c005a07a00155.service.
+[1671515.233053] Ubuntu-noble-latest-amd64-base.zst systemd[1]: hc074-get-owner-held-881ed769590b484cb54c005a07a00155.service: Service reached runtime time limit. Stopping.
+[1671515.234411] Ubuntu-noble-latest-amd64-base.zst systemd[1]: hc074-get-owner-held-881ed769590b484cb54c005a07a00155.service: Main process exited, code=killed, status=9/KILL
+[1671515.299590] Ubuntu-noble-latest-amd64-base.zst python3[368438]: Traceback (most recent call last):
+[1671515.299590] Ubuntu-noble-latest-amd64-base.zst python3[368438]:   File "/tmp/hc074-server-gate-root-20261025.0k0xbdah/get-owner-held-cgroup-fixture-first/fixture.py", line 9, in <module>
+[1671515.299913] Ubuntu-noble-latest-amd64-base.zst python3[368438]:     assert cg.name==sys.argv[3]
+[1671515.299913] Ubuntu-noble-latest-amd64-base.zst python3[368438]:            ^^^^^^^^^^^^^^^^^^^^
+[1671515.299913] Ubuntu-noble-latest-amd64-base.zst python3[368438]: AssertionError
+[1671515.309120] Ubuntu-noble-latest-amd64-base.zst systemd[1]: hc074-get-owner-held-881ed769590b484cb54c005a07a00155.service: Control process exited, code=exited, status=1/FAILURE
+[1671515.309420] Ubuntu-noble-latest-amd64-base.zst systemd[1]: hc074-get-owner-held-881ed769590b484cb54c005a07a00155.service: Failed with result 'timeout'.

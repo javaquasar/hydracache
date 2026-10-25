@@ -1,0 +1,11 @@
+
+running 1 test
+test get_response_owner_full_d3_terminal_rejection_disables_only_candidate ... FAILED
+
+failures:
+
+failures:
+    get_response_owner_full_d3_terminal_rejection_disables_only_candidate
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

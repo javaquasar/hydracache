@@ -1,0 +1,8 @@
+{
+  "pid": 368236,
+  "child": 368237,
+  "uid": 1000,
+  "gid": 1000,
+  "fd_preserved": true,
+  "cgroup": "0::/system.slice/hc074-get-owner-scope-367557d44e5742cbbee856177ca6b7a3.scope"
+}

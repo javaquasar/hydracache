@@ -1,0 +1,13 @@
+{
+  "passed": false,
+  "cases": [
+    {
+      "mode": "healthy",
+      "root": "/tmp/hc074-get-owner-d3-fixture-a2926061ff764f3eb696f148f56eaf45",
+      "passed": false
+    }
+  ],
+  "stable_supervisor_unchanged": true,
+  "product": false,
+  "retry": false
+}

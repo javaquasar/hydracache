@@ -1,0 +1,8 @@
+   Compiling get-owner-scheduled-controls-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\get-owner-scheduled-controls-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 15.69s
+     Running unittests src\bin\full_d3_allocation.rs (target\debug\deps\full_d3_allocation_074-e007e792b9690a8a.exe)
+
+thread 'tests::semantic_wire_control_reaches_each_required_depth_without_counting' (21664) panicked at src\bin\full_d3_allocation.rs:456:17:
+Some("allocation observation contains errors, incomplete owners or overflow")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: test failed, to rerun pass `--bin full-d3-allocation-074`

@@ -1,0 +1,24 @@
+
+running 19 tests
+test redis_api_addr_conflicting_with_client_or_admin_is_rejected_loud ... ok
+test redis_api_is_off_by_default_and_env_gated ... ok
+test redis_api_auth_env_reads_token_file ... ok
+test redis_api_rediss_env_reuses_server_tls_material ... ok
+test redis_event_subscription_limit_rejects_zero_and_invalid_env ... ok
+test redis_listener_core_parity ... ok
+test redis_mtls_env_is_explicit_and_old_env_remains_server_auth_tls ... ok
+test redis_event_listener_uses_server_shared_client_dispatch_state ... ok
+test redis_api_auth_config_is_wired_into_resp_server ... ok
+test redis_api_auth_and_rediss_posture_are_explicit ... ok
+test redis_resp_server_uses_client_surface_state_without_enabling_client_api_routes ... ok
+test daemon_serves_redis_resp_listener_only_when_enabled_and_drains_gracefully ... ok
+test redis_resp_listener_accepts_rediss_auth_and_cache_commands ... ok
+test authenticated_rediss_subscriber_receives_native_backend_put ... ok
+test redis_resp_tls_keeps_wrong_auth_as_wrongpass ... ok
+test redis_client_observes_native_backend_put_in_listener_namespace ... ok
+test redis_resp_tls_client_rejects_wrong_ca ... ok
+test redis_tcp_listener_accepts_real_socket_and_honors_drain_gate ... ok
+test redis_resp_tls_listener_rejects_plaintext_before_mutation ... ok
+
+test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 9 filtered out; finished in 0.27s
+

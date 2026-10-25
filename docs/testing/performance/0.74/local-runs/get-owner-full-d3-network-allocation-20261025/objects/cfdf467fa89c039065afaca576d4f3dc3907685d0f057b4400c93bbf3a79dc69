@@ -1,0 +1,13 @@
+   Compiling get-owner-scheduled-controls-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\get-owner-scheduled-controls-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 56.87s
+     Running unittests src\lib.rs (target\debug\deps\get_owner_scheduled_controls_074-82ca0e394c9268d3.exe)
+     Running unittests src\bin\full_d3_allocation.rs (target\debug\deps\full_d3_allocation_074-25bc4d0af0472d8a.exe)
+     Running unittests src\bin\memory_diagnostics.rs (target\debug\deps\memory_diagnostics_074-bac23ebf975ae62a.exe)
+     Running unittests src\bin\timing_controls.rs (target\debug\deps\timing_controls_074-b7fc61247599feac.exe)
+     Running tests\embedded.rs (target\debug\deps\embedded-c9102d6e49c68245.exe)
+     Running tests\native.rs (target\debug\deps\native-f9871c8afae1c8de.exe)
+     Running tests\resp.rs (target\debug\deps\resp-a81079eaa0e64523.exe)
+     Running tests\scheduled.rs (target\debug\deps\scheduled-d69e84e6f6241e1c.exe)
+     Running tests\secure.rs (target\debug\deps\secure-ec01c9547b16afc6.exe)
+     Running tests\timing.rs (target\debug\deps\timing-8a50d86f01e2a3a8.exe)
+     Running tests\timing_cli.rs (target\debug\deps\timing_cli-664bde7b4fce1b8c.exe)

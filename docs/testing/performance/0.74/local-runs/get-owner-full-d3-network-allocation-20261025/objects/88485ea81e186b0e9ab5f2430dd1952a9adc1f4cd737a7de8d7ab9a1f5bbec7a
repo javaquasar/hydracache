@@ -1,0 +1,45 @@
+
+from pathlib import Path
+import fcntl,json,os,subprocess,sys,time
+root=Path(sys.argv[2]);mode=sys.argv[1]
+def publish(name,value):
+ with (root/name).open('x') as f:json.dump(value,f,indent=2);f.flush();os.fsync(f.fileno())
+cg=Path('/sys/fs/cgroup')/Path('/proc/self/cgroup').read_text().strip().split('0::',1)[1].lstrip('/')
+publish('entry-'+mode+'.json',dict(cgroup=str(cg),mode=mode))
+assert cg.name==('control' if mode=='main' else '.control')
+cg=cg.parent
+assert cg.name==sys.argv[3]
+if mode=='main':
+ target=cg/'writers';target.mkdir();stamp=target.stat()
+ lock=os.open(root/'private.lock',os.O_RDONLY|os.O_NOFOLLOW);fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
+ sink=os.open(root/'writer.bin',os.O_CREAT|os.O_EXCL|os.O_WRONLY,0o600)
+ publish('group.json',dict(path=str(target),dev=stamp.st_dev,ino=stamp.st_ino,boot=Path('/proc/sys/kernel/random/boot_id').read_text()))
+ code="""import fcntl,os,signal,sys,time
+lock,sink=map(int,sys.argv[1:]);assert fcntl.fcntl(lock,fcntl.F_GETFD)&fcntl.FD_CLOEXEC==0
+assert os.getuid()==1000 and os.getgid()==1000
+copy=os.dup(lock);signal.signal(signal.SIGTERM,signal.SIG_IGN)
+child=os.fork()
+print(str(os.getpid())+' '+str(child),flush=True)
+while True:os.write(sink,b'x');time.sleep(.01)
+"""
+ def enter():
+  (target/'cgroup.procs').write_text(str(os.getpid()));os.setgroups([]);os.setgid(1000);os.setuid(1000)
+ with (root/'child.stdout.log').open('xb') as out,(root/'child.stderr.log').open('xb') as err:
+  p=subprocess.Popen(['/usr/bin/python3','-I','-B','-c',code,str(lock),str(sink)],pass_fds=(lock,sink),preexec_fn=enter,stdout=out,stderr=err)
+  publish('started.json',dict(pid=p.pid,main=os.getpid(),unit=cg.name,private_fence_only=True))
+  time.sleep(30)
+elif mode=='post':
+ try:
+  expected=json.loads((root/'group.json').read_bytes());target=Path(expected['path'])
+  assert target==cg/'writers' and expected['boot']==Path('/proc/sys/kernel/random/boot_id').read_text()
+  fd=os.open(target,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW);stamp=os.fstat(fd)
+  assert (stamp.st_dev,stamp.st_ino)==(expected['dev'],expected['ino'])
+  event=os.open('cgroup.events',os.O_RDONLY|os.O_NOFOLLOW,dir_fd=fd);state=os.read(event,4096).decode()
+  assert 'populated 0' in state.splitlines(),state
+  lock=os.open(root/'private.lock',os.O_RDONLY|os.O_NOFOLLOW);fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
+  size=(root/'writer.bin').stat().st_size;time.sleep(.1);assert size>0 and (root/'writer.bin').stat().st_size==size
+  publish('post.json',dict(passed=True,original_group_identity_checked=True,events=state,private_fence_acquired=True,writer_bytes=size,writer_size_stable=True))
+  os.close(lock);os.close(event);os.close(fd)
+ except BaseException as e:
+  publish('post.json',dict(passed=False,error=f'{type(e).__name__}: {e}'));raise
+else:raise RuntimeError('unsupported fixture mode')

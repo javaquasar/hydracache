@@ -1,0 +1,85 @@
+{
+  "attempt": {
+    "affected": true,
+    "argv": [
+      "/tmp/hc074-get-owner-d3-allocation-v2-395e07411a664600850bc88fc054ad73/allocation-off",
+      "--run",
+      "/tmp/hc074-get-owner-d3-allocation-v2-395e07411a664600850bc88fc054ad73/resp2-mtls-get-4k-p50.config.json",
+      "f28862c0f594a91e9cb38af9266ffe9689995009c77b56d05e7a63517ae76d12",
+      "be0499a8cb0a2ad0b7328d6ac0cf6227114cebcc",
+      "/tmp/hc074-get-owner-d3-allocation-v2-395e07411a664600850bc88fc054ad73/private-material.json",
+      "a2214a063903514fae99c695c529eb39d164a1050004256d26f3d64a631a9767"
+    ],
+    "cell": "resp2-mtls-get-4k-p50",
+    "feature_enabled": false,
+    "mode": "ab",
+    "pair": 1,
+    "receipt_pins": {
+      "actual_wire_inflight_high_water": 50,
+      "allocation_diagnostics_feature": true,
+      "binary_sha256": "f28862c0f594a91e9cb38af9266ffe9689995009c77b56d05e7a63517ae76d12",
+      "compiled_observer_lock_sha256": "e3be470f5a1bff4e917e841fc5bfbd257ff12559206bbc1481c3c4bca528eb1d",
+      "compiled_root_lock_sha256": "d2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c",
+      "fixed_material": {
+        "material_sha256": "a2214a063903514fae99c695c529eb39d164a1050004256d26f3d64a631a9767",
+        "production_enrollment": false,
+        "transport": {
+          "client_certificate_sha256": "c00aa403faa09d045eb48a873856a58633d89a8e6c5ce8b5c7b49382873081be",
+          "cross_surface_numeric_comparison_allowed": false,
+          "required_client_certificate": true,
+          "root_certificate_sha256": "109b5cf82a6ab65f3e8bb95fa480e29da55f95cf0967f4e300bcb597517a25a0",
+          "server_certificate_sha256": "5970caf4ae6eeeb39031d281d9173d722a365719d1893c4575f7b636e6adc4a1",
+          "server_name": "localhost"
+        }
+      },
+      "profile_id": "get-owner-full-d3-allocation-074-v2",
+      "schema_version": 2,
+      "source_commit_from_coordinator": "be0499a8cb0a2ad0b7328d6ac0cf6227114cebcc",
+      "source_git_identity_verified_by_binary": false,
+      "stage_input": {
+        "profile_id": "get-owner-full-d3-allocation-074-v2",
+        "resp_connections": 1,
+        "schema_version": 2,
+        "workload": {
+          "dataset_sha256": "d1f7bca83840d79ebea94a65bfe9389bf2465a5ca2ac3d74535bca3600663498",
+          "keyspace": 16,
+          "minimum_usable_cpu_ns": 1000000000,
+          "minimum_usable_measurement_wall_ns": 1000000000,
+          "operation": "get",
+          "payload_bytes": 4096,
+          "pipeline_depth": 50,
+          "profile_id": "unprofiled-timing-controls-074-v1",
+          "schedule": {
+            "concurrency": 128,
+            "drain_timeout_ns": 5000000000,
+            "highest_trackable_ns": 10000000000,
+            "maximum_queued": 1024,
+            "offered_rate_per_second": 1000000,
+            "operation_timeout_ns": 5000000000,
+            "operations": 1000,
+            "slo_ns": 5000000000
+          },
+          "schema_version": 1,
+          "seed": 740074,
+          "slots": 128,
+          "surface": "resp2-mtls",
+          "warmup_calls": 64
+        }
+      },
+      "stage_workload_sha256": "51d1792de0a59361a5a92ddc5309aaec1f194775b3602ee07b0a3297d73f1aa0"
+    },
+    "role": "off"
+  },
+  "boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+  "deadline_ns": 1676083448676595,
+  "group": "/sys/fs/cgroup/system.slice/hc074-get-owner-d3-allocation-v2-395e07411a664600850bc88fc054ad73.service/writers-128",
+  "group_identity": [
+    29,
+    357525
+  ],
+  "quiet": {
+    "busy_percent": 0.0,
+    "maximum_percent": 10,
+    "sample_milliseconds": 500
+  }
+}

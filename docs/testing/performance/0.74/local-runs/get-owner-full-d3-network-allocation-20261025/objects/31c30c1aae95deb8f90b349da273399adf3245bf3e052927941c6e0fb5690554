@@ -1,0 +1,16 @@
+   Compiling hydracache-redis-compat v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-redis-compat)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 52.46s
+     Running unittests src\lib.rs (target\debug\deps\hydracache_redis_compat-b38587182ec9e4df.exe)
+     Running tests\connection_chaos.rs (target\debug\deps\connection_chaos-eabd15a35c4416ba.exe)
+     Running tests\redis_batch_execution_074.rs (target\debug\deps\redis_batch_execution_074-579fb33bc908360e.exe)
+     Running tests\redis_clients.rs (target\debug\deps\redis_clients-7fec9dd57dc54448.exe)
+     Running tests\redis_event_listeners.rs (target\debug\deps\redis_event_listeners-aceb07c80594fa82.exe)
+     Running tests\redis_mined_edge_corpus.rs (target\debug\deps\redis_mined_edge_corpus-41c31595fc3c849e.exe)
+     Running tests\resp_adaptive_coalescing_074.rs (target\debug\deps\resp_adaptive_coalescing_074-736e38e63fcccdb4.exe)
+     Running tests\resp_boundaries.rs (target\debug\deps\resp_boundaries-142d28c29ee42522.exe)
+     Running tests\resp_get_owner_074.rs (target\debug\deps\resp_get_owner_074-c6bc8c790055d051.exe)
+     Running tests\resp_pipeline_attribution_074.rs (target\debug\deps\resp_pipeline_attribution_074-22b49fe16dc57a10.exe)
+     Running tests\resp_resource_smoke.rs (target\debug\deps\resp_resource_smoke-561861403551a674.exe)
+     Running tests\resp_staged_order_model_074.rs (target\debug\deps\resp_staged_order_model_074-1a95f409a8ea129a.exe)
+     Running tests\resp_transport_adversarial_074.rs (target\debug\deps\resp_transport_adversarial_074-5c89de2f1c36a76b.exe)
+   Doc-tests hydracache_redis_compat

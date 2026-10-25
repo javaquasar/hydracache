@@ -1,0 +1,74 @@
+{
+  "attempt": {
+    "affected": true,
+    "argv": [
+      "/tmp/hc074-get-owner-d3-allocation-v2-395e07411a664600850bc88fc054ad73/allocation-on",
+      "--run",
+      "/tmp/hc074-get-owner-d3-allocation-v2-395e07411a664600850bc88fc054ad73/resp2-get-1m-p10.config.json",
+      "7a5b99472df28ef6d143533e0010633829a3f6c13bed912c559ecac9edfa4bb2",
+      "be0499a8cb0a2ad0b7328d6ac0cf6227114cebcc",
+      "-",
+      "-"
+    ],
+    "cell": "resp2-get-1m-p10",
+    "feature_enabled": true,
+    "mode": "ab",
+    "pair": 1,
+    "receipt_pins": {
+      "actual_wire_inflight_high_water": 10,
+      "allocation_diagnostics_feature": true,
+      "binary_sha256": "7a5b99472df28ef6d143533e0010633829a3f6c13bed912c559ecac9edfa4bb2",
+      "compiled_observer_lock_sha256": "e3be470f5a1bff4e917e841fc5bfbd257ff12559206bbc1481c3c4bca528eb1d",
+      "compiled_root_lock_sha256": "d2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c",
+      "fixed_material": null,
+      "profile_id": "get-owner-full-d3-allocation-074-v2",
+      "schema_version": 2,
+      "source_commit_from_coordinator": "be0499a8cb0a2ad0b7328d6ac0cf6227114cebcc",
+      "source_git_identity_verified_by_binary": false,
+      "stage_input": {
+        "profile_id": "get-owner-full-d3-allocation-074-v2",
+        "resp_connections": 1,
+        "schema_version": 2,
+        "workload": {
+          "dataset_sha256": "cc02a30745df8fcec104bd6ea96c66054b8bd33530cafebe9dac0e4872bc7a47",
+          "keyspace": 16,
+          "minimum_usable_cpu_ns": 1000000000,
+          "minimum_usable_measurement_wall_ns": 1000000000,
+          "operation": "get",
+          "payload_bytes": 1048576,
+          "pipeline_depth": 10,
+          "profile_id": "unprofiled-timing-controls-074-v1",
+          "schedule": {
+            "concurrency": 128,
+            "drain_timeout_ns": 5000000000,
+            "highest_trackable_ns": 10000000000,
+            "maximum_queued": 1024,
+            "offered_rate_per_second": 1000000,
+            "operation_timeout_ns": 5000000000,
+            "operations": 1000,
+            "slo_ns": 5000000000
+          },
+          "schema_version": 1,
+          "seed": 740074,
+          "slots": 128,
+          "surface": "resp2",
+          "warmup_calls": 64
+        }
+      },
+      "stage_workload_sha256": "4dbb8818986995d2785e988aa12f5ebc24892f56e171dabb0e0539c747fae4e3"
+    },
+    "role": "on"
+  },
+  "boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+  "deadline_ns": 1676078553098541,
+  "group": "/sys/fs/cgroup/system.slice/hc074-get-owner-d3-allocation-v2-395e07411a664600850bc88fc054ad73.service/writers-123",
+  "group_identity": [
+    29,
+    357435
+  ],
+  "quiet": {
+    "busy_percent": 0.0,
+    "maximum_percent": 10,
+    "sample_milliseconds": 500
+  }
+}

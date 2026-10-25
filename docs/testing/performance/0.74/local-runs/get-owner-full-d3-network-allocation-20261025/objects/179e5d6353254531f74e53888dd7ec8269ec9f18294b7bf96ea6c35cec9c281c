@@ -1,0 +1,12 @@
+[1675662.963807] Ubuntu-noble-latest-amd64-base.zst systemd[1]: Starting hc074-get-owner-d3-fixture-e376fbec914b49e480c68678d4704632.service - /usr/bin/python3 -I -B /tmp/hc074-get-owner-d3-fixture-e376fbec914b49e480c68678d4704632/coordinator.py main /tmp/hc074-get-owner-d3-fixture-e376fbec914b49e480c68678d4704632...
+[1675662.966746] Ubuntu-noble-latest-amd64-base.zst systemd[1]: Started hc074-get-owner-d3-fixture-e376fbec914b49e480c68678d4704632.service - /usr/bin/python3 -I -B /tmp/hc074-get-owner-d3-fixture-e376fbec914b49e480c68678d4704632/coordinator.py main /tmp/hc074-get-owner-d3-fixture-e376fbec914b49e480c68678d4704632.
+[1675665.126611] Ubuntu-noble-latest-amd64-base.zst python3[374091]: Traceback (most recent call last):
+[1675665.126611] Ubuntu-noble-latest-amd64-base.zst python3[374091]:   File "/tmp/hc074-get-owner-d3-fixture-e376fbec914b49e480c68678d4704632/coordinator.py", line 396, in <module>
+[1675665.126942] Ubuntu-noble-latest-amd64-base.zst python3[374091]:     entry()
+[1675665.126942] Ubuntu-noble-latest-amd64-base.zst python3[374091]:   File "/tmp/hc074-get-owner-d3-fixture-e376fbec914b49e480c68678d4704632/coordinator.py", line 386, in entry
+[1675665.126942] Ubuntu-noble-latest-amd64-base.zst python3[374091]:     main(plan, root)
+[1675665.126942] Ubuntu-noble-latest-amd64-base.zst python3[374091]:   File "/tmp/hc074-get-owner-d3-fixture-e376fbec914b49e480c68678d4704632/coordinator.py", line 269, in main
+[1675665.126942] Ubuntu-noble-latest-amd64-base.zst python3[374091]:     raise RuntimeError(f'first child refusal {sequence}: {code}; no retry')
+[1675665.126942] Ubuntu-noble-latest-amd64-base.zst python3[374091]: RuntimeError: first child refusal 0: -9; no retry
+[1675665.136765] Ubuntu-noble-latest-amd64-base.zst systemd[1]: hc074-get-owner-d3-fixture-e376fbec914b49e480c68678d4704632.service: Main process exited, code=exited, status=1/FAILURE
+[1675665.239498] Ubuntu-noble-latest-amd64-base.zst systemd[1]: hc074-get-owner-d3-fixture-e376fbec914b49e480c68678d4704632.service: Failed with result 'exit-code'.

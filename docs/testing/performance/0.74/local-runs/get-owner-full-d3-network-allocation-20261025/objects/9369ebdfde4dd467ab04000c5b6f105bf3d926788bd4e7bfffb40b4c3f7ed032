@@ -1,0 +1,38 @@
+{
+  "argv": [
+    "/usr/bin/systemd-run",
+    "--quiet",
+    "--no-ask-password",
+    "--unit=hc074-get-owner-d3-allocation-v2-395e07411a664600850bc88fc054ad73.service",
+    "--service-type=exec",
+    "--property=Delegate=yes",
+    "--property=DelegateSubgroup=control",
+    "--property=RuntimeMaxSec=1080",
+    "--property=RuntimeRandomizedExtraSec=0",
+    "--property=KillMode=control-group",
+    "--property=KillSignal=SIGKILL",
+    "--property=SendSIGKILL=yes",
+    "--property=Restart=no",
+    "--property=TimeoutStopSec=120",
+    "--property=NoNewPrivileges=yes",
+    "--property=ExecStopPost=/usr/bin/python3 -I -B /tmp/hc074-get-owner-d3-allocation-v2-395e07411a664600850bc88fc054ad73/coordinator.py post /tmp/hc074-get-owner-d3-allocation-v2-395e07411a664600850bc88fc054ad73",
+    "/usr/bin/python3",
+    "-I",
+    "-B",
+    "/tmp/hc074-get-owner-d3-allocation-v2-395e07411a664600850bc88fc054ad73/coordinator.py",
+    "main",
+    "/tmp/hc074-get-owner-d3-allocation-v2-395e07411a664600850bc88fc054ad73"
+  ],
+  "pointer": {
+    "root": "/tmp/hc074-get-owner-d3-allocation-v2-395e07411a664600850bc88fc054ad73",
+    "unit": "hc074-get-owner-d3-allocation-v2-395e07411a664600850bc88fc054ad73.service",
+    "plan_sha256": "cb84a2be132817cdd5fd91697066e5a066a4de4b9d49191b0e76297ea49e99f7",
+    "coordinator_sha256": "fcb8a53eba5ebc7e1364cbfa0d2bcb9e0ad1098f75b4e53dae56b7503c02ed38"
+  },
+  "operator_approved_exact_supervisor_maintenance": true,
+  "maximum_main_seconds": 1080,
+  "maximum_stop_seconds": 120,
+  "maximum_total_seconds": 1200,
+  "qualified_release_install": false,
+  "retry": false
+}

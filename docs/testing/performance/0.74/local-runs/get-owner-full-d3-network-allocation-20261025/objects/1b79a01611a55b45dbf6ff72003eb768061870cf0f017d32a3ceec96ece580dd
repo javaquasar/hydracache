@@ -1,0 +1,33 @@
+{
+  "argv": [
+    "/usr/bin/systemd-run",
+    "--no-ask-password",
+    "--quiet",
+    "--unit=hc074-get-owner-held-a60f8c22f89a4ee4b7846ffcb599dce0.service",
+    "--service-type=exec",
+    "--property=Delegate=yes",
+    "--property=DelegateSubgroup=control",
+    "--property=RuntimeMaxSec=3",
+    "--property=RuntimeRandomizedExtraSec=0",
+    "--property=KillMode=control-group",
+    "--property=KillSignal=SIGKILL",
+    "--property=SendSIGKILL=yes",
+    "--property=Restart=no",
+    "--property=TimeoutStopSec=10",
+    "--property=NoNewPrivileges=yes",
+    "--property=ExecStopPost=/usr/bin/python3 -I -B /tmp/hc074-server-gate-root-20261025.0k0xbdah/get-owner-held-cgroup-fixture-corrected/fixture.py post /tmp/hc074-server-gate-root-20261025.0k0xbdah/get-owner-held-cgroup-fixture-corrected hc074-get-owner-held-a60f8c22f89a4ee4b7846ffcb599dce0.service",
+    "/usr/bin/python3",
+    "-I",
+    "-B",
+    "/tmp/hc074-server-gate-root-20261025.0k0xbdah/get-owner-held-cgroup-fixture-corrected/fixture.py",
+    "main",
+    "/tmp/hc074-server-gate-root-20261025.0k0xbdah/get-owner-held-cgroup-fixture-corrected",
+    "hc074-get-owner-held-a60f8c22f89a4ee4b7846ffcb599dce0.service"
+  ],
+  "source_sha256": "88485ea81e186b0e9ab5f2430dd1952a9adc1f4cd737a7de8d7ab9a1f5bbec7a",
+  "private_fence": true,
+  "shared_host_fence": false,
+  "product": false,
+  "supervisor_stop": false,
+  "retry": false
+}

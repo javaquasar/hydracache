@@ -1,0 +1,4 @@
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.69s
+     Running `target\debug\xtask.exe performance-contract-check`
+Error: "performance-contract-check requires --release"
+error: process didn't exit successfully: `target\debug\xtask.exe performance-contract-check` (exit code: 1)

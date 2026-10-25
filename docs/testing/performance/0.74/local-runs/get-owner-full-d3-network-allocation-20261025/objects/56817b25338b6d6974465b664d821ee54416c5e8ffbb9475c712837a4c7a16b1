@@ -1,0 +1,33 @@
+{
+  "argv": [
+    "/usr/bin/systemd-run",
+    "--no-ask-password",
+    "--quiet",
+    "--unit=hc074-get-owner-held-881ed769590b484cb54c005a07a00155.service",
+    "--service-type=exec",
+    "--property=Delegate=yes",
+    "--property=DelegateSubgroup=control",
+    "--property=RuntimeMaxSec=3",
+    "--property=RuntimeRandomizedExtraSec=0",
+    "--property=KillMode=control-group",
+    "--property=KillSignal=SIGKILL",
+    "--property=SendSIGKILL=yes",
+    "--property=Restart=no",
+    "--property=TimeoutStopSec=10",
+    "--property=NoNewPrivileges=yes",
+    "--property=ExecStopPost=/usr/bin/python3 -I -B /tmp/hc074-server-gate-root-20261025.0k0xbdah/get-owner-held-cgroup-fixture-first/fixture.py post /tmp/hc074-server-gate-root-20261025.0k0xbdah/get-owner-held-cgroup-fixture-first hc074-get-owner-held-881ed769590b484cb54c005a07a00155.service",
+    "/usr/bin/python3",
+    "-I",
+    "-B",
+    "/tmp/hc074-server-gate-root-20261025.0k0xbdah/get-owner-held-cgroup-fixture-first/fixture.py",
+    "main",
+    "/tmp/hc074-server-gate-root-20261025.0k0xbdah/get-owner-held-cgroup-fixture-first",
+    "hc074-get-owner-held-881ed769590b484cb54c005a07a00155.service"
+  ],
+  "source_sha256": "682d32cb2dc4fd55447b044ae9aeb3d2f74f6f3c9e196cc969b4cca41b68ecd8",
+  "private_fence": true,
+  "shared_host_fence": false,
+  "product": false,
+  "supervisor_stop": false,
+  "retry": false
+}

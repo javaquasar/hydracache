@@ -1,0 +1,10 @@
+
+running 5 tests
+test memory::tests::allocation_zeroed_reallocation_and_drop_preserve_live_accounting ... ok
+test memory::tests::epoch_counts_gross_calls_peak_and_owner_release_without_oracle_allocation ... ok
+test tests::argument_grammar_requires_exact_pins_and_no_fallback_or_retry ... ok
+test tests::deadline_is_created_inside_the_runtime_without_starting_a_fixture ... ok
+test tests::exact_stage_cells_and_identity_bounds_without_workloads ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.61s
+

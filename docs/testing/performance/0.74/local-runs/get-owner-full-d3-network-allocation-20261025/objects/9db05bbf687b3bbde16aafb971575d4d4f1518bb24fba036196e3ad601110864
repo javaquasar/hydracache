@@ -1,0 +1,17 @@
+   Compiling rustls v0.23.45
+    Checking rustls-webpki v0.103.15
+    Checking hydracache v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache)
+    Checking tokio-rustls v0.26.4
+    Checking rcgen v0.14.8
+    Checking tonic v0.14.6
+    Checking tonic-prost v0.14.6
+    Checking hydracache-client-hc2 v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-client-hc2)
+    Checking hydracache-observability v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-observability)
+    Checking hydracache-client-plane-spike v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-client-plane-spike)
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+    Checking hydracache-client-transport-axum v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-client-transport-axum)
+    Checking hydracache-redis-compat v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-redis-compat)
+    Checking hydracache-loadgen v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-loadgen)
+    Checking redis v1.3.0
+    Checking xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2m 00s

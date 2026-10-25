@@ -1,0 +1,28 @@
+{
+  "argv": [
+    "/usr/bin/systemd-run",
+    "--scope",
+    "--no-ask-password",
+    "--quiet",
+    "--unit=hc074-get-owner-scope-367557d44e5742cbbee856177ca6b7a3.scope",
+    "--property=RuntimeMaxSec=3",
+    "--property=RuntimeRandomizedExtraSec=0",
+    "--property=KillMode=control-group",
+    "--property=KillSignal=SIGKILL",
+    "--property=SendSIGKILL=yes",
+    "--property=TimeoutStopSec=1",
+    "/usr/bin/python3",
+    "-I",
+    "-B",
+    "-c",
+    "\nimport ctypes,fcntl,json,os,signal,sys,time\nlock,sink,dev,ino=map(int,sys.argv[1:])\nassert os.fstat(lock).st_dev==dev and os.fstat(lock).st_ino==ino\nassert fcntl.fcntl(lock,fcntl.F_GETFL)&os.O_ACCMODE==os.O_RDONLY\nassert fcntl.fcntl(lock,fcntl.F_GETFD)&fcntl.FD_CLOEXEC==0\nlibc=ctypes.CDLL(None,use_errno=True)\nassert libc.prctl(38,1,0,0,0)==0\nos.setgroups([]);os.setgid(1000);os.setuid(1000)\nassert os.getuid()==1000 and os.getgid()==1000\ncopy= os.dup(lock)\nchild=os.fork()\nif child==0:\n signal.signal(signal.SIGTERM,signal.SIG_IGN)\n while True: os.write(sink,b'x');time.sleep(.01)\nprint(json.dumps(dict(pid=os.getpid(),child=child,uid=os.getuid(),gid=os.getgid(),fd_preserved=True,\n cgroup=open('/proc/self/cgroup').read().strip())),flush=True)\nos._exit(0)\n",
+    "3",
+    "4",
+    "2306",
+    "12322142"
+  ],
+  "env": {
+    "PATH": "/usr/bin:/bin",
+    "LANG": "C"
+  }
+}

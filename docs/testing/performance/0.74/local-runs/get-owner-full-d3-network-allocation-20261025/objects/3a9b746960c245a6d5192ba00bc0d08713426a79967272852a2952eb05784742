@@ -1,0 +1,318 @@
+{
+  "schema_version": 1,
+  "profile_id": "get-owner-full-d3-allocation-074-v2",
+  "attempts": 240,
+  "classification": "rejected-mandatory-full-d3-allocation-floor",
+  "rejected_cells": [
+    "resp2-mtls-get-4k-p50",
+    "resp2-mtls-get-1m-p10",
+    "resp3-mtls-get-4k-p50",
+    "resp3-mtls-get-1m-p10"
+  ],
+  "results": [
+    {
+      "cell": "resp2-get-4k-p50",
+      "affected": true,
+      "aa_ratios": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "gross": {
+        "paired_ratios": [
+          0.7653015133525733,
+          0.7653015133525733,
+          0.7653015133525733,
+          0.7653015133525733,
+          0.7653015133525733
+        ],
+        "geometric_mean": 0.7653015133525733,
+        "lower_95": 0.7653015133525733,
+        "upper_95": 0.7653015133525733
+      },
+      "ceiling": 0.8,
+      "passed": true
+    },
+    {
+      "cell": "resp2-get-1m-p10",
+      "affected": true,
+      "aa_ratios": [
+        1.0000193597916087,
+        0.9999957423646827,
+        1.0000184378488206,
+        1.0000282460382757,
+        0.9999919558473285
+      ],
+      "gross": {
+        "paired_ratios": [
+          0.6671429453391652,
+          0.6671328421141521,
+          0.6671387106434281,
+          0.6671239727162064,
+          0.6671422851449326
+        ],
+        "geometric_mean": 0.6671361511541628,
+        "lower_95": 0.6671263427920027,
+        "upper_95": 0.6671459596605294
+      },
+      "ceiling": 0.8,
+      "passed": true
+    },
+    {
+      "cell": "resp3-get-4k-p50",
+      "affected": true,
+      "aa_ratios": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "gross": {
+        "paired_ratios": [
+          0.7759812646831128,
+          0.7759812646831128,
+          0.7759812646831128,
+          0.7759812646831128,
+          0.7759812646831128
+        ],
+        "geometric_mean": 0.7759812646831128,
+        "lower_95": 0.7759812646831128,
+        "upper_95": 0.7759812646831128
+      },
+      "ceiling": 0.8,
+      "passed": true
+    },
+    {
+      "cell": "resp3-get-1m-p10",
+      "affected": true,
+      "aa_ratios": [
+        1.00000984854779,
+        1.0000046792677648,
+        1.0000175189936749,
+        0.9999701855928785,
+        0.9999974000865388
+      ],
+      "gross": {
+        "paired_ratios": [
+          0.6672162576432906,
+          0.6672277509160661,
+          0.6672383733849402,
+          0.6672281666959106,
+          0.6672202147876729
+        ],
+        "geometric_mean": 0.6672261526422436,
+        "lower_95": 0.6672155962890145,
+        "upper_95": 0.66723670916249
+      },
+      "ceiling": 0.8,
+      "passed": true
+    },
+    {
+      "cell": "resp2-mtls-get-4k-p50",
+      "affected": true,
+      "aa_ratios": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "gross": {
+        "paired_ratios": [
+          0.8425784658868435,
+          0.8426250328937118,
+          0.8426250328937118,
+          0.8426250328937118,
+          0.8426250328937118
+        ],
+        "geometric_mean": 0.8426157192864522,
+        "lower_95": 0.8425898611068503,
+        "upper_95": 0.8426415782596139
+      },
+      "ceiling": 0.8,
+      "passed": false
+    },
+    {
+      "cell": "resp2-mtls-get-1m-p10",
+      "affected": true,
+      "aa_ratios": [
+        1.000001023448295,
+        0.9999986633460838,
+        1.0,
+        0.9999995199013857,
+        0.9999999794243699
+      ],
+      "gross": {
+        "paired_ratios": [
+          0.8002308236358876,
+          0.8002285989413798,
+          0.8002306791497639,
+          0.800230248902351,
+          0.8002292780234199
+        ],
+        "geometric_mean": 0.8002299257301033,
+        "lower_95": 0.8002287382998579,
+        "upper_95": 0.8002311131621106
+      },
+      "ceiling": 0.8,
+      "passed": false
+    },
+    {
+      "cell": "resp3-mtls-get-4k-p50",
+      "affected": true,
+      "aa_ratios": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "gross": {
+        "paired_ratios": [
+          0.8475000034439086,
+          0.8475000034439086,
+          0.8475000034439086,
+          0.8475000034439086,
+          0.8475000034439086
+        ],
+        "geometric_mean": 0.8475000034439086,
+        "lower_95": 0.8475000034439086,
+        "upper_95": 0.8475000034439086
+      },
+      "ceiling": 0.8,
+      "passed": false
+    },
+    {
+      "cell": "resp3-mtls-get-1m-p10",
+      "affected": true,
+      "aa_ratios": [
+        0.9999996708421461,
+        1.0000011627212058,
+        0.9999901726031191,
+        0.999998837280146,
+        1.0000016770315199
+      ],
+      "gross": {
+        "paired_ratios": [
+          0.8002621835134397,
+          0.800262022767824,
+          0.8002636138422053,
+          0.8002606367766028,
+          0.8002633285258623
+        ],
+        "geometric_mean": 0.800262357084484,
+        "lower_95": 0.8002608847195838,
+        "upper_95": 0.8002638294520931
+      },
+      "ceiling": 0.8,
+      "passed": false
+    },
+    {
+      "cell": "embedded-get-4k",
+      "affected": false,
+      "aa_ratios": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "gross": {
+        "paired_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "geometric_mean": 1.0,
+        "lower_95": 1.0,
+        "upper_95": 1.0
+      },
+      "ceiling": 1.05,
+      "passed": true
+    },
+    {
+      "cell": "direct-get-4k",
+      "affected": false,
+      "aa_ratios": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "gross": {
+        "paired_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "geometric_mean": 1.0,
+        "lower_95": 1.0,
+        "upper_95": 1.0
+      },
+      "ceiling": 1.05,
+      "passed": true
+    },
+    {
+      "cell": "hc1-get-4k",
+      "affected": false,
+      "aa_ratios": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "gross": {
+        "paired_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "geometric_mean": 1.0,
+        "lower_95": 1.0,
+        "upper_95": 1.0
+      },
+      "ceiling": 1.05,
+      "passed": true
+    },
+    {
+      "cell": "hc2-mtls-get-4k",
+      "affected": false,
+      "aa_ratios": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "gross": {
+        "paired_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "geometric_mean": 1.0,
+        "lower_95": 1.0,
+        "upper_95": 1.0
+      },
+      "ceiling": 1.05,
+      "passed": true
+    }
+  ],
+  "candidate_admitted": false,
+  "timing_or_retention_proven": false,
+  "full_d3_terminal_rejection": true,
+  "thresholds_changed": false
+}
