@@ -20134,3 +20134,35 @@ wrappers. The profile does not answer that yet. It directs a new bounded
 experiment while preserving the frequency constraint, original deadlines and
 first refusals. A confirmed leaf optimization and an honest red enclosing gate
 can coexist without declaring the release ready.
+
+### Measure the observer before trusting small operation costs
+
+The [Boot and Namespace operation cohort](../testing/performance/0.74/kernel-operation-cost-result-20261025.md)
+answers the next attribution question without replacing the validation path.
+Test-only hooks select opens, filesystem checks, identity, document read,
+decode or path construction inside actual functions. An empty span measures
+the observer itself. All original effects and refusal order remain, and removing
+the hooks reconstructs the previous runtime statements. Errno and original
+panic/results must survive observation too; they are part of its tests.
+
+Eight processes compare frozen reference, identical-reference control, actual
+runtime with no active capture and runtime with one selected capture. All 35
+path/kind calibrations pass. Inactive hooks still add roughly 0.7–1.2% CPU against
+the copied baseline in this test image, so disabled instrumentation is not assumed
+free. Native check, strict lint and 43 origin cases pass before measurement.
+
+The active observer is much more visible. Selecting four Boot opens gives a
+whole-CPU/reference ratio of 1.482; selecting a Namespace open gives about
+1.292–1.295. Selected spans include clock/observer cost, not only the syscall.
+Open is the largest measured span, but path construction and boot decode are
+near the roughly 0.57-microsecond empty control. Subtracting medians or adding
+spans from different runs would manufacture precision that the method does not
+provide. No decode/path optimization is accepted from those small differences.
+
+The useful next experiment is a separately frozen aggregate comparison of an
+open or filesystem/identity wrapper, with the same syscall flags, error/EINTR
+behavior and full observation sequence. The attribution does not yet separate
+kernel time from wrapper work within those spans. No runtime optimization,
+preparation retry or production gain is claimed here. The first enrollment expiry
+from the previous candidate remains the enclosing gate result, and the original
+deadlines and all live checks remain in place.

@@ -223,6 +223,15 @@ host manager is still 255; no upgrade, original service send or product run occu
 
 ## 4. Completion, cells 2–4, crashes and reconnect
 
+The [Boot Namespace operation attribution](kernel-operation-cost-result-20261025.md)
+adds test-only selected CPU spans, with all 35 baseline calibration combinations
+passing in one eight-process cohort. Forty-three origin tests, native check and
+strict lint pass. Open is the largest measured span; decode/path remain near
+the empty-observer cost. The active observer materially increases whole CPU,
+so its spans are not additive production timings. Runtime statements are
+unchanged, no optimization or full-preparation retry occurs, and the prior
+enrollment refusal and later-cell blockers remain intact.
+
 The separate [parent-device experiment](authority-parent-cost-result-20261025.md)
 keeps all before-read predicates, four full-leaf observations and original
 windows. Integrated CPU ratios are 0.924130 for marker and 0.926178 for record;
