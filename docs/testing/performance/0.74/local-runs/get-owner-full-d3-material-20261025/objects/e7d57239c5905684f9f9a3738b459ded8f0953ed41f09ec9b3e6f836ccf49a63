@@ -1,0 +1,20 @@
+{
+  "argv": [
+    "/usr/bin/cc",
+    "-std=c11",
+    "-O2",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/get-owner-provider-control-first/source.c",
+    "-o",
+    "/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/get-owner-provider-control-first/control"
+  ],
+  "env": {
+    "PATH": "/usr/bin:/bin",
+    "LANG": "C"
+  },
+  "uid": 1000,
+  "gid": 1000,
+  "bound_seconds": 60
+}

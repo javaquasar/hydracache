@@ -1,0 +1,3 @@
+   Compiling get-owner-scheduled-controls-074 v0.0.0 (/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/source-get-owner-material-checks-corrected/tools/get-owner-scheduled-controls-074)
+    Finished `release` profile [optimized] target(s) in 6.11s
+     Running unittests src/bin/timing_controls.rs (/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/get-owner-d3-build-target-first/release/deps/timing_controls_074-6033575a3726a352)

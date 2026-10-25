@@ -1,0 +1,7 @@
+
+running 2 tests
+test tests::arguments_need_exact_binary_and_full_source_identity_without_retry ... ok
+test tests::binary_seal_hashes_raw_bytes_and_missing_file_fails ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+

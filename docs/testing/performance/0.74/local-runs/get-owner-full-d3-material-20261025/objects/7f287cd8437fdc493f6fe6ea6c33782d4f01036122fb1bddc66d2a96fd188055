@@ -1,0 +1,34 @@
+{
+  "cases": [
+    {
+      "name": "locked-fetch",
+      "exit": 0,
+      "wall_ns": 6628842879
+    },
+    {
+      "name": "build-off",
+      "exit": 0,
+      "wall_ns": 101250950581
+    },
+    {
+      "name": "build-on",
+      "exit": 0,
+      "wall_ns": 25677196479
+    },
+    {
+      "name": "check",
+      "exit": 0,
+      "wall_ns": 34713102488
+    },
+    {
+      "name": "clippy",
+      "exit": 0,
+      "wall_ns": 1726839035
+    }
+  ],
+  "first_refusal": null,
+  "postflight_refusal": null,
+  "passed": true,
+  "source_unchanged": true,
+  "workload_started": false
+}

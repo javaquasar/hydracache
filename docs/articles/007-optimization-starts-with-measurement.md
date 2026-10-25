@@ -20251,3 +20251,32 @@ then require differential faults and both leaf and complete-context comparisons.
 Twelve offline controls and staged-byte verification support this narrower next
 question. No new preparation attempt or runtime optimization follows from the
 ranking alone, and the original failed enrollment stays visible.
+
+### Complete GET owner prerequisites before spending the host window
+
+The next work returns exclusively to GET-owner, not another preparation-speed
+hypothesis. The [dedicated-host continuation](../testing/performance/0.74/get-owner-full-d3-readiness-result-20261025.md)
+first closes a comparison defect: independent mTLS processes previously minted
+different certificates. A new explicit mode reads the same private diagnostic
+material by raw-byte pin and reports public fingerprints. Old CLI output and
+ephemeral mode remain compatible. The first tests expose ambiguous Rustls
+provider selection before server startup; an explicit provider in the new
+validator fixes that without changing the transport's global choice. Full
+Windows standalone suites pass 89 tests per off/on variant and Linux metadata
+checks pass six each, with strict compilation/lint gates.
+
+The memory question also becomes more concrete. A synthetic control on the
+installed GNU allocator labels only that child's allocator mappings and checks
+their writable extent against mallinfo2 in five allocate/free/refill snapshots.
+The first large mapping disappears after free; a later heap allocation leaves
+free resident storage after release. This is the distinction an idle-retention
+lane needs: logical ownership, allocator free space and physical residency are
+different observations. Process RSS alone cannot make that distinction.
+
+The control is not yet a multi-arena reader or a GET-owner comparison. A strict
+coverage/parser gate, the allocation lane, sufficient fixed-work timing capacity
+and the complete counterbalanced native/RESP cohort still precede a D3 decision.
+The operator has approved a narrowly scoped fenced maintenance with autonomous
+cleanup and supervisor restoration; preparation has not stopped the service.
+No practical threshold changes and no product speedup claim follow from these
+prerequisite results.

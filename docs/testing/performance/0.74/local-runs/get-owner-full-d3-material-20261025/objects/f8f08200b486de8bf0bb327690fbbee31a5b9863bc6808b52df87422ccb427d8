@@ -1,0 +1,24 @@
+"""Read-only provider inventory; no allocator counters or product fixtures."""
+from pathlib import Path
+import ctypes, hashlib, json, os, subprocess, sys
+
+base = Path('/tmp/hc074-server-gate-root-20261025.0k0xbdah')
+raw = (base/'server-fault-worker-20261025.py').read_bytes()
+assert hashlib.sha256(raw).hexdigest() == 'af1e9926e1ad40bc49c1c225d79f5fffc788c715a7889743decea129ec4b17a3'
+sys.argv = ['readonly','6640e1b9b31ae7c87137b335be4f2665d729ea7b4324ee0e874bdbedc346c520']
+scope = {}; exec(compile(raw.decode().split('started=time.monotonic_ns()\n')[0], '<pinned-preflight>', 'exec'), scope)
+before = scope['preflight']()
+libc_path = Path('/usr/lib/x86_64-linux-gnu/libc.so.6')
+loader = Path('/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2')
+library = ctypes.CDLL(str(libc_path))
+version = library.gnu_get_libc_version; version.restype = ctypes.c_char_p
+symbols = {name: hasattr(library, name) for name in ['mallinfo2','malloc_info','malloc_stats','malloc_trim','malloc_usable_size']}
+result = subprocess.run([str(loader), '--list-tunables'], env={'PATH':'/usr/bin:/bin','LANG':'C'}, capture_output=True, timeout=10)
+assert result.returncode == 0 and len(result.stdout) <= 65536 and not result.stderr
+tunables = [line for line in result.stdout.decode().splitlines() if line.startswith('glibc.malloc.') or line.startswith('glibc.mem.')]
+after = scope['preflight'](); assert before == after
+print(json.dumps(dict(read_only=True, provider_version=version().decode(), symbols=symbols,
+    libc_sha256=hashlib.sha256(libc_path.read_bytes()).hexdigest(), loader_sha256=hashlib.sha256(loader.read_bytes()).hexdigest(),
+    allocator_tunables=tunables, list_tunables_sha256=hashlib.sha256(result.stdout).hexdigest(),
+    symbol_presence_certifies_resident_or_retained=False, allocator_counter_measurement=False,
+    product_fixture_started=False, before=before, after=after)))

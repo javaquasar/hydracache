@@ -1,0 +1,13 @@
+{
+  "source_head": "3c1a75e3edd3d73bc39980fe7b1d95d9e55d0d70",
+  "working_tree_overlay": true,
+  "changed_paths": [
+    "tools/get-owner-scheduled-controls-074/src/bin/timing_controls.rs",
+    "tools/get-owner-scheduled-controls-074/src/security.rs",
+    "tools/get-owner-scheduled-controls-074/src/security/material.rs",
+    "tools/get-owner-scheduled-controls-074/src/timing.rs",
+    "tools/get-owner-scheduled-controls-074/tests/timing_cli.rs"
+  ],
+  "source_count": 2573,
+  "measured_workload": false
+}

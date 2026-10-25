@@ -9,6 +9,18 @@ contract and clean-source/lock/toolchain/placement/binary seal are complete.
 See `docs/testing/performance/0.74/unprofiled-timing-controls-design.md`.
 The opt-in `allocation-diagnostics` binary is separate and must never certify
 timing.
+
+Fresh-process diagnostic PKI now has explicit fixed-material modes:
+`--generate-material PATH`, `--validate-material PATH MATERIAL_SHA256` and
+`--run-with-material CONFIG BINARY_SHA256 SOURCE_SHA PATH MATERIAL_SHA256`.
+Generate once in a private coordinator directory, retain only the public seal,
+and use the same pinned bytes for paired secure processes. Generation never
+overwrites; validation starts no fixture. Unix files must be private, regular,
+nonsymlink and single-link. No production trust or Windows ACL enrollment is
+implied. Old `--run`, ephemeral generation and its envelope stay unchanged.
+The coordinator still must prove matching dataset/material/source/placement and
+all numerical gates. See the
+[current prerequisite results](../../docs/testing/performance/0.74/get-owner-full-d3-readiness-result-20261025.md).
 Use the library's bounded `scheduled::run`, not the source-referenced legacy
 `rate::run_open_loop`. All observations are non-promotable and not product claims.
 

@@ -1,0 +1,96 @@
+#define _GNU_SOURCE
+#include <errno.h>
+#include <fcntl.h>
+#include <malloc.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+/* Synthetic provider capability only, never cache or performance evidence. */
+_Static_assert(sizeof(size_t) == 8, "64-bit GNU control required");
+_Static_assert(sizeof(struct mallinfo2) == 80, "unexpected mallinfo2 ABI");
+static char text[2 * 1024 * 1024];
+struct observation {
+    struct mallinfo2 info;
+    size_t rw_bytes, address_bytes, rss_bytes, heap_maps, malloc_maps, arena_maps;
+    int stable, covered;
+};
+
+static int observe(struct observation *out) {
+    memset(out, 0, sizeof(*out));
+    struct mallinfo2 before = mallinfo2();
+    int fd = open("/proc/self/smaps", O_RDONLY | O_CLOEXEC);
+    if (fd < 0) return 1;
+    size_t used = 0;
+    for (;;) {
+        ssize_t count = read(fd, text + used, sizeof(text) - 1 - used);
+        if (count < 0 && errno == EINTR) continue;
+        if (count < 0) { close(fd); return 2; }
+        if (!count) break;
+        used += (size_t)count;
+        if (used == sizeof(text) - 1) { close(fd); return 3; }
+    }
+    if (close(fd)) return 4;
+    text[used] = 0;
+    int selected = 0, writable = 0;
+    char *state = NULL;
+    for (char *line = strtok_r(text, "\n", &state); line; line = strtok_r(NULL, "\n", &state)) {
+        char *space = strchr(line, ' '), *dash = strchr(line, '-');
+        if (space && dash && dash < space) {
+            char *name = strchr(line, '[');
+            selected = 0;
+            if (name && !strcmp(name, "[heap]")) { selected = 1; out->heap_maps++; }
+            if (name && !strcmp(name, "[anon: glibc: malloc]")) { selected = 1; out->malloc_maps++; }
+            if (name && !strcmp(name, "[anon: glibc: malloc arena]")) { selected = 1; out->arena_maps++; }
+            writable = !strncmp(space + 1, "rw", 2);
+        } else if (selected && !strncmp(line, "Size:", 5)) {
+            size_t bytes = strtoull(line + 5, NULL, 10) * 1024;
+            out->address_bytes += bytes;
+            if (writable) out->rw_bytes += bytes;
+        } else if (selected && !strncmp(line, "Rss:", 4)) {
+            out->rss_bytes += strtoull(line + 4, NULL, 10) * 1024;
+        }
+    }
+    out->info = mallinfo2();
+    out->stable = memcmp(&before, &out->info, sizeof(before)) == 0;
+    out->covered = out->rw_bytes == out->info.arena + out->info.hblkhd;
+    return 0;
+}
+
+int main(void) {
+    const char *tunables = getenv("GLIBC_TUNABLES");
+    if (!tunables || strcmp(tunables, "glibc.mem.decorate_maps=1")) return 10;
+    struct observation samples[5];
+    void *sentinel = malloc(16);
+    if (!sentinel) return 11;
+    ((volatile unsigned char *)sentinel)[0] = 7;
+    volatile unsigned char *large = NULL;
+    for (size_t phase = 0; phase < 5; phase++) {
+        if (phase == 1 || phase == 3) {
+            large = malloc(2 * 1024 * 1024);
+            if (!large) return 12;
+            for (size_t i = 0; i < 2 * 1024 * 1024; i += 4096) large[i] = (unsigned char)i;
+        }
+        if (phase == 2 || phase == 4) { free((void *)large); large = NULL; }
+        int error = observe(&samples[phase]);
+        if (error) return 20 + error;
+    }
+    /* Formatting happens only after all allocator/smaps snapshots. No trim/purge. */
+    printf("{\"synthetic_control_only\":true,\"performance_claim\":false,\"allocator_policy_changed\":false,\"mapping_decoration_only\":true,\"samples\":[");
+    int valid = samples[0].heap_maps > 0 && samples[1].malloc_maps > 0
+        && samples[1].info.hblkhd > samples[0].info.hblkhd
+        && samples[1].rss_bytes >= samples[0].rss_bytes + 2 * 1024 * 1024;
+    for (size_t i = 0; i < 5; i++) {
+        struct observation *s = &samples[i];
+        valid &= s->stable && s->covered;
+        printf("%s{\"phase\":%zu,\"stable\":%s,\"covered\":%s,\"arena\":%zu,\"mmap\":%zu,\"allocator_accounted_in_use\":%zu,\"free_bins_and_top\":%zu,\"allocator_rw_mapping_bytes\":%zu,\"allocator_address_bytes\":%zu,\"allocator_mapping_rss_bytes\":%zu,\"heap_maps\":%zu,\"malloc_maps\":%zu,\"arena_maps\":%zu}",
+            i ? "," : "", i, s->stable ? "true" : "false", s->covered ? "true" : "false", s->info.arena, s->info.hblkhd,
+            s->info.uordblks + s->info.hblkhd, s->info.fordblks, s->rw_bytes, s->address_bytes, s->rss_bytes,
+            s->heap_maps, s->malloc_maps, s->arena_maps);
+    }
+    printf("],\"provider_capability_control_passed\":%s,\"admission\":false}\n", valid ? "true" : "false");
+    free(sentinel);
+    return valid ? 0 : 30;
+}

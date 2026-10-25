@@ -1,0 +1,9 @@
+
+running 4 tests
+test fresh_secure_processes_use_one_pin_and_plaintext_refuses_before_fixture ... ok
+test material_modes_are_metadata_only_private_and_exclusive ... ok
+test single_offer_executable_preserves_identity_and_non_admission_or_refuses_profiled_build ... ok
+test validation_starts_no_fixture_and_bad_binary_seal_never_runs ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 18.40s
+

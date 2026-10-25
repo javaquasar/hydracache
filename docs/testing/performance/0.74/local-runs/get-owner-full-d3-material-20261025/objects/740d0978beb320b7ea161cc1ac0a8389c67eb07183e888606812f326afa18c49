@@ -1,0 +1,28 @@
+from pathlib import Path
+import hashlib,json,os,sys,time
+base=Path('/tmp/hc074-server-gate-root-20261025.0k0xbdah')
+upload=Path('/tmp/hc074-server-gate-upload-20261025.pvdj0f6c')
+raw=(base/'server-fault-worker-20261025.py').read_bytes()
+assert hashlib.sha256(raw).hexdigest()=='af1e9926e1ad40bc49c1c225d79f5fffc788c715a7889743decea129ec4b17a3'
+sys.argv=['readonly','6640e1b9b31ae7c87137b335be4f2665d729ea7b4324ee0e874bdbedc346c520']
+scope={};exec(compile(raw.decode().split('started=time.monotonic_ns()\n')[0],'<pinned-preflight>','exec'),scope)
+before=scope['preflight']()
+def cpu():
+ return [list(map(int,line.split()[1:])) for line in Path('/proc/stat').read_text().splitlines() if line.startswith('cpu')]
+start=cpu();time.sleep(1);end=cpu()
+busy=[]
+for a,b in zip(start,end):
+ # guest counters are already included in user/nice.
+ delta=[y-x for x,y in zip(a[:8],b[:8])];total=sum(delta)
+ busy.append(dict(total_ticks=total,nonidle_percent=(100*(total-delta[3]-delta[4])/total if total else None)))
+after=scope['preflight']();assert before==after
+paths=[upload/'toolchain-v3/bin/cargo',upload/'toolchain-v3/bin/rustc',upload/'cargo-home-v3',upload/'build-target-v3',
+ upload/'source-filesystem-projection-first',Path('/sys/fs/cgroup/cgroup.controllers')]
+print(json.dumps(dict(read_only=True,preflight=before,postflight=after,cpu=busy,
+ available_cpu=sorted(os.sched_getaffinity(0)),loadavg=Path('/proc/loadavg').read_text().strip(),
+ memory=[s for s in Path('/proc/meminfo').read_text().splitlines() if s.startswith(('MemAvailable:','MemTotal:'))],
+ disk_free_bytes=os.statvfs(upload).f_bavail*os.statvfs(upload).f_frsize,
+ private_paths={str(p):p.exists() for p in paths},controllers=Path('/sys/fs/cgroup/cgroup.controllers').read_text().strip(),
+ self_cgroup=Path('/proc/self/cgroup').read_text().strip(),
+ apparmor_enabled=Path('/sys/module/apparmor/parameters/enabled').read_text().strip(),
+ workload_started=False,release_installed=False,supervisor_stopped=False)))

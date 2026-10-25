@@ -1,0 +1,44 @@
+
+running 3 tests
+test security::material::tests::malformed_unknown_oversized_and_mismatched_keys_refuse_without_panics ... FAILED
+test security::material::tests::public_permissions_symlinks_and_hardlinks_are_not_private_material ... FAILED
+test security::material::tests::two_reads_roundtrip_exact_material_without_secret_receipts_or_overwrite ... FAILED
+
+failures:
+
+---- security::material::tests::malformed_unknown_oversized_and_mismatched_keys_refuse_without_panics stdout ----
+
+thread 'security::material::tests::malformed_unknown_oversized_and_mismatched_keys_refuse_without_panics' (365259) panicked at /tmp/hc074-server-gate-upload-20261025.pvdj0f6c/cargo-home-v3/registry/src/index.crates.io-1949cf8c6b5b557f/rustls-0.23.45/src/crypto/mod.rs:249:14:
+
+Could not automatically determine the process-level CryptoProvider from Rustls crate features.
+Call CryptoProvider::install_default() before this point to select a provider manually, or make sure exactly one of the 'aws-lc-rs' and 'ring' features is enabled.
+See the documentation of the CryptoProvider type for more information.
+            
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- security::material::tests::public_permissions_symlinks_and_hardlinks_are_not_private_material stdout ----
+
+thread 'security::material::tests::public_permissions_symlinks_and_hardlinks_are_not_private_material' (365260) panicked at /tmp/hc074-server-gate-upload-20261025.pvdj0f6c/cargo-home-v3/registry/src/index.crates.io-1949cf8c6b5b557f/rustls-0.23.45/src/crypto/mod.rs:249:14:
+
+Could not automatically determine the process-level CryptoProvider from Rustls crate features.
+Call CryptoProvider::install_default() before this point to select a provider manually, or make sure exactly one of the 'aws-lc-rs' and 'ring' features is enabled.
+See the documentation of the CryptoProvider type for more information.
+            
+
+---- security::material::tests::two_reads_roundtrip_exact_material_without_secret_receipts_or_overwrite stdout ----
+
+thread 'security::material::tests::two_reads_roundtrip_exact_material_without_secret_receipts_or_overwrite' (365261) panicked at /tmp/hc074-server-gate-upload-20261025.pvdj0f6c/cargo-home-v3/registry/src/index.crates.io-1949cf8c6b5b557f/rustls-0.23.45/src/crypto/mod.rs:249:14:
+
+Could not automatically determine the process-level CryptoProvider from Rustls crate features.
+Call CryptoProvider::install_default() before this point to select a provider manually, or make sure exactly one of the 'aws-lc-rs' and 'ring' features is enabled.
+See the documentation of the CryptoProvider type for more information.
+            
+
+
+failures:
+    security::material::tests::malformed_unknown_oversized_and_mismatched_keys_refuse_without_panics
+    security::material::tests::public_permissions_symlinks_and_hardlinks_are_not_private_material
+    security::material::tests::two_reads_roundtrip_exact_material_without_secret_receipts_or_overwrite
+
+test result: FAILED. 0 passed; 3 failed; 0 ignored; 0 measured; 38 filtered out; finished in 0.00s
+

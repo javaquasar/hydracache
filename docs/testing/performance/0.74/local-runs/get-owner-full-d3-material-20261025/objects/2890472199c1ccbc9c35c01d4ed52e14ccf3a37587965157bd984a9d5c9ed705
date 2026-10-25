@@ -1,0 +1,26 @@
+schema_version = 1
+contract_id = "get-owner-gnu-provider-capability-control-074-v1"
+state = "prepared-before-first-synthetic-provider-control"
+purpose = "Determine whether installed GNU System allocator maps can be reconciled with mallinfo2 and smaps; not a product optimization or D3 numerical attempt."
+shipping_allocator_replaced = false
+allocator_policy_tunables_changed = false
+child_mapping_decoration = "GLIBC_TUNABLES=glibc.mem.decorate_maps=1; this synthetic diagnostic child only"
+host_environment_changed = false
+supervisor_stop_required = false
+product_fixture_execution_allowed = false
+admission_allowed = false
+original_checks_bounds_thresholds_and_refusals_unchanged = true
+automatic_retry_allowed = false
+maximum_child_seconds = 10
+maximum_compile_seconds = 60
+maximum_smaps_bytes = 2097151
+large_allocation_bytes = 2097152
+phases = ["sentinel baseline", "malloc and touch every 4096-byte page", "free without trim", "same-size refill and page touch", "free without trim"]
+supported_abi = "64-bit GNU mallinfo2: ten size_t fields; static assert 80 bytes"
+mapping_classes = ["[heap]", "[anon: glibc: malloc]", "[anon: glibc: malloc arena]"]
+required_controls = ["main heap and large-malloc labels observed", "allocator RW map size equals arena plus hblkhd in every phase", "mallinfo2 inventory stable across each smaps read", "touched large mapping increases allocator RSS by at least its requested bytes"]
+counter_semantics = "uordblks plus hblkhd is allocator-accounted in-use including tcache accounting; fordblks is free bins/top, not a claim that all application-freed bytes are reported there"
+resident_semantics = "kernel RSS summed only over reconciled allocator mapping classes; not whole-process VmRSS renamed allocator resident"
+reserved_address_space_separate_from_rw_memory = true
+successful_synthetic_control_is_full_d3_retention_proof = false
+remaining_before_memory_admission = ["strict production observer parser and refusal tests", "multi-arena and remap/unknown-map coverage controls", "counting lane integration outside timing", "sealed off/on idle-delete-refill-close cohort"]

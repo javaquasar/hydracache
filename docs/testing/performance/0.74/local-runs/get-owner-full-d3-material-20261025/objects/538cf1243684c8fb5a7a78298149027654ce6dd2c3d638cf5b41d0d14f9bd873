@@ -1,0 +1,7 @@
+
+running 2 tests
+test security::material::tests::malformed_unknown_oversized_and_mismatched_keys_refuse_without_panics ... ok
+test security::material::tests::two_reads_roundtrip_exact_material_without_secret_receipts_or_overwrite ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 38 filtered out; finished in 0.21s
+

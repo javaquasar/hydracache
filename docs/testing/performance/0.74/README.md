@@ -7010,6 +7010,16 @@ three Python controls and strict local checks. First mutation-oracle/lint failur
 remain. The old effect receipt correctly refuses source drift; package timeout,
 production gates and qualification manifest remain unchanged.
 
+The [GET-owner full-D3 prerequisite continuation](get-owner-full-d3-readiness-result-20261025.md)
+adds pinned cross-process diagnostic PKI while preserving legacy modes and all
+original checks. Complete Windows standalone tests pass 89 per off/on variant;
+Linux metadata checks pass six per variant, with strict checks on both systems.
+First crypto-provider refusals remain. A five-phase synthetic GNU control can
+reconcile allocator mappings and distinguish mmap release from retained heap;
+it is not multi-arena or cache retention proof. Full-D3 numerical attempts remain
+zero. The agreed supervisor maintenance is reserved for the completed fenced
+cohort, not used by preparation; C74, thresholds and qualification stay unchanged.
+
 The [current source IO/gate attribution](normalization-cost-result-20261025.md)
 retains 144 calls and three first historical preparation spans. Prepared-cache IO
 medians are 2.321–2.639 ms, expected construction 0.014–0.036 ms, and independent

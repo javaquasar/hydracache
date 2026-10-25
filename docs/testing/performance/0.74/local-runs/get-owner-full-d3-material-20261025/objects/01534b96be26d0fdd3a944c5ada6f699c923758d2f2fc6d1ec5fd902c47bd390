@@ -1,0 +1,11 @@
+   Compiling get-owner-scheduled-controls-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\get-owner-scheduled-controls-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 50.78s
+     Running unittests src\lib.rs (target\debug\deps\get_owner_scheduled_controls_074-98e44592e9ff1a6b.exe)
+     Running unittests src\bin\timing_controls.rs (target\debug\deps\timing_controls_074-d8a8430733bb4458.exe)
+     Running tests\embedded.rs (target\debug\deps\embedded-3f91a2385f50b599.exe)
+     Running tests\native.rs (target\debug\deps\native-aca0b7aa49447432.exe)
+     Running tests\resp.rs (target\debug\deps\resp-0efa6fd51c8774e0.exe)
+     Running tests\scheduled.rs (target\debug\deps\scheduled-074e72608ae6ddfd.exe)
+     Running tests\secure.rs (target\debug\deps\secure-89f980b7b687d124.exe)
+     Running tests\timing.rs (target\debug\deps\timing-9939e9bec92cd6e9.exe)
+     Running tests\timing_cli.rs (target\debug\deps\timing_cli-47c5c2f79eab39b2.exe)

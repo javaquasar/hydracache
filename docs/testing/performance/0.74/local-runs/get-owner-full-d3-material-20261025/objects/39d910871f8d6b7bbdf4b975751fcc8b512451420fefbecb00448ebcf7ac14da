@@ -1,0 +1,13 @@
+{
+  "argv": [
+    "/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/get-owner-provider-control-first/control"
+  ],
+  "env": {
+    "PATH": "/usr/bin:/bin",
+    "LANG": "C",
+    "GLIBC_TUNABLES": "glibc.mem.decorate_maps=1"
+  },
+  "uid": 1000,
+  "gid": 1000,
+  "bound_seconds": 10
+}

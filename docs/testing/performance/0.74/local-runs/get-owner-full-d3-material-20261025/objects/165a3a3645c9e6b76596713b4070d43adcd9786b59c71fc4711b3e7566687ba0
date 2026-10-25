@@ -1,0 +1,35 @@
+   Compiling tokio v1.53.2
+   Compiling hydracache-macros v0.73.0 (/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/source-get-owner-material-checks-first/crates/hydracache-macros)
+   Compiling hydracache-core v0.73.0 (/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/source-get-owner-material-checks-first/crates/hydracache-core)
+   Compiling hydracache-client-hc2 v0.73.0 (/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/source-get-owner-material-checks-first/crates/hydracache-client-hc2)
+   Compiling hydracache-client-protocol v0.73.0 (/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/source-get-owner-material-checks-first/crates/hydracache-client-protocol)
+   Compiling tokio-util v0.7.19
+   Compiling tokio-rustls v0.26.6
+   Compiling hydracache v0.73.0 (/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/source-get-owner-material-checks-first/crates/hydracache)
+   Compiling fs-err v3.3.2
+   Compiling h2 v0.4.20
+   Compiling tower v0.5.3
+   Compiling tokio-stream v0.1.19
+   Compiling chitchat v0.11.2
+   Compiling tower-http v0.6.11
+   Compiling hyper v1.12.0
+   Compiling hyper-util v0.1.21
+   Compiling axum v0.8.9
+   Compiling hyper-timeout v0.5.2
+   Compiling hyper-rustls v0.27.10
+   Compiling axum-server v0.8.0
+   Compiling reqwest v0.13.5
+   Compiling hydracache-observability v0.73.0 (/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/source-get-owner-material-checks-first/crates/hydracache-observability)
+   Compiling tonic v0.14.6
+   Compiling hydracache-cluster-chitchat v0.73.0 (/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/source-get-owner-material-checks-first/crates/hydracache-cluster-chitchat)
+   Compiling hydracache-cluster-raft v0.73.0 (/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/source-get-owner-material-checks-first/crates/hydracache-cluster-raft)
+   Compiling hydracache-cluster-transport-axum v0.73.0 (/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/source-get-owner-material-checks-first/crates/hydracache-cluster-transport-axum)
+   Compiling tonic-prost v0.14.6
+   Compiling hydracache-client-transport-axum v0.73.0 (/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/source-get-owner-material-checks-first/crates/hydracache-client-transport-axum)
+   Compiling hydracache-actuator-axum v0.73.0 (/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/source-get-owner-material-checks-first/crates/hydracache-actuator-axum)
+   Compiling hydracache-redis-compat v0.73.0 (/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/source-get-owner-material-checks-first/crates/hydracache-redis-compat)
+   Compiling hydracache-server v0.73.0 (/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/source-get-owner-material-checks-first/crates/hydracache-server)
+   Compiling get-owner-scheduled-controls-074 v0.0.0 (/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/source-get-owner-material-checks-first/tools/get-owner-scheduled-controls-074)
+    Finished `release` profile [optimized] target(s) in 49.21s
+     Running unittests src/lib.rs (/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/get-owner-d3-build-target-first/release/deps/get_owner_scheduled_controls_074-a6fe214e63dba88d)
+error: test failed, to rerun pass `--lib`

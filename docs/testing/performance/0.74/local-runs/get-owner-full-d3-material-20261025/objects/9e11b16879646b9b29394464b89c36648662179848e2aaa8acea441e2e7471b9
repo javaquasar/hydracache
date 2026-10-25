@@ -1,0 +1,11 @@
+{
+  "source_commit": "5fc6197bf753f454bc209752da02d65bfd16931c",
+  "source_projection": "all 2572 retained source inputs verified against the clean current local tree",
+  "source_count": 2572,
+  "product_candidate_changed": false,
+  "workload_started": false,
+  "service_mutation": false,
+  "dependencies_updated": false,
+  "admission": false,
+  "retry": false
+}

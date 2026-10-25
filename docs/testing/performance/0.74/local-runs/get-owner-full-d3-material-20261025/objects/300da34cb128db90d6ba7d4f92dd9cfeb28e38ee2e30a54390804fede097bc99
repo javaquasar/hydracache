@@ -1,0 +1,7 @@
+{
+  "cases": [],
+  "passed": false,
+  "first_refusal": "AssertionError: {'name': 'off-material', 'exit': 101, 'wall_ns': 49267178393}",
+  "postflight_refusal": null,
+  "product_fixture_started": false
+}

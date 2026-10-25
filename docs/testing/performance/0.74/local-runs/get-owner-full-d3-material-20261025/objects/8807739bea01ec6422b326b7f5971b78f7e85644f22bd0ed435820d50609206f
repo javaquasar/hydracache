@@ -1,0 +1,48 @@
+{
+  "cases": [
+    {
+      "name": "off-material",
+      "exit": 0,
+      "wall_ns": 39740007651
+    },
+    {
+      "name": "off-arguments",
+      "exit": 0,
+      "wall_ns": 6251400078
+    },
+    {
+      "name": "off-metadata-cli",
+      "exit": 0,
+      "wall_ns": 8015116294
+    },
+    {
+      "name": "on-material",
+      "exit": 0,
+      "wall_ns": 25425246398
+    },
+    {
+      "name": "on-arguments",
+      "exit": 0,
+      "wall_ns": 6201553936
+    },
+    {
+      "name": "on-metadata-cli",
+      "exit": 0,
+      "wall_ns": 7962984307
+    },
+    {
+      "name": "check",
+      "exit": 0,
+      "wall_ns": 7544556630
+    },
+    {
+      "name": "clippy",
+      "exit": 0,
+      "wall_ns": 1728042543
+    }
+  ],
+  "passed": true,
+  "first_refusal": null,
+  "postflight_refusal": null,
+  "product_fixture_started": false
+}

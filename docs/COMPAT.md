@@ -2318,3 +2318,21 @@ fixture may ACK and hold, but cannot execute a worker. Positive original-manager
 delivery, complete loaded-unit hardening and all-writer cessation require separate
 integration gates. This entry does not admit installation or server execution.
 <!-- END HELD CHILD ENTRY V1 -->
+
+## GET owner diagnostic TLS material v1
+
+The standalone `timing-controls-074` fixed-material modes use a private JSON
+file with `schema_version=1` and exactly CA, server certificate/key and client
+certificate/key fields. Readers require the exact raw SHA256 before parsing,
+reject unknown/duplicate/missing/future fields, malformed or mismatched key
+pairs, oversized input and unsafe Unix file metadata. Creation is exclusive;
+Unix file and parent publication are synced. This is temporary diagnostic PKI,
+not production issuer/host enrollment. Windows functional readers do not attest
+private ACLs. Keep the secret file outside source control and evidence packets.
+
+Only `--run-with-material` adds the public-only `fixed_material` seal to its
+envelope. It requires a matched new reader; old receipt verifiers are not given
+this new mode's output or silently relaxed. Legacy `--run` emits no new field,
+and existing config/report schemas, ephemeral APIs, protocols, AUTH and TLS
+requirements remain unchanged. A matching material seal alone cannot admit a
+numerical cohort or replace dataset, source, ownership and lifecycle checks.
