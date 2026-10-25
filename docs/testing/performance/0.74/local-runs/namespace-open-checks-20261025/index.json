@@ -1,0 +1,70 @@
+{
+  "admission": false,
+  "doc_check": true,
+  "full_package": false,
+  "local_nonpromotable_contract": true,
+  "measurements_repeated": false,
+  "members": {
+    "checks/namespace-open-final-contract-20261025/intent.json": {
+      "bytes": 334502,
+      "sha256": "704d8075b0b9ecf9a53dc652718c63ead14cac9d14e98ced8bd68560e583c2b2"
+    },
+    "checks/namespace-open-final-contract-20261025/result.json": {
+      "bytes": 334140,
+      "sha256": "8d92ca1405b2ee9bcc00c0c1be146887b3f0f0d710b9c72abf842c62574477e7"
+    },
+    "checks/namespace-open-final-contract-20261025/stderr.log": {
+      "bytes": 152,
+      "sha256": "df1a7dea29e923e31c6782d3bb7795d39e39d942f6bf736a778515cbcfdbf89b"
+    },
+    "checks/namespace-open-final-contract-20261025/stdout.log": {
+      "bytes": 60,
+      "sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+    },
+    "checks/namespace-open-final-doc-check-20261025/intent.json": {
+      "bytes": 334454,
+      "sha256": "e09067a7289874d5426a06f1e59d7517b0c2e0948ede52b56b6375f24345fc31"
+    },
+    "checks/namespace-open-final-doc-check-20261025/result.json": {
+      "bytes": 334140,
+      "sha256": "8d92ca1405b2ee9bcc00c0c1be146887b3f0f0d710b9c72abf842c62574477e7"
+    },
+    "checks/namespace-open-final-doc-check-20261025/stderr.log": {
+      "bytes": 120,
+      "sha256": "2d1b8d2f909004cfc52549ca6cb7698f4ef53241fd3412ce74d6197641bd3d62"
+    },
+    "checks/namespace-open-final-doc-check-20261025/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "checks/namespace-open-staged-audit-20261025/intent.json": {
+      "bytes": 334411,
+      "sha256": "7d81752834ab20e1c4795e658b33b537b294daa311d43a5fb718ea5023749d02"
+    },
+    "checks/namespace-open-staged-audit-20261025/result.json": {
+      "bytes": 334140,
+      "sha256": "8d92ca1405b2ee9bcc00c0c1be146887b3f0f0d710b9c72abf842c62574477e7"
+    },
+    "checks/namespace-open-staged-audit-20261025/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/namespace-open-staged-audit-20261025/stdout.log": {
+      "bytes": 267,
+      "sha256": "7bfefa25454f906a8456e42eb90d1d827f881ff330ba1842d83be6ad2ba71f09"
+    },
+    "coordinator/retain-namespace-open-checks-20261025.py": {
+      "bytes": 2029,
+      "sha256": "1ff58b4074a69542e3bdef51b12805bf1751792ac0ad2b92072c1e8d99daeb67"
+    },
+    "coordinator/verify-staged-namespace-open-20261025.py": {
+      "bytes": 2827,
+      "sha256": "b8a4d0d48068524341dbf8d6b02aa2fe4e2e1395d6b583b72548fb98b8a6b31f"
+    }
+  },
+  "optimization_implemented": false,
+  "preparation_repeated": false,
+  "primary_staged_review_passed": true,
+  "schema": "hc074-namespace-open-final-checks-v1",
+  "upstream_index_sha256": "3412aef1833da4103485c072f67f3f2b6781428577d93a0e491edf081fef9e27"
+}
