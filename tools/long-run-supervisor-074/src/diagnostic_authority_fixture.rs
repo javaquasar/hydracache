@@ -684,6 +684,10 @@ mod tests;
 #[path = "diagnostic_authority_before_tests.rs"]
 mod before_cost;
 
+#[cfg(all(test, target_arch = "x86_64"))]
+#[path = "diagnostic_authority_parent_tests.rs"]
+mod parent_cost;
+
 #[cfg(test)]
 #[path = "../tests/support/authority_leaf_name_controls.rs"]
 pub(crate) mod leaf_name_controls;
