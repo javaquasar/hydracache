@@ -223,6 +223,16 @@ host manager is still 255; no upgrade, original service send or product run occu
 
 ## 4. Completion, cells 2–4, crashes and reconnect
 
+The separate [parent-device experiment](authority-parent-cost-result-20261025.md)
+keeps all before-read predicates, four full-leaf observations and original
+windows. Integrated CPU ratios are 0.924130 for marker and 0.926178 for record;
+native check, strict lint and 63 authority cases pass. First full preparation
+still expires in `enroll_once`, age 10057459559 ns, with zero completed cases.
+One separate attribution-only prefix also fails enrollment. Outputs retains
+76544 Origin/153088 Boot/306176 Namespace observations; Boot/Namespace need
+operation-level attribution rather than fewer observations. Neither result opens
+completion or later cells, and the failed full attempt is not retried into a pass.
+
 The separate [before-read experiment](authority-before-cost-result-20261025.md)
 keeps parent-device metadata and all four full-leaf observations unchanged.
 Integrated CPU ratios are 0.942904 for marker and 0.942807 for record, with

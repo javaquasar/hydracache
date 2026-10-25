@@ -20094,3 +20094,43 @@ observed leaf is useful but insufficient to open original delivery, all-writer
 retirement or later lifecycle cells. The remaining parent-device query and
 Boot/Namespace work need their own attribution, with the same observations and
 original windows intact.
+
+### Preserve the parent observation rather than reuse a prior device
+
+The [parent-device experiment](../testing/performance/0.74/authority-parent-cost-result-20261025.md)
+addresses the remaining metadata query in the leaf read. Its job is deliberately
+narrow: after the regular-file guard, freshly observe the retained parent's
+device before deciding device/size Budget. Caching a previously accepted device
+would remove a live observation. Adding whole-Stamp equality for the parent
+would instead reject benign directory changes. Neither is the intended change.
+
+The implementation consumes device from a fresh Stamp on Linux x86_64 and keeps
+the original Metadata projection on other Linux architectures. Only two call
+sites change. Four fresh observations, before-read ownership/type/link checks,
+size short-circuit, bounded read and original descriptor lifetimes remain in
+place. Device differentials and fourteen full-leaf fault scenarios pass alongside
+the existing authority tests: 63 passing cases, check and strict Clippy.
+
+Separate eight-process baseline and integrated cohorts calibrate the copied
+reference against actual runtime, then actual runtime against prototype. The
+integrated complete leaf CPU ratios are 0.924130 for marker and 0.926178 for
+record, with 95% intervals [0.922977,0.924902] and [0.924135,0.927086]. All
+controls and the frozen 2% floor pass. The roughly 7.6% and 7.4% reductions
+apply to those leaf methods, not cache throughput or full preparation, and must
+not be added to prior gains with different denominators.
+
+The first full preparation still expires in enrollment at 10.057459559 seconds;
+no case completes and the later four do not run. One distinct attribution-only
+prefix retains that failed gate and enables only the existing diagnostic observer.
+It also fails enrollment. Outputs consumes 6.680 seconds wall and 6.597 seconds
+of process CPU, with the same 46 calls/completions in all eight round slots,
+153088 Boot and 306176 Namespace observations. Boot and Namespace still have
+substantial nested wall costs; a single partial profile cannot turn their
+difference from an older run into a performance claim.
+
+The next useful question is which operations within those fresh observations
+cost CPU: opens, filesystem checks, identity projection, document reads or their
+wrappers. The profile does not answer that yet. It directs a new bounded
+experiment while preserving the frequency constraint, original deadlines and
+first refusals. A confirmed leaf optimization and an honest red enclosing gate
+can coexist without declaring the release ready.
