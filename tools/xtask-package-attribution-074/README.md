@@ -99,3 +99,37 @@ helper elapsed cost in `Command::output()`. It does not separate startup from
 child execution or establish overhead acceptance. See the
 [measurements, limitations and preserved first refusals](../../docs/testing/performance/0.74/preservation-helper-spans-result-20261025.md).
 No cache or persistent-child candidate is admitted.
+
+## Separate fresh command pipe diagnostic
+
+`pipe-execution-protocol.toml` fixes a single 96-call, four-worker ABBA/BAAB
+screen before dispatch. It is not a replay or extrapolation of the original
+twenty-case target. One 23589-byte historical test source comes from independent
+archived bytes; a changed Git replacement/configuration response must refuse,
+not become its own reference. Original Git environment and ordinary `git show`
+remain inherited. No current-input/source guard is redirected through this probe.
+
+`pipe_capture.rs` leaves `Command::output()` as its unobserved control and uses
+explicit null stdin, piped stdout/stderr, spawn and `wait_with_output` only in
+the isolated diagnostic. Empty/binary/nonzero/large-pipe/EOF and spawn-error
+controls cover this fresh-command scope, not arbitrary preconfigured commands.
+A duplicated original process handle permits terminal CPU observation after
+`wait_with_output` consumes Child; no PID-based reopening is used. The pipe
+path is not the earlier tempfile/polling transport mirror.
+
+Command setup, spawn, handle observation, wait/collection and terminal observation
+have separate wall brackets. Child CPU is whole-process lifetime, overlaps those
+wall intervals and excludes descendants. Parent CPU is measured only over the
+whole concurrent cohort, never attributed independently to simultaneous calls.
+Wait/collection includes remaining child execution and pipe draining; this does
+not isolate pure copying or waiting that could be removed. The new child has a
+120-second outer diagnostic limit; all original 300/60/10 and package limits stay
+untouched. One screen does not admit overhead, caching or a persistent process.
+
+Build the new target with `--no-run --message-format=json` through the local
+source-preserving wrapper, then invoke `pipe_capture.py <build-label> <new-out-label>`
+through that wrapper. It creates an exclusive output directory before preflight,
+retains the first outcome, refuses inherited diagnostic overrides and joins exact
+source/build/executable receipts. `pipe_review.py` and `test_pipe_review.py` check
+all 96 unique slots, original schedule, bytes/status, phase containment, terminal
+process identities and non-admission. No server, service, clock or product is used.
