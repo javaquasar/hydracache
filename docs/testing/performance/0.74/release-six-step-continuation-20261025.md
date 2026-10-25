@@ -223,6 +223,15 @@ host manager is still 255; no upgrade, original service send or product run occu
 
 ## 4. Completion, cells 2–4, crashes and reconnect
 
+The separate [before-read experiment](authority-before-cost-result-20261025.md)
+keeps parent-device metadata and all four full-leaf observations unchanged.
+Integrated CPU ratios are 0.942904 for marker and 0.942807 for record, with
+calibrated baseline and prototype controls. Native check, strict lint and 61
+authority cases pass. The first full changed-candidate holder attempt still
+expires in `enroll_once` at causal age 10100156571 ns; zero cases complete and
+later cases stay unexecuted. The initial unnamed-file test error and a local
+pre-SSH renderer refusal are retained. No new completion/cells proof follows.
+
 The separate [directory validation experiment](authority-directory-cost-result-20261025.md)
 keeps all eleven fixed-ancestry/four fixture metadata observations. Installed
 method CPU ratios are 0.802622 and 0.814115 against frozen references; native

@@ -20056,3 +20056,41 @@ that single expiry with another candidate's expiry would not measure a speedup.
 The local CPU gain is retained, while the complete admission gate remains red
 and later cases stay unexecuted. AppArmor, clocks, installed release and the
 running supervisor are unchanged.
+
+### Keep ownership and budget refusal order when changing metadata projection
+
+The [before-read experiment](../testing/performance/0.74/authority-before-cost-result-20261025.md)
+isolates the next metadata consumer rather than combining it with parent-device
+validation. Before reading bytes, the leaf must prove regular type, UID/GID,
+complete permission bits and a single link. Those Invalid refusals precede the
+parent-device and size Budget branch. A cheaper identity-only query would not
+preserve that contract, even if healthy-path timings improved.
+
+The new helper freshly projects all eleven Stamp fields and checks exactly those
+regular-file predicates. It changes two before-read sites on Linux x86_64 while
+keeping the parent query, all four observations in a complete revalidation,
+bounded read, descriptor lifetime, content comparison and scratch behavior.
+Other Linux architectures keep their original Metadata path. Field and fourteen
+full-leaf fault scenarios verify refusal precedence as well as successful reads.
+
+The first test fixture exposes its own mistake: an anonymous temporary file has
+zero links, so it cannot be the valid one-link starting object. The corrected
+fixture uses a named file and explicitly checks the original predicate before
+mutations. The first failed image stays retained and supplies no CPU samples.
+This is a fixture repair, not a reason to relax the authority rule.
+
+Eight-process four-arm comparisons calibrate actual baseline runtime against
+the frozen reference, then integrated runtime against the prototype. Marker and
+record CPU ratios for the complete integrated leaf method are 0.942904 and
+0.942807, with 95% intervals [0.942236,0.943886] and [0.942318,0.943157]. All
+controls and the preregistered 2% floor pass. The approximately 5.7% reduction
+belongs to this leaf method, not cache throughput or the whole preparation.
+Native check, strict lint and 61 authority cases accompany the result.
+
+The first full preparation still expires in enrollment at causal age
+10.100156571 seconds, with no completed case. It is retained without retry or
+comparison of failed frontier ages as a speedup. Saving CPU at a frequently
+observed leaf is useful but insufficient to open original delivery, all-writer
+retirement or later lifecycle cells. The remaining parent-device query and
+Boot/Namespace work need their own attribution, with the same observations and
+original windows intact.
