@@ -1,0 +1,11 @@
+{
+  "exit": 101,
+  "first_refusal": null,
+  "postflight_refusal": null,
+  "passed": false,
+  "completed_cases": [],
+  "original_send": false,
+  "all_writers_proven_stopped": false,
+  "completion": false,
+  "admission": false
+}

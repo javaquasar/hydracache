@@ -1,0 +1,13 @@
+from pathlib import Path
+import base64,runpy
+old=Path('target/server-fd-identity-screen-worker-20261025.py').read_text()
+for a,b,count in [
+ ('fd-identity-screen-first','authority-stamp-screen-first',2),
+ ('11445ff7304fa49beaf3be16ed6393155f5a183b','3e72d0185',1),
+ ('One bounded isolated fresh identity prototype screen; old runtime remains unchanged.','One bounded eleven-field authority stamp screen; runtime unchanged.',1)]:
+ assert old.count(a)==count,(a,old.count(a));old=old.replace(a,b)
+prefix='SOURCE_B64='+repr(base64.b64encode(Path('tools/authority-fresh-stamp-074/screen.rs').read_bytes()).decode())+'\n'
+prefix+='PROTOCOL_B64='+repr(base64.b64encode(Path('tools/authority-fresh-stamp-074/protocol.json').read_bytes()).decode())+'\n'
+# Renderer prepends the frozen worker itself. Empty WORKER_FILE is not used.
+runpy.run_path('target/prepare-capacity-checks-20261025.py',init_globals=dict(
+ WORKER_FILE='target/empty-worker-20261025.py',WORKER_DIR='authority-stamp-screen-first',WORKER_PREFIX=prefix+old+'\n'))

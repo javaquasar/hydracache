@@ -1,0 +1,14 @@
+from pathlib import Path
+import runpy
+old=Path('target/server-fd-identity-holder-worker-20261025.py').read_text()
+for a,b,count in [
+ ('fd-identity-holder-first','authority-stamp-holder-first',1),
+ ('fd-identity-build-v2','authority-stamp-build-first',2),
+ ('fd-identity-origin-first','authority-stamp-installed-first',1),
+ ('7ac9b2462222ce61c0486ab79cdebf47d6f94a62540abd6eaf561dbb6ccff9ec','70b666ce7e1afb5009b733cf88ba96f82f389edcb8aef3d11ea3f5764c33326c',1),
+ ('8862986662063b329f17547f61458f08832767e2','317f8a727f80b93663d705c661338d8761da7dba',1),
+ ('First full original holder matrix for the one changed fstat candidate.','First full original holder matrix for the separate authority Stamp candidate.',1),
+]:
+ assert old.count(a)==count,(a,old.count(a));old=old.replace(a,b)
+runpy.run_path('target/prepare-capacity-checks-20261025.py',init_globals=dict(
+ WORKER_FILE='target/empty-worker-20261025.py',WORKER_DIR='authority-stamp-holder-first',WORKER_PREFIX=old+'\n'))

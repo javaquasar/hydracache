@@ -1,0 +1,3 @@
+import runpy
+runpy.run_path('target/prepare-capacity-checks-20261025.py',init_globals=dict(
+ WORKER_FILE='target/server-residual-profile-worker-20261025.py',WORKER_DIR='residual-profile-first'))

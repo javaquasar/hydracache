@@ -1,0 +1,42 @@
+
+running 1 test
+test diagnostic_worker_policy::authority_registry::fixture::fresh_stamp::tests::fresh_authority_stamp_installed_leaf_cpu_screen ... HC074-STAMP-INSTALLED cohort=1 sample=0 slot=0 variant=reference-control calls=1024 cpu_ns=6732561 wall_ns=6731504
+HC074-STAMP-INSTALLED cohort=1 sample=0 slot=1 variant=fresh-stamp calls=1024 cpu_ns=6150280 wall_ns=6149445
+HC074-STAMP-INSTALLED cohort=1 sample=0 slot=2 variant=reference calls=1024 cpu_ns=6814221 wall_ns=6813413
+HC074-STAMP-INSTALLED cohort=1 sample=1 slot=0 variant=fresh-stamp calls=1024 cpu_ns=6131180 wall_ns=6130375
+HC074-STAMP-INSTALLED cohort=1 sample=1 slot=1 variant=reference calls=1024 cpu_ns=6698541 wall_ns=6697775
+HC074-STAMP-INSTALLED cohort=1 sample=1 slot=2 variant=reference-control calls=1024 cpu_ns=6690011 wall_ns=6689235
+HC074-STAMP-INSTALLED cohort=1 sample=2 slot=0 variant=reference calls=1024 cpu_ns=6713841 wall_ns=6713094
+HC074-STAMP-INSTALLED cohort=1 sample=2 slot=1 variant=fresh-stamp calls=1024 cpu_ns=6131370 wall_ns=6130575
+HC074-STAMP-INSTALLED cohort=1 sample=2 slot=2 variant=reference-control calls=1024 cpu_ns=6701951 wall_ns=6701215
+HC074-STAMP-INSTALLED cohort=1 sample=3 slot=0 variant=fresh-stamp calls=1024 cpu_ns=6136480 wall_ns=6135744
+HC074-STAMP-INSTALLED cohort=1 sample=3 slot=1 variant=reference-control calls=1024 cpu_ns=6701391 wall_ns=6700615
+HC074-STAMP-INSTALLED cohort=1 sample=3 slot=2 variant=reference calls=1024 cpu_ns=6703701 wall_ns=6702954
+HC074-STAMP-INSTALLED cohort=1 sample=4 slot=0 variant=reference-control calls=1024 cpu_ns=6698261 wall_ns=6697525
+HC074-STAMP-INSTALLED cohort=1 sample=4 slot=1 variant=reference calls=1024 cpu_ns=6695491 wall_ns=6694745
+HC074-STAMP-INSTALLED cohort=1 sample=4 slot=2 variant=fresh-stamp calls=1024 cpu_ns=6139951 wall_ns=6139184
+HC074-STAMP-INSTALLED cohort=1 sample=5 slot=0 variant=reference calls=1024 cpu_ns=6710391 wall_ns=6709614
+HC074-STAMP-INSTALLED cohort=1 sample=5 slot=1 variant=reference-control calls=1024 cpu_ns=6697311 wall_ns=6696545
+HC074-STAMP-INSTALLED cohort=1 sample=5 slot=2 variant=fresh-stamp calls=1024 cpu_ns=6140411 wall_ns=6139624
+HC074-STAMP-INSTALLED cohort=1 sample=6 slot=0 variant=reference-control calls=1024 cpu_ns=6697431 wall_ns=6696665
+HC074-STAMP-INSTALLED cohort=1 sample=6 slot=1 variant=fresh-stamp calls=1024 cpu_ns=6140180 wall_ns=6139415
+HC074-STAMP-INSTALLED cohort=1 sample=6 slot=2 variant=reference calls=1024 cpu_ns=6715321 wall_ns=6714554
+HC074-STAMP-INSTALLED cohort=1 sample=7 slot=0 variant=fresh-stamp calls=1024 cpu_ns=6130280 wall_ns=6129534
+HC074-STAMP-INSTALLED cohort=1 sample=7 slot=1 variant=reference calls=1024 cpu_ns=6711851 wall_ns=6711095
+HC074-STAMP-INSTALLED cohort=1 sample=7 slot=2 variant=reference-control calls=1024 cpu_ns=6714711 wall_ns=6713964
+HC074-STAMP-INSTALLED cohort=1 sample=8 slot=0 variant=reference calls=1024 cpu_ns=6703671 wall_ns=6702905
+HC074-STAMP-INSTALLED cohort=1 sample=8 slot=1 variant=fresh-stamp calls=1024 cpu_ns=6159560 wall_ns=6158774
+HC074-STAMP-INSTALLED cohort=1 sample=8 slot=2 variant=reference-control calls=1024 cpu_ns=6721631 wall_ns=6720865
+HC074-STAMP-INSTALLED cohort=1 sample=9 slot=0 variant=fresh-stamp calls=1024 cpu_ns=6146300 wall_ns=6145535
+HC074-STAMP-INSTALLED cohort=1 sample=9 slot=1 variant=reference-control calls=1024 cpu_ns=6727981 wall_ns=6727204
+HC074-STAMP-INSTALLED cohort=1 sample=9 slot=2 variant=reference calls=1024 cpu_ns=6716561 wall_ns=6715774
+HC074-STAMP-INSTALLED cohort=1 sample=10 slot=0 variant=reference-control calls=1024 cpu_ns=6704931 wall_ns=6704174
+HC074-STAMP-INSTALLED cohort=1 sample=10 slot=1 variant=reference calls=1024 cpu_ns=6707181 wall_ns=6706435
+HC074-STAMP-INSTALLED cohort=1 sample=10 slot=2 variant=fresh-stamp calls=1024 cpu_ns=6141061 wall_ns=6170114
+HC074-STAMP-INSTALLED cohort=1 sample=11 slot=0 variant=reference calls=1024 cpu_ns=6721431 wall_ns=6720625
+HC074-STAMP-INSTALLED cohort=1 sample=11 slot=1 variant=reference-control calls=1024 cpu_ns=6707660 wall_ns=6706874
+HC074-STAMP-INSTALLED cohort=1 sample=11 slot=2 variant=fresh-stamp calls=1024 cpu_ns=6133851 wall_ns=6133024
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1558 filtered out; finished in 0.24s
+

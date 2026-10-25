@@ -1,0 +1,18 @@
+{
+  "overlay_names": [
+    "diagnostic_authority_fixture.rs",
+    "diagnostic_authority_stamp.rs",
+    "diagnostic_authority_stamp_tests.rs"
+  ],
+  "hypothesis": "fresh eleven-field authority Stamp at held/after sites, x86_64 only",
+  "baseline_commit": "3e72d0185",
+  "original_windows": [
+    300,
+    60,
+    10
+  ],
+  "original_check_frequency_and_order": true,
+  "retry": false,
+  "product": false,
+  "admission": false
+}

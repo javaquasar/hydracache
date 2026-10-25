@@ -1,0 +1,4 @@
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::cgroup::held_live::privileged_consuming_held_live_matrix' (330616) panicked at tools/long-run-supervisor-074/src/../tests/support/consuming_held_live.rs:245:65:
+called `Result::unwrap()` on an `Err` value: Context(Frame(Original(Original(Original(Transport(Material(Outputs(Original(Original(Original(Causal(Time))))))))))))
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

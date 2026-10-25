@@ -1,0 +1,52 @@
+PROTOCOL_B64='ewogICJzY2hlbWEiOiAiaGMwNzQtYXV0aG9yaXR5LWZyZXNoLXN0YW1wLXYxIiwKICAiYmFzZWxpbmVfcnVudGltZV9jb21taXQiOiAiY2RmMTBkMDQyMzZlMGVhZjg4YjJiNjA0NjcxZDA5MmRkMmJiNDA4MiIsCiAgImh5cG90aGVzaXMiOiAiZnJlc2ggZnN0YXQgcHJvamVjdGlvbiBvZiBleGFjdGx5IGVsZXZlbiBleGlzdGluZyBTdGFtcCBmaWVsZHMgcmVtb3ZlcyB1bm5lY2Vzc2FyeSBtZXRhZGF0YSB3b3JrIGF0IGF1dGhvcml0eSBsZWFmIGhlbGQvYWZ0ZXIgY29tcGFyaXNvbnMiLAogICJzY29wZSI6ICJ4ODZfNjQgTGludXggb25seTsgbWV0YWRhdGEgYmVmb3JlIHJlZ3VsYXIvb3duZXJzaGlwL2J1ZGdldCBjaGVja3MgYW5kIGRpcmVjdG9yeSBtZXRhZGF0YSByZW1haW4gdW5jaGFuZ2VkIiwKICAicHJvY2Vzc2VzIjogOCwKICAic2FtcGxlcyI6IDEyLAogICJsZWFmX2l0ZXJhdGlvbnMiOiA4MTkyLAogICJsZWFmX2ZpbGVzIjogNywKICAiaW5zdGFsbGVkX2l0ZXJhdGlvbnMiOiAxMDI0LAogICJ2YXJpYW50cyI6IFsicmVmZXJlbmNlIiwgInJlZmVyZW5jZS1jb250cm9sIiwgImZyZXNoLXN0YW1wIl0sCiAgIm9yZGVyIjogInNpeCBmb3J3YXJkL3JldmVyc2UgTGF0aW4gcGVybXV0YXRpb25zIHJvdGF0ZWQgYnkgY29ob3J0LCB0d2ljZSIsCiAgImFmZmluaXR5IjogWzVdLAogICJ1aWQiOiAxMDAwLAogICJjb21waWxlciI6ICJSdXN0IDEuOTQgR05VIG9wdC1sZXZlbD0zIiwKICAiZXN0aW1hdG9yIjogIm1lZGlhbiBvZiBlaWdodCBwcm9jZXNzIG1lZGlhbnMgb2YgdHdlbHZlIHBhaXJlZCBsb2cgQ1BVIHJhdGlvcyIsCiAgImJvb3RzdHJhcCI6ICIyMDAwMCBwcm9jZXNzLWxldmVsIHJlc2FtcGxlcywgc2VlZCAweDA3NGZkMTA1LCBwZXJjZW50aWxlIDk1JSIsCiAgImlkZW50aWNhbF9jb250cm9sX2ludGVydmFsIjogWzAuOTcsIDEuMDNdLAogICJsZWFmX2NhbmRpZGF0ZV91cHBlcl9tYXgiOiAwLjk1LAogICJpbnN0YWxsZWRfbGVhZl9jYW5kaWRhdGVfdXBwZXJfbWF4IjogMC45NSwKICAiaW5zdGFsbGVkX291dGVyX3NlY29uZHMiOiAzMDAsCiAgImNoZWNrc19vcmRlcl9jb3VudF9hbmRfb3JpZ2luYWxfd2luZG93c191bmNoYW5nZWQiOiB0cnVlLAogICJmaXJzdF9yZWZ1c2Fsc19wcmVzZXJ2ZWQiOiB0cnVlLAogICJyZXRyeSI6IGZhbHNlLAogICJwcm9kdWN0IjogZmFsc2UsCiAgImFkbWlzc2lvbiI6IGZhbHNlLAogICJmdWxsX3ByZXBhcmF0aW9uX2ltcHJvdmVtZW50X3Byb3ZlbiI6IGZhbHNlCn0K'
+"""First installed authority-leaf comparison; never a healthy preparation retry."""
+from pathlib import Path
+import base64,hashlib,json,os,signal,subprocess,sys,time
+base=Path('/tmp/hc074-server-gate-root-20261025.0k0xbdah');root=base/'authority-stamp-installed-first'
+upload=Path('/tmp/hc074-server-gate-upload-20261025.pvdj0f6c')
+raw=(base/'server-fault-worker-20261025.py').read_bytes()
+assert hashlib.sha256(raw).hexdigest()=='af1e9926e1ad40bc49c1c225d79f5fffc788c715a7889743decea129ec4b17a3'
+scope={};exec(compile(raw.decode().split('started=time.monotonic_ns()\n')[0],'<pinned-preflight>','exec'),scope)
+preflight=scope['preflight']
+def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+def publish(name,value):
+ with (root/name).open('x') as f:json.dump(value,f,indent=2);f.flush();os.fsync(f.fileno())
+def limited():
+ os.sched_setaffinity(0,{5});os.setgroups([]);os.setgid(1000);os.setuid(1000)
+protocol=json.loads(base64.b64decode(PROTOCOL_B64));publish('consumed.json',protocol)
+selector='diagnostic_worker_policy::authority_registry::fixture::fresh_stamp::tests::fresh_authority_stamp_installed_leaf_cpu_screen'
+result=dict(cases=[],first_refusal=None,postflight_refusal=None,passed=False,product=False,admission=False)
+before=None
+try:
+ before=preflight();publish('preflight.json',before)
+ build=json.loads((base/'authority-stamp-build-first/result.json').read_bytes());assert build['passed'] and build['source_unchanged']
+ test=Path(build['libtest_path']);assert sha(test)==build['libtest_sha256'];assert (base/'authority-stamp-build-first/libtest').read_bytes()==test.read_bytes()
+ source=upload/'source-authority-stamp-first';manifest=json.loads((base/'authority-stamp-build-first/source-manifest.json').read_bytes())
+ def verify():
+  for name,digest in manifest.items():assert sha(source/name)==digest,name
+ verify()
+ scratch=upload/'authority-stamp-installed-first';scratch.mkdir(mode=0o700);os.chown(scratch,1000,1000)
+ start=time.monotonic_ns()
+ for cohort in range(8):
+  assert time.monotonic_ns()-start<300_000_000_000
+  env=dict(PATH='/usr/bin:/bin',TMPDIR=str(scratch),HOME=str(upload/'signer-home-first'),HC074_STAMP_COHORT=str(cohort))
+  argv=[str(test),selector,'--ignored','--exact','--nocapture','--test-threads=1']
+  publish(f'cohort-{cohort}-command.json',dict(argv=argv,env=env,cwd=str(source),outer_seconds=30))
+  with (root/f'cohort-{cohort}.stdout.log').open('xb') as stdout,(root/f'cohort-{cohort}.stderr.log').open('xb') as stderr:
+   child=subprocess.Popen(argv,cwd=source,env=env,preexec_fn=limited,stdout=stdout,stderr=stderr,start_new_session=True)
+   publish(f'cohort-{cohort}-child.json',dict(pid=child.pid,start_ticks=scope['ticks'](child.pid),affinity=sorted(os.sched_getaffinity(child.pid))))
+   try:code=child.wait(timeout=30)
+   except subprocess.TimeoutExpired:
+    os.killpg(child.pid,signal.SIGKILL);child.wait();raise RuntimeError('first origin screen child timed out; no retry')
+  result['cases'].append(dict(cohort=cohort,exit=code))
+  text=(root/f'cohort-{cohort}.stdout.log').read_text()
+  assert code==0 and text.count('HC074-STAMP-INSTALLED ')==36 and text.count('test result: ok. 1 passed; 0 failed; 0 ignored;')==1
+ verify();result['passed']=True;result['source_unchanged']=True
+except BaseException as error:result['first_refusal']=f'{type(error).__name__}: {error}'
+finally:
+ try:
+  after=preflight();assert before is not None and before==after;publish('postflight.json',after)
+ except BaseException as error:result['postflight_refusal']=f'{type(error).__name__}: {error}';result['passed']=False
+ publish('result.json',result)
+
+# All source is frozen in WORKER_PREFIX by the renderer.

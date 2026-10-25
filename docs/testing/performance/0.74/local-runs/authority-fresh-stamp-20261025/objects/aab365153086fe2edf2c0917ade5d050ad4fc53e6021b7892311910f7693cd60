@@ -1,0 +1,18 @@
+from pathlib import Path
+import base64,runpy
+old=Path('target/server-fd-identity-origin-worker-20261025.py').read_text()
+changes=[
+ ('fd-identity-origin-first','authority-stamp-installed-first',2),
+ ('fd-identity-build-v2','authority-stamp-build-first',2),
+ ('source-fd-identity-v2','source-authority-stamp-first',1),
+ ("test=Path(build['libtest_path']);assert sha(test)==build['libtest_sha256']=='7ac9b2462222ce61c0486ab79cdebf47d6f94a62540abd6eaf561dbb6ccff9ec'", "test=Path(build['libtest_path']);assert sha(test)==build['libtest_sha256'];assert (base/'authority-stamp-build-first/libtest').read_bytes()==test.read_bytes()",1),
+ ('diagnostic_kernel_admission::origin::fd_identity::tests::fresh_fd_identity_original_origin_cpu_screen','diagnostic_worker_policy::authority_registry::fixture::fresh_stamp::tests::fresh_authority_stamp_installed_leaf_cpu_screen',1),
+ ('HC074_FD_IDENTITY_COHORT','HC074_STAMP_COHORT',1),
+ ('HC074-ORIGIN-IDENTITY ','HC074-STAMP-INSTALLED ',1),
+ ('First installed-origin comparison only; never a healthy preparation retry.','First installed authority-leaf comparison; never a healthy preparation retry.',1),
+]
+for a,b,count in changes:
+ assert old.count(a)==count,(a,old.count(a));old=old.replace(a,b)
+prefix='PROTOCOL_B64='+repr(base64.b64encode(Path('tools/authority-fresh-stamp-074/protocol.json').read_bytes()).decode())+'\n'
+runpy.run_path('target/prepare-capacity-checks-20261025.py',init_globals=dict(
+ WORKER_FILE='target/empty-worker-20261025.py',WORKER_DIR='authority-stamp-installed-first',WORKER_PREFIX=prefix+old+'\n'))

@@ -1,0 +1,17 @@
+{
+  "argv": [
+    "/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/build-target-v3/release/deps/hydracache_long_run_supervisor_074-b26b156d3dcd0098",
+    "authority_registry::",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "env": {
+    "PATH": "/usr/bin:/bin",
+    "HOME": "/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/signer-home-first",
+    "TMPDIR": "/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/authority-stamp-build-first-regressions"
+  },
+  "cwd": "/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/source-authority-stamp-first",
+  "uid": 1000,
+  "gid": 1000,
+  "outer_seconds": 180
+}

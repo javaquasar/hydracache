@@ -1,0 +1,79 @@
+"""Saved-byte audit only; no process, host operation, workload or repair."""
+from pathlib import Path
+import base64,hashlib,json,runpy,tarfile
+ROOT=Path(__file__).resolve().parent.parent
+stamp=runpy.run_path(str(ROOT/'tools/authority-fresh-stamp-074/review.py'))
+profile=runpy.run_path(str(ROOT/'tools/native-server-control-074/profile_review.py'))
+IMAGE='70b666ce7e1afb5009b733cf88ba96f82f389edcb8aef3d11ea3f5764c33326c'
+NAMES=['diagnostic_authority_fixture.rs','diagnostic_authority_stamp.rs','diagnostic_authority_stamp_tests.rs']
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+def load():
+ p=ROOT/'target/authorized-server-session-20261025/authority-stamp-final-export/stdout.log'
+ export=json.loads(p.read_bytes());assert export['complete']
+ files={}
+ for name,item in export['members'].items():
+  raw=base64.b64decode(item['base64']);assert len(raw)==item['bytes'] and sha(raw)==item['sha256'];files[name]=raw
+ return files,export['final_frame']
+def baseline_fixture():
+ with tarfile.open(ROOT/'target/server-source-capsule-20261025/source.tar.gz','r:gz') as archive:
+  return archive.extractfile('tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs').read()
+def review(files,frame,sources,baseline):
+ def get(group,name):return json.loads(files[group+'/'+name])
+ groups=['residual-profile-first','authority-stamp-screen-first','authority-stamp-build-first','authority-stamp-installed-first','authority-stamp-holder-first']
+ for group in groups:
+  result=get(group,'result.json');assert result['first_refusal'] is None and result['postflight_refusal'] is None
+  assert get(group,'preflight.json')==get(group,'postflight.json')==frame
+ build=get('authority-stamp-build-first','result.json')
+ assert build['passed'] and build['source_unchanged'] and build['libtest_sha256']==IMAGE
+ assert [(r['name'],r['exit']) for r in build['cases']]==[('build',0),('check',0),('clippy',0),('authority-tests',0)]
+ for name in ['check','clippy']:
+  argv=get('authority-stamp-build-first',name+'-command.json')['argv']
+  assert '--all-features' in argv and '--all-targets' in argv and '--locked' in argv
+  if name=='clippy':assert argv[-3:]==['--','-D','warnings']
+ assert b'test result: ok. 57 passed; 0 failed; 1 ignored;' in files['authority-stamp-build-first/authority-tests.stdout.log']
+ manifest=get('authority-stamp-build-first','source-manifest.json');assert len(manifest)==2562
+ for name,raw in sources.items():assert manifest['tools/long-run-supervisor-074/src/'+name]==sha(raw),name
+ # Reverse only the isolated module declaration and three observation expressions.
+ current=sources[NAMES[0]].decode().replace('\r\n','\n')
+ assert current.count('Stamp::fresh(&file)?')==2 and current.count('Stamp::fresh(&self.file)?')==1
+ original=current.replace('\n#[path = "diagnostic_authority_stamp.rs"]\nmod fresh_stamp;\n','')
+ original=original.replace('Stamp::fresh(&file)?','Stamp::of(&file.metadata()?)').replace('Stamp::fresh(&self.file)?','Stamp::of(&self.file.metadata()?)')
+ assert original==baseline.decode().replace('\r\n','\n'),'Unrelated predicate/order/source change'
+ leaf,installed=None,None
+ child_ids=[]
+ for group,actual in [('authority-stamp-screen-first',False),('authority-stamp-installed-first',True)]:
+  result=get(group,'result.json');assert result['passed'] and result['cases']==[dict(cohort=i,exit=0) for i in range(8)]
+  logs=[files[group+f'/cohort-{i}.stdout.log'] for i in range(8)]
+  report=stamp['review'](logs,actual);assert report['cpu_screen_passed']
+  if actual:installed=report
+  else:leaf=report
+  for i in range(8):
+   child=get(group,f'cohort-{i}-child.json');assert child['affinity']==[5]
+   child_ids.append((child['pid'],child['start_ticks']))
+ assert len(set(child_ids))==16,'Reused measurement process'
+ old=get('residual-profile-first','result.json');assert old['exit']==101 and not old['functional_gate']
+ prof=profile['review'](files['residual-profile-first/profile.stdout.log']+files['residual-profile-first/profile.stderr.log'],101,101,0)
+ assert prof['first_failed_phase']=='owned-root-preparation' and not prof['diagnostic_complete']
+ assert prof['first_original_refusal']['age_ns']==10033755319
+ for group in ['residual-profile-first','authority-stamp-holder-first']:
+  consumed=get(group,'consumed.json');assert consumed['original_windows']==[300,60,10] and not consumed['retry']
+  env=get(group,'command.json')['env'];assert 'HC074_HELD_MATERIAL_LIVE' not in env
+ holder=get('authority-stamp-holder-first','result.json');assert holder['exit']==101 and not holder['passed'] and holder['completed_cases']==[]
+ intent=get('authority-stamp-holder-first','consumed.json')
+ assert intent['image_sha256']==IMAGE and intent['first_candidate_attempt'] and not intent['case_override'] and not intent['cost_override']
+ original=profile['records'](files['authority-stamp-holder-first/holder.stdout.log'],'HC074-HELD-LIVE-ORIGINAL ')
+ assert len(original)==1;original=original[0]
+ assert not original['returned'] and not original['guard_clock_added'] and not original['deadline_changed']
+ refusal=original['causal']['first_refusal']
+ assert refusal['age_ns']==10116757205==refusal['now_ns']-refusal['issued_ns'] and refusal['diagnostic_reason']=='expired'
+ assert b'consuming_held_live.rs:267:59' in files['authority-stamp-holder-first/holder.stderr.log']
+ return dict(leaf=leaf,installed=installed,residual_profile=prof,first_candidate_refusal=refusal,
+  native_authority_tests_passed=57,new_unit_tests=2,mechanically_isolated_three_sites=True,
+  current_runtime_image=IMAGE,source_inputs=2562,checks_order_frequency_windows_unchanged=True,
+  full_holder_completed=False,full_preparation_improvement_proven=False,product=False,admission=False)
+if __name__=='__main__':
+ files,frame=load();sources={n:(ROOT/'tools/long-run-supervisor-074/src'/n).read_bytes() for n in NAMES}
+ result=review(files,frame,sources,baseline_fixture())
+ out=ROOT/'target/authorized-server-session-20261025/authority-stamp-offline-review';out.mkdir(exist_ok=False)
+ (out/'result.json').write_text(json.dumps(result,indent=2)+'\n')
+ print(json.dumps(dict(leaf=result['leaf']['candidate'],installed=result['installed']['candidate'],source_inputs=result['source_inputs'],first_candidate_refusal=result['first_candidate_refusal'],admission=False)))

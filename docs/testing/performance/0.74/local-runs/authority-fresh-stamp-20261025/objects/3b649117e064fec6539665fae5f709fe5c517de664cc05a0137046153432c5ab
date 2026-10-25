@@ -1,0 +1,11 @@
+{
+  "pid": 330811,
+  "start_ticks": 164710205,
+  "affinity": [
+    5
+  ],
+  "argv": [
+    "/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/authority-stamp-screen-first/screen",
+    "5"
+  ]
+}

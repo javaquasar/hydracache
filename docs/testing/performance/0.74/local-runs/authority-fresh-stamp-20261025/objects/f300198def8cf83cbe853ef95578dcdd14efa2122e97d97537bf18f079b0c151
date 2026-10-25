@@ -1,0 +1,43 @@
+{
+  "protocol": {
+    "schema": "hc074-authority-fresh-stamp-v1",
+    "baseline_runtime_commit": "cdf10d04236e0eaf88b2b604671d092dd2bb4082",
+    "hypothesis": "fresh fstat projection of exactly eleven existing Stamp fields removes unnecessary metadata work at authority leaf held/after comparisons",
+    "scope": "x86_64 Linux only; metadata before regular/ownership/budget checks and directory metadata remain unchanged",
+    "processes": 8,
+    "samples": 12,
+    "leaf_iterations": 8192,
+    "leaf_files": 7,
+    "installed_iterations": 1024,
+    "variants": [
+      "reference",
+      "reference-control",
+      "fresh-stamp"
+    ],
+    "order": "six forward/reverse Latin permutations rotated by cohort, twice",
+    "affinity": [
+      5
+    ],
+    "uid": 1000,
+    "compiler": "Rust 1.94 GNU opt-level=3",
+    "estimator": "median of eight process medians of twelve paired log CPU ratios",
+    "bootstrap": "20000 process-level resamples, seed 0x074fd105, percentile 95%",
+    "identical_control_interval": [
+      0.97,
+      1.03
+    ],
+    "leaf_candidate_upper_max": 0.95,
+    "installed_leaf_candidate_upper_max": 0.95,
+    "installed_outer_seconds": 300,
+    "checks_order_count_and_original_windows_unchanged": true,
+    "first_refusals_preserved": true,
+    "retry": false,
+    "product": false,
+    "admission": false,
+    "full_preparation_improvement_proven": false
+  },
+  "baseline_commit": "3e72d0185",
+  "retry": false,
+  "product": false,
+  "admission": false
+}

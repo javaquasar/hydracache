@@ -1,0 +1,1 @@
+{"argv": ["ssh", "-o", "BatchMode=yes", "-o", "StrictHostKeyChecking=yes", "-o", "ConnectTimeout=15", "hydracache-ax42", "sudo -n python3 -"], "remote_sha256": "37a1a4e80d705a57bd1842451e7b3af14523cdf8aba12b11c0497c279926764e", "retry": false, "server": true, "product": false}
