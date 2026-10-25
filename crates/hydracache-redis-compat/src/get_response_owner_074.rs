@@ -1,5 +1,5 @@
-//! Off-by-default D2 experiment. Only private, length-sized successful GET
-//! responses transfer ownership; all other cases use the public borrowed oracle.
+//! Retired D2 hypothesis, retained only under cfg(test) after negative full D3.
+//! These historical differential/property fixtures never enter product runtime.
 use super::{
     ClientRequest, ClientResponse, ClientResponseEnvelope, RedisExecutionPlan, RedisFollowup,
     RedisResponseReducer, RedisTranslationError, RespValue,

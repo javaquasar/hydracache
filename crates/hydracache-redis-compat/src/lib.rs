@@ -36,7 +36,7 @@ use thiserror::Error;
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
 use tokio::time;
 
-#[cfg(any(test, feature = "experimental-resp-get-owner-074"))]
+#[cfg(test)]
 mod get_response_owner_074;
 
 /// RESP dialects claimed by the 0.63 edge surface.
@@ -1406,11 +1406,7 @@ impl RedisRespServer {
                 .into_iter()
                 .map(|request| self.state.dispatch_verified_request(identity, request)),
         );
-        #[cfg(feature = "experimental-resp-get-owner-074")]
-        let reduced = get_response_owner_074::reduce(&plan, responses);
-        #[cfg(not(feature = "experimental-resp-get-owner-074"))]
-        let reduced = plan.reduce(&responses);
-        match reduced {
+        match plan.reduce(&responses) {
             Ok(value) => value,
             Err(error) => {
                 self.errors.fetch_add(1, Ordering::SeqCst);

@@ -1,5 +1,14 @@
 # Local scheduled/native instrumentation only
 
+GET-owner is now [terminally rejected for 0.74](../../docs/testing/performance/0.74/get-owner-full-d3-terminal-result-20261025.md).
+The sealed 240-process real-network allocation stage fails the required mTLS
+floor; the runtime selector is disabled. The empty Cargo feature is a compatibility
+tombstone, not proof of active ownership transfer. Current `full-d3-allocation-074`
+refuses fresh `--run` before opening a config; `--validate` and offline replay
+remain available. Historical source/image receipts are never rebuilt or relabeled.
+The `get_owner_feature` field in legacy reports denotes the compiled Cargo flag,
+not current-source activation or permission to reopen the retired proposal.
+
 The bounded `timing-controls-074` executable now exists; it is instrumentation,
 not a cohort coordinator, daemon or qualification launcher. Its `--validate`
 mode starts no fixture. `--run` requires an exact binary hash/full source SHA,
@@ -48,8 +57,8 @@ batches). Cancelled callers retain FIFO tombstones until their reply/close.
 `RespControl::run` is single-use, shares the original calendar with the driver and
 includes wire-owner drain in elapsed goodput accounting. It reports frame-observed
 timestamps separately from byte-validated operation completion; neither is batch
-time divided by depth. RESP3/mTLS semantic adapters are now available; sealed
-numerical execution remains absent.
+time divided by depth. RESP3/mTLS semantic adapters are available; their later
+sealed allocation comparison is recorded in the terminal result above.
 
 Native 32/128 fixtures synchronize GET/PUT clients with a barrier, verify real HC2
 connection accounting, exact values and shutdown. They assert no real-clock

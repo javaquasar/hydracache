@@ -2353,3 +2353,11 @@ readers must validate both identities. Historical timing modes and requested-v1
 APIs retain their schema and placement. Unexecuted allocation-v1 images cannot
 produce v2 evidence. This counting lane never certifies timing, retention or
 candidate admission.
+
+The 2026-10-25 full-D3 decision rejects GET-owner on the fixed secure allocation
+floor. `experimental-resp-get-owner-074` remains an empty compatibility tombstone,
+but no longer selects a runtime branch. Historical consuming-helper tests remain
+test-only. Current allocation-stage `--run` refuses before config/fixture access;
+metadata validation and historical packet replay keep their format. Old report
+feature booleans describe compiled flags, not proof of current activation. No
+wire, persistence, authorization or native API format changes with this rollback.

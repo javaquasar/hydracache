@@ -176,15 +176,15 @@ measurement source is `3171d02a`. Canonical adversarial guards remain.
 Policy, semantic and negative results:
 [W9b rejection](../../docs/testing/performance/0.74/w9b-serial-scratch-d3-result.md).
 
-## Default-off 0.74 private GET ownership experiment
+## Retired 0.74 private GET ownership experiment
 
-`experimental-resp-get-owner-074` is a separate D2 hypothesis, not an accepted
-release optimization. Only one successful nonempty GET response with
-`capacity == len` transfers its existing Vec into the private executor result.
-Every other shape uses the canonical borrowed reducer; the public borrowed API,
-encoder, command/write/flush frontier and native API are unchanged. No response
-buffer is pooled or retained between commands. The feature is empty and off by
-default; no throughput, allocation percentage or native nonregression is claimed.
+`experimental-resp-get-owner-074` is an empty compatibility tombstone after the
+[terminal real-network D3 rejection](../../docs/testing/performance/0.74/get-owner-full-d3-terminal-result-20261025.md).
+It cannot enable the candidate, including in all-feature builds. The runtime
+always uses the canonical borrowed reducer. Historical consuming-helper
+differential/property tests remain under `cfg(test)` only; they are not linked
+into product runtime. AUTH, isolation, expiration, consistency, durability,
+encoder/write/flush boundaries and native APIs are unchanged.
 
 Run the semantic suite explicitly with:
 
@@ -193,6 +193,7 @@ cargo test -p hydracache-redis-compat --features experimental-resp-get-owner-074
 cargo test -p hydracache-server --test server_lifecycle redis --features hydracache-redis-compat/experimental-resp-get-owner-074 --locked
 ```
 
-The same tests run without the feature as the canonical build. Ordinary CI is
-enrolled for feature-on semantics; a hosted pass must be verified separately.
-See [D2 design and remaining numerical gates](../../docs/testing/performance/0.74/get-response-owner-design.md).
+The same guards run without the tombstone feature. Existing feature-on CI steps
+now also exercise the canonical runtime, never reactivate the rejected candidate.
+The historical [D2 design](../../docs/testing/performance/0.74/get-response-owner-design.md)
+and every negative receipt remain available; unrun acceptance gates are not green.

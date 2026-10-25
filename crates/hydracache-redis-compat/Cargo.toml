@@ -13,7 +13,8 @@ description = "Off-by-default Redis RESP edge facade for HydraCache cache-subset
 
 [features]
 default = []
-# D2 hypothesis only; no numerical admission or default activation.
+# Retired after full-D3 mTLS allocation rejection. Compatibility tombstone only;
+# this feature cannot activate ownership transfer, including all-feature builds.
 experimental-resp-get-owner-074 = []
 
 [dependencies]

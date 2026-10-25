@@ -22,6 +22,9 @@ impl requested::Scope for memory::Scope {
 }
 
 const PROFILE: &str = "get-owner-full-d3-allocation-074-v2";
+// The sealed historical cohort rejected a mandatory gate. Keep metadata/replay
+// tools, but never silently measure this source's now-disabled candidate again.
+const CANDIDATE_RETIRED: bool = true;
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct StageInput {
@@ -234,6 +237,9 @@ fn execute(args: &[String]) -> Result<bool, String> {
             material,
         } => (config, binary, source, material),
     };
+    if CANDIDATE_RETIRED {
+        return Err("GET-owner is terminally rejected for 0.74; no fresh numerical execution; replay the sealed historical packet".to_owned());
+    }
     if !cfg!(feature = "allocation-diagnostics") {
         return Err("counting feature missing".to_owned());
     }
@@ -486,6 +492,19 @@ mod tests {
         assert!(arguments(&secure).is_err());
         plain.push("retry".to_owned());
         assert!(arguments(&plain).is_err());
+    }
+
+    #[test]
+    fn retired_candidate_refuses_before_opening_config_or_starting_fixture() {
+        let args = vec![
+            "--run".to_owned(),
+            "absent-config-must-not-be-opened".to_owned(),
+            "a".repeat(64),
+            "b".repeat(40),
+            "-".to_owned(),
+            "-".to_owned(),
+        ];
+        assert!(execute(&args).unwrap_err().contains("terminally rejected"));
     }
 
     #[test]
