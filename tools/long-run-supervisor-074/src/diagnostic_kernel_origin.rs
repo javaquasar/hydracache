@@ -17,6 +17,14 @@ mod operation_cost;
 #[path = "diagnostic_kernel_operation_tests.rs"]
 mod operation_tests;
 
+#[cfg(all(test, target_arch = "x86_64", target_env = "gnu"))]
+#[path = "diagnostic_namespace_open.rs"]
+mod fixed_namespace_open;
+
+#[cfg(all(test, target_arch = "x86_64", target_env = "gnu"))]
+#[path = "diagnostic_namespace_open_tests.rs"]
+mod namespace_open_tests;
+
 #[derive(Debug, Clone)]
 pub struct KernelTimePoint {
     boot: String,

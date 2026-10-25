@@ -2,6 +2,66 @@ schema_version = 1
 release = "0.64.0"
 
 [[gate]]
+id = "tool.hydracache-long-run-supervisor-074.namespace-open-prototype-cpu"
+kind = "external_tool"
+source = "tools/long-run-supervisor-074/src/diagnostic_namespace_open_tests.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "hydracache_long_run_supervisor_074"
+test = "namespace_open_prototype_cpu_screen"
+cfg = 'all (target_os = "linux" , target_arch = "x86_64" , target_env = "gnu")'
+env = ""
+reason = "manual finite baseline Namespace open CPU screen; no preparation retry or admission"
+tier = "manual"
+required_features = []
+required_env = ["HC074_NAMESPACE_OPEN_COHORT"]
+required_tools = ["cargo"]
+timeout_seconds = 300
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+[gate.command]
+program = "cargo"
+args = ["test","--release","--locked","-p","hydracache-long-run-supervisor-074","--lib","namespace_open_prototype_cpu_screen","--","--ignored","--nocapture","--test-threads=1"]
+cwd = "."
+platform = "linux"
+[gate.command.env]
+HC074_NAMESPACE_OPEN_COHORT = "0"
+
+[[gate]]
+id = "tool.hydracache-long-run-supervisor-074.namespace-open-installed-cpu"
+kind = "external_tool"
+source = "tools/long-run-supervisor-074/src/diagnostic_namespace_open_tests.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "hydracache_long_run_supervisor_074"
+test = "namespace_open_installed_cpu_screen"
+cfg = 'all (target_os = "linux" , target_arch = "x86_64" , target_env = "gnu")'
+env = ""
+reason = "manual finite integrated Namespace open CPU screen; no preparation retry or admission"
+tier = "manual"
+required_features = []
+required_env = ["HC074_NAMESPACE_OPEN_COHORT"]
+required_tools = ["cargo"]
+timeout_seconds = 300
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+[gate.command]
+program = "cargo"
+args = ["test","--release","--locked","-p","hydracache-long-run-supervisor-074","--lib","namespace_open_installed_cpu_screen","--","--ignored","--nocapture","--test-threads=1"]
+cwd = "."
+platform = "linux"
+[gate.command.env]
+HC074_NAMESPACE_OPEN_COHORT = "0"
+
+[[gate]]
 id = "tool.hydracache-long-run-supervisor-074.kernel-operation-cpu"
 kind = "external_tool"
 source = "tools/long-run-supervisor-074/src/diagnostic_kernel_operation_tests.rs"
