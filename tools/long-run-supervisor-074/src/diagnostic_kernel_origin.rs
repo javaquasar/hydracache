@@ -6,6 +6,9 @@ use std::os::fd::FromRawFd;
 #[path = "diagnostic_pidfd_info_path.rs"]
 mod pidfd_info_path;
 
+#[path = "diagnostic_kernel_fd_identity.rs"]
+mod fd_identity;
+
 #[derive(Debug, Clone)]
 pub struct KernelTimePoint {
     boot: String,
@@ -103,8 +106,8 @@ fn namespace(name: &str) -> Result<(File, (u64, u64)), KernelError> {
         .custom_flags(libc::O_CLOEXEC)
         .open(namespace_path(name).as_ref())?;
     filesystem(&file, 0x6e736673)?;
-    let m = file.metadata()?;
-    Ok((file, (m.dev(), m.ino())))
+    let id = fd_identity::fresh(&file)?;
+    Ok((file, id))
 }
 #[path = "diagnostic_boot_document.rs"]
 mod boot_document;
@@ -208,8 +211,7 @@ fn require_namespace(
     if unsafe { libc::ioctl(file.as_raw_fd(), libc::NS_GET_NSTYPE) } != kind {
         return Err(kernel_invalid!("namespace-type"));
     }
-    let metadata = file.metadata()?;
-    if (metadata.dev(), metadata.ino()) != expected {
+    if fd_identity::fresh(file)? != expected {
         return Err(kernel_invalid!("namespace-object"));
     }
     Ok(())
@@ -232,13 +234,13 @@ impl Origin {
             .custom_flags(libc::O_DIRECTORY | libc::O_NOFOLLOW | libc::O_CLOEXEC)
             .open("/proc")?;
         filesystem(&root, 0x9fa0)?;
-        let m = root.metadata()?;
+        let id = fd_identity::fresh(&root)?;
         let boot = boot(&root)?;
         let namespaces = NAMES.map(namespace);
         let [user, mount, pid, time] = namespaces;
         let origin = Self {
             root,
-            id: (m.dev(), m.ino()),
+            id,
             boot,
             namespaces: [user?, mount?, pid?, time?],
         };
@@ -256,15 +258,13 @@ impl Origin {
             .open("/proc")?;
         for file in [&named, &self.root] {
             filesystem(file, 0x9fa0)?;
-            let m = file.metadata()?;
-            if (m.dev(), m.ino()) != self.id || !boot_comparison::matches(file, &self.boot)? {
+            if fd_identity::fresh(file)? != self.id || !boot_comparison::matches(file, &self.boot)? {
                 return Err(kernel_invalid!("proc-origin-or-boot"));
             }
         }
         for (index, (file, id)) in self.namespaces.iter().enumerate() {
             filesystem(file, 0x6e736673)?;
-            let m = file.metadata()?;
-            if (m.dev(), m.ino()) != *id || namespace(NAMES[index])?.1 != *id {
+            if fd_identity::fresh(file)? != *id || namespace(NAMES[index])?.1 != *id {
                 return Err(kernel_invalid!("namespace-origin"));
             }
         }
