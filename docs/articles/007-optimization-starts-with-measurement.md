@@ -20225,3 +20225,29 @@ not the isolated cost of those stores, and does not establish why the leaf
 became slightly slower. The next hypothesis needs a measured owner and its own
 controls, not an assumption that fewer instructions must be faster. All fresh
 checks, error ordering, first refusals and original deadlines stay intact.
+
+### Rank remaining owners without counting the same work twice
+
+After two rejected wrapper hypotheses, the
+[offline preparation audit](../testing/performance/0.74/preparation-ranking-result-20261025.md)
+returns to the retained complete-call profile. Its new reader checks call/root
+and parent/child-time conservation in all 56 round-slot inventories. The kernel
+and live views cannot be added: the 3.72-second live KernelContext wraps the
+same kernel PacketContext body that already contains Origin, Boot and Namespace.
+Treating it as another unowned cost would count the same work twice.
+
+LocalContext is a distinct observation path, with about 0.901 seconds of wall
+outside its instrumented live children in outputs. Pinned-source review derives
+88 metadata requests per successful observation; 24 compare retained directory
+stamps. Across the 4232 observed spans that implies 101568 eligible directory
+comparisons. This is a successful-path inventory, not a measured syscall count
+or a prediction that changing those comparisons saves a particular CPU fraction.
+
+The next protocol therefore isolates one site: fresh five-field directory
+projection at `PinnedDirectory::same`. Constructors, documents, namespaces,
+read frequency/order, error handling and deadlines stay fixed. Before selecting
+an implementation, verify the pinned standard library's syscall/fallback contract;
+then require differential faults and both leaf and complete-context comparisons.
+Twelve offline controls and staged-byte verification support this narrower next
+question. No new preparation attempt or runtime optimization follows from the
+ranking alone, and the original failed enrollment stays visible.

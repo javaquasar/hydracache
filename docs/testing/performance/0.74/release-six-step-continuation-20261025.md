@@ -223,6 +223,15 @@ host manager is still 255; no upgrade, original service send or product run occu
 
 ## 4. Completion, cells 2–4, crashes and reconnect
 
+The [offline preparation ranking](preparation-ranking-result-20261025.md)
+now validates 56 saved round-slot inventories and separates overlapping kernel
+and live views. The large live KernelContext wraps the already investigated
+kernel path; it is not another cost to add. LocalContext retains a 0.900602-second
+wall span in outputs. Its source-derived successful path has 88 metadata requests,
+24 in retained directory comparisons. A separate one-site projection protocol
+is prepared, not implemented or measured. Twelve controls and staged-byte review
+pass without a new live run or any change to the original refusals/windows.
+
 The separate [filesystem buffer projection](filesystem-projection-cost-result-20261025.md)
 passes 50 origin cases, native check/strict lint and all seven calibration
 controls. Its first cohort rejects the candidate: leaf CPU ratios are 1.003559
