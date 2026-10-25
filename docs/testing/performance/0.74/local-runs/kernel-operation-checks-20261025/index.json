@@ -1,0 +1,70 @@
+{
+  "admission": false,
+  "doc_check": true,
+  "full_package": false,
+  "local_nonpromotable_contract": true,
+  "measurements_repeated": false,
+  "members": {
+    "checks/kernel-operation-final-contract-20261025/intent.json": {
+      "bytes": 333745,
+      "sha256": "53d0736ae83f2c5201d778c5f9ebbaa4b32c0737183670e4ff89fb608818b85b"
+    },
+    "checks/kernel-operation-final-contract-20261025/result.json": {
+      "bytes": 333383,
+      "sha256": "6dfe19eb99bd621e8f36b62e6e0746d121bab7eb628d1ade70bbd07786cb0fd9"
+    },
+    "checks/kernel-operation-final-contract-20261025/stderr.log": {
+      "bytes": 152,
+      "sha256": "8d3a5434abf22ce10b8f10c71faa82aaa8e88efc4dfa21a400f9c8676d846816"
+    },
+    "checks/kernel-operation-final-contract-20261025/stdout.log": {
+      "bytes": 60,
+      "sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+    },
+    "checks/kernel-operation-final-doc-check-20261025/intent.json": {
+      "bytes": 333697,
+      "sha256": "d79296e2f45eeef353fc847fedc641764ea5ef98ea697ee592efc2f99834b18e"
+    },
+    "checks/kernel-operation-final-doc-check-20261025/result.json": {
+      "bytes": 333383,
+      "sha256": "6dfe19eb99bd621e8f36b62e6e0746d121bab7eb628d1ade70bbd07786cb0fd9"
+    },
+    "checks/kernel-operation-final-doc-check-20261025/stderr.log": {
+      "bytes": 120,
+      "sha256": "011ebbb843ee97031a9da244b8d17b81aadcee6cd91ca419231fdf80b1bc8985"
+    },
+    "checks/kernel-operation-final-doc-check-20261025/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "checks/kernel-operation-staged-audit-20261025/intent.json": {
+      "bytes": 333538,
+      "sha256": "0b6dcf0cab55c781c2eef443193b7d0684e2cebcc7680df08db0a408e0d048d4"
+    },
+    "checks/kernel-operation-staged-audit-20261025/result.json": {
+      "bytes": 333265,
+      "sha256": "7b506eca1f7fd02c4538c761e25f79eb15223506e549bbd7463706cec62629c9"
+    },
+    "checks/kernel-operation-staged-audit-20261025/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/kernel-operation-staged-audit-20261025/stdout.log": {
+      "bytes": 218,
+      "sha256": "f2a04b3f93a27d9aa74046b3bf1866f7b81639a8a42a6db7bac9ce6161f5581f"
+    },
+    "coordinator/retain-kernel-operation-checks-20261025.py": {
+      "bytes": 2045,
+      "sha256": "c474b147cf38265417e139d08a31e3d9bae92c60981e9318059f877d1eb8a220"
+    },
+    "coordinator/verify-staged-kernel-operation-20261025.py": {
+      "bytes": 2707,
+      "sha256": "21825abb17d344629b77ded904b3922b90af679ed743f91c1b0eb631451b949a"
+    }
+  },
+  "optimization_implemented": false,
+  "preparation_repeated": false,
+  "primary_staged_review_passed": true,
+  "schema": "hc074-kernel-operation-final-checks-v1",
+  "upstream_index_sha256": "45b9c9024a388801f2a2aaeafff592fdb00306151f845a1ad42979eef9544165"
+}
