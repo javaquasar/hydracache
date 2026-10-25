@@ -22,6 +22,14 @@ def encode(value):
 
 
 class HelperReaderControls(unittest.TestCase):
+    def test_losing_an_entire_case_trace_cannot_hide_behind_other_complete_cases(self):
+        first, second = fixture(), fixture()
+        second.update(case='second', thread='ThreadId(2)')
+        expected = {'fixture', 'second'}
+        self.assertEqual(len(reader.traces(encode(first)+encode(second), expected, required_cases=expected)['frames']), 2)
+        with self.assertRaises(ValueError):
+            reader.traces(encode(first), expected, required_cases=expected)
+
     def test_nested_count_bytes_and_times_are_not_cpu_or_disjoint_target_phases(self):
         result = reader.traces(encode(fixture()), {'fixture'})
         self.assertEqual(result['counts'], dict(git=1, output=1, decode=1, read=1))
@@ -31,7 +39,7 @@ class HelperReaderControls(unittest.TestCase):
         self.assertFalse(result['observer_overhead_subtracted'])
 
     def test_damaged_graph_times_types_bytes_completion_and_scope_refuse(self):
-        for mode in range(15):
+        for mode in range(16):
             frame = copy.deepcopy(fixture())
             if mode == 0: frame['valid'] = False
             elif mode == 1: frame['started'] = True
@@ -47,7 +55,8 @@ class HelperReaderControls(unittest.TestCase):
             elif mode == 11: frame['records'][1]['operation'] = 'output'
             elif mode == 12: frame['records'][0], frame['records'][1] = frame['records'][1], frame['records'][0]
             elif mode == 13: frame['records'][1]['end_ns'] = 100; frame['records'][1]['elapsed_ns'] = 40
-            else: frame['records'][2]['arguments'] = ['must-not-execute']
+            elif mode == 14: frame['records'][2]['arguments'] = ['must-not-execute']
+            else: frame['records'][2]['output_bytes'] = 12
             with self.subTest(mode=mode), self.assertRaises(ValueError):
                 reader.traces(encode(frame), {'fixture'})
 

@@ -49,6 +49,9 @@ def trace_frame(frame):
         nested = children.get(root['id'], [])
         require([row['operation'] for row in nested] == (['output', 'decode'] if root['operation'] == 'git' else []),
                 'original helper phase graph')
+        if nested:
+            require(root['output_bytes'] == nested[1]['output_bytes'] and
+                    root['stderr_bytes'] == nested[0]['stderr_bytes'] == nested[1]['stderr_bytes'], 'parent/phase byte join')
         previous = root['start_ns']
         for row in nested:
             require(row['start_ns'] >= previous, 'overlapping sequential phases')
@@ -61,7 +64,7 @@ def trace_frame(frame):
     return frame
 
 
-def traces(raw, allowed_cases):
+def traces(raw, allowed_cases, *, required_cases=None):
     require = review.require
     require(len(raw) <= 16 * 1024**2, 'diagnostic log budget')
     frames = [trace_frame(review.decode_json(line[len('HC074_HELPER_TRACE '):]))
@@ -80,6 +83,8 @@ def traces(raw, allowed_cases):
             item['calls'] += 1
             for key_to, key_from in (('cumulative_wall_ns', 'elapsed_ns'), ('output_bytes', 'output_bytes'), ('stderr_bytes', 'stderr_bytes')):
                 item[key_to] += row[key_from]
+    if required_cases is not None:
+        require(cases == set(required_cases), 'whole case trace missing or unexpected')
     counts = {op: sum(row['operation'] == op for frame in frames for row in frame['records']) for op in OPERATIONS}
     shows = sum(row['operation'] == 'git' and row['arguments'][0] == 'show' for frame in frames for row in frame['records'])
     return dict(frames=frames, groups=groups, counts=counts, shows=shows,

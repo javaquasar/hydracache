@@ -10,6 +10,11 @@ import sweep_review as sweep
 
 
 class HelperCaptureControls(unittest.TestCase):
+    def test_complete_trace_catalog_comes_from_original_ast_not_collected_rows(self):
+        cases = capture.original_trace_cases()
+        self.assertEqual(len(cases), 19)
+        self.assertNotIn('held_build_source_allowlist_requires_all_old_files_and_exactly_one_named_addition', cases)
+        self.assertTrue({name for name, *_ in sweep.SWEEPS}.issubset(cases))
     def test_erasure_reconstructs_original_not_arbitrary_body(self):
         root = Path(__file__).resolve().parents[2]
         source = (root/sweep.SOURCE).read_text()
@@ -31,7 +36,7 @@ class HelperCaptureControls(unittest.TestCase):
             capture.target_result(raw, ['fixture'])
         self.assertTrue(capture.target_result(raw, ['fixture'], filtered=17)['target_pass'])
         for changed in (raw.replace(b'fixture ... ok', b'other ... ok'), raw+raw,
-                        raw.replace(b'0 failed', b'1 failed')):
+                        raw.replace(b'0 failed', b'1 failed'), raw+b'test result: unknown\n'):
             with self.assertRaises(ValueError):
                 capture.target_result(changed, ['fixture'], filtered=17)
         with self.assertRaises(ValueError):

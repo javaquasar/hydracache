@@ -37,6 +37,8 @@ def target_result(raw, expected, *, filtered=0):
     lines = raw.decode().splitlines()
     starts = [review.START.fullmatch(line) for line in lines if review.START.fullmatch(line)]
     ends = [review.END.fullmatch(line) for line in lines if review.END.fullmatch(line)]
+    review.require(all(not line.startswith(('running ', 'test result:')) or review.START.fullmatch(line) or review.END.fullmatch(line)
+                       for line in lines), 'unsupported target header or summary')
     cases = [review.CASE.fullmatch(line) for line in lines if review.CASE.fullmatch(line)]
     review.require(len(starts) == len(ends) == 1 and int(starts[0][1]) == len(expected), 'complete target header')
     review.require(len(cases) == len(expected) and {row[1] for row in cases} == set(expected)
@@ -58,6 +60,17 @@ def original_cases():
     target, = [row for row in report['targets'] if row['target'] == sweep_review.TARGET]
     review.require(target['reported_ns'] is not None and target['passed'] == 20, 'retained twenty-case scope')
     return [row['name'] for row in target['cases']]
+
+
+def original_trace_cases():
+    values = sweep_review.load_snapshot(ROOT)
+    syntax = review.decode_json(values['syntax/final-closure/result.json'])
+    source, = [row for row in syntax['sources'] if row['source'] == sweep_review.SOURCE]
+    review.require(source['sha256'] == sweep_review.SOURCE_SHA256, 'original helper AST identity')
+    cases = set(original_cases())
+    return {site['scope'].split('::')[0] for site in source['sites']
+            if site['kind'] == 'function-call' and site['detail'] in ('read', 'git')
+            and site['scope'].split('::')[0] in cases}
 
 
 def capture(build, out, mode):
@@ -148,7 +161,8 @@ def capture(build, out, mode):
                 raise ValueError('unwind accepted as healthy')
         else:
             allowed_cases = {f'helper-fixture-{index}' for index in range(4)} if mode == 'fixture-healthy' else set(expected)
-            trace = helper_review.traces(error, allowed_cases)
+            required_cases = allowed_cases if mode == 'fixture-healthy' else original_trace_cases()
+            trace = helper_review.traces(error, allowed_cases, required_cases=required_cases)
             if mode == 'profile':
                 for name, _, runtime_count, tail, _ in sweep_review.SWEEPS:
                     review.require(trace['groups'][name+'/read']['calls'] >= runtime_count+len(tail), 'preservation reads missing')
