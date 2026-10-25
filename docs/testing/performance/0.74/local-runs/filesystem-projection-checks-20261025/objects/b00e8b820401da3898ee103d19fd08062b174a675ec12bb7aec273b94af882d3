@@ -1,0 +1,37 @@
+from pathlib import Path
+import hashlib,json,subprocess
+root=Path(__file__).resolve().parent.parent
+prefix='docs/testing/performance/0.74/local-runs/filesystem-projection-cost-20261025/'
+raw=subprocess.check_output(['git','show',':'+prefix+'index.json'],cwd=root)
+assert hashlib.sha256(raw).hexdigest()=='649ddcec8ae7ccf8c0469126131a31c52bb0c75a96740573a2f71af7962fde9b'
+index=json.loads(raw);assert len(index['members'])==142
+digests=sorted({item['sha256'] for item in index['members'].values()});assert len(digests)==102
+p=subprocess.run(['git','cat-file','--batch'],input=('\n'.join(':'+prefix+'objects/'+d for d in digests)+'\n').encode(),cwd=root,capture_output=True,check=True)
+objects={};offset=0
+for digest in digests:
+ newline=p.stdout.index(b'\n',offset);header=p.stdout[offset:newline].split();assert header[1]==b'blob'
+ size=int(header[2]);offset=newline+1;blob=p.stdout[offset:offset+size];offset+=size
+ assert p.stdout[offset:offset+1]==b'\n';offset+=1
+ assert hashlib.sha256(blob).hexdigest()==digest;objects[digest]=blob
+assert offset==len(p.stdout)
+members={}
+for name,item in index['members'].items():
+ assert not Path(name).is_absolute() and '..' not in Path(name).parts
+ blob=objects[item['sha256']];assert len(blob)==item['bytes'];members[name]=blob
+for name in ['review.py','protocol.json','test_review.py']:
+ assert members['tool/'+name]==(root/'tools/filesystem-projection-cost-074'/name).read_bytes()
+assert members['dependencies/directory-review.py']==(root/'tools/authority-directory-cost-074/review.py').read_bytes()
+scope={'__file__':str(root/'target/audit-filesystem-projection-20261025.py'),'__name__':'saved_byte_verifier'}
+exec(compile(members['coordinator/audit-filesystem-projection-20261025.py'],'<staged-audit>','exec'),scope)
+files={n.removeprefix('server/'):v for n,v in members.items() if n.startswith('server/') and n!='server/final-frame.json'}
+sources={n:members['source/'+n] for n in scope['NAMES']}
+old=members['baseline-source/'+scope['NAMES'][0]]
+for name,raw in sources.items():assert raw==(root/'tools/long-run-supervisor-074/src'/name).read_bytes()
+facts=scope['review'](files,json.loads(members['server/final-frame.json']),sources,old)
+assert facts==json.loads(members['analysis/review.json']) and not facts['estimates']['cpu_screen_passed']
+assert all(c['controls_passed'] for c in facts['estimates']['cases'].values())
+for name,digest in index['protected_inputs'].items():assert hashlib.sha256((root/name).read_bytes()).hexdigest()==digest
+assert not index['admission'] and not index['optimization_implemented'] and not index['preparation_repeated']
+print(json.dumps(dict(staged_byte_review=True,members=142,objects=102,production_source_preserved=True,
+ raw_rows=3584,targeted_tests_passed=50,field_fault_cases=2058,codegen_reproduced=True,cpu_screen_passed=False,
+ optimization_implemented=False,admission=False)))
