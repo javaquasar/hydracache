@@ -19989,3 +19989,36 @@ show AppArmor denying `sys_chroot` to diagnostic signer threads in
 `unprivileged_userns`. Lowering host protections would change the experiment's
 security premise. The first results stay retained, and a compatible fixture
 environment is a separate decision rather than a reason to relax the tests.
+
+### Preserve the full stamp while reducing its projection cost
+
+The [remaining preparation profile](../testing/performance/0.74/authority-fresh-stamp-result-20261025.md)
+still places outputs at 6.804 seconds wall and 6.712 seconds of process CPU.
+Its 153088 Boot and 306176 Namespace observations remain intact. The separate
+authority view contributes 1.121 seconds of overlapping wall time, directing a
+new leaf hypothesis toward fresh metadata rather than fewer validation rounds.
+These nested views cannot be added or treated as isolated CPU costs.
+
+Authority metadata has a stricter consumer than kernel device/inode identity:
+its Stamp also compares ownership, type/mode, links, size and nanosecond
+timestamps. The candidate therefore projects all eleven existing fields from
+a fresh `fstat`. It replaces only the held/after comparisons; metadata before
+ownership/budget checks, directory checks, bounded reads, content comparisons
+and refusal latching remain unchanged. The named descriptor retains the same
+lifetime, and the adapter never reuses a successful observation.
+
+Eight independent processes first support the isolated eleven-field hypothesis:
+CPU ratio 0.628, 95% interval [0.621,0.632]. The separately frozen comparison of
+the actual complete authority leaf method then gives ratio 0.915, interval
+[0.914,0.916], against a frozen original reference in the same image. Both
+identical-function controls stay near one. The roughly 8.5% CPU reduction belongs
+to that leaf method, not the authority registry, entire preparation or cache API.
+Native check, strict lint and 57 authority cases accompany the measurements.
+
+The first complete preparation of this changed candidate reaches enrollment,
+then expires at 10.116757205 seconds of its unchanged causal window. None of
+the five cases completes, and the first attempt is not retried. A later refusal
+frontier is useful diagnostic evidence, but one failed frontier cannot establish
+an end-to-end speedup. The measured local optimization stays separate from the
+still-red admission gate. Host AppArmor, installed artifacts, clocks and the
+running supervisor remain untouched.

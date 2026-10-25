@@ -223,6 +223,15 @@ host manager is still 255; no upgrade, original service send or product run occu
 
 ## 4. Completion, cells 2–4, crashes and reconnect
 
+The next [residual preparation and authority Stamp experiment](authority-fresh-stamp-result-20261025.md)
+keeps all observation counts and windows while replacing only three fresh
+held/after metadata projections. Eight-process installed-leaf CPU ratio is
+0.915110, interval [0.913530,0.915821]; native check, strict lint and 57 authority
+cases pass. The changed candidate's first full holder attempt reaches
+`enroll_once` but still expires at causal age 10116757205 ns. Zero cases complete;
+this does not open completion/cells or retire the prior failures. No AppArmor,
+installed release or supervisor change occurs.
+
 The [fresh identity candidate and signer compatibility control](fresh-kernel-identity-result-20261025.md)
 now implement fresh x86_64 `fstat` projection without reducing any original
 observation. Eight-process CPU screens pass: metadata leaf ratio 0.626101 and
