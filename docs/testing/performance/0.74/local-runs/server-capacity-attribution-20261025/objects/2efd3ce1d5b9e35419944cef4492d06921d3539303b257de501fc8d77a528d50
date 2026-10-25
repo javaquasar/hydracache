@@ -1,0 +1,6 @@
+from pathlib import Path
+import json
+roots=[Path('/home/github-runner/.rustup/toolchains/1.94.0-x86_64-unknown-linux-gnu'),
+ Path('/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/toolchain-v3')]
+print(json.dumps({str(root):dict(bin=sorted(p.name for p in (root/'bin').iterdir()),
+ manifests=sorted(p.name for p in (root/'lib/rustlib').iterdir() if p.name.startswith(('manifest','components')))) for root in roots},indent=2))

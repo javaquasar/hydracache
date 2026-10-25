@@ -1,0 +1,1086 @@
+seed=0x0750 actual_owned_sigkill=1 outside_pipe_writer_blocks_eof=true late_bytes_reconciled=true production_cgroup_proof=false
+
+thread 'diagnostic_ipc::validation_trace::custody_boundaries::custody_boundary_capture_is_inactive_nested_thread_local_and_unwind_safe' (319754) panicked at tools/long-run-supervisor-074/src/../tests/support/custody_boundaries.rs:62:17:
+Box<dyn Any>
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'diagnostic_ipc::validation_trace::kernel_walk::tests::kernel_numeric_escaping_span_cannot_complete_capture' (319759) panicked at tools/long-run-supervisor-074/src/diagnostic_kernel_walk_trace.rs:61:5:
+unfinished kernel numeric span
+
+thread 'diagnostic_ipc::validation_trace::kernel_walk::tests::kernel_numeric_nested_capture_and_unwind_restore_original' (319760) panicked at tools/long-run-supervisor-074/src/diagnostic_kernel_walk_trace.rs:168:21:
+kernel numeric restoration canary
+
+thread 'diagnostic_ipc::validation_trace::live_walk::tests::nested_capture_and_panic_restore_original_frame' (319764) panicked at tools/long-run-supervisor-074/src/diagnostic_live_walk_trace.rs:119:21:
+numeric restoration canary
+
+thread 'diagnostic_ipc::validation_trace::round_cost::round_cost_deltas_preserve_parent_counts_errors_and_panic_identity' (319768) panicked at tools/long-run-supervisor-074/src/../tests/support/round_cost.rs:162:21:
+Box<dyn Any>
+
+thread 'diagnostic_ipc::validation_trace::round_cost::round_cost_escaping_span_cannot_complete_capture' (319769) panicked at tools/long-run-supervisor-074/src/../tests/support/round_cost.rs:37:9:
+assertion `left == right` failed: unfinished round observation
+  left: 1
+ right: 0
+
+thread 'diagnostic_ipc::validation_trace_tests::validation_trace_nested_unwind_and_ambient_scope_restore_original_frame' (319781) panicked at tools/long-run-supervisor-074/src/diagnostic_validation_trace_tests.rs:60:17:
+owned validation trace canary
+HC074-VALIDATION-COST Report { stages: [Stats { wall_ns: 11770, authentication_calls: 1, authentication_ns: 11590, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }, Stats { wall_ns: 0, authentication_calls: 0, authentication_ns: 0, signature_calls: 0, signature_ns: 0, worker_policy_calls: 0, worker_policy_ns: 0 }], first_time: Some(TimeRefusal { stage: Unassigned, operation: Reserve, issued: 1, expires: 61, now: 0 }), time_refusals: 1 }
+
+thread 'diagnostic_kernel_admission::refusal_trace::tests::kernel_refusal_capture_nested_and_unwind_restore_original_scope' (319831) panicked at tools/long-run-supervisor-074/src/diagnostic_kernel_refusal_trace.rs:104:21:
+owned trace unwind canary
+HC074-KERNEL-FIRST-REFUSAL Event { phase: "unwind", site: "unwinding", file: "tools/long-run-supervisor-074/src/diagnostic_kernel_refusal_trace.rs", line: 103, clock: [0, 0, 0, 0, 0, 0] }
+binding mutation seed=0x74b2026
+namespace binding mutation seed=0x7502026
+account mutation seed=0x74a2026
+seed=0x749
+seed=0x746
+seed=0x745
+namespace credential mutation seed=0x74f2026
+credential mutation seed=0x74c2026
+mount namespace mutation seed=0x7582026; mutations=256
+namespace mutation seed=0x74e2026
+task-set modeled seed=0x7612026; schedules=256
+task membership add=true: Err(Drift)
+task membership add=false: Err(Drift)
+task directory modeled seed=0x7622026; mutations=512
+seed=0x07403b24 fresh_process_observations=16 independent_originals=4 production_custody=false
+actual_same_inode_reexec=observed object_and_generation_match=true original_invocation_or_runtime_proved=false
+seed=0x07403b23 fresh_substitutions=32 independent_originals=4 actual_bootstrap=false
+
+thread 'diagnostic_signer_joined_fixture::tests::signer_joined_early_exec_is_refused_before_syscall_dispatch' (320482) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_joined_fixture_tests.rs:75:34:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_joined_fixture::tests::signer_joined_flags_policy_length_and_nonstack_inputs_refuse' (320484) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_joined_fixture_tests.rs:63:38:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_joined_fixture::tests::signer_joined_foreign_inode_metadata_and_nonempty_output_refuse' (320485) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_joined_fixture_tests.rs:187:38:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_joined_fixture::tests::signer_joined_image_preparation_has_no_parent_writer_to_inherit' (320486) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_joined_fixture_tests.rs:7:34:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_joined_fixture::tests::signer_joined_original_exec_and_installation_are_one_child' (320487) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_joined_fixture_tests.rs:33:34:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_joined_fixture::tests::signer_joined_other_exec_and_descriptor_exec_are_denied' (320488) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_joined_fixture_tests.rs:43:38:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_joined_fixture::tests::signer_joined_owned_child_sigkill_at_exec_and_installed_boundaries' (320489) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_joined_fixture_tests.rs:167:38:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_joined_fixture::tests::signer_joined_phase_replay_and_stack_range_inputs_refuse' (320490) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_joined_fixture_tests.rs:148:38:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_joined_fixture::tests::signer_joined_seeded_originals_and_independent_tracer_threads' (320493) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_joined_fixture_tests.rs:209:38:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+creator observer refused: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_entry ... 
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_entry' (320499) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_creator_loss_fixture.rs:515:73:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_entry' (320496) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_creator_loss_fixture.rs:514:75:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.00s
+
+
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_armed_boundaries_require_sigkill_before_group_exit' (320494) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_creator_loss_fixture.rs:527:46:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+creator observer refused: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_entry ... 
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_entry' (320507) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_creator_loss_fixture.rs:515:73:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_entry' (320504) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_creator_loss_fixture.rs:514:75:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.00s
+
+
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_before_arm_refuses_dead_original_task' (320502) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_creator_loss_fixture.rs:522:40:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+creator observer refused: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_entry ... 
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_entry' (320516) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_creator_loss_fixture.rs:515:73:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_entry' (320513) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_creator_loss_fixture.rs:514:75:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.00s
+
+
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_healthy_controls_finish_original_handoff' (320511) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_creator_loss_fixture.rs:537:45:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+creator observer refused: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_entry ... 
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_entry' (320524) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_creator_loss_fixture.rs:515:73:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_entry' (320521) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_creator_loss_fixture.rs:514:75:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.00s
+
+
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_old_getppid_control_misses_creator_death' (320519) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_creator_loss_fixture.rs:532:39:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+creator observer refused: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_entry ... 
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_entry' (320536) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_creator_loss_fixture.rs:515:73:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_entry' (320534) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_creator_loss_fixture.rs:514:75:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.00s
+
+
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_seeded_fresh_and_independent_observers' (320532) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_creator_loss_fixture.rs:736:57:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+thread observer refused: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry ... 
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry' (320546) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:406:77:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+thread keeper failed: owned runtime root refused
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry' (320544) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:405:79:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.00s
+
+
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_all_original_cuts' (320540) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:414:36:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+thread observer refused: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry ... 
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry' (320566) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:406:77:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+thread keeper failed: note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+owned runtime root refused
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry' (320562) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:405:79:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.00s
+
+
+
+thread '<unnamed>' (320554) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:424:63:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+thread observer refused: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry ... thread keeper failed: 
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry' (320569) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:406:77:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+owned runtime root refusednote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry' (320563) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:405:79:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.00s
+
+
+
+thread '<unnamed>' (320555) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:424:63:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+thread observer refused: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry ... 
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry' (320561) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:405:79:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.00s
+
+
+
+thread '<unnamed>' (320553) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:424:63:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+thread observer refused: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry ... 
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry' (320572) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:405:79:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.00s
+
+
+
+thread '<unnamed>' (320556) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:424:63:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_four_independent_negative_controls' (320552) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:427:5:
+assertion failed: results.iter().all(Result::is_ok)
+thread observer refused: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry ... thread keeper failed: 
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry' (320587) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:406:77:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+owned runtime root refusednote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry' (320585) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:405:79:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.00s
+
+
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_healthy_original_controls' (320582) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:469:36:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+thread observer refused: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry ... 
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry' (320594) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:406:77:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+thread keeper failed: note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+owned runtime root refused
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry' (320592) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:405:79:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.00s
+
+
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_no_exitkill_is_not_positive' (320590) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:419:28:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_rooted_loss_cut_is_kernel_group_stop_not_delivery_stop' (320598) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:446:72:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+thread observer refused: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry ... 
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry' (320605) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:406:77:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+thread keeper failed: note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+owned runtime root refused
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry' (320602) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:405:79:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.00s
+
+
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_seeded_fresh_and_concurrent' (320600) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:536:45:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+constructor monitor refused cut=1 fault=0 healthy=false: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry ... 
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry' (320612) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:96:75:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry' (320610) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:95:77:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.00s
+
+
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_armed_cuts_require_original_child_sigkill' (320608) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:571:46:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+constructor monitor refused cut=0 fault=0 healthy=false: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry ... 
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry' (320619) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:96:75:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry' (320617) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:95:77:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.00s
+
+
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_before_arm_refuses_original_parent_mismatch' (320614) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:566:40:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+constructor monitor refused cut=0 fault=0 healthy=false: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry ... 
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry' (320627) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:96:75:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry' (320623) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:95:77:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.00s
+
+
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_before_arm_requires_peer_held_until_original_tracer_terminal' (320621) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:486:92:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+constructor monitor refused cut=0 fault=0 healthy=false: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry ... 
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry' (320648) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:96:75:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry' (320643) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:95:77:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.00s
+
+
+constructor monitor refused cut=0 fault=0 healthy=false: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry ... 
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry' (320641) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:95:77:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.00s
+
+
+constructor monitor refused cut=0 fault=0 healthy=false: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry ... 
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry' (320645) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:95:77:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.00s
+
+
+constructor monitor refused cut=0 fault=0 healthy=false: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry ... 
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry' (320654) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:96:75:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry' (320640) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:95:77:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.00s
+
+
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_four_independent_prearm_peer_barriers' (320631) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:558:38:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+constructor monitor refused cut=1 fault=1 healthy=false: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry ... 
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry' (320670) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:96:75:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry' (320667) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:95:77:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.00s
+
+
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_guard_and_parent_check_controls_are_not_positive_proof' (320662) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:582:40:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+constructor monitor refused cut=0 fault=0 healthy=true: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry ... 
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry' (320676) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:96:75:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry' (320674) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:95:77:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.00s
+
+
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_healthy_cuts_finish_original_handoff' (320672) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:577:45:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+constructor monitor refused cut=4 fault=0 healthy=false: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry ... 
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry' (320687) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:100:90:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry' (320683) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:98:82:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.00s
+
+
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_kernel_eof_can_precede_creator_death_and_arming' (320678) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:478:87:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+constructor monitor refused cut=2 fault=0 healthy=false: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry ... 
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry' (320689) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:96:75:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry' (320685) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:95:77:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.00s
+
+
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_seeded_fresh_and_independent_observers' (320681) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:654:57:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+loss monitor failed: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry ... 
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry' (320700) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:7:64:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry' (320695) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:6:66:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "report: owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.00s
+
+
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_bad_reports_refuse_before_fault_admission' (320691) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:13:46:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+loss monitor failed: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry ... 
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry' (320702) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:7:64:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry' (320698) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:6:66:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "report: owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.00s
+
+
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_delivered_original_sigkill_reaps_original_child' (320693) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:13:46:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+loss monitor failed: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry ... 
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry' (320714) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:7:64:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry' (320710) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:6:66:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "report: owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.00s
+
+
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_healthy_control_finishes_original_protocol_and_cleans' (320706) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:13:46:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+loss monitor failed: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry ... 
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry' (320716) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:7:64:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry' (320712) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:6:66:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "report: owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.00s
+
+
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_initial_rooted_and_first_exec_boundaries' (320708) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:13:46:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+loss monitor failed: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry ... 
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry' (320734) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:7:64:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry' (320728) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:6:66:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "report: owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.00s
+
+
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_no_exitkill_controls_keep_natural_channel_failure_distinct' (320725) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:13:46:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+loss monitor failed: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry ... 
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry' (320736) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:7:64:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry' (320730) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:6:66:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "report: owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.00s
+
+
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_installed_original_sigkill_reaps_original_child' (320722) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:13:46:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+loss monitor failed: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry ... 
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry' (320747) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:7:64:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry' (320742) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:6:66:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "report: owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.00s
+
+
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_ready_original_sigkill_reaps_original_child' (320738) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:13:46:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_ancillary_capable_call_fd_replacement_and_nonstack_pointer_refuse' (320751) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:78:35:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_dummy_withheld_at_every_readiness_boundary' (320752) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:24:55:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_foreign_endpoint_and_changed_flags_refuse' (320753) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:145:41:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_lost_wrong_and_duplicate_ack_never_resend' (320754) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:108:35:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_malformed_duplicate_readiness_and_wrong_fd_refuse_before_send' (320755) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:57:35:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_original_child_receives_dummy_once_then_closes' (320756) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:11:37:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_original_context_and_missing_channel_refuse' (320757) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:177:41:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_original_sigkill_and_drop_at_three_transfer_boundaries' (320758) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:195:45:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_phase_replay_is_sticky_and_terminal_not_reusable' (320759) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:122:41:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_seeded_cases_and_four_independent_owners' (320760) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:282:35:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_send_failure_latches_attempt_before_dispatch_without_retry' (320761) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:86:37:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_startup_channel_use_and_inherited_descriptor_leak_refuse' (320763) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:66:49:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_context_phase_replay_and_memory_bounds_refuse' (320764) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs:376:74:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_exec_denials_and_actual_alternate_abi_sigsys' (320767) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs:339:35:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_fifteen_native_mutations_denied_after_exact_install' (320768) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs:294:49:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_installer_startup_and_environment_faults_refuse' (320769) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs:363:51:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_missing_foreign_or_weakened_environment_fd_refuses' (320770) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs:130:58:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_old_policy_controls_retain_negative_namespace_regain_result' (320771) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs:314:35:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_original_environment_survives_nd0_without_reopen_fallback' (320772) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs:5:54:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_original_fd_directory_faults_refuse' (320773) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs:61:58:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_seeded_fresh_probes_and_independent_owners' (320777) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs:479:70:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_sigkill_and_drop_at_four_original_boundaries' (320779) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs:423:78:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_exact_installer_faults_refuse_stickily' (320780) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture_tests.rs:137:47:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_healthy_drop_reaps_original_without_replacement' (320782) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture_tests.rs:304:57:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_maps_require_exact_selected_file_and_pseudo_identities' (320783) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture_tests.rs:48:28:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_maps_seeded_parser_inputs_do_not_panic' (320784) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture_tests.rs:112:28:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_nonempty_environment_refuses_at_original_exec_stop' (320785) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture_tests.rs:149:48:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_original_selected_root_exec_and_install' (320786) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture_tests.rs:4:53:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_original_tree_hash_and_namespace_drift_refuse' (320787) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture_tests.rs:160:57:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_other_image_is_denied_after_install' (320788) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture_tests.rs:15:54:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_phase_replay_native_numbers_and_stack_bounds_refuse' (320789) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture_tests.rs:219:49:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_seeded_fresh_execs_and_independent_nonroot_owners' (320790) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture_tests.rs:345:10:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_sigkill_at_four_boundaries_reaps_only_original' (320791) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture_tests.rs:267:57:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_root_fixture::tests::signer_root_cleanup_uses_original_directory_fds_not_replaced_ancestors' (320793) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_root_fixture_tests.rs:188:32:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_root_fixture::tests::signer_root_exact_tree_files_and_hash_drift_refuse_stickily' (320794) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_root_fixture_tests.rs:63:36:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_root_fixture::tests::signer_root_original_kernel_root_is_not_signer_launch' (320795) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_root_fixture_tests.rs:7:32:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_root_fixture::tests::signer_root_owner_sequence_namespace_and_terminal_replay_refuse' (320796) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_root_fixture_tests.rs:116:36:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_root_fixture::tests::signer_root_seeded_probes_and_independent_nonroot_owners' (320797) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_root_fixture_tests.rs:209:36:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_root_fixture::tests::signer_root_sigkill_and_healthy_drop_reap_only_original_and_prevent_reuse' (320798) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_root_fixture_tests.rs:143:36:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+loss monitor failed: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry ... 
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry' (320776) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:7:64:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry' (320749) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:6:66:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "report: owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.00s
+
+
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_seeded_cases_and_independent_monitors' (320745) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:13:46:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+
+thread 'diagnostic_signer_runtime_fixture::tests::signer_runtime_cloexec_positional_reads_and_healthy_drop_preserve_owner' (320799) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_runtime_fixture_tests.rs:379:34:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_runtime_fixture::tests::signer_runtime_content_hash_detects_drift_and_cannot_be_repaired' (320800) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_runtime_fixture_tests.rs:321:34:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_runtime_fixture::tests::signer_runtime_equal_byte_named_and_root_replacement_is_sticky' (320804) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_runtime_fixture_tests.rs:300:38:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_runtime_fixture::tests::signer_runtime_file_modes_types_links_and_root_refuse' (320805) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_runtime_fixture_tests.rs:246:38:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_runtime_fixture::tests::signer_runtime_original_four_file_inventory_is_not_runtime_admission' (320806) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_runtime_fixture_tests.rs:220:34:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread '<unnamed>' (320809) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_runtime_fixture_tests.rs:429:46:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_runtime_fixture::tests::signer_runtime_unknown_missing_extra_graph_and_objects_refuse' (320810) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_runtime_fixture_tests.rs:345:34:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread 'diagnostic_signer_runtime_fixture::tests::signer_runtime_seeded_parser_mutations_and_independent_retention' (320807) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_runtime_fixture_tests.rs:436:23:
+called `Result::unwrap()` on an `Err` value: Any { .. }
+
+thread '<unnamed>' (320811) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_runtime_fixture_tests.rs:429:46:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread '<unnamed>' (320812) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_runtime_fixture_tests.rs:429:46:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+
+thread '<unnamed>' (320813) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_runtime_fixture_tests.rs:429:46:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "No such file or directory (os error 2)" }
+root enrollment seed=0x74c2019
+
+thread 'diagnostic_worker_policy::authority_registry::context_controls::authority_context_bounded_fixtures_keep_prefix_and_context_failures_distinct' (320957) panicked at tools/long-run-supervisor-074/src/../tests/support/authority_context_controls.rs:70:18:
+unknown bounded binding fixture
+authority context equivalence seed=0x074c07e5 contexts=256 cases_per_context=17
+fd-path seed=0x074fd025 seeded=4096 decimal-boundaries=i32
+expected-name seed=0x074e1a9e depths=0..128 mutations=16/depth
+
+thread 'diagnostic_worker_policy::authority_registry::fixture::leaf_name_controls::authority_leaf_name_fault_classes_and_original_metadata_short_circuit_match' (320976) panicked at tools/long-run-supervisor-074/src/../tests/support/authority_leaf_name_controls.rs:150:18:
+unknown bounded leaf name case
+authority leaf seed=0x0741eaf5 names=64 includes-empty-and-full-budget
+name capacity seed=0x074ca9ac bounded-depths=0..128 seeded=256 suffixes=7
+open-name seed=0x07400a23 seeded=128 utf8-byte-boundaries=23/24
+short-directory seed=0x074d1a24 seeded=64 bytes=23/24 fixed-components=4
+
+thread 'diagnostic_worker_policy::authority_registry::fixture::publication_checkpoint::tests::authority_checkpoint_nested_scope_refuses_without_replacing_original' (320987) panicked at tools/long-run-supervisor-074/src/diagnostic_authority_checkpoint.rs:24:9:
+nested authority publication observer
+
+thread 'diagnostic_worker_policy::authority_registry::fixture::publication_checkpoint::tests::authority_checkpoint_panic_restores_empty_scope' (320988) panicked at tools/long-run-supervisor-074/src/diagnostic_authority_checkpoint.rs:49:17:
+expected observer failure
+inventory seed=0x07411e17 depths=0..128 mutations=16/depth
+authority hex equivalence seed=0x074a17e5 samples=256 all_nibbles=true
+authority journal seed=0x7642026; mutations=256
+attempt publication seed=0x074d
+early attempt seed=0x074d
+seed=0x74a
+seed=0x748
+seed=0x074c
+
+thread 'diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::tests::process_crash_tests::context_replay::diagnostic_context_replay_partial_tail_never_claims_binding_check' (321421) panicked at tools/long-run-supervisor-074/src/diagnostic_context_replay_tests.rs:87:14:
+unknown context-replay checkpoint
+seed=0x74b
+signed tasks seed=0x7632026; schedules=256
+signed mount mutation seed=0x7592026; mutations=256
+signed opening mutation seed=0x7572026; mutations=256
+policy credentials mutation seed=0x7562026; mutations=256
+consuming_held_join seed=0x0074c05e substitutions=128
+held material bootstrap seed=0x0740fd61 substitutions=256
+held unit projection seed=0x074051a7 cases=256
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::time_observation::closing::closing_age_storage_is_bounded_and_restores_nested_unwind_and_threads' (322165) panicked at tools/long-run-supervisor-074/src/diagnostic_closing_age_trace.rs:111:52:
+closing observer canary
+HC074-CLOSING-AGE Some(Report { sites: [Site { calls: 0, first: None, last: None, first_refusal: None }, Site { calls: 0, first: None, last: None, first_refusal: None }, Site { calls: 0, first: None, last: None, first_refusal: None }] })
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::time_observation::tests::causal_facts_first_refusal_and_nested_unwind_are_isolated' (322168) panicked at tools/long-run-supervisor-074/src/diagnostic_causal_time_observation.rs:123:56:
+trace restoration canary
+HC074-CAUSAL-FACTS Some(Report { observations: 0, first: None, last: None, first_refusal: None })
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::cgroup::held_live::consuming_held_cost_observer_preserves_single_call_result_and_panic_identity' (322195) panicked at tools/long-run-supervisor-074/src/../tests/support/consuming_held_live.rs:60:13:
+Box<dyn Any>
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::cgroup::held_live::consuming_held_trace_keeps_first_original_refusal_and_same_panic_without_retry' (322196) panicked at tools/long-run-supervisor-074/src/../tests/support/consuming_held_live.rs:153:9:
+Box<dyn Any>
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::cgroup::held_live::cost::preparation_cost_observer_failure_does_not_mask_original_panic_or_reuse_counts' (322197) panicked at tools/long-run-supervisor-074/src/../tests/support/consuming_held_cost.rs:89:13:
+Box<dyn Any>
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::owned_placement::preparation_trace::cost::tests::placement_cost_keeps_refusal_and_original_panic_payload' (322206) panicked at tools/long-run-supervisor-074/src/diagnostic_placement_preparation_cost.rs:87:13:
+Box<dyn Any>
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::owned_placement::preparation_trace::tests::preparation_trace_capture_resumes_the_same_panic_without_retry' (322208) panicked at tools/long-run-supervisor-074/src/diagnostic_placement_preparation_trace.rs:85:17:
+Box<dyn Any>
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::owned_placement::preparation_trace::tests::preparation_trace_retains_first_raw_refusal_and_original_panic_identity' (322212) panicked at tools/long-run-supervisor-074/src/diagnostic_placement_preparation_trace.rs:64:13:
+Box<dyn Any>
+HC074-CONSUMING-MISMATCH-TRACE sample=0 assertions_ok=true first=None
+held_runtime_trust seed=0x00747a57 corruptions=256
+HC074-CONSUMING-MISMATCH-TRACE sample=1 assertions_ok=true first=None
+HC074-CONSUMING-MISMATCH-TRACE sample=2 assertions_ok=true first=None
+HC074-CONSUMING-MISMATCH-TRACE sample=3 assertions_ok=true first=None
+HC074-CONSUMING-MISMATCH-TRACE sample=4 assertions_ok=true first=None
+HC074-CONSUMING-MISMATCH-TRACE sample=5 assertions_ok=true first=None
+seed=0x747
+HC074-CONSUMING-MISMATCH-TRACE sample=6 assertions_ok=true first=None
+HC074-CONSUMING-MISMATCH-TRACE sample=7 assertions_ok=true first=None

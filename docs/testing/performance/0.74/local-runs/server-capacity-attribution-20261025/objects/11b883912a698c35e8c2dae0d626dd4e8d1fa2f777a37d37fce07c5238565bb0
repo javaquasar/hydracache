@@ -1,0 +1,41 @@
+"""Prepare only a private fixture HOME and verify the exact rustup discovery contract."""
+from pathlib import Path
+import hashlib,json,os,shutil,subprocess
+base=Path('/tmp/hc074-server-gate-root-20261025.0k0xbdah')
+out=base/'signer-home-control-first';out.mkdir(mode=0o700)
+upload=Path('/tmp/hc074-server-gate-upload-20261025.pvdj0f6c')
+def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+def publish(name,value):
+ with (out/name).open('x') as f:json.dump(value,f,indent=2);f.flush();os.fsync(f.fileno())
+def limited():os.setgroups([]);os.setgid(1000);os.setuid(1000)
+result=dict(passed=False,first_refusal=None,unit_cohort_repeated=False,project_sources_changed=False,existing_home_changed=False)
+publish('intent.json',dict(retry=False,scope='new private tooling prerequisite only; no signer/owner execution',product=False))
+try:
+ original=Path('/home/hydracache-admin/.cargo/bin/rustup')
+ publish('original-input.json',dict(path=str(original),lexists=os.path.lexists(original),
+  fixed_home='/home/hydracache-admin',required_by='diagnostic_signer_joined_fixture.rs:37-46 and namespace_fixture.rs:184-198'))
+ assert not os.path.lexists(original)
+ task_home=upload/'signer-home-first';task_home.mkdir(mode=0o700);os.chown(task_home,1000,1000)
+ for name in ('.cargo','.cargo/bin','.rustup','.rustup/toolchains'):
+  p=task_home/name;p.mkdir(mode=0o700);os.chown(p,1000,1000)
+ source=Path('/home/github-runner/.cargo/bin/rustup');assert source.is_file() and not source.is_symlink()
+ target=task_home/'.cargo/bin/rustup'
+ with source.open('rb') as src,target.open('xb') as dst:shutil.copyfileobj(src,dst)
+ os.chown(target,1000,1000);os.chmod(target,0o500);assert sha(target)==sha(source)
+ link=task_home/'.rustup/toolchains/1.94.0-x86_64-unknown-linux-gnu'
+ link.symlink_to(upload/'toolchain-v3',target_is_directory=True);os.lchown(link,1000,1000)
+ argv=[str(target),'which','--toolchain','1.94.0','rustc'];env=dict(HOME=str(task_home))
+ publish('command.json',dict(argv=argv,env=env,uid=1000,gid=1000,original_helper_env_clear_preserved=True))
+ p=subprocess.run(argv,env=env,cwd=task_home,preexec_fn=limited,capture_output=True,timeout=20)
+ (out/'which.stdout.log').write_bytes(p.stdout);(out/'which.stderr.log').write_bytes(p.stderr)
+ assert p.returncode==0
+ compiler=Path(p.stdout.decode().strip());assert compiler.resolve()==upload/'toolchain-v3/bin/rustc'
+ assert sha(compiler)=='103b60e1b1339968c1d74202ea1d45686037e82c4ea3e0569de24b18a1e6836a'
+ p=subprocess.run([str(compiler),'--version'],env={},cwd=task_home,preexec_fn=limited,capture_output=True,timeout=20)
+ (out/'version.stdout.log').write_bytes(p.stdout);(out/'version.stderr.log').write_bytes(p.stderr)
+ assert p.returncode==0 and p.stdout.startswith(b'rustc 1.94.0 ')
+ result.update(passed=True,private_home=str(task_home),rustup_sha256=sha(target),compiler_sha256=sha(compiler))
+ assert not os.path.lexists(original)
+except BaseException as error:result['first_refusal']=f'{type(error).__name__}: {error}'
+finally:publish('result.json',result)
+print(json.dumps(result,indent=2))

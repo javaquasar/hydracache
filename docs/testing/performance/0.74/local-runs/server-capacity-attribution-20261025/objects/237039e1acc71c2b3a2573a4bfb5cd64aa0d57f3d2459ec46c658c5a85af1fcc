@@ -1,0 +1,6 @@
+{
+  "path": "/home/hydracache-admin/.cargo/bin/rustup",
+  "lexists": false,
+  "fixed_home": "/home/hydracache-admin",
+  "required_by": "diagnostic_signer_joined_fixture.rs:37-46 and namespace_fixture.rs:184-198"
+}

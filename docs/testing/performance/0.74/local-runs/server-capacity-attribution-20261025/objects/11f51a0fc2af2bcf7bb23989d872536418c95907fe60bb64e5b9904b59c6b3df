@@ -1,0 +1,19 @@
+{
+  "passed": true,
+  "first_refusal": null,
+  "project_dependencies_changed": false,
+  "system_toolchain_changed": false,
+  "target": "/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/private-clippy-194",
+  "manifest_sha256": "aaa177def36e01d539bee6bde95295230b9ce378f81057845db8d0ebe97898ee",
+  "archive_sha256": "935529b0b9150084fa9cc1734c6598efe86b6e7d76f31ad3f8d4bb79ebf6031a",
+  "component": {
+    "cargo-clippy": {
+      "bytes": 1259736,
+      "sha256": "4ca38c6c514b6f5cb24bec4cc765672b174889583d3735549c02486f54484299"
+    },
+    "clippy-driver": {
+      "bytes": 20136048,
+      "sha256": "2ff45d07196eec4f57a631103a877631d3579e86db2770bcfaa3b9d92a0b9d15"
+    }
+  }
+}

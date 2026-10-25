@@ -1,0 +1,29 @@
+"""Saved-log attribution only. No process, clocks, retries or counter summation across views."""
+from pathlib import Path
+import importlib.util,json
+root=Path(__file__).resolve().parent.parent
+path=root/'target/authorized-server-session-20261025/capacity-profile-result'
+spec=importlib.util.spec_from_file_location('profile_review',root/'tools/native-server-control-074/profile_review.py')
+p=importlib.util.module_from_spec(spec);spec.loader.exec_module(p)
+raw=(path/'raw/profile.stdout.log').read_bytes()+(path/'raw/profile.stderr.log').read_bytes()
+phases=p.records(raw,'HC074-HELD-PHASE ')
+result=p.review(raw,101,101,0)
+assert result['first_failed_phase']=='owned-root-preparation' and not result['diagnostic_complete']
+rows=[]
+for phase in phases:
+ row={name:phase[name] for name in ('phase','wall_ns','process_cpu_ns','returned','authentication_calls',
+  'authentication_ns','signature_calls','signature_ns')}
+ row['round_steps']=[dict(step=s['step'],calls=s['calls'],completed=s['completed'],wall_ns=s['wall_ns'],
+  kernel_calls=[v['calls'] for v in s['kernel']],live_calls=[v['calls'] for v in s['live']],
+  roots=s['roots']) for s in phase['round_steps'] if s['calls']]
+ row['kernel']=[dict(kind=name,**span) for name,span in zip(p.KERNEL,phase['kernel'])]
+ row['live']=[dict(kind=name,**span) for name,span in zip(p.LIVE,phase['live'])]
+ rows.append(row)
+out=dict(phases=rows,first_expiry=result['first_original_refusal'],
+ no_disjoint_sum_of_nested_views=True,process_cpu_excludes_children=True,wall_minus_cpu_is_not_io=True,
+ instrumentation_overhead_not_subtracted=True,repeated_performance_claim=False,admission=False,
+ original_windows=[300,60,10],profile_not_functional_gate=True)
+with (path/'cost-summary.json').open('x') as f:json.dump(out,f,indent=2)
+print(json.dumps([dict(phase=r['phase'],round_steps=[(s['step'],s['calls'],s['completed'],s['wall_ns']) for s in r['round_steps']],
+ authentication_calls=r['authentication_calls'],authentication_ns=r['authentication_ns'],
+ signature_calls=r['signature_calls'],signature_ns=r['signature_ns']) for r in rows],indent=2))

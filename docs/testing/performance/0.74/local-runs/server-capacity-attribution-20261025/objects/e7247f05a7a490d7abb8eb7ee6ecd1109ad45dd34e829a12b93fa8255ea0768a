@@ -1,0 +1,11 @@
+from pathlib import Path
+import json
+root=Path('/tmp/hc074-server-gate-root-20261025.0k0xbdah/capacity-unit-first')
+result={}
+for name in ('launch.json','child.json','result.json'):
+ if (root/name).exists():result[name]=json.loads((root/name).read_bytes())
+for name in ('unit.stdout.log','unit.stderr.log','worker.stderr.log'):
+ p=root/name
+ if p.exists():
+  raw=p.read_bytes();result[name]=dict(bytes=len(raw),tail=raw[-2800:].decode(errors='replace'))
+print(json.dumps(result,indent=2))

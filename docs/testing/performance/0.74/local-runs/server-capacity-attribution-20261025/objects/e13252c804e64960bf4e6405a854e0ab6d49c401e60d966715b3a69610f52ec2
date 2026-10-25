@@ -1,0 +1,22 @@
+{
+  "image_sha256": "6640e1b9b31ae7c87137b335be4f2665d729ea7b4324ee0e874bdbedc346c520",
+  "source_head": "ee9692b672be093716822db13a22f5a63960f928",
+  "all_ordinary_library_tests": true,
+  "test_threads": 4,
+  "cpu_affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "outer_seconds": 780,
+  "ignored_enabled": false,
+  "retry": false,
+  "product": false,
+  "qualification": false,
+  "admission": false
+}

@@ -1,0 +1,47 @@
+{
+  "frame": {
+    "boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+    "supervisor": "MainPID=8839\nNRestarts=0\nActiveState=active\nSubState=running\n",
+    "markers_absent": true,
+    "installed_unchanged": true,
+    "image_sha256": "6640e1b9b31ae7c87137b335be4f2665d729ea7b4324ee0e874bdbedc346c520",
+    "pid1_mountinfo_sha256": "aadf33da0248a5d1eb511955adcd7e28926cc0ac6838ad91870131ea5fa9b677"
+  },
+  "cpu_count": 8,
+  "affinity": [
+    0,
+    5,
+    6,
+    7
+  ],
+  "memory": "MemTotal:       64932120 kB\nMemFree:        56540268 kB\nMemAvailable:   63765900 kB\nBuffers:          947888 kB\nCached:          6744888 kB\nSwapCached:            0 kB\nActive:           936292 kB\nInactive:        6788552 kB\nActive(anon):      42036 kB\nInactive(anon):        0 kB\nActive(file):     894256 kB\nInactive(file):  6788552 kB\nUnevictable:       27416 kB\nMlocked:           27416 kB\nSwapTotal:      32488444 kB\nSwapFree:       32488444 kB\nZswap:                 0 kB\nZswapped:              0 kB\nDirty:               928 kB\nWriteback:             0 kB\nAnonPages:         59612 kB\nMapped:            84420 kB\nShmem:              1216 kB\nKReclaimable:     265580 kB\nSlab:             396252 kB\nSReclaimable:     265580 kB\nSUnreclaim:       130672 kB\nKernelStack:        4624 kB\nPageTables:         2360 kB\nSecPageTables:         0 kB\nNFS_Unstable:          0 kB\nBounce:                0 kB\nWritebackTmp:          0 kB\nCommitLimit:    64954504 kB\nCommitted_AS:     130352 kB\nVmallocTotal:   34359738367 kB\nVmallocUsed:       55284 kB\nVmallocChunk:          0 kB\nPercpu:            63040 kB\nHardwareCorrupted:     0 kB\nAnonHugePages:         0 kB\nShmemHugePages:        0 kB\nShmemPmdMapped:        0 kB\nFileHugePages:         0 kB\nFilePmdMapped:         0 kB\nUnaccepted:            0 kB\nHugePages_Total:       0\nHugePages_Free:        0\nHugePages_Rsvd:        0\nHugePages_Surp:        0\nHugepagesize:       2048 kB\nHugetlb:               0 kB\nDirectMap4k:      222332 kB\nDirectMap2M:     4098048 kB\nDirectMap1G:    61865984 kB\n",
+  "load": "0.00 0.01 0.00 1/274 317413\n",
+  "self_cgroup": "0::/user.slice/user-1000.slice/session-4403.scope\n",
+  "cgroup_cpu_max": null,
+  "cgroup_memory_max": null,
+  "disk": {
+    "exit": 0,
+    "stdout": "Filesystem        1B-blocks        Used    Available Use% Mounted on\n/dev/md2       468702478336 28345946112 416472526848   7% /\n",
+    "stderr": ""
+  },
+  "manager": {
+    "exit": 0,
+    "stdout": "systemd 255 (255.4-1ubuntu8.17)\n+PAM +AUDIT +SELINUX +APPARMOR +IMA +SMACK +SECCOMP +GCRYPT -GNUTLS +OPENSSL +ACL +BLKID +CURL +ELFUTILS +FIDO2 +IDN2 -IDN +IPTC +KMOD +LIBCRYPTSETUP +LIBFDISK +PCRE2 -PWQUALITY +P11KIT +QRENCODE +TPM2 +BZIP2 +LZ4 +XZ +ZLIB +ZSTD -BPF_FRAMEWORK -XKBCOMMON +UTMP +SYSVINIT default-hierarchy=unified\n",
+    "stderr": ""
+  },
+  "prior_matrix": {
+    "passed": false,
+    "exit": 101,
+    "first_refusal": "first current-source holder matrix did not pass; raw first refusal retained",
+    "postflight_refusal": null,
+    "server": true,
+    "product": false,
+    "original_send": false,
+    "all_writers_proven_stopped": false,
+    "completion": false,
+    "admission": false,
+    "completed_cases": []
+  },
+  "read_only": true,
+  "product": false
+}

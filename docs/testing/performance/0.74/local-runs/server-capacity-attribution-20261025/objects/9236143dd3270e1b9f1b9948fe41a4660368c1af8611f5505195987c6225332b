@@ -1,0 +1,5 @@
+{
+  "retry": false,
+  "scope": "new private tooling prerequisite only; no signer/owner execution",
+  "product": false
+}

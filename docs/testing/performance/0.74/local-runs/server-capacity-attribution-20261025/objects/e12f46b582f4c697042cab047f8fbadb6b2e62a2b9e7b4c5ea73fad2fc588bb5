@@ -1,0 +1,16 @@
+from pathlib import Path
+import base64,hashlib,json,sys
+base=Path('/tmp/hc074-server-gate-root-20261025.0k0xbdah')
+groups=('capacity-profile-first','capacity-checks-first','capacity-lint-first','capacity-unit-first','private-clippy-first','signer-home-control-first')
+members={}
+for group in groups:
+ folder=base/group;assert (folder/'result.json').is_file(),group
+ for p in sorted(folder.iterdir()):
+  if not p.is_file() or p.name=='component.tar.xz':continue
+  assert not p.is_symlink();raw=p.read_bytes();assert len(raw)<16*1024**2
+  members[group+'/'+p.name]=dict(bytes=len(raw),sha256=hashlib.sha256(raw).hexdigest(),base64=base64.b64encode(raw).decode())
+raw=(base/'server-fault-worker-20261025.py').read_bytes()
+assert hashlib.sha256(raw).hexdigest()=='af1e9926e1ad40bc49c1c225d79f5fffc788c715a7889743decea129ec4b17a3'
+sys.argv=['readonly','6640e1b9b31ae7c87137b335be4f2665d729ea7b4324ee0e874bdbedc346c520']
+scope={};exec(compile(raw.decode().split('started=time.monotonic_ns()\n')[0],'<pinned-preflight>','exec'),scope)
+print(json.dumps(dict(members=members,final_frame=scope['preflight'](),all_workers_reported_terminal=True,product=False,read_only=True)))

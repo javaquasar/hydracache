@@ -1,0 +1,64 @@
+"""Offline result reconstruction; never promote a failed cohort or a profiled prefix."""
+from pathlib import Path
+import importlib.util,json,re
+ROOT=Path(__file__).resolve().parent.parent
+spec=importlib.util.spec_from_file_location('profile_review',ROOT/'tools/native-server-control-074/profile_review.py')
+p=importlib.util.module_from_spec(spec);spec.loader.exec_module(p)
+def review(files,frame):
+ def get(group,name):return json.loads(files[group+'/'+name])
+ for group in ('capacity-profile-first','capacity-checks-first','capacity-lint-first','capacity-unit-first'):
+  assert get(group,'preflight.json')==get(group,'postflight.json')==frame
+  result=get(group,'result.json');assert result['postflight_refusal'] is None and result['first_refusal'] is None
+ for group in ('capacity-checks-first','capacity-lint-first','capacity-unit-first'):
+  assert get(group,'result.json')['source_unchanged'] is True
+ profile=get('capacity-profile-first','result.json')
+ intent=get('capacity-profile-first','consumed.json')
+ assert intent['original_windows']==[300,60,10] and intent['schedule']==['healthy']
+ assert intent['attribution_only'] is True and intent['healthy_gate'] is False and intent['retry'] is False
+ raw=files['capacity-profile-first/profile.stdout.log']+files['capacity-profile-first/profile.stderr.log']
+ observed=p.review(raw,profile['exit'],profile['exit'],0)
+ assert profile['exit']==101 and not observed['diagnostic_complete'] and observed['first_failed_phase']=='owned-root-preparation'
+ outputs=next(row for row in p.records(raw,'HC074-HELD-PHASE ') if row['phase']=='outputs')
+ assert outputs['returned'] is True and all(s['calls']==46 and s['completed']==46 for s in outputs['round_steps'])
+ check=get('capacity-checks-first','result.json')
+ assert [(r['name'],r['exit']) for r in check['cases']]==[('check',0),('clippy',101)] and check['passed'] is False
+ assert b'no such command: `clippy`' in files['capacity-checks-first/clippy.stderr.log']
+ lint=get('capacity-lint-first','result.json')
+ assert [(r['name'],r['exit']) for r in lint['cases']]==[('clippy',0),('origin',0)] and lint['passed'] is True
+ assert lint['origin_counts']==dict(passed=35,failed=0,ignored=3)
+ for group,case in [('capacity-checks-first','check'),('capacity-lint-first','clippy')]:
+  argv=get(group,case+'-command.json')['argv']
+  assert '--all-targets' in argv and '--all-features' in argv and '--offline' in argv and '--locked' in argv
+  assert get(group,case+'-child.json')['affinity']==list(range(8))
+  assert get(group,case+'-command.json')['env']['CARGO_BUILD_JOBS']=='8'
+ assert get('capacity-lint-first','clippy-command.json')['argv'][-3:]==['--','-D','warnings']
+ unit=get('capacity-unit-first','result.json');unit_intent=get('capacity-unit-first','consumed.json')
+ assert unit_intent['outer_seconds']==780 and unit_intent['test_threads']==4 and not unit_intent['ignored_enabled'] and not unit_intent['retry']
+ assert unit['exit']==101 and unit['passed'] is False and unit['counts']==dict(passed=1348,failed=82,ignored=122)
+ stdout=files['capacity-unit-first/unit.stdout.log'].decode()
+ verdict=re.findall(r'test result: (ok|FAILED)\. (\d+) passed; (\d+) failed; (\d+) ignored;',stdout)
+ assert verdict==[('FAILED','1348','82','122')]
+ failed=[s.strip() for s in stdout.rsplit('\nfailures:\n',1)[1].split('\ntest result:',1)[0].splitlines() if s.strip()]
+ assert len(failed)==len(set(failed))==82 and all(s.startswith('diagnostic_signer_') for s in failed)
+ home=get('signer-home-control-first','result.json')
+ assert home['passed'] and not home['unit_cohort_repeated'] and not home['existing_home_changed']
+ assert home['compiler_sha256']=='103b60e1b1339968c1d74202ea1d45686037e82c4ea3e0569de24b18a1e6836a'
+ assert get('signer-home-control-first','original-input.json')['lexists'] is False
+ assert files['signer-home-control-first/version.stdout.log'].startswith(b'rustc 1.94.0 ')
+ return dict(native_all_target_check_passed=True,native_all_target_strict_lint_passed=True,
+  origin_counts=lint['origin_counts'],ordinary_gnu_library_passed=False,ordinary_gnu_library_counts=unit['counts'],
+  ordinary_gnu_library_wall_ns=unit['wall_ns'],prior_missing_clippy_retained=True,
+  profile=observed,outputs_wall_ns=outputs['wall_ns'],outputs_process_cpu_ns=outputs['process_cpu_ns'],
+  outputs_boot_calls=outputs['kernel'][5]['calls'],outputs_namespace_calls=outputs['kernel'][6]['calls'],
+  outputs_reserved_live_ns=outputs['round_steps'][1]['wall_ns'],private_home_discovery_passed=True,
+  first_failures_preserved=True,checks_frequency_changed=False,deadlines_changed=False,
+  release_gate_passed=False,performance_win=False,product=False,qualification=False,admission=False)
+def load():
+ phase=ROOT/'target/authorized-server-session-20261025/capacity-final-export'
+ files={p.relative_to(phase/'raw').as_posix():p.read_bytes() for p in (phase/'raw').rglob('*') if p.is_file()}
+ return files,json.loads((phase/'stdout.log').read_bytes())['final_frame']
+if __name__=='__main__':
+ facts=review(*load())
+ out=ROOT/'target/authorized-server-session-20261025/capacity-offline-review';out.mkdir(exist_ok=False)
+ with (out/'result.json').open('x') as f:json.dump(facts,f,indent=2)
+ print(json.dumps({k:v for k,v in facts.items() if k!='profile'},indent=2))

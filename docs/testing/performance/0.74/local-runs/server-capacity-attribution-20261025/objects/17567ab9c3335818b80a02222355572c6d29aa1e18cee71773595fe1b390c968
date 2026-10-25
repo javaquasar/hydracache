@@ -1,0 +1,25 @@
+from pathlib import Path
+import base64,hashlib,json,os
+root=Path('/tmp/hc074-server-gate-root-20261025.0k0xbdah/capacity-profile-first')
+assert (root/'result.json').is_file(), 'profile is still running; do not repeat launch'
+names=['worker.py','launch-intent.json','launch.json','consumed.json','preflight.json','command.json','child.json',
+ 'profile.stdout.log','profile.stderr.log','worker.stdout.log','worker.stderr.log','postflight.json','result.json']
+members={}
+for name in names:
+ p=root/name
+ if p.exists():
+  raw=p.read_bytes();assert len(raw)<16*1024**2
+  members[name]=dict(bytes=len(raw),sha256=hashlib.sha256(raw).hexdigest(),base64=base64.b64encode(raw).decode())
+group=Path('/sys/fs/cgroup')/Path('/proc/self/cgroup').read_text().strip().split('::',1)[1].lstrip('/')
+resources=[]
+while group.is_relative_to('/sys/fs/cgroup'):
+ files={}
+ for name in ('cpuset.cpus.effective','cpu.max','memory.max'):
+  p=group/name
+  if p.exists():files[name]=p.read_text().strip()
+ resources.append(dict(path=str(group),files=files))
+ if group==Path('/sys/fs/cgroup'):break
+ group=group.parent
+print(json.dumps(dict(members=members,resources=resources,affinity=sorted(os.sched_getaffinity(0)),
+ cpu_online=Path('/sys/devices/system/cpu/online').read_text().strip(),
+ isolated=Path('/sys/devices/system/cpu/isolated').read_text().strip(),read_only=True)))

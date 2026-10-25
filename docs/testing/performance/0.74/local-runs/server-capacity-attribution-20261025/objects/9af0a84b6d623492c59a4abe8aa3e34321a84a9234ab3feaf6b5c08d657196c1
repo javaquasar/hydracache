@@ -1,0 +1,34 @@
+{
+  "/home/github-runner/.rustup/toolchains/1.94.0-x86_64-unknown-linux-gnu": {
+    "bin": [
+      "cargo",
+      "rust-gdb",
+      "rust-gdbgui",
+      "rust-lldb",
+      "rustc",
+      "rustdoc"
+    ],
+    "manifests": [
+      "components",
+      "manifest-cargo-x86_64-unknown-linux-gnu",
+      "manifest-rust-std-x86_64-unknown-linux-gnu",
+      "manifest-rustc-x86_64-unknown-linux-gnu"
+    ]
+  },
+  "/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/toolchain-v3": {
+    "bin": [
+      "cargo",
+      "rust-gdb",
+      "rust-gdbgui",
+      "rust-lldb",
+      "rustc",
+      "rustdoc"
+    ],
+    "manifests": [
+      "components",
+      "manifest-cargo-x86_64-unknown-linux-gnu",
+      "manifest-rust-std-x86_64-unknown-linux-gnu",
+      "manifest-rustc-x86_64-unknown-linux-gnu"
+    ]
+  }
+}

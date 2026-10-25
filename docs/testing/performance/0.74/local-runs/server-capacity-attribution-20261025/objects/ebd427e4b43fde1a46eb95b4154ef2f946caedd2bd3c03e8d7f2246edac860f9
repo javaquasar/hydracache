@@ -1,0 +1,18 @@
+from pathlib import Path
+import base64,hashlib,json
+root=Path(__file__).resolve().parent.parent
+phase=root/'target/authorized-server-session-20261025/capacity-completed-export'
+packet=json.loads((phase/'stdout.log').read_bytes());out=phase/'raw';out.mkdir(exist_ok=False)
+for name,item in packet['members'].items():
+ assert not Path(name).is_absolute() and '..' not in Path(name).parts
+ raw=base64.b64decode(item['base64'],validate=True)
+ assert len(raw)==item['bytes'] and hashlib.sha256(raw).hexdigest()==item['sha256']
+ path=out/name;path.parent.mkdir(parents=True,exist_ok=True)
+ with path.open('xb') as f:f.write(raw)
+for group in ('capacity-checks-first','capacity-lint-first','private-clippy-first'):
+ result=json.loads((out/group/'result.json').read_bytes())
+ print(group,json.dumps(result))
+ if group!='private-clippy-first':
+  assert (out/group/'preflight.json').read_bytes()==(out/group/'postflight.json').read_bytes()
+  p=out/group/'clippy.stderr.log'
+  if p.exists():print('lint tail',p.read_text()[-7000:])

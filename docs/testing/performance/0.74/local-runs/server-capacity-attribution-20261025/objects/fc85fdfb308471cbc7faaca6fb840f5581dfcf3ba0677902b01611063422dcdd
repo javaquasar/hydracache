@@ -1,0 +1,1243 @@
+{
+  "failed_names": [
+    "diagnostic_signer_joined_fixture::tests::signer_joined_early_exec_is_refused_before_syscall_dispatch",
+    "diagnostic_signer_joined_fixture::tests::signer_joined_flags_policy_length_and_nonstack_inputs_refuse",
+    "diagnostic_signer_joined_fixture::tests::signer_joined_foreign_inode_metadata_and_nonempty_output_refuse",
+    "diagnostic_signer_joined_fixture::tests::signer_joined_image_preparation_has_no_parent_writer_to_inherit",
+    "diagnostic_signer_joined_fixture::tests::signer_joined_original_exec_and_installation_are_one_child",
+    "diagnostic_signer_joined_fixture::tests::signer_joined_other_exec_and_descriptor_exec_are_denied",
+    "diagnostic_signer_joined_fixture::tests::signer_joined_owned_child_sigkill_at_exec_and_installed_boundaries",
+    "diagnostic_signer_joined_fixture::tests::signer_joined_phase_replay_and_stack_range_inputs_refuse",
+    "diagnostic_signer_joined_fixture::tests::signer_joined_seeded_originals_and_independent_tracer_threads",
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_armed_boundaries_require_sigkill_before_group_exit",
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_before_arm_refuses_dead_original_task",
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_healthy_controls_finish_original_handoff",
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_old_getppid_control_misses_creator_death",
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_seeded_fresh_and_independent_observers",
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_all_original_cuts",
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_four_independent_negative_controls",
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_healthy_original_controls",
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_no_exitkill_is_not_positive",
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_rooted_loss_cut_is_kernel_group_stop_not_delivery_stop",
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_seeded_fresh_and_concurrent",
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_armed_cuts_require_original_child_sigkill",
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_before_arm_refuses_original_parent_mismatch",
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_before_arm_requires_peer_held_until_original_tracer_terminal",
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_four_independent_prearm_peer_barriers",
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_guard_and_parent_check_controls_are_not_positive_proof",
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_healthy_cuts_finish_original_handoff",
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_kernel_eof_can_precede_creator_death_and_arming",
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_seeded_fresh_and_independent_observers",
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_bad_reports_refuse_before_fault_admission",
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_delivered_original_sigkill_reaps_original_child",
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_healthy_control_finishes_original_protocol_and_cleans",
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_initial_rooted_and_first_exec_boundaries",
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_installed_original_sigkill_reaps_original_child",
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_no_exitkill_controls_keep_natural_channel_failure_distinct",
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_ready_original_sigkill_reaps_original_child",
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_seeded_cases_and_independent_monitors",
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_ancillary_capable_call_fd_replacement_and_nonstack_pointer_refuse",
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_dummy_withheld_at_every_readiness_boundary",
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_foreign_endpoint_and_changed_flags_refuse",
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_lost_wrong_and_duplicate_ack_never_resend",
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_malformed_duplicate_readiness_and_wrong_fd_refuse_before_send",
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_original_child_receives_dummy_once_then_closes",
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_original_context_and_missing_channel_refuse",
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_original_sigkill_and_drop_at_three_transfer_boundaries",
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_phase_replay_is_sticky_and_terminal_not_reusable",
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_seeded_cases_and_four_independent_owners",
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_send_failure_latches_attempt_before_dispatch_without_retry",
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_startup_channel_use_and_inherited_descriptor_leak_refuse",
+    "diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_context_phase_replay_and_memory_bounds_refuse",
+    "diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_exec_denials_and_actual_alternate_abi_sigsys",
+    "diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_fifteen_native_mutations_denied_after_exact_install",
+    "diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_installer_startup_and_environment_faults_refuse",
+    "diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_missing_foreign_or_weakened_environment_fd_refuses",
+    "diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_old_policy_controls_retain_negative_namespace_regain_result",
+    "diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_original_environment_survives_nd0_without_reopen_fallback",
+    "diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_original_fd_directory_faults_refuse",
+    "diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_seeded_fresh_probes_and_independent_owners",
+    "diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_sigkill_and_drop_at_four_original_boundaries",
+    "diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_exact_installer_faults_refuse_stickily",
+    "diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_healthy_drop_reaps_original_without_replacement",
+    "diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_maps_require_exact_selected_file_and_pseudo_identities",
+    "diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_maps_seeded_parser_inputs_do_not_panic",
+    "diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_nonempty_environment_refuses_at_original_exec_stop",
+    "diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_original_selected_root_exec_and_install",
+    "diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_original_tree_hash_and_namespace_drift_refuse",
+    "diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_other_image_is_denied_after_install",
+    "diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_phase_replay_native_numbers_and_stack_bounds_refuse",
+    "diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_seeded_fresh_execs_and_independent_nonroot_owners",
+    "diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_sigkill_at_four_boundaries_reaps_only_original",
+    "diagnostic_signer_root_fixture::tests::signer_root_cleanup_uses_original_directory_fds_not_replaced_ancestors",
+    "diagnostic_signer_root_fixture::tests::signer_root_exact_tree_files_and_hash_drift_refuse_stickily",
+    "diagnostic_signer_root_fixture::tests::signer_root_original_kernel_root_is_not_signer_launch",
+    "diagnostic_signer_root_fixture::tests::signer_root_owner_sequence_namespace_and_terminal_replay_refuse",
+    "diagnostic_signer_root_fixture::tests::signer_root_seeded_probes_and_independent_nonroot_owners",
+    "diagnostic_signer_root_fixture::tests::signer_root_sigkill_and_healthy_drop_reap_only_original_and_prevent_reuse",
+    "diagnostic_signer_runtime_fixture::tests::signer_runtime_cloexec_positional_reads_and_healthy_drop_preserve_owner",
+    "diagnostic_signer_runtime_fixture::tests::signer_runtime_content_hash_detects_drift_and_cannot_be_repaired",
+    "diagnostic_signer_runtime_fixture::tests::signer_runtime_equal_byte_named_and_root_replacement_is_sticky",
+    "diagnostic_signer_runtime_fixture::tests::signer_runtime_file_modes_types_links_and_root_refuse",
+    "diagnostic_signer_runtime_fixture::tests::signer_runtime_original_four_file_inventory_is_not_runtime_admission",
+    "diagnostic_signer_runtime_fixture::tests::signer_runtime_seeded_parser_mutations_and_independent_retention",
+    "diagnostic_signer_runtime_fixture::tests::signer_runtime_unknown_missing_extra_graph_and_objects_refuse"
+  ],
+  "first_panics": {
+    "diagnostic_signer_joined_fixture::tests::signer_joined_early_exec_is_refused_before_syscall_dispatch": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_joined_fixture_tests.rs:75:34",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_joined_fixture::tests::signer_joined_flags_policy_length_and_nonstack_inputs_refuse": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_joined_fixture_tests.rs:63:38",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_joined_fixture::tests::signer_joined_foreign_inode_metadata_and_nonempty_output_refuse": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_joined_fixture_tests.rs:187:38",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_joined_fixture::tests::signer_joined_image_preparation_has_no_parent_writer_to_inherit": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_joined_fixture_tests.rs:7:34",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_joined_fixture::tests::signer_joined_original_exec_and_installation_are_one_child": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_joined_fixture_tests.rs:33:34",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_joined_fixture::tests::signer_joined_other_exec_and_descriptor_exec_are_denied": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_joined_fixture_tests.rs:43:38",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_joined_fixture::tests::signer_joined_owned_child_sigkill_at_exec_and_installed_boundaries": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_joined_fixture_tests.rs:167:38",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_joined_fixture::tests::signer_joined_phase_replay_and_stack_range_inputs_refuse": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_joined_fixture_tests.rs:148:38",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_joined_fixture::tests::signer_joined_seeded_originals_and_independent_tracer_threads": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_joined_fixture_tests.rs:209:38",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }",
+        "creator observer refused: ",
+        "running 1 test",
+        "test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_entry ... ",
+        "running 1 test"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_armed_boundaries_require_sigkill_before_group_exit": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_creator_loss_fixture.rs:527:46",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }",
+        "creator observer refused: ",
+        "running 1 test",
+        "test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_entry ... ",
+        "running 1 test"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_before_arm_refuses_dead_original_task": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_creator_loss_fixture.rs:522:40",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }",
+        "creator observer refused: ",
+        "running 1 test",
+        "test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_entry ... ",
+        "running 1 test"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_healthy_controls_finish_original_handoff": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_creator_loss_fixture.rs:537:45",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }",
+        "creator observer refused: ",
+        "running 1 test",
+        "test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_entry ... ",
+        "running 1 test"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_old_getppid_control_misses_creator_death": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_creator_loss_fixture.rs:532:39",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }",
+        "creator observer refused: ",
+        "running 1 test",
+        "test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_entry ... ",
+        "running 1 test"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_seeded_fresh_and_independent_observers": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_creator_loss_fixture.rs:736:57",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }",
+        "thread observer refused: ",
+        "running 1 test",
+        "test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry ... ",
+        "running 1 test"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_all_original_cuts": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:414:36",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }",
+        "thread observer refused: ",
+        "running 1 test",
+        "test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry ... ",
+        "running 1 test"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_four_independent_negative_controls": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:427:5",
+      "first_lines": [
+        "assertion failed: results.iter().all(Result::is_ok)",
+        "thread observer refused: ",
+        "running 1 test",
+        "test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry ... ",
+        "running 1 test"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_healthy_original_controls": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:469:36",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }",
+        "thread observer refused: ",
+        "running 1 test",
+        "test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry ... ",
+        "running 1 test"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_no_exitkill_is_not_positive": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:419:28",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_rooted_loss_cut_is_kernel_group_stop_not_delivery_stop": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:446:72",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }",
+        "thread observer refused: ",
+        "running 1 test",
+        "test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry ... ",
+        "running 1 test"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_seeded_fresh_and_concurrent": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:536:45",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }",
+        "constructor monitor refused cut=1 fault=0 healthy=false: ",
+        "running 1 test",
+        "test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry ... ",
+        "running 1 test"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_armed_cuts_require_original_child_sigkill": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:571:46",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }",
+        "constructor monitor refused cut=0 fault=0 healthy=false: ",
+        "running 1 test",
+        "test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry ... ",
+        "running 1 test"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_before_arm_refuses_original_parent_mismatch": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:566:40",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }",
+        "constructor monitor refused cut=0 fault=0 healthy=false: ",
+        "running 1 test",
+        "test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry ... ",
+        "running 1 test"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_before_arm_requires_peer_held_until_original_tracer_terminal": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:486:92",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }",
+        "constructor monitor refused cut=0 fault=0 healthy=false: ",
+        "running 1 test",
+        "test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry ... ",
+        "running 1 test"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_four_independent_prearm_peer_barriers": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:558:38",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }",
+        "constructor monitor refused cut=1 fault=1 healthy=false: ",
+        "running 1 test",
+        "test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry ... ",
+        "running 1 test"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_guard_and_parent_check_controls_are_not_positive_proof": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:582:40",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }",
+        "constructor monitor refused cut=0 fault=0 healthy=true: ",
+        "running 1 test",
+        "test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry ... ",
+        "running 1 test"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_healthy_cuts_finish_original_handoff": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:577:45",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }",
+        "constructor monitor refused cut=4 fault=0 healthy=false: ",
+        "running 1 test",
+        "test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry ... ",
+        "running 1 test"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_kernel_eof_can_precede_creator_death_and_arming": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:478:87",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }",
+        "constructor monitor refused cut=2 fault=0 healthy=false: ",
+        "running 1 test",
+        "test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry ... ",
+        "running 1 test"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_seeded_fresh_and_independent_observers": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:654:57",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }",
+        "loss monitor failed: ",
+        "running 1 test",
+        "test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry ... ",
+        "running 1 test"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_bad_reports_refuse_before_fault_admission": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:13:46",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }",
+        "loss monitor failed: ",
+        "running 1 test",
+        "test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry ... ",
+        "running 1 test"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_delivered_original_sigkill_reaps_original_child": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:13:46",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }",
+        "loss monitor failed: ",
+        "running 1 test",
+        "test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry ... ",
+        "running 1 test"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_healthy_control_finishes_original_protocol_and_cleans": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:13:46",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }",
+        "loss monitor failed: ",
+        "running 1 test",
+        "test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry ... ",
+        "running 1 test"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_initial_rooted_and_first_exec_boundaries": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:13:46",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }",
+        "loss monitor failed: ",
+        "running 1 test",
+        "test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry ... ",
+        "running 1 test"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_no_exitkill_controls_keep_natural_channel_failure_distinct": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:13:46",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }",
+        "loss monitor failed: ",
+        "running 1 test",
+        "test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry ... ",
+        "running 1 test"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_installed_original_sigkill_reaps_original_child": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:13:46",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }",
+        "loss monitor failed: ",
+        "running 1 test",
+        "test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry ... ",
+        "running 1 test"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_ready_original_sigkill_reaps_original_child": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:13:46",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_ancillary_capable_call_fd_replacement_and_nonstack_pointer_refuse": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:78:35",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_dummy_withheld_at_every_readiness_boundary": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:24:55",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_foreign_endpoint_and_changed_flags_refuse": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:145:41",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_lost_wrong_and_duplicate_ack_never_resend": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:108:35",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_malformed_duplicate_readiness_and_wrong_fd_refuse_before_send": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:57:35",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_original_child_receives_dummy_once_then_closes": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:11:37",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_original_context_and_missing_channel_refuse": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:177:41",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_original_sigkill_and_drop_at_three_transfer_boundaries": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:195:45",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_phase_replay_is_sticky_and_terminal_not_reusable": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:122:41",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_seeded_cases_and_four_independent_owners": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:282:35",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_send_failure_latches_attempt_before_dispatch_without_retry": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:86:37",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_startup_channel_use_and_inherited_descriptor_leak_refuse": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:66:49",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_context_phase_replay_and_memory_bounds_refuse": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs:376:74",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_exec_denials_and_actual_alternate_abi_sigsys": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs:339:35",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_fifteen_native_mutations_denied_after_exact_install": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs:294:49",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_installer_startup_and_environment_faults_refuse": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs:363:51",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_missing_foreign_or_weakened_environment_fd_refuses": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs:130:58",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_old_policy_controls_retain_negative_namespace_regain_result": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs:314:35",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_original_environment_survives_nd0_without_reopen_fallback": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs:5:54",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_original_fd_directory_faults_refuse": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs:61:58",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_seeded_fresh_probes_and_independent_owners": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs:479:70",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_sigkill_and_drop_at_four_original_boundaries": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs:423:78",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_exact_installer_faults_refuse_stickily": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture_tests.rs:137:47",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_healthy_drop_reaps_original_without_replacement": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture_tests.rs:304:57",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_maps_require_exact_selected_file_and_pseudo_identities": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture_tests.rs:48:28",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_maps_seeded_parser_inputs_do_not_panic": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture_tests.rs:112:28",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_nonempty_environment_refuses_at_original_exec_stop": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture_tests.rs:149:48",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_original_selected_root_exec_and_install": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture_tests.rs:4:53",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_original_tree_hash_and_namespace_drift_refuse": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture_tests.rs:160:57",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_other_image_is_denied_after_install": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture_tests.rs:15:54",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_phase_replay_native_numbers_and_stack_bounds_refuse": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture_tests.rs:219:49",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_seeded_fresh_execs_and_independent_nonroot_owners": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture_tests.rs:345:10",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_sigkill_at_four_boundaries_reaps_only_original": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture_tests.rs:267:57",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_root_fixture::tests::signer_root_cleanup_uses_original_directory_fds_not_replaced_ancestors": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_root_fixture_tests.rs:188:32",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_root_fixture::tests::signer_root_exact_tree_files_and_hash_drift_refuse_stickily": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_root_fixture_tests.rs:63:36",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_root_fixture::tests::signer_root_original_kernel_root_is_not_signer_launch": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_root_fixture_tests.rs:7:32",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_root_fixture::tests::signer_root_owner_sequence_namespace_and_terminal_replay_refuse": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_root_fixture_tests.rs:116:36",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_root_fixture::tests::signer_root_seeded_probes_and_independent_nonroot_owners": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_root_fixture_tests.rs:209:36",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_root_fixture::tests::signer_root_sigkill_and_healthy_drop_reap_only_original_and_prevent_reuse": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_root_fixture_tests.rs:143:36",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }",
+        "loss monitor failed: ",
+        "running 1 test",
+        "test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry ... ",
+        "running 1 test"
+      ]
+    },
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_seeded_cases_and_independent_monitors": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:13:46",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }"
+      ]
+    },
+    "diagnostic_signer_runtime_fixture::tests::signer_runtime_cloexec_positional_reads_and_healthy_drop_preserve_owner": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_runtime_fixture_tests.rs:379:34",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_runtime_fixture::tests::signer_runtime_content_hash_detects_drift_and_cannot_be_repaired": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_runtime_fixture_tests.rs:321:34",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_runtime_fixture::tests::signer_runtime_equal_byte_named_and_root_replacement_is_sticky": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_runtime_fixture_tests.rs:300:38",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_runtime_fixture::tests::signer_runtime_file_modes_types_links_and_root_refuse": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_runtime_fixture_tests.rs:246:38",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_runtime_fixture::tests::signer_runtime_original_four_file_inventory_is_not_runtime_admission": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_runtime_fixture_tests.rs:220:34",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_runtime_fixture::tests::signer_runtime_unknown_missing_extra_graph_and_objects_refuse": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_runtime_fixture_tests.rs:345:34",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    "diagnostic_signer_runtime_fixture::tests::signer_runtime_seeded_parser_mutations_and_independent_retention": {
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_runtime_fixture_tests.rs:436:23",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Any { .. }"
+      ]
+    }
+  },
+  "groups": [
+    {
+      "count": 6,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:13:46",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }",
+        "loss monitor failed: "
+      ]
+    },
+    {
+      "count": 2,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:13:46",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_joined_fixture_tests.rs:75:34",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_joined_fixture_tests.rs:63:38",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_joined_fixture_tests.rs:187:38",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_joined_fixture_tests.rs:7:34",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_joined_fixture_tests.rs:33:34",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_joined_fixture_tests.rs:43:38",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_joined_fixture_tests.rs:167:38",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_joined_fixture_tests.rs:148:38",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_joined_fixture_tests.rs:209:38",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }",
+        "creator observer refused: "
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_creator_loss_fixture.rs:527:46",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }",
+        "creator observer refused: "
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_creator_loss_fixture.rs:522:40",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }",
+        "creator observer refused: "
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_creator_loss_fixture.rs:537:45",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }",
+        "creator observer refused: "
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_creator_loss_fixture.rs:532:39",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }",
+        "creator observer refused: "
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_creator_loss_fixture.rs:736:57",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }",
+        "thread observer refused: "
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:414:36",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }",
+        "thread observer refused: "
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:427:5",
+      "first_lines": [
+        "assertion failed: results.iter().all(Result::is_ok)",
+        "thread observer refused: "
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:469:36",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }",
+        "thread observer refused: "
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:419:28",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:446:72",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }",
+        "thread observer refused: "
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:536:45",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }",
+        "constructor monitor refused cut=1 fault=0 healthy=false: "
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:571:46",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }",
+        "constructor monitor refused cut=0 fault=0 healthy=false: "
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:566:40",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }",
+        "constructor monitor refused cut=0 fault=0 healthy=false: "
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:486:92",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }",
+        "constructor monitor refused cut=0 fault=0 healthy=false: "
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:558:38",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }",
+        "constructor monitor refused cut=1 fault=1 healthy=false: "
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:582:40",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }",
+        "constructor monitor refused cut=0 fault=0 healthy=true: "
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:577:45",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }",
+        "constructor monitor refused cut=4 fault=0 healthy=false: "
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:478:87",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }",
+        "constructor monitor refused cut=2 fault=0 healthy=false: "
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:654:57",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }",
+        "loss monitor failed: "
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:78:35",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:24:55",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:145:41",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:108:35",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:57:35",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:11:37",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:177:41",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:195:45",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:122:41",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:282:35",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:86:37",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:66:49",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs:376:74",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs:339:35",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs:294:49",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs:363:51",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs:130:58",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs:314:35",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs:5:54",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs:61:58",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs:479:70",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs:423:78",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture_tests.rs:137:47",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture_tests.rs:304:57",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture_tests.rs:48:28",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture_tests.rs:112:28",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture_tests.rs:149:48",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture_tests.rs:4:53",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture_tests.rs:160:57",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture_tests.rs:15:54",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture_tests.rs:219:49",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture_tests.rs:345:10",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture_tests.rs:267:57",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_root_fixture_tests.rs:188:32",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_root_fixture_tests.rs:63:36",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_root_fixture_tests.rs:7:32",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_root_fixture_tests.rs:116:36",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_root_fixture_tests.rs:209:36",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_root_fixture_tests.rs:143:36",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }",
+        "loss monitor failed: "
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_runtime_fixture_tests.rs:379:34",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_runtime_fixture_tests.rs:321:34",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_runtime_fixture_tests.rs:300:38",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_runtime_fixture_tests.rs:246:38",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_runtime_fixture_tests.rs:220:34",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_runtime_fixture_tests.rs:345:34",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: \"No such file or directory (os error 2)\" }"
+      ]
+    },
+    {
+      "count": 1,
+      "site": "tools/long-run-supervisor-074/src/diagnostic_signer_runtime_fixture_tests.rs:436:23",
+      "first_lines": [
+        "called `Result::unwrap()` on an `Err` value: Any { .. }"
+      ]
+    }
+  ],
+  "first_results_preserved": true,
+  "rerun": false,
+  "passed": false,
+  "admission": false
+}

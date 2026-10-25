@@ -1,0 +1,33 @@
+{
+  "launch.json": {
+    "pid": 319584,
+    "start_ticks": 164013195,
+    "boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f"
+  },
+  "child.json": {
+    "pid": 319586,
+    "start_ticks": 164013209,
+    "affinity": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ]
+  },
+  "unit.stdout.log": {
+    "bytes": 353268,
+    "tail": "ed ... ok\ntest diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::controller_attempt_original_capture_mismatch_preserves_retained_bytes ... ok\ntest diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::controller_attempt_pre_refused_original_does_no_write_or_checkpoint ... ok\nobserved_reservation seed=0x0740c099 signed_mutations=6 caller_state=false durable_ack=false start=false\ntest diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::observed_reservation_seeded_signed_clock_and_state_substitutions_refuse ... ok\ntest diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::controller_attempt_retains_original_request_and_lock ... ok\ntest diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::controller_attempt_signed_nonreserve_refuses_before_first_write ... ok\ncontroller_attempt_seed=0x0740c094 logical_boundaries=8 sigkill_proof=false\ntest diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::controller_attempt_seeded_all_logical_write_faults_keep_lock_and_partial_context ... ok\ntest diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::original_collector_preflight_api_shape ... ok\ntest diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::process_crash_tests::controller_attempt_process_child ... ok\ntest diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::process_crash_tests::controller_attempt_process_crash_all_stages_and_lost_ack ... ignored, manual nonroot Linux original controller attempt SIGKILL proof\ntest diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::process_crash_tests::controller_attempt_process_protocol_accepts_only_bounded_expected_records ... ok\ntest diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::controller_fence_preflight_constructor_refuses_both_chains_and_keeps_lock ... ok\ntest diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::controller_attempt_late_owned_object_and_namespace_drift_stay_refused ... ok\n"
+  },
+  "unit.stderr.log": {
+    "bytes": 83507,
+    "tail": "bserver_preserves_single_call_result_and_panic_identity' (322195) panicked at tools/long-run-supervisor-074/src/../tests/support/consuming_held_live.rs:60:13:\nBox<dyn Any>\n\nthread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::cgroup::held_live::consuming_held_trace_keeps_first_original_refusal_and_same_panic_without_retry' (322196) panicked at tools/long-run-supervisor-074/src/../tests/support/consuming_held_live.rs:153:9:\nBox<dyn Any>\n\nthread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::cgroup::held_live::cost::preparation_cost_observer_failure_does_not_mask_original_panic_or_reuse_counts' (322197) panicked at tools/long-run-supervisor-074/src/../tests/support/consuming_held_cost.rs:89:13:\nBox<dyn Any>\n\nthread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::owned_placement::preparation_trace::cost::tests::placement_cost_keeps_refusal_and_original_panic_payload' (322206) panicked at tools/long-run-supervisor-074/src/diagnostic_placement_preparation_cost.rs:87:13:\nBox<dyn Any>\n\nthread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::owned_placement::preparation_trace::tests::preparation_trace_capture_resumes_the_same_panic_without_retry' (322208) panicked at tools/long-run-supervisor-074/src/diagnostic_placement_preparation_trace.rs:85:17:\nBox<dyn Any>\n\nthread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::owned_placement::preparation_trace::tests::preparation_trace_retains_first_raw_refusal_and_original_panic_identity' (322212) panicked at tools/long-run-supervisor-074/src/diagnostic_placement_preparation_trace.rs:64:13:\nBox<dyn Any>\n"
+  },
+  "worker.stderr.log": {
+    "bytes": 0,
+    "tail": ""
+  }
+}

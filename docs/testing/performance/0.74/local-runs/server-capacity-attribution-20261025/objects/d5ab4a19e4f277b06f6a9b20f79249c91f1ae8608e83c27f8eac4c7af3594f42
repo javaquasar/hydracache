@@ -1,0 +1,18 @@
+{
+  "cases": [
+    {
+      "name": "check",
+      "exit": 0,
+      "wall_ns": 19271127070
+    },
+    {
+      "name": "clippy",
+      "exit": 101,
+      "wall_ns": 10780128
+    }
+  ],
+  "first_refusal": null,
+  "postflight_refusal": null,
+  "source_unchanged": true,
+  "passed": false
+}

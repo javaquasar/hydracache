@@ -1,0 +1,12 @@
+from pathlib import Path
+import json,os
+root=Path('/tmp/hc074-server-gate-root-20261025.0k0xbdah/capacity-checks-first')
+result={}
+for name in ('launch.json','check-child.json','clippy-child.json','check-result.json','clippy-result.json','result.json'):
+ if (root/name).exists():result[name]=json.loads((root/name).read_bytes())
+for name in ('check.stderr.log','clippy.stderr.log','worker.stderr.log'):
+ p=root/name
+ if p.exists():
+  raw=p.read_bytes();result[name]=dict(bytes=len(raw),tail=raw[-5000:].decode(errors='replace'))
+result['load']=Path('/proc/loadavg').read_text().strip()
+print(json.dumps(result,indent=2))

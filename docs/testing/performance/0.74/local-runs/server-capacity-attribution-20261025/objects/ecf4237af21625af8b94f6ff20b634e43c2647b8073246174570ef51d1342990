@@ -1,0 +1,74 @@
+"""First actual version-exact native lint, then ordinary origin regression controls."""
+from pathlib import Path
+import hashlib,json,os,re,shutil,signal,subprocess,sys,time
+base=Path('/tmp/hc074-server-gate-root-20261025.0k0xbdah');root=base/'capacity-lint-first'
+upload=Path('/tmp/hc074-server-gate-upload-20261025.pvdj0f6c')
+image='6640e1b9b31ae7c87137b335be4f2665d729ea7b4324ee0e874bdbedc346c520'
+raw=(base/'server-fault-worker-20261025.py').read_bytes()
+assert hashlib.sha256(raw).hexdigest()=='af1e9926e1ad40bc49c1c225d79f5fffc788c715a7889743decea129ec4b17a3'
+assert sys.argv[1]==image
+scope={};exec(compile(raw.decode().split('started=time.monotonic_ns()\n')[0],'<pinned-preflight>','exec'),scope)
+preflight=scope['preflight']
+def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+def publish(name,value):
+ with (root/name).open('x') as f:json.dump(value,f,indent=2);f.flush();os.fsync(f.fileno())
+def limited():
+ os.sched_setaffinity(0,set(range(8)));os.setgroups([]);os.setgid(1000);os.setuid(1000)
+def execute(name,argv,env,cwd,outer):
+ publish(name+'-command.json',dict(argv=argv,env=env,cwd=str(cwd),uid=1000,gid=1000,cpu_budget=8,outer_seconds=outer))
+ start=time.monotonic_ns()
+ with (root/(name+'.stdout.log')).open('xb') as stdout,(root/(name+'.stderr.log')).open('xb') as stderr:
+  child=subprocess.Popen(argv,cwd=cwd,env=env,stdout=stdout,stderr=stderr,preexec_fn=limited,start_new_session=True)
+  publish(name+'-child.json',dict(pid=child.pid,start_ticks=scope['ticks'](child.pid),affinity=sorted(os.sched_getaffinity(child.pid))))
+  try:code=child.wait(timeout=outer)
+  except subprocess.TimeoutExpired:
+   os.killpg(child.pid,signal.SIGTERM)
+   try:child.wait(timeout=5)
+   except subprocess.TimeoutExpired:os.killpg(child.pid,signal.SIGKILL);child.wait()
+   raise RuntimeError('bounded diagnostic timeout; no retry')
+ result=dict(name=name,exit=code,wall_ns=time.monotonic_ns()-start);publish(name+'-result.json',result)
+ return result
+publish('consumed.json',dict(schedule=['clippy-with-exact-private-component','origin-ordinary-regressions'],
+ previous_missing_component_refusal_preserved=True,retry=False,product=False,qualification=False,admission=False,
+ original_windows=[300,60,10],live_check_frequency_unchanged=True))
+result=dict(cases=[],first_refusal=None,postflight_refusal=None,source_unchanged=False,passed=False)
+before=None
+try:
+ before=preflight();publish('preflight.json',before)
+ manifest=json.loads((base/'manifest.json').read_bytes())
+ assert sha(base/'manifest.json')=='2a0f7c581a1e854ab71841efb71aaebee3de56d1c0357b54d55a41ae4011ea6d'
+ source=upload/'source-v3';toolchain=upload/'toolchain-v3/bin';addon=upload/'private-clippy-194/bin'
+ receipt=json.loads((base/'private-clippy-first/result.json').read_bytes());assert receipt['passed']
+ assert receipt['archive_sha256']=='935529b0b9150084fa9cc1734c6598efe86b6e7d76f31ad3f8d4bb79ebf6031a'
+ for name,digest in [('cargo-clippy','4ca38c6c514b6f5cb24bec4cc765672b174889583d3735549c02486f54484299'),
+  ('clippy-driver','2ff45d07196eec4f57a631103a877631d3579e86db2770bcfaa3b9d92a0b9d15')]:assert sha(addon/name)==digest
+ def verify():
+  for name,item in manifest['members'].items():
+   p=source/name;assert p.is_file() and not p.is_symlink() and sha(p)==item['sha256'],name
+ verify()
+ env=dict(PATH=str(addon)+':'+str(toolchain)+':/usr/bin:/bin',HOME='/home/hydracache-admin',CARGO_HOME=str(upload/'cargo-home-v3'),
+  CARGO_TARGET_DIR=str(upload/'build-target-v3'),CARGO_NET_OFFLINE='true',CARGO_INCREMENTAL='0',CARGO_BUILD_JOBS='8',
+  RUSTC=str(toolchain/'rustc'),RUSTDOC=str(toolchain/'rustdoc'))
+ argv=[str(toolchain/'cargo'),'clippy','--release','--offline','--locked','-p','hydracache-long-run-supervisor-074',
+  '--all-targets','--all-features','--','-D','warnings']
+ result['cases'].append(execute('clippy',argv,env,source,1200));verify()
+ target=upload/'origin-regression-first';target.mkdir(mode=0o700);os.chown(target,1000,1000)
+ test=target/'libtest'
+ with (base/'libtest').open('rb') as src,test.open('xb') as dst:shutil.copyfileobj(src,dst)
+ os.chown(test,1000,1000);os.chmod(test,0o500);assert sha(test)==image
+ scratch=target/'scratch';scratch.mkdir(mode=0o700);os.chown(scratch,1000,1000)
+ env=dict(PATH='/usr/bin:/bin',TMPDIR=str(scratch))
+ argv=[str(test),'diagnostic_kernel_admission::origin::','--nocapture','--test-threads=1']
+ result['cases'].append(execute('origin',argv,env,source,180))
+ log=(root/'origin.stdout.log').read_text()
+ verdict=re.findall(r'test result: ok\. (\d+) passed; (\d+) failed; (\d+) ignored;',log)
+ assert len(verdict)==1 and int(verdict[0][0])>0 and int(verdict[0][1])==0
+ result['origin_counts']=dict(zip(('passed','failed','ignored'),map(int,verdict[0])))
+ verify();result['source_unchanged']=True
+ result['passed']=len(result['cases'])==2 and all(case['exit']==0 for case in result['cases'])
+except BaseException as error:result['first_refusal']=f'{type(error).__name__}: {error}'
+finally:
+ try:
+  after=preflight();assert before is not None and before==after;publish('postflight.json',after)
+ except BaseException as error:result['postflight_refusal']=f'{type(error).__name__}: {error}';result['passed']=False
+ publish('result.json',result)

@@ -1,0 +1,13 @@
+test_changed_windows_or_healthy_profile_promotion_refuse (__main__.Tests.test_changed_windows_or_healthy_profile_promotion_refuse) ... ok
+test_exact_failed_results_remain_failed (__main__.Tests.test_exact_failed_results_remain_failed) ... ok
+test_first_gnu_failure_cannot_be_promoted (__main__.Tests.test_first_gnu_failure_cannot_be_promoted) ... ok
+test_host_drift_refuses (__main__.Tests.test_host_drift_refuses) ... ok
+test_missing_component_result_cannot_be_erased (__main__.Tests.test_missing_component_result_cannot_be_erased) ... ok
+test_ordinary_cohort_bound_and_ignored_scope_remain_fixed (__main__.Tests.test_ordinary_cohort_bound_and_ignored_scope_remain_fixed) ... ok
+test_private_home_cannot_rebind_the_compiler (__main__.Tests.test_private_home_cannot_rebind_the_compiler) ... ok
+test_strict_lint_and_actual_cpu_affinity_must_match (__main__.Tests.test_strict_lint_and_actual_cpu_affinity_must_match) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.396s
+
+OK

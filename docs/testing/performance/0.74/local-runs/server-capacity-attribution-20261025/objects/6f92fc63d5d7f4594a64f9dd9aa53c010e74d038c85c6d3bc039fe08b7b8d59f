@@ -1,0 +1,88 @@
+{
+  "launch.json": {
+    "pid": 317693,
+    "start_ticks": 163979350,
+    "boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f"
+  },
+  "check-child.json": {
+    "pid": 317695,
+    "start_ticks": 163979366,
+    "affinity": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "status": [
+      "Uid:\t1000\t1000\t1000\t1000",
+      "Gid:\t1000\t1000\t1000\t1000",
+      "Groups:\t ",
+      "Cpus_allowed_list:\t0-7"
+    ]
+  },
+  "clippy-child.json": {
+    "pid": 318621,
+    "start_ticks": 163981302,
+    "affinity": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "status": [
+      "Uid:\t1000\t1000\t1000\t1000",
+      "Gid:\t1000\t1000\t1000\t1000",
+      "Groups:\t ",
+      "Cpus_allowed_list:\t0-7"
+    ]
+  },
+  "check-result.json": {
+    "name": "check",
+    "exit": 0,
+    "wall_ns": 19271127070
+  },
+  "clippy-result.json": {
+    "name": "clippy",
+    "exit": 101,
+    "wall_ns": 10780128
+  },
+  "result.json": {
+    "cases": [
+      {
+        "name": "check",
+        "exit": 0,
+        "wall_ns": 19271127070
+      },
+      {
+        "name": "clippy",
+        "exit": 101,
+        "wall_ns": 10780128
+      }
+    ],
+    "first_refusal": null,
+    "postflight_refusal": null,
+    "source_unchanged": true,
+    "passed": false
+  },
+  "check.stderr.log": {
+    "bytes": 2851,
+    "tail": "    Checking typenum v1.20.1\n    Checking libc v0.2.186\n    Checking serde_core v1.0.228\n    Checking cfg-if v1.0.4\n    Checking pin-project-lite v0.2.17\n    Checking unicode-ident v1.0.24\n    Checking winnow v1.0.3\n    Checking crossbeam-utils v0.8.21\n    Checking linux-raw-sys v0.12.1\n    Checking parking v2.2.1\n    Checking proc-macro2 v1.0.106\n    Checking bitflags v2.13.0\n    Checking once_cell v1.21.4\n    Checking concurrent-queue v2.5.0\n    Checking futures-core v0.3.32\n    Checking cpufeatures v0.2.17\n    Checking event-listener v5.4.1\n    Checking quote v1.0.46\n    Checking endi v1.1.1\n    Checking generic-array v0.14.7\n    Checking hybrid-array v0.4.13\n    Checking syn v3.0.6\n    Checking fastrand v2.4.1\n    Checking block-buffer v0.10.4\n    Checking crypto-common v0.1.7\n    Checking event-listener-strategy v0.5.4\n    Checking digest v0.10.7\n    Checking tracing-core v0.1.36\n    Checking errno v0.3.14\n    Checking socket2 v0.6.4\n    Checking signal-hook-registry v1.4.8\n    Checking crypto-common v0.2.2\n    Checking block-buffer v0.12.1\n    Checking rustix v1.1.4\n    Checking serde v1.0.228\n    Checking mio v1.2.1\n    Checking zstd-sys v2.0.16+zstd.1.5.7\n    Checking subtle v2.6.1\n    Checking futures-io v0.3.32\n    Checking signature v2.2.0\n    Checking bytes v1.12.0\n    Checking zeroize v1.9.0\n    Checking const-oid v0.10.2\n    Checking futures-lite v2.6.1\n    Checking curve25519-dalek v4.1.3\n    Checking ed25519 v2.2.3\n    Checking digest v0.11.3\n    Checking toml_parser v1.1.2+spec-1.1.0\n    Checking zcheapstr v1.1.0\n    Checking enumflags2 v0.7.12\n    Checking zstd-safe v7.2.4\n    Checking tracing v0.1.44\n    Checking uuid v1.23.4\n    Checking tokio v1.52.3\n    Checking toml_datetime v1.1.1+spec-1.1.0\n    Checking serde_spanned v1.1.1\n    Checking sha2 v0.10.9\n    Checking filetime v0.2.29\n    Checking getrandom v0.2.17\n    Checking zmij v1.0.21\n    Checking async-broadcast v0.7.2\n    Checking ordered-stream v0.2.0\n    Checking hex v0.4.3\n    Checking toml_writer v1.1.1+spec-1.1.0\n    Checking zvariant_utils v4.2.0\n    Checking memchr v2.8.2\n    Checking cpufeatures v0.3.0\n    Checking itoa v1.0.18\n    Checking untrusted v0.9.0\n    Checking toml v1.1.2+spec-1.1.0\n    Checking ring v0.17.14\n    Checking sha2 v0.11.0\n    Checking ed25519-dalek v2.2.0\n    Checking thiserror v2.0.18\n    Checking zstd v0.13.3\n    Checking fs2 v0.4.3\n    Checking serde_json v1.0.150\n    Checking zvariant v5.15.0\n    Checking base64 v0.22.1\n    Checking getrandom v0.4.3\n    Checking xattr v1.6.1\n    Checking tempfile v3.27.0\n    Checking tar v0.4.46\n    Checking zbus_names v4.3.4\n    Checking zbus v5.19.0\n    Checking hydracache-long-run-supervisor-074 v0.0.0 (/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/source-v3/tools/long-run-supervisor-074)\n    Finished `release` profile [optimized] target(s) in 19.21s\n"
+  },
+  "clippy.stderr.log": {
+    "bytes": 162,
+    "tail": "error: no such command: `clippy`\n\nhelp: view all installed commands with `cargo --list`\nhelp: find a package to install `clippy` with `cargo search cargo-clippy`\n"
+  },
+  "worker.stderr.log": {
+    "bytes": 0,
+    "tail": ""
+  },
+  "load": "0.58 0.26 0.09 1/280 318708"
+}

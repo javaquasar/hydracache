@@ -1,0 +1,49 @@
+"""Fetch a version-exact companion component into this session's private tools only."""
+from pathlib import Path
+import hashlib,json,os,tarfile,tomllib,urllib.request,io
+base=Path('/tmp/hc074-server-gate-root-20261025.0k0xbdah')
+out=base/'private-clippy-first';out.mkdir(mode=0o700)
+upload=Path('/tmp/hc074-server-gate-upload-20261025.pvdj0f6c')
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+def save(name,raw):
+ with (out/name).open('xb') as f:f.write(raw);f.flush();os.fsync(f.fileno())
+def fetch(url,budget):
+ assert url.startswith('https://static.rust-lang.org/dist/')
+ with urllib.request.urlopen(url,timeout=20) as response:
+  assert response.url.startswith('https://static.rust-lang.org/dist/')
+  raw=response.read(budget+1)
+ assert len(raw)<=budget
+ return raw
+result=dict(passed=False,first_refusal=None,project_dependencies_changed=False,system_toolchain_changed=False)
+save('intent.json',json.dumps(dict(version='1.94.0',host='x86_64-unknown-linux-gnu',
+ provenance='official Rust distribution over HTTPS plus manifest checksum; no installer execution',retry=False)).encode())
+try:
+ url='https://static.rust-lang.org/dist/channel-rust-1.94.0.toml'
+ raw=fetch(url,4*1024**2);save('channel.toml',raw)
+ checksum=fetch(url+'.sha256',1024);save('channel.toml.sha256',checksum)
+ assert sha(raw)==checksum.decode().split()[0]
+ manifest=tomllib.loads(raw.decode())
+ assert manifest['pkg']['rust']['version'].startswith('1.94.0 ')
+ item=manifest['pkg']['clippy-preview']['target']['x86_64-unknown-linux-gnu'];assert item['available']
+ archive=fetch(item['xz_url'],32*1024**2);save('component.tar.xz',archive)
+ assert sha(archive)==item['xz_hash']
+ target=upload/'private-clippy-194';target.mkdir(mode=0o700);os.chown(target,1000,1000)
+ (target/'bin').mkdir(mode=0o700);os.chown(target/'bin',1000,1000)
+ entries={}
+ with tarfile.open(fileobj=io.BytesIO(archive),mode='r:xz') as tar:
+  for leaf in ('cargo-clippy','clippy-driver'):
+   selected=[m for m in tar.getmembers() if m.name.endswith('/clippy-preview/bin/'+leaf)]
+   assert len(selected)==1 and selected[0].isfile()
+   m=selected[0];raw=tar.extractfile(m).read();assert len(raw)==m.size
+   path=target/'bin'/leaf
+   with path.open('xb') as f:f.write(raw)
+   os.chown(path,1000,1000);os.chmod(path,0o500)
+   entries[leaf]=dict(bytes=len(raw),sha256=sha(raw))
+ # Companion driver resolves the matching existing private Rust shared libraries.
+ (target/'lib').symlink_to(upload/'toolchain-v3/lib',target_is_directory=True)
+ os.lchown(target/'lib',1000,1000)
+ result.update(passed=True,target=str(target),manifest_sha256=sha((out/'channel.toml').read_bytes()),
+  archive_sha256=item['xz_hash'],component=entries)
+except BaseException as error:result['first_refusal']=f'{type(error).__name__}: {error}'
+finally:save('result.json',json.dumps(result,indent=2).encode())
+print(json.dumps(result,indent=2))

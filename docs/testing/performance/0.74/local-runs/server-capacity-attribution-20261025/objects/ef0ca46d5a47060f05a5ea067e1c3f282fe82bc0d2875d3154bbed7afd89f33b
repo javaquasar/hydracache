@@ -1,0 +1,17 @@
+{
+  "schedule": [
+    "clippy-with-exact-private-component",
+    "origin-ordinary-regressions"
+  ],
+  "previous_missing_component_refusal_preserved": true,
+  "retry": false,
+  "product": false,
+  "qualification": false,
+  "admission": false,
+  "original_windows": [
+    300,
+    60,
+    10
+  ],
+  "live_check_frequency_unchanged": true
+}

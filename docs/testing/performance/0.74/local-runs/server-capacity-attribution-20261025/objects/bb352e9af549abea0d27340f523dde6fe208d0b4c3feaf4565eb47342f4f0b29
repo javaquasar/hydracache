@@ -1,0 +1,17 @@
+{
+  "argv": [
+    "/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/origin-regression-first/libtest",
+    "diagnostic_kernel_admission::origin::",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "env": {
+    "PATH": "/usr/bin:/bin",
+    "TMPDIR": "/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/origin-regression-first/scratch"
+  },
+  "cwd": "/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/source-v3",
+  "uid": 1000,
+  "gid": 1000,
+  "cpu_budget": 8,
+  "outer_seconds": 180
+}

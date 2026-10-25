@@ -1,0 +1,22 @@
+from pathlib import Path
+import hashlib,json,os,subprocess,sys
+root=Path('/tmp/hc074-server-gate-root-20261025.0k0xbdah')
+image='6640e1b9b31ae7c87137b335be4f2665d729ea7b4324ee0e874bdbedc346c520'
+raw=(root/'server-fault-worker-20261025.py').read_bytes()
+assert hashlib.sha256(raw).hexdigest()=='af1e9926e1ad40bc49c1c225d79f5fffc788c715a7889743decea129ec4b17a3'
+sys.argv=['readonly',image]
+scope={}
+exec(compile(raw.decode().split('started=time.monotonic_ns()\n')[0],'<pinned-preflight>','exec'),scope)
+frame=scope['preflight']()
+def read(path):
+ try:return Path(path).read_text()
+ except FileNotFoundError:return None
+def command(args):
+ p=subprocess.run(args,capture_output=True,timeout=10)
+ return dict(exit=p.returncode,stdout=p.stdout.decode(),stderr=p.stderr.decode())
+print(json.dumps(dict(frame=frame,cpu_count=os.cpu_count(),affinity=sorted(os.sched_getaffinity(0)),
+ memory=read('/proc/meminfo'),load=read('/proc/loadavg'),self_cgroup=read('/proc/self/cgroup'),
+ cgroup_cpu_max=read('/sys/fs/cgroup/cpu.max'),cgroup_memory_max=read('/sys/fs/cgroup/memory.max'),
+ disk=command(['df','-B1','/tmp']),manager=command(['systemctl','--version']),
+ prior_matrix=json.loads((root/'holder-result.json').read_bytes()),
+ read_only=True,product=False),indent=2))

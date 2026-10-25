@@ -1,0 +1,14 @@
+from pathlib import Path
+import base64,hashlib,json
+base=Path('/tmp/hc074-server-gate-root-20261025.0k0xbdah')
+groups=['capacity-checks-first','capacity-lint-first','private-clippy-first']
+members={}
+for group in groups:
+ root=base/group
+ assert (root/'result.json').is_file(), group+' is still running; never relaunch'
+ for p in sorted(root.iterdir()):
+  if not p.is_file() or p.name=='component.tar.xz':continue
+  assert not p.is_symlink()
+  raw=p.read_bytes();assert len(raw)<16*1024**2
+  members[group+'/'+p.name]=dict(bytes=len(raw),sha256=hashlib.sha256(raw).hexdigest(),base64=base64.b64encode(raw).decode())
+print(json.dumps(dict(members=members,read_only=True,product=False)))

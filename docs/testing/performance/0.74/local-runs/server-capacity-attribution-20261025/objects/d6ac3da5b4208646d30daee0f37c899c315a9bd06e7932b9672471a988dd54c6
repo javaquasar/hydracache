@@ -1,0 +1,15 @@
+{
+  "argv": [
+    "/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/signer-home-first/.cargo/bin/rustup",
+    "which",
+    "--toolchain",
+    "1.94.0",
+    "rustc"
+  ],
+  "env": {
+    "HOME": "/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/signer-home-first"
+  },
+  "uid": 1000,
+  "gid": 1000,
+  "original_helper_env_clear_preserved": true
+}

@@ -1,0 +1,13 @@
+{
+  "exit": 101,
+  "first_refusal": null,
+  "postflight_refusal": null,
+  "source_unchanged": true,
+  "passed": false,
+  "wall_ns": 91644547350,
+  "counts": {
+    "passed": 1348,
+    "failed": 82,
+    "ignored": 122
+  }
+}

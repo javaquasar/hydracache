@@ -1,0 +1,23 @@
+{
+  "cases": [
+    {
+      "name": "clippy",
+      "exit": 0,
+      "wall_ns": 19059009575
+    },
+    {
+      "name": "origin",
+      "exit": 0,
+      "wall_ns": 39513009
+    }
+  ],
+  "first_refusal": null,
+  "postflight_refusal": null,
+  "source_unchanged": true,
+  "passed": true,
+  "origin_counts": {
+    "passed": 35,
+    "failed": 0,
+    "ignored": 3
+  }
+}

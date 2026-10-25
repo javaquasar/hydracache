@@ -1,0 +1,17 @@
+{
+  "cpu_budget": 8,
+  "process_local_affinity_only": true,
+  "uid": 1000,
+  "gid": 1000,
+  "source_head": "ee9692b672be093716822db13a22f5a63960f928",
+  "retry": false,
+  "schedule": [
+    "check-all-targets-all-features",
+    "clippy-all-targets-all-features"
+  ],
+  "outer_seconds_each": 1200,
+  "release_install": false,
+  "product": false,
+  "qualification": false,
+  "admission": false
+}

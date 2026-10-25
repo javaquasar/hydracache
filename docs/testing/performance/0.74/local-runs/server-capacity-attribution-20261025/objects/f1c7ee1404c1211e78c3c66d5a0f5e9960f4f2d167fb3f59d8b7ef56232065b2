@@ -1,0 +1,17 @@
+from pathlib import Path
+import base64,hashlib
+source=Path(globals().get('WORKER_FILE','target/server-capacity-checks-worker-20261025.py')).read_bytes()
+compile(source,'<worker>','exec')
+payload=base64.b64encode(source).decode();digest=hashlib.sha256(source).hexdigest()
+print('from pathlib import Path\nimport base64,hashlib,json,os,subprocess')
+print("base=Path('/tmp/hc074-server-gate-root-20261025.0k0xbdah')")
+print("assert os.geteuid()==0 and base.stat().st_uid==0 and base.stat().st_mode&0o777==0o700")
+print(f"root=base/{globals().get('WORKER_DIR','capacity-checks-first')!r};root.mkdir(mode=0o700)")
+print(f"raw=base64.b64decode({payload!r});assert hashlib.sha256(raw).hexdigest()=={digest!r}")
+print("worker=root/'worker.py'\nwith worker.open('xb') as f:f.write(raw);f.flush();os.fsync(f.fileno())\nos.chmod(worker,0o500)")
+print(f"intent=dict(worker_sha256={digest!r},retry=False,cpu_budget=8,product=False,admission=False)")
+print("with (root/'launch-intent.json').open('x') as f:json.dump(intent,f);f.flush();os.fsync(f.fileno())")
+print("with (root/'worker.stdout.log').open('xb') as stdout,(root/'worker.stderr.log').open('xb') as stderr:")
+print(" child=subprocess.Popen(['/usr/bin/python3',str(worker),'6640e1b9b31ae7c87137b335be4f2665d729ea7b4324ee0e874bdbedc346c520'],stdin=subprocess.DEVNULL,stdout=stdout,stderr=stderr,start_new_session=True)")
+print(" fact=dict(pid=child.pid,start_ticks=int(Path(f'/proc/{child.pid}/stat').read_text().rsplit(')',1)[1].split()[19]),boot=Path('/proc/sys/kernel/random/boot_id').read_text().strip())")
+print(" with (root/'launch.json').open('x') as f:json.dump(fact,f);f.flush();os.fsync(f.fileno())\nprint(json.dumps(fact))")

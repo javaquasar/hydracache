@@ -1,0 +1,40 @@
+from pathlib import Path
+import copy,importlib.util,json,unittest
+spec=importlib.util.spec_from_file_location('r',Path(__file__).with_name('review-capacity-evidence-20261025.py'))
+r=importlib.util.module_from_spec(spec);spec.loader.exec_module(r)
+class Tests(unittest.TestCase):
+ def test_exact_failed_results_remain_failed(self):
+  result=r.review(*r.load())
+  self.assertFalse(result['release_gate_passed']);self.assertFalse(result['performance_win'])
+  self.assertFalse(result['ordinary_gnu_library_passed']);self.assertTrue(result['native_all_target_strict_lint_passed'])
+ def test_host_drift_refuses(self):
+  files,frame=r.load();frame['boot']='changed'
+  with self.assertRaises(AssertionError):r.review(files,frame)
+ def test_changed_windows_or_healthy_profile_promotion_refuse(self):
+  for key,value in [('original_windows',[300,60,11]),('healthy_gate',True),('retry',True)]:
+   files,frame=r.load();keyfile='capacity-profile-first/consumed.json'
+   row=json.loads(files[keyfile]);row[key]=value;files[keyfile]=json.dumps(row).encode()
+   with self.subTest(key=key),self.assertRaises(AssertionError):r.review(files,frame)
+ def test_missing_component_result_cannot_be_erased(self):
+  files,frame=r.load();key='capacity-checks-first/result.json';row=json.loads(files[key]);row['passed']=True
+  files[key]=json.dumps(row).encode()
+  with self.assertRaises(AssertionError):r.review(files,frame)
+ def test_strict_lint_and_actual_cpu_affinity_must_match(self):
+  for key,field,value in [('capacity-lint-first/clippy-command.json','argv',['cargo','clippy','-Awarnings']),
+    ('capacity-checks-first/check-child.json','affinity',[0,5,6,7])]:
+   files,frame=r.load();row=json.loads(files[key]);row[field]=value;files[key]=json.dumps(row).encode()
+   with self.subTest(key=key),self.assertRaises(AssertionError):r.review(files,frame)
+ def test_first_gnu_failure_cannot_be_promoted(self):
+  files,frame=r.load();key='capacity-unit-first/result.json';row=json.loads(files[key]);row['passed']=True
+  files[key]=json.dumps(row).encode()
+  with self.assertRaises(AssertionError):r.review(files,frame)
+ def test_ordinary_cohort_bound_and_ignored_scope_remain_fixed(self):
+  for field,value in [('outer_seconds',781),('ignored_enabled',True),('test_threads',8)]:
+   files,frame=r.load();key='capacity-unit-first/consumed.json';row=json.loads(files[key]);row[field]=value
+   files[key]=json.dumps(row).encode()
+   with self.subTest(field=field),self.assertRaises(AssertionError):r.review(files,frame)
+ def test_private_home_cannot_rebind_the_compiler(self):
+  files,frame=r.load();key='signer-home-control-first/result.json';row=json.loads(files[key]);row['compiler_sha256']='0'*64
+  files[key]=json.dumps(row).encode()
+  with self.assertRaises(AssertionError):r.review(files,frame)
+if __name__=='__main__':unittest.main()

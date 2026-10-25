@@ -1,0 +1,20 @@
+{
+  "pid": 317695,
+  "start_ticks": 163979366,
+  "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "status": [
+    "Uid:\t1000\t1000\t1000\t1000",
+    "Gid:\t1000\t1000\t1000\t1000",
+    "Groups:\t ",
+    "Cpus_allowed_list:\t0-7"
+  ]
+}

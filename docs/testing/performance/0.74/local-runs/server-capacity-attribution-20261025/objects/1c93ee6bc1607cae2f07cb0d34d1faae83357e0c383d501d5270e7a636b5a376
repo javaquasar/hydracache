@@ -1,0 +1,24 @@
+from pathlib import Path
+import base64,hashlib,importlib.util,json
+root=Path(__file__).resolve().parent.parent
+phase=root/'target/authorized-server-session-20261025/capacity-profile-result'
+packet=json.loads((phase/'stdout.log').read_bytes())
+out=phase/'raw';out.mkdir(exist_ok=False)
+for name,item in packet['members'].items():
+ assert Path(name).name==name
+ raw=base64.b64decode(item['base64'],validate=True)
+ assert len(raw)==item['bytes'] and hashlib.sha256(raw).hexdigest()==item['sha256']
+ with (out/name).open('xb') as stream:stream.write(raw)
+spec=importlib.util.spec_from_file_location('profile_review',root/'tools/native-server-control-074/profile_review.py')
+review=importlib.util.module_from_spec(spec);spec.loader.exec_module(review)
+result=json.loads((out/'result.json').read_bytes())
+facts=review.review((out/'profile.stdout.log').read_bytes()+(out/'profile.stderr.log').read_bytes(),
+ result['exit'],result['exit'],int(result['postflight_refusal'] is not None))
+assert (out/'preflight.json').read_bytes()==(out/'postflight.json').read_bytes()
+facts['resources']={k:v for k,v in packet.items() if k!='members'}
+with (phase/'review.json').open('x') as stream:json.dump(facts,stream,indent=2)
+print(json.dumps(dict(exit=result['exit'],postflight=result['postflight_refusal'],
+ phases=[dict(phase=p['phase'],wall_ns=p['wall_ns'],cpu_ns=p['process_cpu_ns'],returned=p['returned'],
+ top_kernel=sorted(p['kernel'],key=lambda s:s['outside_children_ns'],reverse=True)[:3],
+ top_live=sorted(p['live'],key=lambda s:s['outside_children_ns'],reverse=True)[:3]) for p in facts['phases']],
+ first_refusal=facts['first_original_refusal'],resources=facts['resources']),indent=2))

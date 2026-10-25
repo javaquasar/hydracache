@@ -1,0 +1,25 @@
+"""Exclusive transcript capture for this authorized, fixed-alias server session."""
+from pathlib import Path
+import hashlib,json,subprocess,sys
+root=Path(__file__).resolve().parent.parent
+label,script=sys.argv[1:]
+assert label.replace('-','').isalnum()
+source=(subprocess.run([sys.executable,script[7:]],check=True,capture_output=True).stdout
+        if script.startswith('render:') else Path(script).read_bytes())
+compile(source,'<frozen-remote>','exec')
+out=root/'target/authorized-server-session-20261025'/label
+out.mkdir(parents=True,exist_ok=False)
+argv=['ssh','-o','BatchMode=yes','-o','StrictHostKeyChecking=yes','-o','ConnectTimeout=15','hydracache-ax42','sudo -n python3 -']
+(out/'intent.json').write_text(json.dumps(dict(argv=argv,remote_sha256=hashlib.sha256(source).hexdigest(),retry=False,server=True,product=False)),encoding='utf-8')
+(out/'remote.py').write_bytes(source)
+result=dict(exit=None,error=None)
+try:
+ with (out/'stdout.log').open('xb') as stdout,(out/'stderr.log').open('xb') as stderr:
+  p=subprocess.run(argv,input=source,stdout=stdout,stderr=stderr,timeout=60)
+ result['exit']=p.returncode
+except BaseException as error:
+ result['error']=f'{type(error).__name__}: {error}'
+finally:
+ (out/'result.json').write_text(json.dumps(result),encoding='utf-8')
+print(json.dumps(dict(**result,output=str(out))))
+raise SystemExit(int(result['exit']!=0 or result['error'] is not None))

@@ -1,0 +1,15 @@
+{
+  "argv": [
+    "/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/origin-regression-first/libtest",
+    "--nocapture",
+    "--test-threads=4"
+  ],
+  "env": {
+    "PATH": "/usr/bin:/bin",
+    "TMPDIR": "/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/ordinary-unit-first",
+    "HOME": "/home/hydracache-admin"
+  },
+  "cwd": "/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/source-v3",
+  "uid": 1000,
+  "gid": 1000
+}

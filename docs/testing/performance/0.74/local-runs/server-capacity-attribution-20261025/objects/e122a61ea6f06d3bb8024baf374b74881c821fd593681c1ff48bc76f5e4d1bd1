@@ -1,0 +1,10 @@
+{
+  "passed": true,
+  "first_refusal": null,
+  "unit_cohort_repeated": false,
+  "project_sources_changed": false,
+  "existing_home_changed": false,
+  "private_home": "/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/signer-home-first",
+  "rustup_sha256": "dda7234360b7f578ca8b0ddcb80145646fa61a67c1720a5abc7051b35c9fcb71",
+  "compiler_sha256": "103b60e1b1339968c1d74202ea1d45686037e82c4ea3e0569de24b18a1e6836a"
+}

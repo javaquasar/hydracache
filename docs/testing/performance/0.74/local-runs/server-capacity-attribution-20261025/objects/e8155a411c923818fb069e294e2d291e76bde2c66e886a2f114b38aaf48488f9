@@ -1,0 +1,23 @@
+"""Decode independent final transport and compare every prior downloaded byte."""
+from pathlib import Path
+import base64,hashlib,json
+root=Path(__file__).resolve().parent.parent
+phase=root/'target/authorized-server-session-20261025/capacity-final-export'
+packet=json.loads((phase/'stdout.log').read_bytes());out=phase/'raw';out.mkdir(exist_ok=False)
+for name,item in packet['members'].items():
+ assert not Path(name).is_absolute() and '..' not in Path(name).parts
+ raw=base64.b64decode(item['base64'],validate=True)
+ assert len(raw)==item['bytes'] and hashlib.sha256(raw).hexdigest()==item['sha256']
+ path=out/name;path.parent.mkdir(parents=True,exist_ok=True)
+ with path.open('xb') as f:f.write(raw)
+ group,leaf=name.split('/',1)
+ old={'capacity-profile-first':('capacity-profile-result',leaf),
+      'capacity-unit-first':('capacity-unit-export',leaf)}.get(group,('capacity-completed-export',name))
+ previous=phase.parent/old[0]/'raw'/old[1]
+ if previous.exists():assert previous.read_bytes()==raw,name
+for group in ('capacity-profile-first','capacity-checks-first','capacity-lint-first','capacity-unit-first'):
+ before=json.loads((out/group/'preflight.json').read_bytes())
+ after=json.loads((out/group/'postflight.json').read_bytes())
+ assert before==after==packet['final_frame']
+print(json.dumps(dict(members=len(packet['members']),all_transferred_bytes_verified=True,
+ repeated_downloads_match=True,frames_preserved=True,admission=False)))

@@ -1,0 +1,25 @@
+"""Classify only saved first panics for the actual 82 failing libtest names."""
+from pathlib import Path
+from collections import Counter
+import json,re
+root=Path(__file__).resolve().parent.parent
+phase=root/'target/authorized-server-session-20261025/capacity-unit-export'
+raw=phase/'raw'
+stdout=(raw/'unit.stdout.log').read_text();stderr=(raw/'unit.stderr.log').read_text()
+final=stdout.rsplit('\nfailures:\n',1)[1].split('\ntest result:',1)[0]
+failed=[line.strip() for line in final.splitlines() if line.strip()]
+assert len(failed)==len(set(failed))==82
+events=re.split(r"\nthread '([^']+)' \([^)]*\) panicked at ([^\n]+):\n",'\n'+stderr)
+panics={}
+for i in range(1,len(events),3):
+ name,site,body=events[i:i+3]
+ if name in failed and name not in panics:
+  lines=body.splitlines();panics[name]=dict(site=site,first_lines=lines[:5])
+missing=sorted(set(failed)-set(panics))
+assert not missing,missing
+groups=Counter((p['site'],tuple(p['first_lines'][:2])) for p in panics.values())
+out=dict(failed_names=failed,first_panics=panics,
+ groups=[dict(count=count,site=key[0],first_lines=list(key[1])) for key,count in groups.most_common()],
+ first_results_preserved=True,rerun=False,passed=False,admission=False)
+with (phase/'refusals.json').open('x') as f:json.dump(out,f,indent=2)
+print(json.dumps(out['groups'],indent=2))
