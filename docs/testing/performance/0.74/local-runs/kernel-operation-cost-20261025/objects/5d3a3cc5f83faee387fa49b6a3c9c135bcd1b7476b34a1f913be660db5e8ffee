@@ -1,0 +1,19 @@
+{
+  "overlay_names": [
+    "diagnostic_kernel_operation_cost.rs",
+    "diagnostic_kernel_operation_reference.rs",
+    "diagnostic_kernel_operation_tests.rs",
+    "diagnostic_kernel_origin.rs"
+  ],
+  "hypothesis": "test-only Boot Namespace operation attribution; production observations unchanged",
+  "baseline_commit": "b0a8030cb",
+  "original_windows": [
+    300,
+    60,
+    10
+  ],
+  "original_check_frequency_and_order": true,
+  "retry": false,
+  "product": false,
+  "admission": false
+}

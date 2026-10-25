@@ -1,0 +1,18 @@
+from pathlib import Path
+import base64,runpy
+old=Path('target/server-fd-identity-build-worker-20261025.py').read_text()
+changes=[
+ ("manifest=json.loads((base/'manifest.json').read_bytes());old=upload/'source-v3'", "manifest=json.loads((base/'authority-parent-runtime-build-first/source-manifest.json').read_bytes());old=upload/'source-authority-parent-runtime-first'"),
+ ("assert sha(base/'manifest.json')=='2a0f7c581a1e854ab71841efb71aaebee3de56d1c0357b54d55a41ae4011ea6d'", "assert len(manifest)==2565 and sha(base/'authority-parent-runtime-build-first/libtest')=='1d43e73b00403b0ee834d11b392f754b124b40e5e6151d1a28cc22a020f5afc1'"),
+ ("for name,item in manifest['members'].items():assert sha(old/name)==item['sha256'],name", "for name,digest in manifest.items():assert sha(old/name)==digest,name"),
+ ("expected={name:item['sha256'] for name,item in manifest['members'].items()}", "expected=dict(manifest)"),
+ ("fresh fstat dev/inode leaf, x86_64 only", "test-only Boot Namespace operation attribution; production observations unchanged"),
+ ("11445ff7304fa49beaf3be16ed6393155f5a183b", "b0a8030cb"),
+]
+for a,b in changes:
+ count=2 if a.startswith('for name,item in') else 1
+ assert old.count(a)==count,(a,old.count(a));old=old.replace(a,b)
+names=['diagnostic_kernel_origin.rs','diagnostic_kernel_operation_cost.rs','diagnostic_kernel_operation_tests.rs','diagnostic_kernel_operation_reference.rs']
+files={n:base64.b64encode((Path('tools/long-run-supervisor-074/src')/n).read_bytes()).decode() for n in names}
+prefix=f'OVERLAY={files!r}\nRUN_TAG="kernel-operation-build-first"\nSOURCE_TAG="source-kernel-operation-first"\n'
+runpy.run_path('target/prepare-capacity-checks-20261025.py',init_globals=dict(WORKER_FILE='target/empty-worker-20261025.py',WORKER_DIR='kernel-operation-build-first',WORKER_PREFIX=prefix+old+'\n'))

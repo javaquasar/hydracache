@@ -1,0 +1,86 @@
+{
+  "protocol": {
+    "schema": "hc074-kernel-operation-cost-v1",
+    "baseline_runtime_commit": "e5284749e84a1a025ea1ef47f2b20e744a72bed1",
+    "purpose": "selected-operation CPU attribution in actual Boot and Namespace functions, not an optimization candidate",
+    "processes": 8,
+    "cases": [
+      "boot",
+      "user",
+      "mnt",
+      "pid",
+      "time"
+    ],
+    "stages": [
+      "open",
+      "filesystem",
+      "identity",
+      "document",
+      "decode",
+      "path",
+      "empty"
+    ],
+    "operation_counts_per_call": {
+      "boot": [
+        4,
+        4,
+        0,
+        1,
+        1,
+        0,
+        1
+      ],
+      "namespace": [
+        1,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1
+      ]
+    },
+    "arms": [
+      "reference",
+      "reference-control",
+      "runtime",
+      "observed"
+    ],
+    "samples_per_stage": 16,
+    "iterations_per_sample": 256,
+    "warmups_per_case_and_reference_runtime": 16,
+    "order": "eight forward/reverse cyclic four-arm permutations, twice, rotated by process",
+    "cpu_affinity": [
+      5
+    ],
+    "uid": 1000,
+    "compiler": "Rust 1.94 GNU release default features",
+    "baseline_control_interval": [
+      0.97,
+      1.03
+    ],
+    "estimator": "median over eight process medians of sixteen paired log CPU ratios per case and selected stage",
+    "bootstrap": "20000 process resamples, seed 0x074d1a05, percentile 95%",
+    "selected_operation_estimator": "median over eight process medians of sixteen observed CPU ns per selected operation",
+    "empty_control_subtracted": false,
+    "selected_spans_additive": false,
+    "selected_clocks_are_original_guard_clocks": false,
+    "observer_preserves_errno_and_original_results": true,
+    "outer_seconds": 300,
+    "per_process_seconds": 45,
+    "original_check_frequency_order_and_windows_unchanged": true,
+    "first_refusals_preserved": true,
+    "retry": false,
+    "preparation_retry": false,
+    "product": false,
+    "admission": false
+  },
+  "phase": "attribution",
+  "image_sha256": "5123ef8a8bbb4f04840ab4259908ff20b6383af354c44a2e6893b819494d34b7",
+  "source_manifest_sha256": "51be38c9c532e4298b1d0b043e2142f69e4bc2c64ae661f96a293c6412c7ad92",
+  "source_commit": "ed0707328a3e77f08ca2f63dfadaa0d1bde119c2",
+  "overlapping_builds_by_this_session": false,
+  "retry": false,
+  "product": false,
+  "admission": false
+}

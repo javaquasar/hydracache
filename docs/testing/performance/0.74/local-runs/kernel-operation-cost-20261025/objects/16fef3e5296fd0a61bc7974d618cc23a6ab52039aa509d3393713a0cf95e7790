@@ -1,0 +1,75 @@
+"""Saved-source and raw-cohort audit; no runtime optimization or admission."""
+from pathlib import Path
+import ast,base64,hashlib,json,re,runpy,subprocess
+ROOT=Path(__file__).resolve().parent.parent
+api=runpy.run_path(str(ROOT/'tools/kernel-operation-cost-074/review.py'))
+NAMES=['diagnostic_kernel_origin.rs','diagnostic_kernel_operation_cost.rs','diagnostic_kernel_operation_tests.rs','diagnostic_kernel_operation_reference.rs']
+BASELINE='b0a8030cb'
+INSTRUMENTATION='ed0707328a3e77f08ca2f63dfadaa0d1bde119c2'
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+def load():
+ packet=json.loads((ROOT/'target/authorized-server-session-20261025/kernel-operation-final-export/stdout.log').read_bytes());assert packet['complete']
+ files={}
+ for name,item in packet['members'].items():
+  raw=base64.b64decode(item['base64']);assert len(raw)==item['bytes'] and sha(raw)==item['sha256'];files[name]=raw
+ return files,packet['final_frame']
+def baseline():return subprocess.check_output(['git','show',BASELINE+':tools/long-run-supervisor-074/src/'+NAMES[0]],cwd=ROOT)
+def extract(source,name):
+ match=re.search(r'(?:pub\(super\) )?fn '+name+r'(?:\b|<)',source);assert match,name
+ begin=match.start();brace=source.index('{',begin);depth=1;end=brace+1
+ while depth:
+  if source[end]=='{':depth+=1
+  if source[end]=='}':depth-=1
+  end+=1
+ return source[begin:end]
+def source_proof(sources,old):
+ norm=lambda raw:raw.decode().replace('\r\n','\n')
+ body=norm(sources[NAMES[0]])
+ modules='#[cfg(test)]\n#[path = "diagnostic_kernel_operation_cost.rs"]\nmod operation_cost;\n\n#[cfg(all(test, target_arch = "x86_64"))]\n#[path = "diagnostic_kernel_operation_tests.rs"]\nmod operation_tests;\n\n'
+ assert body.count(modules)==1;body=body.replace(modules,'')
+ pattern=r'    #\[cfg\(test\)\]\n    (?:let \w+ = operation_cost::span\(operation_cost::Kind::\w+\);|drop\(operation_cost::span\(operation_cost::Kind::\w+\)\);|drop\(operation_\w+\);)\n'
+ body,count=re.subn(pattern,'',body);assert count==12
+ assert body==norm(old),'Runtime predicate, observation, error order or FD lifetime changed'
+ reference=norm(sources[NAMES[3]])
+ names=['filesystem','fixed_child','namespace_path','namespace','boot_read','boot_view','boot_apply']
+ for name in names:
+  original=extract(norm(old),name);copy=extract(reference,'reference_'+name)
+  copy=copy.replace('pub(super) fn ','fn ',1);original=original.replace('pub(super) fn ','fn ',1)
+  for called in names:copy=re.sub(r'\breference_'+called+r'(?=\b|<)',called,copy)
+  assert re.sub(r'\s+','',original)==re.sub(r'\s+','',copy),name
+ observer=norm(sources[NAMES[1]])
+ assert 'libc::__errno_location()' in observer and 'unsafe { *errno = saved };' in observer
+ assert observer.count('PhantomData<std::rc::Rc<()>>')==2
+ return dict(test_only_observer_sites=12,production_body_exactly_preserved=True,
+  seven_reference_functions_match_baseline=True,original_order_and_fd_lifetimes_preserved=True,
+  original_windows_unchanged=True,observer_errno_and_thread_locality_checked=True)
+def review(files,frame,sources,old):
+ def get(group,name):return json.loads(files[group+'/'+name])
+ build='kernel-operation-build-first';cohort='kernel-operation-cohort-first'
+ for group in [build,cohort]:
+  result=get(group,'result.json');assert result['passed'] and result['source_unchanged'] and result['first_refusal'] is None and result['postflight_refusal'] is None
+  assert get(group,'preflight.json')==get(group,'postflight.json')==frame
+ result=get(build,'result.json');assert [(r['name'],r['exit']) for r in result['cases']]==[('build',0),('check',0),('clippy',0),('origin-tests',0)]
+ assert b'43 passed; 0 failed; 5 ignored;' in files[build+'/origin-tests.stdout.log']
+ for name in ['check','clippy']:
+  argv=get(build,name+'-command.json')['argv'];assert '--all-targets' in argv and '--all-features' in argv and '--locked' in argv
+  if name=='clippy':assert argv[-3:]==['--','-D','warnings']
+ manifest=get(build,'source-manifest.json');assert len(manifest)==2568
+ for name,raw in sources.items():assert manifest['tools/long-run-supervisor-074/src/'+name]==sha(raw),name
+ proof=source_proof(sources,old)
+ intent=get(cohort,'consumed.json');assert intent['phase']=='attribution' and intent['source_commit']==INSTRUMENTATION
+ assert intent['image_sha256']==result['libtest_sha256']=='5123ef8a8bbb4f04840ab4259908ff20b6383af354c44a2e6893b819494d34b7'
+ assert intent['source_manifest_sha256']==sha(files[build+'/source-manifest.json'])
+ assert intent['protocol']==json.loads((ROOT/'tools/kernel-operation-cost-074/protocol.json').read_bytes()) and not intent['retry']
+ assert get(cohort,'result.json')['cases']==[dict(cohort=i,exit=0) for i in range(8)]
+ identities=[]
+ for i in range(8):
+  child=get(cohort,f'cohort-{i}-child.json');assert child['affinity']==[5];identities.append((child['pid'],child['start_ticks']))
+  command=get(cohort,f'cohort-{i}-command.json');assert command['env']['HC074_KERNEL_OPERATION_COHORT']==str(i) and command['outer_seconds']==45
+ assert len(set(identities))==8
+ estimates=api['review']([files[cohort+f'/cohort-{i}.stdout.log'] for i in range(8)])
+ return dict(source_proof=proof,estimates=estimates,targeted_tests_passed=43,optimization_implemented=False,
+  preparation_repeated=False,product=False,admission=False)
+if __name__=='__main__':
+ files,frame=load();sources={n:(ROOT/'tools/long-run-supervisor-074/src'/n).read_bytes() for n in NAMES}
+ print(json.dumps(review(files,frame,sources,baseline()),sort_keys=True,indent=2))

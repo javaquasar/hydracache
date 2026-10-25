@@ -1,0 +1,22 @@
+from pathlib import Path
+import base64,json,runpy,subprocess
+export=json.loads(Path('target/authorized-server-session-20261025/kernel-operation-build-export/stdout.log').read_bytes());assert export['complete']
+group='kernel-operation-build-first/'
+result=json.loads(base64.b64decode(export['members'][group+'result.json']['base64']));assert result['passed'] and result['source_unchanged']
+worker=Path('target/server-authority-directory-cost-worker-20261025.py').read_text()
+changes=[
+ ("selector='diagnostic_worker_policy::authority_registry::fixture::fixed::directory_cost::fresh_authority_directory_'+PHASE+'_cpu_screen'", "selector='diagnostic_kernel_admission::origin::operation_tests::fresh_kernel_operation_cpu_screen'"),
+ ("assert PHASE in ['prototype','installed']", "assert PHASE=='attribution'"),
+ ('HC074_DIRECTORY_COHORT','HC074_KERNEL_OPERATION_COHORT'),
+ ("text.count('HC074-DIR-COST ')==128", "text.count('HC074-OPERATION-COST ')==2240"),
+ ('outer_seconds=30','outer_seconds=45'),
+ ('child.wait(timeout=30)','child.wait(timeout=min(45,max(0.001,300-(time.monotonic_ns()-start)/1e9)))'),
+ ('first directory cost child timed out; no retry','first operation attribution child timed out; no retry'),
+]
+for a,b in changes:
+ assert worker.count(a)==1,(a,worker.count(a));worker=worker.replace(a,b)
+head=subprocess.check_output(['git','rev-parse','HEAD']).decode().strip()
+prefix='RUN_TAG="kernel-operation-cohort-first"\nPHASE="attribution"\nBUILD_TAG="kernel-operation-build-first"\nSOURCE_TAG="source-kernel-operation-first"\n'
+prefix+=f'IMAGE_SHA={result["libtest_sha256"]!r}\nMANIFEST_SHA={export["members"][group+"source-manifest.json"]["sha256"]!r}\nSOURCE_COMMIT={head!r}\n'
+prefix+='PROTOCOL_B64='+repr(base64.b64encode(Path('tools/kernel-operation-cost-074/protocol.json').read_bytes()).decode())+'\n'
+runpy.run_path('target/prepare-capacity-checks-20261025.py',init_globals=dict(WORKER_FILE='target/empty-worker-20261025.py',WORKER_DIR='kernel-operation-cohort-first',WORKER_PREFIX=prefix+worker+'\n'))

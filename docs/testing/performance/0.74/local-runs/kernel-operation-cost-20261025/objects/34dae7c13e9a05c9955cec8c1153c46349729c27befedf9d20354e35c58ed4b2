@@ -1,0 +1,1067 @@
+{
+  "admission": false,
+  "estimates": {
+    "admission": false,
+    "calibration_passed": true,
+    "cases": {
+      "boot": {
+        "decode": {
+          "controls_passed": true,
+          "ratios": {
+            "observed": {
+              "lower": 1.130698464951001,
+              "ratio": 1.1322732551060612,
+              "upper": 1.1339688468339653
+            },
+            "reference-control": {
+              "lower": 0.9995317225021814,
+              "ratio": 0.999849412605519,
+              "upper": 1.0001122521345998
+            },
+            "runtime": {
+              "lower": 1.011024249348837,
+              "ratio": 1.0118481333923905,
+              "upper": 1.0127856576094476
+            }
+          },
+          "reference_cpu_ns_per_call": 9901.6376953125,
+          "selected_cpu_ns_per_operation": 615.30859375,
+          "selected_process_medians": [
+            615.296875,
+            613.103515625,
+            615.16015625,
+            616.13671875,
+            617.630859375,
+            615.3203125,
+            623.826171875,
+            611.802734375
+          ]
+        },
+        "document": {
+          "controls_passed": true,
+          "ratios": {
+            "observed": {
+              "lower": 1.1305276058650624,
+              "ratio": 1.131418389245389,
+              "upper": 1.1335212768808147
+            },
+            "reference-control": {
+              "lower": 0.9996347203398394,
+              "ratio": 1.00013025503915,
+              "upper": 1.000315962045297
+            },
+            "runtime": {
+              "lower": 1.0109872904869353,
+              "ratio": 1.011310870431543,
+              "upper": 1.0122090963861123
+            }
+          },
+          "reference_cpu_ns_per_call": 9906.0029296875,
+          "selected_cpu_ns_per_operation": 1388.4853515625,
+          "selected_process_medians": [
+            1397.697265625,
+            1392.935546875,
+            1385.537109375,
+            1388.251953125,
+            1386.078125,
+            1388.294921875,
+            1392.291015625,
+            1388.67578125
+          ]
+        },
+        "empty": {
+          "controls_passed": true,
+          "ratios": {
+            "observed": {
+              "lower": 1.1318104718655497,
+              "ratio": 1.1331118937413425,
+              "upper": 1.1342392091856563
+            },
+            "reference-control": {
+              "lower": 0.9998579883859917,
+              "ratio": 1.0000855055871898,
+              "upper": 1.0005197624396187
+            },
+            "runtime": {
+              "lower": 1.0110181733131942,
+              "ratio": 1.0121434348269636,
+              "upper": 1.012869037406236
+            }
+          },
+          "reference_cpu_ns_per_call": 9903.8251953125,
+          "selected_cpu_ns_per_operation": 574.927734375,
+          "selected_process_medians": [
+            574.923828125,
+            574.412109375,
+            574.966796875,
+            574.00390625,
+            574.931640625,
+            575.705078125,
+            577.166015625,
+            574.130859375
+          ]
+        },
+        "filesystem": {
+          "controls_passed": true,
+          "ratios": {
+            "observed": {
+              "lower": 1.4711810417663516,
+              "ratio": 1.4826678599659089,
+              "upper": 1.4859033040051584
+            },
+            "reference-control": {
+              "lower": 0.9995997675996482,
+              "ratio": 0.999994918445965,
+              "upper": 1.0003750360930677
+            },
+            "runtime": {
+              "lower": 1.0101276566860538,
+              "ratio": 1.0111380462686266,
+              "upper": 1.0128907763993693
+            }
+          },
+          "reference_cpu_ns_per_call": 9900.5439453125,
+          "selected_cpu_ns_per_operation": 934.893310546875,
+          "selected_process_medians": [
+            936.2431640625,
+            933.79638671875,
+            932.6630859375,
+            934.70849609375,
+            935.564453125,
+            935.078125,
+            937.59130859375,
+            933.9951171875
+          ]
+        },
+        "identity": {
+          "controls_passed": true,
+          "ratios": {
+            "observed": {
+              "lower": 1.0107091656108584,
+              "ratio": 1.0112186289843743,
+              "upper": 1.0119605943231036
+            },
+            "reference-control": {
+              "lower": 0.9995220911014243,
+              "ratio": 0.999979756844674,
+              "upper": 1.000119921866497
+            },
+            "runtime": {
+              "lower": 1.0107217324484346,
+              "ratio": 1.0115669852059364,
+              "upper": 1.0121889336832315
+            }
+          },
+          "reference_cpu_ns_per_call": 9911.3828125,
+          "selected_cpu_ns_per_operation": null,
+          "selected_process_medians": []
+        },
+        "open": {
+          "controls_passed": true,
+          "ratios": {
+            "observed": {
+              "lower": 1.4728155335215882,
+              "ratio": 1.4815458685612877,
+              "upper": 1.4837769853602887
+            },
+            "reference-control": {
+              "lower": 0.9997096950634362,
+              "ratio": 1.0001207803409675,
+              "upper": 1.0003056023200103
+            },
+            "runtime": {
+              "lower": 1.0102789895511974,
+              "ratio": 1.011388796804931,
+              "upper": 1.0126721957909686
+            }
+          },
+          "reference_cpu_ns_per_call": 9904.33203125,
+          "selected_cpu_ns_per_operation": 1941.6298828125,
+          "selected_process_medians": [
+            1941.65673828125,
+            1939.85107421875,
+            1974.21923828125,
+            1976.7578125,
+            1939.38720703125,
+            1971.7890625,
+            1938.74609375,
+            1941.60302734375
+          ]
+        },
+        "path": {
+          "controls_passed": true,
+          "ratios": {
+            "observed": {
+              "lower": 1.0097641870384437,
+              "ratio": 1.0122127987240586,
+              "upper": 1.012719848166185
+            },
+            "reference-control": {
+              "lower": 0.9994339914904433,
+              "ratio": 1.0001046533155147,
+              "upper": 1.000950383794771
+            },
+            "runtime": {
+              "lower": 1.0111167219318957,
+              "ratio": 1.012466629019513,
+              "upper": 1.012698487007084
+            }
+          },
+          "reference_cpu_ns_per_call": 9899.9091796875,
+          "selected_cpu_ns_per_operation": null,
+          "selected_process_medians": []
+        }
+      },
+      "mnt": {
+        "decode": {
+          "controls_passed": true,
+          "ratios": {
+            "observed": {
+              "lower": 1.0072425133332419,
+              "ratio": 1.008336542412383,
+              "upper": 1.0096350876000226
+            },
+            "reference-control": {
+              "lower": 0.9991451795434846,
+              "ratio": 0.9995486956335069,
+              "upper": 1.0000510202536876
+            },
+            "runtime": {
+              "lower": 1.0074330184724,
+              "ratio": 1.0083605423142992,
+              "upper": 1.0087826494059282
+            }
+          },
+          "reference_cpu_ns_per_call": 4198.8642578125,
+          "selected_cpu_ns_per_operation": null,
+          "selected_process_medians": []
+        },
+        "document": {
+          "controls_passed": true,
+          "ratios": {
+            "observed": {
+              "lower": 1.007927629492235,
+              "ratio": 1.0088301237457764,
+              "upper": 1.0093834491964937
+            },
+            "reference-control": {
+              "lower": 0.9992259902928271,
+              "ratio": 1.0001203292078034,
+              "upper": 1.0013314041433157
+            },
+            "runtime": {
+              "lower": 1.0078451333498246,
+              "ratio": 1.0085149981140613,
+              "upper": 1.0086561860681562
+            }
+          },
+          "reference_cpu_ns_per_call": 4199.685546875,
+          "selected_cpu_ns_per_operation": null,
+          "selected_process_medians": []
+        },
+        "empty": {
+          "controls_passed": true,
+          "ratios": {
+            "observed": {
+              "lower": 1.2838204156888446,
+              "ratio": 1.2868786774007763,
+              "upper": 1.2875825295126038
+            },
+            "reference-control": {
+              "lower": 0.9994326018741672,
+              "ratio": 1.000333500877956,
+              "upper": 1.0009976798104978
+            },
+            "runtime": {
+              "lower": 1.0072701379356226,
+              "ratio": 1.0078791529800806,
+              "upper": 1.0088682469427304
+            }
+          },
+          "reference_cpu_ns_per_call": 4205.3974609375,
+          "selected_cpu_ns_per_operation": 571.416015625,
+          "selected_process_medians": [
+            571.69140625,
+            569.6171875,
+            572.353515625,
+            567.322265625,
+            570.330078125,
+            571.140625,
+            572.044921875,
+            573.0234375
+          ]
+        },
+        "filesystem": {
+          "controls_passed": true,
+          "ratios": {
+            "observed": {
+              "lower": 1.2850721649956582,
+              "ratio": 1.2862237355298989,
+              "upper": 1.2871764428618109
+            },
+            "reference-control": {
+              "lower": 0.99903022048693,
+              "ratio": 0.9998605258779233,
+              "upper": 1.0016949945835127
+            },
+            "runtime": {
+              "lower": 1.007965259384507,
+              "ratio": 1.0082942693269665,
+              "upper": 1.0091551220491592
+            }
+          },
+          "reference_cpu_ns_per_call": 4198.5224609375,
+          "selected_cpu_ns_per_operation": 957.099609375,
+          "selected_process_medians": [
+            956.662109375,
+            956.931640625,
+            960.63671875,
+            957.267578125,
+            957.8046875,
+            956.365234375,
+            962.83203125,
+            956.115234375
+          ]
+        },
+        "identity": {
+          "controls_passed": true,
+          "ratios": {
+            "observed": {
+              "lower": 1.2839045065634742,
+              "ratio": 1.2848115064927663,
+              "upper": 1.2865590922559111
+            },
+            "reference-control": {
+              "lower": 0.9992852348111197,
+              "ratio": 0.9998645134332835,
+              "upper": 1.0007215157591611
+            },
+            "runtime": {
+              "lower": 1.0082017280521378,
+              "ratio": 1.0088078106822558,
+              "upper": 1.0099858961288062
+            }
+          },
+          "reference_cpu_ns_per_call": 4200.7578125,
+          "selected_cpu_ns_per_operation": 1083.2939453125,
+          "selected_process_medians": [
+            1088.623046875,
+            1082.67578125,
+            1079.912109375,
+            1086.486328125,
+            1082.736328125,
+            1078.734375,
+            1091.779296875,
+            1083.8515625
+          ]
+        },
+        "open": {
+          "controls_passed": true,
+          "ratios": {
+            "observed": {
+              "lower": 1.2899230881381893,
+              "ratio": 1.292229641826989,
+              "upper": 1.2934466337329822
+            },
+            "reference-control": {
+              "lower": 0.9992763540907028,
+              "ratio": 0.9999730380061418,
+              "upper": 1.000860342086205
+            },
+            "runtime": {
+              "lower": 1.00751996335461,
+              "ratio": 1.008167239543778,
+              "upper": 1.008693812684219
+            }
+          },
+          "reference_cpu_ns_per_call": 4202.1259765625,
+          "selected_cpu_ns_per_operation": 3322.08203125,
+          "selected_process_medians": [
+            3322.1796875,
+            3321.984375,
+            3323.875,
+            3319.365234375,
+            3313.51953125,
+            3307.55078125,
+            3333.669921875,
+            3336.7734375
+          ]
+        },
+        "path": {
+          "controls_passed": true,
+          "ratios": {
+            "observed": {
+              "lower": 1.2907685247830434,
+              "ratio": 1.292291254345414,
+              "upper": 1.2943801867366087
+            },
+            "reference-control": {
+              "lower": 0.999972463509301,
+              "ratio": 1.000631449184739,
+              "upper": 1.0010133025315586
+            },
+            "runtime": {
+              "lower": 1.0072519148766195,
+              "ratio": 1.0086140888647128,
+              "upper": 1.0092154028415103
+            }
+          },
+          "reference_cpu_ns_per_call": 4198.5322265625,
+          "selected_cpu_ns_per_operation": 578.4189453125,
+          "selected_process_medians": [
+            578.458984375,
+            576.03125,
+            579.873046875,
+            578.51953125,
+            578.693359375,
+            578.03125,
+            577.744140625,
+            578.37890625
+          ]
+        }
+      },
+      "pid": {
+        "decode": {
+          "controls_passed": true,
+          "ratios": {
+            "observed": {
+              "lower": 1.0073588332995118,
+              "ratio": 1.0089236347200643,
+              "upper": 1.010408224893744
+            },
+            "reference-control": {
+              "lower": 0.9988102512021066,
+              "ratio": 0.9995625694172203,
+              "upper": 1.0004498787915157
+            },
+            "runtime": {
+              "lower": 1.0073966709254372,
+              "ratio": 1.0087510465632545,
+              "upper": 1.0101188021864025
+            }
+          },
+          "reference_cpu_ns_per_call": 4209.3046875,
+          "selected_cpu_ns_per_operation": null,
+          "selected_process_medians": []
+        },
+        "document": {
+          "controls_passed": true,
+          "ratios": {
+            "observed": {
+              "lower": 1.0080165443112454,
+              "ratio": 1.0085160049954345,
+              "upper": 1.0104851967341737
+            },
+            "reference-control": {
+              "lower": 0.9990298097226098,
+              "ratio": 0.9999607827578928,
+              "upper": 1.0008646368636973
+            },
+            "runtime": {
+              "lower": 1.0076613519364075,
+              "ratio": 1.0081936848446336,
+              "upper": 1.0092868372976367
+            }
+          },
+          "reference_cpu_ns_per_call": 4213.630859375,
+          "selected_cpu_ns_per_operation": null,
+          "selected_process_medians": []
+        },
+        "empty": {
+          "controls_passed": true,
+          "ratios": {
+            "observed": {
+              "lower": 1.2837472505762233,
+              "ratio": 1.2865218939787777,
+              "upper": 1.2886988406130173
+            },
+            "reference-control": {
+              "lower": 0.9987009076006274,
+              "ratio": 1.0000578192502318,
+              "upper": 1.0010787965017776
+            },
+            "runtime": {
+              "lower": 1.0067647763001104,
+              "ratio": 1.0073188371986599,
+              "upper": 1.009769755661869
+            }
+          },
+          "reference_cpu_ns_per_call": 4213.4052734375,
+          "selected_cpu_ns_per_operation": 570.986328125,
+          "selected_process_medians": [
+            571.318359375,
+            570.275390625,
+            572.259765625,
+            569.7578125,
+            571.826171875,
+            570.181640625,
+            572.24609375,
+            570.654296875
+          ]
+        },
+        "filesystem": {
+          "controls_passed": true,
+          "ratios": {
+            "observed": {
+              "lower": 1.2839911132043782,
+              "ratio": 1.285862603331375,
+              "upper": 1.2872895587543112
+            },
+            "reference-control": {
+              "lower": 0.9997725781126544,
+              "ratio": 1.0005124520059734,
+              "upper": 1.000926708929283
+            },
+            "runtime": {
+              "lower": 1.007292914763034,
+              "ratio": 1.008323104497166,
+              "upper": 1.0100951071131123
+            }
+          },
+          "reference_cpu_ns_per_call": 4209.7822265625,
+          "selected_cpu_ns_per_operation": 959.1396484375,
+          "selected_process_medians": [
+            956.27734375,
+            958.140625,
+            962.587890625,
+            958.712890625,
+            959.56640625,
+            955.953125,
+            960.822265625,
+            959.861328125
+          ]
+        },
+        "identity": {
+          "controls_passed": true,
+          "ratios": {
+            "observed": {
+              "lower": 1.2810342143289706,
+              "ratio": 1.28465089692557,
+              "upper": 1.2869151241890824
+            },
+            "reference-control": {
+              "lower": 0.9995031929613274,
+              "ratio": 1.0005019569334448,
+              "upper": 1.0010441005720374
+            },
+            "runtime": {
+              "lower": 1.0079524405792717,
+              "ratio": 1.008503361099521,
+              "upper": 1.0095717459387283
+            }
+          },
+          "reference_cpu_ns_per_call": 4209.71484375,
+          "selected_cpu_ns_per_operation": 1086.9169921875,
+          "selected_process_medians": [
+            1092.892578125,
+            1085.70703125,
+            1081.78125,
+            1086.642578125,
+            1089.353515625,
+            1087.19140625,
+            1091.212890625,
+            1080.841796875
+          ]
+        },
+        "open": {
+          "controls_passed": true,
+          "ratios": {
+            "observed": {
+              "lower": 1.2903275080861865,
+              "ratio": 1.2919576007514748,
+              "upper": 1.2935524883606302
+            },
+            "reference-control": {
+              "lower": 0.99902128111801,
+              "ratio": 1.000009328297516,
+              "upper": 1.0006229448180954
+            },
+            "runtime": {
+              "lower": 1.0081646120075214,
+              "ratio": 1.008653605210573,
+              "upper": 1.009473207424221
+            }
+          },
+          "reference_cpu_ns_per_call": 4206.3642578125,
+          "selected_cpu_ns_per_operation": 3329.306640625,
+          "selected_process_medians": [
+            3325.13671875,
+            3328.0078125,
+            3332.6953125,
+            3330.60546875,
+            3322.73046875,
+            3321.462890625,
+            3332.48828125,
+            3336.42578125
+          ]
+        },
+        "path": {
+          "controls_passed": true,
+          "ratios": {
+            "observed": {
+              "lower": 1.2878052034910374,
+              "ratio": 1.289428556782407,
+              "upper": 1.2902316446441726
+            },
+            "reference-control": {
+              "lower": 0.9985063327052104,
+              "ratio": 0.9998188865418084,
+              "upper": 1.0003473111180052
+            },
+            "runtime": {
+              "lower": 1.0070713741410018,
+              "ratio": 1.0079333753109594,
+              "upper": 1.0087793501149187
+            }
+          },
+          "reference_cpu_ns_per_call": 4211.6572265625,
+          "selected_cpu_ns_per_operation": 577.466796875,
+          "selected_process_medians": [
+            575.62890625,
+            576.89453125,
+            578.0703125,
+            577.14453125,
+            577.7890625,
+            577.97265625,
+            578.07421875,
+            576.166015625
+          ]
+        }
+      },
+      "time": {
+        "decode": {
+          "controls_passed": true,
+          "ratios": {
+            "observed": {
+              "lower": 1.0072544001683295,
+              "ratio": 1.008835315972161,
+              "upper": 1.010491668438037
+            },
+            "reference-control": {
+              "lower": 0.9997563663385864,
+              "ratio": 1.00001375364839,
+              "upper": 1.0006138405421894
+            },
+            "runtime": {
+              "lower": 1.0081850783158357,
+              "ratio": 1.0084120235417338,
+              "upper": 1.0097081781228479
+            }
+          },
+          "reference_cpu_ns_per_call": 4197.986328125,
+          "selected_cpu_ns_per_operation": null,
+          "selected_process_medians": []
+        },
+        "document": {
+          "controls_passed": true,
+          "ratios": {
+            "observed": {
+              "lower": 1.0070130281031564,
+              "ratio": 1.0095775904625082,
+              "upper": 1.0104643778574856
+            },
+            "reference-control": {
+              "lower": 0.9992523328149795,
+              "ratio": 1.0001463821105179,
+              "upper": 1.0006718524517018
+            },
+            "runtime": {
+              "lower": 1.0079968075563062,
+              "ratio": 1.0084829083001234,
+              "upper": 1.0101159543270186
+            }
+          },
+          "reference_cpu_ns_per_call": 4197.0576171875,
+          "selected_cpu_ns_per_operation": null,
+          "selected_process_medians": []
+        },
+        "empty": {
+          "controls_passed": true,
+          "ratios": {
+            "observed": {
+              "lower": 1.2838591565598598,
+              "ratio": 1.287403628860484,
+              "upper": 1.288597589351331
+            },
+            "reference-control": {
+              "lower": 0.999716936532384,
+              "ratio": 1.000257953415415,
+              "upper": 1.0007859265518886
+            },
+            "runtime": {
+              "lower": 1.0083726517759835,
+              "ratio": 1.0090239386058317,
+              "upper": 1.0102574490521858
+            }
+          },
+          "reference_cpu_ns_per_call": 4199.6162109375,
+          "selected_cpu_ns_per_operation": 570.2568359375,
+          "selected_process_medians": [
+            570.33203125,
+            572.40234375,
+            572.76953125,
+            568.443359375,
+            570.1171875,
+            568.978515625,
+            571.646484375,
+            570.181640625
+          ]
+        },
+        "filesystem": {
+          "controls_passed": true,
+          "ratios": {
+            "observed": {
+              "lower": 1.2845343999788166,
+              "ratio": 1.2872699856827912,
+              "upper": 1.2891595664899391
+            },
+            "reference-control": {
+              "lower": 0.9988368111417635,
+              "ratio": 0.9997025662335268,
+              "upper": 1.000489474624617
+            },
+            "runtime": {
+              "lower": 1.0075760104109772,
+              "ratio": 1.0080476971592918,
+              "upper": 1.0088830819787946
+            }
+          },
+          "reference_cpu_ns_per_call": 4198.3662109375,
+          "selected_cpu_ns_per_operation": 958.7978515625,
+          "selected_process_medians": [
+            957.712890625,
+            958.630859375,
+            960.1015625,
+            958.96484375,
+            960.32421875,
+            958.47265625,
+            960.521484375,
+            957.373046875
+          ]
+        },
+        "identity": {
+          "controls_passed": true,
+          "ratios": {
+            "observed": {
+              "lower": 1.2834044061275964,
+              "ratio": 1.2868637238325151,
+              "upper": 1.2879426069211535
+            },
+            "reference-control": {
+              "lower": 0.9982891904124939,
+              "ratio": 0.9992504631990503,
+              "upper": 0.9998407530008315
+            },
+            "runtime": {
+              "lower": 1.0066022038492402,
+              "ratio": 1.008216287854847,
+              "upper": 1.0108240941521227
+            }
+          },
+          "reference_cpu_ns_per_call": 4195.884765625,
+          "selected_cpu_ns_per_operation": 1087.580078125,
+          "selected_process_medians": [
+            1088.001953125,
+            1087.814453125,
+            1079.888671875,
+            1085.48828125,
+            1091.322265625,
+            1087.345703125,
+            1091.158203125,
+            1081.607421875
+          ]
+        },
+        "open": {
+          "controls_passed": true,
+          "ratios": {
+            "observed": {
+              "lower": 1.2888577593070643,
+              "ratio": 1.292349489794344,
+              "upper": 1.2934351024170239
+            },
+            "reference-control": {
+              "lower": 0.9994181982921996,
+              "ratio": 1.0000539871075163,
+              "upper": 1.0004498782180276
+            },
+            "runtime": {
+              "lower": 1.0075097231755892,
+              "ratio": 1.0076637668113284,
+              "upper": 1.0089962565163981
+            }
+          },
+          "reference_cpu_ns_per_call": 4199.5087890625,
+          "selected_cpu_ns_per_operation": 3316.5888671875,
+          "selected_process_medians": [
+            3320.1875,
+            3320.7109375,
+            3312.990234375,
+            3311.794921875,
+            3308.072265625,
+            3312.48828125,
+            3370.6875,
+            3321.08203125
+          ]
+        },
+        "path": {
+          "controls_passed": true,
+          "ratios": {
+            "observed": {
+              "lower": 1.2907854066679476,
+              "ratio": 1.2939463337941597,
+              "upper": 1.2946362962587412
+            },
+            "reference-control": {
+              "lower": 0.9994450488607488,
+              "ratio": 0.9998909237313238,
+              "upper": 1.0006551792653704
+            },
+            "runtime": {
+              "lower": 1.0074106935119163,
+              "ratio": 1.0084783176494765,
+              "upper": 1.00961727150437
+            }
+          },
+          "reference_cpu_ns_per_call": 4194.83203125,
+          "selected_cpu_ns_per_operation": 579.4228515625,
+          "selected_process_medians": [
+            578.53515625,
+            580.86328125,
+            579.265625,
+            578.8515625,
+            578.302734375,
+            580.31640625,
+            579.669921875,
+            579.580078125
+          ]
+        }
+      },
+      "user": {
+        "decode": {
+          "controls_passed": true,
+          "ratios": {
+            "observed": {
+              "lower": 1.0083117163816784,
+              "ratio": 1.0091289760368607,
+              "upper": 1.009980541296917
+            },
+            "reference-control": {
+              "lower": 0.9997662505405276,
+              "ratio": 1.0000704342472369,
+              "upper": 1.0007805972994137
+            },
+            "runtime": {
+              "lower": 1.0080108047811716,
+              "ratio": 1.0093766427322102,
+              "upper": 1.011203875919416
+            }
+          },
+          "reference_cpu_ns_per_call": 4188.40625,
+          "selected_cpu_ns_per_operation": null,
+          "selected_process_medians": []
+        },
+        "document": {
+          "controls_passed": true,
+          "ratios": {
+            "observed": {
+              "lower": 1.0091967096758703,
+              "ratio": 1.009590331888822,
+              "upper": 1.010263245106815
+            },
+            "reference-control": {
+              "lower": 0.9996425147080439,
+              "ratio": 1.0000288090272251,
+              "upper": 1.0008728075848783
+            },
+            "runtime": {
+              "lower": 1.0069332455451492,
+              "ratio": 1.0097044366192032,
+              "upper": 1.0104516427794314
+            }
+          },
+          "reference_cpu_ns_per_call": 4186.4326171875,
+          "selected_cpu_ns_per_operation": null,
+          "selected_process_medians": []
+        },
+        "empty": {
+          "controls_passed": true,
+          "ratios": {
+            "observed": {
+              "lower": 1.2888677306848182,
+              "ratio": 1.289727355931732,
+              "upper": 1.2910038926490137
+            },
+            "reference-control": {
+              "lower": 0.9991875631283272,
+              "ratio": 1.0001797193744166,
+              "upper": 1.0005881326519872
+            },
+            "runtime": {
+              "lower": 1.0076314386578622,
+              "ratio": 1.0087981461148572,
+              "upper": 1.0096958948356993
+            }
+          },
+          "reference_cpu_ns_per_call": 4185.201171875,
+          "selected_cpu_ns_per_operation": 571.40234375,
+          "selected_process_medians": [
+            571.029296875,
+            572.34765625,
+            574.07421875,
+            570.005859375,
+            570.45703125,
+            571.775390625,
+            573.265625,
+            569.310546875
+          ]
+        },
+        "filesystem": {
+          "controls_passed": true,
+          "ratios": {
+            "observed": {
+              "lower": 1.2870114941585251,
+              "ratio": 1.2876836457150067,
+              "upper": 1.2898123584191499
+            },
+            "reference-control": {
+              "lower": 0.9982954152270721,
+              "ratio": 1.0000705952160873,
+              "upper": 1.0011042601989522
+            },
+            "runtime": {
+              "lower": 1.0065514018013018,
+              "ratio": 1.0083302093543423,
+              "upper": 1.0089975757223337
+            }
+          },
+          "reference_cpu_ns_per_call": 4188.6484375,
+          "selected_cpu_ns_per_operation": 958.2109375,
+          "selected_process_medians": [
+            954.9296875,
+            958.37109375,
+            960.109375,
+            957.140625,
+            958.05078125,
+            959.685546875,
+            962.509765625,
+            956.033203125
+          ]
+        },
+        "identity": {
+          "controls_passed": true,
+          "ratios": {
+            "observed": {
+              "lower": 1.2852819246448335,
+              "ratio": 1.2856819503797539,
+              "upper": 1.2886271443948092
+            },
+            "reference-control": {
+              "lower": 0.9988796017935171,
+              "ratio": 0.9999234991350368,
+              "upper": 1.0004521637660806
+            },
+            "runtime": {
+              "lower": 1.0079915796659547,
+              "ratio": 1.0100589836428067,
+              "upper": 1.0106883648238665
+            }
+          },
+          "reference_cpu_ns_per_call": 4185.5146484375,
+          "selected_cpu_ns_per_operation": 1082.947265625,
+          "selected_process_medians": [
+            1087.3125,
+            1083.154296875,
+            1084.759765625,
+            1079.279296875,
+            1082.740234375,
+            1080.53125,
+            1085.580078125,
+            1082.29296875
+          ]
+        },
+        "open": {
+          "controls_passed": true,
+          "ratios": {
+            "observed": {
+              "lower": 1.292415057401975,
+              "ratio": 1.295208522410594,
+              "upper": 1.296810609690929
+            },
+            "reference-control": {
+              "lower": 0.9990431858603905,
+              "ratio": 0.9994413603449851,
+              "upper": 1.0002944092387993
+            },
+            "runtime": {
+              "lower": 1.0065307817374223,
+              "ratio": 1.007750516766996,
+              "upper": 1.0094087253635005
+            }
+          },
+          "reference_cpu_ns_per_call": 4183.091796875,
+          "selected_cpu_ns_per_operation": 3309.4716796875,
+          "selected_process_medians": [
+            3308.185546875,
+            3310.7578125,
+            3311.3046875,
+            3299.818359375,
+            3303.298828125,
+            3300.787109375,
+            3316.96484375,
+            3313.3203125
+          ]
+        },
+        "path": {
+          "controls_passed": true,
+          "ratios": {
+            "observed": {
+              "lower": 1.2927255395383772,
+              "ratio": 1.2936109607902155,
+              "upper": 1.2954021025041473
+            },
+            "reference-control": {
+              "lower": 0.9995334068586166,
+              "ratio": 0.9999220879662444,
+              "upper": 1.0003518545760628
+            },
+            "runtime": {
+              "lower": 1.0062419123383342,
+              "ratio": 1.0079919412851825,
+              "upper": 1.0108660311760727
+            }
+          },
+          "reference_cpu_ns_per_call": 4183.81640625,
+          "selected_cpu_ns_per_operation": 578.49609375,
+          "selected_process_medians": [
+            576.041015625,
+            579.060546875,
+            577.59375,
+            579.123046875,
+            578.40625,
+            578.5859375,
+            578.666015625,
+            575.833984375
+          ]
+        }
+      }
+    },
+    "empty_control_subtracted": false,
+    "performance_improvement_proven": false,
+    "preparation_retry": false,
+    "product": false,
+    "selected_spans_include_observer_cost": true,
+    "spans_additive": false
+  },
+  "optimization_implemented": false,
+  "preparation_repeated": false,
+  "product": false,
+  "source_proof": {
+    "observer_errno_and_thread_locality_checked": true,
+    "original_order_and_fd_lifetimes_preserved": true,
+    "original_windows_unchanged": true,
+    "production_body_exactly_preserved": true,
+    "seven_reference_functions_match_baseline": true,
+    "test_only_observer_sites": 12
+  },
+  "targeted_tests_passed": 43
+}

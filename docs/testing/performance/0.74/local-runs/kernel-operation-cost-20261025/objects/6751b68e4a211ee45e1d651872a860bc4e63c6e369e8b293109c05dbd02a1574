@@ -1,0 +1,67 @@
+RUN_TAG="kernel-operation-cohort-first"
+PHASE="attribution"
+BUILD_TAG="kernel-operation-build-first"
+SOURCE_TAG="source-kernel-operation-first"
+IMAGE_SHA='5123ef8a8bbb4f04840ab4259908ff20b6383af354c44a2e6893b819494d34b7'
+MANIFEST_SHA='51be38c9c532e4298b1d0b043e2142f69e4bc2c64ae661f96a293c6412c7ad92'
+SOURCE_COMMIT='ed0707328a3e77f08ca2f63dfadaa0d1bde119c2'
+PROTOCOL_B64='ewogICJzY2hlbWEiOiAiaGMwNzQta2VybmVsLW9wZXJhdGlvbi1jb3N0LXYxIiwKICAiYmFzZWxpbmVfcnVudGltZV9jb21taXQiOiAiZTUyODQ3NDllODRhMWEwMjVlYTFlZjQ3ZjJiMjBlNzQ0YTcyYmVkMSIsCiAgInB1cnBvc2UiOiAic2VsZWN0ZWQtb3BlcmF0aW9uIENQVSBhdHRyaWJ1dGlvbiBpbiBhY3R1YWwgQm9vdCBhbmQgTmFtZXNwYWNlIGZ1bmN0aW9ucywgbm90IGFuIG9wdGltaXphdGlvbiBjYW5kaWRhdGUiLAogICJwcm9jZXNzZXMiOiA4LAogICJjYXNlcyI6IFsiYm9vdCIsICJ1c2VyIiwgIm1udCIsICJwaWQiLCAidGltZSJdLAogICJzdGFnZXMiOiBbIm9wZW4iLCAiZmlsZXN5c3RlbSIsICJpZGVudGl0eSIsICJkb2N1bWVudCIsICJkZWNvZGUiLCAicGF0aCIsICJlbXB0eSJdLAogICJvcGVyYXRpb25fY291bnRzX3Blcl9jYWxsIjogeyJib290IjogWzQsNCwwLDEsMSwwLDFdLCAibmFtZXNwYWNlIjogWzEsMSwxLDAsMCwxLDFdfSwKICAiYXJtcyI6IFsicmVmZXJlbmNlIiwgInJlZmVyZW5jZS1jb250cm9sIiwgInJ1bnRpbWUiLCAib2JzZXJ2ZWQiXSwKICAic2FtcGxlc19wZXJfc3RhZ2UiOiAxNiwKICAiaXRlcmF0aW9uc19wZXJfc2FtcGxlIjogMjU2LAogICJ3YXJtdXBzX3Blcl9jYXNlX2FuZF9yZWZlcmVuY2VfcnVudGltZSI6IDE2LAogICJvcmRlciI6ICJlaWdodCBmb3J3YXJkL3JldmVyc2UgY3ljbGljIGZvdXItYXJtIHBlcm11dGF0aW9ucywgdHdpY2UsIHJvdGF0ZWQgYnkgcHJvY2VzcyIsCiAgImNwdV9hZmZpbml0eSI6IFs1XSwKICAidWlkIjogMTAwMCwKICAiY29tcGlsZXIiOiAiUnVzdCAxLjk0IEdOVSByZWxlYXNlIGRlZmF1bHQgZmVhdHVyZXMiLAogICJiYXNlbGluZV9jb250cm9sX2ludGVydmFsIjogWzAuOTcsMS4wM10sCiAgImVzdGltYXRvciI6ICJtZWRpYW4gb3ZlciBlaWdodCBwcm9jZXNzIG1lZGlhbnMgb2Ygc2l4dGVlbiBwYWlyZWQgbG9nIENQVSByYXRpb3MgcGVyIGNhc2UgYW5kIHNlbGVjdGVkIHN0YWdlIiwKICAiYm9vdHN0cmFwIjogIjIwMDAwIHByb2Nlc3MgcmVzYW1wbGVzLCBzZWVkIDB4MDc0ZDFhMDUsIHBlcmNlbnRpbGUgOTUlIiwKICAic2VsZWN0ZWRfb3BlcmF0aW9uX2VzdGltYXRvciI6ICJtZWRpYW4gb3ZlciBlaWdodCBwcm9jZXNzIG1lZGlhbnMgb2Ygc2l4dGVlbiBvYnNlcnZlZCBDUFUgbnMgcGVyIHNlbGVjdGVkIG9wZXJhdGlvbiIsCiAgImVtcHR5X2NvbnRyb2xfc3VidHJhY3RlZCI6IGZhbHNlLAogICJzZWxlY3RlZF9zcGFuc19hZGRpdGl2ZSI6IGZhbHNlLAogICJzZWxlY3RlZF9jbG9ja3NfYXJlX29yaWdpbmFsX2d1YXJkX2Nsb2NrcyI6IGZhbHNlLAogICJvYnNlcnZlcl9wcmVzZXJ2ZXNfZXJybm9fYW5kX29yaWdpbmFsX3Jlc3VsdHMiOiB0cnVlLAogICJvdXRlcl9zZWNvbmRzIjogMzAwLAogICJwZXJfcHJvY2Vzc19zZWNvbmRzIjogNDUsCiAgIm9yaWdpbmFsX2NoZWNrX2ZyZXF1ZW5jeV9vcmRlcl9hbmRfd2luZG93c191bmNoYW5nZWQiOiB0cnVlLAogICJmaXJzdF9yZWZ1c2Fsc19wcmVzZXJ2ZWQiOiB0cnVlLAogICJyZXRyeSI6IGZhbHNlLAogICJwcmVwYXJhdGlvbl9yZXRyeSI6IGZhbHNlLAogICJwcm9kdWN0IjogZmFsc2UsCiAgImFkbWlzc2lvbiI6IGZhbHNlCn0K'
+"""One frozen finite directory CPU cohort, never a preparation retry or admission."""
+from pathlib import Path
+import base64,hashlib,json,os,signal,subprocess,sys,time
+base=Path('/tmp/hc074-server-gate-root-20261025.0k0xbdah')
+upload=Path('/tmp/hc074-server-gate-upload-20261025.pvdj0f6c')
+root=base/RUN_TAG
+raw=(base/'server-fault-worker-20261025.py').read_bytes()
+assert hashlib.sha256(raw).hexdigest()=='af1e9926e1ad40bc49c1c225d79f5fffc788c715a7889743decea129ec4b17a3'
+scope={};exec(compile(raw.decode().split('started=time.monotonic_ns()\n')[0],'<pinned-preflight>','exec'),scope)
+preflight=scope['preflight']
+def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+def publish(name,value):
+ with (root/name).open('x') as f:json.dump(value,f,indent=2);f.flush();os.fsync(f.fileno())
+def limited():
+ os.sched_setaffinity(0,{5});os.setgroups([]);os.setgid(1000);os.setuid(1000)
+protocol=json.loads(base64.b64decode(PROTOCOL_B64))
+publish('consumed.json',dict(protocol=protocol,phase=PHASE,image_sha256=IMAGE_SHA,source_manifest_sha256=MANIFEST_SHA,
+ source_commit=SOURCE_COMMIT,overlapping_builds_by_this_session=False,retry=False,product=False,admission=False))
+selector='diagnostic_kernel_admission::origin::operation_tests::fresh_kernel_operation_cpu_screen'
+result=dict(cases=[],first_refusal=None,postflight_refusal=None,passed=False,product=False,admission=False)
+before=None
+try:
+ assert PHASE=='attribution'
+ before=preflight();publish('preflight.json',before)
+ build=json.loads((base/BUILD_TAG/'result.json').read_bytes());assert build['passed'] and build['source_unchanged']
+ assert sha(base/BUILD_TAG/'source-manifest.json')==MANIFEST_SHA
+ manifest=json.loads((base/BUILD_TAG/'source-manifest.json').read_bytes())
+ test=Path(build['libtest_path']);assert sha(test)==build['libtest_sha256']==IMAGE_SHA
+ assert sha(base/BUILD_TAG/'libtest')==IMAGE_SHA
+ source=upload/SOURCE_TAG
+ def verify():
+  for name,digest in manifest.items():assert sha(source/name)==digest,name
+ verify()
+ scratch=upload/RUN_TAG;scratch.mkdir(mode=0o700);os.chown(scratch,1000,1000)
+ start=time.monotonic_ns()
+ for cohort in range(8):
+  assert time.monotonic_ns()-start<300_000_000_000
+  env=dict(PATH='/usr/bin:/bin',TMPDIR=str(scratch),HOME=str(upload/'signer-home-first'),HC074_KERNEL_OPERATION_COHORT=str(cohort))
+  argv=[str(test),selector,'--ignored','--exact','--nocapture','--test-threads=1']
+  publish(f'cohort-{cohort}-command.json',dict(argv=argv,env=env,cwd=str(source),outer_seconds=45))
+  with (root/f'cohort-{cohort}.stdout.log').open('xb') as stdout,(root/f'cohort-{cohort}.stderr.log').open('xb') as stderr:
+   child=subprocess.Popen(argv,cwd=source,env=env,preexec_fn=limited,stdout=stdout,stderr=stderr,start_new_session=True)
+   publish(f'cohort-{cohort}-child.json',dict(pid=child.pid,start_ticks=scope['ticks'](child.pid),affinity=sorted(os.sched_getaffinity(child.pid))))
+   try:code=child.wait(timeout=min(45,max(0.001,300-(time.monotonic_ns()-start)/1e9)))
+   except subprocess.TimeoutExpired:
+    os.killpg(child.pid,signal.SIGKILL);child.wait();raise RuntimeError('first operation attribution child timed out; no retry')
+  result['cases'].append(dict(cohort=cohort,exit=code))
+  text=(root/f'cohort-{cohort}.stdout.log').read_text()
+  assert code==0 and text.count('HC074-OPERATION-COST ')==2240 and text.count('test result: ok. 1 passed; 0 failed; 0 ignored;')==1
+ verify();assert sha(test)==IMAGE_SHA
+ result['passed']=True;result['source_unchanged']=True
+except BaseException as error:result['first_refusal']=f'{type(error).__name__}: {error}'
+finally:
+ try:
+  after=preflight();assert before is not None and before==after;publish('postflight.json',after)
+ except BaseException as error:result['postflight_refusal']=f'{type(error).__name__}: {error}';result['passed']=False
+ publish('result.json',result)
+
+# All source is frozen in WORKER_PREFIX by the renderer.

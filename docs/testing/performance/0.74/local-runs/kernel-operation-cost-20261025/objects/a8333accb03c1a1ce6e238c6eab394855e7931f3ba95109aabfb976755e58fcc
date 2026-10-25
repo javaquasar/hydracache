@@ -1,0 +1,28 @@
+from pathlib import Path
+import copy,json,runpy,unittest
+api=runpy.run_path(str(Path(__file__).with_name('audit-kernel-operation-20261025.py')))
+files,frame=api['load']();old=api['baseline']();sources={n:(api['ROOT']/'tools/long-run-supervisor-074/src'/n).read_bytes() for n in api['NAMES']}
+class SavedBytes(unittest.TestCase):
+ def test_exact_saved_cohort_is_attribution_only(self):
+  value=api['review'](files,frame,sources,old)
+  self.assertTrue(value['estimates']['calibration_passed']);self.assertFalse(value['optimization_implemented']);self.assertFalse(value['admission'])
+ def test_host_and_source_drift_refuse(self):
+  changed=copy.deepcopy(frame);changed['drift']=True
+  with self.assertRaises(AssertionError):api['review'](files,changed,sources,old)
+  changed=dict(sources);changed[api['NAMES'][0]]=changed[api['NAMES'][0]].replace(b'libc::O_NOFOLLOW',b'0',1)
+  with self.assertRaises(AssertionError):api['review'](files,frame,changed,old)
+ def test_changed_manifest_pins_protocol_and_lint_refuse(self):
+  for key,field,value in [('kernel-operation-cohort-first/consumed.json','source_commit','changed'),
+   ('kernel-operation-cohort-first/consumed.json','image_sha256','0'*64),
+   ('kernel-operation-build-first/clippy-command.json','argv',['cargo','clippy'])]:
+   changed=dict(files);body=json.loads(changed[key]);body[field]=value;changed[key]=json.dumps(body).encode()
+   with self.assertRaises(AssertionError):api['review'](changed,frame,sources,old)
+  changed=dict(files);key='kernel-operation-cohort-first/consumed.json';body=json.loads(changed[key]);body['protocol']['outer_seconds']=301;changed[key]=json.dumps(body).encode()
+  with self.assertRaises(AssertionError):api['review'](changed,frame,sources,old)
+ def test_process_reuse_and_changed_observer_counts_refuse(self):
+  changed=dict(files);changed['kernel-operation-cohort-first/cohort-1-child.json']=changed['kernel-operation-cohort-first/cohort-0-child.json']
+  with self.assertRaises(AssertionError):api['review'](changed,frame,sources,old)
+  changed=dict(files);key='kernel-operation-cohort-first/cohort-0.stdout.log'
+  changed[key]=changed[key].replace(b'"operation_calls":1024',b'"operation_calls":1023',1)
+  with self.assertRaises(ValueError):api['review'](changed,frame,sources,old)
+if __name__=='__main__':unittest.main()
