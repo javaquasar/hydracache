@@ -1,0 +1,31 @@
+"""Reconcile saved strict report after its first console renderer KeyError."""
+from pathlib import Path
+import hashlib
+import json
+import sys
+import tomllib
+
+ROOT=Path(__file__).resolve().parent.parent
+sys.path.insert(0,str(ROOT/'tools/xtask-package-attribution-074'))
+import review
+folder=ROOT/'target/source-continuation-20261024/package-replay-v2-first-reviewed'
+intent=json.loads((folder/'intent.json').read_bytes()); result=json.loads((folder/'result.json').read_bytes())
+raw=(ROOT/'target/package-review-v2-first-result-20261025.json').read_bytes()
+report=json.loads(raw)
+catalog=review.catalog(intent['source'],tomllib.loads((ROOT/'crates/xtask/Cargo.toml').read_text()))
+again=review.parse_transcript((folder/'stdout.log').read_text(),(folder/'stderr.log').read_text(),
+    catalog,result['exit'],result['outer_refusal'],780)
+assert again==report
+summary={k:report[k] for k in ('complete','package_pass','exit','outer_refusal','expected_targets',
+    'scheduled_targets','completed_targets','passed','failed','ignored','individual_passed','individual_failed')}
+summary['incomplete_target']={k:v for k,v in report['incomplete_target'].items() if k!='cases'}
+summary['incomplete_observed_cases']=len(report['incomplete_target']['cases'])
+summary['unstarted_targets']=report['unstarted_targets']
+summary['failed_targets']=[dict(target=v['target'],failed_cases=[c['name'] for c in v['cases'] if c['verdict']=='FAILED'])
+                          for v in report['targets'] if v.get('failed')]
+summary.update(strict_report_sha256=hashlib.sha256(raw).hexdigest(),producer_repeated=False,
+    first_renderer_refusal=dict(type='KeyError',reason='failed key absent on incomplete target; strict JSON was already saved',
+        provenance='manual transcription of first console tool result, not captured process log'))
+with (ROOT/'target/package-review-v2-first-summary-20261025.json').open('x',encoding='utf-8') as stream:
+    json.dump(summary,stream,sort_keys=True,indent=2); stream.write('\n')
+print(json.dumps(summary,indent=2))

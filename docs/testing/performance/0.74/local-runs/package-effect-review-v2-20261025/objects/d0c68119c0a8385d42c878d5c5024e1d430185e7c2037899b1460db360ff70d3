@@ -1,0 +1,99 @@
+"""Retain manual v2 review, first controls and the one red full-command replay."""
+from pathlib import Path
+import hashlib
+import json
+import subprocess
+import sys
+
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'docs/testing/performance/0.74/local-runs/package-effect-review-v2-20261025'
+CODE='baffe6000f747ea6bc830f338f2673b0874129b7'
+sys.path.insert(0,str(ROOT/'tools/historical-blob-batch-074'))
+import package_effects_review_v2 as effects
+sys.path.insert(0,str(ROOT/'tools/xtask-package-attribution-074'))
+import review
+
+members,objects,phases={},{},[]
+def sha(raw): return hashlib.sha256(raw).hexdigest()
+def add(name,raw):
+    assert name not in members
+    digest=sha(raw); members[name]=dict(sha256=digest,bytes=len(raw)); objects[digest]=raw
+def tree(folder,prefix):
+    for path in sorted(folder.iterdir()):
+        if path.is_file(): add(prefix+'/'+path.name,path.read_bytes())
+assert subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip()==CODE
+checks=ROOT/'target/source-continuation-20261024'
+for folder in sorted(checks.iterdir()):
+    if not folder.is_dir() or not folder.name.startswith('package-review-v2-20261025-'): continue
+    intent=json.loads((folder/'intent.json').read_bytes()); result=json.loads((folder/'result.json').read_bytes())
+    expected=1 if folder.name in ('package-review-v2-20261025-legacy-refusal','package-review-v2-20261025-python-final') else 0
+    assert result['exit']==expected and result['outer_refusal'] is None,folder
+    assert result['source_unchanged'] and result['head_unchanged'] and intent['source']==result['source_after']
+    tree(folder,'checks/'+folder.name); phases.append(dict(phase=folder.name,exit=expected))
+package=checks/'package-replay-v2-first-reviewed'
+tree(package,'package')
+intent=json.loads((package/'intent.json').read_bytes()); result=json.loads((package/'result.json').read_bytes())
+assert intent['head']==CODE and intent['argv']==review.ARGV and intent['bound_seconds']==780 and intent['retry'] is False
+assert result['exit']==1 and result['outer_refusal']=='outer-timeout'
+assert result['source_unchanged'] and result['head_unchanged'] and intent['source']==result['source_after']
+for name in ('current-source-preflight','first-reviewed'):
+    tree(ROOT/'target/reviewed-package-v2-20261025'/name,'coordinator/'+name)
+report=json.loads((ROOT/'target/package-review-v2-first-result-20261025.json').read_bytes())
+summary=json.loads((ROOT/'target/package-review-v2-first-summary-20261025.json').read_bytes())
+catalog=review.catalog(intent['source'],effects.legacy.package_replay_audit.tomllib.loads((ROOT/'crates/xtask/Cargo.toml').read_text()))
+actual=review.parse_transcript((package/'stdout.log').read_text(),(package/'stderr.log').read_text(),catalog,1,'outer-timeout',780)
+assert report==actual and summary['strict_report_sha256']==sha((ROOT/'target/package-review-v2-first-result-20261025.json').read_bytes())
+assert (report['expected_targets'],report['completed_targets'],report['passed'],report['failed'])==(136,112,815,7)
+assert len(report['incomplete_target']['cases'])==171 and report['incomplete_target']['declared']==321
+assert len(report['unstarted_targets'])==23 and report['package_pass'] is False
+for name in ('package-review-v2-first-result-20261025.json','package-review-v2-first-summary-20261025.json'):
+    add('derived/'+name,(ROOT/'target'/name).read_bytes())
+document=json.loads((ROOT/'target/package-syntax-v2-20261025/result.json').read_bytes())
+gate=effects.source_review(ROOT,document)
+for path,digest in gate['sources'].items():
+    raw=(ROOT/path).read_bytes(); assert sha(raw)==digest==intent['source'][path]; add('reviewed-source/'+path,raw)
+for path,digest in gate['auxiliary'].items():
+    raw=(ROOT/path).read_bytes(); assert sha(raw)==digest; add('reviewed-auxiliary/'+path,raw)
+for name in ('package_effects_review_v2.py','package_replay_v2.py','test_package_effects_review_v2.py','test_package_replay_v2.py'):
+    path='tools/historical-blob-batch-074/'+name
+    raw=(ROOT/path).read_bytes(); assert sha(raw)==intent['source'][path]
+    assert raw==subprocess.check_output(['git','show',CODE+':'+path],cwd=ROOT)
+    add('coordinator-source/'+path,raw)
+first_sources=(
+    ('package-review-v2-20261025-preflight','package_effects_review_v2.py'),
+    ('package-review-v2-20261025-python','test_package_effects_review_v2.py'),
+    ('package-review-v2-20261025-python-final','test_package_effects_review_v2.py'))
+for phase,name in first_sources:
+    original=json.loads((checks/phase/'intent.json').read_bytes())
+    raw=(checks/phase/(name+'.raw')).read_bytes()
+    assert sha(raw)==original['source']['tools/historical-blob-batch-074/'+name]
+post=json.loads((checks/'package-review-v2-20261025-postflight/stdout.log').read_bytes())
+assert post['present_processes']==[] and post['original_creation_identity_recorded'] is False
+assert post['process_stopped_by_this_check'] is False and post['package_repeated'] is False
+protected={
+    'Cargo.toml':'18a8a27cf140a1d6eb31c8316ee39bb7d5832866a990346eee16cd0c30de344b',
+    'Cargo.lock':'d2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c',
+    'docs/testing/performance/0.74/qualification-manifest.toml':'11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc',
+    'tools/authority-storage-source-074/contract.rs':'aefcd4f6a9ed0acc1e072225ea3ed4dda82d2d1ccda0ba4f22ca74459efa64c2'}
+for path,digest in protected.items():
+    raw=(ROOT/path).read_bytes(); assert sha(raw)==digest; add('protected/'+path,raw)
+for name in ('run-source-step-20261024.py','run-xtask-package-780-20261024.py',
+             'read-only-package-v2-postflight-20261025.ps1','review-package-v2-first-20261025.py',
+             'package-review-v2-first-rendering-source.raw','review-package-v2-saved-20261025.py',
+             'seal-package-review-v2-20261025.py','verify-package-review-v2-staged-20261025.py'):
+    add('retention-coordinators/'+name,(ROOT/'target'/name).read_bytes())
+upstream={'docs/testing/performance/0.74/local-runs/package-effect-syntax-v2-20261025/index.json':
+          '54795bdd931fa4b759621d5fae7ec76d430e1611d82a139c7200252d4bc6d447'}
+for path,digest in upstream.items(): assert sha((ROOT/path).read_bytes())==digest
+index=dict(schema='hc074-package-effect-review-v2-evidence-v1',code_commit=CODE,members=members,
+    upstream_indexes=upstream,phases=phases,protected_sha256=protected,
+    package_attempts=1,package_complete=False,package_pass=False,
+    completed_targets=112,expected_targets=136,completed_passed=815,completed_failed=7,
+    incomplete_observed_passes=171,unstarted_targets=23,outer_bound_seconds=780,
+    first_control_and_renderer_refusals_retained=True,source_and_head_unchanged=True,
+    server=False,services=False,clocks=False,qualification=False,admission=False)
+BASE.mkdir(exist_ok=False); (BASE/'objects').mkdir()
+for digest,raw in objects.items(): (BASE/'objects'/digest).write_bytes(raw)
+(BASE/'index.json').write_bytes((json.dumps(index,indent=2,sort_keys=True)+'\n').encode())
+(BASE/'.gitattributes').write_bytes(b'index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n')
+print(json.dumps(dict(index_sha256=sha((BASE/'index.json').read_bytes()),members=len(members),objects=len(objects),phases=len(phases)),indent=2))

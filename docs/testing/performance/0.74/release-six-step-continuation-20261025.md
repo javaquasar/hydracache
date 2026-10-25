@@ -73,6 +73,22 @@ Fifty-three Python controls and strict checks pass without another measurement.
 Next refresh the manually reviewed package-effect scope for current sources;
 retain stale-review refusal and the original 780-second/four-thread package guard.
 
+The [separate v2 effect review and first replay](package-effect-review-v2-result-20261025.md)
+now covers 342 Rust sources and 28 auxiliary inputs; v1 still refuses drift.
+V2 adds build/config/negative-program guards and a preflight-only default
+coordinator. Its one full unchanged-bound attempt completes 112/136 targets,
+with 815 passed/seven failed cases, then stops in `performance_contract_074`
+after 171/321 observed passes. Twenty-three targets remain unstarted. No focused
+or old result completes this red package.
+
+Next bounded repair: isolate diagnostic additions from frozen-source readers,
+or use narrowly declared exact construction/erasure where necessary. Address all
+seven located compatibility failures with independent missing/duplicate/assertion
+drift controls; do not broaden accepted source, exclude paths or change old pins
+from observed responses. Focused passes must precede a new manually reviewed
+changed-source replay. Preserve every 780-second first result; compatibility
+repair is not evidence that the remaining target fits the window.
+
 Next: use saved target/call attribution to isolate the cost owner without
 removing tests, refreshing source pins from responses or changing conditional
 reads. A separate candidate needs its own baseline and unchanged-bound proof;

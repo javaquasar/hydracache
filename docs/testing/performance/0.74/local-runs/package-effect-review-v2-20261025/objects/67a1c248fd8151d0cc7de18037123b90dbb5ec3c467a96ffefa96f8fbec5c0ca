@@ -1,0 +1,33 @@
+.....FE..............
+======================================================================
+ERROR: test_inherited_profile_control_refuses_before_git_probe (test_package_effects_review_v2.ReviewV2.test_inherited_profile_control_refuses_before_git_probe)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\historical-blob-batch-074\test_package_effects_review_v2.py", line 104, in test_inherited_profile_control_refuses_before_git_probe
+    review.environment_preflight(ROOT)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\historical-blob-batch-074\package_effects_review_v2.py", line 155, in environment_preflight
+    result = build_environment_preflight(root)
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\historical-blob-batch-074\package_effects_review_v2.py", line 145, in build_environment_preflight
+    directories.append(Path.home()/'.cargo' if cargo_home is None else cargo_home)
+                       ~~~~~~~~~^^
+  File "C:\Python313\Lib\pathlib\_abc.py", line 758, in home
+    return cls("~").expanduser()
+           ~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Python313\Lib\pathlib\_local.py", line 808, in expanduser
+    raise RuntimeError("Could not determine home directory.")
+RuntimeError: Could not determine home directory.
+
+======================================================================
+FAIL: test_external_shadowing_and_home_cargo_configs_refuse (test_package_effects_review_v2.ReviewV2.test_external_shadowing_and_home_cargo_configs_refuse)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\historical-blob-batch-074\test_package_effects_review_v2.py", line 125, in test_external_shadowing_and_home_cargo_configs_refuse
+    with self.assertRaisesRegex(ValueError, 'Cargo configuration requires review'):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+----------------------------------------------------------------------
+Ran 21 tests in 2.206s
+
+FAILED (failures=1, errors=1)

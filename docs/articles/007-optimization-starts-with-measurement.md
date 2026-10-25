@@ -19695,3 +19695,30 @@ The decision is therefore to leave the helper unchanged and not pursue naive
 exact-key memoization here. A negative selection is useful progress: the next
 work returns to the independently reviewed full-package scope and its actual
 completion gate, with the original timeout and first incomplete outcome intact.
+
+### Keep effect clearance separate from compatibility
+
+The [next default-Windows review](../testing/performance/0.74/package-effect-review-v2-result-20261025.md)
+pins the actual 342-source graph instead of refreshing the old review's identity.
+Four old sources changed and eight were added. Default-off diagnostics, pure
+contracts and self-only pipe children receive explicit classifications; build
+overrides and external Cargo configuration now refuse as well. The old scope
+continues rejecting the changed graph. A preflight-only coordinator requires an
+explicit execution switch and retains the original four-thread/780-second command.
+
+The first full replay still fails. Of 136 targets, 112 complete with 815 passing
+and seven failing cases; another 171 pass within a target that never completes.
+Twenty-three targets are not started. Neither 986 individual successes nor the
+new effect receipt makes the package green. The failures locate a separate
+integration problem: diagnostic insertions and the path-predicate edit were
+tested individually, but older complete-source views still expect their earlier
+bodies. Passing the instrumented target does not waive those independent guards.
+
+The repair must retain the original checks, not teach a failing guard to accept
+whatever bytes happened to be observed. Isolate additive diagnostics where
+possible, and use exact independently reviewed construction/erasure only where
+needed. Missing/duplicate hooks, changed assertions and unknown paths must still
+refuse. Compatibility fixes also cannot be advertised as a cure for the separate
+unfinished target's cost. The first timeout, seven failures and cleanup error
+remain evidence; no suffix rerun or process-absence snapshot turns them into
+completion or all-writer retirement proof.

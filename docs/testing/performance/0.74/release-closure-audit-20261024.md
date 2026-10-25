@@ -423,3 +423,12 @@ controls pass; no query is resolved or measured again and no cache is connected.
 The immediate exact-key hypothesis is not selected. A new independently reviewed
 package-effect scope remains prerequisite to another complete replay; the old
 scope must refuse current drift rather than self-refresh its admission pins.
+
+The [v2 package-effect review](package-effect-review-v2-result-20261025.md) is
+separately closed for 342 sources/28 auxiliary pins, with the old v1 unchanged.
+Eighty-one historical-tool and fifty-three attribution Python controls pass.
+One real full-command replay on `baffe6000` remains red: 112/136 targets complete,
+815 passed/seven failed cases, and 171/321 observed passes in the incomplete
+performance target before the original timeout. Its seven test-source view
+mismatches and 23-target unstarted suffix are not repaired or waived by effect
+clearance. No replay, server, dependency or release gate is promoted.

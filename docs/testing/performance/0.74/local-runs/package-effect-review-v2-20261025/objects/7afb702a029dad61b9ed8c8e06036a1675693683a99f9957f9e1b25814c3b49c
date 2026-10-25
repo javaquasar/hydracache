@@ -1,0 +1,9 @@
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\historical-blob-batch-074\package_effects_review.py", line 126, in <module>
+    result = source_review(root, document)
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\historical-blob-batch-074\package_effects_review.py", line 70, in source_review
+    census_cost.require(document_digest(document) == REVIEWED_AST_SHA256, 'unreviewed syntax/source inventory')
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\historical-blob-batch-074\census_cost.py", line 22, in require
+    raise ValueError(message)
+ValueError: unreviewed syntax/source inventory

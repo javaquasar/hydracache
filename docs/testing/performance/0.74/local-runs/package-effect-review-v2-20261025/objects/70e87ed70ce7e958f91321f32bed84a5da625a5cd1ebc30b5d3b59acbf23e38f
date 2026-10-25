@@ -1,0 +1,97 @@
+{
+  "complete": false,
+  "completed_targets": 112,
+  "exit": 1,
+  "expected_targets": 136,
+  "failed": 7,
+  "failed_targets": [
+    {
+      "failed_cases": [
+        "inventory_reader_preserves_every_old_assertion_and_comparison_count"
+      ],
+      "target": "tests/artifact_inventory_reader_074.rs"
+    },
+    {
+      "failed_cases": [
+        "full_contract_adapters_change_only_one_preservation_reader_per_module"
+      ],
+      "target": "tests/authority_runtime_074.rs"
+    },
+    {
+      "failed_cases": [
+        "independent_current_tree_gate_refuses_unapproved_source_and_runtime_drift"
+      ],
+      "target": "tests/authority_rust_history_074.rs"
+    },
+    {
+      "failed_cases": [
+        "current_tree_input_frontier_is_fully_accounted_without_path_exclusions"
+      ],
+      "target": "tests/current_tree_input_audit_074.rs"
+    },
+    {
+      "failed_cases": [
+        "all_nine_current_inputs_are_exact_declared_patches_not_assertion_waivers"
+      ],
+      "target": "tests/current_tree_reader_074.rs"
+    },
+    {
+      "failed_cases": [
+        "immutable_source_cache_changes_only_the_historical_loader_not_current_validation"
+      ],
+      "target": "tests/historical_source_cache_074.rs"
+    },
+    {
+      "failed_cases": [
+        "authority_context_reader_adapts_only_the_exact_reviewed_registry_input"
+      ],
+      "target": "tests/owned_case_074.rs"
+    }
+  ],
+  "first_renderer_refusal": {
+    "provenance": "manual transcription of first console tool result, not captured process log",
+    "reason": "failed key absent on incomplete target; strict JSON was already saved",
+    "type": "KeyError"
+  },
+  "ignored": 0,
+  "incomplete_observed_cases": 171,
+  "incomplete_target": {
+    "declared": 321,
+    "reported_seconds": null,
+    "start_line": 1477,
+    "target": "tests/performance_contract_074.rs"
+  },
+  "individual_failed": 7,
+  "individual_passed": 986,
+  "outer_refusal": "outer-timeout",
+  "package_pass": false,
+  "passed": 815,
+  "producer_repeated": false,
+  "scheduled_targets": 113,
+  "strict_report_sha256": "94cd67775c8e4dfce7dd0e5989279cf0733bd9764f745b2ec6bd3819bd40d25f",
+  "unstarted_targets": [
+    "tests/performance_local_073.rs",
+    "tests/pid_path_cost_074.rs",
+    "tests/pid_path_reader_074.rs",
+    "tests/pidfd_info_path_074.rs",
+    "tests/proc_document_baseline_074.rs",
+    "tests/projection_groups_074.rs",
+    "tests/quarantine.rs",
+    "tests/raft_spec_check.rs",
+    "tests/release_evidence.rs",
+    "tests/release_governance.rs",
+    "tests/release_governance_071.rs",
+    "tests/remaining_preparation_cost_074.rs",
+    "tests/role_census_reader_074.rs",
+    "tests/sample_boot_baseline_074.rs",
+    "tests/sample_boot_inline_074.rs",
+    "tests/starting_effects_cost_074.rs",
+    "tests/status_field_scan_074.rs",
+    "tests/trust_component_baseline_074.rs",
+    "tests/trust_component_stack_074.rs",
+    "tests/tsan_check.rs",
+    "tests/validation_leaf_reader_074.rs",
+    "tests/validation_leaf_requests_074.rs",
+    "tests/validation_round_cost_074.rs"
+  ]
+}

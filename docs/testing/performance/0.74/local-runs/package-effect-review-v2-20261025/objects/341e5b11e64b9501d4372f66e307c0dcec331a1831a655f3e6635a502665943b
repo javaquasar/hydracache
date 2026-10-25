@@ -1,0 +1,11 @@
+$reviewIds = @(9896,17492,388,53724,54244)
+$reviewPresent = @(Get-Process -Id $reviewIds -ErrorAction SilentlyContinue | Select-Object Id,ProcessName,StartTime)
+[pscustomobject]@{
+    queried_pids = $reviewIds
+    present_processes = $reviewPresent
+    observation_utc = [DateTime]::UtcNow.ToString('o')
+    original_creation_identity_recorded = $false
+    absence_is_not_historical_or_all_writer_retirement_proof = $true
+    process_stopped_by_this_check = $false
+    package_repeated = $false
+} | ConvertTo-Json -Depth 5

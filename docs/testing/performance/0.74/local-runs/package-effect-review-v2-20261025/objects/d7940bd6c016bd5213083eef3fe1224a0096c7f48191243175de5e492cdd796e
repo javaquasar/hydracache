@@ -1,0 +1,141 @@
+"""Separate manual DEFAULT WINDOWS review. The old receipt/pins stay unchanged.
+
+Literal pins below follow review of four changed and eight added Rust inputs.
+No CLI option derives a new admission pin or dispatches the package itself.
+"""
+import hashlib
+import json
+import os
+from pathlib import Path
+import shutil
+import sys
+
+import package_effects_review as legacy
+
+REVIEWED_AST_SHA256 = 'befe75505aa2c8c6da32424c23792063bcb096bf1352a42ee8a255e16ccf0840'
+PREVIOUS_PACKET = 'docs/testing/performance/0.74/local-runs/transport-package-20261025'
+PREVIOUS_INDEX_SHA256 = 'e9b8a923723360bce644c9de558113bf084630d1c4a72916dd0bfd3d418fc553'
+PREVIOUS_AST_SHA256 = '9b516072c8d034cf33c11b17ec8e07fdd4a4c337903f77ab9a82ba727f9cbc59'
+NEGATIVE_PROGRAM = 'HC074-never-present-executable-6d7f094d.exe'
+REVIEWED_DELTA = {
+    'crates/xtask/tests/authority_context_074.rs': 'e05fe658870dec0ac43963caa72e7215d70c91b261b308a013160195fd3d2c24',
+    'crates/xtask/tests/diagnostic_artifact_fixture_074.rs': '9fda72f29d625d1010502a49b6db3533f24f392fdebbf6b49d89a396a054ebe0',
+    'crates/xtask/tests/direct_output_cost_074.rs': '0c8740ec73b56b3f791fc0b25ca879327dc23bcfb45a781fd5a0d1356a913b8d',
+    'crates/xtask/tests/support/performance_contract_074_fixed_slice.rs': 'c1dbcc165b17c4fd4c345436ee415fe4650b23ae34b02ae88c118c54e0283edf',
+    'tools/authority-runtime-074/gate.rs': '549ecf4ba7ac352b705fa618471b84a85db4a421afaf2bd97196769a46cc5a8e',
+    'tools/guard-path-comparison-074/contract.rs': 'b24e9938aa5af4c9f45f1a542d21aac22da6adb168465df490d48c8c32d084c5',
+    'tools/normalization-attribution-074/history_probe.rs': '7ca89559130b3b8271f59c39f039ad7622ea2cecf1a2bc0e31472c9e4eba0dc1',
+    'tools/normalization-attribution-074/probe.rs': '10681270967fb942e56944ac95bdf5a86d4891d63d0a69104c3ef2b1e4c30ec7',
+    'tools/xtask-package-attribution-074/helper_contract.rs': 'b3a6c8bdac36154f51fa1e26cea24f44a93ae9f02d2ff1f528518b739ee06a13',
+    'tools/xtask-package-attribution-074/helper_model.rs': '137db5f7bfb7fc6146b8ace70143fec8a1515f97eda0d49fb00e543ba83c5907',
+    'tools/xtask-package-attribution-074/helper_trace.rs': '91aff09249e6d8caa8df4bd49769015006f2701b9396167ba7775106d38ef029',
+    'tools/xtask-package-attribution-074/pipe_capture.rs': '7b81ec42ec234dc6bb3d98fc551ea4e7dbc40d986a18d14cfb8d639c1a7587d3',
+}
+EXTRA_AUXILIARY = {
+    'tools/guard-path-comparison-074/fixed-slice-before.txt': '5bf7b3618f2cf80143a28c8bf56e368faa59d8d8d8517771e3998feab51888ec',
+    'tools/xtask-package-attribution-074/pipe-execution-protocol.toml': '1607a3738191f7598a96ce1787864f161f0a71891d993bc4d2f898efb25540d3',
+    'docs/testing/performance/0.74/local-runs/transport-package-20261025/objects/5819f89ec58a899e03d7c0f14c6af91f4be6248a26f8578186cfc47b5900a805': '5819f89ec58a899e03d7c0f14c6af91f4be6248a26f8578186cfc47b5900a805',
+    'tools/historical-blob-batch-074/package_effects_review.py': '2930cba469aec96c9f6846aedfeb8d94f91b1fecf81a123c15e025f272d6028a',
+    'tools/historical-blob-batch-074/package_replay_audit.py': '65e4706d425507c5d93c8633bc1e543cb74497bb523b692f7c023db317298106',
+    'tools/historical-blob-batch-074/syntax_audit.py': 'a1b8045abbee202569ed50fc5df43ad9f633524883a71d590cca6ab0ea547b5e',
+    'tools/historical-blob-batch-074/census_cost.py': 'd953065d5b5617efa5c854b25d4491a223a0b1866c229d268876f261624a80cc',
+}
+DELTA_REVIEW = {
+    'authority_context': 'Same original document module through its existing parent chain (avoids duplicate macros). New ordinary cases inspect source/pure buffers. Cost/healthy/panic profile entries return with absent HC074_* inputs; preflight forbids inherited controls.',
+    'artifact_helper': 'Only exact default-off observer insertion around the old read/output/decode body. Original commands/args/CWD/status/UTF8/conditional inventory assertions retained; independent erasure controls cover the whole source.',
+    'path_predicate': 'One allocation-free strip_prefix comparison at the same four loop positions. Gate adapter authorizes that exact delta only. No new IO, skipped checks or current-file cache.',
+    'helper_modules': 'Contract text is inert data; event model is pure bounded memory. Trace reads env once, no TLS clock/event allocation while off. Opt-in thread diagnostics only write bounded final stderr records, never files/processes.',
+    'normalization_modules': 'Ordinary protocol/unrelated-path controls are pure; selected history tests perform existing historical/current source observations. Cost runners require explicit HC074_* files and are not reached by this default package.',
+    'pipe_target': 'Five cases: protocol/body data; cost entry returns absent control; fixture returns absent mode; semantic control launches exact same-executable pipe_fixture_child six times (empty/binary exit7/one-MiB streams) with null stdin; missing-name control must fail spawn twice. No Git measurement entry is enabled.',
+    'pipe_module': 'Only original output or explicit piped spawn/wait on the caller-supplied self fixture. Windows handle duplication/GetProcessTimes are observations; terminal process identity checked. Error cleanup targets only the directly owned child. Not writer-alias or production retirement authority.',
+    'other_inputs': 'New Python audit/capture/cohort utilities and standalone probes are not imported/dispatched by the default Cargo test graph. New include_str/include_bytes values are pinned inert data, not include! implementation edges.',
+}
+
+
+def require(value, message):
+    if not value:
+        raise ValueError(message)
+
+
+def sha(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+
+def previous_document(root):
+    folder = root/PREVIOUS_PACKET
+    raw = (folder/'index.json').read_bytes()
+    require(sha(raw) == PREVIOUS_INDEX_SHA256, 'old packet identity')
+    entry = json.loads(raw)['members']['syntax/final-closure/result.json']
+    raw = (folder/'objects'/entry['sha256']).read_bytes()
+    require(len(raw) == entry['bytes'] and sha(raw) == entry['sha256'], 'old syntax object')
+    result = json.loads(raw)
+    require(legacy.document_digest(result) == PREVIOUS_AST_SHA256 == legacy.REVIEWED_AST_SHA256,
+            'old review remains immutable')
+    return result
+
+
+def source_review(root, document):
+    root = root.resolve(strict=True)
+    require(legacy.document_digest(document) == REVIEWED_AST_SHA256, 'unreviewed v2 syntax/source inventory')
+    require(document['executed_input_code'] is False and document['compiler_expansion'] is False, 'source-only inventory scope')
+    additions, unresolved = legacy.syntax_audit.module_edges(root, document)
+    require(not additions and not unresolved, 'module graph not closed')
+    sources = {v['source']: v['sha256'] for v in document['sources']}
+    require(len(sources) == len(document['sources']) == 342, 'duplicate or changed source count')
+    constructors = []
+    for row in document['sources']:
+        path = (root/row['source']).resolve(strict=True)
+        require(path.is_relative_to(root) and path.suffix == '.rs' and sha(path.read_bytes()) == row['sha256'], 'source bytes/path drift')
+        for site in row['sites']:
+            require(site['kind'] != 'include', 'unexpanded include edge')
+            if site['kind'] in ('command-constructor', 'macro-command-constructor'):
+                require(site['detail'] not in {'literal:ssh', 'literal:systemctl', 'literal:systemd-run',
+                    'literal:wsl', 'literal:timedatectl'}, 'host/service constructor requires separate review')
+                constructors.append(dict(source=row['source'], **site))
+    old = {v['source']: v for v in previous_document(root)['sources']}
+    new = {v['source']: v for v in document['sources']}
+    changed = {path for path in old.keys() & new.keys() if old[path] != new[path]}
+    added = new.keys() - old.keys()
+    require(not old.keys() - new.keys() and len(changed) == 4 and len(added) == 8, 'unreviewed old-source delta')
+    require({path: sources[path] for path in changed | added} == REVIEWED_DELTA, 'manual delta pins drift')
+    expected_aux = {**legacy.REVIEWED_AUXILIARY, **EXTRA_AUXILIARY}
+    auxiliary = {path: sha((root/path).read_bytes()) for path in expected_aux}
+    require(auxiliary == expected_aux and len(auxiliary) == 28, 'reviewed auxiliary input drift')
+    catalog = legacy.package_replay_audit.audit(root)['targets']
+    require(len(catalog) == 136 and catalog.count('tests/direct_output_cost_074.rs') == 1, 'default target catalog drift')
+    return dict(schema='hc074-package-effect-review-v2',
+        method='separate manual delta review plus fixed complete AST/module inventory; not automatic pin refresh',
+        scope='Windows default features; --lib --tests; no --ignored; four case threads/780 seconds',
+        reviewed_ast_sha256=REVIEWED_AST_SHA256, previous_ast_sha256=PREVIOUS_AST_SHA256,
+        sources=sources, auxiliary=auxiliary, constructors=constructors, targets=catalog,
+        added_sources=sorted(added), changed_sources=sorted(changed),
+        inherited_review=legacy.REVIEW, delta_review=DELTA_REVIEW,
+        source_effect_review_complete=True, formal_whole_program_proof=False,
+        linux_or_all_features_cleared=False, package_pass=False,
+        original_execution_or_product_or_qualification_admission=False)
+
+
+def negative_program_preflight(root):
+    # Windows search may include CWD, application directory and system paths,
+    # not just PATH. This is a presence guard, not executable provenance proof.
+    candidates = [root, root/'target/debug/deps', root/'target/debug']
+    if os.environ.get('SystemRoot'):
+        system = Path(os.environ['SystemRoot'])
+        candidates.extend((system, system/'System32', system/'System'))
+    require(shutil.which(NEGATIVE_PROGRAM) is None and all(not (p/NEGATIVE_PROGRAM).exists() for p in candidates),
+            'negative-control executable unexpectedly exists')
+    return dict(negative_fixture_executable_absent=True)
+
+
+def environment_preflight(root):
+    result = legacy.environment_preflight(root)
+    result.update(negative_program_preflight(root))
+    return result
+
+
+if __name__ == '__main__':
+    root = Path(__file__).resolve().parents[2]
+    document = json.loads(Path(sys.argv[1]).read_bytes())
+    result = source_review(root, document)
+    result['environment'] = environment_preflight(root)
+    print(json.dumps(result, indent=2, sort_keys=True))

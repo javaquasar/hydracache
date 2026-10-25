@@ -1,0 +1,12 @@
+ERROR: The process with PID 508 (child process of PID 1532) could not be terminated.
+Reason: The operation attempted is not supported.
+ERROR: The process with PID 33092 (child process of PID 9896) could not be terminated.
+Reason: The operation attempted is not supported.
+ERROR: The process with PID 1532 (child process of PID 388) could not be terminated.
+Reason: The operation attempted is not supported.
+ERROR: The process with PID 9896 (child process of PID 388) could not be terminated.
+Reason: The operation attempted is not supported.
+SUCCESS: The process with PID 17492 (child process of PID 388) has been terminated.
+SUCCESS: The process with PID 388 (child process of PID 53724) has been terminated.
+SUCCESS: The process with PID 53724 (child process of PID 54244) has been terminated.
+SUCCESS: The process with PID 54244 (child process of PID 51348) has been terminated.

@@ -1,0 +1,24 @@
+{
+  "argv": [
+    "cargo",
+    "+1.94.0",
+    "test",
+    "--offline",
+    "--locked",
+    "--no-fail-fast",
+    "-p",
+    "xtask",
+    "--lib",
+    "--tests",
+    "--",
+    "--test-threads=4"
+  ],
+  "case_threads": 4,
+  "clocks": false,
+  "execute": false,
+  "package_bound_seconds": 780,
+  "qualification": false,
+  "retry": false,
+  "server": false,
+  "services": false
+}

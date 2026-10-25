@@ -1,0 +1,17 @@
+{
+    "queried_pids":  [
+                         9896,
+                         17492,
+                         388,
+                         53724,
+                         54244
+                     ],
+    "present_processes":  [
+
+                          ],
+    "observation_utc":  "2026-10-25T02:09:40.7119627Z",
+    "original_creation_identity_recorded":  false,
+    "absence_is_not_historical_or_all_writer_retirement_proof":  true,
+    "process_stopped_by_this_check":  false,
+    "package_repeated":  false
+}

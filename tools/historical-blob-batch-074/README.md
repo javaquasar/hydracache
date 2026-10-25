@@ -393,3 +393,26 @@ explicit classifications; service names in source assertions are not dispatches.
 The receipt is not Linux/all-feature clearance, security-policy green or product,
 server, installation or qualification admission. Full replay still needs its own
 complete verdict under the original 780-second bound.
+
+## Separate current Windows scope v2
+
+`package_effects_review_v2.py` records a distinct manual review of 342 sources,
+four changed/eight added inputs and 28 auxiliary pins. It does not edit or refresh
+the v1 pin. New build/config and missing-executable refusals supplement the old
+environment checks. The pinned source-only fixture is retained in
+`package-effect-syntax-v2-20261025`; it is not an execution result.
+
+`package_replay_v2.py NEW_LABEL` is preflight-only. The explicit `--execute` option
+uses only the original command/four threads/780-second wrapper, whose two source
+hashes are required. No target/filter/timeout override or automatic retry exists.
+Source must be clean including untracked inputs. Ignored wrappers must already
+exist with their retained exact bytes; the tool does not fetch or install them.
+Destinations are exclusive and intent/failure files are written before further
+validation; this is diagnostic retention, not an fsync/crash-durability protocol.
+
+The [first actual v2 replay](../../docs/testing/performance/0.74/package-effect-review-v2-result-20261025.md)
+completes 112/136 targets with 815 passed and seven failed cases, then reaches the
+original timeout with 171/321 cases observed in the incomplete target. There is
+no package pass, suffix retry, new product result or server admission. The seven
+test-source compatibility failures and incomplete suffix require separate repair;
+effect clearance does not waive them.

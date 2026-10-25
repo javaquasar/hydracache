@@ -1,0 +1,14 @@
+{
+  "admission": false,
+  "completed_failed": 7,
+  "completed_passed": 815,
+  "completed_targets": 112,
+  "expected_targets": 136,
+  "incomplete_observed_passes": 171,
+  "index_sha256": "58b7a5f845abd8e791b5d150f98f461fc069869195131fe3e76ea620df772dae",
+  "members": 475,
+  "package_pass": false,
+  "producer_repeated": false,
+  "schema": "hc074-package-review-v2-staged-verification-v1",
+  "unstarted_targets": 23
+}

@@ -1,0 +1,61 @@
+"""Independent staged data/source/verdict joins; never rerun a package target."""
+from pathlib import Path
+import hashlib
+import json
+import subprocess
+import sys
+import tomllib
+
+ROOT=Path(__file__).resolve().parent.parent
+BASE='docs/testing/performance/0.74/local-runs/package-effect-review-v2-20261025'
+def staged(path): return subprocess.check_output(['git','show',':'+path],cwd=ROOT)
+def sha(raw): return hashlib.sha256(raw).hexdigest()
+index_raw=staged(BASE+'/index.json'); index=json.loads(index_raw); members={}
+for name,row in index['members'].items():
+    raw=staged(BASE+'/objects/'+row['sha256'])
+    assert len(raw)==row['bytes'] and sha(raw)==row['sha256']; members[name]=raw
+for path,digest in index['upstream_indexes'].items(): assert sha(staged(path))==digest
+intent=json.loads(members['package/intent.json']); result=json.loads(members['package/result.json'])
+assert intent['head']==index['code_commit']=='baffe6000f747ea6bc830f338f2673b0874129b7'
+assert intent['bound_seconds']==780 and intent['retry'] is False
+assert result['exit']==1 and result['outer_refusal']=='outer-timeout'
+assert result['source_unchanged'] and result['head_unchanged'] and intent['source']==result['source_after']
+sys.path.insert(0,str(ROOT/'tools/xtask-package-attribution-074'))
+import review
+assert intent['argv']==review.ARGV
+manifest=members['reviewed-auxiliary/crates/xtask/Cargo.toml']
+catalog=review.catalog(intent['source'],tomllib.loads(manifest.decode()))
+report=review.parse_transcript(members['package/stdout.log'].decode(),members['package/stderr.log'].decode(),
+    catalog,1,'outer-timeout',780)
+assert report==json.loads(members['derived/package-review-v2-first-result-20261025.json'])
+assert report['package_pass'] is False and report['complete'] is False
+assert report['completed_targets']==112 and report['expected_targets']==136
+assert report['passed']==815 and report['failed']==7 and len(report['unstarted_targets'])==23
+assert len(report['incomplete_target']['cases'])==171 and report['incomplete_target']['declared']==321
+for name,raw in members.items():
+    if name.startswith('reviewed-source/'):
+        assert sha(raw)==intent['source'][name.removeprefix('reviewed-source/')]
+    if name.startswith('coordinator-source/'):
+        path=name.removeprefix('coordinator-source/')
+        assert sha(raw)==intent['source'][path]
+        assert raw==subprocess.check_output(['git','show',index['code_commit']+':'+path],cwd=ROOT)
+    if name.startswith('protected/'):
+        path=name.removeprefix('protected/')
+        assert sha(raw)==index['protected_sha256'][path]==sha((ROOT/path).read_bytes())
+for phase in index['phases']:
+    base='checks/'+phase['phase']+'/'
+    before=json.loads(members[base+'intent.json']); after=json.loads(members[base+'result.json'])
+    assert after['exit']==phase['exit'] and after['outer_refusal'] is None
+    assert after['source_unchanged'] and after['head_unchanged'] and before['source']==after['source_after']
+gate=json.loads(members['coordinator/first-reviewed/gate.json'])
+assert gate['source_effect_review_complete'] is True and gate['package_pass'] is False
+assert len(gate['sources'])==342 and len(gate['auxiliary'])==28
+assert gate['environment']['unreviewed_build_overrides_absent'] is True
+assert gate['environment']['external_cargo_configuration_absent'] is True
+receipt=dict(schema='hc074-package-review-v2-staged-verification-v1',index_sha256=sha(index_raw),
+    members=len(members),expected_targets=136,completed_targets=112,completed_passed=815,
+    completed_failed=7,incomplete_observed_passes=171,unstarted_targets=23,
+    package_pass=False,producer_repeated=False,admission=False)
+with (ROOT/(BASE+'-staged-verification.json')).open('x',encoding='utf-8') as stream:
+    json.dump(receipt,stream,indent=2,sort_keys=True); stream.write('\n')
+print(json.dumps(receipt,indent=2))
