@@ -144,6 +144,7 @@ fn fresh_authority_directory_predicates_and_benign_fields_are_differential() {
         }
         let old = reference_match("test", &expected, file).unwrap();
         assert_eq!(old, projected_match("test", &expected, file).unwrap());
+        assert_eq!(old, expected.directory_matches_file(file).unwrap());
         assert_eq!(old, field == 0 || field >= 6);
     }
     fs::create_dir(tree.root.path().join("unrelated")).unwrap();
@@ -152,6 +153,7 @@ fn fresh_authority_directory_predicates_and_benign_fields_are_differential() {
     let expected = Stamp::of(&regular.metadata().unwrap());
     assert!(!reference_match("regular", &expected, &regular).unwrap());
     assert!(!projected_match("regular", &expected, &regular).unwrap());
+    assert!(!expected.directory_matches_file(&regular).unwrap());
     for (index, query) in [libc::F_GETFL, libc::F_GETFD].into_iter().enumerate() {
         assert_eq!(
             unsafe { libc::fcntl(file.as_raw_fd(), query) },

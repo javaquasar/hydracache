@@ -52,6 +52,7 @@ impl Stamp {
             ctime_ns: m.ctime_nsec(),
         }
     }
+    #[cfg(any(test, not(target_arch = "x86_64")))]
     fn directory_matches(&self, m: &Metadata) -> bool {
         m.is_dir()
             && self.dev == m.dev()
@@ -265,27 +266,25 @@ impl Directory {
             let named = open_at(&self.temporary, &self.leaf_name, true)?;
             if !self
                 .temporary_stamp
-                .directory_matches(&self.temporary.metadata()?)
-                || !self.leaf_stamp.directory_matches(&named.metadata()?)
-                || !self.leaf_stamp.directory_matches(&self.leaf.metadata()?)
+                .directory_matches_file(&self.temporary)?
+                || !self.leaf_stamp.directory_matches_file(&named)?
+                || !self.leaf_stamp.directory_matches_file(&self.leaf)?
             {
                 return Err(AuthorityError::Invalid);
             }
             return Ok(());
         }
         let temporary = open_at(&self.root, "tmp", true)?;
-        if !self
-            .temporary_stamp
-            .directory_matches(&temporary.metadata()?)
+        if !self.temporary_stamp.directory_matches_file(&temporary)?
             || !self
                 .temporary_stamp
-                .directory_matches(&self.temporary.metadata()?)
+                .directory_matches_file(&self.temporary)?
         {
             return Err(AuthorityError::Invalid);
         }
         let named = open_at(&temporary, &self.leaf_name, true)?;
-        if !self.leaf_stamp.directory_matches(&named.metadata()?)
-            || !self.leaf_stamp.directory_matches(&self.leaf.metadata()?)
+        if !self.leaf_stamp.directory_matches_file(&named)?
+            || !self.leaf_stamp.directory_matches_file(&self.leaf)?
         {
             return Err(AuthorityError::Invalid);
         }

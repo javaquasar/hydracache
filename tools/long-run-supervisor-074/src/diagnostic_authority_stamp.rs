@@ -4,6 +4,23 @@ use std::fs::File;
 use std::io;
 
 impl Stamp {
+    pub(super) fn directory_matches_file(&self, file: &File) -> io::Result<bool> {
+        #[cfg(target_arch = "x86_64")]
+        {
+            let m = Self::fresh(file)?;
+            Ok(m.mode & libc::S_IFMT == libc::S_IFDIR
+                && self.dev == m.dev
+                && self.ino == m.ino
+                && self.uid == m.uid
+                && self.gid == m.gid
+                && self.mode == m.mode)
+        }
+        #[cfg(not(target_arch = "x86_64"))]
+        {
+            Ok(self.directory_matches(&file.metadata()?))
+        }
+    }
+
     pub(super) fn fresh(file: &File) -> io::Result<Self> {
         #[cfg(target_arch = "x86_64")]
         {

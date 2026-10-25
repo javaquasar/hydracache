@@ -21,16 +21,16 @@ impl Ancestry {
             .read(true)
             .custom_flags(libc::O_DIRECTORY | libc::O_NOFOLLOW | libc::O_CLOEXEC)
             .open(&self.root_name)?;
-        if !self.root_stamp.directory_matches(&root.metadata()?)
-            || !self.root_stamp.directory_matches(&named_root.metadata()?)
+        if !self.root_stamp.directory_matches_file(root)?
+            || !self.root_stamp.directory_matches_file(&named_root)?
         {
             return Err(AuthorityError::Invalid);
         }
         let mut parent = root;
         for ancestor in &self.ancestors {
             let named = open_at(parent, &ancestor.name, true)?;
-            if !ancestor.stamp.directory_matches(&named.metadata()?)
-                || !ancestor.stamp.directory_matches(&ancestor.file.metadata()?)
+            if !ancestor.stamp.directory_matches_file(&named)?
+                || !ancestor.stamp.directory_matches_file(&ancestor.file)?
             {
                 return Err(AuthorityError::Invalid);
             }
