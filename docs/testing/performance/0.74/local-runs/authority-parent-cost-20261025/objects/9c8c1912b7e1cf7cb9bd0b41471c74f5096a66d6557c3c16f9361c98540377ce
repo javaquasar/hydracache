@@ -1,0 +1,20 @@
+from pathlib import Path
+import base64,runpy
+old=Path('target/server-fd-identity-build-worker-20261025.py').read_text()
+changes=[
+ ("manifest=json.loads((base/'manifest.json').read_bytes());old=upload/'source-v3'", "manifest=json.loads((base/'authority-before-runtime-build-first/source-manifest.json').read_bytes());old=upload/'source-authority-before-runtime-first'"),
+ ("assert sha(base/'manifest.json')=='2a0f7c581a1e854ab71841efb71aaebee3de56d1c0357b54d55a41ae4011ea6d'", "assert len(manifest)==2564 and sha(base/'authority-before-runtime-build-first/libtest')=='92fb7f268cf08b86b5989b8c21460e8f7feab5c600fc5df6046340dd4814df10'"),
+ ("for name,item in manifest['members'].items():assert sha(old/name)==item['sha256'],name", "for name,digest in manifest.items():assert sha(old/name)==digest,name"),
+ ("expected={name:item['sha256'] for name,item in manifest['members'].items()}", "expected=dict(manifest)"),
+ ("if p.exists():assert relative=='tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs'", "if p.exists():assert relative=='tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs'"),
+ ("fresh fstat dev/inode leaf, x86_64 only", "test-only parent-device projection attribution; before-read and runtime unchanged"),
+ ("11445ff7304fa49beaf3be16ed6393155f5a183b", "8ac78483d"),
+ ("'origin-tests',[str(test),'diagnostic_kernel_admission::origin::'", "'authority-tests',[str(test),'authority_registry::'"),
+]
+for a,b in changes:
+ count=2 if a.startswith('for name,item in') else 1
+ assert old.count(a)==count,(a,old.count(a));old=old.replace(a,b)
+names=['diagnostic_authority_fixture.rs','diagnostic_authority_parent_tests.rs']
+files={n:base64.b64encode((Path('tools/long-run-supervisor-074/src')/n).read_bytes()).decode() for n in names}
+prefix=f'OVERLAY={files!r}\nRUN_TAG="authority-parent-probe-build-first"\nSOURCE_TAG="source-authority-parent-probe-first"\n'
+runpy.run_path('target/prepare-capacity-checks-20261025.py',init_globals=dict(WORKER_FILE='target/empty-worker-20261025.py',WORKER_DIR='authority-parent-probe-build-first',WORKER_PREFIX=prefix+old+'\n'))

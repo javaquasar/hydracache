@@ -1,0 +1,101 @@
+"""Saved-byte audit of the separate parent-device projection experiment."""
+from pathlib import Path
+import ast,base64,hashlib,json,runpy,subprocess
+ROOT=Path(__file__).resolve().parent.parent
+cpu=runpy.run_path(str(ROOT/'tools/authority-parent-cost-074/review.py'))
+profile_api=runpy.run_path(str(ROOT/'tools/native-server-control-074/profile_review.py'))
+records=profile_api['records']
+NAMES=['diagnostic_authority_fixture.rs','diagnostic_authority_stamp.rs','diagnostic_authority_parent_tests.rs']
+BASELINE='68d4b89e516c3350e70d164b18dc9813f91f9980'
+RUNTIME='e5284749e84a1a025ea1ef47f2b20e744a72bed1'
+GROUPS=['authority-parent-probe-build-first','authority-parent-prototype-first',
+ 'authority-parent-runtime-build-first','authority-parent-installed-first','authority-parent-holder-first']
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+def load():
+ export=json.loads((ROOT/'target/authorized-server-session-20261025/authority-parent-final-export/stdout.log').read_bytes());assert export['complete']
+ files={}
+ for name,item in export['members'].items():
+  raw=base64.b64decode(item['base64']);assert len(raw)==item['bytes'] and sha(raw)==item['sha256'];files[name]=raw
+ profile=json.loads((ROOT/'target/authorized-server-session-20261025/parent-residual-profile-export/stdout.log').read_bytes())
+ assert profile['complete'] and profile['final_frame']==export['final_frame']
+ for name,item in profile['members'].items():
+  raw=base64.b64decode(item['base64']);assert name not in files and len(raw)==item['bytes'] and sha(raw)==item['sha256'];files[name]=raw
+ return files,export['final_frame']
+def baseline():
+ return {n:subprocess.check_output(['git','show',BASELINE+':tools/long-run-supervisor-074/src/'+n],cwd=ROOT) for n in NAMES}
+def overlay(files,group):
+ parsed=ast.parse(files[group+'/worker.py'].decode())
+ rows=[ast.literal_eval(n.value) for n in parsed.body if isinstance(n,ast.Assign) and any(isinstance(t,ast.Name) and t.id=='OVERLAY' for t in n.targets)]
+ assert len(rows)==1
+ return {k:base64.b64decode(v) for k,v in rows[0].items()}
+def source_proof(sources,old):
+ norm=lambda raw:raw.decode().replace('\r\n','\n')
+ fixture=norm(sources[NAMES[0]])
+ assert fixture.count('stamp.dev != Stamp::fresh_device(dir)?')==2
+ assert fixture.replace('stamp.dev != Stamp::fresh_device(dir)?','stamp.dev != dir.metadata()?.dev()')==norm(old[NAMES[0]])
+ stamp=norm(sources[NAMES[1]])
+ begin=stamp.index('    pub(super) fn fresh_device(');end=stamp.index('    pub(super) fn fresh_regular(',begin)
+ method=stamp[begin:end]
+ assert method.count('Self::fresh(file)?')==1 and method.count('file.metadata()?.dev()')==1
+ assert 'Ok(Self::fresh(file)?.dev)' in method and '#[cfg(not(target_arch = "x86_64"))]' in method
+ assert stamp[:begin]+stamp[end:]==norm(old[NAMES[1]])
+ tests=norm(sources[NAMES[2]])
+ for line in ['        assert_eq!(metadata.dev(), Stamp::fresh_device(file).unwrap());\n',
+              '    assert_eq!(original, Stamp::fresh_device(&parent).unwrap());\n']:
+  assert tests.count(line)==1;tests=tests.replace(line,'')
+ assert tests==norm(old[NAMES[2]]),'Frozen reference/prototype/benchmark changed'
+ return dict(parent_device_sites=2,metadata_observations_per_full_leaf=4,before_read_unchanged=True,
+  short_circuit_and_fd_lifetimes_unchanged=True,other_architectures_keep_original_metadata=True)
+def review(files,frame,sources,old):
+ def get(group,name):return json.loads(files[group+'/'+name])
+ for group in GROUPS:
+  result=get(group,'result.json');assert result['first_refusal'] is None and result['postflight_refusal'] is None
+  assert get(group,'preflight.json')==get(group,'postflight.json')==frame
+ for group,src in [(GROUPS[0],old),(GROUPS[2],sources)]:
+  result=get(group,'result.json');assert result['passed'] and result['source_unchanged']
+  assert [(r['name'],r['exit']) for r in result['cases']]==[('build',0),('check',0),('clippy',0),('authority-tests',0)]
+  assert b'63 passed; 0 failed; 7 ignored;' in files[group+'/authority-tests.stdout.log']
+  manifest=get(group,'source-manifest.json');assert len(manifest)==2565
+  for name,raw in src.items():assert manifest['tools/long-run-supervisor-074/src/'+name]==sha(raw),name
+  for check in ['check','clippy']:
+   argv=get(group,check+'-command.json')['argv'];assert '--all-targets' in argv and '--all-features' in argv and '--locked' in argv
+   if check=='clippy':assert argv[-3:]==['--','-D','warnings']
+ for name,raw in overlay(files,GROUPS[0]).items():assert raw.decode().replace('\r\n','\n')==old[name].decode().replace('\r\n','\n')
+ proof=source_proof(sources,old);estimates={};identities=[]
+ for phase,group,build,commit in [('prototype',GROUPS[1],GROUPS[0],BASELINE),('installed',GROUPS[3],GROUPS[2],RUNTIME)]:
+  result=get(group,'result.json');assert result['passed'] and result['source_unchanged'] and result['cases']==[dict(cohort=i,exit=0) for i in range(8)]
+  estimates[phase]=cpu['review']([files[group+f'/cohort-{i}.stdout.log'] for i in range(8)],phase);assert estimates[phase]['cpu_screen_passed']
+  intent=get(group,'consumed.json');assert intent['phase']==phase and not intent['retry'] and intent['source_commit']==commit
+  assert intent['protocol']==json.loads((ROOT/'tools/authority-parent-cost-074/protocol.json').read_bytes())
+  assert intent['image_sha256']==get(build,'result.json')['libtest_sha256']
+  assert intent['source_manifest_sha256']==sha(files[build+'/source-manifest.json'])
+  for i in range(8):
+   child=get(group,f'cohort-{i}-child.json');assert child['affinity']==[5];identities.append((child['pid'],child['start_ticks']))
+ assert len(set(identities))==16
+ holder=get(GROUPS[4],'result.json');intent=get(GROUPS[4],'consumed.json')
+ assert intent['image_sha256']==get(GROUPS[2],'result.json')['libtest_sha256'] and intent['original_windows']==[300,60,10] and intent['candidate_commit']==RUNTIME
+ assert intent['first_candidate_attempt'] and not intent['retry'] and not intent['case_override'] and not intent['cost_override']
+ assert 'HC074_HELD_MATERIAL_LIVE' not in get(GROUPS[4],'command.json')['env']
+ originals=records(files[GROUPS[4]+'/holder.stdout.log'],'HC074-HELD-LIVE-ORIGINAL ');assert originals
+ for original in originals:assert not original['guard_clock_added'] and not original['deadline_changed']
+ if holder['passed']:
+  assert holder['exit']==0 and holder['completed_cases']==['healthy','revalidate','role-before','role-after','trust-after']
+ else:
+  assert holder['exit']==101 and holder['completed_cases']==[] and len(originals)==1 and not originals[0]['returned']
+ group='parent-residual-profile-first';result=get(group,'result.json');intent=get(group,'consumed.json')
+ assert result['exit']==101 and result['first_refusal'] is None and result['postflight_refusal'] is None
+ assert result['attribution_only'] and not result['functional_gate'] and not result['admission']
+ assert get(group,'preflight.json')==get(group,'postflight.json')==frame
+ assert intent['attribution_only'] and not intent['healthy_gate'] and not intent['retry'] and intent['original_windows']==[300,60,10]
+ assert intent['source_head']==RUNTIME and intent['image_sha256']==get(GROUPS[2],'result.json')['libtest_sha256']
+ env=get(group,'command.json')['env'];assert env['HC074_CONSUMING_HELD_COST']=='1' and env['HC074_CONSUMING_HELD_LIVE_CASE']=='healthy' and 'HC074_HELD_MATERIAL_LIVE' not in env
+ profile=profile_api['review'](files[group+'/profile.stdout.log']+files[group+'/profile.stderr.log'],101,101,0)
+ assert profile['first_failed_phase']=='enrollment' and not profile['diagnostic_complete']
+ outputs=records(files[group+'/profile.stdout.log'],'HC074-HELD-PHASE ')[2]
+ assert [s['calls'] for s in outputs['kernel']][4:7]==[76544,153088,306176]
+ assert outputs['live'][3]['calls']==17066
+ return dict(source_proof=proof,estimates=estimates,full_holder_passed=holder['passed'],first_full_results=originals,
+  residual_profile=profile,
+  authority_tests_passed=63,product=False,admission=False)
+if __name__=='__main__':
+ files,frame=load();print(json.dumps(review(files,frame,{n:(ROOT/'tools/long-run-supervisor-074/src'/n).read_bytes() for n in NAMES},baseline()),sort_keys=True,indent=2))

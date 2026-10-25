@@ -1,0 +1,14 @@
+from pathlib import Path
+import runpy
+old=Path('target/server-residual-profile-worker-20261025.py').read_text()
+for a,b,n in [
+ ('residual-profile-first','parent-residual-profile-first',1),
+ ('fd-identity-format-build/libtest','authority-parent-runtime-build-first/libtest',1),
+ ('62caf35baa1f3320c5184b6304fb2623d64338dfb7470dfbefcacd1613113e5a','1d43e73b00403b0ee834d11b392f754b124b40e5e6151d1a28cc22a020f5afc1',1),
+ ('cdf10d04236e0eaf88b2b604671d092dd2bb4082','e5284749e84a1a025ea1ef47f2b20e744a72bed1',1),
+ ('1602437df5634d38b82d6f5f55df9114139fb2b4','e5284749e84a1a025ea1ef47f2b20e744a72bed1',1),
+ ("preserved_first_results=['holder-result.json','fd-identity-holder-first/result.json']", "preserved_first_results=['holder-result.json','fd-identity-holder-first/result.json','authority-before-holder-first/result.json','authority-parent-holder-first/result.json']",1),
+ (" assert json.loads((base/'fd-identity-holder-first/result.json').read_bytes())['exit']==101", " assert json.loads((base/'fd-identity-holder-first/result.json').read_bytes())['exit']==101\n assert json.loads((base/'authority-parent-holder-first/result.json').read_bytes())['exit']==101\n assert json.loads((base/'authority-parent-runtime-build-first/result.json').read_bytes())['passed']",1),
+]:
+ assert old.count(a)==n,(a,old.count(a));old=old.replace(a,b)
+runpy.run_path('target/prepare-capacity-checks-20261025.py',init_globals=dict(WORKER_FILE='target/empty-worker-20261025.py',WORKER_DIR='parent-residual-profile-first',WORKER_PREFIX=old+'\n'))

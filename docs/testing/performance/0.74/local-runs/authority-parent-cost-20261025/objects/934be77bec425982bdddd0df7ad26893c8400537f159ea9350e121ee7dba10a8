@@ -1,0 +1,32 @@
+from pathlib import Path
+import copy,json,runpy,unittest
+api=runpy.run_path(str(Path(__file__).with_name('audit-authority-parent-20261025.py')))
+files,frame=api['load']();old=api['baseline']();sources={n:(api['ROOT']/'tools/long-run-supervisor-074/src'/n).read_bytes() for n in api['NAMES']}
+class SavedBytes(unittest.TestCase):
+ def test_exact_saved_data_passes_without_admission(self):
+  self.assertFalse(api['review'](files,frame,sources,old)['admission'])
+ def test_host_drift_refuses(self):
+  changed=copy.deepcopy(frame);changed['drift']=True
+  with self.assertRaises(AssertionError):api['review'](files,changed,sources,old)
+ def test_promoted_failure_changed_windows_and_lint_refuse(self):
+  for key,field,value in [('authority-parent-holder-first/result.json','passed',True),
+   ('authority-parent-holder-first/result.json','exit',0),
+   ('authority-parent-holder-first/consumed.json','original_windows',[300,60,11]),
+   ('authority-parent-runtime-build-first/clippy-command.json','argv',['cargo','clippy'])]:
+   changed=dict(files);body=json.loads(changed[key]);body[field]=value;changed[key]=json.dumps(body).encode()
+   with self.assertRaises(AssertionError):api['review'](changed,frame,sources,old)
+ def test_reused_process_and_changed_source_refuse(self):
+  changed=dict(files);changed['authority-parent-installed-first/cohort-0-child.json']=changed['authority-parent-prototype-first/cohort-0-child.json']
+  with self.assertRaises(AssertionError):api['review'](changed,frame,sources,old)
+  changed=dict(sources);changed[api['NAMES'][0]]+=b'\n'
+  with self.assertRaises(AssertionError):api['review'](files,frame,changed,old)
+ def test_profile_cannot_be_promoted_or_change_observer(self):
+  for key,field,value in [('parent-residual-profile-first/result.json','functional_gate',True),
+   ('parent-residual-profile-first/consumed.json','healthy_gate',True),
+   ('parent-residual-profile-first/consumed.json','original_windows',[300,60,11])]:
+   changed=dict(files);body=json.loads(changed[key]);body[field]=value;changed[key]=json.dumps(body).encode()
+   with self.assertRaises(AssertionError):api['review'](changed,frame,sources,old)
+  changed=dict(files);key='parent-residual-profile-first/profile.stdout.log'
+  changed[key]=changed[key].replace(b'"guard_clock_added":false',b'"guard_clock_added":true',1)
+  with self.assertRaises(ValueError):api['review'](changed,frame,sources,old)
+if __name__=='__main__':unittest.main()

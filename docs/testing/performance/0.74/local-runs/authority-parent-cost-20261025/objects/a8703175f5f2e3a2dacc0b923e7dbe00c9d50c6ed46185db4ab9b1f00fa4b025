@@ -1,0 +1,1288 @@
+{
+  "admission": false,
+  "authority_tests_passed": 63,
+  "estimates": {
+    "installed": {
+      "admission": false,
+      "before_read_metadata_changed": false,
+      "cpu_screen_passed": true,
+      "full_preparation_improvement_proven": false,
+      "payloads": {
+        "marker": {
+          "controls_passed": true,
+          "cpu_screen_passed": true,
+          "process_log_estimates": {
+            "prototype": [
+              -0.0789895841255522,
+              -0.07727176978380393,
+              -0.08016937439667661,
+              -0.07846097370287487,
+              -0.07550499550251916,
+              -0.07818374245028739,
+              -0.07832334187682646,
+              -0.07520899813370101
+            ],
+            "reference-control": [
+              -0.0002273202166115642,
+              -0.0007315398816424238,
+              -0.0004799357727338786,
+              -0.00039800435664305583,
+              0.0003618522248513567,
+              -0.0008103248553482456,
+              0.000512544192873859,
+              -0.00014142063307258758
+            ],
+            "runtime": [
+              -0.08015112448515667,
+              -0.07911790941167758,
+              -0.08193924058022782,
+              -0.07837724338343288,
+              -0.07806766457559175,
+              -0.07915318421978362,
+              -0.07868623326668511,
+              -0.076853931583518
+            ]
+          },
+          "ratios": {
+            "prototype": {
+              "lower": 0.9240495491790495,
+              "ratio": 0.9247299387891427,
+              "upper": 0.9272750983173391
+            },
+            "reference-control": {
+              "lower": 0.9992687276284213,
+              "ratio": 0.9996873865871316,
+              "upper": 1.000361917701265
+            },
+            "runtime": {
+              "lower": 0.9229768514448645,
+              "ratio": 0.9241304188683572,
+              "upper": 0.9249018413356044
+            }
+          },
+          "reference_cpu_ns_per_call": 5633.827880859375,
+          "runtime_to_prototype": {
+            "lower": 0.9982279362318831,
+            "ratio": 0.9982794265312059,
+            "upper": 0.9988644436814749
+          }
+        },
+        "record": {
+          "controls_passed": true,
+          "cpu_screen_passed": true,
+          "process_log_estimates": {
+            "prototype": [
+              -0.07998980820349455,
+              -0.07602281569046943,
+              -0.08009110290630059,
+              -0.07713816988840044,
+              -0.07647275091693262,
+              -0.07505729752396437,
+              -0.07625345617438403,
+              -0.07747548138854565
+            ],
+            "reference-control": [
+              0.0003801556422746142,
+              0.0007396005859685707,
+              0.0001667982757159373,
+              0.00029008420031277496,
+              -7.972048360600756e-05,
+              -2.93223398402126e-05,
+              0.0008308888671782106,
+              0.000325499428057886
+            ],
+            "runtime": [
+              -0.07887640888117886,
+              -0.0759340548368348,
+              -0.07895827125080762,
+              -0.07672621882913094,
+              -0.07889741486910601,
+              -0.07490610837512779,
+              -0.07570896087549558,
+              -0.07665144318771511
+            ]
+          },
+          "ratios": {
+            "prototype": {
+              "lower": 0.9231257546485325,
+              "ratio": 0.9260699933673813,
+              "upper": 0.9267950608489193
+            },
+            "reference-control": {
+              "lower": 0.9999706780900554,
+              "ratio": 1.000307839186946,
+              "upper": 1.0007398741579225
+            },
+            "runtime": {
+              "lower": 0.9241347220640173,
+              "ratio": 0.9261780066483741,
+              "upper": 0.9270859855929384
+            }
+          },
+          "reference_cpu_ns_per_call": 5666.371826171875,
+          "runtime_to_prototype": {
+            "lower": 0.9997768461717054,
+            "ratio": 1.000366964715729,
+            "upper": 1.001355091034
+          }
+        }
+      },
+      "phase": "installed",
+      "product": false
+    },
+    "prototype": {
+      "admission": false,
+      "before_read_metadata_changed": false,
+      "cpu_screen_passed": true,
+      "full_preparation_improvement_proven": false,
+      "payloads": {
+        "marker": {
+          "controls_passed": true,
+          "cpu_screen_passed": true,
+          "process_log_estimates": {
+            "prototype": [
+              -0.0764081178347288,
+              -0.07786647072257243,
+              -0.07723559675603223,
+              -0.078312914338715,
+              -0.07782514515815428,
+              -0.0807851957747061,
+              -0.07631566465950561,
+              -0.08013275524076408
+            ],
+            "reference-control": [
+              0.0008634028943733205,
+              -0.0006621004311957947,
+              9.967679987830968e-05,
+              -0.0005889024467099515,
+              0.0009653724694646171,
+              -0.0014079572589768313,
+              -1.5585111250865386e-05,
+              -0.00010034897303159084
+            ],
+            "runtime": [
+              0.0010473157045237113,
+              0.000585277798126604,
+              0.0005757270503281931,
+              -0.0008624633956794306,
+              0.0015487982931120703,
+              -0.002062566998505628,
+              -0.0006009240484379462,
+              0.0011562395117335187
+            ]
+          },
+          "ratios": {
+            "prototype": {
+              "lower": 0.922993805987938,
+              "ratio": 0.9251070597097268,
+              "upper": 0.9264380335108016
+            },
+            "reference-control": {
+              "lower": 0.9993381187089277,
+              "ratio": 0.9999420346379153,
+              "upper": 1.0008637757339482
+            },
+            "runtime": {
+              "lower": 0.9991379084189752,
+              "ratio": 1.0005806709483676,
+              "upper": 1.0011569082143397
+            }
+          },
+          "reference_cpu_ns_per_call": 5636.508544921875,
+          "runtime_to_prototype": {
+            "lower": 1.0809044916358372,
+            "ratio": 1.0815086067027306,
+            "upper": 1.083252678806133
+          }
+        },
+        "record": {
+          "controls_passed": true,
+          "cpu_screen_passed": true,
+          "process_log_estimates": {
+            "prototype": [
+              -0.07388324998005663,
+              -0.07385357305775725,
+              -0.07715045824172664,
+              -0.07380774339663938,
+              -0.07439331184799118,
+              -0.07481770480660546,
+              -0.0758951196274509,
+              -0.07598825239440153
+            ],
+            "reference-control": [
+              0.0008956224350807156,
+              -0.0005438594780998237,
+              -0.0009728429809386602,
+              0.00042021575832235076,
+              9.053010343669323e-05,
+              0.00019903306173222376,
+              2.7573611813891672e-05,
+              0.00048594739912068304
+            ],
+            "runtime": [
+              0.002765312768162864,
+              0.0004381074006133884,
+              -0.00042896310749759544,
+              0.0008760730491126937,
+              0.0011473631749755833,
+              0.0007526728464710519,
+              -0.00038351834085116734,
+              0.0008310182090952149
+            ]
+          },
+          "ratios": {
+            "prototype": {
+              "lower": 0.9268270944945927,
+              "ratio": 0.928109545607234,
+              "upper": 0.9288076863540047
+            },
+            "reference-control": {
+              "lower": 0.999456288386659,
+              "ratio": 1.0001447920639437,
+              "upper": 1.000486065490686
+            },
+            "runtime": {
+              "lower": 0.9996165551929069,
+              "ratio": 1.0007921591202198,
+              "upper": 1.001148021647915
+            }
+          },
+          "reference_cpu_ns_per_call": 5657.67333984375,
+          "runtime_to_prototype": {
+            "lower": 1.0781634679126415,
+            "ratio": 1.0785230641252312,
+            "upper": 1.0796794864464827
+          }
+        }
+      },
+      "phase": "prototype",
+      "product": false
+    }
+  },
+  "first_full_results": [
+    {
+      "age": {
+        "sites": [
+          {
+            "calls": 72,
+            "first": {
+              "age_ns": 8349884837,
+              "file": "tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs",
+              "issued_ns": 1656339693883905,
+              "line": 121,
+              "now_ns": 1656348043768742,
+              "reason": "within-window"
+            },
+            "first_refusal": null,
+            "last": {
+              "age_ns": 9775716324,
+              "file": "tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs",
+              "issued_ns": 1656339693883905,
+              "line": 121,
+              "now_ns": 1656349469600229,
+              "reason": "within-window"
+            }
+          },
+          {
+            "calls": 67,
+            "first": {
+              "age_ns": 244368250,
+              "file": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+              "issued_ns": 1656339693883905,
+              "line": 109,
+              "now_ns": 1656339938252155,
+              "reason": "within-window"
+            },
+            "first_refusal": {
+              "age_ns": 10057459559,
+              "file": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+              "issued_ns": 1656339693883905,
+              "line": 109,
+              "now_ns": 1656349751343464,
+              "reason": "expired"
+            },
+            "last": {
+              "age_ns": 10057459559,
+              "file": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+              "issued_ns": 1656339693883905,
+              "line": 109,
+              "now_ns": 1656349751343464,
+              "reason": "expired"
+            }
+          },
+          {
+            "calls": 63,
+            "first": {
+              "age_ns": 873925604,
+              "file": "tools/long-run-supervisor-074/src/diagnostic_preconsent_frame.rs",
+              "issued_ns": 1656339693883905,
+              "line": 188,
+              "now_ns": 1656340567809509,
+              "reason": "within-window"
+            },
+            "first_refusal": null,
+            "last": {
+              "age_ns": 9915400957,
+              "file": "tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs",
+              "issued_ns": 1656339693883905,
+              "line": 139,
+              "now_ns": 1656349609284862,
+              "reason": "within-window"
+            }
+          }
+        ]
+      },
+      "case": "healthy",
+      "causal": {
+        "first": {
+          "age_ns": 244368250,
+          "diagnostic_reason": "within-window",
+          "issued_boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+          "issued_ns": 1656339693883905,
+          "now_boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+          "now_ns": 1656339938252155,
+          "site": "window"
+        },
+        "first_refusal": {
+          "age_ns": 10057459559,
+          "diagnostic_reason": "expired",
+          "issued_boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+          "issued_ns": 1656339693883905,
+          "now_boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+          "now_ns": 1656349751343464,
+          "site": "window"
+        },
+        "last": {
+          "age_ns": 10057459559,
+          "diagnostic_reason": "expired",
+          "issued_boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+          "issued_ns": 1656339693883905,
+          "now_boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+          "now_ns": 1656349751343464,
+          "site": "window"
+        },
+        "observations": 126
+      },
+      "deadline_changed": false,
+      "guard_clock_added": false,
+      "kernel": null,
+      "product": false,
+      "returned": false,
+      "server": false
+    }
+  ],
+  "full_holder_passed": false,
+  "product": false,
+  "residual_profile": {
+    "admission": false,
+    "all_production_writers_retired_proven": false,
+    "cpu_includes_children": false,
+    "diagnostic_complete": false,
+    "first_failed_phase": "enrollment",
+    "first_original_refusal": {
+      "age_ns": 10005376028,
+      "diagnostic_reason": "expired",
+      "issued_boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+      "issued_ns": 1656431760652525,
+      "now_boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+      "now_ns": 1656441766028553,
+      "site": "window"
+    },
+    "matrix_exit": 101,
+    "nested_wall_views_overlap": true,
+    "not_observed_phases": [
+      "placement",
+      "fixed-slice",
+      "consuming"
+    ],
+    "original": {
+      "age": {
+        "sites": [
+          {
+            "calls": 72,
+            "first": {
+              "age_ns": 8437350948,
+              "file": "tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs",
+              "issued_ns": 1656431760652525,
+              "line": 121,
+              "now_ns": 1656440198003473,
+              "reason": "within-window"
+            },
+            "first_refusal": null,
+            "last": {
+              "age_ns": 9878188136,
+              "file": "tools/long-run-supervisor-074/src/diagnostic_original_custody_join.rs",
+              "issued_ns": 1656431760652525,
+              "line": 121,
+              "now_ns": 1656441638840661,
+              "reason": "within-window"
+            }
+          },
+          {
+            "calls": 66,
+            "first": {
+              "age_ns": 244215821,
+              "file": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+              "issued_ns": 1656431760652525,
+              "line": 109,
+              "now_ns": 1656432004868346,
+              "reason": "within-window"
+            },
+            "first_refusal": {
+              "age_ns": 10005376028,
+              "file": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+              "issued_ns": 1656431760652525,
+              "line": 109,
+              "now_ns": 1656441766028553,
+              "reason": "expired"
+            },
+            "last": {
+              "age_ns": 10005376028,
+              "file": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+              "issued_ns": 1656431760652525,
+              "line": 109,
+              "now_ns": 1656441766028553,
+              "reason": "expired"
+            }
+          },
+          {
+            "calls": 62,
+            "first": {
+              "age_ns": 872216380,
+              "file": "tools/long-run-supervisor-074/src/diagnostic_preconsent_frame.rs",
+              "issued_ns": 1656431760652525,
+              "line": 188,
+              "now_ns": 1656432632868905,
+              "reason": "within-window"
+            },
+            "first_refusal": null,
+            "last": {
+              "age_ns": 9859505074,
+              "file": "tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs",
+              "issued_ns": 1656431760652525,
+              "line": 139,
+              "now_ns": 1656441620157599,
+              "reason": "within-window"
+            }
+          }
+        ]
+      },
+      "case": "healthy",
+      "causal": {
+        "first": {
+          "age_ns": 244215821,
+          "diagnostic_reason": "within-window",
+          "issued_boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+          "issued_ns": 1656431760652525,
+          "now_boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+          "now_ns": 1656432004868346,
+          "site": "window"
+        },
+        "first_refusal": {
+          "age_ns": 10005376028,
+          "diagnostic_reason": "expired",
+          "issued_boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+          "issued_ns": 1656431760652525,
+          "now_boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+          "now_ns": 1656441766028553,
+          "site": "window"
+        },
+        "last": {
+          "age_ns": 10005376028,
+          "diagnostic_reason": "expired",
+          "issued_boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+          "issued_ns": 1656431760652525,
+          "now_boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+          "now_ns": 1656441766028553,
+          "site": "window"
+        },
+        "observations": 124
+      },
+      "deadline_changed": false,
+      "guard_clock_added": false,
+      "kernel": null,
+      "product": false,
+      "returned": false,
+      "server": false
+    },
+    "original_delivery_proven": false,
+    "original_windows_seconds": [
+      300,
+      60,
+      10
+    ],
+    "performance_improvement_proven": false,
+    "phases": [
+      {
+        "authentication_calls": 68,
+        "kernel": [
+          {
+            "calls": 712,
+            "inclusive_ns": 309888334,
+            "kind": "PacketContext",
+            "outside_children_ns": 176634
+          },
+          {
+            "calls": 1646,
+            "inclusive_ns": 208547692,
+            "kind": "Sender",
+            "outside_children_ns": 16182051
+          },
+          {
+            "calls": 3292,
+            "inclusive_ns": 20752900,
+            "kind": "Alive",
+            "outside_children_ns": 16373660
+          },
+          {
+            "calls": 3292,
+            "inclusive_ns": 2996934,
+            "kind": "Projection",
+            "outside_children_ns": 2996934
+          },
+          {
+            "calls": 6362,
+            "inclusive_ns": 286026880,
+            "kind": "Origin",
+            "outside_children_ns": 64527984
+          },
+          {
+            "calls": 12724,
+            "inclusive_ns": 127764022,
+            "kind": "Boot",
+            "outside_children_ns": 117101088
+          },
+          {
+            "calls": 25448,
+            "inclusive_ns": 93734874,
+            "kind": "Namespace",
+            "outside_children_ns": 93734874
+          },
+          {
+            "calls": 823,
+            "inclusive_ns": 73777560,
+            "kind": "Sample",
+            "outside_children_ns": 169522
+          },
+          {
+            "calls": 712,
+            "inclusive_ns": 65514170,
+            "kind": "WorkerOrigin",
+            "outside_children_ns": 1823084
+          },
+          {
+            "calls": 19308,
+            "inclusive_ns": 34930225,
+            "kind": "Document",
+            "outside_children_ns": 34930225
+          }
+        ],
+        "live": [
+          {
+            "calls": 356,
+            "inclusive_ns": 493488959,
+            "kind": "KernelWorker",
+            "outside_children_ns": 90853
+          },
+          {
+            "calls": 712,
+            "inclusive_ns": 108275465,
+            "kind": "WorkerPolicy",
+            "outside_children_ns": 2232675
+          },
+          {
+            "calls": 1424,
+            "inclusive_ns": 27172594,
+            "kind": "WorkerSource",
+            "outside_children_ns": 27172594
+          },
+          {
+            "calls": 1435,
+            "inclusive_ns": 79474287,
+            "kind": "ActiveAuthority",
+            "outside_children_ns": 79474287
+          },
+          {
+            "calls": 712,
+            "inclusive_ns": 309927037,
+            "kind": "KernelContext",
+            "outside_children_ns": 309927037
+          },
+          {
+            "calls": 356,
+            "inclusive_ns": 75195604,
+            "kind": "LocalContext",
+            "outside_children_ns": 75195604
+          }
+        ],
+        "phase": "prepare-consent",
+        "process_cpu_ns": 544168035,
+        "returned": true,
+        "signature_calls": 68,
+        "wall_ns": 544193346
+      },
+      {
+        "authentication_calls": 34,
+        "kernel": [
+          {
+            "calls": 368,
+            "inclusive_ns": 160116135,
+            "kind": "PacketContext",
+            "outside_children_ns": 91249
+          },
+          {
+            "calls": 865,
+            "inclusive_ns": 109399474,
+            "kind": "Sender",
+            "outside_children_ns": 8560551
+          },
+          {
+            "calls": 1731,
+            "inclusive_ns": 10969389,
+            "kind": "Alive",
+            "outside_children_ns": 8615584
+          },
+          {
+            "calls": 1731,
+            "inclusive_ns": 1590953,
+            "kind": "Projection",
+            "outside_children_ns": 1590953
+          },
+          {
+            "calls": 3334,
+            "inclusive_ns": 149726012,
+            "kind": "Origin",
+            "outside_children_ns": 33979228
+          },
+          {
+            "calls": 6668,
+            "inclusive_ns": 66609364,
+            "kind": "Boot",
+            "outside_children_ns": 60985412
+          },
+          {
+            "calls": 13336,
+            "inclusive_ns": 49137420,
+            "kind": "Namespace",
+            "outside_children_ns": 49137420
+          },
+          {
+            "calls": 434,
+            "inclusive_ns": 38992434,
+            "kind": "Sample",
+            "outside_children_ns": 90052
+          },
+          {
+            "calls": 368,
+            "inclusive_ns": 33932998,
+            "kind": "WorkerOrigin",
+            "outside_children_ns": 938519
+          },
+          {
+            "calls": 10130,
+            "inclusive_ns": 18474847,
+            "kind": "Document",
+            "outside_children_ns": 18474847
+          }
+        ],
+        "live": [
+          {
+            "calls": 184,
+            "inclusive_ns": 255213734,
+            "kind": "KernelWorker",
+            "outside_children_ns": 46772
+          },
+          {
+            "calls": 368,
+            "inclusive_ns": 56085007,
+            "kind": "WorkerPolicy",
+            "outside_children_ns": 1170907
+          },
+          {
+            "calls": 736,
+            "inclusive_ns": 14087304,
+            "kind": "WorkerSource",
+            "outside_children_ns": 14087304
+          },
+          {
+            "calls": 742,
+            "inclusive_ns": 41156180,
+            "kind": "ActiveAuthority",
+            "outside_children_ns": 41156180
+          },
+          {
+            "calls": 368,
+            "inclusive_ns": 160135713,
+            "kind": "KernelContext",
+            "outside_children_ns": 160135713
+          },
+          {
+            "calls": 184,
+            "inclusive_ns": 38946242,
+            "kind": "LocalContext",
+            "outside_children_ns": 38946242
+          }
+        ],
+        "phase": "accept-consent",
+        "process_cpu_ns": 284018346,
+        "returned": true,
+        "signature_calls": 34,
+        "wall_ns": 284034805
+      },
+      {
+        "authentication_calls": 782,
+        "kernel": [
+          {
+            "calls": 8464,
+            "inclusive_ns": 3721424899,
+            "kind": "PacketContext",
+            "outside_children_ns": 2179996
+          },
+          {
+            "calls": 19872,
+            "inclusive_ns": 2534747337,
+            "kind": "Sender",
+            "outside_children_ns": 198523930
+          },
+          {
+            "calls": 39744,
+            "inclusive_ns": 253139944,
+            "kind": "Alive",
+            "outside_children_ns": 199588659
+          },
+          {
+            "calls": 39744,
+            "inclusive_ns": 36399388,
+            "kind": "Projection",
+            "outside_children_ns": 36399388
+          },
+          {
+            "calls": 76544,
+            "inclusive_ns": 3476815885,
+            "kind": "Origin",
+            "outside_children_ns": 789159771
+          },
+          {
+            "calls": 153088,
+            "inclusive_ns": 1550095904,
+            "kind": "Boot",
+            "outside_children_ns": 1420836870
+          },
+          {
+            "calls": 306176,
+            "inclusive_ns": 1137560210,
+            "kind": "Namespace",
+            "outside_children_ns": 1137560210
+          },
+          {
+            "calls": 9936,
+            "inclusive_ns": 903369533,
+            "kind": "Sample",
+            "outside_children_ns": 2032323
+          },
+          {
+            "calls": 8464,
+            "inclusive_ns": 791139359,
+            "kind": "WorkerOrigin",
+            "outside_children_ns": 21691047
+          },
+          {
+            "calls": 232576,
+            "inclusive_ns": 423464031,
+            "kind": "Document",
+            "outside_children_ns": 423464031
+          }
+        ],
+        "live": [
+          {
+            "calls": 4232,
+            "inclusive_ns": 5931417706,
+            "kind": "KernelWorker",
+            "outside_children_ns": 1088069
+          },
+          {
+            "calls": 8464,
+            "inclusive_ns": 1307855005,
+            "kind": "WorkerPolicy",
+            "outside_children_ns": 27303028
+          },
+          {
+            "calls": 16928,
+            "inclusive_ns": 328767373,
+            "kind": "WorkerSource",
+            "outside_children_ns": 328767373
+          },
+          {
+            "calls": 17066,
+            "inclusive_ns": 959482117,
+            "kind": "ActiveAuthority",
+            "outside_children_ns": 959482117
+          },
+          {
+            "calls": 8464,
+            "inclusive_ns": 3721872136,
+            "kind": "KernelContext",
+            "outside_children_ns": 3721872136
+          },
+          {
+            "calls": 4232,
+            "inclusive_ns": 900602496,
+            "kind": "LocalContext",
+            "outside_children_ns": 900602496
+          }
+        ],
+        "phase": "outputs",
+        "process_cpu_ns": 6596969116,
+        "returned": true,
+        "signature_calls": 782,
+        "wall_ns": 6680364848
+      },
+      {
+        "authentication_calls": 34,
+        "kernel": [
+          {
+            "calls": 368,
+            "inclusive_ns": 160890170,
+            "kind": "PacketContext",
+            "outside_children_ns": 93648
+          },
+          {
+            "calls": 868,
+            "inclusive_ns": 110296258,
+            "kind": "Sender",
+            "outside_children_ns": 8601672
+          },
+          {
+            "calls": 1736,
+            "inclusive_ns": 11073493,
+            "kind": "Alive",
+            "outside_children_ns": 8677793
+          },
+          {
+            "calls": 1736,
+            "inclusive_ns": 1597996,
+            "kind": "Projection",
+            "outside_children_ns": 1597996
+          },
+          {
+            "calls": 3340,
+            "inclusive_ns": 150792082,
+            "kind": "Origin",
+            "outside_children_ns": 34149366
+          },
+          {
+            "calls": 6680,
+            "inclusive_ns": 67466572,
+            "kind": "Boot",
+            "outside_children_ns": 61842848
+          },
+          {
+            "calls": 13360,
+            "inclusive_ns": 49176144,
+            "kind": "Namespace",
+            "outside_children_ns": 49176144
+          },
+          {
+            "calls": 434,
+            "inclusive_ns": 39192587,
+            "kind": "Sample",
+            "outside_children_ns": 88407
+          },
+          {
+            "calls": 368,
+            "inclusive_ns": 34123461,
+            "kind": "WorkerOrigin",
+            "outside_children_ns": 948322
+          },
+          {
+            "calls": 10152,
+            "inclusive_ns": 18529758,
+            "kind": "Document",
+            "outside_children_ns": 18529758
+          }
+        ],
+        "live": [
+          {
+            "calls": 184,
+            "inclusive_ns": 256239758,
+            "kind": "KernelWorker",
+            "outside_children_ns": 48208
+          },
+          {
+            "calls": 368,
+            "inclusive_ns": 56115966,
+            "kind": "WorkerPolicy",
+            "outside_children_ns": 1188400
+          },
+          {
+            "calls": 736,
+            "inclusive_ns": 14085105,
+            "kind": "WorkerSource",
+            "outside_children_ns": 14085105
+          },
+          {
+            "calls": 742,
+            "inclusive_ns": 41171976,
+            "kind": "ActiveAuthority",
+            "outside_children_ns": 41171976
+          },
+          {
+            "calls": 368,
+            "inclusive_ns": 160910852,
+            "kind": "KernelContext",
+            "outside_children_ns": 160910852
+          },
+          {
+            "calls": 184,
+            "inclusive_ns": 39164732,
+            "kind": "LocalContext",
+            "outside_children_ns": 39164732
+          }
+        ],
+        "phase": "enrollment-frame",
+        "process_cpu_ns": 342224302,
+        "returned": true,
+        "signature_calls": 34,
+        "wall_ns": 342298223
+      },
+      {
+        "authentication_calls": 34,
+        "kernel": [
+          {
+            "calls": 368,
+            "inclusive_ns": 161588686,
+            "kind": "PacketContext",
+            "outside_children_ns": 91854
+          },
+          {
+            "calls": 870,
+            "inclusive_ns": 111107537,
+            "kind": "Sender",
+            "outside_children_ns": 8619919
+          },
+          {
+            "calls": 1740,
+            "inclusive_ns": 11118991,
+            "kind": "Alive",
+            "outside_children_ns": 8717394
+          },
+          {
+            "calls": 1740,
+            "inclusive_ns": 1609446,
+            "kind": "Projection",
+            "outside_children_ns": 1609446
+          },
+          {
+            "calls": 3350,
+            "inclusive_ns": 151975459,
+            "kind": "Origin",
+            "outside_children_ns": 34588808
+          },
+          {
+            "calls": 6700,
+            "inclusive_ns": 68037622,
+            "kind": "Boot",
+            "outside_children_ns": 62378484
+          },
+          {
+            "calls": 13400,
+            "inclusive_ns": 49349029,
+            "kind": "Namespace",
+            "outside_children_ns": 49349029
+          },
+          {
+            "calls": 435,
+            "inclusive_ns": 39407941,
+            "kind": "Sample",
+            "outside_children_ns": 87130
+          },
+          {
+            "calls": 368,
+            "inclusive_ns": 34221301,
+            "kind": "WorkerOrigin",
+            "outside_children_ns": 941935
+          },
+          {
+            "calls": 10180,
+            "inclusive_ns": 18631801,
+            "kind": "Document",
+            "outside_children_ns": 18631801
+          }
+        ],
+        "live": [
+          {
+            "calls": 184,
+            "inclusive_ns": 257070943,
+            "kind": "KernelWorker",
+            "outside_children_ns": 47229
+          },
+          {
+            "calls": 368,
+            "inclusive_ns": 56147916,
+            "kind": "WorkerPolicy",
+            "outside_children_ns": 1191589
+          },
+          {
+            "calls": 736,
+            "inclusive_ns": 14091057,
+            "kind": "WorkerSource",
+            "outside_children_ns": 14091057
+          },
+          {
+            "calls": 742,
+            "inclusive_ns": 41196524,
+            "kind": "ActiveAuthority",
+            "outside_children_ns": 41196524
+          },
+          {
+            "calls": 368,
+            "inclusive_ns": 161608379,
+            "kind": "KernelContext",
+            "outside_children_ns": 161608379
+          },
+          {
+            "calls": 184,
+            "inclusive_ns": 39267419,
+            "kind": "LocalContext",
+            "outside_children_ns": 39267419
+          }
+        ],
+        "phase": "fixed-manager-message",
+        "process_cpu_ns": 317185990,
+        "returned": true,
+        "signature_calls": 34,
+        "wall_ns": 322758766
+      },
+      {
+        "authentication_calls": 102,
+        "kernel": [
+          {
+            "calls": 1104,
+            "inclusive_ns": 489810378,
+            "kind": "PacketContext",
+            "outside_children_ns": 269925
+          },
+          {
+            "calls": 2604,
+            "inclusive_ns": 334692670,
+            "kind": "Sender",
+            "outside_children_ns": 26274346
+          },
+          {
+            "calls": 5208,
+            "inclusive_ns": 33471445,
+            "kind": "Alive",
+            "outside_children_ns": 26441878
+          },
+          {
+            "calls": 5208,
+            "inclusive_ns": 4822021,
+            "kind": "Projection",
+            "outside_children_ns": 4822021
+          },
+          {
+            "calls": 10032,
+            "inclusive_ns": 460107896,
+            "kind": "Origin",
+            "outside_children_ns": 105991735
+          },
+          {
+            "calls": 20064,
+            "inclusive_ns": 203992491,
+            "kind": "Boot",
+            "outside_children_ns": 187088234
+          },
+          {
+            "calls": 40128,
+            "inclusive_ns": 150123670,
+            "kind": "Namespace",
+            "outside_children_ns": 150123670
+          },
+          {
+            "calls": 1302,
+            "inclusive_ns": 119816123,
+            "kind": "Sample",
+            "outside_children_ns": 257411
+          },
+          {
+            "calls": 1104,
+            "inclusive_ns": 104267446,
+            "kind": "WorkerOrigin",
+            "outside_children_ns": 2818793
+          },
+          {
+            "calls": 30480,
+            "inclusive_ns": 55510851,
+            "kind": "Document",
+            "outside_children_ns": 55510851
+          }
+        ],
+        "live": [
+          {
+            "calls": 552,
+            "inclusive_ns": 780393589,
+            "kind": "KernelWorker",
+            "outside_children_ns": 142135
+          },
+          {
+            "calls": 1104,
+            "inclusive_ns": 172160781,
+            "kind": "WorkerPolicy",
+            "outside_children_ns": 3577481
+          },
+          {
+            "calls": 2208,
+            "inclusive_ns": 43354768,
+            "kind": "WorkerSource",
+            "outside_children_ns": 43354768
+          },
+          {
+            "calls": 2226,
+            "inclusive_ns": 126241193,
+            "kind": "ActiveAuthority",
+            "outside_children_ns": 126241193
+          },
+          {
+            "calls": 1104,
+            "inclusive_ns": 489869650,
+            "kind": "KernelContext",
+            "outside_children_ns": 489869650
+          },
+          {
+            "calls": 552,
+            "inclusive_ns": 118221023,
+            "kind": "LocalContext",
+            "outside_children_ns": 118221023
+          }
+        ],
+        "phase": "owned-root-preparation",
+        "process_cpu_ns": 958186180,
+        "returned": true,
+        "signature_calls": 102,
+        "wall_ns": 958625746
+      },
+      {
+        "authentication_calls": 17,
+        "kernel": [
+          {
+            "calls": 168,
+            "inclusive_ns": 73257544,
+            "kind": "PacketContext",
+            "outside_children_ns": 41634
+          },
+          {
+            "calls": 388,
+            "inclusive_ns": 49175887,
+            "kind": "Sender",
+            "outside_children_ns": 3842329
+          },
+          {
+            "calls": 776,
+            "inclusive_ns": 4941405,
+            "kind": "Alive",
+            "outside_children_ns": 3875572
+          },
+          {
+            "calls": 776,
+            "inclusive_ns": 710925,
+            "kind": "Projection",
+            "outside_children_ns": 710925
+          },
+          {
+            "calls": 1502,
+            "inclusive_ns": 67579940,
+            "kind": "Origin",
+            "outside_children_ns": 15459479
+          },
+          {
+            "calls": 3004,
+            "inclusive_ns": 30032067,
+            "kind": "Boot",
+            "outside_children_ns": 27501273
+          },
+          {
+            "calls": 6008,
+            "inclusive_ns": 22088394,
+            "kind": "Namespace",
+            "outside_children_ns": 22088394
+          },
+          {
+            "calls": 194,
+            "inclusive_ns": 17455720,
+            "kind": "Sample",
+            "outside_children_ns": 38449
+          },
+          {
+            "calls": 168,
+            "inclusive_ns": 15524426,
+            "kind": "WorkerOrigin",
+            "outside_children_ns": 430088
+          },
+          {
+            "calls": 4556,
+            "inclusive_ns": 8301614,
+            "kind": "Document",
+            "outside_children_ns": 8301614
+          }
+        ],
+        "live": [
+          {
+            "calls": 84,
+            "inclusive_ns": 116762441,
+            "kind": "KernelWorker",
+            "outside_children_ns": 21517
+          },
+          {
+            "calls": 168,
+            "inclusive_ns": 25648330,
+            "kind": "WorkerPolicy",
+            "outside_children_ns": 542648
+          },
+          {
+            "calls": 336,
+            "inclusive_ns": 6432606,
+            "kind": "WorkerSource",
+            "outside_children_ns": 6432606
+          },
+          {
+            "calls": 338,
+            "inclusive_ns": 18783384,
+            "kind": "ActiveAuthority",
+            "outside_children_ns": 18783384
+          },
+          {
+            "calls": 168,
+            "inclusive_ns": 73266657,
+            "kind": "KernelContext",
+            "outside_children_ns": 73266657
+          },
+          {
+            "calls": 84,
+            "inclusive_ns": 17825937,
+            "kind": "LocalContext",
+            "outside_children_ns": 17825937
+          }
+        ],
+        "phase": "enrollment",
+        "process_cpu_ns": 129900644,
+        "returned": false,
+        "signature_calls": 17,
+        "wall_ns": 129971883
+      }
+    ],
+    "postflight_exit": 0,
+    "postflight_passed": true,
+    "product": false,
+    "retry": false,
+    "server": true,
+    "wall_residual_is_io": false,
+    "wrapper_exit": 101
+  },
+  "source_proof": {
+    "before_read_unchanged": true,
+    "metadata_observations_per_full_leaf": 4,
+    "other_architectures_keep_original_metadata": true,
+    "parent_device_sites": 2,
+    "short_circuit_and_fd_lifetimes_unchanged": true
+  }
+}

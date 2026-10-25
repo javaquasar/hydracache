@@ -1,0 +1,18 @@
+{
+  "overlay_names": [
+    "diagnostic_authority_fixture.rs",
+    "diagnostic_authority_parent_tests.rs",
+    "diagnostic_authority_stamp.rs"
+  ],
+  "hypothesis": "parent-device projection only; before-read and original count/order/lifetimes/windows unchanged",
+  "baseline_commit": "68d4b89e516c3350e70d164b18dc9813f91f9980",
+  "original_windows": [
+    300,
+    60,
+    10
+  ],
+  "original_check_frequency_and_order": true,
+  "retry": false,
+  "product": false,
+  "admission": false
+}

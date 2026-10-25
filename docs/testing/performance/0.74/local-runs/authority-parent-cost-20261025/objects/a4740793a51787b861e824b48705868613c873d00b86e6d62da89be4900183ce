@@ -1,0 +1,60 @@
+from pathlib import Path
+import hashlib,json,runpy
+root=Path(__file__).resolve().parent.parent
+api=runpy.run_path(str(root/'target/audit-authority-parent-20261025.py'))
+files,frame=api['load']();old=api['baseline']();sources={n:(root/'tools/long-run-supervisor-074/src'/n).read_bytes() for n in api['NAMES']}
+facts=api['review'](files,frame,sources,old)
+members,objects={},{}
+def add(name,raw):
+ assert name not in members
+ digest=hashlib.sha256(raw).hexdigest();members[name]={'bytes':len(raw),'sha256':digest};objects[digest]=raw
+for name,raw in files.items():add('server/'+name,raw)
+add('server/final-frame.json',(json.dumps(frame,sort_keys=True,indent=2)+'\n').encode())
+add('analysis/review.json',(json.dumps(facts,sort_keys=True,indent=2)+'\n').encode())
+session=root/'target/authorized-server-session-20261025'
+labels=['authority-parent-probe-build-launch','authority-parent-probe-build-export','authority-parent-probe-build-export-second',
+ 'authority-parent-prototype-launch','authority-parent-prototype-export','authority-parent-runtime-build-launch',
+ 'authority-parent-runtime-build-export','authority-parent-installed-launch','authority-parent-installed-export',
+ 'authority-parent-holder-launch','authority-parent-final-export','parent-residual-profile-launch','parent-residual-profile-export']
+for label in labels:
+ folder=session/label;assert folder.is_dir()
+ for p in sorted(folder.rglob('*')):
+  if p.is_file():add('session/'+p.relative_to(session).as_posix(),p.read_bytes())
+for label in ['authority-parent-reader-controls-20261025','authority-parent-baseline-format-20261025',
+ 'authority-parent-baseline-doc-check-20261025','authority-parent-final-reader-controls-20261025',
+ 'authority-parent-runtime-format-20261025','authority-parent-local-contract-20261025','authority-parent-saved-byte-controls-20261025']:
+ folder=root/'target/source-continuation-20261024'/label
+ result=json.loads((folder/'result.json').read_bytes())
+ assert result['exit']==0 and result['outer_refusal'] is None and result['source_unchanged'] and result['head_unchanged']
+ for p in sorted(folder.iterdir()):add('checks/'+label+'/'+p.name,p.read_bytes())
+for name in ['prepare-authority-parent-probe-build-20261025.py','render-authority-parent-probe-export-20261025.py',
+ 'server-authority-directory-cost-worker-20261025.py','prepare-authority-parent-cpu-20261025.py',
+ 'render-authority-parent-cpu-export-20261025.py','prepare-authority-parent-runtime-build-20261025.py',
+ 'render-authority-parent-runtime-export-20261025.py','prepare-authority-parent-installed-20261025.py',
+ 'render-authority-parent-installed-export-20261025.py','prepare-authority-parent-holder-20261025.py',
+ 'render-authority-parent-final-export-20261025.py','audit-authority-parent-20261025.py',
+ 'test-audit-authority-parent-20261025.py','retain-authority-parent-20261025.py',
+ 'prepare-parent-residual-profile-20261025.py','render-parent-residual-export-20261025.py','server-residual-profile-worker-20261025.py']:
+ add('coordinator/'+name,(root/'target'/name).read_bytes())
+for name in api['NAMES']:
+ add('baseline-source/'+name,old[name]);add('source/'+name,sources[name])
+for name in ['protocol.json','review.py','test_review.py']:add('tool/'+name,(root/'tools/authority-parent-cost-074'/name).read_bytes())
+add('dependencies/profile-review.py',(root/'tools/native-server-control-074/profile_review.py').read_bytes())
+add('dependencies/directory-review.py',(root/'tools/authority-directory-cost-074/review.py').read_bytes())
+protected={}
+for name in ['Cargo.toml','Cargo.lock','docs/testing/performance/0.74/qualification-manifest.toml','tools/authority-storage-source-074/contract.rs']:
+ protected[name]=hashlib.sha256((root/name).read_bytes()).hexdigest()
+base=root/'docs/testing/performance/0.74/local-runs/authority-parent-cost-20261025'
+base.mkdir(exist_ok=False);(base/'objects').mkdir()
+for digest,raw in objects.items():(base/'objects'/digest).write_bytes(raw)
+index=dict(schema='hc074-authority-parent-cost-evidence-v1',members=members,protected_inputs=protected,
+ baseline_commit=api['BASELINE'],runtime_commit=api['RUNTIME'],
+ baseline_image_sha256='925dd4945a3d0c828a459198ac89fa959e91f6f22cf00e6994451987acf89ad5',
+ runtime_image_sha256='1d43e73b00403b0ee834d11b392f754b124b40e5e6151d1a28cc22a020f5afc1',
+ upstream_index_sha256='4136e44c8a3adf1c06c234861406b730ebd99644c2bd3af48b36931e3e2c6466',
+ source_inputs=2565,authority_tests_passed=63,full_holder_passed=False,
+ checks_order_count_deadlines_unchanged=True,before_read_metadata_changed=False,apparmor_changed=False,
+ attribution_only_profile=True,release_installed=False,supervisor_stopped=False,product=False,admission=False)
+raw=(json.dumps(index,sort_keys=True,indent=2)+'\n').encode();(base/'index.json').write_bytes(raw)
+(base/'.gitattributes').write_bytes(b'index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n')
+print(json.dumps(dict(index_sha256=hashlib.sha256(raw).hexdigest(),members=len(members),objects=len(objects),bytes=sum(map(len,objects.values())))))

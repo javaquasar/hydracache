@@ -1,0 +1,2 @@
+import runpy
+runpy.run_path('target/render-authority-parent-cpu-export-20261025.py',init_globals=dict(PHASE='installed'))

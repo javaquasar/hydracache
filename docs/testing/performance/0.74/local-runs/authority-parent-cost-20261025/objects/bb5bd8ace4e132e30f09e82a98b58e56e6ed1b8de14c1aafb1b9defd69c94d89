@@ -1,0 +1,49 @@
+"""First full original holder matrix for the separate parent-device candidate."""
+from pathlib import Path
+import hashlib,json,os,subprocess,sys
+base=Path('/tmp/hc074-server-gate-root-20261025.0k0xbdah');root=base/'authority-parent-holder-first'
+candidate='1d43e73b00403b0ee834d11b392f754b124b40e5e6151d1a28cc22a020f5afc1'
+raw=(base/'server-fault-worker-20261025.py').read_bytes()
+assert hashlib.sha256(raw).hexdigest()=='af1e9926e1ad40bc49c1c225d79f5fffc788c715a7889743decea129ec4b17a3'
+scope={};exec(compile(raw.decode().split('started=time.monotonic_ns()\n')[0],'<pinned-preflight>','exec'),scope)
+preflight=scope['preflight']
+def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+def publish(name,value):
+ with (root/name).open('x') as f:json.dump(value,f,indent=2);f.flush();os.fsync(f.fileno())
+selector=('diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::'
+ 'tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::'
+ 'collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::'
+ 'starting_tests::privileged_root::cgroup::held_live::privileged_consuming_held_live_matrix')
+publish('consumed.json',dict(candidate_commit='e5284749e84a1a025ea1ef47f2b20e744a72bed1',image_sha256=candidate,
+ selector=selector,schedule=['healthy','revalidate','role-before','role-after','trust-after'],original_windows=[300,60,10],
+ outer_seconds=1200,case_override=False,cost_override=False,first_candidate_attempt=True,retry=False,
+ old_first_refusals_preserved=True,product=False,admission=False))
+result=dict(exit=None,first_refusal=None,postflight_refusal=None,passed=False,completed_cases=[],original_send=False,
+ all_writers_proven_stopped=False,completion=False,admission=False)
+before=None
+try:
+ before=preflight();publish('preflight.json',before)
+ build=json.loads((base/'authority-parent-runtime-build-first/result.json').read_bytes());assert build['passed']
+ assert json.loads((base/'authority-parent-installed-first/result.json').read_bytes())['passed']
+ test=base/'authority-parent-runtime-build-first/libtest';assert sha(test)==candidate
+ old=json.loads((base/'holder-consumed.json').read_bytes());bundle=base/'holder-bundle'
+ for name,digest in old['bundle_inputs'].items():assert sha(bundle/name)==digest
+ scratch=root/'scratch';scratch.mkdir(mode=0o700)
+ env=dict(PATH='/usr/sbin:/usr/bin:/sbin:/bin',TMPDIR=str(scratch),HC074_OWNED_ROOT_FIXTURE='local-only-v1',HC074_START_MATERIAL_BUNDLE=str(bundle))
+ argv=['/usr/bin/timeout','--signal=TERM','--kill-after=5s','1200s','/usr/bin/nice','-n','10',str(test),selector,'--ignored','--exact','--nocapture','--test-threads=1']
+ publish('command.json',dict(argv=argv,env=env,affinity=sorted(os.sched_getaffinity(0)),bundle_inputs=old['bundle_inputs']))
+ with (root/'holder.stdout.log').open('xb') as stdout,(root/'holder.stderr.log').open('xb') as stderr:
+  child=subprocess.Popen(argv,cwd=scratch,env=env,stdout=stdout,stderr=stderr,start_new_session=True)
+  publish('child.json',dict(pid=child.pid,start_ticks=scope['ticks'](child.pid)));result['exit']=child.wait()
+ text=(root/'holder.stdout.log').read_text()+(root/'holder.stderr.log').read_text()
+ result['completed_cases']=[case for case in old['schedule'] if f'HC074-HELD-LIVE case={case} seed=0x074c051e actual_fixed=true actual_consuming=true' in text]
+ result['passed']=result['exit']==0 and len(result['completed_cases'])==5 and text.count('test result: ok. 1 passed; 0 failed; 0 ignored;')==6
+ for name,digest in old['bundle_inputs'].items():assert sha(bundle/name)==digest
+except BaseException as error:result['first_refusal']=f'{type(error).__name__}: {error}'
+finally:
+ try:
+  after=preflight();assert before is not None and before==after;publish('postflight.json',after)
+ except BaseException as error:result['postflight_refusal']=f'{type(error).__name__}: {error}';result['passed']=False
+ publish('result.json',result)
+
+# All source is frozen in WORKER_PREFIX by the renderer.

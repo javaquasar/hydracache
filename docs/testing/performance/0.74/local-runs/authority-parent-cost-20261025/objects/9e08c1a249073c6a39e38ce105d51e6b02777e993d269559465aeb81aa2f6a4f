@@ -1,0 +1,6 @@
+from pathlib import Path
+text=Path('target/server-stamp-export-20261025.py').read_text()
+assert text.count("groups=['authority-stamp-screen-first']")==1
+groups=['authority-parent-probe-build-first','authority-parent-prototype-first',
+ 'authority-parent-runtime-build-first','authority-parent-installed-first','authority-parent-holder-first']
+print(text.replace("groups=['authority-stamp-screen-first']", 'groups='+repr(groups)))

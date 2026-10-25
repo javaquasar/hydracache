@@ -1,0 +1,19 @@
+from pathlib import Path
+import base64,json,runpy,subprocess
+phase=globals().get('PHASE','prototype')
+assert phase in ['prototype','installed']
+build='authority-parent-probe-build-first' if phase=='prototype' else 'authority-parent-runtime-build-first'
+source='source-authority-parent-probe-first' if phase=='prototype' else 'source-authority-parent-runtime-first'
+label='authority-parent-probe-build-export-second' if phase=='prototype' else 'authority-parent-runtime-build-export'
+export=json.loads(Path('target/authorized-server-session-20261025',label,'stdout.log').read_bytes());assert export['complete']
+group=build+'/'
+result=json.loads(base64.b64decode(export['members'][group+'result.json']['base64']));assert result['passed'] and result['source_unchanged']
+head=subprocess.check_output(['git','rev-parse','HEAD']).decode().strip()
+worker=Path('target/server-authority-directory-cost-worker-20261025.py').read_text()
+for a,b in [('fixture::fixed::directory_cost::fresh_authority_directory_','fixture::parent_cost::fresh_authority_parent_'),('HC074_DIRECTORY_COHORT','HC074_PARENT_COHORT'),('HC074-DIR-COST ','HC074-PARENT-COST ')]:
+ assert worker.count(a)==1;worker=worker.replace(a,b)
+tag='authority-parent-'+phase+'-first'
+prefix=f'RUN_TAG={tag!r}\nPHASE={phase!r}\nBUILD_TAG={build!r}\nSOURCE_TAG={source!r}\n'
+prefix+=f'IMAGE_SHA={result["libtest_sha256"]!r}\nMANIFEST_SHA={export["members"][group+"source-manifest.json"]["sha256"]!r}\nSOURCE_COMMIT={head!r}\n'
+prefix+='PROTOCOL_B64='+repr(base64.b64encode(Path('tools/authority-parent-cost-074/protocol.json').read_bytes()).decode())+'\n'
+runpy.run_path('target/prepare-capacity-checks-20261025.py',init_globals=dict(WORKER_FILE='target/empty-worker-20261025.py',WORKER_DIR=tag,WORKER_PREFIX=prefix+worker+'\n'))

@@ -1,0 +1,25 @@
+{
+  "candidate_commit": "e5284749e84a1a025ea1ef47f2b20e744a72bed1",
+  "image_sha256": "1d43e73b00403b0ee834d11b392f754b124b40e5e6151d1a28cc22a020f5afc1",
+  "selector": "diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::cgroup::held_live::privileged_consuming_held_live_matrix",
+  "schedule": [
+    "healthy",
+    "revalidate",
+    "role-before",
+    "role-after",
+    "trust-after"
+  ],
+  "original_windows": [
+    300,
+    60,
+    10
+  ],
+  "outer_seconds": 1200,
+  "case_override": false,
+  "cost_override": false,
+  "first_candidate_attempt": true,
+  "retry": false,
+  "old_first_refusals_preserved": true,
+  "product": false,
+  "admission": false
+}

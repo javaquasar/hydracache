@@ -1,0 +1,2 @@
+import runpy
+runpy.run_path('target/prepare-authority-parent-cpu-20261025.py',init_globals=dict(PHASE='installed'))

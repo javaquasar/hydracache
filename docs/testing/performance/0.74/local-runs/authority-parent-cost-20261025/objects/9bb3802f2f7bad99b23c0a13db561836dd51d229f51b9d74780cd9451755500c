@@ -1,0 +1,70 @@
+{
+  "protocol": {
+    "schema": "hc074-authority-parent-cost-v1",
+    "baseline_runtime_commit": "bac965b92a64d1f042fa6094b261dcdb614407da",
+    "hypothesis": "replace only the parent-device metadata projection with fresh fstat device; keep before-read checked Stamp unchanged",
+    "processes": 8,
+    "samples_per_payload": 16,
+    "iterations_per_sample": 1024,
+    "warmups_per_arm": 32,
+    "arms": [
+      "reference",
+      "reference-control",
+      "runtime",
+      "prototype"
+    ],
+    "order": "eight forward/reverse cyclic four-arm permutations, twice, rotated by cohort",
+    "payload_order": [
+      "marker",
+      "record"
+    ],
+    "payloads": {
+      "marker": {
+        "bytes": 65,
+        "budget": 65
+      },
+      "record": {
+        "bytes": 1024,
+        "budget": 2048
+      }
+    },
+    "fresh_metadata_observations_per_call": 4,
+    "cpu_affinity": [
+      5
+    ],
+    "uid": 1000,
+    "compiler": "Rust 1.94 GNU release default features",
+    "estimator": "median over eight process medians of sixteen paired log process-CPU ratios per payload",
+    "bootstrap": "20000 process resamples, seed 0x074d1a05, percentile 95%",
+    "identical_reference_control_interval": [
+      0.97,
+      1.03
+    ],
+    "baseline_runtime_reference_control_interval": [
+      0.97,
+      1.03
+    ],
+    "prototype_reference_upper_max": 0.98,
+    "installed_runtime_reference_upper_max": 0.98,
+    "installed_runtime_prototype_control_interval": [
+      0.97,
+      1.03
+    ],
+    "outer_seconds": 300,
+    "per_process_seconds": 30,
+    "conditional_read_order_count_and_original_windows_unchanged": true,
+    "first_refusals_preserved": true,
+    "retry": false,
+    "full_preparation_improvement_proven": false,
+    "product": false,
+    "admission": false
+  },
+  "phase": "prototype",
+  "image_sha256": "925dd4945a3d0c828a459198ac89fa959e91f6f22cf00e6994451987acf89ad5",
+  "source_manifest_sha256": "ec8eab39e71b8cfe7e53a7681c5fb6610605fa0b98082b2118432567a81a8103",
+  "source_commit": "68d4b89e516c3350e70d164b18dc9813f91f9980",
+  "overlapping_builds_by_this_session": false,
+  "retry": false,
+  "product": false,
+  "admission": false
+}

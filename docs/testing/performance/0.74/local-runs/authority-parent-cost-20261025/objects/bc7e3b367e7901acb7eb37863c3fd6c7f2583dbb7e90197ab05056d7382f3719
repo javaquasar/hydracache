@@ -1,0 +1,17 @@
+{
+  "overlay_names": [
+    "diagnostic_authority_fixture.rs",
+    "diagnostic_authority_parent_tests.rs"
+  ],
+  "hypothesis": "test-only parent-device projection attribution; before-read and runtime unchanged",
+  "baseline_commit": "8ac78483d",
+  "original_windows": [
+    300,
+    60,
+    10
+  ],
+  "original_check_frequency_and_order": true,
+  "retry": false,
+  "product": false,
+  "admission": false
+}
