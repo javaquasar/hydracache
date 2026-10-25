@@ -20199,3 +20199,29 @@ observations. Filesystem/identity wrappers or another measured preparation cost
 need separate hypotheses and controls. The original ten-second gate remains red;
 an honest rejected micro-optimization is preferable to adding unsafe code for a
 claim the frozen experiment does not support.
+
+### Removing instructions does not guarantee lower CPU cost
+
+The next [filesystem projection experiment](../testing/performance/0.74/filesystem-projection-cost-result-20261025.md)
+tests another narrow hypothesis: avoid zeroing a full `statfs` before a fresh
+query that needs only its filesystem type. The candidate still calls libc once,
+keeps EINTR as an error and reads only the initialized field after success.
+It never assumes initialization of the whole struct. Partial-output/error tests
+cover this unsafe boundary alongside complete observation-count controls;
+50 origin tests, native check and strict lint pass.
+
+Seven calibrated cases compare leaf checks, complete Boot and four Namespace
+paths in eight fresh processes. The first cohort rejects the candidate. Proc
+and Namespace leaf CPU ratios are 1.003559 and 1.004120, while whole Boot is
+0.999606 and Namespace ratios range from 1.000519 to 1.001479. No upper bound
+meets the frozen 0.98 maximum. The candidate remains outside production, with
+no installed-image measurement or full preparation retry.
+
+Read-only disassembly makes the distinction concrete: the original/reference
+functions contain 120 bytes of zero stores before `fstatfs`; the candidate
+does not. The intended code-generation change happened, yet it did not produce
+the required CPU reduction. The experiment measures the compiled whole method,
+not the isolated cost of those stores, and does not establish why the leaf
+became slightly slower. The next hypothesis needs a measured owner and its own
+controls, not an assumption that fewer instructions must be faster. All fresh
+checks, error ordering, first refusals and original deadlines stay intact.

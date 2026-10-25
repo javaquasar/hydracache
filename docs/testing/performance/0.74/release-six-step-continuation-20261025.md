@@ -223,6 +223,15 @@ host manager is still 255; no upgrade, original service send or product run occu
 
 ## 4. Completion, cells 2–4, crashes and reconnect
 
+The separate [filesystem buffer projection](filesystem-projection-cost-result-20261025.md)
+passes 50 origin cases, native check/strict lint and all seven calibration
+controls. Its first cohort rejects the candidate: leaf CPU ratios are 1.003559
+and 1.004120, with whole Boot/Namespace near baseline. Read-only disassembly
+confirms removal of the zero stores, not a useful CPU gain. The change stays
+test-only, without runtime integration, preparation retry or altered live work.
+Next return to cost-ranked complete preparation owners, not another unmeasured
+assumption that fewer wrapper instructions imply a faster admission path.
+
 The [fixed Namespace open experiment](namespace-open-cost-result-20261025.md)
 passes differential controls, including real targeted FIFO interruption, and
 47 origin tests with native check/strict lint. Its first eight-process cohort

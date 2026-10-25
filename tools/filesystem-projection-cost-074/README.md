@@ -48,3 +48,8 @@ C:/Python313/python.exe tools/filesystem-projection-cost-074/test_review.py
 
 Both Rust measurement selectors are manual non-shipping gates. Use the exact
 protected source/image coordinator, not an unbounded preparation retry.
+
+The [first result](../../docs/testing/performance/0.74/filesystem-projection-cost-result-20261025.md)
+rejects this candidate: all calibration controls pass, but no case meets the
+frozen 2% floor. Codegen confirms the zero stores disappeared without the
+required CPU benefit. The change stays test-only.
