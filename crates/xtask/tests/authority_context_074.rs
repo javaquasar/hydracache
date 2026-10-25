@@ -1,11 +1,40 @@
 #[path = "support/document_scratch_guard.rs"]
 mod guard;
+#[path = "../../../tools/normalization-attribution-074/history_probe.rs"]
+mod history_profile;
 #[path = "../../../tools/normalization-attribution-074/probe.rs"]
 mod normalization_profile;
 #[path = "../../../tools/authority-runtime-074/gate.rs"]
 mod runtime;
 #[path = "../../../tools/authority-runtime-074/io.rs"]
 mod runtime_io;
+
+#[test]
+fn history_prefix_protocol_and_unrelated_input_are_exact() {
+    assert_eq!(history_profile::PATHS.len(), 3);
+    assert_eq!(history_profile::ITERATIONS, 16);
+    assert_eq!(history_profile::order(0), history_profile::OPERATIONS);
+    let mut reverse = history_profile::order(1);
+    reverse.reverse();
+    assert_eq!(reverse, history_profile::order(0));
+    for operation in history_profile::OPERATIONS {
+        for raw in ["", "unchanged", "\u{0}λ\r\n// unmatched hook"] {
+            assert_eq!(history_profile::normalize(operation, "unrelated", raw), raw);
+        }
+    }
+    assert!(
+        std::panic::catch_unwind(|| history_profile::normalize("unknown", "unrelated", ""))
+            .is_err()
+    );
+}
+
+#[test]
+fn history_prefix_cost_child() {
+    let Some(input) = std::env::var_os("HC074_HISTORY_CHAIN_INPUT") else {
+        return;
+    };
+    history_profile::run(std::path::Path::new(&input));
+}
 
 #[test]
 fn normalization_cost_protocol_keeps_separate_scopes() {
