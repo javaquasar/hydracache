@@ -61,6 +61,15 @@ controller_disconnect_does_not_orphan_or_retry = true
 restoration_and_verified_supervisor_required = true
 installation_clock_apparmor_or_other_service_changes_allowed = false
 maximum_stage_seconds = 1200
+target = "x86_64-unknown-linux-gnu"
+toolchain = "1.94.0"
+build_profile = "release"
+runtime = "current-thread; identical colocated client/server topology"
+measurement_cpus = [1, 2, 3, 4]
+coordinator_cpus = [0, 5, 6, 7]
+quiet_sample_milliseconds = 500
+maximum_background_cpu_percent = 10.0
+quiet_guard_or_placement_failure_is_invalid_not_retry = true
 workload_execution_before_coordinator_fault_gate_allowed = false
 six_hour_or_24_hour_qualification_allowed = false
 
