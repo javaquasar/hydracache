@@ -19934,3 +19934,29 @@ The installed systemd 255 also remains outside the reviewed newer-manager
 FD-delivery scope. These concrete boundaries guide the next implementation and
 environment decisions; they do not justify another identical attempt, a product
 performance claim or production admission.
+
+### More cores help compilation but do not remove serial validation cost
+
+The [next dedicated-server profile](../testing/performance/0.74/server-capacity-attribution-result-20261025.md)
+separates capacity from the admission bottleneck. Eight CPUs are available to
+new build children, and all-target/all-feature GNU check and strict Rust 1.94
+Clippy pass. The existing supervisor, host CPU isolation and original
+four-CPU profile affinity remain unchanged. Builds start only after the profile
+ends, so their extra parallelism cannot contaminate its timing.
+
+The single instrumented outputs phase takes 7.113 seconds wall and 7.030 seconds
+of process CPU. Its 46 original rounds spend 6.011 seconds in ReservedLive and
+perform 153088 Boot and 306176 Namespace observations. Authentication takes
+about 28.6 milliseconds, including nested signature work. These observations
+direct the next hypothesis toward fresh kernel validation, not crypto replacement.
+Nested views overlap; adding them would double-count work. Observer overhead
+has not been subtracted, so this is attribution, not a repeated performance claim.
+
+Preparation still expires in its unchanged ten-second causal window. More cores
+alone do not accelerate the serial call chain, and they do not authorize fewer
+checks or a longer deadline. The following ordinary GNU library run also stays
+red: 1348 passed, 82 failed, 122 ignored. Its signer fixtures expose a missing
+account-local rustup prerequisite. A private HOME now resolves the exact compiler,
+without modifying the real account, but that setup control does not supply a
+new verdict for any failed case. Faster verification and honest first failures
+are useful progress; neither is production admission.

@@ -197,6 +197,19 @@ The compatible-manager environment choice is a real integration boundary. Local
 source controls cannot turn it green; current restrictions exclude the service
 and host actions needed to demonstrate it.
 
+The [full-capacity native checks and separate cost profile](server-capacity-attribution-result-20261025.md)
+now use all eight CPUs only for new compilation/test children. All-target,
+all-feature GNU check and exact Rust 1.94 strict Clippy pass; the missing-component
+first refusal remains retained. Thirty-five origin controls pass. The first
+unfiltered ordinary GNU library cohort remains red: 1348 passed, 82 failed,
+122 ignored. The signer fixture's required account-local rustup is absent;
+private HOME discovery now passes, but no failed case is replayed or promoted.
+The attribution-only healthy profile still expires at 10134325468 ns. Outputs
+records 7.113 seconds wall/7.030 process CPU, including 6.011 seconds in
+ReservedLive and 153088 Boot/306176 Namespace observations. This identifies the
+next cost owner without changing any fresh check, deadline, installed artifact
+or supervisor. It neither completes the package nor supplies original delivery.
+
 The separately authorized [bounded dedicated-server session](server-kernel-gate-result-20261025.md)
 now builds the current source offline and passes three actual kernel tests with
 31 internal scenarios. Killing the local SSH observer preserves the same live

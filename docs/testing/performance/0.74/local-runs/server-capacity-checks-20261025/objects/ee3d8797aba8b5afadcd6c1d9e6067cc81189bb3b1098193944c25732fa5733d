@@ -1,0 +1,37 @@
+"""Read staged blobs in one binary batch and independently replay the result reader."""
+from pathlib import Path
+import hashlib,importlib.util,json,subprocess
+root=Path(__file__).resolve().parent.parent
+prefix='docs/testing/performance/0.74/local-runs/server-capacity-attribution-20261025/'
+raw=subprocess.check_output(['git','show',':'+prefix+'index.json'],cwd=root)
+assert hashlib.sha256(raw).hexdigest()=='474cae994bbd36005e44adb14f38d17738d654bbe209a50b5adeddb725f59e1a'
+index=json.loads(raw);assert len(index['members'])==266
+digests=sorted({item['sha256'] for item in index['members'].values()});assert len(digests)==133
+queries=[':'+prefix+'objects/'+digest for digest in digests]
+p=subprocess.run(['git','cat-file','--batch'],input=('\n'.join(queries)+'\n').encode(),cwd=root,capture_output=True,check=True)
+objects={};offset=0
+for digest in digests:
+ newline=p.stdout.index(b'\n',offset);header=p.stdout[offset:newline].split();assert header[1]==b'blob'
+ size=int(header[2]);offset=newline+1;blob=p.stdout[offset:offset+size];offset+=size
+ assert p.stdout[offset:offset+1]==b'\n';offset+=1
+ assert hashlib.sha256(blob).hexdigest()==digest;objects[digest]=blob
+assert offset==len(p.stdout)
+members={}
+for name,item in index['members'].items():
+ assert not Path(name).is_absolute() and '..' not in Path(name).parts
+ blob=objects[item['sha256']];assert len(blob)==item['bytes'];members[name]=blob
+assert members['input/readers/profile_review.py']==(root/'tools/native-server-control-074/profile_review.py').read_bytes()
+assert members['coordinator/review-capacity-evidence-20261025.py']==(root/'target/review-capacity-evidence-20261025.py').read_bytes()
+spec=importlib.util.spec_from_file_location('review',root/'target/review-capacity-evidence-20261025.py')
+r=importlib.util.module_from_spec(spec);spec.loader.exec_module(r)
+key='session/capacity-final-export/'
+frame=json.loads(members[key+'stdout.log'])['final_frame']
+files={name.removeprefix(key+'raw/'):blob for name,blob in members.items() if name.startswith(key+'raw/')}
+facts=r.review(files,frame)
+assert facts==json.loads(members['session/capacity-offline-review/result.json'])
+assert facts['ordinary_gnu_library_counts']==dict(passed=1348,failed=82,ignored=122)
+assert not index['admission'] and not index['ordinary_gnu_passed'] and not index['performance_win']
+for name,digest in index['protected_sha256'].items():
+ assert hashlib.sha256((root/name).read_bytes()).hexdigest()==digest
+print(json.dumps(dict(staged_index_sha256=hashlib.sha256(raw).hexdigest(),members=266,objects=133,
+ staged_byte_review=True,native_check=True,native_lint=True,ordinary_gnu_library=False,admission=False)))

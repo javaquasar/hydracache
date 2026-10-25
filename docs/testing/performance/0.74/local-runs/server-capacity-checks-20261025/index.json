@@ -1,0 +1,68 @@
+{
+  "admission": false,
+  "doc_check": true,
+  "full_package_passed": false,
+  "local_nonpromotable_performance_contract": true,
+  "members": {
+    "checks/capacity-doc-check-20261025/intent.json": {
+      "bytes": 328958,
+      "sha256": "51aefddcd39629e757e27a717bb390fd93c34e1d0043c70313c870317dcee956"
+    },
+    "checks/capacity-doc-check-20261025/result.json": {
+      "bytes": 328644,
+      "sha256": "7598df376c0563edb3d812491d984d1b7647fac12c52722bb0b3525dc5ae764c"
+    },
+    "checks/capacity-doc-check-20261025/stderr.log": {
+      "bytes": 120,
+      "sha256": "46e8ca8822ee1bd8406d9461ec4e3d316cbe5f68c633f3a40b4831050ea413a6"
+    },
+    "checks/capacity-doc-check-20261025/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "checks/capacity-local-contract-20261025/intent.json": {
+      "bytes": 329006,
+      "sha256": "ef5fe2bfbfa78418f6f8cdf7144b65916f7038767df9b54e5bb5d6b241126f47"
+    },
+    "checks/capacity-local-contract-20261025/result.json": {
+      "bytes": 328644,
+      "sha256": "7598df376c0563edb3d812491d984d1b7647fac12c52722bb0b3525dc5ae764c"
+    },
+    "checks/capacity-local-contract-20261025/stderr.log": {
+      "bytes": 152,
+      "sha256": "f0348c1386029881b6ba4e90bf3bf2109855614f7d4fca600b31841d8465b427"
+    },
+    "checks/capacity-local-contract-20261025/stdout.log": {
+      "bytes": 60,
+      "sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+    },
+    "checks/capacity-staged-byte-review-20261025/intent.json": {
+      "bytes": 328909,
+      "sha256": "9f44f236354aa75cf5529baa35a7fb0d70d3e293cecd11d1f5a5de082bf4601c"
+    },
+    "checks/capacity-staged-byte-review-20261025/result.json": {
+      "bytes": 328644,
+      "sha256": "7598df376c0563edb3d812491d984d1b7647fac12c52722bb0b3525dc5ae764c"
+    },
+    "checks/capacity-staged-byte-review-20261025/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/capacity-staged-byte-review-20261025/stdout.log": {
+      "bytes": 247,
+      "sha256": "8a5ad044b80ad9081a93cc23c6084117b92e8bf65183a68e8f814137933d790f"
+    },
+    "retention/retain-capacity-checks-20261025.py": {
+      "bytes": 1829,
+      "sha256": "6072806968b25e56a082a7b80b89decb27a2f3873dbdbfb606b6a3ac01530fad"
+    },
+    "retention/verify-staged-capacity-20261025.py": {
+      "bytes": 2657,
+      "sha256": "ee3d8797aba8b5afadcd6c1d9e6067cc81189bb3b1098193944c25732fa5733d"
+    }
+  },
+  "ordinary_gnu_library_passed": false,
+  "schema": "hc074-server-capacity-checks-v1",
+  "staged_primary_verified": true,
+  "upstream_index_sha256": "474cae994bbd36005e44adb14f38d17738d654bbe209a50b5adeddb725f59e1a"
+}

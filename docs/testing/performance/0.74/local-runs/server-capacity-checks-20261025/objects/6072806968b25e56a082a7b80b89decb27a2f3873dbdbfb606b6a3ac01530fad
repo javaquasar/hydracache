@@ -1,0 +1,24 @@
+from pathlib import Path
+import hashlib,json
+root=Path(__file__).resolve().parent.parent
+members,objects={},{}
+def add(name,raw):
+ digest=hashlib.sha256(raw).hexdigest();assert name not in members
+ members[name]=dict(bytes=len(raw),sha256=digest);objects[digest]=raw
+for label in ('capacity-doc-check-20261025','capacity-local-contract-20261025','capacity-staged-byte-review-20261025'):
+ folder=root/'target/source-continuation-20261024'/label
+ before=json.loads((folder/'intent.json').read_bytes());after=json.loads((folder/'result.json').read_bytes())
+ assert after['exit']==0 and after['outer_refusal'] is None and after['source_unchanged'] and after['head_unchanged'] and before['source']==after['source_after']
+ for p in sorted(folder.iterdir()):add('checks/'+label+'/'+p.name,p.read_bytes())
+for name in ('verify-staged-capacity-20261025.py','retain-capacity-checks-20261025.py'):
+ add('retention/'+name,(root/'target'/name).read_bytes())
+base=root/'docs/testing/performance/0.74/local-runs/server-capacity-checks-20261025'
+base.mkdir(exist_ok=False);(base/'objects').mkdir()
+for digest,raw in objects.items():(base/'objects'/digest).write_bytes(raw)
+index=dict(schema='hc074-server-capacity-checks-v1',members=members,
+ upstream_index_sha256='474cae994bbd36005e44adb14f38d17738d654bbe209a50b5adeddb725f59e1a',
+ staged_primary_verified=True,doc_check=True,local_nonpromotable_performance_contract=True,
+ ordinary_gnu_library_passed=False,full_package_passed=False,admission=False)
+raw=(json.dumps(index,sort_keys=True,indent=2)+'\n').encode();(base/'index.json').write_bytes(raw)
+(base/'.gitattributes').write_bytes(b'index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n')
+print(json.dumps(dict(index_sha256=hashlib.sha256(raw).hexdigest(),members=len(members),objects=len(objects))))
