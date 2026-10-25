@@ -1,0 +1,41 @@
+"""Retain first bounded source-only AST capture, not package execution."""
+from pathlib import Path
+import hashlib
+import json
+
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'docs/testing/performance/0.74/local-runs/package-effect-syntax-v2-20261025'
+members,objects={ deep: value for deep,value in [] },{}
+def sha(raw): return hashlib.sha256(raw).hexdigest()
+def add(name,raw):
+    assert name not in members
+    digest=sha(raw); members[name]=dict(sha256=digest,bytes=len(raw)); objects[digest]=raw
+def tree(folder,prefix):
+    for path in sorted(folder.iterdir()):
+        if path.is_file(): add(prefix+'/'+path.name,path.read_bytes())
+capture=ROOT/'target/package-syntax-v2-20261025'
+raw=(capture/'result.json').read_bytes()
+assert sha(raw)=='07d9960365b4976ba7f0a618799b222fad89c3d6e5dffa9a29436186c802e94d'
+document=json.loads(raw)
+digest=sha(json.dumps(document,sort_keys=True,separators=(',',':')).encode())
+assert digest=='befe75505aa2c8c6da32424c23792063bcb096bf1352a42ee8a255e16ccf0840'
+assert len(document['sources'])==342 and not document['executed_input_code'] and not document['compiler_expansion']
+assert json.loads((capture/'edges-1.json').read_bytes())==dict(additions={},unresolved=[])
+assert all(sha((ROOT/v['source']).read_bytes())==v['sha256'] for v in document['sources'])
+tree(capture,'capture')
+for label in ('package-review-v2-20261025-build','package-review-v2-20261025-syntax'):
+    folder=ROOT/'target/source-continuation-20261024'/label
+    intent=json.loads((folder/'intent.json').read_bytes()); result=json.loads((folder/'result.json').read_bytes())
+    assert result['exit']==0 and result['outer_refusal'] is None and result['source_unchanged'] and result['head_unchanged']
+    assert intent['source']==result['source_after']
+    tree(folder,'checks/'+label)
+for name in ('run-fresh-reader-20261024.py','run-source-step-20261024.py','seal-package-syntax-v2-20261025.py'):
+    add('coordinators/'+name,(ROOT/'target'/name).read_bytes())
+index=dict(schema='hc074-package-effect-syntax-v2-evidence-v1',members=members,
+    captured_head='7a0beba20',canonical_ast_sha256=digest,source_files=342,syntax_sites=25129,
+    source_only=True,package_replayed=False,admission=False)
+BASE.mkdir(exist_ok=False); (BASE/'objects').mkdir()
+for digest,raw in objects.items(): (BASE/'objects'/digest).write_bytes(raw)
+(BASE/'index.json').write_bytes((json.dumps(index,indent=2,sort_keys=True)+'\n').encode())
+(BASE/'.gitattributes').write_bytes(b'index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n')
+print(json.dumps(dict(index_sha256=sha((BASE/'index.json').read_bytes()),members=len(members),objects=len(objects))))

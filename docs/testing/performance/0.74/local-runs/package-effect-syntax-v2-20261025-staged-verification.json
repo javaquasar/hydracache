@@ -1,0 +1,10 @@
+{
+  "admission": false,
+  "index_sha256": "54795bdd931fa4b759621d5fae7ec76d430e1611d82a139c7200252d4bc6d447",
+  "members": 21,
+  "package_replayed": false,
+  "schema": "hc074-package-syntax-v2-staged-verification-v1",
+  "source_files": 342,
+  "source_only": true,
+  "syntax_sites": 25129
+}
