@@ -1,0 +1,20 @@
+{
+  "schema": "hc074-preparation-ranking-v1",
+  "mode": "offline saved evidence only",
+  "upstream_index_sha256": "afb69bd536c0399dc378095dd6d3420a4bbb451cf0ce79675370a00c08c7551b",
+  "source_commit": "e5284749e84a1a025ea1ef47f2b20e744a72bed1",
+  "image_sha256": "1d43e73b00403b0ee834d11b392f754b124b40e5e6151d1a28cc22a020f5afc1",
+  "source_manifest_sha256": "0a383f29c9fbb2788d33d7d7d9049f8cf1b07058183eb425527ae42c8f617e83",
+  "profile_stdout_sha256": "580fbdf4cb21773aae94c876bb0518ab6ad4102ae1f20eea7c3d9d5c22be113a",
+  "profile_group": "parent-residual-profile-first",
+  "original_windows": [300,60,10],
+  "conservation": "per round slot: incoming calls plus roots equals node calls; outgoing inclusive wall equals inclusive minus outside-children; root wall and outside-children totals agree",
+  "no_addition_across_kernel_live_or_auth_views": true,
+  "no_wall_to_cpu_or_io_conversion": true,
+  "source_inventory_is_not_measured_syscall_inventory": true,
+  "successful_local_context_expected_requests": {"metadata":88,"directory_same":24,"open":48,"dup":12,"fstatfs":44,"ioctl":16,"gettid":8,"read_at":4},
+  "new_measurements": false,
+  "server": false,
+  "product": false,
+  "admission": false
+}
