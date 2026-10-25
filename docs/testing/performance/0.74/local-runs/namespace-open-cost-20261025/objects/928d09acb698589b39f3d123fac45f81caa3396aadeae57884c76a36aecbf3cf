@@ -1,0 +1,63 @@
+{
+  "protocol": {
+    "schema": "hc074-namespace-open-cost-v1",
+    "baseline_commit": "bb15ffb99",
+    "hypothesis": "replace only fixed Namespace OpenOptions conversion with GNU open64 on terminated literals, retaining original path projection and dynamic fallback",
+    "cases": [
+      "user",
+      "mnt",
+      "pid",
+      "time"
+    ],
+    "processes": 8,
+    "samples_per_case": 16,
+    "iterations_per_sample": 1024,
+    "warmups_per_arm": 32,
+    "arms": [
+      "reference",
+      "reference-control",
+      "runtime",
+      "prototype"
+    ],
+    "order": "eight forward/reverse cyclic four-arm permutations, twice, rotated by process",
+    "opens_per_call": 1,
+    "filesystem_checks_per_call": 1,
+    "identity_checks_per_call": 1,
+    "original_path_projection_and_descriptor_retirement_unchanged": true,
+    "active_operation_observer": false,
+    "cpu_affinity": [
+      5
+    ],
+    "uid": 1000,
+    "compiler": "Rust 1.94 GNU release default features",
+    "estimator": "median of eight process medians of sixteen paired log CPU ratios per Namespace case",
+    "bootstrap": "20000 process resamples, seed 0x074d1a05, percentile 95%",
+    "baseline_control_interval": [
+      0.97,
+      1.03
+    ],
+    "prototype_reference_upper_max": 0.98,
+    "installed_runtime_reference_upper_max": 0.98,
+    "installed_runtime_prototype_control_interval": [
+      0.97,
+      1.03
+    ],
+    "open_flags": "O_RDONLY | O_CLOEXEC, same GNU open64 entry point and unused mode 0666",
+    "eintr": "same retry semantics as pinned std; real targeted SIGUSR1 FIFO child control",
+    "outer_seconds": 300,
+    "per_process_seconds": 30,
+    "first_results_preserved": true,
+    "original_checks_frequency_order_and_windows_unchanged": true,
+    "retry": false,
+    "product": false,
+    "admission": false
+  },
+  "phase": "prototype",
+  "image_sha256": "82217f857b4a43c55e8060f7df7f4dd3157587af51a4b66b3038c81cf75feb3f",
+  "source_manifest_sha256": "27a7f83a3ac744d664942e35a30c68fea4ff4eb32e60f6032a4f9203446e1966",
+  "source_commit": "284808a69f4fbce76a68e73b60eaac42198dc8ce",
+  "overlapping_builds_by_this_session": false,
+  "retry": false,
+  "product": false,
+  "admission": false
+}

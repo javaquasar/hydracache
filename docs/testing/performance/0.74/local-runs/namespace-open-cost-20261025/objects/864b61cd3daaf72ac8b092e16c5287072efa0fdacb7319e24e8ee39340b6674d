@@ -1,0 +1,8 @@
+{
+  "boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+  "image_sha256": "6640e1b9b31ae7c87137b335be4f2665d729ea7b4324ee0e874bdbedc346c520",
+  "installed_unchanged": true,
+  "markers_absent": true,
+  "pid1_mountinfo_sha256": "aadf33da0248a5d1eb511955adcd7e28926cc0ac6838ad91870131ea5fa9b677",
+  "supervisor": "MainPID=8839\nNRestarts=0\nActiveState=active\nSubState=running\n"
+}

@@ -1,0 +1,21 @@
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/source-namespace-open-first/tools/long-run-supervisor-074)
+error: using a non-octal value to set unix file permissions
+  --> tools/long-run-supervisor-074/src/diagnostic_namespace_open_tests.rs:79:74
+   |
+79 |     std::fs::set_permissions(&forbidden, std::fs::Permissions::from_mode(0)).unwrap();
+   |                                                                          ^ help: consider using an octal literal instead: `0o0`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#non_octal_unix_permissions
+   = note: `#[deny(clippy::non_octal_unix_permissions)]` on by default
+
+error: very complex type used. Consider factoring parts into `type` definitions
+   --> tools/long-run-supervisor-074/src/diagnostic_namespace_open_tests.rs:364:16
+    |
+364 |     let calls: [fn(&str) -> Result<(File, (u64, u64)), KernelError>; 4] =
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#type_complexity
+    = note: `-D clippy::type-complexity` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::type_complexity)]`
+
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 2 previous errors

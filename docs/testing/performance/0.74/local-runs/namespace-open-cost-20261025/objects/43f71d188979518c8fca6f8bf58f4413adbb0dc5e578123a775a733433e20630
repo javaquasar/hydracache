@@ -1,0 +1,7 @@
+{
+  "phase": "offline audit drafting",
+  "error": "AssertionError: expected failed Clippy in result.cases, but execute() appends only successful cases",
+  "correction": "Check successful build/check cases and separate clippy-result.json exit 101; retain first failure unchanged",
+  "new_measurement": false,
+  "admission": false
+}

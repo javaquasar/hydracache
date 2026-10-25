@@ -1,0 +1,4 @@
+
+thread 'diagnostic_kernel_admission::origin::operation_cost::operation_observer_unwind_clears_only_its_scope_and_preserves_panic' (348891) panicked at tools/long-run-supervisor-074/src/diagnostic_kernel_operation_cost.rs:193:9:
+Box<dyn Any>
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

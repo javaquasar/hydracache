@@ -1,0 +1,88 @@
+"""Audit first raw cohort and unchanged production source; never admission."""
+from pathlib import Path
+import ast,base64,hashlib,json,re,runpy,subprocess
+ROOT=Path(__file__).resolve().parent.parent
+api=runpy.run_path(str(ROOT/'tools/namespace-open-cost-074/review.py'))
+NAMES=['diagnostic_kernel_origin.rs','diagnostic_namespace_open.rs','diagnostic_namespace_open_tests.rs']
+BASELINE='bb15ffb99'
+EXPERIMENT='284808a69f4fbce76a68e73b60eaac42198dc8ce'
+IMAGE='82217f857b4a43c55e8060f7df7f4dd3157587af51a4b66b3038c81cf75feb3f'
+FIRST_IMAGE='d8e277a56b20076d9611c019f22c4c819743cd8e8c91113d8e518a13008d6f88'
+BUILD='namespace-open-build-v2';COHORT='namespace-open-prototype-first';FIRST='namespace-open-build-first'
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+def load():
+ packet=json.loads((ROOT/'target/authorized-server-session-20261025/namespace-open-final-export-second/stdout.log').read_bytes());assert packet['complete']
+ files={}
+ for name,item in packet['members'].items():
+  raw=base64.b64decode(item['base64']);assert len(raw)==item['bytes'] and sha(raw)==item['sha256'];files[name]=raw
+ return files,packet['final_frame']
+def baseline():return subprocess.check_output(['git','show',BASELINE+':tools/long-run-supervisor-074/src/'+NAMES[0]],cwd=ROOT)
+def extract(source,name):
+ match=re.search(r'(?:pub\(super\) )?fn '+name+r'(?:\b|<)',source);assert match,name
+ begin=match.start();brace=source.index('{',begin);depth=1;end=brace+1
+ while depth:
+  if source[end]=='{':depth+=1
+  if source[end]=='}':depth-=1
+  end+=1
+ return source[begin:end]
+def source_proof(sources,old):
+ norm=lambda raw:raw.decode().replace('\r\n','\n')
+ body=norm(sources[NAMES[0]])
+ modules='#[cfg(all(test, target_arch = "x86_64", target_env = "gnu"))]\n#[path = "diagnostic_namespace_open.rs"]\nmod fixed_namespace_open;\n\n#[cfg(all(test, target_arch = "x86_64", target_env = "gnu"))]\n#[path = "diagnostic_namespace_open_tests.rs"]\nmod namespace_open_tests;\n\n'
+ assert body.count(modules)==1;assert body.replace(modules,'')==norm(old),'Production body changed'
+ tests=norm(sources[NAMES[2]])
+ original=extract(norm(old),'namespace');reference=extract(tests,'reference');prototype=extract(tests,'prototype')
+ original=original.replace('fn namespace(', 'fn reference(',1)
+ assert original==reference,'Frozen whole-method reference changed'
+ old_open='OpenOptions::new()\n        .read(true)\n        .custom_flags(libc::O_CLOEXEC)\n        .open(namespace_path(name).as_ref())?'
+ assert reference.count(old_open)==1
+ assert prototype==reference.replace('fn reference(', 'fn prototype(',1).replace(old_open,'fixed_namespace_open::read(name)?')
+ return dict(production_body_exactly_preserved=True,reference_matches_baseline=True,
+  prototype_only_replaces_open=True,original_observation_frequency_order_and_windows_unchanged=True)
+def review(files,frame,sources,old):
+ get=lambda group,name:json.loads(files[group+'/'+name])
+ failed=get(FIRST,'result.json');assert not failed['passed'] and failed['first_refusal'] and failed['postflight_refusal'] is None
+ assert [(r['name'],r['exit']) for r in failed['cases']]==[('build',0),('check',0)]
+ assert get(FIRST,'clippy-result.json')['exit']==101 and "'clippy'" in failed['first_refusal']
+ assert 'origin-tests.stdout.log' not in {n.removeprefix(FIRST+'/') for n in files if n.startswith(FIRST+'/')}
+ receipt=get(FIRST,'failed-image-receipt.json');assert receipt['image_sha256']==FIRST_IMAGE and not receipt['lint_passed'] and not receipt['measurements_run']
+ for group in [FIRST,BUILD,COHORT]:assert get(group,'preflight.json')==get(group,'postflight.json')==frame
+ for group in [BUILD,COHORT]:
+  result=get(group,'result.json');assert result['passed'] and result['source_unchanged'] and result['first_refusal'] is None and result['postflight_refusal'] is None
+ result=get(BUILD,'result.json');assert result['libtest_sha256']==IMAGE
+ assert [(r['name'],r['exit']) for r in result['cases']]==[('build',0),('check',0),('clippy',0),('origin-tests',0)]
+ stdout=files[BUILD+'/origin-tests.stdout.log'];assert b'47 passed; 0 failed; 7 ignored;' in stdout
+ fifo=api['common'].records(stdout,'HC074-OPEN-FIFO ')
+ assert fifo==[dict(admission=False,product=False,prototype=[257,524288,1,32768],reference=[257,524288,1,32768],targeted_sigusr1=True)]
+ for name in ['check','clippy']:
+  argv=get(BUILD,name+'-command.json')['argv'];assert '--all-targets' in argv and '--all-features' in argv and '--locked' in argv
+  if name=='clippy':assert argv[-3:]==['--','-D','warnings']
+ manifest=get(BUILD,'source-manifest.json');first=get(FIRST,'source-manifest.json');assert len(manifest)==len(first)==2570
+ for name,raw in sources.items():assert manifest['tools/long-run-supervisor-074/src/'+name]==sha(raw),name
+ changed=[name for name in manifest if manifest[name]!=first[name]]
+ assert changed==['tools/long-run-supervisor-074/src/diagnostic_namespace_open_tests.rs']
+ tree=ast.parse(files[FIRST+'/worker.py']);overlay=ast.literal_eval(tree.body[0].value);assert sorted(overlay)==sorted(NAMES)
+ for name,payload in overlay.items():assert first['tools/long-run-supervisor-074/src/'+name]==sha(base64.b64decode(payload))
+ first_tests=base64.b64decode(overlay[NAMES[2]]).decode().replace('\r\n','\n')
+ corrected=sources[NAMES[2]].decode().replace('\r\n','\n')
+ fixed=first_tests.replace('Permissions::from_mode(0)', 'Permissions::from_mode(0o0)')
+ original_type='let calls: [fn(&str) -> Result<(File, (u64, u64)), KernelError>; 4] =\n        [reference, reference, namespace, prototype];'
+ corrected_type='type Call = fn(&str) -> Result<(File, (u64, u64)), KernelError>;\n    let calls: [Call; 4] = [reference, reference, namespace, prototype];'
+ assert fixed.count(original_type)==1;assert fixed.replace(original_type,corrected_type)==corrected,'Unrelated lint correction'
+ proof=source_proof(sources,old)
+ intent=get(COHORT,'consumed.json');assert intent['phase']=='prototype' and intent['source_commit']==EXPERIMENT
+ assert intent['image_sha256']==IMAGE and intent['source_manifest_sha256']==sha(files[BUILD+'/source-manifest.json'])
+ assert intent['protocol']==json.loads((ROOT/'tools/namespace-open-cost-074/protocol.json').read_bytes()) and not intent['retry'] and not intent['product'] and not intent['admission']
+ assert get(COHORT,'result.json')['cases']==[dict(cohort=i,exit=0) for i in range(8)]
+ identities=[]
+ for i in range(8):
+  child=get(COHORT,f'cohort-{i}-child.json');assert child['affinity']==[5];identities.append((child['pid'],child['start_ticks']))
+  command=get(COHORT,f'cohort-{i}-command.json');assert command['env']['HC074_NAMESPACE_OPEN_COHORT']==str(i) and command['outer_seconds']==30
+  assert command['argv'][1:]==['diagnostic_kernel_admission::origin::namespace_open_tests::namespace_open_prototype_cpu_screen','--ignored','--exact','--nocapture','--test-threads=1']
+ assert len(set(identities))==8
+ estimates=api['review']([files[COHORT+f'/cohort-{i}.stdout.log'] for i in range(8)],'prototype')
+ return dict(source_proof=proof,estimates=estimates,targeted_tests_passed=47,first_lint_refusal_preserved=True,
+  real_eintr_differential_passed=True,optimization_implemented=False,preparation_repeated=False,product=False,admission=False)
+if __name__=='__main__':
+ files,frame=load();sources={n:(ROOT/'tools/long-run-supervisor-074/src'/n).read_bytes() for n in NAMES}
+ print(json.dumps(review(files,frame,sources,baseline()),sort_keys=True,indent=2))

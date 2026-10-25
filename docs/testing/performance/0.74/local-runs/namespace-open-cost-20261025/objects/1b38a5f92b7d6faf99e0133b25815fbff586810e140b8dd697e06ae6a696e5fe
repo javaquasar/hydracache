@@ -1,0 +1,18 @@
+{
+  "overlay_names": [
+    "diagnostic_kernel_origin.rs",
+    "diagnostic_namespace_open.rs",
+    "diagnostic_namespace_open_tests.rs"
+  ],
+  "hypothesis": "test-only fixed Namespace open wrapper; flags errno EINTR and all checks preserved",
+  "baseline_commit": "bb15ffb99",
+  "original_windows": [
+    300,
+    60,
+    10
+  ],
+  "original_check_frequency_and_order": true,
+  "retry": false,
+  "product": false,
+  "admission": false
+}

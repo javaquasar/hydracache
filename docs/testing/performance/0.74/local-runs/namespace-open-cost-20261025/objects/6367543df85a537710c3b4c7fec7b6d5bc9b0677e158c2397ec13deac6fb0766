@@ -1,0 +1,18 @@
+from pathlib import Path
+import base64,runpy
+old=Path('target/server-fd-identity-build-worker-20261025.py').read_text()
+changes=[
+ ("manifest=json.loads((base/'manifest.json').read_bytes());old=upload/'source-v3'", "manifest=json.loads((base/'kernel-operation-build-first/source-manifest.json').read_bytes());old=upload/'source-kernel-operation-first'"),
+ ("assert sha(base/'manifest.json')=='2a0f7c581a1e854ab71841efb71aaebee3de56d1c0357b54d55a41ae4011ea6d'", "assert len(manifest)==2568 and sha(base/'kernel-operation-build-first/libtest')=='5123ef8a8bbb4f04840ab4259908ff20b6383af354c44a2e6893b819494d34b7'"),
+ ("for name,item in manifest['members'].items():assert sha(old/name)==item['sha256'],name", "for name,digest in manifest.items():assert sha(old/name)==digest,name"),
+ ("expected={name:item['sha256'] for name,item in manifest['members'].items()}", "expected=dict(manifest)"),
+ ("fresh fstat dev/inode leaf, x86_64 only", "test-only fixed Namespace open wrapper; flags errno EINTR and all checks preserved"),
+ ("11445ff7304fa49beaf3be16ed6393155f5a183b", "bb15ffb99"),
+]
+for a,b in changes:
+ count=2 if a.startswith('for name,item in') else 1
+ assert old.count(a)==count,(a,old.count(a));old=old.replace(a,b)
+names=['diagnostic_kernel_origin.rs','diagnostic_namespace_open.rs','diagnostic_namespace_open_tests.rs']
+files={n:base64.b64encode((Path('tools/long-run-supervisor-074/src')/n).read_bytes()).decode() for n in names}
+prefix=f'OVERLAY={files!r}\nRUN_TAG="namespace-open-build-first"\nSOURCE_TAG="source-namespace-open-first"\n'
+runpy.run_path('target/prepare-capacity-checks-20261025.py',init_globals=dict(WORKER_FILE='target/empty-worker-20261025.py',WORKER_DIR='namespace-open-build-first',WORKER_PREFIX=prefix+old+'\n'))

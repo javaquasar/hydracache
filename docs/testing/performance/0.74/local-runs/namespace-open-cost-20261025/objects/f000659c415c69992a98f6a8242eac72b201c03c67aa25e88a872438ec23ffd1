@@ -1,0 +1,16 @@
+from pathlib import Path
+import hashlib,json,os,shutil,sys
+base=Path('/tmp/hc074-server-gate-root-20261025.0k0xbdah');root=base/'namespace-open-build-first'
+raw=(base/'server-fault-worker-20261025.py').read_bytes();assert hashlib.sha256(raw).hexdigest()=='af1e9926e1ad40bc49c1c225d79f5fffc788c715a7889743decea129ec4b17a3'
+sys.argv=['readonly','6640e1b9b31ae7c87137b335be4f2665d729ea7b4324ee0e874bdbedc346c520'];scope={}
+exec(compile(raw.decode().split('started=time.monotonic_ns()\n')[0],'<pinned-preflight>','exec'),scope)
+before=scope['preflight']();result=json.loads((root/'result.json').read_bytes());assert not result['passed'] and 'clippy' in result['first_refusal']
+rows=[json.loads(line) for line in (root/'build.stdout.log').read_text().splitlines() if line.startswith('{')]
+rows=[r for r in rows if r.get('reason')=='compiler-artifact' and r.get('executable') and r.get('profile',{}).get('test') and r.get('target',{}).get('name')=='hydracache_long_run_supervisor_074'];assert len(rows)==1
+image=Path(rows[0]['executable']);assert image.resolve()==Path('/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/build-target-v3/release/deps/hydracache_long_run_supervisor_074-b26b156d3dcd0098') and image.is_file() and not image.is_symlink()
+with image.open('rb') as src,(root/'libtest').open('xb') as dst:shutil.copyfileobj(src,dst)
+os.chmod(root/'libtest',0o500)
+receipt=dict(image_sha256=hashlib.sha256((root/'libtest').read_bytes()).hexdigest(),lint_passed=False,measurements_run=False,admission=False)
+with (root/'failed-image-receipt.json').open('x') as f:json.dump(receipt,f,indent=2);f.flush();os.fsync(f.fileno())
+assert scope['preflight']()==before
+print(json.dumps(receipt))

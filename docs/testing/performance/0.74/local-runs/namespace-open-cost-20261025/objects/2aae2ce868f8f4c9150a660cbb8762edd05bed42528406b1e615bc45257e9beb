@@ -1,0 +1,1 @@
+{"stage":"local draft formatting before native build or measurement","refusal":"expected item, found + at diagnostic_namespace_open_tests.rs:10","cause":"patch-renderer added one literal + on a separator line","correction":"remove only that separator token","native_dispatched":false,"measurement_attempted":false,"runtime_changed":false,"thresholds_changed":false}

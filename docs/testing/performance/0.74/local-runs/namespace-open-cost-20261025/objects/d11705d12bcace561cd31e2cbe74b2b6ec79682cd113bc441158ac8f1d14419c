@@ -1,0 +1,18 @@
+{
+  "cases": [
+    {
+      "name": "build",
+      "exit": 0,
+      "wall_ns": 48501724492
+    },
+    {
+      "name": "check",
+      "exit": 0,
+      "wall_ns": 12600741210
+    }
+  ],
+  "first_refusal": "AssertionError: {'name': 'clippy', 'exit': 101, 'wall_ns': 19404240052}",
+  "postflight_refusal": null,
+  "passed": false,
+  "source_unchanged": false
+}

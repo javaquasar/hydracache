@@ -1,0 +1,4 @@
+from pathlib import Path
+old=Path('target/prepare-namespace-open-build-20261025.py').read_text()
+assert old.count('namespace-open-build-first')==2 and old.count('source-namespace-open-first')==1
+exec(compile(old.replace('namespace-open-build-first','namespace-open-build-v2').replace('source-namespace-open-first','source-namespace-open-v2'),'<lint-corrected-build>','exec'))

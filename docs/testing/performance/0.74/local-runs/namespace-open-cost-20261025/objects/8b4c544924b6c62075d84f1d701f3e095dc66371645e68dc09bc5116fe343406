@@ -1,0 +1,52 @@
+from pathlib import Path
+import hashlib,json,runpy
+root=Path(__file__).resolve().parent.parent
+api=runpy.run_path(str(root/'target/audit-namespace-open-20261025.py'))
+files,frame=api['load']();old=api['baseline']();sources={n:(root/'tools/long-run-supervisor-074/src'/n).read_bytes() for n in api['NAMES']}
+facts=api['review'](files,frame,sources,old);assert not facts['estimates']['cpu_screen_passed']
+members,objects={},{}
+def add(name,raw):
+ assert name not in members
+ digest=hashlib.sha256(raw).hexdigest();members[name]={'bytes':len(raw),'sha256':digest};objects[digest]=raw
+for name,raw in files.items():add('server/'+name,raw)
+add('server/final-frame.json',(json.dumps(frame,sort_keys=True,indent=2)+'\n').encode())
+add('analysis/review.json',(json.dumps(facts,sort_keys=True,indent=2)+'\n').encode())
+session=root/'target/authorized-server-session-20261025'
+for label in ['namespace-open-build-launch','namespace-open-build-export','namespace-open-preserve-lint-image',
+ 'namespace-open-build-v2-launch','namespace-open-build-v2-export','namespace-open-cohort-launch',
+ 'namespace-open-final-export','namespace-open-final-export-second']:
+ folder=session/label;assert folder.is_dir()
+ for p in sorted(folder.rglob('*')):
+  if p.is_file():add('session/'+p.relative_to(session).as_posix(),p.read_bytes())
+for label in ['namespace-open-reader-controls-20261025','namespace-open-baseline-format-20261025',
+ 'namespace-open-baseline-doc-check-20261025','namespace-open-saved-byte-controls-20261025']:
+ folder=root/'target/source-continuation-20261024'/label
+ result=json.loads((folder/'result.json').read_bytes())
+ assert result['exit']==0 and result['outer_refusal'] is None and result['source_unchanged'] and result['head_unchanged']
+ for p in sorted(folder.iterdir()):add('checks/'+label+'/'+p.name,p.read_bytes())
+for name in ['prepare-namespace-open-build-20261025.py','prepare-namespace-open-build-v2-20261025.py',
+ 'render-namespace-open-build-export-20261025.py','render-namespace-open-build-v2-export-20261025.py',
+ 'preserve-namespace-open-lint-image-20261025.py','server-authority-directory-cost-worker-20261025.py',
+ 'prepare-namespace-open-cpu-20261025.py','render-namespace-open-final-export-20261025.py',
+ 'audit-namespace-open-20261025.py','test-audit-namespace-open-20261025.py','retain-namespace-open-20261025.py',
+ 'namespace-open-local-syntax-refusal-20261025.json','namespace-open-first-audit-refusal-20261025.json']:
+ add('coordinator/'+name,(root/'target'/name).read_bytes())
+add('baseline-source/'+api['NAMES'][0],old)
+for name in api['NAMES']:add('source/'+name,sources[name])
+for name in ['protocol.json','review.py','test_review.py']:add('tool/'+name,(root/'tools/namespace-open-cost-074'/name).read_bytes())
+add('dependencies/directory-review.py',(root/'tools/authority-directory-cost-074/review.py').read_bytes())
+protected={}
+for name in ['Cargo.toml','Cargo.lock','docs/testing/performance/0.74/qualification-manifest.toml','tools/authority-storage-source-074/contract.rs']:
+ protected[name]=hashlib.sha256((root/name).read_bytes()).hexdigest()
+base=root/'docs/testing/performance/0.74/local-runs/namespace-open-cost-20261025'
+base.mkdir(exist_ok=False);(base/'objects').mkdir()
+for digest,raw in objects.items():(base/'objects'/digest).write_bytes(raw)
+index=dict(schema='hc074-namespace-open-evidence-v1',members=members,protected_inputs=protected,
+ baseline_commit=api['BASELINE'],experiment_commit=api['EXPERIMENT'],image_sha256=api['IMAGE'],
+ first_lint_image_sha256=api['FIRST_IMAGE'],upstream_index_sha256='45b9c9024a388801f2a2aaeafff592fdb00306151f845a1ad42979eef9544165',
+ source_inputs=2570,targeted_tests_passed=47,cpu_screen_passed=False,production_body_unchanged=True,
+ optimization_implemented=False,preparation_repeated=False,clock_overhead_subtracted=False,
+ release_installed=False,supervisor_stopped=False,apparmor_changed=False,product=False,admission=False)
+raw=(json.dumps(index,sort_keys=True,indent=2)+'\n').encode();(base/'index.json').write_bytes(raw)
+(base/'.gitattributes').write_bytes(b'index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n')
+print(json.dumps(dict(index_sha256=hashlib.sha256(raw).hexdigest(),members=len(members),objects=len(objects),bytes=sum(map(len,objects.values())))))

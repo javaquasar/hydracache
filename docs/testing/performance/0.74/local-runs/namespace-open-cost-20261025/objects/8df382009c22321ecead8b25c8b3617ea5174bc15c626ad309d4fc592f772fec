@@ -1,0 +1,31 @@
+from pathlib import Path
+import copy,json,runpy,unittest
+api=runpy.run_path(str(Path(__file__).with_name('audit-namespace-open-20261025.py')))
+files,frame=api['load']();old=api['baseline']();sources={n:(api['ROOT']/'tools/long-run-supervisor-074/src'/n).read_bytes() for n in api['NAMES']}
+class SavedBytes(unittest.TestCase):
+ def test_first_negative_cohort_is_not_optimization_or_admission(self):
+  value=api['review'](files,frame,sources,old)
+  self.assertFalse(value['estimates']['cpu_screen_passed']);self.assertFalse(value['optimization_implemented']);self.assertFalse(value['admission'])
+  self.assertTrue(all(c['controls_passed'] for c in value['estimates']['cases'].values()))
+ def test_source_host_and_real_eintr_drift_refuse(self):
+  changed=copy.deepcopy(frame);changed['drift']=True
+  with self.assertRaises(AssertionError):api['review'](files,changed,sources,old)
+  changed=dict(sources);changed[api['NAMES'][0]]=changed[api['NAMES'][0]].replace(b'libc::O_NOFOLLOW',b'0',1)
+  with self.assertRaises(AssertionError):api['review'](files,frame,changed,old)
+  changed=dict(files);key=api['BUILD']+'/origin-tests.stdout.log';changed[key]=changed[key].replace(b'"targeted_sigusr1":true',b'"targeted_sigusr1":false',1)
+  with self.assertRaises(AssertionError):api['review'](changed,frame,sources,old)
+ def test_changed_pins_protocol_lint_and_erased_first_refusal_refuse(self):
+  for key,field,value in [(api['COHORT']+'/consumed.json','source_commit','changed'),
+   (api['COHORT']+'/consumed.json','image_sha256','0'*64),
+   (api['BUILD']+'/clippy-command.json','argv',['cargo','clippy']),
+   (api['FIRST']+'/result.json','passed',True)]:
+   changed=dict(files);body=json.loads(changed[key]);body[field]=value;changed[key]=json.dumps(body).encode()
+   with self.assertRaises(AssertionError):api['review'](changed,frame,sources,old)
+  changed=dict(files);key=api['COHORT']+'/consumed.json';body=json.loads(changed[key]);body['protocol']['prototype_reference_upper_max']=1;changed[key]=json.dumps(body).encode()
+  with self.assertRaises(AssertionError):api['review'](changed,frame,sources,old)
+ def test_process_reuse_and_changed_work_refuse(self):
+  changed=dict(files);changed[api['COHORT']+'/cohort-1-child.json']=changed[api['COHORT']+'/cohort-0-child.json']
+  with self.assertRaises(AssertionError):api['review'](changed,frame,sources,old)
+  changed=dict(files);key=api['COHORT']+'/cohort-0.stdout.log';changed[key]=changed[key].replace(b'"calls":1024',b'"calls":1023',1)
+  with self.assertRaises(ValueError):api['review'](changed,frame,sources,old)
+if __name__=='__main__':unittest.main()
