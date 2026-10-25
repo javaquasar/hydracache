@@ -133,3 +133,8 @@ retains the first outcome, refuses inherited diagnostic overrides and joins exac
 source/build/executable receipts. `pipe_review.py` and `test_pipe_review.py` check
 all 96 unique slots, original schedule, bytes/status, phase containment, terminal
 process identities and non-admission. No server, service, clock or product is used.
+
+The [first screen and exact limitations](../../docs/testing/performance/0.74/direct-pipe-attribution-result-20261025.md)
+retain all 96 calls: median control/profile wall is about 71.190 ms, profile spawn
+14.940 ms and wait/collection 53.774 ms. The latter still includes child execution;
+the similar medians do not establish overhead acceptance or a product speedup.

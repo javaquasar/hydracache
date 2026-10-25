@@ -107,3 +107,8 @@ reconciliation and independent staged verification. The original 780-second
 package timeout, unfinished target/suffix, dependency audit-only restriction,
 live checks/order/frequency, 300/60/10 origins/windows and qualification digest
 remain unchanged. No server, service, clock or frozen 0.73 artifact is operated.
+
+The [separate direct-pipe screen](direct-pipe-attribution-result-20261025.md)
+now brackets spawn and wait/collection with retained child CPU observations on a
+selected fixed payload. It is not a repetition or phase partition of this target.
+No observed wait interval is treated as pure removable output-collection cost.

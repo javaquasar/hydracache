@@ -1,0 +1,77 @@
+"""Independent staged-object arithmetic, source, receipt and outcome joins."""
+from pathlib import Path
+import hashlib
+import json
+import statistics
+import subprocess
+
+ROOT=Path(__file__).resolve().parent.parent
+BASE='docs/testing/performance/0.74/local-runs/direct-pipe-attribution-20261025'
+def staged(name): return subprocess.check_output(['git','show',':'+name],cwd=ROOT)
+def sha(raw): return hashlib.sha256(raw).hexdigest()
+index_raw=staged(BASE+'/index.json'); index=json.loads(index_raw)
+members={}
+for name,entry in index['members'].items():
+    raw=staged(BASE+'/objects/'+entry['sha256'])
+    assert len(raw)==entry['bytes'] and sha(raw)==entry['sha256'],name
+    members[name]=raw
+capture=json.loads(members['capture/result.json'])
+preflight=json.loads(members['capture/preflight.json'])
+assert capture['exit']==0 and capture['retry'] is False and capture['package_pass'] is False
+assert preflight['head']==index['code_commit']=='d8d0a0b3991223839bd7f8a0e8f4d59221dd49e5'
+assert len(preflight['executable_sha256'])==64
+derived=json.loads(members['derived/review.json'])
+assert capture['derived']==derived
+raw=members['capture/stdout.log']
+assert not members['capture/stderr.log']
+assert b'test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out;' in raw
+rows=[json.loads(line.removeprefix('HC074_PIPE ')) for line in raw.decode().splitlines() if line.startswith('HC074_PIPE ')]
+assert len(rows)==96 and len({(v['worker'],v['block'],v['slot']) for v in rows})==96
+values={k:[] for k in derived['medians_ns']}
+identities=set()
+for row in rows:
+    worker,block,slot=row['worker'],row['block'],row['slot']
+    assert 0<=worker<4 and 0<=block<6 and 0<=slot<4
+    order=('control','profile','profile','control') if block%2==0 else ('profile','control','control','profile')
+    assert row['variant']==order[slot] and row['code']==0 and row['stdout_bytes']==23589 and row['stderr_bytes']==0
+    values[row['variant']+'_wall_ns'].append(row['wall_ns'])
+    phase=row['phases']
+    if row['variant']=='control': assert phase is None; continue
+    start,end=phase['child_start'],phase['child_end']
+    assert (start['pid'],start['created_100ns'])==(end['pid'],end['created_100ns'])
+    assert end['exited_100ns']>0 and start['user_ns']<=end['user_ns'] and start['kernel_ns']<=end['kernel_ns']
+    identities.add((end['pid'],end['created_100ns']))
+    assert row['setup_ns']+sum(v for k,v in phase.items() if k.endswith('_ns'))<=row['wall_ns']
+    for key in values:
+        if key in phase: values[key].append(phase[key])
+    values['child_cpu_ns'].append(end['user_ns']+end['kernel_ns'])
+assert len(identities)==48
+assert derived['medians_ns']=={k:statistics.median(v) for k,v in values.items()}
+assert derived['totals_ns']=={k:sum(v) for k,v in values.items()}
+for name,raw in members.items():
+    if name.startswith('measured-source/'):
+        path=name.removeprefix('measured-source/')
+        assert sha(raw)==preflight['compiled_source'][path]
+        assert raw==subprocess.check_output(['git','show',index['code_commit']+':'+path],cwd=ROOT)
+    if name.startswith('protected/'):
+        path=name.removeprefix('protected/')
+        assert sha(raw)==index['facts']['protected_sha256'][path]
+        assert sha((ROOT/path).read_bytes())==sha(raw)
+    if name.startswith('unchanged/'):
+        assert sha(raw)==preflight['compiled_source'][name.removeprefix('unchanged/')]
+for phase in index['facts']['phases']:
+    base='checks/'+phase['phase']+'/'
+    intent=json.loads(members[base+'intent.json']); result=json.loads(members[base+'result.json'])
+    assert result['exit']==phase['exit'] and result['outer_refusal'] is None
+    assert result['source_unchanged'] and result['head_unchanged'] and intent['source']==result['source_after']
+for label in ('controls','clippy'):
+    base='checks/direct-pipe-20261025-'+label+'/'
+    intent=json.loads(members[base+'intent.json'])
+    assert sha(members[base+'direct_output_cost_074.rs.raw'])==intent['source']['crates/xtask/tests/direct_output_cost_074.rs']
+assert sha(members['independent-body.rs'])=='5819f89ec58a899e03d7c0f14c6af91f4be6248a26f8578186cfc47b5900a805'
+receipt=dict(schema='hc074-direct-pipe-staged-verification-v1',index_sha256=sha(index_raw),
+             members=len(members),samples=len(rows),observed_children=len(identities),
+             arithmetic_and_source_verified=True,child_repeated=False,admission=False)
+out=ROOT/(BASE+'-staged-verification.json')
+with out.open('x',encoding='utf-8') as stream: json.dump(receipt,stream,indent=2,sort_keys=True); stream.write('\n')
+print(json.dumps(receipt,indent=2))

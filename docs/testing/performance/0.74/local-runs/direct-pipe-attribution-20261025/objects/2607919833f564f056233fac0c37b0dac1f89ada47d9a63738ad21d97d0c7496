@@ -1,0 +1,2 @@
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.71s
+     Running `target\debug\xtask.exe performance-contract-check --release 0.74`

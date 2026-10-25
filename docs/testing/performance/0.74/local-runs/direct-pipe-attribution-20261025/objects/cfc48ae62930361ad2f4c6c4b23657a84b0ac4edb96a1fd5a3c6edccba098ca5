@@ -1,0 +1,12 @@
+{
+  "schema": "hc074-offline-coordination-note-v1",
+  "provenance": "manual transcription of the original tool result, not captured process stdout or stderr",
+  "command": "python target/seal-direct-pipe-20261025.py",
+  "exit": 1,
+  "error": "FileNotFoundError",
+  "missing": "target/source-continuation-20261024/direct-pipe-20261025-doc-check-final/result.json",
+  "cause": "sealer invoked before the ongoing final doc-check wrapper completed",
+  "packet_created": false,
+  "cohort_repeated": false,
+  "resolution": "wait for the existing doc-check completion, then seal the same retained artifacts offline"
+}

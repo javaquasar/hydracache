@@ -1,0 +1,10 @@
+
+running 5 tests
+test direct_output_cost_child ... ok
+test fixed_protocol_and_independent_body ... ok
+test pipe_fixture_child ... ok
+test pipe_semantics_empty_binary_nonzero_and_large_streams ... ok
+test pipe_spawn_failure_is_not_replaced_or_retried ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+

@@ -1,0 +1,10 @@
+{
+  "admission": false,
+  "arithmetic_and_source_verified": true,
+  "child_repeated": false,
+  "index_sha256": "2ac207a78f7b6b64d876a4136f9a9197ef35e2cb9c9289573eea30ebdf41e43a",
+  "members": 117,
+  "observed_children": 48,
+  "samples": 96,
+  "schema": "hc074-direct-pipe-staged-verification-v1"
+}

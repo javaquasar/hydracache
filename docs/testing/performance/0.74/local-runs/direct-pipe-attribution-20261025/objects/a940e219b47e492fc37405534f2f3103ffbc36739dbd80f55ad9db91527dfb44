@@ -1,0 +1,14 @@
+{
+  "admission": false,
+  "bound_seconds": 120,
+  "build": "direct-pipe-20261025-build",
+  "clocks": false,
+  "disk_floor_bytes": 4294967296,
+  "log_budget_bytes": 16777216,
+  "package": false,
+  "retry": false,
+  "samples": 96,
+  "server": false,
+  "services": false,
+  "workers": 4
+}

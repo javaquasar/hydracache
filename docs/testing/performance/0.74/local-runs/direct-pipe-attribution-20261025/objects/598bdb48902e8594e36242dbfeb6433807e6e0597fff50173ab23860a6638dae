@@ -1,0 +1,199 @@
+
+running 1 test
+test direct_output_cost_child ... 
+HC074_PIPE {"block":0,"code":0,"phases":null,"setup_ns":3100,"slot":0,"stderr_bytes":0,"stdout_bytes":23589,"variant":"control","wall_ns":279826500,"worker":0}
+
+HC074_PIPE {"block":0,"code":0,"phases":{"child_end":{"created_100ns":134373648095298970,"exited_100ns":134373648095877542,"kernel_ns":0,"pid":46580,"user_ns":31250000},"child_start":{"created_100ns":134373648095298970,"exited_100ns":0,"kernel_ns":0,"pid":46580,"user_ns":0},"handle_observation_ns":7000,"spawn_ns":11253600,"terminal_observation_ns":800,"wait_and_collect_ns":54947400},"setup_ns":3600,"slot":1,"stderr_bytes":0,"stdout_bytes":23589,"variant":"profile","wall_ns":66260200,"worker":0}
+
+HC074_PIPE {"block":0,"code":0,"phases":{"child_end":{"created_100ns":134373648096055878,"exited_100ns":134373648096636497,"kernel_ns":0,"pid":42568,"user_ns":15625000},"child_start":{"created_100ns":134373648096055878,"exited_100ns":0,"kernel_ns":0,"pid":42568,"user_ns":0},"handle_observation_ns":8000,"spawn_ns":17599300,"terminal_observation_ns":800,"wait_and_collect_ns":54743400},"setup_ns":4600,"slot":2,"stderr_bytes":0,"stdout_bytes":23589,"variant":"profile","wall_ns":72358000,"worker":0}
+
+HC074_PIPE {"block":0,"code":0,"phases":null,"setup_ns":5200,"slot":3,"stderr_bytes":0,"stdout_bytes":23589,"variant":"control","wall_ns":62054100,"worker":0}
+
+HC074_PIPE {"block":1,"code":0,"phases":{"child_end":{"created_100ns":134373648097626990,"exited_100ns":134373648098150429,"kernel_ns":15625000,"pid":46556,"user_ns":0},"child_start":{"created_100ns":134373648097626990,"exited_100ns":0,"kernel_ns":0,"pid":46556,"user_ns":0},"handle_observation_ns":8400,"spawn_ns":23555300,"terminal_observation_ns":1600,"wait_and_collect_ns":48668600},"setup_ns":9300,"slot":0,"stderr_bytes":0,"stdout_bytes":23589,"variant":"profile","wall_ns":72246200,"worker":0}
+
+HC074_PIPE {"block":1,"code":0,"phases":null,"setup_ns":4700,"slot":1,"stderr_bytes":0,"stdout_bytes":23589,"variant":"control","wall_ns":67678200,"worker":0}
+
+HC074_PIPE {"block":1,"code":0,"phases":null,"setup_ns":3500,"slot":2,"stderr_bytes":0,"stdout_bytes":23589,"variant":"control","wall_ns":55051700,"worker":0}
+
+HC074_PIPE {"block":1,"code":0,"phases":{"child_end":{"created_100ns":134373648099786764,"exited_100ns":134373648100434048,"kernel_ns":0,"pid":42752,"user_ns":15625000},"child_start":{"created_100ns":134373648099786764,"exited_100ns":0,"kernel_ns":0,"pid":42752,"user_ns":0},"handle_observation_ns":9100,"spawn_ns":23037400,"terminal_observation_ns":1300,"wait_and_collect_ns":61940900},"setup_ns":2900,"slot":3,"stderr_bytes":0,"stdout_bytes":23589,"variant":"profile","wall_ns":84994000,"worker":0}
+
+HC074_PIPE {"block":2,"code":0,"phases":null,"setup_ns":1900,"slot":0,"stderr_bytes":0,"stdout_bytes":23589,"variant":"control","wall_ns":163373900,"worker":0}
+
+HC074_PIPE {"block":2,"code":0,"phases":{"child_end":{"created_100ns":134373648102398227,"exited_100ns":134373648102909581,"kernel_ns":0,"pid":44144,"user_ns":31250000},"child_start":{"created_100ns":134373648102398227,"exited_100ns":0,"kernel_ns":0,"pid":44144,"user_ns":0},"handle_observation_ns":21200,"spawn_ns":24731600,"terminal_observation_ns":1200,"wait_and_collect_ns":47188400},"setup_ns":9800,"slot":1,"stderr_bytes":0,"stdout_bytes":23589,"variant":"profile","wall_ns":71955000,"worker":0}
+
+HC074_PIPE {"block":2,"code":0,"phases":{"child_end":{"created_100ns":134373648102939420,"exited_100ns":134373648103484615,"kernel_ns":0,"pid":54052,"user_ns":15625000},"child_start":{"created_100ns":134373648102939420,"exited_100ns":0,"kernel_ns":0,"pid":54052,"user_ns":0},"handle_observation_ns":7500,"spawn_ns":7616500,"terminal_observation_ns":1100,"wait_and_collect_ns":50639400},"setup_ns":2000,"slot":2,"stderr_bytes":0,"stdout_bytes":23589,"variant":"profile","wall_ns":58268600,"worker":0}
+
+HC074_PIPE {"block":2,"code":0,"phases":null,"setup_ns":11700,"slot":3,"stderr_bytes":0,"stdout_bytes":23589,"variant":"control","wall_ns":52127400,"worker":0}
+
+HC074_PIPE {"block":3,"code":0,"phases":{"child_end":{"created_100ns":134373648104393566,"exited_100ns":134373648105980864,"kernel_ns":78125000,"pid":45140,"user_ns":31250000},"child_start":{"created_100ns":134373648104393566,"exited_100ns":0,"kernel_ns":0,"pid":45140,"user_ns":0},"handle_observation_ns":8700,"spawn_ns":6051800,"terminal_observation_ns":1200,"wait_and_collect_ns":156044600},"setup_ns":3500,"slot":0,"stderr_bytes":0,"stdout_bytes":23589,"variant":"profile","wall_ns":162112200,"worker":0}
+
+HC074_PIPE {"block":3,"code":0,"phases":null,"setup_ns":11200,"slot":1,"stderr_bytes":0,"stdout_bytes":23589,"variant":"control","wall_ns":74744500,"worker":0}
+
+HC074_PIPE {"block":3,"code":0,"phases":null,"setup_ns":2300,"slot":2,"stderr_bytes":0,"stdout_bytes":23589,"variant":"control","wall_ns":159162500,"worker":0}
+
+HC074_PIPE {"block":3,"code":0,"phases":{"child_end":{"created_100ns":134373648109814397,"exited_100ns":134373648111339477,"kernel_ns":109375000,"pid":53520,"user_ns":15625000},"child_start":{"created_100ns":134373648109814397,"exited_100ns":0,"kernel_ns":0,"pid":53520,"user_ns":0},"handle_observation_ns":7700,"spawn_ns":125346900,"terminal_observation_ns":1300,"wait_and_collect_ns":148938400},"setup_ns":9700,"slot":3,"stderr_bytes":0,"stdout_bytes":23589,"variant":"profile","wall_ns":274307400,"worker":0}
+
+HC074_PIPE {"block":4,"code":0,"phases":null,"setup_ns":2000,"slot":0,"stderr_bytes":0,"stdout_bytes":23589,"variant":"control","wall_ns":280832500,"worker":0}
+
+HC074_PIPE {"block":4,"code":0,"phases":{"child_end":{"created_100ns":134373648114230050,"exited_100ns":134373648114868339,"kernel_ns":0,"pid":22056,"user_ns":0},"child_start":{"created_100ns":134373648114230050,"exited_100ns":0,"kernel_ns":0,"pid":22056,"user_ns":0},"handle_observation_ns":7400,"spawn_ns":6065800,"terminal_observation_ns":1200,"wait_and_collect_ns":60929500},"setup_ns":2800,"slot":1,"stderr_bytes":0,"stdout_bytes":23589,"variant":"profile","wall_ns":67009100,"worker":0}
+
+HC074_PIPE {"block":4,"code":0,"phases":{"child_end":{"created_100ns":134373648115060364,"exited_100ns":134373648115593908,"kernel_ns":0,"pid":44092,"user_ns":0},"child_start":{"created_100ns":134373648115060364,"exited_100ns":0,"kernel_ns":0,"pid":44092,"user_ns":0},"handle_observation_ns":15100,"spawn_ns":7230700,"terminal_observation_ns":1700,"wait_and_collect_ns":49456900},"setup_ns":4200,"slot":2,"stderr_bytes":0,"stdout_bytes":23589,"variant":"profile","wall_ns":56772400,"worker":0}
+
+HC074_PIPE {"block":4,"code":0,"phases":null,"setup_ns":9800,"slot":3,"stderr_bytes":0,"stdout_bytes":23589,"variant":"control","wall_ns":70707300,"worker":0}
+
+HC074_PIPE {"block":5,"code":0,"phases":{"child_end":{"created_100ns":134373648116544252,"exited_100ns":134373648117180078,"kernel_ns":0,"pid":33780,"user_ns":31250000},"child_start":{"created_100ns":134373648116544252,"exited_100ns":0,"kernel_ns":0,"pid":33780,"user_ns":0},"handle_observation_ns":9500,"spawn_ns":7580200,"terminal_observation_ns":1000,"wait_and_collect_ns":59401900},"setup_ns":3100,"slot":0,"stderr_bytes":0,"stdout_bytes":23589,"variant":"profile","wall_ns":66998200,"worker":0}
+
+HC074_PIPE {"block":5,"code":0,"phases":null,"setup_ns":11200,"slot":1,"stderr_bytes":0,"stdout_bytes":23589,"variant":"control","wall_ns":69502900,"worker":0}
+
+HC074_PIPE {"block":5,"code":0,"phases":null,"setup_ns":4800,"slot":2,"stderr_bytes":0,"stdout_bytes":23589,"variant":"control","wall_ns":70992300,"worker":0}
+
+HC074_PIPE {"block":5,"code":0,"phases":{"child_end":{"created_100ns":134373648118840018,"exited_100ns":134373648119377092,"kernel_ns":15625000,"pid":5836,"user_ns":0},"child_start":{"created_100ns":134373648118840018,"exited_100ns":0,"kernel_ns":0,"pid":5836,"user_ns":0},"handle_observation_ns":8600,"spawn_ns":6314500,"terminal_observation_ns":1100,"wait_and_collect_ns":50724200},"setup_ns":4500,"slot":3,"stderr_bytes":0,"stdout_bytes":23589,"variant":"profile","wall_ns":57055200,"worker":0}
+
+HC074_PIPE {"block":0,"code":0,"phases":null,"setup_ns":29800,"slot":0,"stderr_bytes":0,"stdout_bytes":23589,"variant":"control","wall_ns":280271600,"worker":1}
+
+HC074_PIPE {"block":0,"code":0,"phases":{"child_end":{"created_100ns":134373648095350607,"exited_100ns":134373648095870976,"kernel_ns":0,"pid":20496,"user_ns":46875000},"child_start":{"created_100ns":134373648095350607,"exited_100ns":0,"kernel_ns":0,"pid":20496,"user_ns":0},"handle_observation_ns":7500,"spawn_ns":16278600,"terminal_observation_ns":1400,"wait_and_collect_ns":49833100},"setup_ns":1800,"slot":1,"stderr_bytes":0,"stdout_bytes":23589,"variant":"profile","wall_ns":66175600,"worker":1}
+
+HC074_PIPE {"block":0,"code":0,"phases":{"child_end":{"created_100ns":134373648095946465,"exited_100ns":134373648096532882,"kernel_ns":15625000,"pid":44492,"user_ns":0},"child_start":{"created_100ns":134373648095946465,"exited_100ns":0,"kernel_ns":0,"pid":44492,"user_ns":0},"handle_observation_ns":8300,"spawn_ns":6067800,"terminal_observation_ns":1300,"wait_and_collect_ns":56551400},"setup_ns":3400,"slot":2,"stderr_bytes":0,"stdout_bytes":23589,"variant":"profile","wall_ns":62698000,"worker":1}
+
+HC074_PIPE {"block":0,"code":0,"phases":null,"setup_ns":12100,"slot":3,"stderr_bytes":0,"stdout_bytes":23589,"variant":"control","wall_ns":74604800,"worker":1}
+
+HC074_PIPE {"block":1,"code":0,"phases":{"child_end":{"created_100ns":134373648097573016,"exited_100ns":134373648098153064,"kernel_ns":0,"pid":1708,"user_ns":0},"child_start":{"created_100ns":134373648097573016,"exited_100ns":0,"kernel_ns":0,"pid":1708,"user_ns":0},"handle_observation_ns":8100,"spawn_ns":17468800,"terminal_observation_ns":400,"wait_and_collect_ns":54950800},"setup_ns":11300,"slot":0,"stderr_bytes":0,"stdout_bytes":23589,"variant":"profile","wall_ns":72440700,"worker":1}
+
+HC074_PIPE {"block":1,"code":0,"phases":null,"setup_ns":3400,"slot":1,"stderr_bytes":0,"stdout_bytes":23589,"variant":"control","wall_ns":61259900,"worker":1}
+
+HC074_PIPE {"block":1,"code":0,"phases":null,"setup_ns":4000,"slot":2,"stderr_bytes":0,"stdout_bytes":23589,"variant":"control","wall_ns":62330000,"worker":1}
+
+HC074_PIPE {"block":1,"code":0,"phases":{"child_end":{"created_100ns":134373648099733516,"exited_100ns":134373648100334535,"kernel_ns":15625000,"pid":8068,"user_ns":0},"child_start":{"created_100ns":134373648099733516,"exited_100ns":0,"kernel_ns":0,"pid":8068,"user_ns":0},"handle_observation_ns":9800,"spawn_ns":17562300,"terminal_observation_ns":1300,"wait_and_collect_ns":57272000},"setup_ns":3500,"slot":3,"stderr_bytes":0,"stdout_bytes":23589,"variant":"profile","wall_ns":74851200,"worker":1}
+
+HC074_PIPE {"block":2,"code":0,"phases":null,"setup_ns":3900,"slot":0,"stderr_bytes":0,"stdout_bytes":23589,"variant":"control","wall_ns":175060200,"worker":1}
+
+HC074_PIPE {"block":2,"code":0,"phases":{"child_end":{"created_100ns":134373648102336075,"exited_100ns":134373648102839424,"kernel_ns":15625000,"pid":40476,"user_ns":0},"child_start":{"created_100ns":134373648102336075,"exited_100ns":0,"kernel_ns":0,"pid":40476,"user_ns":0},"handle_observation_ns":8200,"spawn_ns":18572700,"terminal_observation_ns":1200,"wait_and_collect_ns":46658300},"setup_ns":1700,"slot":1,"stderr_bytes":0,"stdout_bytes":23589,"variant":"profile","wall_ns":65295600,"worker":1}
+
+HC074_PIPE {"block":2,"code":0,"phases":{"child_end":{"created_100ns":134373648103064555,"exited_100ns":134373648103598573,"kernel_ns":15625000,"pid":14736,"user_ns":0},"child_start":{"created_100ns":134373648103064555,"exited_100ns":0,"kernel_ns":0,"pid":14736,"user_ns":0},"handle_observation_ns":8700,"spawn_ns":19121800,"terminal_observation_ns":1300,"wait_and_collect_ns":49968400},"setup_ns":3300,"slot":2,"stderr_bytes":0,"stdout_bytes":23589,"variant":"profile","wall_ns":69279600,"worker":1}
+
+HC074_PIPE {"block":2,"code":0,"phases":null,"setup_ns":4900,"slot":3,"stderr_bytes":0,"stdout_bytes":23589,"variant":"control","wall_ns":65245600,"worker":1}
+
+HC074_PIPE {"block":3,"code":0,"phases":{"child_end":{"created_100ns":134373648105573908,"exited_100ns":134373648106102302,"kernel_ns":15625000,"pid":17404,"user_ns":0},"child_start":{"created_100ns":134373648105573908,"exited_100ns":0,"kernel_ns":0,"pid":17404,"user_ns":0},"handle_observation_ns":8100,"spawn_ns":126107500,"terminal_observation_ns":1300,"wait_and_collect_ns":47934000},"setup_ns":3300,"slot":0,"stderr_bytes":0,"stdout_bytes":23589,"variant":"profile","wall_ns":174056600,"worker":1}
+
+HC074_PIPE {"block":3,"code":0,"phases":null,"setup_ns":2100,"slot":1,"stderr_bytes":0,"stdout_bytes":23589,"variant":"control","wall_ns":57570300,"worker":1}
+
+HC074_PIPE {"block":3,"code":0,"phases":null,"setup_ns":9900,"slot":2,"stderr_bytes":0,"stdout_bytes":23589,"variant":"control","wall_ns":164839900,"worker":1}
+
+HC074_PIPE {"block":3,"code":0,"phases":{"child_end":{"created_100ns":134373648108628044,"exited_100ns":134373648110178957,"kernel_ns":15625000,"pid":21560,"user_ns":0},"child_start":{"created_100ns":134373648108628044,"exited_100ns":0,"kernel_ns":0,"pid":21560,"user_ns":0},"handle_observation_ns":7300,"spawn_ns":7030300,"terminal_observation_ns":1100,"wait_and_collect_ns":151574200},"setup_ns":4200,"slot":3,"stderr_bytes":0,"stdout_bytes":23589,"variant":"profile","wall_ns":158619400,"worker":1}
+
+HC074_PIPE {"block":4,"code":0,"phases":null,"setup_ns":12100,"slot":0,"stderr_bytes":0,"stdout_bytes":23589,"variant":"control","wall_ns":285733700,"worker":1}
+
+HC074_PIPE {"block":4,"code":0,"phases":{"child_end":{"created_100ns":134373648114388639,"exited_100ns":134373648115029800,"kernel_ns":0,"pid":24244,"user_ns":0},"child_start":{"created_100ns":134373648114388639,"exited_100ns":0,"kernel_ns":0,"pid":24244,"user_ns":0},"handle_observation_ns":9000,"spawn_ns":22506500,"terminal_observation_ns":700,"wait_and_collect_ns":60433100},"setup_ns":1900,"slot":1,"stderr_bytes":0,"stdout_bytes":23589,"variant":"profile","wall_ns":82998000,"worker":1}
+
+HC074_PIPE {"block":4,"code":0,"phases":{"child_end":{"created_100ns":134373648115237371,"exited_100ns":134373648115762158,"kernel_ns":0,"pid":9132,"user_ns":15625000},"child_start":{"created_100ns":134373648115237371,"exited_100ns":0,"kernel_ns":0,"pid":9132,"user_ns":0},"handle_observation_ns":8800,"spawn_ns":24861300,"terminal_observation_ns":1400,"wait_and_collect_ns":48449900},"setup_ns":2500,"slot":2,"stderr_bytes":0,"stdout_bytes":23589,"variant":"profile","wall_ns":73373500,"worker":1}
+
+HC074_PIPE {"block":4,"code":0,"phases":null,"setup_ns":2400,"slot":3,"stderr_bytes":0,"stdout_bytes":23589,"variant":"control","wall_ns":60704900,"worker":1}
+
+HC074_PIPE {"block":5,"code":0,"phases":{"child_end":{"created_100ns":134373648116736721,"exited_100ns":134373648117294837,"kernel_ns":0,"pid":52592,"user_ns":15625000},"child_start":{"created_100ns":134373648116736721,"exited_100ns":0,"kernel_ns":0,"pid":52592,"user_ns":0},"handle_observation_ns":10200,"spawn_ns":26237100,"terminal_observation_ns":1300,"wait_and_collect_ns":51903900},"setup_ns":10900,"slot":0,"stderr_bytes":0,"stdout_bytes":23589,"variant":"profile","wall_ns":78166300,"worker":1}
+
+HC074_PIPE {"block":5,"code":0,"phases":null,"setup_ns":2000,"slot":1,"stderr_bytes":0,"stdout_bytes":23589,"variant":"control","wall_ns":68937400,"worker":1}
+
+HC074_PIPE {"block":5,"code":0,"phases":null,"setup_ns":3600,"slot":2,"stderr_bytes":0,"stdout_bytes":23589,"variant":"control","wall_ns":53321000,"worker":1}
+
+HC074_PIPE {"block":5,"code":0,"phases":{"child_end":{"created_100ns":134373648119020587,"exited_100ns":134373648119541035,"kernel_ns":0,"pid":27048,"user_ns":0},"child_start":{"created_100ns":134373648119020587,"exited_100ns":0,"kernel_ns":0,"pid":27048,"user_ns":0},"handle_observation_ns":8600,"spawn_ns":24210200,"terminal_observation_ns":1100,"wait_and_collect_ns":49054400},"setup_ns":9900,"slot":3,"stderr_bytes":0,"stdout_bytes":23589,"variant":"profile","wall_ns":73287300,"worker":1}
+
+HC074_PIPE {"block":0,"code":0,"phases":null,"setup_ns":61100,"slot":0,"stderr_bytes":0,"stdout_bytes":23589,"variant":"control","wall_ns":279938300,"worker":2}
+
+HC074_PIPE {"block":0,"code":0,"phases":{"child_end":{"created_100ns":134373648095401106,"exited_100ns":134373648095916307,"kernel_ns":0,"pid":15136,"user_ns":0},"child_start":{"created_100ns":134373648095401106,"exited_100ns":0,"kernel_ns":0,"pid":15136,"user_ns":0},"handle_observation_ns":6700,"spawn_ns":21576400,"terminal_observation_ns":900,"wait_and_collect_ns":48471600},"setup_ns":2000,"slot":1,"stderr_bytes":0,"stdout_bytes":23589,"variant":"profile","wall_ns":70059600,"worker":2}
+
+HC074_PIPE {"block":0,"code":0,"phases":{"child_end":{"created_100ns":134373648096000358,"exited_100ns":134373648096630576,"kernel_ns":0,"pid":9864,"user_ns":0},"child_start":{"created_100ns":134373648096000358,"exited_100ns":0,"kernel_ns":0,"pid":9864,"user_ns":0},"handle_observation_ns":7400,"spawn_ns":11694400,"terminal_observation_ns":1300,"wait_and_collect_ns":59816100},"setup_ns":2500,"slot":2,"stderr_bytes":0,"stdout_bytes":23589,"variant":"profile","wall_ns":71628000,"worker":2}
+
+HC074_PIPE {"block":0,"code":0,"phases":null,"setup_ns":33200,"slot":3,"stderr_bytes":0,"stdout_bytes":23589,"variant":"control","wall_ns":67340000,"worker":2}
+
+HC074_PIPE {"block":1,"code":0,"phases":{"child_end":{"created_100ns":134373648097461414,"exited_100ns":134373648098033947,"kernel_ns":15625000,"pid":44656,"user_ns":0},"child_start":{"created_100ns":134373648097461414,"exited_100ns":0,"kernel_ns":0,"pid":44656,"user_ns":0},"handle_observation_ns":9300,"spawn_ns":6094700,"terminal_observation_ns":1200,"wait_and_collect_ns":55182300},"setup_ns":7900,"slot":0,"stderr_bytes":0,"stdout_bytes":23589,"variant":"profile","wall_ns":61298100,"worker":2}
+
+HC074_PIPE {"block":1,"code":0,"phases":null,"setup_ns":29900,"slot":1,"stderr_bytes":0,"stdout_bytes":23589,"variant":"control","wall_ns":71387500,"worker":2}
+
+HC074_PIPE {"block":1,"code":0,"phases":null,"setup_ns":1800,"slot":2,"stderr_bytes":0,"stdout_bytes":23589,"variant":"control","wall_ns":66241500,"worker":2}
+
+HC074_PIPE {"block":1,"code":0,"phases":{"child_end":{"created_100ns":134373648099681997,"exited_100ns":134373648100334783,"kernel_ns":0,"pid":31536,"user_ns":15625000},"child_start":{"created_100ns":134373648099681997,"exited_100ns":0,"kernel_ns":0,"pid":31536,"user_ns":0},"handle_observation_ns":8700,"spawn_ns":12204600,"terminal_observation_ns":700,"wait_and_collect_ns":63070100},"setup_ns":3300,"slot":3,"stderr_bytes":0,"stdout_bytes":23589,"variant":"profile","wall_ns":75289100,"worker":2}
+
+HC074_PIPE {"block":2,"code":0,"phases":null,"setup_ns":5900,"slot":0,"stderr_bytes":0,"stdout_bytes":23589,"variant":"control","wall_ns":164297700,"worker":2}
+
+HC074_PIPE {"block":2,"code":0,"phases":{"child_end":{"created_100ns":134373648102219770,"exited_100ns":134373648102753338,"kernel_ns":15625000,"pid":54224,"user_ns":15625000},"child_start":{"created_100ns":134373648102219770,"exited_100ns":0,"kernel_ns":0,"pid":54224,"user_ns":0},"handle_observation_ns":7300,"spawn_ns":5692900,"terminal_observation_ns":1400,"wait_and_collect_ns":51140500},"setup_ns":5200,"slot":1,"stderr_bytes":0,"stdout_bytes":23589,"variant":"profile","wall_ns":56849500,"worker":2}
+
+HC074_PIPE {"block":2,"code":0,"phases":{"child_end":{"created_100ns":134373648103124574,"exited_100ns":134373648103634123,"kernel_ns":0,"pid":36596,"user_ns":15625000},"child_start":{"created_100ns":134373648103124574,"exited_100ns":0,"kernel_ns":0,"pid":36596,"user_ns":0},"handle_observation_ns":8900,"spawn_ns":25498100,"terminal_observation_ns":4200,"wait_and_collect_ns":46920200},"setup_ns":11700,"slot":2,"stderr_bytes":0,"stdout_bytes":23589,"variant":"profile","wall_ns":72447300,"worker":2}
+
+HC074_PIPE {"block":2,"code":0,"phases":null,"setup_ns":2200,"slot":3,"stderr_bytes":0,"stdout_bytes":23589,"variant":"control","wall_ns":62256600,"worker":2}
+
+HC074_PIPE {"block":3,"code":0,"phases":{"child_end":{"created_100ns":134373648104511693,"exited_100ns":134373648106007385,"kernel_ns":0,"pid":44516,"user_ns":15625000},"child_start":{"created_100ns":134373648104511693,"exited_100ns":0,"kernel_ns":0,"pid":44516,"user_ns":0},"handle_observation_ns":8200,"spawn_ns":18075600,"terminal_observation_ns":1200,"wait_and_collect_ns":146671200},"setup_ns":4000,"slot":0,"stderr_bytes":0,"stdout_bytes":23589,"variant":"profile","wall_ns":164818200,"worker":2}
+
+HC074_PIPE {"block":3,"code":0,"phases":null,"setup_ns":3500,"slot":1,"stderr_bytes":0,"stdout_bytes":23589,"variant":"control","wall_ns":66226900,"worker":2}
+
+HC074_PIPE {"block":3,"code":0,"phases":null,"setup_ns":4100,"slot":2,"stderr_bytes":0,"stdout_bytes":23589,"variant":"control","wall_ns":164081400,"worker":2}
+
+HC074_PIPE {"block":3,"code":0,"phases":{"child_end":{"created_100ns":134373648108690860,"exited_100ns":134373648110219880,"kernel_ns":0,"pid":48564,"user_ns":15625000},"child_start":{"created_100ns":134373648108690860,"exited_100ns":0,"kernel_ns":0,"pid":48564,"user_ns":0},"handle_observation_ns":14200,"spawn_ns":12081900,"terminal_observation_ns":800,"wait_and_collect_ns":150213800},"setup_ns":5800,"slot":3,"stderr_bytes":0,"stdout_bytes":23589,"variant":"profile","wall_ns":162370000,"worker":2}
+
+HC074_PIPE {"block":4,"code":0,"phases":null,"setup_ns":3500,"slot":0,"stderr_bytes":0,"stdout_bytes":23589,"variant":"control","wall_ns":281336900,"worker":2}
+
+HC074_PIPE {"block":4,"code":0,"phases":{"child_end":{"created_100ns":134373648114283075,"exited_100ns":134373648114841631,"kernel_ns":0,"pid":10968,"user_ns":15625000},"child_start":{"created_100ns":134373648114283075,"exited_100ns":0,"kernel_ns":0,"pid":10968,"user_ns":0},"handle_observation_ns":8300,"spawn_ns":10945800,"terminal_observation_ns":1400,"wait_and_collect_ns":53538800},"setup_ns":3900,"slot":1,"stderr_bytes":0,"stdout_bytes":23589,"variant":"profile","wall_ns":64553900,"worker":2}
+
+HC074_PIPE {"block":4,"code":0,"phases":{"child_end":{"created_100ns":134373648115177588,"exited_100ns":134373648115667722,"kernel_ns":31250000,"pid":40852,"user_ns":0},"child_start":{"created_100ns":134373648115177588,"exited_100ns":0,"kernel_ns":0,"pid":40852,"user_ns":0},"handle_observation_ns":7400,"spawn_ns":17773900,"terminal_observation_ns":1300,"wait_and_collect_ns":46169100},"setup_ns":2000,"slot":2,"stderr_bytes":0,"stdout_bytes":23589,"variant":"profile","wall_ns":63956100,"worker":2}
+
+HC074_PIPE {"block":4,"code":0,"phases":null,"setup_ns":4400,"slot":3,"stderr_bytes":0,"stdout_bytes":23589,"variant":"control","wall_ns":74870000,"worker":2}
+
+HC074_PIPE {"block":5,"code":0,"phases":{"child_end":{"created_100ns":134373648116672370,"exited_100ns":134373648117201427,"kernel_ns":15625000,"pid":37848,"user_ns":0},"child_start":{"created_100ns":134373648116672370,"exited_100ns":0,"kernel_ns":0,"pid":37848,"user_ns":0},"handle_observation_ns":7800,"spawn_ns":19569600,"terminal_observation_ns":1000,"wait_and_collect_ns":50028600},"setup_ns":2200,"slot":0,"stderr_bytes":0,"stdout_bytes":23589,"variant":"profile","wall_ns":69610800,"worker":2}
+
+HC074_PIPE {"block":5,"code":0,"phases":null,"setup_ns":3700,"slot":1,"stderr_bytes":0,"stdout_bytes":23589,"variant":"control","wall_ns":75064600,"worker":2}
+
+HC074_PIPE {"block":5,"code":0,"phases":null,"setup_ns":3100,"slot":2,"stderr_bytes":0,"stdout_bytes":23589,"variant":"control","wall_ns":76238600,"worker":2}
+
+HC074_PIPE {"block":5,"code":0,"phases":{"child_end":{"created_100ns":134373648118895483,"exited_100ns":134373648119422273,"kernel_ns":0,"pid":5072,"user_ns":31250000},"child_start":{"created_100ns":134373648118895483,"exited_100ns":0,"kernel_ns":0,"pid":5072,"user_ns":0},"handle_observation_ns":6700,"spawn_ns":12817000,"terminal_observation_ns":1300,"wait_and_collect_ns":49065800},"setup_ns":2100,"slot":3,"stderr_bytes":0,"stdout_bytes":23589,"variant":"profile","wall_ns":61895300,"worker":2}
+
+HC074_PIPE {"block":0,"code":0,"phases":null,"setup_ns":8400,"slot":0,"stderr_bytes":0,"stdout_bytes":23589,"variant":"control","wall_ns":280197100,"worker":3}
+
+HC074_PIPE {"block":0,"code":0,"phases":{"child_end":{"created_100ns":134373648095245435,"exited_100ns":134373648095789637,"kernel_ns":0,"pid":43748,"user_ns":15625000},"child_start":{"created_100ns":134373648095245435,"exited_100ns":0,"kernel_ns":0,"pid":43748,"user_ns":0},"handle_observation_ns":10000,"spawn_ns":6152300,"terminal_observation_ns":1400,"wait_and_collect_ns":51967700},"setup_ns":2100,"slot":1,"stderr_bytes":0,"stdout_bytes":23589,"variant":"profile","wall_ns":58135600,"worker":3}
+
+HC074_PIPE {"block":0,"code":0,"phases":{"child_end":{"created_100ns":134373648096117011,"exited_100ns":134373648096682381,"kernel_ns":31250000,"pid":41500,"user_ns":0},"child_start":{"created_100ns":134373648096117011,"exited_100ns":0,"kernel_ns":0,"pid":41500,"user_ns":0},"handle_observation_ns":8900,"spawn_ns":23518100,"terminal_observation_ns":900,"wait_and_collect_ns":53047600},"setup_ns":12600,"slot":2,"stderr_bytes":0,"stdout_bytes":23589,"variant":"profile","wall_ns":76591100,"worker":3}
+
+HC074_PIPE {"block":0,"code":0,"phases":null,"setup_ns":4200,"slot":3,"stderr_bytes":0,"stdout_bytes":23589,"variant":"control","wall_ns":58151300,"worker":3}
+
+HC074_PIPE {"block":1,"code":0,"phases":{"child_end":{"created_100ns":134373648097513138,"exited_100ns":134373648098155620,"kernel_ns":0,"pid":49092,"user_ns":0},"child_start":{"created_100ns":134373648097513138,"exited_100ns":0,"kernel_ns":0,"pid":49092,"user_ns":0},"handle_observation_ns":10100,"spawn_ns":11970600,"terminal_observation_ns":400,"wait_and_collect_ns":60779300},"setup_ns":14100,"slot":0,"stderr_bytes":0,"stdout_bytes":23589,"variant":"profile","wall_ns":72775700,"worker":3}
+
+HC074_PIPE {"block":1,"code":0,"phases":null,"setup_ns":2600,"slot":1,"stderr_bytes":0,"stdout_bytes":23589,"variant":"control","wall_ns":56191200,"worker":3}
+
+HC074_PIPE {"block":1,"code":0,"phases":null,"setup_ns":11000,"slot":2,"stderr_bytes":0,"stdout_bytes":23589,"variant":"control","wall_ns":71573400,"worker":3}
+
+HC074_PIPE {"block":1,"code":0,"phases":{"child_end":{"created_100ns":134373648099617961,"exited_100ns":134373648100237523,"kernel_ns":0,"pid":53512,"user_ns":0},"child_start":{"created_100ns":134373648099617961,"exited_100ns":0,"kernel_ns":0,"pid":53512,"user_ns":0},"handle_observation_ns":8700,"spawn_ns":7074900,"terminal_observation_ns":1300,"wait_and_collect_ns":58444100},"setup_ns":2100,"slot":3,"stderr_bytes":0,"stdout_bytes":23589,"variant":"profile","wall_ns":65533400,"worker":3}
+
+HC074_PIPE {"block":2,"code":0,"phases":null,"setup_ns":11900,"slot":0,"stderr_bytes":0,"stdout_bytes":23589,"variant":"control","wall_ns":164366500,"worker":3}
+
+HC074_PIPE {"block":2,"code":0,"phases":{"child_end":{"created_100ns":134373648102268578,"exited_100ns":134373648102798503,"kernel_ns":15625000,"pid":52028,"user_ns":0},"child_start":{"created_100ns":134373648102268578,"exited_100ns":0,"kernel_ns":0,"pid":52028,"user_ns":0},"handle_observation_ns":6900,"spawn_ns":12425200,"terminal_observation_ns":1200,"wait_and_collect_ns":48543300},"setup_ns":4100,"slot":1,"stderr_bytes":0,"stdout_bytes":23589,"variant":"profile","wall_ns":60983400,"worker":3}
+
+HC074_PIPE {"block":2,"code":0,"phases":{"child_end":{"created_100ns":134373648103008012,"exited_100ns":134373648103521941,"kernel_ns":15625000,"pid":16444,"user_ns":15625000},"child_start":{"created_100ns":134373648103008012,"exited_100ns":0,"kernel_ns":0,"pid":16444,"user_ns":0},"handle_observation_ns":10700,"spawn_ns":13077500,"terminal_observation_ns":1200,"wait_and_collect_ns":48374700},"setup_ns":4100,"slot":2,"stderr_bytes":0,"stdout_bytes":23589,"variant":"profile","wall_ns":61527300,"worker":3}
+
+HC074_PIPE {"block":2,"code":0,"phases":null,"setup_ns":11800,"slot":3,"stderr_bytes":0,"stdout_bytes":23589,"variant":"control","wall_ns":72774700,"worker":3}
+
+HC074_PIPE {"block":3,"code":0,"phases":{"child_end":{"created_100ns":134373648104447941,"exited_100ns":134373648106007696,"kernel_ns":0,"pid":25332,"user_ns":0},"child_start":{"created_100ns":134373648104447941,"exited_100ns":0,"kernel_ns":0,"pid":25332,"user_ns":0},"handle_observation_ns":5800,"spawn_ns":11787300,"terminal_observation_ns":400,"wait_and_collect_ns":153485700},"setup_ns":2500,"slot":0,"stderr_bytes":0,"stdout_bytes":23589,"variant":"profile","wall_ns":165282900,"worker":3}
+
+HC074_PIPE {"block":3,"code":0,"phases":null,"setup_ns":4300,"slot":1,"stderr_bytes":0,"stdout_bytes":23589,"variant":"control","wall_ns":59898300,"worker":3}
+
+HC074_PIPE {"block":3,"code":0,"phases":null,"setup_ns":5400,"slot":2,"stderr_bytes":0,"stdout_bytes":23589,"variant":"control","wall_ns":174604100,"worker":3}
+
+HC074_PIPE {"block":3,"code":0,"phases":{"child_end":{"created_100ns":134373648108743579,"exited_100ns":134373648110220514,"kernel_ns":0,"pid":34920,"user_ns":15625000},"child_start":{"created_100ns":134373648108743579,"exited_100ns":0,"kernel_ns":0,"pid":34920,"user_ns":0},"handle_observation_ns":8400,"spawn_ns":17552600,"terminal_observation_ns":1200,"wait_and_collect_ns":144732100},"setup_ns":2300,"slot":3,"stderr_bytes":0,"stdout_bytes":23589,"variant":"profile","wall_ns":162348100,"worker":3}
+
+HC074_PIPE {"block":4,"code":0,"phases":null,"setup_ns":4900,"slot":0,"stderr_bytes":0,"stdout_bytes":23589,"variant":"control","wall_ns":276702500,"worker":3}
+
+HC074_PIPE {"block":4,"code":0,"phases":{"child_end":{"created_100ns":134373648114331954,"exited_100ns":134373648114976183,"kernel_ns":15625000,"pid":8356,"user_ns":0},"child_start":{"created_100ns":134373648114331954,"exited_100ns":0,"kernel_ns":0,"pid":8356,"user_ns":0},"handle_observation_ns":7100,"spawn_ns":16532400,"terminal_observation_ns":1200,"wait_and_collect_ns":61066000},"setup_ns":4000,"slot":1,"stderr_bytes":0,"stdout_bytes":23589,"variant":"profile","wall_ns":77613100,"worker":3}
+
+HC074_PIPE {"block":4,"code":0,"phases":{"child_end":{"created_100ns":134373648115126316,"exited_100ns":134373648115695238,"kernel_ns":15625000,"pid":18580,"user_ns":0},"child_start":{"created_100ns":134373648115126316,"exited_100ns":0,"kernel_ns":0,"pid":18580,"user_ns":0},"handle_observation_ns":7600,"spawn_ns":12512500,"terminal_observation_ns":1100,"wait_and_collect_ns":54009500},"setup_ns":3200,"slot":2,"stderr_bytes":0,"stdout_bytes":23589,"variant":"profile","wall_ns":66536300,"worker":3}
+
+HC074_PIPE {"block":4,"code":0,"phases":null,"setup_ns":4100,"slot":3,"stderr_bytes":0,"stdout_bytes":23589,"variant":"control","wall_ns":64425300,"worker":3}
+
+HC074_PIPE {"block":5,"code":0,"phases":{"child_end":{"created_100ns":134373648116612832,"exited_100ns":134373648117220086,"kernel_ns":0,"pid":42780,"user_ns":15625000},"child_start":{"created_100ns":134373648116612832,"exited_100ns":0,"kernel_ns":0,"pid":42780,"user_ns":0},"handle_observation_ns":8800,"spawn_ns":13601400,"terminal_observation_ns":700,"wait_and_collect_ns":57136500},"setup_ns":3200,"slot":0,"stderr_bytes":0,"stdout_bytes":23589,"variant":"profile","wall_ns":70752500,"worker":3}
+
+HC074_PIPE {"block":5,"code":0,"phases":null,"setup_ns":3700,"slot":1,"stderr_bytes":0,"stdout_bytes":23589,"variant":"control","wall_ns":54851500,"worker":3}
+
+HC074_PIPE {"block":5,"code":0,"phases":null,"setup_ns":18200,"slot":2,"stderr_bytes":0,"stdout_bytes":23589,"variant":"control","wall_ns":63621600,"worker":3}
+
+HC074_PIPE {"block":5,"code":0,"phases":{"child_end":{"created_100ns":134373648118960890,"exited_100ns":134373648119463957,"kernel_ns":15625000,"pid":47880,"user_ns":31250000},"child_start":{"created_100ns":134373648118960890,"exited_100ns":0,"kernel_ns":0,"pid":47880,"user_ns":0},"handle_observation_ns":8400,"spawn_ns":18163300,"terminal_observation_ns":1200,"wait_and_collect_ns":47296800},"setup_ns":3900,"slot":3,"stderr_bytes":0,"stdout_bytes":23589,"variant":"profile","wall_ns":65530100,"worker":3}
+HC074_PIPE_DONE {"admission":false,"blocks":6,"body_sha256":"5819f89ec58a899e03d7c0f14c6af91f4be6248a26f8578186cfc47b5900a805","installed_helper_changed":false,"parent_cpu_ns":906250000,"product_candidate":false,"samples":96,"spec":"3e9bcc06ebce3439495200162cb0c1900b8eda53:crates/xtask/tests/diagnostic_artifact_fixture_074.rs","wall_ns":2713749700,"workers":4}
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 2.72s
+

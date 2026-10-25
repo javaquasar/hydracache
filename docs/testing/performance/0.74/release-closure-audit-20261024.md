@@ -407,3 +407,10 @@ nested intervals are not target-wall or CPU partitions. Eighteen focused cases
 per compiler, thirty-nine Python controls and strict checks pass. First fixture
 parser/offline-oracle failures survive without rerunning their children. No
 transport candidate, full-package verdict or server admission follows.
+
+The [direct pipe continuation](direct-pipe-attribution-result-20261025.md)
+retains one 96-call fixed-payload cohort and process-handle joins without touching
+the installed helper. Spawn and wait/collection medians are 14.940 and 53.774 ms;
+the latter includes child work, not pure collection overhead. Twenty-three Rust
+cases per compiler and forty-three Python cases pass. Similar control/profile
+medians do not admit a candidate or close any package/execution/security gate.

@@ -1,0 +1,37 @@
+{
+  "cohort": {
+    "admission": false,
+    "blocks": 6,
+    "body_sha256": "5819f89ec58a899e03d7c0f14c6af91f4be6248a26f8578186cfc47b5900a805",
+    "installed_helper_changed": false,
+    "parent_cpu_ns": 906250000,
+    "product_candidate": false,
+    "samples": 96,
+    "spec": "3e9bcc06ebce3439495200162cb0c1900b8eda53:crates/xtask/tests/diagnostic_artifact_fixture_074.rs",
+    "wall_ns": 2713749700,
+    "workers": 4
+  },
+  "medians_ns": {
+    "child_cpu_ns": 15625000.0,
+    "control_wall_ns": 71189900.0,
+    "handle_observation_ns": 8400.0,
+    "profile_wall_ns": 71190250.0,
+    "spawn_ns": 14940000.0,
+    "terminal_observation_ns": 1200.0,
+    "wait_and_collect_ns": 53774150.0
+  },
+  "observed_children": 48,
+  "overhead_acceptance": false,
+  "product_admission": false,
+  "pure_collection_attribution": false,
+  "samples": 96,
+  "totals_ns": {
+    "child_cpu_ns": 984375000,
+    "control_wall_ns": 5662570600,
+    "handle_observation_ns": 423100,
+    "profile_wall_ns": 4159963700,
+    "spawn_ns": 930801500,
+    "terminal_observation_ns": 57000,
+    "wait_and_collect_ns": 3227378500
+  }
+}

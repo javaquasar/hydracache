@@ -1,0 +1,33 @@
+
+running 18 tests
+test authority_context_candidate_matches_contract_and_frozen_prefix_order ... ok
+test authority_context_restores_preceding_sources_without_changing_key_encoder ... ok
+test guard_path_comparison_current_source_is_one_exact_predicate_edit ... ok
+test guard_path_comparison_leaves_other_reader_expectations_unchanged ... ok
+test guard_path_comparison_refuses_missing_duplicate_and_already_changed_baselines ... ok
+test helper_instrumentation_erases_only_exact_observers_and_preserves_twenty_cases ... ok
+test helper_model_preserves_nested_order_bytes_and_unwind_without_additive_claims ... ok
+test helper_model_refuses_unknown_operations_budgets_reverse_time_and_bad_retirement ... ok
+test helper_observer_fixture_child ... ok
+test helper_observer_is_default_off_and_does_not_read_fixture_inputs ... ok
+test history_namespace_cost_child ... ok
+test history_namespace_matches_independent_frozen_sources_and_keeps_body_drift ... ok
+test history_namespace_protocol_and_unrelated_input_are_exact ... ok
+test history_namespace_still_refuses_missing_and_duplicate_namespace_hook ... ok
+test history_prefix_cost_child ... ok
+test history_prefix_protocol_and_unrelated_input_are_exact ... ok
+test normalization_cost_child ... ok
+test normalization_cost_protocol_keeps_separate_scopes ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.77s
+
+
+running 5 tests
+test direct_output_cost_child ... ok
+test fixed_protocol_and_independent_body ... ok
+test pipe_fixture_child ... ok
+test pipe_semantics_empty_binary_nonzero_and_large_streams ... ok
+test pipe_spawn_failure_is_not_replaced_or_retried ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+

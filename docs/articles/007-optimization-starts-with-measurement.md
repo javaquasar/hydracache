@@ -19644,3 +19644,29 @@ observations still constrain that choice. The first fixture collector mistakes
 are retained and corrected through offline review of the same original logs;
 no child is rerun to manufacture a clean first outcome. Product qualification
 and the earlier incomplete package remain separate gates.
+
+### Separate process creation from the remaining pipe interval
+
+The [next direct-pipe diagnostic](../testing/performance/0.74/direct-pipe-attribution-result-20261025.md)
+keeps the installed helper untouched. Its control still calls `Command::output()`;
+only an isolated probe explicitly spawns a fresh child with null stdin and two
+pipes, then calls `wait_with_output`. Empty/binary/nonzero output, large pipes,
+stdin EOF and spawn failure are checked before one finite measurement cohort.
+This avoids importing timings from the unrelated tempfile/polling transport.
+
+Four workers perform ninety-six calls against independently archived bytes.
+Median control and profile wall times are both about 71.190 ms; profile spawn is
+14.940 ms and wait/collection 53.774 ms. A duplicate original process handle joins
+creation identity to terminal CPU even after Child is consumed. Its median
+whole-child CPU is 15.625 ms, with quantized values and descendants outside the
+counter's scope. Parent CPU belongs to the whole concurrent cohort, not individual
+overlapping calls.
+
+These observations narrow the hypothesis without inventing a saving. Child work
+continues while the parent drains pipes and waits, so the larger interval is not
+pure capture cost or removable sleep. CPU overlaps wall phases; medians of
+separate distributions cannot be added into one median call. The first control
+group is visibly slower, and all its samples remain: a lower cumulative profile
+sum in one finite order is not proof of an optimization. Neither similar medians
+nor a measurable startup phase permits a persistent child or a cache that changes
+fresh refs/configuration, independent pins, ABA/fallback behavior or current reads.

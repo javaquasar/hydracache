@@ -1,0 +1,92 @@
+"""Retain sole direct pipe cohort and all original check outcomes."""
+from pathlib import Path
+import hashlib
+import json
+import subprocess
+import sys
+
+ROOT = Path(__file__).resolve().parent.parent
+BASE = ROOT/'docs/testing/performance/0.74/local-runs/direct-pipe-attribution-20261025'
+CODE = 'd8d0a0b3991223839bd7f8a0e8f4d59221dd49e5'
+sys.path.insert(0, str(ROOT/'tools/xtask-package-attribution-074'))
+import pipe_review
+
+PROTECTED = {
+    'Cargo.toml':'18a8a27cf140a1d6eb31c8316ee39bb7d5832866a990346eee16cd0c30de344b',
+    'Cargo.lock':'d2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c',
+    'docs/testing/performance/0.74/qualification-manifest.toml':'11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc',
+    'tools/authority-storage-source-074/contract.rs':'aefcd4f6a9ed0acc1e072225ea3ed4dda82d2d1ccda0ba4f22ca74459efa64c2',
+}
+members, objects, phases = {}, {}, []
+def sha(raw): return hashlib.sha256(raw).hexdigest()
+def add(name, raw):
+    assert name not in members
+    digest=sha(raw); members[name]=dict(sha256=digest,bytes=len(raw)); objects[digest]=raw
+def tree(folder, prefix):
+    for path in sorted(folder.rglob('*')):
+        if path.is_file(): add(prefix+'/'+path.relative_to(folder).as_posix(), path.read_bytes())
+
+assert subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip()==CODE
+checks=ROOT/'target/source-continuation-20261024'
+for folder in sorted(checks.iterdir()):
+    if not folder.is_dir() or not folder.name.startswith('direct-pipe-20261025-'): continue
+    intent=json.loads((folder/'intent.json').read_bytes()); result=json.loads((folder/'result.json').read_bytes())
+    expected=101 if folder.name in ('direct-pipe-20261025-controls','direct-pipe-20261025-clippy') else 0
+    assert result['exit']==expected and result['outer_refusal'] is None, folder
+    assert result['source_unchanged'] and result['head_unchanged'] and intent['source']==result['source_after']
+    tree(folder,'checks/'+folder.name); phases.append(dict(phase=folder.name,exit=expected))
+capture=ROOT/'target/direct-pipe-20261025-first'
+tree(capture,'capture')
+derived=pipe_review.read((capture/'stdout.log').read_bytes())
+result=json.loads((capture/'result.json').read_bytes())
+assert result==dict(exit=0,first_outcome=True,retry=False,package_pass=False,derived=derived)
+assert not (capture/'stderr.log').read_bytes()
+compiled=json.loads((capture/'preflight.json').read_bytes())['compiled_source']
+for path in ('crates/xtask/tests/direct_output_cost_074.rs',
+             'tools/xtask-package-attribution-074/pipe_capture.rs',
+             'tools/xtask-package-attribution-074/pipe_capture.py',
+             'tools/xtask-package-attribution-074/pipe_review.py',
+             'tools/xtask-package-attribution-074/test_pipe_review.py',
+             'tools/xtask-package-attribution-074/pipe-execution-protocol.toml',
+             'tools/xtask-package-attribution-074/README.md'):
+    raw=subprocess.check_output(['git','show',CODE+':'+path],cwd=ROOT)
+    assert sha(raw)==compiled[path], path
+    add('measured-source/'+path,raw)
+source=ROOT/'docs/testing/performance/0.74/local-runs/transport-package-20261025/objects'/pipe_review.BODY
+assert sha(source.read_bytes())==pipe_review.BODY and len(source.read_bytes())==23589
+add('independent-body.rs',source.read_bytes())
+rows=[json.loads(line.removeprefix('HC074_PIPE ')) for line in (capture/'stdout.log').read_text().splitlines() if line.startswith('HC074_PIPE ')]
+ranges={v:dict(min_ns=min(r['wall_ns'] for r in rows if r['variant']==v),
+               max_ns=max(r['wall_ns'] for r in rows if r['variant']==v)) for v in ('control','profile')}
+first=[r['wall_ns'] for r in rows if r['block']==0 and r['slot']==0]
+derived_extra=dict(ranges=ranges,first_control_slot_ns=first,
+    observed_child_cpu_ns=sorted({r['phases']['child_end']['kernel_ns']+r['phases']['child_end']['user_ns'] for r in rows if r['phases']}))
+add('derived/review.json',(json.dumps(derived,indent=2,sort_keys=True)+'\n').encode())
+add('derived/tails.json',(json.dumps(derived_extra,indent=2,sort_keys=True)+'\n').encode())
+for path,digest in PROTECTED.items():
+    raw=(ROOT/path).read_bytes(); assert sha(raw)==digest; add('protected/'+path,raw)
+for path in ('crates/xtask/tests/diagnostic_artifact_fixture_074.rs',
+             'crates/xtask/tests/authority_context_074.rs',
+             'tools/authority-runtime-074/gate.rs','tools/authority-runtime-074/io.rs',
+             'tools/historical-blob-batch-074/transport.rs',
+             'crates/xtask/tests/support/census_provider_input.rs','deny.toml'):
+    raw=(ROOT/path).read_bytes()
+    old=subprocess.check_output(['git','show','cd37b8e9:'+path],cwd=ROOT)
+    assert raw.replace(b'\r\n',b'\n')==old.replace(b'\r\n',b'\n')
+    assert sha(raw)==compiled[path]
+    add('unchanged/'+path,raw)
+for name in ('run-source-step-20261024.py','run-fresh-reader-20261024.py',
+             'seal-direct-pipe-20261025.py','verify-direct-pipe-staged-20261025.py'):
+    add('coordinators/'+name,(ROOT/'target'/name).read_bytes())
+add('coordination/first-sealer-refusal.json',(ROOT/'target/direct-pipe-sealer-first-refusal-20261025.json').read_bytes())
+index=dict(schema='hc074-direct-pipe-evidence-v1',code_commit=CODE,members=members,
+    facts=dict(phases=phases,protected_sha256=PROTECTED,cohorts=1,samples=96,observed_children=48,
+               workers=4,product_candidate=False,package_pass=False,overhead_acceptance=False,
+               live_checks_order_frequency_or_windows_changed=False,first_compile_and_clippy_failures_retained=True,
+               services=False,clocks=False,server=False,qualification=False))
+BASE.mkdir(exist_ok=False)
+(BASE/'objects').mkdir()
+for digest,raw in objects.items(): (BASE/'objects'/digest).write_bytes(raw)
+(BASE/'index.json').write_bytes((json.dumps(index,indent=2,sort_keys=True)+'\n').encode())
+(BASE/'.gitattributes').write_bytes(b'index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n')
+print(json.dumps(dict(index_sha256=sha((BASE/'index.json').read_bytes()),members=len(members),objects=len(objects),phases=len(phases)),indent=2))

@@ -57,6 +57,14 @@ unseparated. Exact source erasure, original-AST trace completeness and strict
 controls pass. This is neither repeated overhead acceptance nor a full package,
 product win, changed live schedule or permission for a persistent-child/cache.
 
+The [next direct-pipe screen](direct-pipe-attribution-result-20261025.md) keeps
+the installed helper unchanged and runs one fixed 96-call/four-worker diagnostic.
+Spawn has a 14.940 ms median; wait/collection 53.774 ms still includes child work.
+Original control/profile wall medians are both about 71.190 ms, not an accepted
+overhead or acceleration result. Twenty-three Rust controls per compiler,
+forty-three Python controls and strict checks pass. This selected-payload screen
+does not finish the interrupted package, install a cache or change release gates.
+
 Next: use saved target/call attribution to isolate the cost owner without
 removing tests, refreshing source pins from responses or changing conditional
 reads. A separate candidate needs its own baseline and unchanged-bound proof;
