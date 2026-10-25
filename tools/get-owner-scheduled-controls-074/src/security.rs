@@ -1,4 +1,6 @@
 //! Ephemeral transport material only. No application-security equivalence claim.
+mod material;
+pub use material::MaterialSeal;
 use rustls::{
     pki_types::{pem::PemObject, CertificateDer, PrivateKeyDer},
     RootCertStore,

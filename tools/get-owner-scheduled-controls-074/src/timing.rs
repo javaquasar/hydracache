@@ -33,6 +33,9 @@ pub enum Surface {
     Resp3Mtls,
 }
 impl Surface {
+    pub fn uses_mtls(self) -> bool {
+        matches!(self, Self::Hc2Mtls | Self::Resp2Mtls | Self::Resp3Mtls)
+    }
     fn resp(self) -> Option<(Dialect, bool)> {
         match self {
             Self::Resp2 => Some((Dialect::Resp2, false)),
@@ -172,7 +175,16 @@ enum Owner {
     Resp(Arc<RespControl>),
 }
 impl Owner {
-    async fn start(input: &Input) -> Result<Self, String> {
+    async fn start(input: &Input, material: Option<&MtlsFixture>) -> Result<Self, String> {
+        if material.is_some() && !input.surface.uses_mtls() {
+            return Err("fixed material requires an mTLS surface before fixture".to_owned());
+        }
+        let ephemeral = if input.surface.uses_mtls() && material.is_none() {
+            Some(MtlsFixture::new()?)
+        } else {
+            None
+        };
+        let material = material.or(ephemeral.as_ref());
         let dataset = Dataset::new(input.keyspace, input.payload_bytes)?;
         if let Some((dialect, secure)) = input.surface.resp() {
             let control = if secure {
@@ -182,7 +194,7 @@ impl Owner {
                     input.slots,
                     input.operation.resp(),
                     dialect,
-                    &MtlsFixture::new()?,
+                    material.ok_or("missing mTLS material")?,
                 )
                 .await?
             } else {
@@ -221,7 +233,7 @@ impl Owner {
                     input.slots,
                     dataset,
                     input.operation.native(),
-                    &MtlsFixture::new()?,
+                    material.ok_or("missing mTLS material")?,
                 )
                 .await?
             }
@@ -419,12 +431,23 @@ async fn finish_fixture(report: &mut Report, owner: Owner) {
 /// external process ownership/deadline/source/placement seal for numerical use.
 /// Tests invoke this only as semantic instrumentation, never as A/A-A/B data.
 pub async fn run(input: Input) -> Report {
+    run_inner(input, None).await
+}
+
+/// Exact pinned fixture supplied by the coordinator, shared across fresh
+/// processes. The coordinator must still prove paired material/dataset parity;
+/// this report cannot grant numerical admission or production enrollment.
+pub async fn run_with_material(input: Input, material: &MtlsFixture) -> Report {
+    run_inner(input, Some(material)).await
+}
+
+async fn run_inner(input: Input, material: Option<&MtlsFixture>) -> Report {
     let mut report = initial_report(input);
     if let Err(error) = report.input.validate() {
         report.error = Some(error);
         return report;
     }
-    let owner = match Owner::start(&report.input).await {
+    let owner = match Owner::start(&report.input, material).await {
         Ok(owner) => owner,
         Err(error) => {
             report.error = Some(error);
@@ -471,7 +494,7 @@ mod tests {
             let mut config = input();
             config.warmup_calls = warmup;
             let mut report = initial_report(config);
-            let owner = Owner::start(&report.input).await.unwrap();
+            let owner = Owner::start(&report.input, None).await.unwrap();
             if let Owner::Native(c) = &owner {
                 c.delete_dataset().await.unwrap();
             } else {
@@ -489,7 +512,7 @@ mod tests {
     #[tokio::test]
     async fn leaked_owner_is_not_reported_as_successful_shutdown() {
         let mut report = initial_report(input());
-        let owner = Owner::start(&report.input).await.unwrap();
+        let owner = Owner::start(&report.input, None).await.unwrap();
         let leaked = match &owner {
             Owner::Native(c) => Arc::clone(c),
             _ => panic!("native fixture"),
