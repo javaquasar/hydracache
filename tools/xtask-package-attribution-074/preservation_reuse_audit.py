@@ -110,13 +110,20 @@ def audit(root):
     stored = review.decode_json(review.member(folder, index, 'capture/profile/result.json'))
     review.require(stored['trace'] == trace and stored['target_pass'] is True, 'original complete trace verdict')
     contract = (root/'tools/xtask-package-attribution-074/helper_contract.rs').read_text()
-    helper_capture.erase((root/sweep.SOURCE).read_text(), contract, original['reviewed-source/'+sweep.SOURCE].decode())
+    baseline = original['reviewed-source/'+sweep.SOURCE].decode()
+    measured = review.member(folder, index, 'measured-source/'+sweep.SOURCE).decode()
+    helper_capture.erase(measured, contract, baseline)
+    # The observer was withdrawn from the frozen target after the package
+    # compatibility refusal. Historical trace attribution uses its sealed
+    # measured source, never a newly instrumented or silently accepted body.
+    review.require((root/sweep.SOURCE).read_text() == baseline, 'installed helper differs from original baseline')
     result = analyze(trace['frames'])
     review.require(result['git_calls'] == trace['counts']['git'] == 3157
                    and result['show_calls'] == trace['shows'] == 3141
                    and result['fresh_read_calls'] == trace['counts']['read'] == 3140, 'original scope counts')
     result.update(helper_packet_sha256=PACKET_SHA256, original_packet_sha256=sweep.PACKET_SHA256,
-                  current_helper_erases_to_original=True, source_sha256=sweep.SOURCE_SHA256,
+                  current_helper_erases_to_original=False, current_helper_equals_original=True,
+                  retained_measured_helper_erases_to_original=True, source_sha256=sweep.SOURCE_SHA256,
                   original_proven_sweep_lower_bound=proof['proven_direct_show_launches_lower_bound'],
                   profile_log_sha256=review.sha(log), package_pass=False)
     return result

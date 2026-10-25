@@ -90,7 +90,19 @@ class ReuseAudit(unittest.TestCase):
         self.assertEqual(value['command_shapes']['short_default_replacements'], 1795)
         self.assertEqual(value['command_shapes']['full40_default_replacements'], 1346)
         self.assertEqual(value['fresh_read_calls'], 3140)
-        self.assertTrue(value['current_helper_erases_to_original'])
+        self.assertFalse(value['current_helper_erases_to_original'])
+        self.assertTrue(value['current_helper_equals_original'])
+        self.assertTrue(value['retained_measured_helper_erases_to_original'])
+
+    def test_installed_body_drift_refuses_even_with_valid_saved_trace(self):
+        root = Path(__file__).resolve().parents[2]
+        original = Path.read_text
+        def read(path, *args, **kwargs):
+            raw = original(path, *args, **kwargs)
+            return raw+'\nfn unreviewed() {}\n' if path == root/audit.sweep.SOURCE else raw
+        with patch.object(Path, 'read_text', read):
+            with self.assertRaisesRegex(ValueError, 'installed helper differs'):
+                audit.audit(root)
 
     def test_changed_packet_pin_refuses_before_trace_review(self):
         with patch.object(audit.review, 'sha', return_value='changed'):

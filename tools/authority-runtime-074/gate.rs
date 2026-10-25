@@ -1,7 +1,5 @@
 //! Exact current installation gate plus a verified predecessor view for old phases.
 use crate::storage_contract as storage;
-#[path = "../guard-path-comparison-074/contract.rs"]
-pub mod guard_path;
 #[path = "../historical-source-cache-074/library.rs"]
 pub mod historical_cache;
 #[path = "performance.rs"]
@@ -88,12 +86,7 @@ pub fn expected(path: &str) -> Option<String> {
         return Some(format!("{}\n{}", performance::IMPORTS, frozen(BASE, path)));
     }
     if let Some((_, read)) = performance::READERS.iter().find(|(file, _)| *file == path) {
-        let current = performance::reader(&frozen(BASE, path), read);
-        return Some(if path == guard_path::SOURCE {
-            guard_path::candidate(&current)
-        } else {
-            current
-        });
+        return Some(performance::reader(&frozen(BASE, path), read));
     }
     if path == FIXTURE {
         return Some(storage::candidate(&frozen(BASE, path)));

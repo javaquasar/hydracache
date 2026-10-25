@@ -17,10 +17,49 @@ class ReviewV2(unittest.TestCase):
         raw = DOCUMENT.read_bytes()
         assert review.sha(raw) == DOCUMENT.name
         cls.document = review.json.loads(raw)
+        # Positive tests exercise the exact retained v2 scope, not whichever
+        # source happens to be installed today. This is a data-only fixture;
+        # no retained source is compiled or dispatched.
+        folder = ROOT/'docs/testing/performance/0.74/local-runs/package-effect-review-v2-20261025'
+        index_raw = (folder/'index.json').read_bytes()
+        assert review.sha(index_raw) == '58b7a5f845abd8e791b5d150f98f461fc069869195131fe3e76ea620df772dae'
+        members = review.json.loads(index_raw)['members']
+        cls.directory = tempfile.TemporaryDirectory()
+        cls.addClassCleanup(cls.directory.cleanup)
+        cls.root = Path(cls.directory.name).resolve()
+        def materialize(name, body):
+            path = cls.root/name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(body)
+        for prefix, pins in (
+                ('reviewed-source/', {v['source']:v['sha256'] for v in cls.document['sources']}),
+                ('reviewed-auxiliary/', {**review.legacy.REVIEWED_AUXILIARY, **review.EXTRA_AUXILIARY})):
+            for name, digest in pins.items():
+                entry = members[prefix+name]
+                body = (folder/'objects'/entry['sha256']).read_bytes()
+                assert review.sha(body) == digest == entry['sha256'] and len(body) == entry['bytes']
+                materialize(name, body)
+        previous = ROOT/review.PREVIOUS_PACKET
+        index_raw = (previous/'index.json').read_bytes()
+        assert review.sha(index_raw) == review.PREVIOUS_INDEX_SHA256
+        entry = review.json.loads(index_raw)['members']['syntax/final-closure/result.json']
+        body = (previous/'objects'/entry['sha256']).read_bytes()
+        assert review.sha(body) == entry['sha256'] and len(body) == entry['bytes']
+        materialize(review.PREVIOUS_PACKET+'/index.json', index_raw)
+        materialize(review.PREVIOUS_PACKET+'/objects/'+entry['sha256'], body)
+        cls.targets = ['unittests src/lib.rs', 'unittests src/main.rs'] + [
+            'tests/'+p.name for p in sorted((cls.root/'crates/xtask/tests').glob('*.rs'))]
+        assert len(cls.targets) == 136
+
+    def frozen_review(self, document):
+        # The separate catalog/old-log audit has its own tests. Avoid loading
+        # executable Python from the source fixture in this unit-level join.
+        with patch.object(review.legacy.package_replay_audit, 'audit', return_value={'targets':self.targets}):
+            return review.source_review(self.root, document)
 
     def test_exact_current_scope_and_old_receipt_refusal(self):
         with patch.object(review.legacy.subprocess, 'Popen', side_effect=AssertionError('no child')):
-            value = review.source_review(ROOT, self.document)
+            value = self.frozen_review(self.document)
         self.assertEqual(len(value['sources']), 342)
         self.assertEqual(len(value['targets']), 136)
         self.assertEqual(len(value['auxiliary']), 28)
@@ -34,14 +73,19 @@ class ReviewV2(unittest.TestCase):
             review.legacy.source_review(ROOT, self.document)
         self.assertEqual(review.legacy.REVIEWED_AST_SHA256, review.PREVIOUS_AST_SHA256)
 
+    def test_repaired_current_tree_is_not_admitted_by_old_v2_scope(self):
+        with patch.object(review.legacy.subprocess, 'Popen', side_effect=AssertionError('no child')):
+            with self.assertRaisesRegex(ValueError, 'source bytes/path drift'):
+                review.source_review(ROOT, self.document)
+
     def test_unknown_digest_and_scope_cannot_self_refresh(self):
         bad = copy.deepcopy(self.document)
         bad['compiler_expansion'] = True
         with self.assertRaisesRegex(ValueError, 'unreviewed v2'):
-            review.source_review(ROOT, bad)
+            self.frozen_review(bad)
         with patch.object(review, 'REVIEWED_AST_SHA256', review.legacy.document_digest(bad)):
             with self.assertRaisesRegex(ValueError, 'source-only inventory scope'):
-                review.source_review(ROOT, bad)
+                self.frozen_review(bad)
 
     def test_missing_duplicate_and_unclosed_inventory_refuse(self):
         for mode in ('missing', 'duplicate', 'unclosed'):
@@ -51,7 +95,7 @@ class ReviewV2(unittest.TestCase):
             else:
                 bad['sources'][0]['sites'].append(dict(kind='module', scope='unreviewed_absent', detail='default-module-path'))
             with patch.object(review, 'REVIEWED_AST_SHA256', review.legacy.document_digest(bad)):
-                with self.assertRaises(ValueError): review.source_review(ROOT, bad)
+                with self.assertRaises(ValueError): self.frozen_review(bad)
 
     def test_service_constructor_and_unexpanded_include_are_still_forbidden(self):
         for kind, detail in (('command-constructor', 'literal:ssh'), ('macro-command-constructor', 'literal:systemctl'),
@@ -60,28 +104,28 @@ class ReviewV2(unittest.TestCase):
             bad['sources'][0]['sites'].append(dict(kind=kind, scope='fixture', detail=detail))
             with patch.object(review, 'REVIEWED_AST_SHA256', review.legacy.document_digest(bad)):
                 with self.assertRaisesRegex(ValueError, 'host/service constructor|unexpanded include'):
-                    review.source_review(ROOT, bad)
+                    self.frozen_review(bad)
 
     def test_actual_source_drift_and_new_data_drift_refuse(self):
         original = Path.read_bytes
-        for path in (ROOT/'crates/xtask/tests/direct_output_cost_074.rs',
-                     ROOT/'tools/xtask-package-attribution-074/pipe-execution-protocol.toml'):
+        for path in (self.root/'crates/xtask/tests/direct_output_cost_074.rs',
+                     self.root/'tools/xtask-package-attribution-074/pipe-execution-protocol.toml'):
             def read(current):
                 return b'unreviewed drift' if current == path else original(current)
             with patch.object(Path, 'read_bytes', read):
                 with self.assertRaisesRegex(ValueError, 'source bytes/path drift|auxiliary input drift'):
-                    review.source_review(ROOT, self.document)
+                    self.frozen_review(self.document)
 
     def test_manual_delta_and_legacy_auxiliary_pins_are_independent(self):
         for name, value in (('REVIEWED_DELTA', {}), ('EXTRA_AUXILIARY', {})):
             with patch.object(review, name, value):
                 with self.assertRaisesRegex(ValueError, 'manual delta pins drift|auxiliary input drift'):
-                    review.source_review(ROOT, self.document)
+                    self.frozen_review(self.document)
 
     def test_old_packet_pin_drift_refuses(self):
         with patch.object(review, 'PREVIOUS_INDEX_SHA256', '0'*64):
             with self.assertRaisesRegex(ValueError, 'old packet identity'):
-                review.source_review(ROOT, self.document)
+                self.frozen_review(self.document)
 
     def test_negative_program_presence_in_application_directory_refuses(self):
         with tempfile.TemporaryDirectory() as directory, patch.object(review.shutil, 'which', return_value=None):

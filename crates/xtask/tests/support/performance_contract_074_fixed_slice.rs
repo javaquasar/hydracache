@@ -44,7 +44,7 @@ platform = "linux"
 pub(super) fn normalize(path: &str, raw: &str) -> String {
     let mut text = namespace::normalize(path, raw);
     for (file, hook) in HOOKS {
-        if path.strip_prefix(PREFIX) == Some(*file) {
+        if path == format!("{PREFIX}{file}") {
             assert_eq!(
                 text.matches(hook).count(),
                 1,
