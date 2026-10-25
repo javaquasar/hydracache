@@ -4,6 +4,18 @@ use std::fs::File;
 use std::io;
 
 impl Stamp {
+    pub(super) fn fresh_device(file: &File) -> io::Result<u64> {
+        #[cfg(target_arch = "x86_64")]
+        {
+            Ok(Self::fresh(file)?.dev)
+        }
+        #[cfg(not(target_arch = "x86_64"))]
+        {
+            use std::os::unix::fs::MetadataExt;
+            Ok(file.metadata()?.dev())
+        }
+    }
+
     pub(super) fn fresh_regular(
         file: &File,
         uid: u32,

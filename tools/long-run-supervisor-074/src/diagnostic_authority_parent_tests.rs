@@ -124,12 +124,14 @@ fn fresh_authority_parent_device_and_benign_fields_match_metadata() {
     for file in [named.as_file(), &parent, &special] {
         let metadata = file.metadata().unwrap();
         assert_eq!(metadata.dev(), Stamp::fresh(file).unwrap().dev);
+        assert_eq!(metadata.dev(), Stamp::fresh_device(file).unwrap());
     }
     let original = parent.metadata().unwrap().dev();
     fs::write(dir.path().join("unrelated"), b"x").unwrap();
     fs::set_permissions(dir.path(), fs::Permissions::from_mode(0o750)).unwrap();
     assert_eq!(original, parent.metadata().unwrap().dev());
     assert_eq!(original, Stamp::fresh(&parent).unwrap().dev);
+    assert_eq!(original, Stamp::fresh_device(&parent).unwrap());
     assert_eq!(
         original,
         Stamp::fresh(&parent.try_clone().unwrap()).unwrap().dev

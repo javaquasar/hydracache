@@ -95,7 +95,7 @@ impl Leaf {
     ) -> Result<(File, Stamp, Vec<u8>), AuthorityError> {
         let mut file = open_at(dir, name, false)?;
         let stamp = Stamp::fresh_regular(&file, uid, gid, 0o400)?;
-        if stamp.dev != dir.metadata()?.dev() || stamp.len > budget as u64 {
+        if stamp.dev != Stamp::fresh_device(dir)? || stamp.len > budget as u64 {
             return Err(AuthorityError::Budget);
         }
         let mut raw = Vec::with_capacity(stamp.len as usize);
@@ -115,7 +115,7 @@ impl Leaf {
     ) -> Result<(File, Stamp, Vec<u8>), AuthorityError> {
         let mut file = open_at(dir, name, false)?;
         let stamp = Stamp::fresh_regular(&file, uid, gid, 0o400)?;
-        if stamp.dev != dir.metadata()?.dev() || stamp.len > budget as u64 {
+        if stamp.dev != Stamp::fresh_device(dir)? || stamp.len > budget as u64 {
             return Err(AuthorityError::Budget);
         }
         let mut raw = match slot.take() {
