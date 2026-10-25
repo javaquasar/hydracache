@@ -1,0 +1,13 @@
+from pathlib import Path
+import hashlib,json
+base=Path('/tmp/hc074-server-gate-root-20261025.0k0xbdah');root=base/'signer-fixed-home-first'
+result={}
+for name in ('launch.json','child.json','result.json'):
+ if (root/name).exists():result[name]=json.loads((root/name).read_bytes())
+for name in ('unit.stdout.log','unit.stderr.log','worker.stderr.log'):
+ p=root/name
+ if p.exists():
+  raw=p.read_bytes();result[name]=dict(bytes=len(raw),tail=raw[-2400:].decode(errors='replace'))
+folder=Path('/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/build-target-v3/release/deps')
+result['libc_rlibs']=[dict(path=str(p),bytes=p.stat().st_size,sha256=hashlib.sha256(p.read_bytes()).hexdigest()) for p in folder.glob('liblibc-*.rlib')]
+print(json.dumps(result,indent=2))

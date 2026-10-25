@@ -1,0 +1,69 @@
+"""First signer-only compatibility cohort with the repaired, private fixture HOME."""
+from pathlib import Path
+import hashlib,json,os,re,signal,subprocess,sys,time
+base=Path('/tmp/hc074-server-gate-root-20261025.0k0xbdah');root=base/'signer-fixed-home-first'
+upload=Path('/tmp/hc074-server-gate-upload-20261025.pvdj0f6c')
+image='6640e1b9b31ae7c87137b335be4f2665d729ea7b4324ee0e874bdbedc346c520'
+raw=(base/'server-fault-worker-20261025.py').read_bytes()
+assert hashlib.sha256(raw).hexdigest()=='af1e9926e1ad40bc49c1c225d79f5fffc788c715a7889743decea129ec4b17a3'
+assert sys.argv[1]==image
+scope={};exec(compile(raw.decode().split('started=time.monotonic_ns()\n')[0],'<pinned-preflight>','exec'),scope)
+preflight=scope['preflight']
+def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+def publish(name,value):
+ with (root/name).open('x') as f:json.dump(value,f,indent=2);f.flush();os.fsync(f.fileno())
+def limited():
+ os.sched_setaffinity(0,set(range(8)));os.setgroups([]);os.setgid(1000);os.setuid(1000)
+publish('consumed.json',dict(image_sha256=image,selector='diagnostic_signer_',source_head='ee9692b672be093716822db13a22f5a63960f928',
+ environment_delta='HOME only: verified private signer-home-first instead of account HOME',
+ previous_ordinary_cohort=dict(passed=1348,failed=82,ignored=122,still_red=True),
+ test_threads=4,outer_seconds=780,original_windows=[300,60,10],retry=False,
+ ignored_enabled=False,product=False,qualification=False,admission=False))
+result=dict(exit=None,first_refusal=None,postflight_refusal=None,source_unchanged=False,passed=False)
+before=None
+try:
+ before=preflight();publish('preflight.json',before)
+ assert json.loads((base/'signer-home-control-first/result.json').read_bytes())['passed']
+ assert sha(base/'manifest.json')=='2a0f7c581a1e854ab71841efb71aaebee3de56d1c0357b54d55a41ae4011ea6d'
+ manifest=json.loads((base/'manifest.json').read_bytes());source=upload/'source-v3'
+ def verify():
+  for name,item in manifest['members'].items():
+   p=source/name;assert p.is_file() and not p.is_symlink() and sha(p)==item['sha256'],name
+ verify()
+ test=upload/'origin-regression-first/libtest';assert sha(test)==image
+ task_home=upload/'signer-home-first'
+ assert sha(task_home/'.cargo/bin/rustup')=='dda7234360b7f578ca8b0ddcb80145646fa61a67c1720a5abc7051b35c9fcb71'
+ assert sha(task_home/'.rustup/toolchains/1.94.0-x86_64-unknown-linux-gnu/bin/rustc')=='103b60e1b1339968c1d74202ea1d45686037e82c4ea3e0569de24b18a1e6836a'
+ scratch=upload/'signer-fixed-home-scratch-first';scratch.mkdir(mode=0o700);os.chown(scratch,1000,1000)
+ env=dict(PATH='/usr/bin:/bin',TMPDIR=str(scratch),HOME=str(task_home))
+ catalog=subprocess.run([str(test),'diagnostic_signer_','--list'],cwd=source,env=env,preexec_fn=limited,capture_output=True,timeout=20)
+ (root/'catalog.stdout.log').write_bytes(catalog.stdout);(root/'catalog.stderr.log').write_bytes(catalog.stderr)
+ assert catalog.returncode==0
+ names=[s.removesuffix(': test') for s in catalog.stdout.decode().splitlines() if s.endswith(': test')]
+ assert len(names)==len(set(names))>82 and all(s.startswith('diagnostic_signer_') for s in names)
+ publish('catalog.json',dict(names=names,scope_frozen_before_cohort=True))
+ argv=[str(test),'diagnostic_signer_','--nocapture','--test-threads=4']
+ publish('command.json',dict(argv=argv,env=env,cwd=str(source),uid=1000,gid=1000))
+ start=time.monotonic_ns()
+ with (root/'unit.stdout.log').open('xb') as stdout,(root/'unit.stderr.log').open('xb') as stderr:
+  child=subprocess.Popen(argv,cwd=source,env=env,stdout=stdout,stderr=stderr,preexec_fn=limited,start_new_session=True)
+  publish('child.json',dict(pid=child.pid,start_ticks=scope['ticks'](child.pid),affinity=sorted(os.sched_getaffinity(child.pid))))
+  try:result['exit']=child.wait(timeout=780)
+  except subprocess.TimeoutExpired:
+   os.killpg(child.pid,signal.SIGTERM)
+   try:child.wait(timeout=5)
+   except subprocess.TimeoutExpired:os.killpg(child.pid,signal.SIGKILL);child.wait()
+   raise RuntimeError('first fixed-HOME signer cohort timed out; no retry')
+ result['wall_ns']=time.monotonic_ns()-start
+ text=(root/'unit.stdout.log').read_text()
+ verdict=re.findall(r'test result: (ok|FAILED)\. (\d+) passed; (\d+) failed; (\d+) ignored;',text)
+ assert len(verdict)==1 and sum(map(int,verdict[0][1:]))==len(names)
+ result['counts']=dict(zip(('passed','failed','ignored'),map(int,verdict[0][1:])))
+ verify();result['source_unchanged']=True
+ result['passed']=result['exit']==0 and verdict[0][0]=='ok' and result['counts']['failed']==0
+except BaseException as error:result['first_refusal']=f'{type(error).__name__}: {error}'
+finally:
+ try:
+  after=preflight();assert before is not None and before==after;publish('postflight.json',after)
+ except BaseException as error:result['postflight_refusal']=f'{type(error).__name__}: {error}';result['passed']=False
+ publish('result.json',result)

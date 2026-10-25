@@ -1,0 +1,50 @@
+PROTOCOL_B64='ewogICJzY2hlbWEiOiAiaGMwNzQtaW5zdGFsbGVkLW9yaWdpbi1pZGVudGl0eS1zY3JlZW4tdjEiLAogICJiYXNlbGluZSI6ICJieXRlLWV4YWN0IG9yaWdpbmFsIE9yaWdpbiByZXZhbGlkYXRlIGFuZCBuYW1lc3BhY2UgcmVmZXJlbmNlLCBzYW1lIHByb2MvbnMvYm9vdCBvYnNlcnZhdGlvbnMiLAogICJjYW5kaWRhdGUiOiAiaW5zdGFsbGVkIGZyZXNoIGZzdGF0IGRldmljZS9pbm9kZSBwcm9qZWN0aW9uLCBMaW51eCB4ODZfNjQgb25seSIsCiAgImluZGVwZW5kZW50X3Byb2Nlc3NlcyI6IDgsCiAgInNhbXBsZXNfcGVyX3Byb2Nlc3MiOiAxMiwKICAiaXRlcmF0aW9uc19wZXJfc2FtcGxlIjogMTAyNCwKICAidmFyaWFudHMiOiBbInJlZmVyZW5jZSIsICJyZWZlcmVuY2UtY29udHJvbCIsICJmc3RhdC1pbnN0YWxsZWQiXSwKICAib3JkZXIiOiAic2FtZSBzaXggTGF0aW4gZm9yd2FyZC9yZXZlcnNlIHBlcm11dGF0aW9ucyBhcyB0aGUgbGVhZiBzY3JlZW4iLAogICJjcHVfYWZmaW5pdHkiOiBbNV0sCiAgImVzdGltYXRvciI6ICJzYW1lIHBlci1wcm9jZXNzIG1lZGlhbiBsb2cgcGFpcmVkIENQVSByYXRpb3MgYW5kIGVpZ2h0LXByb2Nlc3MgbWVkaWFuIiwKICAiaW50ZXJ2YWwiOiAic2FtZSBwZXJjZW50aWxlIGJvb3RzdHJhcCwgMjAwMDAgZHJhd3MsIHNlZWQgMHgwNzRmZDEwNSwgOTUgcGVyY2VudCIsCiAgInNhbWVfZnVuY3Rpb25fY29udHJvbCI6ICJyYXRpbyBpbnRlcnZhbCB3aG9sbHkgd2l0aGluIFswLjk3LCAxLjAzXSIsCiAgInByYWN0aWNhbF9mbG9vciI6ICJpbnN0YWxsZWQvcmVmZXJlbmNlIENQVSB1cHBlciBpbnRlcnZhbCA8PSAwLjk4IiwKICAicHJlY29uZGl0aW9ucyI6IFsiZm9jdXNlZCBkaWZmZXJlbnRpYWwgdGVzdHMgcGFzc2VkIiwgIm5hdGl2ZSBhbGwtdGFyZ2V0IGFsbC1mZWF0dXJlIGNoZWNrIGFuZCBzdHJpY3QgbGludCBwYXNzZWQiLCAidW5jaGFuZ2VkIHRyYWNlIGNvdW50cywgb3JkZXIsIGZyZXNobmVzcywgY29uZGl0aW9uYWwgcmVhZHMgYW5kIHJlZnVzYWwgc2l0ZXMiLCAibm8gY29uY3VycmVudCBob3N0IHRlc3Qgb3IgYnVpbGQgbG9hZCJdLAogICJwcm9jZXNzX291dGVyX3NlY29uZHMiOiAzMCwKICAiY29ob3J0X291dGVyX3NlY29uZHMiOiAzMDAsCiAgIm9yaWdpbmFsX3dpbmRvd3Nfc2Vjb25kcyI6IFszMDAsIDYwLCAxMF0sCiAgImZ1bGxfcHJlcGFyYXRpb25fcmVwZWF0ZWQiOiBmYWxzZSwKICAicmV0cnkiOiBmYWxzZSwKICAicHJvZHVjdCI6IGZhbHNlLAogICJxdWFsaWZpY2F0aW9uIjogZmFsc2UsCiAgImFkbWlzc2lvbiI6IGZhbHNlCn0K'
+"""First installed-origin comparison only; never a healthy preparation retry."""
+from pathlib import Path
+import base64,hashlib,json,os,signal,subprocess,sys,time
+base=Path('/tmp/hc074-server-gate-root-20261025.0k0xbdah');root=base/'fd-identity-origin-first'
+upload=Path('/tmp/hc074-server-gate-upload-20261025.pvdj0f6c')
+raw=(base/'server-fault-worker-20261025.py').read_bytes()
+assert hashlib.sha256(raw).hexdigest()=='af1e9926e1ad40bc49c1c225d79f5fffc788c715a7889743decea129ec4b17a3'
+scope={};exec(compile(raw.decode().split('started=time.monotonic_ns()\n')[0],'<pinned-preflight>','exec'),scope)
+preflight=scope['preflight']
+def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+def publish(name,value):
+ with (root/name).open('x') as f:json.dump(value,f,indent=2);f.flush();os.fsync(f.fileno())
+def limited():
+ os.sched_setaffinity(0,{5});os.setgroups([]);os.setgid(1000);os.setuid(1000)
+protocol=json.loads(base64.b64decode(PROTOCOL_B64));publish('consumed.json',protocol)
+selector='diagnostic_kernel_admission::origin::fd_identity::tests::fresh_fd_identity_original_origin_cpu_screen'
+result=dict(cases=[],first_refusal=None,postflight_refusal=None,passed=False,product=False,admission=False)
+before=None
+try:
+ before=preflight();publish('preflight.json',before)
+ build=json.loads((base/'fd-identity-build-v2/result.json').read_bytes());assert build['passed'] and build['source_unchanged']
+ test=Path(build['libtest_path']);assert sha(test)==build['libtest_sha256']=='7ac9b2462222ce61c0486ab79cdebf47d6f94a62540abd6eaf561dbb6ccff9ec'
+ source=upload/'source-fd-identity-v2';manifest=json.loads((base/'fd-identity-build-v2/source-manifest.json').read_bytes())
+ def verify():
+  for name,digest in manifest.items():assert sha(source/name)==digest,name
+ verify()
+ scratch=upload/'fd-identity-origin-first';scratch.mkdir(mode=0o700);os.chown(scratch,1000,1000)
+ start=time.monotonic_ns()
+ for cohort in range(8):
+  assert time.monotonic_ns()-start<300_000_000_000
+  env=dict(PATH='/usr/bin:/bin',TMPDIR=str(scratch),HOME=str(upload/'signer-home-first'),HC074_FD_IDENTITY_COHORT=str(cohort))
+  argv=[str(test),selector,'--ignored','--exact','--nocapture','--test-threads=1']
+  publish(f'cohort-{cohort}-command.json',dict(argv=argv,env=env,cwd=str(source),outer_seconds=30))
+  with (root/f'cohort-{cohort}.stdout.log').open('xb') as stdout,(root/f'cohort-{cohort}.stderr.log').open('xb') as stderr:
+   child=subprocess.Popen(argv,cwd=source,env=env,preexec_fn=limited,stdout=stdout,stderr=stderr,start_new_session=True)
+   publish(f'cohort-{cohort}-child.json',dict(pid=child.pid,start_ticks=scope['ticks'](child.pid),affinity=sorted(os.sched_getaffinity(child.pid))))
+   try:code=child.wait(timeout=30)
+   except subprocess.TimeoutExpired:
+    os.killpg(child.pid,signal.SIGKILL);child.wait();raise RuntimeError('first origin screen child timed out; no retry')
+  result['cases'].append(dict(cohort=cohort,exit=code))
+  text=(root/f'cohort-{cohort}.stdout.log').read_text()
+  assert code==0 and text.count('HC074-ORIGIN-IDENTITY ')==36 and text.count('test result: ok. 1 passed; 0 failed; 0 ignored;')==1
+ verify();result['passed']=True;result['source_unchanged']=True
+except BaseException as error:result['first_refusal']=f'{type(error).__name__}: {error}'
+finally:
+ try:
+  after=preflight();assert before is not None and before==after;publish('postflight.json',after)
+ except BaseException as error:result['postflight_refusal']=f'{type(error).__name__}: {error}';result['passed']=False
+ publish('result.json',result)

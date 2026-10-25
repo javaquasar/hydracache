@@ -1,0 +1,7 @@
+from pathlib import Path
+import base64,runpy
+source=Path('tools/kernel-fresh-identity-074/screen.rs').read_bytes()
+protocol=Path('tools/kernel-fresh-identity-074/protocol.json').read_bytes()
+prefix=f'SOURCE_B64={base64.b64encode(source).decode()!r}\nPROTOCOL_B64={base64.b64encode(protocol).decode()!r}\n'
+runpy.run_path('target/prepare-capacity-checks-20261025.py',init_globals=dict(
+ WORKER_FILE='target/server-fd-identity-screen-worker-20261025.py',WORKER_DIR='fd-identity-screen-first',WORKER_PREFIX=prefix))

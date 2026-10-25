@@ -1,0 +1,5 @@
+from pathlib import Path
+import json
+root=Path('/tmp/hc074-server-gate-root-20261025.0k0xbdah/fd-identity-build-first')
+rows=[json.loads(s) for s in (root/'build.stdout.log').read_text().splitlines() if s.startswith('{')]
+print(json.dumps([r['message']['rendered'] for r in rows if r.get('reason')=='compiler-message'],indent=2))

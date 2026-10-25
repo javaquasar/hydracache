@@ -1,0 +1,21 @@
+from pathlib import Path
+import importlib.util,json,unittest
+spec=importlib.util.spec_from_file_location('a',Path(__file__).with_name('audit-fresh-identity-20261025.py'))
+a=importlib.util.module_from_spec(spec);spec.loader.exec_module(a)
+class Tests(unittest.TestCase):
+ def test_scope_keeps_signer_and_full_preparation_red(self):
+  facts=a.review(*a.load());self.assertFalse(facts['admission']);self.assertFalse(facts['candidate_holder_passed'])
+ def test_host_drift_fails(self):
+  files,frame=a.load();frame['boot']='other'
+  with self.assertRaises(AssertionError):a.review(files,frame)
+ def test_promoted_refusal_weakened_lint_or_changed_windows_fail(self):
+  for key,field,value in [('signer-fixed-home-first/result.json','passed',True),
+   ('fd-identity-holder-first/result.json','passed',True),
+   ('fd-identity-holder-first/consumed.json','original_windows',[300,60,11]),
+   ('fd-identity-build-v2/clippy-command.json','argv',['cargo','clippy','-Awarnings'])]:
+   files,frame=a.load();row=json.loads(files[key]);row[field]=value;files[key]=json.dumps(row).encode()
+   with self.subTest(key=key),self.assertRaises(AssertionError):a.review(files,frame)
+ def test_reused_measurement_process_refuses(self):
+  files,frame=a.load();files['fd-identity-origin-first/cohort-1-child.json']=files['fd-identity-origin-first/cohort-0-child.json']
+  with self.assertRaises(AssertionError):a.review(files,frame)
+if __name__=='__main__':unittest.main()

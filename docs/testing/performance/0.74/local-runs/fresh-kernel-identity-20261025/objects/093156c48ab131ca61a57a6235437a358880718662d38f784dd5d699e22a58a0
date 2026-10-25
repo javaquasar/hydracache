@@ -1,0 +1,58 @@
+{
+  "launch.json": {
+    "pid": 322980,
+    "start_ticks": 164106882,
+    "boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f"
+  },
+  "child.json": {
+    "pid": 322983,
+    "start_ticks": 164106899,
+    "affinity": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ]
+  },
+  "result.json": {
+    "exit": 101,
+    "first_refusal": null,
+    "postflight_refusal": null,
+    "source_unchanged": true,
+    "passed": false,
+    "wall_ns": 4808726212,
+    "counts": {
+      "passed": 100,
+      "failed": 51,
+      "ignored": 0
+    }
+  },
+  "unit.stdout.log": {
+    "bytes": 38516,
+    "tail": "espace_installer_startup_and_environment_faults_refuse\n    diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_missing_foreign_or_weakened_environment_fd_refuses\n    diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_old_policy_controls_retain_negative_namespace_regain_result\n    diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_original_environment_survives_nd0_without_reopen_fallback\n    diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_original_fd_directory_faults_refuse\n    diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_seeded_fresh_probes_and_independent_owners\n    diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_sigkill_and_drop_at_four_original_boundaries\n    diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_exact_installer_faults_refuse_stickily\n    diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_healthy_drop_reaps_original_without_replacement\n    diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_nonempty_environment_refuses_at_original_exec_stop\n    diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_original_selected_root_exec_and_install\n    diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_original_tree_hash_and_namespace_drift_refuse\n    diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_other_image_is_denied_after_install\n    diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_phase_replay_native_numbers_and_stack_bounds_refuse\n    diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_seeded_fresh_execs_and_independent_nonroot_owners\n    diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_sigkill_at_four_boundaries_reaps_only_original\n    diagnostic_signer_root_fixture::tests::signer_root_original_kernel_root_is_not_signer_launch\n    diagnostic_signer_root_fixture::tests::signer_root_owner_sequence_namespace_and_terminal_replay_refuse\n    diagnostic_signer_root_fixture::tests::signer_root_seeded_probes_and_independent_nonroot_owners\n    diagnostic_signer_root_fixture::tests::signer_root_sigkill_and_healthy_drop_reap_only_original_and_prevent_reuse\n\ntest result: FAILED. 100 passed; 51 failed; 0 ignored; 0 measured; 1401 filtered out; finished in 4.79s\n\n"
+  },
+  "unit.stderr.log": {
+    "bytes": 45558,
+    "tail": " Custom { kind: InvalidData, error: \"owned runtime root refused\" }\n\nthread 'diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_seeded_fresh_execs_and_independent_nonroot_owners' (325966) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture_tests.rs:346:23:\ncalled `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }\n\nthread 'diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_sigkill_at_four_boundaries_reaps_only_original' (326020) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture_tests.rs:269:27:\ncalled `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }\n\nthread 'diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_phase_replay_native_numbers_and_stack_bounds_refuse' (325946) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture_tests.rs:236:31:\ncalled `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }\n\nthread 'diagnostic_signer_root_fixture::tests::signer_root_original_kernel_root_is_not_signer_launch' (326092) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_root_fixture_tests.rs:9:19:\ncalled `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }\n\nthread 'diagnostic_signer_root_fixture::tests::signer_root_seeded_probes_and_independent_nonroot_owners' (326155) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_root_fixture_tests.rs:211:23:\ncalled `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }\n\nthread 'diagnostic_signer_root_fixture::tests::signer_root_owner_sequence_namespace_and_terminal_replay_refuse' (326149) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_root_fixture_tests.rs:121:31:\ncalled `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }\n\nthread 'diagnostic_signer_root_fixture::tests::signer_root_sigkill_and_healthy_drop_reap_only_original_and_prevent_reuse' (326193) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_root_fixture_tests.rs:146:27:\ncalled `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: \"owned runtime root refused\" }\n"
+  },
+  "worker.stderr.log": {
+    "bytes": 0,
+    "tail": ""
+  },
+  "libc_rlibs": [
+    {
+      "path": "/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/build-target-v3/release/deps/liblibc-0f6644dfc1fb6414.rlib",
+      "bytes": 4037284,
+      "sha256": "90c20dc8aa21074c47e80c68f97580539afeaf6e2bea3cf46e9498daa230ad97"
+    },
+    {
+      "path": "/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/build-target-v3/release/deps/liblibc-9402cb668622eea2.rlib",
+      "bytes": 3963034,
+      "sha256": "e5b9b994e870aa7a3fc52bec54074dc647ec32f47ac817261fa1dceff8f4bffa"
+    }
+  ]
+}

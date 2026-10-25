@@ -1,0 +1,42 @@
+
+running 1 test
+test diagnostic_kernel_admission::origin::fd_identity::tests::fresh_fd_identity_original_origin_cpu_screen ... HC074-ORIGIN-IDENTITY cohort=4 sample=0 slot=0 variant=fstat-installed calls=1024 cpu_ns=46607967 wall_ns=46606119
+HC074-ORIGIN-IDENTITY cohort=4 sample=0 slot=1 variant=reference-control calls=1024 cpu_ns=49938802 wall_ns=49937119
+HC074-ORIGIN-IDENTITY cohort=4 sample=0 slot=2 variant=reference calls=1024 cpu_ns=49964852 wall_ns=49963209
+HC074-ORIGIN-IDENTITY cohort=4 sample=1 slot=0 variant=reference-control calls=1024 cpu_ns=49942932 wall_ns=49941299
+HC074-ORIGIN-IDENTITY cohort=4 sample=1 slot=1 variant=reference calls=1024 cpu_ns=49983312 wall_ns=49981668
+HC074-ORIGIN-IDENTITY cohort=4 sample=1 slot=2 variant=fstat-installed calls=1024 cpu_ns=46478237 wall_ns=46476661
+HC074-ORIGIN-IDENTITY cohort=4 sample=2 slot=0 variant=reference calls=1024 cpu_ns=49945522 wall_ns=49943889
+HC074-ORIGIN-IDENTITY cohort=4 sample=2 slot=1 variant=reference-control calls=1024 cpu_ns=49962442 wall_ns=49960819
+HC074-ORIGIN-IDENTITY cohort=4 sample=2 slot=2 variant=fstat-installed calls=1024 cpu_ns=46566026 wall_ns=46570249
+HC074-ORIGIN-IDENTITY cohort=4 sample=3 slot=0 variant=reference-control calls=1024 cpu_ns=49947972 wall_ns=49950559
+HC074-ORIGIN-IDENTITY cohort=4 sample=3 slot=1 variant=fstat-installed calls=1024 cpu_ns=46469087 wall_ns=46467512
+HC074-ORIGIN-IDENTITY cohort=4 sample=3 slot=2 variant=reference calls=1024 cpu_ns=49969522 wall_ns=49979218
+HC074-ORIGIN-IDENTITY cohort=4 sample=4 slot=0 variant=fstat-installed calls=1024 cpu_ns=46388176 wall_ns=46386583
+HC074-ORIGIN-IDENTITY cohort=4 sample=4 slot=1 variant=reference calls=1024 cpu_ns=49956392 wall_ns=49954739
+HC074-ORIGIN-IDENTITY cohort=4 sample=4 slot=2 variant=reference-control calls=1024 cpu_ns=49950012 wall_ns=49948368
+HC074-ORIGIN-IDENTITY cohort=4 sample=5 slot=0 variant=reference calls=1024 cpu_ns=49978212 wall_ns=49980519
+HC074-ORIGIN-IDENTITY cohort=4 sample=5 slot=1 variant=fstat-installed calls=1024 cpu_ns=46483217 wall_ns=46481651
+HC074-ORIGIN-IDENTITY cohort=4 sample=5 slot=2 variant=reference-control calls=1024 cpu_ns=50027092 wall_ns=50025447
+HC074-ORIGIN-IDENTITY cohort=4 sample=6 slot=0 variant=fstat-installed calls=1024 cpu_ns=46461786 wall_ns=46460212
+HC074-ORIGIN-IDENTITY cohort=4 sample=6 slot=1 variant=reference-control calls=1024 cpu_ns=49997802 wall_ns=49996158
+HC074-ORIGIN-IDENTITY cohort=4 sample=6 slot=2 variant=reference calls=1024 cpu_ns=49989003 wall_ns=49987348
+HC074-ORIGIN-IDENTITY cohort=4 sample=7 slot=0 variant=reference-control calls=1024 cpu_ns=49958333 wall_ns=49956699
+HC074-ORIGIN-IDENTITY cohort=4 sample=7 slot=1 variant=reference calls=1024 cpu_ns=50033082 wall_ns=50031447
+HC074-ORIGIN-IDENTITY cohort=4 sample=7 slot=2 variant=fstat-installed calls=1024 cpu_ns=46435636 wall_ns=46437832
+HC074-ORIGIN-IDENTITY cohort=4 sample=8 slot=0 variant=reference calls=1024 cpu_ns=50004992 wall_ns=50006778
+HC074-ORIGIN-IDENTITY cohort=4 sample=8 slot=1 variant=reference-control calls=1024 cpu_ns=49936542 wall_ns=49934909
+HC074-ORIGIN-IDENTITY cohort=4 sample=8 slot=2 variant=fstat-installed calls=1024 cpu_ns=46464927 wall_ns=46463341
+HC074-ORIGIN-IDENTITY cohort=4 sample=9 slot=0 variant=reference-control calls=1024 cpu_ns=49993642 wall_ns=49991989
+HC074-ORIGIN-IDENTITY cohort=4 sample=9 slot=1 variant=fstat-installed calls=1024 cpu_ns=46507546 wall_ns=46505970
+HC074-ORIGIN-IDENTITY cohort=4 sample=9 slot=2 variant=reference calls=1024 cpu_ns=49955372 wall_ns=49953739
+HC074-ORIGIN-IDENTITY cohort=4 sample=10 slot=0 variant=fstat-installed calls=1024 cpu_ns=46475967 wall_ns=46474392
+HC074-ORIGIN-IDENTITY cohort=4 sample=10 slot=1 variant=reference calls=1024 cpu_ns=49993872 wall_ns=50000968
+HC074-ORIGIN-IDENTITY cohort=4 sample=10 slot=2 variant=reference-control calls=1024 cpu_ns=50062832 wall_ns=50061197
+HC074-ORIGIN-IDENTITY cohort=4 sample=11 slot=0 variant=reference calls=1024 cpu_ns=50052822 wall_ns=50051187
+HC074-ORIGIN-IDENTITY cohort=4 sample=11 slot=1 variant=fstat-installed calls=1024 cpu_ns=46473657 wall_ns=46474502
+HC074-ORIGIN-IDENTITY cohort=4 sample=11 slot=2 variant=reference-control calls=1024 cpu_ns=49519181 wall_ns=49517536
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1555 filtered out; finished in 1.76s
+

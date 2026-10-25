@@ -1,0 +1,7 @@
+{
+  "cases": [],
+  "first_refusal": "AssertionError: {'name': 'build', 'exit': 101, 'wall_ns': 10833101834}",
+  "postflight_refusal": null,
+  "passed": false,
+  "source_unchanged": false
+}

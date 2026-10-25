@@ -1,0 +1,40 @@
+{
+  "cases": [
+    {
+      "cohort": 0,
+      "exit": 0
+    },
+    {
+      "cohort": 1,
+      "exit": 0
+    },
+    {
+      "cohort": 2,
+      "exit": 0
+    },
+    {
+      "cohort": 3,
+      "exit": 0
+    },
+    {
+      "cohort": 4,
+      "exit": 0
+    },
+    {
+      "cohort": 5,
+      "exit": 0
+    },
+    {
+      "cohort": 6,
+      "exit": 0
+    },
+    {
+      "cohort": 7,
+      "exit": 0
+    }
+  ],
+  "first_refusal": null,
+  "postflight_refusal": null,
+  "passed": true,
+  "runtime_integrated": false
+}

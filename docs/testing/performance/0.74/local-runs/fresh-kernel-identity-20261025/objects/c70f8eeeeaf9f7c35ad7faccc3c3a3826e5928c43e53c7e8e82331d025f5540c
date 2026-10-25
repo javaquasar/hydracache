@@ -1,0 +1,12 @@
+test_control_and_prototype_do_not_grant_runtime_or_release_admission (test_review.Tests.test_control_and_prototype_do_not_grant_runtime_or_release_admission) ... ok
+test_installed_origin_scope_does_not_claim_complete_preparation (test_review.Tests.test_installed_origin_scope_does_not_claim_complete_preparation) ... ok
+test_missing_or_duplicate_rows_or_processes_refuse (test_review.Tests.test_missing_or_duplicate_rows_or_processes_refuse) ... ok
+test_no_win_and_noisy_identical_control_stay_rejected (test_review.Tests.test_no_win_and_noisy_identical_control_stay_rejected) ... ok
+test_origin_incomplete_work_or_wrong_result_cannot_pass (test_review.Tests.test_origin_incomplete_work_or_wrong_result_cannot_pass) ... ok
+test_seeded_interval_is_reproducible (test_review.Tests.test_seeded_interval_is_reproducible) ... ok
+test_work_order_clock_and_origin_changes_refuse (test_review.Tests.test_work_order_clock_and_origin_changes_refuse) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.304s
+
+OK

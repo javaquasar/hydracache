@@ -1,0 +1,12 @@
+from pathlib import Path
+import json,subprocess
+root=Path('/tmp/hc074-server-gate-root-20261025.0k0xbdah/fd-identity-build-first')
+result={}
+for name in ('result.json','build-result.json','check-result.json','clippy-result.json','origin-tests-result.json'):
+ if (root/name).exists():result[name]=json.loads((root/name).read_bytes())
+for name in ('build.stderr.log','check.stderr.log','clippy.stderr.log','origin-tests.stdout.log','worker.stderr.log'):
+ p=root/name
+ if p.exists():result[name]=p.read_bytes()[-4200:].decode(errors='replace')
+p=subprocess.run(['journalctl','-k','-n','100','--no-pager','--output=json','--grep=apparmor="DENIED"'],capture_output=True,timeout=15)
+result['denied_log']=dict(exit=p.returncode,stdout=p.stdout.decode()[-65000:],stderr=p.stderr.decode()[-1024:])
+print(json.dumps(result))

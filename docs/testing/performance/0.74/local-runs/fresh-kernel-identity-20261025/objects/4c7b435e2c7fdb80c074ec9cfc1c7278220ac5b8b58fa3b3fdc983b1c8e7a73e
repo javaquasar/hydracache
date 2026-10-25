@@ -1,0 +1,66 @@
+"""Pure saved-byte review. No process, controller, clock or server operation."""
+from pathlib import Path
+import hashlib,importlib.util,json,re
+ROOT=Path(__file__).resolve().parent.parent
+def module(name,path):
+ spec=importlib.util.spec_from_file_location(name,path);result=importlib.util.module_from_spec(spec);spec.loader.exec_module(result);return result
+r=module('identity_review',ROOT/'tools/kernel-fresh-identity-074/review.py')
+p=module('profile_review',ROOT/'tools/native-server-control-074/profile_review.py')
+def review(files,frame):
+ def get(group,name):return json.loads(files[group+'/'+name])
+ for group in ('signer-fixed-home-first','fd-identity-screen-first','fd-identity-build-first','fd-identity-build-v2','fd-identity-origin-first','fd-identity-holder-first'):
+  assert get(group,'preflight.json')==get(group,'postflight.json')==frame
+  assert get(group,'result.json')['postflight_refusal'] is None
+ signer=get('signer-fixed-home-first','result.json')
+ assert signer['exit']==101 and signer['passed'] is False and signer['source_unchanged'] is True
+ assert signer['counts']==dict(passed=100,failed=51,ignored=0)
+ intent=get('signer-fixed-home-first','consumed.json');assert intent['outer_seconds']==780 and intent['test_threads']==4 and not intent['retry']
+ assert len(get('signer-fixed-home-first','catalog.json')['names'])==151
+ assert get('fd-identity-build-first','build-result.json')['exit']==101
+ failed=get('fd-identity-build-first','result.json');assert not failed['passed'] and failed['first_refusal']
+ compiler_rows=[json.loads(line) for line in files['fd-identity-build-first/build.stdout.log'].decode().splitlines() if line.startswith('{')]
+ errors=[row['message'] for row in compiler_rows if row.get('reason')=='compiler-message' and row['message']['level']=='error']
+ assert len(errors)==3 and all(e['code']['code']=='E0433' for e in errors)
+ build=get('fd-identity-build-v2','result.json');assert build['passed'] and build['source_unchanged']
+ assert [(c['name'],c['exit']) for c in build['cases']]==[('build',0),('check',0),('clippy',0),('origin-tests',0)]
+ assert b'test result: ok. 38 passed; 0 failed; 4 ignored;' in files['fd-identity-build-v2/origin-tests.stdout.log']
+ assert get('fd-identity-build-v2','clippy-command.json')['argv'][-3:]==['--','-D','warnings']
+ for group in ('fd-identity-screen-first','fd-identity-origin-first'):
+  assert get(group,'result.json')['passed']
+  identities=[]
+  for i in range(8):
+   child=get(group,f'cohort-{i}-child.json');assert child['affinity']==[5]
+   identities.append((child['pid'],child['start_ticks']))
+  assert len(set(identities))==8
+ leaf=r.review([files[f'fd-identity-screen-first/cohort-{i}.stdout.log'] for i in range(8)])
+ origin=r.review_origin([files[f'fd-identity-origin-first/cohort-{i}.stdout.log'] for i in range(8)])
+ assert leaf['leaf_screen_passed'] and origin['origin_cpu_screen_passed']
+ holder=get('fd-identity-holder-first','result.json');assert holder['exit']==101 and not holder['passed'] and holder['completed_cases']==[]
+ intent=get('fd-identity-holder-first','consumed.json')
+ assert intent['original_windows']==[300,60,10] and not intent['case_override'] and not intent['cost_override'] and not intent['retry']
+ raw=files['fd-identity-holder-first/holder.stdout.log']+files['fd-identity-holder-first/holder.stderr.log']
+ originals=p.records(raw,'HC074-HELD-LIVE-ORIGINAL ')
+ assert len(originals)==1
+ original=originals[0];assert original['case']=='healthy' and not original['returned'] and not original['deadline_changed'] and not original['guard_clock_added']
+ assert original['causal']['first_refusal'] is None
+ refusal=original['age']['sites'][0]['first_refusal'];assert refusal['reason']=='expired' and refusal['age_ns']==10005245622
+ assert refusal['now_ns']-refusal['issued_ns']==refusal['age_ns']
+ return dict(leaf=leaf,origin=origin,signer_counts=signer['counts'],origin_regressions_passed=38,
+  candidate_holder_passed=False,candidate_holder_first_expiry_ns=refusal['age_ns'],candidate_completed_cases=[],
+  first_compile_failure_preserved=True,source_bytes_preserved=True,original_windows=[300,60,10],
+  original_delivery=False,all_writers_proven_stopped=False,release_gate=False,admission=False)
+def load():
+ session=ROOT/'target/authorized-server-session-20261025'
+ phase=session/'fd-identity-final-export-v2';holder=session/'fd-identity-holder-export'
+ files={p.relative_to(phase/'raw').as_posix():p.read_bytes() for p in (phase/'raw').rglob('*') if p.is_file()}
+ files.update({'fd-identity-holder-first/'+p.name:p.read_bytes() for p in (holder/'raw').iterdir() if p.is_file()})
+ frame=json.loads((holder/'stdout.log').read_bytes())['final_frame']
+ assert frame==json.loads((phase/'stdout.log').read_bytes())['final_frame']
+ return files,frame
+if __name__=='__main__':
+ facts=review(*load());out=ROOT/'target/authorized-server-session-20261025/fd-identity-offline-audit';out.mkdir(exist_ok=False)
+ manifest=json.loads((ROOT/'target/authorized-server-session-20261025/fd-identity-final-export-v2/raw/fd-identity-build-v2/source-manifest.json').read_bytes())
+ for name in ('diagnostic_kernel_origin.rs','diagnostic_kernel_fd_identity.rs','diagnostic_kernel_fd_identity_tests.rs'):
+  path='tools/long-run-supervisor-074/src/'+name;assert hashlib.sha256((ROOT/path).read_bytes()).hexdigest()==manifest[path]
+ with (out/'result.json').open('x') as f:json.dump(facts,f,indent=2)
+ print(json.dumps({k:v for k,v in facts.items() if k not in ('leaf','origin')},indent=2))

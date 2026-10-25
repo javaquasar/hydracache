@@ -1,0 +1,593 @@
+seed=0x07403b24 fresh_process_observations=16 independent_originals=4 production_custody=false
+actual_same_inode_reexec=observed object_and_generation_match=true original_invocation_or_runtime_proved=false
+seed=0x07403b23 fresh_substitutions=32 independent_originals=4 actual_bootstrap=false
+creator observer refused: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_entry ... fixture_handoff_helper_sha256=b67ab287ac59bbe5c22649ea79ffa5c32e34f079f8a56cb294f88c52075908e4 compiler=Rust1.94 profile=O3_abort runtime_admission=false
+loss_root_binding parent=/tmp/.tmpEV4HER original_root=/tmp/.tmpEV4HER/.tmpRzb1gF/root
+loss_container mode=755 uid=1000
+loss_directory actual=[2306, 11947597] original=[2306, 11947597] mode=555 flags=231424
+loss_directory actual=[2306, 11947599] original=[2306, 11947599] mode=555 flags=231424
+loss_directory actual=[2306, 11947601] original=[2306, 11947601] mode=555 flags=231424
+loss_directory actual=[2306, 11947604] original=[2306, 11947604] mode=555 flags=231424
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_entry' (323242) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_creator_loss_fixture.rs:515:73:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_entry' (323240) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_creator_loss_fixture.rs:514:75:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.19s
+
+
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_healthy_controls_finish_original_handoff' (323238) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_creator_loss_fixture.rs:537:45:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+thread observer refused: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry ... fixture_handoff_helper_sha256=b67ab287ac59bbe5c22649ea79ffa5c32e34f079f8a56cb294f88c52075908e4 compiler=Rust1.94 profile=O3_abort runtime_admission=false
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry' (323594) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:405:79:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.27s
+
+
+
+thread '<unnamed>' (323587) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:424:63:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+thread observer refused: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry ... fixture_handoff_helper_sha256=b67ab287ac59bbe5c22649ea79ffa5c32e34f079f8a56cb294f88c52075908e4 compiler=Rust1.94 profile=O3_abort runtime_admission=false
+thread keeper failed: 
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry' (323626) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:406:77:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+owned runtime root refusednote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry' (323593) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:405:79:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.32s
+
+
+
+thread '<unnamed>' (323584) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:424:63:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+thread observer refused: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry ... fixture_handoff_helper_sha256=b67ab287ac59bbe5c22649ea79ffa5c32e34f079f8a56cb294f88c52075908e4 compiler=Rust1.94 profile=O3_abort runtime_admission=false
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry' (323601) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:406:77:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry' (323596) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:405:79:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.33s
+
+
+
+thread '<unnamed>' (323585) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:424:63:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+thread observer refused: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry ... fixture_handoff_helper_sha256=b67ab287ac59bbe5c22649ea79ffa5c32e34f079f8a56cb294f88c52075908e4 compiler=Rust1.94 profile=O3_abort runtime_admission=false
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry' (323627) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:406:77:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry' (323621) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:405:79:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.34s
+
+
+
+thread '<unnamed>' (323586) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:424:63:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_four_independent_negative_controls' (323583) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:427:5:
+assertion failed: results.iter().all(Result::is_ok)
+thread observer refused: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry ... fixture_handoff_helper_sha256=b67ab287ac59bbe5c22649ea79ffa5c32e34f079f8a56cb294f88c52075908e4 compiler=Rust1.94 profile=O3_abort runtime_admission=false
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry' (323676) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:406:77:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry' (323672) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:405:79:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.31s
+
+
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_all_original_cuts' (323450) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:414:36:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+thread observer refused: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry ... fixture_handoff_helper_sha256=b67ab287ac59bbe5c22649ea79ffa5c32e34f079f8a56cb294f88c52075908e4 compiler=Rust1.94 profile=O3_abort runtime_admission=false
+loss_root_binding parent=/tmp/.tmpKX4cYh original_root=/tmp/.tmpKX4cYh/.tmp7m0Btw/root
+loss_container mode=755 uid=1000
+loss_directory actual=[2306, 11947606] original=[2306, 11947606] mode=555 flags=231424
+loss_directory actual=[2306, 11947607] original=[2306, 11947607] mode=555 flags=231424
+loss_directory actual=[2306, 11947608] original=[2306, 11947608] mode=555 flags=231424
+loss_directory actual=[2306, 11947609] original=[2306, 11947609] mode=555 flags=231424
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry' (323825) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:406:77:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry' (323823) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:405:79:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.24s
+
+
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_healthy_original_controls' (323821) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:469:36:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_rooted_loss_cut_is_kernel_group_stop_not_delivery_stop' (323888) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:448:17:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+thread observer refused: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry ... fixture_handoff_helper_sha256=b67ab287ac59bbe5c22649ea79ffa5c32e34f079f8a56cb294f88c52075908e4 compiler=Rust1.94 profile=O3_abort runtime_admission=false
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry' (323890) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:406:77:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+thread keeper failed: note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+owned runtime root refused
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry' (323886) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:405:79:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.19s
+
+
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_no_exitkill_is_not_positive' (323884) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:419:28:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+thread observer refused: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry ... fixture_handoff_helper_sha256=b67ab287ac59bbe5c22649ea79ffa5c32e34f079f8a56cb294f88c52075908e4 compiler=Rust1.94 profile=O3_abort runtime_admission=false
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry' (324011) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:406:77:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+thread keeper failed: note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+owned runtime root refused
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry' (324009) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:405:79:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.20s
+
+
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_seeded_fresh_and_concurrent' (324007) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:536:45:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+constructor monitor refused cut=0 fault=0 healthy=true: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry ... fixture_handoff_helper_sha256=b67ab287ac59bbe5c22649ea79ffa5c32e34f079f8a56cb294f88c52075908e4 compiler=Rust1.94 profile=O3_abort runtime_admission=false
+loss_root_binding parent=/tmp/.tmpyMCoWm original_root=/tmp/.tmpyMCoWm/.tmpt7kJIK/root
+loss_container mode=755 uid=1000
+loss_directory actual=[2306, 11947611] original=[2306, 11947611] mode=555 flags=231424
+loss_directory actual=[2306, 11947612] original=[2306, 11947612] mode=555 flags=231424
+loss_directory actual=[2306, 11947613] original=[2306, 11947613] mode=555 flags=231424
+loss_directory actual=[2306, 11947614] original=[2306, 11947614] mode=555 flags=231424
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry' (324541) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:95:77:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "healthy constructor stage 2: owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.19s
+
+
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_healthy_cuts_finish_original_handoff' (324539) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:577:45:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+loss monitor failed: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry ... fixture_handoff_helper_sha256=b67ab287ac59bbe5c22649ea79ffa5c32e34f079f8a56cb294f88c52075908e4 compiler=Rust1.94 profile=O3_abort runtime_admission=false
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry' (324803) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:6:66:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "report: owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.27s
+
+
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_bad_reports_refuse_before_fault_admission' (324801) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:13:46:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+loss monitor failed: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry ... fixture_handoff_helper_sha256=b67ab287ac59bbe5c22649ea79ffa5c32e34f079f8a56cb294f88c52075908e4 compiler=Rust1.94 profile=O3_abort runtime_admission=false
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry' (324875) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:7:64:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry' (324870) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:6:66:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "report: owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.32s
+
+
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_delivered_original_sigkill_reaps_original_child' (324867) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:13:46:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+loss monitor failed: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry ... fixture_handoff_helper_sha256=b67ab287ac59bbe5c22649ea79ffa5c32e34f079f8a56cb294f88c52075908e4 compiler=Rust1.94 profile=O3_abort runtime_admission=false
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry' (325055) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:6:66:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "report: owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.26s
+
+
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_healthy_control_finishes_original_protocol_and_cleans' (325053) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:13:46:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+loss monitor failed: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry ... fixture_handoff_helper_sha256=b67ab287ac59bbe5c22649ea79ffa5c32e34f079f8a56cb294f88c52075908e4 compiler=Rust1.94 profile=O3_abort runtime_admission=false
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry' (325182) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:7:64:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry' (325177) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:6:66:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "report: owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.20s
+
+
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_installed_original_sigkill_reaps_original_child' (325173) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:13:46:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+loss monitor failed: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry ... fixture_handoff_helper_sha256=b67ab287ac59bbe5c22649ea79ffa5c32e34f079f8a56cb294f88c52075908e4 compiler=Rust1.94 profile=O3_abort runtime_admission=false
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry' (325288) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:6:66:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "report: owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.21s
+
+
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_no_exitkill_controls_keep_natural_channel_failure_distinct' (325278) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:13:46:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+loss monitor failed: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry ... fixture_handoff_helper_sha256=b67ab287ac59bbe5c22649ea79ffa5c32e34f079f8a56cb294f88c52075908e4 compiler=Rust1.94 profile=O3_abort runtime_admission=false
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry' (325334) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:7:64:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry' (325332) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:6:66:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "report: owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.18s
+
+
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_initial_rooted_and_first_exec_boundaries' (325169) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:13:46:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+loss monitor failed: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry ... fixture_handoff_helper_sha256=b67ab287ac59bbe5c22649ea79ffa5c32e34f079f8a56cb294f88c52075908e4 compiler=Rust1.94 profile=O3_abort runtime_admission=false
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry' (325354) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:7:64:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.20s
+
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry' (325350) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:6:66:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "report: owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.20s
+
+
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_ready_original_sigkill_reaps_original_child' (325348) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:13:46:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_ancillary_capable_call_fd_replacement_and_nonstack_pointer_refuse' (325481) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:78:35:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "handoff enter: owned runtime root refused" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_foreign_endpoint_and_changed_flags_refuse' (325505) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:145:41:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "handoff enter: owned runtime root refused" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_dummy_withheld_at_every_readiness_boundary' (325503) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:26:25:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_lost_wrong_and_duplicate_ack_never_resend' (325533) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:108:35:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "handoff enter: owned runtime root refused" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_malformed_duplicate_readiness_and_wrong_fd_refuse_before_send' (325562) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:57:35:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "handoff enter: owned runtime root refused" }
+loss monitor failed: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry ... fixture_handoff_helper_sha256=b67ab287ac59bbe5c22649ea79ffa5c32e34f079f8a56cb294f88c52075908e4 compiler=Rust1.94 profile=O3_abort runtime_admission=false
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry' (325459) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:7:64:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry' (325457) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:6:66:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "report: owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1551 filtered out; finished in 0.19s
+
+
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_seeded_cases_and_independent_monitors' (325455) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs:13:46:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_original_child_receives_dummy_once_then_closes' (325571) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:11:37:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "handoff enter: owned runtime root refused" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_original_context_and_missing_channel_refuse' (325580) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:177:41:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "handoff enter: owned runtime root refused" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_original_sigkill_and_drop_at_three_transfer_boundaries' (325589) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:195:45:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "handoff enter: owned runtime root refused" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_phase_replay_is_sticky_and_terminal_not_reusable' (325594) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:122:41:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "handoff enter: owned runtime root refused" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_seeded_cases_and_four_independent_owners' (325605) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:282:35:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "handoff enter: owned runtime root refused" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_send_failure_latches_attempt_before_dispatch_without_retry' (325615) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:86:37:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "handoff enter: owned runtime root refused" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_startup_channel_use_and_inherited_descriptor_leak_refuse' (325625) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:67:21:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_fifteen_native_mutations_denied_after_exact_install' (325672) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs:294:49:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_exec_denials_and_actual_alternate_abi_sigsys' (325657) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs:339:35:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_context_phase_replay_and_memory_bounds_refuse' (325636) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs:380:29:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_installer_startup_and_environment_faults_refuse' (325729) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs:364:21:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_missing_foreign_or_weakened_environment_fd_refuses' (325732) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs:130:58:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_original_environment_survives_nd0_without_reopen_fallback' (325766) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs:5:54:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_old_policy_controls_retain_negative_namespace_regain_result' (325763) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs:314:35:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_original_fd_directory_faults_refuse' (325775) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs:61:58:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_seeded_fresh_probes_and_independent_owners' (325786) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs:479:70:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_sigkill_and_drop_at_four_original_boundaries' (325791) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs:425:29:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_exact_installer_faults_refuse_stickily' (325797) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture_tests.rs:138:23:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_healthy_drop_reaps_original_without_replacement' (325820) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture_tests.rs:306:27:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_nonempty_environment_refuses_at_original_exec_stop' (325904) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture_tests.rs:150:19:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_original_tree_hash_and_namespace_drift_refuse' (325925) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture_tests.rs:161:23:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_original_selected_root_exec_and_install' (325924) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture_tests.rs:5:19:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_other_image_is_denied_after_install' (325935) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture_tests.rs:16:19:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_seeded_fresh_execs_and_independent_nonroot_owners' (325966) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture_tests.rs:346:23:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_sigkill_at_four_boundaries_reaps_only_original' (326020) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture_tests.rs:269:27:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_phase_replay_native_numbers_and_stack_bounds_refuse' (325946) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture_tests.rs:236:31:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+
+thread 'diagnostic_signer_root_fixture::tests::signer_root_original_kernel_root_is_not_signer_launch' (326092) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_root_fixture_tests.rs:9:19:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+
+thread 'diagnostic_signer_root_fixture::tests::signer_root_seeded_probes_and_independent_nonroot_owners' (326155) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_root_fixture_tests.rs:211:23:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+
+thread 'diagnostic_signer_root_fixture::tests::signer_root_owner_sequence_namespace_and_terminal_replay_refuse' (326149) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_root_fixture_tests.rs:121:31:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+
+thread 'diagnostic_signer_root_fixture::tests::signer_root_sigkill_and_healthy_drop_reap_only_original_and_prevent_reuse' (326193) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_root_fixture_tests.rs:146:27:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }

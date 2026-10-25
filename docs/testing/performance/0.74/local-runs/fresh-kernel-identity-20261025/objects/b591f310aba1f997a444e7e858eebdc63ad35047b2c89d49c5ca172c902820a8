@@ -1,0 +1,20 @@
+from pathlib import Path
+import base64,hashlib,importlib.util,json
+root=Path(__file__).resolve().parent.parent
+phase=root/'target/authorized-server-session-20261025/fd-identity-final-export-v2'
+packet=json.loads((phase/'stdout.log').read_bytes());out=phase/'raw';out.mkdir(exist_ok=False)
+for name,item in packet['members'].items():
+ assert not Path(name).is_absolute() and '..' not in Path(name).parts
+ raw=base64.b64decode(item['base64'],validate=True)
+ assert len(raw)==item['bytes'] and hashlib.sha256(raw).hexdigest()==item['sha256']
+ p=out/name;p.parent.mkdir(parents=True,exist_ok=True)
+ with p.open('xb') as f:f.write(raw)
+for group in ('signer-fixed-home-first','fd-identity-screen-first','fd-identity-build-first','fd-identity-build-v2','fd-identity-origin-first'):
+ assert json.loads((out/group/'preflight.json').read_bytes())==json.loads((out/group/'postflight.json').read_bytes())==packet['final_frame']
+ print(group,(out/group/'result.json').read_text())
+spec=importlib.util.spec_from_file_location('r',root/'tools/kernel-fresh-identity-074/review.py')
+r=importlib.util.module_from_spec(spec);spec.loader.exec_module(r)
+leaf=r.review([(out/'fd-identity-screen-first'/f'cohort-{i}.stdout.log').read_bytes() for i in range(8)])
+origin=r.review_origin([(out/'fd-identity-origin-first'/f'cohort-{i}.stdout.log').read_bytes() for i in range(8)])
+with (phase/'review.json').open('x') as f:json.dump(dict(leaf=leaf,origin=origin),f,indent=2)
+print(json.dumps(dict(leaf=leaf,origin=origin),indent=2))

@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/origin-regression-first/libtest",
+    "diagnostic_signer_",
+    "--nocapture",
+    "--test-threads=4"
+  ],
+  "env": {
+    "PATH": "/usr/bin:/bin",
+    "TMPDIR": "/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/signer-fixed-home-scratch-first",
+    "HOME": "/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/signer-home-first"
+  },
+  "cwd": "/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/source-v3",
+  "uid": 1000,
+  "gid": 1000
+}

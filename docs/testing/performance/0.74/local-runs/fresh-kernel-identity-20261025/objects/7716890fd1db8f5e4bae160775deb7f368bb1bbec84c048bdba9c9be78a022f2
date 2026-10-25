@@ -1,0 +1,11 @@
+{
+  "pid": 326573,
+  "start_ticks": 164137123,
+  "affinity": [
+    5
+  ],
+  "argv": [
+    "/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/fd-identity-screen-first/screen",
+    "6"
+  ]
+}

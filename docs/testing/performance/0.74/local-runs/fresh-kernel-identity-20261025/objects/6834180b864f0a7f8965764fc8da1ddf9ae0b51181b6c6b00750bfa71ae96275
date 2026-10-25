@@ -1,0 +1,24 @@
+{
+  "image_sha256": "6640e1b9b31ae7c87137b335be4f2665d729ea7b4324ee0e874bdbedc346c520",
+  "selector": "diagnostic_signer_",
+  "source_head": "ee9692b672be093716822db13a22f5a63960f928",
+  "environment_delta": "HOME only: verified private signer-home-first instead of account HOME",
+  "previous_ordinary_cohort": {
+    "passed": 1348,
+    "failed": 82,
+    "ignored": 122,
+    "still_red": true
+  },
+  "test_threads": 4,
+  "outer_seconds": 780,
+  "original_windows": [
+    300,
+    60,
+    10
+  ],
+  "retry": false,
+  "ignored_enabled": false,
+  "product": false,
+  "qualification": false,
+  "admission": false
+}

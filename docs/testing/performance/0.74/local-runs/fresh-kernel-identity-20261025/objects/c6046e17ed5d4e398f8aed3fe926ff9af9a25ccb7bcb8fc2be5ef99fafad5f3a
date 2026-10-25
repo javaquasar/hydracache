@@ -1,0 +1,10 @@
+from pathlib import Path
+import json
+root=Path('/tmp/hc074-server-gate-root-20261025.0k0xbdah/fd-identity-build-v2')
+result={}
+for name in ('result.json','build-result.json','check-result.json','clippy-result.json','origin-tests-result.json'):
+ if (root/name).exists():result[name]=json.loads((root/name).read_bytes())
+for name in ('build.stderr.log','check.stderr.log','clippy.stderr.log','origin-tests.stdout.log','origin-tests.stderr.log','worker.stderr.log'):
+ p=root/name
+ if p.exists():result[name]=p.read_bytes()[-4000:].decode(errors='replace')
+print(json.dumps(result,indent=2))

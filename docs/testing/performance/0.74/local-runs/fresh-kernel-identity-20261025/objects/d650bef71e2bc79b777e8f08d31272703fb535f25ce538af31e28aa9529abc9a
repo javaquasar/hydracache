@@ -1,0 +1,58 @@
+{
+  "result.json": {
+    "cases": [
+      {
+        "name": "build",
+        "exit": 0,
+        "wall_ns": 48103050636
+      },
+      {
+        "name": "check",
+        "exit": 0,
+        "wall_ns": 12399766371
+      },
+      {
+        "name": "clippy",
+        "exit": 0,
+        "wall_ns": 19006494152
+      },
+      {
+        "name": "origin-tests",
+        "exit": 0,
+        "wall_ns": 38462605
+      }
+    ],
+    "first_refusal": null,
+    "postflight_refusal": null,
+    "passed": true,
+    "source_unchanged": true,
+    "libtest_sha256": "7ac9b2462222ce61c0486ab79cdebf47d6f94a62540abd6eaf561dbb6ccff9ec",
+    "libtest_path": "/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/build-target-v3/release/deps/hydracache_long_run_supervisor_074-b26b156d3dcd0098"
+  },
+  "build-result.json": {
+    "name": "build",
+    "exit": 0,
+    "wall_ns": 48103050636
+  },
+  "check-result.json": {
+    "name": "check",
+    "exit": 0,
+    "wall_ns": 12399766371
+  },
+  "clippy-result.json": {
+    "name": "clippy",
+    "exit": 0,
+    "wall_ns": 19006494152
+  },
+  "origin-tests-result.json": {
+    "name": "origin-tests",
+    "exit": 0,
+    "wall_ns": 38462605
+  },
+  "build.stderr.log": "   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/source-fd-identity-v2/tools/long-run-supervisor-074)\n    Finished `release` profile [optimized] target(s) in 48.07s\n",
+  "check.stderr.log": "    Checking hydracache-long-run-supervisor-074 v0.0.0 (/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/source-fd-identity-v2/tools/long-run-supervisor-074)\n    Finished `release` profile [optimized] target(s) in 12.31s\n",
+  "clippy.stderr.log": "    Checking hydracache-long-run-supervisor-074 v0.0.0 (/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/source-fd-identity-v2/tools/long-run-supervisor-074)\n    Finished `release` profile [optimized] target(s) in 18.91s\n",
+  "origin-tests.stdout.log": "lags_and_replacement_are_differential ... ok\ntest diagnostic_kernel_admission::origin::fixed_leaf_path_tests::fixed_leaf_path_cost_abba ... ignored, manual local paired fixed path leaf costs; no admission or product workload\ntest diagnostic_kernel_admission::origin::fixed_leaf_path_tests::fixed_leaf_path_differential_identity_flags_and_unknown_names ... ok\ntest diagnostic_kernel_admission::origin::fixed_leaf_path_tests::fixed_leaf_path_preserves_original_trace_counts_and_sticky_drift ... ok\ntest diagnostic_kernel_admission::origin::fixed_leaf_path_tests::fixed_leaf_path_single_cost ... ignored, manual actual leaf in one image; external crossover only, no admission or product\ntest diagnostic_kernel_admission::origin::fresh_kernel_cost::fresh_kernel_observation_attribution ... ignored, manual local nonroot fresh kernel observation attribution; no start authority\ntest diagnostic_kernel_admission::origin::fresh_kernel_cost::fresh_status_observation_does_not_reuse_previous_bytes ... ok\ntest diagnostic_kernel_admission::origin::fresh_kernel_cost::fresh_status_openers_preserve_identity_flags_and_refusals ... ok\ntest diagnostic_kernel_admission::origin::fresh_kernel_cost::fresh_status_runtime_uses_the_measured_fixed_openers ... ok\ntest diagnostic_kernel_admission::origin::manager_binding::tests::manager_receiver_binding_cannot_mint_from_refused_or_wrong_original_clock ... ok\ntest diagnostic_kernel_admission::origin::manager_binding::tests::manager_receiver_binding_retains_actual_origin_without_packet_or_claim_adoption ... ok\ntest diagnostic_kernel_admission::origin::manager_binding::tests::manager_receiver_binding_wrong_boot_type_object_and_descriptor_latch ... ok\ntest diagnostic_kernel_admission::origin::pid_path::pid_path_open_differential_preserves_identity_flags_and_refusals ... ok\ntest diagnostic_kernel_admission::origin::pid_path::pid_path_runtime_sites_use_fresh_numeric_key_without_string_allocation ... ok\ntest diagnostic_kernel_admission::origin::pid_path::pid_path_signed_edges_and_seeded_values_match_complete_decimal ... HC074-PID-FORMAT seed=0x07401d32 mutations=16384 complete_signed_i32=true\nok\ntest diagnostic_kernel_admission::origin::pidfd_info_path::tests::pidfd_info_path_changed_document_and_pid_fields_refuse_without_reusing_success ... ok\ntest diagnostic_kernel_admission::origin::pidfd_info_path::tests::pidfd_info_path_each_actual_read_keeps_alive_document_trace_and_original_pid ... ok\ntest diagnostic_kernel_admission::origin::pidfd_info_path::tests::pidfd_info_path_fresh_open_identity_flags_and_missing_name_match_reference ... ok\ntest diagnostic_kernel_admission::origin::pidfd_info_path::tests::pidfd_info_path_non_pidfd_poll_refuses_before_read ... ok\ntest diagnostic_kernel_admission::origin::pidfd_info_path::tests::pidfd_info_path_read_errors_propagate_once_without_retry ... ok\ntest diagnostic_kernel_admission::origin::pidfd_info_path::tests::pidfd_info_path_signed_boundaries_seed_and_owned_lifetime ... HC074-PIDFD-PATH-PROPERTY seed=0x074fd174 cases=16384 signed_edges=true owned=true profile=false server=false product=false\nok\ntest diagnostic_kernel_admission::origin::tests::kernel_refusal_capture_seeded_clock_and_namespace_classification ... kernel_refusal_classification seed=0x0740c096 clock_cases=6 namespace_cases=3 historical_cause_proved=false\nok\ntest diagnostic_kernel_admission::origin::tests::kernel_time_original_proc_boot_and_namespace_drift_refuse ... ok\ntest diagnostic_kernel_admission::origin::tests::kernel_time_packet_hold_has_exclusive_boottime_boundary ... ok\ntest diagnostic_kernel_admission::origin::tests::kernel_time_timespec_and_ordering_edges_refuse ... ok\ntest diagnostic_kernel_admission::origin::tests::kernel_worker_context_namespace_type_and_object_are_independent_checks ... ok\ntest diagnostic_kernel_admission::origin::tests::kernel_worker_context_original_typed_namespaces_and_drift_refuse ... ok\n\ntest result: ok. 38 passed; 0 failed; 4 ignored; 0 measured; 1514 filtered out; finished in 0.03s\n\n",
+  "origin-tests.stderr.log": "",
+  "worker.stderr.log": ""
+}

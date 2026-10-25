@@ -1,0 +1,6 @@
+from pathlib import Path
+import base64,runpy
+raw=Path('tools/kernel-fresh-identity-074/installed-origin-protocol.json').read_bytes()
+runpy.run_path('target/prepare-capacity-checks-20261025.py',init_globals=dict(
+ WORKER_FILE='target/server-fd-identity-origin-worker-20261025.py',WORKER_DIR='fd-identity-origin-first',
+ WORKER_PREFIX=f'PROTOCOL_B64={base64.b64encode(raw).decode()!r}\n'))

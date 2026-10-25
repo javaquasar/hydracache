@@ -1,0 +1,9 @@
+test_host_drift_fails (__main__.Tests.test_host_drift_fails) ... ok
+test_promoted_refusal_weakened_lint_or_changed_windows_fail (__main__.Tests.test_promoted_refusal_weakened_lint_or_changed_windows_fail) ... ok
+test_reused_measurement_process_refuses (__main__.Tests.test_reused_measurement_process_refuses) ... ok
+test_scope_keeps_signer_and_full_preparation_red (__main__.Tests.test_scope_keeps_signer_and_full_preparation_red) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.773s
+
+OK

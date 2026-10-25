@@ -1,0 +1,16 @@
+from pathlib import Path
+import base64,hashlib,json,subprocess
+base=Path('/tmp/hc074-server-gate-root-20261025.0k0xbdah')
+members={}
+for group in ('signer-fixed-home-first','fd-identity-screen-first'):
+ folder=base/group;assert (folder/'result.json').is_file(),group+' still running; never relaunch'
+ for p in sorted(folder.iterdir()):
+  if not p.is_file():continue
+  assert not p.is_symlink();raw=p.read_bytes();assert len(raw)<8*1024**2
+  members[group+'/'+p.name]=dict(bytes=len(raw),sha256=hashlib.sha256(raw).hexdigest(),base64=base64.b64encode(raw).decode())
+context={}
+for name in ('/proc/sys/kernel/unprivileged_userns_clone','/proc/sys/kernel/apparmor_restrict_unprivileged_userns','/sys/module/apparmor/parameters/enabled','/proc/self/attr/current'):
+ p=Path(name);context[name]=p.read_text().strip() if p.exists() else None
+p=subprocess.run(['journalctl','-k','-n','80','--no-pager','--output=json','--grep=userns_create'],capture_output=True,timeout=15)
+context['kernel_denials']=dict(exit=p.returncode,stdout=p.stdout.decode()[-65536:],stderr=p.stderr.decode()[-4096:])
+print(json.dumps(dict(members=members,read_only_context=context,read_only=True,product=False)))

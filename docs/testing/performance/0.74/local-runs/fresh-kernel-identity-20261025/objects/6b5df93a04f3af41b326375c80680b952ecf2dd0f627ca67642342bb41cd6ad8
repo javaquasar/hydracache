@@ -1,0 +1,11 @@
+from pathlib import Path
+import importlib.util,json
+root=Path(__file__).resolve().parent.parent
+spec=importlib.util.spec_from_file_location('r',root/'tools/kernel-fresh-identity-074/review.py')
+r=importlib.util.module_from_spec(spec);spec.loader.exec_module(r)
+out=root/'target/authorized-server-session-20261025/signer-leaf-export'
+raw=out/'raw/fd-identity-screen-first'
+assert json.loads((raw/'result.json').read_bytes())['passed']
+facts=r.review([(raw/f'cohort-{i}.stdout.log').read_bytes() for i in range(8)])
+with (out/'leaf-review.json').open('x') as f:json.dump(facts,f,indent=2)
+print(json.dumps(facts,indent=2))

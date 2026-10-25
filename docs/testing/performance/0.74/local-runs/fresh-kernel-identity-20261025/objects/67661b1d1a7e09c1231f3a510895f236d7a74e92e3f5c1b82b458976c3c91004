@@ -1,0 +1,7 @@
+from pathlib import Path
+import base64,json,runpy
+names=['diagnostic_kernel_origin.rs','diagnostic_kernel_fd_identity.rs','diagnostic_kernel_fd_identity_tests.rs']
+files={name:base64.b64encode((Path('tools/long-run-supervisor-074/src')/name).read_bytes()).decode() for name in names}
+prefix=f'OVERLAY={files!r}\n'
+runpy.run_path('target/prepare-capacity-checks-20261025.py',init_globals=dict(
+ WORKER_FILE='target/server-fd-identity-build-worker-20261025.py',WORKER_DIR='fd-identity-build-first',WORKER_PREFIX=prefix))

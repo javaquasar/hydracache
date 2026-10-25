@@ -1,0 +1,54 @@
+"""Seal already completed diagnostics and exact source inputs; no live dispatch."""
+from pathlib import Path
+import hashlib,importlib.util,json,subprocess
+root=Path(__file__).resolve().parent.parent
+spec=importlib.util.spec_from_file_location('a',root/'target/audit-fresh-identity-20261025.py')
+a=importlib.util.module_from_spec(spec);spec.loader.exec_module(a);facts=a.review(*a.load())
+members,objects={},{}
+def add(name,raw):
+ assert name not in members
+ digest=hashlib.sha256(raw).hexdigest();members[name]=dict(bytes=len(raw),sha256=digest);objects[digest]=raw
+session=root/'target/authorized-server-session-20261025'
+for folder in sorted(session.iterdir()):
+ if not folder.name.startswith(('signer-fixed-home-','signer-leaf-export','fd-identity-')):continue
+ for p in sorted(folder.rglob('*')):
+  if p.is_file():add('session/'+p.relative_to(session).as_posix(),p.read_bytes())
+for p in sorted((root/'target').glob('*20261025.py')):
+ if p.name.startswith(('server-signer-fixed-home-','prepare-signer-fixed-home-','server-signer-leaf-','decode-signer-leaf-',
+  'server-fd-identity-','prepare-fd-identity-','decode-fd-identity-','review-fd-identity-','audit-fresh-identity-',
+  'test_fresh_identity_','retain-fresh-identity-')) or p.name in ('server-phase-20261025.py','prepare-capacity-checks-20261025.py'):
+  add('coordinator/'+p.name,p.read_bytes())
+for path in sorted((root/'tools/kernel-fresh-identity-074').iterdir()):
+ if path.is_file():add('input/screen/'+path.name,path.read_bytes())
+for name in ('diagnostic_kernel_origin.rs','diagnostic_kernel_fd_identity.rs','diagnostic_kernel_fd_identity_tests.rs'):
+ add('input/runtime/'+name,(root/'tools/long-run-supervisor-074/src'/name).read_bytes())
+add('input/original-origin-git-lf.rs',subprocess.check_output(['git','show','11445ff7304fa49beaf3be16ed6393155f5a183b:tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs'],cwd=root))
+add('input/profile_review.py',(root/'tools/native-server-control-074/profile_review.py').read_bytes())
+for label,cases in [('fd-identity-python-controls-20261025',7),('fresh-identity-offline-falsification-20261025',4)]:
+ folder=root/'target/source-continuation-20261024'/label
+ before=json.loads((folder/'intent.json').read_bytes());after=json.loads((folder/'result.json').read_bytes())
+ assert after['exit']==0 and after['outer_refusal'] is None and after['source_unchanged'] and after['head_unchanged'] and before['source']==after['source_after']
+ assert ('Ran '+str(cases)+' tests').encode() in (folder/'stderr.log').read_bytes()
+ for p in sorted(folder.iterdir()):add('checks/'+label+'/'+p.name,p.read_bytes())
+protected={
+ 'Cargo.toml':'18a8a27cf140a1d6eb31c8316ee39bb7d5832866a990346eee16cd0c30de344b',
+ 'Cargo.lock':'d2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c',
+ 'docs/testing/performance/0.74/qualification-manifest.toml':'11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc',
+ 'tools/authority-storage-source-074/contract.rs':'aefcd4f6a9ed0acc1e072225ea3ed4dda82d2d1ccda0ba4f22ca74459efa64c2'}
+for name,digest in protected.items():
+ raw=(root/name).read_bytes();assert hashlib.sha256(raw).hexdigest()==digest;add('protected/'+name,raw)
+index=dict(schema='hc074-fresh-kernel-identity-v1',members=members,protected_sha256=protected,
+ upstream_index_sha256='474cae994bbd36005e44adb14f38d17738d654bbe209a50b5adeddb725f59e1a',
+ baseline_commit='11445ff7304fa49beaf3be16ed6393155f5a183b',candidate_commit='8862986662063b329f17547f61458f08832767e2',
+ candidate_image_sha256='7ac9b2462222ce61c0486ab79cdebf47d6f94a62540abd6eaf561dbb6ccff9ec',
+ leaf_cpu_ratio=facts['leaf']['candidate'],origin_cpu_ratio=facts['origin']['installed'],
+ signer_counts=facts['signer_counts'],origin_regressions_passed=38,python_controls_passed=11,
+ candidate_holder_passed=False,candidate_holder_first_custody_expiry_ns=10005245622,
+ original_windows=[300,60,10],check_frequency_changed=False,dependencies_changed=False,
+ host_policy_changed=False,services_changed=False,clocks_changed=False,release_install=False,
+ original_delivery=False,all_writers_proven_stopped=False,product=False,qualification=False,admission=False)
+base=root/'docs/testing/performance/0.74/local-runs/fresh-kernel-identity-20261025';base.mkdir(exist_ok=False);(base/'objects').mkdir()
+for digest,raw in objects.items():(base/'objects'/digest).write_bytes(raw)
+raw=(json.dumps(index,sort_keys=True,indent=2)+'\n').encode();(base/'index.json').write_bytes(raw)
+(base/'.gitattributes').write_bytes(b'index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n')
+print(json.dumps(dict(index_sha256=hashlib.sha256(raw).hexdigest(),members=len(members),objects=len(objects),bytes=sum(map(len,objects.values())))))

@@ -1,0 +1,81 @@
+"""Fresh private source overlay; preserve every old input, artifact and refusal."""
+from pathlib import Path
+import base64,hashlib,json,os,shutil,signal,subprocess,sys,time
+base=Path('/tmp/hc074-server-gate-root-20261025.0k0xbdah');root=base/globals().get('RUN_TAG','fd-identity-build-first')
+upload=Path('/tmp/hc074-server-gate-upload-20261025.pvdj0f6c')
+image='6640e1b9b31ae7c87137b335be4f2665d729ea7b4324ee0e874bdbedc346c520'
+raw=(base/'server-fault-worker-20261025.py').read_bytes()
+assert hashlib.sha256(raw).hexdigest()=='af1e9926e1ad40bc49c1c225d79f5fffc788c715a7889743decea129ec4b17a3'
+assert sys.argv[1]==image
+scope={};exec(compile(raw.decode().split('started=time.monotonic_ns()\n')[0],'<pinned-preflight>','exec'),scope)
+preflight=scope['preflight']
+def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+def publish(name,value):
+ with (root/name).open('x') as f:json.dump(value,f,indent=2);f.flush();os.fsync(f.fileno())
+def limited():
+ os.sched_setaffinity(0,set(range(8)));os.setgroups([]);os.setgid(1000);os.setuid(1000)
+def execute(name,argv,env,cwd,outer=1200):
+ publish(name+'-command.json',dict(argv=argv,env=env,cwd=str(cwd),uid=1000,gid=1000,outer_seconds=outer))
+ start=time.monotonic_ns()
+ with (root/(name+'.stdout.log')).open('xb') as stdout,(root/(name+'.stderr.log')).open('xb') as stderr:
+  child=subprocess.Popen(argv,cwd=cwd,env=env,stdout=stdout,stderr=stderr,preexec_fn=limited,start_new_session=True)
+  publish(name+'-child.json',dict(pid=child.pid,start_ticks=scope['ticks'](child.pid)))
+  try:code=child.wait(timeout=outer)
+  except subprocess.TimeoutExpired:
+   os.killpg(child.pid,signal.SIGTERM)
+   try:child.wait(timeout=5)
+   except subprocess.TimeoutExpired:os.killpg(child.pid,signal.SIGKILL);child.wait()
+   raise RuntimeError('bounded candidate build/check timeout; no retry')
+ result=dict(name=name,exit=code,wall_ns=time.monotonic_ns()-start);publish(name+'-result.json',result)
+ assert code==0,result
+ return result
+publish('consumed.json',dict(overlay_names=sorted(OVERLAY),hypothesis='fresh fstat dev/inode leaf, x86_64 only',
+ baseline_commit='11445ff7304fa49beaf3be16ed6393155f5a183b',original_windows=[300,60,10],
+ original_check_frequency_and_order=True,retry=False,product=False,admission=False))
+result=dict(cases=[],first_refusal=None,postflight_refusal=None,passed=False,source_unchanged=False)
+before=None
+try:
+ before=preflight();publish('preflight.json',before)
+ assert json.loads((base/'fd-identity-screen-first/result.json').read_bytes())['passed']
+ manifest=json.loads((base/'manifest.json').read_bytes());old=upload/'source-v3'
+ assert sha(base/'manifest.json')=='2a0f7c581a1e854ab71841efb71aaebee3de56d1c0357b54d55a41ae4011ea6d'
+ for name,item in manifest['members'].items():assert sha(old/name)==item['sha256'],name
+ source=upload/globals().get('SOURCE_TAG','source-fd-identity-first');shutil.copytree(old,source)
+ expected={name:item['sha256'] for name,item in manifest['members'].items()}
+ for name,payload in OVERLAY.items():
+  raw=base64.b64decode(payload);relative='tools/long-run-supervisor-074/src/'+name
+  p=source/relative
+  if p.exists():assert relative=='tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs'
+  p.write_bytes(raw);expected[relative]=hashlib.sha256(raw).hexdigest()
+ for p in [source,*source.rglob('*')]:
+  if not p.is_symlink():os.chown(p,1000,1000)
+ publish('source-manifest.json',expected)
+ def verify():
+  for name,digest in expected.items():assert sha(source/name)==digest,name
+  for name,item in manifest['members'].items():assert sha(old/name)==item['sha256'],name
+ verify()
+ toolchain=upload/'toolchain-v3/bin';addon=upload/'private-clippy-194/bin'
+ env=dict(PATH=str(addon)+':'+str(toolchain)+':/usr/bin:/bin',HOME=str(upload/'signer-home-first'),CARGO_HOME=str(upload/'cargo-home-v3'),
+  CARGO_TARGET_DIR=str(upload/'build-target-v3'),CARGO_NET_OFFLINE='true',CARGO_INCREMENTAL='0',CARGO_BUILD_JOBS='8',
+  RUSTC=str(toolchain/'rustc'),RUSTDOC=str(toolchain/'rustdoc'))
+ cargo=str(toolchain/'cargo');common=['--release','--offline','--locked','-p','hydracache-long-run-supervisor-074']
+ for name,argv in [('build',[cargo,'test',*common,'--lib','--no-run','--message-format=json']),
+  ('check',[cargo,'check',*common,'--all-targets','--all-features']),
+  ('clippy',[cargo,'clippy',*common,'--all-targets','--all-features','--','-D','warnings'])]:
+  result['cases'].append(execute(name,argv,env,source));verify()
+ rows=[json.loads(line) for line in (root/'build.stdout.log').read_text().splitlines() if line.startswith('{')]
+ artifacts=[r for r in rows if r.get('reason')=='compiler-artifact' and r.get('executable') and r.get('profile',{}).get('test') and r.get('target',{}).get('name')=='hydracache_long_run_supervisor_074']
+ assert len(artifacts)==1;test=Path(artifacts[0]['executable'])
+ with test.open('rb') as src,(root/'libtest').open('xb') as dst:shutil.copyfileobj(src,dst)
+ os.chmod(root/'libtest',0o500)
+ result.update(libtest_sha256=sha(root/'libtest'),libtest_path=str(test))
+ scratch=upload/(root.name+'-regressions');scratch.mkdir(mode=0o700);os.chown(scratch,1000,1000)
+ test_env=dict(PATH='/usr/bin:/bin',HOME=str(upload/'signer-home-first'),TMPDIR=str(scratch))
+ result['cases'].append(execute('origin-tests',[str(test),'diagnostic_kernel_admission::origin::','--nocapture','--test-threads=1'],test_env,source,180))
+ verify();result['source_unchanged']=True;result['passed']=True
+except BaseException as error:result['first_refusal']=f'{type(error).__name__}: {error}'
+finally:
+ try:
+  after=preflight();assert before is not None and before==after;publish('postflight.json',after)
+ except BaseException as error:result['postflight_refusal']=f'{type(error).__name__}: {error}';result['passed']=False
+ publish('result.json',result)

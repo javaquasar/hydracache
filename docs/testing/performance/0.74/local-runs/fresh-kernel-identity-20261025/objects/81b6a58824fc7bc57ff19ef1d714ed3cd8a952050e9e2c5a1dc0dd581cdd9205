@@ -1,0 +1,21 @@
+{
+  "argv": [
+    "/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/toolchain-v3/bin/rustc",
+    "--edition=2021",
+    "-Copt-level=3",
+    "-Cdebuginfo=0",
+    "-Dwarnings",
+    "--extern",
+    "libc=/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/build-target-v3/release/deps/liblibc-0f6644dfc1fb6414.rlib",
+    "/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/fd-identity-screen-first/screen.rs",
+    "-o",
+    "/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/fd-identity-screen-first/screen"
+  ],
+  "env": {
+    "PATH": "/usr/bin:/bin",
+    "TMPDIR": "/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/fd-identity-screen-first",
+    "HOME": "/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/signer-home-first"
+  },
+  "source_sha256": "3640db2c552e316a773ba6e80bfe8641e06004417a6bcf2117dc7a407cfc6b2b",
+  "protocol_sha256": "cd1a1f9f504d5e08b8a2d7786fae9814a77e3da4ccf4c8c8a0e92c4cdb54c568"
+}
