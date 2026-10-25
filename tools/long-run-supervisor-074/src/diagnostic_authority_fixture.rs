@@ -19,6 +19,9 @@ use std::rc::Rc;
 #[path = "diagnostic_authority_fixed.rs"]
 pub mod fixed;
 
+#[path = "diagnostic_authority_stamp.rs"]
+mod fresh_stamp;
+
 #[derive(Clone, PartialEq, Eq)]
 struct Stamp {
     dev: u64,
@@ -98,7 +101,7 @@ impl Leaf {
         let stamp = Stamp::of(&before);
         let mut raw = Vec::with_capacity(before.len() as usize);
         (&mut file).take(budget as u64 + 1).read_to_end(&mut raw)?;
-        if Stamp::of(&file.metadata()?) != stamp || raw.len() as u64 != stamp.len {
+        if Stamp::fresh(&file)? != stamp || raw.len() as u64 != stamp.len {
             return Err(AuthorityError::Invalid);
         }
         Ok((file, stamp, raw))
@@ -126,7 +129,7 @@ impl Leaf {
             _ => Vec::with_capacity(before.len() as usize),
         };
         (&mut file).take(budget as u64 + 1).read_to_end(&mut raw)?;
-        if Stamp::of(&file.metadata()?) != stamp || raw.len() as u64 != stamp.len {
+        if Stamp::fresh(&file)? != stamp || raw.len() as u64 != stamp.len {
             return Err(AuthorityError::Invalid);
         }
         Ok((file, stamp, raw))
@@ -151,7 +154,7 @@ impl Leaf {
         gid: u32,
         budget: usize,
     ) -> Result<(), AuthorityError> {
-        if Stamp::of(&self.file.metadata()?) != self.stamp {
+        if Stamp::fresh(&self.file)? != self.stamp {
             return Err(AuthorityError::Invalid);
         }
         // Keep the fresh File (tuple field zero) alive through both comparisons.
