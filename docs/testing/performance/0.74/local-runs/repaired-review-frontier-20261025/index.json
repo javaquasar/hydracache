@@ -1,0 +1,431 @@
+{
+  "admission": false,
+  "attribution_python_cases": 62,
+  "clocks": false,
+  "code_commit": "050d0b3fe2592fcce414c18b3aa21cd91a64e5a5",
+  "dependencies_changed": false,
+  "focused_rust_cases_per_compiler": 22,
+  "full_package_pass": false,
+  "full_package_repeated": false,
+  "historical_frontier_missing": 150,
+  "historical_frontier_observed": 171,
+  "historical_python_cases": 91,
+  "members": {
+    "checks/repaired-scope-20261025-build/intent.json": {
+      "bytes": 324461,
+      "sha256": "92ad27a552148854b79b353b9bc5298f6441509b2bd75bfdd80dba43faf23ac5"
+    },
+    "checks/repaired-scope-20261025-build/result.json": {
+      "bytes": 324089,
+      "sha256": "22e8f19de474536df2ef7d5c17affbeec6b4fc2fd9cc2e9ecd7d6b86b3e6154d"
+    },
+    "checks/repaired-scope-20261025-build/stderr.log": {
+      "bytes": 156,
+      "sha256": "bddb97c3d655be5b328346b749abaac941149b68c43644ab4a664c200bea74c9"
+    },
+    "checks/repaired-scope-20261025-build/stdout.log": {
+      "bytes": 319630,
+      "sha256": "2b4ce3047b3594b501394c6ca3873b7eff19787014beddb1fefe4b4f53d1c63f"
+    },
+    "checks/repaired-scope-20261025-check/intent.json": {
+      "bytes": 324960,
+      "sha256": "14a152135cf9453c03cec73243d9a5db23d9002531e7279811f55836bf8f49d5"
+    },
+    "checks/repaired-scope-20261025-check/result.json": {
+      "bytes": 324651,
+      "sha256": "eb6179b59e7740d6cd46d5ea3ec4e600caf46e134d28e955bf4f788b0ac9ed83"
+    },
+    "checks/repaired-scope-20261025-check/stderr.log": {
+      "bytes": 334,
+      "sha256": "9cd85ffdd729a472cce0bb15cca957a216fa36313933978d7485613c363e5458"
+    },
+    "checks/repaired-scope-20261025-check/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/repaired-scope-20261025-clippy/intent.json": {
+      "bytes": 325023,
+      "sha256": "573f306fed4f8aeb02eead5dae8771e9e797d544e4292eca14ec7fe22106397b"
+    },
+    "checks/repaired-scope-20261025-clippy/result.json": {
+      "bytes": 324651,
+      "sha256": "eb6179b59e7740d6cd46d5ea3ec4e600caf46e134d28e955bf4f788b0ac9ed83"
+    },
+    "checks/repaired-scope-20261025-clippy/stderr.log": {
+      "bytes": 282,
+      "sha256": "7a3d3d264743b4cd6784640c5dd4201374b0e00e25c87d913b26d829b12cdb6a"
+    },
+    "checks/repaired-scope-20261025-clippy/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/repaired-scope-20261025-committed-preflight/intent.json": {
+      "bytes": 324976,
+      "sha256": "a88ae4dc0e47496ea7c2f111f36320894e68a49bfa8de543ae7b97dca23fc89c"
+    },
+    "checks/repaired-scope-20261025-committed-preflight/result.json": {
+      "bytes": 324651,
+      "sha256": "eb6179b59e7740d6cd46d5ea3ec4e600caf46e134d28e955bf4f788b0ac9ed83"
+    },
+    "checks/repaired-scope-20261025-committed-preflight/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/repaired-scope-20261025-committed-preflight/stdout.log": {
+      "bytes": 113252,
+      "sha256": "7a38917b1bdbd85062343af60dd90dc2684aa6c4109e0b76798b65e42b06f198"
+    },
+    "checks/repaired-scope-20261025-focused/intent.json": {
+      "bytes": 325059,
+      "sha256": "93456e59e8230c83eba0d1e313b3ea821630d853f3ac06b2f2807e49f2c64c25"
+    },
+    "checks/repaired-scope-20261025-focused/result.json": {
+      "bytes": 324651,
+      "sha256": "eb6179b59e7740d6cd46d5ea3ec4e600caf46e134d28e955bf4f788b0ac9ed83"
+    },
+    "checks/repaired-scope-20261025-focused/stderr.log": {
+      "bytes": 435,
+      "sha256": "9382808ec07a02f8b008e6ab3f0c0346b6509d371a896795e28259a72f825a7d"
+    },
+    "checks/repaired-scope-20261025-focused/stdout.log": {
+      "bytes": 1651,
+      "sha256": "2872dbda833d922db78465f784d69cefb8b8966363469d9d224fb5cd3797b26b"
+    },
+    "checks/repaired-scope-20261025-frontier-final/intent.json": {
+      "bytes": 324634,
+      "sha256": "c365871b08d722ea02102bee618f569bd9d65536d5e995e62c6703713895d35f"
+    },
+    "checks/repaired-scope-20261025-frontier-final/result.json": {
+      "bytes": 324365,
+      "sha256": "b557b7749efb58c3686c065b47926e76d07efa2ea2d65e773fa45c13f9e5bee3"
+    },
+    "checks/repaired-scope-20261025-frontier-final/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/repaired-scope-20261025-frontier-final/stdout.log": {
+      "bytes": 218961,
+      "sha256": "5f9f841a9f5ee85052e452752ed0de8b662b5d97d3acd4f181eaa27e71cc3a7c"
+    },
+    "checks/repaired-scope-20261025-frontier-reviewed/intent.json": {
+      "bytes": 324634,
+      "sha256": "b646b21be0f4ec6d05d642c6e8b33f8559a9c7a8eb75298ef762534d58db1030"
+    },
+    "checks/repaired-scope-20261025-frontier-reviewed/result.json": {
+      "bytes": 324365,
+      "sha256": "9861475078103c7b6b3cddd0563e7d640dd34be60de1c39a493f0467eed554a0"
+    },
+    "checks/repaired-scope-20261025-frontier-reviewed/source.raw": {
+      "bytes": 12933,
+      "sha256": "1243d503226d29d3d153408308249b08d7f7bdc63888d2f3d098fed177d1cd03"
+    },
+    "checks/repaired-scope-20261025-frontier-reviewed/stderr.log": {
+      "bytes": 1179,
+      "sha256": "7f034a0c01cefa81403711cb583e7567bdf64f1090e368e81d0afcbb5af24c13"
+    },
+    "checks/repaired-scope-20261025-frontier-reviewed/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/repaired-scope-20261025-frontier/first-source.raw": {
+      "bytes": 12841,
+      "sha256": "48640033feadfe91b61fca8b957eb7cfb3ca6b1ba6169dcd928e8bd807cc544e"
+    },
+    "checks/repaired-scope-20261025-frontier/intent.json": {
+      "bytes": 324634,
+      "sha256": "6fc8af887ad15bb819cb8a2d24039de0fe6fd72c6b848a77c8d76f5bc45a4b83"
+    },
+    "checks/repaired-scope-20261025-frontier/result.json": {
+      "bytes": 324365,
+      "sha256": "8040dabdfa6920c4baa4169606106aca603a3ed0ba71f05d38dc00ab74a60c24"
+    },
+    "checks/repaired-scope-20261025-frontier/stderr.log": {
+      "bytes": 1059,
+      "sha256": "6ec148f18f7aabeba9866276cee273d47fce08096c7c718634c6e60352c0ad2d"
+    },
+    "checks/repaired-scope-20261025-frontier/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/repaired-scope-20261025-msrv/intent.json": {
+      "bytes": 325059,
+      "sha256": "6055e71fbdeb79e2b023c5c9dd1671f3de9afc3987fb07c32539806be95f900b"
+    },
+    "checks/repaired-scope-20261025-msrv/result.json": {
+      "bytes": 324651,
+      "sha256": "eb6179b59e7740d6cd46d5ea3ec4e600caf46e134d28e955bf4f788b0ac9ed83"
+    },
+    "checks/repaired-scope-20261025-msrv/stderr.log": {
+      "bytes": 362,
+      "sha256": "b7a3c6bc41460d04c3edce06c6c587b065312108d1ae20ea4a51424a58e35b6a"
+    },
+    "checks/repaired-scope-20261025-msrv/stdout.log": {
+      "bytes": 1651,
+      "sha256": "6f3410cc2531761400e7c1dce2e39d941b0984f7abd2f2bcceda2e66580ee84a"
+    },
+    "checks/repaired-scope-20261025-python-attribution/intent.json": {
+      "bytes": 324978,
+      "sha256": "7eb1f7dc0a45ff84f678f6f45c2411b671821a222fe22a6edd489fc9ad9c5411"
+    },
+    "checks/repaired-scope-20261025-python-attribution/result.json": {
+      "bytes": 324651,
+      "sha256": "eb6179b59e7740d6cd46d5ea3ec4e600caf46e134d28e955bf4f788b0ac9ed83"
+    },
+    "checks/repaired-scope-20261025-python-attribution/stderr.log": {
+      "bytes": 166,
+      "sha256": "49de1c4072070b5bfff5a76eeea1bc35709f0e5c9750102de93d0a0eddc85e19"
+    },
+    "checks/repaired-scope-20261025-python-attribution/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/repaired-scope-20261025-python-history/intent.json": {
+      "bytes": 324974,
+      "sha256": "e8bb927fa0f006b9fbb18f44454ece3ef6bb3911083082e22a3e3877e2e67641"
+    },
+    "checks/repaired-scope-20261025-python-history/result.json": {
+      "bytes": 324651,
+      "sha256": "eb6179b59e7740d6cd46d5ea3ec4e600caf46e134d28e955bf4f788b0ac9ed83"
+    },
+    "checks/repaired-scope-20261025-python-history/stderr.log": {
+      "bytes": 196,
+      "sha256": "d70f10853d09202da2b886d764949718d0cfc598728d91b5964a225ecbddc94d"
+    },
+    "checks/repaired-scope-20261025-python-history/stdout.log": {
+      "bytes": 82,
+      "sha256": "f632472212663717a16f350315529b24ff21bcf9c34eaaa70ce866ff6e87b6b2"
+    },
+    "checks/repaired-scope-20261025-python-indent/intent.json": {
+      "bytes": 324961,
+      "sha256": "fe5b381c1e043a8d0da347d82bce34b05894e553b7188ee68c76d200605cc440"
+    },
+    "checks/repaired-scope-20261025-python-indent/result.json": {
+      "bytes": 324651,
+      "sha256": "eb6179b59e7740d6cd46d5ea3ec4e600caf46e134d28e955bf4f788b0ac9ed83"
+    },
+    "checks/repaired-scope-20261025-python-indent/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/repaired-scope-20261025-python-indent/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/repaired-scope-20261025-python-syntax/intent.json": {
+      "bytes": 324974,
+      "sha256": "09ed755ded126cf79130af4a148bed20a888e4a8a74909e836036f1aa7f7038e"
+    },
+    "checks/repaired-scope-20261025-python-syntax/result.json": {
+      "bytes": 324651,
+      "sha256": "eb6179b59e7740d6cd46d5ea3ec4e600caf46e134d28e955bf4f788b0ac9ed83"
+    },
+    "checks/repaired-scope-20261025-python-syntax/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/repaired-scope-20261025-python-syntax/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/repaired-scope-20261025-syntax/intent.json": {
+      "bytes": 324463,
+      "sha256": "fb7e7796f516cd7a87bdca86c0ca72c7f9cfc8f6b4616731ed8aad9131baa55c"
+    },
+    "checks/repaired-scope-20261025-syntax/result.json": {
+      "bytes": 324089,
+      "sha256": "22e8f19de474536df2ef7d5c17affbeec6b4fc2fd9cc2e9ecd7d6b86b3e6154d"
+    },
+    "checks/repaired-scope-20261025-syntax/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/repaired-scope-20261025-syntax/stdout.log": {
+      "bytes": 152,
+      "sha256": "843ecb40944344d7a2697d1bf64673b7abeb9e08dcff7200646d245a2f97e2a8"
+    },
+    "checks/repaired-scope-20261025-v3-preflight/intent.json": {
+      "bytes": 324551,
+      "sha256": "d07754c1acf2364710639f8ed23832e3fbca7bd75baefde6ec866c5569d1566e"
+    },
+    "checks/repaired-scope-20261025-v3-preflight/result.json": {
+      "bytes": 324226,
+      "sha256": "646e0caaea81d7e3aa4d134d4fa32e30933964a20f7388be53ef13e66c8e499d"
+    },
+    "checks/repaired-scope-20261025-v3-preflight/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/repaired-scope-20261025-v3-preflight/stdout.log": {
+      "bytes": 113252,
+      "sha256": "7a38917b1bdbd85062343af60dd90dc2684aa6c4109e0b76798b65e42b06f198"
+    },
+    "code/tools/historical-blob-batch-074/package_effects_review_v3.py": {
+      "bytes": 6203,
+      "sha256": "b82ade2053bea6532efe4483c4dc51d5cc4f9aeb02cebee1b5a7fff4fc5ac0b3"
+    },
+    "code/tools/historical-blob-batch-074/test_package_effects_review_v3.py": {
+      "bytes": 6339,
+      "sha256": "197794f7a5c03007463428eff8d07272f0963b2ee01deb4eca75cea414cc7d08"
+    },
+    "code/tools/xtask-package-attribution-074/contract_frontier_audit.py": {
+      "bytes": 13328,
+      "sha256": "0531056b494b0da5317037fad71b4734dcb1b7a0fac20a666a7363f451c9aae7"
+    },
+    "code/tools/xtask-package-attribution-074/test_contract_frontier_audit.py": {
+      "bytes": 6244,
+      "sha256": "eaa23a641e9ed9d8db07d0fd353574e271cb30f439a090eba9b9241bd493fad0"
+    },
+    "derived/offline-frontier.json": {
+      "bytes": 216779,
+      "sha256": "00d88bf8c9613ddb5df1de4d59691688cd27d41566d7c874ebb51cd0ff2e1c96"
+    },
+    "derived/selected-target.json": {
+      "bytes": 69455,
+      "sha256": "0305913c101eadd3282691d2da5c0eec68109d7f25da6c7e7d70577a94dfd626"
+    },
+    "protected/Cargo.lock": {
+      "bytes": 175330,
+      "sha256": "d2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c"
+    },
+    "protected/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "18a8a27cf140a1d6eb31c8316ee39bb7d5832866a990346eee16cd0c30de344b"
+    },
+    "protected/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "protected/tools/authority-storage-source-074/contract.rs": {
+      "bytes": 6943,
+      "sha256": "aefcd4f6a9ed0acc1e072225ea3ed4dda82d2d1ccda0ba4f22ca74459efa64c2"
+    },
+    "retention-code/run-fresh-reader-20261024.py": {
+      "bytes": 544,
+      "sha256": "851631e846ec7d3696a0e2fa550b6f87e8f07e8412f5dafc0530c0bc70c597ed"
+    },
+    "retention-code/run-source-step-20261024.py": {
+      "bytes": 2596,
+      "sha256": "a92482cabcfcf8f6440e95972bee8d204bb9c59c8805c45c7b57363dcc3ab430"
+    },
+    "retention-code/run-xtask-package-780-20261024.py": {
+      "bytes": 571,
+      "sha256": "52504f2b489d16f344b477df0568f33ac224c5cadacc552f32f427f39c09d04d"
+    },
+    "retention-code/seal-repaired-review-frontier-20261025.py": {
+      "bytes": 7108,
+      "sha256": "d17a1194f8f408dafba302f5461c5a09457521cdffcae3240d5b01e25b85c2c5"
+    },
+    "retention-code/verify-repaired-review-frontier-staged-20261025.py": {
+      "bytes": 3288,
+      "sha256": "f71f6662be38d8f0482da9089a7a6680e16cabe5d0435b4a57a495089bb11a9e"
+    },
+    "retention-code/verify-repaired-syntax-v3-staged-20261025.py": {
+      "bytes": 2277,
+      "sha256": "059f62bb7bd2c76b2421563a0c03bab57ea1fb5821ae95a5a0c7b546d72c5b46"
+    },
+    "selected-target/intent.json": {
+      "bytes": 325020,
+      "sha256": "a2a3ceffe121106296126b1dfcedcdb2cc8076e39cdca1c29f629d2905b718a7"
+    },
+    "selected-target/read-only-process-postflight.json": {
+      "bytes": 329,
+      "sha256": "f044755274a71624c01a6cf330b712054d52adc19bdc3ce819216e370fd09e17"
+    },
+    "selected-target/read-only-process-sample.json": {
+      "bytes": 556,
+      "sha256": "a78bbdb8e8713761c067300b144f7264c65b977e6d5aa9a07e96c955642aa5b6"
+    },
+    "selected-target/result.json": {
+      "bytes": 324651,
+      "sha256": "eb6179b59e7740d6cd46d5ea3ec4e600caf46e134d28e955bf4f788b0ac9ed83"
+    },
+    "selected-target/stderr.log": {
+      "bytes": 270,
+      "sha256": "895f5e1b0ab1b1f344a88a1bb6dc3aed59aa48104e5bbba6d90953a20bf09a1d"
+    },
+    "selected-target/stdout.log": {
+      "bytes": 50881,
+      "sha256": "2cbf1acd6ac78bc7267278874858e46b403c52a428b7020bf7001554849bec31"
+    }
+  },
+  "phases": [
+    {
+      "exit": 0,
+      "name": "repaired-scope-20261025-build"
+    },
+    {
+      "exit": 0,
+      "name": "repaired-scope-20261025-check"
+    },
+    {
+      "exit": 0,
+      "name": "repaired-scope-20261025-clippy"
+    },
+    {
+      "exit": 0,
+      "name": "repaired-scope-20261025-committed-preflight"
+    },
+    {
+      "exit": 0,
+      "name": "repaired-scope-20261025-focused"
+    },
+    {
+      "exit": 1,
+      "name": "repaired-scope-20261025-frontier"
+    },
+    {
+      "exit": 0,
+      "name": "repaired-scope-20261025-frontier-final"
+    },
+    {
+      "exit": 1,
+      "name": "repaired-scope-20261025-frontier-reviewed"
+    },
+    {
+      "exit": 0,
+      "name": "repaired-scope-20261025-msrv"
+    },
+    {
+      "exit": 0,
+      "name": "repaired-scope-20261025-python-attribution"
+    },
+    {
+      "exit": 0,
+      "name": "repaired-scope-20261025-python-history"
+    },
+    {
+      "exit": 0,
+      "name": "repaired-scope-20261025-python-indent"
+    },
+    {
+      "exit": 0,
+      "name": "repaired-scope-20261025-python-syntax"
+    },
+    {
+      "exit": 0,
+      "name": "repaired-scope-20261025-syntax"
+    },
+    {
+      "exit": 0,
+      "name": "repaired-scope-20261025-v3-preflight"
+    }
+  ],
+  "product_load": false,
+  "protected_sha256": {
+    "Cargo.lock": "d2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c",
+    "Cargo.toml": "18a8a27cf140a1d6eb31c8316ee39bb7d5832866a990346eee16cd0c30de344b",
+    "docs/testing/performance/0.74/qualification-manifest.toml": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+    "tools/authority-storage-source-074/contract.rs": "aefcd4f6a9ed0acc1e072225ea3ed4dda82d2d1ccda0ba4f22ca74459efa64c2"
+  },
+  "qualification": false,
+  "schema": "hc074-repaired-review-frontier-evidence-v1",
+  "selected_target_pass": true,
+  "server": false,
+  "services": false,
+  "source_checks_or_windows_changed": false,
+  "upstream_indexes": {
+    "docs/testing/performance/0.74/local-runs/package-effect-review-v2-20261025/index.json": "58b7a5f845abd8e791b5d150f98f461fc069869195131fe3e76ea620df772dae",
+    "docs/testing/performance/0.74/local-runs/package-effect-syntax-v3-20261025/index.json": "1e461457bb2448b9caabfe396b0e9999ec8f34e28522036dd4c7dd4296bac0aa",
+    "docs/testing/performance/0.74/local-runs/transport-package-20261025/index.json": "e9b8a923723360bce644c9de558113bf084630d1c4a72916dd0bfd3d418fc553"
+  }
+}

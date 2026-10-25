@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\xtask-package-attribution-074\contract_frontier_audit.py", line 188, in <module>
+    print(json.dumps(analyze(Path(__file__).resolve().parents[2]),indent=2,sort_keys=True))
+                     ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\xtask-package-attribution-074\contract_frontier_audit.py", line 160, in analyze
+    proof = sweep_proof(member('reviewed-source/'+path),rows[path],spec)
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\xtask-package-attribution-074\contract_frontier_audit.py", line 120, in sweep_proof
+    review.require(calls['git'] == 2 and calls['read'] == 1, 'selected call sites changed')
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\xtask-package-attribution-074\review.py", line 31, in require
+    raise ValueError(message)
+ValueError: selected call sites changed

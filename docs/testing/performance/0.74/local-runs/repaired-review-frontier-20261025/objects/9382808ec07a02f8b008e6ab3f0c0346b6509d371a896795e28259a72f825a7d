@@ -1,0 +1,6 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.55s
+     Running tests\census_cost_074.rs (target\debug\deps\census_cost_074-cc21f9b43c2ba5b5.exe)
+     Running tests\package_diagnostics_074.rs (target\debug\deps\package_diagnostics_074-ff1851e2eb09d5b1.exe)

@@ -449,3 +449,21 @@ bytes without executing retained sources. The eleven-phase packet preserves two
 retention-accounting refusals and independent staged verification. No full replay
 or measurement is repeated. The incomplete package, dependency decisions and
 every original execution/lifecycle/trust/qualification barrier remain open.
+
+## Repaired scope and full contract target, 2026-10-25
+
+The [v3 source review and offline frontier audit](repaired-scope-contract-frontier-result-20261025.md)
+pin 343 sources/29 auxiliaries while preserving all 334 v1 source/AST rows.
+Ninety-one historical-tool and sixty-two attribution Python controls pass, with
+22 ordinary Rust cases per current/MSRV compiler and current strict checks.
+Two saved offline-reader errors remain; correcting their macro-scope/source-count
+accounting repeats no original producer.
+
+One standalone four-thread `performance_contract_074` command now completes all
+321 cases inside the original 780-second guard, with unchanged source/HEAD and
+zero failures/ignored cases. This closes that selected Windows target only.
+The full package remains red, the old unfinished outcomes remain retained and
+the old 23-target suffix is not admitted from this check. Source counting finds
+1264 mandatory direct show/read calls in three earlier passing loops, not their
+elapsed/CPU share or a measured optimization. The six-step production/security
+barriers and prepared-not-authorized qualification manifest remain unchanged.

@@ -1,0 +1,12 @@
+{
+  "schema": "hc074-owned-test-process-observation-v1",
+  "observed_at_utc": "2026-10-25 02:57:20 UTC",
+  "process_id": 46032,
+  "parent_process_id": 51448,
+  "created_utc": "2026-10-25T02:53:00.0122990Z",
+  "executable_path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\performance_contract_074-6e7177044aaa8c23.exe",
+  "query": "exact executable basename and absolute path via Win32_Process",
+  "identity_handle_retained": false,
+  "process_mutated_by_query": false,
+  "original_worker_or_all_writer_retirement_proved": false
+}

@@ -1,0 +1,11 @@
+{
+  "admission": false,
+  "declared_cases": 321,
+  "full_package_pass": false,
+  "index_sha256": "2bc4c942e01c9b9dec15c14046afeb1b5c71e022b76d89d4ea07f23d89d1e012",
+  "members": 84,
+  "observed_cases": 321,
+  "producer_repeated": false,
+  "schema": "hc074-repaired-review-frontier-staged-readback-v1",
+  "selected_target_pass": true
+}

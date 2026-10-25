@@ -424,3 +424,18 @@ V2's production source pins remain unchanged and reject this repaired graph.
 Its positive unit fixture materializes the exact retained v2 data; a substituted
 catalog avoids executing archived Python, and current-tree refusal stays a
 separate negative control. This fixture is not current-source effect clearance.
+
+## Repaired scope v3 without a dispatcher
+
+`package_effects_review_v3.py SYNTAX_JSON` requires the separately reviewed
+343-source AST, all 334 original rows unchanged, nine added-source pins, 29
+auxiliary pins and 137 targets. It reuses the byte-pinned v2 environment guards
+but never dispatches a package. V1/v2 pins remain immutable. The positive unit
+fixture contains sealed source data, with an explicitly substituted catalog;
+the actual committed-tree preflight is retained separately.
+
+The [review and full target result](../../docs/testing/performance/0.74/repaired-scope-contract-frontier-result-20261025.md)
+includes one unfiltered four-thread 321-case contract target inside the unchanged
+780-second limit. Its complete names match the independent offline catalog.
+No full package is repeated or declared green, no measured candidate is accepted,
+and no Linux/live/qualification admission follows from v3.

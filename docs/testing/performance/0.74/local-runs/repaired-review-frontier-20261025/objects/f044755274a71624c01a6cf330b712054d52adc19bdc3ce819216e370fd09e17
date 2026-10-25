@@ -1,0 +1,10 @@
+{
+  "schema": "hc074-owned-test-process-postflight-v1",
+  "queried_pid": 46032,
+  "present": false,
+  "query": "Win32_Process exact ProcessId after the target summary",
+  "process_stopped_by_query": false,
+  "original_identity_handle_retained": false,
+  "all_writer_retirement_proved": false,
+  "test_producer_repeated": false
+}

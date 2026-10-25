@@ -1,0 +1,33 @@
+"""Independent staged parser fixture readback; no retained code execution."""
+from pathlib import Path
+import hashlib,json,subprocess,sys
+root=Path(__file__).resolve().parent.parent
+base='docs/testing/performance/0.74/local-runs/package-effect-syntax-v3-20261025'
+get=lambda name:subprocess.check_output(['git','show',':'+name],cwd=root)
+sha=lambda raw:hashlib.sha256(raw).hexdigest()
+raw=get(base+'/index.json');assert sha(raw)=='1e461457bb2448b9caabfe396b0e9999ec8f34e28522036dd4c7dd4296bac0aa'
+index=json.loads(raw);values={}
+for name,row in index['members'].items():
+    body=get(base+'/objects/'+row['sha256'])
+    assert sha(body)==row['sha256'] and len(body)==row['bytes'];values[name]=body
+doc=json.loads(values['syntax/result.json'])
+canonical=lambda value:sha(json.dumps(value,sort_keys=True,separators=(',',':')).encode())
+assert canonical(doc)=='ec5fdf083b8f489f1ee5b51c646322b705bf502669d80f4dfe4e874100de4b75'
+assert len(doc['sources'])==343 and sum(len(r['sites']) for r in doc['sources'])==25124
+for row in doc['sources']:assert sha(values['fixture/'+row['source']])==row['sha256']
+sys.path.insert(0,str(root/'tools/historical-blob-batch-074'))
+import package_effects_review_v3 as gate
+for name,digest in gate.AUXILIARY.items():assert sha(values['fixture/'+name])==digest
+old='fixture/'+gate.previous.PREVIOUS_PACKET
+old_raw=values[old+'/index.json'];assert sha(old_raw)==gate.previous.PREVIOUS_INDEX_SHA256
+entry=json.loads(old_raw)['members']['syntax/final-closure/result.json']
+old_doc=json.loads(values[old+'/objects/'+entry['sha256']])
+assert canonical(old_doc)==gate.previous.PREVIOUS_AST_SHA256
+rows={r['source']:r for r in doc['sources']};before={r['source']:r for r in old_doc['sources']}
+assert len(before)==334 and all(rows[k]==v for k,v in before.items())
+assert {k:rows[k]['sha256'] for k in rows.keys()-before.keys()}==gate.ADDED
+receipt=dict(schema='hc074-package-syntax-v3-staged-readback-v1',index_sha256=sha(raw),members=len(values),
+    source_files=343,auxiliary_files=29,original_sources_changed=0,package_dispatched=False,admission=False)
+with (root/(base+'-staged-verification.json')).open('x',encoding='utf-8') as stream:
+    json.dump(receipt,stream,indent=2,sort_keys=True);stream.write('\n')
+print(json.dumps(receipt,sort_keys=True))

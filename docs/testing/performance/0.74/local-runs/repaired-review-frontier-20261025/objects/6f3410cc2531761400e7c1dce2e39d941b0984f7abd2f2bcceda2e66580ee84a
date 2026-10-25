@@ -1,0 +1,32 @@
+
+running 6 tests
+test attribution_order_is_balanced_and_not_a_package_measurement ... ok
+test census_cost_child ... ok
+test package_syntax_child ... ok
+test transport_capture_child ... ok
+test package_syntax_distinguishes_quoted_code_and_macro_effects ... ok
+test profiled_capture_keeps_output_and_early_refusals ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+
+running 16 tests
+test guard_path_comparison_refuses_missing_duplicate_and_already_changed_baselines ... ok
+test helper_model_preserves_nested_order_bytes_and_unwind_without_additive_claims ... ok
+test helper_instrumentation_erases_only_exact_observers_and_preserves_twenty_cases ... ok
+test helper_observer_fixture_child ... ok
+test helper_observer_is_default_off_and_does_not_read_fixture_inputs ... ok
+test history_namespace_cost_child ... ok
+test helper_model_refuses_unknown_operations_budgets_reverse_time_and_bad_retirement ... ok
+test history_namespace_protocol_and_unrelated_input_are_exact ... ok
+test history_namespace_still_refuses_missing_and_duplicate_namespace_hook ... ok
+test history_prefix_cost_child ... ok
+test history_prefix_protocol_and_unrelated_input_are_exact ... ok
+test normalization_cost_child ... ok
+test normalization_cost_protocol_keeps_separate_scopes ... ok
+test guard_path_comparison_is_isolated_and_original_installation_stays_exact ... ok
+test guard_path_comparison_leaves_other_reader_expectations_unchanged ... ok
+test history_namespace_matches_independent_frozen_sources_and_keeps_body_drift ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.23s
+

@@ -1,0 +1,41 @@
+{
+  "admission": false,
+  "full_package_pass": false,
+  "members": {
+    "repaired-frontier-doc-check-20261025/intent.json": {
+      "bytes": 324965,
+      "sha256": "efa031a72f315f7a21f9a35d8c84960ac8e01bd8d9c5be8c1c6eb8d21e10f38d"
+    },
+    "repaired-frontier-doc-check-20261025/result.json": {
+      "bytes": 324651,
+      "sha256": "2587e46f215deadf0c57d89e87f46da9f16e8f60bcf2f7c817f7621449103d48"
+    },
+    "repaired-frontier-doc-check-20261025/stderr.log": {
+      "bytes": 334,
+      "sha256": "933ebb805bda5c8b1fd5222d2ffdf9a26d836bc773c3fe995ff5622082373491"
+    },
+    "repaired-frontier-doc-check-20261025/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "repaired-frontier-performance-contract-20261025/intent.json": {
+      "bytes": 325013,
+      "sha256": "0e756c0b7dbc42d9fe30690f18a5c356ec859fc34da7dde9db2ba3a0eeb413fa"
+    },
+    "repaired-frontier-performance-contract-20261025/result.json": {
+      "bytes": 324651,
+      "sha256": "2587e46f215deadf0c57d89e87f46da9f16e8f60bcf2f7c817f7621449103d48"
+    },
+    "repaired-frontier-performance-contract-20261025/stderr.log": {
+      "bytes": 392,
+      "sha256": "82a8448282e6c4b27046df289137130f103016d94942074497b2a563fe1a6277"
+    },
+    "repaired-frontier-performance-contract-20261025/stdout.log": {
+      "bytes": 60,
+      "sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+    }
+  },
+  "producer_repeated": false,
+  "schema": "hc074-repaired-frontier-doc-gates-v1",
+  "upstream_index_sha256": "2bc4c942e01c9b9dec15c14046afeb1b5c71e022b76d89d4ea07f23d89d1e012"
+}

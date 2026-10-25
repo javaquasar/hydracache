@@ -19760,3 +19760,35 @@ package is repeated, and the unfinished target still needs causal attribution.
 Even the retention tooling's initial body-count and nested-test-catalog mistakes
 remain in the evidence; corrected accounting reuses saved results rather than
 rerunning successful-looking subsets.
+
+### Separate a missing verdict from a measured cost
+
+The [repaired scope and frontier audit](../testing/performance/0.74/repaired-scope-contract-frontier-result-20261025.md)
+restore a useful distinction. A new Windows effect scope covers 343 Rust inputs
+and keeps all 334 original source/AST rows byte-exact. Nine additions are pinned
+separately; the old review identities are not refreshed. This permits a concrete
+next test without treating the effect review itself as correctness or release
+admission.
+
+The two old package logs contain the same 171 successful names inside a
+321-case target. Resolving actual module edges reconstructs the other names,
+but a missing verdict does not say whether a case started, failed or hung.
+The apparent slow-test warning belongs to an earlier completed target, not this
+one. Associating it with the last target would manufacture an attractive but
+incorrect explanation. Completion-order text is not a per-case timing trace.
+
+Pinned source/verdict joins can still establish useful work bounds: three
+passing loops require 1264 direct Git shows and 1264 reads in each old attempt.
+The comparisons are unconditional and their assertions/tails are checked. This
+does not make the requests immutable-cache candidates, assign CPU or wall time,
+or justify multiplying the count by another probe's median. It narrows what a
+future causal profiler must observe while preserving the existing checks.
+
+One subsequent standalone execution completes all 321 original cases inside the
+same 780-second bound, with four threads, no filters and unchanged source/HEAD.
+Every actual qualified name matches the independent catalog. That is new semantic
+coverage, not completion of either old package attempt. Nor can its duration be
+added to another process's earlier target spans to claim a total package time.
+The full command, its budget and its first failures still need their own verdict.
+Separate evidence for effect safety, case coverage, timing ownership and release
+admission keeps each successful step useful without promoting it beyond its scope.

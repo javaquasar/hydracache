@@ -168,3 +168,22 @@ silently retargeted. `helper_capture.py` still refuses an uninstrumented helper.
 The [focused repair and evidence](../../docs/testing/performance/0.74/package-compatibility-isolation-result-20261025.md)
 close seven source-view failures without admitting a full package or repeating
 any attribution cohort.
+
+## Offline contract frontier audit
+
+`contract_frontier_audit.py` reads the pinned v1/v2 full-package packets and AST
+data only; it never invokes Git, Cargo or a profiler. Literal/default module
+resolution reconstructs the same 321 qualified names in both versions, with
+114/115 source files respectively. Duplicate/ignored cases, cycles, unsafe or
+ambiguous edges and changed identities refuse. This is not a general cfg or
+compiler-expansion engine.
+
+Both old attempts have the same 171 successful names and 150 without verdicts.
+The latter are not necessarily unstarted or failed. Warning lines are assigned
+to surrounding target ranges; the old over-60-second message belongs to a
+completed different target. Three fixed-source passing loops prove 1264 direct
+show/read calls per attempt, excluding nested work and without timing ownership.
+The [result and sole standalone target check](../../docs/testing/performance/0.74/repaired-scope-contract-frontier-result-20261025.md)
+retain two reader-accounting refusals and a separate first 321/321 Windows pass.
+It is not spliced into the still-red full package, and no cache or optimization
+is admitted by the audit.

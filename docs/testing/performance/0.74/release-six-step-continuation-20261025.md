@@ -87,14 +87,25 @@ a separate ordinary target. All seven previously failing cases pass among 54
 focused cases on Rust 1.94 and MSRV 1.88; the restored twenty-case artifact target
 also passes. No old source gate/pin is broadened. Historical source/trace reviews
 use sealed measured bytes, while v2 correctly refuses the changed current tree.
-Next independently review this new graph before another full replay. Preserve
-every 780-second first result; compatibility repair is not evidence that the
-remaining target fits the window.
+
+The [independent v3 review and frontier audit](repaired-scope-contract-frontier-result-20261025.md)
+now pin 343 sources/29 auxiliaries with all 334 original AST/source rows unchanged.
+One separate unfiltered `performance_contract_074` execution passes all 321 cases
+inside the original 780-second bound. It is not a full-package replay and does
+not complete the old 23-target suffix. The old 171/321 frontiers remain retained;
+missing verdicts are not retrospectively labeled started or failed. Preserve every
+first result and require the complete package's own actual verdict.
 
 Next: use saved target/call attribution to isolate the cost owner without
 removing tests, refreshing source pins from responses or changing conditional
 reads. A separate candidate needs its own baseline and unchanged-bound proof;
 do not retry the same source to pass or splice focused suffix results into it.
+
+The offline audit proves 1264 direct show/read calls in three selected passing
+loops per old attempt, not their time share. Both old warning lines belong to a
+different completed target. Current local cost profiling therefore still needs
+fresh causal observations under a separately frozen finite diagnostic; source
+counts and the new standalone target's reported duration cannot supply them.
 
 The [first isolated comparison candidate](guard-path-comparison-result-20261025.md)
 removed temporary path allocations in one fixed-slice source guard, but its

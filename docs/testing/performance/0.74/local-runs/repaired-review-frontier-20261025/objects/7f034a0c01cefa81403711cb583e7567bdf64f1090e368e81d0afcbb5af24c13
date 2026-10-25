@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\xtask-package-attribution-074\contract_frontier_audit.py", line 189, in <module>
+    print(json.dumps(analyze(Path(__file__).resolve().parents[2]),indent=2,sort_keys=True))
+                     ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\xtask-package-attribution-074\contract_frontier_audit.py", line 154, in analyze
+    review.require(active is not None and active['target'] == TARGET and active['declared'] == len(catalog['cases']) == 321
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                   and len(catalog['sources']) == 114 and len(catalog['edges']) == 113, 'concrete Windows target scope changed')
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\xtask-package-attribution-074\review.py", line 31, in require
+    raise ValueError(message)
+ValueError: concrete Windows target scope changed
