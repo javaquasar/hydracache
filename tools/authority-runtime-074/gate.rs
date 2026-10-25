@@ -7,6 +7,8 @@ pub mod performance;
 #[path = "../status-field-gate-074/contract.rs"]
 pub mod status_fields;
 use std::path::{Path, PathBuf};
+#[path = "../source-successor-view-074/contract.rs"]
+pub mod successor;
 
 pub const BASE: &str = storage::SOURCE;
 pub const ARTIFACT: &str = "f193fabae86c9bd7a2e778a9463a43984834deb5";
@@ -179,6 +181,7 @@ pub fn accepts(path: &str, raw: &str) -> bool {
 // This is not permissive normalization: require the whole approved current file
 // before returning an old phase's predecessor. Unknown paths retain current bytes.
 pub fn view(path: &str, raw: String) -> String {
+    let raw = successor::project(path, raw);
     if expected(path).is_none() {
         return raw;
     }

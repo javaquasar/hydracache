@@ -38,8 +38,9 @@ pub fn accepts(path: &str, raw: &str) -> bool {
     expected(path).is_some_and(|expected| expected == raw.replace("\r\n", "\n"))
 }
 pub fn predecessor(path: &str, raw: &str) -> String {
+    let raw = crate::runtime::successor::project(path, raw.to_owned());
     assert!(
-        accepts(path, raw),
+        accepts(path, &raw),
         "unreviewed input cannot enter historical assertions: {path}"
     );
     frozen(PREDECESSOR, path)
