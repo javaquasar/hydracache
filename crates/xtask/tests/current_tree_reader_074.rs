@@ -8,6 +8,8 @@ mod runtime_io;
 #[path = "../../../tools/authority-storage-source-074/contract.rs"]
 mod storage_contract;
 use current_inputs::history_reader;
+#[path = "../../../tools/authority-reader-phase-074/contract.rs"]
+mod reader_phase;
 
 #[test]
 fn current_tree_reader_retains_entire_prior_gate_and_unknown_source_assertions() {
@@ -42,6 +44,7 @@ fn runtime_contract_reader_changes_only_the_current_history_input() {
     assert_eq!(old.matches(hook).count(), 1);
     assert_eq!(old.matches(before).count(), 1);
     let expected = old.replacen(hook, "mod gate;\n#[path = \"../../../tools/authority-runtime-074/history_reader.rs\"]\nmod history_reader;\n", 1).replacen(before, after, 1);
+    let expected = reader_phase::runtime(&expected);
     let actual = std::fs::read_to_string(runtime::root().join(path))
         .unwrap()
         .replace("\r\n", "\n");

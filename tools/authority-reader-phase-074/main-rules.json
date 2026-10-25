@@ -1,0 +1,39 @@
+{
+  "schema": "hc074-source-successor-view-v1",
+  "rows": [
+    {
+      "path": "crates/xtask/tests/performance_contract_074.rs",
+      "previous_revision": "37db65f68e67ed7c0ee0f1cc84fed1c30bf9822a",
+      "revision": "a67a5299ab335424e9b11330dc06bd749ea9b859",
+      "current_sha256": "30dc4166f86f71a2028b0adc3287e898920adf18c92a45cb7046ab67663f9207",
+      "previous_sha256": "b99acaf03257db18bb5f52e53ed948bf9ca26250e9193c0cfeeabb4725fa5906",
+      "patches": [
+        {
+          "offset": 342962,
+          "current": "// Negative D3 removed the runtime selector. Only the exact historical test-only\n// module projection may be removed; the canonical runtime digest is unchanged.\n",
+          "previous": "// Only the reviewed experiment's exact two source hunks may be removed to\n// reconstruct the same full canonical runtime fingerprint. Unknown edits fail.\n"
+        },
+        {
+          "offset": 343178,
+          "current": "    let module = \"#[cfg(test)]\\nmod get_response_owner_074;\\n\\n\";\n    assert!(!source.contains(\"get_response_owner_074::reduce\"));\n    assert!(!source.contains(\"experimental-resp-get-owner-074\"));\n",
+          "previous": "    let module = \"#[cfg(any(test, feature = \\\"experimental-resp-get-owner-074\\\"))]\\nmod get_response_owner_074;\\n\\n\";\n    let selector = concat!(\n        \"        #[cfg(feature = \\\"experimental-resp-get-owner-074\\\")]\\n\",\n        \"        let reduced = get_response_owner_074::reduce(&plan, responses);\\n\",\n        \"        #[cfg(not(feature = \\\"experimental-resp-get-owner-074\\\"))]\\n\",\n        \"        let reduced = plan.reduce(&responses);\\n\",\n        \"        match reduced {\\n\",\n    );\n"
+        },
+        {
+          "offset": 343486,
+          "current": "        source.replace(module, \"\")\n",
+          "previous": "        assert_eq!(source.matches(selector).count(), 1);\n        source\n            .replace(module, \"\")\n            .replace(selector, \"        match plan.reduce(&responses) {\\n\")\n"
+        },
+        {
+          "offset": 347487,
+          "current": "        \"only the retained historical test-only module may exist\"\n",
+          "previous": "        \"the exact two enrolled hunks must exist\"\n"
+        },
+        {
+          "offset": 355414,
+          "current": "    // the retired hypothesis's test-only module declaration. No old Git object\n    // is required in shallow CI. Both runtime candidates stay disabled.\n",
+          "previous": "    // the new preregistered experiment's two exact cfg hunks. No old Git object\n    // is required in shallow CI. Scratch stays removed; unknown edits fail.\n"
+        }
+      ]
+    }
+  ]
+}

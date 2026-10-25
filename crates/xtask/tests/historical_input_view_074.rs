@@ -53,12 +53,14 @@ fn historical_inputs_require_the_complete_reviewed_current_file_before_predecess
             ));
             current = original;
         }
+        let entry = current.clone();
+        let current = runtime::successor::project(path, current);
         assert!(
             contract::accepts(path, &current),
             "raw current input: {path}"
         );
         assert_eq!(
-            contract::predecessor(path, &current),
+            contract::predecessor(path, &entry),
             contract::frozen(contract::PREDECESSOR, path)
         );
         assert!(

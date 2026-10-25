@@ -52,6 +52,7 @@ fn hex_reader_changes_only_registry_input_and_preserves_every_old_assertion() {
 #[test]
 fn hex_registry_view_requires_exact_current_bytes_before_the_old_view() {
     let raw = std::fs::read_to_string(runtime::root().join(REGISTRY)).unwrap();
+    let raw = runtime::successor::project(REGISTRY, raw);
     assert_eq!(raw.replace("\r\n", "\n"), runtime::frozen(BASE, REGISTRY));
     assert!(runtime_io::reviewed_inputs::accepts(REGISTRY, &raw));
     assert_eq!(

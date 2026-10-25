@@ -29,6 +29,7 @@ fn authority_context_reader_adapts_only_the_exact_reviewed_registry_input() {
     }
     let registry = "docs/testing/gated-test-registry.toml";
     let raw = std::fs::read_to_string(runtime::root().join(registry)).unwrap();
+    let raw = runtime::successor::project(registry, raw);
     assert_eq!(
         raw.replace("\r\n", "\n"),
         runtime::frozen("d9a2b85c9a35ac8799f927f07e248e958918a7b5", registry)
