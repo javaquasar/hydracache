@@ -258,7 +258,8 @@ impl Origin {
             .open("/proc")?;
         for file in [&named, &self.root] {
             filesystem(file, 0x9fa0)?;
-            if fd_identity::fresh(file)? != self.id || !boot_comparison::matches(file, &self.boot)? {
+            if fd_identity::fresh(file)? != self.id || !boot_comparison::matches(file, &self.boot)?
+            {
                 return Err(kernel_invalid!("proc-origin-or-boot"));
             }
         }
