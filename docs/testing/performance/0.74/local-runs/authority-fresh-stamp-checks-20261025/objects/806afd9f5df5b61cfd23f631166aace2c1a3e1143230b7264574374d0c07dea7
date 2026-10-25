@@ -1,0 +1,11 @@
+First local evidence-retainer invocation, copied from the terminal API result.
+No worker, test, measurement or server operation was repeated. Python refused
+the local coordinator at parse time before any filesystem effect.
+
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\target\retain-authority-stamp-checks-20261025.py", line 26
+    print(json.dumps(dict(index_sha256=hashlib.sha256(raw).hexdigest(),members=len(members),objects=len(objects)))))
+                                                                                                                   ^
+SyntaxError: unmatched ')'
+
+Correction: remove only the extra terminal closing parenthesis; also retain this
+first coordinator refusal with the subsequent successful evidence collection.

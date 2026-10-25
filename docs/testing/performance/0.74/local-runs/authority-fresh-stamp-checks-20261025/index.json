@@ -1,0 +1,73 @@
+{
+  "admission": false,
+  "doc_check": true,
+  "full_holder_passed": false,
+  "full_package": false,
+  "local_nonpromotable_performance_contract": true,
+  "measurements_repeated": false,
+  "members": {
+    "checks/authority-stamp-final-contract-20261025/intent.json": {
+      "bytes": 330921,
+      "sha256": "386f8b0d0070308c7890520c8df86a7c9513f246eb03f6dd00099f87d90a3222"
+    },
+    "checks/authority-stamp-final-contract-20261025/result.json": {
+      "bytes": 330559,
+      "sha256": "7e56256d9f6a1596b18b84b7c41ce1787108e968386f527076d215bb5c15c4bd"
+    },
+    "checks/authority-stamp-final-contract-20261025/stderr.log": {
+      "bytes": 152,
+      "sha256": "90167e32d47b63fea85637d0d2f0065ee4a881b5b3bcb71efbedac946f96a5bb"
+    },
+    "checks/authority-stamp-final-contract-20261025/stdout.log": {
+      "bytes": 60,
+      "sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+    },
+    "checks/authority-stamp-final-doc-check-20261025/intent.json": {
+      "bytes": 330873,
+      "sha256": "9a2c80c25482de93fb7d746ebbb9d93543de9180fedb39cc6b31abb0f0404f9e"
+    },
+    "checks/authority-stamp-final-doc-check-20261025/result.json": {
+      "bytes": 330559,
+      "sha256": "7e56256d9f6a1596b18b84b7c41ce1787108e968386f527076d215bb5c15c4bd"
+    },
+    "checks/authority-stamp-final-doc-check-20261025/stderr.log": {
+      "bytes": 120,
+      "sha256": "9e52c70e4b037666ee8ed72a49dec24d3bcdda0fe8fd41d03cd5fc82e47fce5c"
+    },
+    "checks/authority-stamp-final-doc-check-20261025/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "checks/authority-stamp-staged-review-20261025/intent.json": {
+      "bytes": 330713,
+      "sha256": "b31117c50634177f346cea7d9004636d9c5009757c35724b20d3cf24110af7c4"
+    },
+    "checks/authority-stamp-staged-review-20261025/result.json": {
+      "bytes": 330441,
+      "sha256": "8e65dbbfa94c6d8188a6dd62c08f39a3bf9df7e32e6b08d418cd42f262722e71"
+    },
+    "checks/authority-stamp-staged-review-20261025/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/authority-stamp-staged-review-20261025/stdout.log": {
+      "bytes": 193,
+      "sha256": "4cba68d96a7ea48995402c0c26c813d6c2b79e1cbe03071c2c00bf5070a7ee8a"
+    },
+    "coordinator/authority-stamp-retainer-first-refusal.txt": {
+      "bytes": 753,
+      "sha256": "806afd9f5df5b61cfd23f631166aace2c1a3e1143230b7264574374d0c07dea7"
+    },
+    "coordinator/retain-authority-stamp-checks-20261025.py": {
+      "bytes": 2069,
+      "sha256": "6b94a2a3314df66d3e3b8c81568c9820466b9f16d2e1800cfbe3cfd1a406db75"
+    },
+    "coordinator/verify-staged-authority-stamp-20261025.py": {
+      "bytes": 2687,
+      "sha256": "8b6f47e04d7850e32f431b92e0036c2dcb18b64c465bd68c07de9404627ef4b8"
+    }
+  },
+  "primary_staged_review_passed": true,
+  "schema": "hc074-authority-stamp-final-checks-v1",
+  "upstream_index_sha256": "19bd1fa220d0b77cbcfbea33ccd1491f423acc1726d13714ffa802355b09d81c"
+}
