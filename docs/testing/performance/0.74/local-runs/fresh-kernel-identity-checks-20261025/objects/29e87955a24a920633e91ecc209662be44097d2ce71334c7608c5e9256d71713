@@ -1,0 +1,18 @@
+{
+  "overlay_names": [
+    "diagnostic_kernel_fd_identity.rs",
+    "diagnostic_kernel_fd_identity_tests.rs",
+    "diagnostic_kernel_origin.rs"
+  ],
+  "hypothesis": "fresh fstat dev/inode leaf, x86_64 only",
+  "baseline_commit": "11445ff7304fa49beaf3be16ed6393155f5a183b",
+  "original_windows": [
+    300,
+    60,
+    10
+  ],
+  "original_check_frequency_and_order": true,
+  "retry": false,
+  "product": false,
+  "admission": false
+}

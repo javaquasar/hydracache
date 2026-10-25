@@ -1,0 +1,25 @@
+"""Correct exact whitespace proof, using already downloaded bytes; no remote call."""
+from pathlib import Path
+import hashlib,json
+root=Path(__file__).resolve().parent.parent
+phase=root/'target/authorized-server-session-20261025/fd-identity-format-export'
+out=phase/'raw';result=json.loads((out/'result.json').read_bytes())
+assert result['passed'] and result['source_unchanged']
+packet=root/'docs/testing/performance/0.74/local-runs/fresh-kernel-identity-20261025'
+index=json.loads((packet/'index.json').read_bytes())
+item=index['members']['input/runtime/diagnostic_kernel_origin.rs']
+raw=(packet/'objects'/item['sha256']).read_bytes();assert hashlib.sha256(raw).hexdigest()==item['sha256']
+before=raw.decode().replace('\r\n','\n')
+path=root/'tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs';after=path.read_text()
+old='if fd_identity::fresh(file)? != self.id || !boot_comparison::matches(file, &self.boot)? {'
+new='if fd_identity::fresh(file)? != self.id || !boot_comparison::matches(file, &self.boot)?\n            {'
+assert before.count(old)==1 and before.replace(old,new)==after
+manifest=json.loads((out/'source-manifest.json').read_bytes())
+for name in ('diagnostic_kernel_origin.rs','diagnostic_kernel_fd_identity.rs','diagnostic_kernel_fd_identity_tests.rs'):
+ relative='tools/long-run-supervisor-074/src/'+name
+ assert hashlib.sha256((root/relative).read_bytes()).hexdigest()==manifest[relative]
+facts=dict(whitespace_only=True,source_bytes_match=True,final_build_checks=result['cases'],
+ final_image_sha256=result['libtest_sha256'],measurements_repeated=False,full_preparation_repeated=False,
+ first_proof_refusal_preserved=True,admission=False)
+with (phase/'format-proof.json').open('x') as f:json.dump(facts,f,indent=2)
+print(json.dumps(facts,indent=2))

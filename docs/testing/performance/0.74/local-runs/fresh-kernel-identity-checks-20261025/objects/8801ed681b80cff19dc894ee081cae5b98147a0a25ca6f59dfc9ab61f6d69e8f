@@ -1,0 +1,31 @@
+{
+  "whitespace_only": true,
+  "source_bytes_match": true,
+  "final_build_checks": [
+    {
+      "name": "build",
+      "exit": 0,
+      "wall_ns": 48100226885
+    },
+    {
+      "name": "check",
+      "exit": 0,
+      "wall_ns": 12403297701
+    },
+    {
+      "name": "clippy",
+      "exit": 0,
+      "wall_ns": 19057360802
+    },
+    {
+      "name": "origin-tests",
+      "exit": 0,
+      "wall_ns": 39238382
+    }
+  ],
+  "final_image_sha256": "62caf35baa1f3320c5184b6304fb2623d64338dfb7470dfbefcacd1613113e5a",
+  "measurements_repeated": false,
+  "full_preparation_repeated": false,
+  "first_proof_refusal_preserved": true,
+  "admission": false
+}

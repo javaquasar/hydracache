@@ -223,6 +223,17 @@ host manager is still 255; no upgrade, original service send or product run occu
 
 ## 4. Completion, cells 2–4, crashes and reconnect
 
+The [fresh identity candidate and signer compatibility control](fresh-kernel-identity-result-20261025.md)
+now implement fresh x86_64 `fstat` projection without reducing any original
+observation. Eight-process CPU screens pass: metadata leaf ratio 0.626101 and
+actual complete `Origin::revalidate` ratio 0.928180. Native strict lint/check
+and 38 origin cases pass, including three new differential controls. The first
+full changed-candidate holder matrix still refuses its healthy case at custody
+age 10005245622 ns; later cases remain unexecuted, with all windows unchanged.
+The repaired-HOME signer cohort is 100 passed/51 failed, with correlated
+AppArmor `sys_chroot` denials. No host policy is changed. This completes a narrow
+control-path optimization, not step 3 or permission to begin later cells.
+
 Only after step 3: join durable completion to proven retirement; implement later
 cells and legal adjacent transitions with durable state/intent publication and
 fsync boundaries. A lost acknowledgement must retain an uncertain attempt,

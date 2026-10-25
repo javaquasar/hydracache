@@ -1,0 +1,38 @@
+from pathlib import Path
+import hashlib,json
+root=Path(__file__).resolve().parent.parent
+members,objects={},{}
+def add(name,raw):
+ assert name not in members
+ digest=hashlib.sha256(raw).hexdigest();members[name]=dict(bytes=len(raw),sha256=digest);objects[digest]=raw
+session=root/'target/authorized-server-session-20261025'
+for label in ('fd-identity-format-build-launch','fd-identity-format-export'):
+ folder=session/label
+ for p in sorted(folder.rglob('*')):
+  if p.is_file():add('session/'+p.relative_to(session).as_posix(),p.read_bytes())
+for label in ('fresh-identity-staged-review-20261025','fresh-identity-final-format-20261025',
+ 'fresh-identity-complete-doc-check-20261025','fresh-identity-complete-contract-20261025'):
+ folder=root/'target/source-continuation-20261024'/label
+ before=json.loads((folder/'intent.json').read_bytes());after=json.loads((folder/'result.json').read_bytes())
+ assert after['exit']==0 and after['outer_refusal'] is None and after['source_unchanged'] and after['head_unchanged'] and before['source']==after['source_after']
+ for p in sorted(folder.iterdir()):add('checks/'+label+'/'+p.name,p.read_bytes())
+for name in ('verify-staged-fresh-identity-20261025.py','server-fd-identity-format-export-20261025.py',
+ 'prepare-fd-identity-format-build-20261025.py','review-fd-identity-format-20261025.py',
+ 'verify-fd-identity-format-proof-20261025.py','retain-fresh-identity-checks-20261025.py'):
+ add('coordinator/'+name,(root/'target'/name).read_bytes())
+for name in ('diagnostic_kernel_origin.rs','diagnostic_kernel_fd_identity.rs','diagnostic_kernel_fd_identity_tests.rs'):
+ add('final-source/'+name,(root/'tools/long-run-supervisor-074/src'/name).read_bytes())
+proof=json.loads((session/'fd-identity-format-export/format-proof.json').read_bytes())
+assert proof['whitespace_only'] and proof['source_bytes_match'] and not proof['measurements_repeated']
+base=root/'docs/testing/performance/0.74/local-runs/fresh-kernel-identity-checks-20261025'
+base.mkdir(exist_ok=False);(base/'objects').mkdir()
+for digest,raw in objects.items():(base/'objects'/digest).write_bytes(raw)
+index=dict(schema='hc074-fresh-kernel-identity-checks-v1',members=members,
+ upstream_index_sha256='ae5029f4ce80d03e1aa4983278daf44320415eefb0b17b7bd61dc43129a888d1',
+ measured_candidate='8862986662063b329f17547f61458f08832767e2',final_format_commit='cdf10d042',
+ final_image_sha256=proof['final_image_sha256'],final_format_build_check_lint_regressions_passed=True,
+ measurements_repeated=False,whitespace_only=True,staged_primary_verified=True,
+ doc_check=True,local_nonpromotable_contract=True,full_package=False,admission=False)
+raw=(json.dumps(index,sort_keys=True,indent=2)+'\n').encode();(base/'index.json').write_bytes(raw)
+(base/'.gitattributes').write_bytes(b'index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n')
+print(json.dumps(dict(index_sha256=hashlib.sha256(raw).hexdigest(),members=len(members),objects=len(objects),bytes=sum(map(len,objects.values())))))

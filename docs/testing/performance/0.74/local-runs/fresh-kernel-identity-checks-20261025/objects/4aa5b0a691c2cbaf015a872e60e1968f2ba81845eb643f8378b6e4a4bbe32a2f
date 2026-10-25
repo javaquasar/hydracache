@@ -1,0 +1,36 @@
+from pathlib import Path
+import hashlib,importlib.util,json,subprocess
+root=Path(__file__).resolve().parent.parent
+prefix='docs/testing/performance/0.74/local-runs/fresh-kernel-identity-20261025/'
+raw=subprocess.check_output(['git','show',':'+prefix+'index.json'],cwd=root)
+assert hashlib.sha256(raw).hexdigest()=='ae5029f4ce80d03e1aa4983278daf44320415eefb0b17b7bd61dc43129a888d1'
+index=json.loads(raw);assert len(index['members'])==352
+digests=sorted({item['sha256'] for item in index['members'].values()});assert len(digests)==204
+queries=[':'+prefix+'objects/'+digest for digest in digests]
+p=subprocess.run(['git','cat-file','--batch'],input=('\n'.join(queries)+'\n').encode(),cwd=root,capture_output=True,check=True)
+objects={};offset=0
+for digest in digests:
+ newline=p.stdout.index(b'\n',offset);header=p.stdout[offset:newline].split();assert header[1]==b'blob'
+ size=int(header[2]);offset=newline+1;blob=p.stdout[offset:offset+size];offset+=size
+ assert p.stdout[offset:offset+1]==b'\n';offset+=1
+ assert hashlib.sha256(blob).hexdigest()==digest;objects[digest]=blob
+assert offset==len(p.stdout)
+members={}
+for name,item in index['members'].items():
+ assert not Path(name).is_absolute() and '..' not in Path(name).parts
+ blob=objects[item['sha256']];assert len(blob)==item['bytes'];members[name]=blob
+assert members['input/screen/review.py']==(root/'tools/kernel-fresh-identity-074/review.py').read_bytes()
+assert members['coordinator/audit-fresh-identity-20261025.py']==(root/'target/audit-fresh-identity-20261025.py').read_bytes()
+spec=importlib.util.spec_from_file_location('a',root/'target/audit-fresh-identity-20261025.py')
+a=importlib.util.module_from_spec(spec);spec.loader.exec_module(a)
+key='session/fd-identity-final-export-v2/'
+files={name.removeprefix(key+'raw/'):blob for name,blob in members.items() if name.startswith(key+'raw/')}
+holder_key='session/fd-identity-holder-export/'
+files.update({'fd-identity-holder-first/'+name.removeprefix(holder_key+'raw/'):blob for name,blob in members.items() if name.startswith(holder_key+'raw/')})
+frame=json.loads(members[holder_key+'stdout.log'])['final_frame']
+facts=a.review(files,frame)
+assert facts==json.loads(members['session/fd-identity-offline-audit/result.json'])
+assert not index['admission'] and not index['candidate_holder_passed']
+for name,digest in index['protected_sha256'].items():assert hashlib.sha256((root/name).read_bytes()).hexdigest()==digest
+print(json.dumps(dict(staged_byte_review=True,members=352,objects=204,leaf_screen=True,origin_screen=True,
+ signer_cohort_passed=False,candidate_holder_passed=False,admission=False)))

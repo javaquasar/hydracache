@@ -19960,3 +19960,32 @@ account-local rustup prerequisite. A private HOME now resolves the exact compile
 without modifying the real account, but that setup control does not supply a
 new verdict for any failed case. Faster verification and honest first failures
 are useful progress; neither is production admission.
+
+### Make the fresh observation cheaper without observing less often
+
+The [fresh kernel identity experiment](../testing/performance/0.74/fresh-kernel-identity-result-20261025.md)
+tests one concrete cost hypothesis: obtain the required device/inode identity
+with a fresh `fstat` rather than constructing full `File::metadata`. It does not
+cache an earlier identity, remove a namespace or Boot observation, change a
+short-circuit read or extend a time window. The runtime change is limited to
+Linux x86_64; other Linux architectures retain the original projection.
+
+Eight independent processes give a leaf CPU ratio of 0.626, with a matched
+identical-function control near 1.000. The next separately frozen screen uses
+the actual installed `Origin::revalidate`, including all original filesystem,
+Boot and namespace work: CPU ratio 0.928, 95% interval [0.927,0.929]. The
+approximately 7.2% reduction belongs to that whole validation method, not cache
+requests or complete preparation. Differential object/error/drift controls and
+the unchanged original trace counts accompany the timing result.
+
+The first complete preparation of this candidate still expires at the original
+custody/challenge boundary after 10.005245622 seconds. Its later four cases do
+not run. A useful local CPU optimization can therefore remain insufficient for
+admission; numerical success at one owner cannot erase a failed enclosing gate.
+
+Environment evidence stays separate too. The repaired private HOME permits a
+signer-only run with 100 passing and 51 failing cases, while kernel audit records
+show AppArmor denying `sys_chroot` to diagnostic signer threads in
+`unprivileged_userns`. Lowering host protections would change the experiment's
+security premise. The first results stay retained, and a compatible fixture
+environment is a separate decision rather than a reason to relax the tests.

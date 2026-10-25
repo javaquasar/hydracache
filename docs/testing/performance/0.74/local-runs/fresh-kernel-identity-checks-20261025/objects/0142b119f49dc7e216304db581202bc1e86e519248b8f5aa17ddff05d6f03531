@@ -1,0 +1,28 @@
+from pathlib import Path
+import base64,hashlib,json
+root=Path(__file__).resolve().parent.parent
+phase=root/'target/authorized-server-session-20261025/fd-identity-format-export'
+packet=json.loads((phase/'stdout.log').read_bytes());assert packet['complete']
+out=phase/'raw';out.mkdir(exist_ok=False)
+for name,item in packet['members'].items():
+ assert Path(name).name==name
+ raw=base64.b64decode(item['base64'],validate=True)
+ assert len(raw)==item['bytes'] and hashlib.sha256(raw).hexdigest()==item['sha256']
+ with (out/name).open('xb') as f:f.write(raw)
+assert json.loads((out/'preflight.json').read_bytes())==json.loads((out/'postflight.json').read_bytes())==packet['final_frame']
+result=json.loads((out/'result.json').read_bytes());assert result['passed'] and result['source_unchanged']
+manifest=json.loads((out/'source-manifest.json').read_bytes())
+for name in ('diagnostic_kernel_origin.rs','diagnostic_kernel_fd_identity.rs','diagnostic_kernel_fd_identity_tests.rs'):
+ path='tools/long-run-supervisor-074/src/'+name;assert hashlib.sha256((root/path).read_bytes()).hexdigest()==manifest[path]
+old=(root/'target/authorized-server-session-20261025/fd-identity-final-export-v2/raw/fd-identity-build-v2/worker.py').read_text()
+# The frozen measured source is retained independently in the primary packet.
+index=json.loads((root/'docs/testing/performance/0.74/local-runs/fresh-kernel-identity-20261025/index.json').read_bytes())
+item=index['members']['input/runtime/diagnostic_kernel_origin.rs']
+raw=(root/'docs/testing/performance/0.74/local-runs/fresh-kernel-identity-20261025/objects'/item['sha256']).read_bytes()
+before=raw.decode().replace('\r\n','\n')
+after=(root/'tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs').read_text()
+needle='if fd_identity::fresh(file)? != self.id || !boot_comparison::matches(file, &self.boot)? {'
+assert before.count(needle)==1
+assert before.replace(needle,needle[:-1]+'\n            {')==after
+print(json.dumps(dict(final_format_build_passed=True,whitespace_only=True,source_bytes_match=True,
+ final_image=result['libtest_sha256'],checks=result['cases'],measurements_repeated=False,admission=False),indent=2))
