@@ -1,0 +1,106 @@
+"""Data-only reconstruction of this bounded server session; no dispatch API."""
+from pathlib import Path
+import hashlib,importlib.util,json,re,sys
+ROOT=Path(__file__).resolve().parent.parent
+RAW=ROOT/'target/authorized-server-session-20261025/download-evidence/raw'
+def require(ok,reason):
+ if not ok:raise ValueError(reason)
+def strict(raw):
+ def pairs(values):
+  result={}
+  for key,value in values:
+   require(key not in result,'duplicate JSON key');result[key]=value
+  return result
+ return json.loads(raw,object_pairs_hook=pairs)
+def checkpoints(raw):
+ rows=[strict(line) for line in raw.splitlines()]
+ require(bool(rows),'missing checkpoints')
+ previous='0'*64;elapsed=-1;identity=rows[0]['identity']
+ for index,row in enumerate(rows):
+  unsigned={key:value for key,value in row.items() if key!='sha256'}
+  digest=hashlib.sha256(json.dumps(unsigned,sort_keys=True,separators=(',',':')).encode()).hexdigest()
+  require(row['seq']==index and row['previous_sha256']==previous and row['sha256']==digest,'checkpoint chain break')
+  require(row['identity']==identity and row['elapsed_monotonic_ns']>elapsed,'checkpoint identity/time drift')
+  previous=digest;elapsed=row['elapsed_monotonic_ns']
+ return rows
+def host(before,after):
+ for key in ('boot','supervisor','artifacts','manager','cgroup_mount','clocksource'):
+  require(before[key]==after[key],'host context changed: '+key)
+ require(before['markers']==after['markers'] and not any(before['markers'].values()),'active host marker')
+ require(not before['fixture_cgroups'] and not after['fixture_cgroups'],'fixture cgroup left behind')
+def reconnect(rows,observations,joined):
+ require(joined['same_live_process'] is True,'worker no longer live at reconnect')
+ require(joined['launch']==observations[0]['launch'],'reconnect adopted another launch')
+ identity=rows[0]['identity'];seq=-1
+ for observation in observations:
+  row=observation['checkpoint']
+  require(row==rows[row['seq']] and row['identity']==identity and row['seq']>=seq,'observer snapshot not in original chain')
+  seq=row['seq']
+ require(len(observations)>=2 and joined['checkpoints'][-1]['seq']>seq,'no checkpoint progress after disconnect')
+ require(joined['checkpoints']==rows[:len(joined['checkpoints'])],'reconnect spliced another chain')
+ # This session observed one already running guardian component on both sides.
+ latest=joined['checkpoints'][-1]
+ require(latest['phase']==observations[-1]['checkpoint']['phase']=='guardians','different reconnect component phase')
+ require(latest['child']==observations[-1]['checkpoint']['child'],'reconnect replaced component child')
+ return dict(wrapper=identity,component_child=latest['child'],last_pre_disconnect_seq=seq,
+             first_reconnected_tail_seq=latest['seq'],production_recovery=False)
+def original(raw):
+ marker='HC074-HELD-LIVE-ORIGINAL '
+ reports=[strict(line.split(marker,1)[1]) for line in raw.decode().splitlines() if marker in line]
+ require(len(reports)==1 and reports[0]['case']=='healthy','not one first healthy attempt')
+ report=reports[0];refusal=report['causal']['first_refusal']
+ require(report['returned'] is False and report['deadline_changed'] is False and report['guard_clock_added'] is False,'original guard or outcome changed')
+ require(refusal['age_ns']==refusal['now_ns']-refusal['issued_ns']>=10_000_000_000 and refusal['diagnostic_reason']=='expired','not original causal expiry')
+ require('HC074-HELD-LIVE case=' not in raw.decode() and 'HC074-HELD-PHASE ' not in raw.decode(),'unexpected completion or profiling')
+ spec=importlib.util.spec_from_file_location('previous_native_holder_outcome',ROOT/'tools/native-server-control-074/review.py')
+ old=importlib.util.module_from_spec(spec);spec.loader.exec_module(old)
+ # Project only the marker for the unchanged old reader; raw stdout is retained.
+ projected=(marker+json.dumps(report)+'\n').encode()
+ result=old.holder(projected,101,101,0)
+ require(not result['complete_matrix_passed'] and result['not_executed_cases']==old.CASES[1:],'partial matrix promoted')
+ result['raw_report']=report
+ return result
+def analyze():
+ def load(name):return strict((RAW/name).read_bytes())
+ before=strict((ROOT/'target/authorized-server-preflight-20261025/stdout.log').read_bytes())
+ after=strict((ROOT/'target/authorized-server-session-20261025/final-host-preflight/stdout.log').read_bytes())
+ host(before,after)
+ build=load('build-v3-result.json')
+ require(build['exit']==0 and build['source_unchanged'] and build['first_refusal'] is None,'build did not pass unchanged')
+ require(build['libtest_sha256']=='6640e1b9b31ae7c87137b335be4f2665d729ea7b4324ee0e874bdbedc346c520','image changed')
+ manifest=(RAW/'manifest.json').read_bytes()
+ require(hashlib.sha256(manifest).hexdigest()=='2a0f7c581a1e854ab71841efb71aaebee3de56d1c0357b54d55a41ae4011ea6d','source manifest drift')
+ source=strict(manifest)
+ for name,entry in source['members'].items():
+  require(hashlib.sha256((ROOT/name).read_bytes()).hexdigest()==entry['sha256'],'local source drift: '+name)
+ faults=load('fault-result.json')
+ require(faults['passed'] and faults['first_refusal'] is None and faults['postflight_refusal'] is None,'kernel cohort failed')
+ require([r['name'] for r in faults['cases']]==['cgroup','guardians','original-adapter'] and all(r['exit']==0 for r in faults['cases']),'cohort schedule changed')
+ text={name:((RAW/(name+'.stdout.log')).read_text()+(RAW/(name+'.stderr.log')).read_text()) for name in ('cgroup','guardians','original-adapter')}
+ for raw in text.values():require(raw.count('test result: ok. 1 passed; 0 failed; 0 ignored;')==1,'wrong libtest summary')
+ require(len(re.findall(r'HC074-CGROUP-ROOT case=',text['cgroup']))==7,'kernel case shape')
+ require(re.findall(r'HC074-CGROUP-ROOT cut=(\d) actual_sigkill=true lost_confirmation=true',text['cgroup'])==['1','2','3','4'],'lost confirmation cut shape')
+ require(re.findall(r'HC074-ROOT-GUARDIAN case=construction-(\d)',text['guardians'])==['3','4','5','6'],'construction case shape')
+ require(re.findall(r'HC074-ROOT-GUARDIAN case=(\d+) ',text['guardians'])==[str(i) for i in range(12)],'guardian case shape')
+ for case in (10,11):require(f'case={case} expected_negative=true all_writers=false' in text['guardians'],'missing deliberate all-writer negative')
+ require(re.findall(r'HC074-ROOT-JOIN-KERNEL case=(\d) seed=0x074c2023',text['original-adapter'])==['0','1','2','3'],'original adapter case shape')
+ chain=checkpoints((RAW/'fault-checkpoints.jsonl').read_bytes())
+ require(faults['checkpoints']==len(chain)==27 and faults['checkpoint_tail']==chain[-1]['sha256'],'checkpoint footer changed')
+ observations=[strict(line) for line in (ROOT/'target/authorized-server-session-20261025/disconnect-observer/stdout.log').read_bytes().splitlines()]
+ joined=strict((ROOT/'target/authorized-server-session-20261025/reconnect-fault/stdout.log').read_bytes())
+ recovery=reconnect(chain,observations,joined)
+ holder=load('holder-result.json')
+ require(holder['exit']==101 and holder['passed'] is False and holder['postflight_refusal'] is None and not holder['completed_cases'],'holder failure promoted')
+ held=original((RAW/'holder.stdout.log').read_bytes())
+ require(load('fault-preflight.json')==load('fault-postflight.json')==load('holder-preflight.json')==load('holder-postflight.json'),'root safety frame changed')
+ first=load('build-result.json')
+ require(first['exit'] is None and first['first_refusal'].startswith('PermissionError:'),'first setup refusal lost')
+ require(b"AssertionError: 'build.stdout.log'" in (RAW/'build-v2-worker.stderr.log').read_bytes(),'second setup refusal lost')
+ return dict(source_head=source['head'],source_members=len(source['members']),build_passed=True,kernel_libtests_passed=3,
+  kernel_internal_scenarios=31,reconnect=recovery,holder=held,host_preserved=True,
+  manager_version=before['manager']['stdout'].splitlines()[0],original_delivery=False,all_writers_proven_stopped=False,
+  production_recovery=False,full_package_pass=False,release_admission=False,server=True,product=False)
+if __name__=='__main__':
+ out=ROOT/'target/authorized-server-session-20261025/offline-review';out.mkdir(exist_ok=False)
+ result=analyze();(out/'result.json').write_text(json.dumps(result,indent=2,sort_keys=True)+'\n',encoding='utf-8')
+ print(json.dumps(dict(kernel_libtests_passed=3,kernel_internal_scenarios=31,holder_passed=False,reconnect_wrapper_pid=result['reconnect']['wrapper']['pid'],source_members=result['source_members'])))

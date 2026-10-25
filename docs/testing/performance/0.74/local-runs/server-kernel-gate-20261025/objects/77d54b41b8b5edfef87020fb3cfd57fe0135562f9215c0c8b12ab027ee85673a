@@ -1,0 +1,17 @@
+from pathlib import Path
+import hashlib,json,os,shutil,subprocess
+root=Path('/tmp/hc074-server-gate-root-20261025.0k0xbdah')
+upload=Path('/tmp/hc074-server-gate-upload-20261025.pvdj0f6c')
+image='6640e1b9b31ae7c87137b335be4f2665d729ea7b4324ee0e874bdbedc346c520'
+assert os.geteuid()==0 and not any((root/n).exists() for n in ('holder-launch-intent.json','holder-launch.json','holder-consumed.json'))
+assert json.loads((root/'fault-result.json').read_bytes())['passed']
+name='server-holder-worker-20261025.py'
+with (upload/name).open('rb') as src,(root/name).open('xb') as dst:shutil.copyfileobj(src,dst)
+assert hashlib.sha256((root/name).read_bytes()).hexdigest()=='cb4e02ec316d0e026fef184e4f14e7b00587be7dd50539681736e70d471b4c68'
+os.chmod(root/name,0o500)
+with (root/'holder-launch-intent.json').open('x') as f:json.dump(dict(consumed=True,retry=False,image=image),f);f.flush();os.fsync(f.fileno())
+with (root/'holder-worker.stdout.log').open('xb') as stdout,(root/'holder-worker.stderr.log').open('xb') as stderr:
+ child=subprocess.Popen(['/usr/bin/python3',str(root/name),image],stdin=subprocess.DEVNULL,stdout=stdout,stderr=stderr,start_new_session=True)
+ fact=dict(pid=child.pid,start_ticks=int(Path(f'/proc/{child.pid}/stat').read_text().rsplit(')',1)[1].split()[19]),boot=Path('/proc/sys/kernel/random/boot_id').read_text().strip(),retry=False)
+ with (root/'holder-launch.json').open('x') as f:json.dump(fact,f);f.flush();os.fsync(f.fileno())
+print(json.dumps(fact))

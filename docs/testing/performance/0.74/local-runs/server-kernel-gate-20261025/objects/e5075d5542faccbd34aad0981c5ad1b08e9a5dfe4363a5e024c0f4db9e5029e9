@@ -1,0 +1,53 @@
+"""Seal completed server observations and first refusals, never execute a test."""
+from pathlib import Path
+import hashlib,importlib.util,json
+root=Path(__file__).resolve().parent.parent
+base=root/'docs/testing/performance/0.74/local-runs/server-kernel-gate-20261025'
+members,objects={},{}
+def add(name,raw):
+ assert name not in members
+ digest=hashlib.sha256(raw).hexdigest();members[name]=dict(sha256=digest,bytes=len(raw));objects[digest]=raw
+spec=importlib.util.spec_from_file_location('server_gate_review',root/'target/review-server-session-20261025.py')
+review=importlib.util.module_from_spec(spec);spec.loader.exec_module(review)
+analysis=review.analyze()
+saved=json.loads((root/'target/authorized-server-session-20261025/offline-review/result.json').read_bytes())
+assert analysis==saved and not analysis['holder']['complete_matrix_passed']
+for folder,label in ((root/'target/authorized-server-session-20261025','session'),
+                     (root/'target/authorized-server-preflight-20261025','first-host'),
+                     (root/'target/authorized-server-build-inventory-20261025','build-inventory')):
+ for path in sorted(folder.rglob('*')):
+  if not path.is_file() or path.name=='raw.tar':continue
+  assert not path.is_symlink()
+  add(label+'/'+path.relative_to(folder).as_posix(),path.read_bytes())
+for path in sorted((root/'target').glob('*20261025.py')):
+ if path.name.startswith(('server-','transfer-server-','download-server-','prepare-server-source-','review-server-session-','test_server_session_review_','retain-server-session-')):
+  add('coordinator/'+path.name,path.read_bytes())
+phase=root/'target/source-continuation-20261024/server-session-offline-controls-20261025'
+before=json.loads((phase/'intent.json').read_bytes());after=json.loads((phase/'result.json').read_bytes())
+assert after['exit']==0 and before['source']==after['source_after'] and after['source_unchanged'] and after['head_unchanged']
+assert b'Ran 6 tests' in (phase/'stderr.log').read_bytes()
+for path in sorted(phase.iterdir()):add('checks/offline-controls/'+path.name,path.read_bytes())
+manifest=root/'target/server-source-capsule-20261025/manifest.json'
+add('input/source-manifest.json',manifest.read_bytes())
+for name in ('review.py','profile_review.py','test_review.py','test_profile_review.py','test_profile_session.py','profile_session.py'):
+ add('input/existing-readers/'+name,(root/'tools/native-server-control-074'/name).read_bytes())
+protected={
+ 'Cargo.toml':'18a8a27cf140a1d6eb31c8316ee39bb7d5832866a990346eee16cd0c30de344b',
+ 'Cargo.lock':'d2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c',
+ 'docs/testing/performance/0.74/qualification-manifest.toml':'11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc',
+ 'tools/authority-storage-source-074/contract.rs':'aefcd4f6a9ed0acc1e072225ea3ed4dda82d2d1ccda0ba4f22ca74459efa64c2'}
+for name,digest in protected.items():
+ raw=(root/name).read_bytes();assert hashlib.sha256(raw).hexdigest()==digest;add('protected/'+name,raw)
+index=dict(schema='hc074-bounded-server-kernel-gate-v1',members=members,protected_sha256=protected,
+ source_head='ee9692b672be093716822db13a22f5a63960f928',libtest_sha256='6640e1b9b31ae7c87137b335be4f2665d729ea7b4324ee0e874bdbedc346c520',
+ kernel_libtests_passed=3,kernel_internal_scenarios=31,offline_review_controls=6,
+ holder_matrix_passed=False,holder_attempted_cases=['healthy'],holder_completed_cases=[],
+ first_causal_expiry_age_ns=10018691950,controller_disconnect_fixture_passed=True,
+ real_server=True,original_delivery=False,production_recovery=False,all_writers_proven_stopped=False,
+ release_install=False,services_changed=False,clocks_changed=False,dependencies_changed=False,
+ product_load=False,qualification=False,admission=False)
+base.mkdir(exist_ok=False);(base/'objects').mkdir()
+for digest,raw in objects.items():(base/'objects'/digest).write_bytes(raw)
+raw=(json.dumps(index,indent=2,sort_keys=True)+'\n').encode();(base/'index.json').write_bytes(raw)
+(base/'.gitattributes').write_bytes(b'index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n')
+print(json.dumps(dict(index_sha256=hashlib.sha256(raw).hexdigest(),members=len(members),objects=len(objects))))

@@ -1,0 +1,58 @@
+"""Read exact Git-index blobs in one batch; never contact the host or run tests."""
+from pathlib import Path
+import hashlib,json,subprocess
+root=Path(__file__).resolve().parent.parent
+prefix='docs/testing/performance/0.74/local-runs/server-kernel-gate-20261025/'
+entries={}
+for line in subprocess.check_output(['git','ls-files','--stage','-z','--',prefix],cwd=root).split(b'\0'):
+ if not line:continue
+ meta,path=line.split(b'\t',1);mode,oid,stage=meta.split()
+ assert stage==b'0' and mode==b'100644'
+ entries[path.decode()[len(prefix):]]=oid
+oids=list(dict.fromkeys(entries.values()))
+raw=subprocess.check_output(['git','cat-file','--batch'],cwd=root,input=b'\n'.join(oids)+b'\n')
+offset=0;blobs={}
+for oid in oids:
+ end=raw.index(b'\n',offset);head=raw[offset:end].split()
+ assert head[:2]==[oid,b'blob'];size=int(head[2]);offset=end+1
+ blobs[oid]=raw[offset:offset+size];offset+=size
+ assert raw[offset:offset+1]==b'\n';offset+=1
+assert offset==len(raw)
+def read(name):return blobs[entries[name]]
+index_raw=read('index.json')
+assert hashlib.sha256(index_raw).hexdigest()=='5366ec91b06b7877e152853d3d7d10ed35e17f32441499ac0bcb4b159676b32f'
+index=json.loads(index_raw);assert len(index['members'])==235
+data={}
+for name,entry in index['members'].items():
+ value=read('objects/'+entry['sha256'])
+ assert len(value)==entry['bytes'] and hashlib.sha256(value).hexdigest()==entry['sha256'];data[name]=value
+base='session/download-evidence/raw/'
+fault=json.loads(data[base+'fault-result.json']);holder=json.loads(data[base+'holder-result.json'])
+assert fault['passed'] and not fault['first_refusal'] and len(fault['cases'])==3 and all(r['exit']==0 for r in fault['cases'])
+assert holder['exit']==101 and not holder['passed'] and not holder['completed_cases'] and holder['postflight_refusal'] is None
+for name in ('fault-preflight.json','fault-postflight.json','holder-preflight.json','holder-postflight.json'):
+ assert data[base+name]==data[base+'fault-preflight.json']
+previous='0'*64
+chain=[json.loads(line) for line in data[base+'fault-checkpoints.jsonl'].splitlines()]
+assert len(chain)==27
+for seq,row in enumerate(chain):
+ unsigned={key:value for key,value in row.items() if key!='sha256'}
+ digest=hashlib.sha256(json.dumps(unsigned,sort_keys=True,separators=(',',':')).encode()).hexdigest()
+ assert row['seq']==seq and row['previous_sha256']==previous and row['sha256']==digest
+ previous=digest
+assert previous==fault['checkpoint_tail']
+reconnected=json.loads(data['session/reconnect-fault/stdout.log'])
+observations=[json.loads(line) for line in data['session/disconnect-observer/stdout.log'].splitlines()]
+assert reconnected['same_live_process'] and len(observations)==6
+assert observations[-1]['checkpoint']['seq']==6 and reconnected['checkpoints'][-1]['seq']==9
+assert observations[-1]['checkpoint']['child']==reconnected['checkpoints'][-1]['child']
+assert reconnected['checkpoints']==chain[:10]
+assert all(o['checkpoint']==chain[o['checkpoint']['seq']] for o in observations)
+raw=data[base+'holder.stdout.log'];marker=b'HC074-HELD-LIVE-ORIGINAL '
+rows=[json.loads(line.split(marker,1)[1]) for line in raw.splitlines() if marker in line]
+assert len(rows)==1 and rows[0]['case']=='healthy' and not rows[0]['returned']
+refusal=rows[0]['causal']['first_refusal']
+assert refusal['age_ns']==refusal['now_ns']-refusal['issued_ns']==10018691950 and refusal['diagnostic_reason']=='expired'
+assert not rows[0]['deadline_changed'] and not rows[0]['guard_clock_added']
+assert not index['holder_matrix_passed'] and not index['original_delivery'] and not index['all_writers_proven_stopped'] and not index['admission']
+print(json.dumps(dict(staged_verified=True,members=235,kernel_libtests=3,holder_matrix_passed=False,production_admission=False)))

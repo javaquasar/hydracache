@@ -1,0 +1,16 @@
+from pathlib import Path
+import hashlib,json,os,shutil,subprocess
+root=Path('/tmp/hc074-server-gate-root-20261025.0k0xbdah')
+upload=Path('/tmp/hc074-server-gate-upload-20261025.pvdj0f6c')
+assert os.geteuid()==0 and not (root/'build-v2-launch.json').exists() and not (root/'build-v2-consumed.json').exists()
+first=json.loads((root/'build-result.json').read_bytes())
+assert first['exit'] is None and first['first_refusal'].startswith('PermissionError:') and not (root/'build-child.json').exists()
+name='server-build-worker-v2-20261025.py'
+with (upload/name).open('rb') as src,(root/name).open('xb') as dst:shutil.copyfileobj(src,dst)
+assert hashlib.sha256((root/name).read_bytes()).hexdigest()=='47dcb6f649752228a39ef08f376d8283f711130750133ec5c792c467c1753ad7'
+os.chmod(root/name,0o500)
+with (root/'build-v2-worker.stdout.log').open('xb') as stdout,(root/'build-v2-worker.stderr.log').open('xb') as stderr:
+ child=subprocess.Popen(['/usr/bin/python3',str(root/name),str(root),str(upload)],stdin=subprocess.DEVNULL,stdout=stdout,stderr=stderr,start_new_session=True)
+ fact=dict(pid=child.pid,start_ticks=int(Path(f'/proc/{child.pid}/stat').read_text().rsplit(')',1)[1].split()[19]),boot=Path('/proc/sys/kernel/random/boot_id').read_text().strip(),configuration='private exact toolchain copy',retry=False)
+ with (root/'build-v2-launch.json').open('x') as f:json.dump(fact,f);f.flush();os.fsync(f.fileno())
+print(json.dumps(fact))

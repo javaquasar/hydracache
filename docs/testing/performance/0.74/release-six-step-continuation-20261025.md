@@ -197,6 +197,17 @@ The compatible-manager environment choice is a real integration boundary. Local
 source controls cannot turn it green; current restrictions exclude the service
 and host actions needed to demonstrate it.
 
+The separately authorized [bounded dedicated-server session](server-kernel-gate-result-20261025.md)
+now builds the current source offline and passes three actual kernel tests with
+31 internal scenarios. Killing the local SSH observer preserves the same live
+diagnostic wrapper and its guardian-test launcher child across reconnect, with a continuous
+27-checkpoint chain. These are component/diagnostic controls, not production
+lease recovery or original-start admission. The fresh full holder matrix still
+fails its first healthy case at causal age 10018691950 ns; the later four cases
+are unexecuted and cannot be spliced from the component tests. All original
+windows, the stable supervisor and installed files remain unchanged. The observed
+host manager is still 255; no upgrade, original service send or product run occurs.
+
 ## 4. Completion, cells 2–4, crashes and reconnect
 
 Only after step 3: join durable completion to proven retirement; implement later

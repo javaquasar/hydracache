@@ -1,0 +1,11 @@
+test_actual_first_results_reconstruct_without_dispatch (__main__.Controls.test_actual_first_results_reconstruct_without_dispatch) ... ok
+test_checkpoint_mutation_gap_or_identity_refuses (__main__.Controls.test_checkpoint_mutation_gap_or_identity_refuses) ... ok
+test_duplicate_report_or_json_key_refuses (__main__.Controls.test_duplicate_report_or_json_key_refuses) ... ok
+test_holder_partial_and_original_window_cannot_be_promoted (__main__.Controls.test_holder_partial_and_original_window_cannot_be_promoted) ... ok
+test_host_change_or_marker_cannot_be_a_clean_postflight (__main__.Controls.test_host_change_or_marker_cannot_be_a_clean_postflight) ... ok
+test_reconnect_to_other_or_dead_worker_refuses (__main__.Controls.test_reconnect_to_other_or_dead_worker_refuses) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.184s
+
+OK

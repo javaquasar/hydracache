@@ -1,0 +1,11 @@
+from pathlib import Path
+import json,subprocess
+base=Path('/home/github-runner/.rustup/toolchains')
+result=dict(toolchains=sorted(p.name for p in base.iterdir()))
+for name in result['toolchains']:
+ if name.startswith(('1.94.0-','stable-')):
+  for tool in ('rustc','cargo'):
+   path=base/name/'bin'/tool
+   p=subprocess.run([str(path),'-Vv'],capture_output=True,timeout=10)
+   result[name+'/'+tool]=dict(exit=p.returncode,stdout=p.stdout.decode())
+print(json.dumps(result,indent=2))

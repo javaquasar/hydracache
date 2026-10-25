@@ -1,0 +1,30 @@
+{
+  "argv": [
+    "/usr/bin/unshare",
+    "--mount",
+    "--propagation",
+    "private",
+    "/usr/bin/timeout",
+    "--signal=TERM",
+    "--kill-after=5s",
+    "180s",
+    "/usr/bin/nice",
+    "-n",
+    "10",
+    "/tmp/hc074-server-gate-root-20261025.0k0xbdah/libtest",
+    "diagnostic_two_phase_launch::root_enrollment::kernel::tests::fault::cgroup_root_kernel_fault_matrix",
+    "--ignored",
+    "--exact",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "env": {
+    "PATH": "/usr/sbin:/usr/bin:/sbin:/bin",
+    "TMPDIR": "/tmp/hc074-server-gate-root-20261025.0k0xbdah/fault-scratch",
+    "HC074_ROOT_FAULT_FIXTURE": "local-only-v1",
+    "HC074_ROOT_GUARDIAN_FIXTURE": "local-only-v1",
+    "HC074_ROOT_JOIN_FIXTURE": "local-only-v1"
+  },
+  "retry": false,
+  "source_head": "ee9692b672be093716822db13a22f5a63960f928"
+}

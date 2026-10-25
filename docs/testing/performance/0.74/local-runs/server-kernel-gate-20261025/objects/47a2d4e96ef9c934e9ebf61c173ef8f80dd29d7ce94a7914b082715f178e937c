@@ -1,0 +1,11 @@
+
+from pathlib import Path
+import json,os,signal,time
+signal.signal(signal.SIGPIPE,signal.SIG_DFL)
+root=Path('/tmp/hc074-server-gate-root-20261025.0k0xbdah')
+launch=json.loads((root/'fault-launch.json').read_bytes())
+for _ in range(30):
+ rows=(root/'fault-checkpoints.jsonl').read_bytes().splitlines()
+ if rows:
+  row=json.loads(rows[-1]);print(json.dumps(dict(observer_pid=os.getpid(),launch=launch,checkpoint=row)),flush=True)
+ time.sleep(.5)

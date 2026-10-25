@@ -1,0 +1,7 @@
+{
+  "exit": null,
+  "first_refusal": "PermissionError: [Errno 13] Permission denied: '/home/github-runner/.rustup/toolchains/1.94.0-x86_64-unknown-linux-gnu/bin/cargo'",
+  "source_unchanged": false,
+  "release_install": false,
+  "product": false
+}

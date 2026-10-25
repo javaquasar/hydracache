@@ -1,0 +1,1 @@
+{"argv": ["scp", "-o", "BatchMode=yes", "-o", "StrictHostKeyChecking=yes", "-o", "ConnectTimeout=15", "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\server-fault-worker-20261025.py", "hydracache-ax42:/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/"], "sha256": "af1e9926e1ad40bc49c1c225d79f5fffc788c715a7889743decea129ec4b17a3", "fixture_spawns": 0, "retry": false}

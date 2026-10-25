@@ -1,0 +1,1 @@
+{"argv": ["scp", "-o", "BatchMode=yes", "-o", "StrictHostKeyChecking=yes", "-o", "ConnectTimeout=15", "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\server-holder-worker-20261025.py", "hydracache-ax42:/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/"], "sha256": "cb4e02ec316d0e026fef184e4f14e7b00587be7dd50539681736e70d471b4c68", "retry": false}

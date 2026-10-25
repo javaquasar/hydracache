@@ -1,0 +1,100 @@
+"""One nonproduct kernel cohort, retained on first failure, detached from SSH.
+
+No unit mutation, enrollment, clock operation, product or qualification entry.
+The wrapper checkpoints prove only this diagnostic process lifetime.
+"""
+from pathlib import Path
+import hashlib,json,os,subprocess,sys,time
+ROOT=Path('/tmp/hc074-server-gate-root-20261025.0k0xbdah')
+IMAGE_SHA=sys.argv[1]
+PREFIX='diagnostic_two_phase_launch::root_enrollment::kernel::tests::fault::'
+CASES=[('cgroup',PREFIX+'cgroup_root_kernel_fault_matrix'),
+       ('guardians',PREFIX+'guardians::cgroup_root_guardian_fault_matrix'),
+       ('original-adapter',PREFIX+'guardians::original_adapter::root_guardian_original_kernel_controls')]
+MARKERS=[
+ '/var/lib/hydracache-performance/campaigns/'+name for name in
+ ('active-campaign','active-diagnostic.json','.active-diagnostic.pending','diagnostic-requests.json','.diagnostic-requests.pending')]
+MARKERS += ['/var/lib/hydracache-performance/'+name for name in
+ ('campaign-lifecycle-smoke-v1.json','controller-loss-smoke-v1.json','diagnostic-intents-074','worker-authority-074')]
+ARTIFACTS={'/opt/hydracache-perf/bin/hydracache-long-run-supervisor-074':'f797629f65385ebfd4d94577a43a2d1d020f71c1e841028dad7d02a51b47ad62',
+ '/var/lib/hydracache-performance/provisioning-receipt-074.json':'b314953d4deedaeaade3e24468da4844b7f13d348a5d77b8e8f41c672ff44525'}
+def sha(path):return hashlib.sha256(path.read_bytes()).hexdigest()
+def ticks(pid):return int(Path(f'/proc/{pid}/stat').read_text().rsplit(')',1)[1].split()[19])
+def publish(name,value):
+ with (ROOT/name).open('x',encoding='utf-8') as f:json.dump(value,f,indent=2);f.flush();os.fsync(f.fileno())
+def preflight():
+ assert Path('/proc/sys/kernel/random/boot_id').read_text().strip()=='e81671d6-bf23-4ebf-b8fe-5dad1f45866f'
+ assert not any(os.path.lexists(p) for p in MARKERS)
+ p=subprocess.run(['systemctl','show','hydracache-performance-supervisor-074.service','-p','MainPID','-p','NRestarts','-p','ActiveState','-p','SubState'],capture_output=True,check=True,timeout=10)
+ assert set(p.stdout.decode().splitlines())=={'MainPID=8839','NRestarts=0','ActiveState=active','SubState=running'}
+ for path,digest in ARTIFACTS.items():assert sha(Path(path))==digest
+ assert sha(ROOT/'libtest')==IMAGE_SHA
+ for directory in (Path('/tmp'),Path('/sys/fs/cgroup')):
+  assert not any(p.name.startswith(('hc074-root-fixture-','hc074-owned-root-')) for p in directory.iterdir())
+ return dict(boot='e81671d6-bf23-4ebf-b8fe-5dad1f45866f',supervisor=p.stdout.decode(),markers_absent=True,installed_unchanged=True,image_sha256=IMAGE_SHA,
+             pid1_mountinfo_sha256=sha(Path('/proc/1/mountinfo')))
+started=time.monotonic_ns()
+identity=dict(pid=os.getpid(),start_ticks=ticks(os.getpid()),boot=Path('/proc/sys/kernel/random/boot_id').read_text().strip())
+seq,previous=0,'0'*64
+def checkpoint(phase,child=None):
+ global seq,previous
+ row=dict(seq=seq,previous_sha256=previous,identity=identity,phase=phase,elapsed_monotonic_ns=time.monotonic_ns()-started,
+          child=child,scope='diagnostic wrapper only; no production recovery claim')
+ raw=json.dumps(row,sort_keys=True,separators=(',',':')).encode()
+ digest=hashlib.sha256(raw).hexdigest()
+ record=dict(row,sha256=digest)
+ with (ROOT/'fault-checkpoints.jsonl').open('ab') as stream:
+  stream.write((json.dumps(record,sort_keys=True)+'\n').encode());stream.flush();os.fsync(stream.fileno())
+ previous=digest;seq+=1
+result=dict(passed=False,first_refusal=None,postflight_refusal=None,cases=[],identity=identity,server=True,
+ original_delivery=False,all_writers_proven_stopped=False,release_install=False,qualification=False,product=False,admission=False)
+publish('fault-consumed.json',dict(identity=identity,schedule=CASES,retry=False,image_sha256=IMAGE_SHA,original_windows=[300,60,10],case_outer_seconds=180,cohort_outer_seconds=600))
+try:
+ assert os.geteuid()==0
+ before=preflight();publish('fault-preflight.json',before)
+ scratch=ROOT/'fault-scratch';scratch.mkdir(mode=0o700)
+ env=dict(PATH='/usr/sbin:/usr/bin:/sbin:/bin',TMPDIR=str(scratch),
+          HC074_ROOT_FAULT_FIXTURE='local-only-v1',HC074_ROOT_GUARDIAN_FIXTURE='local-only-v1',HC074_ROOT_JOIN_FIXTURE='local-only-v1')
+ listed=subprocess.run([str(ROOT/'libtest'),'--list','--ignored'],capture_output=True,env=env,timeout=30)
+ (ROOT/'fault-catalog.stdout.log').write_bytes(listed.stdout);(ROOT/'fault-catalog.stderr.log').write_bytes(listed.stderr)
+ assert listed.returncode==0
+ lines=listed.stdout.decode().splitlines()
+ for _,selector in CASES:assert lines.count(selector+': test')==1,selector
+ checkpoint('catalog-confirmed')
+ for name,selector in CASES:
+  assert time.monotonic_ns()-started<600_000_000_000
+  publish('preflight-'+name+'.json',preflight())
+  argv=['/usr/bin/unshare','--mount','--propagation','private','/usr/bin/timeout','--signal=TERM','--kill-after=5s','180s',
+        '/usr/bin/nice','-n','10',str(ROOT/'libtest'),selector,'--ignored','--exact','--nocapture','--test-threads=1']
+  publish('intent-'+name+'.json',dict(argv=argv,env=env,retry=False,source_head='ee9692b672be093716822db13a22f5a63960f928'))
+  with (ROOT/(name+'.stdout.log')).open('xb') as stdout,(ROOT/(name+'.stderr.log')).open('xb') as stderr:
+   child=subprocess.Popen(argv,cwd=scratch,env=env,stdout=stdout,stderr=stderr,start_new_session=True)
+   child_identity=dict(pid=child.pid,start_ticks=ticks(child.pid))
+   checkpoint(name,child_identity)
+   while child.poll() is None:
+    try:child.wait(timeout=1)
+    except subprocess.TimeoutExpired:checkpoint(name,child_identity)
+  raw=(ROOT/(name+'.stdout.log')).read_text()+(ROOT/(name+'.stderr.log')).read_text()
+  case=dict(name=name,exit=child.returncode,child=child_identity)
+  publish('result-'+name+'.json',case);result['cases'].append(case)
+  assert child.returncode==0 and raw.count('test result: ok. 1 passed; 0 failed; 0 ignored;')==1,case
+  if name=='cgroup':
+   assert 'completed=true cases=11 original_authority=false guardian_armed=false completion=false' in raw
+   for cut in range(1,5):assert f'cut={cut} actual_sigkill=true lost_confirmation=true' in raw
+  elif name=='guardians':
+   assert 'completed=true cases=16 creator_sigkill_tested=false original_armed=false completion=false' in raw
+   for case_id in (10,11):assert f'case={case_id} expected_negative=true all_writers=false' in raw
+  else:
+   for case_id in range(4):assert f'case={case_id} seed=0x074c2023 actual_sigkill=true original_frame=false completion=false' in raw
+  after=preflight();assert after==before;publish('postflight-'+name+'.json',after)
+  checkpoint(name+'-complete',child_identity)
+ result['passed']=len(result['cases'])==3
+except BaseException as error:
+ result['first_refusal']=f'{type(error).__name__}: {error}'
+finally:
+ try:
+  after=preflight();assert after==before;publish('fault-postflight.json',after)
+ except BaseException as error:result['postflight_refusal']=f'{type(error).__name__}: {error}';result['passed']=False
+ checkpoint('terminal')
+ result.update(checkpoints=seq,checkpoint_tail=previous)
+ publish('fault-result.json',result)

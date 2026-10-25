@@ -1,0 +1,38 @@
+"""Kill only this owned local SSH observer; never signal the remote test worker."""
+from pathlib import Path
+import hashlib,json,subprocess
+root=Path(__file__).resolve().parent.parent
+out=root/'target/authorized-server-session-20261025/disconnect-observer';out.mkdir(exist_ok=False)
+remote=r'''
+from pathlib import Path
+import json,os,signal,time
+signal.signal(signal.SIGPIPE,signal.SIG_DFL)
+root=Path('/tmp/hc074-server-gate-root-20261025.0k0xbdah')
+launch=json.loads((root/'fault-launch.json').read_bytes())
+for _ in range(30):
+ rows=(root/'fault-checkpoints.jsonl').read_bytes().splitlines()
+ if rows:
+  row=json.loads(rows[-1]);print(json.dumps(dict(observer_pid=os.getpid(),launch=launch,checkpoint=row)),flush=True)
+ time.sleep(.5)
+'''
+argv=['ssh','-o','BatchMode=yes','-o','StrictHostKeyChecking=yes','-o','ConnectTimeout=15','hydracache-ax42','sudo -n python3 -']
+(out/'intent.json').write_text(json.dumps(dict(argv=argv,kill_only_owned_local_ssh=True,remote_sha256=hashlib.sha256(remote.encode()).hexdigest(),retry=False)),encoding='utf-8')
+(out/'remote.py').write_bytes(remote.encode())
+with (out/'stderr.log').open('xb') as stderr:
+ child=subprocess.Popen(argv,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=stderr)
+ try:
+  stdout,_=child.communicate(input=remote.encode(),timeout=4)
+  raise RuntimeError('observer ended before the planned disconnect')
+ except subprocess.TimeoutExpired:
+  child.kill()  # exact original Popen/Windows handle; local SSH observer only
+  stdout,_=child.communicate(timeout=10)
+(out/'stdout.log').write_bytes(stdout)
+rows=[json.loads(line) for line in stdout.splitlines()]
+result=dict(local_ssh_exit=child.returncode,records=len(rows),local_ssh_killed=True,remote_worker_signalled=False,
+ original_delivery=False,production_recovery=False,admission=False)
+(out/'result.json').write_text(json.dumps(result),encoding='utf-8')
+assert len(rows)>=2,'no established observer before disconnect'
+identity=rows[0]['launch']
+assert all(r['launch']==identity and r['checkpoint']['identity']['pid']==identity['pid']
+           and r['checkpoint']['identity']['start_ticks']==identity['start_ticks'] for r in rows)
+print(json.dumps(result))

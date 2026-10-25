@@ -19908,3 +19908,29 @@ production writer. The target dispatcher remains disabled pending review of the
 real caller and its finite observation. Better attribution depends on that
 boundary: precise counters are not useful if a plausible old result can replace
 the current attempt, or if an observer error silently starts another one.
+
+### Native component success does not complete preparation
+
+The [dedicated Linux session](../testing/performance/0.74/server-kernel-gate-result-20261025.md)
+puts the paid host to a bounded nonproduct use. A fresh offline build of the
+current source passes three kernel tests containing 31 internal scenarios.
+Four cuts use actual creator SIGKILL and lost confirmation; other controls
+exercise guardian death, disconnect, late writers and external FD aliases.
+The controller also kills its own SSH observer and reconnects to the same live
+diagnostic wrapper and guardian component, with an uninterrupted checkpoint
+chain. This records the same wrapper and component launcher, not a production
+process/cgroup recovery proof. The installed supervisor remains untouched.
+
+The subsequent full holder preparation still refuses its first healthy case at
+10.018691950 seconds of the original ten-second causal window. The remaining
+four cases do not run. This is a useful separation: native process-control
+mechanisms work in their declared fixtures, while their complete original
+preparation remains too expensive for its admission contract. Neither successful
+mechanics nor a clean postflight permits extending that contract.
+
+Negative controls are equally important. Losing both guardians is deliberately
+not an all-writer guarantee, and an external descriptor can keep a pipe alive.
+The installed systemd 255 also remains outside the reviewed newer-manager
+FD-delivery scope. These concrete boundaries guide the next implementation and
+environment decisions; they do not justify another identical attempt, a product
+performance claim or production admission.

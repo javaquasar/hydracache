@@ -1,0 +1,9 @@
+{
+  "exit": 0,
+  "first_refusal": null,
+  "source_unchanged": true,
+  "release_install": false,
+  "product": false,
+  "libtest_sha256": "6640e1b9b31ae7c87137b335be4f2665d729ea7b4324ee0e874bdbedc346c520",
+  "libtest_bytes": 26376320
+}

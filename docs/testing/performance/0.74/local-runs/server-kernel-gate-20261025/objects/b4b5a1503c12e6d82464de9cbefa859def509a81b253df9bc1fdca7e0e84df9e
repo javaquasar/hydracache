@@ -1,0 +1,15 @@
+{
+  "launch": {
+    "pid": 312833,
+    "start_ticks": 163473444,
+    "boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+    "configuration": "private exact toolchain copy",
+    "retry": false
+  },
+  "same_live_process": false,
+  "files": {},
+  "build-v2-worker.stderr.log": {
+    "bytes": 259,
+    "tail": "Traceback (most recent call last):\n  File \"/tmp/hc074-server-gate-root-20261025.0k0xbdah/server-build-worker-v2-20261025.py\", line 34, in <module>\n    assert source.count(before)==1,before\n           ^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 'build.stdout.log'\n"
+  }
+}

@@ -1,0 +1,14 @@
+from pathlib import Path
+import hashlib,json,subprocess
+root=Path(__file__).resolve().parent.parent
+out=root/'target/authorized-server-session-20261025/transfer-build-v3';out.mkdir(exist_ok=False)
+source=root/'target/server-build-worker-v3-20261025.py'
+compile(source.read_bytes(),str(source),'exec')
+digest=hashlib.sha256(source.read_bytes()).hexdigest()
+argv=['scp','-o','BatchMode=yes','-o','StrictHostKeyChecking=yes','-o','ConnectTimeout=15',str(source),
+ 'hydracache-ax42:/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/']
+(out/'intent.json').write_text(json.dumps(dict(argv=argv,sha256=digest,separate_configuration=True,first_refusals_preserved=True)),encoding='utf-8')
+with (out/'stdout.log').open('xb') as stdout,(out/'stderr.log').open('xb') as stderr:p=subprocess.run(argv,stdout=stdout,stderr=stderr,timeout=60)
+(out/'result.json').write_text(json.dumps(dict(exit=p.returncode)),encoding='utf-8')
+print(json.dumps(dict(exit=p.returncode,sha256=digest)))
+raise SystemExit(p.returncode)

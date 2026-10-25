@@ -1,0 +1,69 @@
+"""One read-only host observation through the existing strict SSH alias."""
+from pathlib import Path
+import hashlib
+import json
+import subprocess
+
+root = Path(__file__).resolve().parent.parent
+out = root / 'target/authorized-server-preflight-20261025'
+out.mkdir(exist_ok=False)
+remote = r'''
+import hashlib,json,os,platform,pwd,grp,subprocess,time
+from pathlib import Path
+markers = [
+ '/var/lib/hydracache-performance/campaigns/active-campaign',
+ '/var/lib/hydracache-performance/campaigns/active-diagnostic.json',
+ '/var/lib/hydracache-performance/campaigns/.active-diagnostic.pending',
+ '/var/lib/hydracache-performance/campaigns/diagnostic-requests.json',
+ '/var/lib/hydracache-performance/campaigns/.diagnostic-requests.pending',
+ '/var/lib/hydracache-performance/campaign-lifecycle-smoke-v1.json',
+ '/var/lib/hydracache-performance/controller-loss-smoke-v1.json',
+ '/var/lib/hydracache-performance/diagnostic-intents-074',
+ '/var/lib/hydracache-performance/worker-authority-074']
+def command(argv):
+ p=subprocess.run(argv,capture_output=True,timeout=15)
+ return dict(exit=p.returncode,stdout=p.stdout.decode(errors='replace')[:65536],stderr=p.stderr.decode(errors='replace')[:4096])
+def file(path):
+ try:
+  s=os.lstat(path)
+  result=dict(uid=s.st_uid,gid=s.st_gid,mode=oct(s.st_mode),inode=s.st_ino,bytes=s.st_size)
+  if os.path.isfile(path) and not os.path.islink(path) and s.st_size<32*1024**2:
+   result['sha256']=hashlib.sha256(Path(path).read_bytes()).hexdigest()
+  return result
+ except FileNotFoundError:return dict(absent=True)
+result=dict(uid=os.getuid(),gid=os.getgid(),kernel=platform.release(),host=platform.node(),
+ boot=Path('/proc/sys/kernel/random/boot_id').read_text().strip(),
+ machine_id_sha256=hashlib.sha256(Path('/etc/machine-id').read_bytes()).hexdigest(),
+ markers={p:os.path.lexists(p) for p in markers},
+ supervisor=command(['systemctl','show','hydracache-performance-supervisor-074.service','-p','ActiveState','-p','SubState','-p','MainPID','-p','NRestarts','-p','ExecMainStartTimestampMonotonic']),
+ manager=command(['systemctl','--version']),
+ libc=command(['getconf','GNU_LIBC_VERSION']),
+ manager_interface=command(['busctl','--system','introspect','org.freedesktop.systemd1','/org/freedesktop/systemd1','org.freedesktop.systemd1.Manager']),
+ artifacts={p:file(p) for p in ['/opt/hydracache-perf/bin/hydracache-long-run-supervisor-074', '/var/lib/hydracache-performance/provisioning-receipt-074.json']},
+ cgroup_mount=command(['findmnt','-n','-o','FSTYPE,OPTIONS','/sys/fs/cgroup']),
+ clocksource=Path('/sys/devices/system/clocksource/clocksource0/current_clocksource').read_text().strip(),
+ disk=command(['df','-B1','/tmp']),
+ fixture_cgroups=sorted(p.name for p in Path('/sys/fs/cgroup').iterdir() if p.name.startswith(('hc074','hydracache-074'))),
+ temporary_inventory=sorted(p.name for p in Path('/tmp').iterdir() if p.name.startswith(('hc074','hydracache')))[:100],
+ scope='read-only preflight; no installation/service/clock/product operations')
+result['accounts']={}
+for name in ('hydracache-perf','hydracache-admin'):
+ try:
+  p=pwd.getpwnam(name);result['accounts'][name]=dict(uid=p.pw_uid,gid=p.pw_gid,groups=os.getgrouplist(name,p.pw_gid))
+ except KeyError:result['accounts'][name]=dict(absent=True)
+samples=[]
+for _ in range(101):
+ samples.append([time.time_ns(),time.clock_gettime_ns(time.CLOCK_BOOTTIME),time.monotonic_ns(),time.clock_gettime_ns(time.CLOCK_MONOTONIC_RAW)])
+ time.sleep(.01)
+result['clock_samples_rt_boot_mono_raw_ns']=samples
+print(json.dumps(result,indent=2))
+'''
+argv = ['ssh', '-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=yes', '-o', 'ConnectTimeout=15',
+        'hydracache-ax42', 'sudo -n python3 -']
+(out / 'intent.json').write_text(json.dumps(dict(argv=argv,server=True,read_only=True,retry=False,remote_sha256=hashlib.sha256(remote.encode()).hexdigest())),encoding='utf-8')
+(out / 'remote.py').write_bytes(remote.encode())
+with (out / 'stdout.log').open('xb') as stdout, (out / 'stderr.log').open('xb') as stderr:
+    p = subprocess.run(argv,input=remote.encode(),stdout=stdout,stderr=stderr,timeout=60)
+(out / 'result.json').write_text(json.dumps(dict(exit=p.returncode,server=True,product=False,admission=False)),encoding='utf-8')
+print(json.dumps(dict(exit=p.returncode,output=str(out))))
+raise SystemExit(p.returncode)

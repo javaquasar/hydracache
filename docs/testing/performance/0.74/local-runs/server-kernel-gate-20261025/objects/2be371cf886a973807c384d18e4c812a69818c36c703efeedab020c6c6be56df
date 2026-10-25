@@ -1,0 +1,8 @@
+{
+  "name": "original-adapter",
+  "exit": 0,
+  "child": {
+    "pid": 316120,
+    "start_ticks": 163516481
+  }
+}

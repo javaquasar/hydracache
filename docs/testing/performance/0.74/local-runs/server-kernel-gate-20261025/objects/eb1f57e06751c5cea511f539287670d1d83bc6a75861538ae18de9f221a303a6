@@ -1,0 +1,28 @@
+from pathlib import Path
+import hashlib,json,os,tarfile,tempfile
+root=Path('/tmp/hc074-server-gate-root-20261025.0k0xbdah')
+assert os.geteuid()==0
+for name in ('build-launch.json','build-v2-launch.json','build-v3-launch.json','fault-launch.json','holder-launch.json'):
+ launch=json.loads((root/name).read_bytes());path=Path(f"/proc/{launch['pid']}/stat")
+ if path.exists():
+  raw=path.read_text().rsplit(')',1)[1].split()
+  assert int(raw[19])!=launch['start_ticks'] or raw[0]=='Z',name
+assert json.loads((root/'fault-result.json').read_bytes())['passed']
+holder=json.loads((root/'holder-result.json').read_bytes())
+assert holder['exit']==101 and not holder['passed'] and holder['postflight_refusal'] is None
+files={}
+for path in sorted(root.iterdir()):
+ if path.name in ('libtest','source.tar.gz'):continue
+ if not path.is_file():continue
+ assert not path.is_symlink() and path.stat().st_uid==0 and path.stat().st_size<=32*1024**2
+ raw=path.read_bytes();files[path.name]=dict(sha256=hashlib.sha256(raw).hexdigest(),bytes=len(raw))
+export=Path(tempfile.mkdtemp(prefix='hc074-server-gate-export-20261025.',dir='/tmp'))
+with tarfile.open(export/'raw.tar','x') as archive:
+ for name in files:archive.add(root/name,arcname=name,recursive=False)
+manifest=dict(files=files,root=str(root),source_head='ee9692b672be093716822db13a22f5a63960f928',
+ tar_sha256=hashlib.sha256((export/'raw.tar').read_bytes()).hexdigest(),server=True,product=False,release_install=False)
+(export/'manifest.json').write_text(json.dumps(manifest,indent=2,sort_keys=True)+'\n')
+for p in export.iterdir():os.chmod(p,0o400);os.chown(p,1000,1000)
+os.chown(export,1000,1000)
+print(json.dumps(dict(export=str(export),members=len(files),tar_bytes=(export/'raw.tar').stat().st_size,
+ tar_sha256=manifest['tar_sha256'],manifest_sha256=hashlib.sha256((export/'manifest.json').read_bytes()).hexdigest())))

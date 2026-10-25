@@ -1,0 +1,13 @@
+from pathlib import Path
+import json
+root=Path('/tmp/hc074-server-gate-root-20261025.0k0xbdah')
+launch=json.loads((root/'holder-launch.json').read_bytes())
+stat=Path(f"/proc/{launch['pid']}/stat")
+current=None if not stat.exists() else int(stat.read_text().rsplit(')',1)[1].split()[19])
+result=dict(launch=launch,same_live_process=current==launch['start_ticks'])
+for name in ('holder-result.json','holder-child.json'):
+ if (root/name).exists():result[name]=json.loads((root/name).read_bytes())
+for name in ('holder.stdout.log','holder.stderr.log','holder-worker.stderr.log'):
+ if (root/name).exists():
+  raw=(root/name).read_bytes();result[name]=dict(bytes=len(raw),tail=raw[-9000:].decode(errors='replace'))
+print(json.dumps(result,indent=2))

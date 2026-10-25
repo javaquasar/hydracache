@@ -1,0 +1,21 @@
+from pathlib import Path
+import hashlib,json,os,shutil,subprocess
+root=Path('/tmp/hc074-server-gate-root-20261025.0k0xbdah')
+upload=Path('/tmp/hc074-server-gate-upload-20261025.pvdj0f6c')
+image='6640e1b9b31ae7c87137b335be4f2665d729ea7b4324ee0e874bdbedc346c520'
+assert os.geteuid()==0
+assert not any((root/n).exists() for n in ('fault-launch-intent.json','fault-launch.json','fault-consumed.json'))
+build=json.loads((root/'build-v3-result.json').read_bytes())
+assert build['exit']==0 and build['first_refusal'] is None and build['source_unchanged'] and build['libtest_sha256']==image
+assert hashlib.sha256((root/'libtest').read_bytes()).hexdigest()==image
+name='server-fault-worker-20261025.py'
+with (upload/name).open('rb') as src,(root/name).open('xb') as dst:shutil.copyfileobj(src,dst)
+assert hashlib.sha256((root/name).read_bytes()).hexdigest()=='af1e9926e1ad40bc49c1c225d79f5fffc788c715a7889743decea129ec4b17a3'
+os.chmod(root/name,0o500)
+with (root/'fault-launch-intent.json').open('x') as f:
+ json.dump(dict(consumed=True,retry=False,image_sha256=image,server=True,product=False),f);f.flush();os.fsync(f.fileno())
+with (root/'fault-worker.stdout.log').open('xb') as stdout,(root/'fault-worker.stderr.log').open('xb') as stderr:
+ child=subprocess.Popen(['/usr/bin/python3',str(root/name),image],stdin=subprocess.DEVNULL,stdout=stdout,stderr=stderr,start_new_session=True)
+ fact=dict(pid=child.pid,start_ticks=int(Path(f'/proc/{child.pid}/stat').read_text().rsplit(')',1)[1].split()[19]),boot=Path('/proc/sys/kernel/random/boot_id').read_text().strip(),retry=False,image_sha256=image)
+ with (root/'fault-launch.json').open('x') as f:json.dump(fact,f);f.flush();os.fsync(f.fileno())
+print(json.dumps(fact))

@@ -1,0 +1,30 @@
+{
+  "identity": {
+    "pid": 315925,
+    "start_ticks": 163514632,
+    "boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f"
+  },
+  "schedule": [
+    [
+      "cgroup",
+      "diagnostic_two_phase_launch::root_enrollment::kernel::tests::fault::cgroup_root_kernel_fault_matrix"
+    ],
+    [
+      "guardians",
+      "diagnostic_two_phase_launch::root_enrollment::kernel::tests::fault::guardians::cgroup_root_guardian_fault_matrix"
+    ],
+    [
+      "original-adapter",
+      "diagnostic_two_phase_launch::root_enrollment::kernel::tests::fault::guardians::original_adapter::root_guardian_original_kernel_controls"
+    ]
+  ],
+  "retry": false,
+  "image_sha256": "6640e1b9b31ae7c87137b335be4f2665d729ea7b4324ee0e874bdbedc346c520",
+  "original_windows": [
+    300,
+    60,
+    10
+  ],
+  "case_outer_seconds": 180,
+  "cohort_outer_seconds": 600
+}

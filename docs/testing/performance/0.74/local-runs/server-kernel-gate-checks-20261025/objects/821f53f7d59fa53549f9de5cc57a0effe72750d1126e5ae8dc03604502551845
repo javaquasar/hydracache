@@ -1,0 +1,15 @@
+test_changed_schedule_clocks_spans_or_refusal_fail_closed (test_profile_review.Tests.test_changed_schedule_clocks_spans_or_refusal_fail_closed) ... ok
+test_observer_clocks_missing_cpu_and_failed_postflight_remain_separate (test_profile_review.Tests.test_observer_clocks_missing_cpu_and_failed_postflight_remain_separate) ... ok
+test_partial_first_result_is_retained_not_promoted (test_profile_review.Tests.test_partial_first_result_is_retained_not_promoted) ... ok
+test_exact_safety_frame_and_one_case_only (test_profile_session.ProfileTests.test_exact_safety_frame_and_one_case_only) ... ok
+test_template_drift_is_not_silently_rebased (test_profile_session.ProfileTests.test_template_drift_is_not_silently_rebased) ... ok
+test_changed_window_inconsistent_age_or_clock_guard_refuses (test_review.ReviewTests.test_changed_window_inconsistent_age_or_clock_guard_refuses) ... ok
+test_first_healthy_expiry_stays_negative_despite_successful_postflight (test_review.ReviewTests.test_first_healthy_expiry_stays_negative_despite_successful_postflight) ... ok
+test_full_synthetic_shape_is_not_original_delivery_or_production_retirement (test_review.ReviewTests.test_full_synthetic_shape_is_not_original_delivery_or_production_retirement) ... ok
+test_schedule_override_duplicate_or_cost_refuses (test_review.ReviewTests.test_schedule_override_duplicate_or_cost_refuses) ... ok
+test_zero_or_bad_postflight_cannot_promote_partial_shape (test_review.ReviewTests.test_zero_or_bad_postflight_cannot_promote_partial_shape) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.007s
+
+OK

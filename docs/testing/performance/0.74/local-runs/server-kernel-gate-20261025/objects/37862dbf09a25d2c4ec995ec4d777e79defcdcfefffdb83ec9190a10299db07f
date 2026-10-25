@@ -1,0 +1,72 @@
+"""Detached diagnostic build; only the compiler child runs as UID/GID 1000."""
+from pathlib import Path
+import hashlib,json,os,shutil,signal,subprocess,sys,tarfile,time
+protected,upload=map(Path,sys.argv[1:])
+assert str(protected)=='/tmp/hc074-server-gate-root-20261025.0k0xbdah'
+assert str(upload)=='/tmp/hc074-server-gate-upload-20261025.pvdj0f6c'
+def sha(path):return hashlib.sha256(path.read_bytes()).hexdigest()
+def write(name,value):
+ with (protected/name).open('x',encoding='utf-8') as f:
+  json.dump(value,f,indent=2);f.flush();os.fsync(f.fileno())
+result=dict(exit=None,first_refusal=None,source_unchanged=False,release_install=False,product=False)
+write('build-consumed.json',dict(pid=os.getpid(),retry=False,server=True,source_head='ee9692b672be093716822db13a22f5a63960f928'))
+try:
+ assert os.geteuid()==0
+ assert sha(protected/'source.tar.gz')=='45ed5f3f2b8f465cad58a61bca21169bcb5e9df5e66b9bf1081a6793a179e63c'
+ assert sha(protected/'manifest.json')=='2a0f7c581a1e854ab71841efb71aaebee3de56d1c0357b54d55a41ae4011ea6d'
+ manifest=json.loads((protected/'manifest.json').read_bytes())
+ source=upload/'source';source.mkdir(mode=0o700)
+ with tarfile.open(protected/'source.tar.gz','r:gz') as archive:
+  members=archive.getmembers()
+  assert len(members)==len(manifest['members'])==2558
+  assert len({m.name for m in members})==len(members)
+  for m in members:
+   assert m.isfile() and not Path(m.name).is_absolute() and '..' not in Path(m.name).parts
+   assert m.name in manifest['members'] and m.size==manifest['members'][m.name]['bytes']
+  archive.extractall(source,filter='data')
+ def verify():
+  for name,entry in manifest['members'].items():
+   path=source/name
+   assert path.is_file() and not path.is_symlink() and sha(path)==entry['sha256'],name
+ verify()
+ cargo_home=upload/'cargo-home';cargo_home.mkdir(mode=0o700)
+ registry=cargo_home/'registry';registry.mkdir()
+ for name in ('index','cache'):
+  shutil.copytree(Path('/home/github-runner/.cargo/registry')/name,registry/name,symlinks=True)
+ target=upload/'build-target';target.mkdir(mode=0o700)
+ for base in (source,cargo_home,target):
+  for p in [base,*base.rglob('*')]:
+   if not p.is_symlink():os.chown(p,1000,1000)
+ toolchain=Path('/home/github-runner/.rustup/toolchains/1.94.0-x86_64-unknown-linux-gnu/bin')
+ argv=[str(toolchain/'cargo'),*manifest['command'][1:]]
+ env=dict(PATH=str(toolchain)+':/usr/bin:/bin',HOME='/home/hydracache-admin',CARGO_HOME=str(cargo_home),
+          CARGO_TARGET_DIR=str(target),CARGO_NET_OFFLINE='true',CARGO_INCREMENTAL='0',CARGO_BUILD_JOBS='2',
+          RUSTC=str(toolchain/'rustc'),RUSTDOC=str(toolchain/'rustdoc'))
+ write('build-command.json',dict(argv=argv,env=env,cwd=str(source),uid=1000,gid=1000,
+   rustc_sha256=sha(toolchain/'rustc'),cargo_sha256=sha(toolchain/'cargo'),timeout_seconds=1200))
+ def limited():
+  os.setgroups([]);os.setgid(1000);os.setuid(1000);os.nice(10)
+ with (protected/'build.stdout.log').open('xb') as stdout,(protected/'build.stderr.log').open('xb') as stderr:
+  child=subprocess.Popen(argv,cwd=source,env=env,stdout=stdout,stderr=stderr,preexec_fn=limited,start_new_session=True)
+  write('build-child.json',dict(pid=child.pid,start_ticks=int(Path(f'/proc/{child.pid}/stat').read_text().rsplit(')',1)[1].split()[19])))
+  try:result['exit']=child.wait(timeout=1200)
+  except subprocess.TimeoutExpired:
+   os.killpg(child.pid,signal.SIGTERM)
+   try:child.wait(timeout=5)
+   except subprocess.TimeoutExpired:os.killpg(child.pid,signal.SIGKILL);child.wait()
+   raise RuntimeError('bounded diagnostic build timed out; no retry')
+ verify();result['source_unchanged']=True
+ assert result['exit']==0,'native compilation failed'
+ rows=[json.loads(line) for line in (protected/'build.stdout.log').read_text().splitlines() if line.startswith('{')]
+ artifacts=[r for r in rows if r.get('reason')=='compiler-artifact' and r.get('executable') and r.get('profile',{}).get('test')
+            and r.get('target',{}).get('name')=='hydracache_long_run_supervisor_074']
+ assert len(artifacts)==1
+ image=Path(artifacts[0]['executable'])
+ assert image.parent==target/'release/deps' and image.is_file() and not image.is_symlink()
+ with image.open('rb') as src,(protected/'libtest').open('xb') as dst:shutil.copyfileobj(src,dst)
+ os.chmod(protected/'libtest',0o500)
+ result.update(libtest_sha256=sha(protected/'libtest'),libtest_bytes=(protected/'libtest').stat().st_size)
+except BaseException as error:
+ result['first_refusal']=f'{type(error).__name__}: {error}'
+finally:
+ write('build-result.json',result)

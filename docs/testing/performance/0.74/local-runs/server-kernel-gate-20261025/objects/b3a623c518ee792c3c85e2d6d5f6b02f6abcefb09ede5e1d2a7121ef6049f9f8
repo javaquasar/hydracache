@@ -1,0 +1,16 @@
+from pathlib import Path
+import hashlib,json,os,shutil,subprocess
+root=Path('/tmp/hc074-server-gate-root-20261025.0k0xbdah')
+upload=Path('/tmp/hc074-server-gate-upload-20261025.pvdj0f6c')
+assert os.geteuid()==0 and not (root/'build-v3-launch.json').exists() and not (root/'build-v3-consumed.json').exists()
+assert not (root/'build-v2-child.json').exists() and not (root/'build-v2-consumed.json').exists()
+assert b"AssertionError: 'build.stdout.log'" in (root/'build-v2-worker.stderr.log').read_bytes()
+name='server-build-worker-v3-20261025.py'
+with (upload/name).open('rb') as src,(root/name).open('xb') as dst:shutil.copyfileobj(src,dst)
+assert hashlib.sha256((root/name).read_bytes()).hexdigest()=='5b3726cae6894d46fbe01334458bb622acfe0345aba99d6b396320c1d5e634ce'
+os.chmod(root/name,0o500)
+with (root/'build-v3-worker.stdout.log').open('xb') as stdout,(root/'build-v3-worker.stderr.log').open('xb') as stderr:
+ child=subprocess.Popen(['/usr/bin/python3',str(root/name)],stdin=subprocess.DEVNULL,stdout=stdout,stderr=stderr,start_new_session=True)
+ fact=dict(pid=child.pid,start_ticks=int(Path(f'/proc/{child.pid}/stat').read_text().rsplit(')',1)[1].split()[19]),boot=Path('/proc/sys/kernel/random/boot_id').read_text().strip(),configuration='explicit private exact toolchain copy',retry=False)
+ with (root/'build-v3-launch.json').open('x') as f:json.dump(fact,f);f.flush();os.fsync(f.fileno())
+print(json.dumps(fact))

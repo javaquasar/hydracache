@@ -1,0 +1,237 @@
+{
+  "tools": {
+    "cargo": {
+      "path": null
+    },
+    "rustc": {
+      "path": null
+    },
+    "unshare": {
+      "path": "/usr/bin/unshare"
+    },
+    "timeout": {
+      "path": "/usr/bin/timeout"
+    },
+    "python3": {
+      "path": "/usr/bin/python3"
+    },
+    "tar": {
+      "path": "/usr/bin/tar"
+    },
+    "gcc": {
+      "path": "/usr/bin/gcc"
+    }
+  },
+  "caches": {
+    "/home/hydracache-admin/.cargo": {
+      "exists": false,
+      "members": []
+    },
+    "/root/.cargo": {
+      "exists": false,
+      "members": []
+    },
+    "/home/github-runner/.cargo": {
+      "exists": true,
+      "members": [
+        ".global-cache",
+        ".package-cache",
+        ".package-cache-mutate",
+        "bin",
+        "env",
+        "git",
+        "registry"
+      ]
+    },
+    "/opt/actions-runner": {
+      "exists": true,
+      "members": [
+        ".credentials",
+        ".credentials_rsaparams",
+        ".env",
+        ".path",
+        ".runner",
+        ".runner_migrated",
+        ".service",
+        "_diag",
+        "_work",
+        "actions-runner-linux-x64-2.336.0.tar.gz",
+        "bin",
+        "bin.2.336.0",
+        "bin.2.337.0",
+        "config.sh",
+        "env.sh",
+        "externals",
+        "externals.2.336.0",
+        "externals.2.337.0",
+        "run-helper.cmd.template",
+        "run-helper.sh.template",
+        "run.sh",
+        "runsvc.sh",
+        "safe_sleep.sh",
+        "svc.sh",
+        "update.finished"
+      ]
+    },
+    "/tmp/hc074-native-cost-root-20261024.7PkS2E": {
+      "exists": true,
+      "members": [
+        "bundle",
+        "inputs.sha256",
+        "libtest",
+        "matrix.exit",
+        "matrix.log",
+        "mountinfo-after.log",
+        "mountinfo-before.log",
+        "postflight.exit",
+        "postflight.log",
+        "preflight.log",
+        "profile-once",
+        "profile-session.sh",
+        "wrapper.exit",
+        "wrapper.log"
+      ]
+    },
+    "/tmp/hc074-native-held-root-20261023.0Au6cQ": {
+      "exists": true,
+      "members": [
+        "bundle",
+        "holder-once",
+        "holder-session.sh",
+        "inputs.sha256",
+        "libtest",
+        "matrix.exit",
+        "matrix.log",
+        "mountinfo-after.log",
+        "mountinfo-before.log",
+        "postflight.exit",
+        "postflight.log",
+        "preflight.log",
+        "wrapper.exit",
+        "wrapper.log"
+      ]
+    }
+  },
+  "artifacts": {
+    "/tmp/hc074-native-cost-root-20261024.7PkS2E/matrix.log": {
+      "bytes": 103505,
+      "sha256": "06f32551be04ec237ae7b77986a6f8186294521cf5d6bb83b3609b10fe7d2d11",
+      "mode": "0o100600"
+    },
+    "/tmp/hc074-native-cost-root-20261024.7PkS2E/postflight.exit": {
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "mode": "0o100600"
+    },
+    "/tmp/hc074-native-cost-root-20261024.7PkS2E/mountinfo-before.log": {
+      "bytes": 2533,
+      "sha256": "aadf33da0248a5d1eb511955adcd7e28926cc0ac6838ad91870131ea5fa9b677",
+      "mode": "0o100600"
+    },
+    "/tmp/hc074-native-cost-root-20261024.7PkS2E/wrapper.log": {
+      "bytes": 74,
+      "sha256": "fbbd871b4f433e8b655e3e3fc9790c419a5bd34ecdbf72adc613898c5a77ccf3",
+      "mode": "0o100600"
+    },
+    "/tmp/hc074-native-cost-root-20261024.7PkS2E/wrapper.exit": {
+      "bytes": 4,
+      "sha256": "39b8dc3fc8b44765c8e6f1adee04c5b465e555ab791cc42d0d9e810d5b64297c",
+      "mode": "0o100600"
+    },
+    "/tmp/hc074-native-cost-root-20261024.7PkS2E/libtest": {
+      "bytes": 27152400,
+      "sha256": "ca5484aa951414b80aefd0148c7d8f5185a8fdf73bb197cf98a790de59b8cff1",
+      "mode": "0o100500"
+    },
+    "/tmp/hc074-native-cost-root-20261024.7PkS2E/postflight.log": {
+      "bytes": 965,
+      "sha256": "869239713b38bed7374f7d19490e00f17b975dee3af56b88d16cc5ef1c3f889d",
+      "mode": "0o100600"
+    },
+    "/tmp/hc074-native-cost-root-20261024.7PkS2E/mountinfo-after.log": {
+      "bytes": 2533,
+      "sha256": "aadf33da0248a5d1eb511955adcd7e28926cc0ac6838ad91870131ea5fa9b677",
+      "mode": "0o100600"
+    },
+    "/tmp/hc074-native-cost-root-20261024.7PkS2E/profile-session.sh": {
+      "bytes": 4183,
+      "sha256": "351bc4dc4b0c6e7da16ad9be1c76c175743fcf0738fda8339fc83b90ea8e6f1c",
+      "mode": "0o100500"
+    },
+    "/tmp/hc074-native-cost-root-20261024.7PkS2E/preflight.log": {
+      "bytes": 965,
+      "sha256": "869239713b38bed7374f7d19490e00f17b975dee3af56b88d16cc5ef1c3f889d",
+      "mode": "0o100600"
+    },
+    "/tmp/hc074-native-cost-root-20261024.7PkS2E/inputs.sha256": {
+      "bytes": 958,
+      "sha256": "c436786db7cdee54817f4bdeaeecb05da8d7a1b1b629f8b3c3ed4b98cd0a9215",
+      "mode": "0o100500"
+    },
+    "/tmp/hc074-native-cost-root-20261024.7PkS2E/matrix.exit": {
+      "bytes": 4,
+      "sha256": "39b8dc3fc8b44765c8e6f1adee04c5b465e555ab791cc42d0d9e810d5b64297c",
+      "mode": "0o100600"
+    },
+    "/tmp/hc074-native-held-root-20261023.0Au6cQ/matrix.log": {
+      "bytes": 5397,
+      "sha256": "aac754a7aeb04df4c93a2981ffedeb5937be28677f292efd3a2c677b7c946000",
+      "mode": "0o100600"
+    },
+    "/tmp/hc074-native-held-root-20261023.0Au6cQ/postflight.exit": {
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "mode": "0o100600"
+    },
+    "/tmp/hc074-native-held-root-20261023.0Au6cQ/holder-session.sh": {
+      "bytes": 4431,
+      "sha256": "e6a2bf2b654ab9a25888bb96bcfb94463c1d66b7c1c577c3927097fdba4dccf5",
+      "mode": "0o100500"
+    },
+    "/tmp/hc074-native-held-root-20261023.0Au6cQ/mountinfo-before.log": {
+      "bytes": 2533,
+      "sha256": "aadf33da0248a5d1eb511955adcd7e28926cc0ac6838ad91870131ea5fa9b677",
+      "mode": "0o100600"
+    },
+    "/tmp/hc074-native-held-root-20261023.0Au6cQ/wrapper.log": {
+      "bytes": 73,
+      "sha256": "1dd18bab7db1905d04a0bb749f4641d6316496399fea35810a79e42cd3e992c4",
+      "mode": "0o100600"
+    },
+    "/tmp/hc074-native-held-root-20261023.0Au6cQ/wrapper.exit": {
+      "bytes": 4,
+      "sha256": "39b8dc3fc8b44765c8e6f1adee04c5b465e555ab791cc42d0d9e810d5b64297c",
+      "mode": "0o100600"
+    },
+    "/tmp/hc074-native-held-root-20261023.0Au6cQ/libtest": {
+      "bytes": 27152400,
+      "sha256": "ca5484aa951414b80aefd0148c7d8f5185a8fdf73bb197cf98a790de59b8cff1",
+      "mode": "0o100500"
+    },
+    "/tmp/hc074-native-held-root-20261023.0Au6cQ/postflight.log": {
+      "bytes": 964,
+      "sha256": "0106b0e7fc50405e8599ae54a55da2ffb462f0d39636b7db4550ba2f7ca2e5de",
+      "mode": "0o100600"
+    },
+    "/tmp/hc074-native-held-root-20261023.0Au6cQ/mountinfo-after.log": {
+      "bytes": 2533,
+      "sha256": "aadf33da0248a5d1eb511955adcd7e28926cc0ac6838ad91870131ea5fa9b677",
+      "mode": "0o100600"
+    },
+    "/tmp/hc074-native-held-root-20261023.0Au6cQ/preflight.log": {
+      "bytes": 964,
+      "sha256": "0106b0e7fc50405e8599ae54a55da2ffb462f0d39636b7db4550ba2f7ca2e5de",
+      "mode": "0o100600"
+    },
+    "/tmp/hc074-native-held-root-20261023.0Au6cQ/inputs.sha256": {
+      "bytes": 957,
+      "sha256": "eda17171eeb658e5dec422f89140a2b01eb437bab2adedb7b5b90c4b6873cbbc",
+      "mode": "0o100500"
+    },
+    "/tmp/hc074-native-held-root-20261023.0Au6cQ/matrix.exit": {
+      "bytes": 4,
+      "sha256": "39b8dc3fc8b44765c8e6f1adee04c5b465e555ab791cc42d0d9e810d5b64297c",
+      "mode": "0o100600"
+    }
+  }
+}

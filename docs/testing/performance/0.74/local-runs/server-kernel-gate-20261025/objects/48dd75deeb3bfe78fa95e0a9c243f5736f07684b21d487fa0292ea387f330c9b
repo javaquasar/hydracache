@@ -1,0 +1,180 @@
+{
+  "launch": {
+    "pid": 315925,
+    "start_ticks": 163514632,
+    "boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+    "retry": false,
+    "image_sha256": "6640e1b9b31ae7c87137b335be4f2665d729ea7b4324ee0e874bdbedc346c520"
+  },
+  "same_live_process": true,
+  "checkpoints": [
+    {
+      "child": null,
+      "elapsed_monotonic_ns": 45515310,
+      "identity": {
+        "boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+        "pid": 315925,
+        "start_ticks": 163514632
+      },
+      "phase": "catalog-confirmed",
+      "previous_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "scope": "diagnostic wrapper only; no production recovery claim",
+      "seq": 0,
+      "sha256": "83d01865434563d586ae173936b6ae26d7fef8ad98babf215b0785c70bc19b75"
+    },
+    {
+      "child": {
+        "pid": 315929,
+        "start_ticks": 163514643
+      },
+      "elapsed_monotonic_ns": 91053769,
+      "identity": {
+        "boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+        "pid": 315925,
+        "start_ticks": 163514632
+      },
+      "phase": "cgroup",
+      "previous_sha256": "83d01865434563d586ae173936b6ae26d7fef8ad98babf215b0785c70bc19b75",
+      "scope": "diagnostic wrapper only; no production recovery claim",
+      "seq": 1,
+      "sha256": "cd886235e7a71bb8d53eca44504737050ec8297a13a4b86e545d4db78789f6d6"
+    },
+    {
+      "child": {
+        "pid": 315929,
+        "start_ticks": 163514643
+      },
+      "elapsed_monotonic_ns": 161682504,
+      "identity": {
+        "boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+        "pid": 315925,
+        "start_ticks": 163514632
+      },
+      "phase": "cgroup-complete",
+      "previous_sha256": "cd886235e7a71bb8d53eca44504737050ec8297a13a4b86e545d4db78789f6d6",
+      "scope": "diagnostic wrapper only; no production recovery claim",
+      "seq": 2,
+      "sha256": "bda6a701dff5651e78e81ae7b692f6337190d93eb766e0ca5b1dfcdf336a048a"
+    },
+    {
+      "child": {
+        "pid": 315951,
+        "start_ticks": 163514654
+      },
+      "elapsed_monotonic_ns": 200193226,
+      "identity": {
+        "boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+        "pid": 315925,
+        "start_ticks": 163514632
+      },
+      "phase": "guardians",
+      "previous_sha256": "bda6a701dff5651e78e81ae7b692f6337190d93eb766e0ca5b1dfcdf336a048a",
+      "scope": "diagnostic wrapper only; no production recovery claim",
+      "seq": 3,
+      "sha256": "2227c3d8e6122b7ab67d40335cf23a9f8cff6d46159cae1e4b70f0a4db130787"
+    },
+    {
+      "child": {
+        "pid": 315951,
+        "start_ticks": 163514654
+      },
+      "elapsed_monotonic_ns": 1205707230,
+      "identity": {
+        "boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+        "pid": 315925,
+        "start_ticks": 163514632
+      },
+      "phase": "guardians",
+      "previous_sha256": "2227c3d8e6122b7ab67d40335cf23a9f8cff6d46159cae1e4b70f0a4db130787",
+      "scope": "diagnostic wrapper only; no production recovery claim",
+      "seq": 4,
+      "sha256": "1cc57e0af6cd4975065a5b57fabaf29a6be5a6bb331c1a9ce144dafe19332a9b"
+    },
+    {
+      "child": {
+        "pid": 315951,
+        "start_ticks": 163514654
+      },
+      "elapsed_monotonic_ns": 2220477231,
+      "identity": {
+        "boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+        "pid": 315925,
+        "start_ticks": 163514632
+      },
+      "phase": "guardians",
+      "previous_sha256": "1cc57e0af6cd4975065a5b57fabaf29a6be5a6bb331c1a9ce144dafe19332a9b",
+      "scope": "diagnostic wrapper only; no production recovery claim",
+      "seq": 5,
+      "sha256": "0eb70e5137f882ce005adece13d0aaea600ee208d3c8a49d1a983686e927dbe7"
+    },
+    {
+      "child": {
+        "pid": 315951,
+        "start_ticks": 163514654
+      },
+      "elapsed_monotonic_ns": 3235306472,
+      "identity": {
+        "boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+        "pid": 315925,
+        "start_ticks": 163514632
+      },
+      "phase": "guardians",
+      "previous_sha256": "0eb70e5137f882ce005adece13d0aaea600ee208d3c8a49d1a983686e927dbe7",
+      "scope": "diagnostic wrapper only; no production recovery claim",
+      "seq": 6,
+      "sha256": "16f7055ea32041d31be4788eaef3ae34e5dcf9ecfe00e17a13a8f2e5ebbce376"
+    },
+    {
+      "child": {
+        "pid": 315951,
+        "start_ticks": 163514654
+      },
+      "elapsed_monotonic_ns": 4241329441,
+      "identity": {
+        "boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+        "pid": 315925,
+        "start_ticks": 163514632
+      },
+      "phase": "guardians",
+      "previous_sha256": "16f7055ea32041d31be4788eaef3ae34e5dcf9ecfe00e17a13a8f2e5ebbce376",
+      "scope": "diagnostic wrapper only; no production recovery claim",
+      "seq": 7,
+      "sha256": "f1ea9df07de016ccc9959f00c83f131427bf4d0f10a8c9cbe3a666ffda01acb0"
+    },
+    {
+      "child": {
+        "pid": 315951,
+        "start_ticks": 163514654
+      },
+      "elapsed_monotonic_ns": 5256235043,
+      "identity": {
+        "boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+        "pid": 315925,
+        "start_ticks": 163514632
+      },
+      "phase": "guardians",
+      "previous_sha256": "f1ea9df07de016ccc9959f00c83f131427bf4d0f10a8c9cbe3a666ffda01acb0",
+      "scope": "diagnostic wrapper only; no production recovery claim",
+      "seq": 8,
+      "sha256": "8f34e13634aac388d7b8def8bd157a7fce6ae34da3080f667b5c0089e48dd360"
+    },
+    {
+      "child": {
+        "pid": 315951,
+        "start_ticks": 163514654
+      },
+      "elapsed_monotonic_ns": 6262254855,
+      "identity": {
+        "boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+        "pid": 315925,
+        "start_ticks": 163514632
+      },
+      "phase": "guardians",
+      "previous_sha256": "8f34e13634aac388d7b8def8bd157a7fce6ae34da3080f667b5c0089e48dd360",
+      "scope": "diagnostic wrapper only; no production recovery claim",
+      "seq": 9,
+      "sha256": "7e24a59953cca3e5afd4dab104fb41f9e802225b94bf7b53b7248258a807f749"
+    }
+  ],
+  "worker_stderr": ""
+}

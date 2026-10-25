@@ -1,0 +1,45 @@
+{
+  "passed": true,
+  "first_refusal": null,
+  "postflight_refusal": null,
+  "cases": [
+    {
+      "name": "cgroup",
+      "exit": 0,
+      "child": {
+        "pid": 315929,
+        "start_ticks": 163514643
+      }
+    },
+    {
+      "name": "guardians",
+      "exit": 0,
+      "child": {
+        "pid": 315951,
+        "start_ticks": 163514654
+      }
+    },
+    {
+      "name": "original-adapter",
+      "exit": 0,
+      "child": {
+        "pid": 316120,
+        "start_ticks": 163516481
+      }
+    }
+  ],
+  "identity": {
+    "pid": 315925,
+    "start_ticks": 163514632,
+    "boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f"
+  },
+  "server": true,
+  "original_delivery": false,
+  "all_writers_proven_stopped": false,
+  "release_install": false,
+  "qualification": false,
+  "product": false,
+  "admission": false,
+  "checkpoints": 27,
+  "checkpoint_tail": "9b19473ac313b90cadcd1e8486329fc34eebbb0c7159f6f4bf9bcec371c09162"
+}

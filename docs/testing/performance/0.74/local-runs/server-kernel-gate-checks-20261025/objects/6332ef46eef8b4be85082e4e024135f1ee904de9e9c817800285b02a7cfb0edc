@@ -1,0 +1,29 @@
+from pathlib import Path
+import hashlib,json,subprocess,sys
+root=Path(__file__).resolve().parent.parent
+out=root/'target/authorized-server-session-staged-reader-first-20261025';out.mkdir(exist_ok=False)
+argv=[sys.executable,str(root/'target/verify-staged-server-session-20261025.py')]
+(out/'intent.json').write_text(json.dumps(dict(argv=argv,producer_repeated=False)),encoding='utf-8')
+p=subprocess.run(argv,cwd=root,capture_output=True,timeout=30)
+(out/'stdout.log').write_bytes(p.stdout);(out/'stderr.log').write_bytes(p.stderr)
+(out/'result.json').write_text(json.dumps(dict(exit=p.returncode)),encoding='utf-8')
+assert p.returncode==0,p.stderr
+members,objects={},{}
+def add(name,raw):
+ digest=hashlib.sha256(raw).hexdigest();assert name not in members
+ members[name]=dict(sha256=digest,bytes=len(raw));objects[digest]=raw
+for path in sorted(out.iterdir()):add('reader/'+path.name,path.read_bytes())
+for label in ('server-session-doc-check-20261025','server-session-existing-readers-20261025','server-session-local-contract-20261025'):
+ folder=root/'target/source-continuation-20261024'/label
+ before=json.loads((folder/'intent.json').read_bytes());after=json.loads((folder/'result.json').read_bytes())
+ assert after['exit']==0 and after['outer_refusal'] is None and after['source_unchanged'] and after['head_unchanged'] and before['source']==after['source_after']
+ for path in sorted(folder.iterdir()):add('checks/'+label+'/'+path.name,path.read_bytes())
+for name in ('verify-staged-server-session-20261025.py','retain-server-session-checks-20261025.py'):add('retention/'+name,(root/'target'/name).read_bytes())
+base=root/'docs/testing/performance/0.74/local-runs/server-kernel-gate-checks-20261025'
+base.mkdir(exist_ok=False);(base/'objects').mkdir()
+for digest,raw in objects.items():(base/'objects'/digest).write_bytes(raw)
+index=dict(schema='hc074-server-kernel-gate-checks-v1',members=members,upstream_index_sha256='5366ec91b06b7877e152853d3d7d10ed35e17f32441499ac0bcb4b159676b32f',
+ offline_existing_reader_cases=10,staged_verified=True,holder_matrix_passed=False,admission=False)
+raw=(json.dumps(index,indent=2,sort_keys=True)+'\n').encode();(base/'index.json').write_bytes(raw)
+(base/'.gitattributes').write_bytes(b'index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n')
+print(json.dumps(dict(index_sha256=hashlib.sha256(raw).hexdigest(),members=len(members),objects=len(objects))))

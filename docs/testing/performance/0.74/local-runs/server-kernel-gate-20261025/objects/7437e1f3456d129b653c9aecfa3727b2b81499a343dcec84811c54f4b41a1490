@@ -1,0 +1,8 @@
+{
+  "name": "guardians",
+  "exit": 0,
+  "child": {
+    "pid": 315951,
+    "start_ticks": 163514654
+  }
+}

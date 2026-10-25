@@ -1,0 +1,36 @@
+"""Generate an exact raw-source diagnostic build capsule, not a release bundle."""
+from pathlib import Path
+import hashlib,io,json,os,re,subprocess,tarfile
+root=Path(__file__).resolve().parent.parent
+out=root/'target/server-source-capsule-20261025';out.mkdir(exist_ok=False)
+assert not subprocess.check_output(['git','status','--porcelain'],cwd=root).strip()
+head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=root,text=True).strip()
+assert head=='ee9692b672be093716822db13a22f5a63960f928'
+names={s.decode() for s in subprocess.check_output(['git','ls-files','-z','--','Cargo.toml','Cargo.lock','.cargo','crates','tools','fuzz','tests/post-publish-consumer','README.md','LICENSE'],cwd=root).split(b'\0') if s}
+for source in (root/'tools/long-run-supervisor-074').rglob('*.rs'):
+ if 'target' in source.relative_to(root).parts:continue
+ text=source.read_text(encoding='utf-8')
+ for match in re.finditer(r'include_(?:str|bytes)!\(\s*"([^"]+)"',text):
+  path=(source.parent/match[1]).resolve()
+  relative=path.relative_to(root.resolve()).as_posix()
+  if relative.startswith('docs/'):
+   assert path.is_file();names.add(relative)
+ # The one workspace-root concat include in the current runtime controls.
+ for match in re.finditer(r'env!\("CARGO_MANIFEST_DIR"\),\s*"([^"]+)"',text):
+  path=(root/'tools/long-run-supervisor-074'/match[1].lstrip('/')).resolve()
+  relative=path.relative_to(root.resolve()).as_posix()
+  assert path.is_file();names.add(relative)
+manifest={}
+with tarfile.open(out/'source.tar.gz','x:gz',compresslevel=1) as archive:
+ for name in sorted(names):
+  path=root/name
+  assert path.is_file() and not path.is_symlink(),name
+  raw=path.read_bytes();manifest[name]=dict(bytes=len(raw),sha256=hashlib.sha256(raw).hexdigest())
+  member=tarfile.TarInfo(name);member.size=len(raw);member.mode=0o644;member.mtime=0
+  archive.addfile(member,io.BytesIO(raw))
+for name,entry in manifest.items():assert hashlib.sha256((root/name).read_bytes()).hexdigest()==entry['sha256']
+document=dict(head=head,members=manifest,source_only=True,release_install=False,dependency_changes=False,
+ command=['cargo','test','--release','--offline','--locked','-p','hydracache-long-run-supervisor-074','--lib','--no-run','--message-format=json'],
+ archive_sha256=hashlib.sha256((out/'source.tar.gz').read_bytes()).hexdigest())
+(out/'manifest.json').write_text(json.dumps(document,indent=2,sort_keys=True)+'\n',encoding='utf-8')
+print(json.dumps(dict(members=len(manifest),archive_bytes=(out/'source.tar.gz').stat().st_size,archive_sha256=document['archive_sha256'],manifest_sha256=hashlib.sha256((out/'manifest.json').read_bytes()).hexdigest())))

@@ -1,0 +1,11 @@
+from pathlib import Path
+import json
+root=Path('/tmp/hc074-server-gate-root-20261025.0k0xbdah')
+launch=json.loads((root/'fault-launch.json').read_bytes())
+stat=Path(f"/proc/{launch['pid']}/stat")
+current=None if not stat.exists() else int(stat.read_text().rsplit(')',1)[1].split()[19])
+rows=[json.loads(line) for line in (root/'fault-checkpoints.jsonl').read_bytes().splitlines()] if (root/'fault-checkpoints.jsonl').exists() else []
+result=dict(launch=launch,same_live_process=current==launch['start_ticks'],checkpoints=rows)
+if (root/'fault-result.json').exists():result['result']=json.loads((root/'fault-result.json').read_bytes())
+result['worker_stderr']=(root/'fault-worker.stderr.log').read_text()
+print(json.dumps(result,indent=2))

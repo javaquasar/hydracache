@@ -1,0 +1,13 @@
+{
+  "passed": false,
+  "exit": 101,
+  "first_refusal": "first current-source holder matrix did not pass; raw first refusal retained",
+  "postflight_refusal": null,
+  "server": true,
+  "product": false,
+  "original_send": false,
+  "all_writers_proven_stopped": false,
+  "completion": false,
+  "admission": false,
+  "completed_cases": []
+}

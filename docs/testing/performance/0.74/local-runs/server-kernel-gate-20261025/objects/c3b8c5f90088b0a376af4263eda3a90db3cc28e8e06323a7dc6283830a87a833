@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/tmp/hc074-server-gate-root-20261025.0k0xbdah/server-build-worker-v2-20261025.py", line 34, in <module>
+    assert source.count(before)==1,before
+           ^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'build.stdout.log'

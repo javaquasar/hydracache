@@ -1,0 +1,18 @@
+
+from pathlib import Path
+import json,hashlib,shutil,subprocess,os
+result=dict(tools={},caches={},artifacts={})
+for name in ('cargo','rustc','unshare','timeout','python3','tar','gcc'):
+ path=shutil.which(name)
+ result['tools'][name]=dict(path=path)
+ if path and name in ('cargo','rustc'):
+  p=subprocess.run([path,'--version'],capture_output=True,timeout=10)
+  result['tools'][name].update(exit=p.returncode,stdout=p.stdout.decode().strip())
+for name in ('/home/hydracache-admin/.cargo','/root/.cargo','/home/github-runner/.cargo','/opt/actions-runner','/tmp/hc074-native-cost-root-20261024.7PkS2E','/tmp/hc074-native-held-root-20261023.0Au6cQ'):
+ path=Path(name)
+ result['caches'][name]=dict(exists=path.exists(),members=sorted(p.name for p in path.iterdir())[:30] if path.is_dir() else [])
+ if name.startswith('/tmp/') and path.is_dir():
+  for p in path.iterdir():
+   if p.is_file() and p.stat().st_size<64*1024**2:
+    result['artifacts'][str(p)]=dict(bytes=p.stat().st_size,sha256=hashlib.sha256(p.read_bytes()).hexdigest(),mode=oct(p.stat().st_mode))
+print(json.dumps(result,indent=2))

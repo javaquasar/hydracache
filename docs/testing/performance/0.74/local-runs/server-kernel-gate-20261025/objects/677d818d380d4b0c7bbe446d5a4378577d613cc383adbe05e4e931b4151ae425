@@ -1,0 +1,48 @@
+import copy,hashlib,importlib.util,json
+from pathlib import Path
+import unittest
+spec=importlib.util.spec_from_file_location('session_review',Path(__file__).with_name('review-server-session-20261025.py'))
+r=importlib.util.module_from_spec(spec);spec.loader.exec_module(r)
+class Controls(unittest.TestCase):
+ def test_actual_first_results_reconstruct_without_dispatch(self):
+  result=r.analyze();self.assertEqual(result['kernel_internal_scenarios'],31)
+  self.assertFalse(result['release_admission']);self.assertFalse(result['holder']['complete_matrix_passed'])
+ def test_checkpoint_mutation_gap_or_identity_refuses(self):
+  raw=(r.RAW/'fault-checkpoints.jsonl').read_bytes();rows=[json.loads(line) for line in raw.splitlines()]
+  for mode in ('gap','identity','digest','clock'):
+   bad=copy.deepcopy(rows)
+   if mode=='gap':bad.pop(3)
+   elif mode=='identity':bad[3]['identity']['pid']+=1
+   elif mode=='digest':bad[3]['sha256']='f'*64
+   else:bad[3]['elapsed_monotonic_ns']=0
+   with self.assertRaises(ValueError):r.checkpoints(b'\n'.join(json.dumps(row).encode() for row in bad))
+ def test_host_change_or_marker_cannot_be_a_clean_postflight(self):
+  before=r.strict((r.ROOT/'target/authorized-server-preflight-20261025/stdout.log').read_bytes())
+  for mode in ('supervisor','artifacts','markers','fixture_cgroups'):
+   after=copy.deepcopy(before)
+   if mode=='supervisor':after[mode]['stdout']='MainPID=1'
+   elif mode=='artifacts':after[mode]={}
+   elif mode=='markers':after[mode][next(iter(after[mode]))]=True
+   else:after[mode]=['hc074-root-fixture-alive']
+   with self.assertRaises(ValueError):r.host(before,after)
+ def test_reconnect_to_other_or_dead_worker_refuses(self):
+  chain=r.checkpoints((r.RAW/'fault-checkpoints.jsonl').read_bytes())
+  observations=[r.strict(line) for line in (r.ROOT/'target/authorized-server-session-20261025/disconnect-observer/stdout.log').read_bytes().splitlines()]
+  joined=r.strict((r.ROOT/'target/authorized-server-session-20261025/reconnect-fault/stdout.log').read_bytes())
+  for mode in ('dead','other','spliced'):
+   bad=copy.deepcopy(joined)
+   if mode=='dead':bad['same_live_process']=False
+   elif mode=='other':bad['launch']['pid']+=1
+   else:bad['checkpoints'][-1]['child']['start_ticks']+=1
+   with self.assertRaises(ValueError):r.reconnect(chain,observations,bad)
+ def test_holder_partial_and_original_window_cannot_be_promoted(self):
+  raw=(r.RAW/'holder.stdout.log').read_bytes()
+  for before,after in ((b'"deadline_changed":false',b'"deadline_changed":true'),
+                       (b'"returned":false',b'"returned":true'),(b'"diagnostic_reason":"expired"',b'"diagnostic_reason":"within-window"')):
+   self.assertIn(before,raw)
+   with self.assertRaises(ValueError):r.original(raw.replace(before,after))
+ def test_duplicate_report_or_json_key_refuses(self):
+  with self.assertRaises(ValueError):r.strict(b'{"a":1,"a":2}')
+  raw=(r.RAW/'holder.stdout.log').read_bytes()
+  with self.assertRaises(ValueError):r.original(raw+raw)
+if __name__=='__main__':unittest.main(verbosity=2)

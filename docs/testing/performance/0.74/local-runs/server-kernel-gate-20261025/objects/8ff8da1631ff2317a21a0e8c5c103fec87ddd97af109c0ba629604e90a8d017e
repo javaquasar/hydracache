@@ -1,0 +1,32 @@
+"""Read-only inventory of available native tools and retained test artifacts."""
+from pathlib import Path
+import json,subprocess
+root=Path(__file__).resolve().parent.parent
+out=root/'target/authorized-server-build-inventory-20261025';out.mkdir(exist_ok=False)
+remote=r'''
+from pathlib import Path
+import json,hashlib,shutil,subprocess,os
+result=dict(tools={},caches={},artifacts={})
+for name in ('cargo','rustc','unshare','timeout','python3','tar','gcc'):
+ path=shutil.which(name)
+ result['tools'][name]=dict(path=path)
+ if path and name in ('cargo','rustc'):
+  p=subprocess.run([path,'--version'],capture_output=True,timeout=10)
+  result['tools'][name].update(exit=p.returncode,stdout=p.stdout.decode().strip())
+for name in ('/home/hydracache-admin/.cargo','/root/.cargo','/home/github-runner/.cargo','/opt/actions-runner','/tmp/hc074-native-cost-root-20261024.7PkS2E','/tmp/hc074-native-held-root-20261023.0Au6cQ'):
+ path=Path(name)
+ result['caches'][name]=dict(exists=path.exists(),members=sorted(p.name for p in path.iterdir())[:30] if path.is_dir() else [])
+ if name.startswith('/tmp/') and path.is_dir():
+  for p in path.iterdir():
+   if p.is_file() and p.stat().st_size<64*1024**2:
+    result['artifacts'][str(p)]=dict(bytes=p.stat().st_size,sha256=hashlib.sha256(p.read_bytes()).hexdigest(),mode=oct(p.stat().st_mode))
+print(json.dumps(result,indent=2))
+'''
+argv=['ssh','-o','BatchMode=yes','-o','StrictHostKeyChecking=yes','-o','ConnectTimeout=15','hydracache-ax42','sudo -n python3 -']
+(out/'intent.json').write_text(json.dumps(dict(argv=argv,read_only=True,retry=False)),encoding='utf-8')
+(out/'remote.py').write_bytes(remote.encode())
+with (out/'stdout.log').open('xb') as stdout,(out/'stderr.log').open('xb') as stderr:
+ p=subprocess.run(argv,input=remote.encode(),stdout=stdout,stderr=stderr,timeout=60)
+(out/'result.json').write_text(json.dumps(dict(exit=p.returncode)),encoding='utf-8')
+print(json.dumps(dict(exit=p.returncode,output=str(out))))
+raise SystemExit(p.returncode)

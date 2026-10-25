@@ -1,0 +1,22 @@
+from pathlib import Path
+import hashlib,json,os,shutil,subprocess
+protected=Path('/tmp/hc074-server-gate-root-20261025.0k0xbdah')
+upload=Path('/tmp/hc074-server-gate-upload-20261025.pvdj0f6c')
+assert os.geteuid()==0 and protected.stat().st_uid==0 and protected.stat().st_mode&0o777==0o700
+assert not (protected/'build-launch.json').exists() and not (protected/'build-consumed.json').exists()
+expected={'source.tar.gz':'45ed5f3f2b8f465cad58a61bca21169bcb5e9df5e66b9bf1081a6793a179e63c',
+          'manifest.json':'2a0f7c581a1e854ab71841efb71aaebee3de56d1c0357b54d55a41ae4011ea6d',
+          'server-build-worker-20261025.py':'37862dbf09a25d2c4ec995ec4d777e79defcdcfefffdb83ec9190a10299db07f'}
+for name,digest in expected.items():
+ source=upload/name
+ assert source.is_file() and not source.is_symlink() and source.stat().st_uid==1000
+ with source.open('rb') as src,(protected/name).open('xb') as dst:shutil.copyfileobj(src,dst)
+ assert hashlib.sha256((protected/name).read_bytes()).hexdigest()==digest
+ os.chmod(protected/name,0o500 if name.endswith('.py') else 0o400)
+with (protected/'build-worker.stdout.log').open('xb') as stdout,(protected/'build-worker.stderr.log').open('xb') as stderr:
+ child=subprocess.Popen(['/usr/bin/python3',str(protected/'server-build-worker-20261025.py'),str(protected),str(upload)],
+      stdin=subprocess.DEVNULL,stdout=stdout,stderr=stderr,start_new_session=True)
+ fact=dict(pid=child.pid,start_ticks=int(Path(f'/proc/{child.pid}/stat').read_text().rsplit(')',1)[1].split()[19]),
+           boot=Path('/proc/sys/kernel/random/boot_id').read_text().strip(),retry=False,protected=str(protected),upload=str(upload))
+ with (protected/'build-launch.json').open('x') as f:json.dump(fact,f);f.flush();os.fsync(f.fileno())
+print(json.dumps(fact))

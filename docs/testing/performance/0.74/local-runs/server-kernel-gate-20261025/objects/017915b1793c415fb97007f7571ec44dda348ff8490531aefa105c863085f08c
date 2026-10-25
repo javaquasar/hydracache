@@ -1,0 +1,13 @@
+from pathlib import Path
+import json,os
+root=Path('/tmp/hc074-server-gate-root-20261025.0k0xbdah')
+launch=json.loads((root/'build-launch.json').read_bytes())
+process=Path('/proc')/str(launch['pid'])/'stat'
+current=None if not process.exists() else int(process.read_text().rsplit(')',1)[1].split()[19])
+result=dict(launch=launch,same_live_process=current==launch['start_ticks'],files={})
+for name in ('build-consumed.json','build-command.json','build-child.json','build-result.json'):
+ if (root/name).exists():result['files'][name]=json.loads((root/name).read_bytes())
+for name in ('build.stderr.log','build-worker.stderr.log'):
+ if (root/name).exists():
+  raw=(root/name).read_bytes();result[name]=dict(bytes=len(raw),tail=raw[-5000:].decode(errors='replace'))
+print(json.dumps(result,indent=2))
