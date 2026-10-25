@@ -1,0 +1,11 @@
+test_exit_or_source_conflict_remains_first_refusal_without_retry (test_bound_target_observation.CompositionTests.test_exit_or_source_conflict_remains_first_refusal_without_retry) ... ok
+test_failed_partial_and_lost_ack_never_become_diagnostic_pass (test_bound_target_observation.CompositionTests.test_failed_partial_and_lost_ack_never_become_diagnostic_pass) ... ok
+test_foreign_slot_owner_custody_or_unbound_outputs_refuse (test_bound_target_observation.CompositionTests.test_foreign_slot_owner_custody_or_unbound_outputs_refuse) ... ok
+test_model_complete_join_is_not_package_execution_or_real_cargo_proof (test_bound_target_observation.CompositionTests.test_model_complete_join_is_not_package_execution_or_real_cargo_proof) ... ok
+test_output_or_cleanup_failure_never_passes (test_bound_target_observation.CompositionTests.test_output_or_cleanup_failure_never_passes) ... ok
+test_unfrozen_or_live_does_not_read_files (test_bound_target_observation.CompositionTests.test_unfrozen_or_live_does_not_read_files) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.013s
+
+OK

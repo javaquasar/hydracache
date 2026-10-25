@@ -254,3 +254,21 @@ reads only the sealed old 321-case result; it cannot supply a new live verdict.
 `handoff_control.py synthetic-controls NEW_OUTPUT_DIR` exercises healthy/lost-ACK
 handoff through the unchanged wrapper. The [results and protocol boundary](../../docs/testing/performance/0.74/dispatch-result-custody-20261025.md)
 retain the first session and explicitly leave real-target dispatch disabled.
+
+## Original output binding
+
+`attempt_output_binding.py` checks an absent original-wrapper slot and holds
+its live directory/stream objects under the original owner. Terminal sealing
+checks file IDs and locks all four inputs against ordinary writers before reads.
+An open writer, identity drift or read/cleanup failure refuses without retry.
+This is trusted local Windows output custody, not all-writer revocation or
+power-loss-safe recovery.
+The absence check is not a global reservation: `DispatchOnce` owns the exclusive
+consumed marker and the unchanged wrapper exclusively creates its directory.
+
+`bound_target_observation.py` composes the existing dispatch, frozen custody and
+held files with the independent target reader; it has no process-launch API or
+external log paths. `output_binding_control.py synthetic-controls NEW_OUTPUT_DIR`
+has a fixed two-case Python-fixture schedule. Its [first results](../../docs/testing/performance/0.74/original-output-binding-result-20261025.md)
+retain both expected refusals and 279 final Python checks. The real Cargo caller
+still needs review/authorization; the fixed dispatch CLI remains disabled.

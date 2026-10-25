@@ -128,6 +128,14 @@ The independent 321-case result reader passes only an offline archived replay;
 it does not supply a new target or package verdict. The finite future diagnostic
 protocol is recorded with dispatch disabled pending live attempt/output binding.
 
+The next [original-output binding step](original-output-binding-result-20261025.md)
+joins that local dispatch/owner/custody to held wrapper files. One synthetic
+session confirms ordinary write-handle refusal and forbids retry after the handle
+closes; its Python node command also correctly refuses the fixed target verdict.
+The final Python suites pass 188 attribution and 91 historical cases. Actual Cargo
+shape/output lifetime, the reviewed real-target caller and explicit dispatch
+authorization remain open; file sealing is not production all-writer retirement.
+
 Next: use saved target/call attribution to isolate the cost owner without
 removing tests, refreshing source pins from responses or changing conditional
 reads. A separate candidate needs its own baseline and unchanged-bound proof;

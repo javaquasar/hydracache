@@ -1,0 +1,159 @@
+{
+  "mode": "writer-held",
+  "passed": true,
+  "first_refusal": null,
+  "cleanup_errors": [],
+  "cargo_dispatch": false,
+  "selected_target_pass": false,
+  "full_package_pass": false,
+  "admission": false,
+  "expected_join_refusal": "hold original output: Win32 error 32",
+  "no_retry_after_writer_close": true,
+  "binding": null,
+  "original_owner": {
+    "pid": 28924,
+    "creation_100ns": 134373880748563301
+  },
+  "custody": {
+    "observation": {
+      "schema": 1,
+      "first_refusal": null,
+      "events": [
+        {
+          "kind": "attached",
+          "pids": [
+            28924,
+            47508,
+            48364,
+            8404
+          ]
+        },
+        {
+          "kind": "leaf-terminal"
+        },
+        {
+          "kind": "owner-exit",
+          "code": 0
+        }
+      ],
+      "discovery_snapshots": 12,
+      "owner_exit_observed": true,
+      "owner_returncode": 0,
+      "live_owner_custody_retained": false,
+      "leaf_terminal": true,
+      "outer_expired": false,
+      "observations_complete": true,
+      "identities": [
+        {
+          "pid": 28924,
+          "image": "C:\\Python313\\python.exe",
+          "creation_100ns": 134373880748563301
+        },
+        {
+          "pid": 47508,
+          "image": "c:\\python313\\python.exe",
+          "creation_100ns": 134373880753180707
+        },
+        {
+          "pid": 48364,
+          "image": "c:\\python313\\python.exe",
+          "creation_100ns": 134373880753793870
+        },
+        {
+          "pid": 8404,
+          "image": "c:\\python313\\python.exe",
+          "creation_100ns": 134373880755564772
+        }
+      ],
+      "samples": [
+        {
+          "terminal": false,
+          "creation_100ns": 134373880755564772,
+          "exit_100ns": null,
+          "kernel_100ns": 0,
+          "user_100ns": 156250,
+          "io": {
+            "read_ops": 0,
+            "write_ops": 0,
+            "other_ops": 140,
+            "read_bytes": 0,
+            "write_bytes": 0,
+            "other_bytes": 4780
+          },
+          "memory": {
+            "working_set_bytes": 7819264,
+            "peak_working_set_bytes": 7819264,
+            "private_usage": 3706880,
+            "peak_private_commit_bytes": 3706880
+          },
+          "terminal_memory_error": null,
+          "observed_monotonic_ns": 765952456967300
+        },
+        {
+          "terminal": true,
+          "creation_100ns": 134373880755564772,
+          "exit_100ns": 134373880757235061,
+          "kernel_100ns": 156250,
+          "user_100ns": 312500,
+          "io": {
+            "read_ops": 72,
+            "write_ops": 2,
+            "other_ops": 900,
+            "read_bytes": 830876,
+            "write_bytes": 22,
+            "other_bytes": 83190
+          },
+          "memory": {
+            "working_set_bytes": 32768,
+            "peak_working_set_bytes": 15233024,
+            "private_usage": 77824,
+            "peak_private_commit_bytes": 9486336
+          },
+          "terminal_memory_error": null,
+          "observed_monotonic_ns": 765952871291200
+        }
+      ],
+      "selected_target_pass": false,
+      "full_package_pass": false,
+      "admission": false
+    },
+    "first_observation_refusal": null,
+    "first_custody_refusal": null,
+    "exit_proof": {
+      "owner_returncode": 0,
+      "witnesses": [
+        {
+          "pid": 28924,
+          "creation_100ns": 134373880748563301,
+          "exit_100ns": 134373880760117914
+        },
+        {
+          "pid": 47508,
+          "creation_100ns": 134373880753180707,
+          "exit_100ns": 134373880757331580
+        },
+        {
+          "pid": 48364,
+          "creation_100ns": 134373880753793870,
+          "exit_100ns": 134373880757284965
+        },
+        {
+          "pid": 8404,
+          "creation_100ns": 134373880755564772,
+          "exit_100ns": 134373880757235061
+        }
+      ],
+      "coverage": "only previously held processes, not all writers"
+    },
+    "query_handles_released": true,
+    "release_attempted": true,
+    "execution_completion_authorized": false,
+    "all_writers_proven_stopped": false,
+    "durable_custody": false,
+    "selected_target_pass": false,
+    "admission": false
+  },
+  "real_wrapper_spawns": 1,
+  "output_first_refusal": "hold original output: Win32 error 32",
+  "live_owner_custody_retained": false
+}

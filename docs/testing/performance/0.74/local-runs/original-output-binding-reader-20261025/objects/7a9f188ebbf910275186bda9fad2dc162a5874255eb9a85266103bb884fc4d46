@@ -1,0 +1,49 @@
+"""Retain the first staged reader and saved doc check, without producer repeats."""
+from pathlib import Path
+import hashlib
+import json
+import subprocess
+import sys
+
+root = Path(__file__).resolve().parent.parent
+out = root / 'target/original-output-binding-staged-reader-first-20261025'
+out.mkdir(exist_ok=False)
+argv = [sys.executable, str(root / 'target/verify-original-output-binding-20261025.py')]
+(out / 'intent.json').write_text(json.dumps(dict(argv=argv, retry=False, producer_repeated=False)), encoding='utf-8')
+result = subprocess.run(argv, cwd=root, capture_output=True, timeout=45)
+(out / 'stdout.log').write_bytes(result.stdout)
+(out / 'stderr.log').write_bytes(result.stderr)
+(out / 'result.json').write_text(json.dumps(dict(exit=result.returncode)), encoding='utf-8')
+assert result.returncode == 0, result.stderr
+assert json.loads(result.stdout)['staged_verified']
+members, objects = {}, {}
+
+def add(name, raw):
+    digest = hashlib.sha256(raw).hexdigest()
+    assert name not in members
+    members[name] = dict(sha256=digest, bytes=len(raw))
+    objects[digest] = raw
+
+for path in sorted(out.iterdir()):
+    add('staged-reader/' + path.name, path.read_bytes())
+folder = root / 'target/source-continuation-20261024/output-binding-doc-check-20261025'
+before, after = [json.loads((folder / name).read_bytes()) for name in ('intent.json', 'result.json')]
+assert after['exit'] == 0 and after['outer_refusal'] is None
+assert before['source'] == after['source_after'] and after['source_unchanged'] and after['head_unchanged']
+for path in sorted(folder.iterdir()):
+    assert path.is_file()
+    add('doc-check/' + path.name, path.read_bytes())
+for name in ('verify-original-output-binding-20261025.py', 'retain-original-output-binding-reader-20261025.py'):
+    add('retention/' + name, (root / 'target' / name).read_bytes())
+base = root / 'docs/testing/performance/0.74/local-runs/original-output-binding-reader-20261025'
+base.mkdir(exist_ok=False)
+(base / 'objects').mkdir()
+for digest, raw in objects.items():
+    (base / 'objects' / digest).write_bytes(raw)
+index = dict(schema='hc074-original-output-binding-reader-v1', members=members,
+             upstream_index_sha256='568aba8368782b54bb555173a7c3cee2319b2d4f962bc26588ff696bd343d0c7',
+             staged_verified=True, actual_target_dispatches=0, full_package_pass=False, admission=False)
+raw = (json.dumps(index, indent=2, sort_keys=True) + '\n').encode()
+(base / 'index.json').write_bytes(raw)
+(base / '.gitattributes').write_bytes(b'index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n')
+print(json.dumps(dict(index_sha256=hashlib.sha256(raw).hexdigest(), members=len(members), objects=len(objects))))

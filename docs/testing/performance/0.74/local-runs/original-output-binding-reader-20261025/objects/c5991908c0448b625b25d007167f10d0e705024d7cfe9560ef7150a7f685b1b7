@@ -1,0 +1,58 @@
+"""Independently verify staged output-binding evidence, data only."""
+from pathlib import Path
+import hashlib
+import json
+import subprocess
+
+root = Path(__file__).resolve().parent.parent
+prefix = 'docs/testing/performance/0.74/local-runs/original-output-binding-20261025/'
+
+def read(name):
+    return subprocess.check_output(['git', 'show', ':' + prefix + name], cwd=root)
+
+raw = read('index.json')
+assert hashlib.sha256(raw).hexdigest() == '568aba8368782b54bb555173a7c3cee2319b2d4f962bc26588ff696bd343d0c7'
+index = json.loads(raw)
+assert len(index['members']) == 91
+assert len({entry['sha256'] for entry in index['members'].values()}) == 66
+assert index['attribution_python_cases'] == 188 and index['historical_python_cases'] == 91
+for flag in ('actual_target_dispatches', 'all_writers_proven_stopped', 'full_package_pass', 'services',
+             'clocks', 'server', 'product_load', 'qualification', 'admission', 'live_checks_changed'):
+    assert not index[flag]
+data = {}
+for name, entry in index['members'].items():
+    assert not Path(name).is_absolute() and '..' not in Path(name).parts
+    raw = read('objects/' + entry['sha256'])
+    assert len(raw) == entry['bytes'] and hashlib.sha256(raw).hexdigest() == entry['sha256']
+    data[name] = raw
+for name, digest in index['protected_sha256'].items():
+    assert hashlib.sha256(data['protected/' + name]).hexdigest() == digest
+for mode in ('healthy', 'writer-held'):
+    result = json.loads(data['native/' + mode + '/result.json'])
+    custody = result['custody']
+    assert result['passed'] and result['first_refusal'] is None and not result['cleanup_errors']
+    assert not result['selected_target_pass'] and not result['full_package_pass'] and not result['admission']
+    assert result['real_wrapper_spawns'] == 1 and not result['live_owner_custody_retained']
+    assert custody['query_handles_released'] and custody['observation']['observations_complete']
+    assert len(custody['exit_proof']['witnesses']) == 4 and custody['exit_proof']['owner_returncode'] == 0
+    attached = json.loads(data['native/' + mode + '/owner-attached.json'])
+    for key in ('pid', 'creation_100ns'):
+        assert result['original_owner'][key] == attached[key] == custody['exit_proof']['witnesses'][0][key]
+    phase = 'checks/output-bound-20261025-' + mode + '/'
+    intent = json.loads(data[phase + 'intent.json'])
+    after = json.loads(data[phase + 'result.json'])
+    assert intent['bound_seconds'] == 780 and intent['retry'] is False
+    assert intent['head'] == '534f9c506476a5f563ec2856c764c9efe09c7e51'
+    assert intent['source'] == after['source_after'] and after['source_unchanged'] and after['head_unchanged']
+    assert after['exit'] == 0 and after['outer_refusal'] is None
+    assert data[phase + 'stdout.log'].decode().splitlines() == ['node-0-complete', 'node-1-complete', 'node-2-complete']
+    assert not data[phase + 'stderr.log']
+    if mode == 'healthy':
+        assert result['expected_join_refusal'] == 'target command/window/retry drift'
+        for name, member in result['binding']['files'].items():
+            raw = data[phase + name]
+            assert len(raw) == member['bytes'] and hashlib.sha256(raw).hexdigest() == member['sha256']
+    else:
+        assert result['binding'] is None and result['no_retry_after_writer_close']
+        assert result['output_first_refusal'] == result['expected_join_refusal'] == 'hold original output: Win32 error 32'
+print(json.dumps(dict(staged_verified=True, members=91, objects=66, actual_target_dispatches=0)))

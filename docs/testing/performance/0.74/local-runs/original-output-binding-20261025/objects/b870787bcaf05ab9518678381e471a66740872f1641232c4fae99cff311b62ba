@@ -1,0 +1,129 @@
+"""Seal the first output-binding controls; never repeat a producer."""
+from pathlib import Path
+import hashlib
+import json
+
+root = Path(__file__).resolve().parent.parent
+base = root / 'docs/testing/performance/0.74/local-runs/original-output-binding-20261025'
+members, objects, intents = {}, {}, {}
+
+def sha(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+def add(name, raw):
+    assert name not in members
+    digest = sha(raw)
+    members[name] = dict(sha256=digest, bytes=len(raw))
+    objects[digest] = raw
+
+labels = ['output-binding-model-first-20261025', 'output-files-first-20261025',
+          'output-binding-python-first-20261025', 'output-binding-native-first-20261025',
+          'output-binding-python-final-20261025', 'output-binding-compile-final-20261025',
+          'output-binding-tabnanny-final-20261025', 'output-binding-v3-final-20261025',
+          'output-binding-historical-final-20261025', 'output-binding-local-contract-20261025']
+for label in labels + ['output-bound-20261025-healthy', 'output-bound-20261025-writer-held']:
+    folder = root / 'target/source-continuation-20261024' / label
+    before = json.loads((folder / 'intent.json').read_bytes())
+    after = json.loads((folder / 'result.json').read_bytes())
+    assert before['source'] == after['source_after'] and after['source_unchanged'] and after['head_unchanged']
+    assert after['exit'] == 0 and after['outer_refusal'] is None
+    assert before['head'] == '534f9c506476a5f563ec2856c764c9efe09c7e51'
+    assert before['bound_seconds'] == (780 if label.startswith('output-bound-') else 1200)
+    assert not (folder / 'owned-cleanup.log').exists()
+    intents[label] = before
+    for path in sorted(folder.iterdir()):
+        assert path.is_file()
+        add('checks/' + label + '/' + path.name, path.read_bytes())
+
+native = root / 'target/output-binding-native-first-20261025'
+assert json.loads((native / 'result.json').read_bytes())['passed']
+for mode in ('healthy', 'writer-held'):
+    folder = native / mode
+    result = json.loads((folder / 'result.json').read_bytes())
+    c = result['custody']
+    assert result['passed'] and result['first_refusal'] is None and not result['cleanup_errors']
+    assert result['real_wrapper_spawns'] == 1 and not result['live_owner_custody_retained']
+    assert not result['selected_target_pass'] and not result['full_package_pass'] and not result['admission']
+    assert c['query_handles_released'] and c['observation']['observations_complete']
+    assert c['exit_proof']['owner_returncode'] == 0 and len(c['exit_proof']['witnesses']) == 4
+    attached = json.loads((folder / 'owner-attached.json').read_bytes())
+    for key in ('pid', 'creation_100ns'):
+        assert result['original_owner'][key] == attached[key] == c['exit_proof']['witnesses'][0][key]
+    wrapped = root / 'target/source-continuation-20261024' / ('output-bound-20261025-' + mode)
+    assert (wrapped / 'stdout.log').read_text().splitlines() == ['node-0-complete', 'node-1-complete', 'node-2-complete']
+    assert not (wrapped / 'stderr.log').read_bytes()
+    if mode == 'healthy':
+        assert result['expected_join_refusal'] == 'target command/window/retry drift'
+        assert result['output_first_refusal'] is None
+        for name, member in result['binding']['files'].items():
+            raw = (wrapped / name).read_bytes()
+            assert member['sha256'] == sha(raw) and member['bytes'] == len(raw)
+    else:
+        assert result['binding'] is None and result['no_retry_after_writer_close']
+        assert result['expected_join_refusal'] == result['output_first_refusal'] == 'hold original output: Win32 error 32'
+for path in sorted(native.rglob('*')):
+    if path.is_file():
+        add('native/' + path.relative_to(native).as_posix(), path.read_bytes())
+
+code = root / 'tools/xtask-package-attribution-074'
+new = ['attempt_output_binding.py', 'bound_target_observation.py', 'output_binding_control.py',
+       'test_attempt_output_binding.py', 'test_bound_target_observation.py', 'test_output_binding_control.py']
+deps = ['dispatch_handoff.py', 'target_result_join.py', 'launch_preflight.py', 'observation_coordinator.py',
+        'owned_process_observer.py', 'process_lineage.py', 'lineage_control.py', 'review.py', 'contract_frontier_audit.py']
+versions = {}
+for name in new + deps:
+    raw = (code / name).read_bytes()
+    assert sha(raw) == intents['output-binding-python-final-20261025']['source']['tools/xtask-package-attribution-074/' + name]
+    add('code/' + name, raw)
+    versions.setdefault(name, {})[sha(raw)] = raw
+
+raw = (code / 'bound_target_observation.py').read_text()
+first = raw.replace('        self.binding = None\n', '').replace('            self.binding = binding\n', '').encode()
+versions['bound_target_observation.py'][sha(first)] = first
+add('code/first-bound_target_observation.py', first)
+
+raw = (code / 'test_attempt_output_binding.py').read_text()
+first = (raw[:raw.index('\n    def test_owner_exit_during_attach')] + raw[raw.index('\n\n@unittest.skipUnless'):])
+first = first.replace('import ctypes\n', 'import json\n').replace('from unittest.mock import Mock, patch\n', 'from unittest.mock import Mock\n').encode()
+versions['test_attempt_output_binding.py'][sha(first)] = first
+add('code/first-test_attempt_output_binding.py', first)
+
+raw = (code / 'test_bound_target_observation.py').read_text()
+first = (raw[:raw.index('\n    def test_cleanup_attempt_without_release')] + raw[raw.index('\n\nif __name__'):]).replace('import ast\n', '').encode()
+versions['test_bound_target_observation.py'][sha(first)] = first
+add('code/first-test_bound_target_observation.py', first)
+
+for label in labels:
+    for name in new + deps:
+        relative = 'tools/xtask-package-attribution-074/' + name
+        if relative in intents[label]['source']:
+            digest = intents[label]['source'][relative]
+            assert digest in versions[name], (label, name, digest)
+
+protected = {
+    'Cargo.toml': '18a8a27cf140a1d6eb31c8316ee39bb7d5832866a990346eee16cd0c30de344b',
+    'Cargo.lock': 'd2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c',
+    'docs/testing/performance/0.74/qualification-manifest.toml': '11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc',
+    'tools/authority-storage-source-074/contract.rs': 'aefcd4f6a9ed0acc1e072225ea3ed4dda82d2d1ccda0ba4f22ca74459efa64c2',
+    'docs/testing/performance/0.74/contract-observation-protocol-20261025.toml': '6e515a055cd168d69a658f399d0aff78b0e448ecd619dadfe770f8c42a60b40e',
+    'docs/testing/performance/0.74/contract-observer-launch-receipt-20261025.json': '0f364991c37248f7f7d73d271932b3aaa77250d308df4a6314b0eb09905d65b5'}
+for name, digest in protected.items():
+    raw = (root / name).read_bytes()
+    assert sha(raw) == digest
+    add('protected/' + name, raw)
+assert b'Ran 188 tests' in objects[members['checks/output-binding-python-final-20261025/stderr.log']['sha256']]
+assert b'Ran 91 tests' in objects[members['checks/output-binding-historical-final-20261025/stderr.log']['sha256']]
+add('retention/seal-original-output-binding-20261025.py', Path(__file__).read_bytes())
+index = dict(schema='hc074-original-output-binding-v1', members=members, protected_sha256=protected,
+             implementation_commit='8a7dd6472da31adc60adaa1397b38966465fde02', attribution_python_cases=188,
+             historical_python_cases=91, added_python_cases=24, native_sessions=1, native_cases=2,
+             actual_target_dispatches=0, fixed_protocol_changed=False, live_checks_changed=False,
+             all_writers_proven_stopped=False, full_package_pass=False, services=False, clocks=False,
+             server=False, product_load=False, qualification=False, admission=False)
+base.mkdir(exist_ok=False)
+(base / 'objects').mkdir()
+for digest, raw in objects.items():
+    (base / 'objects' / digest).write_bytes(raw)
+(base / 'index.json').write_bytes((json.dumps(index, indent=2, sort_keys=True) + '\n').encode())
+(base / '.gitattributes').write_bytes(b'index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n')
+print(json.dumps(dict(index_sha256=sha((base / 'index.json').read_bytes()), members=len(members), objects=len(objects))))

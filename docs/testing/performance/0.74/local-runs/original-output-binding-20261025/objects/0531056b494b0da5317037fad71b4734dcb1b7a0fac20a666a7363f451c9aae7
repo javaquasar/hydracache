@@ -1,0 +1,193 @@
+"""Offline case/source/verdict joins; never execute tests, Git or a profiler."""
+from collections import Counter
+from pathlib import Path, PurePosixPath
+import json
+import posixpath
+import re
+import tomllib
+
+import review
+
+TARGET = 'tests/performance_contract_074.rs'
+ROOT_SOURCE = 'crates/xtask/'+TARGET
+DATASETS = (
+    ('transport-package-20261025','e9b8a923723360bce644c9de558113bf084630d1c4a72916dd0bfd3d418fc553',
+     'checks/transport-audit-20261025-package-first/','9b516072c8d034cf33c11b17ec8e07fdd4a4c337903f77ab9a82ba727f9cbc59'),
+    ('package-effect-review-v2-20261025','58b7a5f845abd8e791b5d150f98f461fc069869195131fe3e76ea620df772dae',
+     'package/','befe75505aa2c8c6da32424c23792063bcb096bf1352a42ee8a255e16ccf0840'),
+)
+V2_SYNTAX = 'docs/testing/performance/0.74/local-runs/package-effect-syntax-v2-20261025/objects/07d9960365b4976ba7f0a618799b222fad89c3d6e5dffa9a29436186c802e94d'
+SWEEPS = (
+    ('performance_contract_074_held_placement.rs','held_placement_preserves_all_423_sources_and_external_fault_harness',423,
+     ('docs/COMPAT.md','docs/testing/gated-test-registry.toml','tools/long-run-supervisor-074/tests/owned_root_creator_sigkill.py')),
+    ('performance_contract_074_owned_placement.rs','owned_placement_preserves_all_425_prior_sources_wire_and_external_harness',425,
+     ('docs/COMPAT.md','docs/testing/gated-test-registry.toml','tools/long-run-supervisor-074/tests/owned_root_creator_sigkill.py')),
+    ('performance_contract_074_gnu_preparation.rs','gnu_preparation_preserves_every_previous_body_and_protocol',402,
+     ('docs/COMPAT.md','docs/testing/gated-test-registry.toml',
+      'tools/long-run-supervisor-074/tests/prearmed_watchdog.py','tools/long-run-supervisor-074/tests/redundant_watchdog.py',
+      'tools/long-run-supervisor-074/tests/root_creator_sigkill.py',
+      'crates/xtask/tests/support/performance_contract_074_output_join.rs',
+      'crates/xtask/tests/support/performance_contract_074_starting_publication.rs',
+      'crates/xtask/tests/support/performance_contract_074_safety_alarm.rs')),
+)
+
+
+def digest(document):
+    return review.sha(json.dumps(document,sort_keys=True,separators=(',',':')).encode())
+
+
+def case_catalog(document, root_source=ROOT_SOURCE):
+    """Resolve a bounded literal/default module graph from sealed AST data only.
+
+    This is not a cfg evaluator or macro expander. The concrete scope must also
+    match the actual declared Windows case count and every observed full name.
+    """
+    rows = {v['source']:v for v in document['sources']}
+    review.require(len(rows) == len(document['sources']), 'duplicate AST source')
+    cases, visited, active, edges = {}, set(), set(), []
+    def walk(name, prefix):
+        review.require(name in rows and name not in active and len(active) < 256, 'missing/cyclic module')
+        review.require(len(edges) < 4096, 'module edge budget')
+        active.add(name); visited.add(name)
+        row = rows[name]
+        for site in row['sites']:
+            if site['kind'] == 'function-attribute' and site['detail'] == 'test':
+                case = prefix+site['scope']
+                review.require(re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*',case) is not None
+                               and case not in cases, 'invalid/duplicate qualified case')
+                review.require(not any(s['kind'] == 'function-attribute' and s['scope'] == site['scope']
+                    and s['detail'] == 'ignore' for s in row['sites']), 'ignored case changes scope')
+                cases[case] = dict(source=name, scope=site['scope'])
+            if site['kind'] != 'module': continue
+            parts = site['scope'].split('::')
+            source = PurePosixPath(name)
+            detail = site['detail']
+            if detail.startswith('literal:'):
+                literal = detail[8:]
+                review.require(literal and not any(c in literal for c in '\\\0\r\n:')
+                               and not literal.startswith('/'), 'unsafe module literal')
+                candidates = [source.parent.joinpath(*parts[:-1],literal).as_posix()]
+            else:
+                review.require(detail == 'default-module-path', 'unknown module edge')
+                base = source.parent if source.name in ('main.rs','lib.rs','mod.rs') else source.with_suffix('')
+                candidates = [base.joinpath(*parts).with_suffix('.rs').as_posix(),base.joinpath(*parts,'mod.rs').as_posix()]
+            candidates = [posixpath.normpath(p) for p in candidates]
+            review.require(all(not p.startswith(('../','/')) and p != '..' for p in candidates), 'module escapes source root')
+            known = [p for p in candidates if p in rows]
+            review.require(len(known) == 1, 'missing/ambiguous module edge')
+            child, = known
+            edges.append(dict(source=name,target=child,scope=prefix+site['scope']))
+            walk(child,prefix+site['scope']+'::')
+        active.remove(name)
+    walk(root_source,'')
+    return dict(cases=cases,sources=sorted(visited),edges=edges,cfg_evaluated=False,compiler_expanded=False)
+
+
+def warning_owners(stdout, report):
+    """Bind warning text to the actual surrounding target, not the last target."""
+    result = []
+    for line_number, line in enumerate(stdout.splitlines(),1):
+        match = re.fullmatch(r'test (\S+) has been running for over (\d+) seconds',line)
+        if match is None: continue
+        owners = [v for v in report['targets'] if v['start_line'] <= line_number <= v.get('end_line',len(stdout.splitlines()))]
+        review.require(len(owners) == 1, 'warning outside/ambiguous target')
+        result.append(dict(case=match[1],target=owners[0]['target'],line=line_number,
+            diagnostic_seconds=int(match[2]),per_case_duration_measured=False))
+    return result
+
+
+def sweep_proof(raw, syntax_row, spec):
+    file, case, count, tail = spec
+    review.require(review.sha(raw) == syntax_row['sha256'], 'selected sweep source drift')
+    text = raw.decode().replace('\r\n','\n')
+    marker = 'fn '+case+'() {'
+    review.require(text.count(marker) == 1, 'selected case declaration')
+    start = text.index(marker); end = text.find('\n#[test]',start)
+    body = text[start:] if end < 0 else text[start:end]
+    assertion = f'assert_eq!(files.{"len()" if count == 402 else "lines().count()"}, {count});'
+    loop = 'for path in files.'+('into_iter()' if count == 402 else 'lines()')+'.chain(['
+    for exact in (assertion,loop,'normalize(path, &read(path))','git(&["show", &format!("{BASE}:{path}")])'):
+        review.require(body.count(exact) == 1, 'selected loop/assertion changed')
+    review.require(not re.search(r'\b(break|continue|return)\b',body), 'selected loop early exit')
+    tail_text = body.split(loop)[1].split(']) {')[0]
+    review.require(tuple(re.findall(r'"([^"\n]*)"',tail_text)) == tail, 'selected loop tail changed')
+    if count == 402:
+        review.require(body.count('listing.lines().filter(|p| p.ends_with(".rs")).collect()') == 1, 'GNU filtered list changed')
+    for exact in ('std::process::Command::new("git")','.args(args)',
+                  'crate::runtime_io::read_to_string(root().join(path))'):
+        review.require(text.count(exact) == 1, 'selected helper graph changed')
+    calls = Counter((s['scope'],s['detail']) for s in syntax_row['sites'] if s['kind'] == 'function-call')
+    review.require(calls[(case,'git')] == 1 and calls[(case+'::macro:assert_eq','git')] == 1
+                   and calls[(case+'::macro:assert_eq','read')] == 1, 'selected call sites changed')
+    return dict(source='crates/xtask/tests/support/'+file,case=case,runtime_paths=count,tail_paths=list(tail),
+        source_required_direct_show_calls=count+len(tail),source_required_read_calls=count+len(tail),
+        dynamic_helper_time_measured=False,nested_reads_and_other_cases_included=False)
+
+
+def analyze(root):
+    runs, catalogs, proofs = [], [], []
+    for folder_name, pin, prefix, ast_pin in DATASETS:
+        folder = root/'docs/testing/performance/0.74/local-runs'/folder_name
+        index_raw = (folder/'index.json').read_bytes()
+        review.require(review.sha(index_raw) == pin, 'sealed package identity')
+        index = review.decode_json(index_raw)
+        member = lambda name: review.member(folder,index,name)
+        intent, outcome = (review.decode_json(member(prefix+n)) for n in ('intent.json','result.json'))
+        review.require(intent['argv'] == review.ARGV and intent['bound_seconds'] == 780 and intent['retry'] is False, 'original command/bound changed')
+        review.require(outcome['source_unchanged'] and outcome['head_unchanged'] and intent['source'] == outcome['source_after'], 'original source receipt changed')
+        stdout, stderr = (member(prefix+n).decode() for n in ('stdout.log','stderr.log'))
+        targets = review.catalog(intent['source'],tomllib.loads(member('reviewed-auxiliary/crates/xtask/Cargo.toml').decode()
+            if folder_name.startswith('package-effect') else member('reviewed-source/crates/xtask/Cargo.toml').decode()))
+        report = review.parse_transcript(stdout,stderr,targets,outcome['exit'],outcome['outer_refusal'],780)
+        if folder_name.startswith('package-effect'):
+            syntax_raw = (root/V2_SYNTAX).read_bytes()
+            review.require(review.sha(syntax_raw) == PurePosixPath(V2_SYNTAX).name, 'v2 syntax bytes drift')
+        else: syntax_raw = member('syntax/final-closure/result.json')
+        document = review.decode_json(syntax_raw)
+        review.require(digest(document) == ast_pin and document['executed_input_code'] is False
+                       and document['compiler_expansion'] is False, 'original syntax scope drift')
+        catalog = case_catalog(document)
+        rows = {v['source']:v for v in document['sources']}
+        for path in catalog['sources']:
+            review.require(review.sha(member('reviewed-source/'+path)) == rows[path]['sha256'], 'catalog source bytes drift')
+        active = report['incomplete_target']
+        source_count = 115 if folder_name.startswith('package-effect') else 114
+        review.require(active is not None and active['target'] == TARGET and active['declared'] == len(catalog['cases']) == 321
+                       and len(catalog['sources']) == source_count and len(catalog['edges']) == source_count-1, 'concrete Windows target scope changed')
+        passed = {v['name'] for v in active['cases'] if v['verdict'] == 'ok'}
+        review.require(len(passed) == len(active['cases']) == 171 and passed <= catalog['cases'].keys(), 'observed verdict scope changed')
+        local_proofs = []
+        for spec in SWEEPS:
+            path = 'crates/xtask/tests/support/'+spec[0]
+            proof = sweep_proof(member('reviewed-source/'+path),rows[path],spec)
+            names = [name for name,row in catalog['cases'].items() if row == dict(source=path,scope=spec[1])]
+            review.require(len(names) == 1 and names[0] in passed, 'selected sweep has no passing verdict')
+            proof['qualified_case'] = names[0]; local_proofs.append(proof)
+        review.require(sum(p['source_required_direct_show_calls'] for p in local_proofs) == 1264, 'selected lower bound changed')
+        missing = sorted(catalog['cases'].keys()-passed)
+        warnings = warning_owners(stdout,report)
+        runs.append(dict(packet=folder_name,index_sha256=pin,source_head=intent['head'],
+            completed_targets=report['completed_targets'],expected_targets=report['expected_targets'],
+            completed_failed_cases=report['failed'],unstarted_targets=report['unstarted_targets'],
+            source_files=len(catalog['sources']),module_edges=len(catalog['edges']),
+            declared_cases=321,observed_passing_cases=sorted(passed),missing_case_verdicts=missing,
+            missing_verdict_is_started_or_unstarted_known=False,warnings=warnings,
+            unfinished_target_warning_count=sum(w['target']==TARGET for w in warnings),
+            source_required_selected_direct_show_calls_lower_bound=1264,selected_sweeps=local_proofs,
+            package_pass=False,per_test_timing_available=False,phase_cost_attributed=False))
+        catalogs.append(catalog); proofs.append(local_proofs)
+    review.require(catalogs[0]['cases'] == catalogs[1]['cases'] and proofs[0] == proofs[1], 'cross-source frontier differs')
+    review.require(set(catalogs[1]['sources'])-set(catalogs[0]['sources']) == {'tools/guard-path-comparison-074/contract.rs'}
+                   and set(catalogs[0]['sources']) <= set(catalogs[1]['sources']), 'historical module delta differs')
+    review.require(runs[0]['observed_passing_cases'] == runs[1]['observed_passing_cases'], 'passing frontier differs')
+    return dict(schema='hc074-contract-frontier-audit-v1',runs=runs,
+        source_case_catalog=catalogs[0]['cases'],
+        case_catalogs_equal=True,observed_case_sets_equal=True,
+        declared_by_top_level=dict(sorted(Counter(name.split('::')[0] if '::' in name else 'root'
+            for name in catalogs[0]['cases']).items())),
+        per_test_cpu_or_elapsed_attributed=False,cache_or_optimization_admitted=False,
+        producer_repeated=False,subprocesses_executed=False,server=False,admission=False)
+
+
+if __name__ == '__main__':
+    print(json.dumps(analyze(Path(__file__).resolve().parents[2]),indent=2,sort_keys=True))

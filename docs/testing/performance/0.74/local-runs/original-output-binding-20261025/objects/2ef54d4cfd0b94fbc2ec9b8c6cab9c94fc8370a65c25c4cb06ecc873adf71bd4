@@ -1,0 +1,206 @@
+{
+  "mode": "healthy",
+  "passed": true,
+  "first_refusal": null,
+  "cleanup_errors": [],
+  "cargo_dispatch": false,
+  "selected_target_pass": false,
+  "full_package_pass": false,
+  "admission": false,
+  "expected_join_refusal": "target command/window/retry drift",
+  "binding": {
+    "attempt_id": "output-bound-20261025-healthy",
+    "owner": {
+      "pid": 10544,
+      "creation_100ns": 134373880735185058
+    },
+    "directory_identity": [
+      1344208527,
+      2251799816660551
+    ],
+    "files": {
+      "intent.json": {
+        "identity": [
+          1344208527,
+          3096224746792527
+        ],
+        "bytes": 328268,
+        "sha256": "248f4b4108f52598dfd1d816e70aba08698cadba7b19917070c3ae5cf6ee8859"
+      },
+      "stdout.log": {
+        "identity": [
+          1344208527,
+          2533274793371223
+        ],
+        "bytes": 51,
+        "sha256": "b055184ef8fbcae67a8e3afea501f375d2040a205c53b2b2d72004e6df82e776"
+      },
+      "stderr.log": {
+        "identity": [
+          1344208527,
+          2533274793371228
+        ],
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "result.json": {
+        "identity": [
+          1344208527,
+          1688849863239282
+        ],
+        "bytes": 327797,
+        "sha256": "ada5362b0cec3cb53e96ca27f698ee00ab9a1177546183930dc5748f81a80b1b"
+      }
+    },
+    "scope": "trusted local wrapper; held output objects only",
+    "all_writers_proven_stopped": false,
+    "durable_recovery": false,
+    "admission": false
+  },
+  "original_owner": {
+    "pid": 10544,
+    "creation_100ns": 134373880735185058
+  },
+  "custody": {
+    "observation": {
+      "schema": 1,
+      "first_refusal": null,
+      "events": [
+        {
+          "kind": "attached",
+          "pids": [
+            10544,
+            48052,
+            43064,
+            48516
+          ]
+        },
+        {
+          "kind": "leaf-terminal"
+        },
+        {
+          "kind": "owner-exit",
+          "code": 0
+        }
+      ],
+      "discovery_snapshots": 9,
+      "owner_exit_observed": true,
+      "owner_returncode": 0,
+      "live_owner_custody_retained": false,
+      "leaf_terminal": true,
+      "outer_expired": false,
+      "observations_complete": true,
+      "identities": [
+        {
+          "pid": 10544,
+          "image": "C:\\Python313\\python.exe",
+          "creation_100ns": 134373880735185058
+        },
+        {
+          "pid": 48052,
+          "image": "c:\\python313\\python.exe",
+          "creation_100ns": 134373880738729686
+        },
+        {
+          "pid": 43064,
+          "image": "c:\\python313\\python.exe",
+          "creation_100ns": 134373880739321094
+        },
+        {
+          "pid": 48516,
+          "image": "c:\\python313\\python.exe",
+          "creation_100ns": 134373880739961789
+        }
+      ],
+      "samples": [
+        {
+          "terminal": false,
+          "creation_100ns": 134373880739961789,
+          "exit_100ns": null,
+          "kernel_100ns": 0,
+          "user_100ns": 625000,
+          "io": {
+            "read_ops": 52,
+            "write_ops": 0,
+            "other_ops": 676,
+            "read_bytes": 478692,
+            "write_bytes": 0,
+            "other_bytes": 73944
+          },
+          "memory": {
+            "working_set_bytes": 13905920,
+            "peak_working_set_bytes": 13905920,
+            "private_usage": 7892992,
+            "peak_private_commit_bytes": 7892992
+          },
+          "terminal_memory_error": null,
+          "observed_monotonic_ns": 765950908130700
+        },
+        {
+          "terminal": true,
+          "creation_100ns": 134373880739961789,
+          "exit_100ns": 134373880742000604,
+          "kernel_100ns": 0,
+          "user_100ns": 781250,
+          "io": {
+            "read_ops": 72,
+            "write_ops": 2,
+            "other_ops": 906,
+            "read_bytes": 830876,
+            "write_bytes": 22,
+            "other_bytes": 83190
+          },
+          "memory": {
+            "working_set_bytes": 32768,
+            "peak_working_set_bytes": 15089664,
+            "private_usage": 77824,
+            "peak_private_commit_bytes": 9347072
+          },
+          "terminal_memory_error": null,
+          "observed_monotonic_ns": 765951337898100
+        }
+      ],
+      "selected_target_pass": false,
+      "full_package_pass": false,
+      "admission": false
+    },
+    "first_observation_refusal": null,
+    "first_custody_refusal": null,
+    "exit_proof": {
+      "owner_returncode": 0,
+      "witnesses": [
+        {
+          "pid": 10544,
+          "creation_100ns": 134373880735185058,
+          "exit_100ns": 134373880744762009
+        },
+        {
+          "pid": 48052,
+          "creation_100ns": 134373880738729686,
+          "exit_100ns": 134373880742131521
+        },
+        {
+          "pid": 43064,
+          "creation_100ns": 134373880739321094,
+          "exit_100ns": 134373880742065220
+        },
+        {
+          "pid": 48516,
+          "creation_100ns": 134373880739961789,
+          "exit_100ns": 134373880742000604
+        }
+      ],
+      "coverage": "only previously held processes, not all writers"
+    },
+    "query_handles_released": true,
+    "release_attempted": true,
+    "execution_completion_authorized": false,
+    "all_writers_proven_stopped": false,
+    "durable_custody": false,
+    "selected_target_pass": false,
+    "admission": false
+  },
+  "real_wrapper_spawns": 1,
+  "output_first_refusal": null,
+  "live_owner_custody_retained": false
+}

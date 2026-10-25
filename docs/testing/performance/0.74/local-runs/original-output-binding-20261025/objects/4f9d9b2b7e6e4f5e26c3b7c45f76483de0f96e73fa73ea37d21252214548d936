@@ -1,0 +1,14 @@
+test_attachment_requires_same_live_owner_and_birth (test_attempt_output_binding.OutputModelTests.test_attachment_requires_same_live_owner_and_birth) ... ok
+test_bound_identity_and_all_files_read_once (test_attempt_output_binding.OutputModelTests.test_bound_identity_and_all_files_read_once) ... ok
+test_close_failure_prevents_payload_success_and_retry (test_attempt_output_binding.OutputModelTests.test_close_failure_prevents_payload_success_and_retry) ... ok
+test_file_directory_replacement_and_writer_refuse_before_read (test_attempt_output_binding.OutputModelTests.test_file_directory_replacement_and_writer_refuse_before_read) ... ok
+test_foreign_custody_or_witness_cannot_select_outputs (test_attempt_output_binding.OutputModelTests.test_foreign_custody_or_witness_cannot_select_outputs) ... ok
+test_live_owner_prevents_close_or_seal (test_attempt_output_binding.OutputModelTests.test_live_owner_prevents_close_or_seal) ... ok
+test_stale_slot_and_invalid_label_refuse (test_attempt_output_binding.OutputModelTests.test_stale_slot_and_invalid_label_refuse) ... ok
+test_real_read_limit_directory_and_hardlink_refusal (test_attempt_output_binding.WindowsFileControls.test_real_read_limit_directory_and_hardlink_refusal) ... ok
+test_real_writer_and_delete_sharing_preserve_original_inode (test_attempt_output_binding.WindowsFileControls.test_real_writer_and_delete_sharing_preserve_original_inode) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.056s
+
+OK

@@ -1,0 +1,33 @@
+{
+  "schema": "hc074-local-contract-observer-launch-v1",
+  "scope": "local Windows diagnostic preflight only; not production enrollment",
+  "dispatch_authorized": false,
+  "cwd": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074",
+  "argv": ["cargo", "+1.94.0", "test", "--offline", "--locked", "-p", "xtask", "--test", "performance_contract_074", "--", "--test-threads=4"],
+  "wrapper_seconds": 780,
+  "build_source_head": "48a01cbb5e8b9045e9700feab81ec26f367c1d8d",
+  "build_source_count": 2028,
+  "build_source_fingerprint": "2d18c30afb2704fb4bf13e84af7e6667e0d0d338b28fa729445deb1d5a5aeed6",
+  "build_objects": {
+    "intent.json": "eb7c49fff7ff7948048067e873882e5c5fe81b5fbfec72344204061f4092ca51",
+    "result.json": "cf4fa6b72f5598f7aa976989e681a0d1895c7d2da7fa3b807026277faad13a14",
+    "stderr.log": "9ff83085ffc1a69f1f7fb7a6e3f8a311819c9943cb0a67f750322e7ab23aa8cb",
+    "stdout.log": "877ece51c4c4b09cf83d275696350412a03b8059d9984f15780add21ee21529f"
+  },
+  "images": {
+    "python": {"path": "C:\\Python313\\python.exe", "sha256": "d932e5e2f324d57f392e8fd063dcf6d0185be8a664c57c6d24e7762ed02c28ca"},
+    "shim": {"path": "C:\\Users\\ArturBuzov\\.cargo\\bin\\cargo.exe", "sha256": "6f4bef66261261fcb43131be8720bab817d403a09edec7455c371974b90bdb7e"},
+    "cargo": {"path": "C:\\Users\\ArturBuzov\\.rustup\\toolchains\\1.94.0-x86_64-pc-windows-msvc\\bin\\cargo.exe", "sha256": "cbfdfc04b61ba49d184c6d3996502a00391d570cb5cb71a00faeb8c0ce12a4c9"},
+    "test": {"path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\performance_contract_074-6e7177044aaa8c23.exe", "sha256": "1f92f6532690febd531cb1f5377ddf4c7a5af2fec9409ee6a46a8f261dadb95b"}
+  },
+  "wrappers": {
+    "target/run-xtask-package-780-20261024.py": "52504f2b489d16f344b477df0568f33ac224c5cadacc552f32f427f39c09d04d",
+    "target/run-source-step-20261024.py": "a92482cabcfcf8f6440e95972bee8d204bb9c59c8805c45c7b57363dcc3ab430"
+  },
+  "policy_roles": [["shim", "cargo", "test"], ["cargo", "test"]],
+  "mapped_image_attested": false,
+  "source_effect_review_required": "v3",
+  "selected_target_pass": false,
+  "full_package_pass": false,
+  "product_or_qualification_admission": false
+}

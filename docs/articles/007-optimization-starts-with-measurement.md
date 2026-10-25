@@ -19884,3 +19884,27 @@ source identity. Replaying the old successful log verifies that reader but does
 not create a new live result. Dispatch, observation, semantic verdict and writer
 retirement need distinct evidence, even when a synthetic control makes their
 normal path look like one operation.
+
+### Bind the result to the original output objects
+
+An exact transcript can still belong to another attempt. The next
+[output-binding controls](../testing/performance/0.74/original-output-binding-result-20261025.md)
+therefore check the wrapper's selected output slot is absent before launch, hold
+its live directory and stream objects, and match the same owner to its terminal witness.
+The final reader locks all four original inputs against ordinary writers and
+checks file IDs before reading through retained handles. A pathname or digest
+alone does not provide that lifetime binding.
+The existing consumed marker and exclusive wrapper-directory creation remain
+separate guards; an absence check alone is not a global reservation.
+
+The first Windows fixture session tests an outstanding append handle as well as
+normal sealing. The append handle causes a sharing refusal; closing it does not
+license a second read. In the normal case, file binding succeeds but the Python
+fixture command still refuses the Cargo target verdict. This keeps successful
+collection separate from successful execution of the intended experiment.
+
+These locks cover the held files during reading, not writable mappings or every
+production writer. The target dispatcher remains disabled pending review of the
+real caller and its finite observation. Better attribution depends on that
+boundary: precise counters are not useful if a plausible old result can replace
+the current attempt, or if an observer error silently starts another one.
