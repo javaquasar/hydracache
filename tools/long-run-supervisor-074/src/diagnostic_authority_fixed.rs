@@ -187,6 +187,10 @@ pub(crate) fn modeled_registry_for_test(
 #[path = "diagnostic_authority_fixed_tests.rs"]
 mod tests;
 
+#[cfg(all(test, target_arch = "x86_64"))]
+#[path = "diagnostic_authority_directory_tests.rs"]
+mod directory_cost;
+
 #[cfg(test)]
 #[path = "diagnostic_privileged_authority_fixture.rs"]
 pub(crate) mod privileged_fixture;
