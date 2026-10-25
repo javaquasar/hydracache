@@ -1,0 +1,31 @@
+{
+  "cases": [
+    "consuming_held_join_exact_adapter_rejects_missing_duplicate_extra_and_body_drift",
+    "actual_consuming_adapter_refuses_missing_duplicate_hook_and_unrelated_drift",
+    "held_build_source_allowlist_requires_all_old_files_and_exactly_one_named_addition",
+    "held_trust_adapter_refuses_missing_duplicate_extra_and_unrelated_drift",
+    "held_build_adapter_rejects_missing_duplicate_and_unrelated_old_drift",
+    "immutable_fixture_adapter_refuses_missing_duplicate_and_unrelated_test_drift",
+    "immutable_fixture_changes_only_old_input_helper_not_any_old_assertion",
+    "immutable_fixture_is_exact_worker_blob_and_checkout_keeps_raw_lf",
+    "actual_consuming_fixture_preserves_all_446_preceding_sources_and_formats",
+    "held_trust_preserves_all_442_preceding_sources_and_production_inputs",
+    "consuming_held_join_preserves_all_443_old_sources_and_formats",
+    "immutable_fixture_preserves_all_437_runtime_sources_and_production_inputs",
+    "namespace_fixture_is_test_only_private_mount_and_not_manager_authority",
+    "role_binding_adapter_refuses_missing_duplicate_and_unrelated_drift",
+    "launcher_adapter_refuses_missing_duplicate_and_unrelated_drift",
+    "namespace_adapter_refuses_missing_duplicate_and_unrelated_drift",
+    "role_files_adapter_refuses_missing_duplicate_and_unrelated_drift",
+    "launcher_preserves_all_438_preceding_sources_and_exact_old_formats",
+    "role_binding_preserves_all_441_preceding_runtime_sources_and_inputs",
+    "role_files_preserve_all_440_previous_runtime_sources_and_inputs"
+  ],
+  "mode": "off",
+  "package_pass": false,
+  "process_wall_ns": 110601808800,
+  "product_candidate": false,
+  "repeated": false,
+  "reported_ns": 110570000000,
+  "target_pass": true
+}

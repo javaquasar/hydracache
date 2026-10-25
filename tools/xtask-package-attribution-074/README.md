@@ -78,3 +78,24 @@ four-thread diagnostic under the original bound. It remains unexecuted, requires
 exact-source observer erasure and preserves every original read/assertion.
 No cache, persistent child, package pass or product admission follows. See the
 [scope, checks and first-refusal evidence](../../docs/testing/performance/0.74/preservation-sweep-attribution-20261025.md).
+
+## Opt-in direct helper scopes
+
+`helper_contract.rs` proves byte-exact recovery of the old complete artifact
+test source after removing only the bounded observers. `helper_trace.rs` and
+`helper_model.rs` retain the original helper graph; default-off scopes read no
+clock and allocate no event. Active data is per-thread/case, with parent/order,
+byte and terminal-buffer checks. `helper_review.py` rejects incomplete graphs
+and whole missing cases against the retained original AST catalog.
+
+`helper_capture.py` enforces the separate `helper-execution-protocol.toml`,
+original twenty cases/four threads, finite leg order, first-output directories,
+source/executable pins and unchanged baseline runtime inputs. It runs only this
+local read-only source/Git target, not the full package, product or server.
+Fixture filters are explicit and never accepted for the main target.
+
+The first triplet completes, with 12611 profile records locating cumulative
+helper elapsed cost in `Command::output()`. It does not separate startup from
+child execution or establish overhead acceptance. See the
+[measurements, limitations and preserved first refusals](../../docs/testing/performance/0.74/preservation-helper-spans-result-20261025.md).
+No cache or persistent-child candidate is admitted.

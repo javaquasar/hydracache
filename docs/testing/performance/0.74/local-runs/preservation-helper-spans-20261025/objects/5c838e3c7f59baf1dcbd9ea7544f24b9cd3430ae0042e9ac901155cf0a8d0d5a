@@ -1,0 +1,92 @@
+"""Independent staged source, raw verdict, case-catalog and interval arithmetic."""
+from collections import Counter
+from pathlib import Path
+import hashlib
+import json
+import re
+import subprocess
+
+ROOT=Path(__file__).resolve().parent.parent
+BASE='docs/testing/performance/0.74/local-runs/preservation-helper-spans-20261025'
+def staged(name): return subprocess.check_output(['git','show',':'+BASE+'/'+name],cwd=ROOT)
+raw=staged('index.json'); index=json.loads(raw); objects={}
+assert index['schema']=='hc074-preservation-helper-spans-v1'
+for entry in index['members'].values():
+    digest=entry['sha256']; assert re.fullmatch('[0-9a-f]{64}',digest)
+    if digest not in objects: objects[digest]=staged('objects/'+digest)
+    assert hashlib.sha256(objects[digest]).hexdigest()==digest and len(objects[digest])==entry['bytes']
+def member(name): return objects[index['members'][name]['sha256']]
+assert hashlib.sha256(member('original/index.json')).hexdigest()==index['facts']['original_packet_sha256']
+old=json.loads(member('original/index.json'))
+for name,entry in index['members'].items():
+    if name.startswith('original/') and name!='original/index.json': assert entry==old['members'][name[len('original/'):]]
+syntax=json.loads(member('original/syntax/final-closure/result.json'))
+source,=[row for row in syntax['sources'] if row['source']=='crates/xtask/tests/diagnostic_artifact_fixture_074.rs']
+cases={row['scope'] for row in source['sites'] if row==dict(scope=row['scope'],kind='function-attribute',detail='test')}
+required={row['scope'].split('::')[0] for row in source['sites'] if row['kind']=='function-call'
+          and row['detail'] in ('read','git') and row['scope'].split('::')[0] in cases}
+assert len(cases)==20 and len(required)==19
+durations={}
+for mode in ('reference','off','profile'):
+    text=member('capture/'+mode+'/stdout.log').decode()
+    result=json.loads(member('capture/'+mode+'/result.json'))
+    observed=re.findall(r'^test (\S+) \.\.\. ok$',text,re.M)
+    assert len(observed)==20 and set(observed)==cases and 'running 20 tests\n' in text
+    end=re.findall(r'^test result: ok\. 20 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in (\d+\.\d+)s$',text,re.M)
+    assert len(end)==1
+    seconds,decimal=end[0].split('.'); ns=int(seconds)*10**9+int(decimal.ljust(9,'0'))
+    assert ns==result['reported_ns'] and result['target_pass'] and not result['package_pass'] and not result['repeated']
+    durations[mode]=ns
+    if mode!='profile': assert b'HC074_HELPER_TRACE ' not in member('capture/'+mode+'/stderr.log')
+text=member('capture/profile/stderr.log').decode()
+frames=[json.loads(line[len('HC074_HELPER_TRACE '):]) for line in text.splitlines() if line.startswith('HC074_HELPER_TRACE ')]
+assert {frame['case'] for frame in frames}==required and len(frames)==19
+counts,ns,byte_counts,commands=Counter(),Counter(),Counter(),Counter()
+for frame in frames:
+    assert frame['valid'] and frame['started']==len(frame['records'])
+    rows={row['id']:row for row in frame['records']}
+    assert sorted(rows)==list(range(1,len(rows)+1))
+    for row in frame['records']:
+        op=row['operation']; assert row['returned'] and not row['unwinding']
+        assert row['elapsed_ns']==row['end_ns']-row['start_ns']>=0
+        if row['parent']:
+            parent=rows[row['parent']]; assert parent['operation']=='git'
+            assert parent['start_ns']<=row['start_ns']<=row['end_ns']<=parent['end_ns']
+        if op=='git':
+            commands[row['arguments'][0]]+=1
+            children=sorted((v for v in rows.values() if v['parent']==row['id']),key=lambda v:v['id'])
+            assert [v['operation'] for v in children]==['output','decode']
+            assert row['output_bytes']==children[1]['output_bytes']
+            assert row['stderr_bytes']==children[0]['stderr_bytes']==children[1]['stderr_bytes']
+        counts[op]+=1; ns[op]+=row['elapsed_ns']; byte_counts[op]+=row['output_bytes']
+assert dict(counts)==dict(git=3157,output=3157,decode=3157,read=3140)
+assert dict(commands)==dict(show=3141,**{'ls-tree':7,'ls-files':7,'hash-object':1,'check-attr':1})
+totals=json.loads(member('derived/totals.json'))
+assert totals['reported_target_ns']==durations and totals['cumulative_helper_wall_ns']==dict(ns)
+assert totals['logical_output_bytes']==dict(byte_counts) and totals['records']==12611
+compiled=json.loads(member('capture/profile/preflight.json'))['compiled_source']
+for name,entry in index['members'].items():
+    if name.startswith('measured-source/'): assert entry['sha256']==compiled[name[len('measured-source/'):]]
+baseline=member('baseline/source.rs').decode()
+contract=member('measured-source/tools/xtask-package-attribution-074/helper_contract.rs').decode()
+body=member('measured-source/crates/xtask/tests/diagnostic_artifact_fixture_074.rs').decode()
+templates={name:re.findall(r'pub const '+name+r': &str = r#"(.*?)"#;',contract,re.S)[0]
+           for name in ('OLD_READ','NEW_READ','OLD_GIT','NEW_GIT')}
+hook=json.loads(re.findall(r'pub const HOOK: &str = ("(?:[^"\\]|\\.)*");',contract)[0])
+for new,old_value in ((hook,''),(templates['NEW_READ'],templates['OLD_READ']),(templates['NEW_GIT'],templates['OLD_GIT'])):
+    assert body.count(new)==1; body=body.replace(new,old_value,1)
+assert body==baseline and hashlib.sha256(baseline.encode()).hexdigest()==source['sha256']
+for mode in ('fixture-healthy','fixture-panic'):
+    assert json.loads(member('capture/'+mode+'/refusal.json'))==dict(exit=0,reason='target verdict',type='ValueError')
+    assert b'1 passed; 0 failed;' in member('capture/'+mode+'/stdout.log')
+for path,digest in index['facts']['protected_sha256'].items():
+    assert hashlib.sha256(member('protected/'+path)).hexdigest()==digest
+    assert hashlib.sha256((ROOT/path).read_bytes()).hexdigest()==digest
+for phase in index['facts']['phases']:
+    result=json.loads(member('checks/'+phase['phase']+'/result.json'))
+    assert result['exit']==phase['exit'] and result['source_unchanged'] and result['head_unchanged']
+print(json.dumps(dict(schema='hc074-helper-spans-staged-verification-v1',index_sha256=hashlib.sha256(raw).hexdigest(),
+    members=len(index['members']),objects=len(objects),profile_records=12611,required_case_traces=19,
+    raw_verdicts_and_cumulative_arithmetic_verified=True,measured_source_erasure_verified=True,
+    protected_unchanged=True,first_refusals_retained=True,no_child_or_measurement_repeated=True,
+    server_or_qualification_admission=False)))

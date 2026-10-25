@@ -1,0 +1,16 @@
+{
+  "schema": "hc074-helper-spans-staged-verification-v1",
+  "index_sha256": "f239630ed26fc19beae9ab4163a59e4807747307b81293e859ef6499208b8b99",
+  "members": 212,
+  "objects": 152,
+  "profile_records": 12611,
+  "required_case_traces": 19,
+  "raw_verdicts_and_cumulative_arithmetic_verified": true,
+  "measured_source_erasure_verified": true,
+  "protected_unchanged": true,
+  "first_refusals_retained": true,
+  "no_child_or_measurement_repeated": true,
+  "server_or_qualification_admission": false,
+  "verifier": "coordinators/verify-helper-spans-staged-20261025.py",
+  "tool_output_chunk": "30afca"
+}

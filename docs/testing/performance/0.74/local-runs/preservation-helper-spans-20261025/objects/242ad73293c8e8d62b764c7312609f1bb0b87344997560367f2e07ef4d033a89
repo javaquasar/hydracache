@@ -1,0 +1,32 @@
+"""Review both saved first producers, preserving their original refusals."""
+from pathlib import Path
+import json
+import sys
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT/'tools/xtask-package-attribution-074'))
+import helper_capture as capture
+import helper_review
+
+for mode in ('healthy', 'panic'):
+    folder = ROOT/f'target/helper-spans-20261025/fixture-{mode}'
+    assert json.loads((folder/'refusal.json').read_bytes()) == dict(exit=0, reason='target verdict', type='ValueError')
+    verdict = capture.target_result((folder/'stdout.log').read_bytes(), ['helper_observer_fixture_child'], filtered=17)
+    error = (folder/'stderr.log').read_bytes()
+    if mode == 'healthy':
+        result = helper_review.traces(error, {f'helper-fixture-{index}' for index in range(4)})
+        assert result['counts'] == dict(git=4, output=4, decode=4, read=4)
+        assert len(result['frames']) == 4
+    else:
+        frames = [json.loads(line[len('HC074_HELPER_TRACE '):]) for line in error.decode().splitlines() if line.startswith('HC074_HELPER_TRACE ')]
+        assert len(frames) == 1 and frames[0]['valid'] and len(frames[0]['records']) == 2
+        assert all(row['unwinding'] and not row['returned'] for row in frames[0]['records'])
+        import hashlib
+        source = ROOT/'crates/xtask/tests/authority_context_074.rs'
+        pinned = json.loads((folder/'preflight.json').read_bytes())['compiled_source'][source.relative_to(ROOT).as_posix()]
+        assert hashlib.sha256(source.read_bytes()).hexdigest() == pinned
+        assert 'Some(&"original-helper-fixture-panic")' in source.read_text()
+        try: helper_review.traces(error, {'helper_observer_fixture_child'})
+        except ValueError: pass
+        else: raise AssertionError('unwind admitted as healthy')
+    print(json.dumps(dict(mode=mode, original_producer_pass=verdict['target_pass'], first_refusal_retained=True,
+                         original_panic_preserved=mode=='panic', synthetic_child_repeated=False)))

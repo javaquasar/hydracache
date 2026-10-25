@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\xtask-package-attribution-074\helper_capture.py", line 166, in <module>
+    capture(Path(sys.argv[1]).resolve(), Path(sys.argv[2]).resolve(), sys.argv[3])
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\xtask-package-attribution-074\helper_capture.py", line 124, in capture
+    result = target_result((out/'stdout.log').read_bytes(), expected)
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\xtask-package-attribution-074\helper_capture.py", line 44, in target_result
+    review.require(end[1] == 'ok' and list(map(int, end.group(2, 3, 4, 5, 6))) == [len(expected), 0, 0, 0, 0], 'target verdict')
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\xtask-package-attribution-074\review.py", line 31, in require
+    raise ValueError(message)
+ValueError: target verdict

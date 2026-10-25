@@ -108,3 +108,9 @@ readback. The article and continuation plan distinguish call/object facts from
 unmeasured time and safety hypotheses. No normalizer, original live check,
 frequency/order, 300/60/10 origin/window, dependency, qualification manifest or
 frozen 0.73 artifact changes.
+
+The [subsequent helper-span study](preservation-helper-spans-result-20261025.md)
+implements the bounded observer and completes a separate first reference/off/on
+triplet. It validates nineteen helper-using case traces against the original
+AST and locates cumulative elapsed work in `Command::output()`, without replacing
+the old package outcome, measuring CPU or admitting a cache/transport candidate.

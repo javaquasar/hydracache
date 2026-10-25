@@ -19613,3 +19613,34 @@ nor a numerical speedup. A separate helper-timing protocol now fixes the origina
 twenty cases, four threads, unchanged bound, source-erasure controls and observer
 overhead comparison before dispatch. The full package's first timeout survives;
 no passing offline analysis or old target verdict replaces its unfinished suffix.
+
+### Locate elapsed work without changing the helper graph
+
+The [direct helper-span study](../testing/performance/0.74/preservation-helper-spans-result-20261025.md)
+adds bounded, default-off observations while an exact erasure test restores the
+entire old source. Commands, assertions, conditional inventory projection and
+current-input reads keep their positions. Terminal thread buffers carry sequence,
+parent, byte and unwind information; the original AST supplies the nineteen
+required helper-using cases so a missing whole trace cannot disappear from a
+successful-looking subset.
+
+One finite reference/off/on triplet completes all twenty cases in every mode.
+Reported durations are 113.71, 110.57 and 119.40 seconds. The lone fixed-order
+screen is not evidence that the off path is faster or that observer overhead
+passes a numerical budget. The active profile supplies 12611 records: 3157 Git
+helpers, their output/decode scopes and 3140 reads.
+
+Git helpers accumulate 395.012 seconds; the original `Command::output()` accounts
+for 392.164 of those cumulative seconds, versus 2.713 for decode/projection.
+Read helpers accumulate 7.806 seconds. Concurrency and nesting explain why these
+totals cannot be added into the target's 119.40 seconds or labelled CPU. Work
+outside the helpers is still outside the attribution. Startup, Git execution,
+waiting and captured output also remain together inside `output()`.
+
+This is enough to move the next diagnostic question into process/output work,
+not enough to replace repeated Git launches with a supposedly safe cache.
+Fresh refs/configuration, independent pins, ABA/fallback behavior and source
+observations still constrain that choice. The first fixture collector mistakes
+are retained and corrected through offline review of the same original logs;
+no child is rerun to manufacture a clean first outcome. Product qualification
+and the earlier incomplete package remain separate gates.

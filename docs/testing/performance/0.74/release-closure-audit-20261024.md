@@ -398,3 +398,12 @@ show/read lower bound for seven loops. A separate read-only tree collection has
 original-run ref/config state or completed package follows from that locality.
 Thirty-one Python controls and a prepared, unexecuted helper protocol retain the
 earlier first failures and the unchanged release barriers.
+
+The [helper-span implementation and first triplet](preservation-helper-spans-result-20261025.md)
+preserve the original twenty artifact cases in each of three processes and
+retain 12611 events across nineteen helper-using cases. Git helpers accumulate
+395.012 s, including 392.164 s in original `Command::output()`; those concurrent,
+nested intervals are not target-wall or CPU partitions. Eighteen focused cases
+per compiler, thirty-nine Python controls and strict checks pass. First fixture
+parser/offline-oracle failures survive without rerunning their children. No
+transport candidate, full-package verdict or server admission follows.

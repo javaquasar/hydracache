@@ -1,0 +1,13 @@
+{
+  "clocks": false,
+  "diagnostic_log_budget_bytes": 16777216,
+  "disk_floor_bytes": 4294967296,
+  "mode": "fixture-healthy",
+  "package_replay": false,
+  "product": false,
+  "retry": false,
+  "server": false,
+  "services": false,
+  "threads": 1,
+  "timeout_seconds": 30
+}

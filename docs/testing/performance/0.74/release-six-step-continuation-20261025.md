@@ -49,6 +49,14 @@ completed target. Pinned-tree locality shows distinct revision/path keys but
 465 blob OIDs; it does not prove time ownership or authorize a cache. The next
 twenty-case/four-thread helper-attribution protocol is prepared, not executed.
 
+Its [subsequent supplemental helper screen](preservation-helper-spans-result-20261025.md)
+now completes one unchanged-reference/off/on triplet, with all twenty cases in
+each process and 12611 profile records. Cumulative helper time concentrates in
+`Command::output()`, not decode/projection; startup versus child work remains
+unseparated. Exact source erasure, original-AST trace completeness and strict
+controls pass. This is neither repeated overhead acceptance nor a full package,
+product win, changed live schedule or permission for a persistent-child/cache.
+
 Next: use saved target/call attribution to isolate the cost owner without
 removing tests, refreshing source pins from responses or changing conditional
 reads. A separate candidate needs its own baseline and unchanged-bound proof;

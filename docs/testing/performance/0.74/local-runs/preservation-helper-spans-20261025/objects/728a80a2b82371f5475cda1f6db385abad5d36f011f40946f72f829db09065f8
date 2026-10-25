@@ -1,0 +1,8 @@
+{
+  "sha256": {
+    "diagnostic_artifact_fixture_074.exe": "c0ffe82e2760044326ea2fca25447519b47138d68f27a2c6ca5344a804b0c0e9",
+    "source.rs": "5819f89ec58a899e03d7c0f14c6af91f4be6248a26f8578186cfc47b5900a805"
+  },
+  "build_phase": "helper-spans-20261025-baseline-build",
+  "executed": false
+}
