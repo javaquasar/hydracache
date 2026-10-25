@@ -158,6 +158,23 @@ correction, not a second numerical attempt. All scoped Rust command captures
 retain unchanged source/HEAD before and after execution. These checks do not
 replace the previously red full-workspace/security gates or create ship admission.
 
+## Continuation commits
+
+| Commit | Scope |
+| --- | --- |
+| `3c1a75e3e` | Fixed-material preregistration |
+| `5a3785a6a` | Private pinned diagnostic material and compatibility controls |
+| `c3711a8ef` | Shipping-GNU allocator capability contract |
+| `352b0cc9c` | First material/provider evidence packet |
+| `33c1ed37d` | Finite real-network allocation contract |
+| `558d418a6` | Original host placement and quiet guards |
+| `8c5d48108` | Separate requested-layout worker; v1 never numerically executed |
+| `85fb71c51` | Independent physical-placement preregistration |
+| `be0499a8c` | Exact measured v2 source and actual wire-overlap guard |
+| `53b99dea6` | Autonomous fenced maintenance coordinator and offline controls |
+| `4a5343636` | Complete numerical packet and offline fixed-estimator replay |
+| `a67a5299a` | Selective runtime withdrawal, terminal registry and regression guards |
+
 ```text
 python docs/testing/performance/0.74/local-runs/get-owner-full-d3-network-allocation-20261025/test_verify.py -v
 python docs/testing/performance/0.74/local-runs/get-owner-full-d3-network-allocation-20261025/verify.py

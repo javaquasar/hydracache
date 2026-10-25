@@ -20275,8 +20275,52 @@ different observations. Process RSS alone cannot make that distinction.
 
 The control is not yet a multi-arena reader or a GET-owner comparison. A strict
 coverage/parser gate, the allocation lane, sufficient fixed-work timing capacity
-and the complete counterbalanced native/RESP cohort still precede a D3 decision.
+and the complete counterbalanced native/RESP cohort still precede positive admission.
 The operator has approved a narrowly scoped fenced maintenance with autonomous
 cleanup and supervisor restoration; preparation has not stopped the service.
 No practical threshold changes and no product speedup claim follow from these
 prerequisite results.
+
+### Reject GET owner at the real secure transport boundary
+
+The [complete real-network allocation stage](../testing/performance/0.74/get-owner-full-d3-terminal-result-20261025.md)
+now gives GET-owner a terminal negative decision for 0.74. All 240 fresh processes
+finish: five A/A and five counterbalanced A/B pairs across eight RESP cells and
+four independent native surfaces. Every process uses the same pinned source,
+locks, corpus and matched diagnostic material. The unchanged 20% practical floor
+is checked using all five paired log ratios and the upper 95% cost bound.
+
+Before measurement, a method audit catches a subtle denominator mistake: pipeline
+depth is an outstanding limit, not a batch multiplier. The first draft also tied
+physical sockets to execution concurrency. A separately preregistered schema
+uses one RESP socket and 128 execution slots; each offer is still one GET. Wire
+timestamps must prove 50 actual overlapping requests for 4 KiB and 10 for 1 MiB.
+Both GNU release variants pass those controls before any numerical attempt. The
+first invalid Windows debug control stays visible, without a retry or a longer
+deadline.
+
+Plain RESP2/3 reduces gross requested layouts by about 22.4–23.5% at 4 KiB and
+33.3% at 1 MiB. The same candidate under matched mTLS reaches only 15.25–15.74%
+and 19.9738–19.9770%, respectively. All four secure cells miss the frozen floor;
+the near-20% results are not rounded into passing. Each native allocation ratio
+is exactly 1.0, but this says nothing about native CPU or tail latency. The measured
+scope includes the colocated client and real transport, so the scripted helper's
+success cannot stand in for this admission test. The comparison establishes the
+smaller secure end-to-end allocation fraction, not a profile of which TLS leaf
+should be optimized next.
+
+The right response is to stop this candidate's acceptance work, not expand the
+experiment until something passes. Only its private runtime selector is disabled;
+canonical semantics, historical property/integration guards and every receipt
+remain. More timing or retention runs cannot repair a failed mandatory allocation
+floor, so they are not purchased or marked green. This is a rejected release
+proposal with a real saving in some cells, not proof that moving the Vec is wrong.
+
+The short host window also supplies operational evidence. An autonomous delegated
+coordinator holds the shared fence through all original writers; synthetic owner
+SIGKILL and deadline controls prove retirement before restoration. The launch SSH
+connection closes while the same finite series continues. After all 240 attempts,
+the exact stable supervisor is restored and its installed image verified. That
+manual, operator-approved diagnostic route does not claim production enrollment,
+original-start or general lifecycle readiness. GET-owner is closed for 0.74;
+the rest of the release still has its own gates.

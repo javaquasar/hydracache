@@ -7016,9 +7016,9 @@ original checks. Complete Windows standalone tests pass 89 per off/on variant;
 Linux metadata checks pass six per variant, with strict checks on both systems.
 First crypto-provider refusals remain. A five-phase synthetic GNU control can
 reconcile allocator mappings and distinguish mmap release from retained heap;
-it is not multi-arena or cache retention proof. Full-D3 numerical attempts remain
-zero. The agreed supervisor maintenance is reserved for the completed fenced
-cohort, not used by preparation; C74, thresholds and qualification stay unchanged.
+it is not multi-arena or cache retention proof. That preparation packet contains
+zero full-D3 numerical attempts; the later terminal result below records the
+separately sealed and authorized maintenance. C74 and qualification stay unchanged.
 
 The [current source IO/gate attribution](normalization-cost-result-20261025.md)
 retains 144 calls and three first historical preparation spans. Prepared-cache IO
@@ -7030,3 +7030,14 @@ CPU/tail evidence admits it. Only that active prototype is withdrawn, with exact
 source and first results retained. The installed source gate and prior fixed-slice
 optimization remain. Seven final active cases pass per Windows compiler, with
 strict checks; this does not close the package or original production barriers.
+
+The [terminal GET-owner D3 result](get-owner-full-d3-terminal-result-20261025.md)
+closes this proposal with a valid negative decision: 240 processes, all five A/A
+and five A/B pairs per cell, actual deep wire pipelines and unchanged thresholds.
+All four mTLS allocation cells miss the required 20% floor; four independent
+native gross ratios equal 1.0. The runtime selector is disabled, historical
+semantic guards retained, and further acceptance-only timing/retention runs are
+not started or labeled passed. The raw packet has offline source/wire/retirement
+and estimator replay. The approved short maintenance ends with the exact stable
+supervisor restored (PID 377415, NRestarts=0), no installation or qualification.
+This closes GET-owner, not Release 0.74 or its production original-start gates.

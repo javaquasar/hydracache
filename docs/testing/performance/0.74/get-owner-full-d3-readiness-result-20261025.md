@@ -4,7 +4,9 @@ The fixed-material instrumentation closes one full-D3 prerequisite: fresh secure
 processes can consume the same pinned diagnostic PKI instead of generating a new
 certificate chain each time. A separate synthetic GNU control demonstrates a
 possible allocator-residency measurement boundary on this host. Neither result
-accepts GET-owner; the numerical full-D3 cohort has not started.
+accepts GET-owner. This preparation packet precedes the numerical cohort; the
+later [terminal D3 result](get-owner-full-d3-terminal-result-20261025.md) rejects
+the candidate on the mandatory mTLS allocation floor.
 
 ## Shared material and compatibility
 
@@ -107,7 +109,12 @@ python docs/testing/performance/0.74/local-runs/get-owner-full-d3-material-20261
 python docs/testing/performance/0.74/local-runs/get-owner-full-d3-material-20261025/verify.py
 ```
 
-## Remaining full D3 work
+## Acceptance work superseded by terminal rejection
+
+The following were the prerequisites for positive admission after this packet.
+The later complete real-network allocation gate rejects GET-owner, so these
+additional acceptance-only runs are not pending work for this 0.74 candidate
+and are not relabeled as passed.
 
 Complete and fault-test the shipping-GNU memory reader, including multiple
 arenas and unknown/remapped mappings, then connect it to the separate
