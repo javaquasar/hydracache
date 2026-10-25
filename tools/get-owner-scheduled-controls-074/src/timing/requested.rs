@@ -77,6 +77,28 @@ pub async fn run<S: Scope, F: FnOnce() -> S>(
     material: Option<&MtlsFixture>,
     begin: F,
 ) -> Report<S::Output> {
+    run_inner(input, material, None, begin).await
+}
+
+/// Separate physical RESP placement for the v2 stage. Zero retains native
+/// placement. Legacy callers keep the original slots-to-sockets behavior.
+pub async fn run_with_resp_connections<S: Scope, F: FnOnce() -> S>(
+    input: Input,
+    material: Option<&MtlsFixture>,
+    resp_connections: usize,
+    begin: F,
+) -> Report<S::Output> {
+    let placement =
+        (resp_connections != 0 || input.surface.resp().is_some()).then_some(resp_connections);
+    run_inner(input, material, placement, begin).await
+}
+
+async fn run_inner<S: Scope, F: FnOnce() -> S>(
+    input: Input,
+    material: Option<&MtlsFixture>,
+    resp_connections: Option<usize>,
+    begin: F,
+) -> Report<S::Output> {
     let mut report = Report {
         schema_version: 1,
         profile_id: PROFILE,
@@ -104,13 +126,14 @@ pub async fn run<S: Scope, F: FnOnce() -> S>(
         report.error = Some("allocation material/surface mismatch before fixture".to_owned());
         return report;
     }
-    let owner = match Owner::start(&report.input, material).await {
-        Ok(owner) => owner,
-        Err(error) => {
-            report.error = Some(error);
-            return report;
-        }
-    };
+    let owner =
+        match Owner::start_with_resp_connections(&report.input, material, resp_connections).await {
+            Ok(owner) => owner,
+            Err(error) => {
+                report.error = Some(error);
+                return report;
+            }
+        };
     report.transport_security = owner.security();
     if let Err(error) = measured(&mut report, &owner, begin).await {
         report.error = Some(error);
@@ -180,6 +203,33 @@ mod tests {
             assert!(report.error.is_some());
             assert!(report.requested_layouts.is_none() && report.observation.is_none());
             assert!(!report.shutdown_verified);
+        }
+    }
+
+    #[tokio::test]
+    async fn independent_placement_refuses_wrong_boundary_before_counting() {
+        for (surface, connections) in [
+            (super::super::Surface::Resp2, 0),
+            (super::super::Surface::Resp2, 2),
+            (super::super::Surface::Embedded, 1),
+        ] {
+            let mut config = input();
+            config.surface = surface;
+            config.pipeline_depth = if matches!(surface, super::super::Surface::Resp2) {
+                1
+            } else {
+                0
+            };
+            let report =
+                run_with_resp_connections(config, None, connections, || -> Marker<'static> {
+                    panic!("invalid placement started counting")
+                })
+                .await;
+            assert!(report
+                .error
+                .as_ref()
+                .is_some_and(|e| e.contains("connection count")));
+            assert!(report.requested_layouts.is_none() && report.observation.is_none());
         }
     }
 

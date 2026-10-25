@@ -2336,3 +2336,20 @@ this new mode's output or silently relaxed. Legacy `--run` emits no new field,
 and existing config/report schemas, ephemeral APIs, protocols, AUTH and TLS
 requirements remain unchanged. A matching material seal alone cannot admit a
 numerical cohort or replace dataset, source, ownership and lifecycle checks.
+
+## GET owner allocation stage v2
+
+The private `full-d3-allocation-074` config/envelope uses schema 2 and profile
+`get-owner-full-d3-allocation-074-v2`. Its strict config contains `schema_version`,
+`profile_id`, the unchanged timing-v1 `workload`, and required `resp_connections`.
+The canonical stage hash binds physical placement independently of execution
+concurrency. Missing, duplicate, unknown, future or out-of-contract fields refuse
+before a fixture. RESP requires one socket and an observed wire-overlap high-water
+equal to the configured limit, not a pipeline-sized operation multiplier.
+
+The matched envelope adds the stage config/hash and actual wire overlap. Its
+nested requested-layout report remains v1 and binds the base workload only;
+readers must validate both identities. Historical timing modes and requested-v1
+APIs retain their schema and placement. Unexecuted allocation-v1 images cannot
+produce v2 evidence. This counting lane never certifies timing, retention or
+candidate admission.

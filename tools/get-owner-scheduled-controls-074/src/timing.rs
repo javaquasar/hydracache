@@ -177,9 +177,22 @@ enum Owner {
 }
 impl Owner {
     async fn start(input: &Input, material: Option<&MtlsFixture>) -> Result<Self, String> {
+        Self::start_with_resp_connections(input, material, None).await
+    }
+    async fn start_with_resp_connections(
+        input: &Input,
+        material: Option<&MtlsFixture>,
+        resp_connections: Option<usize>,
+    ) -> Result<Self, String> {
         if material.is_some() && !input.surface.uses_mtls() {
             return Err("fixed material requires an mTLS surface before fixture".to_owned());
         }
+        if resp_connections.is_some_and(|count| {
+            input.surface.resp().is_none() || ![1, 8, 32, 128].contains(&count)
+        }) {
+            return Err("invalid independent RESP connection count before fixture".to_owned());
+        }
+        let connections = resp_connections.unwrap_or(input.slots);
         let ephemeral = if input.surface.uses_mtls() && material.is_none() {
             Some(MtlsFixture::new()?)
         } else {
@@ -192,7 +205,7 @@ impl Owner {
                 RespControl::start_mtls(
                     dataset,
                     input.pipeline_depth,
-                    input.slots,
+                    connections,
                     input.operation.resp(),
                     dialect,
                     material.ok_or("missing mTLS material")?,
@@ -202,7 +215,7 @@ impl Owner {
                 RespControl::start_connections_dialect(
                     dataset,
                     input.pipeline_depth,
-                    input.slots,
+                    connections,
                     input.operation.resp(),
                     dialect,
                 )
