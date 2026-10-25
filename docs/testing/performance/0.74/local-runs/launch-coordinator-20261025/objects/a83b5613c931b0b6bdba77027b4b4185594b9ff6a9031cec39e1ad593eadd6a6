@@ -1,0 +1,16 @@
+test_absence_is_waiting_until_original_discovery_origin (test_observation_coordinator.CoordinatorTests.test_absence_is_waiting_until_original_discovery_origin) ... ok
+test_clock_faults_first_reason_and_no_post_completion_ticks (test_observation_coordinator.CoordinatorTests.test_clock_faults_first_reason_and_no_post_completion_ticks) ... ok
+test_held_leaf_terminal_sample_once_then_owner_verdict_separate (test_observation_coordinator.CoordinatorTests.test_held_leaf_terminal_sample_once_then_owner_verdict_separate) ... ok
+test_missed_slots_not_burst_replayed_and_root_error_retained (test_observation_coordinator.CoordinatorTests.test_missed_slots_not_burst_replayed_and_root_error_retained) ... ok
+test_no_retry_or_kill_after_snapshot_failure_owner_still_drains (test_observation_coordinator.CoordinatorTests.test_no_retry_or_kill_after_snapshot_failure_owner_still_drains) ... ok
+test_outer_expiry_retains_live_custody_and_blocks_close (test_observation_coordinator.CoordinatorTests.test_outer_expiry_retains_live_custody_and_blocks_close) ... ok
+test_owner_exit_before_leaf_or_live_leaf_at_exit_refuses (test_observation_coordinator.CoordinatorTests.test_owner_exit_before_leaf_or_live_leaf_at_exit_refuses) ... ok
+test_sampling_error_latched_and_no_future_sampling (test_observation_coordinator.CoordinatorTests.test_sampling_error_latched_and_no_future_sampling) ... ok
+test_single_attachment_failure_never_reacquired (test_observation_coordinator.CoordinatorTests.test_single_attachment_failure_never_reacquired) ... ok
+test_snapshot_budget_without_reset (test_observation_coordinator.CoordinatorTests.test_snapshot_budget_without_reset) ... ok
+test_terminal_on_first_attachment_does_not_sample_again (test_observation_coordinator.CoordinatorTests.test_terminal_on_first_attachment_does_not_sample_again) ... ok
+
+----------------------------------------------------------------------
+Ran 11 tests in 0.007s
+
+OK

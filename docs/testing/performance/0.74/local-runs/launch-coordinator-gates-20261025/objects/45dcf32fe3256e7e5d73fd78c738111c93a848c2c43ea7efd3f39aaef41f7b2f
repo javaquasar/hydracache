@@ -1,0 +1,43 @@
+"""Independent staged data-only verification; no producer is executed."""
+from pathlib import Path
+import hashlib,json,subprocess
+root=Path(__file__).resolve().parent.parent
+prefix='docs/testing/performance/0.74/local-runs/launch-coordinator-20261025/'
+def read(name):return subprocess.check_output(['git','show',':'+prefix+name],cwd=root)
+raw=read('index.json')
+assert hashlib.sha256(raw).hexdigest()=='b29405c011bf7e05f0b13d0695ffacb4b19d4d2a6337ec3036568473720f6838'
+index=json.loads(raw);assert len(index['members'])==77
+assert index['attribution_python_cases']==136 and index['native_sessions']==1 and index['native_cases']==3
+assert index['actual_target_dispatches']==0 and not index['actual_cargo_shape_observed'] and not index['admission']
+data={}
+for name,entry in index['members'].items():
+    assert not Path(name).is_absolute() and '..' not in Path(name).parts
+    raw=read('objects/'+entry['sha256'])
+    assert len(raw)==entry['bytes'] and hashlib.sha256(raw).hexdigest()==entry['sha256'];data[name]=raw
+receipt=json.loads(data['receipt/launch.json'])
+assert hashlib.sha256(data['receipt/launch.json']).hexdigest()=='0f364991c37248f7f7d73d271932b3aaa77250d308df4a6314b0eb09905d65b5'
+assert not receipt['dispatch_authorized'] and receipt['wrapper_seconds']==780
+for name,digest in receipt['wrappers'].items():
+    assert hashlib.sha256(data['wrappers/'+Path(name).name]).hexdigest()==digest
+preflight=json.loads(data['preflight/result.json'])
+assert preflight['preflight_pass'] and preflight['build_source_inputs']==2028 and not preflight['dispatch_authorized']
+native_intent=json.loads(data['checks/coordinator-native-first-20261025/intent.json'])
+for name in ('observation_coordinator.py','coordinator_control.py','launch_preflight.py','process_lineage.py','owned_process_observer.py','lineage_control.py'):
+    assert hashlib.sha256(data['code/'+name]).hexdigest()==native_intent['source']['tools/xtask-package-attribution-074/'+name]
+for mode,expected in [('healthy',None),('wrong-path','held lineage image/PID mismatch'),('census-fault','injected census fault')]:
+    result=json.loads(data['native/'+mode+'/result.json']);obs=result['observation']
+    assert result['passed'] and result['first_refusal'] is None and not result['cleanup_errors']
+    assert obs['first_refusal']==expected and obs['owner_exit_observed'] and obs['owner_returncode']==0
+    assert not obs['live_owner_custody_retained'] and not obs['selected_target_pass']
+    assert obs['observations_complete']==(mode=='healthy')
+    if mode=='healthy':assert len(obs['identities'])==4 and obs['samples'][-1]['terminal']
+    else:assert obs['samples']==obs['identities']==[]
+    if mode=='census-fault':assert obs['discovery_snapshots']==1
+    label='checks/coordinator-native-20261025-'+mode+'/'
+    before=json.loads(data[label+'intent.json']);after=json.loads(data[label+'result.json'])
+    assert before['bound_seconds']==780 and before['source']==after['source_after']
+    assert after['exit']==0 and after['outer_refusal'] is None and after['head_unchanged']
+    assert data[label+'stdout.log'].decode().splitlines()==['node-0-complete','node-1-complete','node-2-complete']
+    assert not data[label+'stderr.log']
+assert b'Ran 136 tests' in data['checks/launch-coordinator-preservation-final-20261025/stderr.log']
+print(json.dumps(dict(staged_verified=True,members=len(data),native_cases=3,target_dispatches=0,admission=False)))

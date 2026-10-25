@@ -1,0 +1,11 @@
+{
+  "scope": "additional staged data-only reader, not a producer",
+  "argv": [
+    "C:\\Python313\\python.exe",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\verify-launch-build-gates-final-20261025.py"
+  ],
+  "preceding_shell_invocation_observed_error": "SyntaxError: unterminated string literal (detected at line 1)",
+  "preceding_raw_stderr_saved": false,
+  "preceding_error_source": "observed tool output, not reconstructed raw bytes",
+  "producer_repeated": false
+}

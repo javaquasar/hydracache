@@ -1,0 +1,111 @@
+{
+  "mode": "healthy",
+  "passed": true,
+  "first_refusal": null,
+  "cleanup_errors": [],
+  "cargo_dispatch": false,
+  "product_admission": false,
+  "observation": {
+    "schema": 1,
+    "first_refusal": null,
+    "events": [
+      {
+        "kind": "attached",
+        "pids": [
+          45108,
+          53664,
+          32808,
+          37604
+        ]
+      },
+      {
+        "kind": "leaf-terminal"
+      },
+      {
+        "kind": "owner-exit",
+        "code": 0
+      }
+    ],
+    "discovery_snapshots": 9,
+    "owner_exit_observed": true,
+    "owner_returncode": 0,
+    "live_owner_custody_retained": false,
+    "leaf_terminal": true,
+    "outer_expired": false,
+    "observations_complete": true,
+    "identities": [
+      {
+        "pid": 45108,
+        "image": "C:\\Python313\\python.exe",
+        "creation_100ns": 134373735642097724
+      },
+      {
+        "pid": 53664,
+        "image": "c:\\python313\\python.exe",
+        "creation_100ns": 134373735645601214
+      },
+      {
+        "pid": 32808,
+        "image": "c:\\python313\\python.exe",
+        "creation_100ns": 134373735646222116
+      },
+      {
+        "pid": 37604,
+        "image": "c:\\python313\\python.exe",
+        "creation_100ns": 134373735646915258
+      }
+    ],
+    "samples": [
+      {
+        "terminal": false,
+        "creation_100ns": 134373735646915258,
+        "exit_100ns": null,
+        "kernel_100ns": 312500,
+        "user_100ns": 156250,
+        "io": {
+          "read_ops": 64,
+          "write_ops": 0,
+          "other_ops": 802,
+          "read_bytes": 691999,
+          "write_bytes": 0,
+          "other_bytes": 79896
+        },
+        "memory": {
+          "working_set_bytes": 14716928,
+          "peak_working_set_bytes": 14716928,
+          "private_usage": 8273920,
+          "peak_private_commit_bytes": 8273920
+        },
+        "terminal_memory_error": null,
+        "observed_monotonic_ns": 751441606264500
+      },
+      {
+        "terminal": true,
+        "creation_100ns": 134373735646915258,
+        "exit_100ns": 134373735647751839,
+        "kernel_100ns": 312500,
+        "user_100ns": 312500,
+        "io": {
+          "read_ops": 72,
+          "write_ops": 2,
+          "other_ops": 894,
+          "read_bytes": 830876,
+          "write_bytes": 22,
+          "other_bytes": 83190
+        },
+        "memory": {
+          "working_set_bytes": 32768,
+          "peak_working_set_bytes": 15114240,
+          "private_usage": 77824,
+          "peak_private_commit_bytes": 9359360
+        },
+        "terminal_memory_error": null,
+        "observed_monotonic_ns": 751442010367200
+      }
+    ],
+    "selected_target_pass": false,
+    "full_package_pass": false,
+    "admission": false
+  },
+  "live_owner_custody_retained": false
+}

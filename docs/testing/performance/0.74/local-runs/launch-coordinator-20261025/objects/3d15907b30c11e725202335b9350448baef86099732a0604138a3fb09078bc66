@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "receipt_sha256": "0f364991c37248f7f7d73d271932b3aaa77250d308df4a6314b0eb09905d65b5",
+  "planned_argv": [
+    "cargo",
+    "+1.94.0",
+    "test",
+    "--offline",
+    "--locked",
+    "-p",
+    "xtask",
+    "--test",
+    "performance_contract_074",
+    "--",
+    "--test-threads=4"
+  ],
+  "planned_policies": [
+    [
+      "C:\\Users\\ArturBuzov\\.cargo\\bin\\cargo.exe",
+      "C:\\Users\\ArturBuzov\\.rustup\\toolchains\\1.94.0-x86_64-pc-windows-msvc\\bin\\cargo.exe",
+      "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\performance_contract_074-6e7177044aaa8c23.exe"
+    ],
+    [
+      "C:\\Users\\ArturBuzov\\.rustup\\toolchains\\1.94.0-x86_64-pc-windows-msvc\\bin\\cargo.exe",
+      "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\performance_contract_074-6e7177044aaa8c23.exe"
+    ]
+  ],
+  "build_source_inputs": 2028,
+  "reviewed_rust_sources": 343,
+  "environment": {
+    "unreviewed_build_overrides_absent": true,
+    "external_cargo_configuration_absent": true,
+    "fixture_overrides_absent": true,
+    "target_and_protoc_scratch_not_reparse": true,
+    "git_effect_config_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "git_effect_config_active": false,
+    "negative_fixture_executable_absent": true
+  },
+  "preflight_pass": true,
+  "actual_cargo_shape_observed": false,
+  "dispatch_authorized": false,
+  "tests_executed": false,
+  "mapped_image_attested": false,
+  "admission": false
+}

@@ -1,0 +1,35 @@
+{
+  "mode": "census-fault",
+  "passed": true,
+  "first_refusal": null,
+  "cleanup_errors": [],
+  "cargo_dispatch": false,
+  "product_admission": false,
+  "observation": {
+    "schema": 1,
+    "first_refusal": "injected census fault",
+    "events": [
+      {
+        "kind": "first-refusal",
+        "reason": "injected census fault"
+      },
+      {
+        "kind": "owner-exit",
+        "code": 0
+      }
+    ],
+    "discovery_snapshots": 1,
+    "owner_exit_observed": true,
+    "owner_returncode": 0,
+    "live_owner_custody_retained": false,
+    "leaf_terminal": false,
+    "outer_expired": false,
+    "observations_complete": false,
+    "identities": [],
+    "samples": [],
+    "selected_target_pass": false,
+    "full_package_pass": false,
+    "admission": false
+  },
+  "live_owner_custody_retained": false
+}

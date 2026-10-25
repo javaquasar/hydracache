@@ -1,0 +1,21 @@
+"""Retain completed no-run build bytes; never rebuild or execute the target."""
+from pathlib import Path
+import hashlib,json
+root=Path(__file__).resolve().parent.parent
+receipt=json.loads((root/'docs/testing/performance/0.74/contract-observer-launch-receipt-20261025.json').read_bytes())
+base=root/'docs/testing/performance/0.74/local-runs/launch-build-20261025'
+folder=root/'target/source-continuation-20261024/launch-receipt-build-first-20261025'
+objects={}
+for name,digest in receipt['build_objects'].items():
+    raw=(folder/name).read_bytes()
+    assert hashlib.sha256(raw).hexdigest()==digest
+    objects[digest]=raw
+before=json.loads(objects[receipt['build_objects']['intent.json']])
+after=json.loads(objects[receipt['build_objects']['result.json']])
+assert before['source']==after['source_after'] and after['source_unchanged'] and after['head_unchanged']
+assert after['exit']==0 and after['outer_refusal'] is None
+base.mkdir(exist_ok=False);(base/'objects').mkdir()
+for digest,raw in objects.items():(base/'objects'/digest).write_bytes(raw)
+(base/'index.json').write_bytes((json.dumps(dict(schema='hc074-local-no-run-build-v1',members=receipt['build_objects'],tests_executed=False,admission=False),indent=2,sort_keys=True)+'\n').encode())
+(base/'.gitattributes').write_bytes(b'index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n')
+print(json.dumps(dict(index_sha256=hashlib.sha256((base/'index.json').read_bytes()).hexdigest(),objects=len(objects))))

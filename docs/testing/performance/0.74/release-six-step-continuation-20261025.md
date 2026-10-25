@@ -112,6 +112,14 @@ Actual Cargo launch receipts, fixed shim/toolchain/test-image pins and the bound
 coordinator remain to be joined. Diagnostic lineage does not authorize the
 production original-owner or writer-retirement path.
 
+The [fixed-receipt/coordinator step](launch-coordinator-result-20261025.md) now
+pins one no-run build and passes a preflight-only CLI. A first three-case
+synthetic session through the byte-exact 780-second wrapper proves healthy
+observation and that image/census refusals do not stop or reacquire the owner.
+The attribution suite passes 136 cases. The real Cargo shape and actual-target
+dispatch/result/custody handoff remain unobserved; a passing local preflight is
+not authorization to execute or declare a release gate green.
+
 Next: use saved target/call attribution to isolate the cost owner without
 removing tests, refreshing source pins from responses or changing conditional
 reads. A separate candidate needs its own baseline and unchanged-bound proof;

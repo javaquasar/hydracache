@@ -19838,3 +19838,26 @@ caller credentials or a path string into mapped-image attestation. It also does
 not count short-lived descendants' CPU or prove that every writer has stopped.
 Those boundaries prevent a successful profiler control from becoming an
 unearned production execution or retirement capability.
+
+### Let a failed observer leave the experiment unchanged
+
+The [fixed launch and coordinator controls](../testing/performance/0.74/launch-coordinator-result-20261025.md)
+test another important boundary: what happens when the profiler itself fails?
+The launch receipt fixes inputs before discovery. The coordinator may wait for
+the one expected process chain, but once it sees ambiguity, a failed attachment
+or a census error, it preserves that first refusal and stops trying to observe.
+It neither kills the experiment nor keeps reconnecting in search of useful-looking
+telemetry. The original owner keeps its existing deadline.
+
+One synthetic session exercises this through the unchanged 780-second wrapper.
+Both the wrong-image and injected-census cases lose observation, yet the wrapper
+and every synthetic node finish normally. That distinguishes profiler failure
+from workload failure. Conversely, model controls allow complete telemetry from
+a nonzero owner exit: observing an experiment completely does not make the
+experiment pass. Separate fields preserve those two verdicts.
+
+A no-run build and a passing pinned preflight still do not prove the actual
+Cargo delegation shape, mapped-image identity or production recovery. The CLI
+therefore remains preflight-only. If the outer diagnostic bound expires while
+the owner is alive, custody remains an explicit unresolved state rather than
+being converted into completion or permission to retry.

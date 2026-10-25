@@ -1,0 +1,1 @@
+{"schedule": ["healthy", "wrong-path", "census-fault"], "retry": false, "cargo_dispatch": false}

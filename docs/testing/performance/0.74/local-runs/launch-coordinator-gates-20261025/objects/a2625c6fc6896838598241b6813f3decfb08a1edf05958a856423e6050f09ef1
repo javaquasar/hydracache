@@ -1,0 +1,39 @@
+"""Seal saved structural gates and a retained first data-only reader call."""
+from pathlib import Path
+import hashlib,json,subprocess,sys
+root=Path(__file__).resolve().parent.parent
+base=root/'docs/testing/performance/0.74/local-runs/launch-coordinator-gates-20261025'
+members,objects={},{}
+def add(name,raw):
+    digest=hashlib.sha256(raw).hexdigest();assert name not in members
+    members[name]=dict(sha256=digest,bytes=len(raw));objects[digest]=raw
+for label in ['launch-coordinator-historical-20261025','launch-coordinator-compile-20261025',
+    'launch-coordinator-tabnanny-20261025','launch-coordinator-v3-20261025',
+    'launch-coordinator-doc-check-20261025','launch-coordinator-local-contract-20261025']:
+    folder=root/'target/source-continuation-20261024'/label
+    before=json.loads((folder/'intent.json').read_bytes());after=json.loads((folder/'result.json').read_bytes())
+    assert before['source']==after['source_after'] and after['source_unchanged'] and after['head_unchanged']
+    assert after['exit']==0 and after['outer_refusal'] is None
+    for path in sorted(folder.iterdir()):
+        assert path.is_file();add(label+'/'+path.name,path.read_bytes())
+assert b'Ran 91 tests' in objects[members['launch-coordinator-historical-20261025/stderr.log']['sha256']]
+reader=root/'target/verify-launch-coordinator-20261025.py'
+receipt=root/'target/launch-coordinator-staged-reader-first-20261025';receipt.mkdir(exist_ok=False)
+argv=[sys.executable,str(reader)]
+(receipt/'intent.json').write_text(json.dumps(dict(argv=argv,producer_repeated=False)),encoding='utf-8')
+result=subprocess.run(argv,cwd=root,capture_output=True,timeout=30)
+(receipt/'stdout.log').write_bytes(result.stdout);(receipt/'stderr.log').write_bytes(result.stderr)
+(receipt/'result.json').write_text(json.dumps(dict(exit=result.returncode)),encoding='utf-8')
+assert result.returncode==0,result.stderr
+assert json.loads(result.stdout)['staged_verified']
+for path in sorted(receipt.iterdir()):add('staged-reader/'+path.name,path.read_bytes())
+for name in ('retain-launch-coordinator-gates-20261025.py','verify-launch-coordinator-20261025.py'):
+    add('retention/'+name,(root/'target'/name).read_bytes())
+index=dict(schema='hc074-fixed-launch-coordinator-gates-v1',members=members,
+    upstream_index_sha256='b29405c011bf7e05f0b13d0695ffacb4b19d4d2a6337ec3036568473720f6838',
+    historical_python_cases=91,native_session_repeated=False,full_package_pass=False,admission=False)
+base.mkdir(exist_ok=False);(base/'objects').mkdir()
+for digest,raw in objects.items():(base/'objects'/digest).write_bytes(raw)
+(base/'index.json').write_bytes((json.dumps(index,indent=2,sort_keys=True)+'\n').encode())
+(base/'.gitattributes').write_bytes(b'index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n')
+print(json.dumps(dict(index_sha256=hashlib.sha256((base/'index.json').read_bytes()).hexdigest(),members=len(members),objects=len(objects))))

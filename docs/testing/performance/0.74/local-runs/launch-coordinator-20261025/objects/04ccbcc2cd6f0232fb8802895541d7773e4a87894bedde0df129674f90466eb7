@@ -1,0 +1,18 @@
+{
+  "passed": true,
+  "results": [
+    {
+      "mode": "healthy",
+      "passed": true
+    },
+    {
+      "mode": "wrong-path",
+      "passed": true
+    },
+    {
+      "mode": "census-fault",
+      "passed": true
+    }
+  ],
+  "admission": false
+}

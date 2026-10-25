@@ -1,0 +1,8 @@
+{
+  "mode": "wrong-path",
+  "passed": false,
+  "first_refusal": null,
+  "cleanup_errors": [],
+  "cargo_dispatch": false,
+  "product_admission": false
+}

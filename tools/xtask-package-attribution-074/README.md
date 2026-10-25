@@ -218,3 +218,22 @@ refusal. The [first native results and 28 new model controls](../../docs/testing
 are retained, including the initial test-only short-path expectation failure.
 This is not Cargo dispatch or authenticated production ownership: parent IDs
 and full path strings do not attest caller credentials, argv or mapped bytes.
+
+## Fixed launch preflight and caller-owned coordinator
+
+`launch_preflight.py preflight NEW_OUTPUT_DIR` has no dispatch mode. It checks a
+literal-pinned local receipt, retained no-run Cargo build, declared source inputs,
+image/wrapper bytes, original command/CWD and the existing v3 environment/effect
+scope. Receipt drift refuses instead of adopting current discovery responses.
+
+`observation_coordinator.py` bounds discovery and makes exactly one held-chain
+attachment attempt. First refusal disables further observations while the
+caller drains its original owner. It never kills the owner, treats telemetry as
+a test verdict or releases live-owner custody on outer expiry.
+
+`coordinator_control.py synthetic-controls NEW_OUTPUT_DIR` runs three finite
+synthetic cases through the unchanged 780-second wrapper: healthy, wrong full
+image path and injected census failure. The [first results and limitations](../../docs/testing/performance/0.74/launch-coordinator-result-20261025.md)
+retain one no-run build, successful preflight, all three wrapper completions and
+136 passing Python cases. Actual Cargo topology/target dispatch, durable custody,
+overhead acceptance, production ownership and release qualification remain open.

@@ -1,0 +1,11 @@
+{
+  "admission": false,
+  "members": {
+    "intent.json": "eb7c49fff7ff7948048067e873882e5c5fe81b5fbfec72344204061f4092ca51",
+    "result.json": "cf4fa6b72f5598f7aa976989e681a0d1895c7d2da7fa3b807026277faad13a14",
+    "stderr.log": "9ff83085ffc1a69f1f7fb7a6e3f8a311819c9943cb0a67f750322e7ab23aa8cb",
+    "stdout.log": "877ece51c4c4b09cf83d275696350412a03b8059d9984f15780add21ee21529f"
+  },
+  "schema": "hc074-local-no-run-build-v1",
+  "tests_executed": false
+}
