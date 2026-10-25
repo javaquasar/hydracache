@@ -1,4 +1,6 @@
 //! Test input repair only: old runtime, production pins and assertions stay fixed.
+#[path = "../../../tools/xtask-package-attribution-074/helper_trace.rs"]
+mod helper_trace;
 use sha2::{Digest, Sha256};
 use std::path::PathBuf;
 
@@ -134,27 +136,37 @@ fn root() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..")
 }
 fn read(path: &str) -> String {
-    runtime_io::read_to_string(root().join(path))
+    let helper = helper_trace::read(path);
+    let result = runtime_io::read_to_string(root().join(path))
         .unwrap()
-        .replace('\r', "")
+        .replace('\r', "");
+    helper_trace::finish(helper, result.len(), 0);
+    result
 }
 fn git(args: &[&str]) -> String {
+    let helper = helper_trace::git(args);
+    let output_span = helper_trace::output();
     let output = std::process::Command::new("git")
         .args(args)
         .current_dir(root())
         .output()
         .unwrap();
+    helper_trace::finish(output_span, output.stdout.len(), output.stderr.len());
+    let decode = helper_trace::decode();
     assert!(
         output.status.success(),
         "{}",
         String::from_utf8_lossy(&output.stderr)
     );
     let raw = String::from_utf8(output.stdout).unwrap().replace('\r', "");
-    if args == ["ls-files", "--", inventory::SCOPE] {
+    let result = if args == ["ls-files", "--", inventory::SCOPE] {
         inventory::project(&raw).expect("current inventory refused before historical phase")
     } else {
         raw
-    }
+    };
+    helper_trace::finish(decode, result.len(), output.stderr.len());
+    helper_trace::finish(helper, result.len(), output.stderr.len());
+    result
 }
 fn normalize(raw: &str) -> String {
     assert_eq!(raw.matches(NEW).count(), 1, "exact immutable helper");
