@@ -1,0 +1,13 @@
+from pathlib import Path
+import base64,json,runpy,subprocess
+export=json.loads(Path('target/authorized-server-session-20261025/authority-directory-runtime-build-export/stdout.log').read_bytes())
+assert export['complete']
+group='authority-directory-runtime-build-first/'
+result=json.loads(base64.b64decode(export['members'][group+'result.json']['base64']))
+assert result['passed'] and result['source_unchanged']
+head=subprocess.check_output(['git','rev-parse','HEAD']).decode().strip()
+prefix=f'RUN_TAG="authority-directory-installed-first"\nPHASE="installed"\nBUILD_TAG="authority-directory-runtime-build-first"\nSOURCE_TAG="source-authority-directory-runtime-first"\n'
+prefix+=f'IMAGE_SHA={result["libtest_sha256"]!r}\nMANIFEST_SHA={export["members"][group+"source-manifest.json"]["sha256"]!r}\nSOURCE_COMMIT={head!r}\n'
+prefix+='PROTOCOL_B64='+repr(base64.b64encode(Path('tools/authority-directory-cost-074/protocol.json').read_bytes()).decode())+'\n'
+runpy.run_path('target/prepare-capacity-checks-20261025.py',init_globals=dict(
+ WORKER_FILE='target/server-authority-directory-cost-worker-20261025.py',WORKER_DIR='authority-directory-installed-first',WORKER_PREFIX=prefix))

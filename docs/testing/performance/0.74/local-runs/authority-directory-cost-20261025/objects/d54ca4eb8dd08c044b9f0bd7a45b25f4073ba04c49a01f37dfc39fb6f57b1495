@@ -1,0 +1,4 @@
+from pathlib import Path
+old=Path('target/server-stamp-export-20261025.py').read_text()
+assert old.count("groups=['authority-stamp-screen-first']")==1
+print(old.replace("groups=['authority-stamp-screen-first']", "groups=['authority-directory-probe-build-first','authority-directory-probe-build-v2']"))

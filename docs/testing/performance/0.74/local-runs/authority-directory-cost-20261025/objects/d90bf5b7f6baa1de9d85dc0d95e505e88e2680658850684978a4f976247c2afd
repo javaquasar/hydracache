@@ -1,0 +1,113 @@
+"""Saved-byte/source audit only, with first fixture and full-preparation failures retained."""
+from pathlib import Path
+import ast,base64,hashlib,json,runpy,subprocess
+ROOT=Path(__file__).resolve().parent.parent
+cpu=runpy.run_path(str(ROOT/'tools/authority-directory-cost-074/review.py'))
+records=runpy.run_path(str(ROOT/'tools/native-server-control-074/profile_review.py'))['records']
+NAMES=['diagnostic_authority_fixture.rs','diagnostic_authority_fixed.rs','diagnostic_authority_stamp.rs','diagnostic_authority_directory_tests.rs']
+IMAGE='98b63f7f9409763aa777aeaac2008df3278c36ae5d31a7267306f2f90ba9b2dd'
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+def load():
+ export=json.loads((ROOT/'target/authorized-server-session-20261025/authority-directory-final-export/stdout.log').read_bytes());assert export['complete']
+ files={}
+ for name,item in export['members'].items():
+  raw=base64.b64decode(item['base64']);assert len(raw)==item['bytes'] and sha(raw)==item['sha256'];files[name]=raw
+ return files,export['final_frame']
+def baseline():
+ return {n:subprocess.check_output(['git','show','96b6f5511ce6e0220c73b2582fb762b66c0f00c0:tools/long-run-supervisor-074/src/'+n],cwd=ROOT) for n in NAMES}
+def overlay(files,group):
+ parsed=ast.parse(files[group+'/worker.py'].decode())
+ values=[ast.literal_eval(n.value) for n in parsed.body if isinstance(n,ast.Assign) and any(isinstance(t,ast.Name) and t.id=='OVERLAY' for t in n.targets)]
+ assert len(values)==1
+ return {name:base64.b64decode(value) for name,value in values[0].items()}
+def source_proof(sources,old):
+ normalize=lambda raw:raw.decode().replace('\r\n','\n')
+ fixture=normalize(sources[NAMES[0]])
+ declaration='    #[cfg(any(test, not(target_arch = "x86_64")))]\n    fn directory_matches('
+ assert fixture.count(declaration)==1
+ fixture=fixture.replace(declaration,'    fn directory_matches(')
+ for expression,count in [('self.temporary',2),('named',2),('self.leaf',2),('temporary',1)]:
+  a=f'.directory_matches_file(&{expression})?';assert fixture.count(a)==count
+  fixture=fixture.replace(a,f'.directory_matches(&{expression}.metadata()?)')
+ fixture=fixture.replace('if !self.temporary_stamp.directory_matches(&temporary.metadata()?)',
+  'if !self\n            .temporary_stamp\n            .directory_matches(&temporary.metadata()?)')
+ assert fixture==normalize(old[NAMES[0]]),'Unrelated fixture predicate/order change'
+ fixed=normalize(sources[NAMES[1]])
+ for expression,arg in [('root','root'),('named_root','&named_root'),('named','&named'),('ancestor.file','&ancestor.file')]:
+  a=f'.directory_matches_file({arg})?';assert fixed.count(a)==1
+  fixed=fixed.replace(a,f'.directory_matches(&{expression}.metadata()?)')
+ assert fixed==normalize(old[NAMES[1]]),'Unrelated ancestry/open/lifetime change'
+ stamp=normalize(sources[NAMES[2]])
+ begin=stamp.index('    pub(super) fn directory_matches_file(');end=stamp.index('    pub(super) fn fresh(',begin)
+ method=stamp[begin:end]
+ assert method.count('Self::fresh(file)?')==1 and method.count('file.metadata()?')==1
+ for predicate in ['m.mode & libc::S_IFMT == libc::S_IFDIR','self.dev == m.dev','self.ino == m.ino',
+                   'self.uid == m.uid','self.gid == m.gid','self.mode == m.mode']:
+  assert method.count(predicate)==1
+ assert stamp[:begin]+stamp[end:]==normalize(old[NAMES[2]])
+ tests=normalize(sources[NAMES[3]])
+ for extra in ['        assert_eq!(old, expected.directory_matches_file(file).unwrap());\n',
+               '    assert!(!expected.directory_matches_file(&regular).unwrap());\n']:
+  assert tests.count(extra)==1;tests=tests.replace(extra,'')
+ assert tests==normalize(old[NAMES[3]]),'Timing/prototype/threshold changed during integration'
+ return dict(existing_predicate_expressions=11,fixed_queries_per_call=11,fixture_queries_per_call=4,
+  before_read_leaf_metadata_unchanged=True,open_order_and_lifetimes_unchanged=True,
+  error_short_circuit_unchanged=True,other_linux_architectures_keep_original_metadata=True)
+def review(files,frame,sources,old):
+ def get(group,name):return json.loads(files[group+'/'+name])
+ groups=['authority-directory-probe-build-first','authority-directory-probe-build-v2',
+ 'authority-directory-prototype-first','authority-directory-runtime-build-first','authority-directory-installed-first','authority-directory-holder-first']
+ for group in groups:
+  result=get(group,'result.json');assert result['postflight_refusal'] is None
+  assert get(group,'preflight.json')==get(group,'postflight.json')==frame
+  if group!='authority-directory-probe-build-first':assert result['first_refusal'] is None
+ first=get(groups[0],'result.json');assert not first['passed'] and not first['source_unchanged']
+ assert get(groups[0],'authority-tests-result.json')['exit']==101
+ assert b'58 passed; 1 failed; 3 ignored;' in files[groups[0]+'/authority-tests.stdout.log']
+ one=overlay(files,groups[0]);two=overlay(files,groups[1])
+ assert one[NAMES[1]]==two[NAMES[1]]
+ corrected=one[NAMES[3]].decode().replace('3 => tree.directory.temporary = File::open("/tmp").unwrap(),',
+  '3 => tree.directory.temporary = File::open(backup.path()).unwrap(),').replace('assert_eq!(a.0 == "ok", case == 0);',
+  'assert_eq!(a.0 == "ok", case == 0, "fixed={fixed} case={case}");')
+ assert corrected==two[NAMES[3]].decode() and two[NAMES[3]]==old[NAMES[3]]
+ for group in [groups[1],groups[3]]:
+  result=get(group,'result.json');assert result['passed'] and result['source_unchanged']
+  assert [(r['name'],r['exit']) for r in result['cases']]==[('build',0),('check',0),('clippy',0),('authority-tests',0)]
+  assert b'59 passed; 0 failed; 3 ignored;' in files[group+'/authority-tests.stdout.log']
+  for name in ['check','clippy']:
+   argv=get(group,name+'-command.json')['argv'];assert '--all-targets' in argv and '--all-features' in argv and '--locked' in argv
+   if name=='clippy':assert argv[-3:]==['--','-D','warnings']
+ assert get(groups[1],'result.json')['libtest_sha256']=='b31d18291c51d1c10800e63802acacc6c2b2c662f73f384019d767338a19809f'
+ assert get(groups[3],'result.json')['libtest_sha256']==IMAGE
+ for group,src in [(groups[1],old),(groups[3],sources)]:
+  manifest=get(group,'source-manifest.json');assert len(manifest)==2563
+  for name,raw in src.items():assert manifest['tools/long-run-supervisor-074/src/'+name]==sha(raw),name
+ proof=source_proof(sources,old)
+ estimates={};identities=[]
+ for phase,group in [('prototype',groups[2]),('installed',groups[4])]:
+  result=get(group,'result.json');assert result['passed'] and result['source_unchanged'] and result['cases']==[dict(cohort=i,exit=0) for i in range(8)]
+  estimates[phase]=cpu['review']([files[group+f'/cohort-{i}.stdout.log'] for i in range(8)],phase)
+  assert estimates[phase]['cpu_screen_passed']
+  intent=get(group,'consumed.json');assert intent['phase']==phase and intent['protocol']['outer_seconds']==300 and not intent['retry']
+  for i in range(8):
+   child=get(group,f'cohort-{i}-child.json');assert child['affinity']==[5];identities.append((child['pid'],child['start_ticks']))
+ assert len(set(identities))==16
+ holder=get(groups[5],'result.json');assert holder['exit']==101 and not holder['passed'] and holder['completed_cases']==[]
+ intent=get(groups[5],'consumed.json');assert intent['image_sha256']==IMAGE and intent['original_windows']==[300,60,10]
+ assert intent['first_candidate_attempt'] and not intent['retry'] and not intent['case_override'] and not intent['cost_override']
+ env=get(groups[5],'command.json')['env'];assert 'HC074_HELD_MATERIAL_LIVE' not in env
+ original=records(files[groups[5]+'/holder.stdout.log'],'HC074-HELD-LIVE-ORIGINAL ');assert len(original)==1;original=original[0]
+ assert not original['returned'] and not original['guard_clock_added'] and not original['deadline_changed']
+ refusal=original['causal']['first_refusal'];assert refusal['diagnostic_reason']=='expired'
+ assert refusal['age_ns']==10086211570==refusal['now_ns']-refusal['issued_ns']
+ assert b'consuming_held_live.rs:267:59' in files[groups[5]+'/holder.stderr.log']
+ return dict(estimates=estimates,source_proof=proof,first_fixture_failure_retained=True,
+  corrected_fixture_only=True,authority_tests_passed=59,new_unit_tests=2,first_full_holder_refusal=refusal,
+  full_holder_passed=False,full_preparation_improvement_proven=False,source_inputs=2563,product=False,admission=False)
+if __name__=='__main__':
+ files,frame=load();sources={n:(ROOT/'tools/long-run-supervisor-074/src'/n).read_bytes() for n in NAMES}
+ result=review(files,frame,sources,baseline())
+ out=ROOT/'target/authorized-server-session-20261025/authority-directory-offline-audit';out.mkdir(exist_ok=False)
+ (out/'result.json').write_text(json.dumps(result,sort_keys=True,indent=2)+'\n')
+ print(json.dumps(dict(installed={k:v['ratios']['runtime'] for k,v in result['estimates']['installed']['layouts'].items()},
+  source_proof=result['source_proof'],first_refusal=result['first_full_holder_refusal'],admission=False)))

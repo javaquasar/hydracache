@@ -1,0 +1,19 @@
+{
+  "overlay_names": [
+    "diagnostic_authority_directory_tests.rs",
+    "diagnostic_authority_fixed.rs",
+    "diagnostic_authority_fixture.rs",
+    "diagnostic_authority_stamp.rs"
+  ],
+  "hypothesis": "fresh directory predicates only; original count/order/lifetimes/windows",
+  "baseline_commit": "96b6f5511ce6e0220c73b2582fb762b66c0f00c0",
+  "original_windows": [
+    300,
+    60,
+    10
+  ],
+  "original_check_frequency_and_order": true,
+  "retry": false,
+  "product": false,
+  "admission": false
+}

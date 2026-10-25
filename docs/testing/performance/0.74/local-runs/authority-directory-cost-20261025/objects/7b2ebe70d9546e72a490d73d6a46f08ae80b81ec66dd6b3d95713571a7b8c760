@@ -1,0 +1,58 @@
+from pathlib import Path
+import hashlib,json,runpy
+root=Path(__file__).resolve().parent.parent
+api=runpy.run_path(str(root/'target/audit-authority-directory-20261025.py'))
+files,frame=api['load']();old=api['baseline']()
+members,objects={},{}
+def add(name,raw):
+ assert name not in members
+ digest=hashlib.sha256(raw).hexdigest();members[name]={'bytes':len(raw),'sha256':digest};objects[digest]=raw
+for name,raw in files.items():add('server/'+name,raw)
+add('server/final-frame.json',(json.dumps(frame,sort_keys=True,indent=2)+'\n').encode())
+session=root/'target/authorized-server-session-20261025'
+labels=['authority-directory-probe-build-launch','authority-directory-probe-build-export','authority-directory-probe-build-export-second',
+ 'authority-directory-probe-build-v2-launch','authority-directory-probe-build-v2-export','authority-directory-prototype-launch',
+ 'authority-directory-prototype-export','authority-directory-runtime-build-launch','authority-directory-runtime-build-export',
+ 'authority-directory-installed-launch','authority-directory-installed-export','authority-directory-holder-launch',
+ 'authority-directory-final-export','authority-directory-offline-audit']
+for label in labels:
+ folder=session/label;assert folder.is_dir()
+ for p in sorted(folder.rglob('*')):
+  if p.is_file():add('session/'+p.relative_to(session).as_posix(),p.read_bytes())
+for label in ['authority-directory-reader-controls-20261025','authority-directory-baseline-format-20261025',
+ 'authority-directory-baseline-doc-check-20261025','authority-directory-final-reader-controls-20261025',
+ 'authority-directory-runtime-format-20261025','authority-directory-local-contract-20261025','authority-directory-saved-byte-controls-20261025']:
+ folder=root/'target/source-continuation-20261024'/label
+ result=json.loads((folder/'result.json').read_bytes())
+ assert result['exit']==0 and result['outer_refusal'] is None and result['source_unchanged'] and result['head_unchanged']
+ for p in sorted(folder.iterdir()):add('checks/'+label+'/'+p.name,p.read_bytes())
+for name in ['prepare-authority-directory-probe-build-20261025.py','render-authority-directory-probe-export-20261025.py',
+ 'prepare-authority-directory-probe-build-v2-20261025.py','render-authority-directory-probe-v2-export-20261025.py',
+ 'server-authority-directory-cost-worker-20261025.py','prepare-authority-directory-prototype-20261025.py',
+ 'render-authority-directory-prototype-export-20261025.py','prepare-authority-directory-runtime-build-20261025.py',
+ 'render-authority-directory-runtime-export-20261025.py','prepare-authority-directory-installed-20261025.py',
+ 'render-authority-directory-installed-export-20261025.py','prepare-authority-directory-holder-20261025.py',
+ 'render-authority-directory-final-export-20261025.py','audit-authority-directory-20261025.py',
+ 'test-audit-authority-directory-20261025.py','retain-authority-directory-20261025.py']:
+ add('coordinator/'+name,(root/'target'/name).read_bytes())
+for name in api['NAMES']:
+ add('baseline-source/'+name,old[name])
+ add('source/'+name,(root/'tools/long-run-supervisor-074/src'/name).read_bytes())
+for name in ['protocol.json','review.py','test_review.py']:add('tool/'+name,(root/'tools/authority-directory-cost-074'/name).read_bytes())
+add('dependencies/profile-review.py',(root/'tools/native-server-control-074/profile_review.py').read_bytes())
+protected={}
+for name in ['Cargo.toml','Cargo.lock','docs/testing/performance/0.74/qualification-manifest.toml','tools/authority-storage-source-074/contract.rs']:
+ protected[name]=hashlib.sha256((root/name).read_bytes()).hexdigest()
+base=root/'docs/testing/performance/0.74/local-runs/authority-directory-cost-20261025'
+base.mkdir(exist_ok=False);(base/'objects').mkdir()
+for digest,raw in objects.items():(base/'objects'/digest).write_bytes(raw)
+index={'schema':'hc074-authority-directory-cost-evidence-v1','members':members,'protected_inputs':protected,
+ 'baseline_commit':'96b6f5511ce6e0220c73b2582fb762b66c0f00c0','runtime_commit':'64f184d9ba642ff504aa1943b4724858944b9ade',
+ 'baseline_image_sha256':'b31d18291c51d1c10800e63802acacc6c2b2c662f73f384019d767338a19809f','runtime_image_sha256':api['IMAGE'],
+ 'upstream_index_sha256':'19bd1fa220d0b77cbcfbea33ccd1491f423acc1726d13714ffa802355b09d81c',
+ 'source_inputs':2563,'authority_tests_passed':59,'first_fixture_failure_retained':True,'full_holder_passed':False,
+ 'checks_order_count_deadlines_unchanged':True,'apparmor_changed':False,'release_installed':False,
+ 'supervisor_stopped':False,'product':False,'admission':False}
+raw=(json.dumps(index,sort_keys=True,indent=2)+'\n').encode();(base/'index.json').write_bytes(raw)
+(base/'.gitattributes').write_bytes(b'index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n')
+print(json.dumps({'index_sha256':hashlib.sha256(raw).hexdigest(),'members':len(members),'objects':len(objects),'bytes':sum(map(len,objects.values()))}))

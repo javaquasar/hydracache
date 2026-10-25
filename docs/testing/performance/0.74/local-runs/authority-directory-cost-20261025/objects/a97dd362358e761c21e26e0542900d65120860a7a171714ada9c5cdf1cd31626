@@ -1,0 +1,17 @@
+{
+  "overlay_names": [
+    "diagnostic_authority_directory_tests.rs",
+    "diagnostic_authority_fixed.rs"
+  ],
+  "hypothesis": "test-only authority directory projection attribution; production unchanged",
+  "baseline_commit": "54b420cfd",
+  "original_windows": [
+    300,
+    60,
+    10
+  ],
+  "original_check_frequency_and_order": true,
+  "retry": false,
+  "product": false,
+  "admission": false
+}

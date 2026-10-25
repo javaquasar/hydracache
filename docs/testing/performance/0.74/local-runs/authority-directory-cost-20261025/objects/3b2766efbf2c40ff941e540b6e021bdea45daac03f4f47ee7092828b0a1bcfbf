@@ -1,0 +1,6 @@
+from pathlib import Path
+old=Path('target/prepare-authority-directory-probe-build-20261025.py').read_text()
+for a,b,count in [('authority-directory-probe-build-first','authority-directory-probe-build-v2',2),
+                  ('source-authority-directory-probe-first','source-authority-directory-probe-v2',1)]:
+ assert old.count(a)==count,(a,old.count(a));old=old.replace(a,b)
+exec(compile(old,'<separate-corrected-fixture-build>','exec'))

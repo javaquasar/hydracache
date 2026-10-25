@@ -1,0 +1,18 @@
+from pathlib import Path
+import base64,json,runpy
+export=json.loads(Path('target/authorized-server-session-20261025/authority-directory-installed-export/stdout.log').read_bytes())
+group='authority-directory-installed-first/'
+logs=[base64.b64decode(export['members'][group+f'cohort-{i}.stdout.log']['base64']) for i in range(8)]
+assert runpy.run_path('tools/authority-directory-cost-074/review.py')['review'](logs,'installed')['cpu_screen_passed']
+old=Path('target/server-fd-identity-holder-worker-20261025.py').read_text()
+for a,b,count in [
+ ('fd-identity-holder-first','authority-directory-holder-first',1),
+ ('fd-identity-build-v2','authority-directory-runtime-build-first',2),
+ ('fd-identity-origin-first','authority-directory-installed-first',1),
+ ('7ac9b2462222ce61c0486ab79cdebf47d6f94a62540abd6eaf561dbb6ccff9ec','98b63f7f9409763aa777aeaac2008df3278c36ae5d31a7267306f2f90ba9b2dd',1),
+ ('8862986662063b329f17547f61458f08832767e2','64f184d9ba642ff504aa1943b4724858944b9ade',1),
+ ('First full original holder matrix for the one changed fstat candidate.','First full original holder matrix for the separate directory predicate candidate.',1),
+]:
+ assert old.count(a)==count,(a,old.count(a));old=old.replace(a,b)
+runpy.run_path('target/prepare-capacity-checks-20261025.py',init_globals=dict(
+ WORKER_FILE='target/empty-worker-20261025.py',WORKER_DIR='authority-directory-holder-first',WORKER_PREFIX=old+'\n'))

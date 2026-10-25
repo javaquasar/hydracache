@@ -1,0 +1,28 @@
+from pathlib import Path
+import base64,runpy,json
+api=runpy.run_path('tools/authority-directory-cost-074/review.py')
+export=json.loads(Path('target/authorized-server-session-20261025/authority-directory-prototype-export/stdout.log').read_bytes())
+assert export['complete']
+group='authority-directory-prototype-first/'
+logs=[base64.b64decode(export['members'][group+f'cohort-{i}.stdout.log']['base64']) for i in range(8)]
+assert api['review'](logs,'prototype')['cpu_screen_passed']
+old=Path('target/server-fd-identity-build-worker-20261025.py').read_text()
+allowed=['diagnostic_authority_fixture.rs','diagnostic_authority_fixed.rs','diagnostic_authority_stamp.rs','diagnostic_authority_directory_tests.rs']
+changes=[
+ ("manifest=json.loads((base/'manifest.json').read_bytes());old=upload/'source-v3'", "manifest=json.loads((base/'authority-directory-probe-build-v2/source-manifest.json').read_bytes());old=upload/'source-authority-directory-probe-v2'"),
+ ("assert sha(base/'manifest.json')=='2a0f7c581a1e854ab71841efb71aaebee3de56d1c0357b54d55a41ae4011ea6d'", "assert len(manifest)==2563 and sha(base/'authority-directory-probe-build-v2/libtest')=='b31d18291c51d1c10800e63802acacc6c2b2c662f73f384019d767338a19809f'"),
+ ("assert json.loads((base/'fd-identity-screen-first/result.json').read_bytes())['passed']", "assert json.loads((base/'authority-directory-prototype-first/result.json').read_bytes())['passed']"),
+ ("for name,item in manifest['members'].items():assert sha(old/name)==item['sha256'],name", "for name,digest in manifest.items():assert sha(old/name)==digest,name"),
+ ("expected={name:item['sha256'] for name,item in manifest['members'].items()}", "expected=dict(manifest)"),
+ ("if p.exists():assert relative=='tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs'", "assert relative in "+repr(['tools/long-run-supervisor-074/src/'+n for n in allowed])+" and p.is_file()"),
+ ("fresh fstat dev/inode leaf, x86_64 only", "fresh directory predicates only; original count/order/lifetimes/windows"),
+ ("11445ff7304fa49beaf3be16ed6393155f5a183b", "96b6f5511ce6e0220c73b2582fb762b66c0f00c0"),
+ ("'origin-tests',[str(test),'diagnostic_kernel_admission::origin::'", "'authority-tests',[str(test),'authority_registry::'"),
+]
+for a,b in changes:
+ count=2 if a.startswith('for name,item in') else 1
+ assert old.count(a)==count,(a,old.count(a));old=old.replace(a,b)
+files={n:base64.b64encode((Path('tools/long-run-supervisor-074/src')/n).read_bytes()).decode() for n in allowed}
+prefix=f'OVERLAY={files!r}\nRUN_TAG="authority-directory-runtime-build-first"\nSOURCE_TAG="source-authority-directory-runtime-first"\n'
+runpy.run_path('target/prepare-capacity-checks-20261025.py',init_globals=dict(
+ WORKER_FILE='target/empty-worker-20261025.py',WORKER_DIR='authority-directory-runtime-build-first',WORKER_PREFIX=prefix+old+'\n'))
