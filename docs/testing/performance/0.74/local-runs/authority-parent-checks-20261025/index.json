@@ -1,0 +1,69 @@
+{
+  "admission": false,
+  "doc_check": true,
+  "full_holder_passed": false,
+  "full_package": false,
+  "local_nonpromotable_contract": true,
+  "measurements_repeated": false,
+  "members": {
+    "checks/authority-parent-final-contract-20261025/intent.json": {
+      "bytes": 332820,
+      "sha256": "71debee86cf13bd2c2a4a990e94ef5452388c57c3ac69125531bc4f874f03157"
+    },
+    "checks/authority-parent-final-contract-20261025/result.json": {
+      "bytes": 332458,
+      "sha256": "fc12c01c22a81ae4f65ee448e61d7d5fc75bcd6909369692d77bb7af7ab4c1d3"
+    },
+    "checks/authority-parent-final-contract-20261025/stderr.log": {
+      "bytes": 152,
+      "sha256": "888aec6a092220d1df66c8852e85b4945901db126a890b5bbfb6849614d41183"
+    },
+    "checks/authority-parent-final-contract-20261025/stdout.log": {
+      "bytes": 60,
+      "sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+    },
+    "checks/authority-parent-final-doc-check-20261025/intent.json": {
+      "bytes": 332772,
+      "sha256": "dd6c28ed726e365cf61a4b4e8ed8a422d6a283b29d8d76c496c8b6e8af53ace5"
+    },
+    "checks/authority-parent-final-doc-check-20261025/result.json": {
+      "bytes": 332458,
+      "sha256": "fc12c01c22a81ae4f65ee448e61d7d5fc75bcd6909369692d77bb7af7ab4c1d3"
+    },
+    "checks/authority-parent-final-doc-check-20261025/stderr.log": {
+      "bytes": 120,
+      "sha256": "9c5c5d4ed241002f0e7fc2cb7d7c633c55893110042eca002e8da6e2c7fb4500"
+    },
+    "checks/authority-parent-final-doc-check-20261025/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "checks/authority-parent-staged-audit-20261025/intent.json": {
+      "bytes": 332613,
+      "sha256": "831915ae6d411d5040c08a04785dfd4102a05870710ce9cd0202419065a84646"
+    },
+    "checks/authority-parent-staged-audit-20261025/result.json": {
+      "bytes": 332340,
+      "sha256": "760a1bf1d207060f7f36fe3b33fef169eca3c641db636d18ce1efbc4bf85848c"
+    },
+    "checks/authority-parent-staged-audit-20261025/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/authority-parent-staged-audit-20261025/stdout.log": {
+      "bytes": 218,
+      "sha256": "bce71e604c77f694f415541b340b3f54b3df8fd8aeedb6ffb04a0637109e14bb"
+    },
+    "coordinator/retain-authority-parent-checks-20261025.py": {
+      "bytes": 2002,
+      "sha256": "e324b43a74f3fba3fed1ef744930ab02d431c512dcf8c7006665de5abead535a"
+    },
+    "coordinator/verify-staged-authority-parent-20261025.py": {
+      "bytes": 2803,
+      "sha256": "50e27aa290d4a12ee3a069e624514805de1bdf0ea809c81d3c16ddda19265da4"
+    }
+  },
+  "primary_staged_review_passed": true,
+  "schema": "hc074-parent-final-checks-v1",
+  "upstream_index_sha256": "afb69bd536c0399dc378095dd6d3420a4bbb451cf0ce79675370a00c08c7551b"
+}

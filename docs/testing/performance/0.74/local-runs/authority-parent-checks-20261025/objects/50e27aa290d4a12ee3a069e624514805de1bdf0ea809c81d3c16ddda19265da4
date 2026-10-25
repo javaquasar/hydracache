@@ -1,0 +1,36 @@
+from pathlib import Path
+import hashlib,json,subprocess
+root=Path(__file__).resolve().parent.parent
+prefix='docs/testing/performance/0.74/local-runs/authority-parent-cost-20261025/'
+raw=subprocess.check_output(['git','show',':'+prefix+'index.json'],cwd=root)
+assert hashlib.sha256(raw).hexdigest()=='afb69bd536c0399dc378095dd6d3420a4bbb451cf0ce79675370a00c08c7551b'
+index=json.loads(raw);assert len(index['members'])==291
+digests=sorted({item['sha256'] for item in index['members'].values()});assert len(digests)==209
+p=subprocess.run(['git','cat-file','--batch'],input=('\n'.join(':'+prefix+'objects/'+d for d in digests)+'\n').encode(),cwd=root,capture_output=True,check=True)
+objects={};offset=0
+for digest in digests:
+ newline=p.stdout.index(b'\n',offset);header=p.stdout[offset:newline].split();assert header[1]==b'blob'
+ size=int(header[2]);offset=newline+1;blob=p.stdout[offset:offset+size];offset+=size
+ assert p.stdout[offset:offset+1]==b'\n';offset+=1
+ assert hashlib.sha256(blob).hexdigest()==digest;objects[digest]=blob
+assert offset==len(p.stdout)
+members={}
+for name,item in index['members'].items():
+ assert not Path(name).is_absolute() and '..' not in Path(name).parts
+ blob=objects[item['sha256']];assert len(blob)==item['bytes'];members[name]=blob
+for name in ['review.py','protocol.json','test_review.py']:
+ assert members['tool/'+name]==(root/'tools/authority-parent-cost-074'/name).read_bytes()
+assert members['dependencies/profile-review.py']==(root/'tools/native-server-control-074/profile_review.py').read_bytes()
+assert members['dependencies/directory-review.py']==(root/'tools/authority-directory-cost-074/review.py').read_bytes()
+scope={'__file__':str(root/'target/audit-authority-parent-20261025.py'),'__name__':'saved_byte_verifier'}
+exec(compile(members['coordinator/audit-authority-parent-20261025.py'],'<staged-audit>','exec'),scope)
+files={n.removeprefix('server/'):v for n,v in members.items() if n.startswith('server/') and n!='server/final-frame.json'}
+sources={n:members['source/'+n] for n in scope['NAMES']}
+old={n:members['baseline-source/'+n] for n in scope['NAMES']}
+for name,raw in sources.items():assert raw==(root/'tools/long-run-supervisor-074/src'/name).read_bytes()
+facts=scope['review'](files,json.loads(members['server/final-frame.json']),sources,old)
+assert facts==json.loads(members['analysis/review.json'])
+for name,digest in index['protected_inputs'].items():assert hashlib.sha256((root/name).read_bytes()).hexdigest()==digest
+assert not index['admission'] and not index['full_holder_passed'] and not index['before_read_metadata_changed']
+print(json.dumps(dict(staged_byte_review=True,members=291,objects=209,source_delta_verified=True,
+ prototype_and_installed_screens=True,authority_tests_passed=63,first_failures_preserved=True,admission=False)))
