@@ -25,12 +25,14 @@ def review(cohorts, installed=False):
             # The shared parser is a frozen schedule/CPU estimator, not a change of work.
             for row in rows:
                 require(common.fields(row)['calls'] == '1024', 'Changed installed work')
+                require(common.fields(row)['variant'] in ('reference', 'reference-control', 'fresh-stamp'), 'Wrong original variant')
             header = f'HC074-FD-IDENTITY-ORIGIN cohort={cohort} files=7 iterations=8192 samples=12 product=false admission=false'
             converted = [header] + [row.replace('HC074-STAMP-INSTALLED ', 'HC074-FD-IDENTITY ').replace('calls=1024 ', 'calls=57344 ').replace('variant=fresh-stamp ', 'variant=fstat-prototype ') for row in rows]
         else:
             lines = text.splitlines()
             require(len(lines) == 37 and lines[0].startswith('HC074-STAMP-ORIGIN '), 'Incomplete leaf')
             require(all(line.startswith('HC074-STAMP ') for line in lines[1:]), 'Unexpected leaf record')
+            require(all(common.fields(line)['variant'] in ('reference', 'reference-control', 'fresh-stamp') for line in lines[1:]), 'Wrong original leaf variant')
             converted = [lines[0].replace('HC074-STAMP-ORIGIN ', 'HC074-FD-IDENTITY-ORIGIN ')] + [line.replace('HC074-STAMP ', 'HC074-FD-IDENTITY ').replace('variant=fresh-stamp ', 'variant=fstat-prototype ') for line in lines[1:]]
         normalized.append(('\n'.join(converted)+'\n').encode('ascii'))
     result = common.review(normalized)

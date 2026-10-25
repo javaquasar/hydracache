@@ -36,7 +36,8 @@ class Controls(unittest.TestCase):
 
     def test_wrong_calls_order_clock_and_variant(self):
         for a, b in [('calls=57344','calls=57343'), ('slot=0','slot=9'),
-                     ('cpu_ns=80000','cpu_ns=0'), ('variant=fresh-stamp','variant=other')]:
+                     ('cpu_ns=80000','cpu_ns=0'), ('variant=fresh-stamp','variant=other'),
+                     ('variant=fresh-stamp','variant=fstat-prototype')]:
             rows = samples(); rows[0] = rows[0].replace(a.encode(), b.encode(), 1)
             with self.assertRaises(ValueError): api.review(rows)
 
