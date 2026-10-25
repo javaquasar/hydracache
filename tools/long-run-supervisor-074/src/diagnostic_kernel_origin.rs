@@ -25,6 +25,14 @@ mod fixed_namespace_open;
 #[path = "diagnostic_namespace_open_tests.rs"]
 mod namespace_open_tests;
 
+#[cfg(all(test, target_arch = "x86_64", target_env = "gnu"))]
+#[path = "diagnostic_filesystem_projection.rs"]
+mod filesystem_projection;
+
+#[cfg(all(test, target_arch = "x86_64", target_env = "gnu"))]
+#[path = "diagnostic_filesystem_projection_tests.rs"]
+mod filesystem_projection_tests;
+
 #[derive(Debug, Clone)]
 pub struct KernelTimePoint {
     boot: String,
