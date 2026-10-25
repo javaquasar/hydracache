@@ -1,0 +1,71 @@
+{
+  "admission": false,
+  "doc_check": true,
+  "full_package": false,
+  "local_nonpromotable_contract": true,
+  "measurements_repeated": false,
+  "members": {
+    "checks/preparation-ranking-final-contract-20261025/intent.json": {
+      "bytes": 336040,
+      "sha256": "858ac7474436e1b8ad9f16c111da81b226b5feff2c61924ada2607ae65625ca0"
+    },
+    "checks/preparation-ranking-final-contract-20261025/result.json": {
+      "bytes": 335678,
+      "sha256": "3650e576ffc03ec099f5a7517654f1afb76b04e03a3fbc0750cff2b9fb081373"
+    },
+    "checks/preparation-ranking-final-contract-20261025/stderr.log": {
+      "bytes": 152,
+      "sha256": "e59195abe1f9c08815043904813560bd68188e779e15c4e68b284aa8587d770b"
+    },
+    "checks/preparation-ranking-final-contract-20261025/stdout.log": {
+      "bytes": 60,
+      "sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+    },
+    "checks/preparation-ranking-final-doc-check-20261025/intent.json": {
+      "bytes": 335992,
+      "sha256": "1728d5f99d27b744f9ffa77e52a00fc2167af881a330f1dc7360f47c17f88a25"
+    },
+    "checks/preparation-ranking-final-doc-check-20261025/result.json": {
+      "bytes": 335678,
+      "sha256": "3650e576ffc03ec099f5a7517654f1afb76b04e03a3fbc0750cff2b9fb081373"
+    },
+    "checks/preparation-ranking-final-doc-check-20261025/stderr.log": {
+      "bytes": 120,
+      "sha256": "e539cb501efce1b22fe5f5128b1b524817357095d1e00b1214fa2b4310f76804"
+    },
+    "checks/preparation-ranking-final-doc-check-20261025/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "checks/preparation-ranking-staged-audit-20261025/intent.json": {
+      "bytes": 335954,
+      "sha256": "21da54cab036b55a8c9fadc580205cf506849a2a3c7033488753481be9a7eb6c"
+    },
+    "checks/preparation-ranking-staged-audit-20261025/result.json": {
+      "bytes": 335678,
+      "sha256": "3650e576ffc03ec099f5a7517654f1afb76b04e03a3fbc0750cff2b9fb081373"
+    },
+    "checks/preparation-ranking-staged-audit-20261025/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/preparation-ranking-staged-audit-20261025/stdout.log": {
+      "bytes": 294,
+      "sha256": "60bc983755d755c06e6d1c4cc861a6a279823cbbd0d0c41f11d1c577303250bd"
+    },
+    "coordinator/retain-preparation-ranking-checks-20261025.py": {
+      "bytes": 2085,
+      "sha256": "ca1a2282eb532a42fe02bf6e1f83960a1aa5bacb988849f58d63199d5a777dfa"
+    },
+    "coordinator/verify-staged-preparation-ranking-20261025.py": {
+      "bytes": 3436,
+      "sha256": "288872d9fa3cc8c24753f2c5307b1e9cc1170684b7b91affb59ae9f50395d3e6"
+    }
+  },
+  "optimization_implemented": false,
+  "preparation_repeated": false,
+  "primary_staged_review_passed": true,
+  "schema": "hc074-preparation-ranking-final-checks-v1",
+  "server_actions": false,
+  "upstream_index_sha256": "7f0db4bc76bd616232c2824e35cc22ef1d910b0a093c3e50eaf09b46fbc68e70"
+}

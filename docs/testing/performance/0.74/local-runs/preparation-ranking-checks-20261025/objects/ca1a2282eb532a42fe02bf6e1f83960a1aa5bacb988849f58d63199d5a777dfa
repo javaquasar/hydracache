@@ -1,0 +1,26 @@
+from pathlib import Path
+import hashlib,json
+root=Path(__file__).resolve().parent.parent
+members,objects={},{}
+def add(name,raw):
+ assert name not in members
+ digest=hashlib.sha256(raw).hexdigest();members[name]={'bytes':len(raw),'sha256':digest};objects[digest]=raw
+for label in ['preparation-ranking-staged-audit-20261025','preparation-ranking-final-doc-check-20261025','preparation-ranking-final-contract-20261025']:
+ folder=root/'target/source-continuation-20261024'/label
+ result=json.loads((folder/'result.json').read_bytes())
+ assert result['exit']==0 and result['outer_refusal'] is None and result['source_unchanged'] and result['head_unchanged']
+ for p in sorted(folder.iterdir()):add('checks/'+label+'/'+p.name,p.read_bytes())
+for name in ['verify-staged-preparation-ranking-20261025.py','retain-preparation-ranking-checks-20261025.py']:
+ add('coordinator/'+name,(root/'target'/name).read_bytes())
+primary=root/'docs/testing/performance/0.74/local-runs/preparation-ranking-20261025/index.json'
+assert hashlib.sha256(primary.read_bytes()).hexdigest()=='7f0db4bc76bd616232c2824e35cc22ef1d910b0a093c3e50eaf09b46fbc68e70'
+base=root/'docs/testing/performance/0.74/local-runs/preparation-ranking-checks-20261025'
+base.mkdir(exist_ok=False);(base/'objects').mkdir()
+for digest,raw in objects.items():(base/'objects'/digest).write_bytes(raw)
+index=dict(schema='hc074-preparation-ranking-final-checks-v1',members=members,
+ upstream_index_sha256='7f0db4bc76bd616232c2824e35cc22ef1d910b0a093c3e50eaf09b46fbc68e70',
+ primary_staged_review_passed=True,doc_check=True,local_nonpromotable_contract=True,
+ full_package=False,preparation_repeated=False,optimization_implemented=False,measurements_repeated=False,server_actions=False,admission=False)
+raw=(json.dumps(index,sort_keys=True,indent=2)+'\n').encode();(base/'index.json').write_bytes(raw)
+(base/'.gitattributes').write_bytes(b'index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n')
+print(json.dumps(dict(index_sha256=hashlib.sha256(raw).hexdigest(),members=len(members),objects=len(objects))))

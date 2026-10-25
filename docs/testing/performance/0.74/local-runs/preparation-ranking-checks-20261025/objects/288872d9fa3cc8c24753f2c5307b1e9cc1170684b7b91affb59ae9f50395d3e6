@@ -1,0 +1,44 @@
+from pathlib import Path
+import hashlib,json,subprocess
+root=Path(__file__).resolve().parent.parent
+prefix='docs/testing/performance/0.74/local-runs/preparation-ranking-20261025/'
+raw=subprocess.check_output(['git','show',':'+prefix+'index.json'],cwd=root)
+assert hashlib.sha256(raw).hexdigest()=='7f0db4bc76bd616232c2824e35cc22ef1d910b0a093c3e50eaf09b46fbc68e70'
+index=json.loads(raw);assert len(index['members'])==42
+digests=sorted({item['sha256'] for item in index['members'].values()});assert len(digests)==36
+p=subprocess.run(['git','cat-file','--batch'],input=('\n'.join(':'+prefix+'objects/'+d for d in digests)+'\n').encode(),cwd=root,capture_output=True,check=True)
+objects={};offset=0
+for digest in digests:
+ newline=p.stdout.index(b'\n',offset);header=p.stdout[offset:newline].split();assert header[1]==b'blob'
+ size=int(header[2]);offset=newline+1;blob=p.stdout[offset:offset+size];offset+=size
+ assert p.stdout[offset:offset+1]==b'\n';offset+=1
+ assert hashlib.sha256(blob).hexdigest()==digest;objects[digest]=blob
+assert offset==len(p.stdout)
+members={}
+for name,item in index['members'].items():
+ assert not Path(name).is_absolute() and '..' not in Path(name).parts
+ blob=objects[item['sha256']];assert len(blob)==item['bytes'];members[name]=blob
+for name in ['protocol.json','local-context-graph.json','next-directory-protocol.json','review.py','test_review.py','README.md']:
+ assert members['tool/'+name]==(root/'tools/preparation-ranking-074'/name).read_bytes()
+assert members['dependency/profile-review.py']==(root/'tools/native-server-control-074/profile_review.py').read_bytes()
+scope={'__file__':str(root/'tools/preparation-ranking-074/review.py'),'__name__':'saved_byte_verifier'}
+exec(compile(members['tool/review.py'],'<staged-audit>','exec'),scope)
+protocol=json.loads(members['tool/protocol.json']);graph=json.loads(members['tool/local-context-graph.json'])
+assert hashlib.sha256(members['input/upstream-index.json']).hexdigest()==protocol['upstream_index_sha256']
+upstream=json.loads(members['input/upstream-index.json'])
+files={n.removeprefix('input/'):v for n,v in members.items() if n.startswith('input/') and n!='input/upstream-index.json'}
+for name,raw in files.items():
+ original='server/authority-parent-runtime-build-first/source-manifest.json' if name=='source-manifest.json' else 'server/parent-residual-profile-first/'+name
+ assert upstream['members'][original]['sha256']==hashlib.sha256(raw).hexdigest()
+sources={n.removeprefix('source/'):v for n,v in members.items() if n.startswith('source/')}
+assert len(sources)==8
+for name,raw in sources.items():
+ path=root/'tools/long-run-supervisor-074'/('tests/support' if name=='round_cost.rs' else 'src')/name
+ assert raw==path.read_bytes()
+facts=scope['review'](files,sources,protocol,graph)
+assert facts==json.loads(members['analysis/review.json']) and not facts['performance_improvement_proven']
+for name,digest in index['protected_inputs'].items():assert hashlib.sha256((root/name).read_bytes()).hexdigest()==digest
+assert not index['server_actions'] and not index['optimization_implemented'] and not index['next_candidate_implemented']
+print(json.dumps(dict(staged_byte_review=True,members=42,objects=36,source_files=8,round_slot_inventories=56,
+ first_profile_refusal_age_ns=facts['first_original_refusal']['age_ns'],source_derived_metadata_requests_per_observe=88,
+ directory_same_requests_per_observe=24,server_actions=False,admission=False)))
