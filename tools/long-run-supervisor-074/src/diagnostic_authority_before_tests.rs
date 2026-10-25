@@ -152,6 +152,10 @@ fn fresh_authority_before_regular_fields_match_original_contract() {
             class(regular(&m, uid, gid, mode)),
             class(projected_regular(&original, uid, gid, mode))
         );
+        assert_eq!(
+            class(regular(&m, uid, gid, mode)),
+            class(Stamp::fresh_regular(file, uid, gid, mode))
+        );
     }
     for field in 0..14 {
         let mut stamp = original.clone();
@@ -172,6 +176,10 @@ fn fresh_authority_before_regular_fields_match_original_contract() {
             _ => stamp.ctime_ns ^= 1,
         }
         let result = class(projected_regular(&stamp, m.uid(), m.gid(), 0o400));
+        assert_eq!(
+            result,
+            class(stamp.require_regular(m.uid(), m.gid(), 0o400))
+        );
         assert_eq!(result.0 == "ok", field == 0 || field >= 7, "field {field}");
     }
     let dir = tempfile::tempdir().unwrap();
@@ -185,6 +193,10 @@ fn fresh_authority_before_regular_fields_match_original_contract() {
             m.gid(),
             0o700
         ))
+    );
+    assert_eq!(
+        class(regular(&m, m.uid(), m.gid(), 0o700)),
+        class(Stamp::fresh_regular(&held, m.uid(), m.gid(), 0o700))
     );
 }
 #[test]

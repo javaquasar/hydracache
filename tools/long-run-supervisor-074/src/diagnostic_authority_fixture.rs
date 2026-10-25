@@ -94,13 +94,11 @@ impl Leaf {
         budget: usize,
     ) -> Result<(File, Stamp, Vec<u8>), AuthorityError> {
         let mut file = open_at(dir, name, false)?;
-        let before = file.metadata()?;
-        regular(&before, uid, gid, 0o400)?;
-        if before.dev() != dir.metadata()?.dev() || before.len() > budget as u64 {
+        let stamp = Stamp::fresh_regular(&file, uid, gid, 0o400)?;
+        if stamp.dev != dir.metadata()?.dev() || stamp.len > budget as u64 {
             return Err(AuthorityError::Budget);
         }
-        let stamp = Stamp::of(&before);
-        let mut raw = Vec::with_capacity(before.len() as usize);
+        let mut raw = Vec::with_capacity(stamp.len as usize);
         (&mut file).take(budget as u64 + 1).read_to_end(&mut raw)?;
         if Stamp::fresh(&file)? != stamp || raw.len() as u64 != stamp.len {
             return Err(AuthorityError::Invalid);
@@ -116,18 +114,16 @@ impl Leaf {
         slot: &mut Option<Vec<u8>>,
     ) -> Result<(File, Stamp, Vec<u8>), AuthorityError> {
         let mut file = open_at(dir, name, false)?;
-        let before = file.metadata()?;
-        regular(&before, uid, gid, 0o400)?;
-        if before.dev() != dir.metadata()?.dev() || before.len() > budget as u64 {
+        let stamp = Stamp::fresh_regular(&file, uid, gid, 0o400)?;
+        if stamp.dev != dir.metadata()?.dev() || stamp.len > budget as u64 {
             return Err(AuthorityError::Budget);
         }
-        let stamp = Stamp::of(&before);
         let mut raw = match slot.take() {
-            Some(mut raw) if raw.capacity() == before.len() as usize => {
+            Some(mut raw) if raw.capacity() == stamp.len as usize => {
                 raw.clear();
                 raw
             }
-            _ => Vec::with_capacity(before.len() as usize),
+            _ => Vec::with_capacity(stamp.len as usize),
         };
         (&mut file).take(budget as u64 + 1).read_to_end(&mut raw)?;
         if Stamp::fresh(&file)? != stamp || raw.len() as u64 != stamp.len {

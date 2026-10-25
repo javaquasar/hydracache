@@ -1,9 +1,47 @@
 //! Fresh projection at existing held/after comparisons, never a metadata cache.
-use super::Stamp;
+use super::{AuthorityError, Stamp};
 use std::fs::File;
 use std::io;
 
 impl Stamp {
+    pub(super) fn fresh_regular(
+        file: &File,
+        uid: u32,
+        gid: u32,
+        mode: u32,
+    ) -> Result<Self, AuthorityError> {
+        #[cfg(target_arch = "x86_64")]
+        {
+            let stamp = Self::fresh(file)?;
+            stamp.require_regular(uid, gid, mode)?;
+            Ok(stamp)
+        }
+        #[cfg(not(target_arch = "x86_64"))]
+        {
+            let metadata = file.metadata()?;
+            super::regular(&metadata, uid, gid, mode)?;
+            Ok(Self::of(&metadata))
+        }
+    }
+
+    #[cfg(target_arch = "x86_64")]
+    pub(super) fn require_regular(
+        &self,
+        uid: u32,
+        gid: u32,
+        mode: u32,
+    ) -> Result<(), AuthorityError> {
+        if self.mode & libc::S_IFMT != libc::S_IFREG
+            || self.uid != uid
+            || self.gid != gid
+            || self.mode & 0o7777 != mode
+            || self.links != 1
+        {
+            return Err(AuthorityError::Invalid);
+        }
+        Ok(())
+    }
+
     pub(super) fn directory_matches_file(&self, file: &File) -> io::Result<bool> {
         #[cfg(target_arch = "x86_64")]
         {
