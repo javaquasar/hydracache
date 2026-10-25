@@ -1,0 +1,220 @@
+{
+  "schema": 1,
+  "scope": "owned-synthetic-child-only",
+  "passed": true,
+  "product_admission": false,
+  "cargo_dispatch_admission": false,
+  "refusal": null,
+  "samples": [
+    {
+      "terminal": false,
+      "creation_100ns": 134373718584021666,
+      "exit_100ns": null,
+      "kernel_100ns": 0,
+      "user_100ns": 0,
+      "io": {
+        "read_ops": 0,
+        "write_ops": 0,
+        "other_ops": 0,
+        "read_bytes": 0,
+        "write_bytes": 0,
+        "other_bytes": 0
+      },
+      "memory": {
+        "working_set_bytes": 2134016,
+        "peak_working_set_bytes": 2134016,
+        "private_usage": 409600,
+        "peak_private_commit_bytes": 409600
+      },
+      "terminal_memory_error": null,
+      "observed_monotonic_ns": 749735261762000
+    },
+    {
+      "terminal": false,
+      "creation_100ns": 134373718584021666,
+      "exit_100ns": null,
+      "kernel_100ns": 312500,
+      "user_100ns": 0,
+      "io": {
+        "read_ops": 52,
+        "write_ops": 1,
+        "other_ops": 732,
+        "read_bytes": 817388,
+        "write_bytes": 262144,
+        "other_bytes": 75642
+      },
+      "memory": {
+        "working_set_bytes": 13524992,
+        "peak_working_set_bytes": 13754368,
+        "private_usage": 7405568,
+        "peak_private_commit_bytes": 7405568
+      },
+      "terminal_memory_error": null,
+      "observed_monotonic_ns": 749735318279400
+    },
+    {
+      "terminal": false,
+      "creation_100ns": 134373718584021666,
+      "exit_100ns": null,
+      "kernel_100ns": 468750,
+      "user_100ns": 468750,
+      "io": {
+        "read_ops": 52,
+        "write_ops": 1,
+        "other_ops": 732,
+        "read_bytes": 817388,
+        "write_bytes": 262144,
+        "other_bytes": 75642
+      },
+      "memory": {
+        "working_set_bytes": 13524992,
+        "peak_working_set_bytes": 13754368,
+        "private_usage": 7405568,
+        "peak_private_commit_bytes": 7405568
+      },
+      "terminal_memory_error": null,
+      "observed_monotonic_ns": 749735381542800
+    },
+    {
+      "terminal": false,
+      "creation_100ns": 134373718584021666,
+      "exit_100ns": null,
+      "kernel_100ns": 468750,
+      "user_100ns": 1093750,
+      "io": {
+        "read_ops": 52,
+        "write_ops": 1,
+        "other_ops": 732,
+        "read_bytes": 817388,
+        "write_bytes": 262144,
+        "other_bytes": 75642
+      },
+      "memory": {
+        "working_set_bytes": 13524992,
+        "peak_working_set_bytes": 13754368,
+        "private_usage": 7405568,
+        "peak_private_commit_bytes": 7405568
+      },
+      "terminal_memory_error": null,
+      "observed_monotonic_ns": 749735444298700
+    },
+    {
+      "terminal": false,
+      "creation_100ns": 134373718584021666,
+      "exit_100ns": null,
+      "kernel_100ns": 468750,
+      "user_100ns": 1718750,
+      "io": {
+        "read_ops": 52,
+        "write_ops": 1,
+        "other_ops": 732,
+        "read_bytes": 817388,
+        "write_bytes": 262144,
+        "other_bytes": 75642
+      },
+      "memory": {
+        "working_set_bytes": 13524992,
+        "peak_working_set_bytes": 13754368,
+        "private_usage": 7405568,
+        "peak_private_commit_bytes": 7405568
+      },
+      "terminal_memory_error": null,
+      "observed_monotonic_ns": 749735506369600
+    },
+    {
+      "terminal": false,
+      "creation_100ns": 134373718584021666,
+      "exit_100ns": null,
+      "kernel_100ns": 468750,
+      "user_100ns": 2343750,
+      "io": {
+        "read_ops": 52,
+        "write_ops": 1,
+        "other_ops": 732,
+        "read_bytes": 817388,
+        "write_bytes": 262144,
+        "other_bytes": 75642
+      },
+      "memory": {
+        "working_set_bytes": 13524992,
+        "peak_working_set_bytes": 13754368,
+        "private_usage": 7405568,
+        "peak_private_commit_bytes": 7405568
+      },
+      "terminal_memory_error": null,
+      "observed_monotonic_ns": 749735569164200
+    },
+    {
+      "terminal": false,
+      "creation_100ns": 134373718584021666,
+      "exit_100ns": null,
+      "kernel_100ns": 468750,
+      "user_100ns": 2968750,
+      "io": {
+        "read_ops": 52,
+        "write_ops": 1,
+        "other_ops": 732,
+        "read_bytes": 817388,
+        "write_bytes": 262144,
+        "other_bytes": 75642
+      },
+      "memory": {
+        "working_set_bytes": 13524992,
+        "peak_working_set_bytes": 13754368,
+        "private_usage": 7405568,
+        "peak_private_commit_bytes": 7405568
+      },
+      "terminal_memory_error": null,
+      "observed_monotonic_ns": 749735631604600
+    },
+    {
+      "terminal": false,
+      "creation_100ns": 134373718584021666,
+      "exit_100ns": null,
+      "kernel_100ns": 468750,
+      "user_100ns": 3593750,
+      "io": {
+        "read_ops": 52,
+        "write_ops": 1,
+        "other_ops": 732,
+        "read_bytes": 817388,
+        "write_bytes": 262144,
+        "other_bytes": 75642
+      },
+      "memory": {
+        "working_set_bytes": 13524992,
+        "peak_working_set_bytes": 13754368,
+        "private_usage": 7405568,
+        "peak_private_commit_bytes": 7405568
+      },
+      "terminal_memory_error": null,
+      "observed_monotonic_ns": 749735693827800
+    },
+    {
+      "terminal": true,
+      "creation_100ns": 134373718584021666,
+      "exit_100ns": 134373718588692841,
+      "kernel_100ns": 468750,
+      "user_100ns": 3906250,
+      "io": {
+        "read_ops": 52,
+        "write_ops": 2,
+        "other_ops": 746,
+        "read_bytes": 817388,
+        "write_bytes": 262170,
+        "other_bytes": 75746
+      },
+      "memory": {
+        "working_set_bytes": 32768,
+        "peak_working_set_bytes": 13754368,
+        "private_usage": 77824,
+        "peak_private_commit_bytes": 7405568
+      },
+      "terminal_memory_error": null,
+      "observed_monotonic_ns": 749735720471300
+    }
+  ],
+  "exit_code": 0,
+  "pid": 21884,
+  "image": "C:\\Python313\\python.exe"
+}

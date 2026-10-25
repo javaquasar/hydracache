@@ -19792,3 +19792,26 @@ added to another process's earlier target spans to claim a total package time.
 The full command, its budget and its first failures still need their own verdict.
 Separate evidence for effect safety, case coverage, timing ownership and release
 admission keeps each successful step useful without promoting it beyond its scope.
+
+### Keep process identity attached to the counters
+
+The [external observer foundation](../testing/performance/0.74/owned-process-observer-result-20261025.md)
+tests a smaller prerequisite before another expensive target: can the observer
+read final CPU and I/O from the exact process it originally attached to? A PID
+lookup after exit would risk observing a reused identity. Holding the original
+query handle makes terminal observation refer to the same process; live checks
+around attachment and an executable-path comparison reject a mismatched child.
+
+Two short synthetic controls, before and after error-path hardening, confirm
+same-handle reads through termination on this Windows host. Model controls cover
+identity/counter changes, undefined live exit time, exhausted budgets and cleanup
+errors. Preserving the first refusal matters here too: a failed observer is not
+allowed to sample again until a plausible-looking result appears.
+
+These counters answer narrower questions than a full profiler. Process CPU
+excludes descendants, I/O transfers are not physical disk traffic, and private
+commit is not allocator retention. The tiny terminal working set in the control
+does not describe the live workload's memory requirement. Sequential API reads
+also do not form an atomic CPU/I/O/memory snapshot. Connecting this foundation
+to Cargo still requires an exact lineage and unchanged launch semantics; directly
+executing a test binary would not establish equivalence to the original command.

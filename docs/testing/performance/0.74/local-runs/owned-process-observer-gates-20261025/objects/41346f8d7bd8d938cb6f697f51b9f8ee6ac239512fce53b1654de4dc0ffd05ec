@@ -1,0 +1,53 @@
+"""Independent data-only validation; never repeats a control."""
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+
+root = Path(__file__).resolve().parent.parent
+relative = 'docs/testing/performance/0.74/local-runs/owned-process-observer-20261025/'
+
+def staged(name):
+    return subprocess.check_output(['git', 'show', ':' + relative + name], cwd=root)
+
+raw = staged('index.json')
+assert hashlib.sha256(raw).hexdigest() == '9812d360f72d9a1ddfd000dbed77353eeffa7520525c8e106f38af3c0f3a03ac'
+index = json.loads(raw)
+assert len(index['members']) == 38
+assert index['model_cases'] == 21 and index['attribution_python_cases'] == 83
+assert index['target_dispatches'] == index['measurement_cohorts'] == 0
+assert index['cargo_dispatch_admission'] is index['full_package_pass'] is index['admission'] is False
+data = {}
+for name, entry in index['members'].items():
+    assert not Path(name).is_absolute() and '..' not in Path(name).parts
+    content = staged('objects/' + entry['sha256'])
+    assert len(content) == entry['bytes']
+    assert hashlib.sha256(content).hexdigest() == entry['sha256']
+    data[name] = content
+
+for control in ('owned-process-control-first-20261025', 'owned-process-final-control-20261025'):
+    result = json.loads(data['native/' + control + '/result.json'])
+    assert result['passed'] and result['exit_code'] == 0 and result['refusal'] is None
+    samples = result['samples']
+    assert 2 <= len(samples) <= 400 and samples[-1]['terminal']
+    assert len({row['creation_100ns'] for row in samples}) == 1
+    assert not any(row['terminal'] for row in samples[:-1])
+    assert all(row['exit_100ns'] is None for row in samples[:-1])
+    assert samples[-1]['exit_100ns'] >= samples[-1]['creation_100ns'] > 0
+    assert samples[-1]['user_100ns'] + samples[-1]['kernel_100ns'] > 0
+    assert samples[-1]['io']['write_bytes'] >= 262144
+    assert any(row['memory'] and row['memory']['working_set_bytes'] > 0 for row in samples[:-1])
+    for before, after in zip(samples, samples[1:]):
+        assert before['observed_monotonic_ns'] <= after['observed_monotonic_ns']
+        for key in ('kernel_100ns', 'user_100ns'):
+            assert before[key] <= after[key]
+        assert before['io'].keys() == after['io'].keys()
+        assert all(before['io'][key] <= after['io'][key] for key in before['io'])
+
+for label, version in (('owned-observer-native-first-20261025', 'first'),
+                       ('owned-observer-final-native-20261025', 'final')):
+    intent = json.loads(data['checks/' + label + '/intent.json'])
+    source = data['code/' + version + '-owned_process_observer.py']
+    assert hashlib.sha256(source).hexdigest() == intent['source']['tools/xtask-package-attribution-074/owned_process_observer.py']
+print(json.dumps(dict(staged_verified=True, members=len(data), native_controls=2,
+                      target_dispatches=0, admission=False)))

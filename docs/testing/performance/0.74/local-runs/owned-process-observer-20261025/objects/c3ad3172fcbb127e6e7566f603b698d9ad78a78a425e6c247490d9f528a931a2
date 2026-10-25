@@ -1,0 +1,17 @@
+test_changed_creation_and_cpu_refuse (test_owned_process_observer.ObserverTests.test_changed_creation_and_cpu_refuse) ... ok
+test_closed_handle_refuses (test_owned_process_observer.ObserverTests.test_closed_handle_refuses) ... ok
+test_cpu_can_exceed_wall_no_fake_wait_subtraction (test_owned_process_observer.ObserverTests.test_cpu_can_exceed_wall_no_fake_wait_subtraction) ... ok
+test_every_io_counter_monotonic (test_owned_process_observer.ObserverTests.test_every_io_counter_monotonic) ... ok
+test_invalid_budgets_do_not_open (test_owned_process_observer.ObserverTests.test_invalid_budgets_do_not_open) ... ok
+test_live_exit_time_mask_and_terminal_identity (test_owned_process_observer.ObserverTests.test_live_exit_time_mask_and_terminal_identity) ... ok
+test_platform_refusal_retained_before_dispatch (test_owned_process_observer.ObserverTests.test_platform_refusal_retained_before_dispatch) ... ok
+test_reject_exit_during_open_and_close (test_owned_process_observer.ObserverTests.test_reject_exit_during_open_and_close) ... ok
+test_reject_exited_before_open (test_owned_process_observer.ObserverTests.test_reject_exited_before_open) ... ok
+test_reject_wrong_pid_or_image (test_owned_process_observer.ObserverTests.test_reject_wrong_pid_or_image) ... ok
+test_sample_budget_and_first_refusal_latched (test_owned_process_observer.ObserverTests.test_sample_budget_and_first_refusal_latched) ... ok
+test_terminal_uses_same_handle_no_pid_reopen (test_owned_process_observer.ObserverTests.test_terminal_uses_same_handle_no_pid_reopen) ... ok
+
+----------------------------------------------------------------------
+Ran 12 tests in 0.018s
+
+OK

@@ -1,0 +1,10 @@
+{
+  "scope": "staged data-only evidence reader, not native control",
+  "first_direct_reader_exit": 1,
+  "first_gate_retention_exit": 1,
+  "reader_error": "KeyError: 'code/first-owned_process_observer.py'",
+  "actual_member": "code/first-native-owned_process_observer.py",
+  "native_controls_repeated": false,
+  "raw_stderr_bytes_saved": false,
+  "source": "observed tool output; no claim of a raw stderr receipt"
+}

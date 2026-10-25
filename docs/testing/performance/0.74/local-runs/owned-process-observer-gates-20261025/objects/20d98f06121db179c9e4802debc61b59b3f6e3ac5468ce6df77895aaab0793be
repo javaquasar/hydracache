@@ -1,0 +1,51 @@
+"""Seal saved local gates and independently verify the staged control packet."""
+from pathlib import Path
+import hashlib
+import json
+import subprocess
+import sys
+
+root = Path(__file__).resolve().parent.parent
+base = root / 'docs/testing/performance/0.74/local-runs/owned-process-observer-gates-20261025'
+members, objects = {}, {}
+
+def add(name, raw):
+    digest = hashlib.sha256(raw).hexdigest()
+    assert name not in members
+    members[name] = dict(sha256=digest, bytes=len(raw))
+    objects[digest] = raw
+
+labels = ['owned-observer-historical-controls-20261025', 'owned-observer-compile-20261025',
+          'owned-observer-v3-preflight-20261025', 'owned-observer-doc-check-20261025',
+          'owned-observer-local-contract-20261025', 'owned-observer-tabnanny-20261025']
+for label in labels:
+    folder = root / 'target/source-continuation-20261024' / label
+    before = json.loads((folder / 'intent.json').read_bytes())
+    after = json.loads((folder / 'result.json').read_bytes())
+    assert after['exit'] == 0 and after['outer_refusal'] is None
+    assert after['source_unchanged'] and after['head_unchanged']
+    assert before['source'] == after['source_after']
+    for path in sorted(folder.iterdir()):
+        assert path.is_file()
+        add(label + '/' + path.name, path.read_bytes())
+assert b'Ran 91 tests' in objects[members[labels[0] + '/stderr.log']['sha256']]
+verify = root / 'target/verify-owned-observer-20261025.py'
+result = subprocess.run([sys.executable, str(verify)], cwd=root, capture_output=True, timeout=30)
+assert result.returncode == 0, result.stderr
+assert json.loads(result.stdout)['staged_verified']
+add('staged-verification/stdout.json', result.stdout)
+add('staged-verification/stderr.log', result.stderr)
+add('retention/verify-owned-observer-20261025.py', verify.read_bytes())
+add('retention/retain-owned-observer-gates-20261025.py', Path(__file__).read_bytes())
+index = dict(schema='hc074-owned-process-gates-v1', members=members,
+             upstream_index_sha256='9812d360f72d9a1ddfd000dbed77353eeffa7520525c8e106f38af3c0f3a03ac',
+             historical_python_cases=91, controls_repeated=False,
+             rust_runtime_or_tests_changed=False, full_package_pass=False, admission=False)
+base.mkdir(exist_ok=False)
+(base / 'objects').mkdir()
+for digest, raw in objects.items():
+    (base / 'objects' / digest).write_bytes(raw)
+(base / 'index.json').write_bytes((json.dumps(index, indent=2, sort_keys=True) + '\n').encode())
+(base / '.gitattributes').write_bytes(b'index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n')
+print(json.dumps(dict(index_sha256=hashlib.sha256((base / 'index.json').read_bytes()).hexdigest(),
+                      members=len(members), objects=len(objects))))

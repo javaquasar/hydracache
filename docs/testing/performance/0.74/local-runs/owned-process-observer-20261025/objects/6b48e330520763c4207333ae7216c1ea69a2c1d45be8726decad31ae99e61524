@@ -1,0 +1,9 @@
+{
+  "schema": 1,
+  "scope": "owned-synthetic-child-only",
+  "passed": false,
+  "product_admission": false,
+  "cargo_dispatch_admission": false,
+  "refusal": null,
+  "samples": []
+}

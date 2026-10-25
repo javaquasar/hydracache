@@ -187,3 +187,19 @@ The [result and sole standalone target check](../../docs/testing/performance/0.7
 retain two reader-accounting refusals and a separate first 321/321 Windows pass.
 It is not spliced into the still-red full package, and no cache or optimization
 is admitted by the audit.
+
+## Owned Windows process observer foundation
+
+`owned_process_observer.py` is a separate retained-handle collector, not a Cargo
+dispatcher. Its sole CLI is `synthetic-control NEW_OUTPUT_DIR`; it runs one short
+owned no-descendant Python fixture with exclusive intent/stream/result files.
+The library checks attachment identity, lifetime CPU/I/O monotonicity, terminal
+signaling and a fixed sample budget without reopening a PID. Model controls
+cover first-refusal retention, counter/identity drift, API errors and fixture
+timeout cleanup. The fixture's direct-child kill is not process-tree retirement.
+
+The [scope, two synthetic outcomes and remaining adapter boundary](../../docs/testing/performance/0.74/owned-process-observer-result-20261025.md)
+keep parent-only CPU, I/O transfer and working-set/private-commit observations
+distinct from descendant totals, physical disk I/O, retained heap and per-case
+timing. Both native controls pass; no target cohort or overhead acceptance is
+claimed. Prove original-wrapper/Cargo/test-image lineage before integrating it.

@@ -96,6 +96,14 @@ not complete the old 23-target suffix. The old 171/321 frontiers remain retained
 missing verdicts are not retrospectively labeled started or failed. Preserve every
 first result and require the complete package's own actual verdict.
 
+The [owned Windows observer controls](owned-process-observer-result-20261025.md)
+now establish same-handle terminal CPU/I/O collection for a short synthetic
+child, with 21 new model controls and no Cargo dispatch. The next adapter still
+needs original-wrapper/Cargo/test-image lineage and preservation of the original
+environment, CWD and 780-second origin. Parent counters do not account for Git
+descendants or per-case time; synthetic cleanup does not prove all-writer
+retirement. The 321-case target and full package are not repeated here.
+
 Next: use saved target/call attribution to isolate the cost owner without
 removing tests, refreshing source pins from responses or changing conditional
 reads. A separate candidate needs its own baseline and unchanged-bound proof;
