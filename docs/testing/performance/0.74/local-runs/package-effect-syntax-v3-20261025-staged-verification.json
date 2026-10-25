@@ -1,0 +1,10 @@
+{
+  "admission": false,
+  "auxiliary_files": 29,
+  "index_sha256": "1e461457bb2448b9caabfe396b0e9999ec8f34e28522036dd4c7dd4296bac0aa",
+  "members": 393,
+  "original_sources_changed": 0,
+  "package_dispatched": false,
+  "schema": "hc074-package-syntax-v3-staged-readback-v1",
+  "source_files": 343
+}

@@ -1,0 +1,41 @@
+"""Freeze parser-only inputs for independent v3 unit fixtures, not execution."""
+from pathlib import Path
+import json,hashlib,sys
+root=Path(__file__).resolve().parent.parent
+sys.path.insert(0,str(root/'tools/historical-blob-batch-074'))
+import package_effects_review_v3 as gate
+base=root/'docs/testing/performance/0.74/local-runs/package-effect-syntax-v3-20261025'
+doc=json.loads((root/'target/repaired-scope-syntax-20261025/result.json').read_bytes())
+verdict=gate.source_review(root,doc)
+members,objects={},{}
+def add(name,raw):
+    assert name not in members
+    digest=hashlib.sha256(raw).hexdigest();members[name]=dict(sha256=digest,bytes=len(raw));objects[digest]=raw
+for group in ('sources','auxiliary'):
+    for name,digest in verdict[group].items():
+        raw=(root/name).read_bytes();assert gate.sha(raw)==digest;add('fixture/'+name,raw)
+original=root/gate.previous.PREVIOUS_PACKET
+raw=(original/'index.json').read_bytes();assert gate.sha(raw)==gate.previous.PREVIOUS_INDEX_SHA256
+add('fixture/'+gate.previous.PREVIOUS_PACKET+'/index.json',raw)
+entry=json.loads(raw)['members']['syntax/final-closure/result.json']
+raw=(original/'objects'/entry['sha256']).read_bytes();assert gate.sha(raw)==entry['sha256'] and len(raw)==entry['bytes']
+add('fixture/'+gate.previous.PREVIOUS_PACKET+'/objects/'+entry['sha256'],raw)
+for label in ['repaired-scope-20261025-build','repaired-scope-20261025-syntax']:
+    folder=root/'target/source-continuation-20261024'/label
+    before=json.loads((folder/'intent.json').read_bytes());after=json.loads((folder/'result.json').read_bytes())
+    assert before['source']==after['source_after'] and after['source_unchanged'] and after['head_unchanged']
+    assert after['exit']==0 and after['outer_refusal'] is None
+    for path in sorted(folder.iterdir()):
+        if path.is_file():add('checks/'+label+'/'+path.name,path.read_bytes())
+for path in sorted((root/'target/repaired-scope-syntax-20261025').iterdir()):
+    if path.is_file():add('syntax/'+path.name,path.read_bytes())
+add('retention-source/seal-repaired-syntax-v3-20261025.py',Path(__file__).read_bytes())
+index=dict(schema='hc074-package-effect-syntax-v3-data-v1',members=members,
+    canonical_ast_sha256=gate.REVIEWED_AST_SHA256,source_files=343,auxiliary_files=29,
+    syntax_sites=25124,old_sources_changed=0,added_sources=9,
+    fixture_code_executed=False,package_dispatched=False,package_pass=False,admission=False)
+base.mkdir(exist_ok=False);(base/'objects').mkdir()
+for digest,raw in objects.items():(base/'objects'/digest).write_bytes(raw)
+(base/'index.json').write_bytes((json.dumps(index,indent=2,sort_keys=True)+'\n').encode())
+(base/'.gitattributes').write_bytes(b'index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n')
+print(json.dumps(dict(index_sha256=gate.sha((base/'index.json').read_bytes()),members=len(members),objects=len(objects))))
