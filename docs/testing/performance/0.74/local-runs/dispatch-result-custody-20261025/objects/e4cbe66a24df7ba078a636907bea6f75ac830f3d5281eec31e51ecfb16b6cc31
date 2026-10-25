@@ -1,0 +1,17 @@
+test_exit_api_error_and_cleanup_error_never_retry_to_pass (test_dispatch_handoff.CustodyTests.test_exit_api_error_and_cleanup_error_never_retry_to_pass) ... ok
+test_late_exit_after_outer_handoff_does_not_resume_telemetry (test_dispatch_handoff.CustodyTests.test_late_exit_after_outer_handoff_does_not_resume_telemetry) ... ok
+test_live_held_descendant_keeps_query_custody (test_dispatch_handoff.CustodyTests.test_live_held_descendant_keeps_query_custody) ... ok
+test_live_owner_cannot_finalize (test_dispatch_handoff.CustodyTests.test_live_owner_cannot_finalize) ... ok
+test_original_root_required_and_snapshots_not_mutable (test_dispatch_handoff.CustodyTests.test_original_root_required_and_snapshots_not_mutable) ... ok
+test_poll_and_tick_exceptions_are_separate_first_refusals (test_dispatch_handoff.CustodyTests.test_poll_and_tick_exceptions_are_separate_first_refusals) ... ok
+test_wrong_pid_birth_or_time_latches_no_witness_retry (test_dispatch_handoff.CustodyTests.test_wrong_pid_birth_or_time_latches_no_witness_retry) ... ok
+test_lost_ack_retains_same_owner_and_marker_blocks_restart (test_dispatch_handoff.DispatchTests.test_lost_ack_retains_same_owner_and_marker_blocks_restart) ... ok
+test_spawn_or_attach_error_consumes_attempt_without_second_spawn (test_dispatch_handoff.DispatchTests.test_spawn_or_attach_error_consumes_attempt_without_second_spawn) ... ok
+test_success_ack_once_and_invalid_id (test_dispatch_handoff.DispatchTests.test_success_ack_once_and_invalid_id) ... ok
+test_terminal_identity_only_and_live_no_times (test_dispatch_handoff.ExitApiTests.test_terminal_identity_only_and_live_no_times) ... ok
+test_wait_or_times_failure_refuses (test_dispatch_handoff.ExitApiTests.test_wait_or_times_failure_refuses) ... ok
+
+----------------------------------------------------------------------
+Ran 12 tests in 0.020s
+
+OK

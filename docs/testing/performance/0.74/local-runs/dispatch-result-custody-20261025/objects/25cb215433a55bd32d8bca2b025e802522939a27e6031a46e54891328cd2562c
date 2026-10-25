@@ -1,0 +1,14 @@
+{
+  "passed": true,
+  "results": [
+    {
+      "mode": "healthy",
+      "passed": true
+    },
+    {
+      "mode": "lost-ack",
+      "passed": true
+    }
+  ],
+  "admission": false
+}

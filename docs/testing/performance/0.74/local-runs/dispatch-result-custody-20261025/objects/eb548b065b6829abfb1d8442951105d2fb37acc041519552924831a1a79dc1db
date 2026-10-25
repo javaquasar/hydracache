@@ -1,0 +1,11 @@
+test_argv_window_retry_and_source_flags_refuse (test_target_result_join.ResultJoinTests.test_argv_window_retry_and_source_flags_refuse) ... ok
+test_complete_target_not_package_or_telemetry (test_target_result_join.ResultJoinTests.test_complete_target_not_package_or_telemetry) ... ok
+test_different_catalog_and_invalid_identity_refuse (test_target_result_join.ResultJoinTests.test_different_catalog_and_invalid_identity_refuse) ... ok
+test_failed_and_partial_target_preserve_own_verdict (test_target_result_join.ResultJoinTests.test_failed_and_partial_target_preserve_own_verdict) ... ok
+test_reserved_identity_cannot_be_taken_from_changed_response (test_target_result_join.ResultJoinTests.test_reserved_identity_cannot_be_taken_from_changed_response) ... ok
+test_unknown_duplicate_missing_case_and_filtered_scope_refuse (test_target_result_join.ResultJoinTests.test_unknown_duplicate_missing_case_and_filtered_scope_refuse) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.012s
+
+OK

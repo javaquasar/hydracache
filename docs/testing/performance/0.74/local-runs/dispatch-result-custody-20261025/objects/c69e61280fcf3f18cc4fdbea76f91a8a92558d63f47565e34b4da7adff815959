@@ -1,0 +1,147 @@
+{
+  "mode": "lost-ack",
+  "passed": true,
+  "first_refusal": null,
+  "cleanup_errors": [],
+  "cargo_dispatch": false,
+  "admission": false,
+  "dispatch": {
+    "attempt_id": "synthetic-lost-ack",
+    "attempted": true,
+    "acknowledged": false,
+    "first_dispatch_refusal": "injected lost spawn ACK",
+    "owner_object_retained": true,
+    "attached_custody": true,
+    "retry_allowed": false,
+    "durable_recovery": false,
+    "admission": false
+  },
+  "restart_request": {
+    "attempt_id": "synthetic-lost-ack",
+    "attempted": true,
+    "acknowledged": false,
+    "first_dispatch_refusal": "[Errno 17] File exists: 'C:\\\\Workspace\\\\prj\\\\jq\\\\cashe\\\\hydracache-074\\\\target\\\\handoff-native-first-20261025\\\\lost-ack\\\\dispatch-consumed.json'",
+    "owner_object_retained": false,
+    "attached_custody": false,
+    "retry_allowed": false,
+    "durable_recovery": false,
+    "admission": false
+  },
+  "custody": {
+    "observation": {
+      "schema": 1,
+      "first_refusal": "dispatch acknowledgement refused: injected lost spawn ACK",
+      "events": [
+        {
+          "kind": "attached",
+          "pids": [
+            18580,
+            51188,
+            37584,
+            49548
+          ]
+        },
+        {
+          "kind": "first-refusal",
+          "reason": "dispatch acknowledgement refused: injected lost spawn ACK"
+        }
+      ],
+      "discovery_snapshots": 9,
+      "owner_exit_observed": false,
+      "owner_returncode": null,
+      "live_owner_custody_retained": true,
+      "leaf_terminal": false,
+      "outer_expired": false,
+      "observations_complete": false,
+      "identities": [
+        {
+          "pid": 18580,
+          "image": "C:\\Python313\\python.exe",
+          "creation_100ns": 134373749822334841
+        },
+        {
+          "pid": 51188,
+          "image": "c:\\python313\\python.exe",
+          "creation_100ns": 134373749825687840
+        },
+        {
+          "pid": 37584,
+          "image": "c:\\python313\\python.exe",
+          "creation_100ns": 134373749826268088
+        },
+        {
+          "pid": 49548,
+          "image": "c:\\python313\\python.exe",
+          "creation_100ns": 134373749826944267
+        }
+      ],
+      "samples": [
+        {
+          "terminal": false,
+          "creation_100ns": 134373749826944267,
+          "exit_100ns": null,
+          "kernel_100ns": 312500,
+          "user_100ns": 156250,
+          "io": {
+            "read_ops": 72,
+            "write_ops": 1,
+            "other_ops": 881,
+            "read_bytes": 830876,
+            "write_bytes": 5,
+            "other_bytes": 82982
+          },
+          "memory": {
+            "working_set_bytes": 15417344,
+            "peak_working_set_bytes": 15417344,
+            "private_usage": 9699328,
+            "peak_private_commit_bytes": 9699328
+          },
+          "terminal_memory_error": null,
+          "observed_monotonic_ns": 752859618935100
+        }
+      ],
+      "selected_target_pass": false,
+      "full_package_pass": false,
+      "admission": false
+    },
+    "first_observation_refusal": "dispatch acknowledgement refused: injected lost spawn ACK",
+    "first_custody_refusal": null,
+    "exit_proof": {
+      "owner_returncode": 0,
+      "witnesses": [
+        {
+          "pid": 18580,
+          "creation_100ns": 134373749822334841,
+          "exit_100ns": 134373749831201136
+        },
+        {
+          "pid": 51188,
+          "creation_100ns": 134373749825687840,
+          "exit_100ns": 134373749828476175
+        },
+        {
+          "pid": 37584,
+          "creation_100ns": 134373749826268088,
+          "exit_100ns": 134373749828426101
+        },
+        {
+          "pid": 49548,
+          "creation_100ns": 134373749826944267,
+          "exit_100ns": 134373749828370392
+        }
+      ],
+      "coverage": "only previously held processes, not all writers"
+    },
+    "query_handles_released": true,
+    "release_attempted": true,
+    "execution_completion_authorized": false,
+    "all_writers_proven_stopped": false,
+    "durable_custody": false,
+    "selected_target_pass": false,
+    "admission": false
+  },
+  "post_freeze_counter_reads": 0,
+  "post_freeze_census_reads": 0,
+  "real_wrapper_spawns": 1,
+  "live_owner_custody_retained": false
+}

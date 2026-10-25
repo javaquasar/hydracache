@@ -237,3 +237,20 @@ image path and injected census failure. The [first results and limitations](../.
 retain one no-run build, successful preflight, all three wrapper completions and
 136 passing Python cases. Actual Cargo topology/target dispatch, durable custody,
 overhead acceptance, production ownership and release qualification remain open.
+
+## Dispatch result and observation custody handoff
+
+`dispatch_request.py prepare|dispatch NEW_LABEL` has an explicit zero-spawn
+dispatch refusal under the current fixed receipt. `DispatchOnce` in
+`dispatch_handoff.py` consumes an exclusive marker before the single caller-owned
+spawn; lost ACK or attachment uncertainty cannot authorize replay of that slot.
+`ObservationCustody` freezes telemetry and separately checks the original held
+processes' terminal identities before releasing query handles. It does not prove
+all-writer cessation, durable custody or production completion.
+
+`target_result_join.py` keeps a single target's exact source/case verdict separate
+from telemetry and package status. `historical_target_replay.py replay NEW_OUTPUT_DIR`
+reads only the sealed old 321-case result; it cannot supply a new live verdict.
+`handoff_control.py synthetic-controls NEW_OUTPUT_DIR` exercises healthy/lost-ACK
+handoff through the unchanged wrapper. The [results and protocol boundary](../../docs/testing/performance/0.74/dispatch-result-custody-20261025.md)
+retain the first session and explicitly leave real-target dispatch disabled.

@@ -1,0 +1,8 @@
+{
+  "mode": "prepare",
+  "label": "prepare-first-20261025",
+  "receipt_sha256": "0f364991c37248f7f7d73d271932b3aaa77250d308df4a6314b0eb09905d65b5",
+  "retry": false,
+  "real_target_spawns": 0,
+  "original_wrapper_seconds": 780
+}

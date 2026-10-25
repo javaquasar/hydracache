@@ -19861,3 +19861,26 @@ Cargo delegation shape, mapped-image identity or production recovery. The CLI
 therefore remains preflight-only. If the outer diagnostic bound expires while
 the owner is alive, custody remains an explicit unresolved state rather than
 being converted into completion or permission to retry.
+
+### Keep the acknowledgement separate from the process
+
+The [dispatch and custody controls](../testing/performance/0.74/dispatch-result-custody-20261025.md)
+exercise the window after a process starts but before its controller receives an
+acknowledgement. The local dispatcher consumes an exclusive marker before spawn
+and retains the original owner before publishing ACK. A missing ACK is therefore
+uncertainty about a process that may already exist, not permission to start
+another. The first synthetic lost-ACK case rejects a second dispatch object
+while the original wrapper is still running.
+
+Stopping observation and proving terminal identity are also separate operations.
+The coordinator's frozen refusal is not cleared when the same held owner later
+exits. Separate handle witnesses allow query cleanup without sampling new CPU/I/O
+metrics or declaring the experiment successful. They cover only previously held
+processes, not every possible writer or descriptor alias; local file fsync does
+not turn the controller into a power-loss-safe recovery service.
+
+Finally, an independent reader matches the exact 321 case names and reserved
+source identity. Replaying the old successful log verifies that reader but does
+not create a new live result. Dispatch, observation, semantic verdict and writer
+retirement need distinct evidence, even when a synthetic control makes their
+normal path look like one operation.

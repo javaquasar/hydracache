@@ -1,0 +1,130 @@
+{
+  "actual_target_dispatches": 0,
+  "admission": false,
+  "full_package_pass": false,
+  "historical_python_cases": 91,
+  "members": {
+    "handoff-compile-final-20261025/intent.json": {
+      "bytes": 328097,
+      "sha256": "c6bc9ed8251446ffb0a7e33d51845bd2b7e0d5f1c268c745d5d8ef12109f343f"
+    },
+    "handoff-compile-final-20261025/result.json": {
+      "bytes": 327797,
+      "sha256": "ada5362b0cec3cb53e96ca27f698ee00ab9a1177546183930dc5748f81a80b1b"
+    },
+    "handoff-compile-final-20261025/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "handoff-compile-final-20261025/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "handoff-doc-check-20261025/intent.json": {
+      "bytes": 328111,
+      "sha256": "99d110141a8ca9bbb207bd639126c3e32d71b2805cf20cb6fd8dadb5ca6b66eb"
+    },
+    "handoff-doc-check-20261025/result.json": {
+      "bytes": 327797,
+      "sha256": "ada5362b0cec3cb53e96ca27f698ee00ab9a1177546183930dc5748f81a80b1b"
+    },
+    "handoff-doc-check-20261025/stderr.log": {
+      "bytes": 333,
+      "sha256": "1e3501494db5644b349b280ed2e24d8170614baece73a2110b8ec20f1ce23d4b"
+    },
+    "handoff-doc-check-20261025/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "handoff-historical-final-20261025/intent.json": {
+      "bytes": 328137,
+      "sha256": "e0f53fe8942f0c1f67863154db1e6b521a8922e9faca5e9f4fa91428665451e2"
+    },
+    "handoff-historical-final-20261025/result.json": {
+      "bytes": 327797,
+      "sha256": "ada5362b0cec3cb53e96ca27f698ee00ab9a1177546183930dc5748f81a80b1b"
+    },
+    "handoff-historical-final-20261025/stderr.log": {
+      "bytes": 196,
+      "sha256": "3cb667ec05047f9c363bdbc06b1e720d352ffdbf616f6e3a6d64681b144ec883"
+    },
+    "handoff-historical-final-20261025/stdout.log": {
+      "bytes": 82,
+      "sha256": "f632472212663717a16f350315529b24ff21bcf9c34eaaa70ce866ff6e87b6b2"
+    },
+    "handoff-local-contract-20261025/intent.json": {
+      "bytes": 328159,
+      "sha256": "78d338c74a681cba73f97213432b619fc356849187a4d6077da4ca7bb0c930ad"
+    },
+    "handoff-local-contract-20261025/result.json": {
+      "bytes": 327797,
+      "sha256": "ada5362b0cec3cb53e96ca27f698ee00ab9a1177546183930dc5748f81a80b1b"
+    },
+    "handoff-local-contract-20261025/stderr.log": {
+      "bytes": 308,
+      "sha256": "2a8e28306aad644a24ea202da71c17f4ea008dfe4552f20342eab964d26cd3a2"
+    },
+    "handoff-local-contract-20261025/stdout.log": {
+      "bytes": 60,
+      "sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+    },
+    "handoff-tabnanny-final-20261025/intent.json": {
+      "bytes": 328084,
+      "sha256": "51f84354bbd6eaf15c9cd9c9bdb79cf864e34dbccf981abf6dcbbdc64e510122"
+    },
+    "handoff-tabnanny-final-20261025/result.json": {
+      "bytes": 327797,
+      "sha256": "ada5362b0cec3cb53e96ca27f698ee00ab9a1177546183930dc5748f81a80b1b"
+    },
+    "handoff-tabnanny-final-20261025/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "handoff-tabnanny-final-20261025/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "handoff-v3-final-20261025/intent.json": {
+      "bytes": 328139,
+      "sha256": "043ec20fe05bdb29007584a7ed5aa091dcfe52fcddf8c939ebe993c61c6161e9"
+    },
+    "handoff-v3-final-20261025/result.json": {
+      "bytes": 327797,
+      "sha256": "ada5362b0cec3cb53e96ca27f698ee00ab9a1177546183930dc5748f81a80b1b"
+    },
+    "handoff-v3-final-20261025/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "handoff-v3-final-20261025/stdout.log": {
+      "bytes": 113252,
+      "sha256": "7a38917b1bdbd85062343af60dd90dc2684aa6c4109e0b76798b65e42b06f198"
+    },
+    "retention/retain-dispatch-handoff-gates-20261025.py": {
+      "bytes": 2886,
+      "sha256": "55e33705ca073708519d846ca5320fec72c590d895d3f3d7ec1a61234f1ae690"
+    },
+    "retention/verify-dispatch-handoff-20261025.py": {
+      "bytes": 3744,
+      "sha256": "7712191d83b9d1d8eb588be3eab88f59c45fd46342fc769257df5a22b848dbee"
+    },
+    "staged-reader/intent.json": {
+      "bytes": 161,
+      "sha256": "cbc4663d776fc607810a3cfa4fcefbb160638506a5b27eaa1524a98add1634f3"
+    },
+    "staged-reader/result.json": {
+      "bytes": 11,
+      "sha256": "bfdedf06596faa2042b0fedd9653ec1023d2e96ed56dc40b607985bc8438c1d5"
+    },
+    "staged-reader/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "staged-reader/stdout.log": {
+      "bytes": 143,
+      "sha256": "a5ea25dcb0d98e491e681fb6600ac6da9bfc3a792e0688e1d32e1f68d273b1a2"
+    }
+  },
+  "schema": "hc074-dispatch-result-custody-gates-v1",
+  "upstream_index_sha256": "3b42f4e9373ef4f99b03935b3af9a1acbc1439c246a71b43e86982bf2e7cf771"
+}

@@ -120,6 +120,14 @@ The attribution suite passes 136 cases. The real Cargo shape and actual-target
 dispatch/result/custody handoff remain unobserved; a passing local preflight is
 not authorization to execute or declare a release gate green.
 
+The [dispatch/result/custody step](dispatch-result-custody-20261025.md) now adds
+exclusive one-shot markers, lost-ACK refusal, frozen observation handoff and
+terminal witnesses for previously held handles. A first two-case synthetic
+session preserves one spawn and the original owner identity in each case.
+The independent 321-case result reader passes only an offline archived replay;
+it does not supply a new target or package verdict. The finite future diagnostic
+protocol is recorded with dispatch disabled pending live attempt/output binding.
+
 Next: use saved target/call attribution to isolate the cost owner without
 removing tests, refreshing source pins from responses or changing conditional
 reads. A separate candidate needs its own baseline and unchanged-bound proof;

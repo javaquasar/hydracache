@@ -1,0 +1,160 @@
+{
+  "mode": "healthy",
+  "passed": true,
+  "first_refusal": null,
+  "cleanup_errors": [],
+  "cargo_dispatch": false,
+  "admission": false,
+  "dispatch": {
+    "attempt_id": "synthetic-healthy",
+    "attempted": true,
+    "acknowledged": true,
+    "first_dispatch_refusal": null,
+    "owner_object_retained": true,
+    "attached_custody": true,
+    "retry_allowed": false,
+    "durable_recovery": false,
+    "admission": false
+  },
+  "custody": {
+    "observation": {
+      "schema": 1,
+      "first_refusal": null,
+      "events": [
+        {
+          "kind": "attached",
+          "pids": [
+            21280,
+            43876,
+            7708,
+            50880
+          ]
+        },
+        {
+          "kind": "leaf-terminal"
+        },
+        {
+          "kind": "owner-exit",
+          "code": 0
+        }
+      ],
+      "discovery_snapshots": 9,
+      "owner_exit_observed": true,
+      "owner_returncode": 0,
+      "live_owner_custody_retained": false,
+      "leaf_terminal": true,
+      "outer_expired": false,
+      "observations_complete": true,
+      "identities": [
+        {
+          "pid": 21280,
+          "image": "C:\\Python313\\python.exe",
+          "creation_100ns": 134373749811896775
+        },
+        {
+          "pid": 43876,
+          "image": "c:\\python313\\python.exe",
+          "creation_100ns": 134373749815278014
+        },
+        {
+          "pid": 7708,
+          "image": "c:\\python313\\python.exe",
+          "creation_100ns": 134373749815881676
+        },
+        {
+          "pid": 50880,
+          "image": "c:\\python313\\python.exe",
+          "creation_100ns": 134373749816579067
+        }
+      ],
+      "samples": [
+        {
+          "terminal": false,
+          "creation_100ns": 134373749816579067,
+          "exit_100ns": null,
+          "kernel_100ns": 312500,
+          "user_100ns": 0,
+          "io": {
+            "read_ops": 72,
+            "write_ops": 1,
+            "other_ops": 881,
+            "read_bytes": 830876,
+            "write_bytes": 5,
+            "other_bytes": 82982
+          },
+          "memory": {
+            "working_set_bytes": 15454208,
+            "peak_working_set_bytes": 15454208,
+            "private_usage": 9748480,
+            "peak_private_commit_bytes": 9748480
+          },
+          "terminal_memory_error": null,
+          "observed_monotonic_ns": 752858584235600
+        },
+        {
+          "terminal": true,
+          "creation_100ns": 134373749816579067,
+          "exit_100ns": 134373749817962685,
+          "kernel_100ns": 468750,
+          "user_100ns": 0,
+          "io": {
+            "read_ops": 72,
+            "write_ops": 2,
+            "other_ops": 901,
+            "read_bytes": 830876,
+            "write_bytes": 22,
+            "other_bytes": 83190
+          },
+          "memory": {
+            "working_set_bytes": 28672,
+            "peak_working_set_bytes": 15458304,
+            "private_usage": 73728,
+            "peak_private_commit_bytes": 9748480
+          },
+          "terminal_memory_error": null,
+          "observed_monotonic_ns": 752858990745000
+        }
+      ],
+      "selected_target_pass": false,
+      "full_package_pass": false,
+      "admission": false
+    },
+    "first_observation_refusal": null,
+    "first_custody_refusal": null,
+    "exit_proof": {
+      "owner_returncode": 0,
+      "witnesses": [
+        {
+          "pid": 21280,
+          "creation_100ns": 134373749811896775,
+          "exit_100ns": 134373749821135024
+        },
+        {
+          "pid": 43876,
+          "creation_100ns": 134373749815278014,
+          "exit_100ns": 134373749818153106
+        },
+        {
+          "pid": 7708,
+          "creation_100ns": 134373749815881676,
+          "exit_100ns": 134373749818056502
+        },
+        {
+          "pid": 50880,
+          "creation_100ns": 134373749816579067,
+          "exit_100ns": 134373749817962685
+        }
+      ],
+      "coverage": "only previously held processes, not all writers"
+    },
+    "query_handles_released": true,
+    "release_attempted": true,
+    "execution_completion_authorized": false,
+    "all_writers_proven_stopped": false,
+    "durable_custody": false,
+    "selected_target_pass": false,
+    "admission": false
+  },
+  "real_wrapper_spawns": 1,
+  "live_owner_custody_retained": false
+}

@@ -1,0 +1,47 @@
+"""Independent staged data-only dispatch/result/custody verification."""
+from pathlib import Path
+import hashlib,json,subprocess,tomllib
+root=Path(__file__).resolve().parent.parent
+prefix='docs/testing/performance/0.74/local-runs/dispatch-result-custody-20261025/'
+def read(name):return subprocess.check_output(['git','show',':'+prefix+name],cwd=root)
+raw=read('index.json')
+assert hashlib.sha256(raw).hexdigest()=='3b42f4e9373ef4f99b03935b3af9a1acbc1439c246a71b43e86982bf2e7cf771'
+index=json.loads(raw);assert len(index['members'])==100
+assert index['attribution_python_cases']==164 and index['actual_target_dispatches']==0
+assert index['native_cases']==2 and index['native_sessions']==1 and not index['admission']
+data={}
+for name,entry in index['members'].items():
+    assert not Path(name).is_absolute() and '..' not in Path(name).parts
+    raw=read('objects/'+entry['sha256'])
+    assert hashlib.sha256(raw).hexdigest()==entry['sha256'] and len(raw)==entry['bytes'];data[name]=raw
+for mode in ('healthy','lost-ack'):
+    result=json.loads(data['native/'+mode+'/result.json']);c=result['custody']
+    assert result['passed'] and not result['cleanup_errors'] and result['real_wrapper_spawns']==1
+    assert c['query_handles_released'] and not c['execution_completion_authorized']
+    assert c['exit_proof']['owner_returncode']==0 and len(c['exit_proof']['witnesses'])==4
+    attached=json.loads(data['native/'+mode+'/owner-attached.json']);w=c['exit_proof']['witnesses'][0]
+    assert (attached['pid'],attached['creation_100ns'])==(w['pid'],w['creation_100ns'])
+    for row in c['exit_proof']['witnesses']:assert row['exit_100ns']>=row['creation_100ns']>0
+    if mode=='lost-ack':
+        assert not result['dispatch']['acknowledged'] and not result['restart_request']['owner_object_retained']
+        assert result['post_freeze_counter_reads']==result['post_freeze_census_reads']==0
+        assert c['first_observation_refusal']=='dispatch acknowledgement refused: injected lost spawn ACK'
+        assert not c['observation']['observations_complete']
+    phase='checks/handoff-native-20261025-'+mode+'/'
+    before=json.loads(data[phase+'intent.json']);after=json.loads(data[phase+'result.json'])
+    assert before['bound_seconds']==780 and before['source']==after['source_after'] and after['exit']==0
+    assert data[phase+'stdout.log'].decode().splitlines()==['node-0-complete','node-1-complete','node-2-complete']
+    assert not data[phase+'stderr.log']
+native=json.loads(data['checks/handoff-native-first-20261025/intent.json'])
+for name in ('dispatch_handoff.py','handoff_control.py','observation_coordinator.py','process_lineage.py','owned_process_observer.py'):
+    assert hashlib.sha256(data['code/'+name]).hexdigest()==native['source']['tools/xtask-package-attribution-074/'+name]
+refused=json.loads(data['request/refusal-first-20261025/result.json'])
+assert refused['real_target_spawns']==0 and 'forbids real-target dispatch' in refused['first_refusal']
+archived=json.loads(data['historical-replay/result.json'])
+assert archived['archived_selected_target_pass'] and archived['passed']==321
+assert not archived['new_target_executed'] and not archived['current_release_gate_pass'] and not archived['full_package_pass']
+protocol=tomllib.loads(data['protocol/local-observation.toml'].decode())
+assert not protocol['dispatch_enabled'] and protocol['original_live_windows_seconds']==[300,60,10]
+assert hashlib.sha256(data['protocol/local-observation.toml']).hexdigest()==index['protocol_sha256']
+assert b'Ran 164 tests' in data['checks/handoff-python-protocol-final-20261025/stderr.log']
+print(json.dumps(dict(staged_verified=True,members=len(data),native_cases=2,actual_target_dispatches=0,archived_replay_only=True,admission=False)))
