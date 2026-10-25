@@ -1,0 +1,264 @@
+import copy
+import ctypes
+from types import SimpleNamespace
+import unittest
+from unittest.mock import patch
+
+import process_lineage as subject
+from owned_process_observer import Refusal
+
+
+ROOT = r"C:\fixture\root.exe"
+CARGO = r"C:\fixture\cargo.exe"
+TEST = r"C:\fixture\test.exe"
+ROWS = [(1, 0, "root.exe"), (2, 1, "cargo.exe"), (3, 2, "test.exe")]
+POLICIES = [(CARGO, TEST)]
+
+
+def row(pid, terminal=False):
+    return dict(terminal=terminal, creation_100ns=pid * 100,
+                exit_100ns=999 if terminal else None, kernel_100ns=1,
+                user_100ns=1, io={"read": 1}, memory=None)
+
+
+class Api:
+    def __init__(self):
+        self.opened, self.closed = [], []
+        self.snapshots = [ROWS, ROWS]
+        self.images = {1: ROOT, 2: CARGO, 3: TEST}
+        self.reads = {pid: row(pid) for pid in (1, 2, 3)}
+
+    def snapshot(self):
+        return copy.deepcopy(self.snapshots.pop(0))
+
+    def open(self, pid):
+        self.opened.append(pid)
+        return pid
+
+    def close(self, handle):
+        self.closed.append(handle)
+
+    def identity(self, handle):
+        return handle, self.images[handle]
+
+    def read(self, handle):
+        return copy.deepcopy(self.reads[handle])
+
+
+def root():
+    return SimpleNamespace(handle=1, pid=1, image=ROOT, samples=[row(1)], refusal=None)
+
+
+class ShapeTests(unittest.TestCase):
+    def test_exact_chain_and_optional_shim(self):
+        self.assertEqual(subject.candidates(ROWS, 1, POLICIES)[0][0], (1, 2, 3))
+        rows = [(1, 0, "root.exe"), (4, 1, "shim.exe"), (2, 4, "cargo.exe"), (3, 2, "test.exe")]
+        policies = [*POLICIES, (r"C:\fixture\shim.exe", CARGO, TEST)]
+        self.assertEqual(subject.candidates(rows, 1, policies)[0][0], (1, 4, 2, 3))
+
+    def test_absent_candidate_is_not_an_admitted_chain(self):
+        self.assertEqual(subject.candidates(ROWS[:-1], 1, POLICIES), [])
+
+    def test_foreign_target_and_wrong_parent_not_selected(self):
+        rows = [*ROWS[:2], (3, 99, "test.exe")]
+        self.assertEqual(subject.candidates(rows, 1, POLICIES), [])
+
+    def test_ambiguity_rejects_instead_of_selecting_first(self):
+        with self.assertRaisesRegex(Refusal, "ambiguous"):
+            subject.candidates([*ROWS, (4, 2, "test.exe")], 1, POLICIES)
+
+    def test_duplicate_pid_cycle_and_root_missing(self):
+        for rows in ([*ROWS, ROWS[0]], [(1, 3, "root.exe"), (2, 1, "cargo.exe"), (3, 2, "test.exe")], ROWS[1:]):
+            policies = [(CARGO, TEST, ROOT)] if rows[0][1] == 3 else POLICIES
+            with self.subTest(rows=rows), self.assertRaises(Refusal):
+                subject.candidates(rows, 1, policies)
+
+    def test_policy_and_snapshot_budgets(self):
+        for policies in ([], [()] , [(CARGO,) * 5], POLICIES * 2, [("relative.exe",)]):
+            with self.subTest(policies=policies), self.assertRaises(Refusal):
+                subject.candidates(ROWS, 1, policies)
+        with self.assertRaisesRegex(Refusal, "row budget"):
+            subject.candidates(ROWS * 11000, 1, POLICIES)
+        with self.assertRaisesRegex(Refusal, "frontier budget"):
+            subject.candidates([ROWS[0], *[(i, 1, "cargo.exe") for i in range(2, 68)]], 1, POLICIES)
+
+    def test_invalid_snapshot_rows(self):
+        for invalid in ((True, 0, "test.exe"), (4, -1, "test.exe"), (4, 1, None)):
+            with self.subTest(invalid=invalid), self.assertRaisesRegex(Refusal, "invalid process"):
+                subject.candidates([*ROWS, invalid], 1, POLICIES)
+
+
+class JoinTests(unittest.TestCase):
+    def test_hold_all_nodes_close_reverse_only_owned_descendants(self):
+        api = Api()
+        chain = subject.HeldLineage(root(), api, POLICIES)
+        self.assertEqual(api.opened, [2, 3])
+        api.reads[3] = row(3, True)
+        self.assertTrue(chain.sample()["terminal"])
+        self.assertEqual(api.opened, [2, 3])
+        chain.close()
+        chain.close()
+        self.assertEqual(api.closed, [3, 2])
+
+    def test_reused_pid_child_older_than_new_parent(self):
+        api = Api()
+        api.reads[2]["creation_100ns"] = 400
+        with self.assertRaisesRegex(Refusal, "predates"):
+            subject.HeldLineage(root(), api, POLICIES)
+        self.assertEqual(api.closed, [3, 2])
+
+    def test_root_birth_drift_and_exit_refuse_before_descendant_open(self):
+        for mutation in (dict(creation_100ns=101), dict(terminal=True, exit_100ns=999)):
+            api = Api()
+            api.reads[1].update(mutation)
+            with self.subTest(mutation=mutation), self.assertRaises(Refusal):
+                subject.HeldLineage(root(), api, POLICIES)
+            self.assertEqual(api.opened, [])
+
+    def test_unusable_root_rejected_before_snapshot(self):
+        for change in (dict(handle=None), dict(refusal="previous refusal"), dict(samples=[])):
+            owner = root()
+            owner.__dict__.update(change)
+            api = Api()
+            with self.subTest(change=change), self.assertRaisesRegex(Refusal, "not usable"):
+                subject.HeldLineage(owner, api, POLICIES)
+            self.assertEqual(len(api.snapshots), 2)
+            self.assertEqual(api.opened, [])
+
+    def test_leaf_creation_drift_latches_and_final_frame_failure_closes(self):
+        api = Api()
+        chain = subject.HeldLineage(root(), api, POLICIES)
+        api.reads[3]["creation_100ns"] += 1
+        with self.assertRaisesRegex(Refusal, "creation identity changed"):
+            chain.sample()
+        self.assertIsNotNone(chain.refusal)
+        chain.close()
+        api = Api()
+        original = api.snapshot
+
+        def mutate_at_closing_snapshot():
+            result = original()
+            if not api.snapshots:
+                api.reads[1] = row(1, True)
+            return result
+
+        api.snapshot = mutate_at_closing_snapshot
+        with self.assertRaisesRegex(Refusal, "no longer live"):
+            subject.HeldLineage(root(), api, POLICIES)
+        self.assertEqual(api.closed, [3, 2])
+
+    def test_wrong_full_image_rejects_matching_basename(self):
+        api = Api()
+        api.images[3] = r"C:\foreign\test.exe"
+        with self.assertRaisesRegex(Refusal, "image/PID mismatch"):
+            subject.HeldLineage(root(), api, POLICIES)
+        self.assertEqual(api.closed, [3, 2])
+
+    def test_second_snapshot_change_or_ambiguity_refuses(self):
+        for second in ([*ROWS[:2], (3, 1, "test.exe")], [*ROWS, (4, 2, "test.exe")]):
+            api = Api()
+            api.snapshots[1] = second
+            with self.subTest(second=second), self.assertRaises(Refusal):
+                subject.HeldLineage(root(), api, POLICIES)
+            self.assertEqual(api.closed, [3, 2])
+
+    def test_parent_exit_during_child_attachment_refuses(self):
+        api = Api()
+        original = api.open
+
+        def changed(pid):
+            handle = original(pid)
+            if pid == 3:
+                api.reads[2] = row(2, True)
+            return handle
+
+        api.open = changed
+        with self.assertRaisesRegex(Refusal, "no longer live"):
+            subject.HeldLineage(root(), api, POLICIES)
+        self.assertEqual(api.closed, [3, 2])
+
+    def test_sampling_refusal_latched_and_no_reopen(self):
+        api = Api()
+        chain = subject.HeldLineage(root(), api, POLICIES)
+        api.reads[3]["user_100ns"] = 0
+        with self.assertRaisesRegex(Refusal, "regressed"):
+            chain.sample()
+        with self.assertRaisesRegex(Refusal, "already refused"):
+            chain.sample()
+        self.assertEqual(api.opened, [2, 3])
+        chain.close()
+
+    def test_budget_and_closed_handle(self):
+        for budget in (0, True, 801):
+            with self.assertRaises(Refusal):
+                subject.HeldLineage(root(), Api(), POLICIES, budget)
+        for close in (False, True):
+            chain = subject.HeldLineage(root(), Api(), POLICIES, 1)
+            if close:
+                chain.close()
+            with self.assertRaises(Refusal):
+                chain.sample()
+            chain.close()
+
+    def test_cleanup_continues_and_does_not_mask_first_refusal(self):
+        api = Api()
+        api.images[3] = r"C:\foreign\test.exe"
+
+        def close(handle):
+            api.closed.append(handle)
+            raise RuntimeError("close error")
+
+        api.close = close
+        with self.assertRaisesRegex(Refusal, "mismatch") as caught:
+            subject.HeldLineage(root(), api, POLICIES)
+        self.assertEqual(api.closed, [3, 2])
+        self.assertIn("close error", caught.exception.__notes__[0])
+
+
+class SnapshotTests(unittest.TestCase):
+    def api(self, first=False, next_error=18):
+        api = object.__new__(subject.SnapshotApi)
+        api.closed = []
+        api.close = api.closed.append
+        api.dll = SimpleNamespace(
+            CreateToolhelp32Snapshot=lambda flags, pid: 99,
+            Process32FirstW=lambda handle, entry: first,
+            Process32NextW=lambda handle, entry: False)
+        return api
+
+    def test_empty_snapshot_eof_not_api_failure(self):
+        api = self.api()
+        with patch.object(ctypes, "get_last_error", return_value=18, create=True):
+            self.assertEqual(api.snapshot(), [])
+        self.assertEqual(api.closed, [99])
+
+    def test_enumeration_failure_closes_and_refuses(self):
+        api = self.api()
+        with patch.object(ctypes, "get_last_error", return_value=5, create=True):
+            with self.assertRaisesRegex(Refusal, "enumeration"):
+                api.snapshot()
+        self.assertEqual(api.closed, [99])
+
+    def test_invalid_snapshot_handle_not_closed(self):
+        api = self.api()
+        api.dll.CreateToolhelp32Snapshot = lambda flags, pid: ctypes.c_void_p(-1).value
+        with patch.object(ctypes, "get_last_error", return_value=5, create=True):
+            with self.assertRaisesRegex(Refusal, "process snapshot"):
+                api.snapshot()
+        self.assertEqual(api.closed, [])
+
+    def test_one_row_enumeration(self):
+        api = self.api()
+
+        def first(handle, pointer):
+            self.assertEqual(pointer._obj.size, ctypes.sizeof(subject.ProcessEntry))
+            pointer._obj.pid, pointer._obj.parent, pointer._obj.image = 3, 2, "test.exe"
+            return True
+
+        api.dll.Process32FirstW = first
+        with patch.object(ctypes, "get_last_error", return_value=18, create=True):
+            self.assertEqual(api.snapshot(), [(3, 2, "test.exe")])
+
+
+if __name__ == "__main__":
+    unittest.main()

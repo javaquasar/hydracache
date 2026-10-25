@@ -19815,3 +19815,26 @@ does not describe the live workload's memory requirement. Sequential API reads
 also do not form an atomic CPU/I/O/memory snapshot. Connecting this foundation
 to Cargo still requires an exact lineage and unchanged launch semantics; directly
 executing a test binary would not establish equivalence to the original command.
+
+### Validate every parent edge before assigning cost
+
+The [held-lineage controls](../testing/performance/0.74/held-lineage-result-20261025.md)
+extend that identity check across intermediate processes. A parent PID in a
+snapshot is not enough: if the parent exited and its number was reused, attaching
+to a child by that number could attribute cost to an unrelated chain. The join
+holds each parent while opening its child, compares creation order, requires
+the same unique chain in a second snapshot, then checks every held process live
+again. Counter sampling continues on the original leaf handle, not new lookups.
+
+One finite synthetic session confirms two- and three-edge chains and rejects a
+matching basename at the wrong full path. The first complete model suite also
+exposes a useful test mistake: Windows expands a temporary 8.3 path, while a mock
+expected its unresolved spelling. Resolving only the mock expectation preserves
+the real path checks. The initial failure stays evidence; no native control is
+rerun to hide it.
+
+This remains a diagnostic identity join. It cannot turn parent IDs into verified
+caller credentials or a path string into mapped-image attestation. It also does
+not count short-lived descendants' CPU or prove that every writer has stopped.
+Those boundaries prevent a successful profiler control from becoming an
+unearned production execution or retirement capability.

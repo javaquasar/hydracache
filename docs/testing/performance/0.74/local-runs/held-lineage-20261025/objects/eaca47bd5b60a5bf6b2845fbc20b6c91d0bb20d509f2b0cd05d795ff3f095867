@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "scope": "synthetic-lineage-only",
+  "depth": 2,
+  "expected_refusal": null,
+  "passed": false,
+  "refusal": null,
+  "cleanup_errors": [],
+  "identities": [],
+  "samples": [],
+  "cargo_dispatch": false,
+  "product_admission": false
+}

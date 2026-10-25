@@ -1,0 +1,58 @@
+"""Retain completed local checks and the first staged-reader invocation."""
+from pathlib import Path
+import hashlib
+import json
+import subprocess
+import sys
+
+root = Path(__file__).resolve().parent.parent
+base = root / 'docs/testing/performance/0.74/local-runs/held-lineage-gates-20261025'
+members, objects = {}, {}
+
+def add(name, raw):
+    digest = hashlib.sha256(raw).hexdigest()
+    assert name not in members
+    members[name] = dict(sha256=digest, bytes=len(raw))
+    objects[digest] = raw
+
+labels = ['lineage-historical-controls-20261025', 'lineage-compile-20261025',
+          'lineage-tabnanny-20261025', 'lineage-v3-preflight-20261025',
+          'lineage-doc-check-20261025', 'lineage-local-contract-20261025']
+for label in labels:
+    folder = root / 'target/source-continuation-20261024' / label
+    before = json.loads((folder / 'intent.json').read_bytes())
+    after = json.loads((folder / 'result.json').read_bytes())
+    assert after['exit'] == 0 and after['outer_refusal'] is None
+    assert after['source_unchanged'] and after['head_unchanged']
+    assert before['source'] == after['source_after']
+    for path in sorted(folder.iterdir()):
+        assert path.is_file()
+        add(label + '/' + path.name, path.read_bytes())
+assert b'Ran 91 tests' in objects[members[labels[0] + '/stderr.log']['sha256']]
+reader = root / 'target/verify-held-lineage-20261025.py'
+receipt = root / 'target/held-lineage-staged-reader-first-20261025'
+receipt.mkdir(exist_ok=False)
+argv = [sys.executable, str(reader)]
+(receipt / 'intent.json').write_text(json.dumps(dict(argv=argv, producer_repeated=False)), encoding='utf-8')
+result = subprocess.run(argv, cwd=root, capture_output=True, timeout=30)
+(receipt / 'stdout.log').write_bytes(result.stdout)
+(receipt / 'stderr.log').write_bytes(result.stderr)
+(receipt / 'result.json').write_text(json.dumps(dict(exit=result.returncode)), encoding='utf-8')
+assert result.returncode == 0, result.stderr
+assert json.loads(result.stdout)['staged_verified']
+for path in sorted(receipt.iterdir()):
+    add('staged-reader/' + path.name, path.read_bytes())
+add('retention/verify-held-lineage-20261025.py', reader.read_bytes())
+add('retention/retain-held-lineage-gates-20261025.py', Path(__file__).read_bytes())
+index = dict(schema='hc074-held-lineage-gates-v1', members=members,
+             upstream_index_sha256='04a7c1082fbe307cbefa5952febe2a4d7f9ad912cee1a874df7f623b079a6fd4',
+             historical_python_cases=91, native_session_repeated=False,
+             rust_sources_changed=False, full_package_pass=False, admission=False)
+base.mkdir(exist_ok=False)
+(base / 'objects').mkdir()
+for digest, raw in objects.items():
+    (base / 'objects' / digest).write_bytes(raw)
+(base / 'index.json').write_bytes((json.dumps(index, indent=2, sort_keys=True) + '\n').encode())
+(base / '.gitattributes').write_bytes(b'index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n')
+print(json.dumps(dict(index_sha256=hashlib.sha256((base / 'index.json').read_bytes()).hexdigest(),
+                      members=len(members), objects=len(objects))))

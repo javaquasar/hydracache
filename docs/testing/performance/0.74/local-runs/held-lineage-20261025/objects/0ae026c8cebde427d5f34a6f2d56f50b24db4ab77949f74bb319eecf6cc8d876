@@ -1,0 +1,21 @@
+{
+  "schedule": [
+    [
+      "two-level",
+      2,
+      false
+    ],
+    [
+      "three-level",
+      3,
+      false
+    ],
+    [
+      "wrong-path",
+      2,
+      true
+    ]
+  ],
+  "retry": false,
+  "cargo_dispatch": false
+}

@@ -1,0 +1,130 @@
+{
+  "schema": 1,
+  "scope": "synthetic-lineage-only",
+  "depth": 3,
+  "expected_refusal": null,
+  "passed": true,
+  "refusal": null,
+  "cleanup_errors": [],
+  "identities": [
+    {
+      "pid": 42980,
+      "image": "C:\\Python313\\python.exe",
+      "creation_100ns": 134373725629152991
+    },
+    {
+      "pid": 19444,
+      "image": "c:\\python313\\python.exe",
+      "creation_100ns": 134373725630967703
+    },
+    {
+      "pid": 18028,
+      "image": "c:\\python313\\python.exe",
+      "creation_100ns": 134373725631862330
+    },
+    {
+      "pid": 44220,
+      "image": "c:\\python313\\python.exe",
+      "creation_100ns": 134373725632553943
+    }
+  ],
+  "samples": [
+    {
+      "terminal": false,
+      "creation_100ns": 134373725632553943,
+      "exit_100ns": null,
+      "kernel_100ns": 156250,
+      "user_100ns": 312500,
+      "io": {
+        "read_ops": 72,
+        "write_ops": 1,
+        "other_ops": 882,
+        "read_bytes": 830876,
+        "write_bytes": 5,
+        "other_bytes": 82982
+      },
+      "memory": {
+        "working_set_bytes": 15114240,
+        "peak_working_set_bytes": 15114240,
+        "private_usage": 9363456,
+        "peak_private_commit_bytes": 9363456
+      },
+      "terminal_memory_error": null,
+      "observed_monotonic_ns": 750440198870300
+    },
+    {
+      "terminal": true,
+      "creation_100ns": 134373725632553943,
+      "exit_100ns": 134373725633646219,
+      "kernel_100ns": 156250,
+      "user_100ns": 312500,
+      "io": {
+        "read_ops": 72,
+        "write_ops": 2,
+        "other_ops": 897,
+        "read_bytes": 830876,
+        "write_bytes": 22,
+        "other_bytes": 83190
+      },
+      "memory": {
+        "working_set_bytes": 32768,
+        "peak_working_set_bytes": 15118336,
+        "private_usage": 77824,
+        "peak_private_commit_bytes": 9363456
+      },
+      "terminal_memory_error": null,
+      "observed_monotonic_ns": 750440238295800
+    }
+  ],
+  "cargo_dispatch": false,
+  "product_admission": false,
+  "exit_code": 0,
+  "root_samples": [
+    {
+      "terminal": false,
+      "creation_100ns": 134373725629152991,
+      "exit_100ns": null,
+      "kernel_100ns": 0,
+      "user_100ns": 0,
+      "io": {
+        "read_ops": 0,
+        "write_ops": 0,
+        "other_ops": 0,
+        "read_bytes": 0,
+        "write_bytes": 0,
+        "other_bytes": 0
+      },
+      "memory": {
+        "working_set_bytes": 2011136,
+        "peak_working_set_bytes": 2011136,
+        "private_usage": 385024,
+        "peak_private_commit_bytes": 393216
+      },
+      "terminal_memory_error": null,
+      "observed_monotonic_ns": 750439776132400
+    },
+    {
+      "terminal": true,
+      "creation_100ns": 134373725629152991,
+      "exit_100ns": 134373725633866704,
+      "kernel_100ns": 1718750,
+      "user_100ns": 468750,
+      "io": {
+        "read_ops": 72,
+        "write_ops": 1,
+        "other_ops": 974,
+        "read_bytes": 830876,
+        "write_bytes": 17,
+        "other_bytes": 85780
+      },
+      "memory": {
+        "working_set_bytes": 32768,
+        "peak_working_set_bytes": 15339520,
+        "private_usage": 77824,
+        "peak_private_commit_bytes": 9330688
+      },
+      "terminal_memory_error": null,
+      "observed_monotonic_ns": 750440238319000
+    }
+  ]
+}

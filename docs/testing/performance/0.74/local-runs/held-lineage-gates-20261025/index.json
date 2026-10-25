@@ -1,0 +1,131 @@
+{
+  "admission": false,
+  "full_package_pass": false,
+  "historical_python_cases": 91,
+  "members": {
+    "lineage-compile-20261025/intent.json": {
+      "bytes": 325766,
+      "sha256": "f66e4cb2f2629d7d03e7350f292d97ad92638d823592cc15c7f3538f2df2236c"
+    },
+    "lineage-compile-20261025/result.json": {
+      "bytes": 325466,
+      "sha256": "cf4fa6b72f5598f7aa976989e681a0d1895c7d2da7fa3b807026277faad13a14"
+    },
+    "lineage-compile-20261025/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "lineage-compile-20261025/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "lineage-doc-check-20261025/intent.json": {
+      "bytes": 325780,
+      "sha256": "391450b534c2acbb02d35b074625b1a342f0d5c9fc0cc746ce41418d4cba9cb4"
+    },
+    "lineage-doc-check-20261025/result.json": {
+      "bytes": 325466,
+      "sha256": "cf4fa6b72f5598f7aa976989e681a0d1895c7d2da7fa3b807026277faad13a14"
+    },
+    "lineage-doc-check-20261025/stderr.log": {
+      "bytes": 276,
+      "sha256": "b28b075c1d3a84d532f5d1661c26ef02b986d29e43241ac8391f645612b384d8"
+    },
+    "lineage-doc-check-20261025/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "lineage-historical-controls-20261025/intent.json": {
+      "bytes": 325806,
+      "sha256": "5574be9589c20ba93f648da878fdf1fe2ecbe05a779a825775ff40dd7425fcfc"
+    },
+    "lineage-historical-controls-20261025/result.json": {
+      "bytes": 325466,
+      "sha256": "cf4fa6b72f5598f7aa976989e681a0d1895c7d2da7fa3b807026277faad13a14"
+    },
+    "lineage-historical-controls-20261025/stderr.log": {
+      "bytes": 196,
+      "sha256": "33d7735fc87cd6d043830358143195d51c7e4be13be822fc42d295409b63181c"
+    },
+    "lineage-historical-controls-20261025/stdout.log": {
+      "bytes": 82,
+      "sha256": "f632472212663717a16f350315529b24ff21bcf9c34eaaa70ce866ff6e87b6b2"
+    },
+    "lineage-local-contract-20261025/intent.json": {
+      "bytes": 325828,
+      "sha256": "cfec04f27ce55c2ae0f7e3597c67b7d83c2f9688060221a2931e04b53e45af4e"
+    },
+    "lineage-local-contract-20261025/result.json": {
+      "bytes": 325466,
+      "sha256": "cf4fa6b72f5598f7aa976989e681a0d1895c7d2da7fa3b807026277faad13a14"
+    },
+    "lineage-local-contract-20261025/stderr.log": {
+      "bytes": 365,
+      "sha256": "0e7d60b25839a9e8a55daedec7ec12065be3c3968cb2bf6c558482d2bc7a7652"
+    },
+    "lineage-local-contract-20261025/stdout.log": {
+      "bytes": 60,
+      "sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+    },
+    "lineage-tabnanny-20261025/intent.json": {
+      "bytes": 325753,
+      "sha256": "78539b902d6570196d2340ca688b2dd0be4382257d68005818a350cf6d2d43f7"
+    },
+    "lineage-tabnanny-20261025/result.json": {
+      "bytes": 325466,
+      "sha256": "cf4fa6b72f5598f7aa976989e681a0d1895c7d2da7fa3b807026277faad13a14"
+    },
+    "lineage-tabnanny-20261025/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "lineage-tabnanny-20261025/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "lineage-v3-preflight-20261025/intent.json": {
+      "bytes": 325808,
+      "sha256": "01ea0a77116678a6ded9130b13dfb168ffee7453d010289c2fde02ddfac29d5e"
+    },
+    "lineage-v3-preflight-20261025/result.json": {
+      "bytes": 325466,
+      "sha256": "cf4fa6b72f5598f7aa976989e681a0d1895c7d2da7fa3b807026277faad13a14"
+    },
+    "lineage-v3-preflight-20261025/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "lineage-v3-preflight-20261025/stdout.log": {
+      "bytes": 113252,
+      "sha256": "7a38917b1bdbd85062343af60dd90dc2684aa6c4109e0b76798b65e42b06f198"
+    },
+    "retention/retain-held-lineage-gates-20261025.py": {
+      "bytes": 3107,
+      "sha256": "1f0123683dc99cb97a0a00e0162b9c927f11b23a82a2e8119fbaabf94f9e47eb"
+    },
+    "retention/verify-held-lineage-20261025.py": {
+      "bytes": 3288,
+      "sha256": "1d93cd0476df72f439df1ba8ad9719643d65578144f15da70114827c698d0842"
+    },
+    "staged-reader/intent.json": {
+      "bytes": 157,
+      "sha256": "2c1626956c7d2cedd09a71927510d7542263b55393822ba733c519dce296d1d1"
+    },
+    "staged-reader/result.json": {
+      "bytes": 11,
+      "sha256": "bfdedf06596faa2042b0fedd9653ec1023d2e96ed56dc40b607985bc8438c1d5"
+    },
+    "staged-reader/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "staged-reader/stdout.log": {
+      "bytes": 141,
+      "sha256": "73c072e6782685814e8f455feb477ca5b6f126ba60c422c4ab21bc478ac48243"
+    }
+  },
+  "native_session_repeated": false,
+  "rust_sources_changed": false,
+  "schema": "hc074-held-lineage-gates-v1",
+  "upstream_index_sha256": "04a7c1082fbe307cbefa5952febe2a4d7f9ad912cee1a874df7f623b079a6fd4"
+}

@@ -1,0 +1,53 @@
+"""Independent staged, data-only lineage evidence verification."""
+from pathlib import Path
+import hashlib
+import json
+import subprocess
+
+root = Path(__file__).resolve().parent.parent
+prefix = 'docs/testing/performance/0.74/local-runs/held-lineage-20261025/'
+
+def read(name):
+    return subprocess.check_output(['git', 'show', ':' + prefix + name], cwd=root)
+
+raw = read('index.json')
+assert hashlib.sha256(raw).hexdigest() == '04a7c1082fbe307cbefa5952febe2a4d7f9ad912cee1a874df7f623b079a6fd4'
+index = json.loads(raw)
+assert len(index['members']) == 48
+assert index['attribution_python_cases'] == 111 and index['added_python_cases'] == 28
+assert index['native_sessions'] == 1 and index['native_cases'] == 3
+assert index['cargo_dispatch'] is index['original_owner_admitted'] is index['admission'] is False
+data = {}
+for name, entry in index['members'].items():
+    assert not Path(name).is_absolute() and '..' not in Path(name).parts
+    content = read('objects/' + entry['sha256'])
+    assert hashlib.sha256(content).hexdigest() == entry['sha256'] and len(content) == entry['bytes']
+    data[name] = content
+
+for label, edges in [('two-level', 2), ('three-level', 3)]:
+    result = json.loads(data['native/' + label + '/result.json'])
+    assert result['passed'] and result['exit_code'] == 0 and result['refusal'] is None
+    assert not result['cleanup_errors'] and not result['cargo_dispatch']
+    identities = result['identities']
+    assert len(identities) == edges + 1 and len({row['pid'] for row in identities}) == edges + 1
+    assert all(a['creation_100ns'] <= b['creation_100ns'] for a, b in zip(identities, identities[1:]))
+    before, after = result['samples']
+    assert not before['terminal'] and after['terminal']
+    assert before['creation_100ns'] == after['creation_100ns'] == identities[-1]['creation_100ns']
+    assert after['exit_100ns'] >= after['creation_100ns'] > 0
+    for key in ('kernel_100ns', 'user_100ns'):
+        assert 0 <= before[key] <= after[key]
+    assert all(before['io'][key] <= after['io'][key] for key in before['io'])
+    assert data['native/' + label + '/stderr.log'] == b''
+negative = json.loads(data['native/wrong-path/result.json'])
+assert negative['passed'] and negative['refusal'] == negative['expected_refusal'] == 'held lineage image/PID mismatch'
+assert negative['samples'] == negative['identities'] == [] and not negative['cleanup_errors']
+native_intent = json.loads(data['checks/lineage-native-first-20261025/intent.json'])
+for name in ('lineage_control.py', 'process_lineage.py'):
+    assert hashlib.sha256(data['code/final-' + name]).hexdigest() == native_intent['source']['tools/xtask-package-attribution-074/' + name]
+failed_intent = json.loads(data['checks/lineage-model-complete-first-20261025/intent.json'])
+assert hashlib.sha256(data['code/first-test_lineage_control.py']).hexdigest() == failed_intent['source']['tools/xtask-package-attribution-074/test_lineage_control.py']
+assert b'FAILED (failures=1)' in data['checks/lineage-model-complete-first-20261025/stderr.log']
+assert b'Ran 111 tests' in data['checks/lineage-model-final-20261025/stderr.log']
+print(json.dumps(dict(staged_verified=True, members=len(data), native_sessions=1,
+                      native_cases=3, first_model_failure_retained=True, admission=False)))

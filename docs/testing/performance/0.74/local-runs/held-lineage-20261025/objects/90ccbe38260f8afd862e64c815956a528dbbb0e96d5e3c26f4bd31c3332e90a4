@@ -1,0 +1,21 @@
+.................F...........................................................................................
+======================================================================
+FAIL: test_finite_schedule_stops_on_first_failure (test_lineage_control.ControlTests.test_finite_schedule_stops_on_first_failure)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\xtask-package-attribution-074\test_lineage_control.py", line 29, in test_finite_schedule_stops_on_first_failure
+    control.assert_called_once_with(out / "two-level", 2, False)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\unittest\mock.py", line 991, in assert_called_once_with
+    return self.assert_called_with(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\unittest\mock.py", line 979, in assert_called_with
+    raise AssertionError(_error_message()) from cause
+AssertionError: expected call not found.
+Expected: control(WindowsPath('C:/Users/ARTURB~1/AppData/Local/Temp/tmp958sx9sb/first/two-level'), 2, False)
+  Actual: control(WindowsPath('C:/Users/ArturBuzov/AppData/Local/Temp/tmp958sx9sb/first/two-level'), 2, False)
+
+----------------------------------------------------------------------
+Ran 109 tests in 1.465s
+
+FAILED (failures=1)

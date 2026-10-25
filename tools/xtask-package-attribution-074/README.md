@@ -203,3 +203,18 @@ keep parent-only CPU, I/O transfer and working-set/private-commit observations
 distinct from descendant totals, physical disk I/O, retained heap and per-case
 timing. Both native controls pass; no target cohort or overhead acceptance is
 claimed. Prove original-wrapper/Cargo/test-image lineage before integrating it.
+
+## Held diagnostic lineage
+
+`process_lineage.py` joins one unique fixed-image shape between two bounded
+process-only snapshots. It borrows the original owned root handle, holds every
+descendant and checks live parent/child identity and creation order before a
+final complete live frame. Counter sampling then uses only the held leaf;
+ambiguity or identity drift refuses without reopening or selecting a replacement.
+
+`lineage_control.py synthetic-controls NEW_OUTPUT_DIR` has a fixed three-case
+synthetic schedule: two levels, three levels and a wrong-full-path expected
+refusal. The [first native results and 28 new model controls](../../docs/testing/performance/0.74/held-lineage-result-20261025.md)
+are retained, including the initial test-only short-path expectation failure.
+This is not Cargo dispatch or authenticated production ownership: parent IDs
+and full path strings do not attest caller credentials, argv or mapped bytes.

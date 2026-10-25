@@ -1,0 +1,18 @@
+{
+  "passed": true,
+  "results": [
+    {
+      "label": "two-level",
+      "passed": true
+    },
+    {
+      "label": "three-level",
+      "passed": true
+    },
+    {
+      "label": "wrong-path",
+      "passed": true
+    }
+  ],
+  "admission": false
+}

@@ -1,0 +1,25 @@
+test_budget_and_closed_handle (test_process_lineage.JoinTests.test_budget_and_closed_handle) ... ok
+test_cleanup_continues_and_does_not_mask_first_refusal (test_process_lineage.JoinTests.test_cleanup_continues_and_does_not_mask_first_refusal) ... ok
+test_hold_all_nodes_close_reverse_only_owned_descendants (test_process_lineage.JoinTests.test_hold_all_nodes_close_reverse_only_owned_descendants) ... ok
+test_parent_exit_during_child_attachment_refuses (test_process_lineage.JoinTests.test_parent_exit_during_child_attachment_refuses) ... ok
+test_reused_pid_child_older_than_new_parent (test_process_lineage.JoinTests.test_reused_pid_child_older_than_new_parent) ... ok
+test_root_birth_drift_and_exit_refuse_before_descendant_open (test_process_lineage.JoinTests.test_root_birth_drift_and_exit_refuse_before_descendant_open) ... ok
+test_sampling_refusal_latched_and_no_reopen (test_process_lineage.JoinTests.test_sampling_refusal_latched_and_no_reopen) ... ok
+test_second_snapshot_change_or_ambiguity_refuses (test_process_lineage.JoinTests.test_second_snapshot_change_or_ambiguity_refuses) ... ok
+test_wrong_full_image_rejects_matching_basename (test_process_lineage.JoinTests.test_wrong_full_image_rejects_matching_basename) ... ok
+test_absent_candidate_is_not_an_admitted_chain (test_process_lineage.ShapeTests.test_absent_candidate_is_not_an_admitted_chain) ... ok
+test_ambiguity_rejects_instead_of_selecting_first (test_process_lineage.ShapeTests.test_ambiguity_rejects_instead_of_selecting_first) ... ok
+test_duplicate_pid_cycle_and_root_missing (test_process_lineage.ShapeTests.test_duplicate_pid_cycle_and_root_missing) ... ok
+test_exact_chain_and_optional_shim (test_process_lineage.ShapeTests.test_exact_chain_and_optional_shim) ... ok
+test_foreign_target_and_wrong_parent_not_selected (test_process_lineage.ShapeTests.test_foreign_target_and_wrong_parent_not_selected) ... ok
+test_invalid_snapshot_rows (test_process_lineage.ShapeTests.test_invalid_snapshot_rows) ... ok
+test_policy_and_snapshot_budgets (test_process_lineage.ShapeTests.test_policy_and_snapshot_budgets) ... ok
+test_empty_snapshot_eof_not_api_failure (test_process_lineage.SnapshotTests.test_empty_snapshot_eof_not_api_failure) ... ok
+test_enumeration_failure_closes_and_refuses (test_process_lineage.SnapshotTests.test_enumeration_failure_closes_and_refuses) ... ok
+test_invalid_snapshot_handle_not_closed (test_process_lineage.SnapshotTests.test_invalid_snapshot_handle_not_closed) ... ok
+test_one_row_enumeration (test_process_lineage.SnapshotTests.test_one_row_enumeration) ... ok
+
+----------------------------------------------------------------------
+Ran 20 tests in 0.005s
+
+OK

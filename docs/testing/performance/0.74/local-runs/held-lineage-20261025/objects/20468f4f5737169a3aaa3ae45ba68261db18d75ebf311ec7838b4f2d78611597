@@ -1,0 +1,62 @@
+{
+  "schema": 1,
+  "scope": "synthetic-lineage-only",
+  "depth": 2,
+  "expected_refusal": "held lineage image/PID mismatch",
+  "passed": true,
+  "refusal": "held lineage image/PID mismatch",
+  "cleanup_errors": [],
+  "identities": [],
+  "samples": [],
+  "cargo_dispatch": false,
+  "product_admission": false,
+  "exit_code": 0,
+  "root_samples": [
+    {
+      "terminal": false,
+      "creation_100ns": 134373725634091302,
+      "exit_100ns": null,
+      "kernel_100ns": 0,
+      "user_100ns": 0,
+      "io": {
+        "read_ops": 0,
+        "write_ops": 0,
+        "other_ops": 0,
+        "read_bytes": 0,
+        "write_bytes": 0,
+        "other_bytes": 0
+      },
+      "memory": {
+        "working_set_bytes": 1986560,
+        "peak_working_set_bytes": 1986560,
+        "private_usage": 380928,
+        "peak_private_commit_bytes": 380928
+      },
+      "terminal_memory_error": null,
+      "observed_monotonic_ns": 750440271345400
+    },
+    {
+      "terminal": true,
+      "creation_100ns": 134373725634091302,
+      "exit_100ns": 134373725658099852,
+      "kernel_100ns": 937500,
+      "user_100ns": 625000,
+      "io": {
+        "read_ops": 72,
+        "write_ops": 1,
+        "other_ops": 1167,
+        "read_bytes": 830876,
+        "write_bytes": 17,
+        "other_bytes": 85780
+      },
+      "memory": {
+        "working_set_bytes": 32768,
+        "peak_working_set_bytes": 15572992,
+        "private_usage": 77824,
+        "peak_private_commit_bytes": 9560064
+      },
+      "terminal_memory_error": null,
+      "observed_monotonic_ns": 750442671667500
+    }
+  ]
+}

@@ -104,6 +104,14 @@ environment, CWD and 780-second origin. Parent counters do not account for Git
 descendants or per-case time; synthetic cleanup does not prove all-writer
 retirement. The 321-case target and full package are not repeated here.
 
+The next [held-lineage step](held-lineage-result-20261025.md) now holds every
+node between an owned root and a synthetic leaf. Two positive native shapes and
+one wrong-full-image expected refusal pass in a single session; the attribution
+suite passes 111 cases after retaining one test-only 8.3-path expectation failure.
+Actual Cargo launch receipts, fixed shim/toolchain/test-image pins and the bounded
+coordinator remain to be joined. Diagnostic lineage does not authorize the
+production original-owner or writer-retirement path.
+
 Next: use saved target/call attribution to isolate the cost owner without
 removing tests, refreshing source pins from responses or changing conditional
 reads. A separate candidate needs its own baseline and unchanged-bound proof;
