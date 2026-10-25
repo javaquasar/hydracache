@@ -138,3 +138,20 @@ The [first screen and exact limitations](../../docs/testing/performance/0.74/dir
 retain all 96 calls: median control/profile wall is about 71.190 ms, profile spawn
 14.940 ms and wait/collection 53.774 ms. The latter still includes child execution;
 the similar medians do not establish overhead acceptance or a product speedup.
+
+## Offline reuse boundary audit
+
+`preservation_reuse_audit.py` joins the saved complete helper trace to its original
+source/AST and exact current-helper erasure. No Git or workload is run. It retains
+literal short/full query spellings, counts repeats without claiming actual cache
+hits, and separates current inventory/file/attribute observations. Unknown shapes
+and missing coverage refuse rather than being silently classified as immutable.
+
+The [audit result](../../docs/testing/performance/0.74/preservation-reuse-audit-result-20261025.md)
+finds 3124 distinct literal queries among 3141 shows, only seventeen occurrences
+beyond first. All show arguments omit a replacement-disabling flag; effective
+inherited policy is not attested. Ten new controls
+include explicit logical ABA/prefetch countermodels; these are not new real-Git
+measurements. Neither small literal reuse nor equal blob addresses admit a cache,
+eager batch or persistent process. Refresh the independent package-effect review
+next; do not spend another cohort tuning this unadmitted exact-key hypothesis.

@@ -65,6 +65,14 @@ overhead or acceleration result. Twenty-three Rust controls per compiler,
 forty-three Python controls and strict checks pass. This selected-payload screen
 does not finish the interrupted package, install a cache or change release gates.
 
+The [offline reuse boundary audit](preservation-reuse-audit-result-20261025.md)
+now closes the immediate exact-key cache investigation: 3141 shows contain 3124
+distinct literal queries, and neither replacement/config freshness nor short-ID
+resolution can be discarded. No cache/batch/persistent process is installed.
+Fifty-three Python controls and strict checks pass without another measurement.
+Next refresh the manually reviewed package-effect scope for current sources;
+retain stale-review refusal and the original 780-second/four-thread package guard.
+
 Next: use saved target/call attribution to isolate the cost owner without
 removing tests, refreshing source pins from responses or changing conditional
 reads. A separate candidate needs its own baseline and unchanged-bound proof;

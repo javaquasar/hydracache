@@ -1,0 +1,59 @@
+"""Independent staged-byte and literal-query counting; no live Git workload."""
+from collections import Counter
+from pathlib import Path
+import hashlib
+import json
+import subprocess
+
+ROOT=Path(__file__).resolve().parent.parent
+BASE='docs/testing/performance/0.74/local-runs/preservation-reuse-audit-20261025'
+def staged(path): return subprocess.check_output(['git','show',':'+path],cwd=ROOT)
+def sha(raw): return hashlib.sha256(raw).hexdigest()
+raw=staged(BASE+'/index.json'); index=json.loads(raw)
+members={}
+for name,row in index['members'].items():
+    value=staged(BASE+'/objects/'+row['sha256'])
+    assert len(value)==row['bytes'] and sha(value)==row['sha256']
+    members[name]=value
+for path,digest in index['upstream_indexes'].items(): assert sha(staged(path))==digest
+upstream='docs/testing/performance/0.74/local-runs/preservation-helper-spans-20261025'
+previous=json.loads(staged(upstream+'/index.json'))
+entry=previous['members']['capture/profile/stderr.log']
+log=staged(upstream+'/objects/'+entry['sha256'])
+assert len(log)==entry['bytes'] and sha(log)==entry['sha256']
+frames=[json.loads(line.removeprefix('HC074_HELPER_TRACE ')) for line in log.decode().splitlines()
+        if line.startswith('HC074_HELPER_TRACE ')]
+assert len(frames)==len({v['case'] for v in frames})==19
+args=[row['arguments'] for frame in frames for row in frame['records'] if row['operation']=='git']
+queries=Counter(tuple(v) for v in args if v[0]=='show')
+derived=json.loads(members['derived/audit.json'])
+assert derived==json.loads(members['checks/reuse-audit-20261025-offline-final/stdout.log'])
+assert len(args)==derived['git_calls']==3157
+assert sum(queries.values())==derived['show_calls']==3141
+assert len(queries)==derived['distinct_literal_show_queries']==3124
+assert sum(v-1 for v in queries.values())==derived['literal_occurrences_beyond_first']==17
+assert sum(count for key,count in queries.items() if len(key[1].split(':')[0])==40)==1346
+assert sum(count for key,count in queries.items() if len(key[1].split(':')[0])<40)==1795
+assert len([v for v in queries.values() if v>1])==15
+for phase in index['phases']:
+    prefix='checks/'+phase+'/'
+    intent=json.loads(members[prefix+'intent.json']); result=json.loads(members[prefix+'result.json'])
+    assert result['exit']==0 and result['outer_refusal'] is None
+    assert result['source_unchanged'] and result['head_unchanged'] and intent['source']==result['source_after']
+for name,value in members.items():
+    if name.startswith('protected/'):
+        path=name.removeprefix('protected/')
+        assert sha(value)==index['protected_sha256'][path]==sha((ROOT/path).read_bytes())
+    if name.startswith('source/'):
+        path=name.removeprefix('source/')
+        assert value==subprocess.check_output(['git','show',index['code_commit']+':'+path],cwd=ROOT)
+    if name.startswith('first-reconstructed-source/'):
+        path=name.removeprefix('first-reconstructed-source/')
+        original=json.loads(members['checks/reuse-audit-20261025-offline/intent.json'])
+        assert sha(value)==original['source'][path]
+receipt=dict(schema='hc074-preservation-reuse-staged-verification-v1',index_sha256=sha(raw),
+    members=len(members),frames=19,show_calls=3141,distinct_literal_queries=3124,
+    occurrences_beyond_first=17,measurements_repeated=False,admission=False)
+with (ROOT/(BASE+'-staged-verification.json')).open('x',encoding='utf-8') as stream:
+    json.dump(receipt,stream,indent=2,sort_keys=True); stream.write('\n')
+print(json.dumps(receipt,indent=2))

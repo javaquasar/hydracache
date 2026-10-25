@@ -108,3 +108,8 @@ as a signed production artifact. The installed artifact helper, census caller,
 source gate, dependencies, qualification manifest and 300/60/10 live schedule
 remain unchanged. The original incomplete package and fifteen audit-only
 dependency advisories remain open. No server, service, clock or product is used.
+
+The [subsequent offline reuse audit](preservation-reuse-audit-result-20261025.md)
+finds only seventeen repeated literal-query occurrences in the complete saved
+helper profile and preserves all freshness/admission boundaries. No further
+measurement is used to select an exact-key cache for this caller.

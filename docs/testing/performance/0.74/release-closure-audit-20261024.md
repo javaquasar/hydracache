@@ -414,3 +414,12 @@ the installed helper. Spawn and wait/collection medians are 14.940 and 53.774 ms
 the latter includes child work, not pure collection overhead. Twenty-three Rust
 cases per compiler and forty-three Python cases pass. Similar control/profile
 medians do not admit a candidate or close any package/execution/security gate.
+
+The [offline preservation reuse audit](preservation-reuse-audit-result-20261025.md)
+finds seventeen literal-query occurrences beyond first among 3141 shows, with
+1795 short spellings and no explicit replacement-disabling argument. Effective
+inherited policy is not attested. Fifty-three Python
+controls pass; no query is resolved or measured again and no cache is connected.
+The immediate exact-key hypothesis is not selected. A new independently reviewed
+package-effect scope remains prerequisite to another complete replay; the old
+scope must refuse current drift rather than self-refresh its admission pins.

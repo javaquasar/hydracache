@@ -1,0 +1,11 @@
+{
+  "admission": false,
+  "distinct_literal_queries": 3124,
+  "frames": 19,
+  "index_sha256": "f33c9af85b300101721f3818a87ce6d8d39b844269d5b167a0b8172a06bc25a0",
+  "measurements_repeated": false,
+  "members": 58,
+  "occurrences_beyond_first": 17,
+  "schema": "hc074-preservation-reuse-staged-verification-v1",
+  "show_calls": 3141
+}

@@ -19670,3 +19670,28 @@ group is visibly slower, and all its samples remain: a lower cumulative profile
 sum in one finite order is not proof of an optimization. Neither similar medians
 nor a measurable startup phase permits a persistent child or a cache that changes
 fresh refs/configuration, independent pins, ABA/fallback behavior or current reads.
+
+### Count actual reuse before building another cache
+
+The [offline reuse audit](../testing/performance/0.74/preservation-reuse-audit-result-20261025.md)
+returns to the complete saved helper trace instead of timing another prototype.
+Its 3141 shows contain 3124 distinct literal queries: only seventeen occurrences
+repeat a key. This is not a measured hit rate. It assumes an empty shared cache,
+does not include other helpers or earlier warming, and keeps short/full revision
+spellings distinct. The separate blob-OID overlap screen cannot silently erase
+those lookup semantics.
+
+All show arguments omit an explicit replacement-disabling flag; effective inherited
+policy is not attested, and 1795 use short revisions. A pinned old
+body can still conceal a fresh observation that should reject changed replacement
+bytes. An A–B–A transition can restore the final refs/config while hiding that
+difference from endpoint checks. The new regression countermodels express this
+logic explicitly; earlier real-Git fault evidence remains a separate result.
+Eager prefetch also changes which reads an invalid helper reaches. A lazy
+persistent process needs a different proof, not an assumption that its retained
+configuration behaves like a fresh original Git invocation.
+
+The decision is therefore to leave the helper unchanged and not pursue naive
+exact-key memoization here. A negative selection is useful progress: the next
+work returns to the independently reviewed full-package scope and its actual
+completion gate, with the original timeout and first incomplete outcome intact.

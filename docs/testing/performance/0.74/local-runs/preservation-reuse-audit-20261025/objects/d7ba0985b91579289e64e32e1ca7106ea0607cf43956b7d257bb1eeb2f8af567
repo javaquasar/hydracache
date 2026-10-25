@@ -1,0 +1,84 @@
+"""Seal offline audit and checks; reference old CAS inputs without copying them."""
+from pathlib import Path
+import hashlib
+import json
+import subprocess
+import sys
+
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'docs/testing/performance/0.74/local-runs/preservation-reuse-audit-20261025'
+CODE='11d777a5cd13bcc1fc68784d113b7a211062ac46'
+sys.path.insert(0,str(ROOT/'tools/xtask-package-attribution-074'))
+import preservation_reuse_audit as audit
+
+members,objects,phases={},{},[]
+def sha(raw): return hashlib.sha256(raw).hexdigest()
+def add(name,raw):
+    assert name not in members
+    digest=sha(raw); members[name]=dict(sha256=digest,bytes=len(raw)); objects[digest]=raw
+checks=ROOT/'target/source-continuation-20261024'
+assert subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip()==CODE
+for folder in sorted(checks.iterdir()):
+    if not folder.is_dir() or not folder.name.startswith('reuse-audit-20261025-'): continue
+    intent=json.loads((folder/'intent.json').read_bytes()); result=json.loads((folder/'result.json').read_bytes())
+    assert result['exit']==0 and result['outer_refusal'] is None
+    assert result['source_unchanged'] and result['head_unchanged'] and intent['source']==result['source_after']
+    for path in sorted(folder.iterdir()):
+        if path.is_file(): add('checks/'+folder.name+'/'+path.name,path.read_bytes())
+    phases.append(folder.name)
+result=audit.audit(ROOT)
+stored=json.loads((checks/'reuse-audit-20261025-offline-final/stdout.log').read_bytes())
+assert result==stored
+add('derived/audit.json',(json.dumps(result,indent=2,sort_keys=True)+'\n').encode())
+source_files=('tools/xtask-package-attribution-074/preservation_reuse_audit.py',
+              'tools/xtask-package-attribution-074/test_preservation_reuse_audit.py')
+final=json.loads((checks/'reuse-audit-20261025-offline-final/intent.json').read_bytes())['source']
+for path in source_files:
+    raw=(ROOT/path).read_bytes(); assert sha(raw)==final[path]
+    assert raw==subprocess.check_output(['git','show',CODE+':'+path],cwd=ROOT)
+    add('source/'+path,raw)
+# Exact inverse of the two known test additions and the clarified report field.
+# These are reconstructed old bytes, explicitly labeled and checked against the
+# original pre-execution source maps, not claimed as raw first capture copies.
+first=json.loads((checks/'reuse-audit-20261025-offline/intent.json').read_bytes())['source']
+path=source_files[0]
+raw=(ROOT/path).read_bytes().replace(b'preplanned_prefetch_changes_conditional_observation_schedule',
+                                  b'batching_changes_conditional_observation_schedule')
+assert sha(raw)==first[path]; add('first-reconstructed-source/'+path,raw)
+path=source_files[1]
+raw=(ROOT/path).read_bytes()
+line=b"        with self.assertRaises(ValueError): audit.analyze([frame('a', ['ls-files', '--', audit.SCOPE])])\n"
+assert raw.count(line)==1; raw=raw.replace(line,b'',1)
+marker=b'\n    def test_changed_packet_pin_refuses_before_trace_review(self):\n'
+assert raw.count(marker)==1; raw=raw.split(marker)[0]
+assert sha(raw)==first[path]; add('first-reconstructed-source/'+path,raw)
+upstream={audit.PACKET+'/index.json':audit.PACKET_SHA256,
+          audit.sweep.PACKET+'/index.json':audit.sweep.PACKET_SHA256}
+for path,digest in upstream.items(): assert sha((ROOT/path).read_bytes())==digest
+protected={
+    'Cargo.toml':'18a8a27cf140a1d6eb31c8316ee39bb7d5832866a990346eee16cd0c30de344b',
+    'Cargo.lock':'d2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c',
+    'docs/testing/performance/0.74/qualification-manifest.toml':'11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc',
+    'tools/authority-storage-source-074/contract.rs':'aefcd4f6a9ed0acc1e072225ea3ed4dda82d2d1ccda0ba4f22ca74459efa64c2'}
+for path,digest in protected.items():
+    raw=(ROOT/path).read_bytes(); assert sha(raw)==digest; add('protected/'+path,raw)
+for path in ('crates/xtask/tests/diagnostic_artifact_fixture_074.rs',
+             'crates/xtask/tests/support/census_provider_input.rs',
+             'tools/authority-runtime-074/gate.rs','tools/authority-runtime-074/io.rs',
+             'tools/historical-blob-batch-074/transport.rs'):
+    raw=(ROOT/path).read_bytes(); assert sha(raw)==final[path]
+    old=subprocess.check_output(['git','show','cf75b9d80:'+path],cwd=ROOT)
+    assert raw.replace(b'\r\n',b'\n')==old.replace(b'\r\n',b'\n')
+    add('unchanged/'+path,raw)
+for name in ('run-source-step-20261024.py','run-fresh-reader-20261024.py',
+             'seal-preservation-reuse-20261025.py','verify-preservation-reuse-staged-20261025.py'):
+    add('coordinators/'+name,(ROOT/'target'/name).read_bytes())
+index=dict(schema='hc074-preservation-reuse-evidence-v1',code_commit=CODE,members=members,
+    upstream_indexes=upstream,phases=phases,protected_sha256=protected,
+    measurements_repeated=False,cache_or_persistent_child_installed=False,
+    original_checks_order_frequency_or_windows_changed=False,package_pass=False,admission=False)
+BASE.mkdir(exist_ok=False); (BASE/'objects').mkdir()
+for digest,raw in objects.items(): (BASE/'objects'/digest).write_bytes(raw)
+(BASE/'index.json').write_bytes((json.dumps(index,indent=2,sort_keys=True)+'\n').encode())
+(BASE/'.gitattributes').write_bytes(b'index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n')
+print(json.dumps(dict(index_sha256=sha((BASE/'index.json').read_bytes()),members=len(members),objects=len(objects),phases=len(phases)),indent=2))
