@@ -1,0 +1,30 @@
+{
+  "cases": [
+    {
+      "name": "build",
+      "exit": 0,
+      "wall_ns": 48852507597
+    },
+    {
+      "name": "check",
+      "exit": 0,
+      "wall_ns": 12744253182
+    },
+    {
+      "name": "clippy",
+      "exit": 0,
+      "wall_ns": 19607239702
+    },
+    {
+      "name": "origin-tests",
+      "exit": 0,
+      "wall_ns": 39514254
+    }
+  ],
+  "first_refusal": null,
+  "postflight_refusal": null,
+  "passed": true,
+  "source_unchanged": true,
+  "libtest_sha256": "fcd26cedc7c37237ec659a0002668dfbdd46d8be2919370b1645e5eed3625b7b",
+  "libtest_path": "/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/build-target-v3/release/deps/hydracache_long_run_supervisor_074-b26b156d3dcd0098"
+}

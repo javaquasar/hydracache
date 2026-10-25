@@ -1,0 +1,18 @@
+from pathlib import Path
+import base64,runpy
+old=Path('target/server-fd-identity-build-worker-20261025.py').read_text()
+changes=[
+ ("manifest=json.loads((base/'manifest.json').read_bytes());old=upload/'source-v3'", "manifest=json.loads((base/'namespace-open-build-v2/source-manifest.json').read_bytes());old=upload/'source-namespace-open-v2'"),
+ ("assert sha(base/'manifest.json')=='2a0f7c581a1e854ab71841efb71aaebee3de56d1c0357b54d55a41ae4011ea6d'", "assert len(manifest)==2570 and sha(base/'namespace-open-build-v2/libtest')=='82217f857b4a43c55e8060f7df7f4dd3157587af51a4b66b3038c81cf75feb3f'"),
+ ("for name,item in manifest['members'].items():assert sha(old/name)==item['sha256'],name", "for name,digest in manifest.items():assert sha(old/name)==digest,name"),
+ ("expected={name:item['sha256'] for name,item in manifest['members'].items()}", "expected=dict(manifest)"),
+ ("fresh fstat dev/inode leaf, x86_64 only", "test-only fstatfs initialized-field projection, one fresh query without output zeroing"),
+ ("11445ff7304fa49beaf3be16ed6393155f5a183b", "c54c284bd"),
+]
+for a,b in changes:
+ count=2 if a.startswith('for name,item in') else 1
+ assert old.count(a)==count,(a,old.count(a));old=old.replace(a,b)
+names=['diagnostic_kernel_origin.rs','diagnostic_filesystem_projection.rs','diagnostic_filesystem_projection_tests.rs']
+files={n:base64.b64encode((Path('tools/long-run-supervisor-074/src')/n).read_bytes()).decode() for n in names}
+prefix=f'OVERLAY={files!r}\nRUN_TAG="filesystem-projection-build-first"\nSOURCE_TAG="source-filesystem-projection-first"\n'
+runpy.run_path('target/prepare-capacity-checks-20261025.py',init_globals=dict(WORKER_FILE='target/empty-worker-20261025.py',WORKER_DIR='filesystem-projection-build-first',WORKER_PREFIX=prefix+old+'\n'))

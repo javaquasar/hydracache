@@ -1,0 +1,67 @@
+RUN_TAG='filesystem-projection-prototype-first'
+PHASE="prototype"
+BUILD_TAG='filesystem-projection-build-first'
+SOURCE_TAG='source-filesystem-projection-first'
+IMAGE_SHA='fcd26cedc7c37237ec659a0002668dfbdd46d8be2919370b1645e5eed3625b7b'
+MANIFEST_SHA='ef2fa59c4ee0e6f09b5e8169c4840933137c3346f2993ead3bb75dc690f6d8c2'
+SOURCE_COMMIT='958b3135a15c00b9f6aad41522cef9d1f6608d3a'
+PROTOCOL_B64='ewogICJzY2hlbWEiOiAiaGMwNzQtZmlsZXN5c3RlbS1wcm9qZWN0aW9uLWNvc3QtdjEiLAogICJiYXNlbGluZV9jb21taXQiOiAiYzU0YzI4NGJkIiwKICAiaHlwb3RoZXNpcyI6ICJvbWl0IHN0YXRmcyBvdXRwdXQtYnVmZmVyIHplcm9pbmcgYW5kIHByb2plY3Qgb25seSBpbml0aWFsaXplZCBmX3R5cGUgYWZ0ZXIgb25lIHN1Y2Nlc3NmdWwgZnJlc2ggR05VIGZzdGF0ZnMiLAogICJjYXNlcyI6IFsicHJvYy1mcyIsIm5zLWZzIiwiYm9vdCIsInVzZXIiLCJtbnQiLCJwaWQiLCJ0aW1lIl0sCiAgInByb2Nlc3NlcyI6IDgsCiAgInNhbXBsZXNfcGVyX2Nhc2UiOiAxNiwKICAiaXRlcmF0aW9uc19wZXJfc2FtcGxlIjogMTAyNCwKICAid2FybXVwc19wZXJfYXJtIjogMzIsCiAgImFybXMiOiBbInJlZmVyZW5jZSIsInJlZmVyZW5jZS1jb250cm9sIiwicnVudGltZSIsInByb3RvdHlwZSJdLAogICJvcmRlciI6ICJlaWdodCBmb3J3YXJkL3JldmVyc2UgY3ljbGljIGZvdXItYXJtIHBlcm11dGF0aW9ucywgdHdpY2UsIHJvdGF0ZWQgYnkgcHJvY2VzcyIsCiAgIm9wZXJhdGlvbl9jb3VudHNfcGVyX2NhbGwiOiB7ImZpbGVzeXN0ZW1fbGVhZiI6IFswLDEsMF0sICJib290IjogWzQsNCwwXSwgIm5hbWVzcGFjZSI6IFsxLDEsMV19LAogICJvcGVyYXRpb25fY291bnRzX29yZGVyIjogWyJvcGVucyIsImZpbGVzeXN0ZW1fY2hlY2tzIiwiaWRlbnRpdHlfY2hlY2tzIl0sCiAgIm9yaWdpbmFsX2ZkX2xpZmV0aW1lX2Vycm5vX3JldHJ5X2FuZF9yZWZ1c2FsX29yZGVyX3VuY2hhbmdlZCI6IHRydWUsCiAgImFjdGl2ZV9vcGVyYXRpb25fb2JzZXJ2ZXIiOiBmYWxzZSwKICAiY3B1X2FmZmluaXR5IjogWzVdLAogICJ1aWQiOiAxMDAwLAogICJjb21waWxlciI6ICJSdXN0IDEuOTQgR05VIHJlbGVhc2UgZGVmYXVsdCBmZWF0dXJlcyIsCiAgImVzdGltYXRvciI6ICJtZWRpYW4gb2YgZWlnaHQgcHJvY2VzcyBtZWRpYW5zIG9mIHNpeHRlZW4gcGFpcmVkIGxvZyBDUFUgcmF0aW9zIHBlciBjYXNlIiwKICAiYm9vdHN0cmFwIjogIjIwMDAwIHByb2Nlc3MgcmVzYW1wbGVzLCBzZWVkIDB4MDc0ZDFhMDUsIHBlcmNlbnRpbGUgOTUlIiwKICAiYmFzZWxpbmVfY29udHJvbF9pbnRlcnZhbCI6IFswLjk3LDEuMDNdLAogICJwcm90b3R5cGVfcmVmZXJlbmNlX3VwcGVyX21heF9hbGxfc2V2ZW5fY2FzZXMiOiAwLjk4LAogICJpbnN0YWxsZWRfcnVudGltZV9yZWZlcmVuY2VfdXBwZXJfbWF4X2FsbF9zZXZlbl9jYXNlcyI6IDAuOTgsCiAgImluc3RhbGxlZF9ydW50aW1lX3Byb3RvdHlwZV9jb250cm9sX2ludGVydmFsIjogWzAuOTcsMS4wM10sCiAgIm91dHB1dF9zYWZldHkiOiAiZnVsbCBhbGlnbmVkIHdyaXRhYmxlIHN0YXRmcyBhbGxvY2F0aW9uLCBubyB3aG9sZS1vYmplY3QgYXNzdW1lX2luaXQsIGZpZWxkIHJlYWQgb25seSBhZnRlciByZXR1cm4gemVybyIsCiAgImVycm9yX2NvbnRyYWN0IjogImFueSBub256ZXJvIHJldHVybiBpbW1lZGlhdGVseSBjYXB0dXJlcyBlcnJubywgZG9lcyBub3QgaW5zcGVjdCBvdXRwdXQgb3IgcmV0cnkgRUlOVFIiLAogICJvdXRlcl9zZWNvbmRzIjogMzAwLAogICJwZXJfcHJvY2Vzc19zZWNvbmRzIjogMzAsCiAgImZpcnN0X3Jlc3VsdHNfcHJlc2VydmVkIjogdHJ1ZSwKICAib3JpZ2luYWxfY2hlY2tzX2ZyZXF1ZW5jeV9vcmRlcl9hbmRfd2luZG93c191bmNoYW5nZWQiOiB0cnVlLAogICJyZXRyeSI6IGZhbHNlLAogICJwcm9kdWN0IjogZmFsc2UsCiAgImFkbWlzc2lvbiI6IGZhbHNlCn0K'
+"""One frozen finite directory CPU cohort, never a preparation retry or admission."""
+from pathlib import Path
+import base64,hashlib,json,os,signal,subprocess,sys,time
+base=Path('/tmp/hc074-server-gate-root-20261025.0k0xbdah')
+upload=Path('/tmp/hc074-server-gate-upload-20261025.pvdj0f6c')
+root=base/RUN_TAG
+raw=(base/'server-fault-worker-20261025.py').read_bytes()
+assert hashlib.sha256(raw).hexdigest()=='af1e9926e1ad40bc49c1c225d79f5fffc788c715a7889743decea129ec4b17a3'
+scope={};exec(compile(raw.decode().split('started=time.monotonic_ns()\n')[0],'<pinned-preflight>','exec'),scope)
+preflight=scope['preflight']
+def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+def publish(name,value):
+ with (root/name).open('x') as f:json.dump(value,f,indent=2);f.flush();os.fsync(f.fileno())
+def limited():
+ os.sched_setaffinity(0,{5});os.setgroups([]);os.setgid(1000);os.setuid(1000)
+protocol=json.loads(base64.b64decode(PROTOCOL_B64))
+publish('consumed.json',dict(protocol=protocol,phase=PHASE,image_sha256=IMAGE_SHA,source_manifest_sha256=MANIFEST_SHA,
+ source_commit=SOURCE_COMMIT,overlapping_builds_by_this_session=False,retry=False,product=False,admission=False))
+selector='diagnostic_kernel_admission::origin::filesystem_projection_tests::filesystem_projection_'+PHASE+'_cpu_screen'
+result=dict(cases=[],first_refusal=None,postflight_refusal=None,passed=False,product=False,admission=False)
+before=None
+try:
+ assert PHASE in ['prototype','installed']
+ before=preflight();publish('preflight.json',before)
+ build=json.loads((base/BUILD_TAG/'result.json').read_bytes());assert build['passed'] and build['source_unchanged']
+ assert sha(base/BUILD_TAG/'source-manifest.json')==MANIFEST_SHA
+ manifest=json.loads((base/BUILD_TAG/'source-manifest.json').read_bytes())
+ test=Path(build['libtest_path']);assert sha(test)==build['libtest_sha256']==IMAGE_SHA
+ assert sha(base/BUILD_TAG/'libtest')==IMAGE_SHA
+ source=upload/SOURCE_TAG
+ def verify():
+  for name,digest in manifest.items():assert sha(source/name)==digest,name
+ verify()
+ scratch=upload/RUN_TAG;scratch.mkdir(mode=0o700);os.chown(scratch,1000,1000)
+ start=time.monotonic_ns()
+ for cohort in range(8):
+  assert time.monotonic_ns()-start<300_000_000_000
+  env=dict(PATH='/usr/bin:/bin',TMPDIR=str(scratch),HOME=str(upload/'signer-home-first'),HC074_FILESYSTEM_COHORT=str(cohort))
+  argv=[str(test),selector,'--ignored','--exact','--nocapture','--test-threads=1']
+  publish(f'cohort-{cohort}-command.json',dict(argv=argv,env=env,cwd=str(source),outer_seconds=30))
+  with (root/f'cohort-{cohort}.stdout.log').open('xb') as stdout,(root/f'cohort-{cohort}.stderr.log').open('xb') as stderr:
+   child=subprocess.Popen(argv,cwd=source,env=env,preexec_fn=limited,stdout=stdout,stderr=stderr,start_new_session=True)
+   publish(f'cohort-{cohort}-child.json',dict(pid=child.pid,start_ticks=scope['ticks'](child.pid),affinity=sorted(os.sched_getaffinity(child.pid))))
+   try:code=child.wait(timeout=30)
+   except subprocess.TimeoutExpired:
+    os.killpg(child.pid,signal.SIGKILL);child.wait();raise RuntimeError('first directory cost child timed out; no retry')
+  result['cases'].append(dict(cohort=cohort,exit=code))
+  text=(root/f'cohort-{cohort}.stdout.log').read_text()
+  assert code==0 and text.count('HC074-FILESYSTEM-COST ')==448 and text.count('test result: ok. 1 passed; 0 failed; 0 ignored;')==1
+ verify();assert sha(test)==IMAGE_SHA
+ result['passed']=True;result['source_unchanged']=True
+except BaseException as error:result['first_refusal']=f'{type(error).__name__}: {error}'
+finally:
+ try:
+  after=preflight();assert before is not None and before==after;publish('postflight.json',after)
+ except BaseException as error:result['postflight_refusal']=f'{type(error).__name__}: {error}';result['passed']=False
+ publish('result.json',result)
+
+# All source is frozen in WORKER_PREFIX by the renderer.

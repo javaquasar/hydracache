@@ -1,0 +1,18 @@
+{
+  "argv": [
+    "/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/build-target-v3/release/deps/hydracache_long_run_supervisor_074-b26b156d3dcd0098",
+    "diagnostic_kernel_admission::origin::filesystem_projection_tests::filesystem_projection_prototype_cpu_screen",
+    "--ignored",
+    "--exact",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "env": {
+    "PATH": "/usr/bin:/bin",
+    "TMPDIR": "/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/filesystem-projection-prototype-first",
+    "HOME": "/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/signer-home-first",
+    "HC074_FILESYSTEM_COHORT": "2"
+  },
+  "cwd": "/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/source-filesystem-projection-first",
+  "outer_seconds": 30
+}

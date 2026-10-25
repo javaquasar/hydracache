@@ -1,0 +1,29 @@
+from pathlib import Path
+import hashlib,json,subprocess,sys
+base=Path('/tmp/hc074-server-gate-root-20261025.0k0xbdah')
+raw=(base/'server-fault-worker-20261025.py').read_bytes()
+assert hashlib.sha256(raw).hexdigest()=='af1e9926e1ad40bc49c1c225d79f5fffc788c715a7889743decea129ec4b17a3'
+sys.argv=['readonly','6640e1b9b31ae7c87137b335be4f2665d729ea7b4324ee0e874bdbedc346c520']
+scope={};exec(compile(raw.decode().split('started=time.monotonic_ns()\n')[0],'<pinned-preflight>','exec'),scope)
+before=scope['preflight']()
+image=base/'filesystem-projection-build-first/libtest'
+image_sha=hashlib.sha256(image.read_bytes()).hexdigest()
+assert image_sha=='fcd26cedc7c37237ec659a0002668dfbdd46d8be2919370b1645e5eed3625b7b'
+argv=['/usr/bin/nm','--defined-only','--demangle','--print-size',str(image)]
+result=subprocess.run(argv,capture_output=True,check=True,timeout=20)
+assert len(result.stdout)<8*1024**2
+selected=[]
+targets=['diagnostic_kernel_admission::origin::filesystem_projection::check',
+ 'diagnostic_kernel_admission::origin::filesystem_projection_tests::reference_filesystem',
+ 'diagnostic_kernel_admission::origin::filesystem',
+ 'diagnostic_kernel_admission::origin::filesystem_projection_tests::invoke']
+for line in result.stdout.decode().splitlines():
+ parts=line.split(None,3)
+ if len(parts)==4 and any(parts[3].endswith(name) for name in targets):
+  start=int(parts[0],16);size=int(parts[1],16);assert 0<size<32768
+  command=['/usr/bin/objdump','--disassemble','--demangle','--no-show-raw-insn',f'--start-address={start}',f'--stop-address={start+size}',str(image)]
+  output=subprocess.run(command,capture_output=True,check=True,timeout=20);assert len(output.stdout)<256*1024
+  selected.append(dict(symbol=line,argv=command,stdout=output.stdout.decode(),stderr=output.stderr.decode()))
+after=scope['preflight']();assert before==after and hashlib.sha256(image.read_bytes()).hexdigest()==image_sha
+print(json.dumps(dict(read_only=True,image_sha256=image_sha,nm_argv=argv,selected=selected,preflight=before,postflight=after,
+ measurements_run=False,product=False,admission=False)))

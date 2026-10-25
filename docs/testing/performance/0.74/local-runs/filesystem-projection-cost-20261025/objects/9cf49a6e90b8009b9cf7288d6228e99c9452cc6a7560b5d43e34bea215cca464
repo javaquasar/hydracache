@@ -1,0 +1,31 @@
+{
+  "argv": [
+    "/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/toolchain-v3/bin/cargo",
+    "clippy",
+    "--release",
+    "--offline",
+    "--locked",
+    "-p",
+    "hydracache-long-run-supervisor-074",
+    "--all-targets",
+    "--all-features",
+    "--",
+    "-D",
+    "warnings"
+  ],
+  "env": {
+    "PATH": "/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/private-clippy-194/bin:/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/toolchain-v3/bin:/usr/bin:/bin",
+    "HOME": "/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/signer-home-first",
+    "CARGO_HOME": "/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/cargo-home-v3",
+    "CARGO_TARGET_DIR": "/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/build-target-v3",
+    "CARGO_NET_OFFLINE": "true",
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_BUILD_JOBS": "8",
+    "RUSTC": "/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/toolchain-v3/bin/rustc",
+    "RUSTDOC": "/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/toolchain-v3/bin/rustdoc"
+  },
+  "cwd": "/tmp/hc074-server-gate-upload-20261025.pvdj0f6c/source-filesystem-projection-first",
+  "uid": 1000,
+  "gid": 1000,
+  "outer_seconds": 1200
+}

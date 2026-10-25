@@ -1,0 +1,97 @@
+"""Recompute one raw cohort and verify the preserved source boundary."""
+from pathlib import Path
+import hashlib,json,base64,re,runpy,subprocess
+ROOT=Path(__file__).resolve().parent.parent
+api=runpy.run_path(str(ROOT/'tools/filesystem-projection-cost-074/review.py'))
+NAMES=['diagnostic_kernel_origin.rs','diagnostic_filesystem_projection.rs','diagnostic_filesystem_projection_tests.rs']
+BASELINE='c54c284bd';EXPERIMENT='958b3135a15c00b9f6aad41522cef9d1f6608d3a'
+IMAGE='fcd26cedc7c37237ec659a0002668dfbdd46d8be2919370b1645e5eed3625b7b'
+BUILD='filesystem-projection-build-first';COHORT='filesystem-projection-prototype-first'
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+def load():
+ packet=json.loads((ROOT/'target/authorized-server-session-20261025/filesystem-projection-final-export/stdout.log').read_bytes());assert packet['complete']
+ files={}
+ for name,item in packet['members'].items():
+  raw=base64.b64decode(item['base64']);assert len(raw)==item['bytes'] and sha(raw)==item['sha256'];files[name]=raw
+ files['codegen/receipt.json']=(ROOT/'target/authorized-server-session-20261025/filesystem-projection-codegen-readonly/stdout.log').read_bytes()
+ return files,packet['final_frame']
+def baseline():return subprocess.check_output(['git','show',BASELINE+':tools/long-run-supervisor-074/src/'+NAMES[0]],cwd=ROOT)
+def extract(source,name):
+ match=re.search(r'(?:pub\(super\) )?fn '+name+r'(?:\b|<)',source);assert match,name
+ begin=match.start();brace=source.index('{',begin);depth=1;end=brace+1
+ while depth:
+  if source[end]=='{':depth+=1
+  if source[end]=='}':depth-=1
+  end+=1
+ return source[begin:end]
+def source_proof(sources,old):
+ norm=lambda raw:raw.decode().replace('\r\n','\n')
+ body=norm(sources[NAMES[0]])
+ modules='#[cfg(all(test, target_arch = "x86_64", target_env = "gnu"))]\n#[path = "diagnostic_filesystem_projection.rs"]\nmod filesystem_projection;\n\n#[cfg(all(test, target_arch = "x86_64", target_env = "gnu"))]\n#[path = "diagnostic_filesystem_projection_tests.rs"]\nmod filesystem_projection_tests;\n\n'
+ assert body.count(modules)==1 and body.replace(modules,'')==norm(old),'Production body changed'
+ tests=norm(sources[NAMES[2]])
+ compact=lambda text:re.sub(r'\s+','',re.sub(r'//[^\n]*','',text)).replace('pub(super)fn','fn')
+ for name in ['filesystem','fixed_child','boot_apply','namespace']:
+  original=extract(norm(old),name);reference=extract(tests,'reference_'+name)
+  for called in ['filesystem','fixed_child','boot_apply','namespace']:reference=re.sub(r'\breference_'+called+r'\b',called,reference)
+  assert compact(original)==compact(reference),name
+ for name in ['fixed_child','boot_apply','namespace']:
+  reference=extract(tests,'reference_'+name);prototype=extract(tests,'prototype_'+name)
+  for called in ['fixed_child','boot_apply','namespace']:reference=re.sub(r'\breference_'+called+r'\b','prototype_'+called,reference)
+  reference=reference.replace('reference_filesystem(', 'filesystem_projection::check(')
+  assert compact(reference)==compact(prototype),name
+ candidate=norm(sources[NAMES[1]])
+ assert candidate.count('libc::fstatfs(fd, out)')==1 and 'MaybeUninit::<libc::statfs>::uninit()' in candidate
+ assert 'assume_init' not in candidate and 'addr_of!((*output.as_ptr()).f_type).read()' in candidate
+ assert candidate.index('query(fd, output.as_mut_ptr()) != 0')<candidate.index('Error::last_os_error()')<candidate.index('addr_of!')
+ return dict(production_body_exactly_preserved=True,four_reference_functions_match_baseline=True,
+  prototype_only_replaces_filesystem_buffer_projection=True,only_success_field_read=True,
+  original_observation_frequency_order_windows_and_fd_lifetimes_unchanged=True)
+def review(files,frame,sources,old):
+ get=lambda group,name:json.loads(files[group+'/'+name])
+ for group in [BUILD,COHORT]:
+  result=get(group,'result.json');assert result['passed'] and result['source_unchanged'] and result['first_refusal'] is None and result['postflight_refusal'] is None
+  assert get(group,'preflight.json')==get(group,'postflight.json')==frame
+ result=get(BUILD,'result.json');assert result['libtest_sha256']==IMAGE
+ assert [(r['name'],r['exit']) for r in result['cases']]==[('build',0),('check',0),('clippy',0),('origin-tests',0)]
+ stdout=files[BUILD+'/origin-tests.stdout.log'];assert b'50 passed; 0 failed; 9 ignored;' in stdout
+ assert stdout.count(b'HC074-FILESYSTEM-FAULT seed=0x074f5a17 cases=2058 single_query=true partial_success_field_only=true')==1
+ for name in ['check','clippy']:
+  argv=get(BUILD,name+'-command.json')['argv'];assert '--all-targets' in argv and '--all-features' in argv and '--locked' in argv
+  if name=='clippy':assert argv[-3:]==['--','-D','warnings']
+ consumed=get(BUILD,'consumed.json');assert consumed['original_windows']==[300,60,10] and consumed['original_check_frequency_and_order'] and not consumed['retry']
+ manifest=get(BUILD,'source-manifest.json');assert len(manifest)==2572
+ for name,raw in sources.items():assert manifest['tools/long-run-supervisor-074/src/'+name]==sha(raw),name
+ proof=source_proof(sources,old)
+ intent=get(COHORT,'consumed.json');assert intent['phase']=='prototype' and intent['source_commit']==EXPERIMENT
+ assert intent['image_sha256']==IMAGE and intent['source_manifest_sha256']==sha(files[BUILD+'/source-manifest.json'])
+ assert intent['protocol']==json.loads((ROOT/'tools/filesystem-projection-cost-074/protocol.json').read_bytes())
+ assert not intent['retry'] and not intent['product'] and not intent['admission'] and not intent['overlapping_builds_by_this_session']
+ assert get(COHORT,'result.json')['cases']==[dict(cohort=i,exit=0) for i in range(8)]
+ identities=[]
+ for i in range(8):
+  child=get(COHORT,f'cohort-{i}-child.json');assert child['affinity']==[5];identities.append((child['pid'],child['start_ticks']))
+  command=get(COHORT,f'cohort-{i}-command.json');assert command['env']['HC074_FILESYSTEM_COHORT']==str(i) and command['outer_seconds']==30
+  assert command['argv'][1:]==['diagnostic_kernel_admission::origin::filesystem_projection_tests::filesystem_projection_prototype_cpu_screen','--ignored','--exact','--nocapture','--test-threads=1']
+ assert len(set(identities))==8
+ estimates=api['review']([files[COHORT+f'/cohort-{i}.stdout.log'] for i in range(8)],'prototype')
+ codegen=json.loads(files['codegen/receipt.json'])
+ assert codegen['read_only'] and codegen['image_sha256']==IMAGE and codegen['preflight']==codegen['postflight']==frame
+ assert not codegen['measurements_run'] and not codegen['admission'] and len(codegen['selected'])==4
+ symbols={entry['symbol'].split()[-1]:entry['stdout'] for entry in codegen['selected']}
+ suffix='diagnostic_kernel_admission::origin::'
+ def prefix(name):
+  entries=[text for symbol,text in symbols.items() if symbol.endswith(suffix+name)];assert len(entries)==1
+  assert entries[0].count('<fstatfs@GLIBC_2.2.5>')==1
+  return entries[0].split('<fstatfs@GLIBC_2.2.5>')[0]
+ old_fs=prefix('filesystem');reference_fs=prefix('filesystem_projection_tests::reference_filesystem');candidate_fs=prefix('filesystem_projection::check')
+ assert all(text.count('movaps %xmm0,')==7 and 'movq   $0x0,' in text for text in [old_fs,reference_fs])
+ assert 'movaps %xmm0,' not in candidate_fs and 'movq   $0x0,' not in candidate_fs
+ return dict(source_proof=proof,estimates=estimates,targeted_tests_passed=50,field_fault_cases=2058,
+  codegen=dict(zeroing_present_in_reference=True,zeroing_absent_in_candidate=True,causal_speedup_proven=False),
+  optimization_implemented=False,preparation_repeated=False,product=False,admission=False)
+if __name__=='__main__':
+ files,frame=load();sources={n:(ROOT/'tools/long-run-supervisor-074/src'/n).read_bytes() for n in NAMES}
+ facts=review(files,frame,sources,baseline())
+ print(json.dumps(dict(cpu_screen_passed=facts['estimates']['cpu_screen_passed'],source_proof=facts['source_proof'],
+  cases={k:dict(controls=v['controls_passed'],candidate=v['ratios']['prototype']) for k,v in facts['estimates']['cases'].items()}),indent=2))

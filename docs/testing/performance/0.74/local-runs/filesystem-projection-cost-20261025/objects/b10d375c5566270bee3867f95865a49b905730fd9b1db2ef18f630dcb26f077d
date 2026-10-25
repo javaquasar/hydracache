@@ -1,0 +1,8 @@
+{
+  "phase": "local draft formatting before native build or measurement",
+  "command": "cargo +1.94.0 fmt --all",
+  "error": "The filename or extension is too long. (os error 206)",
+  "resolution": "Use direct rustfmt on the three affected sources with skip_children=true, preserving unrelated files",
+  "measurements_run": false,
+  "admission": false
+}

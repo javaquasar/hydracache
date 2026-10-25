@@ -1,0 +1,18 @@
+{
+  "overlay_names": [
+    "diagnostic_filesystem_projection.rs",
+    "diagnostic_filesystem_projection_tests.rs",
+    "diagnostic_kernel_origin.rs"
+  ],
+  "hypothesis": "test-only fstatfs initialized-field projection, one fresh query without output zeroing",
+  "baseline_commit": "c54c284bd",
+  "original_windows": [
+    300,
+    60,
+    10
+  ],
+  "original_check_frequency_and_order": true,
+  "retry": false,
+  "product": false,
+  "admission": false
+}

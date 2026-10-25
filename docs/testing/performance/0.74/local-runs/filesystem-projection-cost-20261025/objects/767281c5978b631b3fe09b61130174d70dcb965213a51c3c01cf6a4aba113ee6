@@ -1,0 +1,16 @@
+from pathlib import Path
+import base64,json,runpy,subprocess
+build='filesystem-projection-build-first';source='source-filesystem-projection-first'
+export=json.loads(Path('target/authorized-server-session-20261025/filesystem-projection-build-export-second/stdout.log').read_bytes());assert export['complete']
+group=build+'/'
+result=json.loads(base64.b64decode(export['members'][group+'result.json']['base64']));assert result['passed'] and result['source_unchanged']
+head=subprocess.check_output(['git','rev-parse','HEAD']).decode().strip()
+assert not subprocess.check_output(['git','status','--porcelain','--untracked-files=no']).strip()
+worker=Path('target/server-authority-directory-cost-worker-20261025.py').read_text()
+for a,b in [("selector='diagnostic_worker_policy::authority_registry::fixture::fixed::directory_cost::fresh_authority_directory_'+PHASE+'_cpu_screen'", "selector='diagnostic_kernel_admission::origin::filesystem_projection_tests::filesystem_projection_'+PHASE+'_cpu_screen'"),('HC074_DIRECTORY_COHORT','HC074_FILESYSTEM_COHORT'),('HC074-DIR-COST ','HC074-FILESYSTEM-COST '),("==128 and", "==448 and")]:
+ assert worker.count(a)==1;worker=worker.replace(a,b)
+tag='filesystem-projection-prototype-first'
+prefix=f'RUN_TAG={tag!r}\nPHASE="prototype"\nBUILD_TAG={build!r}\nSOURCE_TAG={source!r}\n'
+prefix+=f'IMAGE_SHA={result["libtest_sha256"]!r}\nMANIFEST_SHA={export["members"][group+"source-manifest.json"]["sha256"]!r}\nSOURCE_COMMIT={head!r}\n'
+prefix+='PROTOCOL_B64='+repr(base64.b64encode(Path('tools/filesystem-projection-cost-074/protocol.json').read_bytes()).decode())+'\n'
+runpy.run_path('target/prepare-capacity-checks-20261025.py',init_globals=dict(WORKER_FILE='target/empty-worker-20261025.py',WORKER_DIR=tag,WORKER_PREFIX=prefix+worker+'\n'))
