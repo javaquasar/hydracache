@@ -9,6 +9,14 @@ mod pidfd_info_path;
 #[path = "diagnostic_kernel_fd_identity.rs"]
 mod fd_identity;
 
+#[cfg(test)]
+#[path = "diagnostic_kernel_operation_cost.rs"]
+mod operation_cost;
+
+#[cfg(all(test, target_arch = "x86_64"))]
+#[path = "diagnostic_kernel_operation_tests.rs"]
+mod operation_tests;
+
 #[derive(Debug, Clone)]
 pub struct KernelTimePoint {
     boot: String,
@@ -70,6 +78,8 @@ impl PidName {
 mod manager_binding;
 pub(crate) use manager_binding::OriginalReceiverBinding;
 pub(super) fn filesystem(file: &File, magic: libc::c_long) -> Result<(), KernelError> {
+    #[cfg(test)]
+    let _operation_fs = operation_cost::span(operation_cost::Kind::Filesystem);
     let mut stat: libc::statfs = unsafe { std::mem::zeroed() };
     if unsafe { libc::fstatfs(file.as_raw_fd(), &mut stat) } != 0 {
         return Err(std::io::Error::last_os_error().into());
@@ -97,16 +107,26 @@ pub(super) fn child(parent: &File, name: &str, directory: bool) -> Result<File, 
 }
 fn namespace(name: &str) -> Result<(File, (u64, u64)), KernelError> {
     #[cfg(test)]
+    drop(operation_cost::span(operation_cost::Kind::Empty));
+    #[cfg(test)]
     let _kernel_walk = crate::diagnostic_ipc::validation_trace::kernel_walk::span(
         crate::diagnostic_ipc::validation_trace::kernel_walk::Kind::Namespace,
     );
     // These fixed kernel magic links must be followed, then checked as nsfs.
+    #[cfg(test)]
+    let operation_open = operation_cost::span(operation_cost::Kind::Open);
     let file = OpenOptions::new()
         .read(true)
         .custom_flags(libc::O_CLOEXEC)
         .open(namespace_path(name).as_ref())?;
+    #[cfg(test)]
+    drop(operation_open);
     filesystem(&file, 0x6e736673)?;
+    #[cfg(test)]
+    let operation_identity = operation_cost::span(operation_cost::Kind::Identity);
     let id = fd_identity::fresh(&file)?;
+    #[cfg(test)]
+    drop(operation_identity);
     Ok((file, id))
 }
 #[path = "diagnostic_boot_document.rs"]
@@ -120,6 +140,8 @@ fn boot_apply<T>(
     root: &File,
     decode: impl FnOnce(([u8; 38], usize)) -> Result<T, KernelError>,
 ) -> Result<T, KernelError> {
+    #[cfg(test)]
+    drop(operation_cost::span(operation_cost::Kind::Empty));
     #[cfg(test)]
     let _kernel_walk = crate::diagnostic_ipc::validation_trace::kernel_walk::span(
         crate::diagnostic_ipc::validation_trace::kernel_walk::Kind::Boot,
@@ -144,7 +166,11 @@ pub(super) fn fixed_child(
         | libc::O_CLOEXEC
         | libc::O_NONBLOCK
         | if directory { libc::O_DIRECTORY } else { 0 };
+    #[cfg(test)]
+    let operation_open = operation_cost::span(operation_cost::Kind::Open);
     let fd = unsafe { libc::openat(parent.as_raw_fd(), name.as_ptr(), flags) };
+    #[cfg(test)]
+    drop(operation_open);
     if fd < 0 {
         return Err(std::io::Error::last_os_error().into());
     }
@@ -153,6 +179,8 @@ pub(super) fn fixed_child(
     Ok(file)
 }
 fn namespace_path(name: &str) -> std::borrow::Cow<'static, str> {
+    #[cfg(test)]
+    let _operation_path = operation_cost::span(operation_cost::Kind::Path);
     use std::borrow::Cow;
     match name {
         "user" => Cow::Borrowed("/proc/thread-self/ns/user"),
@@ -166,6 +194,8 @@ fn boot_read(
     read: impl FnOnce(&mut [u8]) -> std::io::Result<usize>,
 ) -> Result<([u8; 38], usize), KernelError> {
     #[cfg(test)]
+    let _operation_document = operation_cost::span(operation_cost::Kind::Document);
+    #[cfg(test)]
     let _kernel_walk = crate::diagnostic_ipc::validation_trace::kernel_walk::span(
         crate::diagnostic_ipc::validation_trace::kernel_walk::Kind::Document,
     );
@@ -175,6 +205,8 @@ fn boot_value(raw: ([u8; 38], usize)) -> Result<String, KernelError> {
     boot_view(&raw).map(str::to_owned)
 }
 fn boot_view(raw: &([u8; 38], usize)) -> Result<&str, KernelError> {
+    #[cfg(test)]
+    let _operation_decode = operation_cost::span(operation_cost::Kind::Decode);
     let (raw, count) = raw;
     let count = *count;
     if count == 0 {

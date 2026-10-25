@@ -2,6 +2,36 @@ schema_version = 1
 release = "0.64.0"
 
 [[gate]]
+id = "tool.hydracache-long-run-supervisor-074.kernel-operation-cpu"
+kind = "external_tool"
+source = "tools/long-run-supervisor-074/src/diagnostic_kernel_operation_tests.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "hydracache_long_run_supervisor_074"
+test = "fresh_kernel_operation_cpu_screen"
+cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
+env = ""
+reason = "manual finite Boot Namespace operation attribution; no preparation retry or admission"
+tier = "manual"
+required_features = []
+required_env = ["HC074_KERNEL_OPERATION_COHORT"]
+required_tools = ["cargo"]
+timeout_seconds = 300
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+[gate.command]
+program = "cargo"
+args = ["test","--release","--locked","-p","hydracache-long-run-supervisor-074","--lib","fresh_kernel_operation_cpu_screen","--","--ignored","--nocapture","--test-threads=1"]
+cwd = "."
+platform = "linux"
+[gate.command.env]
+HC074_KERNEL_OPERATION_COHORT = "0"
+
+[[gate]]
 id = "tool.hydracache-long-run-supervisor-074.parent-prototype-cpu"
 kind = "external_tool"
 source = "tools/long-run-supervisor-074/src/diagnostic_authority_parent_tests.rs"
