@@ -1,0 +1,5 @@
+8862986662063b329f17547f61458f08832767e2 perf: use fresh fstat identity in kernel origin checks
+cdf10d04236e0eaf88b2b604671d092dd2bb4082 style: format fresh origin identity conditional
+ed0707328a3e77f08ca2f63dfadaa0d1bde119c2 test: freeze selected Boot Namespace operation attribution
+284808a69f4fbce76a68e73b60eaac42198dc8ce test: freeze fixed Namespace open experiment and fault controls
+958b3135a15c00b9f6aad41522cef9d1f6608d3a test: freeze fresh filesystem projection candidate and fault controls

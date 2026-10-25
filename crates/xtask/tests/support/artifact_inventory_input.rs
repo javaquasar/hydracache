@@ -3,6 +3,9 @@ use sha2::{Digest, Sha256};
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
+#[path = "artifact_inventory_phase_544.rs"]
+mod phase_544;
+
 pub(crate) const SCOPE: &str = "tools/long-run-supervisor-074/src";
 const LEDGER: &[u8] = include_bytes!("../../../../docs/testing/performance/0.74/local-runs/role-census-inventory-20261024/objects/cfd5e7f1c153f5214dd71da196dfdbac2d1c05806fa14865605e9ce0776bc9c0");
 const DIGEST: &str = "cfd5e7f1c153f5214dd71da196dfdbac2d1c05806fa14865605e9ce0776bc9c0";
@@ -14,6 +17,7 @@ pub(crate) struct Entry {
 struct Inventory {
     entries: BTreeMap<String, Entry>,
     current: String,
+    phase530: String,
     previous: String,
 }
 fn digest(raw: &[u8]) -> String {
@@ -66,12 +70,16 @@ fn ledger() -> &'static Inventory {
                 .map(|name| format!("{name}\n"))
                 .collect::<String>()
         };
-        let current = names(false);
+        let phase530 = names(false);
         let previous = names(true);
         assert_eq!(previous.lines().count(), 446);
+        let entries = phase_544::extend(entries);
+        let current: String = entries.keys().map(|name| format!("{name}\n")).collect();
+        assert_eq!(phase_544::predecessor_names(&current), phase530);
         Inventory {
             entries,
             current,
+            phase530,
             previous,
         }
     })
@@ -84,6 +92,16 @@ pub(crate) fn current() -> &'static str {
 }
 pub(crate) fn project_with(
     names: &str,
+    observe: impl FnMut(&str) -> Result<String, &'static str>,
+) -> Result<String, &'static str> {
+    let phase530 = project_phase530_with(names, observe)?;
+    if phase530 != ledger().phase530 {
+        return Err("unreviewed predecessor inventory");
+    }
+    Ok(ledger().previous.clone())
+}
+pub(crate) fn project_phase530_with(
+    names: &str,
     mut observe: impl FnMut(&str) -> Result<String, &'static str>,
 ) -> Result<String, &'static str> {
     if names != current() {
@@ -94,7 +112,7 @@ pub(crate) fn project_with(
             return Err("current source bytes drift");
         }
     }
-    Ok(ledger().previous.clone())
+    Ok(phase_544::predecessor_names(names))
 }
 pub(crate) fn root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")

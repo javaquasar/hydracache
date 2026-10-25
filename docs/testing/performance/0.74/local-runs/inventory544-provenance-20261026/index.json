@@ -1,0 +1,197 @@
+{
+  "current_is_fixed_historical_tree": true,
+  "ledger_sha256": "fec2195d38bd7784e9c584704b90d5851f5a5c228a900513aa11cf91b42fad8f",
+  "members": {
+    "baseline-reader.rs": {
+      "bytes": 6377,
+      "sha256": "536cb02654d3b2bb21328a0b3dc81726d6f7bef8f1b19994168f247b0ec0d56b"
+    },
+    "first-refused-retainer-source.py": {
+      "bytes": 5507,
+      "sha256": "98f33f06ffed150cec6b75152a69e79d3071d7d8fb9994e241f3b031a849f8e4"
+    },
+    "first-retainer-refusal-note.json": {
+      "bytes": 449,
+      "sha256": "5fc1e1b1e24d93a81de1286d8473f56811136486e3165c8465ba9a2a6ac10bd1"
+    },
+    "history/tools/long-run-supervisor-074/src/diagnostic_authority_before_tests.rs.raw": {
+      "bytes": 202,
+      "sha256": "070677b8ca4459e83fcf1794019734c56148784be5f07b9060e7d83738f8b76d"
+    },
+    "history/tools/long-run-supervisor-074/src/diagnostic_authority_directory_tests.rs.raw": {
+      "bytes": 218,
+      "sha256": "a1c3c88a3bac6bc087aa878c9d18b762c6f7d8e77c77570cb526757d956fa2e7"
+    },
+    "history/tools/long-run-supervisor-074/src/diagnostic_authority_fixed.rs.raw": {
+      "bytes": 218,
+      "sha256": "a1c3c88a3bac6bc087aa878c9d18b762c6f7d8e77c77570cb526757d956fa2e7"
+    },
+    "history/tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs.raw": {
+      "bytes": 616,
+      "sha256": "9154e4c8d48d5edec2aff89f149f8af1be26028c877b20ab088049d8b04b83f9"
+    },
+    "history/tools/long-run-supervisor-074/src/diagnostic_authority_parent_tests.rs.raw": {
+      "bytes": 211,
+      "sha256": "1d01db80658fe71063d5e7ef79235a539253a49f368a6f6fb808e1815ea13c58"
+    },
+    "history/tools/long-run-supervisor-074/src/diagnostic_authority_stamp.rs.raw": {
+      "bytes": 414,
+      "sha256": "e73af18e45ae2fa5eb23dd279cc9a161376e82d4606158a73f1dbc12976b22a4"
+    },
+    "history/tools/long-run-supervisor-074/src/diagnostic_authority_stamp_tests.rs.raw": {
+      "bytes": 94,
+      "sha256": "66f7c333eaf5135e01dba4d93a6e635a990036cff655dbf052aed03da9e2618b"
+    },
+    "history/tools/long-run-supervisor-074/src/diagnostic_filesystem_projection.rs.raw": {
+      "bytes": 111,
+      "sha256": "0f56f3be640da949ee25bd45f60546e4c2200cc8381b060b042a04cddd133e84"
+    },
+    "history/tools/long-run-supervisor-074/src/diagnostic_filesystem_projection_tests.rs.raw": {
+      "bytes": 111,
+      "sha256": "0f56f3be640da949ee25bd45f60546e4c2200cc8381b060b042a04cddd133e84"
+    },
+    "history/tools/long-run-supervisor-074/src/diagnostic_kernel_fd_identity.rs.raw": {
+      "bytes": 96,
+      "sha256": "2c223ad85a3457733558963b95c5cb8e688fb69a8ecf712afc200e27facaa53f"
+    },
+    "history/tools/long-run-supervisor-074/src/diagnostic_kernel_fd_identity_tests.rs.raw": {
+      "bytes": 96,
+      "sha256": "2c223ad85a3457733558963b95c5cb8e688fb69a8ecf712afc200e27facaa53f"
+    },
+    "history/tools/long-run-supervisor-074/src/diagnostic_kernel_operation_cost.rs.raw": {
+      "bytes": 100,
+      "sha256": "8bc6f360cc4d6db25ede68520073961fe51c6929737b45347550d724ae546d13"
+    },
+    "history/tools/long-run-supervisor-074/src/diagnostic_kernel_operation_reference.rs.raw": {
+      "bytes": 100,
+      "sha256": "8bc6f360cc4d6db25ede68520073961fe51c6929737b45347550d724ae546d13"
+    },
+    "history/tools/long-run-supervisor-074/src/diagnostic_kernel_operation_tests.rs.raw": {
+      "bytes": 100,
+      "sha256": "8bc6f360cc4d6db25ede68520073961fe51c6929737b45347550d724ae546d13"
+    },
+    "history/tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs.raw": {
+      "bytes": 501,
+      "sha256": "f546af793f58a4f2c7d5915562677c558a383cd4b1e841713973055772e5e14a"
+    },
+    "history/tools/long-run-supervisor-074/src/diagnostic_namespace_open.rs.raw": {
+      "bytes": 105,
+      "sha256": "6998770380b098c60304089413b92522269bd36d2818b56010d3635d6331b85a"
+    },
+    "history/tools/long-run-supervisor-074/src/diagnostic_namespace_open_tests.rs.raw": {
+      "bytes": 105,
+      "sha256": "6998770380b098c60304089413b92522269bd36d2818b56010d3635d6331b85a"
+    },
+    "observed-index.raw": {
+      "bytes": 65236,
+      "sha256": "b5c87dcd8f36a109b501304ffbc59bed2b8435cf7a825288bc91ea4b4acfa19f"
+    },
+    "phase-ledger.json": {
+      "bytes": 5521,
+      "sha256": "fec2195d38bd7784e9c584704b90d5851f5a5c228a900513aa11cf91b42fad8f"
+    },
+    "previous-ledger.json": {
+      "bytes": 576734,
+      "sha256": "cfd5e7f1c153f5214dd71da196dfdbac2d1c05806fa14865605e9ce0776bc9c0"
+    },
+    "provenance.json": {
+      "bytes": 4995,
+      "sha256": "41b15c507717b9be0370b56610de61818cc0132f1c1c55be1b1a1a58d1122098"
+    },
+    "retainer-source.py": {
+      "bytes": 6271,
+      "sha256": "736b9202688031f595346f8d1c121a2b9a3476a61d94858d9dc18eb7242f16e4"
+    },
+    "source/958b3135a15c00b9f6aad41522cef9d1f6608d3a/tools/long-run-supervisor-074/src/diagnostic_authority_before_tests.rs": {
+      "bytes": 13233,
+      "sha256": "70f9cb739d192c3662075bed70d821c8f62630ec1f43599d1a6ae1af26b6594e"
+    },
+    "source/958b3135a15c00b9f6aad41522cef9d1f6608d3a/tools/long-run-supervisor-074/src/diagnostic_authority_directory_tests.rs": {
+      "bytes": 12972,
+      "sha256": "323be5e906892ee0b9507c8e01f10e6a9811fe6e436e19eeb27a0fc4086b4c76"
+    },
+    "source/958b3135a15c00b9f6aad41522cef9d1f6608d3a/tools/long-run-supervisor-074/src/diagnostic_authority_fixed.rs": {
+      "bytes": 6708,
+      "sha256": "55d1372e62984d2ccda29879fd65951f3cd7415ad2d68be2c567d2a329c06b9d"
+    },
+    "source/958b3135a15c00b9f6aad41522cef9d1f6608d3a/tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs": {
+      "bytes": 23608,
+      "sha256": "81edd92cedb2f223a7f218b2610b3e59cf30614a7c4c70a1bd1196f49d3c85e3"
+    },
+    "source/958b3135a15c00b9f6aad41522cef9d1f6608d3a/tools/long-run-supervisor-074/src/diagnostic_authority_parent_tests.rs": {
+      "bytes": 11854,
+      "sha256": "aca89e7b9748cb2df31f144043476c07d6665fbf3c206e25e593cc91915e36a1"
+    },
+    "source/958b3135a15c00b9f6aad41522cef9d1f6608d3a/tools/long-run-supervisor-074/src/diagnostic_authority_stamp.rs": {
+      "bytes": 3178,
+      "sha256": "7c2a9b0d0166ae595bf582986182edaaa8696b9223045601d98bbeb5cc4f7e9b"
+    },
+    "source/958b3135a15c00b9f6aad41522cef9d1f6608d3a/tools/long-run-supervisor-074/src/diagnostic_authority_stamp_tests.rs": {
+      "bytes": 9854,
+      "sha256": "cef0f6bf456564b3720e54c0c9533b2dec0f8e18a588f63d923de5af6ba3a37a"
+    },
+    "source/958b3135a15c00b9f6aad41522cef9d1f6608d3a/tools/long-run-supervisor-074/src/diagnostic_filesystem_projection.rs": {
+      "bytes": 1404,
+      "sha256": "73326fee5790dd33c3dcae076770cd3be413d135e2d10ce72a90f8aa2ed3736b"
+    },
+    "source/958b3135a15c00b9f6aad41522cef9d1f6608d3a/tools/long-run-supervisor-074/src/diagnostic_filesystem_projection_tests.rs": {
+      "bytes": 15019,
+      "sha256": "725d66ed4bd8ecc1c657dea2e9d906f411c2cffd4227b29e4a46acb1413e530f"
+    },
+    "source/958b3135a15c00b9f6aad41522cef9d1f6608d3a/tools/long-run-supervisor-074/src/diagnostic_kernel_fd_identity.rs": {
+      "bytes": 1037,
+      "sha256": "52ca571f1ea7ae9a42e53cba8273b3e9b0a969323e529c4c4a9f25d4c3bc5dbd"
+    },
+    "source/958b3135a15c00b9f6aad41522cef9d1f6608d3a/tools/long-run-supervisor-074/src/diagnostic_kernel_fd_identity_tests.rs": {
+      "bytes": 6716,
+      "sha256": "afaf3927e9289a55a2d07b84ec1e1006ae35cf54a89751d84704c8379344a757"
+    },
+    "source/958b3135a15c00b9f6aad41522cef9d1f6608d3a/tools/long-run-supervisor-074/src/diagnostic_kernel_operation_cost.rs": {
+      "bytes": 6950,
+      "sha256": "0731eaf56828d138b5b6cd6a0eafbaeb5e6efb9d5a070024d2a5dae70b39f03b"
+    },
+    "source/958b3135a15c00b9f6aad41522cef9d1f6608d3a/tools/long-run-supervisor-074/src/diagnostic_kernel_operation_reference.rs": {
+      "bytes": 4131,
+      "sha256": "119754c64f1c1e0078c0fed2a1892bbcb2bed06ebc3d64427f33590de39babd4"
+    },
+    "source/958b3135a15c00b9f6aad41522cef9d1f6608d3a/tools/long-run-supervisor-074/src/diagnostic_kernel_operation_tests.rs": {
+      "bytes": 6276,
+      "sha256": "37a5ff7881ba73ec6fa429570459db51f01d8f64f532b245d2794a7796637a34"
+    },
+    "source/958b3135a15c00b9f6aad41522cef9d1f6608d3a/tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs": {
+      "bytes": 23791,
+      "sha256": "7c7e78b3734efe3d04559a1e5dd4eeb04118b8bb47e8ccfb032bcb0a66ada89f"
+    },
+    "source/958b3135a15c00b9f6aad41522cef9d1f6608d3a/tools/long-run-supervisor-074/src/diagnostic_namespace_open.rs": {
+      "bytes": 1746,
+      "sha256": "0d87da659557b2997c481f649010c7f0f125b6a4da7c81fd8517a0c5c57ac9d1"
+    },
+    "source/958b3135a15c00b9f6aad41522cef9d1f6608d3a/tools/long-run-supervisor-074/src/diagnostic_namespace_open_tests.rs": {
+      "bytes": 15657,
+      "sha256": "c72ee0e7438bf6ffa72592063fb938cf86043cf67c55b65485f968ae32ca74d6"
+    },
+    "source/c91068bfa8b297bb075b63457da235aaa9c6232e/tools/long-run-supervisor-074/src/diagnostic_authority_fixed.rs": {
+      "bytes": 6618,
+      "sha256": "fd1e10a038ae046888c8ff3c76303e36e5ed49a46aef2025391f8aa009d554a1"
+    },
+    "source/c91068bfa8b297bb075b63457da235aaa9c6232e/tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs": {
+      "bytes": 23496,
+      "sha256": "65cc390d5bb547ab19caa5c84a324404bd8b95da207b7577c7cbb13c3fc29032"
+    },
+    "source/c91068bfa8b297bb075b63457da235aaa9c6232e/tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs": {
+      "bytes": 22126,
+      "sha256": "4e18523c71b6b5bdf3a74d75e58df096f25c6f773067d013a07db2a8cfde5214"
+    },
+    "tree-958b3135a15c00b9f6aad41522cef9d1f6608d3a.raw": {
+      "bytes": 66868,
+      "sha256": "59f3c4ae35eda7565df7ca2e13f652fdab88814f17bcc99dec180b0ea09b7c5e"
+    },
+    "tree-c91068bfa8b297bb075b63457da235aaa9c6232e.raw": {
+      "bytes": 65142,
+      "sha256": "7590c0859b68c2f68e6fd01d3b2bca37ea53e4a44c992ec88f5e419cafcf6448"
+    }
+  },
+  "original_ledgers_changed": false,
+  "product_or_qualification_admission": false,
+  "schema": "hc074-inventory544-provenance-v1"
+}

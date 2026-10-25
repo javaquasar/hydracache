@@ -1,0 +1,8 @@
+{
+  "command": "C:/Python313/python.exe target/retain-inventory544-provenance.py",
+  "error": "AssertionError at line 70: previous == old_ledger[current][name]",
+  "numerical_or_test_cohort": false,
+  "origin": "tool transcript, stderr was not separately captured to a file",
+  "original_source_sha256": "98f33f06ffed150cec6b75152a69e79d3071d7d8fb9994e241f3b031a849f8e4",
+  "reason": "old ledger entries also have bytes and working_sha256 fields"
+}

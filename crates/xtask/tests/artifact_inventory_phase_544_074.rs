@@ -1,0 +1,325 @@
+//! A new current source phase cannot weaken either frozen predecessor inventory.
+#[path = "support/artifact_inventory_input.rs"]
+mod inventory;
+
+use sha2::{Digest, Sha256};
+use std::collections::BTreeMap;
+
+const OLD: &[u8] = include_bytes!("../../../docs/testing/performance/0.74/local-runs/role-census-inventory-20261024/objects/cfd5e7f1c153f5214dd71da196dfdbac2d1c05806fa14865605e9ce0776bc9c0");
+const PHASE: &[u8] = include_bytes!("../../../docs/testing/performance/0.74/local-runs/inventory544-provenance-20261026/objects/fec2195d38bd7784e9c584704b90d5851f5a5c228a900513aa11cf91b42fad8f");
+
+fn sha(raw: &[u8]) -> String {
+    Sha256::digest(raw)
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect()
+}
+
+fn old() -> serde_json::Value {
+    assert_eq!(
+        sha(OLD),
+        "cfd5e7f1c153f5214dd71da196dfdbac2d1c05806fa14865605e9ce0776bc9c0"
+    );
+    serde_json::from_slice(OLD).unwrap()
+}
+
+fn old_names() -> String {
+    old()["current"]
+        .as_object()
+        .unwrap()
+        .keys()
+        .map(|name| format!("{name}\n"))
+        .collect()
+}
+
+fn git(args: &[&str]) -> String {
+    let result = std::process::Command::new("git")
+        .arg("--no-replace-objects")
+        .args(args)
+        .current_dir(inventory::root())
+        .output()
+        .unwrap();
+    assert!(
+        result.status.success(),
+        "{}",
+        String::from_utf8_lossy(&result.stderr)
+    );
+    String::from_utf8(result.stdout)
+        .unwrap()
+        .replace("\r\n", "\n")
+}
+
+#[test]
+fn current_phase_requires_all_544_sources_before_446_projection() {
+    assert_eq!(inventory::current().lines().count(), 544);
+    assert_eq!(inventory::entries().len(), 544);
+    let projected = inventory::project(inventory::current()).unwrap();
+    assert_eq!(projected.lines().count(), 446);
+}
+
+#[test]
+fn phase_chain_observes_every_current_body_before_releasing_old_names() {
+    let mut observed = Vec::new();
+    let projected = inventory::project_phase530_with(inventory::current(), |name| {
+        observed.push(name.to_owned());
+        Ok(inventory::entries()[name].digest.clone())
+    })
+    .unwrap();
+    assert_eq!(
+        observed,
+        inventory::current()
+            .lines()
+            .map(str::to_owned)
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(observed.len(), 544);
+    assert_eq!(projected, old_names());
+    let prior = inventory::project_with(inventory::current(), |name| {
+        Ok(inventory::entries()[name].digest.clone())
+    })
+    .unwrap();
+    let expected = git(&[
+        "ls-tree",
+        "-r",
+        "--name-only",
+        "6c6e47ee5dd3504d0be064b28af5a3e3ac087c9e",
+        "--",
+        inventory::SCOPE,
+    ]);
+    assert_eq!(prior, expected);
+    assert_eq!(prior.lines().count(), 446);
+}
+
+#[test]
+fn successful_projection_never_caches_a_current_observation() {
+    let mut first = 0;
+    inventory::project_with(inventory::current(), |name| {
+        first += 1;
+        Ok(inventory::entries()[name].digest.clone())
+    })
+    .unwrap();
+    assert_eq!(first, 544);
+    let mut next = 0;
+    inventory::project_with(inventory::current(), |name| {
+        next += 1;
+        Ok(inventory::entries()[name].digest.clone())
+    })
+    .unwrap();
+    assert_eq!(next, 544);
+    let mut failure_observed = 0;
+    assert!(inventory::project_with(inventory::current(), |_| {
+        failure_observed += 1;
+        Err("fresh read failed after two successes")
+    })
+    .is_err());
+    assert_eq!(failure_observed, 1);
+}
+
+#[test]
+fn the_frozen_530_phase_is_not_accepted_as_the_live_544_phase() {
+    let stale = old_names();
+    let mut observed = false;
+    assert!(inventory::project_phase530_with(&stale, |_| {
+        observed = true;
+        Err("no read")
+    })
+    .is_err());
+    assert!(!observed);
+    let value = old();
+    let stale_index: String = value["current"]
+        .as_object()
+        .unwrap()
+        .iter()
+        .map(|(name, row)| format!("100644 {} 0\t{name}\n", row["blob"].as_str().unwrap()))
+        .collect();
+    assert!(!inventory::index_matches(&stale_index));
+}
+
+#[test]
+fn every_late_body_or_read_error_blocks_both_predecessor_projections() {
+    let names: Vec<_> = inventory::entries().keys().collect();
+    for (position, bad) in names.iter().enumerate() {
+        for read_error in [false, true] {
+            let mut observed = Vec::new();
+            let result = inventory::project_phase530_with(inventory::current(), |name| {
+                observed.push(name.to_owned());
+                if name == bad.as_str() {
+                    if read_error {
+                        Err("read failure")
+                    } else {
+                        Ok("wrong digest".into())
+                    }
+                } else {
+                    Ok(inventory::entries()[name].digest.clone())
+                }
+            });
+            assert!(result.is_err());
+            assert_eq!(
+                observed,
+                names[..=position]
+                    .iter()
+                    .map(|name| (*name).clone())
+                    .collect::<Vec<_>>()
+            );
+            assert!(inventory::project_with(inventory::current(), |name| {
+                if name == bad.as_str() {
+                    Err("no historical projection")
+                } else {
+                    Ok(inventory::entries()[name].digest.clone())
+                }
+            })
+            .is_err());
+        }
+    }
+}
+
+#[test]
+fn every_544_name_is_required_before_any_body_observation() {
+    let current = inventory::current();
+    for name in inventory::entries().keys() {
+        for bad in [
+            current.replacen(&format!("{name}\n"), "", 1),
+            format!("{current}{name}\n"),
+        ] {
+            let mut observed = false;
+            assert!(inventory::project_phase530_with(&bad, |_| {
+                observed = true;
+                Err("no read")
+            })
+            .is_err());
+            assert!(!observed);
+        }
+    }
+    for bad in [
+        format!("{current}{}/unknown.rs\n", inventory::SCOPE),
+        current
+            .lines()
+            .rev()
+            .map(|name| format!("{name}\n"))
+            .collect(),
+    ] {
+        assert!(
+            inventory::project_phase530_with(&bad, |_| panic!("unreviewed name observed")).is_err()
+        );
+    }
+}
+
+#[test]
+fn current_mode_blob_and_stage_are_pinned_to_independent_producer_tree() {
+    let tree = git(&[
+        "ls-tree",
+        "-r",
+        "958b3135a15c00b9f6aad41522cef9d1f6608d3a",
+        "--",
+        inventory::SCOPE,
+    ]);
+    let mut expected = String::new();
+    for line in tree.lines() {
+        let (metadata, name) = line.split_once('\t').unwrap();
+        let fields: Vec<_> = metadata.split_whitespace().collect();
+        assert_eq!(fields[0], "100644");
+        assert_eq!(fields[1], "blob");
+        expected.push_str(&format!("{} {} 0\t{name}\n", fields[0], fields[2]));
+    }
+    assert_eq!(expected.lines().count(), 544);
+    assert_eq!(inventory::expected_index(), expected);
+}
+
+#[test]
+fn extension_changes_exactly_three_old_entries_and_adds_fourteen() {
+    assert_eq!(
+        sha(PHASE),
+        "fec2195d38bd7784e9c584704b90d5851f5a5c228a900513aa11cf91b42fad8f"
+    );
+    let phase: serde_json::Value = serde_json::from_slice(PHASE).unwrap();
+    let previous = old();
+    let old_entries = previous["current"].as_object().unwrap();
+    assert_eq!(old_entries.len(), 530);
+    let expected_changed = [
+        "diagnostic_authority_fixed.rs",
+        "diagnostic_authority_fixture.rs",
+        "diagnostic_kernel_origin.rs",
+    ]
+    .map(|name| format!("{}/{name}", inventory::SCOPE));
+    let mut changed = Vec::new();
+    let mut added = 0;
+    for (name, current) in inventory::entries() {
+        if let Some(prior) = old_entries.get(name) {
+            if prior["blob"].as_str().unwrap() != current.blob {
+                changed.push(name.clone());
+                let delta = &phase["changed"][name];
+                assert_eq!(delta["previous"]["blob"], prior["blob"]);
+                assert_eq!(
+                    delta["previous"]["canonical_sha256"],
+                    prior["canonical_sha256"]
+                );
+                assert_eq!(delta["current"]["blob"].as_str().unwrap(), current.blob);
+                assert_eq!(
+                    delta["current"]["canonical_sha256"].as_str().unwrap(),
+                    current.digest
+                );
+            } else {
+                assert_eq!(prior["canonical_sha256"].as_str().unwrap(), current.digest);
+            }
+        } else {
+            added += 1;
+            assert_eq!(phase["added"][name]["blob"].as_str().unwrap(), current.blob);
+            assert_eq!(
+                phase["added"][name]["canonical_sha256"].as_str().unwrap(),
+                current.digest
+            );
+        }
+    }
+    assert_eq!(changed, expected_changed);
+    assert_eq!(added, 14);
+    assert_eq!(
+        old_entries
+            .keys()
+            .filter(|name| inventory::entries().contains_key(*name))
+            .count(),
+        530
+    );
+}
+
+#[test]
+fn physical_checks_and_all_five_original_tests_are_byte_preserved() {
+    let prefix = "2b83dff9d7445aa8a14890b51ae5d4b276b048f7:";
+    for path in [
+        "crates/xtask/tests/artifact_inventory_reader_074.rs",
+        "crates/xtask/tests/diagnostic_artifact_fixture_074.rs",
+    ] {
+        let old = git(&["show", &format!("{prefix}{path}")]);
+        let current = std::fs::read_to_string(inventory::root().join(path))
+            .unwrap()
+            .replace("\r\n", "\n");
+        assert_eq!(old, current);
+    }
+    let path = "crates/xtask/tests/support/artifact_inventory_input.rs";
+    let old = git(&["show", &format!("{prefix}{path}")]);
+    let current = std::fs::read_to_string(inventory::root().join(path))
+        .unwrap()
+        .replace("\r\n", "\n");
+    let physical = "pub(crate) fn root() -> PathBuf {";
+    assert_eq!(old.matches(physical).count(), 1);
+    assert_eq!(current.matches(physical).count(), 1);
+    assert_eq!(
+        old.split_once(physical).unwrap().1,
+        current.split_once(physical).unwrap().1
+    );
+    let old_assertions: BTreeMap<_, _> = [
+        (
+            "530",
+            old.matches("assert_eq!(entries.len(), 530);").count(),
+        ),
+        (
+            "446",
+            old.matches("assert_eq!(previous.lines().count(), 446);")
+                .count(),
+        ),
+    ]
+    .into();
+    assert_eq!(old_assertions["530"], 1);
+    assert_eq!(old_assertions["446"], 1);
+    assert!(current.contains("assert_eq!(entries.len(), 530);"));
+    assert!(current.contains("assert_eq!(previous.lines().count(), 446);"));
+}

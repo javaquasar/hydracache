@@ -1,0 +1,107 @@
+"""Describe a fixed, reviewed producer tree; observed worktree cannot supply pins."""
+from pathlib import Path
+import hashlib
+import json
+import subprocess
+
+ROOT = Path(__file__).resolve().parent.parent
+OLD = 'c91068bfa8b297bb075b63457da235aaa9c6232e'
+NEW = '958b3135a15c00b9f6aad41522cef9d1f6608d3a'
+SCOPE = 'tools/long-run-supervisor-074/src'
+OLD_DIGEST = 'cfd5e7f1c153f5214dd71da196dfdbac2d1c05806fa14865605e9ce0776bc9c0'
+OLD_PATH = 'docs/testing/performance/0.74/local-runs/role-census-inventory-20261024/objects/' + OLD_DIGEST
+CHANGED = {SCOPE + '/' + name for name in ('diagnostic_authority_fixed.rs',
+    'diagnostic_authority_fixture.rs', 'diagnostic_kernel_origin.rs')}
+ADDED = {SCOPE + '/' + name for name in (
+    'diagnostic_authority_before_tests.rs', 'diagnostic_authority_directory_tests.rs',
+    'diagnostic_authority_parent_tests.rs', 'diagnostic_authority_stamp.rs',
+    'diagnostic_authority_stamp_tests.rs', 'diagnostic_filesystem_projection.rs',
+    'diagnostic_filesystem_projection_tests.rs', 'diagnostic_kernel_fd_identity.rs',
+    'diagnostic_kernel_fd_identity_tests.rs', 'diagnostic_kernel_operation_cost.rs',
+    'diagnostic_kernel_operation_reference.rs', 'diagnostic_kernel_operation_tests.rs',
+    'diagnostic_namespace_open.rs', 'diagnostic_namespace_open_tests.rs')}
+members, objects = {}, {}
+sha = lambda raw: hashlib.sha256(raw).hexdigest()
+
+def add(name, raw):
+    assert name not in members
+    digest = sha(raw)
+    members[name] = dict(sha256=digest, bytes=len(raw))
+    objects[digest] = raw
+
+def git(*args):
+    return subprocess.check_output(['git', '--no-replace-objects', *args], cwd=ROOT, timeout=30)
+
+def tree(revision):
+    raw = git('ls-tree', '-r', revision, '--', SCOPE)
+    add('tree-' + revision + '.raw', raw)
+    entries = {}
+    for line in raw.decode().splitlines():
+        meta, path = line.split('\t')
+        mode, kind, blob = meta.split()
+        assert mode == '100644' and kind == 'blob' and path not in entries
+        entries[path] = dict(mode=mode, blob=blob)
+    return entries
+
+old, current = tree(OLD), tree(NEW)
+assert len(old) == 530 and len(current) == 544
+assert current.keys()-old.keys() == ADDED and not old.keys()-current.keys()
+assert {name for name in old if old[name] != current[name]} == CHANGED
+old_raw = (ROOT / OLD_PATH).read_bytes()
+assert sha(old_raw) == OLD_DIGEST
+old_ledger = json.loads(old_raw)
+assert old_ledger['pinned_current_source'] == OLD
+assert {name:dict(mode=row['mode'], blob=row['blob']) for name,row in old_ledger['current'].items()} == old
+add('previous-ledger.json', old_raw)
+
+def entry(revision, name, row):
+    raw = git('show', revision + ':' + name)
+    add('source/' + revision + '/' + name, raw)
+    canonical = raw.decode('utf-8').replace('\r\n', '\n').encode()
+    return dict(**row, canonical_sha256=sha(canonical))
+
+added, changed, provenance = {}, {}, {}
+for name in sorted(ADDED | CHANGED):
+    new_row = entry(NEW, name, current[name])
+    if name in ADDED:
+        added[name] = new_row
+    else:
+        previous = entry(OLD, name, old[name])
+        assert previous == old_ledger['current'][name]
+        changed[name] = dict(previous=previous, current=new_row)
+    history = git('log', '--reverse', '--format=%H %s', OLD + '..' + NEW, '--', name)
+    assert history
+    add('history/' + name + '.raw', history)
+    provenance[name] = history.decode().splitlines()
+ledger = dict(schema='hc074-inventory544-phase-v1', previous_revision=OLD, revision=NEW,
+    previous_ledger_sha256=OLD_DIGEST, previous_count=530, current_count=544,
+    added=added, changed=changed, removed=[])
+ledger_raw = (json.dumps(ledger, indent=2, sort_keys=True)+'\n').encode()
+add('phase-ledger.json', ledger_raw)
+add('provenance.json', (json.dumps(provenance, indent=2, sort_keys=True)+'\n').encode())
+add('retainer-source.py', Path(__file__).read_bytes())
+add('baseline-reader.rs', (ROOT/'crates/xtask/tests/support/artifact_inventory_input.rs').read_bytes())
+# Worktree is only a verification input, never an origin for the manifest.
+index_raw = git('ls-files', '--stage', '--', SCOPE)
+expected_index = ''.join(f"{row['mode']} {row['blob']} 0\t{name}\n" for name,row in sorted(current.items()))
+assert index_raw.decode() == expected_index
+add('observed-index.raw', index_raw)
+expected = {name:row['canonical_sha256'] for name,row in old_ledger['current'].items()}
+expected.update({name:row['canonical_sha256'] for name,row in added.items()})
+expected.update({name:row['current']['canonical_sha256'] for name,row in changed.items()})
+assert all(sha((ROOT/name).read_text(encoding='utf-8').replace('\r\n','\n').encode()) == digest
+           for name,digest in expected.items())
+out = ROOT/'docs/testing/performance/0.74/local-runs/inventory544-provenance-20261026'
+out.mkdir(exist_ok=False)
+(out/'objects').mkdir()
+for digest, raw in objects.items():
+    with (out/'objects'/digest).open('xb') as stream:
+        stream.write(raw)
+index = dict(schema='hc074-inventory544-provenance-v1', members=members,
+             ledger_sha256=sha(ledger_raw), current_is_fixed_historical_tree=True,
+             original_ledgers_changed=False, product_or_qualification_admission=False)
+with (out/'index.json').open('x', encoding='utf-8', newline='\n') as stream:
+    json.dump(index, stream, indent=2, sort_keys=True)
+    stream.write('\n')
+print(json.dumps(dict(ledger_sha256=sha(ledger_raw), index_sha256=sha((out/'index.json').read_bytes()),
+                     members=len(members), objects=len(objects)), indent=2))

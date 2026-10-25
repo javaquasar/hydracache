@@ -1,0 +1,2 @@
+3da3c31201b8593dfd938140c4c069e7e05b30ed test: freeze calibrated before-read authority CPU baseline
+bac965b92a64d1f042fa6094b261dcdb614407da perf: use fresh checked Stamp at authority before-read sites
